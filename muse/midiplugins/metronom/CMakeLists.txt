@@ -18,8 +18,25 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-add_library(synti mess.cpp gui.cpp mono.cpp poly.cpp mpevent.cpp)
-set_target_properties( synti
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+QT4_WRAP_CPP ( metronom_mocs metronomgui.h )
+QT4_WRAP_UI (  metronom_uis metronomgui.ui )
+
+add_library ( metronom SHARED 
+      metronom.cpp 
+      metronomgui.cpp
+      metronomgui.h
+      ${metronom_mocs}
+      ${metronom_uis}
+      )
+
+# - tell cmake to name target metronom.so instead of 
+#   libmetronom.so
+# - use precompiled header files
+#
+set_target_properties ( metronom 
+   PROPERTIES PREFIX ""
+   COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
+
+install_targets ( /lib/muse-1.0pre1/midiplugins/ metronom )
 

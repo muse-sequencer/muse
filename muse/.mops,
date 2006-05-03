@@ -1,9 +1,0 @@
-#!/bin/sh
-
-rm `find . -name "ui_*.h"`
-rm `find . -name "*.a"`
-rm `find . -name "*.so"`
-
-
-find . > files
-

@@ -18,8 +18,23 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-add_library(synti mess.cpp gui.cpp mono.cpp poly.cpp mpevent.cpp)
-set_target_properties( synti
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+QT4_WRAP_CPP ( transform_mocs transform.h )
+QT4_WRAP_UI (  transform_uis transform.ui )
+
+add_library ( transform SHARED 
+      transform.cpp 
+      ${transform_mocs}
+      ${transform_uis}
+      )
+
+# - tell cmake to name target transform.so instead of 
+#   libtransform.so
+# - use precompiled header files
+#
+set_target_properties ( transform 
+   PROPERTIES PREFIX ""
+   COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
+
+install_targets ( /lib/muse-1.0pre1/midiplugins/ transform )
 

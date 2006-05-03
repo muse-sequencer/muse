@@ -9,7 +9,7 @@
 #ifndef __METRONOMGUI_H__
 #define __METRONOMGUI_H__
 
-#include "ui_metronogui.h"
+#include "ui_metronomgui.h"
 
 class Metronom;
 
