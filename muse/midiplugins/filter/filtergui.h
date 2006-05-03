@@ -9,7 +9,7 @@
 #ifndef __FILTERGUI_H__
 #define __FILTERGUI_H__
 
-#include "filterbase.h"
+#include "ui_filtergui.h"
 
 class Filter;
 
