@@ -1,4 +1,0 @@
-#!/bin/sh
-valgrind --error-limit=no --tool=memcheck muse -d midi
-#callgrind -v --error-limit=no muse $*
-
