@@ -1,14 +1,23 @@
+//=============================================================================
+//  MusE
+//  Linux Music Editor
+//  $Id:$
 //
-// C++ Implementation: shortcutconfig
+//  Copyright (C) 2003 Mathias Lundgren (lunar_shuttle@users.sourceforge.net)
 //
-// Description:
-// Dialog for configuring keyboard shortcuts
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
 //
-// Author: Mathias Lundgren <lunar_shuttle@users.sourceforge.net>, (C) 2003
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
 //
-// Copyright: Mathias Lundgren (lunar_shuttle@users.sourceforge.net) (C) 2003
-//
-//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
+
 #include "shortcutconfig.h"
 #include "shortcutcapturedialog.h"
 #include "shortcuts.h"
