@@ -43,7 +43,7 @@ class AudioPrefetch : public Thread {
       ~AudioPrefetch();
       virtual void start(int);
 
-      void msgTick(unsigned pos);
+      void msgTick();
       void msgSeek(unsigned pos);
       bool seekDone() const { return seekCount == 0; }
       Fifo1* getFifo() { return &fifo; }

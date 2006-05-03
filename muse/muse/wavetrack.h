@@ -59,7 +59,7 @@ class WaveTrack : public AudioTrack {
       virtual void read(QDomNode);
       virtual void write(Xml&) const;
 
-      virtual void fetchData(unsigned pos, unsigned frames, float** bp);
+      virtual void fetchData(unsigned pos, unsigned frames, int);
 
       virtual void setChannels(int n);
       virtual bool hasAuxSend() const 	{ return true; }
@@ -70,7 +70,6 @@ class WaveTrack : public AudioTrack {
       void recordBeat();
       virtual void stopRecording(const AL::Pos&, const AL::Pos&);
 	virtual void process();
-      float** prefetchBuffer(int idx) { return readBuffer[idx]; }
       };
 
 

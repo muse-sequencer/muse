@@ -72,8 +72,9 @@ WaveTrack::~WaveTrack()
 //    called from prefetch thread
 //---------------------------------------------------------
 
-void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp)
+void WaveTrack::fetchData(unsigned pos, unsigned samples, int widx)
       {
+      float** bp = readBuffer[widx];
       for (int i = 0; i < channels(); ++i)
             memset(bp[i], 0, samples * sizeof(float));
       PartList* pl = parts();
@@ -323,7 +324,7 @@ void WaveTrack::collectInputData()
 	unsigned framePos = audio->pos().frame();
       if (audio->freewheel()) {
       	// when freewheeling, read data direct from file:
-            fetchData(framePos, segmentSize, buffer);
+            // TODO: fetchData(framePos, segmentSize, buffer);
             }
 	else {
             int idx = audio->curReadIndex();

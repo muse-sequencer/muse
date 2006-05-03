@@ -110,12 +110,10 @@ void AudioPrefetch::processMsg1(const void* m)
 //    trigger audio prefetch with next buffer position
 //---------------------------------------------------------
 
-void AudioPrefetch::msgTick(unsigned pos)
+void AudioPrefetch::msgTick()
       {
       PrefetchMsg msg;
       msg.id  = PREFETCH_TICK;
-//      msg.pos = pos;
-//      msg.serialNo = 0;
       if (fifo.count() < FIFO_BUFFER/3) {
             while (sendMsg1(&msg, sizeof(msg))) {
                   printf("AudioPrefetch::msgTick(): send failed!\n");
@@ -178,8 +176,7 @@ void AudioPrefetch::prefetch(bool seekFlag)
                   if (!seekFlag && ((audio->isRecording() && track->recordFlag()) || !audio->isPlaying()))
                       continue;
                   int ch = track->channels();
-                  float** bpp = track->prefetchBuffer(widx);
-                  track->fetchData(writePos, segmentSize, bpp);
+                  track->fetchData(writePos, segmentSize, widx);
                   }
             writePos += segmentSize;
             fifo.put();

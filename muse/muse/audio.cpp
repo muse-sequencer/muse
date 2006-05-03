@@ -366,7 +366,11 @@ void Audio::process(unsigned frames)
 
       unsigned framePos = _pos.frame();
 
-      if (state == PLAY) {	// TODO: only when looping?
+      if (state == PLAY) {
+            //
+            // clear prefetch FIFO if left/right locators
+            // have changed
+            //
             unsigned llmark = song->lPos().frame();
             unsigned rrmark = song->rPos().frame();
 
@@ -374,13 +378,7 @@ void Audio::process(unsigned frames)
                   //
                   // invalidate audio prefetch buffer
                   //
-#if 0
-                  WaveTrackList* tl = song->waves();
-                  for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
-                        WaveTrack* track = *it;
-                        track->clearPrefetchFifo();
-                        }
-#endif
+                  audioPrefetch->getFifo()->clear();
                   audioPrefetch->msgSeek(framePos);
                   lmark = llmark;
                   rmark = rrmark;
@@ -475,18 +473,21 @@ void Audio::process(unsigned frames)
 // printf("process %3d\n", fifo->count());
       	if (fifo->count() == 0) {
             	printf("MusE::Audio: fifo underflow at 0x%x\n", curTickPos);
+                  audioPrefetch->msgTick();
                   }
             else {
                   bool msg = true;
                   do {
 	                  unsigned fifoPos = fifo->readPos();
                   	if (fifoPos != framePos) {
-//                              if (msg) {
-	                        	printf("Muse::Audio: wrong prefetch data 0x%x, expected 0x%x\n",
+                              if (msg) {
+	                              printf("Muse::Audio: wrong prefetch data 0x%x, expected 0x%x\n",
       	                     	   fifoPos, framePos);
                               	msg = false;
-//                                    }
-                              fifo->get();
+                                    }
+                              if (fifoPos > framePos)
+                                    break;
+                              fifo->get();      // discard buffer
                               }
                         else {
                   		_curReadIndex = fifo->ridx;
@@ -494,7 +495,7 @@ void Audio::process(unsigned frames)
                         	}
               		} while (fifo->count());
                   if (_curReadIndex == -1) {
-                        seek(_pos);
+                        seek(_pos + frames);
                         }
                   }
             }
@@ -528,19 +529,20 @@ void Audio::process(unsigned frames)
             song->bounceTrack->process();
 
       if (isPlaying()) {
-      	if (!freewheel())
-			audioPrefetch->msgTick(framePos);
+      	if (!freewheel()) {
+                  //
+                  // consume prefetch buffer
+                  //
+                  if (_curReadIndex != -1) {
+                        audioPrefetch->getFifo()->get();
+			      audioPrefetch->msgTick();
+                        }
+                  }
             if (recording && (_bounce == 0 || _bounce == 1))
                   audioWriteback->trigger();
             _pos      += frames;
             curTickPos = nextTickPos;
             }
-
-      //
-      // consume prefetch buffer
-      //
-      if (_curReadIndex != -1)
-            audioPrefetch->getFifo()->get();
       }
 
 //---------------------------------------------------------

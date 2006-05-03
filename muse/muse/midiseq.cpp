@@ -345,6 +345,7 @@ void MidiSeq::threadStart(void*)
                      rt_param.sched_priority);
                   }
             }
+
 //      timer = new PosixTimer;
 //      if (!timer->initTimer()) {
 //            delete timer;
@@ -381,9 +382,11 @@ void MidiSeq::updatePollFd()
       if (!isRunning())
             return;
       clearPollFd();
-      int timerFd = timer->getFd();
-      if (timerFd != -1)
-            addPollFd(timerFd, POLLIN, midiTick, this, 0);
+      if (timer) {
+            int timerFd = timer->getFd();
+            if (timerFd != -1)
+                  addPollFd(timerFd, POLLIN, midiTick, this, 0);
+            }
 
       addPollFd(toThreadFdr, POLLIN, ::readMsg, this, 0);
 
@@ -415,6 +418,8 @@ void MidiSeq::threadStop()
 
 bool MidiSeq::initRealtimeTimer()
       {
+      if (!timer)
+            return false;
       if (!timer->setTimerFreq(config.rtcTicks))
             return false;
       if (!timer->startTimer())

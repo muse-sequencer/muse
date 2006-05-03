@@ -238,10 +238,18 @@ bool MusE::seqStart()
             	   strerror(rv));
             pthread_attr_destroy(attributes);
             }
-#if 0
+#if 1
+      //
+      // start audio prefetch threads with realtime
+      // priority
+      //
       audioPrefetch->start(0);
       audioWriteback->start(0);
 #else
+      //
+      // start audio prefetch threads as normal
+      // (non realtime) threads
+      //
       audioPrefetch->start(realTimePriority-5);
       audioWriteback->start(realTimePriority-5);
 #endif
