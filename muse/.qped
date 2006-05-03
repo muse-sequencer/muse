@@ -5,22 +5,13 @@
     <Editor1>
       <KontextList>
         <Kontext>
-          <path>/home/ws/projects/muse/svn/trunk/muse/files</path>
-          <column>0</column>
-          <line>78</line>
-          <xoff>0</xoff>
-          <yoff>1</yoff>
-          </Kontext>
-        <cur>1</cur>
-        </KontextList>
-      <KontextList>
-        <Kontext>
-          <path>/home/ws/projects/muse/svn/trunk/muse/mops</path>
-          <column>26</column>
+          <path>/home/ws/projects/muse/mops/trunk/muse/ChangeLog</path>
+          <column>31</column>
           <line>2</line>
           <xoff>0</xoff>
           <yoff>2</yoff>
           </Kontext>
+        <cur>1</cur>
         </KontextList>
       </Editor1>
     <search>Make</search>
