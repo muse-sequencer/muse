@@ -1,0 +1,173 @@
+%====================================================================
+%     MusE Manual
+%     dies ist das MusE Manual
+%
+% (C) 2006 Copyright: Werner Schweer und Andere
+%====================================================================
+
+%----------------------------------------------------------
+%     Setup
+%----------------------------------------------------------
+
+%\showframe
+%\showsetups
+\usemodule[chart]
+\setupcolors[state=start]
+\setupbodyfont[Palatino]
+\language[de]
+\enableregime[il1]
+
+\startuseMPgraphic{FunnyFrame}
+      picture p; numeric o; path a, b; pair c;
+      p := textext.rt(\MPstring{FunnyFrame});
+      o := BodyFontSize;
+      a := unitsquare xyscaled(OverlayWidth,OverlayHeight);
+      p := p shifted (20, OverlayHeight-ypart center p);
+      drawoptions (withpen pencircle scaled 1pt withcolor .625red);
+      b := a superellipsed .95;
+      fill b withcolor .85white; draw b;
+      b := (boundingbox p) superellipsed .95;
+      fill b withcolor .85white; draw b;
+      draw p withcolor black;
+      setbounds currentpicture to a;
+    \stopuseMPgraphic
+
+\defineoverlay[FunnyFrame][\useMPgraphic{FunnyFrame}]
+\defineframedtext[FunnyText][frame=off,background=FunnyFrame]
+\def\StartFrame{\startFunnyText}
+\def\StopFrame{\stopFunnyText}
+\def\FrameTitle#1%
+ {\setMPtext{FunnyFrame}{\hbox spread 1em{\hss\strut#1\hss}}}
+\setMPtext{FunnyFrame}{}
+
+
+\define\M{MusE}
+\define[1]\Index{{\it #1}\marginpar{#1}\index{#1}}
+
+\defineindenting[Cmdi][text=,separator=,width=fit,distance=1em]
+
+\define[1]\Cmd{
+  \Cmdi
+  \framed[
+     background=color,
+     width=fit,
+     align=right,
+     backgroundcolor=lightgray,
+     framecolor=blue]
+     {\tt\space #1}}
+
+\define[2]\CCmd{
+  \Cmdi
+  \framed[
+     background=color,
+     width=broad,
+     align=right,
+     backgroundcolor=lightgray,
+     framecolor=blue]
+     {\vbox{\hbox{\tt\space #1}\hbox{\tt\space #2}}}}
+
+
+%\define\startdescription{\startpacked}
+\define\startdescription{}
+%\define\stopdescription{\stoppacked}
+\define\stopdescription{}
+
+\define[1]\Fig{\hbox{\externalfigure[pics/#1]}}
+
+\define[2]\Screen{
+      \placefigure[here][fig:#1]{#2}{\externalfigure[pics/#1][scale=1600]}
+      }
+\definedescription[Option][
+      location=left,
+      headstyle=bold,
+      width=4em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\definedescription[Sc][
+      location=left,
+      headstyle=bold,
+      width=4em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\definedescription[Filetype][
+      location=left,
+      headstyle=bold,
+      width=4em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\definedescription[FileList][
+      location=left,
+      headstyle=bold,
+      width=7em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\definedescription[Input][
+      location=left,
+      headstyle=bold,
+      width=9em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\definedescription[InputN][
+      location=left,
+      headstyle=bold,
+      width=6em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\define[2]\Figure{
+      \placefigure
+         [#1][fig:#2]{}
+         {\externalfigure[pics/#2]}
+         }
+
+\define[1]\Menu{
+      \placefigure[right][fig:#1]{}
+         {\externalfigure[pics/#1][scale=2000]}
+         }
+
+\definedescription[Opt][location=hanging,headstyle=bold,width=broad]
+
+%----------------------------------------------------------
+%     Body
+%----------------------------------------------------------
+
+\starttext
+   \language[de]
+   \mainlanguage[de]
+   \startstandardmakeup[doublesided=no]
+      \definebodyfont[10pt,11pt,12pt][rm][tfe=Regular at 48pt]
+      \tfe\setupinterlinespace
+      \hfill \color[red]{\M}\par
+      \hfill \color[blue]{Manual}\par
+      \vfill
+      \hfill \color[blue]{DE}\par
+      \definebodyfont[10pt,11pt,12pt][rm][tfb=Regular at 24pt]
+      \tfb\setupinterlinespace
+      \hfill Version 1.0pre1\par
+      \stopstandardmakeup
+
+   \startstandardmakeup[page=no]
+      \vfill
+      \M\ wird von SourceForge gehostet:\par
+      \type{http://mscore.sourceforge.net/}
+      \blank[line]
+      Dieses Dokument wurde mit \pdfTeX\ und dem Macro Paket
+      \ConTeXt\ erstellt.
+      \blank
+      \copyright 2006 Werner Schweer und Andere
+      \stopstandardmakeup
+
+   \completecontent
+
+\chapter{Einführung}
+   \section{Was ist \M?}
+      \M\ ist ein ein "open source" Programm, veröffentlicht unter der GNU General
+      Public License (GPL) (siehe Appendix).
+
+\completeindex
+\stoptext

@@ -1,0 +1,735 @@
+//=============================================================================
+//  MusE
+//  Linux Music Editor
+//  $Id:$
+//
+//  Copyright (C) 2002-2006 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
+
+#include <fcntl.h>
+
+#include "al/al.h"
+#include "muse.h"
+#include "globals.h"
+#include "song.h"
+#include "driver/audiodev.h"
+#include "audioprefetch.h"
+#include "audiowriteback.h"
+#include "audio.h"
+#include "midiseq.h"
+#include "sync.h"
+#include "midi.h"
+#include "gconfig.h"
+#include "al/sig.h"
+#include "al/tempo.h"
+#include "widgets/utils.h"
+#include "synth.h"
+
+extern double curTime();
+extern bool initJackAudio();
+
+Audio* audio;
+AudioDriver* audioDriver;   // current audio device in use
+
+const char* seqMsgList[] = {
+      "SEQM_ADD_TRACK",
+      "SEQM_REMOVE_TRACK",
+      "SEQM_MOVE_TRACK",
+      "SEQM_ADD_PART",
+      "SEQM_REMOVE_PART",
+      "SEQM_CHANGE_PART",
+      "SEQM_ADD_EVENT",
+      "SEQM_REMOVE_EVENT",
+      "SEQM_CHANGE_EVENT",
+      "SEQM_ADD_TEMPO",
+/*10*/"SEQM_SET_TEMPO",
+      "SEQM_REMOVE_TEMPO",
+      "SEQM_ADD_SIG",
+      "SEQM_REMOVE_SIG",
+      "SEQM_SET_GLOBAL_TEMPO",
+      "SEQM_UNDO",
+      "SEQM_REDO",
+      "SEQM_RESET_DEVICES",
+      "SEQM_INIT_DEVICES",
+      "AUDIO_ROUTEADD",
+	"AUDIO_ROUTEREMOVE",
+/*20*/"AUDIO_ADDPLUGIN",
+      "AUDIO_ADDMIDIPLUGIN",
+      "AUDIO_SET_SEG_SIZE",
+      "AUDIO_SET_PREFADER",
+      "AUDIO_SET_CHANNELS",
+      "MS_PROCESS",
+      "MS_START",
+      "MS_STOP",
+      "MS_SET_RTC",
+      "SEQM_IDLE",
+      "SEQM_SEEK",
+      "SEQM_ADD_CTRL",
+      "SEQM_REMOVE_CTRL"
+      };
+
+const char* audioStates[] = {
+      "STOP", "START_PLAY", "PLAY", "LOOP1", "LOOP2", "SYNC", "PRECOUNT"
+      };
+
+
+//---------------------------------------------------------
+//   Audio
+//---------------------------------------------------------
+
+Audio::Audio()
+      {
+      recording     = false;
+      idle          = false;
+      _freewheel    = false;
+      _bounce       = 0;
+      loopPassed    = false;
+
+      _pos.setType(AL::FRAMES);
+      _pos.setFrame(~0);      // make sure first seek is not optimized away
+
+      curTickPos    = 0;
+      nextTickPos   = 0;
+
+      midiClick     = 0;
+      clickno       = 0;
+      clicksMeasure = 0;
+      ticksBeat     = 0;
+
+      syncTime      = 0.0;
+      syncFrame     = 0;
+      frameOffset   = 0;
+
+      state         = STOP;
+      lmark         = 0;      // left loop position
+      rmark         = 0;      // right loop position
+      msg           = 0;
+
+      startRecordPos.setType(AL::TICKS);
+      endRecordPos.setType(AL::TICKS);
+
+      //---------------------------------------------------
+      //  establish pipes/sockets
+      //---------------------------------------------------
+
+      int filedes[2];         // 0 - reading   1 - writing
+      if (pipe(filedes) == -1) {
+            perror("creating pipe0");
+            fatalError("cannot create pipe0");
+            }
+      fromThreadFdw = filedes[1];
+      fromThreadFdr = filedes[0];
+      int rv = fcntl(fromThreadFdw, F_SETFL, O_NONBLOCK);
+      if (rv == -1)
+            perror("set pipe O_NONBLOCK");
+
+      if (pipe(filedes) == -1) {
+            perror("creating pipe1");
+            fatalError("cannot create pipe1");
+            }
+      sigFd = filedes[1];
+      QSocketNotifier* ss = new QSocketNotifier(filedes[0], QSocketNotifier::Read);
+      song->connect(ss, SIGNAL(activated(int)), song, SLOT(seqSignal(int)));
+      }
+
+//---------------------------------------------------------
+//   start
+//    start audio processing
+//---------------------------------------------------------
+
+bool Audio::start()
+      {
+      TrackList* tl = song->tracks();
+
+      //
+      // init marker for synchronous loop processing
+      //
+      lmark = song->lPos().frame();
+      rmark = song->rPos().frame();
+      state = STOP;
+      muse->setHeartBeat();
+
+      if (audioDriver) {
+          //
+          // allocate ports
+          //
+          for (iTrack i = tl->begin(); i != tl->end(); ++i)
+                (*i)->activate1();
+          seek(song->cpos());
+          process(segmentSize);   // warm up caches; audio must be stopped
+          audioDriver->start(realTimePriority);
+          }
+      else {
+
+          // if audio device has disappeared it probably
+          // means jack has performed a shutdown
+          // try to restart and reconnect everything
+
+          if (false == initJackAudio()) {
+                //
+                // allocate ports, first resetting the old connection
+                //
+                InputList* itl = song->inputs();
+                for (iAudioInput i = itl->begin(); i != itl->end(); ++i) {
+//                      printf("reconnecting input %s\n", (*i)->name().toLatin1().data());
+                      for (int x=0; x < (*i)->channels();x++)
+                          (*i)->setJackPort(x,0); // zero out the old connection
+                      (*i)->activate1();
+                      }
+
+                OutputList* otl = song->outputs();
+                for (iAudioOutput i = otl->begin(); i != otl->end(); ++i) {
+//                      printf("reconnecting output %s\n", (*i)->name().toLatin1().data());
+                      for (int x=0; x < (*i)->channels();x++)
+                          (*i)->setJackPort(x,0);  // zero out the old connection
+                      (*i)->activate1();
+                      }
+               audioDriver->start(realTimePriority);
+               }
+          else {
+               printf("Failed to init audio!\n");
+               return false;
+               }
+          }
+      audioDriver->stopTransport();
+
+      //
+      // do connections
+      //
+// done in seqStart
+//      for (iTrack i = tl->begin(); i != tl->end(); ++i) {
+//            (*i)->activate2();
+//      	}
+      return true;
+      }
+
+//---------------------------------------------------------
+//   stop
+//    stop audio processing
+//---------------------------------------------------------
+
+void Audio::stop(bool)
+      {
+      if (audioDriver)
+          audioDriver->stop();
+
+      MidiOutPortList* opl = song->midiOutPorts();
+      for (iMidiOutPort i = opl->begin(); i != opl->end(); ++i)
+            (*i)->deactivate();
+      MidiInPortList* ipl = song->midiInPorts();
+      for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i)
+            (*i)->deactivate();
+      }
+
+//---------------------------------------------------------
+//   sync
+//    return true if sync is completed
+//---------------------------------------------------------
+
+bool Audio::sync(int jackState, unsigned frame)
+      {
+// printf("Audio::sync() state %s jackState %s frame 0x%x\n", audioStates[state], audioStates[jackState], frame);
+      bool done = true;
+      if (state == LOOP1)
+            state = LOOP2;
+      else {
+            State s = State(jackState);
+            //
+            //  STOP -> START_PLAY	start rolling
+            //  STOP -> STOP		seek in stop state
+            //  PLAY -> START_PLAY  seek in play state
+
+            if (state != START_PLAY) {
+            	Pos p(frame, AL::FRAMES);
+//                  printf("  sync seek\n");
+	            seek(p);
+      	      if (!_freewheel)
+            	      done = audioPrefetch->seekDone();
+              	if (s == START_PLAY)
+              		state = START_PLAY;
+              	}
+            else {
+            	if (frame != _pos.frame()) {
+                  	// seek during seek
+		            seek(Pos(frame, AL::FRAMES));
+                  	}
+            	done = audioPrefetch->seekDone();
+                  }
+            }
+//      printf("  sync %s\n", done ? "done" : "busy");
+      return done;
+      }
+
+//---------------------------------------------------------
+//   setFreewheel
+//---------------------------------------------------------
+
+void Audio::setFreewheel(bool val)
+      {
+// printf("JACK: freewheel callback %d\n", val);
+      _freewheel = val;
+      }
+
+//---------------------------------------------------------
+//   shutdown
+//---------------------------------------------------------
+
+void Audio::shutdown()
+      {
+      audioState = AUDIO_STOP;
+printf("JACK: shutdown callback\n");
+      sendMsgToGui(MSG_JACK_SHUTDOWN);
+      }
+
+//---------------------------------------------------------
+//   process
+//    process one audio buffer at position "_pos "
+//    of size "frames"
+//---------------------------------------------------------
+
+void Audio::process(unsigned frames)
+      {
+// printf("process %d\n", frames);
+      bool updateController = false;
+      extern int watchAudio;
+      ++watchAudio;           // make a simple watchdog happy
+
+      if (msg) {
+// printf("msg\n");
+            processMsg(msg);
+            int sn = msg->serialNo;
+            msg    = 0;    // dont process again
+            int rv = write(fromThreadFdw, &sn, sizeof(int));
+            if (rv != sizeof(int)) {
+                  fprintf(stderr, "audio: write(%d) pipe failed: %s\n",
+                     fromThreadFdw, strerror(errno));
+                  }
+            }
+
+      int jackState = audioDriver->getState();
+      if (jackState != state) {
+// printf("process %s %s\n", audioStates[state], audioStates[jackState]);
+            if (state == START_PLAY && jackState == PLAY) {
+                  startRolling();
+                  if (_bounce)
+                        sendMsgToGui(MSG_START_BOUNCE);
+                  }
+            else if (state == LOOP2 && jackState == PLAY) {
+                  Pos newPos(loopFrame, AL::FRAMES);
+                  seek(newPos);
+                  startRolling();
+                  }
+            else if (isPlaying() && jackState == STOP) {
+                  stopRolling();
+                  }
+            else if (state == START_PLAY && jackState == STOP) {
+                  state = STOP;
+                  updateController = true;
+                  if (_bounce) {
+                        audioDriver->startTransport();
+                        }
+                  else {
+                        sendMsgToGui(MSG_STOP);
+                        }
+                  }
+            else if (state == STOP && jackState == PLAY) {
+                  startRolling();
+                  }
+            else if (state == LOOP1 && jackState == PLAY)
+                  ;     // treat as play
+            else if (state == LOOP2 && jackState == START_PLAY)
+                  ;     // sync cycle, treat as play
+            else
+                  printf("JACK: state transition %s -> %s ?\n",
+                     audioStates[state], audioStates[jackState]);
+            }
+
+      OutputList* ol = song->outputs();
+      if (idle || state == START_PLAY) {
+            // deliver no audio
+            for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
+                  (*i)->silence(frames);
+            return;
+            }
+
+      unsigned framePos = _pos.frame();
+
+      if (state == PLAY) {	// TODO: only when looping?
+            unsigned llmark = song->lPos().frame();
+            unsigned rrmark = song->rPos().frame();
+
+            if (lmark != llmark || rmark != rrmark) {
+                  //
+                  // invalidate audio prefetch buffer
+                  //
+#if 0
+                  WaveTrackList* tl = song->waves();
+                  for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
+                        WaveTrack* track = *it;
+                        track->clearPrefetchFifo();
+                        }
+#endif
+                  audioPrefetch->msgSeek(framePos);
+                  lmark = llmark;
+                  rmark = rrmark;
+                  }
+            }
+
+      if (isPlaying()) {
+            if (_bounce == 1 && _pos >= song->rPos()) {
+                  _bounce = 2;
+                  sendMsgToGui(MSG_STOP_BOUNCE);
+                  }
+            //
+            //  check for end of song
+            //
+            if ((curTickPos >= song->len())
+               && !(song->record() || _bounce || song->loop())) {
+                  audioDriver->stopTransport();
+                  return;
+                  }
+
+            //
+            //  check for loop end
+            //
+            if (state == PLAY && song->loop() && !_bounce && !extSyncFlag) {
+                  unsigned n = rmark - framePos - (3 * frames);
+                  if (n < frames) {
+                        // loop end in current cycle
+                        // adjust loop start so we get exact loop len
+                        if (n > lmark)
+                              n = 0;
+                        state = LOOP1;
+                        loopFrame = lmark - n;
+                        audioDriver->seekTransport(loopFrame);
+                        }
+                  }
+
+            Pos ppp(_pos);
+            ppp += frames;
+            nextTickPos = ppp.tick();
+            }
+
+      //
+      // resync with audio interface
+      //    syncFrame - free running JACK frame counter
+      //    syncTime  - corresponding wall clock time
+      //
+      syncFrame   = audioDriver->framePos();
+      syncTime    = curTime();
+      frameOffset = syncFrame - framePos;
+
+      //
+      //  compute current controller values
+      //  (automation)
+      //
+      TrackList* tl = song->tracks();
+      if (state == PLAY || updateController) {
+            updateController = false;
+            for (iTrack it = tl->begin(); it != tl->end(); ++it) {
+                  if ((*it)->isMidiTrack())
+                        continue;
+                  AudioTrack* track = (AudioTrack*)(*it);
+                  if (!track->autoRead())
+                        continue;
+                  CtrlList* cl = track->controller();
+                  for (iCtrl i = cl->begin(); i != cl->end(); ++i) {
+                        Ctrl* c = i->second;
+                        float val = c->value(framePos).f;
+                        if (val != c->curVal().f) {
+                              c->setCurVal(val);
+                              c->setChanged(true);
+                              }
+                        }
+                  }
+            }
+
+      midiSeq->msgProcess(frames);
+
+      GroupList* gl     = song->groups();
+      AuxList* al       = song->auxs();
+      SynthIList* sl    = song->syntis();
+      InputList* il     = song->inputs();
+      WaveTrackList* wl = song->waves();
+
+      for (iAudioInput i = il->begin(); i != il->end(); ++i)
+            (*i)->process();
+      for (iSynthI i = sl->begin(); i != sl->end(); ++i)
+            (*i)->process();
+
+      _curReadIndex = -1;
+      if (isPlaying() && !wl->empty()) {
+   	      Fifo1* fifo = audioPrefetch->getFifo();
+// printf("process %3d\n", fifo->count());
+      	if (fifo->count() == 0) {
+            	printf("MusE::Audio: fifo underflow at 0x%x\n", curTickPos);
+                  }
+            else {
+                  bool msg = true;
+                  do {
+	                  unsigned fifoPos = fifo->readPos();
+                  	if (fifoPos != framePos) {
+//                              if (msg) {
+	                        	printf("Muse::Audio: wrong prefetch data 0x%x, expected 0x%x\n",
+      	                     	   fifoPos, framePos);
+                              	msg = false;
+//                                    }
+                              fifo->get();
+                              }
+                        else {
+                  		_curReadIndex = fifo->ridx;
+                              break;
+                        	}
+              		} while (fifo->count());
+                  if (_curReadIndex == -1) {
+                        seek(_pos);
+                        }
+                  }
+            }
+      for (iWaveTrack i = wl->begin(); i != wl->end(); ++i) {
+      	if (song->bounceTrack != *i)
+            	(*i)->process();
+            }
+      for (iAudioGroup i = gl->begin(); i != gl->end(); ++i)
+            (*i)->process();
+      for (iAudioAux i = al->begin(); i != al->end(); ++i)
+            (*i)->process();
+
+      for (iAudioOutput i = ol->begin(); i != ol->end(); ++i) {
+            AudioOutput* ao = *i;
+            ao->process();
+            int och = ao->channels();
+            float* buffer[och];
+      	for (int i = 0; i < och; ++i) {
+            	void* port = ao->jackPort(i);
+            	if (port)
+                  	buffer[i] = audioDriver->getBuffer(port, frames);
+	            else
+      	            printf("PANIC: process(): no buffer from audio driver\n");
+                  }
+      	if (!ao->multiplyCopy(och, buffer)) {
+                  for (int i = 0; i < och; ++i)
+                        memset(buffer[i], 0, sizeof(float) * frames);
+                  }
+            }
+      if (_bounce == 1 && song->bounceTrack && song->bounceTrack->type() == Track::WAVE)
+            song->bounceTrack->process();
+
+      if (isPlaying()) {
+      	if (!freewheel())
+			audioPrefetch->msgTick(framePos);
+            if (recording && (_bounce == 0 || _bounce == 1))
+                  audioWriteback->trigger();
+            _pos      += frames;
+            curTickPos = nextTickPos;
+            }
+
+      //
+      // consume prefetch buffer
+      //
+      if (_curReadIndex != -1)
+            audioPrefetch->getFifo()->get();
+      }
+
+//---------------------------------------------------------
+//   processMsg
+//---------------------------------------------------------
+
+void Audio::processMsg(AudioMsg* msg)
+      {
+// if (_running)
+//      printf("audio process %d\n", msg->id);
+
+      switch(msg->id) {
+            case AUDIO_ROUTEADD:
+                  addRoute(msg->sroute, msg->droute);
+                  break;
+            case AUDIO_ROUTEREMOVE:
+                  removeRoute(msg->sroute, msg->droute);
+                  break;
+            case AUDIO_SET_PREFADER:
+                  ((AudioTrack*)msg->track)->setPrefader(msg->ival);
+                  break;
+            case AUDIO_SET_CHANNELS:
+                  msg->track->setChannels(msg->ival);
+                  break;
+            case AUDIO_ADDPLUGIN:
+                  ((AudioTrack*)msg->track)->addPlugin(msg->plugin, msg->ival);
+                  break;
+
+            case AUDIO_SET_SEG_SIZE:
+                  segmentSize = msg->ival;
+                  AL::sampleRate  = msg->iival;
+#if 0 //TODO
+                  audioOutput.segmentSizeChanged();
+                  for (int i = 0; i < mixerGroups; ++i)
+                        audioGroups[i].segmentSizeChanged();
+                  for (iSynthI ii = synthiInstances.begin(); ii != synthiInstances.end();++ii)
+                        (*ii)->segmentSizeChanged();
+#endif
+                  break;
+
+            case SEQM_INIT_DEVICES:
+                  initDevices();
+                  break;
+            case SEQM_ADD_TEMPO:
+            case SEQM_REMOVE_TEMPO:
+            case SEQM_SET_GLOBAL_TEMPO:
+            case SEQM_SET_TEMPO:
+                  song->processMsg(msg);
+                  if (isPlaying()) {
+                        _pos.setTick(curTickPos);
+                        int framePos = _pos.frame();
+                        syncFrame     = audioDriver->framePos();
+                        syncTime      = curTime();
+                        frameOffset   = syncFrame - framePos;
+                        }
+                  break;
+
+            case SEQM_IDLE:
+                  idle = msg->a;
+                  // fall through
+            default:
+                  midiSeq->sendMsg(msg);
+                  break;
+            }
+      }
+
+//---------------------------------------------------------
+//   seek
+//    - called before start play
+//    - initiated from gui
+//---------------------------------------------------------
+
+void Audio::seek(const Pos& p)
+      {
+      _pos.setFrame(p.frame());
+      syncFrame   = audioDriver->framePos();
+      frameOffset = syncFrame - _pos.frame();
+      curTickPos  = _pos.tick();
+      nextTickPos = curTickPos;
+
+      loopPassed = true;      // for record loop mode
+      if (state != LOOP2 && !freewheel())
+            audioPrefetch->msgSeek(_pos.frame());
+
+      midiSeq->msgSeek();     // handle stuck notes and set
+                              // controller for new position
+      sendMsgToGui(MSG_SEEK);
+      }
+
+//---------------------------------------------------------
+//   startRolling
+//---------------------------------------------------------
+
+void Audio::startRolling()
+      {
+      startRecordPos = _pos;
+      if (song->record()) {
+            startRecordPos = _pos;
+            recording      = true;
+            TrackList* tracks = song->tracks();
+            for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
+                  if ((*i)->isMidiTrack())
+                        continue;
+                  if ((*i)->type() == Track::WAVE)
+                        ((WaveTrack*)(*i))->resetMeter();
+                  ((AudioTrack*)(*i))->recEvents()->clear();
+                  }
+            }
+      state = PLAY;
+      sendMsgToGui(MSG_PLAY);
+
+      midiSeq->msgStart();
+
+      if (precountEnableFlag
+         && song->click()
+         && !extSyncFlag
+         && song->record()) {
+#if 0
+            state = PRECOUNT;
+            int z, n;
+            if (precountFromMastertrackFlag)
+                  AL::sigmap.timesig(playTickPos, z, n);
+            else {
+                  z = precountSigZ;
+                  n = precountSigN;
+                  }
+            clickno       = z * preMeasures;
+            clicksMeasure = z;
+            ticksBeat     = (division * 4)/n;
+#endif
+            }
+      else {
+            //
+            // compute next midi metronome click position
+            //
+            int bar, beat;
+            unsigned tick;
+            AL::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
+            if (tick)
+                  beat += 1;
+            midiClick = AL::sigmap.bar2tick(bar, beat, 0);
+            }
+      }
+
+//---------------------------------------------------------
+//   stopRolling
+//	execution environment: realtime thread
+//---------------------------------------------------------
+
+void Audio::stopRolling()
+      {
+      state = STOP;
+      midiSeq->msgStop();
+	recording    = false;
+      endRecordPos = _pos;
+      _bounce = 0;
+      sendMsgToGui(MSG_STOP);
+      seek(_pos);
+      }
+
+//---------------------------------------------------------
+//   curFrame
+//    extrapolates current play frame on syncTime/syncFrame
+//---------------------------------------------------------
+
+unsigned int Audio::curFrame() const
+      {
+//      return lrint((curTime() - syncTime) * AL::sampleRate) + syncFrame;
+      //
+      // this should be the same:
+      //
+      return audioDriver->framePos();
+      }
+
+//---------------------------------------------------------
+//   timestamp
+//    timestamp has only meaning when rolling
+//---------------------------------------------------------
+
+int Audio::timestamp() const
+      {
+      return (state == PLAY) ? (audioDriver->framePos() - frameOffset) : 0;
+      }
+
+//---------------------------------------------------------
+//   sendMsgToGui
+//---------------------------------------------------------
+
+void Audio::sendMsgToGui(char c)
+      {
+      write(sigFd, &c, 1);
+      }

@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+    <MidiInstrument name="Waldorf Microwave I">
+        <PatchGroup name="Internal Bank A">
+            <Patch name="A 01" prog="000" hbank="0" lbank="0"/>
+            <Patch name="A 02" prog="001" hbank="0" lbank="0"/>
+            <Patch name="A 03" prog="002" hbank="0" lbank="0"/>
+            <Patch name="A 04" prog="003" hbank="0" lbank="0"/>
+            <Patch name="A 05" prog="004" hbank="0" lbank="0"/>
+            <Patch name="A 06" prog="005" hbank="0" lbank="0"/>
+            <Patch name="A 07" prog="006" hbank="0" lbank="0"/>
+            <Patch name="A 08" prog="007" hbank="0" lbank="0"/>
+            <Patch name="A 09" prog="008" hbank="0" lbank="0"/>
+            <Patch name="A 10" prog="009" hbank="0" lbank="0"/>
+            <Patch name="A 11" prog="010" hbank="0" lbank="0"/>
+            <Patch name="A 12" prog="011" hbank="0" lbank="0"/>
+            <Patch name="A 13" prog="012" hbank="0" lbank="0"/>
+            <Patch name="A 14" prog="013" hbank="0" lbank="0"/>
+            <Patch name="A 15" prog="014" hbank="0" lbank="0"/>
+            <Patch name="A 16" prog="015" hbank="0" lbank="0"/>
+            <Patch name="A 17" prog="016" hbank="0" lbank="0"/>
+            <Patch name="A 18" prog="017" hbank="0" lbank="0"/>
+            <Patch name="A 19" prog="018" hbank="0" lbank="0"/>
+            <Patch name="A 20" prog="019" hbank="0" lbank="0"/>
+            <Patch name="A 21" prog="020" hbank="0" lbank="0"/>
+            <Patch name="A 22" prog="021" hbank="0" lbank="0"/>
+            <Patch name="A 23" prog="022" hbank="0" lbank="0"/>
+            <Patch name="A 24" prog="023" hbank="0" lbank="0"/>
+            <Patch name="A 25" prog="024" hbank="0" lbank="0"/>
+            <Patch name="A 26" prog="025" hbank="0" lbank="0"/>
+            <Patch name="A 27" prog="026" hbank="0" lbank="0"/>
+            <Patch name="A 28" prog="027" hbank="0" lbank="0"/>
+            <Patch name="A 29" prog="028" hbank="0" lbank="0"/>
+            <Patch name="A 30" prog="029" hbank="0" lbank="0"/>
+            <Patch name="A 31" prog="030" hbank="0" lbank="0"/>
+            <Patch name="A 32" prog="031" hbank="0" lbank="0"/>
+        </PatchGroup>
+        <PatchGroup name="Internal Bank B">
+            <Patch name="B 01" prog="032" hbank="0" lbank="0"/>
+            <Patch name="B 02" prog="033" hbank="0" lbank="0"/>
+            <Patch name="B 03" prog="034" hbank="0" lbank="0"/>
+            <Patch name="B 04" prog="035" hbank="0" lbank="0"/>
+            <Patch name="B 05" prog="036" hbank="0" lbank="0"/>
+            <Patch name="B 06" prog="037" hbank="0" lbank="0"/>
+            <Patch name="B 07" prog="038" hbank="0" lbank="0"/>
+            <Patch name="B 08" prog="039" hbank="0" lbank="0"/>
+            <Patch name="B 09" prog="040" hbank="0" lbank="0"/>
+            <Patch name="B 10" prog="041" hbank="0" lbank="0"/>
+            <Patch name="B 11" prog="042" hbank="0" lbank="0"/>
+            <Patch name="B 12" prog="043" hbank="0" lbank="0"/>
+            <Patch name="B 13" prog="044" hbank="0" lbank="0"/>
+            <Patch name="B 14" prog="045" hbank="0" lbank="0"/>
+            <Patch name="B 15" prog="046" hbank="0" lbank="0"/>
+            <Patch name="B 16" prog="047" hbank="0" lbank="0"/>
+            <Patch name="B 17" prog="048" hbank="0" lbank="0"/>
+            <Patch name="B 18" prog="049" hbank="0" lbank="0"/>
+            <Patch name="B 19" prog="050" hbank="0" lbank="0"/>
+            <Patch name="B 20" prog="051" hbank="0" lbank="0"/>
+            <Patch name="B 21" prog="052" hbank="0" lbank="0"/>
+            <Patch name="B 22" prog="053" hbank="0" lbank="0"/>
+            <Patch name="B 23" prog="054" hbank="0" lbank="0"/>
+            <Patch name="B 24" prog="055" hbank="0" lbank="0"/>
+            <Patch name="B 25" prog="056" hbank="0" lbank="0"/>
+            <Patch name="B 26" prog="057" hbank="0" lbank="0"/>
+            <Patch name="B 27" prog="058" hbank="0" lbank="0"/>
+            <Patch name="B 28" prog="059" hbank="0" lbank="0"/>
+            <Patch name="B 29" prog="060" hbank="0" lbank="0"/>
+            <Patch name="B 30" prog="061" hbank="0" lbank="0"/>
+            <Patch name="B 31" prog="062" hbank="0" lbank="0"/>
+            <Patch name="B 32" prog="063" hbank="0" lbank="0"/>
+        </PatchGroup>
+        <PatchGroup name="Card Bank C">
+            <Patch name="C 01" prog="064" hbank="0" lbank="0"/>
+            <Patch name="C 02" prog="065" hbank="0" lbank="0"/>
+            <Patch name="C 03" prog="066" hbank="0" lbank="0"/>
+            <Patch name="C 04" prog="067" hbank="0" lbank="0"/>
+            <Patch name="C 05" prog="068" hbank="0" lbank="0"/>
+            <Patch name="C 06" prog="069" hbank="0" lbank="0"/>
+            <Patch name="C 07" prog="070" hbank="0" lbank="0"/>
+            <Patch name="C 08" prog="071" hbank="0" lbank="0"/>
+            <Patch name="C 09" prog="072" hbank="0" lbank="0"/>
+            <Patch name="C 10" prog="073" hbank="0" lbank="0"/>
+            <Patch name="C 11" prog="074" hbank="0" lbank="0"/>
+            <Patch name="C 12" prog="075" hbank="0" lbank="0"/>
+            <Patch name="C 13" prog="076" hbank="0" lbank="0"/>
+            <Patch name="C 14" prog="077" hbank="0" lbank="0"/>
+            <Patch name="C 15" prog="078" hbank="0" lbank="0"/>
+            <Patch name="C 16" prog="079" hbank="0" lbank="0"/>
+            <Patch name="C 17" prog="080" hbank="0" lbank="0"/>
+            <Patch name="C 18" prog="081" hbank="0" lbank="0"/>
+            <Patch name="C 19" prog="082" hbank="0" lbank="0"/>
+            <Patch name="C 20" prog="083" hbank="0" lbank="0"/>
+            <Patch name="C 21" prog="084" hbank="0" lbank="0"/>
+            <Patch name="C 22" prog="085" hbank="0" lbank="0"/>
+            <Patch name="C 23" prog="086" hbank="0" lbank="0"/>
+            <Patch name="C 24" prog="087" hbank="0" lbank="0"/>
+            <Patch name="C 25" prog="088" hbank="0" lbank="0"/>
+            <Patch name="C 26" prog="089" hbank="0" lbank="0"/>
+            <Patch name="C 27" prog="090" hbank="0" lbank="0"/>
+            <Patch name="C 28" prog="091" hbank="0" lbank="0"/>
+            <Patch name="C 29" prog="092" hbank="0" lbank="0"/>
+            <Patch name="C 30" prog="093" hbank="0" lbank="0"/>
+            <Patch name="C 31" prog="094" hbank="0" lbank="0"/>
+            <Patch name="C 32" prog="095" hbank="0" lbank="0"/>
+        </PatchGroup>
+        <PatchGroup name="Card Bank D">
+            <Patch name="D 01" prog="096" hbank="0" lbank="0"/>
+            <Patch name="D 02" prog="097" hbank="0" lbank="0"/>
+            <Patch name="D 03" prog="098" hbank="0" lbank="0"/>
+            <Patch name="D 04" prog="099" hbank="0" lbank="0"/>
+            <Patch name="D 05" prog="100" hbank="0" lbank="0"/>
+            <Patch name="D 06" prog="101" hbank="0" lbank="0"/>
+            <Patch name="D 07" prog="102" hbank="0" lbank="0"/>
+            <Patch name="D 08" prog="103" hbank="0" lbank="0"/>
+            <Patch name="D 09" prog="104" hbank="0" lbank="0"/>
+            <Patch name="D 10" prog="105" hbank="0" lbank="0"/>
+            <Patch name="D 11" prog="106" hbank="0" lbank="0"/>
+            <Patch name="D 12" prog="107" hbank="0" lbank="0"/>
+            <Patch name="D 13" prog="108" hbank="0" lbank="0"/>
+            <Patch name="D 14" prog="109" hbank="0" lbank="0"/>
+            <Patch name="D 15" prog="110" hbank="0" lbank="0"/>
+            <Patch name="D 16" prog="111" hbank="0" lbank="0"/>
+            <Patch name="D 17" prog="112" hbank="0" lbank="0"/>
+            <Patch name="D 18" prog="113" hbank="0" lbank="0"/>
+            <Patch name="D 19" prog="114" hbank="0" lbank="0"/>
+            <Patch name="D 20" prog="115" hbank="0" lbank="0"/>
+            <Patch name="D 21" prog="116" hbank="0" lbank="0"/>
+            <Patch name="D 22" prog="117" hbank="0" lbank="0"/>
+            <Patch name="D 23" prog="118" hbank="0" lbank="0"/>
+            <Patch name="D 24" prog="119" hbank="0" lbank="0"/>
+            <Patch name="D 25" prog="120" hbank="0" lbank="0"/>
+            <Patch name="D 26" prog="121" hbank="0" lbank="0"/>
+            <Patch name="D 27" prog="122" hbank="0" lbank="0"/>
+            <Patch name="D 28" prog="123" hbank="0" lbank="0"/>
+            <Patch name="D 29" prog="124" hbank="0" lbank="0"/>
+            <Patch name="D 30" prog="125" hbank="0" lbank="0"/>
+            <Patch name="D 31" prog="126" hbank="0" lbank="0"/>
+            <Patch name="D 32" prog="127" hbank="0" lbank="0"/>
+        </PatchGroup>
+    </MidiInstrument>
+</muse>

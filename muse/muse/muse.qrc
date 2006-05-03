@@ -1,0 +1,19 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+   <qresource>
+	<file>xpm/muse_icon_64x64.png</file>
+	<file>xpm/splash.png</file>
+	<file>xpm/filenew.png</file>
+	<file>xpm/fileopen.png</file>
+	<file>xpm/filesave.png</file>
+	<file>xpm/punchin.xpm</file>
+	<file>xpm/punchout.xpm</file>
+	<file>xpm/loop.xpm</file>
+	<file>xpm/start.xpm</file>
+	<file>xpm/stop.xpm</file>
+	<file>xpm/play.xpm</file>
+	<file>xpm/frewind.xpm</file>
+	<file>xpm/fforward.xpm</file>
+   </qresource>
+</RCC>
+

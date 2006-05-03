@@ -1,0 +1,6 @@
+#!/bin/sh
+
+rm `find . -name "Makefile"`
+
+find . > files
+

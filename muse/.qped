@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Ped version="1.0">
+  <Status>
+    <geometry x="0" y="0" w="800" h="990" />
+    <Editor1>
+      <KontextList>
+        <Kontext>
+          <path>/home/ws/projects/muse/svn/trunk/muse/files</path>
+          <column>0</column>
+          <line>78</line>
+          <xoff>0</xoff>
+          <yoff>1</yoff>
+          </Kontext>
+        <cur>1</cur>
+        </KontextList>
+      <KontextList>
+        <Kontext>
+          <path>/home/ws/projects/muse/svn/trunk/muse/mops</path>
+          <column>26</column>
+          <line>2</line>
+          <xoff>0</xoff>
+          <yoff>2</yoff>
+          </Kontext>
+        </KontextList>
+      </Editor1>
+    <search>Make</search>
+    <colorify>0</colorify>
+    <brackets>1</brackets>
+    </Status>
+  </Ped>

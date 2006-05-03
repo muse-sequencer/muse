@@ -1,0 +1,2794 @@
+//===========================================================================
+//
+//    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
+//
+//    Version 0.3
+//
+//
+//
+//
+//  Copyright (c) 2004-2006 Nil Geisweiller
+//
+//
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+// 02111-1307, USA or point your web browser to http://www.gnu.org.
+//===========================================================================
+
+// #include <cmath>
+// #include <list>
+
+// #include <stdio.h>
+
+#include "muse/midi.h"
+#include "libsynti/mess.h"
+#include "muse/midictrl.h"
+#include "deicsonze.h"
+// #include "config.h"
+
+#define ABS(x) (x>=0?x:-x)
+
+
+float DeicsOnze::waveTable[NBRWAVES][RESOLUTION];
+int DeicsOnze::useCount = 0;
+
+//---------------------------------------------------------
+//   DeicsOnze
+//---------------------------------------------------------
+
+DeicsOnze::DeicsOnze() : Mess(1)
+{
+    if (useCount++ == 0) {
+	// create sinus wave table, W1
+	for(int i = 0; i < RESOLUTION; i++)
+	    waveTable[W1][i] =
+		(float)(sin((i * 2.0 * M_PI) / (double)RESOLUTION));
+	// create sinus*abs(sinus) wave table, W2
+	for(int i = 0; i < RESOLUTION; i++){
+	    double t = (i * 2.0 * M_PI) / (double)RESOLUTION;
+	    waveTable[W2][i] = (float)(ABS(sin(t))*sin(t));}
+	// create halfsinus_ wave table, W3
+	for(int i = 0; i < RESOLUTION; i++)
+	    waveTable[W3][i] = (float)
+		(i<RESOLUTION/2?sin((i*2.0*M_PI)/(double)RESOLUTION):0.0);
+	// create halfsinus*abs(sinus)_ wave table, W4
+	for(int i = 0; i < RESOLUTION; i++){
+	    double t = (i * 2.0 * M_PI) / (double)RESOLUTION;
+	    waveTable[W4][i] = (float)(i<RESOLUTION/2?ABS(sin(t))*sin(t):0.0);}
+	// create sinus_ wave table, W5
+	for(int i = 0; i < RESOLUTION; i++)
+	    waveTable[W5][i] = (float)
+		(i<RESOLUTION/2?sin((i*4.0*M_PI) / (double)RESOLUTION):0.0);
+	// create sinus*abs(sinus)_ wave table, W6
+	for(int i = 0; i < RESOLUTION; i++){
+	    double t = (i*4.0*M_PI) / (double)RESOLUTION;
+	    waveTable[W6][i] = (float)(i<RESOLUTION/2?ABS(sin(t))*sin(t):0.0);}
+	// create 2halfsinus_ wave table, W7
+	for(int i = 0; i < RESOLUTION; i++)
+	    waveTable[W7][i] = (float)
+		(i<RESOLUTION/2?ABS(sin((i*4.0*M_PI)/(double)RESOLUTION)):0.0);
+	// create 2halfsinus*abs(sinus)_ wave table, W8
+	for(int i = 0; i < RESOLUTION; i++){
+	    double t = (i * 4.0 * M_PI) / (double)RESOLUTION;
+	    waveTable[W8][i] = (float)(i<RESOLUTION/2?sin(t)*sin(t):0.0);}
+    }
+
+  srand(time(0));   // initialize random number generator
+
+  _gui = new DeicsOnzeGui(this);
+  _gui->setWindowTitle(QString("DeicsOnze"));
+  _gui->show();
+
+  initCtrls();
+  initGlobal();
+  initVoices();
+
+  //Load configuration
+  QString defaultConf = (QString(getenv("HOME")) + QString("/." DEICSONZESTR));
+  FILE* f;
+  f = fopen(defaultConf.toAscii().data(), "r");
+  if(f) {
+    fclose(f);
+    loadConfiguration(defaultConf);
+  }
+  
+  //load Set
+  _set=new Set("Initial Bank");
+  if(_isInitSet) loadSet(_initSetPath);
+
+  _initialPreset = new 
+    Preset(new Subcategory(new Category(NULL, "NONE", 0), "NONE", 0));
+  _preset=_initialPreset;
+
+  setPreset();
+}
+
+//---------------------------------------------------------
+//   ~DeicsOnze
+//---------------------------------------------------------
+
+DeicsOnze::~DeicsOnze()
+{
+    //if (--useCount == 0)
+    //delete[] sine_table;
+}
+
+//---------------------------------------------------------
+//   guiVisible
+//---------------------------------------------------------
+bool DeicsOnze::guiVisible() const
+{
+    return _gui->isVisible();
+}
+
+//---------------------------------------------------------
+// showGui
+//---------------------------------------------------------
+void DeicsOnze::showGui(bool val)
+{
+    _gui->setShown(val);
+}
+
+//---------------------------------------------------------
+//   getGeometry
+//---------------------------------------------------------
+
+void DeicsOnze::getGeometry(int* x, int* y, int* w, int* h) const {
+    QPoint pos(_gui->pos());
+    QSize size(_gui->size());
+    *x = pos.x();
+    *y = pos.y();
+    *w = size.width();
+    *h = size.height();
+}
+
+//---------------------------------------------------------
+//   setGeometry
+//---------------------------------------------------------
+
+void DeicsOnze::setGeometry(int x, int y, int w, int h) {
+    _gui->resize(QSize(w, h));
+    _gui->move(QPoint(x, y));
+}
+
+//---------------------------------------------------------
+// initCtrls
+//---------------------------------------------------------
+void DeicsOnze::initCtrls() {
+    int i=0;
+    for(int k=0; k<NBROP; k++) {
+	_ctrl[i].name=(QString(ARSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_AR+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXAR;
+	_ctrl[i].name=(QString(D1RSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_D1R+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXD1R;
+	_ctrl[i].name=(QString(D2RSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_D2R+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXD2R;
+	_ctrl[i].name=(QString(RRSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_RR+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXRR;
+	_ctrl[i].name=(QString(D1LSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_D1L+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXD1L;
+	_ctrl[i].name=(QString(LSSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_LS+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXLS;
+	_ctrl[i].name=(QString(RSSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_RS+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXRS;
+	_ctrl[i].name=(QString(EBSSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_EBS+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXEBS;
+	_ctrl[i].name=(QString(AMESTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_AME+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=1;
+	_ctrl[i].name=(QString(KVSSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_KVS+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXKVS;
+	_ctrl[i].name=(QString(OUTSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_OUT+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXOUT;
+	_ctrl[i].name=(QString("Centi")+QString(RATIOSTR)+QString::number(k+1))
+	    .toAscii().data();
+	_ctrl[i].num=CTRL_RATIO+k*DECAPAR1;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXRATIO*100;
+	_ctrl[i].name=(QString(DETSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_DET+k*DECAPAR1;
+	_ctrl[i].min=-MAXDET;
+	_ctrl[i++].max=MAXDET;	
+    }
+    _ctrl[i].name=ALGSTR;
+    _ctrl[i].num=CTRL_ALG;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXALG;
+    _ctrl[i].name=FEEDBACKSTR;
+    _ctrl[i].num=CTRL_FEEDBACK;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXFEEDBACK;
+    _ctrl[i].name=SPEEDSTR;
+    _ctrl[i].num=CTRL_SPEED;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXSPEED;
+    _ctrl[i].name=DELAYSTR;
+    _ctrl[i].num=CTRL_DELAY;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXDELAY;
+    _ctrl[i].name=PMODDEPTHSTR;
+    _ctrl[i].num=CTRL_PMODDEPTH;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXPMODDEPTH;
+    _ctrl[i].name=AMODDEPTHSTR;
+    _ctrl[i].num=CTRL_AMODDEPTH;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXAMODDEPTH;
+    _ctrl[i].name=SYNCSTR;
+    _ctrl[i].num=CTRL_SYNC;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=1;
+    _ctrl[i].name=WAVESTR;
+    _ctrl[i].num=CTRL_WAVE;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXWAVE;
+    _ctrl[i].name=PMODSENSSTR;
+    _ctrl[i].num=CTRL_PMODSENS;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXPMODSENS;
+    _ctrl[i].name=AMSSTR;
+    _ctrl[i].num=CTRL_AMS;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXAMS;
+    _ctrl[i].name=TRANSPOSESTR;
+    _ctrl[i].num=CTRL_TRANSPOSE;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXTRANSPOSE;
+    _ctrl[i].name=POLYMODESTR;
+    _ctrl[i].num=CTRL_POLYMODE;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=1;
+    _ctrl[i].name=PBENDRANGESTR;
+    _ctrl[i].num=CTRL_PBENDRANGE;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXPBENDRANGE;
+    _ctrl[i].name=PORTAMODESTR;
+    _ctrl[i].num=CTRL_PORTAMODE;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=1;
+    _ctrl[i].name=PORTATIMESTR;
+    _ctrl[i].num=CTRL_PORTATIME;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXPROTATIME;
+    _ctrl[i].name=FCVOLUMESTR;
+    _ctrl[i].num=CTRL_FCVOLUME;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXFCVOLUME;
+    _ctrl[i].name=FSWSTR;
+    _ctrl[i].num=CTRL_FSW;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXFSW;
+    _ctrl[i].name=MWPITCHSTR;
+    _ctrl[i].num=CTRL_MWPITCH;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXMWPITCH;
+    _ctrl[i].name=MWAMPLITUDESTR;
+    _ctrl[i].num=CTRL_MWAMPLITUDE;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXMWAMPLITUDE;
+    _ctrl[i].name=BCPITCHSTR;
+    _ctrl[i].num=CTRL_BCPITCH;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXBCPITCH;
+    _ctrl[i].name=BCAMPLITUDESTR;
+    _ctrl[i].num=CTRL_BCAMPLITUDE;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXBCAMPLITUDE;
+    _ctrl[i].name=BCPITCHBIASSTR;
+    _ctrl[i].num=CTRL_BCPITCHBIAS;
+    _ctrl[i].min=-MAXBCPITCHBIAS;
+    _ctrl[i++].max=MAXBCPITCHBIAS;
+    _ctrl[i].name=BCEGBIASSTR;
+    _ctrl[i].num=CTRL_BCEGBIAS;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXBCEGBIAS;
+    _ctrl[i].name=ATPITCHSTR;
+    _ctrl[i].num=CTRL_ATPITCH;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXATPITCH;
+    _ctrl[i].name=ATAMPLITUDESTR;
+    _ctrl[i].num=CTRL_ATAMPLITUDE;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXATAMPLITUDE;
+    _ctrl[i].name=ATPITCHBIASSTR;
+    _ctrl[i].num=CTRL_ATPITCHBIAS;
+    _ctrl[i].min=-MAXATPITCHBIAS;
+    _ctrl[i++].max=MAXATPITCHBIAS;
+    _ctrl[i].name=ATEGBIASSTR;
+    _ctrl[i].num=CTRL_ATEGBIAS;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXATEGBIAS;
+    _ctrl[i].name=PR1STR;
+    _ctrl[i].num=CTRL_PR1;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXPR;
+    _ctrl[i].name=PR2STR;
+    _ctrl[i].num=CTRL_PR2;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXPR;
+    _ctrl[i].name=PR3STR;
+    _ctrl[i].num=CTRL_PR3;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXPR;
+    _ctrl[i].name=PL1STR;
+    _ctrl[i].num=CTRL_PL1;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXPL;
+    _ctrl[i].name=PL2STR;
+    _ctrl[i].num=CTRL_PL2;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXPL;
+    _ctrl[i].name=PL3STR;
+    _ctrl[i].num=CTRL_PL3;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXPL;
+    for(int k=0; k<NBROP; k++) {
+	_ctrl[i].name=(QString(FIXSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_FIX+k*DECAPAR2;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=1;
+	_ctrl[i].name=(QString("Centi")+QString(FIXRANGESTR)
+		       +QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_FIXRANGE+k*DECAPAR2;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXFIXRANGE*100;
+	_ctrl[i].name=(QString(OSWSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_OSW+k*DECAPAR2;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXOSW;
+    	_ctrl[i].name=(QString(SHFTSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].num=CTRL_SHFT+k*DECAPAR2;
+	_ctrl[i].min=0;
+	_ctrl[i++].max=MAXSHFT;
+    }	
+    _ctrl[i].name=REVERBRATESTR;
+    _ctrl[i].num=CTRL_REVERBRATE;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=7;
+    _ctrl[i].name=FCPITCHSTR;
+    _ctrl[i].num=CTRL_FCPITCH;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXFCPITCH;
+    _ctrl[i].name=FCAMPLITUDESTR;
+    _ctrl[i].num=CTRL_FCAMPLITUDE;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXFCAMPLITUDE;
+    _ctrl[i].name=GLOBALDETUNESTR;
+    _ctrl[i].num=CTRL_GLOBALDETUNE;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXGLOBALDETUNE;
+    _ctrl[i].name=MASTERVOLUMESTR;
+    _ctrl[i].num=CTRL_MASTERVOLUME;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXMASTERVOLUME;
+    _ctrl[i].name=FINEBRIGHTNESSSTR;
+    _ctrl[i].num=CTRL_FINEBRIGHTNESS;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXFINEBRIGHTNESS;
+    _ctrl[i].name=NBRVOICESSTR;
+    _ctrl[i].num=CTRL_NBRVOICES;
+    _ctrl[i].min=0;
+    _ctrl[i++].max=MAXNBRVOICES;
+    nbrCtrl=i;
+}
+
+//---------------------------------------------------------
+// initGlobal
+//---------------------------------------------------------
+void DeicsOnze::initGlobal() {
+  setMasterVol(32);
+  _global.quality = high;
+  _global.sustain = false;
+  _global.pitchBendCoef = 1.0;
+  _global.lfoIndex = 0;
+  _numPatch = 0;
+  _saveOnlyUsed = true;
+  _saveConfig = true;
+  _global.nbrVoices = 8;
+  _global.channelNum = -1;
+  _isInitSet = true;
+  _initSetPath =
+    "/usr/local/share/muse-1.0pre1/presets/deicsonze/SutulaBank.dei";
+    //INSTPREFIX + "/share/" + PACKAGEVERSION + "/presets/deicsonze/ARCH_ALIN";
+}
+
+//---------------------------------------------------------
+// initVoice
+//---------------------------------------------------------
+void DeicsOnze::initVoice(unsigned char v) {
+  _voices[v].isOn=false;
+  _voices[v].isSustained=false;
+}
+//---------------------------------------------------------
+// initVoices
+//---------------------------------------------------------
+void DeicsOnze::initVoices() {
+  for(int v=0; v<MAXNBRVOICES; v++) initVoice((unsigned char)v);
+}
+
+//--------------------------------------------------------
+// findPreset
+//--------------------------------------------------------
+Preset* DeicsOnze::findPreset(int hbank, int lbank, int prog) {
+    return _set->findPreset(hbank, lbank, prog);
+}
+
+
+//---------------------------------------------------------
+// note2Amp
+//  return the Amp of a note depending on the level scaling
+//---------------------------------------------------------
+inline double note2Amp(double note, int ls)
+{
+    if(ls==0) return(1.0);
+    else return((note<LEVELSCALENOTE?1.0:exp((double)ls*COEFLEVELSCALE*
+					     ((double)LEVELSCALENOTE-note))));
+}
+
+//---------------------------------------------------------
+// delay2Time
+//  return the time in second corresponding to the LFO delay parameter
+//---------------------------------------------------------
+inline double delay2Time(int d)
+{
+    double t;
+    //fitting
+    t=0.07617*(double)d-0.002695*(double)(d*d)+4.214e-05*(double)(d*d*d);
+    //printf("delay2Time : %f\n", t);
+    return(t);
+}
+
+//----------------------------------------------------------------
+// setNbrVoices
+//----------------------------------------------------------------
+void DeicsOnze::setNbrVoices(unsigned char nv) {
+  nv=(nv>MAXNBRVOICES?MAXNBRVOICES:(nv<1?1:nv));
+  //we assume that any voices
+  //that is not included in the active voices is properly initialized
+  for(int v=nv; v<_global.nbrVoices; v++) initVoice(v); 
+  _global.nbrVoices=nv;
+}
+
+//----------------------------------------------------------------
+// setMasterVol
+//----------------------------------------------------------------
+void DeicsOnze::setMasterVol(int mv) {
+    _global.amp=(double)mv/(double)MAXMASTERVOLUME;
+}
+
+//----------------------------------------------------------------
+// getMasterVol
+//----------------------------------------------------------------
+int DeicsOnze::getMasterVol(void) {
+    return((int)(_global.amp*(double)MAXMASTERVOLUME));
+}
+
+//----------------------------------------------------------------
+// setLfo
+//----------------------------------------------------------------
+void DeicsOnze::setLfo()
+{
+    double x;
+    x=(double)_preset->lfo.speed;
+    // lfoSpeed to Hz, obtained by fitting the actual curve by a polynomial
+    _global.lfoFreq=-1.9389e-08*x*x*x*x*x+2.8826e-06*x*x*x*x-9.0316e-05*x*x*x
+	+4.7453e-03*x*x-1.2295e-02*x+7.0347e-02;//a revoir
+    //Pitch LFO
+    _global.lfoMaxIndex=(_global.lfoFreq==0?0:(int)((1.0/_global.lfoFreq)
+						    *(double)sampleRate()));
+    _global.lfoPitch=(((double)_preset->lfo.pModDepth/(double)MAXPMODDEPTH)
+		      *(COEFPLFO(_preset->sensitivity.pitch)));
+    //Amplitude LFO
+    _global.lfoMaxAmp=(((double)_preset->lfo.aModDepth/(double)MAXAMODDEPTH)
+		    *(COEFALFO(_preset->sensitivity.amplitude)));
+    //index is concidered on the frequency of the delay
+    _global.lfoDelayMaxIndex=delay2Time(_preset->lfo.delay)*_global.lfoFreq;
+    _global.lfoDelayInct=(double)(RESOLUTION/4)/_global.lfoDelayMaxIndex;
+}
+
+//-----------------------------------------------------------------
+// setOutLevel
+//-----------------------------------------------------------------
+void DeicsOnze::setOutLevel(int k) {
+  for(int v=0; v<_global.nbrVoices; v++) {
+    if(_voices[v].op[k].envState!=OFF) {
+      _voices[v].op[k].amp = outLevel2Amp(_preset->outLevel[k])
+	* _voices[v].op[k].ampVeloNote * brightness2Amp(k);
+    }
+  }
+}
+void DeicsOnze::setOutLevel() {
+  for(int k=0; k<NBROP; k++) {
+    setOutLevel(k);
+  }
+}
+//-----------------------------------------------------------------
+// setEnvAttack
+//-----------------------------------------------------------------
+void DeicsOnze::setEnvAttack(int v, int k) {
+  if(_voices[v].op[k].envState==ATTACK)
+    _voices[v].op[k].envInct=
+      (_preset->eg[k].ar==0?0:
+       (double)(RESOLUTION/4)/(envAR2s(_preset->eg[k].ar)
+			       *(double)sampleRate()))
+      *coefAttack(_preset->attack);
+}
+void DeicsOnze::setEnvAttack(int k) {
+  for(int v=0; v<_global.nbrVoices; v++) setEnvAttack(v, k);
+}
+void DeicsOnze::setEnvAttack() {
+  for(int k=0; k<NBROP; k++) setEnvAttack(k);
+}  
+//-----------------------------------------------------------------
+// setEnvRelease
+//-----------------------------------------------------------------
+void DeicsOnze::setEnvRelease(int v, int k) {
+  if(_voices[v].op[k].envState==RELEASE)
+    _voices[v].op[k].coefVLevel = envRR2coef(_preset->eg[k].rr,
+					     sampleRate(), 
+					     _preset->release);
+}
+void DeicsOnze::setEnvRelease(int k) {
+  for(int v=0; v<_global.nbrVoices; v++) setEnvRelease(v, k);
+}
+void DeicsOnze::setEnvRelease() {
+  for(int k=0; k<NBROP; k++) setEnvRelease(k);
+}  
+//-----------------------------------------------------------------
+// brightness2Amp
+//-----------------------------------------------------------------
+double DeicsOnze::brightness2Amp(int k) {
+  if(
+     (k==1 && (_preset->algorithm!=SIXTH || _preset->algorithm!=SEVENTH
+	       || _preset->algorithm!=EIGHTH))
+     ||
+     (k==2 && (_preset->algorithm==FIRST || _preset->algorithm==SECOND
+	       || _preset->algorithm==THIRD || _preset->algorithm==FOURTH))
+     ||
+     (k==3 && (_preset->algorithm!=EIGHTH))
+     ) {
+    double x = 2.0*(double)_preset->brightness/(double)MAXFINEBRIGHTNESS;
+    double square_x = x*x;
+    return(square_x*x);
+  }
+  else return(1.0);
+}
+//-----------------------------------------------------------------
+// setFeedback
+//-----------------------------------------------------------------
+void DeicsOnze::setFeedback() {
+    _global.feedbackAmp=COEFFEEDBACK*exp(log(2)*(double)(_preset->feedback
+							 -MAXFEEDBACK));
+}
+
+//-----------------------------------------------------------------
+// setPreset
+//-----------------------------------------------------------------
+
+void DeicsOnze::setPreset() {
+    setFeedback();
+    setLfo();
+    setEnvAttack();
+    setEnvRelease();
+    setOutLevel();
+}
+
+
+inline double coarseFine2Ratio(int c,int f) {
+  double tab[64][16]=
+    {
+      {0.50,0.56,0.62,0.68,0.75,0.81,0.87,0.93,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
+      {0.71,0.79,0.88,0.96,1.05,1.14,1.23,1.32,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
+      {0.78,0.88,0.98,1.07,1.17,1.27,1.37,1.47,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
+      {0.87,0.97,1.08,1.18,1.29,1.40,1.51,1.62,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
+      {1.00,1.06,1.12,1.18,1.25,1.31,1.37,1.43,1.50,1.56,1.62,1.68,1.75,1.81,1.87,1.93},
+      {1.41,1.49,1.58,1.67,1.76,1.85,1.93,2.02,2.11,2.20,2.29,2.37,2.46,2.55,2.64,2.73},
+      {1.57,1.66,1.76,1.86,1.96,2.06,2.15,2.25,2.35,2.45,2.55,2.64,2.74,2.84,2.94,3.04},
+      {1.73,1.83,1.94,2.05,2.16,2.27,2.37,2.48,2.59,2.70,2.81,2.91,3.02,3.13,3.24,3.35},
+      {2.00,2.06,2.12,2.18,2.25,2.31,2.37,2.43,2.50,2.56,2.62,2.68,2.75,2.81,2.87,2.93},
+      {2.82,2.90,2.99,3.08,3.17,3.26,3.34,3.43,3.52,3.61,3.70,3.78,3.87,3.96,4.05,3.14},
+      {3.00,3.06,3.12,3.18,3.25,3.31,3.37,3.43,3.50,3.56,3.62,3.68,3.75,3.81,3.87,3.93} ,
+      {3.14,3.23,3.33,3.43,3.53,3.63,3.72,3.82,3.92,4.02,4.12,4.21,4.31,4.41,4.51,4.61},
+      {3.46,3.56,3.67,3.78,3.89,4.00,4.10,4.21,4.32,4.43,4.54,4.64,4.75,4.86,4.97,5.08},
+      {4.00,4.06,4.12,4.18,4.25,4.31,4.37,4.43,4.50,4.56,4.62,4.68,4.75,4.81,4.87,4.93},
+      {4.24,4.31,4.40,4.49,4.58,4.67,4.75,4.84,4.93,5.02,5.11,5.19,5.28,5.37,5.46,5.55},
+      {4.71,4.80,4.90,5.00,5.10,5.20,5.29,5.39,5.49,5.59,5.69,5.78,5.88,5.98,6.08,6.18},
+      {5.00,5.06,5.12,5.18,5.25,5.31,5.37,5.43,5.50,5.56,5.62,5.68,5.75,5.81,5.87,5.93},
+      {5.19,5.29,5.40,5.51,5.62,5.73,5.83,5.94,6.05,6.16,6.27,6.37,6.48,6.59,6.70,6.81},
+      {5.65,5.72,5.81,5.90,5.99,6.08,6.16,6.25,6.34,6.43,6.52,6.60,6.69,6.78,6.87,6.96},
+      {6.00,6.06,6.12,6.18,6.25,6.31,6.37,6.43,6.50,6.56,6.62,6.68,6.75,6.81,6.87,6.93},
+      {6.28,6.37,6.47,6.57,6.67,6.77,6.86,6.96,7.06,7.16,7.26,7.35,7.45,7.55,7.65,7.75},
+      {6.92,7.02,7.13,7.24,7.35,7.46,7.56,7.67,7.78,7.89,8.00,8.10,8.21,8.32,8.43,8.54},
+      {7.00,7.06,7.12,7.18,7.25,7.31,7.37,7.43,7.50,7.56,7.62,7.68,7.75,7.81,7.87,7.93},
+      {7.07,7.13,7.22,7.31,7.40,7.49,7.57,7.66,7.75,7.84,7.93,8.01,8.10,8.19,8.28,8.37},
+      {7.85,7.94,8.04,8.14,8.24,8.34,8.43,8.53,8.63,8.73,8.83,8.92,9.02,9.12,9.22,9.32},
+      {8.00,8.06,8.12,8.18,8.25,8.31,8.37,8.43,8.50,8.56,8.62,8.68,8.75,8.81,8.87,8.93},
+      {8.48,8.54,8.63,8.72,8.81,8.90,8.98,9.07,9.16,9.25,9.34,9.42,9.51,9.60,9.69,9.78},
+      {8.65,8.75,8.86,8.97,9.08,9.19,9.29,9.40,9.51,9.62,9.73,9.83,9.94,10.05,10.16,10.27},
+      {9.00,9.06,9.12,9.18,9.25,9.31,9.37,9.43,9.50,9.56,9.62,9.68,9.75,9.81,9.87,9.93},
+      {9.42,9.51,9.61,9.71,9.81,9.91,10.00,10.10,10.20,10.30,10.40,10.49,10.59,10.69,10.79,10.89},
+      {9.89,9.95,10.04,10.13,10.22,10.31,10.39,10.48,10.57,10.66,10.75,10.83,10.92,11.01,11.10,11.19},
+      {10.00,10.06,10.12,10.18,10.25,10.31,10.37,10.43,10.50,10.56,10.62,10.68,10.75,10.81,10.87,10.93},
+      {10.38,10.48,10.59,10.70,10.81,10.92,11.02,11.13,11.24,11.35,11.46,11.56,11.67,11.78,11.89,12.00},
+      {10.99,11.08,11.18,11.28,11.38,11.48,11.57,11.67,11.77,11.87,11.97,12.06,12.16,12.26,12.36,12.46},
+      {11.00,11.06,11.12,11.18,11.25,11.31,11.37,11.43,11.50,11.56,11.62,11.68,11.75,11.81,11.87,11.93},
+      {11.30,11.36,11.45,11.54,11.63,11.72,11.80,11.89,11.98,12.07,12.16,12.24,12.33,12.42,12.51,12.60},
+      {12.00,12.06,12.12,12.18,12.25,12.31,12.37,12.43,12.50,12.56,12.62,12.68,12.75,12.81,12.87,12.93},
+      {12.11,12.21,12.32,12.43,12.54,12.65,12.75,12.86,12.97,13.08,13.19,13.29,13.40,13.51,13.62,13.73},
+      {12.56,12.65,12.75,12.85,12.95,13.05,13.14,13.24,13.34,13.44,13.54,13.63,13.73,13.83,13.93,14.03},
+      {12.72,12.77,12.86,12.95,13.04,13.13,13.21,13.30,13.39,13.48,13.57,13.65,13.74,13.83,13.92,14.01},
+      {13.00,13.06,13.12,13.18,13.25,13.31,13.37,13.43,13.50,13.56,13.62,13.68,13.75,13.81,13.87,13.93},
+      {13.84,13.94,14.05,14.16,14.27,14.38,14.48,14.59,14.70,14.81,14.92,15.02,15.13,15.24,15.35,15.46},
+      {14.00,14.06,14.12,14.18,14.25,14.31,14.37,14.43,14.50,14.56,14.62,14.68,14.75,14.81,14.87,14.93},
+      {14.10,14.18,14.27,14.36,14.45,14.54,14.62,14.71,14.80,14.89,14.98,15.06,15.15,15.24,15.33,15.42},
+      {14.13,14.22,14.32,14.42,14.52,14.62,14.71,14.81,14.91,15.01,15.11,15.20,15.30,15.40,15.50,15.60},
+      {15.00,15.06,15.12,15.18,15.25,15.31,15.37,15.43,15.50,15.56,15.62,15.68,15.75,15.81,15.87,15.93},
+      {15.55,15.59,15.68,15.77,15.86,15.95,16.03,16.12,16.21,16.30,16.39,16.47,16.56,16.65,16.74,16.83},
+      {15.57,15.67,15.78,15.89,16.00,16.11,16.21,16.32,16.43,16.54,16.65,16.75,16.86,16.97,17.08,17.19},
+      {15.70,15.79,15.89,15.99,16.09,16.19,16.28,16.38,16.48,16.58,16.68,16.77,16.87,16.97,17.07,17.17},
+      {16.96,17.00,17.09,17.18,17.27,17.36,17.44,17.53,17.62,17.71,17.80,17.88,17.97,18.06,18.15,18.24},
+      {17.27,17.36,17.46,17.56,17.66,17.76,17.85,17.95,18.05,18.15,18.25,18.34,18.44,18.54,18.64,18.74},
+      {17.30,17.40,17.51,17.62,17.73,17.84,17.94,18.05,18.16,18.27,18.38,18.48,18.59,18.70,18.81,18.92},
+      {18.37,18.41,18.50,18.59,18.68,18.77,18.85,18.94,19.03,19.12,19.21,19.29,19.38,19.47,19.56,19.65},
+      {18.84,18.93,19.03,19.13,19.23,19.33,19.42,19.52,19.62,19.72,19.82,19.91,20.01,20.11,20.21,20.31},
+      {19.03,19.13,19.24,19.35,19.46,19.57,19.67,19.78,19.89,20.00,20.11,20.21,20.32,20.43,20.54,20.65},
+      {19.78,19.82,19.91,20.00,20.09,20.18,20.26,20.35,20.44,20.53,20.62,20.70,20.79,20.88,20.97,21.06},
+      {20.41,20.50,20.60,20.70,20.80,20.90,20.99,21.09,21.19,21.29,21.39,21.48,21.58,21.68,21.78,21.88},
+      {20.76,20.86,20.97,21.08,21.19,21.30,21.40,21.51,21.62,21.73,21.84,21.94,22.05,22.16,22.27,22.38},
+      {21.20,21.23,21.32,21.41,21.50,21.59,21.67,21.76,21.85,21.94,22.03,22.11,22.20,22.29,22.38,22.47},
+      {21.98,22.07,22.17,22.17,22.37,22.47,22.56,22.66,22.76,22.86,22.96,23.05,23.15,23.25,23.35,23.45},
+      {22.49,22.59,22.70,22.81,22.92,23.03,23.13,13.24,13.35,13.46,13.57,13.67,13.78,13.89,24.00,24.11},
+      {23.55,23.64,23.74,23.84,23.94,24.04,24.13,24.23,24.33,24.43,24.53,24.62,24.72,24.82,24.92,25.02},
+      {24.22,24.32,24.43,24.54,24.65,24.76,24.86,24.97,25.08,25.19,25.30,25.40,25.51,25.62,25.73,25.84},
+      {25.95,26.05,26.16,26.27,26.38,26.49,26.59,26.70,26.81,26.92,27.03,27.13,27.24,27.35,27.46,27.57}
+    };
+  return(tab[c][f]);
+}
+
+//---------------------------------------------------------------
+// loadSet
+//---------------------------------------------------------------
+void DeicsOnze::loadSet(QString fileName) {
+  // read the XML file and create DOM tree
+  if(!fileName.isEmpty()) {
+    QFile deicsonzeFile(fileName);
+    if(!deicsonzeFile.open(QIODevice::ReadOnly)) {
+      printf("Critical Error Cannot open file %s\n", 
+	     fileName.toAscii().data());
+      return;
+    }
+    QDomDocument domTree;
+    if (!domTree.setContent(&deicsonzeFile )) {
+      printf("Critical Error Parsing error for file %s\n",
+	     fileName.toAscii().data());
+      deicsonzeFile.close();
+      return;
+    }
+    deicsonzeFile.close();
+    
+    QDomNode node = domTree.documentElement();
+    while (!node.isNull()) {
+      QDomElement e = node.toElement();
+      if (e.isNull())
+	continue;
+      if (e.tagName() == "deicsOnzeSet") {
+	QString version = e.attribute(QString("version"));
+	if (version == "1.0") {
+	  _preset=_initialPreset;
+	  while(!_set->_categoryVector.empty())
+	    delete(*_set->_categoryVector.begin());
+	  _set->readSet(node.firstChild());
+	  //display load preset
+	  unsigned char dataUpdateGuiSet[1];
+	  dataUpdateGuiSet[0]=SYSEX_UPDATESETGUI;
+	  MidiEvent evSysexUpdateGuiSet(0, ME_SYSEX, 
+					(const unsigned char*)dataUpdateGuiSet,
+					1);
+	  _gui->writeEvent(evSysexUpdateGuiSet);
+	}
+	else printf("unsupported *.dei file version %s\n",
+		    version.toLatin1().data());
+      }
+      else printf("DeicsOnze: %s not supported\n",
+		  e.tagName().toLatin1().data());
+      node = node.nextSibling();
+    }
+  }
+}
+//---------------------------------------------------------------
+// loadSutulaPreset
+//---------------------------------------------------------------
+/*
+void DeicsOnze::loadSutulaPresets()
+{
+    FILE* file;
+    int v;
+    int crs[NBROP], fin[NBROP]; //coarse ratio, fine ratio
+    char s[500];
+    char sname[LENGTHNAME+1];
+    char scategory[LENGTHCATEGORY+1];
+    char ssubcategory[LENGTHSUBCATEGORY+1];
+    int k;
+    int nhBank, nlBank, nPreset;
+    Preset* presetTemp;
+    Subcategory* subcategoryTemp;
+    Category* categoryTemp;
+
+    if(!_set) _set=new Set("Sutula Bank");
+
+    nhBank=0;
+    nlBank=0;
+    nPreset=0;
+
+    QString presetPath(INSTPREFIX);
+    presetPath += "/share/" PACKAGEVERSION "/presets/deicsonze/ARCH_ALIN";
+
+    file = fopen (presetPath.toLatin1().data(), "rt");
+    if (file == NULL) {
+	printf("can't open ");
+	printf(presetPath.toLatin1().data());
+	printf("\n");
+    }
+    else
+    {
+	while(fgets(s, 500, file) && !strstr(s, "** Source:"))
+	{
+	    if (strstr(s,"* CATEGORY"))
+	    {
+		sscanf(s, "* CATEGORY %s", scategory);
+		categoryTemp=new Category(_set, scategory,0);
+	    }
+	    if (strstr(s,"* SUBCATEGORY"))
+	    {
+		sscanf(s, "* SUBCATEGORY %s", ssubcategory);
+		subcategoryTemp=new Subcategory(categoryTemp,ssubcategory,0);
+		nlBank++;
+	    }
+	}
+	while(!feof(file))
+	{
+	
+	    presetTemp=new Preset(subcategoryTemp);
+	    // Fill the preset
+            //OP.4 to OP.1
+	    for(int kaka=(NBROP-1); kaka>=0; kaka--)
+	    {
+		k=(kaka==2?1:(kaka==1?2:kaka));
+		
+		fscanf(file, "%x", &v);//0
+		presetTemp->eg[k].ar=v;
+		fscanf(file, "%x", &v);//1
+		presetTemp->eg[k].d1r=v;
+		fscanf(file, "%x", &v);//2
+		presetTemp->eg[k].d2r=v;
+		fscanf(file, "%x", &v);//3
+		presetTemp->eg[k].rr=v;
+		fscanf(file, "%x", &v);//4
+		presetTemp->eg[k].d1l=v;
+		fscanf(file, "%x", &v);//5
+		presetTemp->scaling.level[k]=v;
+		fscanf(file, "%x", &v);//6
+		presetTemp->sensitivity.keyVelocity[k]=
+		    v & 0x7;
+		presetTemp->sensitivity.egBias[k]=
+		    (v & 0x38)>>3;
+		presetTemp->sensitivity.ampOn[k]=
+		    (v & 0x40)>>6;
+		fscanf(file, "%x", &v);//7
+		presetTemp->outLevel[k]=v;
+		fscanf(file, "%x", &v);//8
+		crs[k]=v;
+		fscanf(file, "%x", &v);//9
+		presetTemp->detune[k]=(v & 0x7)-3;
+		presetTemp->scaling.rate[k]=(v & 0x18)>>3;
+	    }
+	    fscanf(file, "%x", &v);//40
+	    presetTemp->algorithm=
+		((v & 0x7)==0?FIRST:
+		 ((v & 0x7)==1?SECOND:
+		  ((v & 0x7)==2?THIRD:
+		   ((v & 0x7)==3?FOURTH:
+		    ((v & 0x7)==4?FIFTH:
+		     ((v & 0x7)==5?SIXTH:
+		      ((v & 0x7)==6?SEVENTH:EIGHTH)))))));
+	    presetTemp->feedback=(v & 0x38)>>3;
+	    presetTemp->lfo.sync=(v & 0x40)>>6;	
+	    fscanf(file, "%x", &v);//41
+	    presetTemp->lfo.speed=v;
+	    fscanf(file, "%x", &v);//42
+	    presetTemp->lfo.delay=v;
+	    fscanf(file, "%x", &v);//43
+	    presetTemp->lfo.pModDepth=v;
+	    fscanf(file, "%x", &v);//44
+	    presetTemp->lfo.aModDepth=v;
+	    fscanf(file, "%x", &v);//45
+	    presetTemp->lfo.wave=
+		((v & 0x3)==0?SAWUP:
+		 ((v & 0x3)==1?SQUARE:
+		  ((v & 0x3)==2?TRIANGL:SHOLD)));
+	    presetTemp->sensitivity.amplitude=(v & 0xc)>>2;
+	    presetTemp->sensitivity.pitch=(v & 0x70)>>4;
+	    fscanf(file, "%x", &v);//46
+	    presetTemp->function.transpose=v-24;
+	    fscanf(file, "%x", &v);//47
+	    presetTemp->function.pBendRange=v;
+	    fscanf(file, "%x", &v);//48
+	    presetTemp->function.portamento=
+		((v & 0x1)==0?FULL:FINGER);
+	    presetTemp->function.footSw=
+		((v & 0x4)==0?SUS:POR);
+	    presetTemp->function.mode=
+		((v & 0x8)==0?POLY:MONO);
+	    fscanf(file, "%x", &v);//49
+	    presetTemp->function.portamentoTime=v;
+	    fscanf(file, "%x", &v);//50
+	    presetTemp->function.fcVolume=v;
+	    fscanf(file, "%x", &v);//51
+	    presetTemp->function.mwPitch=v;
+	    fscanf(file, "%x", &v);//52
+	    presetTemp->function.mwAmplitude=v;
+	    fscanf(file, "%x", &v);//53
+	    presetTemp->function.bcPitch=v;
+	    fscanf(file, "%x", &v);//54
+	    presetTemp->function.bcAmplitude=v;
+	    fscanf(file, "%x", &v);//55
+	    presetTemp->function.bcPitchBias=v;
+	    fscanf(file, "%x", &v);//56
+	    presetTemp->function.bcEgBias=v;
+	    for(int l=0; l<10; l++)
+	    {
+		fscanf(file, "%x", &v);//57 to 66
+		sname[l]=(char)v;
+	    }
+	    sname[10]='\0';
+	    presetTemp->name=sname;
+	    fscanf(file, "%x", &v);//67
+	    presetTemp->pitchEg.pr1=v;
+	    fscanf(file, "%x", &v);//68
+	    presetTemp->pitchEg.pr2=v;
+	    fscanf(file, "%x", &v);//69
+	    presetTemp->pitchEg.pr3=v;
+	    fscanf(file, "%x", &v);//70
+	    presetTemp->pitchEg.pl1=v;
+	    fscanf(file, "%x", &v);//71
+	    presetTemp->pitchEg.pl1=v;
+	    fscanf(file, "%x", &v);//72
+	    presetTemp->pitchEg.pl1=v;
+	    for(int kaka=(NBROP-1); kaka>=0; kaka--)
+	    {
+		k=(kaka==2?1:(kaka==1?2:kaka));
+
+		fscanf(file, "%x", &v);//73, 75, 77, 79
+		presetTemp->frequency[k].isFix=(v & 0x8)>>3;
+		presetTemp->frequency[k].freq=((v & 0x7)==0?8:(v & 0x7)*16);
+		presetTemp->eg[k].egShift=
+		    (((v & 0x30)>>4)==0?VOF:
+		     (((v & 0x30)>>4)==1?V48:
+		      (((v & 0x30)>>4)==2?V24:V12)));
+		fscanf(file, "%x", &v);//74, 76, 78, 80
+		fin[k]=v & 0xF;
+		presetTemp->frequency[k].freq+=fin[k];
+		presetTemp->frequency[k].ratio=
+		    coarseFine2Ratio(crs[k],fin[k]);
+		presetTemp->oscWave[k]=
+		    (((v & 0x70)>>4)==0?W1:
+		     (((v & 0x70)>>4)==1?W2:
+		      (((v & 0x70)>>4)==2?W3:
+		       (((v & 0x70)>>4)==3?W4:
+			(((v & 0x70)>>4)==4?W5:
+			 (((v & 0x70)>>4)==5?W6:
+			  (((v & 0x70)>>4)==6?W7:W8)))))));
+	    }
+	    fscanf(file, "%x", &v);//81
+	    presetTemp->function.reverbRate=v;
+	    fscanf(file, "%x", &v);//82
+	    presetTemp->function.fcPitch=v;
+	    fscanf(file, "%x", &v);//83
+	    presetTemp->function.fcAmplitude=v;
+	    presetTemp->globalDetune=0;
+	    presetTemp->prog=nPreset;
+            // End of filling the preset
+
+	    nPreset++;
+	    while(fgets(s, 500, file) && !strstr(s, "** Source:"))
+	    {
+		if (strstr(s,"* CATEGORY"))
+		{
+		    sscanf(s, "* CATEGORY %s", scategory);
+		    nhBank++;
+		    categoryTemp=new Category(_set,scategory,nhBank);
+		    nlBank=0;
+		}
+		if (strstr(s,"* SUBCATEGORY"))
+		{
+		    sscanf(s, "* SUBCATEGORY %s", ssubcategory);
+		    subcategoryTemp=new
+			Subcategory(categoryTemp,ssubcategory,nlBank);
+		    nlBank++;
+		    nPreset=0;
+		}
+	    }
+	}
+    }
+    fclose(file);
+}*/
+
+//---------------------------------------------------------
+// minVolu2Voice
+//  return the number of the voice which is the least aloud
+//  and is not is the ATTACK state
+//---------------------------------------------------------
+int DeicsOnze::minVolu2Voice() {
+  int minVoice=0;
+  double min=MAXVOLUME;
+  for(int i=0; i<_global.nbrVoices; i++)
+    {
+      min=((min>_voices[i].volume
+	    && _voices[i].op[0].envState!=ATTACK
+	    && _voices[i].op[1].envState!=ATTACK
+	    && _voices[i].op[2].envState!=ATTACK
+	    && _voices[i].op[3].envState!=ATTACK)?_voices[i].volume:min);
+      minVoice=(min==_voices[i].volume?i:minVoice);
+    }
+  return minVoice;
+}
+
+//---------------------------------------------------------
+// noteOff2Voice
+//  return the number of one off voice, MAXNBRVOICES otherwise
+//---------------------------------------------------------
+int DeicsOnze::noteOff2Voice() {
+  int offVoice=MAXNBRVOICES;
+  for(int i=0; i<_global.nbrVoices; i++) offVoice=(_voices[i].isOn?offVoice:i);
+  return offVoice;
+}
+
+//---------------------------------------------------------
+// pitchOn2Voice
+//  return the number of the voice which has the input
+//   pitch and is On and not release, MAXNBRVOICES otherwise
+//---------------------------------------------------------
+int DeicsOnze::pitchOn2Voice(int pitch) {
+  int pitchVoice=MAXNBRVOICES;
+  for(int i=0; i<_global.nbrVoices; i++) {
+    if(_voices[i].pitch==pitch && _voices[i].isOn && !_voices[i].isSustained) {
+      if((_preset->algorithm == FIRST || _preset->algorithm == SECOND
+	  || _preset->algorithm == THIRD || _preset->algorithm == FOURTH)
+	 && _voices[i].op[0].envState!=RELEASE
+	 && _voices[i].op[0].envState!=OFF)
+	pitchVoice = i;
+      if(_preset->algorithm == FIFTH
+	 && ((_voices[i].op[0].envState!=RELEASE
+	      && _voices[i].op[0].envState!=OFF)
+	     || (_voices[i].op[2].envState!=RELEASE
+		 && _voices[i].op[2].envState!=OFF)))
+	pitchVoice = i;
+      if((_preset->algorithm == SIXTH ||  _preset->algorithm == SEVENTH)
+	 && ((_voices[i].op[0].envState!=RELEASE
+	      && _voices[i].op[0].envState!=OFF)
+	     || (_voices[i].op[1].envState!=RELEASE
+		 && _voices[i].op[1].envState!=OFF)
+	     || (_voices[i].op[2].envState!=RELEASE
+		 && _voices[i].op[2].envState!=OFF)))
+	pitchVoice = i;
+      if(_preset->algorithm == EIGHTH
+	 && ((_voices[i].op[0].envState!=RELEASE
+	      && _voices[i].op[0].envState!=OFF)
+	     || (_voices[i].op[1].envState!=RELEASE
+		 && _voices[i].op[1].envState!=OFF)
+	     || (_voices[i].op[2].envState!=RELEASE
+		 && _voices[i].op[2].envState!=OFF)
+	     || (_voices[i].op[3].envState!=RELEASE
+		 && _voices[i].op[3].envState!=OFF)))
+	pitchVoice = i;
+    }
+  }
+  return pitchVoice;
+}
+
+
+//---------------------------------------------------------
+// pitch2freq
+//---------------------------------------------------------
+inline double pitch2freq(double p) {
+  return(LOWERNOTEFREQ*exp(p*log(2.0)/12.0));
+}
+
+//---------------------------------------------------------
+// lfoUpdate
+//  update the coefficent which multiplies the current inct in order to
+//  get the right current frequency with respect to the lfo
+//  update the coefficent which multiplies the amplitude.
+//---------------------------------------------------------
+inline void lfoUpdate(Preset* p, Global* p_g, float* wt) {
+  double delayCoef;
+
+  if(p_g->lfoIndex==0)
+    {
+      if(p_g->lfoDelayIndex<(double)(RESOLUTION/4))
+	{
+	  delayCoef=(double)wt[(int)p_g->lfoDelayIndex];
+	  p_g->lfoMaxCoefInct=exp((log(2.0)/12.0)*p_g->lfoPitch*delayCoef);
+	  p_g->lfoCoefInctInct=
+	    exp((log(2.0)/12.0)*((2*p_g->lfoPitch*delayCoef)
+				 /p_g->lfoMaxIndex));
+	  p_g->lfoDelayIndex+=p_g->lfoDelayInct;
+	  p_g->lfoMaxDAmp=delayCoef*p_g->lfoMaxAmp;
+	}
+      else
+	if(!p_g->delayPassed)
+	  {
+	    p_g->lfoMaxCoefInct=exp((log(2.0)/12.0)*p_g->lfoPitch);
+	    p_g->lfoCoefInctInct=
+	      exp((log(2.0)/12.0)*((2*p_g->lfoPitch)/p_g->lfoMaxIndex));
+	    p_g->delayPassed=true;
+	    p_g->lfoMaxDAmp=p_g->lfoMaxDAmp;
+	  }
+    }
+
+  switch(p->lfo.wave)
+    {
+    case SAWUP :
+      if(p_g->lfoIndex==0)
+	{
+	  p_g->lfoCoefInct=1.0/(p_g->lfoMaxCoefInct);
+	  p_g->lfoCoefAmp=p_g->lfoMaxDAmp/(double)p_g->lfoMaxIndex;
+	  p_g->lfoAmp=1.0;
+	}
+      else
+	{
+	  p_g->lfoCoefInct*=p_g->lfoCoefInctInct;
+	  p_g->lfoAmp-=p_g->lfoCoefAmp;
+	}
+      break;
+    case SQUARE :
+      if(p_g->lfoIndex==0)
+	{
+	  p_g->lfoCoefInct=p_g->lfoMaxCoefInct;
+	  p_g->lfoAmp=1.0;
+	}
+      if(p_g->lfoIndex==(p_g->lfoMaxIndex/2))
+	{
+	  p_g->lfoCoefInct=1.0/p_g->lfoMaxCoefInct;
+	  p_g->lfoAmp=1.0-p_g->lfoMaxDAmp;
+	}
+      break;
+    case TRIANGL :
+      if(p_g->lfoIndex==0)
+	{
+	  p_g->lfoCoefInct=1.0;
+	  p_g->lfoCoefAmp=p_g->lfoMaxDAmp
+	    /(double)(p_g->lfoMaxIndex/2);
+	  p_g->lfoAmp=1.0-p_g->lfoMaxDAmp/2.0;
+	}
+      else if(p_g->lfoIndex<(p_g->lfoMaxIndex/4))
+	{
+	  p_g->lfoCoefInct*=p_g->lfoCoefInctInct;
+	  p_g->lfoAmp-=p_g->lfoCoefAmp;
+	}
+      else if(p_g->lfoIndex<((3*p_g->lfoMaxIndex)/4))
+	{
+	  p_g->lfoCoefInct/=p_g->lfoCoefInctInct;
+	  p_g->lfoAmp+=p_g->lfoCoefAmp;
+	}
+      else if(p_g->lfoIndex<p_g->lfoMaxIndex)
+	{
+	  p_g->lfoCoefInct*=p_g->lfoCoefInctInct;
+	  p_g->lfoAmp-=p_g->lfoCoefAmp;
+	}
+      break;
+    case SHOLD :
+      if(p_g->lfoIndex==0||p_g->lfoIndex==(p_g->lfoMaxIndex/2))
+	{
+	  double r;//uniform random between -1.0 and 1.0
+	  r = (double)(2*rand()-RAND_MAX)/(double)RAND_MAX;
+	  p_g->lfoCoefInct=(r>=0.0?1.0+r*(p_g->lfoMaxCoefInct-1.0)
+			    :1.0/(1.0-r*(p_g->lfoMaxCoefInct-1.0)));
+	  p_g->lfoAmp=1.0-(r/2.0+0.5)*p_g->lfoMaxDAmp;
+	}
+      break;
+    default : printf("Error : lfo wave does not exist\n");
+      break;
+    }
+  p_g->lfoIndex=(p_g->lfoIndex<p_g->lfoMaxIndex?p_g->lfoIndex+1:0);
+}
+
+//---------------------------------------------------------
+// outLevel2Amp, Amp for amplitude //between 0.0 and 2.0 or more
+//  100->2.0, 90->1.0, 80->0.5 ...
+//---------------------------------------------------------
+inline double outLevel2Amp(int ol) {
+  double a;
+  double b;
+  a = log(2)/10.0;
+  b = -a*DB0LEVEL;
+  return exp(a*(double)ol+b);
+}
+
+//---------------------------------------------------------
+// velo2RAmp, AmpR between 0.0 and 1.0
+//  return an amplitude ratio with respect to _preset->sensitivity.keyVelocity
+//---------------------------------------------------------
+inline double velo2AmpR(int velo, int kvs) {
+  double lev;
+  lev = exp(-log(2)*kvs);
+  return (lev+(1.0-lev)*((double)velo/(double)MAXVELO));
+}
+
+//---------------------------------------------------------
+// envAR2s
+//  return the time in second of the ATTACK duration
+//---------------------------------------------------------
+inline double envAR2s(int ar) {
+  //determined using the fitting feature of gnuplot
+  return 10.4423*exp(-0.353767*ar);
+}
+
+//---------------------------------------------------------
+// envD1R2coef
+//  return the coefficient for the exponential decrease
+//  with respect to d1r and sampleRate, sr
+//---------------------------------------------------------
+inline double envD1R2coef(int d1r, int sr) {
+  double dt;//such that amp(t+dt)=amp(t)/2
+  double alpha;//such that amp(t)=exp(alpha*t)
+
+  if(d1r==0) return 1.0;
+  else
+    {
+      //dt has been determined with the fitting function of gnuplot
+      dt=9.80715*exp(-0.356053*(double)d1r);
+
+      //amp(0)=1
+      //amp(t+dt)=amp(t)/2
+      //amp(t)=exp(alpha*t)
+      //amp(t+mt)
+      //following the above equational system we found :
+      alpha=-log(2)/dt;
+      return exp(alpha/(double)sr);
+    }
+}
+
+//---------------------------------------------------------
+// coefRelease
+//  convert the release value to a coef for coefVLevel
+//---------------------------------------------------------
+inline double coefRelease(unsigned char release) {
+  double x = COEFGRELEASE*(double)release/(double)MIDRELEASE+1.0-COEFGRELEASE;
+  double square_x = x*x;
+  return(1.0/(square_x*x));
+}
+
+//---------------------------------------------------------
+// envRR2coef
+//  return the coefficient for the exponential decrease
+//  with respect to rr and sampleRate, sr
+//---------------------------------------------------------
+inline double envRR2coef(int rr, int sr, unsigned char release) {
+  double dt;//such that amp(t+dt)=amp(t)/2
+  double alpha;//such that amp(t)=exp(alpha*t)
+
+  //dt has been determined with the fitting function of gnuplot
+  dt=7.06636*exp(-0.697606*(double)rr);
+
+  dt*=coefRelease(release);
+  //printf("demi life = %e\n", dt);
+  //amp(0)=1
+  //amp(t+dt)=amp(t)/2
+  //amp(t)=exp(alpha*t)
+  //amp(t+mt)
+  //following the above equational system we found :
+  alpha=-log(2)/dt;
+  return exp(alpha/(double)sr);
+}
+
+//---------------------------------------------------------
+// coefAttack
+//  convert the attack value to a coef for envInct
+//---------------------------------------------------------
+inline double coefAttack(unsigned char attack) {
+  double x = COEFGATTACK*(double)attack/(double)MIDATTACK + 1.0-COEFGATTACK;
+  double square_x = x*x;
+  return(square_x*square_x*x);
+}
+
+//---------------------------------------------------------
+// env2RAmp
+//  return the amplitude ratio with respect to an envelope and an
+//   envelope state, making evoluate the envelope
+//  sr is the sample rate and st the sine_table
+//---------------------------------------------------------
+inline double env2AmpR(int sr, float* wt, Eg eg, OpVoice* p_opVoice) {
+  switch(p_opVoice->envState)
+    {
+    case ATTACK:
+      p_opVoice->envIndex+=p_opVoice->envInct;
+      if (p_opVoice->envIndex<(RESOLUTION/4))
+	{
+	  p_opVoice->envLevel=wt[(int)p_opVoice->envIndex];
+	}
+      else
+	{
+	  //printf("DECAY\n");
+	  p_opVoice->envState=DECAY;
+	  p_opVoice->envLevel=1.0;
+	  p_opVoice->coefVLevel=envD1R2coef(eg.d1r, sr);
+	}
+      return p_opVoice->envLevel;
+      break;
+    case DECAY:
+      if (p_opVoice->envLevel>((double)eg.d1l/(double)MAXD1L)+COEFERRDECSUS)
+	{
+	  p_opVoice->envLevel*=p_opVoice->coefVLevel;
+	}
+      else
+	{
+	  //printf("SUSTAIN\n");
+	  p_opVoice->envState=SUSTAIN;
+	  p_opVoice->envLevel=((double)eg.d1l/(double)MAXD1L);
+	  p_opVoice->coefVLevel=envD1R2coef(eg.d2r, sr);//probably the same
+	}
+      return p_opVoice->envLevel;
+      break;
+    case SUSTAIN:
+      if (p_opVoice->envLevel>COEFERRSUSREL)
+	{
+	  p_opVoice->envLevel*=p_opVoice->coefVLevel;
+	}
+      else
+	{
+	  //printf("OFF\n");
+	  p_opVoice->envState=OFF;
+	  p_opVoice->envLevel=0.0;
+	}
+      return p_opVoice->envLevel;
+      break;
+    case RELEASE:
+      if (p_opVoice->envLevel > COEFERRSUSREL)
+	{
+	  p_opVoice->envLevel*=p_opVoice->coefVLevel;
+	}
+      else
+	{
+	  p_opVoice->envState=OFF;
+	  p_opVoice->envLevel=0.0;
+	}
+      return p_opVoice->envLevel;
+      break;
+    case OFF: return 0.0;
+      break;
+    default: printf("Error case envelopeState");
+      break;
+    }
+}
+
+//---------------------------------------------------------
+// programSelect
+//---------------------------------------------------------
+
+void DeicsOnze::programSelect(int hbank, int lbank, int prog) {
+    Preset* foundPreset;
+    foundPreset=findPreset(hbank, lbank, prog);
+    if (foundPreset) _preset=foundPreset;
+    else {
+	_preset=_initialPreset;
+	_preset->prog=prog;
+	_preset->_subcategory->_lbank=lbank;
+	_preset->_subcategory->_category->_hbank=hbank;
+    }
+    setPreset();
+}
+
+//---------------------------------------------------------
+//   setModulation
+//---------------------------------------------------------
+void DeicsOnze::setModulation(int val) {
+  _preset->modulation = (unsigned char) val;
+}
+//---------------------------------------------------------
+//   setPitchBendCoef
+//---------------------------------------------------------
+void DeicsOnze::setPitchBendCoef(int val) {
+  _global.pitchBendCoef = exp(log(2)
+			      *((double)_preset->function.pBendRange
+				/(double)MAXPBENDRANGE)
+			      *((double)val/(double)MAXPITCHBENDVALUE));
+}
+
+//---------------------------------------------------------
+// setSustain
+//---------------------------------------------------------
+void DeicsOnze::setSustain(int val) {
+    _global.sustain=(val>64);
+    if(!_global.sustain)
+	for(int i=0; i<_global.nbrVoices; i++)
+	    if(_voices[i].isSustained) {
+		for(int j=0; j<NBROP; j++) {
+		    _voices[i].op[j].envState=RELEASE;
+		    setEnvRelease(i, j);
+		}
+		_voices[i].isSustained=false;
+	    }
+}
+
+//---------------------------------------------------------
+//   readColor
+//---------------------------------------------------------
+QColor readColor(QDomNode node)
+{
+  QDomElement e = node.toElement();
+  int r = e.attribute("r","0").toInt();
+  int g = e.attribute("g","0").toInt();
+  int b = e.attribute("b","0").toInt();
+  return QColor(r, g, b);
+}
+
+//---------------------------------------------------------
+// readConfiguration
+//---------------------------------------------------------
+void DeicsOnze::readConfiguration(QDomNode qdn) {
+  QColor textColor, backgroundColor, editTextColor, editBackgroundColor;
+  while(!qdn.isNull()) {
+    QDomElement qdEl = qdn.toElement();
+    if(qdEl.isNull())
+      continue;
+    //nbrVoices
+    if(qdEl.tagName()==NBRVOICESSTR) {
+      setNbrVoices(qdEl.text().toInt());
+      MidiEvent evNbrVoices(0, 0, ME_CONTROLLER,
+			    CTRL_NBRVOICES, _global.nbrVoices);
+      _gui->writeEvent(evNbrVoices);
+    }
+    //channelNum
+    if(qdEl.tagName()==CHANNELNUMSTR) {
+      _global.channelNum = (qdEl.text()==ALLSTR?-1:qdEl.text().toInt()-1);
+      unsigned char *dataChannelNum = new unsigned char[2];
+      dataChannelNum[0]=SYSEX_CHANNELNUM;
+      dataChannelNum[1]=(unsigned char)_global.channelNum;
+      MidiEvent 
+	evChannelNum(0, ME_SYSEX, (const unsigned char*)dataChannelNum, 2);
+      _gui->writeEvent(evChannelNum);    
+    }
+    //quality
+    if(qdEl.tagName()==QUALITYSTR) {
+      _global.quality = (qdEl.text()==HIGHSTR?high:
+			 (qdEl.text()==MIDDLESTR?middle:low));
+      unsigned char *dataQuality = new unsigned char[2];
+      dataQuality[0]=SYSEX_QUALITY;
+      dataQuality[1]=(unsigned char)_global.quality;
+      MidiEvent evQuality(0, ME_SYSEX, (const unsigned char*)dataQuality, 2);
+      _gui->writeEvent(evQuality);
+    }
+    //saveConfig
+    if(qdEl.tagName()==SAVECONFIGSTR) {
+      _saveConfig = (qdEl.text()==YESSTRDEI?true:false);
+      unsigned char *dataSaveConfig = new unsigned char[2];
+      dataSaveConfig[0]=SYSEX_SAVECONFIG;
+      dataSaveConfig[1]=(unsigned char)_saveConfig;
+      MidiEvent
+	evSaveConfig(0, ME_SYSEX, (const unsigned char*)dataSaveConfig, 2);
+      _gui->writeEvent(evSaveConfig);
+    }
+    //saveOnlyUsed
+    if(qdEl.tagName()==SAVEONLYUSEDSTR) {
+      _saveOnlyUsed = (qdEl.text()==YESSTRDEI?true:false);
+      unsigned char *dataSaveOnlyUsed = new unsigned char[2];
+      dataSaveOnlyUsed[0]=SYSEX_SAVEONLYUSED;
+      dataSaveOnlyUsed[1]=(unsigned char)_saveOnlyUsed;
+      MidiEvent
+	evSaveOnlyUsed(0, ME_SYSEX, (const unsigned char*)dataSaveOnlyUsed, 2);
+      _gui->writeEvent(evSaveOnlyUsed);
+    }
+    //colors
+    if(qdEl.tagName()==TEXTCOLORSTR) textColor = readColor(qdn);
+    if(qdEl.tagName()==BACKGROUNDCOLORSTR) backgroundColor = readColor(qdn);
+    if(qdEl.tagName()==EDITTEXTCOLORSTR) editTextColor = readColor(qdn);
+    if(qdEl.tagName()==EDITBACKGROUNDCOLORSTR)
+      editBackgroundColor = readColor(qdn);
+    //load init set
+    if(qdEl.tagName()==ISINITSETSTR) {
+      _isInitSet = (qdEl.text()==YESSTRDEI?true:false);
+      unsigned char *dataIsInitSet = new unsigned char[2];
+      dataIsInitSet[0]=SYSEX_ISINITSET;
+      dataIsInitSet[1]=(unsigned char)_isInitSet;
+      MidiEvent
+	evIsInitSet(0, ME_SYSEX, (const unsigned char*)dataIsInitSet, 2);
+      _gui->writeEvent(evIsInitSet);
+    }
+    if(qdEl.tagName()==INITSETPATHSTR) {
+      _initSetPath = qdEl.text();
+      unsigned char *dataInitSetPath = 
+	new unsigned char[1+MAXSTRLENGTHINITSETPATH];
+      dataInitSetPath[0]=SYSEX_INITSETPATH;
+      strncpy((char*)&dataInitSetPath[1], _initSetPath.toLatin1().data(), 
+	      MAXSTRLENGTHINITSETPATH);
+      MidiEvent
+	evInitSetPath(0, ME_SYSEX, (const unsigned char*)dataInitSetPath,
+		      1+MAXSTRLENGTHINITSETPATH);
+      _gui->writeEvent(evInitSetPath);
+    }
+    qdn = qdn.nextSibling();
+  }
+  //send colors
+  unsigned char dataColorGui[COLORSYSEXLENGTH+1];
+  dataColorGui[0]=SYSEX_COLORGUI;
+  dataColorGui[1]=(unsigned char)textColor.red();
+  dataColorGui[2]=(unsigned char)textColor.green();
+  dataColorGui[3]=(unsigned char)textColor.blue();
+  dataColorGui[4]=(unsigned char)backgroundColor.red();
+  dataColorGui[5]=(unsigned char)backgroundColor.green();
+  dataColorGui[6]=(unsigned char)backgroundColor.blue();
+  dataColorGui[7]=(unsigned char)editTextColor.red();
+  dataColorGui[8]=(unsigned char)editTextColor.green();
+  dataColorGui[9]=(unsigned char)editTextColor.blue();
+  dataColorGui[10]=(unsigned char)editBackgroundColor.red();
+  dataColorGui[11]=(unsigned char)editBackgroundColor.green();
+  dataColorGui[12]=(unsigned char)editBackgroundColor.blue();
+  MidiEvent evSysexColor(0, ME_SYSEX, (const unsigned char*)dataColorGui,
+			 COLORSYSEXLENGTH+1);
+  _gui->writeEvent(evSysexColor);
+}
+
+//-----------------------------------------------------------
+// loadConfiguration
+//-----------------------------------------------------------
+void DeicsOnze::loadConfiguration(QString fileName) {
+  // read the XML file and create DOM tree
+  if(!fileName.isEmpty()) {
+    QFile confFile(fileName);
+    if(!confFile.open(QIODevice::ReadOnly)) {
+      printf("Critical Error. Cannot open file %s\n",
+	     fileName.toAscii().data());
+      return;
+    }
+    QDomDocument domTree;
+    if (!domTree.setContent(&confFile )) {
+	printf("Critical Error. Parsing error for file %s\n",
+	       fileName.toAscii().data());
+      confFile.close();
+      return;
+    }
+
+    confFile.close();
+
+    QDomNode node = domTree.documentElement();
+    while (!node.isNull()) {
+      QDomElement e = node.toElement();
+      if (e.isNull())
+	continue;
+      if (e.tagName() == DEICSONZECONFIGURATIONSTR) {
+	QString version = e.attribute(QString("version"));
+	if (version == "1.0") {
+	  readConfiguration(node.firstChild());
+	}
+	else printf("unsupported *.dco file version %s\n",
+		    version.toLatin1().data());
+      }
+      else printf("DeicsOnze: %s not supported\n",
+		  e.tagName().toLatin1().data());
+      node = node.nextSibling();
+    }
+  }
+}
+
+//---------------------------------------------------------
+// writeConfiguration
+//---------------------------------------------------------
+void DeicsOnze::writeConfiguration(AL::Xml* xml) {
+  QString str;
+  xml->tag("deicsOnzeConfiguation version=\"1.0\"");
+  xml->intTag(NBRVOICESSTR, (int)_global.nbrVoices);
+  xml->strTag(CHANNELNUMSTR, (_global.channelNum==-1?ALLSTR:
+			      str.setNum(_global.channelNum+1)));
+  xml->strTag(QUALITYSTR, (_global.quality==high?HIGHSTR:
+			   (_global.quality==middle?MIDDLESTR:LOWSTR)));
+  xml->strTag(SAVECONFIGSTR, (_saveConfig?YESSTRDEI:NOSTRDEI));
+  xml->strTag(SAVEONLYUSEDSTR, (_saveOnlyUsed?YESSTRDEI:NOSTRDEI));  
+  xml->colorTag(TEXTCOLORSTR,
+		reinterpret_cast<const QColor &>(*_gui->tColor));
+  xml->colorTag(BACKGROUNDCOLORSTR,
+		reinterpret_cast<const QColor &>(*_gui->bColor));
+  xml->colorTag(EDITTEXTCOLORSTR,
+		reinterpret_cast<const QColor &>(*_gui->etColor));
+  xml->colorTag(EDITBACKGROUNDCOLORSTR,
+		reinterpret_cast<const QColor &>(*_gui->ebColor));
+  xml->strTag(ISINITSETSTR, (_isInitSet?YESSTRDEI:NOSTRDEI));
+  printf("initSetPath : %s\n", _initSetPath.toAscii().data());
+  xml->strTag(INITSETPATHSTR, _initSetPath.toAscii().data());
+  xml->etag(DEICSONZECONFIGURATIONSTR);
+}
+
+//---------------------------------------------------------
+// getInitData
+//---------------------------------------------------------
+void DeicsOnze::getInitData(int* length, const unsigned char** data) const {
+    FILE* tmp;
+    char* comptmp;
+    QString cmd="bzip2 > ";
+
+    //compress the set
+    comptmp=tempnam("/tmp", "DeicsOnze");
+    cmd+=comptmp;
+    tmp=popen(cmd.toAscii().data(), "w");
+    QFile file;
+    file.open(tmp, QIODevice::WriteOnly);
+    AL::Xml* xml=new AL::Xml(&file);
+    xml->header();
+    _set->writeSet(xml, _saveOnlyUsed);
+    file.close();  //flush
+    pclose(tmp);
+
+    //save the set
+    FILE* comptmpf=fopen(comptmp, "r");
+    fseek(comptmpf, 0, SEEK_END);
+    *length=ftell(comptmpf)
+      + SAVEINITLENGTH + SAVEGLOBALLENGTH + SAVECONFIGLENGTH
+      + MAXSTRLENGTHINITSETPATH + 1;
+    fseek(comptmpf, 0, SEEK_SET);
+    unsigned char* buffer = new unsigned char[*length];
+    //save init data
+    buffer[0]=SYSEX_INIT_DATA;
+    buffer[1]=SYSEX_INIT_DATA_VERSION;
+    //save global data
+    buffer[NUMMASTERVOL]=
+	(unsigned char)(_global.amp*(double)MAXMASTERVOLUME);
+    buffer[NUMCURRENTPROG]=(unsigned char) _preset->prog;
+    buffer[NUMCURRENTLBANK]=(unsigned char) _preset->_subcategory->_lbank;
+    buffer[NUMCURRENTHBANK]=
+	(unsigned char) _preset->_subcategory->_category->_hbank;
+    buffer[NUMNBRVOICES]=(unsigned char) _global.nbrVoices;
+    buffer[NUMCHANNELNUM]=(unsigned char) _global.channelNum;
+    buffer[NUMSAVEONLYUSED]=(unsigned char) _saveOnlyUsed;
+    buffer[NUMSAVECONFIG]=(unsigned char) _saveConfig;
+    //save config data
+    if(_saveConfig) {
+	buffer[NUMQUALITY]=(unsigned char)_global.quality;
+	buffer[NUMREDTEXT]=(unsigned char)_gui->tColor->red();
+	buffer[NUMGREENTEXT]=(unsigned char)_gui->tColor->green();
+	buffer[NUMBLUETEXT]=(unsigned char)_gui->tColor->blue();
+	buffer[NUMREDBACKGROUND]=(unsigned char)_gui->bColor->red();
+	buffer[NUMGREENBACKGROUND]=(unsigned char)_gui->bColor->green();
+	buffer[NUMBLUEBACKGROUND]=(unsigned char)_gui->bColor->blue();
+	buffer[NUMREDEDITTEXT]=(unsigned char)_gui->etColor->red();
+	buffer[NUMGREENEDITTEXT]=(unsigned char)_gui->etColor->green();
+	buffer[NUMBLUEEDITTEXT]=(unsigned char)_gui->etColor->blue();
+	buffer[NUMREDEDITBACKGROUND]=(unsigned char)_gui->ebColor->red();
+	buffer[NUMGREENEDITBACKGROUND]=(unsigned char)_gui->ebColor->green();
+	buffer[NUMBLUEEDITBACKGROUND]=(unsigned char)_gui->ebColor->blue();
+	buffer[NUMISINITSET]=(unsigned char)_isInitSet;
+	strncpy((char*)&buffer[NUMINITSETPATH],
+		_initSetPath.toLatin1().data(), MAXSTRLENGTHINITSETPATH);
+    }
+    //save set data
+    for(int i=SAVEINITLENGTH+SAVEGLOBALLENGTH+SAVECONFIGLENGTH
+	  +MAXSTRLENGTHINITSETPATH+1; i<*length; i++)
+	buffer[i]=(unsigned char)getc(comptmpf);
+    fclose(comptmpf);
+    QString rmcmd="rm ";
+    rmcmd+=comptmp;
+    system(rmcmd.toAscii().data());
+    free(comptmp);
+    //printf("Taille en save : %d\n", *length);
+    //for(int i=0; i<*length; i++) printf("%x ", buffer[i]);
+    *data=buffer;
+}
+//---------------------------------------------------------
+// parseInitData
+//---------------------------------------------------------
+void DeicsOnze::parseInitData(int length, const unsigned char* data) {
+  if(data[1]==SYSEX_INIT_DATA_VERSION) {
+    //load global parameters
+    setMasterVol(data[NUMMASTERVOL]);
+    MidiEvent ev(0, 0, ME_CONTROLLER, CTRL_MASTERVOLUME, data[NUMMASTERVOL]);
+    _gui->writeEvent(ev);
+    //nbrVoices
+    setNbrVoices(data[NUMNBRVOICES]);
+    MidiEvent evNbrVoices(0,0,ME_CONTROLLER,CTRL_NBRVOICES,data[NUMNBRVOICES]);
+    _gui->writeEvent(evNbrVoices);
+    //channelNum
+    _global.channelNum = (char)data[NUMCHANNELNUM];
+    unsigned char *dataChannelNum = new unsigned char[2];
+    dataChannelNum[0]=SYSEX_CHANNELNUM;
+    dataChannelNum[1]=(unsigned char)_global.channelNum;
+    MidiEvent 
+      evChannelNum(0, ME_SYSEX, (const unsigned char*)dataChannelNum, 2);
+    _gui->writeEvent(evChannelNum);    
+    //load configuration
+    _saveConfig = (bool)data[NUMSAVECONFIG];
+    unsigned char *dataSaveConfig = new unsigned char[2];
+    dataSaveConfig[0]=SYSEX_SAVECONFIG;
+    dataSaveConfig[1]=(unsigned char)_saveConfig;
+    MidiEvent 
+      evSaveConfig(0, ME_SYSEX, (const unsigned char*)dataSaveConfig, 2);
+    _gui->writeEvent(evSaveConfig);    
+    if(_saveConfig) {
+      //saveOnlyUsed
+      _saveOnlyUsed = (bool)data[NUMSAVEONLYUSED];
+      unsigned char *dataSaveOnlyUsed = new unsigned char[2];
+      dataSaveOnlyUsed[0]=SYSEX_SAVEONLYUSED;
+      dataSaveOnlyUsed[1]=(unsigned char)_saveOnlyUsed;
+      MidiEvent 
+	evSaveOnlyUsed(0, ME_SYSEX, (const unsigned char*)dataSaveOnlyUsed, 2);
+      _gui->writeEvent(evSaveOnlyUsed);    
+      //colors
+      unsigned char dataColorGui[COLORSYSEXLENGTH+1];
+      dataColorGui[0]=SYSEX_COLORGUI;
+      for (int i=0; i<COLORSYSEXLENGTH; i++)
+	dataColorGui[i+1]=data[NUMREDTEXT+i];
+      MidiEvent evSysexColor(0, ME_SYSEX, (const unsigned char*)dataColorGui,
+			     COLORSYSEXLENGTH+1);
+      _gui->writeEvent(evSysexColor);
+      //quality
+      unsigned char dataQuality[2];
+      dataQuality[0]=SYSEX_QUALITY;
+      dataQuality[1]=data[NUMQUALITY];
+      MidiEvent evQuality(0, ME_SYSEX, (const unsigned char*)dataQuality, 2);
+      _gui->writeEvent(evQuality);
+      //load init set
+      unsigned char dataIsInitSet[2];
+      dataIsInitSet[0]=SYSEX_ISINITSET;
+      dataIsInitSet[1]=data[NUMISINITSET];
+      MidiEvent evIsInitSet(0, ME_SYSEX,
+			    (const unsigned char*)dataIsInitSet, 2);
+      _gui->writeEvent(ev);
+      unsigned char dataInitSetPath[1+MAXSTRLENGTHINITSETPATH];
+      dataInitSetPath[0]=SYSEX_INITSETPATH;
+      dataInitSetPath[1]=data[NUMINITSETPATH];
+      MidiEvent evInitSetPath(0,ME_SYSEX,(const unsigned char*)dataInitSetPath,
+			      1+MAXSTRLENGTHINITSETPATH);
+      _gui->writeEvent(evInitSetPath);      
+    }
+    else _gui->saveConfigCheckBox->setChecked(false);
+    
+    //load set
+    FILE* tmp;
+    char* tmpname;
+    char* uncompname;
+    QString cmd="bunzip2 ";
+    
+    //get the bz2 part
+    tmpname=tempnam("/tmp", "DEIBZ2");
+    tmp=fopen(tmpname, "w");
+    for(int i=SAVEINITLENGTH+SAVEGLOBALLENGTH+SAVECONFIGLENGTH; 
+	i<length; i++) putc(data[i], tmp);
+    fclose(tmp);
+	
+    //uncompress the set
+    uncompname=tempnam("/tmp", "DEISET");
+    cmd+=tmpname;
+    cmd+=" -c > ";
+    cmd+=uncompname;
+    system(cmd.toAscii().data());
+    
+    //load the set
+    // read the XML file and create DOM tree
+    //QString filename = (const char*) (data+2);
+    QFile deicsonzeFile(uncompname);
+    deicsonzeFile.open(QIODevice::ReadOnly);
+    QDomDocument domTree;
+    domTree.setContent(&deicsonzeFile);
+    deicsonzeFile.close();
+    QDomNode node = domTree.documentElement();
+    
+    //printf("After XML\n");
+    while (!node.isNull()) {
+      QDomElement e = node.toElement();
+      if (e.isNull())
+	continue;
+      if (e.tagName() == "deicsOnzeSet") {
+	QString version = e.attribute(QString("version"));
+	if (version == "1.0") {
+	  _preset=_initialPreset;
+	  //read the set
+	  if((bool)data[NUMSAVEONLYUSED]) {
+	    //printf("Mini\n");
+	    //updateSaveOnlyUsed(true);
+	  }
+	  else {
+	    //printf("Huge\n");
+	    while(!_set->_categoryVector.empty())
+	      delete(*_set->_categoryVector.begin());
+	    //updateSaveOnlyUsed(false);
+	  }
+	  _set->readSet(node.firstChild());
+	  //display load preset
+	  //setSet();
+	}
+	else printf("Wrong set version : %s\n",
+		    version.toLatin1().data());
+      }
+      node = node.nextSibling();
+    }
+    //send sysex to the gui to load the set (actually not because it doesn't work -the code is just zapped in the middle???-, so it is done above
+    int dL=2+strlen(uncompname);
+    char dataSend[dL];
+    dataSend[0]=SYSEX_LOADSET;
+    dataSend[1]=data[NUMSAVEONLYUSED];
+    for(int i=2; i<dL; i++) dataSend[i]=uncompname[i-2];
+    MidiEvent evSysex(0,ME_SYSEX,(const unsigned char*)dataSend, dL);
+    _gui->writeEvent(evSysex);
+    
+    
+    //set the last hbank, lbank, prog
+    int hbank=(int)data[NUMCURRENTHBANK];
+    int lbank=(int)data[NUMCURRENTLBANK];
+    int prog=(int)data[NUMCURRENTPROG];
+    int val=prog+(lbank<<8)+(hbank<<16);
+    MidiEvent evProgSel(0, 0, ME_CONTROLLER, CTRL_PROGRAM, val);
+    _gui->writeEvent(evProgSel);
+    
+    //delete the temporary file bz2
+    QString rmfile;
+    rmfile="rm ";
+    rmfile+=tmpname;
+    system(rmfile.toAscii().data());   
+  }
+}
+//---------------------------------------------------------
+// sysex
+//---------------------------------------------------------
+bool DeicsOnze::sysex(int length, const unsigned char* data) {
+  sysex(length, data, false);
+  return false;
+}
+bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
+  int cmd=data[0];
+  switch(cmd) {
+  case SYSEX_INIT_DATA:
+    parseInitData(length, data);
+    break;
+  case SYSEX_CHANNELNUM:
+    _global.channelNum = (char)data[1];
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  case SYSEX_QUALITY:
+    _global.quality = (Quality)data[1];
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  case SYSEX_SAVECONFIG:
+    _saveConfig = (bool)data[1];
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  case SYSEX_SAVEONLYUSED:
+    _saveOnlyUsed = (bool)data[1];
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  case SYSEX_ISINITSET:
+    _isInitSet = (bool)data[1];
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  case SYSEX_INITSETPATH:
+    _initSetPath = (char*)&data[1];
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  default:
+    break;
+  }
+  return false;
+}
+//---------------------------------------------------------
+//   setController
+//---------------------------------------------------------
+bool DeicsOnze::setController(int channel, int id, int val) {
+    setController(channel, id, val, false);
+    return false;
+}
+bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
+  int k=0;
+  if(ch==_global.channelNum || _global.channelNum==-1 || fromGui) {
+    if(ctrl>=CTRL_AR && ctrl<CTRL_ALG) {
+      k=(ctrl-CTRLOFFSET)/DECAPAR1;
+      ctrl=ctrl-DECAPAR1*k;
+    }
+    else if(ctrl>CTRL_PL3 && ctrl<CTRL_REVERBRATE) {
+      k=(ctrl-CTRLOFFSET-100)/DECAPAR2;
+      ctrl=ctrl-DECAPAR2*k;
+    }
+    switch(ctrl) {
+    case CTRL_AR:
+      _preset->setIsUsed(true);
+      _preset->eg[k].ar=val;
+      printf("AR : %d\n", val);
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_AR+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_D1R:
+      _preset->setIsUsed(true);
+      _preset->eg[k].d1r=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_D1R+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_D2R:
+      _preset->setIsUsed(true);
+      _preset->eg[k].d2r=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_D2R+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_RR:
+      _preset->setIsUsed(true);
+      _preset->eg[k].rr=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_RR+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_D1L:
+      _preset->setIsUsed(true);
+      _preset->eg[k].d1l=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_D1L+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_LS:
+      _preset->setIsUsed(true);
+      _preset->scaling.level[k]=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_LS+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_RS:
+      _preset->setIsUsed(true);
+      _preset->scaling.rate[k]=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_RS+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_EBS:
+      _preset->setIsUsed(true);
+      _preset->sensitivity.egBias[k]=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_EBS+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_AME:
+      _preset->setIsUsed(true);
+      _preset->sensitivity.ampOn[k]=val==1;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_AME+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_KVS:
+      _preset->setIsUsed(true);
+      _preset->sensitivity.keyVelocity[k]=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_KVS+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_OUT:
+      _preset->setIsUsed(true);
+      _preset->outLevel[k]=val;
+      setOutLevel(k);
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_OUT+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_RATIO:
+      _preset->setIsUsed(true);
+      _preset->frequency[k].ratio=((double)val)/100.0;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,
+		     CTRL_RATIO+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_DET:
+      _preset->setIsUsed(true);
+      _preset->detune[k]=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_DET+k*DECAPAR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_ALG:
+      _preset->setIsUsed(true);
+      _preset->algorithm=(Algorithm)val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_ALG,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_FEEDBACK:
+      _preset->setIsUsed(true);
+      _preset->feedback=val;
+      setFeedback();
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_FEEDBACK,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_SPEED:
+      _preset->setIsUsed(true);
+      _preset->lfo.speed=val;
+      setLfo();
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_SPEED,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_DELAY:
+      _preset->setIsUsed(true);
+      _preset->lfo.delay=val;
+      setLfo();
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_DELAY,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_PMODDEPTH:
+      _preset->setIsUsed(true);
+      _preset->lfo.pModDepth=val;
+      setLfo();
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_PMODDEPTH,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_AMODDEPTH:
+      _preset->setIsUsed(true);
+      _preset->lfo.aModDepth=val;
+      setLfo();
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_AMODDEPTH,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_SYNC:
+      _preset->setIsUsed(true);
+      _preset->lfo.sync=val==1;
+      setLfo();
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_SYNC,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_WAVE:
+      _preset->setIsUsed(true);
+      _preset->lfo.wave=(Wave)val;
+      setLfo();
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_WAVE,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_PMODSENS:
+      _preset->setIsUsed(true);
+      _preset->sensitivity.pitch=val;
+      setLfo();
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_PMODSENS,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_AMS:
+      _preset->setIsUsed(true);
+      _preset->sensitivity.amplitude=val;
+      setLfo();
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_AMS,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_TRANSPOSE:
+      _preset->setIsUsed(true);
+      _preset->function.transpose=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_TRANSPOSE,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_POLYMODE:
+      _preset->setIsUsed(true);
+      _preset->function.mode=(Mode)val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_POLYMODE,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_PBENDRANGE:
+      _preset->setIsUsed(true);
+      _preset->function.pBendRange=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_PBENDRANGE,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_PORTAMODE:
+      _preset->setIsUsed(true);
+      _preset->function.portamento=(Portamento)val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_PORTAMODE,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_PORTATIME:
+      _preset->setIsUsed(true);
+      _preset->function.portamentoTime=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_PORTATIME,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_FCVOLUME:
+      _preset->setIsUsed(true);
+      _preset->function.fcVolume=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_FCVOLUME,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_FSW:
+      _preset->setIsUsed(true);
+      _preset->function.footSw=(FootSw)val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_FSW,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_MWPITCH:
+      _preset->setIsUsed(true);
+      _preset->function.mwPitch=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_MWPITCH,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_MWAMPLITUDE:
+      _preset->setIsUsed(true);
+      _preset->function.mwAmplitude=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_MWAMPLITUDE,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_BCPITCH:
+      _preset->setIsUsed(true);
+      _preset->function.bcPitch=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_BCPITCH,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_BCAMPLITUDE:
+      _preset->setIsUsed(true);
+      _preset->function.bcAmplitude=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_BCAMPLITUDE,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_BCPITCHBIAS:
+      _preset->setIsUsed(true);
+      _preset->function.bcPitchBias=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_BCPITCHBIAS,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_BCEGBIAS:
+      _preset->setIsUsed(true);
+      _preset->function.bcEgBias=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_BCEGBIAS,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_ATPITCH:
+      _preset->setIsUsed(true);
+      _preset->function.atPitch=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_ATPITCH,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_ATAMPLITUDE:
+      _preset->setIsUsed(true);
+      _preset->function.atAmplitude=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_ATAMPLITUDE,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_ATPITCHBIAS:
+      _preset->setIsUsed(true);
+      _preset->function.atPitchBias=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_ATPITCHBIAS,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_ATEGBIAS:
+      _preset->setIsUsed(true);
+      _preset->function.atEgBias=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_ATEGBIAS,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_PR1:
+      _preset->setIsUsed(true);
+      _preset->pitchEg.pr1=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_PR1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_PR2:
+      _preset->setIsUsed(true);
+      _preset->pitchEg.pr2=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_PR2,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_PR3:
+      _preset->setIsUsed(true);
+      _preset->pitchEg.pr3=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_PR3,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_PL1:
+      _preset->setIsUsed(true);
+      _preset->pitchEg.pl1=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_PL1,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_PL2:
+      _preset->setIsUsed(true);
+      _preset->pitchEg.pl2=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_PL2,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_PL3:
+      _preset->setIsUsed(true);
+      _preset->pitchEg.pl3=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_PL3,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_FIX:
+      _preset->setIsUsed(true);
+      _preset->frequency[k].isFix=val==1;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_FIX+k*DECAPAR2,val);
+	_gui->writeEvent(ev);
+      }	
+      break;
+    case CTRL_FIXRANGE:
+      _preset->setIsUsed(true);
+      _preset->frequency[k].freq=((double)val)/100.0;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,
+		     CTRL_FIXRANGE+k*DECAPAR2,val);
+	_gui->writeEvent(ev);
+      }	
+      break;
+    case CTRL_OSW:
+      _preset->setIsUsed(true);
+      _preset->oscWave[k]=(OscWave)val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_OSW+k*DECAPAR2,val);
+	_gui->writeEvent(ev);
+      }	
+      break;
+    case CTRL_SHFT:
+      _preset->setIsUsed(true);
+      _preset->eg[k].egShift=(egShiftValue)val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_SHFT+k*DECAPAR2,val);
+	_gui->writeEvent(ev);
+      }	
+      break;
+    case CTRL_REVERBRATE:
+      _preset->setIsUsed(true);
+      _preset->function.reverbRate=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_REVERBRATE,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_FCPITCH:
+      _preset->setIsUsed(true);
+      _preset->function.fcPitch=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_FCPITCH,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_FCAMPLITUDE:
+      _preset->setIsUsed(true);
+      _preset->function.fcAmplitude=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_FCAMPLITUDE,val);
+	_gui->writeEvent(ev);
+      }
+    break;
+    case CTRL_GLOBALDETUNE:
+      _preset->setIsUsed(true);
+      _preset->globalDetune=val;
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_GLOBALDETUNE,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_MASTERVOLUME:
+      setMasterVol(val);
+      if(!fromGui) {
+	MidiEvent ev(0,0,ME_CONTROLLER,CTRL_MASTERVOLUME,val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_NBRVOICES:
+      setNbrVoices((unsigned char)val);
+      if(!fromGui) {
+	MidiEvent ev(0, 0/*ch*/, ME_CONTROLLER, CTRL_NBRVOICES, val);
+	_gui->writeEvent(ev);
+      }
+    break;
+    case CTRL_PROGRAM: {
+      int hbank = (val & 0xff0000) >> 16;
+      int lbank = (val & 0xff00) >> 8;
+      int prog  = val & 0x7f;
+      if (hbank > 127)  // map "dont care" to 0
+	hbank = 0;
+      if (lbank > 127)
+	lbank = 0;
+      programSelect(hbank, lbank, prog);
+      _preset->setIsUsed(true);//not sure to put that
+      if(!fromGui) {
+	MidiEvent ev(0, 0, ME_CONTROLLER, CTRL_PROGRAM, val);
+	_gui->writeEvent(ev);
+      }
+    } break;
+    case CTRL_MODULATION:
+      printf("TODO : CONTROLE MODULATION %d\n", val);
+      setModulation(val);
+      break;
+    case CTRL_PITCH:
+      printf("CONTROLE PITCH %d\n", val);
+      setPitchBendCoef(val);
+      break;
+    case CTRL_FINEBRIGHTNESS:
+      _preset->setIsUsed(true);
+      _preset->brightness = val;
+      setOutLevel();
+      if(!fromGui) {
+	MidiEvent ev(0,0, ME_CONTROLLER, CTRL_FINEBRIGHTNESS, val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_BRIGHTNESS:
+      _preset->setIsUsed(true);
+      _preset->brightness = val*(MIDFINEBRIGHTNESS/MIDBRIGHTNESS);
+      setOutLevel();
+      if(!fromGui) {
+	MidiEvent
+	  ev(0,0,ME_CONTROLLER,CTRL_FINEBRIGHTNESS,_preset->brightness);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_ATTACK_TIME:
+      _preset->setIsUsed(true);
+      _preset->attack = val;
+      setEnvAttack();
+      if(!fromGui) {
+	MidiEvent ev(0,0, ME_CONTROLLER, CTRL_ATTACK_TIME, val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_RELEASE_TIME:
+      _preset->setIsUsed(true);
+      _preset->release = val;
+      setEnvRelease();
+      if(!fromGui) {
+	MidiEvent ev(0,0, ME_CONTROLLER, CTRL_RELEASE_TIME, val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_SUSTAIN:
+      setSustain(val);
+      break;
+    default:
+      break;
+    }
+  }
+  return false;
+}
+
+//---------------------------------------------------------
+//   getPatchName
+//---------------------------------------------------------
+
+const char* DeicsOnze::getPatchName(int ch, int val, int) const
+{
+  if(ch==_global.channelNum || _global.channelNum==-1) {
+    Preset* p_preset;
+    int hbank = (val & 0xff0000) >> 16;
+    int lbank = (val & 0xff00) >> 8;
+    if (hbank > 127)
+      hbank = 0;
+    if (lbank > 127)
+      lbank = 0;
+    if (lbank == 127)       // drum HACK
+      lbank = 128;
+    int prog =   val & 0x7f;
+    char* tempName="INITVOICE";
+    p_preset=_set->findPreset(hbank, lbank, prog);
+    if (p_preset) tempName=const_cast<char *>(p_preset->name.c_str());
+    return tempName;
+  }
+}
+
+//---------------------------------------------------------
+//   getPatchInfo
+//---------------------------------------------------------
+
+const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* /*p*/) const {
+    /*if(_numPatch<NBRBANKPRESETS)
+    {
+	_patch.typ   = 0;
+	_patch.name  = bankA[_numPatch].name;
+	_patch.lbank = 1;
+	_patch.prog  = _numPatch;
+	return &_patch;
+	}*/
+    return 0;
+}
+
+//---------------------------------------------------------
+//   getControllerInfo
+/*!
+  \fn SimpleSynth::getControllerInfo
+  \brief Called from host to collect info about which controllers
+  the synth supports
+  \param index current controller number
+  \param name pointer where name is stored
+  \param controller int pointer where muse controller number is stored
+  \param min int pointer where controller min value is stored
+  \param max int pointer where controller max value is stored
+  \return 0 when done, otherwise return next desired controller index
+*/
+//---------------------------------------------------------
+int DeicsOnze::getControllerInfo(int index, const char** name,
+				 int* controller, int* min, int* max) const
+{
+    if (index >= nbrCtrl) {
+	return 0;
+    }
+
+    *name = _ctrl[index].name.c_str();
+    *controller = _ctrl[index].num;
+    *min = _ctrl[index].min;
+    *max = _ctrl[index].max;
+    return (index +1);
+}
+
+//---------------------------------------------------------
+//   playNote
+//    process note on
+//---------------------------------------------------------
+
+bool DeicsOnze::playNote(int ch, int pitch, int velo) {
+  int newVoice;
+  int nO2V;
+  int p2V;
+  if(ch==_global.channelNum || _global.channelNum==-1) {    
+    if(velo==0) {//Note off
+      p2V=pitchOn2Voice(pitch);
+      printf("pitchOn2Voice %d\n", p2V);
+      if(p2V<_global.nbrVoices) {
+	if(_global.sustain) _voices[p2V].isSustained=true;
+	else
+	  for(int i=0; i<NBROP; i++) {
+	    _voices[p2V].op[i].envState=RELEASE;
+	    _voices[p2V].op[i].coefVLevel=
+	      envRR2coef(_preset->eg[i].rr, sampleRate(), _preset->release);
+	  }
+ 	return false;}
+      //else printf("error over NBRVOICES\n");
+    }
+    else //Note on
+      {
+	nO2V=noteOff2Voice();
+	newVoice=((nO2V==MAXNBRVOICES)?minVolu2Voice():nO2V);
+
+	_voices[newVoice].isOn=true;
+	_voices[newVoice].sampleFeedback=0.0;
+	_voices[newVoice].pitch=pitch;
+	
+	/*if(_preset->lfo.sync)*/ _global.lfoIndex=0;//a revoir
+	_global.lfoDelayIndex=0.0;
+	_global.delayPassed=false;
+	
+	for(int i=0; i<NBROP; i++) {
+	  _voices[newVoice].op[i].ampVeloNote =
+	    velo2AmpR(velo, _preset->sensitivity.keyVelocity[i])
+	    *note2Amp((double) (pitch+_preset->function.transpose),
+		      _preset->scaling.level[i]);
+	  _voices[newVoice].op[i].amp = outLevel2Amp(_preset->outLevel[i])
+	    *_voices[newVoice].op[i].ampVeloNote * brightness2Amp(i);
+	  _voices[newVoice].op[i].index=0.0;
+	  _voices[newVoice].op[i].freq=
+	    (pitch2freq((double)_preset->globalDetune/(double)MAXGLOBALDETUNE)
+	     /LOWERNOTEFREQ)*
+	    (_preset->frequency[i].isFix?
+	     _preset->frequency[i].freq:
+	     (_preset->frequency[i].ratio
+	      *pitch2freq((double)(pitch+_preset->function.transpose)
+			  +(double)_preset->detune[i]*COEFDETUNE)));
+	  _voices[newVoice].op[i].inct=(double)RESOLUTION
+	    /((double)sampleRate()/_voices[newVoice].op[i].freq);
+	  _voices[newVoice].op[i].envState=ATTACK;
+	  _voices[newVoice].op[i].envIndex=0.0;
+	  setEnvAttack(newVoice, i);
+	  //printf("Coef Attack = %e envInct = %e\n",
+	  //coefAttack(_preset->attack), _voices[newVoice].op[i].envInct);
+	}
+	return false;
+      }
+  }
+  return false;
+}
+
+//---------------------------------------------------------
+// plusMod
+//  add two doubles modulo SINRESOLUTION
+//---------------------------------------------------------
+inline double plusMod(double x, double y)
+{
+  double res;
+  res=x+y;
+  if (res>=0) while (res >= (double)RESOLUTION) res-=(double)RESOLUTION;
+  else while (res < 0) res+=(double)RESOLUTION;
+  return res;
+}
+
+
+//---------------------------------------------------------
+//   write
+//    synthesize n samples into buffer+offset
+//---------------------------------------------------------
+
+void DeicsOnze::process(float** buffer, int offset, int n)
+{
+    //Process messages from the gui
+    while (_gui->fifoSize()) {
+	MidiEvent ev = _gui->readEvent();
+	if (ev.type() == ME_SYSEX) {
+	    sysex(ev.len(), ev.data(), true);
+	    sendEvent(ev);
+	}
+	else if (ev.type() == ME_CONTROLLER) {
+	    setController(ev.channel(), ev.dataA(), ev.dataB(), true);
+	    sendEvent(ev);
+	}
+    }
+    float* p = buffer[0] + offset;
+    float sample[MAXNBRVOICES];
+    float resSample;
+    float sampleOp[NBROP];
+    float ampOp[NBROP];
+    for(int i = 0; i < n; i++)
+    {
+	resSample = 0;
+	//stepProcess return the result to resSample
+	
+	//Global
+	lfoUpdate(_preset, &_global, waveTable[W2]);
+	
+	//per voice
+	for(int j=0; j<_global.nbrVoices; j++)
+	{
+	    if (_voices[j].isOn)
+	    {
+		for(int k=0; k<NBROP; k++)
+		{
+		    _voices[j].op[k].index=
+			plusMod(_voices[j].op[k].index,
+				_global.lfoCoefInct*_voices[j].op[k].inct
+				*_global.pitchBendCoef);
+		
+		    ampOp[k]=_voices[j].op[k].amp*COEFLEVEL
+			*(_preset->sensitivity.ampOn[k]?_global.lfoAmp:1.0)
+			*env2AmpR(sampleRate(), waveTable[W2],
+				  _preset->eg[k], &_voices[j].op[k]);
+		}
+		switch(_preset->algorithm)
+		{
+		    case FIRST :
+			sampleOp[3]=ampOp[3]
+			    *waveTable[_preset->oscWave[3]]
+			    [(int)plusMod(_voices[j].op[3].index,
+					  (float)RESOLUTION
+					  *_voices[j].sampleFeedback)];
+			sampleOp[2]=ampOp[2]
+			    *waveTable[_preset->oscWave[2]]
+			    [(int)plusMod(_voices[j].op[2].index,
+					  (float)RESOLUTION*sampleOp[3])];
+			sampleOp[1]=ampOp[1]
+			    *waveTable[_preset->oscWave[1]]
+			    [(int)plusMod(_voices[j].op[1].index,
+					  (float)RESOLUTION*sampleOp[2])];
+			sampleOp[0]=ampOp[0]
+			    *waveTable[_preset->oscWave[0]]
+			    [(int)plusMod(_voices[j].op[0].index,
+					  (float)RESOLUTION*sampleOp[1])];
+			
+			sample[j]=sampleOp[0];///COEFLEVEL;
+			
+			_voices[j].isOn=(_voices[j].op[0].envState!=OFF);
+			break;
+		    case SECOND :
+			sampleOp[3]=ampOp[3]
+			    *waveTable[_preset->oscWave[3]]
+			    [(int)plusMod(_voices[j].op[3].index,
+					  (float)RESOLUTION
+					  *_voices[j].sampleFeedback)];
+			sampleOp[2]=ampOp[2]
+			    *waveTable[_preset->oscWave[2]]
+			    [(int)_voices[j].op[2].index];
+			sampleOp[1]=ampOp[1]
+			    *waveTable[_preset->oscWave[1]]
+			    [(int)plusMod(_voices[j].op[1].index,
+					  (float)RESOLUTION
+					  *(sampleOp[2]+sampleOp[3])/2.0)];
+			sampleOp[0]=ampOp[0]
+			    *waveTable[_preset->oscWave[0]]
+			    [(int)plusMod(_voices[j].op[0].index,
+					  (float)RESOLUTION
+					  *sampleOp[1])];
+			
+			sample[j]=sampleOp[0];///COEFLEVEL;
+			
+			_voices[j].isOn=(_voices[j].op[0].envState!=OFF);
+			break;
+		    case THIRD :
+			sampleOp[3]=ampOp[3]
+			    *waveTable[_preset->oscWave[3]]
+			    [(int)plusMod(_voices[j].op[3].index,
+					  (float)RESOLUTION
+					  *_voices[j].sampleFeedback)];
+			sampleOp[2]=ampOp[2]
+			    *waveTable[_preset->oscWave[2]]
+			    [(int)_voices[j].op[2].index];
+			sampleOp[1]=ampOp[1]
+			    *waveTable[_preset->oscWave[1]]
+			    [(int)plusMod(_voices[j].op[1].index,
+					  (float)RESOLUTION*sampleOp[2])];
+			sampleOp[0]=ampOp[0]
+			    *waveTable[_preset->oscWave[0]]
+			    [(int)plusMod(_voices[j].op[0].index,
+					  (float)RESOLUTION
+					  *(sampleOp[3]+sampleOp[1])/2.0)];
+			
+			sample[j]=sampleOp[0];///COEFLEVEL;
+			
+			_voices[j].isOn=(_voices[j].op[0].envState!=OFF);
+			break;
+		    case FOURTH :
+			sampleOp[3]=ampOp[3]
+			    *waveTable[_preset->oscWave[3]]
+			    [(int)plusMod(_voices[j].op[3].index,
+					  (float)RESOLUTION
+					  *_voices[j].sampleFeedback)];
+			sampleOp[2]=ampOp[2]
+			    *waveTable[_preset->oscWave[2]]
+			    [(int)plusMod(_voices[j].op[2].index,
+					  (float)RESOLUTION
+					  *sampleOp[3])];
+			sampleOp[1]=ampOp[1]
+			    *waveTable[_preset->oscWave[1]]
+			    [(int)_voices[j].op[1].index];
+			sampleOp[0]=ampOp[0]
+			    *waveTable[_preset->oscWave[0]]
+			    [(int)plusMod(_voices[j].op[0].index,
+					  (float)RESOLUTION
+					  *(sampleOp[1]+sampleOp[2])/2.0)];
+			
+			sample[j]=sampleOp[0];///COEFLEVEL;
+			
+			_voices[j].isOn=(_voices[j].op[0].envState!=OFF);
+			break;
+		    case FIFTH :
+			sampleOp[3]=ampOp[3]
+			    *waveTable[_preset->oscWave[3]]
+			    [(int)plusMod(_voices[j].op[3].index,
+					  (float)RESOLUTION
+					  *_voices[j].sampleFeedback)];
+			sampleOp[2]=ampOp[2]
+			    *waveTable[_preset->oscWave[2]]
+			    [(int)plusMod(_voices[j].op[2].index,
+					  (float)RESOLUTION*sampleOp[3])];
+			sampleOp[1]=ampOp[1]
+			    *waveTable[_preset->oscWave[1]]
+			    [(int)_voices[j].op[1].index];
+			sampleOp[0]=ampOp[0]
+			    *waveTable[_preset->oscWave[0]]
+			    [(int)plusMod(_voices[j].op[0].index,
+					  (float)RESOLUTION*sampleOp[1])];
+			
+			sample[j]=(sampleOp[0]+sampleOp[2])/2.0;///COEFLEVEL;
+			
+			_voices[j].isOn=(_voices[j].op[0].envState!=OFF
+					 ||_voices[j].op[2].envState!=OFF);
+			break;
+		    case SIXTH :
+			sampleOp[3]=ampOp[3]
+			    *waveTable[_preset->oscWave[3]]
+			    [(int)plusMod(_voices[j].op[3].index,
+					  (float)RESOLUTION
+					  *_voices[j].sampleFeedback)];
+			sampleOp[2]=ampOp[2]
+			    *waveTable[_preset->oscWave[2]]
+			    [(int)plusMod(_voices[j].op[2].index,
+					  (float)RESOLUTION*sampleOp[3])];
+			sampleOp[1]=ampOp[1]
+			    *waveTable[_preset->oscWave[1]]
+			    [(int)plusMod(_voices[j].op[1].index,
+					  (float)RESOLUTION*sampleOp[3])];
+			sampleOp[0]=ampOp[0]
+			    *waveTable[_preset->oscWave[0]]
+			    [(int)plusMod(_voices[j].op[0].index,
+					  (float)RESOLUTION*sampleOp[3])];
+			
+			sample[j]=(sampleOp[0]+sampleOp[1]+sampleOp[2])/3.0;
+			
+			_voices[j].isOn=(_voices[j].op[0].envState!=OFF);
+			break;
+		    case SEVENTH :
+			sampleOp[3]=ampOp[3]
+			    *waveTable[_preset->oscWave[3]]
+			    [(int)plusMod(_voices[j].op[3].index,
+					  (float)RESOLUTION
+					  *_voices[j].sampleFeedback)];
+			sampleOp[2]=ampOp[2]
+			    *waveTable[_preset->oscWave[2]]
+			    [(int)plusMod(_voices[j].op[2].index,
+					  (float)RESOLUTION*sampleOp[3])];
+			sampleOp[1]=ampOp[1]
+			    *waveTable[_preset->oscWave[1]]
+			    [(int)_voices[j].op[1].index];
+			sampleOp[0]=ampOp[0]*waveTable[_preset->oscWave[0]]
+			    [(int)_voices[j].op[0].index];
+			
+			sample[j]=(sampleOp[0]+sampleOp[1]+sampleOp[2])/3.0;
+			
+			_voices[j].isOn=(_voices[j].op[0].envState!=OFF);
+			break;		
+		    case EIGHTH :
+			sampleOp[3]=ampOp[3]
+			    *waveTable[_preset->oscWave[3]]
+			    [(int)plusMod(_voices[j].op[3].index,
+					  (float)RESOLUTION
+					  *_voices[j].sampleFeedback)];
+			sampleOp[2]=ampOp[2]
+			    *waveTable[_preset->oscWave[2]]
+			    [(int)_voices[j].op[2].index];
+			sampleOp[1]=ampOp[1]
+			    *waveTable[_preset->oscWave[1]]
+			    [(int)_voices[j].op[1].index];
+			sampleOp[0]=ampOp[0]
+			    *waveTable[_preset->oscWave[0]]
+			    [(int)_voices[j].op[0].index];
+			
+			sample[j]=
+			    (sampleOp[0]+sampleOp[1]+sampleOp[2]+sampleOp[3])
+			    /4.0;
+			
+			_voices[j].isOn=(_voices[j].op[0].envState!=OFF
+					 || _voices[j].op[1].envState!=OFF
+					 || _voices[j].op[2].envState!=OFF
+					 || _voices[j].op[3].envState!=OFF);
+			break;
+		    default : printf("Error : No algorithm");
+			break;
+		}
+		
+		_voices[j].volume=
+		    ampOp[0]+ampOp[1]+ampOp[2]+ampOp[3];
+		
+		_voices[j].sampleFeedback=sampleOp[3]*_global.feedbackAmp;
+		
+		resSample += sample[j];
+	    }
+	}
+	p[i] += resSample*_global.amp;
+    }
+}
+
+
+//---------------------------------------------------------
+//   inst
+//---------------------------------------------------------
+
+class QWidget;
+
+static Mess* instantiate(int sr, QWidget*, const char*)
+{
+    DeicsOnze* deicsonze = new DeicsOnze();
+    deicsonze->setSampleRate(sr);
+    return deicsonze;
+}
+
+extern "C" {
+    static MESS descriptor = {
+	"DeicsOnze",
+	"DeicsOnze FM DX11 emulator",
+	"0.3",      // version string
+	MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
+	instantiate
+    };
+
+    const MESS* mess_descriptor() { return &descriptor; }
+}
+

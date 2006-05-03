@@ -1,0 +1,882 @@
+<ui version="4.0" >
+ <author></author>
+ <comment></comment>
+ <exportmacro></exportmacro>
+ <class>OrganGuiBase</class>
+ <widget class="QWidget" name="OrganGuiBase" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>534</width>
+    <height>366</height>
+   </rect>
+  </property>
+  <property name="sizePolicy" >
+   <sizepolicy>
+    <hsizetype>7</hsizetype>
+    <vsizetype>5</vsizetype>
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle" >
+   <string>MusE: Organ</string>
+  </property>
+  <widget class="QGroupBox" name="GroupBox1" >
+   <property name="geometry" >
+    <rect>
+     <x>5</x>
+     <y>162</y>
+     <width>252</width>
+     <height>199</height>
+    </rect>
+   </property>
+   <property name="sizePolicy" >
+    <sizepolicy>
+     <hsizetype>7</hsizetype>
+     <vsizetype>7</vsizetype>
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="title" >
+    <string>Drawbars</string>
+   </property>
+   <layout class="QGridLayout" >
+    <property name="margin" >
+     <number>6</number>
+    </property>
+    <property name="spacing" >
+     <number>2</number>
+    </property>
+    <item row="0" column="0" >
+     <widget class="QLabel" name="TextLabel1" >
+      <property name="text" >
+       <string>16'</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" >
+     <widget class="QLabel" name="TextLabel4" >
+      <property name="text" >
+       <string>4'</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0" >
+     <widget class="QLabel" name="TextLabel5" >
+      <property name="text" >
+       <string>2 2/3'</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0" >
+     <widget class="QLabel" name="TextLabel6" >
+      <property name="text" >
+       <string>2'</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" >
+     <widget class="QLabel" name="TextLabel2" >
+      <property name="text" >
+       <string>5 1/3'</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" >
+     <widget class="QLabel" name="TextLabel3" >
+      <property name="text" >
+       <string>8'</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2" >
+     <widget class="QSlider" name="p2" >
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2" >
+     <widget class="QSlider" name="p3" >
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2" >
+     <widget class="QSlider" name="p4" >
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="2" >
+     <widget class="QSlider" name="p5" >
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="2" >
+     <widget class="QSlider" name="p6" >
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2" >
+     <widget class="QSlider" name="p1" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>7</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" >
+     <widget class="QSpinBox" name="lcd1" >
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" >
+     <widget class="QSpinBox" name="lcd2" >
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="singleStep" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1" >
+     <widget class="QSpinBox" name="lcd3" >
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="singleStep" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1" >
+     <widget class="QSpinBox" name="lcd4" >
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="singleStep" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1" >
+     <widget class="QSpinBox" name="lcd5" >
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="singleStep" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1" >
+     <widget class="QSpinBox" name="lcd6" >
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="singleStep" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QGroupBox" name="GroupBox2" >
+   <property name="geometry" >
+    <rect>
+     <x>263</x>
+     <y>5</y>
+     <width>266</width>
+     <height>151</height>
+    </rect>
+   </property>
+   <property name="sizePolicy" >
+    <sizepolicy>
+     <hsizetype>7</hsizetype>
+     <vsizetype>7</vsizetype>
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="title" >
+    <string>Envelope Lo</string>
+   </property>
+   <property name="alignment" >
+    <set>Qt::AlignLeading</set>
+   </property>
+   <layout class="QGridLayout" >
+    <property name="margin" >
+     <number>11</number>
+    </property>
+    <property name="spacing" >
+     <number>2</number>
+    </property>
+    <item row="0" column="0" >
+     <widget class="QLabel" name="TextLabel7" >
+      <property name="text" >
+       <string>Attack</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" >
+     <widget class="QLabel" name="TextLabel8" >
+      <property name="text" >
+       <string>Decay</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" >
+     <widget class="QLabel" name="TextLabel9" >
+      <property name="text" >
+       <string>Sustain</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" >
+     <widget class="QLabel" name="TextLabel10" >
+      <property name="text" >
+       <string>Release</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2" >
+     <widget class="QSlider" name="p7" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>7</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>80</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximum" >
+       <number>500</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>50</number>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2" >
+     <widget class="QSlider" name="p8" >
+      <property name="maximum" >
+       <number>5000</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>500</number>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2" >
+     <widget class="QSlider" name="p9" >
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2" >
+     <widget class="QSlider" name="p10" >
+      <property name="maximum" >
+       <number>500</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>50</number>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" >
+     <widget class="QSpinBox" name="lcd7" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>1</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="suffix" >
+       <string>ms</string>
+      </property>
+      <property name="maximum" >
+       <number>500</number>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" >
+     <widget class="QSpinBox" name="lcd8" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>1</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="suffix" >
+       <string>ms</string>
+      </property>
+      <property name="maximum" >
+       <number>5000</number>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1" >
+     <widget class="QSpinBox" name="lcd9" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>1</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="suffix" >
+       <string>cB</string>
+      </property>
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="value" >
+       <number>0</number>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1" >
+     <widget class="QSpinBox" name="lcd10" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>1</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="suffix" >
+       <string>ms</string>
+      </property>
+      <property name="maximum" >
+       <number>500</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="" >
+   <layout class="QHBoxLayout" >
+    <property name="margin" >
+     <number>0</number>
+    </property>
+    <property name="spacing" >
+     <number>6</number>
+    </property>
+    <item>
+     <widget class="QLabel" name="TextLabel1_2" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>7</hsizetype>
+        <vsizetype>5</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font" >
+       <font>
+        <family></family>
+        <pointsize>48</pointsize>
+        <weight>50</weight>
+        <italic>false</italic>
+        <bold>false</bold>
+        <underline>false</underline>
+        <strikeout>false</strikeout>
+       </font>
+      </property>
+      <property name="text" >
+       <string>O-1</string>
+      </property>
+      <property name="alignment" >
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="GroupBox3" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>7</hsizetype>
+        <vsizetype>7</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title" >
+       <string>Oscillator</string>
+      </property>
+      <layout class="QVBoxLayout" >
+       <property name="margin" >
+        <number>11</number>
+       </property>
+       <property name="spacing" >
+        <number>2</number>
+       </property>
+       <item>
+        <widget class="QCheckBox" name="sw1" >
+         <property name="sizePolicy" >
+          <sizepolicy>
+           <hsizetype>5</hsizetype>
+           <vsizetype>1</vsizetype>
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text" >
+          <string>Brass</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="sw2" >
+         <property name="sizePolicy" >
+          <sizepolicy>
+           <hsizetype>5</hsizetype>
+           <vsizetype>1</vsizetype>
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text" >
+          <string>Reed</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="sw3" >
+         <property name="sizePolicy" >
+          <sizepolicy>
+           <hsizetype>5</hsizetype>
+           <vsizetype>1</vsizetype>
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text" >
+          <string>Flute</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType" >
+          <enum>QSizePolicy::Expanding</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="sw4" >
+         <property name="text" >
+          <string>Velocity</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QGroupBox" name="GroupBox4" >
+   <property name="geometry" >
+    <rect>
+     <x>263</x>
+     <y>162</y>
+     <width>266</width>
+     <height>199</height>
+    </rect>
+   </property>
+   <property name="sizePolicy" >
+    <sizepolicy>
+     <hsizetype>7</hsizetype>
+     <vsizetype>7</vsizetype>
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="title" >
+    <string>Envelope Hi</string>
+   </property>
+   <layout class="QGridLayout" >
+    <property name="margin" >
+     <number>8</number>
+    </property>
+    <property name="spacing" >
+     <number>6</number>
+    </property>
+    <item row="3" column="2" >
+     <widget class="QSlider" name="p14" >
+      <property name="maximum" >
+       <number>500</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>50</number>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" >
+     <widget class="QLabel" name="TextLabel13" >
+      <property name="text" >
+       <string>Sustain</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" >
+     <widget class="QLabel" name="TextLabel14" >
+      <property name="text" >
+       <string>Release</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1" >
+     <widget class="QSpinBox" name="lcd14" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="suffix" >
+       <string>ms</string>
+      </property>
+      <property name="maximum" >
+       <number>500</number>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1" >
+     <widget class="QSpinBox" name="lcd13" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="suffix" >
+       <string>cB</string>
+      </property>
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" >
+     <widget class="QSpinBox" name="lcd12" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="suffix" >
+       <string>ms</string>
+      </property>
+      <property name="maximum" >
+       <number>5000</number>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2" >
+     <widget class="QSlider" name="p11" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>7</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximum" >
+       <number>500</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>50</number>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" >
+     <widget class="QSpinBox" name="lcd11" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="suffix" >
+       <string>ms</string>
+      </property>
+      <property name="maximum" >
+       <number>500</number>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2" >
+     <widget class="QSlider" name="p12" >
+      <property name="maximum" >
+       <number>5000</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>500</number>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2" >
+     <widget class="QSlider" name="p13" >
+      <property name="minimum" >
+       <number>-960</number>
+      </property>
+      <property name="maximum" >
+       <number>0</number>
+      </property>
+      <property name="pageStep" >
+       <number>1</number>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickInterval" >
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" >
+     <widget class="QLabel" name="TextLabel11" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>4</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text" >
+       <string>Attack</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" >
+     <widget class="QLabel" name="TextLabel12" >
+      <property name="text" >
+       <string>Decay</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <pixmapfunction></pixmapfunction>
+ <tabstops>
+  <tabstop>p1</tabstop>
+  <tabstop>p3</tabstop>
+  <tabstop>p2</tabstop>
+  <tabstop>p4</tabstop>
+  <tabstop>p5</tabstop>
+  <tabstop>p6</tabstop>
+  <tabstop>p7</tabstop>
+  <tabstop>p8</tabstop>
+  <tabstop>p9</tabstop>
+  <tabstop>p10</tabstop>
+  <tabstop>p11</tabstop>
+  <tabstop>p12</tabstop>
+  <tabstop>p13</tabstop>
+  <tabstop>p14</tabstop>
+  <tabstop>sw1</tabstop>
+  <tabstop>sw2</tabstop>
+  <tabstop>sw3</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

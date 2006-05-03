@@ -1,0 +1,59 @@
+	len 4608
+
+TopLevels
+
+	tr_id		Transport
+      			showTransport(bool)
+                        Transport* transport;
+      bt_id		BigTime
+      			showBigtime(bool)
+                    	BigTime* bigtime;
+      aid1a		Mixer1
+      			showMixer1(bool)
+                        Mixer* mixer1
+      aid1b		Mixer2
+      			showMixer2(bool)
+                        Mixer* mixer2;
+      mk_id		Marker
+      			showMarker(bool)
+                        MarkerView* markerView
+
+
+Drum Maps
+
+      - use Drum Map
+            es wird die GM Drummap benutzt, wenn für den selektierten
+            Patch keine andere Drummap konfiguriert ist
+
+
+
+Time:
+      Frames
+      Ticks
+
+      Part-Positionen werden normalerweise in Ticks angegeben. Nur die
+      Positionen von Parts einer "Locked" Spur beziehen sich auf Frames.
+
+      Die Länge von Wave-Parts wird immer in Frames angegeben.
+
+      Die Positionen von Controller-Events werden ebenfalls normalerweise
+      in Ticks angegeben, es sei denn, sie befinden sich in "Locked"
+      Spuren.
+
+      Der Arranger und die Editoren können Parts und/oder Events entweder
+      im Metronom-Mode oder im Uhr-Mode anzeigen. Das Lineal zeigt
+      dabei entweder Takt/Beat/Tick oder Minute/Sekunde/Frame an.
+
+
+
+WaveTrack
+                            Record
+	
+      Disk--Fader------+
+      		     +---o
+                       	     / o------------->outRouting
+                       +---o/
+      InputRouting-----+
+
+
+

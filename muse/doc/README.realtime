@@ -1,0 +1,37 @@
+For reliable operation MusE needs "realtime priviledges".
+
+Kernel >= 2.6.12
+      - load the set_rtlimits utility from:
+            http://www.physics.adelaide.edu.au/~jwoithe
+      - compile & install
+
+      - create an audio group (if you dont have one already):
+            groupadd audio
+
+      - add yourself to the audio group
+
+      - create an entry in "/etc/set_rtlimits.conf":
+
+            @audio  /home/ws/projects/muse/muse/muse/muse  -1  90
+
+      - start MusE with
+            set_rtlimits -r 60 /usr/local/bin/muse
+
+
+========================================================
+      Low Latency
+========================================================
+
+      Start JACK with a realtime priority of 60 (option -P60). 
+      This should be higher than all (Realtime) system processes
+      if you run a realtime kernel (with Ingo Molnars realtime
+      patches). The JACK default priority is 10 which is too low.
+
+      MusE must be started with a higher priority than jack.
+      This allows the MusE midi thread to interrupt all
+      audio threads. This is important to get a midi timing
+      which is of higher resolution than the audio segment 
+      time. The default priority of 70 for MusE should do.
+
+
+

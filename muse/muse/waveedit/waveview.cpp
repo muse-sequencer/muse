@@ -1,0 +1,799 @@
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//    $Id: waveview.cpp,v 1.25 2006/02/01 22:44:40 wschweer Exp $
+//  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//=========================================================
+
+#include <sys/wait.h>
+
+#include "waveview.h"
+#include "song.h"
+#include "midiedit/midieditor.h"
+#include "al/tempo.h"
+#include "event.h"
+#include "globals.h"
+#include "waveedit.h"
+#include "audio.h"
+#include "gconfig.h"
+#include "part.h"
+
+//---------------------------------------------------------
+//   WaveView
+//---------------------------------------------------------
+
+WaveView::WaveView(WaveEdit* pr)
+   : TimeCanvas(TIME_CANVAS)
+      {
+      curPart = 0;
+      selectionStart = 0;
+      selectionStop  = 0;
+      lastGainvalue = 100;
+      editor = pr;
+
+      if (editor->parts()->empty()) {
+            curPart = 0;
+            curPartId = -1;
+            }
+      else {
+            curPart   = editor->parts()->begin()->second;
+            }
+
+      int start = curPart->frame();
+      int end   = start + curPart->lenFrame();
+      setTimeRange(start, end);
+      }
+
+//---------------------------------------------------------
+//   paint
+//---------------------------------------------------------
+
+void WaveView::paint(QPainter&, QRect)
+      {
+      printf("paint\n");
+      }
+
+//---------------------------------------------------------
+//   draw
+//---------------------------------------------------------
+
+#if 0
+void WaveView::pdraw(QPainter& p, const QRect& rr)
+      {
+      int x1 = rr.x();
+      int x2 = rr.right() + 1;
+      if (x1 < 0)
+            x1 = 0;
+      if (x2 > width())
+            x2 = width();
+      int hh = height();
+      int h  = hh/2;
+      int y  = rr.y() + h;
+
+      for (iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
+            Part* wp = ip->second;
+            int channels = wp->track()->channels();
+            int px = wp->frame();
+
+            EventList* el = wp->events();
+            for (iEvent e = el->begin(); e != el->end(); ++e) {
+                  Event event  = e->second;
+                  if (event.empty())
+                        continue;
+                  SndFileR f = event.sndFile();
+                  if (f.isNull())
+                        continue;
+                  int xScale = xmag;
+                  if (xScale < 0)
+                        xScale = -xScale;
+
+                  int sx, ex;
+                  sx = event.frame() + px + xScale/2 - startSample;
+                  ex = sx + px + event.lenFrame();
+                  sx = sx / xScale - xpos;
+                  ex = ex / xScale - xpos;
+
+                  if (sx < x1)
+                        sx = x1;
+                  if (ex > x2)
+                        ex = x2;
+
+                  int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
+                  //printf("pos=%d xpos=%d sx=%d ex=%d xScale=%d event.spos=%d event.frame=%d px=%d\n",
+                  //      pos, xpos, sx, ex, xScale, event.spos(), event.frame(), px);
+                  h       = hh / (channels * 2);
+                  int cc  = hh % (channels * 2) ? 0 : 1;
+
+                  for (int i = sx; i < ex; i++) {
+                        y  = rr.y() + h;
+                        SampleV sa[f.channels()];
+                        f.read(sa, xScale, pos);
+                        pos += xScale;
+                        if (pos < event.spos())
+                              continue;
+
+                        unsigned peoffset = px + event.frame() - event.spos();
+                        int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
+                        int selectionStopPos  = selectionStop  - peoffset;
+
+
+
+                        for (int k = 0; k < channels; ++k) {
+                              int kk = k % f.channels();
+                              int peak = (sa[kk].peak * (h - 1)) / yScale;
+                              int rms  = (sa[kk].rms  * (h - 1)) / yScale;
+                              if (peak > h)
+                                    peak = h;
+                              if (rms > h)
+                                    rms = h;
+                              QColor peak_color = QColor(Qt::darkGray);
+                              QColor rms_color  = QColor(Qt::black);
+                              if (pos > selectionStartPos && pos < selectionStopPos) {
+                                    peak_color = QColor(Qt::lightGray);
+                                    rms_color  = QColor(Qt::white);
+                                    // Draw inverted
+                                    p.setPen(QColor(Qt::black));
+                                    p.drawLine(i, y - h + cc, i, y + h - cc );
+                                    }
+                              p.setPen(peak_color);
+                              p.drawLine(i, y - peak - cc, i, y + peak);
+                              p.setPen(rms_color);
+                              p.drawLine(i, y - rms - cc, i, y + rms);
+                              y  += 2 * h;
+                              }
+                        }
+                  }
+            }
+      View::pdraw(p, rr);
+      }
+#endif
+
+//---------------------------------------------------------
+//   draw
+//---------------------------------------------------------
+
+#if 0
+void WaveView::draw(QPainter& p, const QRect& r)
+      {
+      unsigned x = r.x() < 0 ? 0 : r.x();
+      unsigned y = r.y() < 0 ? 0 : r.y();
+      int w = r.width();
+      int h = r.height();
+
+      unsigned x2 = x + w;
+      unsigned y2 = y + h;
+
+      //
+      //    draw marker & centerline
+      //
+      p.setPen(Qt::red);
+      if (pos[0] >= x && pos[0] < x2) {
+            p.drawLine(pos[0], y, pos[0], y2);
+            }
+      p.setPen(Qt::blue);
+      if (pos[1] >= x && pos[1] < x2) {
+            p.drawLine(pos[1], y, pos[1], y2);
+            }
+      if (pos[2] >= x && pos[2] < x2)
+            p.drawLine(pos[2], y, pos[2], y2);
+
+      int n  = curPart->track()->channels();
+      int hn = h / n;
+      int hh = hn / 2;
+      for (int i = 0; i < n; ++i) {
+            int h2     = hn * i;
+            int center = hh + h2;
+            p.setPen(QColor(i & i ? Qt::red : Qt::blue));
+            p.drawLine(x, center, x2, center);
+            p.setPen(QColor(Qt::black));
+            p.drawLine(x, h2, x2, h2);
+            }
+      }
+#endif
+
+//---------------------------------------------------------
+//   getCaption
+//---------------------------------------------------------
+
+QString WaveView::getCaption() const
+      {
+      QString caption("MusE: WaveEditor");
+      if (curPart)
+            return caption + QString(": ") + curPart->name();
+      return caption;
+      }
+
+//---------------------------------------------------------
+//   songChanged
+//---------------------------------------------------------
+
+void WaveView::songChanged(int flags)
+      {
+#if 0
+      if (flags & SC_SELECTION) {
+            startSample  = MAXINT;
+            endSample    = 0;
+            curPart      = 0;
+            for (iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
+                  Part* part = p->second;
+                  if (part->sn() == curPartId)
+                        curPart = part;
+                  int ssample = part->frame();
+                  int esample = ssample + part->lenFrame();
+                  if (ssample < startSample) {
+                        startSample = ssample;
+                        //printf("startSample = %d\n", startSample);
+                        }
+                  if (esample > endSample) {
+                        endSample = esample;
+                        //printf("endSample = %d\n", endSample);
+                        }
+                  }
+            }
+      if (flags & SC_CLIP_MODIFIED) {
+            update(); // Boring, but the only thing possible to do
+            }
+      if (flags & SC_TEMPO) {
+            setPos(0, song->cpos(), false);
+            setPos(1, song->lpos(), false);
+            setPos(2, song->rpos(), false);
+            }
+      update();
+#endif
+      }
+
+//---------------------------------------------------------
+//   viewMousePressEvent
+//---------------------------------------------------------
+
+void WaveView::viewMousePressEvent(QMouseEvent* event)
+      {
+#if 0
+      button = event->button();
+      unsigned x = event->x();
+
+      switch (button) {
+            case Qt::LeftButton:
+                  if (mode == NORMAL) {
+                        // redraw and reset:
+                        if (selectionStart != selectionStop) {
+                              selectionStart = selectionStop = 0;
+                              update();
+                              }
+                        mode = DRAG;
+                        dragstartx = x;
+                        selectionStart = selectionStop = x;
+                        }
+                  break;
+
+            case Qt::MidButton:
+            case Qt::RightButton:
+            default:
+                  break;
+            }
+      viewMouseMoveEvent(event);
+#endif
+      }
+
+//---------------------------------------------------------
+//   viewMouseReleaseEvent
+//---------------------------------------------------------
+
+void WaveView::viewMouseReleaseEvent(QMouseEvent*)
+      {
+#if 0
+      button = Qt::NoButton;
+
+      if (mode == DRAG) {
+            mode = NORMAL;
+            //printf("selectionStart=%d selectionStop=%d\n", selectionStart, selectionStop);
+            }
+#endif
+      }
+
+//---------------------------------------------------------
+//   viewMouseMoveEvent
+//---------------------------------------------------------
+
+void WaveView::viewMouseMoveEvent(QMouseEvent* event)
+      {
+#if 0
+      unsigned x = event->x();
+      emit timeChanged(x);
+
+      int i;
+      switch (button) {
+            case Qt::LeftButton:
+                  i = 0;
+                  if (mode == DRAG) {
+                        if (x < dragstartx) {
+                              selectionStart = x;
+                              selectionStop = dragstartx;
+                              }
+                        else {
+                              selectionStart = dragstartx;
+                              selectionStop = x;
+                              }
+                        }
+                  break;
+            case Qt::MidButton:
+                  i = 1;
+                  break;
+            case Qt::RightButton:
+                  i = 2;
+                  break;
+            default:
+                  return;
+            }
+      Pos p(AL::tempomap.frame2tick(x), true);
+      song->setPos(i, p);
+#endif
+      }
+
+//---------------------------------------------------------
+//   cmd
+//---------------------------------------------------------
+
+void WaveView::cmd(int n)
+      {
+#if 0
+      int modifyoperation = -1;
+      double paramA = 0.0;
+
+      switch(n) {
+            case WaveEdit::CMD_SELECT_ALL:
+            if (!editor->parts()->empty()) {
+                  iPart iBeg = editor->parts()->begin();
+                  iPart iEnd = editor->parts()->end();
+                  iEnd--;
+                  Part* beg = iBeg->second;
+                  Part* end = iEnd->second;
+                  selectionStart = beg->frame();
+                  selectionStop  = end->frame() + end->lenFrame();
+                  update();
+                  }
+                  break;
+
+            case WaveEdit::CMD_EDIT_EXTERNAL:
+                  modifyoperation = EDIT_EXTERNAL;
+                  break;
+
+            case WaveEdit::CMD_SELECT_NONE:
+                  selectionStart = selectionStop = 0;
+                  update();
+                  break;
+
+            case WaveEdit::CMD_MUTE:
+                  modifyoperation = MUTE;
+                  break;
+
+            case WaveEdit::CMD_NORMALIZE:
+                  modifyoperation = NORMALIZE;
+                  break;
+
+            case WaveEdit::CMD_FADE_IN:
+                  modifyoperation = FADE_IN;
+                  break;
+
+            case WaveEdit::CMD_FADE_OUT:
+                  modifyoperation = FADE_OUT;
+                  break;
+
+            case WaveEdit::CMD_REVERSE:
+                  modifyoperation = REVERSE;
+                  break;
+
+            case WaveEdit::CMD_GAIN_FREE: {
+            /*
+                  EditGain* editGain = new EditGain(this, lastGainvalue);
+                  if (editGain->exec() == QDialog::Accepted) {
+                        lastGainvalue = editGain->getGain();
+                        modifyoperation = GAIN;
+                        paramA = (double)lastGainvalue / 100.0;
+                        }
+                  delete editGain;
+                  */
+                  printf("Free gain - todo!\n");
+                  }
+                  break;
+
+            case WaveEdit::CMD_GAIN_200:
+                  modifyoperation = GAIN;
+                  paramA = 2.0;
+                  break;
+
+            case WaveEdit::CMD_GAIN_150:
+                  modifyoperation = GAIN;
+                  paramA = 1.5;
+                  break;
+
+            case WaveEdit::CMD_GAIN_75:
+                  modifyoperation = GAIN;
+                  paramA = 0.75;
+                  break;
+
+            case WaveEdit::CMD_GAIN_50:
+                  modifyoperation = GAIN;
+                  paramA = 0.5;
+                  break;
+
+            case WaveEdit::CMD_GAIN_25:
+                  modifyoperation = GAIN;
+                  paramA = 0.25;
+                  break;
+
+            default:
+                  break;
+            }
+
+      if (modifyoperation != -1) {
+            if (selectionStart == selectionStop) {
+                  printf("No selection. Ignoring\n"); //@!TODO: Disable menu options when no selection
+                  return;
+                  }
+            modifySelection(modifyoperation, selectionStart, selectionStop, paramA);
+            }
+#endif
+      }
+
+//---------------------------------------------------------
+//   getSelection
+//---------------------------------------------------------
+
+WaveSelectionList WaveView::getSelection(unsigned startpos, unsigned stoppos)
+      {
+      WaveSelectionList selection;
+#if 0
+      for (iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
+            Part* wp = ip->second;
+            unsigned part_offset = wp->frame();
+            EventList* el = wp->events();
+
+            for (iEvent e = el->begin(); e != el->end(); ++e) {
+                  Event event  = e->second;
+                  if (event.empty())
+                        continue;
+                  SndFileR file = event.sndFile();
+                  if (file.isNull())
+                        continue;
+
+                  unsigned event_offset = event.frame() + part_offset;
+                  unsigned event_startpos  = event.spos();
+                  unsigned event_length = event.lenFrame() + event.spos();
+                  unsigned event_end    = event_offset + event_length;
+                  //printf("startpos=%d stoppos=%d part_offset=%d event_offset=%d event_startpos=%d event_length=%d event_end=%d\n", startpos, stoppos, part_offset, event_offset, event_startpos, event_length, event_end);
+
+                  if (!(event_end <= startpos || event_offset >= stoppos)) {
+                        int tmp_sx = startpos - event_offset + event_startpos;
+                        int tmp_ex = stoppos  - event_offset + event_startpos;
+                        unsigned sx;
+                        unsigned ex;
+
+                        tmp_sx < (int)event_startpos ? sx = event_startpos : sx = tmp_sx;
+                        tmp_ex > (int)event_length   ? ex = event_length   : ex = tmp_ex;
+
+                        //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLatin1().data());
+                        WaveEventSelection s;
+                        s.file = file;
+                        s.startframe = sx;
+                        s.endframe   = ex;
+                        selection.push_back(s);
+                        }
+                  }
+            }
+#endif
+      return selection;
+      }
+
+//---------------------------------------------------------
+//   modifySelection
+//---------------------------------------------------------
+
+void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppos, double paramA)
+      {
+#if 0
+         song->startUndo();
+
+         WaveSelectionList selection = getSelection(startpos, stoppos);
+         for (iWaveSelection i = selection.begin(); i != selection.end(); i++) {
+               WaveEventSelection w = *i;
+               SndFileR& file         = w.file;
+               unsigned sx            = w.startframe;
+               unsigned ex            = w.endframe;
+               unsigned file_channels = file.channels();
+
+               QString tmpWavFile = QString::null;
+               if (!getUniqueTmpfileName(tmpWavFile)) {
+                     break;
+                     }
+
+               audio->msgIdle(true); // Not good with playback during operations
+               SndFile tmpFile(tmpWavFile);
+               tmpFile.setFormat(file.format(), file_channels, file.samplerate());
+               if (tmpFile.openWrite()) {
+                     audio->msgIdle(false);
+                     printf("Could not open temporary file...\n");
+                     break;
+                     }
+
+               //
+               // Write out data that will be changed to temp file
+               //
+               unsigned tmpdatalen = ex - sx;
+               off_t    tmpdataoffset = sx;
+               float*   tmpdata[file_channels];
+
+               for (unsigned i=0; i<file_channels; i++) {
+                     tmpdata[i] = new float[tmpdatalen];
+                     }
+
+               file.seek(tmpdataoffset, 0);
+               file.read(file_channels, tmpdata, tmpdatalen);
+               file.close();
+               tmpFile.write(file_channels, tmpdata, tmpdatalen);
+               tmpFile.close();
+
+               switch(operation)
+               {
+                     case MUTE:
+                           muteSelection(file_channels, tmpdata, tmpdatalen);
+                           break;
+
+                     case NORMALIZE:
+                           normalizeSelection(file_channels, tmpdata, tmpdatalen);
+                           break;
+
+                     case FADE_IN:
+                           fadeInSelection(file_channels, tmpdata, tmpdatalen);
+                           break;
+
+                     case FADE_OUT:
+                           fadeOutSelection(file_channels, tmpdata, tmpdatalen);
+                           break;
+
+                     case REVERSE:
+                           reverseSelection(file_channels, tmpdata, tmpdatalen);
+                           break;
+
+                     case GAIN:
+                           applyGain(file_channels, tmpdata, tmpdatalen, paramA);
+                           break;
+
+                     case EDIT_EXTERNAL:
+                           editExternal(file.format(), file.samplerate(), file_channels, tmpdata, tmpdatalen);
+                           break;
+
+                     default:
+                           printf("Error: Default state reached in modifySelection\n");
+                           break;
+
+               }
+
+               file.openWrite();
+               file.seek(tmpdataoffset, 0);
+               file.write(file_channels, tmpdata, tmpdatalen);
+               file.update();
+               file.close();
+               file.openRead();
+
+               for (unsigned i=0; i<file_channels; i++) {
+                     delete[] tmpdata[i];
+                     }
+
+               // Undo handling
+               song->cmdChangeWave(file.dirPath() + "/" + file.name(), tmpWavFile, sx, ex);
+               audio->msgIdle(false); // Not good with playback during operations
+               }
+         song->endUndo(SC_CLIP_MODIFIED);
+         update();
+#endif
+      }
+
+//---------------------------------------------------------
+//   muteSelection
+//---------------------------------------------------------
+
+void WaveView::muteSelection(unsigned channels, float** data, unsigned length)
+      {
+#if 0
+      // Set everything to 0!
+      for (unsigned i=0; i<channels; i++) {
+            for (unsigned j=0; j<length; j++) {
+                  data[i][j] = 0;
+                  }
+            }
+#endif
+      }
+
+//---------------------------------------------------------
+//   normalizeSelection
+//---------------------------------------------------------
+
+void WaveView::normalizeSelection(unsigned channels, float** data, unsigned length)
+      {
+#if 0
+      float loudest = 0.0;
+
+      for (unsigned i=0; i<channels; i++) {
+            for (unsigned j=0; j<length; j++) {
+                  if (data[i][j]  > loudest)
+                        loudest = data[i][j];
+                  }
+            }
+
+      double scale = 0.99 / (double)loudest;
+
+      for (unsigned i=0; i<channels; i++) {
+            for (unsigned j=0; j<length; j++) {
+                  data[i][j] = (float) ((double)data[i][j] * scale);
+                  }
+            }
+#endif
+      }
+
+//---------------------------------------------------------
+//   fadeInSelection
+//---------------------------------------------------------
+
+void WaveView::fadeInSelection(unsigned channels, float** data, unsigned length)
+      {
+#if 0
+      for (unsigned i=0; i<channels; i++) {
+            for (unsigned j=0; j<length; j++) {
+                  double scale = (double) j / (double)length ;
+                  data[i][j] = (float) ((double)data[i][j] * scale);
+                  }
+            }
+#endif
+      }
+
+//---------------------------------------------------------
+//   fadeOutSelection
+//---------------------------------------------------------
+
+void WaveView::fadeOutSelection(unsigned channels, float** data, unsigned length)
+      {
+#if 0
+      for (unsigned i=0; i<channels; i++) {
+            for (unsigned j=0; j<length; j++) {
+                  double scale = (double) (length - j) / (double)length ;
+                  data[i][j] = (float) ((double)data[i][j] * scale);
+                  }
+            }
+#endif
+      }
+
+//---------------------------------------------------------
+//   reverseSelection
+//---------------------------------------------------------
+
+void WaveView::reverseSelection(unsigned channels, float** data, unsigned length)
+      {
+      for (unsigned i=0; i<channels; i++) {
+            for (unsigned j=0; j<length/2; j++) {
+                  float tmpl = data[i][j];
+                  float tmpr = data[i][length - j];
+                  data[i][j] = tmpr;
+                  data[i][length - j] = tmpl;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   applyGain
+//---------------------------------------------------------
+
+void WaveView::applyGain(unsigned channels, float** data, unsigned length, double gain)
+      {
+      for (unsigned i=0; i<channels; i++) {
+            for (unsigned j=0; j<length; j++) {
+                  data[i][j] = (float) ((double)data[i][j] * gain);
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   editExternal
+//---------------------------------------------------------
+
+void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsigned file_channels, float** tmpdata, unsigned tmpdatalen)
+      {
+      // Create yet another tmp-file
+      QString exttmpFileName;
+      if (!getUniqueTmpfileName(exttmpFileName)) {
+            printf("Could not create temp file - aborting...\n");
+            return;
+            }
+
+      SndFile exttmpFile(exttmpFileName);
+      exttmpFile.setFormat(file_format, file_channels, file_samplerate);
+      if (exttmpFile.openWrite()) {
+            printf("Could not open temporary file...\n");
+            return;
+            }
+      // Write out change-data to this file:
+      exttmpFile.write(file_channels, tmpdata, tmpdatalen);
+      exttmpFile.close();
+
+      // Forkaborkabork
+      int pid = vfork();
+      if (pid == 0) {
+            if (execlp(config.externalWavEditor.toLatin1().data(), "", exttmpFileName.toLatin1().data(), NULL) == -1) {
+                  perror("Failed to launch external editor");
+                  // Get out of here
+                  exit(-1);
+                  }
+                  //@!TODO: Handle unsuccessful attempts
+            }
+      else if (pid == -1) {
+            perror("fork failed");
+            }
+      else {
+            waitpid(pid, 0, 0);
+            if (exttmpFile.openRead()) {
+                  printf("Could not reopen temporary file again!\n");
+                  }
+            else {
+                  // Re-read file again
+                  exttmpFile.seek(0, 0);
+                  size_t sz = exttmpFile.read(file_channels, tmpdata, tmpdatalen);
+                  if (sz != tmpdatalen) {
+                        // File must have been shrunken - not good. Alert user.
+                        QMessageBox::critical(this, tr("MusE - file size changed"),
+                              tr("When editing in external editor - you should not change the filesize\nsince it must fit the selected region.\n\nMissing data is muted"));
+                        for (unsigned i=0; i<file_channels; i++) {
+                              for (unsigned j=sz; j<tmpdatalen; j++) {
+                                    tmpdata[i][j] = 0;
+                                    }
+                              }
+                        }
+                  }
+            QDir dir = exttmpFile.finfo()->absolutePath();
+            dir.remove(exttmpFileName);
+            dir.remove(exttmpFile.finfo()->baseName() + ".wca");
+            }
+      }
+
+//---------------------------------------------------------
+//   getUniqueTmpfileName
+//---------------------------------------------------------
+
+bool WaveView::getUniqueTmpfileName(QString& newFilename)
+      {
+      // Check if tmp-directory exists under project path
+      QString tmpWavDir = museProject + "/tmp_musewav"; //!@TODO: Don't hardcode like this
+      QFileInfo tmpdirfi(tmpWavDir);
+      if (!tmpdirfi.isDir()) {
+            // Try to create a tmpdir
+            QDir projdir(museProject);
+            if (!projdir.mkdir("tmp_musewav")) {
+                  printf("Could not create undo dir!\n");
+                  return false;
+                  }
+            }
+
+
+      tmpdirfi.setFile(tmpWavDir);
+
+      if (!tmpdirfi.isWritable()) {
+            printf("Temp directory is not writable - aborting\n");
+            return false;
+            }
+
+      QDir tmpdir = tmpdirfi.dir();
+
+      // Find a new filename
+      for (int i=0; i<10000; i++) {
+            QString filename = "muse_tmp";
+            filename.append(QString::number(i));
+            filename.append(".wav");
+
+            if (!tmpdir.exists(tmpWavDir +"/" + filename)) {
+                  newFilename = tmpWavDir + "/" + filename;
+                  return true;
+                  }
+            }
+
+      printf("Could not find a suitable tmpfilename (more than 10000 tmpfiles in tmpdir - clean up!\n");
+      return false;
+      }

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if test ! -d build; 
+   then
+      echo "+creating build directory"
+      mkdir build
+      echo "+entering build directory"
+      cd build
+      echo "+calling cmake"
+      cmake ..
+   else
+      cd build
+   fi
+
+echo "+start top level make..."
+make
+

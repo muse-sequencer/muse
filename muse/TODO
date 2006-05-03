@@ -1,0 +1,73 @@
+      convert make system to cmake
+            - change *.ui names (remove *base*)
+            - rearrange code if necessary
+
+      move to subversion
+      
+-----------------------------TODO-------------------------------------------
+(1.2.2006)
+
+BUGS
+	- updating the gui during midi recording is too slow;
+        a new, faster implementation is needed
+
+	- dont allow midi editing during recording. Treat recording
+        as one undoable action.
+
+      - Do not allow switch track recording on/off during recording
+
+FEATURES
+	- wave editor is completely broken
+
+	- list editor
+
+	- missing time signature ruler in master editor
+
+      - If events recorded outside part ask after recording what to do:
+         delete events / expand part
+
+	- what to do with events, which start in a part and end outside
+        a part (too long to fit entirely in part)
+        	- on recording
+            - on cut part (split?)
+
+      - recording: punch in/out
+
+	- system info page: show internal statistics about
+        - buffer usage (fifo usage)
+        - overruns/underruns etc.
+        - actual thread state and priorities
+        - actual used timer resource
+
+	- export midi
+
+	- Import MusE 0.7 song files
+
+	- NEW function with templates
+
+	- manage project subdirectories (better organize wave files)
+
+
+CLEANUPS
+	- Cleanup the icon/pixmap handling using Qt resource file:
+      	- rename xpm directory to resources/images
+            - remove all unreferenced files
+            - transform *.xpm into *.pnm or *.jpg files and move into
+              resource file
+            - redirect all *xpm program references to resource file
+            - remove icon.cpp icon.h
+
+	- implement main widget with qt designer
+
+Wishlist
+	- it should be possible to show controller events in the
+        tracklist for tracktypes which cannot contain
+        Parts to make better use of screen real estate.
+        GUI-wise a "Add Controller" button is needed.
+
+	- the controller selector in "Add Controller" should be
+        implemented as a modal dialog. This allows for
+        presenting the list of controller in a structured
+        way.
+
+

@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+
+<muse version="1.0">
+
+<MidiInstrument name="Roland SRX-02 Concert Piano">
+
+<Init>
+</Init>
+
+
+    <PatchGroup name="SRX02 Concert Piano">
+        <Patch  name="PremierGrand"   drum="0"   hbank="93" lbank="1" prog="0"/>    
+        <Patch  name="Steady Grand"   drum="0"   hbank="93" lbank="1" prog="1"/>    
+        <Patch  name="DynamicGrand"   drum="0"   hbank="93" lbank="1" prog="2"/>    
+        <Patch  name="Concert Hall"   drum="0"   hbank="93" lbank="1" prog="3"/>    
+        <Patch  name="Bright Grand"   drum="0"   hbank="93" lbank="1" prog="4"/>    
+        <Patch  name="Classical"      drum="0"   hbank="93" lbank="1" prog="5"/>    
+        <Patch  name="SoftPdlGrand"   drum="0"   hbank="93" lbank="1" prog="6"/>    
+        <Patch  name="OnMicPremier"   drum="0"   hbank="93" lbank="1" prog="7"/>    
+        <Patch  name="OnMic Bright"   drum="0"   hbank="93" lbank="1" prog="8"/>    
+        <Patch  name="OnMicSoftPdl"   drum="0"   hbank="93" lbank="1" prog="9"/>    
+        <Patch  name="Premier Mono"   drum="0"   hbank="93" lbank="1" prog="10"/>   
+        <Patch  name="Bright Mono"    drum="0"   hbank="93" lbank="1" prog="11"/>   
+        <Patch  name="SoftPdl Mono"   drum="0"   hbank="93" lbank="1" prog="12"/>   
+        <Patch  name="Mellow Piano"   drum="0"   hbank="93" lbank="1" prog="13"/>   
+        <Patch  name="Enhanced Pno"   drum="0"   hbank="93" lbank="1" prog="14"/>   
+        <Patch  name="Comp.Piano"     drum="0"   hbank="93" lbank="1" prog="15"/>   
+        <Patch  name="HonkytonkPno"   drum="0"   hbank="93" lbank="1" prog="16"/>   
+        <Patch  name="NewAgeGrand1"   drum="0"   hbank="93" lbank="1" prog="17"/>   
+        <Patch  name="NewAgeGrand2"   drum="0"   hbank="93" lbank="1" prog="18"/>   
+        <Patch  name="Requiem"        drum="0"   hbank="93" lbank="1" prog="19"/>   
+        <Patch  name="Soundscape"     drum="0"   hbank="93" lbank="1" prog="20"/>   
+        <Patch  name="Grand w/Str"    drum="0"   hbank="93" lbank="1" prog="21"/>   
+        <Patch  name="Concerto 1"     drum="0"   hbank="93" lbank="1" prog="22"/>   
+        <Patch  name="Concerto 2"     drum="0"   hbank="93" lbank="1" prog="23"/>   
+        <Patch  name="SoftpadGrand"   drum="0"   hbank="93" lbank="1" prog="24"/>   
+        <Patch  name="Synpad Grand"   drum="0"   hbank="93" lbank="1" prog="25"/>   
+        <Patch  name="Vox Grand 1"    drum="0"   hbank="93" lbank="1" prog="26"/>   
+        <Patch  name="Vox Grand 2"    drum="0"   hbank="93" lbank="1" prog="27"/>   
+        <Patch  name="Oohs Piano"     drum="0"   hbank="93" lbank="1" prog="28"/>   
+        <Patch  name="Air Grand"      drum="0"   hbank="93" lbank="1" prog="29"/>   
+        <Patch  name="GtrPad Grand"   drum="0"   hbank="93" lbank="1" prog="30"/>   
+        <Patch  name="PhasePad Pno"   drum="0"   hbank="93" lbank="1" prog="31"/>   
+        <Patch  name="HeavenPadPno"   drum="0"   hbank="93" lbank="1" prog="32"/>   
+        <Patch  name="Somber Pad"     drum="0"   hbank="93" lbank="1" prog="33"/>   
+        <Patch  name="Wet Chorus"     drum="0"   hbank="93" lbank="1" prog="34"/>   
+        <Patch  name="Nylon Grand"    drum="0"   hbank="93" lbank="1" prog="35"/>   
+        <Patch  name="FM EP Grand"    drum="0"   hbank="93" lbank="1" prog="36"/>   
+        <Patch  name="Bell Grand"     drum="0"   hbank="93" lbank="1" prog="37"/>   
+        <Patch  name="Bellvox Pno"    drum="0"   hbank="93" lbank="1" prog="38"/>   
+        <Patch  name="StackedGrand"   drum="0"   hbank="93" lbank="1" prog="39"/>   
+        <Patch  name="Hard Stack 1"   drum="0"   hbank="93" lbank="1" prog="40"/>   
+        <Patch  name="Hard Stack 2"   drum="0"   hbank="93" lbank="1" prog="41"/>   
+        <Patch  name="PianoBrass"     drum="0"   hbank="93" lbank="1" prog="42"/>   
+        <Patch  name="PianoBrs fff"   drum="0"   hbank="93" lbank="1" prog="43"/>   
+        <Patch  name="Gig Split 1"    drum="0"   hbank="93" lbank="1" prog="44"/>   
+        <Patch  name="Gig Split 2"    drum="0"   hbank="93" lbank="1" prog="45"/>   
+        <Patch  name="Gig Split 3"    drum="0"   hbank="93" lbank="1" prog="46"/>   
+        <Patch  name="Throb Piano"    drum="0"   hbank="93" lbank="1" prog="47"/>   
+        <Patch  name="Feedback Pno"   drum="0"   hbank="93" lbank="1" prog="48"/>   
+        <Patch  name="Eastern 5th"    drum="0"   hbank="93" lbank="1" prog="49"/>   
+    </PatchGroup>
+
+</MidiInstrument>
+
+</muse>

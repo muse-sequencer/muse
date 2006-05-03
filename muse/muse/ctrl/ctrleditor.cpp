@@ -1,0 +1,412 @@
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//    $Id: ctrleditor.cpp,v 1.12 2006/01/28 19:11:20 wschweer Exp $
+//  (C) Copyright 2005 Werner Schweer (ws@seh.de)
+//=========================================================
+
+#include "ctrleditor.h"
+#include "track.h"
+#include "awl/tcanvas.h"
+#include "ctrl.h"
+#include "midictrl.h"
+#include "gconfig.h"
+#include "song.h"
+#include "part.h"
+
+static const int HANDLE1 = 6;
+static const int HANDLE2 = 3;
+static const int veloWidth = 3;
+
+//---------------------------------------------------------
+//   CtrlEditor
+//---------------------------------------------------------
+
+CtrlEditor::CtrlEditor()
+      {
+      _drawCtrlName = false;
+      dragy         = -1;
+      lselected     = 0;
+      dragy         = -1;
+      singlePitch   = -1;
+      drawRuler     = false;
+      }
+
+//---------------------------------------------------------
+//   drawHandle
+//---------------------------------------------------------
+
+inline static void drawHandle(QPainter& p, int x, int y, int lselected)
+      {
+      p.fillRect(x-HANDLE2, y-HANDLE2, HANDLE1, HANDLE1,
+         x == lselected ? Qt::red : Qt::yellow);
+      }
+
+//---------------------------------------------------------
+//   paint
+//---------------------------------------------------------
+
+void CtrlEditor::paint(QPainter& p, const QRect& r)
+      {
+      if (!ctrl())
+            return;
+      int from = r.x() - HANDLE1;
+      if (from < 0)
+            from = 0;
+      int to = r.x() + r.width() + HANDLE1;
+      int th = cheight();
+
+      bool aR = ctrlTrack()->autoRead();
+      p.setPen(QPen(aR ? Qt::white : Qt::gray, 2));
+
+      TType tt = track()->timeType();
+
+      MidiController::ControllerType type = midiControllerType(ctrl()->id());
+      if (type == MidiController::Velo) {
+            p.setPen(QPen(Qt::blue, veloWidth));
+            PartList* pl = track()->parts();
+            for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
+                  Part* part = ip->second;
+                  int pos1   = tc()->pos2pix(*part);
+                  int pos2   = tc()->pos2pix(part->end());
+
+                  if (pos2 <= from)
+                        continue;
+                  if (pos1 > to)
+                        break;
+
+                  EventList* events = part->events();
+                  for (iEvent e = events->begin(); e != events->end(); ++e) {
+                        if (e->second.type() != Note)
+                              continue;
+                        int pos = tc()->pos2pix(e->second.pos() + *part);
+                        if (pos <= from)
+                              continue;
+                        if (pos > to)
+                              break;
+                        int id = ctrl()->id();
+                        if (id == CTRL_VELOCITY ||
+                          (CTRL_SVELOCITY && e->second.pitch() == singlePitch)) {
+                        	int y1 = ctrl()->val2pixelR(e->second.velo(), th);
+                        	p.drawLine(pos, th, pos, y1);
+                        	}
+                        }
+                  }
+            }
+      else {
+            if (!ctrl()->empty()) {
+                  int x1 = from, y1, x2, y2;
+                  ciCtrlVal i = ctrl()->begin();
+                  if (i != ctrl()->end()) {
+                        x1 = tc()->pos2pix(Pos(i->first, tt));
+                        if (dragy != -1 && lselected == x1)
+                              y1 = dragy;
+                        else
+                              y1 = ctrl()->val2pixelR(i->second, th);
+                        if (x1 >= from)
+                              drawHandle(p, x1, y1, lselected);
+                        }
+                  for (; i != ctrl()->end(); ++i) {
+                        x2 = tc()->pos2pix(Pos(i->first, tt));
+                        if (dragy != -1 && lselected == x2)
+                              y2 = dragy;
+                        else {
+                              y2 = ctrl()->val2pixelR(i->second, th);
+                              }
+                        if (x2 >= to)
+                              break;
+                        if (x2 >= from) {
+                              if (ctrl()->type() & Ctrl::DISCRETE) {
+                                    p.drawLine(x1, y1, x2, y1);
+                                    p.drawLine(x2, y1, x2, y2);
+                                    }
+                              else
+                                    p.drawLine(x1, y1, x2, y2);
+                              drawHandle(p, x1, y1, lselected);
+                              }
+                        x1 = x2;
+                        y1 = y2;
+                        }
+                  if (x1 < to) {
+                        drawHandle(p, x1, y1, lselected);
+                        if (i == ctrl()->end())
+                              x2 = to;
+                        if (ctrl()->type() & Ctrl::DISCRETE)
+                              y2 = y1;
+                        p.drawLine(x1, y1, x2, y2);
+                        }
+                  }
+            if (!aR) {
+                  p.setPen(QPen(Qt::white, 2));
+                  int y = ctrl()->val2pixelR(ctrl()->schedValRaw(), th);
+                  p.drawLine(r.x(), y, r.x() + r.width(), y);
+                  }
+            }
+
+      if (drawRuler) {
+            p.setPen(QPen(Qt::white, 2));
+      	p.setRenderHint(QPainter::Antialiasing, true);
+            p.drawLine(ruler1, ruler2);
+            }
+      //
+      // this does not work well a.t.m:
+      //
+      if (_drawCtrlName) {
+            QString s(ctrl()->name());
+            p.setFont(*config.fonts[3]);
+            p.setPen(Qt::black);
+            QFontMetrics fm(*config.fonts[3]);
+            int ly = fm.lineSpacing() + 2;
+            p.drawText(2, ly, s);
+            }
+      }
+
+//---------------------------------------------------------
+//   mousePress
+//---------------------------------------------------------
+
+void CtrlEditor::mousePress(const QPoint& pos, int button)
+      {
+      int wh = cheight();
+      int y  = pos.y();
+      int x  = pos.x();
+
+      if (tc()->tool() == PencilTool) {
+            CVal val = ctrl()->pixel2val(y, wh);
+            selected = tc()->pix2pos(x);
+            if (ctrl()->id() == CTRL_VELOCITY || ctrl()->id() == CTRL_SVELOCITY)
+                  song->startUndo();
+            else {
+                  song->addControllerVal(ctrlTrack(), ctrl(), selected, val);
+                  tc()->widget()->update();
+                  }
+            lselected = x;
+            dragy     = y;
+            dragx     = x;
+            }
+      else if (tc()->tool() == PointerTool) {
+      	if (ctrl()->id() == CTRL_VELOCITY || ctrl()->id() == CTRL_SVELOCITY) {
+                  dragx = x;
+                  song->startUndo();
+                  return;
+                  }
+
+            Pos pos1(tc()->pix2pos(x - HANDLE2));
+            Pos pos2(tc()->pix2pos(x + HANDLE2));
+
+            TType tt = track()->timeType();
+            ciCtrlVal s = ctrl()->upper_bound(pos1.time(tt));
+            ciCtrlVal e = ctrl()->upper_bound(pos2.time(tt));
+            for (ciCtrlVal i = s; i != e; ++i) {
+                  int yy = ctrl()->val2pixelR(i->second, wh);
+                  if ((yy >= (y-HANDLE2)) && (yy < (y + HANDLE2))) {
+                        if (tt == AL::TICKS)
+                              selected.setTick(i->first);
+                        else
+                              selected.setFrame(i->first);
+                        lselected = tc()->pos2pix(selected);
+                        if (button == Qt::RightButton) {
+                              song->removeControllerVal(ctrlTrack(), ctrl()->id(), i->first);
+                              dragy = -1;
+                              }
+                        else
+                              dragy = yy;
+                        tc()->widget()->update();
+                        break;
+                        }
+                  }
+            }
+      else if (tc()->tool() == DrawTool) {
+            ruler1 = ruler2 = pos;
+            drawRuler = true;
+            }
+      }
+
+//---------------------------------------------------------
+//   mouseRelease
+//---------------------------------------------------------
+
+void CtrlEditor::mouseRelease()
+      {
+      if (tc()->tool() == DrawTool) {
+            song->startUndo();
+            drawRuler = false;
+            int from, to, y1, y2;
+            if (ruler1.x() > ruler2.x()) {
+                  from = ruler2.x();
+                  to = ruler1.x();
+            	y1 = ruler2.y();
+            	y2 = ruler1.y();
+            	}
+      	else {
+            	from = ruler1.x();
+            	to   = ruler2.x();
+            	y1   = ruler1.y();
+            	y2   = ruler2.y();
+            	}
+      	MidiController::ControllerType type = midiControllerType(ctrl()->id());
+      	if (type == MidiController::Velo) {
+            	PartList* pl = track()->parts();
+            	for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
+                  	Part* part = ip->second;
+	                  int pos1   = tc()->pos2pix(*part);
+      	            int pos2   = tc()->pos2pix(part->end());
+
+            	      if (pos2 <= from)
+                  	      continue;
+	                  if (pos1 > to)
+      	                  break;
+
+	                  EventList* events = part->events();
+      	            for (iEvent e = events->begin(); e != events->end(); ++e) {
+	                        if (e->second.type() != Note)
+      	                        continue;
+	                        int pos = tc()->pos2pix(e->second.pos() + *part);
+      	                  if (pos <= from)
+	                              continue;
+      	                  if (pos > to)
+	                              break;
+	                        int id = ctrl()->id();
+      	                  if (id == CTRL_VELOCITY ||
+	                          (CTRL_SVELOCITY && e->second.pitch() == singlePitch)) {
+                                	int y = y1 + (y2 - y1) * (pos - from) / (to - from);
+            				int val = (ctrl()->pixel2val(y, cheight())).i;
+                  			Event clone = e->second.clone();
+                  			clone.setB(val);
+                  			song->changeEvent(e->second, clone, part);
+                  			song->undoOp(UndoOp::ModifyEvent, clone, e->second, part);
+                  	      	}
+                        	}
+	                  }
+                  }
+            else {
+                  printf("ctrleditor:: not implemented\n");
+                  }
+            song->endUndo(SC_EVENT_MODIFIED);
+         	tc()->widget()->update();
+            return;
+            }
+      if (ctrl()->id() == CTRL_VELOCITY || ctrl()->id() == CTRL_SVELOCITY)
+            song->endUndo(SC_EVENT_MODIFIED);
+      else {
+            if (dragy != -1) {
+                  int wh = cheight();
+                  CVal val = ctrl()->pixel2val(dragy, wh);
+                  // modify controller:
+                  song->addControllerVal(ctrlTrack(), ctrl(), selected, val);
+                  dragy = -1;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   mouseMove
+//     called only with mouse button pressed
+//---------------------------------------------------------
+
+void CtrlEditor::mouseMove(const QPoint& pos)
+      {
+      if (tc()->tool() == DrawTool) {
+            ruler2 = pos;
+         	tc()->widget()->update();
+            return;
+            }
+      if (ctrl()->id() == CTRL_VELOCITY || ctrl()->id() == CTRL_SVELOCITY) {
+            AL::Pos p1(tc()->pix2pos(dragx));
+            AL::Pos p2(tc()->pix2pos(pos.x()));
+            dragx = pos.x();
+
+            int wh  = cheight();
+            int val = (ctrl()->pixel2val(pos.y(), wh)).i;
+            unsigned tick1 = p1.tick();
+            Part* part     = track()->parts()->findPart(tick1);
+            if (part == 0)
+                  return;
+            unsigned tick2 = p2.tick();
+            if (tick1 > tick2) {
+                  int tmp = tick2;
+                  tick2 = tick1;
+                  tick1 = tmp;
+                  }
+            if (part->tick() > tick1)
+                  tick1 = 0;
+            else
+                  tick1 -= part->tick();   // event time is relative to part
+            if (part->tick() > tick2)
+                  tick2 = 0;
+            else
+                  tick2 -= part->tick();
+
+            //
+            // change velocity for all notes at tick time
+            //
+            EventList* el = part->events();
+            EventList tel;
+            for (iEvent ie = el->lower_bound(tick1); ie != el->lower_bound(tick2); ie++) {
+                  Event e = ie->second;
+                  if (!e.isNote() || e.dataB() == val)
+                        continue;
+                  tel.add(e);
+                  }
+            for (iEvent ie = tel.begin(); ie != tel.end(); ++ie) {
+                  Event e     = ie->second;
+                  Event clone = e.clone();
+                  clone.setB(val);
+                  song->changeEvent(e, clone, part);
+                  song->undoOp(UndoOp::ModifyEvent, clone, e, part);
+                  }
+            }
+      else {
+            if (dragy != -1)
+                  dragy = pos.y();
+            }
+      tc()->widget()->update();
+      }
+
+//---------------------------------------------------------
+//   populateControllerMenu
+//---------------------------------------------------------
+
+void CtrlEditor::populateControllerMenu(QMenu* ctrlMenu)
+      {
+      ctrlMenu->clear();
+      int idx = 0;
+
+      QAction* a;
+      if (track()->type() == Track::MIDI) {
+            a = ctrlMenu->addAction("Velocity");
+            a->setData(CTRL_VELOCITY);
+            if (CTRL_VELOCITY == ctrl()->id())
+                  ctrlMenu->setActiveAction(a);
+            if (((MidiTrack*)(track()))->drumMap()) {
+            	a = ctrlMenu->addAction("Single Velocity");
+            	a->setData(CTRL_SVELOCITY);
+            	if (CTRL_SVELOCITY == ctrl()->id())
+                  	ctrlMenu->setActiveAction(a);
+                  }
+            }
+
+      ControllerNameList* cn = track()->controllerNames();
+      for (iControllerName i = cn->begin(); i != cn->end(); ++i, ++idx) {
+            a = ctrlMenu->addAction(i->name);
+            a->setData(i->id);
+            if (i->id == ctrl()->id())
+                  ctrlMenu->setActiveAction(a);
+            }
+      if (track()->type() == Track::MIDI) {
+            MidiChannel* mc = ((MidiTrack*)track())->channel();
+            if (mc) {
+                  ControllerNameList* cn = mc->controllerNames();
+                  for (iControllerName i = cn->begin(); i != cn->end(); ++i, ++idx) {
+                        a = ctrlMenu->addAction(i->name);
+                        a->setData(i->id);
+                        if (i->id == ctrl()->id())
+                              ctrlMenu->setActiveAction(a);
+                        }
+                  }
+            }
+      a = ctrlMenu->addAction("other");
+      a->setData(CTRL_OTHER);
+      delete cn;
+      }
+

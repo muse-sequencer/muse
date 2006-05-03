@@ -1,0 +1,302 @@
+%====================================================================
+%
+%     MusE Manual
+%     this is the MusE manual
+%
+% (C) 2006 Copyright: Werner Schweer and Others
+%====================================================================
+
+%----------------------------------------------------------
+%     Setup
+%----------------------------------------------------------
+
+%\showframe
+%\showsetups
+\usemodule[chart]
+\setupcolors[state=start]
+\setupbodyfont[Palatino]
+\language[en]
+\enableregime[il1]
+
+\startuseMPgraphic{FunnyFrame}
+      picture p; numeric o; path a, b; pair c;
+      p := textext.rt(\MPstring{FunnyFrame});
+      o := BodyFontSize;
+      a := unitsquare xyscaled(OverlayWidth,OverlayHeight);
+      p := p shifted (20, OverlayHeight-ypart center p);
+      drawoptions (withpen pencircle scaled 1pt withcolor .625red);
+      b := a superellipsed .95;
+      fill b withcolor .85white; draw b;
+      b := (boundingbox p) superellipsed .95;
+      fill b withcolor .85white; draw b;
+      draw p withcolor black;
+      setbounds currentpicture to a;
+    \stopuseMPgraphic
+
+\defineoverlay[FunnyFrame][\useMPgraphic{FunnyFrame}]
+\defineframedtext[FunnyText][frame=off,background=FunnyFrame]
+\def\StartFrame{\startFunnyText}
+\def\StopFrame{\stopFunnyText}
+\def\FrameTitle#1%
+ {\setMPtext{FunnyFrame}{\hbox spread 1em{\hss\strut#1\hss}}}
+\setMPtext{FunnyFrame}{}
+
+
+\define\M{MusE}
+\define[1]\Index{{\it #1}\marginpar{#1}\index{#1}}
+
+\defineindenting[Cmdi][text=,separator=,width=fit,distance=1em]
+
+\define[1]\Cmd{
+  \Cmdi
+  \framed[
+     background=color,
+     width=fit,
+     align=right,
+     backgroundcolor=lightgray,
+     framecolor=blue]
+     {\tt\space #1}}
+
+\define[2]\CCmd{
+  \Cmdi
+  \framed[
+     background=color,
+     width=broad,
+     align=right,
+     backgroundcolor=lightgray,
+     framecolor=blue]
+     {\vbox{\hbox{\tt\space #1}\hbox{\tt\space #2}}}}
+
+
+%\define\startdescription{\startpacked}
+\define\startdescription{}
+%\define\stopdescription{\stoppacked}
+\define\stopdescription{}
+
+\define[1]\Fig{\hbox{\externalfigure[pics/#1]}}
+
+\define[2]\Screen{
+      \placefigure[here][fig:#1]{#2}{\externalfigure[pics/#1][scale=1600]}
+      }
+\definedescription[Option][
+      location=left,
+      headstyle=bold,
+      width=4em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\definedescription[Sc][
+      location=left,
+      headstyle=bold,
+      width=4em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\definedescription[Filetype][
+      location=left,
+      headstyle=bold,
+      width=6em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\definedescription[FileList][
+      location=left,
+      headstyle=bold,
+      width=7em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\definedescription[Input][
+      location=left,
+      headstyle=bold,
+      width=9em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\definedescription[InputN][
+      location=left,
+      headstyle=bold,
+      width=6em,
+      before={\startnarrower[left]\setupblank[0pt]},
+      after={\stopnarrower\setupblank}]
+
+\define[2]\Figure{
+      \placefigure
+         [#1][fig:#2]{}
+         {\externalfigure[pics/#2]}
+         }
+
+\define[1]\Menu{
+      \placefigure[right][fig:#1]{}
+         {\externalfigure[pics/#1][scale=2000]}
+         }
+
+\definedescription[Opt][location=hanging,headstyle=bold,width=broad]
+
+%----------------------------------------------------------
+%     Body
+%----------------------------------------------------------
+
+\starttext
+   \language[en]
+   \mainlanguage[en]
+   \startstandardmakeup[doublesided=no]
+      \definebodyfont[10pt,11pt,12pt][rm][tfe=Regular at 48pt]
+      \tfe\setupinterlinespace
+      \hfill \color[red]{\M}\par
+      \hfill \color[blue]{Manual}\par
+      \vfill
+      \rightaligned{\externalfigure[../titlelogo.jpg]}
+      \vfill
+      \hfill \color[blue]{EN}\par
+      \definebodyfont[10pt,11pt,12pt][rm][tfb=Regular at 24pt]
+      \tfb\setupinterlinespace
+      \hfill Version 1.0pre1\par
+      \stopstandardmakeup
+
+   \startstandardmakeup[page=no]
+      \vfill
+      \M\ is hosted on SourceForge:\par
+      \type{http://mscore.sourceforge.net/}
+      \blank[line]
+      This document was created using \pdfTeX\ and the macro package
+      \ConTeXt\.
+      \blank
+      \copyright 2006 Werner Schweer and Others
+      \stopstandardmakeup
+
+   \completecontent
+
+\chapter{Introduction}
+   \section{Where from and where to go}
+      There's a long history of sequencers. In the beginning there were
+      only analogue synthesizers, which could only be played live. The classical
+      example is presumably the Moog. After the introduction of MIDI, the first
+      devices appeared where music data could be saved and replayed, in short:
+      Sequencers. To program these devices, i.e. to record and process music can
+      rather be compared with assembler programming of computers than with making
+      music. But soon the first sequencers for computers were developed. At
+      first, one could only process MIDI data, since the corresponding hardware
+      capacities were missing. But those developed at high speed and thus the
+      quality of hardware - and what is most important in this case: sound
+      cards - improved that much, that one could even do without external tape
+      drives. Now multi-track audio on-line recordings were possible and there
+      were even astounding possibilities for the post-editing of large projects.
+      Hard to believe, but nowadays computers can do even more.
+      Software-synthesizers in combination with software sequencers
+      (\M\ for example!) offer apparently unlimited possibilities of
+      variation. In fact, one can compose without even touching the wheel or
+      the button of a "real" synthesizer. It will need time, however, until this
+      software will be affordable, as the prices are immense. That's where \M\
+      enters the game!
+
+     \section{\M\ and its competitors}
+      Of course there will always be "better" programs or not! This decision is
+      due to strongly subjective criteria. On the one hand, it depends on what one
+      is aiming at. On the other hand, it depends on individual technical knowledge
+      in the field of synthesizers/sequencers. To the time that I write this article,
+      there are unfortunately no commercial sequencers for Linux, not to speak of
+      whole studios like Cubase or Logic. So the Linux-user can only choose between
+      a parallel installation either to Mac (if one has a PPC architecture) or to
+      Windows (in case of IBM Hardware). But where do those programs actually beat
+      \M? Certainly not in their price because commercial, proprietary software
+      is expensive. That's where programs like \M\ become interesting because
+      everybody can have it for free. Furthermore they are "open source", which is
+      another important point, because thereby the users get the opportunity of
+      finding bugs themselves and doing away with them.
+
+      Naturally, all projects start small. It's the same with \M. With \M,
+      Linux enters a new dimension of MIDI and Audio processing. Together with
+      Jack, even multi-track on-line recordings can be realized. In the the next
+      few years \M\ will certainly evolve strongly and with some luck there will
+      be an easier installation and more comfortable manuals.
+
+     \section{Features of \M}
+
+      Main features of \M:
+
+      \startitemize[1,packed]
+          \head Arranger
+          	The arranger window structures a song into tracks and
+            parts.
+
+	    \head Pianoroll Editor
+
+	    \head Drum Editor
+
+          \head Mastertrack
+            Allows you to edit tempo changes and time signatures
+
+          \head Controller Editor
+		Allows to graphically edit controller values.
+
+          \head Recording
+		Muse allows simultaneous midi and audio recording. 
+            Midi can be recorded non realtime step by step.
+
+	    \head Editing
+          	Midi and audio editing can be done even during play.
+
+	    \head LADSPA, JACK etc. compatible
+
+        \stopitemize
+
+
+\chapter{Invoking \M}
+   \section{Invoking \M}
+      \M\ is invoked from the command line by typing in:
+
+      \Cmd{muse}
+
+      Optionally, you can use command line options of the form:
+
+      \Cmd{muse <options> <midifile>}
+
+      \definedescription[Mops][location=left,headstyle=bold]
+
+      \Mops{\tt <options>:}
+            see below for a list of available options.
+      \Mops{\tt <midifile>:}
+            can be either a standard MIDI file or a \M\ file
+            ({\tt *.med, *.med.gz or *.med.bz2}).
+
+   \section{Command Line Options}
+
+      \M\ accepts some options as listed below:
+
+      \blank[medium]
+      \Option{ -v}print version\par
+      \Option{ -m}MIDI only mode\par
+      \Option{ -d}debug mode: no threads, no RT\par
+      \Option{ -D}debug mode: enable some debug messages\par
+      \Option{ -i}debug mode: trace midi Input\par
+      \Option{ -o}debug mode: trace midi Output\par
+      \Option{ -p}don't load LADSPA plugins\par
+      \blank[big]
+
+      Example:
+
+       \Cmd{muse -i mysong.med}
+
+       will add trace midi input and open mysong.med on startup.
+
+   \section{File types used by \M}
+
+         \Filetype{\textasciitilde/.MusE}
+            \M\ Configuration File (``\textasciitilde´´ refers to your home directory
+            aka "/home/tux")\par
+         \Filetype{\textasciitilde/.musePrj}
+            Hidden Project File; stores list of last projects\par
+         \Filetype{.med}
+            \M\ song file; internal \M format\par
+         \Filetype{.mid}
+            midi file; can be imported or exported\par
+         \Filetype{.kar}
+            karaoke: midi file with additional information; some types
+            can be imported\par
+
+\startappendices
+   \component ../gpl.tex
+   \completeindex
+   \stopappendices
+\stoptext

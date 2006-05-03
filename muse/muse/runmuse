@@ -1,0 +1,3 @@
+#!/bin/sh
+set_rtlimits -r=80 /home/ws/projects/muse/muse/muse/muse $*
+
