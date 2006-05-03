@@ -1,5 +1,14 @@
 #!/bin/sh
 
+#
+#  out of source build
+#     all generated files go into subdirectory "build"
+#
+#  NOTICE:
+#     this does (yet) not work; for unknown reasons *.ui file
+#     dependencies are not properly handled
+#
+
 if test ! -d build; 
    then
       echo "+creating build directory"

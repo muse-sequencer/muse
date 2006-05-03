@@ -150,7 +150,7 @@ set(CMAKE_CXX_FLAGS
    "-g -Wall -Wextra -Winvalid-pch -fno-exceptions -fno-rtti"
    )
 
-subdirs(al awl grepmidi plugins midiplugins synti muse)
+subdirs(al awl grepmidi plugins midiplugins synti muse share)
 
 include_directories(
    . 

@@ -18,7 +18,10 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-install_files( /share/muse-1.0pre1/html *.html 
+#
+# TODO: fill with useful data
+#
+install_files( /share/muse-1.0pre1/html .html 
       index.html 
       )
 

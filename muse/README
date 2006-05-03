@@ -28,9 +28,7 @@ details.
       - ALSA 1.0 or newer
         http://www.alsa-project.org/
 
-      - gcc 3.4.x
-        NOTE: you should compile MusE with the same compiler
-                you used to compile QT
+      - gcc 4.x.x
 
       - libsndfile >= 1.0.1 
         http://www.zip.com.au/~erikd/libsndfile/
@@ -56,16 +54,15 @@ details.
             tar xvofj muse-x.x.x.tar.bz2
 
       - enter dirctory muse-x.x.x:
-            MAKE SURE YOU SET YOUR 'QTDIR' ENVIRONMENT VARIABLE
-            run configure
-            run make all
+            run "ccmake" or "cmake ." to create Makefiles
+            run "make all"
 
       - as root run:
             make install
         to install MusE
 
   =============================
-      some known bugs
+      known bugs
   =============================
 
       - many
