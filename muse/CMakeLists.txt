@@ -38,8 +38,27 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
 
+##
+##  look for Qt4
+##
+
 find_package(Qt4)
+
+if (NOT QT4_FOUND)
+      message(FATAL_ERROR "Fatal error: QT (version >= 4.1.0) required")
+endif (NOT QT4_FOUND)
+
 include(${QT_USE_FILE})
+
+##
+## find texexec (ConTeXt)
+##
+
+find_path( TEXEXEC_PATH texutil )
+if (NOT TEXEXEC_PATH)
+      message("texexec from ConTeXt package not found. Documentation will not be build")
+endif (NOT TEXEXEC_PATH)
+
 
 ##
 ## find doxygen
@@ -158,7 +177,7 @@ set(CMAKE_CXX_FLAGS
    "-g -Wall -Wextra -Winvalid-pch -fno-exceptions -fno-rtti"
    )
 
-subdirs(al awl grepmidi plugins midiplugins synti muse share)
+subdirs(al awl grepmidi plugins midiplugins synti muse share doc)
 
 include_directories(
    . 

@@ -1,11 +1,5 @@
-      convert make system to cmake
-            - change *.ui names (remove *base*)
-            - rearrange code if necessary
-
-      move to subversion
-      
 -----------------------------TODO-------------------------------------------
-(1.2.2006)
+(4.5.2006)
 
 BUGS
 	- updating the gui during midi recording is too slow;
@@ -57,8 +51,6 @@ CLEANUPS
             - redirect all *xpm program references to resource file
             - remove icon.cpp icon.h
 
-	- implement main widget with qt designer
-
 Wishlist
 	- it should be possible to show controller events in the
         tracklist for tracktypes which cannot contain
@@ -67,7 +59,7 @@ Wishlist
 
 	- the controller selector in "Add Controller" should be
         implemented as a modal dialog. This allows for
-        presenting the list of controller in a structured
+        presenting the list of controller in a more structured
         way.
 
 
