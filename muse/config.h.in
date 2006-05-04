@@ -20,3 +20,8 @@
 
 #cmakedefine DSSI_SUPPORT
 #cmakedefine VST_SUPPORT
+
+#define INSTALL_NAME     "${MusE_INSTALL_NAME}"
+#define INSTPREFIX       "${CMAKE_INSTALL_PREFIX}"
+#define VERSION          "${MusE_VERSION_FULL}"
+

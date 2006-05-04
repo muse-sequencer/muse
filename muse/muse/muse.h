@@ -21,10 +21,6 @@
 #ifndef __APP_H__
 #define __APP_H__
 
-#define VERSION         "1.0"
-#define PACKAGEVERSION  "1.0"
-#define INSTPREFIX      "/usr/bin"
-
 #include "ui_muse.h"
 #include "cobject.h"
 #include "widgets/tools.h"

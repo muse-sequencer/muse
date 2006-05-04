@@ -1851,27 +1851,18 @@ static void catchSignal(int sig)
 
 int main(int argc, char* argv[])
       {
-      puts(PACKAGEVERSION);
-
       museUser = QString(getenv("MUSEHOME"));
       if (museUser.isEmpty())
             museUser = QString(getenv("HOME"));
       QString museGlobal;
       const char* p = getenv("MUSE");
-      if (p)
-            museGlobal = p;
+      museGlobal = p ? p : INSTPREFIX;
 
-      if (museGlobal.isEmpty()) {
-            QString museGlobal(INSTPREFIX);
-            museGlobalLib   =  museGlobal + "/lib/" PACKAGEVERSION;
-            museGlobalShare =  museGlobal + "/share/" PACKAGEVERSION;
-            }
-      else {
-            museGlobalLib   = museGlobal + "/lib/"   PACKAGEVERSION;
-            museGlobalShare = museGlobal + "/share/" PACKAGEVERSION;
-            }
-      museProject = museProjectInitPath; //getcwd(0, 0);
-      configName  = QString(getenv("HOME")) + QString("/." PACKAGEVERSION);
+      museGlobalLib   =  museGlobal + "/lib/"   INSTALL_NAME;
+      museGlobalShare =  museGlobal + "/share/" INSTALL_NAME;
+
+      museProject = museProjectInitPath;
+      configName  = museUser + QString("/." INSTALL_NAME);
 
       srand(time(0));   // initialize random number generator
       initMidiController();

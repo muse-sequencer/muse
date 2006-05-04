@@ -1,6 +1,17 @@
 -----------------------------TODO-------------------------------------------
 (4.5.2006)
-
+	- manage project subdirectories (better organize wave files)
+            - muse is always associated with a project, there is no
+              "No Project" or "Default Project"
+            - muse on start asks for a project name (select or create)
+            - midi files cannot be loaded directly als project anymore,
+              you have to first create a project and then call
+              "import midifile"
+            - "New File" and "Select File" are combined into
+              "Select Project"
+            - there is no "Save As" anymore (your project always has a
+              name)
+              
 BUGS
 	- updating the gui during midi recording is too slow;
         a new, faster implementation is needed
@@ -38,8 +49,6 @@ FEATURES
 	- Import MusE 0.7 song files
 
 	- NEW function with templates
-
-	- manage project subdirectories (better organize wave files)
 
 
 CLEANUPS
