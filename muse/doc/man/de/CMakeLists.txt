@@ -22,7 +22,9 @@ set (SRC man-de.tex)
 
 add_custom_command ( 
       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/man-de.pdf
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/man-de.tex
+      DEPENDS 
+            ${CMAKE_CURRENT_SOURCE_DIR}/man-de.tex
+            ${CMAKE_CURRENT_SOURCE_DIR}/projekte.tex
       COMMAND ${TEXEXEC_PATH}/texexec 
       ARGS  --language=en --verbose --batch --pdf --result=man-de.pdf man-de.tex
       )

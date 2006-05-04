@@ -45,7 +45,10 @@ set(QT_USE_QTDESIGNER TRUE)
 find_package(Qt4)
 
 if (NOT QT4_FOUND)
-      message(FATAL_ERROR "Fatal error: QT (version >= 4.1.0) required")
+      message(FATAL_ERROR "Fatal error: QT (version >= 4.1.0) required.\n"
+      "Cmake tries to detect QT4 by searching for 'qmake' in your PATH\n"
+      "If you have QT4 installed, make sure qmake is found in your PATH."
+      )
 endif (NOT QT4_FOUND)
 
 include(${QT_USE_FILE})

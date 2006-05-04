@@ -94,7 +94,7 @@
 \definedescription[Filetype][
       location=left,
       headstyle=bold,
-      width=4em,
+      width=6em,
       before={\startnarrower[left]\setupblank[0pt]},
       after={\stopnarrower\setupblank}]
 
@@ -145,6 +145,8 @@
       \hfill \color[red]{\M}\par
       \hfill \color[blue]{Manual}\par
       \vfill
+      \rightaligned{\externalfigure[../titlelogo.jpg]}
+      \vfill
       \hfill \color[blue]{DE}\par
       \definebodyfont[10pt,11pt,12pt][rm][tfb=Regular at 24pt]
       \tfb\setupinterlinespace
@@ -154,7 +156,7 @@
    \startstandardmakeup[page=no]
       \vfill
       \M\ wird von SourceForge gehostet:\par
-      \type{http://mscore.sourceforge.net/}
+      \type{http://sourceforge.net/projects/lmuse}
       \blank[line]
       Dieses Dokument wurde mit \pdfTeX\ und dem Macro Paket
       \ConTeXt\ erstellt.
@@ -166,8 +168,13 @@
 
 \chapter{Einführung}
    \section{Was ist \M?}
-      \M\ ist ein ein "open source" Programm, veröffentlicht unter der GNU General
-      Public License (GPL) (siehe Appendix).
+      \M\ ist ein ein ''open source'' Programm, veröffentlicht unter der GNU General
+      Public License (GPL) (siehe Anhang).
 
-\completeindex
+\component projekte.tex
+
+\startappendices
+   \component ../gpl.tex
+   \completeindex
+   \stopappendices
 \stoptext
