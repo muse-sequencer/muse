@@ -21,6 +21,9 @@ if test ! -d build;
       cd build
    fi
 
+# ahem... hack
+cp ../all.h .
+
 echo "+start top level make..."
 make
 

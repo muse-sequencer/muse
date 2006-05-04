@@ -19,6 +19,11 @@
 #=============================================================================
 
 project(muse)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
+set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # The MusE version number.
 SET(MusE_VERSION_MAJOR 1)
@@ -184,10 +189,14 @@ subdirs(al awl grepmidi plugins midiplugins synti muse share doc)
 
 include_directories(
    . 
-   ${CMAKE_CURRENT_BINARY}
    ${PROJECT_SOURCE_DIR} 
    ${PROJECT_SOURCE_DIR}/muse
    ${PROJECT_SOURCE_DIR}/muse/widgets
+   ${PROJECT_BINARY_DIR}/muse
+   ${PROJECT_BINARY_DIR}/muse/widgets
+   ${PROJECT_BINARY_DIR}/muse/instruments
+   ${PROJECT_BINARY_DIR}/muse/ctrl
+
    ${ALSA_INCDIR}
    ${JACK_INCDIR}
    ${SNDFILE_INCDIR}

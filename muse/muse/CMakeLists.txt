@@ -18,6 +18,10 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+include_directories(
+      ${CMAKE_CURRENT_BINARY_DIR}
+      )
+
 MACRO(WRAP_CPP outfiles )
    FOREACH(it ${ARGN})
       SET(${outfiles} ${${outfiles}} ${it}.cpp)
