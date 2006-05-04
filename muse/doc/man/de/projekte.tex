@@ -1,0 +1,66 @@
+\chapter{Projekte}
+
+  \section{Was ist ein Projekt?}
+
+      Ein \M\ Projekt \index{Projekt} ist ein Unterverzeichnis, 
+      welches alle 
+      Dateien des Projekts enthält. Dies sind im wesentlichen die 
+      aufgenommenen Wavedateien und die Projektdatei \index{Projektdatei}.
+      Die Projektdatei enthält alle
+      Informationen über das Projekt sowie alle Midi Daten soweit
+      vorhanden.
+
+      Beispiel einer Projekt Verzeichnisstruktur:
+
+      \starttyping
+      ~/muse
+            songs
+                  song1             
+                        song1.med
+                        rec1.wav
+                        rec1.wca
+                        rec2.wav
+                        rec2.wca
+                  song2
+                          .             
+                          .             
+      \stoptyping
+
+      Im oberen Beispiel ist {\tt song1} das Projektverzeichnis 
+      \index{Projektverzeichnis} und
+      {\tt song1.med} die Projektdatei. Die {\tt *.wav} Dateien sind
+      Audio Aufzeichnungen und die zugehörigen {\tt *.wca} Dateien 
+      enthalten vorberechnete Daten zum schnellen Zeichnen der 
+      Wellenformdarstellung auf den Bildschirm.
+
+      Das Standard-Projektverzeichnis \index{Standard-Projektverzeichnis}
+      {\tt ~/muse/songs} kann im
+      ''Präferenzen'' Menü eingestellt werden.
+
+   \section{Projekt auswählen}
+
+      Nach dem Start von \M\ muß immer zunächst ein Projekt geladen oder
+      ein neues Projekt erzeugt werden.
+
+      Normalerweise wird nach dem Start von \M\ das zuletzt bearbeitete
+      Projekt geladen. Wer das nicht mag kann unter ''Präferenzen'' 
+      einstellen, ob beim Start ein Standardprojekt \index{Standardprojekt}
+      geladen oder immer zunächst nach einen Projekt gefragt werden soll.
+
+          
+   \section{Projekt sichern (Backup)}
+
+      Es gibt keine in \M\ eingebaute Funktion zum Sichern von Projekten.
+      Da sich aber alle Projektdaten in einem Unterverzeichnis befinden,
+      können Standard-Tools zum sichern verwendet werden.
+
+      Projekte sind immer in sich komplett und enthalten keine Verweise
+      auf Dateien außerhalb des Projektverzeichnisses. Dies gilt nicht
+      für Soundfonts \index{Soundfonts}, die z.B. vom Fluid-Synthesizer 
+      Plugin verwendet
+      werden. Es wird empfohlen, diese Soundfonts auch als Kopie im
+      Projektverzeichnis abzulegen.
+
+      Projekte können auf der Platte ohne Probleme verschoben werden,
+      da sie keine absoluten Pfade enthalten.
+
