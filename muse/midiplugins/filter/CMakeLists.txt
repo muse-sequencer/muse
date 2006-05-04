@@ -31,6 +31,10 @@ add_library ( filter SHARED
       ${filter_uis}
       )
 
+target_link_libraries( filter
+   midiplugin
+   )
+
 # - tell cmake to name target filter.so instead of 
 #   libfilter.so
 # - use precompiled header files

@@ -28,6 +28,9 @@ add_library ( metronom SHARED
       ${metronom_mocs}
       ${metronom_uis}
       )
+target_link_libraries( metronom
+   midiplugin
+   )
 
 # - tell cmake to name target metronom.so instead of 
 #   libmetronom.so

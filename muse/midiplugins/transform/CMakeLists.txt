@@ -27,6 +27,10 @@ add_library ( transform SHARED
       ${transform_uis}
       )
 
+target_link_libraries( transform
+   midiplugin
+   )
+
 # - tell cmake to name target transform.so instead of 
 #   libtransform.so
 # - use precompiled header files
