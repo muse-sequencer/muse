@@ -18,5 +18,5 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-install_files( /share/muse-1.0pre1/instruments .*\\.idf )
+install_files( /share/${MusE_INSTALL_NAME}/instruments .*\\.idf )
 

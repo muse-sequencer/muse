@@ -21,7 +21,7 @@
 #
 # TODO: fill with useful data
 #
-install_files( /share/muse-1.0pre1/html .html 
+install_files( /share/${MusE_INSTALL_NAME}/html .html 
       index.html 
       )
 

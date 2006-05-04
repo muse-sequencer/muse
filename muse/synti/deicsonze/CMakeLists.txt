@@ -39,5 +39,5 @@ set_target_properties ( deicsonze
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
-install_targets ( /lib/muse-1.0pre1/synthi/ deicsonze )
+install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ deicsonze )
 

@@ -18,5 +18,5 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-install_files ( /share/muse-1.0pre1/wallpapers .*\\.gif )
-install_files ( /share/muse-1.0pre1/wallpapers .*\\.jpg )
+install_files ( /share/${MusE_INSTALL_NAME}/wallpapers .*\\.gif )
+install_files ( /share/${MusE_INSTALL_NAME}/wallpapers .*\\.jpg )

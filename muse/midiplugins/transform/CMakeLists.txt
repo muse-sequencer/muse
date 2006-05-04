@@ -36,5 +36,5 @@ set_target_properties ( transform
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
-install_targets ( /lib/muse-1.0pre1/midiplugins/ transform )
+install_targets ( /lib/${MusE_INSTALL_NAME}/midiplugins/ transform )
 

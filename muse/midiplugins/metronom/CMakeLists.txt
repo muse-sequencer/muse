@@ -38,5 +38,5 @@ set_target_properties ( metronom
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
-install_targets ( /lib/muse-1.0pre1/midiplugins/ metronom )
+install_targets ( /lib/${MusE_INSTALL_NAME}/midiplugins/ metronom )
 

@@ -20,11 +20,19 @@
 
 project(muse)
 
+# The MusE version number.
+SET(MusE_VERSION_MAJOR 1)
+SET(MusE_VERSION_MINOR 0)
+SET(MusE_VERSION_PATCH "pre1")
+SET(MusE_VERSION       "1.0")
+SET(MusE_VERSION_FULL  "1.0pre1")
+SET(MusE_INSTALL_NAME  "muse-1.0pre1")
+
 include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
 
-option ( ENABLE_DSSI             "enable Disposable Soft Synth Interface" ON)
-option ( ENABLE_VST              "enable VST/win support"                OFF)
-option ( ENABLE_FLUID            "enable fluidsynth softsynth plugins"    ON)
+option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface" ON)
+option ( ENABLE_VST    "enable VST/win support"                OFF)
+option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"    ON)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(QT_USE_QTXML TRUE)
@@ -163,3 +171,32 @@ include_directories(
    ${SNDFILE_INCDIR}
    ${SAMPLERATE_INCDIR}
    )
+
+#
+# If the cmake version includes cpack, use it
+#
+IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+
+  IF(EXISTS "${CMAKE_ROOT}/Modules/InstallRequiredSystemLibraries.cmake")
+      SET(CMAKE_INSTALL_MFC_LIBRARIES 1)
+      INCLUDE(InstallRequiredSystemLibraries)
+  ENDIF(EXISTS "${CMAKE_ROOT}/Modules/InstallRequiredSystemLibraries.cmake")
+
+  SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "MusE is a virtual audio studio environment")
+  SET(CPACK_PACKAGE_VENDOR "Werner Schweer and others")
+  SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+  SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+  SET(CPACK_PACKAGE_VERSION_MAJOR "${MusE_VERSION_MAJOR}")
+  SET(CPACK_PACKAGE_VERSION_MINOR "${MusE_VERSION_MINOR}")
+  SET(CPACK_PACKAGE_VERSION_PATCH "${MusE_VERSION_PATCH}")
+  SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
+  SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${MusE_INSTALL_NAME}")
+
+  SET(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})
+
+  SET(CPACK_PACKAGE_FILE_NAME "${CPACK_SOURCE_PACKAGE_FILE_NAME}-${CPACK_SYSTEM_NAME}")
+  SET(CPACK_STRIP_FILES "bin/muse;bin/grepmidi")
+  SET(CPACK_PACKAGE_EXECUTABLES "muse" "grepmidi")
+  INCLUDE(CPack)
+ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+

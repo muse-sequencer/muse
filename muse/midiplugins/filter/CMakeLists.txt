@@ -40,5 +40,5 @@ set_target_properties ( filter
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
-install_targets ( /lib/muse-1.0pre1/midiplugins/ filter )
+install_targets ( /lib/${MusE_INSTALL_NAME}/midiplugins/ filter )
 

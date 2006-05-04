@@ -25,3 +25,5 @@ add_library ( s1 SHARED s1.cpp )
 #
 set_target_properties ( s1 PROPERTIES PREFIX "" )
 
+install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ s1 )
+
