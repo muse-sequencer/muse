@@ -26,7 +26,11 @@ add_custom_command (
             ${CMAKE_CURRENT_SOURCE_DIR}/man-de.tex
             ${CMAKE_CURRENT_SOURCE_DIR}/projekte.tex
       COMMAND ${TEXEXEC_PATH}/texexec 
-      ARGS  --language=en --verbose --batch --pdf --result=man-de.pdf man-de.tex
+      ARGS  --language=en --verbose --batch --pdf
+            --path=${CMAKE_CURRENT_SOURCE_DIR} 
+            --result=${CMAKE_CURRENT_BINARY_DIR}/man-de.pdf 
+            man-de.tex
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       )
 
 add_custom_target ( man-de ALL 
@@ -34,7 +38,7 @@ add_custom_target ( man-de ALL
       )
 
 install_files ( /share/${MusE_INSTALL_NAME}/doc/ .pdf 
-   ${CMAKE_CURRENT_SOURCE_DIR}/man-de.pdf )
+   ${CMAKE_CURRENT_BINARY_DIR}/man-de.pdf )
 
 set (extraClean man-de.log man-de.tmp man-de.tuo man-de.tui
    man-de-mpgraph.mp mpgraph.mp )

@@ -63,13 +63,11 @@
 static pthread_t watchdogThread;
 
 static const char* fileOpenText =
-      QT_TR_NOOP("Click this button to open a <em>new song</em>.<br>"
-      "You can also select the <b>Open command</b> from the File menu.");
+      QT_TR_NOOP("Click this button to select a new project\n"
+      "You can also select the <b>Open command</b> from the Project menu.");
 static const char* fileSaveText =
-      QT_TR_NOOP("Click this button to save the song you are "
-      "editing.  You will be prompted for a file name.\n"
-      "You can also select the Save command from the File menu.");
-static const char* fileNewText        = QT_TR_NOOP("Create New Song");
+      QT_TR_NOOP("Click this button to save the project you are editing.\n"
+      "You can also select the Save command from the Project menu.");
 
 static const char* infoLoopButton     = QT_TR_NOOP("loop between left mark and right mark");
 static const char* infoPunchinButton  = QT_TR_NOOP("record starts at left mark");
@@ -504,22 +502,14 @@ MusE::MusE()
       startAction->setWhatsThis(tr(infoStartButton));
       connect(startAction, SIGNAL(triggered()), song, SLOT(rewindStart()));
 
-//      rewindAction = new QAction(QIcon(*frewindIcon), tr("Rewind"), this);
       rewindAction->setWhatsThis(tr(infoRewindButton));
 
-//      forwardAction = new QAction(QIcon(*fforwardIcon), tr("Forward"), this);
       forwardAction->setWhatsThis(tr(infoForwardButton));
 
-//      stopAction = new QAction(QIcon(*stopIcon), tr("Stop"), this);
       stopAction->setWhatsThis(tr(infoStopButton));
-//      stopAction->setCheckable(true);
-//      stopAction->setChecked(true);
       connect(stopAction, SIGNAL(triggered(bool)), song, SLOT(setStop(bool)));
 
-//      playAction = new QAction(QIcon(*playIcon), tr("Play"), this);
       playAction->setWhatsThis(tr(infoPlayButton));
-//      playAction->setCheckable(true);
-//      playAction->setChecked(false);
       connect(playAction, SIGNAL(triggered(bool)), song, SLOT(setPlay(bool)));
 
       recordAction = new QAction(*recordIcon, tr("Record"), this);
@@ -544,10 +534,6 @@ MusE::MusE()
 
       //----Actions
 
-      fileNewAction = new QAction(*filenewIcon, tr("&New"), this);
-      fileNewAction->setToolTip(tr(fileNewText));
-      fileNewAction->setWhatsThis(tr(fileNewText));
-
       fileOpenAction = new QAction(QIcon(*openIcon), tr("&Open"), this);
       fileOpenAction->setToolTip(tr(fileOpenText));
       fileOpenAction->setWhatsThis(tr(fileOpenText));
@@ -559,7 +545,6 @@ MusE::MusE()
       pianoAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
       connect(pianoAction, SIGNAL(triggered()), SLOT(startPianoroll()));
 
-      connect(fileNewAction,  SIGNAL(triggered()), SLOT(loadTemplate()));
       connect(fileOpenAction, SIGNAL(triggered()), SLOT(loadProject()));
       connect(fileSaveAction, SIGNAL(triggered()), SLOT(save()));
 
@@ -567,10 +552,9 @@ MusE::MusE()
       //    Toolbar
       //--------------------------------------------------
 
-      tools = new QToolBar(tr("File Buttons"));
+      tools = new QToolBar(tr("Project Buttons"));
       addToolBar(tools);
 
-      tools->addAction(fileNewAction);
       tools->addAction(fileOpenAction);
       tools->addAction(fileSaveAction);
       tools->addAction(QWhatsThis::createAction(this));
@@ -606,9 +590,8 @@ MusE::MusE()
       //    File
       //-------------------------------------------------------------
 
-      menu_file = mb->addMenu(tr("&File"));
+      menu_file = mb->addMenu(tr("&Project"));
 
-      menu_file->addAction(fileNewAction);
       menu_file->addAction(fileOpenAction);
 
       openRecent = new QMenu(tr("Open &Recent"), this);
@@ -618,7 +601,6 @@ MusE::MusE()
       menu_ids[CMD_OPEN_RECENT] = menu_file->addMenu(openRecent);
       menu_file->addSeparator();
       menu_file->addAction(fileSaveAction);
-      menu_ids[CMD_SAVE_AS] = menu_file->addAction(tr("Save &As"), this, SLOT(saveAs()));
       menu_file->addSeparator();
       menu_ids[CMD_IMPORT_MIDI] = menu_file->addAction(*openIconS, tr("Import Midifile"));
       connect(menu_ids[CMD_IMPORT_MIDI], SIGNAL(triggered()),  this, SLOT(importMidi()));
@@ -1282,38 +1264,12 @@ void MusE::loadProject()
       }
 
 //---------------------------------------------------------
-//   loadTemplate
-//---------------------------------------------------------
-
-void MusE::loadTemplate()
-      {
-      QString start(museGlobalShare);
-      start += "/templates";
-      QString fn = QFileDialog::getOpenFileName(
-            this,
-            tr("MusE: load template"),
-            start,
-            medFilePattern
-            );
-      if (!fn.isEmpty()) {
-            loadProjectFile(fn, true, true);
-            setUntitledProject();
-            }
-      }
-
-//---------------------------------------------------------
 //   save
 //---------------------------------------------------------
 
 bool MusE::save()
       {
-      if (project.baseName() == "untitled"
-         || (!project.suffix().isEmpty() && project.suffix() != "med")) {
-            return saveAs();
-            }
-      else
-            return save(project.filePath(), false);
-      return true;
+      return save(project.filePath(), false);
       }
 
 //---------------------------------------------------------
@@ -1472,33 +1428,6 @@ void MusE::showTransport(bool flag)
       tr_id->setChecked(flag);
       if (flag)
             transport->setValues();
-      }
-
-//---------------------------------------------------------
-//   saveAs
-//---------------------------------------------------------
-
-bool MusE::saveAs()
-      {
-      QStringList pattern;
-      const char** p = med_file_pattern;
-      while (*p)
-            pattern << *p++;
-
-      QString name = getSaveFileName(QString(""), pattern, this,
-         tr("MusE: Save As"));
-      bool ok = false;
-      if (!name.isEmpty()) {
-            ok = save(name, true);
-            if (ok) {
-                  project.setFile(name);
-                  setWindowTitle(tr("MusE: Song: ") + project.baseName());
-                  addProject(project);
-                  museProject = project.absolutePath();
-                  }
-            }
-
-      return ok;
       }
 
 //---------------------------------------------------------
@@ -2712,13 +2641,10 @@ void MusE::startEditInstrument()
 void MusE::updateConfiguration()
       {
       fileOpenAction->setShortcut(shortcuts[SHRT_OPEN].key);
-      fileNewAction->setShortcut(shortcuts[SHRT_NEW].key);
       fileSaveAction->setShortcut(shortcuts[SHRT_SAVE].key);
 
       menuEditActions[CMD_DELETE]->setShortcut(shortcuts[SHRT_DELETE].key);
       menu_ids[CMD_OPEN_RECENT]->setShortcut(shortcuts[SHRT_OPEN_RECENT].key);
-//TD      menu_ids[CMD_LOAD_TEMPLATE]->setShortcut(shortcuts[SHRT_LOAD_TEMPLATE].key);
-      menu_ids[CMD_SAVE_AS]->setShortcut(shortcuts[SHRT_SAVE_AS].key);
       menu_ids[CMD_IMPORT_MIDI]->setShortcut(shortcuts[SHRT_IMPORT_MIDI].key);
       menu_ids[CMD_EXPORT_MIDI]->setShortcut(shortcuts[SHRT_EXPORT_MIDI].key);
       menu_ids[CMD_IMPORT_AUDIO]->setShortcut(shortcuts[SHRT_IMPORT_AUDIO].key);

@@ -235,15 +235,11 @@ void initShortCuts()
 
       //-----------------------------------------------------------
       // Arranger:
-      defShrt(SHRT_NEW,           Qt::CTRL + Qt::Key_N, 14, ARRANG_SHRT + DEDIT_SHRT, "new_project");
       defShrt(SHRT_OPEN,          Qt::CTRL + Qt::Key_O, 15, ARRANG_SHRT + DEDIT_SHRT, "open_project");
       defShrt(SHRT_SAVE,          Qt::CTRL + Qt::Key_S, 16, ARRANG_SHRT + DEDIT_SHRT, "save_project");
       //-----------------------------------------------------------
 
       defShrt(SHRT_OPEN_RECENT,           Qt::CTRL + Qt::Key_1, 17, ARRANG_SHRT, "open_recent");
-      defShrt(SHRT_SAVE_AS,               0 , 18, ARRANG_SHRT, "save_project_as");
-      defShrt(SHRT_LOAD_TEMPLATE,         0 , 19, ARRANG_SHRT, "load_template");
-//      defShrt(SHRT_CONFIG_PRINTER,        Qt::CTRL + Qt::Key_P, "Configure printer", ARRANG_SHRT, "config_printer");
 
       defShrt(SHRT_IMPORT_MIDI,           0 , 20, ARRANG_SHRT, "import_midi");
       defShrt(SHRT_EXPORT_MIDI,           0 , 21, ARRANG_SHRT, "export_midi");

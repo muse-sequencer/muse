@@ -111,7 +111,6 @@ enum {
       SHRT_START_REC, // *(keypad)
 
       //Main + Drumeditor
-      SHRT_NEW, //Ctrl+N
       SHRT_OPEN, //Ctrl+O
       SHRT_SAVE, //Ctrl+S
 
@@ -125,7 +124,6 @@ enum {
 
 
       //Main:
-      SHRT_SAVE_AS, //Default: undefined
       SHRT_OPEN_RECENT, //Ctrl+1
       SHRT_LOAD_TEMPLATE, //Default: undefined
       SHRT_CONFIG_PRINTER, //Ctrl+P

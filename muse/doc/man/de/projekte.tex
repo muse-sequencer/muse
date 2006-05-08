@@ -64,3 +64,22 @@
       Projekte können auf der Platte ohne Probleme verschoben werden,
       da sie keine absoluten Pfade enthalten.
 
+   \section{Wavedateien und Samplerate}
+
+      \index{Wavedateien}\index{Audioprojekte}\index{Midiprojekte}
+      \index{Samplerate}
+      MusE unterscheidet zwischen Midiprojekten und Audioprojekten.
+      Audioprojekte enthalten zusätzlich zu eventuell vorhandenen
+      Mididaten Wavedateien.
+      
+      Audioprojekte sind immer mit einer bestimmten Samplerate
+      verbunden und können nur geladen und bearbeitet werden, wenn
+      die Projekt Samplerate mit der aktuellen Samplerate übereinstimmt.
+
+      Die aktuelle Samplerate wird immer vom JACK Server bestimmt und
+      kann von \M\ nicht verändert werden.
+
+      Werden Wavedateien mit einer anderen Samplerate als der aktuellen
+      importiert, so müssen sie konvertiert (resampled\index{resample}) 
+      werden.
+

@@ -39,7 +39,7 @@ option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface" ON)
 option ( ENABLE_VST    "enable VST/win support"                OFF)
 option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"    ON)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
 

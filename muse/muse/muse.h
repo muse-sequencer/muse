@@ -73,7 +73,7 @@ class MusE : public QMainWindow, public Ui::MuseBase
             };
 
       //File menu items:
-      enum { CMD_OPEN_RECENT=0, CMD_LOAD_TEMPLATE, CMD_SAVE_AS, CMD_IMPORT_MIDI,
+      enum { CMD_OPEN_RECENT=0, CMD_IMPORT_MIDI,
             CMD_EXPORT_MIDI, CMD_IMPORT_AUDIO, CMD_QUIT, CMD_OPEN_DRUMS,
             CMD_OPEN_LIST, CMD_OPEN_LIST_MASTER, CMD_GLOBAL_CONFIG,
             CMD_OPEN_GRAPHIC_MASTER, CMD_OPEN_MIDI_TRANSFORM, CMD_TRANSPOSE,
@@ -250,14 +250,12 @@ class MusE : public QMainWindow, public Ui::MuseBase
       void syncChanged();
 
    public slots:
-      bool saveAs();
       void bounceToFile();
       void closeEvent(QCloseEvent*e);
       void loadProjectFile(const QString&);
       void loadProjectFile(const QString&, bool songTemplate, bool loadAll);
       void loadTheme(const QString&);
       bool seqStart();
-      void loadTemplate();
       void showTransport(bool flag);
       void showBigtime(bool);
       void showMixer1(bool);

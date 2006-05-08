@@ -64,7 +64,8 @@ add_library ( widgets STATIC
       ${widget_mocs}
 
       utils.cpp 
-      shortcutconfig.cpp 
+      shortcutconfig.cpp
+      shortcutconfig.h
       shortcutcapturedialog.cpp
       midisync.cpp 
       comment.cpp

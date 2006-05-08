@@ -1,12 +1,8 @@
 #!/bin/sh
 
 #
-#  out of source build
+#  out of source build of MusE
 #     all generated files go into subdirectory "build"
-#
-#  NOTICE:
-#     this does (yet) not work; for unknown reasons *.ui file
-#     dependencies are not properly handled
 #
 
 if test ! -d build; 
@@ -25,5 +21,10 @@ if test ! -d build;
 cp ../all.h .
 
 echo "+start top level make..."
+
+#
+# HACK:
+cp ../all.h .
+
 make
 
