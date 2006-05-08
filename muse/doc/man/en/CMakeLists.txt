@@ -18,17 +18,19 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-set (SRC man-en.tex)
-
 add_custom_command ( 
-      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/man-en.pdf
+      OUTPUT man-en.pdf
       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/man-en.tex
       COMMAND ${TEXEXEC_PATH}/texexec 
-      ARGS  --language=en --verbose --batch --pdf --result=man-en.pdf man-en.tex
+      ARGS  --language=en --verbose --batch --pdf 
+         --path=${CMAKE_CURRENT_SOURCE_DIR} 
+         --result=man-en.pdf 
+         man-en.tex
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       )
 
 add_custom_target ( man-en ALL 
-      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/man-en.pdf 
+      DEPENDS man-en.pdf 
       )
 
 install_files ( /share/${MusE_INSTALL_NAME}/doc/ .pdf 
