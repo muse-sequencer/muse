@@ -27,7 +27,7 @@
 #include "gconfig.h"
 #include "al/xml.h"
 #include "widgets/midisync.h"
-#include "genset.h"
+// #include "genset.h"
 #include "sync.h"
 #include "mixer/mixer.h"
 #include "globals.h"
@@ -638,18 +638,18 @@ void MidiFileConfig::cancelClicked()
 //   configGlobalSettings
 //---------------------------------------------------------
 
-void MusE::configGlobalSettings()
-      {
-      if (!globalSettingsConfig)
-            globalSettingsConfig = new GlobalSettingsConfig();
-
-      if (globalSettingsConfig->isVisible()) {
-          globalSettingsConfig->raise();
-//TD          globalSettingsConfig->setActiveWindow();
-          }
-      else
-          globalSettingsConfig->show();
-      }
+//void MusE::configGlobalSettings()
+//      {
+//      if (!globalSettingsConfig)
+//            globalSettingsConfig = new GlobalSettingsConfig();
+//
+//      if (globalSettingsConfig->isVisible()) {
+//          globalSettingsConfig->raise();
+////TD          globalSettingsConfig->setActiveWindow();
+//          }
+//      else
+//          globalSettingsConfig->show();
+//      }
 
 //---------------------------------------------------------
 //   write

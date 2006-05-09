@@ -18,26 +18,55 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#ifndef __GENSET_H__
-#define __GENSET_H__
+#ifndef __PREFERENCES_H__
+#define __PREFERENCES_H__
 
-#include "ui_genset.h"
-#include "event.h"
+#include "ui_preferences.h"
 #include "mpevent.h"
 
+class MusE;
+class Arranger;
+class GlobalConfigValues;
+
 //---------------------------------------------------------
-//   GlobalSettingsConfig
+//   PreferencesDialog
 //---------------------------------------------------------
 
-class GlobalSettingsConfig : public QDialog, Ui::GlobalSettingsDialogBase {
+class PreferencesDialog : public QDialog, public Ui::PreferencesDialogBase {
       Q_OBJECT
 
+      Arranger* arr;
+      QColor* color;
+      QString currentBg;
+      GlobalConfigValues* config;
+      QButtonGroup* colorGroup;
       QButtonGroup* startSongGroup;
+
+      void updateFonts();
+      void updateColor();
 
    private slots:
       void apply();
       void ok();
       void cancel();
+      void configCanvasBgColor();
+      void configCanvasBgPixmap();
+      void colorItemSelectionChanged();
+      void browseFont(int);
+      void browseFont0();
+      void browseFont1();
+      void browseFont2();
+      void browseFont3();
+      void browseFont4();
+      void browseFont5();
+      void hsliderChanged(int);
+      void ssliderChanged(int);
+      void vsliderChanged(int);
+      void addToPaletteClicked();
+      void paletteClicked(QAbstractButton*);
+      void useColorToggled(bool);
+      void usePixmapToggled(bool);
+
       void mixerCurrent1();
       void mixerCurrent2();
       void bigtimeCurrent();
@@ -50,7 +79,9 @@ class GlobalSettingsConfig : public QDialog, Ui::GlobalSettingsDialogBase {
       void midiEventReceived(MidiEvent);
 
    public:
-      GlobalSettingsConfig(QWidget* parent=0);
+      PreferencesDialog(Arranger*, QWidget* parent=0);
+      ~PreferencesDialog();
+      void resetValues();
       };
 
 #endif

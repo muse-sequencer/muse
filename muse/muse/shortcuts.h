@@ -158,12 +158,12 @@ enum {
       SHRT_FOLLOW_NO, //Default: undefined
       SHRT_FOLLOW_CONTINUOUS, //Default: undefined
 
-      SHRT_GLOBAL_CONFIG, //Default: undefined
+//      SHRT_GLOBAL_CONFIG, //Default: undefined
       SHRT_CONFIG_SHORTCUTS, //Default: undefined
       SHRT_CONFIG_METRONOME, //Default: undefined
       SHRT_CONFIG_MIDISYNC, //Default: undefined
       SHRT_MIDI_FILE_CONFIG, //Default: undefined
-      SHRT_APPEARANCE_SETTINGS, //Default: undefined
+//      SHRT_APPEARANCE_SETTINGS, //Default: undefined
       SHRT_CONFIG_MIDI_PORTS, //Default: undefined
       SHRT_CONFIG_AUDIO_PORTS, //Default: undefined
       //SHRT_SAVE_GLOBAL_CONFIG, //Default: undefined

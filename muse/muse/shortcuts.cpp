@@ -275,12 +275,12 @@ void initShortCuts()
       defShrt(SHRT_FOLLOW_NO,             0, 48, ARRANG_SHRT, "follow_no");
       defShrt(SHRT_FOLLOW_CONTINUOUS,     0, 49, ARRANG_SHRT, "follow_continuous");
 
-      defShrt(SHRT_GLOBAL_CONFIG,         0, 50, ARRANG_SHRT, "configure_global");
+//      defShrt(SHRT_GLOBAL_CONFIG,         0, 50, ARRANG_SHRT, "configure_global");
       defShrt(SHRT_CONFIG_SHORTCUTS,      0, 51, ARRANG_SHRT, "configure_shortcuts");
       defShrt(SHRT_CONFIG_METRONOME,      0, 52, ARRANG_SHRT, "configure_metronome");
       defShrt(SHRT_CONFIG_MIDISYNC,       0, 53, ARRANG_SHRT, "configure_midi_sync");
       defShrt(SHRT_MIDI_FILE_CONFIG,      0, 54, ARRANG_SHRT, "configure_midi_file");
-      defShrt(SHRT_APPEARANCE_SETTINGS,   0, 55, ARRANG_SHRT, "configure_appearance_settings");
+//      defShrt(SHRT_APPEARANCE_SETTINGS,   0, 55, ARRANG_SHRT, "configure_appearance_settings");
       defShrt(SHRT_CONFIG_MIDI_PORTS,     0, 56, ARRANG_SHRT, "configure_midi_ports");
       defShrt(SHRT_CONFIG_AUDIO_PORTS,    0, 57, ARRANG_SHRT, "configure_audio_ports");
       defShrt(SHRT_MIDI_EDIT_INSTRUMENTS, 0, 58, ARRANG_SHRT, "midi_edit_instruments");

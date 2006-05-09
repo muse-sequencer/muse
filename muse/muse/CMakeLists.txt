@@ -44,7 +44,7 @@ subdirs(
       ctrl widgets master driver instruments marker liste
       )
 set (muse_uics
-      muse genset appearance exportmididialog configmidifile
+      muse preferences exportmididialog configmidifile
       transport aboutbox transpose
       midiedit/quantconfig
       mixer/routedialog
@@ -52,7 +52,7 @@ set (muse_uics
       )
 
 set(muse_mocs
-	appearance plugingui midiplugin muse genset song transport conf editor
+	preferences plugingui midiplugin muse song transport conf editor
 	cobject transpose track midisynti midiport
       miditrack wavetrack audiotrack audioaux audiooutput
       audioinput audiogroup exportmidi

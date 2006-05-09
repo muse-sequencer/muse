@@ -43,13 +43,14 @@ class AudioConf;
 class MidiFileConfig;
 class MidiFilterConfig;
 class MarkerView;
-class GlobalSettingsConfig;
+// class GlobalSettingsConfig;
 class MidiInputTransformDialog;
 class MidiTransformerDialog;
 class RhythmGen;
 class MidiTrack;
 class ShortcutConfig;
-class Appearance;
+// class Appearance;
+class PreferencesDialog;
 class EditInstrument;
 class Mixer;
 class ExportMidiDialog;
@@ -75,11 +76,11 @@ class MusE : public QMainWindow, public Ui::MuseBase
       //File menu items:
       enum { CMD_OPEN_RECENT=0, CMD_IMPORT_MIDI,
             CMD_EXPORT_MIDI, CMD_IMPORT_AUDIO, CMD_QUIT, CMD_OPEN_DRUMS,
-            CMD_OPEN_LIST, CMD_OPEN_LIST_MASTER, CMD_GLOBAL_CONFIG,
+            CMD_OPEN_LIST, CMD_OPEN_LIST_MASTER, 
             CMD_OPEN_GRAPHIC_MASTER, CMD_OPEN_MIDI_TRANSFORM, CMD_TRANSPOSE,
             CMD_GLOBAL_CUT, CMD_GLOBAL_INSERT, CMD_GLOBAL_SPLIT, CMD_COPY_RANGE,
             CMD_CUT_EVENTS, CMD_CONFIG_SHORTCUTS, CMD_CONFIG_METRONOME, CMD_CONFIG_MIDISYNC,
-            CMD_MIDI_FILE_CONFIG, CMD_APPEARANCE_SETTINGS, CMD_CONFIG_AUDIO_PORTS,
+            CMD_MIDI_FILE_CONFIG, CMD_CONFIG_AUDIO_PORTS,
             CMD_MIDI_EDIT_INSTRUMENTS, CMD_MIDI_RESET, CMD_MIDI_INIT, CMD_MIDI_LOCAL_OFF,
             CMD_MIXER_SNAPSHOT, CMD_MIXER_AUTOMATION_CLEAR, CMD_OPEN_HELP, CMD_OPEN_HOMEPAGE,
             CMD_OPEN_BUG, CMD_START_WHATSTHIS,
@@ -138,11 +139,12 @@ class MusE : public QMainWindow, public Ui::MuseBase
       MetronomeConfig* metronomeConfig;
       AudioConf* audioConfig;
       MidiFileConfig* midiFileConfig;
-      GlobalSettingsConfig* globalSettingsConfig;
+//      GlobalSettingsConfig* globalSettingsConfig;
       MidiFilterConfig* midiFilterConfig;
       MidiInputTransformDialog* midiInputTransform;
       ShortcutConfig* shortcutConfig;
-      Appearance* appearance;
+//      Appearance* appearance;
+      PreferencesDialog* preferencesDialog;
       ExportMidiDialog* exportMidiDialog;
 
       MidiTransformerDialog* midiTransformerDialog;
@@ -183,7 +185,7 @@ class MusE : public QMainWindow, public Ui::MuseBase
    private slots:
       void loadProject();
       bool save();
-      void configGlobalSettings();
+//      void configGlobalSettings();
       void quitDoc();
       void about();
       void aboutQt();
@@ -199,7 +201,8 @@ class MusE : public QMainWindow, public Ui::MuseBase
       void configMidiSync();
       void configMidiFile();
       void configShortCuts();
-      void configAppearance();
+//      void configAppearance();
+
       void startMasterEditor();
       void startListEditor();
       void startListEditor(PartList*);
@@ -248,6 +251,7 @@ class MusE : public QMainWindow, public Ui::MuseBase
       void mixer2Closed();
       void setRaster(int);
       void syncChanged();
+      void preferences();
 
    public slots:
       void bounceToFile();

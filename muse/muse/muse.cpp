@@ -40,7 +40,7 @@
 #include "plugin.h"
 #include "marker/markerview.h"
 #include "transpose.h"
-#include "appearance.h"
+#include "preferences.h"
 #include "widgets/gatetime.h"
 #include "audio.h"
 #include "midiseq.h"
@@ -444,11 +444,12 @@ MusE::MusE()
       midiFilterConfig      = 0;
       midiInputTransform    = 0;
       midiRhythmGenerator   = 0;
-      globalSettingsConfig  = 0;
+//      globalSettingsConfig  = 0;
+      preferencesDialog     = 0;
       softSynthesizerConfig = 0;
       midiTransformerDialog = 0;
       shortcutConfig        = 0;
-      appearance            = 0;
+//      appearance            = 0;
       editInstrument        = 0;
       appName               = QString("MusE");
       _raster               = 0;
@@ -794,8 +795,8 @@ MusE::MusE()
 
       menuSettings = mb->addMenu(tr("Setti&ngs"));
 
-      menu_ids[CMD_GLOBAL_CONFIG] = menuSettings->addAction(QIcon(*settings_globalsettingsIcon), tr("Global Settings"));
-      connect(menu_ids[CMD_GLOBAL_CONFIG], SIGNAL(triggered()), this, SLOT(configGlobalSettings()));
+//      menu_ids[CMD_GLOBAL_CONFIG] = menuSettings->addAction(QIcon(*settings_globalsettingsIcon), tr("Global Settings"));
+//      connect(menu_ids[CMD_GLOBAL_CONFIG], SIGNAL(triggered()), this, SLOT(configGlobalSettings()));
       menu_ids[CMD_CONFIG_SHORTCUTS] = menuSettings->addAction(QIcon(*settings_configureshortcutsIcon), tr("Configure shortcuts"));
       connect(menu_ids[CMD_CONFIG_SHORTCUTS], SIGNAL(triggered()), this, SLOT(configShortCuts()));
 
@@ -821,8 +822,9 @@ MusE::MusE()
       menu_ids[CMD_MIDI_FILE_CONFIG] = menuSettings->addAction(QIcon(*settings_midifileexportIcon), tr("Midi File Export"));
       connect(menu_ids[CMD_MIDI_FILE_CONFIG], SIGNAL(triggered()), this, SLOT(configMidiFile()));
       menuSettings->addSeparator();
-      menu_ids[CMD_APPEARANCE_SETTINGS] = menuSettings->addAction(QIcon(*settings_appearance_settingsIcon), tr("Appearance settings"));
-      connect(menu_ids[CMD_APPEARANCE_SETTINGS], SIGNAL(triggered()), this, SLOT(configAppearance()));
+//      menu_ids[CMD_GLOBAL_CONFIG] = menuSettings->addAction(QIcon(*settings_globalsettingsIcon), tr("Global Settings"));
+      QAction* action = menuSettings->addAction(QIcon(*settings_globalsettingsIcon), tr("Preferences"));
+      connect(action, SIGNAL(triggered()), this, SLOT(preferences()));
 
       //---------------------------------------------------
       //    Help
@@ -2252,13 +2254,25 @@ void MusE::mixTrack()
 //---------------------------------------------------------
 //   configAppearance
 //---------------------------------------------------------
+//
+//void MusE::configAppearance()
+//      {
+//      if (!appearance)
+//            appearance = new Appearance(arranger);
+//      appearance->resetValues();
+//      appearance->show();
+//      }
 
-void MusE::configAppearance()
+//---------------------------------------------------------
+//   preferences
+//---------------------------------------------------------
+
+void MusE::preferences()
       {
-      if (!appearance)
-            appearance = new Appearance(arranger);
-      appearance->resetValues();
-      appearance->show();
+      if (!preferencesDialog)
+            preferencesDialog = new PreferencesDialog(arranger);
+      preferencesDialog->resetValues();
+      preferencesDialog->show();
       }
 
 //---------------------------------------------------------
@@ -2691,7 +2705,7 @@ void MusE::updateConfiguration()
       menu_ids[CMD_AUDIO_BOUNCE_TO_TRACK]->setShortcut(shortcuts[CMD_AUDIO_BOUNCE_TO_TRACK].key);
       menu_ids[CMD_AUDIO_BOUNCE_TO_FILE]->setShortcut(shortcuts[CMD_AUDIO_BOUNCE_TO_FILE].key);
 
-      menu_ids[CMD_GLOBAL_CONFIG]->setShortcut(shortcuts[SHRT_GLOBAL_CONFIG].key);
+//      menu_ids[CMD_GLOBAL_CONFIG]->setShortcut(shortcuts[SHRT_GLOBAL_CONFIG].key);
       menu_ids[CMD_CONFIG_SHORTCUTS]->setShortcut(shortcuts[SHRT_CONFIG_SHORTCUTS].key);
 
       // Follow options
@@ -2701,7 +2715,7 @@ void MusE::updateConfiguration()
 
       menu_ids[CMD_CONFIG_MIDISYNC]->setShortcut(shortcuts[SHRT_CONFIG_MIDISYNC].key);
       menu_ids[CMD_MIDI_FILE_CONFIG]->setShortcut(shortcuts[SHRT_MIDI_FILE_CONFIG].key);
-      menu_ids[CMD_APPEARANCE_SETTINGS]->setShortcut(shortcuts[SHRT_APPEARANCE_SETTINGS].key);
+//      menu_ids[CMD_APPEARANCE_SETTINGS]->setShortcut(shortcuts[SHRT_APPEARANCE_SETTINGS].key);
 
       menu_ids[CMD_OPEN_HELP]->setShortcut(shortcuts[SHRT_OPEN_HELP].key);
 //      menu_ids[CMD_OPEN_HOMEPAGE]->setShortcut(shortcuts[SHRT_OPEN_HOMEPAGE].key);
