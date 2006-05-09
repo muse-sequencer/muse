@@ -42,3 +42,8 @@ set (extraClean man-en.log man-en.tmp man-en.tuo man-en.tui
 set_directory_properties( PROPERTIES
    ADDITIONAL_MAKE_CLEAN_FILES "${extraClean}"
    )
+
+configure_file(
+   ${CMAKE_CURRENT_SOURCE_DIR}/figurepath.tex.in
+   ${CMAKE_CURRENT_BINARY_DIR}/figurepath.tex
+   )
