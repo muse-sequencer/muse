@@ -51,11 +51,11 @@ QT4_WRAP_UI (widget_ui_headers
       velocity.ui
       )
 
-add_custom_command(OUTPUT ui_midisync.h
-      COMMAND ${QT_UIC_EXECUTABLE}
-      ARGS -o ${CMAKE_CURRENT_BINARY_DIR}/ui_midisync.h ${CMAKE_CURRENT_SOURCE_DIR}/midisync.ui
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/midisync.ui
-      )
+# add_custom_command(OUTPUT ui_midisync.h
+#      COMMAND ${QT_UIC_EXECUTABLE}
+#      ARGS -o ${CMAKE_CURRENT_BINARY_DIR}/ui_midisync.h ${CMAKE_CURRENT_SOURCE_DIR}/midisync.ui
+#      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/midisync.ui
+#      )
 
 ADD_FILE_DEPENDENCIES(moc_midisync.cxx ${CMAKE_CURRENT_BINARY_DIR}/ui_midisync.h)
 
