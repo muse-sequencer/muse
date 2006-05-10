@@ -1,17 +1,17 @@
 -----------------------------TODO-------------------------------------------
-(4.5.2006)
-	- manage project subdirectories (better organize wave files)
-            - muse is always associated with a project, there is no
-              "No Project" or "Default Project"
-            - muse on start asks for a project name (select or create)
-            - midi files cannot be loaded directly als project anymore,
-              you have to first create a project and then call
-              "import midifile"
-            - "New File" and "Select File" are combined into
-              "Select Project"
-            - there is no "Save As" anymore (your project always has a
-              name)
-              
+(10.5.2006)
+      - Select Project Dialog:
+            - add Toolbar with Functions:
+                  - create Subfolder
+                  - Folder Up
+                  - Folder Down
+            - display project subfolder
+            - show current project path in QLabel
+            - marke projects with different samplerat as current
+      - check for samplerate when loading project
+      - compute song len in seconds when saving project
+      - create dialog to edit project comment
+
 BUGS
 	- updating the gui during midi recording is too slow;
         a new, faster implementation is needed

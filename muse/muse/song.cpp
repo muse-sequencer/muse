@@ -39,6 +39,7 @@
 #include "midiplugin.h"
 #include "midirc.h"
 #include "part.h"
+#include "conf.h"
 
 Song* song;
 
@@ -2353,3 +2354,124 @@ bool Song::trackExists(Track* t) const
             }
       return false;
       }
+
+//---------------------------------------------------------
+//   projectDirectory
+//---------------------------------------------------------
+
+QString Song::projectDirectory() const
+      {
+      return QDir::homePath() + "/" + config.projectPath + "/" + _projectName;
+      }
+
+//---------------------------------------------------------
+//   projectName
+//---------------------------------------------------------
+
+QString Song::projectName() const
+      {
+      return _projectName;
+      }
+
+//---------------------------------------------------------
+//   setProjectName
+//---------------------------------------------------------
+
+void Song::setProjectName(const QString& s)
+      {
+      _projectName = s;      
+      }
+
+//---------------------------------------------------------
+//   load
+//---------------------------------------------------------
+
+void Song::load()
+      {
+      clear(false);
+
+      QString s = projectDirectory() + "/" + _projectName + ".med";
+
+      QFile f(s);
+      if (f.open(QIODevice::ReadOnly)) {
+            int rv = read(&f);
+            f.close();
+            if (rv) {
+                  QMessageBox::critical(0, QString("MusE"),
+                     tr("File read error"));
+                  return;
+                  }
+            }
+      dirty = false;
+      }
+
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+bool Song::read(QFile* qf)
+      {
+      QDomDocument doc;
+
+      int line, column;
+      QString err;
+      if (!doc.setContent(qf, false, &err, &line, &column)) {
+            QString col, ln, error;
+            col.setNum(column);
+            ln.setNum(line);
+            error = err + "\n    at line: " + ln + " col: " + col;
+            printf("error reading med file: %s\n", error.toLatin1().data());
+            return true;
+            }
+      for (QDomNode node = doc.documentElement(); !node.isNull(); node = node.nextSibling()) {
+            QDomElement e = node.toElement();
+            if (e.isNull())
+                  continue;
+            if (e.tagName() == "muse") {
+                  QString sversion = e.attribute("version", "1.0");
+                  int major=0, minor=0;
+                  sscanf(sversion.toLatin1().data(), "%d.%d", &major, &minor);
+                  int version = major << 8 + minor;
+                  if (version >= 0x200)
+                        read20(node.firstChild());
+                  else if (version == 0x100)
+                        read10(node.firstChild());
+                  else
+                        printf("unsupported *.med file version %s\n", sversion.toLatin1().data());
+                  }
+            else
+                  printf("MusE: %s not supported\n", e.tagName().toLatin1().data());
+            }
+      return false;
+      }
+
+//---------------------------------------------------------
+//   read10
+//---------------------------------------------------------
+
+void Song::read10(QDomNode)
+      {
+      printf("reading type 1.0 *.med files not implemented\n");
+      }
+
+//---------------------------------------------------------
+//   read20
+//---------------------------------------------------------
+
+void Song::read20(QDomNode node)
+      {
+      for (; !node.isNull(); node = node.nextSibling()) {
+            QDomElement e = node.toElement();
+            if (e.isNull())
+                  continue;
+            if (e.tagName() == "configuration")
+                  readConfiguration(node.firstChild());
+            else if (e.tagName() == "song")
+                  read(node.firstChild());
+            else if (e.tagName() == "toplevels")
+                  muse->readToplevels(node.firstChild());
+            else
+                  printf("MusE:read20(): unknown tag %s\n", e.tagName().toLatin1().data());
+            }
+      }
+

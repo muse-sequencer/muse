@@ -47,8 +47,6 @@ extern const signed char flatTab[14][7];
 extern QString museGlobalLib;
 extern QString museGlobalShare;
 extern QString museUser;
-extern QString museProject;         // current project directory
-extern QString museProjectInitPath;
 extern QString configName;
 
 extern QString lastWavePath;

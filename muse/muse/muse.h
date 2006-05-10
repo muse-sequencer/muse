@@ -43,13 +43,11 @@ class AudioConf;
 class MidiFileConfig;
 class MidiFilterConfig;
 class MarkerView;
-// class GlobalSettingsConfig;
 class MidiInputTransformDialog;
 class MidiTransformerDialog;
 class RhythmGen;
 class MidiTrack;
 class ShortcutConfig;
-// class Appearance;
 class PreferencesDialog;
 class EditInstrument;
 class Mixer;
@@ -62,7 +60,6 @@ extern void configMidiController();
 //---------------------------------------------------------
 
 class MusE : public QMainWindow, public Ui::MuseBase
-// class MusE : public QMainWindow
       {
       Q_OBJECT
       enum {
@@ -95,7 +92,6 @@ class MusE : public QMainWindow, public Ui::MuseBase
       QAction* fileNewAction;
       QString appName;
 
-      QFileInfo project;
       QToolBar *tools;
       EditToolBar *tools1;
       int _raster;
@@ -139,11 +135,9 @@ class MusE : public QMainWindow, public Ui::MuseBase
       MetronomeConfig* metronomeConfig;
       AudioConf* audioConfig;
       MidiFileConfig* midiFileConfig;
-//      GlobalSettingsConfig* globalSettingsConfig;
       MidiFilterConfig* midiFilterConfig;
       MidiInputTransformDialog* midiInputTransform;
       ShortcutConfig* shortcutConfig;
-//      Appearance* appearance;
       PreferencesDialog* preferencesDialog;
       ExportMidiDialog* exportMidiDialog;
 
@@ -154,23 +148,17 @@ class MusE : public QMainWindow, public Ui::MuseBase
       //------------------------------------------
 
       bool readMidi(FILE*);
-      bool read(QFile*, bool skipConfig);
-      void read10(QDomNode);
-      void read20(QDomNode);
       void processTrack(MidiTrack* track);
 
       void write(Xml& xml) const;
-      bool save(const QString&, bool);
-      void setUntitledProject();
 
       void setFollow(FollowMode);
       void readConfigParts(QDomNode);
       void readCtrl(QDomNode, int port, int channel);
-      void readToplevels(QDomNode);
       PartList* getMidiPartsToEdit();
       Part* readPart(QDomNode);
       bool checkRegionNotNull();
-      void loadProjectFile1(const QString&, bool songTemplate, bool loadAll);
+      void loadProject1(const QString&);
       void writeGlobalConfiguration(Xml&) const;
       void writeConfiguration(Xml&) const;
       void updateConfiguration();
@@ -185,7 +173,6 @@ class MusE : public QMainWindow, public Ui::MuseBase
    private slots:
       void loadProject();
       bool save();
-//      void configGlobalSettings();
       void quitDoc();
       void about();
       void aboutQt();
@@ -201,7 +188,6 @@ class MusE : public QMainWindow, public Ui::MuseBase
       void configMidiSync();
       void configMidiFile();
       void configShortCuts();
-//      void configAppearance();
 
       void startMasterEditor();
       void startListEditor();
@@ -214,7 +200,6 @@ class MusE : public QMainWindow, public Ui::MuseBase
       void startPianoroll(PartList* pl);
       void startWaveEditor();
       void startWaveEditor(PartList*);
-//      void startMidiTransformer();
       void writeGlobalConfiguration() const;
       void startEditInstrument();
 
@@ -256,8 +241,7 @@ class MusE : public QMainWindow, public Ui::MuseBase
    public slots:
       void bounceToFile();
       void closeEvent(QCloseEvent*e);
-      void loadProjectFile(const QString&);
-      void loadProjectFile(const QString&, bool songTemplate, bool loadAll);
+      void loadProject(const QString&);
       void loadTheme(const QString&);
       bool seqStart();
       void showTransport(bool flag);
@@ -298,6 +282,7 @@ class MusE : public QMainWindow, public Ui::MuseBase
                         // 0xaabb   aa - major version, bb minor version
 	int raster() const { return _raster; }
 	void setupTransportToolbar(QToolBar* tb) const;
+      void readToplevels(QDomNode);
       };
 
 extern MusE* muse;

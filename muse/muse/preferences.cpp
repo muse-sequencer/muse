@@ -286,17 +286,23 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       minMeterSelect->setValue(config->minMeter);
       peakHoldTime->setValue(config->peakHoldTime);
       helpBrowser->setText(config->helpBrowser);
-      startSongEntry->setText(config->startSong);
+      startProjectEntry->setText(config->startProject);
 
-      startSongGroup = new QButtonGroup(this);
-      startSongGroup->addButton(startLast);
-      startSongGroup->addButton(startTemplate);
-      startSongGroup->addButton(startSong);
+      startProjectGroup = new QButtonGroup(this);
+      startProjectGroup->addButton(alwaysAsk);
+      startProjectGroup->addButton(startWithLastProject);
+      startProjectGroup->addButton(startWithProject);
 
       switch(config->startMode) {
-            case 0: startLast->setChecked(true); break;
-            case 1: startTemplate->setChecked(true); break;
-            case 2: startSong->setChecked(true); break;
+            case START_ASK_FOR_PROJECT: 
+                  alwaysAsk->setChecked(true); 
+                  break;
+            case START_LAST_PROJECT: 
+                  startWithLastProject->setChecked(true); 
+                  break;
+            case START_START_PROJECT: 
+                  startWithProject->setChecked(true); 
+                  break;
             }
 
       showTransport->setChecked(config->transportVisible);
@@ -545,14 +551,14 @@ void PreferencesDialog::apply()
       ::config.rtcTicks     = rtcResolutions[rtcticks];
       ::config.guiDivision  = divisions[div];
       ::config.helpBrowser  = helpBrowser->text();
-      ::config.startSong    = startSongEntry->text();
+      ::config.startProject = startProjectEntry->text();
 
-      if (startLast->isChecked())
-            ::config.startMode = 0;
-      else if (startTemplate->isChecked())
-            ::config.startMode = 1;
-      else if (startSong->isChecked())
-            ::config.startMode = 2;
+      if (alwaysAsk->isChecked())
+            ::config.startMode = START_ASK_FOR_PROJECT;
+      else if (startWithLastProject->isChecked())
+            ::config.startMode = START_LAST_PROJECT;
+      else if (startWithProject->isChecked())
+            ::config.startMode = START_START_PROJECT;
 
       ::config.transportVisible = showTransport->isChecked();
       ::config.bigTimeVisible   = showBigtime->isChecked();
@@ -587,6 +593,8 @@ void PreferencesDialog::apply()
       ::config.useJackFreewheelMode = freewheelMode->isChecked();
       ::config.showSplashScreen = showSplash->isChecked();
 
+      ::config.projectPath = projectPath->text();
+
       PianoRoll::initWidth  = pianorollWidth->value();
       PianoRoll::initHeight = pianorollHeight->value();
       PianoRoll::initRaster = pianorollRaster->raster();
@@ -619,6 +627,7 @@ void PreferencesDialog::apply()
             w->resize(::config.geometryBigTime.size());
             w->move(::config.geometryBigTime.topLeft());
             }
+
 
       muse->resize(::config.geometryMain.size());
       muse->move(::config.geometryMain.topLeft());

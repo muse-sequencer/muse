@@ -27,6 +27,12 @@
 #include "al/xml.h"
 using AL::Xml;
 
+enum StartMode {
+      START_ASK_FOR_PROJECT,
+      START_LAST_PROJECT,
+      START_START_PROJECT
+      };
+
 //---------------------------------------------------------
 //   MixerConfig
 //---------------------------------------------------------
@@ -80,10 +86,8 @@ struct GlobalConfigValues {
       QString copyright;      // copyright string for smf export
       int smfFormat;          // smf export file type
 
-      int startMode;          // 0 - start with last song
-                              // 1 - start with default template
-                              // 2 - start with song
-      QString startSong;      // path for start song
+      enum StartMode startMode;
+      QString startProject;   // path for start project
       int guiDivision;        // division for tick display
 
       QRect geometryMain;
@@ -119,6 +123,7 @@ struct GlobalConfigValues {
       bool connectToAllMidiDevices;
       bool connectToAllMidiTracks;
       bool createDefaultMidiInput;
+      QString projectPath;
       };
 
 extern GlobalConfigValues config;

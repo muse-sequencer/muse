@@ -345,7 +345,7 @@ void initMidiSynth()
                   synthis.push_back(new MessSynth(&fi));
                   }
             if (debugMsg)
-                  printf("%ld soft synth found\n", synthis.size());
+                  printf("%zd soft synth found\n", synthis.size());
             }
       }
 

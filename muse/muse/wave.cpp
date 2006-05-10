@@ -465,18 +465,8 @@ QString SndFile::strerror() const
 
 SndFile* SndFile::getWave(const QString& inName, bool writeFlag)
       {
-      QString name = inName;
+      QString name = song->projectDirectory() + "/" + inName;
 
-      if (QFileInfo(name).isRelative()) {
-            name = museProject + QString("/") + name;
-            }
-      else {
-            if (!QFile::exists(name)) {
-                  if (QFile::exists(museProject + QString("/") + name)) {
-                        name = museProject + QString("/") + name;
-                        }
-                  }
-            }
 // printf("=====%s %s\n", inName.toLatin1().data(), name.toLatin1().data());
       SndFile* f = sndFiles.value(name);
       if (f == 0) {
@@ -769,7 +759,7 @@ SndFile* SndFile::createRecFile(int channels)
       QString fileName("%1/rec%2.wav");
       QFileInfo fi;
       do {
-		fi.setFile(fileName.arg(museProject).arg(recFileNumber));
+		fi.setFile(fileName.arg(song->projectDirectory()).arg(recFileNumber));
             ++recFileNumber;
             } while (fi.exists());
 	SndFile* recFile = new SndFile(fi.absoluteFilePath());

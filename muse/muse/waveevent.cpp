@@ -104,16 +104,7 @@ void WaveEventBase::write(Xml& xml, const Pos& offset) const
 //            wpos.setTick(wpos.tick() + offset);
       wpos.write(xml, "poslen");
       xml.intTag("frame", _spos);  // offset in wave file
-
-      //
-      // waves in the project dirctory are stored
-      // with relative path name, others with absolute path
-      //
-      QString path = f.finfo()->absolutePath();
-      if (path == museProject)
-            xml.strTag("file", f.finfo()->fileName());
-      else
-            xml.strTag("file", f.finfo()->filePath());
+      xml.strTag("file", f.finfo()->fileName());
       xml.etag("event");
       }
 

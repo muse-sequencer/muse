@@ -93,7 +93,7 @@ GlobalConfigValues config = {
       384,                          // division for smf export
       QString(""),                  // copyright string for smf export
       1,                            // smf export file format
-      1,                            // startMode
+      START_ASK_FOR_PROJECT,        // startMode
       QString(""),                  // start song path
       384,                          // gui division
       QRect(0, 0, 800, 560),        // GeometryMain;
@@ -102,15 +102,15 @@ GlobalConfigValues config = {
       QRect(100, 100, 600, 400),    // GeometryPianoroll;
       QRect(0, 0, 600, 400),        // GeometryDrumedit;
       {
-      QRect(0, 0, 300, 500),        // Mixer1
-      false, true, true, true, true,
-      true, true, true, true, true, true
-            },
+         QRect(0, 0, 300, 500),        // Mixer1
+         false, true, true, true, true,
+         true, true, true, true, true, true
+         },
       {
-      QRect(200, 200, 300, 500),    // Mixer2
-      false, true, true, true, true,
-      true, true, true, true, true, true
-            },
+         QRect(200, 200, 300, 500),    // Mixer2
+         false, true, true, true, true,
+         true, true, true, true, true, true
+         },
       false,                        // TransportVisible
       false,                        // BigTimeVisible;
       false,                        // mixerVisible1;
@@ -135,5 +135,6 @@ GlobalConfigValues config = {
       true,                         // connectToAllMidiDevices
       true,                         // connectToAllMidiTracks
       true,                         // createDefaultMidiInput
+      QString("MusE/projects"),     // projectPath
       };
 

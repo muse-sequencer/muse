@@ -40,7 +40,7 @@ class PreferencesDialog : public QDialog, public Ui::PreferencesDialogBase {
       QString currentBg;
       GlobalConfigValues* config;
       QButtonGroup* colorGroup;
-      QButtonGroup* startSongGroup;
+      QButtonGroup* startProjectGroup;
 
       void updateFonts();
       void updateColor();

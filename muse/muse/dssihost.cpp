@@ -116,7 +116,7 @@ int DssiSynthIF::oscUpdate(lo_arg **argv)
       */
 
       lo_send(uiTarget, uiOscConfigurePath, "ss",
-         DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().data());
+         DSSI_PROJECT_DIRECTORY_KEY, song->projectDirectory().toLatin1().data());
 
 #if 0
       /* Send current bank/program  (-FIX- another race...) */

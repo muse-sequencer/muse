@@ -40,7 +40,7 @@
 //   addController
 //---------------------------------------------------------
 
-static void addController(MPEventList* l, int tick, int port, int channel, int a, int b)
+static void addController(MPEventList* l, int tick, int /*port*/, int channel, int a, int b)
       {
       if (a < 0x1000) {          // 7 Bit Controller
             l->add(MidiEvent(tick, channel, ME_CONTROLLER, a, b));
@@ -116,7 +116,7 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
 void MusE::exportMidi()
       {
       if (exportMidiDialog == 0)
-            exportMidiDialog = new ExportMidiDialog(project.filePath());
+            exportMidiDialog = new ExportMidiDialog(song->projectDirectory());
       int rv = exportMidiDialog->exec();
       if (rv == 0)
             return;

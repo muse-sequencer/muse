@@ -46,6 +46,7 @@
 #include <QtCore/QEvent>
 #include <QtCore/QTranslator>
 #include <QtCore/qatomic.h>
+#include <QtCore/QTemporaryFile>
 
 #include <QtDesigner/QDesignerCustomWidgetInterface>
 #include <QtDesigner/QDesignerFormEditorInterface>

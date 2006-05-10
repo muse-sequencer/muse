@@ -66,8 +66,6 @@ const signed char flatTab[14][7]  = {
 QString museGlobalLib;
 QString museGlobalShare;
 QString museUser;
-QString museProject;
-QString museProjectInitPath("./");
 QString configName;
 
 QString lastWavePath(".");

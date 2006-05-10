@@ -250,6 +250,8 @@ void Song::read(QDomNode node)
                   PianoRoll::readConfiguration(node);
             else if (tag == "DrumEdit")
                   DrumEdit::readConfiguration(node);
+            else if (tag == "comment")
+                  _comment = e.text();
             else
                   printf("MusE:Song: unknown tag %s\n", tag.toLatin1().data());
             }
@@ -263,9 +265,10 @@ void Song::read(QDomNode node)
 void Song::write(Xml& xml) const
       {
       xml.tag("song");
-      xml.intTag("cpos", song->cpos());
-      xml.intTag("rpos", song->rpos());
-      xml.intTag("lpos", song->lpos());
+      xml.strTag("comment", _comment);
+      xml.intTag("cpos", cpos());
+      xml.intTag("rpos", rpos());
+      xml.intTag("lpos", lpos());
       xml.intTag("master", _masterFlag);
       if (loopFlag)
             xml.intTag("loop", loopFlag);
@@ -352,76 +355,5 @@ void MusE::write(Xml& xml) const
             }
       xml.etag("toplevels");
       xml.etag("muse");
-      }
-
-//---------------------------------------------------------
-//   read
-//    read song
-//---------------------------------------------------------
-
-bool MusE::read(QFile* qf, bool /*skipConfig*/)
-      {
-      QDomDocument doc;
-
-      int line, column;
-      QString err;
-      if (!doc.setContent(qf, false, &err, &line, &column)) {
-            QString col, ln, error;
-            col.setNum(column);
-            ln.setNum(line);
-            error = err + "\n    at line: " + ln + " col: " + col;
-            printf("error reading med file: %s\n", error.toLatin1().data());
-            return true;
-            }
-      for (QDomNode node = doc.documentElement(); !node.isNull(); node = node.nextSibling()) {
-            QDomElement e = node.toElement();
-            if (e.isNull())
-                  continue;
-            if (e.tagName() == "muse") {
-                  QString sversion = e.attribute("version", "1.0");
-                  int major=0, minor=0;
-                  sscanf(sversion.toLatin1().data(), "%d.%d", &major, &minor);
-                  version = major << 8 + minor;
-                  if (version >= 0x200)
-                        read20(node.firstChild());
-                  else if (version == 0x100)
-                        read10(node.firstChild());
-                  else
-                        printf("unsupported *.med file version %s\n", sversion.toLatin1().data());
-                  }
-            else
-                  printf("MusE: %s not supported\n", e.tagName().toLatin1().data());
-            }
-      return false;
-      }
-
-//---------------------------------------------------------
-//   read10
-//---------------------------------------------------------
-
-void MusE::read10(QDomNode)
-      {
-      printf("reading type 1.0 *.med files not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   read20
-//---------------------------------------------------------
-
-void MusE::read20(QDomNode node)
-      {
-      for (; !node.isNull(); node = node.nextSibling()) {
-            QDomElement e = node.toElement();
-            if (e.isNull())
-                  continue;
-            if (e.tagName() == "configuration")
-                  readConfiguration(node.firstChild());
-            else if (e.tagName() == "song")
-                  song->read(node.firstChild());
-            else if (e.tagName() == "toplevels")
-                  readToplevels(node.firstChild());
-            else
-                  printf("MusE:read20(): unknown tag %s\n", e.tagName().toLatin1().data());
-            }
       }
 

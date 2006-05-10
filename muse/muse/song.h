@@ -86,6 +86,9 @@ class Song : public QObject {
          MARKER_TICK, MARKER_LOCK };
 
    private:
+      QString _projectName;
+      QString _comment;
+
       MidiFifo eventFifo;
 
       int updateFlags;
@@ -125,6 +128,66 @@ class Song : public QObject {
       unsigned _len;         // song len in ticks
       int _globalPitchShift;
       void readMarker(QDomNode);
+
+   public slots:
+      void beat();
+
+      void undo();
+      void redo();
+
+      void setTempo(int t);
+      void setSig(const AL::TimeSignature&);
+
+      void setMasterFlag(bool flag);
+      void setLoop(bool f);
+      void setRecord(bool f);
+      void setPlay(bool f);
+      void setStop(bool);
+      void forward();
+      void rewindStart();
+      void rewind();
+      void setPunchin(bool f);
+      void setPunchout(bool f);
+      void setClick(bool val);
+      void setQuantize(bool val);
+      void panic();
+      void seqSignal(int fd);
+      Track* addTrack(QAction*);
+      void setMeasureLen(int l);
+      void changePart(Part*, unsigned, unsigned);
+      void createLRPart(Track* track);
+      void setTickPos(int, unsigned);
+
+      void setPos(int, const AL::Pos&);
+      void setPos(int, const AL::Pos&, bool sig, bool isSeek = true,
+         bool adjustScrollbar = false);
+
+   signals:
+      void songChanged(int);
+      void posChanged(int, const AL::Pos&, bool);
+      void loopChanged(bool);
+      void recordChanged(bool);
+      void playChanged(bool);
+      void punchinChanged(bool);
+      void punchoutChanged(bool);
+      void clickChanged(bool);
+      void quantizeChanged(bool);
+      void markerChanged(int);
+      void midiPortsChanged();
+      void midiEvent(const MidiEvent&);
+      void trackAdded(Track*, int idx);
+      void trackRemoved(Track*);
+      void lenChanged(const AL::Pos&);
+      void measureLenChanged(int);
+
+      void recordChanged(Track*,bool);
+      void muteChanged(Track*,bool);
+      void soloChanged(Track*,bool);
+      void offChanged(Track*,bool);
+      void autoReadChanged(Track*,bool);
+      void autoWriteChanged(Track*,bool);
+      void trackSelectionChanged(Track*);
+      void tempoChanged();
 
    public:
       Song();
@@ -332,65 +395,16 @@ class Song : public QObject {
       void setSolo(Track*,bool);
       void setOff(Track*,bool);
 
-   public slots:
-      void beat();
+      QString projectDirectory() const;
+      QString projectName() const;
+      void setProjectName(const QString&);
+      QString comment() const           { return _comment; }
+      void setComment(const QString& s) { _comment = s; }
 
-      void undo();
-      void redo();
-
-      void setTempo(int t);
-      void setSig(const AL::TimeSignature&);
-
-      void setMasterFlag(bool flag);
-      void setLoop(bool f);
-      void setRecord(bool f);
-      void setPlay(bool f);
-      void setStop(bool);
-      void forward();
-      void rewindStart();
-      void rewind();
-      void setPunchin(bool f);
-      void setPunchout(bool f);
-      void setClick(bool val);
-      void setQuantize(bool val);
-      void panic();
-      void seqSignal(int fd);
-      Track* addTrack(QAction*);
-      void setMeasureLen(int l);
-      void changePart(Part*, unsigned, unsigned);
-      void createLRPart(Track* track);
-      void setTickPos(int, unsigned);
-
-      void setPos(int, const AL::Pos&);
-      void setPos(int, const AL::Pos&, bool sig, bool isSeek = true,
-         bool adjustScrollbar = false);
-
-   signals:
-      void songChanged(int);
-      void posChanged(int, const AL::Pos&, bool);
-      void loopChanged(bool);
-      void recordChanged(bool);
-      void playChanged(bool);
-      void punchinChanged(bool);
-      void punchoutChanged(bool);
-      void clickChanged(bool);
-      void quantizeChanged(bool);
-      void markerChanged(int);
-      void midiPortsChanged();
-      void midiEvent(const MidiEvent&);
-      void trackAdded(Track*, int idx);
-      void trackRemoved(Track*);
-      void lenChanged(const AL::Pos&);
-      void measureLenChanged(int);
-
-      void recordChanged(Track*,bool);
-      void muteChanged(Track*,bool);
-      void soloChanged(Track*,bool);
-      void offChanged(Track*,bool);
-      void autoReadChanged(Track*,bool);
-      void autoWriteChanged(Track*,bool);
-      void trackSelectionChanged(Track*);
-      void tempoChanged();
+      void load();
+      bool read(QFile* qf);
+      void read20(QDomNode node);
+      void read10(QDomNode);
       };
 
 extern Song* song;

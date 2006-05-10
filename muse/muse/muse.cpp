@@ -59,6 +59,7 @@
 #include "widgets/utils.h"
 #include "instruments/editinstrument.h"
 #include "part.h"
+#include "projectdialog.h"
 
 static pthread_t watchdogThread;
 
@@ -444,12 +445,10 @@ MusE::MusE()
       midiFilterConfig      = 0;
       midiInputTransform    = 0;
       midiRhythmGenerator   = 0;
-//      globalSettingsConfig  = 0;
       preferencesDialog     = 0;
       softSynthesizerConfig = 0;
       midiTransformerDialog = 0;
       shortcutConfig        = 0;
-//      appearance            = 0;
       editInstrument        = 0;
       appName               = QString("MusE");
       _raster               = 0;
@@ -794,9 +793,6 @@ MusE::MusE()
       //-------------------------------------------------------------
 
       menuSettings = mb->addMenu(tr("Setti&ngs"));
-
-//      menu_ids[CMD_GLOBAL_CONFIG] = menuSettings->addAction(QIcon(*settings_globalsettingsIcon), tr("Global Settings"));
-//      connect(menu_ids[CMD_GLOBAL_CONFIG], SIGNAL(triggered()), this, SLOT(configGlobalSettings()));
       menu_ids[CMD_CONFIG_SHORTCUTS] = menuSettings->addAction(QIcon(*settings_configureshortcutsIcon), tr("Configure shortcuts"));
       connect(menu_ids[CMD_CONFIG_SHORTCUTS], SIGNAL(triggered()), this, SLOT(configShortCuts()));
 
@@ -822,7 +818,6 @@ MusE::MusE()
       menu_ids[CMD_MIDI_FILE_CONFIG] = menuSettings->addAction(QIcon(*settings_midifileexportIcon), tr("Midi File Export"));
       connect(menu_ids[CMD_MIDI_FILE_CONFIG], SIGNAL(triggered()), this, SLOT(configMidiFile()));
       menuSettings->addSeparator();
-//      menu_ids[CMD_GLOBAL_CONFIG] = menuSettings->addAction(QIcon(*settings_globalsettingsIcon), tr("Global Settings"));
       QAction* action = menuSettings->addAction(QIcon(*settings_globalsettingsIcon), tr("Preferences"));
       connect(action, SIGNAL(triggered()), this, SLOT(preferences()));
 
@@ -949,7 +944,7 @@ MusE::MusE()
 
       connect(tools1, SIGNAL(toolChanged(int)), SLOT(setTool(int)));
       connect(arranger, SIGNAL(editPart(Part*)), SLOT(startEditor(Part*)));
-//TODO1      connect(arranger, SIGNAL(dropSongFile(const QString&)), SLOT(loadProjectFile(const QString&)));
+//TODO1      connect(arranger, SIGNAL(dropSongFile(const QString&)), SLOT(loadProject(const QString&)));
 //TODO1      connect(arranger, SIGNAL(dropMidiFile(const QString&)), SLOT(importMidi(const QString&)));
       connect(arranger, SIGNAL(cursorPos(const AL::Pos&,bool)), cursorPos, SLOT(setValue(const AL::Pos&,bool)));
 
@@ -1041,20 +1036,10 @@ void MusE::localOff()
       }
 
 //---------------------------------------------------------
-//   loadProjectFile
-//    load *.med, *.mid, *.kar
-//
-//    template - if true, load file but do not change
-//                project name
+//   loadProject
 //---------------------------------------------------------
 
-// for drop:
-void MusE::loadProjectFile(const QString& name)
-      {
-      loadProjectFile(name, false, false);
-      }
-
-void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
+void MusE::loadProject(const QString& name)
       {
       //
       // stop audio threads if running
@@ -1068,22 +1053,17 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
                   }
             seqStop();
             }
-      loadProjectFile1(name, songTemplate, loadAll);
+      loadProject1(name);
       if (restartSequencer)
             seqStart();
       audio->msgSeek(song->cPos());
       }
 
 //---------------------------------------------------------
-//   loadProjectFile1
-//    load *.med, *.mid, *.kar
-//
-//    template - if true, load file but do not change
-//                project name
-//    loadAll  - load song data + configuration data
+//   loadProject1
 //---------------------------------------------------------
 
-void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll)
+void MusE::loadProject1(const QString& name)
       {
       if (mixer1)
             mixer1->clear();
@@ -1109,6 +1089,17 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                         printf("InternalError: gibt %d\n", n);
                   }
             }
+
+      QDir pd(QDir::homePath() + "/" + config.projectPath + "/" + name);
+      bool newProject = false;
+      if (!pd.exists()) {
+            newProject = true;
+            if (!pd.mkdir(pd.path())) {
+                  QMessageBox::critical(this, QString("MusE: new project"),
+                        tr("Cannot create project directory"));
+                  return;
+                  }
+            }
       foreach(QWidget* w, QApplication::topLevelWidgets()) {
             if (!w->isVisible())
                   continue;
@@ -1123,77 +1114,30 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             else if (strcmp("ListEdit", w->metaObject()->className()) == 0)
                   w->close();
             }
-
       emit startLoadSong();
-
-      song->clear(false);
-      QFileInfo fi(name);
-      if (songTemplate) {
-            if (!fi.isReadable()) {
-                  QMessageBox::critical(this, QString("MusE"),
-                     tr("Cannot read template"));
-                  return;
-                  }
-            project.setFile("untitled");
-            }
-      else {
-            museProject = fi.absolutePath();
-            project.setFile(name);
-            }
-      QString ex = fi.suffix().toLower();
-      if (ex.isEmpty() || ex == "med") {
-            //
-            //  read *.med file
-            //
-      	QFile* f = new QFile(ex.isEmpty() ? name + ".med" : name);
-		if (f->open(QIODevice::ReadOnly)) {
-                  int rv = read(f, !loadAll);
-                  f->close();
-                  if (rv) {
-                        QMessageBox::critical(this, QString("MusE"),
-                           tr("File read error"));
-                        setUntitledProject();
-                        }
-                  }
-            delete f;
-            }
-      else if (ex == "mid" || ex == "kar") {
-            if (importMidi(name, false)) {
-                  setUntitledProject();
-                  }
-            }
-      else {
-            QMessageBox::critical(this, QString("MusE"),
-               tr("Unknown File Format"));
-            setUntitledProject();
-            }
-      if (!songTemplate) {
-            addProject(project);
-            setWindowTitle(QString("MusE: Song: ") + project.baseName());
-            }
-      song->dirty = false;
+      song->setProjectName(name);
+      song->load();
 
       tr_id->setChecked(config.transportVisible);
       bt_id->setChecked(config.bigTimeVisible);
 
-      if (loadAll) {
-            //
-            // dont emit song->update():
-            song->blockSignals(true);
+      //
+      // dont emit song->update():
+      song->blockSignals(true);
 
-            showBigtime(config.bigTimeVisible);
-            showMixer1(config.mixer1Visible);
-            showMixer2(config.mixer2Visible);
-            resize(config.geometryMain.size());
-            move(config.geometryMain.topLeft());
+      showBigtime(config.bigTimeVisible);
+      showMixer1(config.mixer1Visible);
+      showMixer2(config.mixer2Visible);
+      resize(config.geometryMain.size());
+      move(config.geometryMain.topLeft());
 
-            if (config.transportVisible)
-                  transport->show();
-            transport->move(config.geometryTransport.topLeft());
-            showTransport(config.transportVisible);
+      if (config.transportVisible)
+            transport->show();
+      transport->move(config.geometryTransport.topLeft());
+      showTransport(config.transportVisible);
 
-            song->blockSignals(false);
-            }
+      song->blockSignals(false);
+      
       transport->setMasterFlag(song->masterFlag());
       punchinAction->setChecked(song->punchin());
       punchoutAction->setChecked(song->punchout());
@@ -1202,7 +1146,6 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       selectionChanged();           // enable/disable "Copy" & "Paste"
       song->setLen(song->len());    // emit song->lenChanged() signal
 
-      // song->update();
       //
       // add connected channels
       //
@@ -1234,17 +1177,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                   }
             (*i)->blockSignals(false);
             }
-      }
-
-//---------------------------------------------------------
-//   setUntitledProject
-//---------------------------------------------------------
-
-void MusE::setUntitledProject()
-      {
-      QString name("untitled");
-      museProject = QFileInfo(name).absolutePath();
-      project.setFile(name);
+      setWindowTitle(QString("MusE: Song: ") + name);
       }
 
 //---------------------------------------------------------
@@ -1253,16 +1186,14 @@ void MusE::setUntitledProject()
 
 void MusE::loadProject()
       {
-      QStringList pattern;
-      const char** p = med_midi_file_pattern;
-      while (*p)
-            pattern << *p++;
-      QString fn = getOpenFileName(QString("."), pattern, this,
-         tr("MusE: load project"));
-      if (!fn.isEmpty()) {
-            museProject = QFileInfo(fn).absolutePath();
-            loadProjectFile(fn, false, true);   // load all
-            }
+      ProjectDialog projectDialog;
+      int rv = projectDialog.exec();
+      if (rv == 0)
+            return;
+      QString name = projectDialog.project();
+      if (name.isEmpty())
+            return;
+      loadProject(name);
       }
 
 //---------------------------------------------------------
@@ -1271,74 +1202,48 @@ void MusE::loadProject()
 
 bool MusE::save()
       {
-      return save(project.filePath(), false);
-      }
-
-//---------------------------------------------------------
-//   save
-//---------------------------------------------------------
-
-bool MusE::save(const QString& fname, bool overwriteWarn)
-      {
       QString backupCommand;
 
-      QString name(fname);
-      QFileInfo info(name);
-      QString zip;
+      QString name(song->projectName() + ".med");
+      QFileInfo fi(song->projectDirectory() + "/" + name);
 
-      if (info.completeSuffix() == "") {
-            name += ".med";
-            info.setFile(name);
-            }
-      if (overwriteWarn && info.exists()) {
-            QString s(QWidget::tr("File\n") + name + QWidget::tr("\nexists"));
-            int rv = QMessageBox::warning(this,
-               QWidget::tr("MusE: write"),
-               s,
-               QWidget::tr("Overwrite"),
-               QWidget::tr("Quit"), QString::null, 0, 1);
-            switch(rv) {
-                  case 0:  // overwrite
-                        break;
-                  case 1:  // quit
-                        return 0;
-                  }
-            }
-      char* tmpName = tempnam(info.absolutePath().toLatin1().data(), "MusE");
-      FILE* fp = fopen(tmpName, "w");
-      if (fp == 0) {
+      QTemporaryFile tmp(fi.path() + "/MusEXXXXXX");
+      tmp.setAutoRemove(false);
+
+      if (!tmp.open()) {
             QString s("Creating temp file failed: ");
             s += strerror(errno);
             QMessageBox::critical(this,
                tr("MusE: Create tmp file failed"), s);
             return false;
             }
-      QFile file;
-      file.open(fp, QIODevice::WriteOnly);
-      Xml xml(&file);
+      Xml xml(&tmp);
       write(xml);
-      if (ferror(fp)) {
-            QString s = QString("Write File\n") + name + QString("\nfailed: ")
-               + QString(strerror(errno));
-            QMessageBox::critical(this,
-               tr("MusE: Write File failed"), s);
-            fclose(fp);
-            unlink(tmpName);
+      if (tmp.error()) {
+            QString s = QString("Write File\n") + tmp.fileName() + QString("\nfailed: ")
+               + tmp.errorString();
+            QMessageBox::critical(this, tr("MusE: Write File failed"), s);
             return false;
             }
-      file.close();
-      fclose(fp);
-      if (!overwriteWarn && !song->backupWritten()) {
+      if (!song->backupWritten()) {
             //
-            // create backup file
+            // remove old backup file
             //
-            if (info.exists()) {
-                  QString backupName = "." + name + ",";
-                  rename(name.toLatin1().data(), backupName.toLatin1().data());
-                  song->setBackupWritten(true);
-                  }
+            QDir dir(fi.path());
+            QString backupName = QString(".") + fi.fileName() + QString(",");
+            dir.remove(backupName);
+
+            //
+            // rename old file to backup
+            //
+            QString n(fi.filePath());
+            dir.rename(n, backupName);
             }
-      rename(tmpName, name.toLatin1().data());
+      //
+      //  rename temp name to file name
+      //
+      tmp.rename(fi.filePath());
+
       song->dirty = false;
       SndFile::updateRecFiles();
       return true;
@@ -1634,7 +1539,7 @@ void MusE::selectProject(QAction* a)
       QString* name = projectList[id];
       if (name == 0)
             return;
-      loadProjectFile(*name, false, true);
+      loadProject(*name);
       }
 
 //---------------------------------------------------------
@@ -1775,207 +1680,6 @@ static void catchSignal(int sig)
             }
       }
 #endif
-
-//---------------------------------------------------------
-//   main
-//---------------------------------------------------------
-
-int main(int argc, char* argv[])
-      {
-      museUser = QString(getenv("MUSEHOME"));
-      if (museUser.isEmpty())
-            museUser = QString(getenv("HOME"));
-      QString museGlobal;
-      const char* p = getenv("MUSE");
-      museGlobal = p ? p : INSTPREFIX;
-
-      museGlobalLib   =  museGlobal + "/lib/"   INSTALL_NAME;
-      museGlobalShare =  museGlobal + "/share/" INSTALL_NAME;
-
-      museProject = museProjectInitPath;
-      configName  = museUser + QString("/." INSTALL_NAME);
-
-      srand(time(0));   // initialize random number generator
-      initMidiController();
-      MuseApplication app(argc, argv);
-
-      config.fonts[0] = new QFont(QString("arial"), 10, QFont::Normal);
-      config.fonts[1] = new QFont(QString("arial"),  8, QFont::Normal);
-      config.fonts[2] = new QFont(QString("arial"), 10, QFont::Normal);
-      config.fonts[3] = new QFont(QString("arial"),  8, QFont::Bold);
-      config.fonts[4] = new QFont(QString("arial"),  8,  QFont::Bold);    // simple buttons, timescale numbers
-      config.fonts[5] = new QFont(QString("Lucidatypewriter"), 14,  QFont::Bold);
-
-      initShortCuts();
-      gmDrumMap.initGm();    // init default drum map
-      readConfiguration();
-
-     	QApplication::setFont(*config.fonts[0]);
-
-      // SHOW MUSE SPLASH SCREEN
-      if (config.showSplashScreen) {
-            QPixmap splsh(":/xpm/splash.png");
-
-            if (!splsh.isNull()) {
-                  QSplashScreen* muse_splash = new QSplashScreen(splsh,
-                     Qt::WindowStaysOnTopHint);
-                  muse_splash->show();
-                  QTimer* stimer = new QTimer(0);
-                  muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
-                  stimer->start(6000);
-                  }
-            }
-      char c;
-      QString opts("mvdDiosP:p");
-
-#ifdef VST_SUPPORT
-      opts += "V";
-#endif
-#ifdef DSSI_SUPPORT
-      opts += "I";
-#endif
-      while ((c = getopt(argc, argv, opts.toLatin1().data())) != EOF) {
-            switch (c) {
-                  case 'v': printVersion(argv[0]); return 0;
-                  case 'd':
-                        debugMode = true;
-                        realTimePriority = false;
-                        break;
-                  case 'm': midiOnly = true; break;
-                  case 'D': debugMsg = true; break;
-                  case 'i': midiInputTrace = true; break;
-                  case 'o': midiOutputTrace = true; break;
-                  case 's': debugSync = true; break;
-                  case 'p': loadPlugins = false; break;
-                  case 'V': loadVST = false; break;
-                  case 'I': loadDSSI = false; break;
-                  default:  usage(argv[0], "bad argument"); return -1;
-                  }
-            }
-      if (midiOnly) {
-            loadDSSI    = false;
-            loadPlugins = false;
-            loadVST     = false;
-            }
-
-      bool useJACK = !(debugMode || midiOnly);
-      if (useJACK) {
-            if (initJackAudio()) {
-                  if (!debugMode)
-                        {
-                        QMessageBox::critical(NULL, "MusE fatal error",
-                           "MusE failed to find a Jack audio server.\n"
-                           "Check that Jack was started.\n"
-                           "If Jack was started check that it was\n"
-                           "started as the same user as MusE.");
-                        // fatalError("cannot start JACK");
-                        }
-                  else
-                        {
-                        fprintf(stderr, "fatal error: no JACK audio server found\n");
-                        fprintf(stderr, "no audio functions available\n");
-                        fprintf(stderr, "*** experimental mode -- no play possible ***\n");
-                        }
-                  useJACK = false;
-                  debugMode = true;
-                  }
-            }
-      if (!useJACK)
-            initDummyAudio();
-
-      argc -= optind;
-      ++argc;
-
-      if (debugMsg) {
-            printf("global lib:   <%s>\n", museGlobalLib.toLatin1().data());
-            printf("global share: <%s>\n", museGlobalShare.toLatin1().data());
-            printf("muse home:    <%s>\n", museUser.toLatin1().data());
-            printf("project dir:  <%s>\n", museProject.toLatin1().data());
-            printf("config file:  <%s>\n", configName.toLatin1().data());
-            }
-
-      static QTranslator translator;
-      QString lo(QLocale::system().name());
-
-      if (lo != "C") {
-            QString loc("muse_");
-            loc += lo;
-            if (translator.load(loc, QString(".")) == false) {
-                  QString lp(museGlobalShare);
-                  lp += QString("/locale");
-                  if (translator.load(loc, lp) == false) {
-                        printf("no locale <%s> in <%s>\n", loc.toLatin1().data(), lp.toLatin1().data());
-                        }
-                  }
-            qApp->installTranslator(&translator);
-            }
-
-      if (loadPlugins) {
-            initPlugins();
-            initMidiPlugins();
-            }
-      if (loadVST)
-            initVST();
-      if (loadDSSI)
-            initDSSI();
-
-      initIcons();
-      if (!midiOnly)
-            initMetronome();
-
-      if (debugMsg) {
-            QStringList list = app.libraryPaths();
-            QStringList::Iterator it = list.begin();
-            printf("QtLibraryPath:\n");
-            while(it != list.end()) {
-                  printf("  <%s>\n", (*it).toLatin1().data());
-                  ++it;
-                  }
-            }
-
-      song = new Song();
-      muse = new MusE();
-      app.setMuse(muse);
-      muse->setWindowIcon(*museIcon);
-
-      //---------------------------------------------------
-      //  load project
-      //    if no songname entered on command line:
-      //    startMode: 0  - load last song
-      //               1  - load default template
-      //               2  - load configured start song
-      //---------------------------------------------------
-
-      QString name;
-      bool useTemplate = false;
-      if (argc >= 2)
-            name = argv[optind];
-      else if (config.startMode == 0) {
-            if (argc < 2)
-                  name = projectList[0] ? *projectList[0] : QString("untitled");
-            else
-                  name = argv[0];
-            }
-      else if (config.startMode == 1) {
-            name = museGlobalShare + QString("/templates/default.med");
-            useTemplate = true;
-            }
-      else if (config.startMode == 2)
-            name = config.startSong;
-      muse->loadProjectFile(name, useTemplate, true);
-      muse->changeConfig(false);
-
-      if (!debugMode) {
-            if (mlockall(MCL_CURRENT | MCL_FUTURE))
-                  perror("WARNING: Cannot lock memory:");
-            }
-      muse->show();
-      muse->seqStart();
-      int n = app.exec();
-      if (n)
-            fprintf(stderr, "app end %d\n", n);
-      return n;
-      }
 
 //---------------------------------------------------------
 //   setFollow
@@ -2984,4 +2688,253 @@ void MusE::setGlobalTempo(int val)
       {
       globalTempoSpinBox->setValue(val);
       }
+
+//---------------------------------------------------------
+//   main
+//---------------------------------------------------------
+
+int main(int argc, char* argv[])
+      {
+      museUser = QString(getenv("MUSEHOME"));
+      if (museUser.isEmpty())
+            museUser = QString(getenv("HOME"));
+      QString museGlobal;
+      const char* p = getenv("MUSE");
+      museGlobal = p ? p : INSTPREFIX;
+
+      museGlobalLib   =  museGlobal + "/lib/"   INSTALL_NAME;
+      museGlobalShare =  museGlobal + "/share/" INSTALL_NAME;
+
+      configName  = museUser + QString("/." INSTALL_NAME);
+
+      srand(time(0));   // initialize random number generator
+      initMidiController();
+      MuseApplication app(argc, argv);
+
+      config.fonts[0] = new QFont(QString("arial"), 10, QFont::Normal);
+      config.fonts[1] = new QFont(QString("arial"),  8, QFont::Normal);
+      config.fonts[2] = new QFont(QString("arial"), 10, QFont::Normal);
+      config.fonts[3] = new QFont(QString("arial"),  8, QFont::Bold);
+      config.fonts[4] = new QFont(QString("arial"),  8,  QFont::Bold);    // simple buttons, timescale numbers
+      config.fonts[5] = new QFont(QString("Lucidatypewriter"), 14,  QFont::Bold);
+
+      initShortCuts();
+      gmDrumMap.initGm();    // init default drum map
+      readConfiguration();
+
+     	QApplication::setFont(*config.fonts[0]);
+
+      // SHOW MUSE SPLASH SCREEN
+      if (config.showSplashScreen) {
+            QPixmap splsh(":/xpm/splash.png");
+
+            if (!splsh.isNull()) {
+                  QSplashScreen* muse_splash = new QSplashScreen(splsh,
+                     Qt::WindowStaysOnTopHint);
+                  muse_splash->show();
+                  QTimer* stimer = new QTimer(0);
+                  muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
+                  stimer->start(6000);
+                  }
+            }
+      char c;
+      QString opts("mvdDiosP:p");
+
+#ifdef VST_SUPPORT
+      opts += "V";
+#endif
+#ifdef DSSI_SUPPORT
+      opts += "I";
+#endif
+      while ((c = getopt(argc, argv, opts.toLatin1().data())) != EOF) {
+            switch (c) {
+                  case 'v': printVersion(argv[0]); return 0;
+                  case 'd':
+                        debugMode = true;
+                        realTimePriority = false;
+                        break;
+                  case 'm': midiOnly = true; break;
+                  case 'D': debugMsg = true; break;
+                  case 'i': midiInputTrace = true; break;
+                  case 'o': midiOutputTrace = true; break;
+                  case 's': debugSync = true; break;
+                  case 'p': loadPlugins = false; break;
+                  case 'V': loadVST = false; break;
+                  case 'I': loadDSSI = false; break;
+                  default:  usage(argv[0], "bad argument"); return -1;
+                  }
+            }
+      if (midiOnly) {
+            loadDSSI    = false;
+            loadPlugins = false;
+            loadVST     = false;
+            }
+
+      bool useJACK = !(debugMode || midiOnly);
+      if (useJACK) {
+            if (initJackAudio()) {
+                  if (!debugMode)
+                        {
+                        QMessageBox::critical(NULL, "MusE fatal error",
+                           "MusE failed to find a Jack audio server.\n"
+                           "Check that Jack was started.\n"
+                           "If Jack was started check that it was\n"
+                           "started as the same user as MusE.");
+                        // fatalError("cannot start JACK");
+                        }
+                  else
+                        {
+                        fprintf(stderr, "fatal error: no JACK audio server found\n");
+                        fprintf(stderr, "no audio functions available\n");
+                        fprintf(stderr, "*** experimental mode -- no play possible ***\n");
+                        }
+                  useJACK = false;
+                  debugMode = true;
+                  }
+            }
+      if (!useJACK)
+            initDummyAudio();
+
+      argc -= optind;
+      ++argc;
+
+      if (debugMsg) {
+            printf("global lib:   <%s>\n", museGlobalLib.toLatin1().data());
+            printf("global share: <%s>\n", museGlobalShare.toLatin1().data());
+            printf("muse home:    <%s>\n", museUser.toLatin1().data());
+            printf("project dir:  <%s>\n", config.projectPath.toLatin1().data());
+            printf("config file:  <%s>\n", configName.toLatin1().data());
+            }
+
+      static QTranslator translator;
+      QString lo(QLocale::system().name());
+
+      if (lo != "C") {
+            QString loc("muse_");
+            loc += lo;
+            if (translator.load(loc, QString(".")) == false) {
+                  QString lp(museGlobalShare);
+                  lp += QString("/locale");
+                  if (translator.load(loc, lp) == false) {
+                        printf("no locale <%s> in <%s>\n", loc.toLatin1().data(), lp.toLatin1().data());
+                        }
+                  }
+            qApp->installTranslator(&translator);
+            }
+
+      if (loadPlugins) {
+            initPlugins();
+            initMidiPlugins();
+            }
+      if (loadVST)
+            initVST();
+      if (loadDSSI)
+            initDSSI();
+
+      initIcons();
+      if (!midiOnly)
+            initMetronome();
+
+      if (debugMsg) {
+            QStringList list = app.libraryPaths();
+            QStringList::Iterator it = list.begin();
+            printf("QtLibraryPath:\n");
+            while(it != list.end()) {
+                  printf("  <%s>\n", (*it).toLatin1().data());
+                  ++it;
+                  }
+            }
+
+      song = new Song();
+      muse = new MusE();
+      app.setMuse(muse);
+      muse->setWindowIcon(*museIcon);
+
+      //---------------------------------------------------
+      //  load project
+      //---------------------------------------------------
+
+      // first check if there is a project directory:
+
+      QDir pd(QDir::homePath() + "/" + config.projectPath);
+      if (!pd.exists()) {
+            // ask user to create a new project directory
+            QString s;
+            s = "The MusE project directory\n%1\ndoes not exists";
+            s = s.arg(pd.path());
+
+            int rv = QMessageBox::question(0, 
+               "MusE: create project directory",
+               s,
+               "Create",
+               "Abort",
+               QString(),
+               0, 1);
+            if (rv == 1)
+                  exit(0);
+            if (!pd.mkpath(pd.path())) {
+                  // TODO: tell user why this has happened
+                  QMessageBox::critical(0,
+                  "MusE: create project directory",
+                  "Creating project directory failed");
+                  exit(-1);
+                  }
+            }
+
+      QString name;
+      if (argc >= 2)
+            name = argv[optind];    // start with first name on command line
+      else if (config.startMode == START_LAST_PROJECT) {
+            if (projectList[0])
+                  name = *projectList[0];
+            }
+      else if (config.startMode == START_START_PROJECT)
+            name = config.startProject;
+
+      //DEBUG:
+      name = "";
+
+      if (name.isEmpty()) {
+            //
+            // ask user for a project
+            //
+            for (;;) {
+                  ProjectDialog projectDialog;
+                  int rv = projectDialog.exec();
+                  if (rv == 1) {
+                        name = projectDialog.project();
+                        if (!name.isEmpty())
+                              break;
+                        }
+                  // the user did not select/create a project
+                  QString s;
+                  s = "before MusE starts, you must select a project\n"
+                      "or create a new one";
+                  rv = QMessageBox::question(0, 
+                     "MusE: create select project",
+                     s,
+                     "Go Back",
+                     "Abort",
+                     QString(),
+                     0, 1);
+                  if (rv == 1)
+                        exit(0);
+                  }
+            }
+
+      muse->loadProject(name);
+      muse->changeConfig(false);
+
+      if (!debugMode) {
+            if (mlockall(MCL_CURRENT | MCL_FUTURE))
+                  perror("WARNING: Cannot lock memory:");
+            }
+      muse->show();
+      muse->seqStart();
+      int n = app.exec();
+      if (n)
+            fprintf(stderr, "app end %d\n", n);
+      return n;
+      }
+
 

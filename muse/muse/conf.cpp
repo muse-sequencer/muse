@@ -248,9 +248,9 @@ void readConfiguration(QDomNode node)
 //TD            else if (tag == "midiTransform")
 //                  readMidiTransform(node.firstChild());
             else if (tag == "startMode")
-                  config.startMode = i;
-            else if (tag == "startSong")
-                  config.startSong = s;
+                  config.startMode = (StartMode)i;
+            else if (tag == "startProject")
+                  config.startProject = s;
             else if (tag == "followMode")
                   TimeCanvas::followMode = (FollowMode)i;
             else if (tag == "defaultMidiInputDevice")
@@ -265,6 +265,8 @@ void readConfiguration(QDomNode node)
                   config.connectToAllMidiTracks = i;
             else if (tag == "createDefaultMidiInput")
                   config.createDefaultMidiInput = i;
+            else if (tag == "projectPath")
+                  config.projectPath = s;
             else if (tag == "PianoRoll")
                   PianoRoll::readConfiguration(node);
             else if (tag == "DrumEdit")
@@ -394,7 +396,7 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
       xml.strTag("copyright", config.copyright);
       xml.intTag("smfFormat", config.smfFormat);
       xml.intTag("startMode", config.startMode);
-      xml.strTag("startSong", config.startSong);
+      xml.strTag("startProject", config.startProject);
       xml.intTag("freewheelMode", config.useJackFreewheelMode);
 
       xml.intTag("txDeviceId", txDeviceId);
@@ -482,6 +484,7 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
       xml.intTag("connectToAllMidiDevices", config.connectToAllMidiDevices);
       xml.intTag("connectToAllMidiTracks", config.connectToAllMidiTracks);
       xml.intTag("createDefaultMidiInput", config.createDefaultMidiInput);
+      xml.strTag("projectPath", config.projectPath);
 
       PianoRoll::writeConfiguration(xml);
       DrumEdit::writeConfiguration(xml);

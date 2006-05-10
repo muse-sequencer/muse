@@ -43,16 +43,19 @@ MACRO(WRAP_UI outfiles )
 subdirs(
       ctrl widgets master driver instruments marker liste
       )
+
 set (muse_uics
       muse preferences exportmididialog configmidifile
       transport aboutbox transpose
+      projectdialog
       midiedit/quantconfig
       mixer/routedialog
       arranger/configtrack
       )
 
 set(muse_mocs
-	preferences plugingui midiplugin muse song transport conf editor
+	projectdialog preferences plugingui midiplugin muse 
+      song transport conf editor
 	cobject transpose track midisynti midiport
       miditrack wavetrack audiotrack audioaux audiooutput
       audioinput audiogroup exportmidi
@@ -110,7 +113,6 @@ add_executable ( muse
 
       midiedit/drummap.cpp 
       midiedit/citem.cpp 
-#      midiedit/midieditor.cpp
 
       ${muse_mocCPP}
       ${muse_moc_headers}

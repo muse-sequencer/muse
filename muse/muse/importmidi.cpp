@@ -74,7 +74,7 @@ void MusE::importMidi(const QString &file)
                   song->update(-1);
                   break;
             case 1:
-                  loadProjectFile(fn, false, false);    // replace
+//TODO                  loadProjectFile(fn, false, false);    // replace
                   break;
             default:
                   return;
@@ -303,9 +303,9 @@ bool MusE::importMidi(const QString name, bool merge)
             int z = sig.z;
             int n = sig.n;
 
-            int tempo = AL::tempomap.tempo(0);
             transport->setTimesig(z, n);
-//TD            transport->setTempo(tempo);
+//TD          int tempo = AL::tempomap.tempo(0);
+//            transport->setTempo(tempo);
 
             bool masterF = !AL::tempomap.empty();
             song->setMasterFlag(masterF);
@@ -426,7 +426,7 @@ void MusE::processTrack(MidiTrack* track)
             }
 
       if (tevents->size())
-            printf("-----------events left: %ld\n", tevents->size());
+            printf("-----------events left: %zd\n", tevents->size());
       for (iEvent i = tevents->begin(); i != tevents->end(); ++i) {
             printf("%d===\n", i->first);
             i->second.dump();
