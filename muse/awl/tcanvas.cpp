@@ -678,10 +678,11 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
       pos2.mbt(&bar2, &beat, &tick);
 
       int n = mag[metronomeRulerMag];
+
 	bar1 = (bar1 / n) * n;		// round down
       if (bar1 && n >= 2)
             bar1 -= 1;
-	bar2 = ((bar2 + n - 1) / n) * n - 1; // round up
+	bar2 = ((bar2 + n - 1) / n) * n; // round up
 
       for (int bar = bar1; bar <= bar2;) {
       	AL::Pos stick(bar, 0, 0);

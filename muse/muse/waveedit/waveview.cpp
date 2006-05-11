@@ -761,11 +761,11 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
 bool WaveView::getUniqueTmpfileName(QString& newFilename)
       {
       // Check if tmp-directory exists under project path
-      QString tmpWavDir = song->projectDirectory() + "/tmp_musewav"; //!@TODO: Don't hardcode like this
+      QString tmpWavDir = song->absoluteProjectPath() + "/tmp_musewav"; //!@TODO: Don't hardcode like this
       QFileInfo tmpdirfi(tmpWavDir);
       if (!tmpdirfi.isDir()) {
             // Try to create a tmpdir
-            QDir projdir(song->projectDirectory());
+            QDir projdir(song->absoluteProjectPath());
             if (!projdir.mkdir("tmp_musewav")) {
                   printf("Could not create undo dir!\n");
                   return false;

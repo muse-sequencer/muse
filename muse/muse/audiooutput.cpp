@@ -178,7 +178,7 @@ void AudioOutput::deactivate()
 //    gui context
 //---------------------------------------------------------
 
-void AudioOutput::stopRecording(const Pos& s, const Pos& e)
+void AudioOutput::stopRecording(const Pos& /*s*/, const Pos& /*e*/)
       {
       SndFile* sf = recFile();
       if (sf)

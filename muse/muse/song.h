@@ -86,7 +86,7 @@ class Song : public QObject {
          MARKER_TICK, MARKER_LOCK };
 
    private:
-      QString _projectName;
+      QString _projectPath;
       QString _comment;
 
       MidiFifo eventFifo;
@@ -395,9 +395,10 @@ class Song : public QObject {
       void setSolo(Track*,bool);
       void setOff(Track*,bool);
 
-      QString projectDirectory() const;
+      QString projectPath() const;
+      QString absoluteProjectPath() const;
       QString projectName() const;
-      void setProjectName(const QString&);
+      void setProjectPath(const QString&);
       QString comment() const           { return _comment; }
       void setComment(const QString& s) { _comment = s; }
 

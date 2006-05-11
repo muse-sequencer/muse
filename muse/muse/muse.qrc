@@ -14,6 +14,7 @@
 	<file>xpm/play.xpm</file>
 	<file>xpm/frewind.xpm</file>
 	<file>xpm/fforward.xpm</file>
+	<file>xpm/folder_new.png</file>
    </qresource>
 </RCC>
 

@@ -90,7 +90,7 @@ void AudioAux::collectInputData()
                   break;
                   }
             }
-      RouteList* rl = inRoutes();
+//      RouteList* rl = inRoutes();
       bool copy = true;
 
       TrackList* tl = song->tracks();

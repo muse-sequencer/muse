@@ -30,13 +30,22 @@
 class ProjectDialog : public QDialog, public Ui_ProjectDialogBase {
       Q_OBJECT
 
+      void processSubdir(QTreeWidgetItem*, const QString&, 
+         const QString&, QTreeWidgetItem**);
+
+      QString itemPath(QTreeWidgetItem*) const;
+
    private slots:
       void currentChanged(QTreeWidgetItem*, QTreeWidgetItem*);
       void projectNameEdited(const QString&);
+      void itemCollapsed(QTreeWidgetItem*);
+      void itemExpanded(QTreeWidgetItem*);
+      void newFolderClicked();
+      void itemDoubleClicked(QTreeWidgetItem*, int);
 
    public:
       ProjectDialog(QWidget* parent = 0);
-      QString project() const { return projectName->text(); }
+      QString projectPath() const;
       };
 
 #endif

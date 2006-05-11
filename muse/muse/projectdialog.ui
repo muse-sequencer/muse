@@ -15,120 +15,132 @@
   <property name="windowTitle" >
    <string>MusE: Select Project</string>
   </property>
-  <layout class="QVBoxLayout" >
+  <layout class="QGridLayout" >
    <property name="margin" >
     <number>9</number>
    </property>
    <property name="spacing" >
     <number>6</number>
    </property>
-   <item>
-    <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
+   <item row="0" column="1" >
+    <spacer>
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="spacing" >
-      <number>6</number>
+     <property name="sizeHint" >
+      <size>
+       <width>221</width>
+       <height>20</height>
+      </size>
      </property>
-     <item>
-      <widget class="QTreeWidget" name="projectTree" >
-       <column>
+    </spacer>
+   </item>
+   <item row="0" column="0" >
+    <widget class="QToolButton" name="newFolder" >
+     <property name="toolTip" >
+      <string>create new project folder</string>
+     </property>
+     <property name="text" >
+      <string>...</string>
+     </property>
+     <property name="icon" >
+      <iconset resource="muse.qrc" >:/xpm/folder_new.png</iconset>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2" >
+    <widget class="QTreeWidget" name="projectTree" >
+     <column>
+      <property name="text" >
+       <string>Projectlist</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item rowspan="2" row="0" column="2" >
+    <widget class="QGroupBox" name="groupBox" >
+     <property name="title" >
+      <string>Properties</string>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>3</number>
+      </property>
+      <item row="0" column="1" >
+       <widget class="QDateEdit" name="createdDate" >
+        <property name="focusPolicy" >
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="readOnly" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QDateEdit" name="modifiedDate" >
+        <property name="focusPolicy" >
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="readOnly" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QTimeEdit" name="length" >
+        <property name="focusPolicy" >
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="readOnly" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label_4" >
         <property name="text" >
-         <string>Project</string>
+         <string>Length:</string>
         </property>
-       </column>
-      </widget>
-     </item>
-     <item>
-      <widget class="QGroupBox" name="groupBox" >
-       <property name="title" >
-        <string>Properties</string>
-       </property>
-       <layout class="QGridLayout" >
-        <property name="margin" >
-         <number>9</number>
+       </widget>
+      </item>
+      <item row="3" column="0" >
+       <widget class="QLabel" name="label_5" >
+        <property name="text" >
+         <string>Comment:</string>
         </property>
-        <property name="spacing" >
-         <number>3</number>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label_3" >
+        <property name="text" >
+         <string>Modified:</string>
         </property>
-        <item row="0" column="1" >
-         <widget class="QDateEdit" name="createdDate" >
-          <property name="readOnly" >
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1" >
-         <widget class="QDateEdit" name="modifiedDate" >
-          <property name="readOnly" >
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1" >
-         <widget class="QTimeEdit" name="length" >
-          <property name="readOnly" >
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0" >
-         <widget class="QLabel" name="label_4" >
-          <property name="text" >
-           <string>Length:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" >
-         <widget class="QLabel" name="label_5" >
-          <property name="text" >
-           <string>Comment:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" >
-         <widget class="QLabel" name="label_3" >
-          <property name="text" >
-           <string>Modified:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" >
-         <widget class="QLabel" name="label_2" >
-          <property name="text" >
-           <string>Created:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0" colspan="2" >
-         <widget class="QTextEdit" name="comment" />
-        </item>
-       </layout>
-      </widget>
-     </item>
-    </layout>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label_2" >
+        <property name="text" >
+         <string>Created:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2" >
+       <widget class="QTextEdit" name="comment" >
+        <property name="focusPolicy" >
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="readOnly" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
-   <item>
-    <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
-     </property>
-     <property name="spacing" >
-      <number>6</number>
-     </property>
-     <item>
-      <widget class="QLabel" name="label" >
-       <property name="text" >
-        <string>Project:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="projectName" />
-     </item>
-    </layout>
-   </item>
-   <item>
+   <item row="3" column="0" colspan="3" >
     <layout class="QHBoxLayout" >
      <property name="margin" >
       <number>0</number>
@@ -154,6 +166,9 @@
        <property name="text" >
         <string>OK</string>
        </property>
+       <property name="default" >
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
      <item>
@@ -165,10 +180,47 @@
      </item>
     </layout>
    </item>
+   <item row="2" column="0" colspan="3" >
+    <layout class="QHBoxLayout" >
+     <property name="margin" >
+      <number>0</number>
+     </property>
+     <property name="spacing" >
+      <number>6</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="label" >
+       <property name="text" >
+        <string>Project:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="projectNameEntry" >
+       <property name="toolTip" >
+        <string>project name</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
   </layout>
  </widget>
  <pixmapfunction></pixmapfunction>
- <resources/>
+ <tabstops>
+  <tabstop>okButton</tabstop>
+  <tabstop>cancelButton</tabstop>
+  <tabstop>projectNameEntry</tabstop>
+  <tabstop>projectTree</tabstop>
+  <tabstop>newFolder</tabstop>
+  <tabstop>modifiedDate</tabstop>
+  <tabstop>length</tabstop>
+  <tabstop>createdDate</tabstop>
+  <tabstop>comment</tabstop>
+ </tabstops>
+ <resources>
+  <include location="muse.qrc" />
+ </resources>
  <connections>
   <connection>
    <sender>okButton</sender>

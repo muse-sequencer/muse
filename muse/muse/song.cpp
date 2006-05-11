@@ -2356,12 +2356,21 @@ bool Song::trackExists(Track* t) const
       }
 
 //---------------------------------------------------------
-//   projectDirectory
+//   absoluteProjectPath
 //---------------------------------------------------------
 
-QString Song::projectDirectory() const
+QString Song::absoluteProjectPath() const
       {
-      return QDir::homePath() + "/" + config.projectPath + "/" + _projectName;
+      return QDir::homePath() + "/" + config.projectPath + "/" + _projectPath;
+      }
+
+//---------------------------------------------------------
+//   projectPath
+//---------------------------------------------------------
+
+QString Song::projectPath() const
+      {
+      return _projectPath;
       }
 
 //---------------------------------------------------------
@@ -2370,16 +2379,17 @@ QString Song::projectDirectory() const
 
 QString Song::projectName() const
       {
-      return _projectName;
+      QString name = _projectPath.split("/").last();
+      return name;
       }
 
 //---------------------------------------------------------
-//   setProjectName
+//   setProjectPath
 //---------------------------------------------------------
 
-void Song::setProjectName(const QString& s)
+void Song::setProjectPath(const QString& s)
       {
-      _projectName = s;      
+      _projectPath = s;
       }
 
 //---------------------------------------------------------
@@ -2390,7 +2400,7 @@ void Song::load()
       {
       clear(false);
 
-      QString s = projectDirectory() + "/" + _projectName + ".med";
+      QString s = absoluteProjectPath() + "/" + projectName() + ".med";
 
       QFile f(s);
       if (f.open(QIODevice::ReadOnly)) {

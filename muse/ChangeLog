@@ -1,3 +1,5 @@
+11.5 (ws)
+      * implemented new project handling; first docs in doc/man/de
 3.5 (ws)
       * moved build system to cmake
       * moved repository to svn

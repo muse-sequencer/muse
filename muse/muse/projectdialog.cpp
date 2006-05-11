@@ -21,6 +21,39 @@
 #include "projectdialog.h"
 #include "gconfig.h"
 #include "song.h"
+#include "icons.h"
+
+//
+// entry types for projectTree tree widget:
+//
+enum { DIR_TYPE, PROJECT_TYPE };
+
+//---------------------------------------------------------
+//   processSubdirectories
+//---------------------------------------------------------
+
+void ProjectDialog::processSubdir(QTreeWidgetItem* item, const QString& p, 
+   const QString& subdir, QTreeWidgetItem** current)
+      {
+      QString path(p + "/" + subdir); 
+      QFile pf(path + "/" + subdir + ".med");
+      if (pf.exists()) {
+            QTreeWidgetItem* pi = new QTreeWidgetItem(item, PROJECT_TYPE);
+            pi->setText(0, subdir);
+            pi->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
+            if (path == song->absoluteProjectPath())
+                  *current = pi;
+            }
+      else {
+            QDir sd(path);
+            QStringList dl = sd.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
+            QTreeWidgetItem* pi = new QTreeWidgetItem(item, DIR_TYPE);
+            pi->setText(0, subdir);
+            itemCollapsed(pi);
+            foreach (QString s, dl)
+                  processSubdir(pi, path, s, current);
+            }
+      }
 
 //---------------------------------------------------------
 //   ProjectDialog
@@ -36,14 +69,26 @@ ProjectDialog::ProjectDialog(QWidget* parent)
       QStringList el = pd.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
       QTreeWidgetItem* current = 0;
       foreach (QString s, el) {
-            QFile pf(QDir::homePath() + "/" + config.projectPath + "/" 
-               + s + "/" + s + ".med");
+            QString path(QDir::homePath() + "/" + config.projectPath + "/" + s);
+            QFile pf(path + "/" + s + ".med");
             if (pf.exists()) {
-                  QTreeWidgetItem* pi = new QTreeWidgetItem;
+                  QTreeWidgetItem* pi = new QTreeWidgetItem(projectTree, PROJECT_TYPE);
                   pi->setText(0, s);
-                  projectTree->addTopLevelItem(pi);
-                  if (s == song->projectName())
+                  pi->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
+                  if (path == song->absoluteProjectPath())
                         current = pi;
+                  }
+            else {
+                  QDir sd(path);
+                  QStringList dl = sd.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
+                  if (!dl.isEmpty()) {
+                        QTreeWidgetItem* pi = new QTreeWidgetItem(projectTree, DIR_TYPE);
+                        pi->setText(0, s);
+                        itemCollapsed(pi);
+                        foreach (QString s, dl) {
+                              processSubdir(pi, path, s, &current);
+                              }
+                        }
                   }
             }
       connect(projectTree, 
@@ -51,15 +96,63 @@ ProjectDialog::ProjectDialog(QWidget* parent)
          SLOT(currentChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
       connect(projectTree, 
          SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),
-         SLOT(accept()));
-      connect(projectName,
+         SLOT(itemDoubleClicked(QTreeWidgetItem*, int)));
+      connect(projectTree,
+         SIGNAL(itemCollapsed(QTreeWidgetItem*)),
+         SLOT(itemCollapsed(QTreeWidgetItem*)));
+      connect(projectTree,
+         SIGNAL(itemExpanded(QTreeWidgetItem*)),
+         SLOT(itemExpanded(QTreeWidgetItem*)));
+      connect(projectNameEntry,
          SIGNAL(textEdited(const QString&)),
          SLOT(projectNameEdited(const QString&)));
-
+      connect(newFolder, 
+         SIGNAL(clicked()),
+         SLOT(newFolderClicked()));
+        
       if (current)
             projectTree->setCurrentItem(current); 
       else
             currentChanged(0, 0);
+      }
+
+//---------------------------------------------------------
+//   itemCollapsed
+//---------------------------------------------------------
+
+void ProjectDialog::itemCollapsed(QTreeWidgetItem* item)
+      {
+      item->setIcon(0, style()->standardIcon(QStyle::SP_DirClosedIcon));
+      }
+
+//---------------------------------------------------------
+//   itemExpanded
+//---------------------------------------------------------
+
+void ProjectDialog::itemExpanded(QTreeWidgetItem* item)
+      {
+      item->setIcon(0, style()->standardIcon(QStyle::SP_DirOpenIcon));
+      }
+
+//---------------------------------------------------------
+//   itemPath
+//---------------------------------------------------------
+
+QString ProjectDialog::itemPath(QTreeWidgetItem* item) const
+      {
+      QString path;
+      QTreeWidgetItem* ti = item;
+      QStringList dirComponent;
+      do {
+            dirComponent.prepend(ti->text(0));
+            ti = ti->parent();
+            } while (ti);
+      foreach (QString s, dirComponent) {
+            if (!path.isEmpty())
+                  path += "/";
+            path += s;
+            }
+      return path;
       }
 
 //---------------------------------------------------------
@@ -68,18 +161,22 @@ ProjectDialog::ProjectDialog(QWidget* parent)
 
 void ProjectDialog::currentChanged(QTreeWidgetItem* item, QTreeWidgetItem*)
       {
-      bool enable = item != 0;
+      bool enable = (item != 0) && (item->type() == PROJECT_TYPE);
       createdDate->setEnabled(enable);
       modifiedDate->setEnabled(enable);
       comment->setEnabled(enable);
       length->setEnabled(enable);
-
+      
+      // newFolder->setEnabled(item == 0 || item->type() == DIR_TYPE);
       if (!enable)
             return;
 
-      projectName->setText(item->text(0));
-      QFileInfo pf(QDir::homePath() + "/" + config.projectPath + "/" 
-         + item->text(0) + "/" + item->text(0) + ".med");
+      projectNameEntry->setText(item->text(0));
+      QString pd(QDir::homePath() + "/" + config.projectPath + "/");
+
+      pd += "/" + itemPath(item);
+
+      QFileInfo pf(pd + "/" + item->text(0) + ".med");
       createdDate->setDateTime(pf.created());
       modifiedDate->setDateTime(pf.lastModified());
 
@@ -136,8 +233,86 @@ void ProjectDialog::currentChanged(QTreeWidgetItem* item, QTreeWidgetItem*)
 void ProjectDialog::projectNameEdited(const QString&)
       {
       QTreeWidgetItem* item = projectTree->currentItem();
-      if (item)
+      if (item && item->type() == PROJECT_TYPE) {
             projectTree->setItemSelected(item, false);
-      projectTree->setCurrentItem(0);      
+            projectTree->setCurrentItem(0);
+            }
+      }
+
+//---------------------------------------------------------
+//   projectPath
+//---------------------------------------------------------
+
+QString ProjectDialog::projectPath() const
+      {
+      QTreeWidgetItem* item = projectTree->currentItem();
+      QString s;
+      if (item) {
+            if (item->type() == PROJECT_TYPE)
+                  s = itemPath(item);
+            else
+                  s = itemPath(item) + "/" + projectNameEntry->text();
+            }
+      else
+            s = projectNameEntry->text(); 
+      return s;
+      }
+
+//---------------------------------------------------------
+//   newFolderClicked
+//---------------------------------------------------------
+
+void ProjectDialog::newFolderClicked()
+      {
+      QString title(tr("MusE: create new folder"));
+      QString folder = QInputDialog::getText(this, title, tr("new folder:"));
+      if (folder.isEmpty())
+            return;
+      QString path;
+      QTreeWidgetItem* item = projectTree->currentItem();
+      if (item) {
+            QStringList sl = itemPath(item).split("/");
+            int n = sl.size() - 1;
+            for (int i = 0; i < n; ++i) {
+                  if (!path.isEmpty())
+                        path += "/";
+                  path += sl[i];
+                  }
+            if (!path.isEmpty())
+                  path += "/";
+            }
+      path += folder;
+
+      QDir d;
+      if (!d.mkpath(QDir::homePath() + "/" + config.projectPath + "/" + path)) {
+            QString s("Creating new project folder <%1> failed");
+            QMessageBox::critical(this, title, s.arg(path));
+            }
+      else {
+            if (item)
+                  item = item->parent();
+            QStringList pathElements = folder.split("/");
+            foreach(QString s, pathElements) {
+                  QTreeWidgetItem* pi;
+                  if (item == 0)
+                        pi = new QTreeWidgetItem(projectTree, DIR_TYPE);
+                  else
+                        pi = new QTreeWidgetItem(item, DIR_TYPE);
+                  pi->setText(0, s);
+                  itemCollapsed(pi);
+                  item = pi;
+                  }
+            projectTree->setCurrentItem(item);
+            }
+      }
+
+//---------------------------------------------------------
+//   itemDoubleClicked
+//---------------------------------------------------------
+
+void ProjectDialog::itemDoubleClicked(QTreeWidgetItem* item, int)
+      {
+      if (item->type() == PROJECT_TYPE)
+            accept();      
       }
 

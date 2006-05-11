@@ -308,9 +308,8 @@ bool MusE::seqRestart()
 //   addProject
 //---------------------------------------------------------
 
-void addProject(const QFileInfo& f)
+void addProject(const QString& name)
       {
-      QString name(f.absoluteFilePath());
       for (int i = 0; i < PROJECT_LIST_LEN; ++i) {
             if (projectList[i] == 0)
                   break;
@@ -1039,7 +1038,7 @@ void MusE::localOff()
 //   loadProject
 //---------------------------------------------------------
 
-void MusE::loadProject(const QString& name)
+void MusE::loadProject(const QString& path)
       {
       //
       // stop audio threads if running
@@ -1053,7 +1052,7 @@ void MusE::loadProject(const QString& name)
                   }
             seqStop();
             }
-      loadProject1(name);
+      loadProject1(path);
       if (restartSequencer)
             seqStart();
       audio->msgSeek(song->cPos());
@@ -1063,15 +1062,17 @@ void MusE::loadProject(const QString& name)
 //   loadProject1
 //---------------------------------------------------------
 
-void MusE::loadProject1(const QString& name)
+void MusE::loadProject1(const QString& path)
       {
+      QString header(tr("MusE: new project"));
+
       if (mixer1)
             mixer1->clear();
       if (mixer2)
             mixer2->clear();
       if (song->dirty) {
             int n = 0;
-            n = QMessageBox::warning(this, appName,
+            n = QMessageBox::warning(this, header,
                tr("The current Project contains unsaved data\n"
                "Load overwrites current Project:\n"
                "Save Current Project?"),
@@ -1089,14 +1090,17 @@ void MusE::loadProject1(const QString& name)
                         printf("InternalError: gibt %d\n", n);
                   }
             }
+      QString name = path.split("/").last();
+      QDir pd(QDir::homePath() + "/" + config.projectPath + "/" + path);
 
-      QDir pd(QDir::homePath() + "/" + config.projectPath + "/" + name);
+      addProject(path);       // add to history
+
       bool newProject = false;
       if (!pd.exists()) {
             newProject = true;
             if (!pd.mkdir(pd.path())) {
-                  QMessageBox::critical(this, QString("MusE: new project"),
-                        tr("Cannot create project directory"));
+                  QString s(tr("Cannot create project folder <%1>"));
+                  QMessageBox::critical(this, header, s.arg(pd.path()));
                   return;
                   }
             }
@@ -1115,7 +1119,7 @@ void MusE::loadProject1(const QString& name)
                   w->close();
             }
       emit startLoadSong();
-      song->setProjectName(name);
+      song->setProjectPath(path);
       song->load();
 
       tr_id->setChecked(config.transportVisible);
@@ -1190,10 +1194,10 @@ void MusE::loadProject()
       int rv = projectDialog.exec();
       if (rv == 0)
             return;
-      QString name = projectDialog.project();
-      if (name.isEmpty())
+      QString path = projectDialog.projectPath();
+      if (path.isEmpty())
             return;
-      loadProject(name);
+      loadProject(path);
       }
 
 //---------------------------------------------------------
@@ -1205,7 +1209,7 @@ bool MusE::save()
       QString backupCommand;
 
       QString name(song->projectName() + ".med");
-      QFileInfo fi(song->projectDirectory() + "/" + name);
+      QFileInfo fi(song->absoluteProjectPath() + "/" + name);
 
       QTemporaryFile tmp(fi.path() + "/MusEXXXXXX");
       tmp.setAutoRemove(false);
@@ -2881,20 +2885,17 @@ int main(int argc, char* argv[])
                   }
             }
 
-      QString name;
+      QString path;     // project path relativ to config.projectPath
       if (argc >= 2)
-            name = argv[optind];    // start with first name on command line
+            path = argv[optind];    // start with first name on command line
       else if (config.startMode == START_LAST_PROJECT) {
             if (projectList[0])
-                  name = *projectList[0];
+                  path = *projectList[0];
             }
       else if (config.startMode == START_START_PROJECT)
-            name = config.startProject;
+            path = config.startProject;
 
-      //DEBUG:
-      name = "";
-
-      if (name.isEmpty()) {
+      if (path.isEmpty()) {
             //
             // ask user for a project
             //
@@ -2902,8 +2903,8 @@ int main(int argc, char* argv[])
                   ProjectDialog projectDialog;
                   int rv = projectDialog.exec();
                   if (rv == 1) {
-                        name = projectDialog.project();
-                        if (!name.isEmpty())
+                        path = projectDialog.projectPath();
+                        if (!path.isEmpty())
                               break;
                         }
                   // the user did not select/create a project
@@ -2922,7 +2923,7 @@ int main(int argc, char* argv[])
                   }
             }
 
-      muse->loadProject(name);
+      muse->loadProject(path);
       muse->changeConfig(false);
 
       if (!debugMode) {
@@ -2936,5 +2937,3 @@ int main(int argc, char* argv[])
             fprintf(stderr, "app end %d\n", n);
       return n;
       }
-
-

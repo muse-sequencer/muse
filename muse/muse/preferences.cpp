@@ -340,6 +340,7 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       setTransportCurrent->setEnabled(muse->transportWindow());
       freewheelMode->setChecked(config->useJackFreewheelMode);
       showSplash->setChecked(config->showSplashScreen);
+      projectPath->setText(config->projectPath);
 
       stopActive->setChecked(midiRCList.isActive(RC_STOP));
       playActive->setChecked(midiRCList.isActive(RC_PLAY));

@@ -116,7 +116,7 @@ static void addController(MPEventList* l, int tick, int /*port*/, int channel, i
 void MusE::exportMidi()
       {
       if (exportMidiDialog == 0)
-            exportMidiDialog = new ExportMidiDialog(song->projectDirectory());
+            exportMidiDialog = new ExportMidiDialog(song->projectPath());
       int rv = exportMidiDialog->exec();
       if (rv == 0)
             return;
