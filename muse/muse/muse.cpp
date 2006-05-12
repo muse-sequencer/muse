@@ -1067,10 +1067,6 @@ void MusE::loadProject1(const QString& path)
       {
       QString header(tr("MusE: new project"));
 
-      if (mixer1)
-            mixer1->clear();
-      if (mixer2)
-            mixer2->clear();
       if (song->dirty) {
             int n = 0;
             n = QMessageBox::warning(this, header,
@@ -1091,6 +1087,10 @@ void MusE::loadProject1(const QString& path)
                         printf("InternalError: gibt %d\n", n);
                   }
             }
+      if (mixer1)
+            mixer1->clear();
+      if (mixer2)
+            mixer2->clear();
       QString name = path.split("/").last();
       QDir pd(QDir::homePath() + "/" + config.projectPath + "/" + path);
 
@@ -1126,7 +1126,8 @@ void MusE::loadProject1(const QString& path)
       song->setProjectPath(path);
       song->clear(false);
 
-      QString s = pd.absoluteFilePath(path + "/" + name + ".med");
+      QString s = pd.absoluteFilePath(name + ".med");
+
       QFile f(s);
 
       bool rv = true;
@@ -1162,6 +1163,11 @@ void MusE::loadProject1(const QString& path)
       showBigtime(config.bigTimeVisible);
       showMixer1(config.mixer1Visible);
       showMixer2(config.mixer2Visible);
+      if (mixer1 && config.mixer1Visible)
+            mixer1->setUpdateMixer();
+      if (mixer2 && config.mixer2Visible)
+            mixer2->setUpdateMixer();
+
       resize(config.geometryMain.size());
       move(config.geometryMain.topLeft());
 
@@ -2888,7 +2894,7 @@ int main(int argc, char* argv[])
       //  load project
       //---------------------------------------------------
 
-      // check if there is a project directory:
+      // check for project directory:
 
       QDir pd(QDir::homePath() + "/" + config.projectPath);
       if (!pd.exists()) {
@@ -2917,7 +2923,7 @@ int main(int argc, char* argv[])
                   }
             }
 
-      // check if there is a template directory:
+      // check for template directory:
 
       pd.setPath(QDir::homePath() + "/" + config.templatePath);
       if (!pd.exists()) {
@@ -2955,6 +2961,16 @@ int main(int argc, char* argv[])
       else if (config.startMode == START_START_PROJECT)
             path = config.startProject;
 
+      QString name = path.split("/").last();
+      if (!path.isEmpty()) {
+            QFile f(QDir::homePath() +"/"+config.projectPath+"/"+path+"/"+name+".med");
+            if (!f.exists()) {
+                  QString s(song->tr("Cannot find project <%1>"));
+                  QString header(song->tr("MusE: load Project"));
+                  QMessageBox::critical(0, header, s.arg(f.fileName()));
+                  path = "";
+                  }
+            }
       if (path.isEmpty()) {
             //
             // ask user for a project

@@ -1,5 +1,5 @@
 ====================================================================
-      MusE  ---  Linux (Midi) Music Editor
+      MusE  ---  Linux Music Editor
 ====================================================================
 
 Welcome to MusE, the open source MIDI/Audio sequencer.
@@ -20,6 +20,9 @@ details.
       Requirements
   =============================
 
+      - CMake 2.4 
+        http:/www.cmake.org/HTML/Download.html
+
       - QT: Qt 4.1.0 or above
         ftp://ftp.trolltech.com/qt/source
         MusE does _not_ compile with older versions
@@ -39,7 +42,6 @@ details.
       - fluidsynth-1.0.3 (formerly known as iiwusynth) from
         http://savannah.nongnu.org/download/fluid
 
-      - (if you compile from cvs:) automake 1.7 and autoconf 2.54
 
   =============================
       Compiling:
@@ -54,10 +56,9 @@ details.
             tar xvofj muse-x.x.x.tar.bz2
 
       - enter dirctory muse-x.x.x:
-            run "ccmake" or "cmake ." to create Makefiles
-            run "make all"
+            run "gen" script
 
-      - as root run:
+      - enter the just build "build" directory and as root run:
             make install
         to install MusE
 

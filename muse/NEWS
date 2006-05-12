@@ -1,5 +1,6 @@
 MusE 1.0:
       New features:
+      - new "project" paradigma
       - "auto fill" parts
       - DSSI support
       - controller automation in arranger

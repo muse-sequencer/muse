@@ -14,11 +14,9 @@ if test ! -d build;
       echo "+calling cmake"
       cmake ..
    else
+      echo "+entering build directory"
       cd build
    fi
-
-# ahem... hack
-cp ../all.h .
 
 echo "+start top level make..."
 

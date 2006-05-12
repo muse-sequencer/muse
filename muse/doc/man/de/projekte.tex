@@ -1,20 +1,19 @@
 \chapter{Projekte}
 
-  \section{Was ist ein Projekt?}
+  \section{Projekte}
 
-      Ein \M\ Projekt \index{Projekt} ist ein Unterverzeichnis, 
-      welches alle 
+      Ein \M\ Projekt \index{Projekt} ist ein Ordner, der alle 
       Dateien des Projekts enthält. Dies sind im wesentlichen die 
       aufgenommenen Wavedateien und die Projektdatei \index{Projektdatei}.
       Die Projektdatei enthält alle
       Informationen über das Projekt sowie alle Midi Daten soweit
       vorhanden.
 
-      Beispiel einer Projekt Verzeichnisstruktur:
+      Beispiel einer Projekt Ordnerstruktur:
 
       \starttyping
-      ~/muse
-            songs
+      ~/MusE
+            projects
                   song1             
                         song1.med
                         rec1.wav
@@ -26,16 +25,16 @@
                           .             
       \stoptyping
 
-      Im oberen Beispiel ist {\tt song1} das Projektverzeichnis 
-      \index{Projektverzeichnis} und
+      Im oberen Beispiel ist {\tt song1} der Projektordner
+      \index{Projektordner} und
       {\tt song1.med} die Projektdatei. Die {\tt *.wav} Dateien sind
       Audio Aufzeichnungen und die zugehörigen {\tt *.wca} Dateien 
       enthalten vorberechnete Daten zum schnellen Zeichnen der 
       Wellenformdarstellung auf den Bildschirm.
 
-      Das Standard-Projektverzeichnis \index{Standard-Projektverzeichnis}
-      {\tt ~/muse/songs} kann im
-      ''Präferenzen'' Menü eingestellt werden.
+      Der Standard-Projektordner \index{Standard-Projektordners}
+      {\tt ~/MusE/projects} kann im ''Präferenzen'' Menü eingestellt 
+      werden.
 
    \section{Projekt auswählen}
 
@@ -47,19 +46,33 @@
       einstellen, ob beim Start ein Standardprojekt \index{Standardprojekt}
       geladen oder immer zunächst nach einen Projekt gefragt werden soll.
 
-          
+   \section{Templates}
+
+      Wird bei der Projektauswahl ein neues Projekt ausgewählt, dann
+      wird im nächsten Schritt ein Dialog gezeigt, in dem ein Template
+      aus einer Liste von verfügbaren Templates ausgewählt werden kann.
+      Ein Template bestimmt die Grundeinstellungen für ein neues
+      Projekt. Ein Template kann ein ein komplettes Projekt sein welches
+      jedoch keine Audiodaten enthalten kann und welches in der Regel
+      auch keine Midi Daten enthält.
+
+      \M\ sucht Templates an zwei Orten:
+      im globalen \M\ Installationspfad (Factory Presets) sowie im 
+      \M\ Verzeichnis relativ zum {\tt HOME} Verzeichnis des
+      Anwenders (User Presets)
+
    \section{Projekt sichern (Backup)}
 
       Es gibt keine in \M\ eingebaute Funktion zum Sichern von Projekten.
-      Da sich aber alle Projektdaten in einem Unterverzeichnis befinden,
-      können Standard-Tools zum sichern verwendet werden.
+      Da sich aber alle Projektdaten in einem Ordner befinden,
+      können Standard-Tools zum Sichern verwendet werden.
 
       Projekte sind immer in sich komplett und enthalten keine Verweise
-      auf Dateien außerhalb des Projektverzeichnisses. Dies gilt nicht
+      auf Dateien außerhalb des Projektordners. Dies gilt nicht
       für Soundfonts \index{Soundfonts}, die z.B. vom Fluid-Synthesizer 
       Plugin verwendet
-      werden. Es wird empfohlen, diese Soundfonts auch als Kopie im
-      Projektverzeichnis abzulegen.
+      werden. Es wird empfohlen, diese Soundfonts\index{Soundfonts} 
+      auch als Kopie im Projektordner abzulegen.
 
       Projekte können auf der Platte ohne Probleme verschoben werden,
       da sie keine absoluten Pfade enthalten.
