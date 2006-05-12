@@ -40,5 +40,3 @@ set (extraClean dimpl.log dimpl.tmp dimpl.tuo dimpl.tui
 set_directory_properties( PROPERTIES
    ADDITIONAL_MAKE_CLEAN_FILES "${extraClean}"
    )
-
-
