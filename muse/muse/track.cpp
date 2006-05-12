@@ -205,7 +205,7 @@ void Track::setDefaultName()
 
 void Track::dump() const
       {
-      printf("Track <%s>: typ %d, parts %ld sel %d\n",
+      printf("Track <%s>: typ %d, parts %zd sel %d\n",
          _name.toLatin1().data(), _type, _parts->size(), _selected);
       }
 
@@ -429,7 +429,7 @@ bool Track::addControllerVal(int id, unsigned time, CVal val)
                         return c->add(time, val);
                         }
                   }
-            printf("Track::addControllerVal(): id 0x%x not found, listsize %ld\n",
+            printf("Track::addControllerVal(): id 0x%x not found, listsize %zd\n",
                id, controller()->size());
             return false;
             }
@@ -444,7 +444,7 @@ void Track::removeControllerVal(int id, unsigned time)
       {
       iCtrl i = controller()->find(id);
       if (i == controller()->end()) {
-            printf("Track::removeControllerVal(): id 0x%x not found, listsize %ld\n",
+            printf("Track::removeControllerVal(): id 0x%x not found, listsize %zd\n",
                id, controller()->size());
             return;
             }
@@ -873,7 +873,7 @@ int Track::getCtrl(int tick, int ctrl) const
       ciCtrl cl = _controller.find(ctrl);
       if (cl == _controller.end()) {
             if (debugMsg)
-                  printf("getCtrl: controller %d(0x%x) not found %ld\n",
+                  printf("getCtrl: controller %d(0x%x) not found %zd\n",
                      ctrl, ctrl, _controller.size());
             return CTRL_VAL_UNKNOWN;
             }

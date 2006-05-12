@@ -60,6 +60,7 @@
 #include "instruments/editinstrument.h"
 #include "part.h"
 #include "projectdialog.h"
+#include "templatedialog.h"
 
 static pthread_t watchdogThread;
 
@@ -1104,6 +1105,9 @@ void MusE::loadProject1(const QString& path)
                   return;
                   }
             }
+      //
+      // close all toplevel windows
+      //
       foreach(QWidget* w, QApplication::topLevelWidgets()) {
             if (!w->isVisible())
                   continue;
@@ -1120,7 +1124,33 @@ void MusE::loadProject1(const QString& path)
             }
       emit startLoadSong();
       song->setProjectPath(path);
-      song->load();
+      song->clear(false);
+
+      QString s = pd.absoluteFilePath(path + "/" + name + ".med");
+      QFile f(s);
+
+      bool rv = true;
+      if (f.open(QIODevice::ReadOnly)) {
+            rv = song->read(&f);
+            f.close();
+            }
+      else {
+            TemplateDialog templateDialog;
+            if (templateDialog.exec() == 1) {
+                  QString path = templateDialog.templatePath();
+                  if (!path.isEmpty()) {
+                        QFile f(path);
+                        if (f.open(QIODevice::ReadOnly)) {
+                              rv = song->read(&f);
+                              f.close();
+                              }
+                        }
+                  }
+            }
+      if (!rv) {
+            QMessageBox::critical(this, QString("MusE"),
+               tr("File read error"));
+            }
 
       tr_id->setChecked(config.transportVisible);
       bt_id->setChecked(config.bigTimeVisible);
@@ -2858,17 +2888,19 @@ int main(int argc, char* argv[])
       //  load project
       //---------------------------------------------------
 
-      // first check if there is a project directory:
+      // check if there is a project directory:
 
       QDir pd(QDir::homePath() + "/" + config.projectPath);
       if (!pd.exists()) {
             // ask user to create a new project directory
+            QString title(muse->tr("MusE: create project directory"));
+
             QString s;
             s = "The MusE project directory\n%1\ndoes not exists";
             s = s.arg(pd.path());
 
             int rv = QMessageBox::question(0, 
-               "MusE: create project directory",
+               title,
                s,
                "Create",
                "Abort",
@@ -2879,9 +2911,37 @@ int main(int argc, char* argv[])
             if (!pd.mkpath(pd.path())) {
                   // TODO: tell user why this has happened
                   QMessageBox::critical(0,
-                  "MusE: create project directory",
+                  title, 
                   "Creating project directory failed");
                   exit(-1);
+                  }
+            }
+
+      // check if there is a template directory:
+
+      pd.setPath(QDir::homePath() + "/" + config.templatePath);
+      if (!pd.exists()) {
+            // ask user to create a new template directory
+            QString title(muse->tr("MusE: create template directory"));
+
+            QString s;
+            s = "The MusE template directory\n%1\ndoes not exists";
+            s = s.arg(pd.path());
+
+            int rv = QMessageBox::question(0, 
+               title,
+               s,
+               "Create",
+               "Abort",
+               QString(),
+               0, 1);
+            if (rv == 0) {
+                  if (!pd.mkpath(pd.path())) {
+                        // TODO: tell user why this has happened
+                        QMessageBox::critical(0,
+                        title,
+                        "Creating template directory failed");
+                        }
                   }
             }
 

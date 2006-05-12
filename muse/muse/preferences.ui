@@ -9,7 +9,7 @@
     <x>0</x>
     <y>0</y>
     <width>731</width>
-    <height>602</height>
+    <height>713</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -117,24 +117,34 @@
        <item>
         <widget class="QGroupBox" name="groupBox_7" >
          <property name="title" >
-          <string>Path</string>
+          <string>Local Paths</string>
          </property>
-         <layout class="QHBoxLayout" >
+         <layout class="QGridLayout" >
           <property name="margin" >
            <number>9</number>
           </property>
           <property name="spacing" >
            <number>6</number>
           </property>
-          <item>
-           <widget class="QLabel" name="label" >
+          <item row="1" column="1" >
+           <widget class="QLineEdit" name="templatePath" />
+          </item>
+          <item row="0" column="1" >
+           <widget class="QLineEdit" name="projectPath" />
+          </item>
+          <item row="1" column="0" >
+           <widget class="QLabel" name="label_35" >
             <property name="text" >
-             <string>Project Path</string>
+             <string>Templates</string>
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QLineEdit" name="projectPath" />
+          <item row="0" column="0" >
+           <widget class="QLabel" name="label" >
+            <property name="text" >
+             <string>Projects</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -2307,20 +2317,6 @@
  <pixmapfunction></pixmapfunction>
  <customwidgets>
   <customwidget>
-   <class>GreendotButton</class>
-   <extends>QToolButton</extends>
-   <header>greendotbutton.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
-  </customwidget>
-  <customwidget>
-   <class>RasterCombo</class>
-   <extends>QComboBox</extends>
-   <header>rastercombo.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
-  </customwidget>
-  <customwidget>
    <class>QuantCombo</class>
    <extends>QComboBox</extends>
    <header>quantcombo.h</header>
@@ -2331,6 +2327,20 @@
    <class>RecordButton</class>
    <extends>QToolButton</extends>
    <header>recordbutton.h</header>
+   <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
+   <class>GreendotButton</class>
+   <extends>QToolButton</extends>
+   <header>greendotbutton.h</header>
+   <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
+   <class>RasterCombo</class>
+   <extends>QComboBox</extends>
+   <header>rastercombo.h</header>
    <container>0</container>
    <pixmap></pixmap>
   </customwidget>

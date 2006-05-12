@@ -124,6 +124,7 @@ struct GlobalConfigValues {
       bool connectToAllMidiTracks;
       bool createDefaultMidiInput;
       QString projectPath;
+      QString templatePath;
       };
 
 extern GlobalConfigValues config;

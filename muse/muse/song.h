@@ -402,7 +402,6 @@ class Song : public QObject {
       QString comment() const           { return _comment; }
       void setComment(const QString& s) { _comment = s; }
 
-      void load();
       bool read(QFile* qf);
       void read20(QDomNode node);
       void read10(QDomNode);

@@ -341,6 +341,7 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       freewheelMode->setChecked(config->useJackFreewheelMode);
       showSplash->setChecked(config->showSplashScreen);
       projectPath->setText(config->projectPath);
+      templatePath->setText(config->templatePath);
 
       stopActive->setChecked(midiRCList.isActive(RC_STOP));
       playActive->setChecked(midiRCList.isActive(RC_PLAY));
@@ -595,6 +596,7 @@ void PreferencesDialog::apply()
       ::config.showSplashScreen = showSplash->isChecked();
 
       ::config.projectPath = projectPath->text();
+      ::config.templatePath = templatePath->text();
 
       PianoRoll::initWidth  = pianorollWidth->value();
       PianoRoll::initHeight = pianorollHeight->value();

@@ -321,7 +321,7 @@ void WaveTrack::collectInputData()
             return;
             }
 
-	unsigned framePos = audio->pos().frame();
+//	unsigned framePos = audio->pos().frame();
       if (audio->freewheel()) {
       	// when freewheeling, read data direct from file:
             // TODO: fetchData(framePos, segmentSize, buffer);

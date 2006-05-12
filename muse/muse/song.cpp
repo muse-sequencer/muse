@@ -2393,30 +2393,8 @@ void Song::setProjectPath(const QString& s)
       }
 
 //---------------------------------------------------------
-//   load
-//---------------------------------------------------------
-
-void Song::load()
-      {
-      clear(false);
-
-      QString s = absoluteProjectPath() + "/" + projectName() + ".med";
-
-      QFile f(s);
-      if (f.open(QIODevice::ReadOnly)) {
-            int rv = read(&f);
-            f.close();
-            if (rv) {
-                  QMessageBox::critical(0, QString("MusE"),
-                     tr("File read error"));
-                  return;
-                  }
-            }
-      dirty = false;
-      }
-
-//---------------------------------------------------------
 //   read
+//    return false on error
 //---------------------------------------------------------
 
 bool Song::read(QFile* qf)
@@ -2431,7 +2409,7 @@ bool Song::read(QFile* qf)
             ln.setNum(line);
             error = err + "\n    at line: " + ln + " col: " + col;
             printf("error reading med file: %s\n", error.toLatin1().data());
-            return true;
+            return false;
             }
       for (QDomNode node = doc.documentElement(); !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
@@ -2452,7 +2430,8 @@ bool Song::read(QFile* qf)
             else
                   printf("MusE: %s not supported\n", e.tagName().toLatin1().data());
             }
-      return false;
+      dirty = false;
+      return true;
       }
 
 //---------------------------------------------------------

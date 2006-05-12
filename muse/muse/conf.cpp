@@ -267,6 +267,8 @@ void readConfiguration(QDomNode node)
                   config.createDefaultMidiInput = i;
             else if (tag == "projectPath")
                   config.projectPath = s;
+            else if (tag == "templatePath")
+                  config.templatePath = s;
             else if (tag == "PianoRoll")
                   PianoRoll::readConfiguration(node);
             else if (tag == "DrumEdit")
@@ -485,6 +487,7 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
       xml.intTag("connectToAllMidiTracks", config.connectToAllMidiTracks);
       xml.intTag("createDefaultMidiInput", config.createDefaultMidiInput);
       xml.strTag("projectPath", config.projectPath);
+      xml.strTag("templatePath", config.templatePath);
 
       PianoRoll::writeConfiguration(xml);
       DrumEdit::writeConfiguration(xml);

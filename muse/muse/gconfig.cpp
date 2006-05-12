@@ -136,5 +136,6 @@ GlobalConfigValues config = {
       true,                         // connectToAllMidiTracks
       true,                         // createDefaultMidiInput
       QString("MusE/projects"),     // projectPath
+      QString("MusE/templates"),    // templatePath
       };
 

@@ -167,7 +167,7 @@ void Transport::setLen(const AL::Pos& len)
 //   setTimesig
 //---------------------------------------------------------
 
-void Transport::setTimesig(int z, int n)
+void Transport::setTimesig(int /*z*/, int /*n*/)
       {
 //TD      tempo->setTimesig(z, n);
       }

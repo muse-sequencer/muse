@@ -48,13 +48,14 @@ set (muse_uics
       muse preferences exportmididialog configmidifile
       transport aboutbox transpose
       projectdialog
+      templatedialog
       midiedit/quantconfig
       mixer/routedialog
       arranger/configtrack
       )
 
 set(muse_mocs
-	projectdialog preferences plugingui midiplugin muse 
+	projectdialog templatedialog preferences plugingui midiplugin muse 
       song transport conf editor
 	cobject transpose track midisynti midiport
       miditrack wavetrack audiotrack audioaux audiooutput
