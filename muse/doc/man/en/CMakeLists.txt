@@ -20,7 +20,9 @@
 
 add_custom_command ( 
       OUTPUT man-en.pdf
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/man-en.tex
+      DEPENDS 
+            ${CMAKE_CURRENT_SOURCE_DIR}/man-en.tex
+            ${CMAKE_CURRENT_SOURCE_DIR}/projects.tex
       COMMAND ${TEXEXEC_PATH}/texexec 
       ARGS  --language=en --verbose --batch --pdf 
          --path=${CMAKE_CURRENT_SOURCE_DIR} 

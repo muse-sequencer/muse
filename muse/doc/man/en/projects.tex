@@ -1,0 +1,55 @@
+\chapter{Projects}
+
+  \section{Project}
+
+      A \M\ project \index{project} is represented by a folder holding 
+      all files of the project. This are mainly the recorded wave files 
+      and the the project file \index{project file}.
+      The project file contains all information about the project.
+      It also contains all midi data if exists.
+
+      Example of a project folder structure:
+
+      \starttyping
+      ~/MusE
+            projects
+                  song1             
+                        song1.med
+                        rec1.wav
+                        rec1.wca
+                        rec2.wav
+                        rec2.wca
+                  song2
+                          .             
+                          .             
+      \stoptyping
+
+      In the above example {\tt song1} is the project folder 
+      \index{project folder} and
+      {\tt song1.med} is the project file. 
+      The {\tt *.wav} files are audio recordings and the {\tt *.wca}
+      files contain precomputed data used for fast screen drawing of
+      waveforms.
+
+      The path of the standard project folder 
+      \index{standard project folder}  {\tt ~/MusE/projects}
+      can be configured in the ''Preferences'' menu.
+      
+
+   \section{Select a project}
+
+      After \M\ starts, first a project must be choosen or created.
+
+      Normally the last project will be loaded. If you do not like this
+      behaviour in the ''Preferences'' menu you can configure
+      a standard project \index{standard project} or tell \M\ to
+      always ask for a project.
+
+   \section{Templates}
+
+      If you enter the name of a new project in the project selection
+      menu then on OK \M\ will present you a list of templates to
+      choose from. The template can be a complete project but 
+      without any wave data and normally without any midi data.
+
+
