@@ -157,9 +157,9 @@ add_custom_target(all.h.pch
    ALL
    ${CMAKE_CXX_COMPILER} 
      -g -Wextra -fno-exceptions -fno-rtti -Wall
-     -I/usr/qt4/include
-     -I/usr/qt4/include/QtCore
-     -I/usr/qt4/include/QtGui
+     -I${QT_INCLUDE_DIR}
+     -I${QT_QTCORE_INCLUDE_DIR}
+     -I${QT_QTGUI_INCLUDE_DIR}
      -o ${PROJECT_BINARY_DIR}/all.h.pch
      ${PROJECT_SOURCE_DIR}/all.h
    DEPENDS ${PROJECT_SOURCE_DIR}/all.h
@@ -171,9 +171,9 @@ add_custom_target(all-pic.h.pch
    ${CMAKE_CXX_COMPILER} 
      -fPIC
      -g -Wextra -fno-exceptions -fno-rtti -Wall
-     -I/usr/qt4/include
-     -I/usr/qt4/include/QtCore
-     -I/usr/qt4/include/QtGui
+     -I${QT_INCLUDE_DIR}
+     -I${QT_QTCORE_INCLUDE_DIR}
+     -I${QT_QTGUI_INCLUDE_DIR}
      -o ${PROJECT_BINARY_DIR}/all-pic.h.pch
      ${PROJECT_BINARY_DIR}/all-pic.h
    DEPENDS ${PROJECT_BINARY_DIR}/all-pic.h
