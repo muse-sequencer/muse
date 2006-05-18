@@ -1138,19 +1138,23 @@ void MusE::loadProject1(const QString& path)
       else {
             TemplateDialog templateDialog;
             if (templateDialog.exec() == 1) {
-                  QString path = templateDialog.templatePath();
-                  if (!path.isEmpty()) {
-                        QFile f(path);
+                  s  = templateDialog.templatePath();
+                  if (!s.isEmpty()) {
+                        QFile f(s);
                         if (f.open(QIODevice::ReadOnly)) {
                               rv = song->read(&f);
                               f.close();
+                              }
+                        else {
+                              QString msg(tr("Cannot open template file\n%1"));
+                              QMessageBox::critical(this, header, msg.arg(s));
                               }
                         }
                   }
             }
       if (!rv) {
-            QMessageBox::critical(this, QString("MusE"),
-               tr("File read error"));
+            QString msg(tr("File <%1> read error"));
+            QMessageBox::critical(this, header, msg.arg(s));
             }
 
       tr_id->setChecked(config.transportVisible);

@@ -31,7 +31,7 @@ class TemplateDialog : public QDialog, public Ui_TemplateDialogBase {
       Q_OBJECT
 
       void processSubdir(QTreeWidgetItem*, const QString&, 
-         const QString&);
+         const QString&, int);
 
       QString itemPath(QTreeWidgetItem*) const;
 

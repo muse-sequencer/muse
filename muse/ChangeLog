@@ -1,3 +1,6 @@
+18.5 (ws)
+      * added "Muse templates" and "User templates" to template list
+        in template dialog
 15.5 (rj)
       * Fixed hardcoded refs to qt in CMakeLists.txt
 11.5 (ws)

@@ -26,14 +26,14 @@
 //
 // entry types for templateTree tree widget:
 //
-enum { DIR_TYPE, TEMPLATE_TYPE };
+enum { DIR_TYPE, LOCAL_TEMPLATE_TYPE, GLOBAL_TEMPLATE_TYPE};
 
 //---------------------------------------------------------
 //   processSubdir
 //---------------------------------------------------------
 
 void TemplateDialog::processSubdir(QTreeWidgetItem* item, const QString& p, 
-   const QString& subdir)
+   const QString& subdir, int type)
       {
       QDir pd(p + "/" + subdir);
       pd.setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
@@ -43,12 +43,11 @@ void TemplateDialog::processSubdir(QTreeWidgetItem* item, const QString& p,
             QTreeWidgetItem* pi;
             if (s.isDir()) {
                   pi = new QTreeWidgetItem(item, DIR_TYPE);
-                  pi->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
                   itemCollapsed(pi);
-                  processSubdir(pi, pd.absolutePath(), s.fileName());
+                  processSubdir(pi, pd.absolutePath(), s.fileName(), type);
                   }
             else {
-                  pi = new QTreeWidgetItem(item, TEMPLATE_TYPE);
+                  pi = new QTreeWidgetItem(item, type);
                   pi->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
                   }
             pi->setText(0, s.fileName());
@@ -66,25 +65,26 @@ TemplateDialog::TemplateDialog(QWidget* parent)
       templateTree->setSelectionBehavior(QAbstractItemView::SelectRows);
       templateTree->setSelectionMode(QAbstractItemView::SingleSelection);
 
-      QDir pd(QDir::homePath() + "/" + config.templatePath);
-      pd.setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
-      pd.setNameFilters(QStringList("*.med"));
-      QFileInfoList el = pd.entryInfoList();
-      foreach (QFileInfo s, el) {
-            QTreeWidgetItem* pi;
+      //
+      //    add global templates to list
+      //
+      QTreeWidgetItem* pi;
+      pi = new QTreeWidgetItem(templateTree, DIR_TYPE);
+      templateTree->setItemExpanded(pi, true);
+      itemExpanded(pi);
+      pi->setText(0, tr("MusE presets"));
+      processSubdir(pi, museGlobalShare, "templates", GLOBAL_TEMPLATE_TYPE);
 
-            if (s.isDir()) {
-                  pi = new QTreeWidgetItem(templateTree, DIR_TYPE);
-                  pi->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
-                  itemCollapsed(pi);
-                  processSubdir(pi, pd.absolutePath(), s.fileName());
-                  }
-            else {
-                  pi = new QTreeWidgetItem(templateTree, TEMPLATE_TYPE);
-                  pi->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
-                  }
-            pi->setText(0, s.fileName());
-            }
+      //
+      //    add local templates to list
+      //
+      pi = new QTreeWidgetItem(templateTree, DIR_TYPE);
+      pi->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
+      templateTree->setItemExpanded(pi, true);
+      itemExpanded(pi);
+      pi->setText(0, tr("User presets"));
+      processSubdir(pi, QDir::homePath() + "/" + config.templatePath, ".", LOCAL_TEMPLATE_TYPE);
+
       connect(templateTree, 
          SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), 
          SLOT(currentChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
@@ -132,10 +132,11 @@ QString TemplateDialog::itemPath(QTreeWidgetItem* item) const
             dirComponent.prepend(ti->text(0));
             ti = ti->parent();
             } while (ti);
-      foreach (QString s, dirComponent) {
+      size_t n = dirComponent.size();
+      for (size_t i = 1; i < n; ++i) {
             if (!path.isEmpty())
                   path += "/";
-            path += s;
+            path += dirComponent[i];
             }
       return path;
       }
@@ -146,7 +147,12 @@ QString TemplateDialog::itemPath(QTreeWidgetItem* item) const
 
 void TemplateDialog::currentChanged(QTreeWidgetItem* item, QTreeWidgetItem*)
       {
-      bool enable = (item != 0) && (item->type() == TEMPLATE_TYPE);
+      bool enable = (item != 0) && 
+        (
+            (item->type() == LOCAL_TEMPLATE_TYPE)
+            ||
+            (item->type() == GLOBAL_TEMPLATE_TYPE)
+         );
       createdDate->setEnabled(enable);
       modifiedDate->setEnabled(enable);
       comment->setEnabled(enable);
@@ -155,11 +161,15 @@ void TemplateDialog::currentChanged(QTreeWidgetItem* item, QTreeWidgetItem*)
       if (!enable)
             return;
 
-      QString pd(QDir::homePath() + "/" + config.templatePath + "/");
+      QString pd;
+      if (item->type() == LOCAL_TEMPLATE_TYPE)
+            pd = QDir::homePath() + "/" + config.templatePath;
+      else
+            pd =  museGlobalShare + "/" + "templates";
 
       pd += "/" + itemPath(item);
 
-      QFileInfo pf(pd + "/" + item->text(0) + ".med");
+      QFileInfo pf(pd);
       createdDate->setDateTime(pf.created());
       modifiedDate->setDateTime(pf.lastModified());
 
@@ -216,8 +226,13 @@ QString TemplateDialog::templatePath() const
       {
       QTreeWidgetItem* item = templateTree->currentItem();
       QString s;
-      if (item)
-            s = itemPath(item);
+      if (item) {
+            if (item->type() == LOCAL_TEMPLATE_TYPE)
+                  s = QDir::homePath() + "/" + config.templatePath;
+            else
+                  s =  museGlobalShare + "/" + "templates";
+            s += "/" + itemPath(item);
+            }
       return s;
       }
 
@@ -227,7 +242,8 @@ QString TemplateDialog::templatePath() const
 
 void TemplateDialog::itemDoubleClicked(QTreeWidgetItem* item, int)
       {
-      if (item->type() == TEMPLATE_TYPE)
+      if ((item->type() == LOCAL_TEMPLATE_TYPE) ||
+         (item->type() == GLOBAL_TEMPLATE_TYPE))
             accept();      
       }
 

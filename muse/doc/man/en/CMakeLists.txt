@@ -36,7 +36,7 @@ add_custom_target ( man-en ALL
       )
 
 install_files ( /share/${MusE_INSTALL_NAME}/doc/ .pdf 
-   ${CMAKE_CURRENT_SOURCE_DIR}/man-en.pdf )
+   ${CMAKE_CURRENT_BINARY_DIR}/man-en.pdf )
 
 set (extraClean man-en.log man-en.tmp man-en.tuo man-en.tui
    man-en-mpgraph.mp mpgraph.mp )

@@ -345,8 +345,8 @@
       <solo>0</solo>
       <prefader>0</prefader>
       <off>0</off>
-      <auxSend idx=0>0.000000</auxSend>
-      <auxSend idx=1>0.000000</auxSend>
+      <auxSend idx="0">0.000000</auxSend>
+      <auxSend idx="1">0.000000</auxSend>
       <controller id="0" cur="1.021645">
         </controller>
       <controller id="1" cur="0.000000">
@@ -366,8 +366,8 @@
       <solo>0</solo>
       <prefader>0</prefader>
       <off>0</off>
-      <auxSend idx=0>0.000000</auxSend>
-      <auxSend idx=1>0.000000</auxSend>
+      <auxSend idx="0">0.000000</auxSend>
+      <auxSend idx="1">0.000000</auxSend>
       <controller id="0" cur="1.021645">
         </controller>
       <controller id="1" cur="0.000000">
