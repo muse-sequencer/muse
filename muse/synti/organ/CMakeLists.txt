@@ -29,6 +29,8 @@ add_library ( organ SHARED
       ${organ_uis}
       )
 
+target_link_libraries( organ synti )
+
 # - tell cmake to name target organ.so instead of 
 #   liborgan.so
 # - use precompiled header files

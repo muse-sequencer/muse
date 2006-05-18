@@ -29,6 +29,7 @@ add_library ( deicsonze SHARED
       ${deicsonze_mocs}
       ${deicsonze_uis}
       )
+target_link_libraries( deicsonze synti )
 
 # - tell cmake to name target deicsonze.so instead of 
 #   libdeicsonze.so

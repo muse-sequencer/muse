@@ -29,6 +29,8 @@ add_library ( fluidsynth SHARED
       ${fluidsynth_uis}
       )
 
+target_link_libraries( fluidsynth synti )
+
 # - tell cmake to name target fluidsynth.so instead of 
 #   libfluidsynth.so
 # - use precompiled header files
@@ -36,6 +38,7 @@ add_library ( fluidsynth SHARED
 set_target_properties ( fluidsynth 
    PROPERTIES PREFIX ""
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
+   LINK_FLAGS "-L${FLUID_LIBDIR} ${FLUID_LIB}"
    )
 
 install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ fluidsynth )

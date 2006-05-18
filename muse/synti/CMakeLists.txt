@@ -27,6 +27,12 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/synti
    )
 
-subdirs(libsynti s1 organ fluid deicsonze fluidsynth simpledrums vam )
+set (SubDirs libsynti s1 organ deicsonze simpledrums vam )
+
+if (ENABLE_FLUID)
+      set (SubDirs ${SubDirs} fluid fluidsynth )
+endif (ENABLE_FLUID)
+
+subdirs(${SubDirs})
 
 

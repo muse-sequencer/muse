@@ -20,7 +20,7 @@
 
 project(muse)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
-# set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
@@ -37,7 +37,7 @@ include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
 
 option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface" ON)
 option ( ENABLE_VST    "enable VST/win support"                OFF)
-option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"    ON)
+option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"   OFF)
 
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 set(QT_USE_QTXML TRUE)
