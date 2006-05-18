@@ -1,18 +1,15 @@
 -----------------------------TODO-------------------------------------------
 (10.5.2006)
-      - Select Project Dialog:
-            - add Toolbar with Functions:
-                  - create Subfolder
-                  - Folder Up
-                  - Folder Down
-            - display project subfolder
-            - show current project path in QLabel
-            - marke projects with different samplerat as current
       - check for samplerate when loading project
       - compute song len in seconds when saving project
+      - save project creation date/time in project
       - create dialog to edit project comment
 
 BUGS
+      - if the user creates a new project and later decides to not
+        save the project, the created (empty) project directory is
+        not deleted on MusE exit
+
 	- updating the gui during midi recording is too slow;
         a new, faster implementation is needed
 
