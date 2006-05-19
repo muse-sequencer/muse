@@ -163,6 +163,8 @@ class MusE : public QMainWindow, public Ui::MuseBase
       void writeConfiguration(Xml&) const;
       void updateConfiguration();
 
+      bool leaveProject();
+
       virtual void focusInEvent(QFocusEvent*);
 
    signals:

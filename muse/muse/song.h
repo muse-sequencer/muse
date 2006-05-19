@@ -88,11 +88,15 @@ class Song : public QObject {
    private:
       QString _projectPath;
       QString _comment;
+      bool _backupWritten;    // set after first "save" operation from
+                              // user; used to make sure there will
+                              // be only one backup for a session
+      bool _created;          // project was created in current session
+      QDateTime _createDate;
 
       MidiFifo eventFifo;
 
       int updateFlags;
-      bool _backupWritten;
 
       TrackList _tracks;      // tracklist as seen by arranger
       MidiTrackList  _midis;
@@ -401,6 +405,8 @@ class Song : public QObject {
       void setProjectPath(const QString&);
       QString comment() const           { return _comment; }
       void setComment(const QString& s) { _comment = s; }
+      void setCreated(bool val)         { _created = val; }
+      bool created() const              { return _created; }
 
       bool read(QFile* qf);
       void read20(QDomNode node);

@@ -6,10 +6,6 @@
       - create dialog to edit project comment
 
 BUGS
-      - if the user creates a new project and later decides to not
-        save the project, the created (empty) project directory is
-        not deleted on MusE exit
-
 	- updating the gui during midi recording is too slow;
         a new, faster implementation is needed
 

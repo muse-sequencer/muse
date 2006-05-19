@@ -21,6 +21,7 @@
 #include "muse.h"
 #include "song.h"
 #include "arranger/arranger.h"
+#include "al/al.h"
 #include "al/xml.h"
 #include "midiedit/drummap.h"
 #include "al/marker.h"
@@ -252,6 +253,8 @@ void Song::read(QDomNode node)
                   DrumEdit::readConfiguration(node);
             else if (tag == "comment")
                   _comment = e.text();
+            else if (tag == "createDate")
+                  _createDate = QDateTime::fromString(e.text(), Qt::ISODate);
             else
                   printf("MusE:Song: unknown tag %s\n", tag.toLatin1().data());
             }
@@ -266,6 +269,10 @@ void Song::write(Xml& xml) const
       {
       xml.tag("song");
       xml.strTag("comment", _comment);
+      xml.strTag("createDate", _createDate.toString(Qt::ISODate));
+      int n = AL::tempomap.tick2frame(_len);
+      xml.intTag("LenInSec", n / AL::sampleRate);
+
       xml.intTag("cpos", cpos());
       xml.intTag("rpos", rpos());
       xml.intTag("lpos", lpos());

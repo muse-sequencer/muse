@@ -1,3 +1,5 @@
+19.5 (ws)
+      * added project creation time and song len (in sec) to project file
 18.5 (ws)
       * added "Muse templates" and "User templates" to template list
         in template dialog

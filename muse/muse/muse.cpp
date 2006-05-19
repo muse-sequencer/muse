@@ -1067,26 +1067,9 @@ void MusE::loadProject1(const QString& path)
       {
       QString header(tr("MusE: new project"));
 
-      if (song->dirty) {
-            int n = 0;
-            n = QMessageBox::warning(this, header,
-               tr("The current Project contains unsaved data\n"
-               "Load overwrites current Project:\n"
-               "Save Current Project?"),
-               tr("&Save"), tr("&Overwrite"), tr("&Abort"), 0, 2);
-            switch (n) {
-                  case 0:
-                        if (!save())      // abort if save failed
-                              return;
-                        break;
-                  case 1:
-                        break;
-                  case 2:
-                        return;
-                  default:
-                        printf("InternalError: gibt %d\n", n);
-                  }
-            }
+      if (leaveProject())
+            return;
+
       if (mixer1)
             mixer1->clear();
       if (mixer2)
@@ -1125,6 +1108,7 @@ void MusE::loadProject1(const QString& path)
       emit startLoadSong();
       song->setProjectPath(path);
       song->clear(false);
+      song->setCreated(newProject);
 
       QString s = pd.absoluteFilePath(name + ".med");
 
@@ -1303,6 +1287,50 @@ void MusE::quitDoc()
       }
 
 //---------------------------------------------------------
+//    leaveProject
+//    return false if user aborts operation
+//---------------------------------------------------------
+
+bool MusE::leaveProject()
+      {
+      //
+      // delete all wave files created in this session and not
+      // referenced any more
+      //
+
+      if (song->dirty) {
+            int n = 0;
+            n = QMessageBox::warning(this, appName,
+               tr("The current Project contains unsaved data\n"
+               "Save Current Project?"),
+               tr("&Save"), tr("&Nosave"), tr("&Abort"), 0, 2);
+            if (n == 0)
+                  return !save();
+            else if (n == 2)
+                  return true;
+	      //
+	      // delete all wave files created in this session and not
+      	// referenced any more
+            // delete all if we drop the song
+	      //
+       	SndFile::cleanupRecFiles(n == 1);
+            }
+      else
+            SndFile::cleanupRecFiles(true);
+      //
+      // if this is a new created project,
+      //   delete project directory
+      //
+      if (song->created()) {
+            // delete project directory
+            QDir pp;
+            if (!pp.rmdir(song->absoluteProjectPath()))
+                  printf("cannot remove dir <%s>\n", song->absoluteProjectPath().toLatin1().data());
+            }
+      return false;
+      }
+
+//---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
 
@@ -1315,32 +1343,10 @@ void MusE::closeEvent(QCloseEvent*)
       while (audio->isPlaying()) {
             qApp->processEvents();
             }
-      //
-      // delete all wave files created in this session and not
-      // referenced any more
-      //
 
-      if (song->dirty) {
-            int n = 0;
-            n = QMessageBox::warning(this, appName,
-               tr("The current Project contains unsaved data\n"
-               "Save Current Project?"),
-               tr("&Save"), tr("&Nosave"), tr("&Abort"), 0, 2);
-            if (n == 0) {
-                  if (!save())      // dont quit if save failed
-                        return;
-                  }
-            else if (n == 2)
-                  return;
-	      //
-	      // delete all wave files created in this session and not
-      	// referenced any more
-            // delete all if we drop the song
-	      //
-       	SndFile::cleanupRecFiles(n == 1);
-            }
-      else
-            SndFile::cleanupRecFiles(true);
+      if (leaveProject())
+            return;
+
       seqStop();
 
       // save "Open Recent" list

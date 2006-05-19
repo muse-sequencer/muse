@@ -1141,6 +1141,12 @@ void Song::panic()
 
 void Song::clear(bool signal)
       {
+      _created       = false;
+      _backupWritten = false;
+      dirty          = false;
+      _comment       = "";
+      _createDate    = QDateTime::currentDateTime();
+
       seekInProgress = false;
       bounceTrack    = 0;
 
@@ -1180,8 +1186,6 @@ void Song::clear(bool signal)
       _quantize      = false;
       _len           = 1;           // song len in ticks
       // _tempo      = 500000;      // default tempo 120
-      dirty          = false;
-      _backupWritten = false;
       if (signal) {
             emit loopChanged(false);
             recordChanged(false);
