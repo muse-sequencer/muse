@@ -55,3 +55,5 @@ set_target_properties( awlplugin
    PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
+install_targets ( /lib/${MusE_INSTALL_NAME}/designer/ awlplugin )
+
