@@ -18,23 +18,26 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#ifndef __TRACKDRAG_H__
-#define __TRACKDRAG_H__
+#ifndef __CTRL_DIALOG_H__
+#define __CTRL_DIALOG_H__
+
+#include "ui_ctrldialog.h"
 
 class Track;
 
 //---------------------------------------------------------
-//   TrackDrag
+//   CtrlDialog
 //---------------------------------------------------------
 
-class TrackDrag : public QDrag {
-      static const char type[];
+class CtrlDialog : public QDialog, public Ui_CtrlDialogBase {
       Q_OBJECT
 
+   private slots:
+      void itemDoubleClicked(QTreeWidgetItem*, int);
+
    public:
-      TrackDrag(Track*, QWidget* src);
-      static bool canDecode(const QMimeSource*);
-      static bool decode(const QMimeSource* s, Track*& p);
+      CtrlDialog(Track*, int, QWidget* parent = 0);
+      int curId() const;
       };
 
 

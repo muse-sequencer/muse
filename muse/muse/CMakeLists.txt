@@ -55,7 +55,8 @@ set (muse_uics
       )
 
 set(muse_mocs
-	projectdialog templatedialog preferences plugingui midiplugin muse 
+	projectdialog templatedialog 
+      preferences plugingui midiplugin muse 
       song transport conf editor
 	cobject transpose track midisynti midiport
       miditrack wavetrack audiotrack audioaux audiooutput

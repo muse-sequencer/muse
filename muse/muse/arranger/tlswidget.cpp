@@ -1,10 +1,22 @@
-//=========================================================
+//=============================================================================
 //  MusE
 //  Linux Music Editor
-//  $Id: tlswidget.cpp,v 1.33 2006/01/12 14:49:13 wschweer Exp $
+//  $Id:$
 //
-//  (C) Copyright 2004 Werner Schweer (ws@seh.de)
-//=========================================================
+//  Copyright (C) 2002-2006 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
 
 #include "song.h"
 #include "track.h"
@@ -16,6 +28,7 @@
 #include "muse.h"
 #include "midiport.h"
 #include "ctrl/configmidictrl.h"
+#include "ctrl/ctrldialog.h"
 #include "midictrl.h"
 #include "widgets/utils.h"
 
@@ -123,16 +136,15 @@ TLSWidget::TLSWidget(Track* t, ArrangerTrack* atrack, TimeCanvas* timeC)
       l->addWidget(minus);
 
       ctrlList = new QToolButton;
-      ctrlList->setPopupMode(QToolButton::MenuButtonPopup);
-      ctrlMenu = new QMenu;
-      connect(ctrlMenu, SIGNAL(aboutToShow()), SLOT(showController()));
-      ctrlList->setMenu(ctrlMenu);
+      ctrlList->setText(tr("Ctrl"));
+
+      connect(ctrlList, SIGNAL(clicked()), SLOT(showControllerList()));
 
       l->addWidget(ctrlList);
       ctrlList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
       updateController();
-      connect(ctrlMenu, SIGNAL(triggered(QAction*)), SLOT(selectController(QAction*)));
+
       connect(_track, SIGNAL(clChanged()), SLOT(updateController()));
       connect(_track, SIGNAL(selectionChanged(bool)), SLOT(selectionChanged()));
       connect(_track, SIGNAL(controllerChanged(int)), SLOT(controllerListChanged(int)));
@@ -190,28 +202,32 @@ void TLSWidget::updateController()
       }
 
 //---------------------------------------------------------
-//   showController
+//   showControllerList
 //---------------------------------------------------------
 
-void TLSWidget::showController()
+void TLSWidget::showControllerList()
       {
-      populateControllerMenu(ctrlMenu);
+      Ctrl* c = ctrl();
+      int id;
+      if (c)
+            id = c->id();
+      else
+            id = CTRL_NO_CTRL;
+      CtrlDialog cd(_ctrlTrack, id);
+      int rv = cd.exec();
+      if (rv != 1)
+            return;
+      id = cd.curId();
+      if (id == CTRL_NO_CTRL)
+            return;
+      setCtrl(id);
       }
 
 //---------------------------------------------------------
-//   selectController
+//   setCtrl
 //---------------------------------------------------------
 
-void TLSWidget::selectController(QAction* a)
-      {
-      selectController(a->data().toInt());
-      }
-
-//---------------------------------------------------------
-//   selectController
-//---------------------------------------------------------
-
-void TLSWidget::selectController(int ctrl)
+void TLSWidget::setCtrl(int ctrl)
       {
       if (ctrl == CTRL_OTHER) {   // "other"
 /*??*/      ConfigMidiCtrl* mce = new ConfigMidiCtrl((MidiTrack*)_track);
@@ -245,34 +261,6 @@ void TLSWidget::selectController(int ctrl)
                   _ctrlTrack = _track;
             ctrlList->setText(at->controller->name());
             emit controllerChanged(ctrl);
-            }
-      }
-
-//---------------------------------------------------------
-//   setCtrl
-//---------------------------------------------------------
-
-void TLSWidget::setCtrl(int ctrl)
-      {
-      if (ctrl == CTRL_OTHER) {
-            QList<QAction*> actions = ctrlMenu->actions();
-            if (actions.isEmpty()) {
-                  if (_track->type() == Track::MIDI) {
-                        selectController(CTRL_VELOCITY);
-                        return;
-                        }
-                  ControllerNameList* cn = _track->controllerNames();
-                  if (!cn->empty())
-                        selectController(cn->front().id);
-                  delete cn;
-                  return;
-                  }
-            QAction* a = actions.at(0);
-            if (a)
-                  selectController(a);
-            }
-      else {
-            selectController(ctrl);
             }
       }
 

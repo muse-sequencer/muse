@@ -255,6 +255,8 @@ void Song::read(QDomNode node)
                   _comment = e.text();
             else if (tag == "createDate")
                   _createDate = QDateTime::fromString(e.text(), Qt::ISODate);
+            else if (tag == "LenInSec")
+                  ;
             else
                   printf("MusE:Song: unknown tag %s\n", tag.toLatin1().data());
             }

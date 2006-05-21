@@ -8,8 +8,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>763</width>
-    <height>108</height>
+    <width>636</width>
+    <height>99</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -134,7 +134,7 @@
         </sizepolicy>
        </property>
        <property name="icon" >
-        <iconset resource="../muse.qrc" >:/xpm/punchin.xpm</iconset>
+        <iconset resource="muse.qrc" >:/xpm/punchin.xpm</iconset>
        </property>
        <property name="checkable" >
         <bool>true</bool>
@@ -155,7 +155,7 @@
         <string>...</string>
        </property>
        <property name="icon" >
-        <iconset resource="../muse.qrc" >:/xpm/loop.xpm</iconset>
+        <iconset resource="muse.qrc" >:/xpm/loop.xpm</iconset>
        </property>
        <property name="checkable" >
         <bool>true</bool>
@@ -173,7 +173,7 @@
         </sizepolicy>
        </property>
        <property name="icon" >
-        <iconset resource="../muse.qrc" >:/xpm/punchout.xpm</iconset>
+        <iconset resource="muse.qrc" >:/xpm/punchout.xpm</iconset>
        </property>
        <property name="checkable" >
         <bool>true</bool>
@@ -310,7 +310,7 @@
           <string>...</string>
          </property>
          <property name="icon" >
-          <iconset resource="../muse.qrc" >:/xpm/start.xpm</iconset>
+          <iconset resource="muse.qrc" >:/xpm/start.xpm</iconset>
          </property>
         </widget>
        </item>
@@ -331,7 +331,7 @@
           <string>...</string>
          </property>
          <property name="icon" >
-          <iconset resource="../muse.qrc" >:/xpm/frewind.xpm</iconset>
+          <iconset resource="muse.qrc" >:/xpm/frewind.xpm</iconset>
          </property>
         </widget>
        </item>
@@ -352,7 +352,7 @@
           <string>...</string>
          </property>
          <property name="icon" >
-          <iconset resource="../muse.qrc" >:/xpm/fforward.xpm</iconset>
+          <iconset resource="muse.qrc" >:/xpm/fforward.xpm</iconset>
          </property>
         </widget>
        </item>
@@ -373,7 +373,7 @@
           <string>...</string>
          </property>
          <property name="icon" >
-          <iconset resource="../muse.qrc" >:/xpm/stop.xpm</iconset>
+          <iconset resource="muse.qrc" >:/xpm/stop.xpm</iconset>
          </property>
          <property name="checkable" >
           <bool>true</bool>
@@ -397,7 +397,7 @@
           <string>...</string>
          </property>
          <property name="icon" >
-          <iconset resource="../muse.qrc" >:/xpm/play.xpm</iconset>
+          <iconset resource="muse.qrc" >:/xpm/play.xpm</iconset>
          </property>
          <property name="checkable" >
           <bool>true</bool>
@@ -828,6 +828,13 @@
  <pixmapfunction></pixmapfunction>
  <customwidgets>
   <customwidget>
+   <class>Awl::PosEdit</class>
+   <extends>QWidget</extends>
+   <header>awl/posedit.h</header>
+   <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
    <class>SigLabel</class>
    <extends>QLabel</extends>
    <header>widgets/siglabel.h</header>
@@ -836,21 +843,14 @@
   </customwidget>
   <customwidget>
    <class>Awl::TempoEdit</class>
-   <extends></extends>
+   <extends>QWidget</extends>
    <header>awl/tempoedit.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
-  </customwidget>
-  <customwidget>
-   <class>Awl::PosEdit</class>
-   <extends></extends>
-   <header>awl/posedit.h</header>
    <container>0</container>
    <pixmap></pixmap>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../muse.qrc" />
+  <include location="muse.qrc" />
  </resources>
  <connections/>
 </ui>

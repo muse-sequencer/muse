@@ -1,3 +1,6 @@
+20.5 (ws)
+      * new controller select dialog
+      * build libsynti.a with -fPIC for athlon64 systems
 19.5 (ws)
       * install libawlplugin.so to make LADSPA plugin guis work
       * added project creation time and song len (in sec) to project file

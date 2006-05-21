@@ -170,10 +170,10 @@ void TemplateDialog::currentChanged(QTreeWidgetItem* item, QTreeWidgetItem*)
       pd += "/" + itemPath(item);
 
       QFileInfo pf(pd);
-      createdDate->setDateTime(pf.created());
       modifiedDate->setDateTime(pf.lastModified());
 
       QTime time(0, 0, 0);
+      QDateTime date;
 
       QFile f(pf.filePath());
       QDomDocument doc;
@@ -206,9 +206,9 @@ void TemplateDialog::currentChanged(QTreeWidgetItem* item, QTreeWidgetItem*)
                                           QString s(e.text());
                                           if (tag == "comment")
                                                 comment->setPlainText(s);
-                                          else if (tag == "LenInSec") {
-                                                int sec = s.toInt();
-                                                time = time.addSecs(sec);
+                                          else if (tag == "createDate") {
+                                                date = QDateTime::fromString(e.text(), Qt::ISODate);
+                                                break;
                                                 }
                                           }
                                     }
@@ -216,6 +216,7 @@ void TemplateDialog::currentChanged(QTreeWidgetItem* item, QTreeWidgetItem*)
                         }
                   }
             }
+      createdDate->setDateTime(date);
       }
 
 //---------------------------------------------------------

@@ -1909,6 +1909,9 @@ void Song::removeTrack2(Track* track)
       else {
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
+printf("remove route:\n");
+r->dump();
+
                   src.channel = r->channel;
                   r->track->outRoutes()->removeRoute(src);
                   }

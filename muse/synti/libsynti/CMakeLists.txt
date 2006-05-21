@@ -20,7 +20,10 @@
 
 add_library(synti mess.cpp gui.cpp mono.cpp poly.cpp mpevent.cpp)
 
+#
+# -fPIC is necessary for 64 bit systems
+#
 set_target_properties( synti
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_SOURCE_DIR}/all.h"
    )
 

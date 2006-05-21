@@ -125,9 +125,9 @@ static void processShutdown(void*)
 	if (audioState == AUDIO_RUNNING)
 		fprintf(stderr, "MusE: sequencer still running, something is very wrong.\n");
       jackAudio->zeroClientPtr(); // jack disconnect client no longer valid
-      delete jackAudio;
-      jackAudio   = 0;
-      audioDriver = 0;
+//      delete jackAudio;
+//      jackAudio   = 0;
+//      audioDriver = 0;
       }
 
 //---------------------------------------------------------

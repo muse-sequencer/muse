@@ -72,6 +72,7 @@ const int CTRL_MASTER_VOLUME = 0x40003;
 const int CTRL_OTHER         = 0x40004;
 const int CTRL_SVELOCITY     = 0x40005;	// single velocity, used for drum editor
 							// to show only velocity for current instrument
+const int CTRL_NO_CTRL       = 0x40006;
 
 const int CTRL_VAL_UNKNOWN   = -1;        // used as unknown hwVal
 

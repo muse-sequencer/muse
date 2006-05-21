@@ -1,18 +1,29 @@
-//=========================================================
+//=============================================================================
 //  MusE
 //  Linux Music Editor
-//  $Id: tlswidget.h,v 1.11 2005/11/29 20:49:13 wschweer Exp $
+//  $Id:$
 //
-//  (C) Copyright 2004 Werner Schweer (ws@seh.de)
-//=========================================================
+//  Copyright (C) 2002-2006 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
 
 #ifndef __TLSWIDGET_H__
 #define __TLSWIDGET_H__
 
 class Track;
-class SimpleButton;
 class ArrangerTrack;
-class CtrlEdit;
+class CtrlDialog;
 class TimeCanvas;
 
 #include "ctrl/ctrleditor.h"
@@ -33,7 +44,7 @@ class TLSWidget : public QWidget, public CtrlEditor {
       Track* _ctrlTrack;      // track were ctrl belongs to
       TimeCanvas* _tc;
       QToolButton* ctrlList;
-      QMenu* ctrlMenu;
+//      CtrlDialog* ctrlMenu;
       QLineEdit* nameEdit;
       ArrangerTrack* at;
 
@@ -46,17 +57,14 @@ class TLSWidget : public QWidget, public CtrlEditor {
       virtual void mouseReleaseEvent(QMouseEvent*);
       virtual void mouseMoveEvent(QMouseEvent*);
 
-      void selectController(int);
-
    private slots:
       void labelMinusClicked();
       void updateController();
-      void showController();
+      void showControllerList();
       void selectionChanged();
       void configChanged();
       void controllerListChanged(int);
       void autoReadChanged();
-      void selectController(QAction*);
 
    signals:
       void minusClicked(TLSWidget*);

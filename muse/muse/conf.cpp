@@ -398,7 +398,8 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
       xml.strTag("copyright", config.copyright);
       xml.intTag("smfFormat", config.smfFormat);
       xml.intTag("startMode", config.startMode);
-      xml.strTag("startProject", config.startProject);
+      if (!config.startProject.isEmpty())
+            xml.strTag("startProject", config.startProject);
       xml.intTag("freewheelMode", config.useJackFreewheelMode);
 
       xml.intTag("txDeviceId", txDeviceId);

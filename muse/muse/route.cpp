@@ -494,6 +494,8 @@ const char* Route::tname(RouteType t)
       static const char* names[] = {
             "TRACK", "AUDIOPORT", "MIDIPORT", "SYNTIPORT"
             };
+      if (t > 3)
+            return "???";
       return names[t];
       }
 
