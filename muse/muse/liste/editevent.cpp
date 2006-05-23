@@ -11,11 +11,9 @@
 #include "editevent.h"
 #include "awl/pitchlabel.h"
 #include "awl/pitchedit.h"
-// #include "widgets/intlabel.h"
 #include "globals.h"
 #include "awl/posedit.h"
 #include "gconfig.h"
-#include "midiport.h"
 #include "midiedit/drummap.h"
 #include "instruments/minstrument.h"
 

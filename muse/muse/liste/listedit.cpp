@@ -14,7 +14,6 @@
 #include "shortcuts.h"
 #include "midi.h"
 #include "event.h"
-#include "midiport.h"
 #include "midictrl.h"
 #include "esettings.h"
 

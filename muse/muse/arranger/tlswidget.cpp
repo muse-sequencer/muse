@@ -26,7 +26,6 @@
 #include "arranger.h"
 #include "widgets/simplebutton.h"
 #include "muse.h"
-#include "midiport.h"
 #include "ctrl/configmidictrl.h"
 #include "ctrl/ctrldialog.h"
 #include "midictrl.h"

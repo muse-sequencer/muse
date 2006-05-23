@@ -31,7 +31,6 @@
 #include "gconfig.h"
 #include "widgets/utils.h"
 #include "trackdrag.h"
-#include "midiport.h"
 #include "synth.h"
 #include "widgets/outportcombo.h"
 #include "audio.h"

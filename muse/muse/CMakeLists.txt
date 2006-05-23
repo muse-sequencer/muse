@@ -58,7 +58,7 @@ set(muse_mocs
 	projectdialog templatedialog 
       preferences plugingui midiplugin muse 
       song transport conf editor
-	cobject transpose track midisynti midiport
+	cobject transpose track midisynti
       miditrack wavetrack audiotrack audioaux audiooutput
       audioinput audiogroup exportmidi
       midiedit/pianoroll 
@@ -112,6 +112,7 @@ add_executable ( muse
 	midictrl.cpp fifo.cpp
 	midiseq.cpp helper.cpp route.cpp shortcuts.cpp ctrl.cpp
       gconfig.cpp midirc.cpp midififo.cpp
+      midiport.cpp
 
       midiedit/drummap.cpp 
       midiedit/citem.cpp 

@@ -7,7 +7,6 @@
 //=========================================================
 
 #include "app.h"
-#include "midiport.h"
 #include "driver/mididev.h"
 #include "midictrl.h"
 #include "midictrledit.h"

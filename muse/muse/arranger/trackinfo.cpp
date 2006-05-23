@@ -537,7 +537,7 @@ MidiOutPortInfo::MidiOutPortInfo()
       {
       instrument = new QComboBox(this);
       instrument->setFixedWidth(infoWidth);
-      instrument->setToolTip(tr("Midi Device"));
+      instrument->setToolTip(tr("Midi Instrument"));
       grid->addWidget(instrument,  2, 0, 1, 2);
 
       grid->setRowStretch(grid->rowCount(), 100);
