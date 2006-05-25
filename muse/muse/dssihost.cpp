@@ -238,7 +238,11 @@ static void scanDSSIDir(const QString& s)
       if (debugMsg)
             printf("scan dssi plugin dir <%s>\n", s.toLatin1().data());
 
+#ifdef __APPLE__
+      QDir pluginDir(s, QString("*.dylib"), QDir::Unsorted, QDir::Files);
+#else
       QDir pluginDir(s, QString("*.so"), QDir::Unsorted, QDir::Files);
+#endif
       if (!pluginDir.exists())
             return;
 

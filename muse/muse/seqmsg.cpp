@@ -26,7 +26,7 @@
 #include "al/sig.h"
 #include "audio.h"
 #include "driver/audiodev.h"
-#include "driver/alsamidi.h"
+#include "driver/mididev.h"
 #include "audio.h"
 #include "arranger/arranger.h"
 #include "plugin.h"

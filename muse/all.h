@@ -22,11 +22,14 @@
 #define __ALLQT_H__
 
 #include <stdio.h>
+#ifndef __APPLE__
 #include <values.h>
+#endif
 #include <errno.h>
 #include <stdarg.h>
 #include <unistd.h>
 #include <assert.h>
+#include <poll.h>
 #include <cmath>
 #include <list>
 #include <vector>

@@ -24,7 +24,7 @@
 #include "track.h"
 #include "synth.h"
 #include "driver/audiodev.h"
-#include "driver/alsamidi.h"
+#include "driver/mididev.h"
 #include "al/xml.h"
 
 //---------------------------------------------------------

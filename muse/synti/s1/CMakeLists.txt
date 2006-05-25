@@ -27,5 +27,8 @@ target_link_libraries( s1 synti )
 #
 set_target_properties ( s1 PROPERTIES PREFIX "" )
 
+target_link_libraries(s1
+      synti
+      )
 install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ s1 )
 

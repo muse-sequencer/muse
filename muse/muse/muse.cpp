@@ -53,7 +53,11 @@
 #include "awl/poslabel.h"
 #include "al/tempo.h"
 #include "shortcuts.h"
+#ifdef __APPLE__
+#include "driver/coremidi.h"
+#else
 #include "driver/alsamidi.h"
+#endif
 #include "midiplugin.h"
 #include "midiedit/drummap.h"
 #include "widgets/utils.h"
@@ -126,11 +130,12 @@ static RasterVal rasterTable[] = {
 static void* watchdog(void*)
       {
       int policy;
+#ifndef __APPLE__
       if ((policy = sched_getscheduler (0)) < 0)
             printf("Cannot get current client scheduler: %s\n", strerror(errno));
       if (policy != SCHED_FIFO)
             printf("MusE: watchdog process _NOT_ running SCHED_FIFO\n");
-
+#endif
       int fatal = 0;
       for (;;) {
             watchAudio = 0;
@@ -523,6 +528,16 @@ MusE::MusE()
 
       initMidiInstruments();
 
+#ifdef __APPLE__
+      if (coreMidi.init()) {
+          QMessageBox::critical(NULL, "MusE fatal error.",
+            "MusE failed to initialize the\n"
+            "Core midi subsystem, check\n"
+            "your configuration.");
+          fatalError("init core-midi failed");
+          }
+      midiDriver = &coreMidi;
+#else
       if (alsaMidi.init()) {
           QMessageBox::critical(NULL, "MusE fatal error.",
             "MusE failed to initialize the\n"
@@ -531,7 +546,7 @@ MusE::MusE()
           fatalError("init alsa failed");
           }
       midiDriver = &alsaMidi;
-
+#endif
       //----Actions
 
       fileOpenAction = new QAction(QIcon(*openIcon), tr("&Open"), this);
@@ -2772,7 +2787,7 @@ int main(int argc, char* argv[])
       gmDrumMap.initGm();    // init default drum map
       readConfiguration();
 
-     	QApplication::setFont(*config.fonts[0]);
+       QApplication::setFont(*config.fonts[0]);
 
       // SHOW MUSE SPLASH SCREEN
       if (config.showSplashScreen) {
@@ -2787,6 +2802,7 @@ int main(int argc, char* argv[])
                   stimer->start(6000);
                   }
             }
+
       char c;
       QString opts("mvdDiosP:p");
 
@@ -3023,3 +3039,4 @@ int main(int argc, char* argv[])
             fprintf(stderr, "app end %d\n", n);
       return n;
       }
+      

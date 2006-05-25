@@ -335,7 +335,11 @@ void initMidiSynth()
       {
       QString s = museGlobalLib + "/synthi";
 
+#ifdef __APPLE__
+      QDir pluginDir(s, QString("*.dylib"), 0, QDir::Files);
+#else
       QDir pluginDir(s, QString("*.so"), 0, QDir::Files);
+#endif
       if (debugMsg)
             printf("searching for software synthesizer in <%s>\n", s.toLatin1().data());
       if (pluginDir.exists()) {

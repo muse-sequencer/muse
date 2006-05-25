@@ -37,11 +37,23 @@ include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
 
 option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface" ON)
 option ( ENABLE_VST    "enable VST/win support"                OFF)
-option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"   OFF)
+option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"    ON)
 
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
+
+##
+## Just print a notice if this is OS X
+##
+if (APPLE)
+	message("OS X detected.")
+else (APPLE)
+	if (UNIX)
+		message("Unix (probably linux) detected")
+	endif(UNIX)
+
+endif (APPLE)
 
 ##
 ##  look for Qt4
@@ -76,10 +88,16 @@ endif (NOT TEXEXEC_PATH)
 ## alsa >= 0.9.0
 ##
 
+if (APPLE)
+	message("Disabling ALSA support due to OS X build.")
+else (APPLE)
 PKGCONFIG (alsa 0.9.0 ALSA_INCDIR ALSA_LIBDIR ALSA_LIB ALSA_CPP )
 if (NOT ALSA_INCDIR)
       message(FATAL_ERROR "Fatal error: ALSA >= 1.0.0 required")
+else (NOT ALSA_INCDIR)
+	message("Alsa detected.")
 endif (NOT ALSA_INCDIR)
+endif (APPLE)
 
 ##
 ## find sndfile >= 1.0.0
@@ -88,6 +106,8 @@ endif (NOT ALSA_INCDIR)
 PKGCONFIG (sndfile 1.0.0 SNDFILE_INCDIR SNDFILE_LIBDIR SNDFILE_LIB SNDFILE_CPP )
 if (NOT SNDFILE_INCDIR)
       message(FATAL_ERROR "Fatal error: libsndfile >= 1.0.0 required")
+else (NOT SNDFILE_INCDIR)
+	message("sndfile detected.")
 endif (NOT SNDFILE_INCDIR)
 
 ##
@@ -97,6 +117,8 @@ endif (NOT SNDFILE_INCDIR)
 PKGCONFIG (samplerate 0.1.0 SAMPLERATE_INCDIR SAMPLERATE_LIBDIR SAMPLERATE_LIB SAMPLERATE_CPP )
 if (NOT SAMPLERATE_INCDIR)
       message(FATAL_ERROR "Fatal error: libsamplerate >= 0.1.0 required")
+else (NOT SAMPLERATE_INCDIR)
+	message("samplerate detected")
 endif (NOT SAMPLERATE_INCDIR)
 
 ##
@@ -106,6 +128,8 @@ endif (NOT SAMPLERATE_INCDIR)
 PKGCONFIG (jack 0.98.0 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
 if (NOT JACK_INCDIR)
       message(FATAL_ERROR "Fatal error: JACK >= 0.98.0 required")
+else (NOT JACK_INCDIR)
+	message("Jack detected")
 endif (NOT JACK_INCDIR)
 
 ##
@@ -117,6 +141,8 @@ if ( ENABLE_DSSI )
       if (NOT DSSI_INCDIR)
             message("Error: dssi >= 0.9.0 not found, disabling feature")
             set ( ENABLE_DSSI OFF )
+      else (NOT DSSI_INCDIR)
+	    message("DSSI detected.")
       endif (NOT DSSI_INCDIR)
 endif ( ENABLE_DSSI )
 
@@ -135,6 +161,8 @@ if ( ENABLE_FLUID )
       if (NOT FLUID_INCDIR)
             message("Error: fluidsynth >= 0.9.0 not found, disabling feature")
             set ( ENABLE_FLUID OFF )
+      else (NOT FLUID_INCDIR)
+	    message("Fluidsynth detected")
       endif (NOT FLUID_INCDIR)
 endif ( ENABLE_FLUID )
 

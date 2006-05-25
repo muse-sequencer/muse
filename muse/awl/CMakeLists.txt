@@ -43,17 +43,26 @@ WRAP_CPP(mocCPP ${mocs})
 
 QT4_WRAP_CPP (moc_headers ${mocH})
 
-set ( awl_src awl.cpp utils.cpp  ${mocCPP} ${moc_headers} )
+set(awl_src 
+      awl.cpp utils.cpp  ${mocCPP} ${moc_headers} 
+      )
 
 add_library ( awl STATIC ${awl_src} )
 set_target_properties( awl
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all.h"
    )
 
-add_library ( awlplugin SHARED  ${awl_src} awlplugin.cpp )
-set_target_properties( awlplugin
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-   )
+IF (APPLE)
+   message("Not yet able to build awlplugin under OS X.")	
+ELSE (APPLE)
 
-install_targets ( /lib/${MusE_INSTALL_NAME}/designer/ awlplugin )
+   add_library ( awlplugin SHARED  ${awl_src} 
+      awlplugin.cpp )
+   set_target_properties( awlplugin
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
+      )
+
+   install_targets ( /lib/${MusE_INSTALL_NAME}/designer/ awlplugin )
+
+ENDIF (APPLE)
 

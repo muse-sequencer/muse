@@ -34,7 +34,7 @@
 #include "audio.h"
 #include "mixer/mixer.h"
 #include "midirc.h"
-#include "driver/alsamidi.h"
+#include "driver/mididev.h"
 #include "instruments/minstrument.h"
 #include "midiedit/pianoroll.h"
 #include "midiedit/drumedit.h"

@@ -202,8 +202,11 @@ void Thread::loop()
             if (mlockall(MCL_CURRENT | MCL_FUTURE))
                   perror("WARNING: Cannot lock memory:");
             }
-
+#ifdef __APPLE__
+#define BIG_ENOUGH_STACK (1024*256*1)
+#else
 #define BIG_ENOUGH_STACK (1024*1024*1)
+#endif
       char buf[BIG_ENOUGH_STACK];
       for (int i = 0; i < BIG_ENOUGH_STACK; i++)
             buf[i] = i;
@@ -213,10 +216,10 @@ void Thread::loop()
       pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
 
       int policy;
-      if ((policy = sched_getscheduler (0)) < 0) {
+      /*if ((policy = sched_getscheduler (0)) < 0) {
             printf("Thread: Cannot get current client scheduler: %s\n", strerror(errno));
             }
-
+*/
       if (debugMsg)
             printf("Thread <%s, id %p> has %s priority %d\n",
                _name, pthread_self(), policy == SCHED_FIFO ? "SCHED_FIFO" : "SCHED_OTHER",

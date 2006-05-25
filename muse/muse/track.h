@@ -49,7 +49,10 @@ class MidiChannel;
 class PartList;
 class Part;
 
+#ifndef __APPLE__
+// actually it should check for ALSA but I don't know how to do that
 typedef struct snd_seq_event snd_seq_event_t;
+#endif
 
 static const int EVENT_FIFO_SIZE = 128;
 
@@ -360,7 +363,9 @@ class MidiInPort : public MidiTrackBase {
       virtual Part* newPart(Part*, bool)  { return 0; }
       Port port() const                   { return alsaPort; }
 
+#ifndef __APPLE__      
       void eventReceived(snd_seq_event_t*);
+#endif
       virtual void getEvents(unsigned from, unsigned to, int channel, MPEventList* dst);
       void afterProcess();
       };

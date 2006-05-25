@@ -13,7 +13,7 @@
 #include "mixer.h"
 #include "widgets/simplebutton.h"
 #include "widgets/utils.h"
-#include "driver/alsamidi.h"
+#include "driver/mididev.h"
 #include "synth.h"
 #include "midirack.h"
 #include "midiplugin.h"

@@ -23,8 +23,8 @@
 
 #include "thread.h"
 #include "mpevent.h"
-#include "driver/rtctimer.h"
 
+#include "driver/timerdev.h"
 namespace AL {
       class Pos;
       };

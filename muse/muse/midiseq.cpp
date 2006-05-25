@@ -23,9 +23,16 @@
 #include "midiseq.h"
 #include "midictrl.h"
 #include "audio.h"
-#include "driver/alsamidi.h"
+#include "driver/mididev.h"
+
+#ifdef __APPLE__
+#include "driver/coretimer.h"
+#else
+#include "driver/rtctimer.h"
 #include "driver/posixtimer.h"
 #include "driver/alsatimer.h"
+#endif
+
 #include "sync.h"
 #include "song.h"
 #include "gconfig.h"
@@ -327,7 +334,11 @@ void MidiSeq::threadStart(void*)
             perror("set realtime scheduler");
 
       int policy;
-      if ((policy = sched_getscheduler (0)) < 0) {
+#ifdef __APPLE__
+      if (0) {
+#else
+      if ( (policy = sched_getscheduler (0)) < 0) {
+#endif
             printf("cannot get current client scheduler for midi thread: %s!\n", strerror(errno));
             }
       else {
@@ -346,6 +357,9 @@ void MidiSeq::threadStart(void*)
                   }
             }
 
+#ifdef __APPLE__
+            timer = new CoreTimer;
+#else
 //      timer = new PosixTimer;
 //      if (!timer->initTimer()) {
 //            delete timer;
@@ -359,6 +373,7 @@ void MidiSeq::threadStart(void*)
                         }
                   }
 //            }
+#endif
       initRealtimeTimer();
       updatePollFd();
       }

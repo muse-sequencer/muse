@@ -41,5 +41,11 @@ set_target_properties ( fluidsynth
    LINK_FLAGS "-L${FLUID_LIBDIR} ${FLUID_LIB}"
    )
 
+target_link_libraries(fluidsynth
+      synti
+      ${QT_LIBRARIES}
+      ${FLUID_LIB}
+      )
+
 install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ fluidsynth )
 

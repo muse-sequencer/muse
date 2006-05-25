@@ -25,7 +25,7 @@
 #include "midi.h"
 #include "instruments/minstrument.h"
 #include "al/xml.h"
-#include "driver/alsamidi.h"
+#include "driver/mididev.h"
 #include "audio.h"
 #include "midiedit/drummap.h"
 
@@ -555,7 +555,7 @@ void MidiInPort::deactivate()
 //---------------------------------------------------------
 //   midiReceived
 //---------------------------------------------------------
-
+#ifndef __APPLE__
 void MidiInPort::eventReceived(snd_seq_event_t* ev)
       {
       MidiEvent event;
@@ -641,6 +641,7 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
             _recordEvents.add(*i);
             }
       }
+#endif
 
 //---------------------------------------------------------
 //   afterProcess

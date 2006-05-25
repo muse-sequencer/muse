@@ -26,7 +26,7 @@
 #include "midictrl.h"
 #include "midictrl.h"
 #include "audio.h"
-#include "driver/alsamidi.h"
+#include "driver/mididev.h"
 #include "wave.h"
 #include "synth.h"
 #include "sync.h"

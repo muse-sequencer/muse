@@ -32,7 +32,8 @@ add_library ( filter SHARED
       )
 
 target_link_libraries( filter
-   midiplugin
+   midiplugin awl
+   ${QT_LIBRARIES}
    )
 
 # - tell cmake to name target filter.so instead of 

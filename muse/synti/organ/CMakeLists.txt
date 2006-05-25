@@ -40,5 +40,11 @@ set_target_properties ( organ
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
+target_link_libraries(organ
+      widgets 
+      synti
+      ${QT_LIBRARIES}
+      )
+
 install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ organ )
 

@@ -174,7 +174,11 @@ static void loadPluginDir(const QString& s)
       {
       if (debugMsg)
             printf("scan ladspa plugin dir <%s>\n", s.toLatin1().data());
+#ifdef __APPLE__      
+      QDir pluginDir(s, QString("*.dylib"), 0, QDir::Files);
+#else
       QDir pluginDir(s, QString("*.so"), 0, QDir::Files);
+#endif
       if (pluginDir.exists()) {
             QFileInfoList list = pluginDir.entryInfoList();
             for (int i = 0; i < list.size(); ++i) {

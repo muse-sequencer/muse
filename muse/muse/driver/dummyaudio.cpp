@@ -187,29 +187,32 @@ std::list<PortName>* DummyAudio::inputPorts()
 
 static void* dummyLoop(void*)
       {
+#ifndef __APPLE__
       if (realTimePriority) {
             //
             // check if we really got realtime priviledges
             //
-      	int policy;
-	      if ((policy = sched_getscheduler (0)) < 0) {
-      	      printf("cannot get current client scheduler for audio dummy thread: %s!\n", strerror(errno));
-	            }
-      	else {
+      	    int policy;
+            if ((policy = sched_getscheduler (0)) < 0) {
+      	        printf("cannot get current client scheduler for audio dummy thread: %s!\n", strerror(errno));
+                }
+      	    else 
+                {
             	if (policy != SCHED_FIFO)
 	                  printf("audio dummy thread _NOT_ running SCHED_FIFO\n");
-      	      else if (debugMsg) {
+      	        else if (debugMsg) {
             		struct sched_param rt_param;
-      	      	memset(&rt_param, 0, sizeof(sched_param));
+      	      	    memset(&rt_param, 0, sizeof(sched_param));
 	            	int type;
-      	      	int rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
+      	      	    int rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
             		if (rv == -1)
 	                  	perror("get scheduler parameter");
       	            printf("audio dummy thread running SCHED_FIFO priority %d\n",
 	                     rt_param.sched_priority);
-	                  }
-      	      }
+                    }
+      	        }
             }
+#endif
 
       for (;;) {
             if (audioState == AUDIO_RUNNING)

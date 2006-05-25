@@ -40,6 +40,11 @@ set_target_properties ( fluid
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    LINK_FLAGS "-L${FLUID_LIBDIR} ${FLUID_LIB}"
    )
+target_link_libraries(fluid
+      synti
+      ${QT_LIBRARIES}
+      ${FLUID_LIB}
+      )
 
 install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ fluid )
 

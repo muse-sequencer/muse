@@ -40,5 +40,10 @@ set_target_properties ( deicsonze
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
+target_link_libraries(deicsonze
+      al awl synti
+      ${QT_LIBRARIES}
+      )
+
 install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ deicsonze )
 

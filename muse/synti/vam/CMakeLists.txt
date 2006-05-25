@@ -40,5 +40,11 @@ set_target_properties ( vam
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
+target_link_libraries(vam
+      al
+      synti
+      ${QT_LIBRARIES}
+      )
+
 install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ vam )
 

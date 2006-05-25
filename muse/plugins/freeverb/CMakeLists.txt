@@ -29,4 +29,4 @@ set_target_properties (freeverb
       PROPERTIES PREFIX ""
       )
 
-install_files( /lib/${MusE_INSTALL_PATH}/plugins .so freeverb.so)
+install_files( /lib/${MusE_INSTALL_PATH}/plugins freeverb)

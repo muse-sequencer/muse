@@ -1,3 +1,8 @@
+25.5 (rj)
+      * buckle up, bumpy road ahead
+      * partial support for MAC OS X
+        includes some build adjustments, more -fPIC and added
+        libraries, still builds on linux so I hope it's mostly ok.
 20.5 (ws)
       * new controller select dialog
       * build libsynti.a with -fPIC for athlon64 systems

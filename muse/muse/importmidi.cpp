@@ -30,7 +30,7 @@
 #include "al/tempo.h"
 #include "instruments/minstrument.h"
 #include "gconfig.h"
-#include "driver/alsamidi.h"
+#include "driver/mididev.h"
 #include "part.h"
 
 //---------------------------------------------------------
@@ -330,8 +330,8 @@ void MusE::processTrack(MidiTrack* track)
       //---------------------------------------------------
       //    Parts ermitteln
       //    die Midi-Spuren werden in Parts aufgebrochen;
-      //    ein neuer Part wird bei einer Lücke von einem
-      //    Takt gebildet; die Länge wird jeweils auf
+      //    ein neuer Part wird bei einer Lcke von einem
+      //    Takt gebildet; die Lï¿½ge wird jeweils auf
       //    Takte aufgerundet und aligned
       //---------------------------------------------------
 

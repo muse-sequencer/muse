@@ -28,6 +28,10 @@
 #include "metronom.xpm"
 #include "clock.xpm"
 
+#ifdef __APPLE__
+  inline double exp10(double a) { return pow(10.0, a); }
+#endif
+
 static QIcon* clockIcon;
 static QIcon* metronomIcon;
 
@@ -94,7 +98,7 @@ TimeCanvas::TimeCanvas(TimeCanvasType t)
       // is known:
 
       pos1.setTick(0);
-      pos2.setTick(MAXINT);
+      pos2.setTick(INT_MAX);
 
       hmag = new QSlider(Qt::Horizontal);
       hmag->setRange(0, 100);
@@ -112,7 +116,7 @@ TimeCanvas::TimeCanvas(TimeCanvasType t)
       _ymag = 1.0;
 
       hbar = new QScrollBar(Qt::Horizontal);
-      hbar->setRange(0, MAXINT);
+      hbar->setRange(0, INT_MAX);
       vbar = new QScrollBar(Qt::Vertical);
       timeTypeButton = new QToolButton;
       timeTypeButton->setFixedSize(20, rulerHeight);

@@ -30,6 +30,7 @@ add_library ( metronom SHARED
       )
 target_link_libraries( metronom
    midiplugin
+   ${QT_LIBRARIES}
    )
 
 # - tell cmake to name target metronom.so instead of 

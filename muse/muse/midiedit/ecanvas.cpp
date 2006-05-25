@@ -107,7 +107,7 @@ void EventCanvas::songChanged(int flags)
       {
       if ((flags & ~SC_SELECTION) && !editor->parts()->empty()) {
             items.clear();
-            startTick = MAXINT;
+            startTick = INT_MAX;
             endTick   = 0;
             for (iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
                   Part* part = p->second;
@@ -1384,13 +1384,13 @@ QMimeData* EventCanvas::getTextDrag()
       //---------------------------------------------------
 
       EventList el;
-      unsigned startTick = MAXINT;
+      unsigned startTick = INT_MAX;
       for (iCItem i = items.begin(); i != items.end(); ++i) {
             if (!i->second->isSelected())
                   continue;
             CItem* ne = i->second;
             Event    e = ne->event;
-            if (startTick == MAXINT)
+            if (startTick == INT_MAX)
                   startTick = e.tick();
             el.add(e);
             }

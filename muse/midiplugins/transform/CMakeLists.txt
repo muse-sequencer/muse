@@ -29,6 +29,7 @@ add_library ( transform SHARED
 
 target_link_libraries( transform
    midiplugin
+   ${QT_LIBRARIES}
    )
 
 # - tell cmake to name target transform.so instead of 
