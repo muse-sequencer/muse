@@ -663,7 +663,9 @@ MusE::MusE()
       a->setData(CMD_DELETE_TRACK);
 
       addTrack = menuEdit->addMenu(*edit_track_addIcon, tr("Add Track"));
-      populateAddTrack(addTrack);
+      // delay creation of menu (at this moment the list of software
+      //   synthesizer is empty):
+      connect(addTrack, SIGNAL(aboutToShow()), SLOT(aboutToShowAddTrack()));
 
       menuEdit->addSeparator();
       select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
@@ -1002,6 +1004,15 @@ MusE::MusE()
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
       connect(cb, SIGNAL(selectionChanged()), SLOT(clipboardChanged()));
       song->blockSignals(false);
+      }
+
+//---------------------------------------------------------
+//   aboutToShowAddTrack
+//---------------------------------------------------------
+
+void MusE::aboutToShowAddTrack()
+      {
+      populateAddTrack(addTrack);
       }
 
 //---------------------------------------------------------
@@ -1349,7 +1360,7 @@ bool MusE::leaveProject()
 //   closeEvent
 //---------------------------------------------------------
 
-void MusE::closeEvent(QCloseEvent*)
+void MusE::closeEvent(QCloseEvent* event)
       {
       song->setStop(true);
       //
@@ -1359,8 +1370,10 @@ void MusE::closeEvent(QCloseEvent*)
             qApp->processEvents();
             }
 
-      if (leaveProject())
+      if (leaveProject()) {
+            event->ignore();
             return;
+            }
 
       seqStop();
 

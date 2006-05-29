@@ -239,6 +239,7 @@ class MusE : public QMainWindow, public Ui::MuseBase
       void setRaster(int);
       void syncChanged();
       void preferences();
+      void aboutToShowAddTrack();
 
    public slots:
       void bounceToFile();

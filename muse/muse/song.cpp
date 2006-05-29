@@ -1729,6 +1729,9 @@ void Song::insertTrack2(Track* track)
             case Track::MIDI_IN:
                   _midiInPorts.push_back((MidiInPort*)track);
                   break;
+            case Track::MIDI_CHANNEL:
+                  _midiChannel.push_back((MidiChannel*)track);
+                  break;
             case Track::WAVE:
                   _waves.push_back((WaveTrack*)track);
                   break;
