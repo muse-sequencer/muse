@@ -1162,6 +1162,11 @@ void Song::clear(bool signal)
       _auxs.clearDelete();       // aux sends
       _synthIs.clearDelete();
 
+      _midiSyntis.clearDelete();
+      _midiOutPorts.clearDelete();
+      _midiInPorts.clearDelete();
+      _midiChannel.clear();
+
       AL::tempomap.clear();
       AL::sigmap.clear();
       undoList->clear();

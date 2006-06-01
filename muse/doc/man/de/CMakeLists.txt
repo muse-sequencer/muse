@@ -24,6 +24,7 @@ add_custom_command (
             ${CMAKE_CURRENT_SOURCE_DIR}/man-de.tex
             ${CMAKE_CURRENT_SOURCE_DIR}/projekte.tex
             ${CMAKE_CURRENT_SOURCE_DIR}/miditracks.tex
+            ${CMAKE_CURRENT_SOURCE_DIR}/struktur.tex
       COMMAND ${TEXEXEC_PATH}/texexec 
       ARGS  --language=en --verbose --batch --pdf
             --path=${CMAKE_CURRENT_SOURCE_DIR} 

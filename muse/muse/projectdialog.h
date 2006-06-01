@@ -21,6 +21,27 @@
 #ifndef __PROJECT_DIALOG_H__
 #define __PROJECT_DIALOG_H__
 
+//---------------------------------------------------------
+//   ProjectTree
+//---------------------------------------------------------
+
+class ProjectTree : public QTreeWidget {
+      Q_OBJECT
+
+      QPoint dragStartPosition;
+      virtual void mousePressEvent(QMouseEvent*);
+      virtual void mouseMoveEvent(QMouseEvent*);
+      virtual void dragEnterEvent(QDragEnterEvent*);
+      virtual void dragMoveEvent(QDragMoveEvent*);
+      virtual void dropEvent(QDropEvent*);
+
+      QTreeWidgetItem* searchItem(const QString&, QTreeWidgetItem*);
+
+   public:
+      ProjectTree(QWidget* parent = 0);
+      QString itemPath(QTreeWidgetItem*) const;
+      };
+
 #include "ui_projectdialog.h"
 
 //---------------------------------------------------------
@@ -32,8 +53,6 @@ class ProjectDialog : public QDialog, public Ui_ProjectDialogBase {
 
       void processSubdir(QTreeWidgetItem*, const QString&, 
          const QString&, QTreeWidgetItem**);
-
-      QString itemPath(QTreeWidgetItem*) const;
 
    private slots:
       void currentChanged(QTreeWidgetItem*, QTreeWidgetItem*);

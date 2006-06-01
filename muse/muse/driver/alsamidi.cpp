@@ -38,6 +38,7 @@ bool AlsaMidi::init()
             printf("init AlsaMidi\n");
       int error = snd_seq_open(&alsaSeq, "hw", SND_SEQ_OPEN_DUPLEX, SND_SEQ_NONBLOCK);
       if (error < 0) {
+            if (error == ENOENT)
             fprintf(stderr, "open ALSA sequencer failed: %s\n",
                snd_strerror(error));
             return true;

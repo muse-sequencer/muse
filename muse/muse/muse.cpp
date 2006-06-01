@@ -1217,19 +1217,21 @@ void MusE::loadProject1(const QString& path)
       //
       // send "cur" controller values to devices
       //
+
       for (iTrack i = tl->begin(); i != tl->end(); ++i) {
-            (*i)->blockSignals(true);
-            CtrlList* cl = (*i)->controller();
+            Track* track = *i;
+            track->blockSignals(true);
+            CtrlList* cl = track->controller();
             for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
                   Ctrl* ctrl = ic->second;
                   if (ctrl->type() & Ctrl::INT) {
                         CVal val;
                         val = ctrl->curVal();
                         ctrl->setCurVal(CTRL_VAL_UNKNOWN);
-                        song->setControllerVal(*i, ctrl, val);
+                        song->setControllerVal(track, ctrl, val);
                         }
                   }
-            (*i)->blockSignals(false);
+            track->blockSignals(false);
             }
       setWindowTitle(QString("MusE: Song: ") + name);
       }

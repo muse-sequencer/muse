@@ -431,7 +431,8 @@ void MidiOutPort::playMidiEvent(MidiEvent* ev)
             if (i->type == Route::MIDIPORT)
                   sendToFifo = true;
             else if (i->type == Route::SYNTIPORT) {
-	      	if (((SynthI*)i->track)->eventFifo()->put(*ev))
+                  SynthI* synti = (SynthI*)i->track;
+	      	if (synti->eventFifo()->put(*ev))
       	      	printf("MidiOut::playMidiEvent(): synti overflow, drop event\n");
                   }
             else

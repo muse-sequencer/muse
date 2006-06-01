@@ -29,6 +29,157 @@
 enum { DIR_TYPE, PROJECT_TYPE };
 
 //---------------------------------------------------------
+//   ProjectTree
+//---------------------------------------------------------
+
+ProjectTree::ProjectTree(QWidget* parent)
+   : QTreeWidget(parent)
+      {
+      setAcceptDrops(true);
+      }
+
+//---------------------------------------------------------
+//   itemPath
+//---------------------------------------------------------
+
+QString ProjectTree::itemPath(QTreeWidgetItem* item) const
+      {
+      QString path;
+      QTreeWidgetItem* ti = item;
+      QStringList dirComponent;
+      do {
+            dirComponent.prepend(ti->text(0));
+            ti = ti->parent();
+            } while (ti);
+      foreach (QString s, dirComponent) {
+            if (!path.isEmpty())
+                  path += "/";
+            path += s;
+            }
+      return path;
+      }
+
+//---------------------------------------------------------
+//   mousePressEvent
+//---------------------------------------------------------
+
+void ProjectTree::mousePressEvent(QMouseEvent* event)
+      {
+      dragStartPosition = event->pos(); 
+      QTreeWidget::mousePressEvent(event);
+      }
+
+//---------------------------------------------------------
+//   mouseMoveEvent
+//---------------------------------------------------------
+
+void ProjectTree::mouseMoveEvent(QMouseEvent* ev)
+      {
+      QTreeWidgetItem* item = itemAt(ev->pos());
+      if (item == 0 || item->type() != PROJECT_TYPE) // || ev->button() != Qt::LeftButton)
+            return;
+      if ((ev->pos() - dragStartPosition).manhattanLength()
+         < QApplication::startDragDistance())
+            return;
+      QDrag* drag = new QDrag(this);
+      QMimeData* mimeData = new QMimeData;
+      mimeData->setText(itemPath(item));
+      drag->setMimeData(mimeData);
+      drag->setPixmap(style()->standardPixmap(QStyle::SP_FileIcon));
+      Qt::DropAction dropAction = drag->start(Qt::MoveAction);
+      if (dropAction == Qt::IgnoreAction)
+            return;
+      printf("drop action\n");
+      if (dropAction == Qt::MoveAction) {
+            printf("move action\n");
+            }
+      }
+
+//---------------------------------------------------------
+//   dragEnterEvent
+//---------------------------------------------------------
+
+void ProjectTree::dragEnterEvent(QDragEnterEvent* event)
+      {
+      if (event->mimeData()->hasFormat("text/plain")) {
+            event->acceptProposedAction();
+            }
+      }
+
+//---------------------------------------------------------
+//   dragMoveEvent
+//---------------------------------------------------------
+
+void ProjectTree::dragMoveEvent(QDragMoveEvent* event)
+      {
+      QTreeWidgetItem* item = itemAt(event->pos());
+      event->setAccepted(item && item->type() == DIR_TYPE);
+      }
+
+//---------------------------------------------------------
+//   searchItem
+//---------------------------------------------------------
+
+QTreeWidgetItem* ProjectTree::searchItem(const QString& s, QTreeWidgetItem* p)
+      {
+      int n = p->childCount();      
+      for (int i = 0; i < n; ++i) {
+            QTreeWidgetItem* item = p->child(i);
+            if (s == itemPath(item))
+                  return p->takeChild(i);
+            item = searchItem(s, item);
+            if (item)
+                  return item;
+            }
+      return 0;
+      }
+            
+//---------------------------------------------------------
+//   dropEvent
+//---------------------------------------------------------
+
+void ProjectTree::dropEvent(QDropEvent* event)
+      {
+      QTreeWidgetItem* dstItem = itemAt(event->pos());
+      if (dstItem && dstItem->type() == DIR_TYPE) {
+            QString src = event->mimeData()->text();
+            QTreeWidgetItem* srcItem;
+            int n = topLevelItemCount();
+            for (int i = 0; i < n; ++i) {
+                  QTreeWidgetItem* item = topLevelItem(i);
+                  if (src == itemPath(item)) {
+                        srcItem = takeTopLevelItem(i);
+                        break;
+                        }
+                  srcItem = searchItem(src, item);
+                  if (srcItem)
+                        break;
+                  }
+            if (srcItem == 0) {
+                  printf("src item not found\n");
+                  return;
+                  }
+            QString dst = itemPath(dstItem);
+            dstItem->addChild(srcItem);
+            //
+            // TODO:    - actual move project
+            //          - look for name conflicts
+            //          - do nothing if src==dst
+            //
+            src = QDir::homePath() + "/" + config.projectPath + "/" + src;
+            dst = QDir::homePath() + "/" + config.projectPath + "/" + dst 
+               + "/" + srcItem->text(0);
+            if (src != dst) {
+                  QDir dir;
+                  if (!dir.rename(src, dst)) {
+printf("Rename <%s> -> <%s> failed\n", src.toLatin1().data(), dst.toLatin1().data());
+                        event->acceptProposedAction();
+                        }
+                  }
+            }
+      }
+
+//---------------------------------------------------------
 //   processSubdirectories
 //---------------------------------------------------------
 
@@ -135,27 +286,6 @@ void ProjectDialog::itemExpanded(QTreeWidgetItem* item)
       }
 
 //---------------------------------------------------------
-//   itemPath
-//---------------------------------------------------------
-
-QString ProjectDialog::itemPath(QTreeWidgetItem* item) const
-      {
-      QString path;
-      QTreeWidgetItem* ti = item;
-      QStringList dirComponent;
-      do {
-            dirComponent.prepend(ti->text(0));
-            ti = ti->parent();
-            } while (ti);
-      foreach (QString s, dirComponent) {
-            if (!path.isEmpty())
-                  path += "/";
-            path += s;
-            }
-      return path;
-      }
-
-//---------------------------------------------------------
 //   currentChanged
 //---------------------------------------------------------
 
@@ -174,7 +304,7 @@ void ProjectDialog::currentChanged(QTreeWidgetItem* item, QTreeWidgetItem*)
       projectNameEntry->setText(item->text(0));
       QString pd(QDir::homePath() + "/" + config.projectPath + "/");
 
-      pd += "/" + itemPath(item);
+      pd += "/" + projectTree->itemPath(item);
 
       QFileInfo pf(pd + "/" + item->text(0) + ".med");
       modifiedDate->setDateTime(pf.lastModified());
@@ -254,9 +384,9 @@ QString ProjectDialog::projectPath() const
       QString s;
       if (item) {
             if (item->type() == PROJECT_TYPE)
-                  s = itemPath(item);
+                  s = projectTree->itemPath(item);
             else
-                  s = itemPath(item) + "/" + projectNameEntry->text();
+                  s = projectTree->itemPath(item) + "/" + projectNameEntry->text();
             }
       else
             s = projectNameEntry->text(); 
@@ -276,7 +406,7 @@ void ProjectDialog::newFolderClicked()
       QString path;
       QTreeWidgetItem* item = projectTree->currentItem();
       if (item) {
-            QStringList sl = itemPath(item).split("/");
+            QStringList sl = projectTree->itemPath(item).split("/");
             int n = sl.size() - 1;
             for (int i = 0; i < n; ++i) {
                   if (!path.isEmpty())

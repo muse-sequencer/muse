@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<muse version="1.0">
+	<MidiInstrument name="Roland JV-1010 Country">
+		<Init>
+		</Init>
+			<PatchGroup name="Patches_Accordian">
+				<Patch name="Squeeze Box1"			hbank="84" lbank="3" prog="105"/>
+				<Patch name="Squeeze Box2"			hbank="84" lbank="3" prog="106"/>
+				<Patch name="Velo Squeeze"			hbank="84" lbank="3" prog="107"/>
+				<Patch name="Squeeze Box3"			hbank="84" lbank="3" prog="108"/>
+				<Patch name="Squeeze Box4"			hbank="84" lbank="3" prog="109"/>
+				<Patch name="Accord Split"			hbank="84" lbank="3" prog="110"/>
+			</PatchGroup>
+			<PatchGroup name="Patches_Harmonica, Blues Harp">
+				<Patch name="CountryHarp1"			hbank="84" lbank="3" prog="97"/>
+				<Patch name="F# Harp"			hbank="84" lbank="3" prog="98"/>
+				<Patch name="CountryHarp2"			hbank="84" lbank="3" prog="99"/>
+				<Patch name="Country Harp"			hbank="84" lbank="3" prog="100"/>
+				<Patch name="Suck'n'Blow"			hbank="84" lbank="3" prog="101"/>
+				<Patch name="Harmo Blues"			hbank="84" lbank="3" prog="102"/>
+				<Patch name="Ghostrider"			hbank="84" lbank="3" prog="103"/>
+				<Patch name="Harp Choir"			hbank="84" lbank="3" prog="104"/>
+			</PatchGroup>
+			<PatchGroup name="Patches_Acoustic Guitar">
+				<Patch name="Ac.Guitars"			hbank="84" lbank="2" prog="10"/>
+				<Patch name="Bright Gtrs"			hbank="84" lbank="2" prog="11"/>
+				<Patch name="Sensible Gtr"			hbank="84" lbank="2" prog="12"/>
+				<Patch name="Countryside"			hbank="84" lbank="2" prog="13"/>
+				<Patch name="AcGtrStereo1"			hbank="84" lbank="2" prog="14"/>
+				<Patch name="AcGtrDuo VSW"			hbank="84" lbank="2" prog="15"/>
+				<Patch name="Real AcGtr 1"			hbank="84" lbank="2" prog="16"/>
+				<Patch name="Real AcGtr 2"			hbank="84" lbank="2" prog="17"/>
+				<Patch name="DynoAcoustic"			hbank="84" lbank="2" prog="18"/>
+				<Patch name="AcGtrDeluxe"			hbank="84" lbank="2" prog="19"/>
+				<Patch name="AcGtrStereo2"			hbank="84" lbank="2" prog="20"/>
+				<Patch name="Bright Pick2"			hbank="84" lbank="2" prog="21"/>
+				<Patch name="Compres'd AG"			hbank="84" lbank="2" prog="22"/>
+				<Patch name="Two Brothers"			hbank="84" lbank="2" prog="23"/>
+				<Patch name="AcGtr VSW"			hbank="84" lbank="2" prog="24"/>
+				<Patch name="Steel Touch"			hbank="84" lbank="2" prog="25"/>
+				<Patch name="Cowboy Gtr"			hbank="84" lbank="2" prog="26"/>
+				<Patch name="Noizy Picker"			hbank="84" lbank="2" prog="27"/>
+				<Patch name="Stereo Touch"			hbank="84" lbank="2" prog="28"/>
+				<Patch name="AcGtr Dual"			hbank="84" lbank="2" prog="29"/>
+				<Patch name="AcGtr Finger"			hbank="84" lbank="2" prog="30"/>
+				<Patch name="AcGtr Pick"			hbank="84" lbank="2" prog="31"/>
+				<Patch name="Pick Solo 1T"			hbank="84" lbank="2" prog="32"/>
+				<Patch name="LA Folk"			hbank="84" lbank="2" prog="33"/>
+				<Patch name="AcGtr Slide"			hbank="84" lbank="2" prog="34"/>
+				<Patch name="Acoustic Wah"			hbank="84" lbank="2" prog="35"/>
+				<Patch name="Shadow Gtr"			hbank="84" lbank="2" prog="36"/>
+				<Patch name="12 Strings"			hbank="84" lbank="2" prog="37"/>
+				<Patch name="Riverside"			hbank="84" lbank="2" prog="38"/>
+				<Patch name="MelanCoustic"			hbank="84" lbank="2" prog="39"/>
+				<Patch name="Voxy Twelve"			hbank="84" lbank="2" prog="40"/>
+				<Patch name="Guitar Song"			hbank="84" lbank="2" prog="41"/>
+				<Patch name="Ac. Ballad"			hbank="84" lbank="2" prog="42"/>
+				<Patch name="Resonant Duo"			hbank="84" lbank="2" prog="43"/>
+				<Patch name="ResonatorGT4"			hbank="84" lbank="2" prog="44"/>
+				<Patch name="BlugrasSlide"			hbank="84" lbank="2" prog="45"/>
+				<Patch name="VelBendReso."			hbank="84" lbank="2" prog="46"/>
+				<Patch name="Velo Reso."			hbank="84" lbank="2" prog="47"/>
+				<Patch name="Reso.Guitar2"			hbank="84" lbank="2" prog="48"/>
+				<Patch name="Reso.Ballad"			hbank="84" lbank="2" prog="49"/>
+				<Patch name="Reso. Pick 1"			hbank="84" lbank="2" prog="50"/>
+				<Patch name="Reso. Touch"			hbank="84" lbank="2" prog="51"/>
+				<Patch name="Reso.Guitar3"			hbank="84" lbank="2" prog="52"/>
+				<Patch name="Reso.Gtr VSW"			hbank="84" lbank="2" prog="53"/>
+				<Patch name="Reso. Pick 2"			hbank="84" lbank="2" prog="54"/>
+			</PatchGroup>
+			<PatchGroup name="Patches_Electric Guitar">
+				<Patch name="GtrFX Menu"			hbank="84" lbank="2" prog="8"/>
+				<Patch name="Country Efx"			hbank="84" lbank="2" prog="9"/>
+				<Patch name="Tele Frnt PU"			hbank="84" lbank="2" prog="98"/>
+				<Patch name="Tele Rear PU"			hbank="84" lbank="2" prog="99"/>
+				<Patch name="Terry Rear"			hbank="84" lbank="2" prog="100"/>
+				<Patch name="Terry Front"			hbank="84" lbank="2" prog="101"/>
+				<Patch name="Tell-A-Castr"			hbank="84" lbank="2" prog="102"/>
+				<Patch name="Mello Tele"			hbank="84" lbank="2" prog="103"/>
+				<Patch name="DynaChrsTele"			hbank="84" lbank="2" prog="104"/>
+				<Patch name="SwitchinTele"			hbank="84" lbank="2" prog="105"/>
+				<Patch name="Slow Rotary"			hbank="84" lbank="2" prog="106"/>
+				<Patch name="Peaks Gtr"			hbank="84" lbank="2" prog="107"/>
+				<Patch name="Aerial Guitr"			hbank="84" lbank="2" prog="108"/>
+				<Patch name="Mellow Peaks"			hbank="84" lbank="2" prog="109"/>
+				<Patch name="SDE2000 Tele"			hbank="84" lbank="2" prog="110"/>
+				<Patch name="GlossyStrata"			hbank="84" lbank="2" prog="111"/>
+				<Patch name="Clean Strat"			hbank="84" lbank="2" prog="112"/>
+				<Patch name="Dyna Strat"			hbank="84" lbank="2" prog="113"/>
+				<Patch name="Chunky Strat"			hbank="84" lbank="2" prog="114"/>
+				<Patch name="Stumpy Strat"			hbank="84" lbank="2" prog="115"/>
+				<Patch name="Strat Rear"			hbank="84" lbank="2" prog="116"/>
+				<Patch name="Strat Comp"			hbank="84" lbank="2" prog="117"/>
+				<Patch name="Crying ja"			hbank="84" lbank="2" prog="118"/>
+				<Patch name="Wild Pikker"			hbank="84" lbank="2" prog="119"/>
+				<Patch name="Electric 12"			hbank="84" lbank="2" prog="120"/>
+				<Patch name="Country 12Gt"			hbank="84" lbank="2" prog="121"/>
+				<Patch name="Touch Driver"			hbank="84" lbank="2" prog="122"/>
+				<Patch name="My 335 No.1"			hbank="84" lbank="2" prog="123"/>
+				<Patch name="Root 335"			hbank="84" lbank="2" prog="124"/>
+				<Patch name="335 Pick"			hbank="84" lbank="2" prog="125"/>
+				<Patch name="Velo 335"			hbank="84" lbank="2" prog="126"/>
+				<Patch name="Plugged Gtr"			hbank="84" lbank="2" prog="127"/>
+				<Patch name="T-Arm Vib Gt"			hbank="84" lbank="3" prog="0"/>
+				<Patch name="EG DynaPick1"			hbank="84" lbank="3" prog="1"/>
+				<Patch name="EG DynaPick2"			hbank="84" lbank="3" prog="2"/>
+				<Patch name="Tremolo Less"			hbank="84" lbank="3" prog="3"/>
+				<Patch name="LP Gtr"			hbank="84" lbank="3" prog="4"/>
+				<Patch name="Backing EG"			hbank="84" lbank="3" prog="5"/>
+				<Patch name="Snappy EG"			hbank="84" lbank="3" prog="6"/>
+				<Patch name="Pick Wah"			hbank="84" lbank="3" prog="7"/>
+				<Patch name="Fast Rotary"			hbank="84" lbank="3" prog="8"/>
+				<Patch name="Riff it!"			hbank="84" lbank="3" prog="9"/>
+				<Patch name="E.Gtr Mute"			hbank="84" lbank="3" prog="10"/>
+				<Patch name="Mute Pop Gtr"			hbank="84" lbank="3" prog="11"/>
+				<Patch name="EGuitarTouch"			hbank="84" lbank="3" prog="12"/>
+				<Patch name="StereoMuters"			hbank="84" lbank="3" prog="13"/>
+				<Patch name="Rocky Peaks"			hbank="84" lbank="3" prog="14"/>
+				<Patch name="Sweet Mute"			hbank="84" lbank="3" prog="15"/>
+				<Patch name="335 VeloMute"			hbank="84" lbank="3" prog="16"/>
+				<Patch name="335PhaseMute"			hbank="84" lbank="3" prog="17"/>
+				<Patch name="335Mute/Pick"			hbank="84" lbank="3" prog="18"/>
+				<Patch name="335MuteSlap"			hbank="84" lbank="3" prog="19"/>
+				<Patch name="Oct Mute Vel"			hbank="84" lbank="3" prog="20"/>
+				<Patch name="Other Mutes"			hbank="84" lbank="3" prog="21"/>
+				<Patch name="Pure Steel"			hbank="84" lbank="3" prog="22"/>
+				<Patch name="MeloPdlSteel"			hbank="84" lbank="3" prog="23"/>
+				<Patch name="Bright Steel"			hbank="84" lbank="3" prog="24"/>
+				<Patch name="St.Steel"			hbank="84" lbank="3" prog="25"/>
+				<Patch name="PedalSteel 5"			hbank="84" lbank="3" prog="26"/>
+				<Patch name="PedalSteel 6"			hbank="84" lbank="3" prog="27"/>
+				<Patch name="PedalSteel 7"			hbank="84" lbank="3" prog="28"/>
+				<Patch name="Steel Again"			hbank="84" lbank="3" prog="29"/>
+				<Patch name="Pink Guitar"			hbank="84" lbank="3" prog="30"/>
+				<Patch name="Delay Slide1"			hbank="84" lbank="3" prog="31"/>
+				<Patch name="AutoPdlSteel"			hbank="84" lbank="3" prog="32"/>
+				<Patch name="Delay Slide2"			hbank="84" lbank="3" prog="33"/>
+				<Patch name="AutoBndSteel"			hbank="84" lbank="3" prog="34"/>
+				<Patch name="PdlStl Vel 1"			hbank="84" lbank="3" prog="35"/>
+				<Patch name="PdlStl Vel 2"			hbank="84" lbank="3" prog="36"/>
+				<Patch name="PdlStl Vel 3"			hbank="84" lbank="3" prog="37"/>
+				<Patch name="Hicksville"			hbank="84" lbank="3" prog="38"/>
+				<Patch name="Patsy EGuitr"			hbank="84" lbank="3" prog="39"/>
+				<Patch name="PedalMajor 1"			hbank="84" lbank="3" prog="40"/>
+				<Patch name="PedalMajor 2"			hbank="84" lbank="3" prog="41"/>
+				<Patch name="Steel Heaven"			hbank="84" lbank="3" prog="42"/>
+				<Patch name="LoneStar"			hbank="84" lbank="3" prog="43"/>
+			</PatchGroup>
+			<PatchGroup name="Patches_Acoustic &amp; Electric Bass">
+				<Patch name="6Strings Bs1"			hbank="84" lbank="3" prog="44"/>
+				<Patch name="Processed Bs"			hbank="84" lbank="3" prog="45"/>
+				<Patch name="MetalStr Bs1"			hbank="84" lbank="3" prog="46"/>
+				<Patch name="6Strings Bs2"			hbank="84" lbank="3" prog="47"/>
+				<Patch name="Pick Bs Hard"			hbank="84" lbank="3" prog="48"/>
+				<Patch name="6StrBs Mt/Pk"			hbank="84" lbank="3" prog="49"/>
+				<Patch name="6Strings Bs3"			hbank="84" lbank="3" prog="50"/>
+				<Patch name="Picked Bass1"			hbank="84" lbank="3" prog="51"/>
+				<Patch name="Picked Bass2"			hbank="84" lbank="3" prog="52"/>
+				<Patch name="Finger Bass2"			hbank="84" lbank="3" prog="53"/>
+				<Patch name="Finger Bass3"			hbank="84" lbank="3" prog="54"/>
+				<Patch name="Finger Bass4"			hbank="84" lbank="3" prog="55"/>
+				<Patch name="CmpFingerBs1"			hbank="84" lbank="3" prog="56"/>
+				<Patch name="CmpFingerBs2"			hbank="84" lbank="3" prog="57"/>
+				<Patch name="DynoFngrBass"			hbank="84" lbank="3" prog="58"/>
+				<Patch name="Strong Bass"			hbank="84" lbank="3" prog="59"/>
+				<Patch name="Super 6 Bass"			hbank="84" lbank="3" prog="60"/>
+				<Patch name="Finger Bass5"			hbank="84" lbank="3" prog="61"/>
+				<Patch name="8Strings Bs"			hbank="84" lbank="3" prog="62"/>
+				<Patch name="MetalStr Bs2"			hbank="84" lbank="3" prog="63"/>
+				<Patch name="Muted Bass 1"			hbank="84" lbank="3" prog="64"/>
+				<Patch name="DynoMuteBass"			hbank="84" lbank="3" prog="65"/>
+				<Patch name="Muted Bass 2"			hbank="84" lbank="3" prog="66"/>
+				<Patch name="WWWBass"			hbank="84" lbank="3" prog="67"/>
+				<Patch name="Muted Bass 3"			hbank="84" lbank="3" prog="68"/>
+				<Patch name="Bassy Muters"			hbank="84" lbank="3" prog="69"/>
+				<Patch name="Wah Bass"			hbank="84" lbank="3" prog="70"/>
+				<Patch name="Tub Mix Bass"			hbank="84" lbank="3" prog="71"/>
+				<Patch name="Washtub Bass"			hbank="84" lbank="3" prog="72"/>
+				<Patch name="Tub.Bass"			hbank="84" lbank="3" prog="73"/>
+				<Patch name="Showdown"			hbank="84" lbank="3" prog="74"/>
+			</PatchGroup>
+			<PatchGroup name="Patches_Strings">
+				<Patch name="FiddleFXmenu"			hbank="84" lbank="2" prog="6"/>
+				<Patch name="Fiddle Split"			hbank="84" lbank="3" prog="75"/>
+				<Patch name="Fiddle Duo"			hbank="84" lbank="3" prog="76"/>
+				<Patch name="Fiddler 1"			hbank="84" lbank="3" prog="77"/>
+				<Patch name="Fiddler 2"			hbank="84" lbank="3" prog="78"/>
+				<Patch name="2 Fiddles"			hbank="84" lbank="3" prog="79"/>
+				<Patch name="Stac Fiddle"			hbank="84" lbank="3" prog="80"/>
+				<Patch name="Fddl+Violins"			hbank="84" lbank="3" prog="81"/>
+				<Patch name="Fiddlers"			hbank="84" lbank="3" prog="82"/>
+				<Patch name="Let's Jig!"			hbank="84" lbank="3" prog="83"/>
+				<Patch name="Fiddlee Dee"			hbank="84" lbank="3" prog="84"/>
+				<Patch name="FiddleSect'n"			hbank="84" lbank="3" prog="85"/>
+				<Patch name="Fiddle Spice"			hbank="84" lbank="3" prog="86"/>
+				<Patch name="FiddlePizz 1"			hbank="84" lbank="3" prog="87"/>
+				<Patch name="FiddlePizz 2"			hbank="84" lbank="3" prog="88"/>
+				<Patch name="FiddlePizz 3"			hbank="84" lbank="3" prog="89"/>
+				<Patch name="FiddlePizz 4"			hbank="84" lbank="3" prog="90"/>
+				<Patch name="FiddlePizz 5"			hbank="84" lbank="3" prog="91"/>
+				<Patch name="Oct Pi"			hbank="84" lbank="3" prog="92"/>
+				<Patch name="FidpizBounce"			hbank="84" lbank="3" prog="93"/>
+				<Patch name="FiddleFilter"			hbank="84" lbank="3" prog="94"/>
+				<Patch name="Promenade"			hbank="84" lbank="3" prog="95"/>
+				<Patch name="Fiddle About"			hbank="84" lbank="3" prog="96"/>
+			</PatchGroup>
+			<PatchGroup name="Patches_Synth FX">
+				<Patch name="BootScootin'"			hbank="84" lbank="3" prog="111"/>
+				<Patch name="BootScootin2"			hbank="84" lbank="3" prog="112"/>
+				<Patch name="CanynCascade"			hbank="84" lbank="3" prog="113"/>
+				<Patch name="GoodMornin'"			hbank="84" lbank="3" prog="114"/>
+				<Patch name="Skyline"			hbank="84" lbank="3" prog="115"/>
+				<Patch name="TwangWahEcho"			hbank="84" lbank="3" prog="116"/>
+				<Patch name="FunkyResonic"			hbank="84" lbank="3" prog="117"/>
+				<Patch name="Shiloh"			hbank="84" lbank="3" prog="122"/>
+				<Patch name="Durango"			hbank="84" lbank="3" prog="123"/>
+			</PatchGroup>
+			<PatchGroup name="Patches_Plucked">
+				<Patch name="GentlDulzouk"			hbank="84" lbank="2" prog="94"/>
+			</PatchGroup>
+			<PatchGroup name="Patches_Fretted Inst">
+				<Patch name="3Chd Strum"			hbank="84" lbank="2" prog="7"/>
+				<Patch name="Banjo 2"			hbank="84" lbank="2" prog="55"/>
+				<Patch name="Banjo 3"			hbank="84" lbank="2" prog="56"/>
+				<Patch name="Banjo 4"			hbank="84" lbank="2" prog="57"/>
+				<Patch name="Deliverance1"			hbank="84" lbank="2" prog="58"/>
+				<Patch name="Banjo Pick"			hbank="84" lbank="2" prog="59"/>
+				<Patch name="Banjo 5"			hbank="84" lbank="2" prog="60"/>
+				<Patch name="Deliverance2"			hbank="84" lbank="2" prog="61"/>
+				<Patch name="Banjo Small"			hbank="84" lbank="2" prog="62"/>
+				<Patch name="Banjo Large"			hbank="84" lbank="2" prog="63"/>
+				<Patch name="Velo Banjo"			hbank="84" lbank="2" prog="64"/>
+				<Patch name="St. Banjo"			hbank="84" lbank="2" prog="65"/>
+				<Patch name="Dyno Mandoln"			hbank="84" lbank="2" prog="66"/>
+				<Patch name="Mandolin 5"			hbank="84" lbank="2" prog="67"/>
+				<Patch name="Mandolin VSW"			hbank="84" lbank="2" prog="68"/>
+				<Patch name="Mandolin Dwn"			hbank="84" lbank="2" prog="69"/>
+				<Patch name="Mandolin Up"			hbank="84" lbank="2" prog="70"/>
+				<Patch name="Mndln Up&amp;Dwn"			hbank="84" lbank="2" prog="71"/>
+				<Patch name="Mdln Oct Ens"			hbank="84" lbank="2" prog="72"/>
+				<Patch name="MandolnTrm 1"			hbank="84" lbank="2" prog="73"/>
+				<Patch name="Mandoln Solo"			hbank="84" lbank="2" prog="74"/>
+				<Patch name="Mandoln Trio"			hbank="84" lbank="2" prog="75"/>
+				<Patch name="Mdln Trem St"			hbank="84" lbank="2" prog="76"/>
+				<Patch name="MandoPlayers"			hbank="84" lbank="2" prog="77"/>
+				<Patch name="MandoSection"			hbank="84" lbank="2" prog="78"/>
+				<Patch name="MandolnTrm 2"			hbank="84" lbank="2" prog="79"/>
+				<Patch name="Mndln Strum1"			hbank="84" lbank="2" prog="80"/>
+				<Patch name="Mndln Strum2"			hbank="84" lbank="2" prog="81"/>
+				<Patch name="MandolnTrm 3"			hbank="84" lbank="2" prog="82"/>
+				<Patch name="MandolnTrm 4"			hbank="84" lbank="2" prog="83"/>
+				<Patch name="MandoStrings"			hbank="84" lbank="2" prog="84"/>
+				<Patch name="Mand SlowPad"			hbank="84" lbank="2" prog="85"/>
+				<Patch name="The Vatican"			hbank="84" lbank="2" prog="86"/>
+				<Patch name="Plato'sDream"			hbank="84" lbank="2" prog="87"/>
+				<Patch name="Mandoswell"			hbank="84" lbank="2" prog="88"/>
+				<Patch name="Circle Pick"			hbank="84" lbank="2" prog="89"/>
+				<Patch name="Bouzouki 3"			hbank="84" lbank="2" prog="90"/>
+				<Patch name="Bouzouki 4"			hbank="84" lbank="2" prog="91"/>
+				<Patch name="StereoBouzki"			hbank="84" lbank="2" prog="92"/>
+				<Patch name="BouzokiSplit"			hbank="84" lbank="2" prog="93"/>
+				<Patch name="Bouzki&amp;Strum"			hbank="84" lbank="2" prog="95"/>
+				<Patch name="Le G String"			hbank="84" lbank="2" prog="96"/>
+				<Patch name="Country Pi"			hbank="84" lbank="2" prog="97"/>
+			</PatchGroup>
+			<PatchGroup name="Patches_Beat and Groove">
+				<Patch name="Banjo Phrs"			hbank="84" lbank="2" prog="0"/>
+				<Patch name="Guitar Phrs1"			hbank="84" lbank="2" prog="1"/>
+				<Patch name="Guitar Phrs2"			hbank="84" lbank="2" prog="2"/>
+				<Patch name="MiddleCRiff"			hbank="84" lbank="2" prog="3"/>
+				<Patch name="12 Bar Riff"			hbank="84" lbank="2" prog="4"/>
+				<Patch name="PdlStl Phrs"			hbank="84" lbank="2" prog="5"/>
+			</PatchGroup>
+			<PatchGroup name="Patches_Drum Set">
+				<Patch name="CountryDrum1"			hbank="84" lbank="3" prog="124"/>
+				<Patch name="CountryDrum2"			hbank="84" lbank="3" prog="125"/>
+				<Patch name="CountryDrum3"			hbank="84" lbank="3" prog="126"/>
+				<Patch name="CountryDrum4"			hbank="84" lbank="3" prog="127"/>
+			</PatchGroup>
+			<PatchGroup name="Patches_Combination">
+				<Patch name="CntryBallad1"			hbank="84" lbank="3" prog="118"/>
+				<Patch name="CntryBallad2"			hbank="84" lbank="3" prog="119"/>
+				<Patch name="Country Ens"			hbank="84" lbank="3" prog="120"/>
+				<Patch name="Fiddle &amp; PNO"			hbank="84" lbank="3" prog="121"/>
+			</PatchGroup>
+			<PatchGroup name="Drums">
+				<Patch name="CountrySet1"			hbank="84" lbank="2" prog="0"/>
+				<Patch name="CountrySet2"			hbank="84" lbank="2" prog="1"/>
+				<Patch name="CountrySet3"			hbank="84" lbank="2" prog="2"/>
+				<Patch name="CountrySet4"			hbank="84" lbank="2" prog="3"/>
+				<Patch name="Brush Set"			hbank="84" lbank="2" prog="4"/>
+				<Patch name="CntryOldySet"			hbank="84" lbank="2" prog="5"/>
+				<Patch name="CntryPopSet1"			hbank="84" lbank="2" prog="6"/>
+				<Patch name="CntryPopSet2"			hbank="84" lbank="2" prog="7"/>
+			</PatchGroup>
+	</MidiInstrument>
+</muse>

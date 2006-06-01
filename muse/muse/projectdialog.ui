@@ -48,15 +48,6 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2" >
-    <widget class="QTreeWidget" name="projectTree" >
-     <column>
-      <property name="text" >
-       <string>Projectlist</string>
-      </property>
-     </column>
-    </widget>
-   </item>
    <item rowspan="2" row="0" column="2" >
     <widget class="QGroupBox" name="groupBox" >
      <property name="title" >
@@ -204,9 +195,39 @@
      </item>
     </layout>
    </item>
+   <item row="1" column="0" colspan="2" >
+    <widget class="ProjectTree" name="projectTree" >
+     <property name="dragEnabled" >
+      <bool>false</bool>
+     </property>
+     <property name="alternatingRowColors" >
+      <bool>true</bool>
+     </property>
+     <property name="uniformRowHeights" >
+      <bool>true</bool>
+     </property>
+     <property name="columnCount" >
+      <number>1</number>
+     </property>
+     <column>
+      <property name="text" >
+       <string>Projectlist</string>
+      </property>
+     </column>
+    </widget>
+   </item>
   </layout>
  </widget>
  <pixmapfunction></pixmapfunction>
+ <customwidgets>
+  <customwidget>
+   <class>ProjectTree</class>
+   <extends>QTreeWidget</extends>
+   <header>projectdialog.h</header>
+   <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>okButton</tabstop>
   <tabstop>cancelButton</tabstop>

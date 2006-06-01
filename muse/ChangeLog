@@ -1,3 +1,8 @@
+1.6. (ws)
+      * fix crash when loading new song (old song has midi channels, new
+        song has not)
+      * drag/drop of projects in project dialog
+      * added Roland  JV-1010 instrument definitions from f.fabre
 29.5 (ws)
       * the list of available software synthesizer in 
         edit->AddTrack->AddSoftSynth was always empty
