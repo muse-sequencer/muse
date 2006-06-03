@@ -675,18 +675,16 @@ void Arranger::mouseWheel(QWheelEvent* e)
 
 //---------------------------------------------------------
 //   appendSubtrack
+//    the user requests a new controller subtrack
 //---------------------------------------------------------
 
 void Arranger::appendSubtrack(TLWidget* trackWidget)
       {
-      appendSubtrack(trackWidget->track());
-      }
+      Track* t = trackWidget->track();
 
-void Arranger::appendSubtrack(Track* t)
-      {
       ArrangerTrack* at = new ArrangerTrack;
       at->h    = minTrackHeight;
-      at->ctrl = CTRL_OTHER;
+      at->ctrl = CTRL_NO_CTRL;
       t->subtracks.push_back(at);
       initSubtrack(t, at);
       updateIndex();

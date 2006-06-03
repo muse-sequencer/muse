@@ -119,10 +119,10 @@ TLSWidget::TLSWidget(Track* t, ArrangerTrack* atrack, TimeCanvas* timeC)
       setAttribute(Qt::WA_NoBackground);
       setMouseTracking(true);
       _tc   = timeC;
-      state  = S_NORMAL;
+      state = S_NORMAL;
 
-      at     = atrack;
-      _track = t;
+      at         = atrack;
+      _track     = t;
       _ctrlTrack = t;
 
       TLSLayout* l = new TLSLayout;
@@ -212,13 +212,21 @@ void TLSWidget::showControllerList()
             id = c->id();
       else
             id = CTRL_NO_CTRL;
-      CtrlDialog cd(_ctrlTrack, id);
-      int rv = cd.exec();
-      if (rv != 1)
-            return;
-      id = cd.curId();
-      if (id == CTRL_NO_CTRL)
-            return;
+      for (;;) {
+            CtrlDialog cd(_ctrlTrack, id);
+            int rv = cd.exec();
+            if (rv != 1)
+                  return;
+            id = cd.curId();
+            if (id == CTRL_NO_CTRL)
+                  return;
+            if (id != CTRL_OTHER)
+                  break;
+            ConfigMidiCtrl* mce = new ConfigMidiCtrl((MidiTrack*)_track);
+            mce->exec();
+            updateController();
+            delete mce;
+            }
       setCtrl(id);
       }
 
@@ -228,13 +236,13 @@ void TLSWidget::showControllerList()
 
 void TLSWidget::setCtrl(int ctrl)
       {
-      if (ctrl == CTRL_OTHER) {   // "other"
-/*??*/      ConfigMidiCtrl* mce = new ConfigMidiCtrl((MidiTrack*)_track);
-            mce->exec();
-            updateController();
-            delete mce;
+      if (ctrl == CTRL_NO_CTRL || ctrl == CTRL_OTHER) {
+            // this controller subtrack is new, ask user for 
+            // controller:
+            showControllerList();
             return;
             }
+      
       if (_ctrlTrack && _ctrlTrack != _track) {
             disconnect(_ctrlTrack, SIGNAL(clChanged()), this, SLOT(updateController()));
             disconnect(_ctrlTrack, SIGNAL(controllerChanged(int)), this, SLOT(controllerListChanged(int)));

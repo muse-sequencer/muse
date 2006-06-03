@@ -100,7 +100,6 @@ class Arranger : public QWidget {
       bool mixerStripVisible;
 
       void updateIndex();
-      void appendSubtrack(Track*);
       TrackInfo* createTrackInfo();
       int tlIndex(Track*) const;
       int tlIndex(ArrangerTrack* t) const;
