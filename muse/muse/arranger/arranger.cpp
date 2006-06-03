@@ -1250,6 +1250,7 @@ void Arranger::keyPressEvent(QKeyEvent* e)
                         shortcutsKbdMovement.setPos(nextRight->tick(), nextRight->tick() + nextRight->lenTick());
                         }
                   }
+
             else if (key == shortcuts[SHRT_SEL_ABOVE].key) {
                   // TODO
                   }
@@ -1257,7 +1258,24 @@ void Arranger::keyPressEvent(QKeyEvent* e)
                   // TODO
                   }
             } // -- end movement
-
+      else {
+            if (key == shortcuts[SHRT_TOOL_POINTER].key) {
+                    emit toolChanged(PointerTool);
+                    return;
+                    }
+            else if (key == shortcuts[SHRT_TOOL_PENCIL].key) {
+                    emit toolChanged(PencilTool);
+                    return;
+                    }
+            else if (key == shortcuts[SHRT_TOOL_RUBBER].key) {
+                    emit toolChanged(RubberTool);
+                    return;
+                    }
+            else if (key == shortcuts[SHRT_TOOL_LINEDRAW].key) {
+                    emit toolChanged(DrawTool);
+                    return;
+                    }
+            }
       // If we haven't dealt with the keypress, pass it along
       if (!keypress_handled) {
             e->ignore();

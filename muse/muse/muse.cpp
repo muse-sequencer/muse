@@ -960,6 +960,7 @@ MusE::MusE()
       setCentralWidget(arranger);
 
       connect(tools1, SIGNAL(toolChanged(int)), SLOT(setTool(int)));
+      connect(arranger, SIGNAL(toolChanged(int)), SLOT(setTool(int)));
       connect(arranger, SIGNAL(editPart(Part*)), SLOT(startEditor(Part*)));
 //TODO1      connect(arranger, SIGNAL(dropSongFile(const QString&)), SLOT(loadProject(const QString&)));
 //TODO1      connect(arranger, SIGNAL(dropMidiFile(const QString&)), SLOT(importMidi(const QString&)));

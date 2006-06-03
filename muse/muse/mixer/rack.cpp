@@ -216,8 +216,9 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
 
 void EffectRack::startDrag(int idx)
       {
-      QBuffer buffer;
-      AL::Xml xml(&buffer);
+      QString buffer;
+      AL::Xml xml(NULL);
+      xml.setString(&buffer);
       Pipeline* pipe = track->efxPipe();
       if (pipe) {
             if ((*pipe)[idx] != NULL) {
@@ -234,6 +235,7 @@ void EffectRack::startDrag(int idx)
                     fval.setNum(plug->param(i)); // wierd stuff to avoid localization
                     QString str="<control name=\"" + name + "\" val=\""+ fval+"\" />";
                     xml.put(str.toLatin1().data());
+                    printf("%s\n",str.toLatin1().data());
                     }
                 xml.etag("plugin");
 
@@ -248,8 +250,9 @@ void EffectRack::startDrag(int idx)
           //printf("no pipe!\n");
           return;
           }
-	
-      QByteArray xmldump = buffer.buffer();
+      //printf("and i wish you were here: %s\n", xml.readAll().toLatin1().data());
+      QByteArray xmldump = xml.readAll().toLatin1();
+      //printf("xmldump=%s\n",xmldump.data());
       QDrag *drag = new QDrag(this);
       QMimeData *mime = new QMimeData();
       mime->setData("text/x-muse-plugin", xmldump);
@@ -262,6 +265,7 @@ void EffectRack::startDrag(int idx)
 //---------------------------------------------------------
 void EffectRack::dropEvent(QDropEvent *event)
       {
+      //printf("drop!\n");
       QString text;
       QListWidgetItem *i = itemAt( (event->pos()) );
       int idx = row(i);
@@ -301,7 +305,7 @@ void EffectRack::dropEvent(QDropEvent *event)
             else if (event->mimeData()->hasFormat("text/x-muse-plugin"))
                 {
                 QByteArray outxml = event->mimeData()->data("text/x-muse-plugin");
-                //printf("%s\n",outxml.data());
+                //printf("DATA:%s\n",outxml.data());
                 QDomDocument doc;
                 doc.setContent(outxml);
                 QDomNode node = doc.documentElement().firstChild();

@@ -141,6 +141,7 @@ class Arranger : public QWidget {
 
    signals:
       void configChanged();
+      void toolChanged(int);
       void editPart(Part*);
       void cursorPos(const AL::Pos&,bool);
 
