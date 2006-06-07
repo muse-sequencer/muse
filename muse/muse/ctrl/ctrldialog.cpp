@@ -33,6 +33,13 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
   : QDialog(parent)
       {
       setupUi(this);
+      QTreeWidgetItem* header = tw->headerItem();
+      header->setTextAlignment(0, Qt::AlignLeft);
+      header->setTextAlignment(1, Qt::AlignHCenter);
+      header->setSizeHint(1, QSize(30, 20));
+      header->setToolTip(0, tr("controller name"));
+      header->setToolTip(1, tr("flag if controller contains data"));
+
       QTreeWidgetItem* ci;
       if (track->type() == Track::MIDI) {
             //
@@ -72,6 +79,9 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                         int id = (idx + 1) * 0x1000 + i;
                         QTreeWidgetItem* cci = new QTreeWidgetItem(ci, id);
                         cci->setText(0, name);
+                        Ctrl* ctrl = track->getController(id);
+                        if (!ctrl->empty())
+                              cci->setText(1, "*");
                         if (id == currentId) {
                               tw->setCurrentItem(cci);
                               tw->setItemSelected(cci, true);
@@ -87,6 +97,9 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                         continue;
                   ci = new QTreeWidgetItem(tw, i->id);
                   ci->setText(0, i->name);
+                  Ctrl* ctrl = track->getController(i->id);
+                  if (!ctrl->empty())
+                        ci->setText(1, "*");
                   if (i->id == currentId) {
                         tw->setCurrentItem(ci);
                         tw->setItemSelected(ci, true);
@@ -99,6 +112,9 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
             for (iControllerName i = cn->begin(); i != cn->end(); ++i) {
                   ci = new QTreeWidgetItem(tw, i->id);
                   ci->setText(0, i->name);
+                  Ctrl* ctrl = track->getController(i->id);
+                  if (!ctrl->empty())
+                        ci->setText(1, "*");
 
                   if (i->id == currentId) {
                         tw->setCurrentItem(ci);
@@ -112,14 +128,20 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
             //
             MidiChannel* mc = ((MidiTrack*)track)->channel();
             if (mc) {
+                  ci = new QTreeWidgetItem(tw, CTRL_NO_CTRL);
+                  ci->setText(0, tr("Midi Channel Controller"));
+
                   ControllerNameList* cn = mc->controllerNames();
                   for (iControllerName i = cn->begin(); i != cn->end(); ++i) {
-                        ci = new QTreeWidgetItem(tw, i->id);
-                        ci->setText(0, i->name);
+                        QTreeWidgetItem* cci = new QTreeWidgetItem(ci, i->id);
+                        cci->setText(0, i->name);
+                        Ctrl* ctrl = mc->getController(i->id);
+                        if (!ctrl->empty())
+                              cci->setText(1, "*");
 
                         if (i->id == currentId) {
-                              tw->setCurrentItem(ci);
-                              tw->setItemSelected(ci, true);
+                              tw->setCurrentItem(cci);
+                              tw->setItemSelected(cci, true);
                               }
                         }
                   }

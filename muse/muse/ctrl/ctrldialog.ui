@@ -27,12 +27,20 @@
      <property name="alternatingRowColors" >
       <bool>true</bool>
      </property>
+     <property name="uniformRowHeights" >
+      <bool>true</bool>
+     </property>
      <property name="columnCount" >
-      <number>1</number>
+      <number>2</number>
      </property>
      <column>
       <property name="text" >
        <string>Controller</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>A</string>
       </property>
      </column>
     </widget>
