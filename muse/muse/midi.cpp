@@ -39,9 +39,32 @@
 
 extern void dump(const unsigned char* p, int n);
 
-unsigned const char gmOnMsg[] = { 0x7e, 0x7f, 0x09, 0x01 };
-unsigned const char gsOnMsg[] = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7f, 0x00, 0x41 };
-unsigned const char xgOnMsg[] = { 0x43, 0x10, 0x4c, 0x00, 0x00, 0x7e, 0x00 };
+unsigned const char gmOnMsg[] = { 
+      0x7e,       // Non-Real Time header
+      0x7f,       // ID of target device (7f = all devices)
+      0x09, 
+      0x01 
+      };
+unsigned const char gsOnMsg[] = { 
+      0x41,       // roland id
+      0x10,       // Id of target device (default = 10h for roland)
+      0x42,       // model id (42h = gs devices)
+      0x12,       // command id (12h = data set)
+      0x40,       // address & value
+      0x00,
+      0x7f, 
+      0x00,        
+      0x41        // checksum?
+      };
+unsigned const char xgOnMsg[] = { 
+      0x43,       // yamaha id
+      0x10,       // device number
+      0x4c,       // model id
+      0x00,       // address (high, mid, low)
+      0x00, 
+      0x7e, 
+      0x00        // data
+      };
 unsigned const int  gmOnMsgLen = sizeof(gmOnMsg);
 unsigned const int  gsOnMsgLen = sizeof(gsOnMsg);
 unsigned const int  xgOnMsgLen = sizeof(xgOnMsg);

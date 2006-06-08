@@ -57,6 +57,7 @@ MidiOutPort::MidiOutPort()
       alsaPort        = 0;
       _nextPlayEvent  = _playEvents.end();
       _sendSync       = false;
+      _deviceId       = 127;        // all
       addMidiController(_instrument, CTRL_MASTER_VOLUME);
       }
 
@@ -112,6 +113,8 @@ void MidiOutPort::write(Xml& xml) const
             if (!_channel[i]->noInRoute())
                   _channel[i]->write(xml);
             }
+      xml.intTag("sendSync", _sendSync);
+      xml.intTag("deviceId", _deviceId);
       xml.etag("MidiOutPort");
       }
 
@@ -132,6 +135,10 @@ void MidiOutPort::read(QDomNode node)
                   QString iname = e.text();
                   _instrument = registerMidiInstrument(iname);
                   }
+            else if (tag == "sendSync")
+                  _sendSync = e.text().toInt();
+            else if (tag == "deviceId")
+                  _deviceId = e.text().toInt();
             else if (MidiTrackBase::readProperties(node))
                   printf("MusE:MidiOutPort: unknown tag %s\n", tag.toLatin1().data());
             }
@@ -218,6 +225,7 @@ void MidiOutPort::putEvent(const MidiEvent& ev)
                   unsigned char sysex[] = {
                         0x7f, 0x7f, 0x04, 0x01, 0x00, 0x00
                         };
+                  sysex[1] = _deviceId;
                   sysex[4] = b & 0x7f;
                   sysex[5] = (b >> 7) & 0x7f;
                   MidiEvent e(ev.time(), ME_SYSEX, sysex, 6);

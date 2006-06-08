@@ -38,8 +38,8 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       connect(syncMaster, SIGNAL(toggled(bool)), SLOT(syncMasterChanged(bool)));
       connect(syncSlave, SIGNAL(toggled(bool)), SLOT(syncSlaveChanged(bool)));
 
-      dstDevId->setValue(txDeviceId);
-      srcDevId->setValue(rxDeviceId);
+//      dstDevId->setValue(txDeviceId);
+//      srcDevId->setValue(rxDeviceId);
 
       mtcSync->setChecked(genMTCSync);
       mcSync->setChecked(genMCSync);
@@ -85,8 +85,8 @@ void MidiSyncConfig::cancel()
 
 void MidiSyncConfig::apply()
       {
-      txDeviceId  = dstDevId->value();
-      rxDeviceId  = srcDevId->value();
+//      txDeviceId  = dstDevId->value();
+//      rxDeviceId  = srcDevId->value();
 
       genMTCSync  = mtcSync->isChecked();
       genMCSync   = mcSync->isChecked();

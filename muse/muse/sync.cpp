@@ -32,9 +32,6 @@
 int rxSyncPort = -1;         // receive from all ports
 int txSyncPort = 1;
 
-int rxDeviceId = 0x7f;       // ´any´ device
-int txDeviceId = 0x7f;       // ´any´ device
-
 bool debugSync = false;
 MTC mtcOffset;
 bool extSyncFlag = false;
@@ -74,6 +71,8 @@ enum {
 
 void MidiSeq::mmcInput(int id, int cmd, const Pos& pos)
       {
+      int rxDeviceId = 127;
+
       if (!extSyncFlag || !acceptMMC || (id != 127 && id != rxDeviceId))
             return;
 

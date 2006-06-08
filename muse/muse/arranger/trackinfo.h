@@ -21,6 +21,10 @@
 #ifndef __TRACKINFO_H__
 #define __TRACKINFO_H__
 
+#include "ui_miditrackinfo.h"
+#include "ui_midichannelinfo.h"
+#include "ui_midiportinfo.h"
+
 class Track;
 class MidiTrack;
 class AudioOutput;
@@ -64,15 +68,11 @@ class TrackInfo : public QWidget {
 class MidiTrackInfo : public TrackInfo {
       Q_OBJECT
 
-      QSpinBox* transposition;
-      QSpinBox* delay;
-      QSpinBox* length;
-      QSpinBox* velocity;
-      QSpinBox* compression;
-      QComboBox* channel;
-      QPushButton* patch;
+      Ui::MidiTrackInfoBase mt;
+      Ui::MidiChannelInfoBase mc;
+      Ui::MidiPortInfoBase mp;
       QComboBox* port;
-      QComboBox* instrument;
+      QComboBox* channel;
       QMenu* pop;
 
    private slots:
@@ -88,6 +88,7 @@ class MidiTrackInfo : public TrackInfo {
       void controllerChanged(int);
       void portSelected(int);
       void channelSelected(int);
+      void deviceIdChanged(int);
 
    public:
       MidiTrackInfo();
@@ -178,11 +179,12 @@ class MidiSynthIInfo : public TrackInfo {
 class MidiOutPortInfo : public TrackInfo {
       Q_OBJECT
 
-      QComboBox* instrument;
+      Ui::MidiPortInfoBase mp;
 
    private slots:
       void instrumentSelected(int);
       void instrumentChanged();
+      void deviceIdChanged(int);
 
    public:
       MidiOutPortInfo();

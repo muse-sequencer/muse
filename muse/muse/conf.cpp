@@ -185,10 +185,6 @@ void readConfiguration(QDomNode node)
 //                  config.transportHandleColor = readColor(node);
             else if (tag == "freewheelMode")
                   config.useJackFreewheelMode = i;
-            else if (tag == "txDeviceId")
-                  txDeviceId = i;
-            else if (tag == "rxDeviceId")
-                  rxDeviceId = i;
             else if (tag == "mtctype")
                   AL::mtcType = i;
             else if (tag == "extSync")
@@ -402,8 +398,6 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
             xml.strTag("startProject", config.startProject);
       xml.intTag("freewheelMode", config.useJackFreewheelMode);
 
-      xml.intTag("txDeviceId", txDeviceId);
-      xml.intTag("rxDeviceId", rxDeviceId);
       xml.strTag("theme", config.style);
 
       for (int i = 0; i < 6; ++i) {
@@ -503,9 +497,6 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
 void MusE::writeConfiguration(Xml& xml) const
       {
       xml.tag("configuration");
-
-      xml.intTag("txDeviceId", txDeviceId);
-      xml.intTag("rxDeviceId", rxDeviceId);
 
       xml.intTag("mtctype", AL::mtcType);
       xml.tag("mtcoffset");

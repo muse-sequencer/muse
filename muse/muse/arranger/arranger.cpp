@@ -77,6 +77,15 @@ TrGroupList glist[Track::TRACK_TYPES];
 extern void populateAddTrack(QMenu*);
 
 //---------------------------------------------------------
+//   sizeHint
+//---------------------------------------------------------
+
+QSize InfoStack::sizeHint() const 
+      {
+      return QSize(infoWidth, height());
+      }
+
+//---------------------------------------------------------
 //   TLayout
 //    simple layout for trackList
 //---------------------------------------------------------
@@ -290,10 +299,9 @@ Arranger::Arranger(QMainWindow* parent)
 
       infoDock = new QDockWidget(tr("TrackInfo"));
       infoDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
- 	infoDock->setFixedWidth(infoWidth);
+      infoDock->setMinimumWidth(infoWidth);
       infoDock->layout()->setMargin(0);
       infoDock->layout()->setSpacing(0);
-      infoDock->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
       infoDockAction = infoDock->toggleViewAction();
 
       mixerDock = new QDockWidget(tr("Mix"));
@@ -301,7 +309,6 @@ Arranger::Arranger(QMainWindow* parent)
       mixerDock->setFixedWidth(STRIP_WIDTH);
       mixerDock->layout()->setMargin(0);
       mixerDock->layout()->setSpacing(0);
-      mixerDock->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
       mixerDockAction = mixerDock->toggleViewAction();
 
       parent->addDockWidget(Qt::LeftDockWidgetArea, infoDock, Qt::Horizontal);
@@ -309,11 +316,12 @@ Arranger::Arranger(QMainWindow* parent)
 
       infoView = new QScrollArea;
       infoDock->setWidget(infoView);
-      infoView->setFixedWidth(infoWidth);
       infoView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-      trackInfo = new QStackedWidget;
+
+      trackInfo = new InfoStack();
       infoView->setWidget(trackInfo);
       infoView->setWidgetResizable(true);
+      trackInfo->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
 
       trackInfoVisible  = false;
       mixerStripVisible = false;
@@ -328,7 +336,6 @@ Arranger::Arranger(QMainWindow* parent)
       tlsvLayout = new TlsvLayout;
       tlsv->setLayout(tlsvLayout);
       trackList = new QWidget;
-//	trackList->setAttribute(Qt::WA_NoSystemBackground);
       trackList->setAttribute(Qt::WA_StaticContents);
       trackList->setMouseTracking(true);
 

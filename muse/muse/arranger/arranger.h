@@ -45,6 +45,19 @@ class TlsvLayout;
 class TLayout;
 
 //---------------------------------------------------------
+//   InfoStack
+//---------------------------------------------------------
+
+class InfoStack : public QStackedWidget {
+      Q_OBJECT;
+
+      virtual QSize sizeHint() const;
+
+   public:
+      InfoStack() : QStackedWidget() {}
+      };
+
+//---------------------------------------------------------
 //   TrackListWidget
 //---------------------------------------------------------
 

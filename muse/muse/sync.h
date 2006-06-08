@@ -25,8 +25,8 @@
 
 extern bool debugSync;
 
-extern int rxDeviceId;
-extern int txDeviceId;
+// extern int rxDeviceId;
+// extern int txDeviceId;
 
 extern MTC mtcOffset;
 extern bool extSyncFlag;

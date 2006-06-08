@@ -1,3 +1,5 @@
+8.6.
+      * implemented deviceId for MidiPort
 3.6. (rj)
       * fixed plugin drag&drop problem
       * enabled tool shortcuts in arranger

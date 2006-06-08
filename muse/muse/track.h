@@ -427,6 +427,7 @@ class MidiOutPort : public MidiTrackBase {
       Port alsaPort;
 
       bool _sendSync;   // this port sends mtc mmc events
+      int _deviceId;    // 0-126; 127 == all
 
       MPEventList _playEvents;   // scheduled events to play
       iMPEvent _nextPlayEvent;
@@ -488,6 +489,9 @@ class MidiOutPort : public MidiTrackBase {
 
       bool sendSync() const      { return _sendSync; }
       void setSendSync(bool val);
+
+      int deviceId() const      { return _deviceId; }
+      void setDeviceId(int val) { _deviceId = val; }
       };
 
 //---------------------------------------------------------

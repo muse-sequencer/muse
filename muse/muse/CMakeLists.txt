@@ -52,6 +52,9 @@ set (muse_uics
       midiedit/quantconfig
       mixer/routedialog
       arranger/configtrack
+      arranger/miditrackinfo
+      arranger/midiportinfo
+      arranger/midichannelinfo
       )
 
 set(muse_mocs
