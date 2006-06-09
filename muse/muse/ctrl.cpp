@@ -331,7 +331,7 @@ void Ctrl::write(Xml& xml)
 int Ctrl::val2pixelR(CVal val, int maxpixel)
       {
       if (_type & INT)
-            return maxpixel - (maxpixel * (val.i - min.i) / (max.i-min.i));
+            return maxpixel - ((maxpixel * (val.i - min.i) + (max.i-min.i)/2) / (max.i-min.i));
       else
             return maxpixel - lrint(float(maxpixel) * (val.f - min.f) / (max.f-min.f));
       }
@@ -356,7 +356,7 @@ CVal Ctrl::pixel2val(int pixel, int maxpixel)
 //   pixel, maxpixel, _type & INT, min.i, max.i);
       CVal rv;
       if (_type & INT) {
-            rv.i = pixel * (max.i - min.i) / maxpixel + min.i;
+            rv.i = (pixel * (max.i - min.i) + (maxpixel+min.i)/2) / maxpixel + min.i;
             if (rv.i < min.i)
                   rv.i = min.i;
             else if (rv.i > max.i)

@@ -34,6 +34,9 @@ class Track;
 class CtrlEditor {
       bool _drawCtrlName;
       int dragx, dragy;
+      int dragYoffset;
+      int startY;
+
       int lselected;    // cached pixel position of current value
       AL::Pos selected; // current selected controller value
 

@@ -212,6 +212,7 @@ void CtrlEditor::mousePress(const QPoint& pos, int button)
             ciCtrlVal e = ctrl()->upper_bound(pos2.time(tt));
             for (ciCtrlVal i = s; i != e; ++i) {
                   int yy = ctrl()->val2pixelR(i->second, wh);
+                  startY = yy;
                   if ((yy >= (y-HANDLE2)) && (yy < (y + HANDLE2))) {
                         if (tt == AL::TICKS)
                               selected.setTick(i->first);
@@ -222,8 +223,10 @@ void CtrlEditor::mousePress(const QPoint& pos, int button)
                               song->removeControllerVal(ctrlTrack(), ctrl()->id(), i->first);
                               dragy = -1;
                               }
-                        else
+                        else {
                               dragy = yy;
+                              dragYoffset = dragy - y;
+                              }
                         tc()->widget()->update();
                         break;
                         }
@@ -302,8 +305,8 @@ void CtrlEditor::mouseRelease()
       if (ctrl()->id() == CTRL_VELOCITY || ctrl()->id() == CTRL_SVELOCITY)
             song->endUndo(SC_EVENT_MODIFIED);
       else {
-            if (dragy != -1) {
-                  int wh = cheight();
+            if (dragy != -1 && dragy != startY) {
+                  int wh   = cheight();
                   CVal val = ctrl()->pixel2val(dragy, wh);
                   // modify controller:
                   song->addControllerVal(ctrlTrack(), ctrl(), selected, val);
@@ -371,7 +374,7 @@ void CtrlEditor::mouseMove(const QPoint& pos)
             }
       else {
             if (dragy != -1)
-                  dragy = pos.y();
+                  dragy = pos.y() + dragYoffset;
             }
       tc()->widget()->update();
       }
