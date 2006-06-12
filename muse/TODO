@@ -1,8 +1,8 @@
 -----------------------------TODO-------------------------------------------
 (10.5.2006)
       - check for samplerate when loading project
-      - compute song len in seconds when saving project
-      - save project creation date/time in project
+      * compute song len in seconds when saving project
+      * save project creation date/time in project
       - create dialog to edit project comment
 
 BUGS
@@ -41,8 +41,6 @@ FEATURES
 
 	- Import MusE 0.7 song files
 
-	- NEW function with templates
-
 
 CLEANUPS
 	- Cleanup the icon/pixmap handling using Qt resource file:
@@ -58,10 +56,3 @@ Wishlist
         tracklist for tracktypes which cannot contain
         Parts to make better use of screen real estate.
         GUI-wise a "Add Controller" button is needed.
-
-	- the controller selector in "Add Controller" should be
-        implemented as a modal dialog. This allows for
-        presenting the list of controller in a more structured
-        way.
-
-

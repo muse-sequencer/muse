@@ -19,6 +19,7 @@
 //=============================================================================
 
 #include "canvas.h"
+#include "al/al.h"
 #include "al/sig.h"
 #include "gconfig.h"
 #include "song.h"
@@ -30,6 +31,8 @@
 #include "tlswidget.h"
 #include "part.h"
 #include "gui.h"
+
+#include <samplerate.h>
 
 static const int partLabelHeight = 13;
 static const int handleWidth = 5;
@@ -904,10 +907,17 @@ void PartCanvas::copyPart(Part*)
 
 void PartCanvas::dragEnter(QDragEnterEvent* event)
       {
-      if (MidiPartDrag::canDecode(event)
-         || AudioPartDrag::canDecode(event)
-         || WavUriDrag::canDecode(event))
+      const QMimeData* md = event->mimeData();
+      if (MidiPartDrag::canDecode(md)
+         || AudioPartDrag::canDecode(md)
+         || WavUriDrag::canDecode(md)) {
             event->acceptProposedAction();
+            }
+      else {
+            QStringList formats = md->formats();
+            foreach(QString s, formats)
+                  printf("drag format <%s>\n", s.toLatin1().data());
+            }
       }
 
 //---------------------------------------------------------
@@ -919,14 +929,15 @@ void PartCanvas::dragMove(QDragMoveEvent* event)
       Part* srcPart = 0;
       QString filename;
 
-      if (MidiPartDrag::canDecode(event)) {
-            MidiPartDrag::decode(event, srcPart);
+      const QMimeData* md = event->mimeData();
+      if (MidiPartDrag::canDecode(md)) {
+            MidiPartDrag::decode(md, srcPart);
             }
-      else if (AudioPartDrag::canDecode(event)) {
-            AudioPartDrag::decode(event, srcPart);
+      else if (AudioPartDrag::canDecode(md)) {
+            AudioPartDrag::decode(md, srcPart);
             }
-      else if (WavUriDrag::canDecode(event)) {
-            WavUriDrag::decode(event, &filename);
+      else if (WavUriDrag::canDecode(md)) {
+            WavUriDrag::decode(md, &filename);
             }
       else {
             state = S_NORMAL;
@@ -996,15 +1007,15 @@ void PartCanvas::drop(QDropEvent* event)
       Part* srcPart = 0;
       QString filename;
 
-      if (MidiPartDrag::canDecode(event)) {
-            MidiPartDrag::decode(event, srcPart);
+      const QMimeData* md = event->mimeData();
+      if (MidiPartDrag::canDecode(md)) {
+            MidiPartDrag::decode(md, srcPart);
             }
-      else if (AudioPartDrag::canDecode(event)) {
-            AudioPartDrag::decode(event, srcPart);
+      else if (AudioPartDrag::canDecode(md)) {
+            AudioPartDrag::decode(md, srcPart);
             }
-      else if (WavUriDrag::canDecode(event)) {
-            WavUriDrag::decode(event, &filename);
-   printf("drop <%s>\n", filename.toLatin1().data());
+      else if (WavUriDrag::canDecode(md)) {
+            WavUriDrag::decode(md, &filename);
             }
       else
             return;
@@ -1016,12 +1027,13 @@ void PartCanvas::drop(QDropEvent* event)
             return;
 
       if (srcPart == 0) {
-            printf("TODO: drop wave file <%s>\n", filename.toLatin1().data());
-            //TODO
+            int tick = AL::sigmap.raster(mapxDev(pos.x()), raster());
+            Pos pos(tick);
+            muse->importWaveToTrack(filename, track, pos);
             }
       else {
             PartCanvas* cw = (PartCanvas*)event->source();
-            unsigned tick = AL::sigmap.raster(mapxDev(pos.x() - cw->dragOffset()), raster());
+            int tick = AL::sigmap.raster(mapxDev(pos.x() - cw->dragOffset()), raster());
             if (srcPart->tick() != tick || srcTrack != track) {
                   Qt::KeyboardModifiers keyState = event->keyboardModifiers();
 

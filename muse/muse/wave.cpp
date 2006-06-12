@@ -18,6 +18,8 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
+#include <samplerate.h>
+
 #include "al/xml.h"
 #include "al/al.h"
 #include "song.h"
@@ -42,6 +44,202 @@ const int cacheMag = 128;
 QHash<QString, SndFile*> SndFile::sndFiles;
 QList<SndFile*> SndFile::createdFiles;
 int SndFile::recFileNumber;
+
+//---------------------------------------------------------
+//   copyWaveFileToProject
+//    - copy wave file to project directory
+//    - do sample rate conversion
+//
+//    return false on error
+//---------------------------------------------------------
+
+static bool copyWaveFileToProject(const QString& path)
+      {
+      QFile srcFile(path);
+      QFileInfo srcInfo(srcFile);
+
+      QString dst(song->absoluteProjectPath());
+      QFile dstFile(dst + "/" + srcInfo.fileName());
+      if (dstFile.exists()) {
+            // TODO: rename file, check for identity
+            printf("File already exists\n");
+            return false;
+            }
+
+      SF_INFO sfinfoSrc;
+      memset(&sfinfoSrc, 0, sizeof(SF_INFO));
+      SNDFILE* sfSrc = sf_open(path.toLatin1().data(), SFM_READ, &sfinfoSrc);
+      if (sfSrc == 0) {
+            printf("Cannot open source file: %s\n", strerror(errno));
+            return false;
+            }
+
+      int channels         = sfinfoSrc.channels;
+      sf_count_t size      = sfinfoSrc.frames;
+
+      SF_INFO sfinfoDst;
+      memset(&sfinfoDst, 0, sizeof(SF_INFO));
+      sfinfoDst.samplerate = AL::sampleRate;
+      sfinfoDst.channels   = channels;
+      sfinfoDst.format     = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+      SNDFILE* sfDst       = sf_open(dstFile.fileName().toLatin1().data(),
+            SFM_WRITE, &sfinfoDst);
+      if (sfDst == 0) {
+            printf("Cannot open destination file<%s>: %s\n", 
+               dstFile.fileName().toLatin1().data(), strerror(errno));
+            return false;
+            }
+
+      bool showProgress = size > (1024LL * 1024LL * 8LL);
+      QProgressDialog* progress = 0;
+      if (showProgress) {
+            QString label(QWidget::tr("copy \n  %1\nto\n  %2"));
+            label = label.arg(path).arg(dst);
+            if (sfinfoSrc.samplerate != AL::sampleRate) {
+                  QString cs(QWidget::tr("\nconverting sample rate\n"
+                     "from %1 to %2"));
+                  label += cs.arg(sfinfoSrc.samplerate).arg(AL::sampleRate);
+                  }
+            int csize = size / 1024;
+            progress = new QProgressDialog(label, QWidget::tr("Abort"), 0, csize);
+            progress->setValue(0);
+            progress->setWindowTitle("MusE");
+            progress->raise();
+            progress->show();
+            qApp->processEvents();
+            }
+      sf_count_t inSize = 1024LL * 512LL;
+      sf_count_t samplesWritten = 0LL;
+
+      bool returnValue = true;
+      if (sfinfoSrc.samplerate != AL::sampleRate) {
+            // TODO: convertsample rate
+            printf("wave file has samplerate of %d, our project has %d\n", 
+               sfinfoSrc.samplerate,AL::sampleRate);
+
+            int srcType = SRC_SINC_MEDIUM_QUALITY;
+            int error;
+            SRC_STATE* src = src_new(srcType, channels, &error);
+            if (src == 0) {
+                  printf("creating sample rate converter failed: error %d\n",
+                     error);
+                  return false;
+                  }
+            double ratio = double(AL::sampleRate) / double(sfinfoSrc.samplerate);
+            src_set_ratio(src, ratio);
+            sf_count_t outSize = int(inSize * ratio) + 1;
+            float inBuffer[inSize * channels];
+            float* inPtr = inBuffer;
+            while (size) {
+                  float outBuffer[outSize * channels];
+
+                  // read buffer
+                  sf_count_t framesToRead = (inBuffer + inSize) - inPtr;
+                  if (framesToRead > size)
+                        framesToRead = size;
+
+                  sf_count_t nr = sf_readf_float(sfSrc, inPtr, framesToRead);
+                  if (nr != framesToRead) {
+                        printf("sound file read failed\n");
+                        src_delete(src);
+                        returnValue = false;
+                        break;
+                        }
+
+                  // convert
+                  SRC_DATA data;
+                  data.data_in       = inBuffer;
+                  data.data_out      = outBuffer;
+                  data.input_frames  = inSize;
+                  data.output_frames = outSize;
+                  data.end_of_input  = framesToRead == size;
+                  data.src_ratio     = ratio;
+
+                  int rv = src_process(src, &data);
+                  if (rv > 0) {
+                        printf("error sampe rate conversion: %s\n", 
+                           src_strerror(rv));
+                        src_delete(src);
+                        returnValue = false;
+                        break;
+                        }
+
+                  // write buffer
+                  sf_count_t n = sf_writef_float(sfDst, outBuffer, data.output_frames_gen);
+                  if (n != data.output_frames_gen) {
+                        printf("sound write failed: returns %lld, should return %ld\n", 
+                           n, data.output_frames_gen);
+                        returnValue = false;
+                        break;
+                        }
+
+                  int rest = (inPtr + nr - inBuffer) - data.input_frames_used;
+                  rest *= (sizeof(float) * channels);
+                  if (rest > 0)
+                        memcpy(inBuffer, inBuffer + data.input_frames_used, rest);
+
+                  inPtr       += framesToRead;
+                  inPtr       -= data.input_frames_used;
+                  if (data.input_frames_used > size)
+                        size = 0;
+                  else
+                        size -= data.input_frames_used;
+                  framesToRead = data.input_frames_used;
+                  samplesWritten += data.input_frames_used;
+
+                  if (framesToRead > size)
+                        framesToRead = size;
+                  if (showProgress) {
+                        progress->setValue(samplesWritten / 1024LL);
+                        progress->raise();
+                  	qApp->processEvents();
+                        if (progress->wasCanceled()) {
+                              returnValue = false;
+                              break;
+                              }
+                        }
+                  }
+            src_delete(src);
+            }
+      else {
+            while (size) {
+                  float buffer[inSize * channels];
+
+                  sf_count_t n  = inSize > size ? size : inSize;
+                  sf_count_t nn = sf_readf_float(sfSrc, buffer, n);
+
+                  if (nn != n) {
+                        printf("sound file read failed\n");
+                        returnValue = false;
+                        break;
+                        }
+                  // write buffer
+                  nn = sf_writef_float(sfDst, buffer, n);
+                  if (n != nn) {
+                        printf("sound write failed: returns %lld, should return %lld\n", 
+                           nn, n);
+                        returnValue = false;
+                        break;
+                        }
+                  size -= n;
+                  samplesWritten += n;
+                  if (showProgress) {
+                        progress->setValue(samplesWritten / 1024LL);
+                        progress->raise();
+                  	qApp->processEvents();
+                        if (progress->wasCanceled()) {
+                              returnValue = false;
+                              break;
+                              }
+                        }
+                  }
+            }
+      if (progress)
+            delete progress;
+      sf_close(sfSrc);
+      sf_close(sfDst);
+      return returnValue;
+      }
 
 //---------------------------------------------------------
 //   SndFile
@@ -629,41 +827,20 @@ void MusE::importWave()
 
 bool MusE::importWave(const QString& name)
       {
-      WaveTrack* track = (WaveTrack*)(arranger->curTrack());
-      SndFile* f = SndFile::getWave(name, false);
-
-      if (f == 0) {
-            printf("import audio file failed\n");
-            return true;
-            }
-      int samples = f->samples();
-      track->setChannels(f->channels());
-
-      Part* part = new Part(track);
-      part->setType(AL::FRAMES);
-      part->setTick(song->cpos());
-      part->setLenFrame(samples);
-
-      Event event(Wave);
-      SndFileR sf(f);
-      event.setSndFile(sf);
-      event.setSpos(0);
-      event.setLenFrame(samples);
-      part->addEvent(event);
-
-      part->setName(QFileInfo(name).baseName());
-      audio->msgAddPart(part);
-      track->partListChanged(); // Updates the gui
-
-      unsigned endTick = part->tick() + part->lenTick();
-      if (song->len() < endTick)
-            song->setLen(endTick);
-      return false;
+      return importWaveToTrack(name, (WaveTrack*)(arranger->curTrack()),
+         song->cPos());
       }
 
-bool MusE::importWaveToTrack(QString& name, Track* track)
+//---------------------------------------------------------
+//   importWaveToTrack
+//---------------------------------------------------------
+
+bool MusE::importWaveToTrack(const QString& wave, Track* track, const Pos& pos)
       {
-      SndFile* f = SndFile::getWave(name, false);
+      if (!copyWaveFileToProject(wave))
+            return true;
+      QFileInfo srcInfo(wave);
+      SndFile* f = SndFile::getWave(srcInfo.fileName(), false);
 
       if (f == 0) {
             printf("import audio file failed\n");
@@ -674,7 +851,7 @@ bool MusE::importWaveToTrack(QString& name, Track* track)
 
       Part* part = new Part((WaveTrack *)track);
       part->setType(AL::FRAMES);
-      part->setTick(song->cpos());
+      part->setTick(pos.tick());
       part->setLenFrame(samples);
 
       Event event(Wave);
@@ -684,7 +861,7 @@ bool MusE::importWaveToTrack(QString& name, Track* track)
       event.setLenFrame(samples);
       part->addEvent(event);
 
-      part->setName(QFileInfo(name).baseName());
+      part->setName(srcInfo.baseName());
       audio->msgAddPart(part);
       unsigned endTick = part->tick() + part->lenTick();
       if (song->len() < endTick)
@@ -696,6 +873,7 @@ bool MusE::importWaveToTrack(QString& name, Track* track)
 //   cmdChangeWave
 //   called from GUI context
 //---------------------------------------------------------
+
 void Song::cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigned ex)
       {
       char* original_charstr = new char[original.length() + 1];

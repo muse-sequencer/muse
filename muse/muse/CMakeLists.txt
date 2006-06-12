@@ -135,6 +135,7 @@ target_link_libraries(muse
       ${ALSA_LIB}
       ${JACK_LIB}
       ${SNDFILE_LIB}
+      ${SAMPLERATE_LIB}
       )
 
 install_targets ( /bin muse )

@@ -27,8 +27,10 @@
 
 namespace AL {
       class Xml;
+      class Pos;
       };
 using AL::Xml;
+using AL::Pos;
 
 class Part;
 class PartList;
@@ -277,7 +279,7 @@ class MusE : public QMainWindow, public Ui::MuseBase
       QWidget* bigtimeWindow();
       QWidget* mixer1Window();
       QWidget* mixer2Window();
-      bool importWaveToTrack(QString& name, Track* track);
+      bool importWaveToTrack(const QString& name, Track* track, const Pos&);
 
       void selectionChanged();
 

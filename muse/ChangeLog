@@ -1,3 +1,9 @@
+12.6. (ws)
+      * drag&drop of wave files with automatic sample rate conversion if
+        necessary
+9.6.  (ws)
+      * clicking on controller event in controller editor changed
+        controller value (fixed rounding error and start offset for drag)
 8.6.
       * implemented deviceId for MidiPort
 3.6. (rj)

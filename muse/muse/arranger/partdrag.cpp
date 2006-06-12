@@ -46,18 +46,18 @@ MidiPartDrag::MidiPartDrag(Part* part, QWidget* src)
 //   canDecode
 //---------------------------------------------------------
 
-bool MidiPartDrag::canDecode(const QMimeSource* s)
+bool MidiPartDrag::canDecode(const QMimeData* s)
       {
-      return !strcmp(s->format(0), type);
+      return s->hasFormat(type);
       }
 
 //---------------------------------------------------------
 //   decode
 //---------------------------------------------------------
 
-bool MidiPartDrag::decode(const QMimeSource* s, Part*& p)
+bool MidiPartDrag::decode(const QMimeData* s, Part*& p)
       {
-      QByteArray a = s->encodedData(type);
+      QByteArray a = s->data(type);
       char* cp = (char*)(&p);
       for (unsigned i = 0; i < sizeof(p); ++i)
             *cp++ = a[i];
@@ -85,18 +85,18 @@ AudioPartDrag::AudioPartDrag(Part* part, QWidget* src)
 //   canDecode
 //---------------------------------------------------------
 
-bool AudioPartDrag::canDecode(const QMimeSource* s)
+bool AudioPartDrag::canDecode(const QMimeData* s)
       {
-      return !strcmp(s->format(0), type);
+      return s->hasFormat(type);
       }
 
 //---------------------------------------------------------
 //   decode
 //---------------------------------------------------------
 
-bool AudioPartDrag::decode(const QMimeSource* s, Part*& p)
+bool AudioPartDrag::decode(const QMimeData* s, Part*& p)
       {
-      QByteArray a = s->encodedData(type);
+      QByteArray a = s->data(type);
       char* cp = (char*)(&p);
       for (unsigned i = 0; i < sizeof(p); ++i)
             *cp++ = a[i];
@@ -120,11 +120,11 @@ WavUriDrag::WavUriDrag(const QString& s, QWidget* src)
 //   canDecode
 //---------------------------------------------------------
 
-bool WavUriDrag::canDecode(const QMimeSource* s)
+bool WavUriDrag::canDecode(const QMimeData* s)
       {
-      if (strcmp(s->format(0), type))
+      if (!s->hasFormat(type))
             return false;
-      QByteArray data = s->encodedData("text/uri-list");
+      QByteArray data = s->data(type);
       QUrl url(data);
       if (url.scheme() != "file")
             return false;
@@ -144,9 +144,9 @@ bool WavUriDrag::canDecode(const QMimeSource* s)
 //   decode
 //---------------------------------------------------------
 
-bool WavUriDrag::decode(const QMimeSource* s, QString* uri)
+bool WavUriDrag::decode(const QMimeData* s, QString* uri)
       {
-      QByteArray data = s->encodedData("text/uri-list");
+      QByteArray data = s->data(type);
       QUrl url(data);
       *uri = url.toLocalFile().trimmed();
       return true;

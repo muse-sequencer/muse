@@ -33,8 +33,8 @@ class MidiPartDrag : public QDrag {
 
    public:
       MidiPartDrag(Part*, QWidget* src);
-      static bool canDecode(const QMimeSource*);
-      static bool decode(const QMimeSource* s, Part*& p);
+      static bool canDecode(const QMimeData*);
+      static bool decode(const QMimeData* s, Part*& p);
       };
 
 //---------------------------------------------------------
@@ -47,8 +47,8 @@ class AudioPartDrag : public QDrag {
 
    public:
       AudioPartDrag(Part*, QWidget* src);
-      static bool canDecode(const QMimeSource*);
-      static bool decode(const QMimeSource* s, Part*& p);
+      static bool canDecode(const QMimeData*);
+      static bool decode(const QMimeData* s, Part*& p);
       };
 
 //---------------------------------------------------------
@@ -61,8 +61,8 @@ class WavUriDrag : public QDrag {
 
    public:
       WavUriDrag(const QString&, QWidget* src);
-      static bool canDecode(const QMimeSource*);
-      static bool decode(const QMimeSource* s, QString* p);
+      static bool canDecode(const QMimeData*);
+      static bool decode(const QMimeData* s, QString* p);
       };
 
 
