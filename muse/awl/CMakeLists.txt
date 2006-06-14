@@ -56,13 +56,46 @@ IF (APPLE)
    message("Not yet able to build awlplugin under OS X.")	
 ELSE (APPLE)
 
-   add_library ( awlplugin SHARED  ${awl_src} 
-      awlplugin.cpp )
+   #
+   #  build libawlplugin.so
+   #
+   QT4_WRAP_CPP (moc_awlplugin_headers 
+      awlplugin.h
+      volknob.h knob.h aslider.h
+      slider.h volslider.h mslider.h
+      posedit.h poslabel.h
+      tempoedit.h tempolabel.h
+      combobox.h checkbox.h
+      panknob.h midipanknob.h
+      floatentry.h
+      )
+
+   add_library ( awlplugin SHARED
+       awlplugin.cpp
+       volknob.cpp knob.cpp aslider.cpp
+       slider.cpp volslider.cpp mslider.cpp
+       posedit.cpp poslabel.cpp
+       tempoedit.cpp tempolabel.cpp
+       combobox.cpp checkbox.cpp
+       panknob.cpp midipanknob.cpp
+       floatentry.cpp
+       ${moc_awlplugin_headers}
+       )
+
    set_target_properties( awlplugin
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
+      PROPERTIES COMPILE_FLAGS 
+         "-D_GNU_SOURCE -D_REENTRANT -DHAVE_CONFIG_H -DQT_PLUGIN -DQT_SHARED -DQT_NO_DEBUG -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      )
+   target_link_libraries( awlplugin
+      al pthread asound
       )
 
    install_targets ( /lib/${MusE_INSTALL_NAME}/designer/ awlplugin )
 
-ENDIF (APPLE)
+   add_executable( ltest ltest.cpp )
+   target_link_libraries ( ltest 
+      awlplugin 
+      ${QT_LIBRARIES}
+      )
 
+ENDIF (APPLE)

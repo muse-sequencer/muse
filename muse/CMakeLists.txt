@@ -20,6 +20,10 @@
 
 project(muse)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
+
+# set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
+
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
@@ -36,12 +40,15 @@ SET(MusE_INSTALL_NAME  "muse-1.0pre1")
 include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
 
 option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface" ON)
-option ( ENABLE_VST    "enable VST/win support"                OFF)
+option ( ENABLE_VST    "enable VST/win support"                 OFF)
 option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"    ON)
 
-# set(CMAKE_VERBOSE_MAKEFILE ON)
+# for debugging the make system uncomment next line:
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
+set(QT_USE_QTNSPLUGIN TRUE)
 
 ##
 ## Just print a notice if this is OS X
@@ -181,10 +188,17 @@ add_custom_target(all-pic.h
    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
    )
 
+add_custom_target(all-pic-debug.h
+   ALL
+   cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic-debug.h
+   DEPENDS ${PROJECT_SOURCE_DIR}/all.h
+   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+   )
+
 add_custom_target(all.h.pch
    ALL
    ${CMAKE_CXX_COMPILER} 
-     -g -Wextra -fno-exceptions -fno-rtti -Wall
+     -g -Wextra -fno-exceptions -Wall
      -I${QT_INCLUDE_DIR}
      -I${QT_QTCORE_INCLUDE_DIR}
      -I${QT_QTGUI_INCLUDE_DIR}
@@ -198,7 +212,9 @@ add_custom_target(all-pic.h.pch
    ALL
    ${CMAKE_CXX_COMPILER} 
      -fPIC
-     -g -Wextra -fno-exceptions -fno-rtti -Wall
+     -Dawlplugin_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB 
+     -DQT_PLUGIN -DQT_SHARED -DQT_NO_DEBUG
+     -g -Wextra -fno-exceptions -Wall
      -I${QT_INCLUDE_DIR}
      -I${QT_QTCORE_INCLUDE_DIR}
      -I${QT_QTGUI_INCLUDE_DIR}
@@ -207,10 +223,25 @@ add_custom_target(all-pic.h.pch
    DEPENDS ${PROJECT_BINARY_DIR}/all-pic.h
    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
    )
-# add_dependencies(all-pic.h.pch all-pic.h)
+
+add_custom_target(all-pic-debug.h.pch
+   ALL
+   ${CMAKE_CXX_COMPILER} 
+     -fPIC
+     -Dawlplugin_debug_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB 
+     -DQT_PLUGIN -DQT_SHARED -DQT_DEBUG
+     -g -Wextra -fno-exceptions -Wall
+     -I${QT_INCLUDE_DIR}
+     -I${QT_QTCORE_INCLUDE_DIR}
+     -I${QT_QTGUI_INCLUDE_DIR}
+     -o ${PROJECT_BINARY_DIR}/all-pic-debug.h.pch
+     ${PROJECT_BINARY_DIR}/all-pic-debug.h
+   DEPENDS ${PROJECT_BINARY_DIR}/all-pic-debug.h
+   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+   )
 
 set(CMAKE_CXX_FLAGS 
-   "-g -Wall -Wextra -Winvalid-pch -fno-exceptions -fno-rtti"
+   "-g -Wall -Wextra -Winvalid-pch -fno-exceptions"
    )
 
 subdirs(al awl grepmidi plugins midiplugins synti muse share doc)

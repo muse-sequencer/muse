@@ -1,3 +1,5 @@
+14.6. (ws)
+      * fix build of libawlplugin.so; works for "release" build
 12.6. (ws)
       * drag&drop of wave files with automatic sample rate conversion if
         necessary
