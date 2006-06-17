@@ -73,7 +73,6 @@ static bool copyWaveFileToProject(const QString& path)
             printf("Cannot open source file: %s\n", strerror(errno));
             return false;
             }
-
       int channels         = sfinfoSrc.channels;
       sf_count_t size      = sfinfoSrc.frames;
 
@@ -108,7 +107,7 @@ static bool copyWaveFileToProject(const QString& path)
             progress->show();
             qApp->processEvents();
             }
-      sf_count_t inSize = 1024LL * 512LL;
+      sf_count_t inSize = 1024LL * 64LL;
       sf_count_t samplesWritten = 0LL;
 
       bool returnValue = true;
@@ -137,7 +136,6 @@ static bool copyWaveFileToProject(const QString& path)
                   sf_count_t framesToRead = (inBuffer + inSize) - inPtr;
                   if (framesToRead > size)
                         framesToRead = size;
-
                   sf_count_t nr = sf_readf_float(sfSrc, inPtr, framesToRead);
                   if (nr != framesToRead) {
                         printf("sound file read failed\n");
