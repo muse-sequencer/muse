@@ -213,7 +213,7 @@ void SigList::tickValues(unsigned t, int* bar, int* beat, unsigned* tick) const
       {
       ciSigEvent e = upper_bound(t);
       if (e == end()) {
-            fprintf(stderr, "tickValues(0x%x) not found(%d)\n", t, size());
+            fprintf(stderr, "tickValues(0x%x) not found(%zd)\n", t, size());
 //DEBUG
 // abort();
             *bar = 0;

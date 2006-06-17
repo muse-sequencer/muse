@@ -1,45 +1,40 @@
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
 #
+#  Copyright (C) 2002-2006 by Werner Schweer and others
 #
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2.
 #
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#=============================================================================
 
-MACRO(WRAP_CPP outfiles )
-   FOREACH(it ${ARGN})
-      SET(${outfiles} ${${outfiles}} ${it}.cpp)
-      ENDFOREACH(it)
-   ENDMACRO(WRAP_CPP)
+QT4_WRAP_CPP ( instruments_mocs
+   minstrument.h editinstrument.h
+   )
 
-MACRO(WRAP_H outfiles )
-   FOREACH(it ${ARGN})
-      SET(${outfiles} ${${outfiles}} ${it}.h)
-      ENDFOREACH(it)
-   ENDMACRO(WRAP_H)
-
-MACRO(WRAP_UI outfiles )
-   FOREACH(it ${ARGN})
-      SET(${outfiles} ${${outfiles}} ${it}.ui)
-      ENDFOREACH(it)
-   ENDMACRO(WRAP_UI)
-
-set(mocs
-      minstrument editinstrument
+QT4_WRAP_UI ( instruments_ui_headers 
+      editinstrument.ui 
       )
 
-WRAP_H(mocH ${mocs})
-WRAP_CPP(mocCPP ${mocs})
+add_library ( instruments STATIC 
+   minstrument.cpp 
+   editinstrument.cpp
+   minstrument.h 
+   editinstrument.h
+   ${instruments_mocs}
+   ${instruments_ui_headers}
+   )
 
-QT4_WRAP_CPP (moc_headers ${mocH})
-
-set (uics
-      editinstrument
-      )
-
-WRAP_UI(uiUI ${uics})
-QT4_WRAP_UI (ui_headers ${uiUI})
-
-set ( instruments_src ${mocCPP} ${moc_headers})
-
-add_library ( instruments STATIC ${instruments_src})
 set_target_properties( instruments
    PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
    )

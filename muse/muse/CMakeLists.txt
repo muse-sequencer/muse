@@ -98,7 +98,7 @@ WRAP_CPP(muse_mocCPP ${muse_mocs})
 WRAP_UI(muse_uiUI ${muse_uics})
 
 QT4_WRAP_CPP (muse_moc_headers ${muse_mocH})
-QT4_WRAP_UI (ui_headers ${muse_uiUI})
+QT4_WRAP_UI  (ui_headers ${muse_uiUI})
 QT4_ADD_RESOURCES (qrc_files muse.qrc)
 
 add_executable ( muse
@@ -122,6 +122,7 @@ add_executable ( muse
 
       ${muse_mocCPP}
       ${muse_moc_headers}
+      ${ui_headers}
       )
 
 set_target_properties( muse

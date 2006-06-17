@@ -211,13 +211,13 @@ bool MusE::seqStart()
       //
       //  create midi thread with a higher priority than JACK
       //
-      midiSeq->start(realTimePriority ? realTimePriority + 1 : 0);
+      midiSeq->start(realTimePriority ? realTimePriority + 2 : 0);
 
       if (realTimePriority) {
             //
             //  create watchdog thread with realTimePriority+2
             //
-            int priority = realTimePriority + 2;
+            int priority = realTimePriority + 3;
             struct sched_param rt_param;
             memset(&rt_param, 0, sizeof(rt_param));
             rt_param.sched_priority = priority;
@@ -248,15 +248,15 @@ bool MusE::seqStart()
       // start audio prefetch threads with realtime
       // priority
       //
-      audioPrefetch->start(0);
-      audioWriteback->start(0);
+      audioPrefetch->start(realTimePriority-5);
+      audioWriteback->start(realTimePriority-5);
 #else
       //
       // start audio prefetch threads as normal
       // (non realtime) threads
       //
-      audioPrefetch->start(realTimePriority-5);
-      audioWriteback->start(realTimePriority-5);
+      audioPrefetch->start(0);
+      audioWriteback->start(0);
 #endif
       audioState = AUDIO_RUNNING;
       //
