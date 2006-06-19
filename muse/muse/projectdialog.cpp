@@ -143,7 +143,7 @@ void ProjectTree::dropEvent(QDropEvent* event)
       QTreeWidgetItem* dstItem = itemAt(event->pos());
       if (dstItem && dstItem->type() == DIR_TYPE) {
             QString src = event->mimeData()->text();
-            QTreeWidgetItem* srcItem;
+            QTreeWidgetItem* srcItem = 0;
             int n = topLevelItemCount();
             for (int i = 0; i < n; ++i) {
                   QTreeWidgetItem* item = topLevelItem(i);

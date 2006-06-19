@@ -564,7 +564,7 @@ void PluginI::apply(unsigned nframes, int ports, float** src, float** dst)
       float** spp = sp;
       float** dpp = dp;
       for (int i = 0; i < instances; ++i) {
-            pif[i]->apply(nframes, sp, dp);
+            pif[i]->apply(nframes, spp, dpp);
             spp += iports;
             dpp += oports;
             }
@@ -656,7 +656,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
       _name  = _plugin->name() + inst;
       _label = _plugin->label() + inst;
 
-      instances = channel/plug->outports();
+      instances = channel / plug->outports();
       if (instances < 1)
             instances = 1;
       pif = new PluginIF*[instances];
@@ -718,6 +718,7 @@ void PluginI::writeConfiguration1(Xml& xml)
       if (hasNativeGui() && nativeGuiVisible())
             xml.intTag("nativeGui", 1);
       }
+
 //---------------------------------------------------------
 //   readConfiguration
 //    return true on error
@@ -725,7 +726,6 @@ void PluginI::writeConfiguration1(Xml& xml)
 
 bool PluginI::readConfiguration(QDomNode node)
       {
-      instances     = 1;
       QDomElement e = node.toElement();
       QString file  = e.attribute("file");
       QString label = e.attribute("label");
@@ -735,7 +735,7 @@ bool PluginI::readConfiguration(QDomNode node)
             _plugin = plugins.find(file, label);
             if (_plugin == 0)
                   return true;
-            if (initPluginInstance(_plugin, instances))
+            if (initPluginInstance(_plugin, channel))
                   return true;
             }
       node = node.firstChild();
