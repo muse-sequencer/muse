@@ -35,7 +35,8 @@
 #include <samplerate.h>
 
 static const int partLabelHeight = 13;
-static const int handleWidth = 5;
+static const int handleWidth     = 5;
+static const int partBorderWidth = 2;
 
 enum { HIT_NOTHING, HIT_TRACK, HIT_PART, HIT_SUBTRACK };
 
@@ -169,7 +170,6 @@ void PartCanvas::paint(QPainter& p, QRect r)
             int h = at->tw->height() - 1;
 
             PartList* pl = t->parts();
-//            p.setRenderHint(QPainter::Antialiasing, true);
             for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
                   Part* part = ip->second;
                   int x1  = pos2pix(*part);
@@ -181,19 +181,19 @@ void PartCanvas::paint(QPainter& p, QRect r)
                   if (x1 > to)
                         break;
 
-                  QRect pr(x1, y+1, len, h-4);
+                  QRect pr(x1, y, len, h - partBorderWidth);
 
                   if (part->mute()) {
-                        p.setPen(QPen(Qt::red, 2));
+                        p.setPen(QPen(Qt::red, partBorderWidth));
                         p.setBrush(Qt::gray);
                         }
                   else if (part->selected()) {
-                        p.setPen(QPen(config.partColors[part->colorIndex()], 2));
+                        p.setPen(QPen(config.partColors[part->colorIndex()], partBorderWidth));
                         p.setBrush(config.selectPartBg);
                         }
                   else {
                         bool clone = part->events()->arefCount() > 1;
-                        p.setPen(QPen(Qt::black, 2, clone ? Qt::DashLine : Qt::SolidLine));
+                        p.setPen(QPen(Qt::black, partBorderWidth, clone ? Qt::DashLine : Qt::SolidLine));
                         p.setBrush(config.partColors[part->colorIndex()]);
                         }
 
@@ -247,7 +247,7 @@ void PartCanvas::paint(QPainter& p, QRect r)
             }
       if (state == S_DRAG4 || state == S_DRAG1 || state == S_DRAG2 || state == S_DRAG5) {
             p.setBrush(Qt::NoBrush);
-            p.setPen(QPen(QColor(Qt::red), 2));
+            p.setPen(QPen(QColor(Qt::red), partBorderWidth));
             p.drawRect(drag);
             }
       }
@@ -683,7 +683,7 @@ void PartCanvas::mouseMove(QPoint pos)
       if (!track)
             return;
     	int y = track->arrangerTrack.tw->y() - splitWidth/2;
-	int h = track->arrangerTrack.tw->height();
+	int ph = track->arrangerTrack.tw->height() - 1 - partBorderWidth;
       if (state == S_DRAG1) {
             //
             // drag left edge of part
@@ -693,7 +693,7 @@ void PartCanvas::mouseMove(QPoint pos)
             int x1  = pos2pix(p);
             int x2  = pos2pix(part->end());
             int size = x2 - x1;
-            drag.setRect(x1, y, size, h-1);
+            drag.setRect(x1, y, size, ph);
             update = true;
             }
       else if (state == S_DRAG2) {
@@ -704,7 +704,7 @@ void PartCanvas::mouseMove(QPoint pos)
             if (size < 10)
                   size = 10;
             int x2 = mapx(AL::sigmap.raster(part->tick() + rmapxDev(size), raster()));
-            drag.setRect(ppos, y, x2 - ppos, h-1);
+            drag.setRect(ppos, y, x2 - ppos, ph);
             update = true;
             }
       else if (state == S_DRAG5) {
@@ -715,7 +715,7 @@ void PartCanvas::mouseMove(QPoint pos)
             if (size < 10)
                   size = 10;
             int x2 = mapx(AL::sigmap.raster(mapxDev(ppos + size), raster()));
-            drag.setRect(ppos, y, x2 - ppos, h-1);
+            drag.setRect(ppos, y, x2 - ppos, ph);
             update = true;
             }
       else if (state == S_DRAG3) {
@@ -991,7 +991,7 @@ void PartCanvas::dragMove(QDragMoveEvent* event)
          x,
          y,
          rmapx(srcPart->lenTick()),
-         h - 1
+         at->tw->height() - 1 - partBorderWidth
          );
 	updateRect |= drag;
       updateRect.adjust(-1, -1 + rCanvasA.y(), 1, 1 + rCanvasA.y());
