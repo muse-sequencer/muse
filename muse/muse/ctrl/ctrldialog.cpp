@@ -61,7 +61,7 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                         }
                   }
             }
-      else if (track->type() == Track::WAVE) {
+      else if (!track->isMidiTrack()) {
             //
             // present plugin parameter
             //
