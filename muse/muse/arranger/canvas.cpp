@@ -90,7 +90,8 @@ void PartCanvas::drawWavePart(QPainter& p, Part* wp, int y0, int th, int from, i
 
             int samples = event.lenFrame();
             int xScale  = (samples + w/2)/w;
-            int frame   = pos.frame() - wp->frame() - e->second.pos().frame();
+            int frame   = pos.frame() - wp->frame() 
+                           - event.pos().frame() + event.spos();
 
             if (h < 20) {
                   //
@@ -547,7 +548,7 @@ void PartCanvas::mousePress(QMouseEvent* me)
 
       QRect r1,r2;
       QPoint pos2;
-      int xpos, y, len, h;
+      int xpos = 0, y = 0, len = 0, h = 0;
 
       if (hit == HIT_PART) {
   		h    = track->arrangerTrack.tw->height();
@@ -1033,7 +1034,7 @@ void PartCanvas::drop(QDropEvent* event)
             }
       else {
             PartCanvas* cw = (PartCanvas*)event->source();
-            int tick = AL::sigmap.raster(mapxDev(pos.x() - cw->dragOffset()), raster());
+            unsigned tick = AL::sigmap.raster(mapxDev(pos.x() - cw->dragOffset()), raster());
             if (srcPart->tick() != tick || srcTrack != track) {
                   Qt::KeyboardModifiers keyState = event->keyboardModifiers();
 

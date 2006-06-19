@@ -1,3 +1,5 @@
+19.6. (ws)
+      * fix drawing of cutted wave part
 14.6. (ws)
       * fix build of libawlplugin.so; works for "release" build
 12.6. (ws)

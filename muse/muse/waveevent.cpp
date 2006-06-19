@@ -31,7 +31,6 @@
 WaveEventBase::WaveEventBase(EventType t)
    : EventBase(t)
       {
-      ipos = -1;
       deleted = false;
       }
 
@@ -108,17 +107,15 @@ void WaveEventBase::write(Xml& xml, const Pos& offset) const
       xml.etag("event");
       }
 
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
 void WaveEventBase::read(unsigned offset, float** buffer, int channel, int n)
       {
       if (f.isNull())
             return;
-/*      if (ipos != -1 && ipos != (offset + _spos))
-            printf("Wave seek %d-%d = %d\n", 
-               offset + _spos, ipos, offset + _spos - ipos);
-  */
       f.seek(offset + _spos, 0);
       f.read(channel, buffer, n);
-
-//      ipos = offset + _spos + n;
       }
 
