@@ -375,6 +375,10 @@ void AudioTrack::record()
 
 void AudioTrack::setChannels(int n)
       {
+      if (n > MAX_CHANNELS) {
+            fprintf(stderr, "too many channels!\n");
+            abort();
+            }
       Track::setChannels(n);
       if (_efxPipe)
             _efxPipe->setChannels(n);

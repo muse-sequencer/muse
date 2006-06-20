@@ -57,7 +57,7 @@ QT4_WRAP_UI (widget_ui_headers
 #      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/midisync.ui
 #      )
 
-ADD_FILE_DEPENDENCIES(moc_midisync.cxx ${CMAKE_CURRENT_BINARY_DIR}/ui_midisync.h)
+# ADD_FILE_DEPENDENCIES(moc_midisync.cxx ${CMAKE_CURRENT_BINARY_DIR}/ui_midisync.h)
 
 add_library ( widgets STATIC 
       ${widget_ui_headers}

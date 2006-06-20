@@ -11,18 +11,17 @@ if test ! -d build;
       mkdir build
       echo "+entering build directory"
       cd build
+
+      # HACK:
+      cp ../muse/all.h .
+
       echo "+calling cmake"
-      cmake ..
+      cmake ../muse
    else
       echo "+entering build directory"
       cd build
    fi
 
 echo "+start top level make..."
-
-#
-# HACK:
-cp ../all.h .
-
 make
 

@@ -42,7 +42,7 @@ WaveTrack::WaveTrack()
       //
       // allocate prefetch buffer
       //
-      float* p = new float[FIFO_BUFFER * segmentSize * MAX_CHANNELS];
+      float* p   = new float[FIFO_BUFFER * segmentSize * MAX_CHANNELS];
       float** pp = new float*[FIFO_BUFFER * MAX_CHANNELS];
 
       for (int i = 0; i < FIFO_BUFFER; ++i) {
@@ -381,6 +381,7 @@ void WaveTrack::process()
 
 void WaveTrack::clone(WaveTrack* t)
       {
+printf("cline WaveTrack\n");
       QString name;
       for (int i = 1; ; ++i) {
             name.sprintf("%s-%d", t->name().toLatin1().data(), i);
