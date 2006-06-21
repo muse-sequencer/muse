@@ -1198,7 +1198,6 @@ void MusE::loadProject1(const QString& path)
       punchoutAction->setChecked(song->punchout());
       loopAction->setChecked(song->loop());
       clipboardChanged();           // enable/disable "Paste"
-      selectionChanged();           // enable/disable "Copy" & "Paste"
       song->setLen(song->len());    // emit song->lenChanged() signal
 
       //
@@ -1213,6 +1212,7 @@ void MusE::loadProject1(const QString& path)
             tl->push_back(mc);
             }
 
+      selectionChanged();           // enable/disable "Copy" & "Paste"
       arranger->endLoadSong();
       song->updatePos();
       //

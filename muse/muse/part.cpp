@@ -424,7 +424,8 @@ void Part::write(Xml& xml) const
       xml.strTag("name", _name);
 
       PosLen::write(xml, "poslen");
-      xml.intTag("selected", _selected);
+      if (_selected)
+            xml.intTag("selected", _selected);
       xml.intTag("color", _colorIndex);
       if (_raster != -1)
       	xml.intTag("raster", _raster);

@@ -244,7 +244,8 @@ void Track::writeProperties(Xml& xml) const
             xml.strTag("comment", _comment);
       if (_recordFlag)
             xml.intTag("record", _recordFlag);
-      xml.intTag("mute", mute());
+      if (mute())
+            xml.intTag("mute", mute());
       if (solo())
             xml.intTag("solo", solo());
       if (off())

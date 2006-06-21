@@ -898,6 +898,7 @@ void Arranger::startLoadSong()
                   }
             (*i)->subtracks.clear();
             }
+      _curTrack = 0;
       }
 
 //---------------------------------------------------------
@@ -917,7 +918,7 @@ void Arranger::endLoadSong()
                   }
             }
       updateIndex();
-      _curTrack = song->selectedTrack();
+      setSelectedTrack(song->selectedTrack());
       infoDock->setVisible(trackInfoVisible);
       mixerDock->setVisible(mixerStripVisible);
       }
