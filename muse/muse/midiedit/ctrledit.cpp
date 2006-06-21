@@ -40,7 +40,7 @@ CtrlEdit::CtrlEdit(QWidget* parent, TimeCanvas* timeCanvas, Track* t)
       _ctrlTrack    = t;
       y             = 0;
       _height       = 0;
-      _drawCtrlName = true;
+      setDrawCtrlName(true);
 
       _tc    = timeCanvas;
       _ctrl  = &veloList;

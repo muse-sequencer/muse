@@ -1,4 +1,6 @@
 21.6. (ws)
+      * show controller name in controller canvas of midi editor
+      * fix save/restore of controller editors in midi editor
       * fixed handling of midi channel selection flag
 19.6. (ws)
       * fixed: mono plugins on stereo tracks work only on one channel

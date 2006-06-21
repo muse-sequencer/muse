@@ -51,7 +51,6 @@ class CtrlEdit : public QObject, public CtrlEditor {
       SimpleButton* minus;
       SimpleButton* sel;
       QMenu* ctrlList;
-      bool _drawCtrlName;
 
    private slots:
       void showControllerList();
