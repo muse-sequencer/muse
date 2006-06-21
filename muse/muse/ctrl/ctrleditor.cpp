@@ -108,7 +108,7 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
             }
       else {
             if (!ctrl()->empty()) {
-                  int x1 = from, y1, x2, y2;
+                  int x1 = from, y1 = 0, x2 = 0, y2 = 0;
                   ciCtrlVal i = ctrl()->begin();
                   if (i != ctrl()->end()) {
                         x1 = tc()->pos2pix(Pos(i->first, tt));
@@ -378,51 +378,3 @@ void CtrlEditor::mouseMove(const QPoint& pos)
             }
       tc()->widget()->update();
       }
-
-//---------------------------------------------------------
-//   populateControllerMenu
-//---------------------------------------------------------
-
-void CtrlEditor::populateControllerMenu(QMenu* ctrlMenu)
-      {
-      ctrlMenu->clear();
-      int idx = 0;
-
-      QAction* a;
-      if (track()->type() == Track::MIDI) {
-            a = ctrlMenu->addAction("Velocity");
-            a->setData(CTRL_VELOCITY);
-            if (CTRL_VELOCITY == ctrl()->id())
-                  ctrlMenu->setActiveAction(a);
-            if (((MidiTrack*)(track()))->drumMap()) {
-            	a = ctrlMenu->addAction("Single Velocity");
-            	a->setData(CTRL_SVELOCITY);
-            	if (CTRL_SVELOCITY == ctrl()->id())
-                  	ctrlMenu->setActiveAction(a);
-                  }
-            }
-
-      ControllerNameList* cn = track()->controllerNames();
-      for (iControllerName i = cn->begin(); i != cn->end(); ++i, ++idx) {
-            a = ctrlMenu->addAction(i->name);
-            a->setData(i->id);
-            if (i->id == ctrl()->id())
-                  ctrlMenu->setActiveAction(a);
-            }
-      if (track()->type() == Track::MIDI) {
-            MidiChannel* mc = ((MidiTrack*)track())->channel();
-            if (mc) {
-                  ControllerNameList* cn = mc->controllerNames();
-                  for (iControllerName i = cn->begin(); i != cn->end(); ++i, ++idx) {
-                        a = ctrlMenu->addAction(i->name);
-                        a->setData(i->id);
-                        if (i->id == ctrl()->id())
-                              ctrlMenu->setActiveAction(a);
-                        }
-                  }
-            }
-      a = ctrlMenu->addAction("other");
-      a->setData(CTRL_OTHER);
-      delete cn;
-      }
-

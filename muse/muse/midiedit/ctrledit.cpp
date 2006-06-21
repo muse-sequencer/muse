@@ -1,15 +1,29 @@
-//=========================================================
+//=============================================================================
 //  MusE
 //  Linux Music Editor
-//    $Id: ctrledit.cpp,v 1.11 2006/02/08 17:33:41 wschweer Exp $
-//  (C) Copyright 1999-2005 Werner Schweer (ws@seh.de)
-//=========================================================
+//  $Id:$
+//
+//  Copyright (C) 2002-2006 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
 
 #include "ctrledit.h"
 #include "midictrl.h"
 #include "widgets/simplebutton.h"
 #include "widgets/utils.h"
 #include "ctrl/configmidictrl.h"
+#include "ctrl/ctrldialog.h"
 #include "widgets/tools.h"
 #include "miditrack.h"
 
@@ -29,21 +43,19 @@ CtrlEdit::CtrlEdit(QWidget* parent, TimeCanvas* timeCanvas, Track* t)
       _drawCtrlName = true;
 
       _tc    = timeCanvas;
-      _ctrl   = &veloList;
+      _ctrl  = &veloList;
       ctrlId = CTRL_VELOCITY;
 
-      connect(_track, SIGNAL(controllerChanged(int)), SLOT(controllerListChanged(int)));
-
-      sel = new SimpleButton(QString("Sel"), parent);
+      sel = new SimpleButton(tr("Sel"), parent);
+      sel->setToolTip(tr("select controller"));
       sel->setAutoRaise(false);
+
       minus = newMinusButton(parent);
+      minus->setToolTip(tr("remove controller view"));
       minus->setAutoRaise(false);
 
-      ctrlList = new QMenu;
-      sel->setMenu(ctrlList);
-      sel->setPopupMode(QToolButton::InstantPopup);
-      connect(ctrlList, SIGNAL(aboutToShow()), SLOT(populateController()));
-      connect(ctrlList, SIGNAL(triggered(QAction*)), SLOT(changeController(QAction*)));
+      connect(_track, SIGNAL(controllerChanged(int)), SLOT(controllerListChanged(int)));
+      connect(sel, SIGNAL(clicked()), SLOT(showControllerList()));
       }
 
 //---------------------------------------------------------
@@ -57,24 +69,73 @@ CtrlEdit::~CtrlEdit()
       }
 
 //---------------------------------------------------------
-//   populateController
+//   setCtrl
 //---------------------------------------------------------
 
-void CtrlEdit::populateController()
+void CtrlEdit::setCtrl(int id)
       {
-      populateControllerMenu(ctrlList);
+      _ctrl = 0;
+
+      if (_ctrlTrack->type() == Track::MIDI) {
+            MidiTrack* mt = (MidiTrack*)_ctrlTrack;
+            if (id == CTRL_VELOCITY)
+                  _ctrl = &veloList;
+            else if (id == CTRL_SVELOCITY)
+                  _ctrl = &sveloList;
+            else
+                  _ctrl = _ctrlTrack->getController(id);
+            if (!_ctrl) {
+                  MidiChannel* mc = mt->channel();
+                  if (mc) {
+                        _ctrl = mc->getController(id);
+                        if (!_ctrl)
+                              _ctrl = mc->port()->getController(id);
+                        }
+                  }
+            }
+      else
+            _ctrl = _ctrlTrack->getController(id);
+      
+      if (!_ctrl)
+            printf("CtrlEdit::setCtrl(%d): not found for track <%s>\n", id,
+               _ctrlTrack->name().toLocal8Bit().data());
+      }
+
+//---------------------------------------------------------
+//   showControllerList
+//---------------------------------------------------------
+
+void CtrlEdit::showControllerList()
+      {
+      Ctrl* c = ctrl();
+      int id;
+      if (c)
+            id = c->id();
+      else
+            id = CTRL_NO_CTRL;
+      for (;;) {
+            CtrlDialog cd(_ctrlTrack, id);
+            int rv = cd.exec();
+            if (rv != 1)
+                        return;
+            id = cd.curId();
+            if (id == CTRL_NO_CTRL)
+                  return;
+            if (id != CTRL_OTHER)
+                  break;
+            ConfigMidiCtrl* mce = new ConfigMidiCtrl((MidiTrack*)_track);
+            mce->exec();
+            delete mce;
+            }
+      changeController(id);
       }
 
 //---------------------------------------------------------
 //   changeController
 //---------------------------------------------------------
 
-void CtrlEdit::changeController(QAction* a)
+void CtrlEdit::changeController(int id)
       {
-      if (a == 0)
-            return;
-      int id = a->data().toInt();
-
       if (id == CTRL_VELOCITY) {
             ctrlId = id;
             _ctrl = &veloList;

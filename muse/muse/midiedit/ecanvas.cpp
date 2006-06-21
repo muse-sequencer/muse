@@ -1,9 +1,22 @@
-//=========================================================
+//=============================================================================
 //  MusE
 //  Linux Music Editor
-//    $Id: ecanvas.cpp,v 1.65 2006/03/24 21:41:16 a-lin Exp $
-//  (C) Copyright 2001-2005 Werner Schweer (ws@seh.de)
-//=========================================================
+//  $Id:$
+//
+//  Copyright (C) 2002-2006 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
 
 #include "midieditor.h"
 #include "ecanvas.h"
@@ -943,11 +956,10 @@ void EventCanvas::addController(int id, int h)
       {
       ctrlHeight += h;
       int n = ctrlEditList.size();
+
       CtrlEdit* ce = new CtrlEdit(widget(), this, track());
       ce->setHeight(h);
-      Ctrl* ctrl = track()->getController(id);
-      if (ctrl)
-	      ce->setCtrl(ctrl);
+      ce->setCtrl(id);
       ctrlEditList.push_back(ce);
 
       ce->minus->defaultAction()->setData(n);
@@ -1219,7 +1231,7 @@ void EventCanvas::mouseMove(QPoint pos)
             int y = 0;
             if (curSplitter > 0) {
                   int k = 0;
-                  CtrlEdit* c;
+                  CtrlEdit* c = 0;
                   for (; i != ctrlEditList.end(); ++i, ++k) {
                         c = *i;
                         y += c->height();

@@ -52,7 +52,6 @@ class CtrlEditor {
 
    protected:
       int singlePitch;
-      void populateControllerMenu(QMenu* ctrlMenu);
 
    public:
       CtrlEditor();

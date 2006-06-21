@@ -1,9 +1,22 @@
-//=========================================================
+//=============================================================================
 //  MusE
 //  Linux Music Editor
-//    $Id: pianoroll.cpp,v 1.81 2006/02/10 16:40:59 wschweer Exp $
-//  (C) Copyright 1999-2006 Werner Schweer (ws@seh.de)
-//=========================================================
+//  $Id:$
+//
+//  Copyright (C) 2002-2006 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
 
 #include "pianoroll.h"
 #include "song.h"
@@ -222,9 +235,9 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
       canvas()->setTimeRange(s1, e);
 
       // connect to toolbar
-      connect(canvas(),   SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));
-      connect(canvas(),   SIGNAL(yChanged(int)), toolbar, SLOT(setInt(int)));
-      connect(canvas(),   SIGNAL(cursorPos(const AL::Pos&,bool)),  toolbar, SLOT(setTime(const AL::Pos&,bool)));
+      connect(canvas(), SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));
+      connect(canvas(), SIGNAL(yChanged(int)), toolbar, SLOT(setInt(int)));
+      connect(canvas(), SIGNAL(cursorPos(const AL::Pos&,bool)),  toolbar, SLOT(setTime(const AL::Pos&,bool)));
       connect(toolbar,  SIGNAL(quantChanged(int)), SLOT(setQuant(int)));
       connect(toolbar,  SIGNAL(rasterChanged(int)),SLOT(setRaster(int)));
       connect(toolbar,  SIGNAL(toChanged(int)),    SLOT(setApplyTo(int)));
@@ -265,7 +278,6 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
             initFromPart();
       else {
 	      resize(initWidth, initHeight);
-printf("resize %d %d\n", initWidth, initHeight);
             }
       }
 

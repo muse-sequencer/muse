@@ -142,9 +142,6 @@ TLSWidget::TLSWidget(Track* t, ArrangerTrack* atrack, TimeCanvas* timeC)
       l->addWidget(ctrlList);
       ctrlList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
-      updateController();
-
-      connect(_track, SIGNAL(clChanged()), SLOT(updateController()));
       connect(_track, SIGNAL(selectionChanged(bool)), SLOT(selectionChanged()));
       connect(_track, SIGNAL(controllerChanged(int)), SLOT(controllerListChanged(int)));
       connect(_track, SIGNAL(autoReadChanged(bool)), SLOT(autoReadChanged()));
@@ -193,14 +190,6 @@ void TLSWidget::configChanged()
       }
 
 //---------------------------------------------------------
-//   updateController
-//---------------------------------------------------------
-
-void TLSWidget::updateController()
-      {
-      }
-
-//---------------------------------------------------------
 //   showControllerList
 //---------------------------------------------------------
 
@@ -224,7 +213,6 @@ void TLSWidget::showControllerList()
                   break;
             ConfigMidiCtrl* mce = new ConfigMidiCtrl((MidiTrack*)_track);
             mce->exec();
-            updateController();
             delete mce;
             }
       setCtrl(id);
@@ -244,7 +232,6 @@ void TLSWidget::setCtrl(int ctrl)
             }
       
       if (_ctrlTrack && _ctrlTrack != _track) {
-            disconnect(_ctrlTrack, SIGNAL(clChanged()), this, SLOT(updateController()));
             disconnect(_ctrlTrack, SIGNAL(controllerChanged(int)), this, SLOT(controllerListChanged(int)));
             }
       if (ctrl == CTRL_VELOCITY) {
@@ -261,7 +248,6 @@ void TLSWidget::setCtrl(int ctrl)
                   MidiChannel* mc = ((MidiTrack*)_track)->channel();
                   at->controller = mc->getController(ctrl);
                   _ctrlTrack = mc;
-                  connect(_ctrlTrack, SIGNAL(clChanged()), SLOT(updateController()));
                   connect(_ctrlTrack, SIGNAL(controllerChanged(int)), SLOT(controllerListChanged(int)));
                   }
             else

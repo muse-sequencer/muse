@@ -980,7 +980,7 @@ void PartCanvas::dragMove(QDragMoveEvent* event)
       state = S_DRAG4;
       ArrangerTrack* at = &(track->arrangerTrack);
       int y = at->tw->y() - splitWidth/2;
-      int h = at->tw->height();
+//      int h = at->tw->height();
 
       PartCanvas* cw = (PartCanvas*)event->source();
       QRect updateRect(drag);

@@ -44,7 +44,6 @@ class TLSWidget : public QWidget, public CtrlEditor {
       Track* _ctrlTrack;      // track were ctrl belongs to
       TimeCanvas* _tc;
       QToolButton* ctrlList;
-//      CtrlDialog* ctrlMenu;
       QLineEdit* nameEdit;
       ArrangerTrack* at;
 
@@ -59,7 +58,6 @@ class TLSWidget : public QWidget, public CtrlEditor {
 
    private slots:
       void labelMinusClicked();
-      void updateController();
       void showControllerList();
       void selectionChanged();
       void configChanged();
