@@ -218,10 +218,10 @@ int string2bitmap(const QString& str)
 //   muteButton
 //---------------------------------------------------------
 
-SimpleButton* newMuteButton(QWidget* parent)
+SimpleButton* newMuteButton()
       {
       // SimpleButton* mute  = new SimpleButton(parent, muteIconOff, muteIconOn);
-      SimpleButton* mute = new SimpleButton(QT_TR_NOOP("m"), parent);
+      SimpleButton* mute = new SimpleButton(QT_TR_NOOP("m"));
       mute->setFont(*config.fonts[BFONT]);
       mute->setCheckable(true);
       mute->setToolTip(QT_TR_NOOP("mute"));
@@ -232,10 +232,10 @@ SimpleButton* newMuteButton(QWidget* parent)
 //   soloButton
 //---------------------------------------------------------
 
-SimpleButton* newSoloButton(QWidget* parent)
+SimpleButton* newSoloButton()
       {
 //      SimpleButton* solo  = new SimpleButton(parent, soloIconOn, soloIconOff);
-      SimpleButton* solo = new SimpleButton(QT_TR_NOOP("s"), parent);
+      SimpleButton* solo = new SimpleButton(QT_TR_NOOP("s"));
       solo->setFont(*config.fonts[BFONT]);
       solo->setCheckable(true);
       solo->setToolTip(QT_TR_NOOP("solo"));
@@ -246,9 +246,9 @@ SimpleButton* newSoloButton(QWidget* parent)
 //   monitorButton
 //---------------------------------------------------------
 
-SimpleButton* newMonitorButton(QWidget* parent)
+SimpleButton* newMonitorButton()
       {
-      SimpleButton* monitor = new SimpleButton(QT_TR_NOOP("Mo"), parent);
+      SimpleButton* monitor = new SimpleButton(QT_TR_NOOP("Mo"));
       monitor->setFont(*config.fonts[BFONT]);
       monitor->setCheckable(true);
       monitor->setToolTip(QT_TR_NOOP("monitor"));
@@ -259,9 +259,9 @@ SimpleButton* newMonitorButton(QWidget* parent)
 //   drumMapButton
 //---------------------------------------------------------
 
-SimpleButton* newDrumMapButton(QWidget* parent)
+SimpleButton* newDrumMapButton()
       {
-      SimpleButton* dm = new SimpleButton(QT_TR_NOOP("Dr"), parent);
+      SimpleButton* dm = new SimpleButton(QT_TR_NOOP("Dr"));
       dm->setFont(*config.fonts[BFONT]);
       dm->setCheckable(true);
       dm->setToolTip(QT_TR_NOOP("use drum map"));
@@ -272,9 +272,9 @@ SimpleButton* newDrumMapButton(QWidget* parent)
 //   newOffButton
 //---------------------------------------------------------
 
-SimpleButton* newOffButton(QWidget* parent)
+SimpleButton* newOffButton()
       {
-      SimpleButton* off  = new SimpleButton(exit1Icon, exitIcon, parent);
+      SimpleButton* off  = new SimpleButton(exit1Icon, exitIcon);
       off->setCheckable(true);
       off->setToolTip(QT_TR_NOOP("off"));
       return off;
@@ -284,18 +284,18 @@ SimpleButton* newOffButton(QWidget* parent)
 //   newRecordButton
 //---------------------------------------------------------
 
-SimpleButton* newRecordButton(QWidget* parent)
+SimpleButton* newRecordButton()
       {
-      return new RecordButton(parent);
+      return new RecordButton();
       }
 
 //---------------------------------------------------------
 //   newAutoReadButton
 //---------------------------------------------------------
 
-SimpleButton* newAutoReadButton(QWidget* parent)
+SimpleButton* newAutoReadButton()
       {
-      SimpleButton* ar = new SimpleButton(QT_TR_NOOP("aR"), parent);
+      SimpleButton* ar = new SimpleButton(QT_TR_NOOP("aR"));
       ar->setFont(*config.fonts[BFONT]);
       ar->setCheckable(true);
       ar->setToolTip(QT_TR_NOOP("automation read"));
@@ -306,9 +306,9 @@ SimpleButton* newAutoReadButton(QWidget* parent)
 //   newAutoWriteButton
 //---------------------------------------------------------
 
-SimpleButton* newAutoWriteButton(QWidget* parent)
+SimpleButton* newAutoWriteButton()
       {
-      SimpleButton* aw = new SimpleButton(QT_TR_NOOP("aW"), parent);
+      SimpleButton* aw = new SimpleButton(QT_TR_NOOP("aW"));
       aw->setFont(*config.fonts[BFONT]);
       aw->setCheckable(true);
       aw->setToolTip(QT_TR_NOOP("automation write"));
@@ -319,9 +319,9 @@ SimpleButton* newAutoWriteButton(QWidget* parent)
 //   syncButton
 //---------------------------------------------------------
 
-SimpleButton* newSyncButton(QWidget* parent)
+SimpleButton* newSyncButton()
       {
-      SimpleButton* sync = new SimpleButton(QT_TR_NOOP("sync"), parent);
+      SimpleButton* sync = new SimpleButton(QT_TR_NOOP("sync"));
       sync->setFont(*config.fonts[BFONT]);
       sync->setCheckable(true);
       sync->setToolTip(QT_TR_NOOP("send sync events"));
@@ -332,18 +332,18 @@ SimpleButton* newSyncButton(QWidget* parent)
 //   newMinusButton
 //---------------------------------------------------------
 
-SimpleButton* newMinusButton(QWidget* parent)
+SimpleButton* newMinusButton()
       {
-      return new SimpleButton(minusIcon, minusIcon, parent);
+      return new SimpleButton(minusIcon, minusIcon);
       }
 
 //---------------------------------------------------------
 //   newPlusButton
 //---------------------------------------------------------
 
-SimpleButton* newPlusButton(QWidget* parent)
+SimpleButton* newPlusButton()
       {
-      SimpleButton* sync = new SimpleButton(plusIcon, plusIcon, parent);
+      SimpleButton* sync = new SimpleButton(plusIcon, plusIcon);
       return sync;
       }
 
@@ -351,9 +351,9 @@ SimpleButton* newPlusButton(QWidget* parent)
 //   newStereoButton
 //---------------------------------------------------------
 
-SimpleButton* newStereoButton(QWidget* parent)
+SimpleButton* newStereoButton()
       {
-      SimpleButton* stereo  = new SimpleButton(stereoIcon, monoIcon, parent);
+      SimpleButton* stereo  = new SimpleButton(stereoIcon, monoIcon);
       stereo->setCheckable(true);
       stereo->setToolTip(QT_TR_NOOP("1/2 channel"));
       return stereo;

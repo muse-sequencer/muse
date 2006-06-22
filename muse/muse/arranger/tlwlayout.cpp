@@ -74,7 +74,6 @@ void TLWidgetLayout::setGeometry(const QRect &rect)
       item->setGeometry(QRect(rect.x(), rect.y(), size.width(), size.height()));
 
       item = itemList.at(1);
-//      size = item->sizeHint();
       item->setGeometry(QRect(x1 - 18, y2 - 19, 18, 18));
 
       int x = x1;

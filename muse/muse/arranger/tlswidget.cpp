@@ -130,7 +130,7 @@ TLSWidget::TLSWidget(Track* t, ArrangerTrack* atrack, TimeCanvas* timeC)
       //
       //  track type
       //
-      SimpleButton* minus = newMinusButton(0);
+      SimpleButton* minus = newMinusButton();
       minus->setToolTip(tr("Remove Subtrack"));
       l->addWidget(minus);
 

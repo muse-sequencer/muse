@@ -101,11 +101,11 @@ void Strip::configChanged()
 void Strip::addAutomationButtons()
       {
       QHBoxLayout* aBox = new QHBoxLayout;
-      SimpleButton* ar = newAutoReadButton(this);
+      SimpleButton* ar = newAutoReadButton();
       ar->setFixedSize(buttonSize);
       ar->setChecked(track->autoRead());
       aBox->addWidget(ar);
-      SimpleButton* aw = newAutoWriteButton(this);
+      SimpleButton* aw = newAutoWriteButton();
       aw->setFixedSize(buttonSize);
       aw->setChecked(track->autoWrite());
       aBox->addWidget(aw);

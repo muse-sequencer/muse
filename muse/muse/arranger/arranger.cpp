@@ -157,7 +157,7 @@ void TLayout::addItem(QLayoutItem* item)
 
 void TLayout::setGeometry(const QRect& r)
       {
-      int y = r.y() + 3;
+      int y = r.y();
       int n = itemList.size();
       int width = r.width();  // ((QWidget*)parent())->width();
       for (int i = 0; i < n; ++i) {
@@ -346,47 +346,49 @@ Arranger::Arranger(QMainWindow* parent)
       //
       //  Toolbox
       //
-      QWidget* ttools = new QWidget;
       QHBoxLayout* ttoolsLayout = new QHBoxLayout;
       ttoolsLayout->setMargin(1);
       ttoolsLayout->setSpacing(1);
-      ttools->setLayout(ttoolsLayout);
-      ttools->setFixedHeight(rulerHeight - 2);
 
       SimpleButton* configButton = new SimpleButton(configIcon, configIcon);
       configButton->setAutoRaise(true);
       configButton->setToolTip(tr("Config Tracklist"));
+      configButton->setFixedHeight(rulerHeight-4);
       connect(configButton, SIGNAL(clicked()), SLOT(configTrackList()));
       ttoolsLayout->addWidget(configButton);
       ttoolsLayout->addStretch(100);
 
-      gmute = newMuteButton(ttools);
+      gmute = newMuteButton();
       gmute->setFixedWidth(rulerHeight);
       gmute->setToolTip(tr("all mute off"));
+      gmute->setFixedHeight(rulerHeight-4);
       ttoolsLayout->addWidget(gmute);
       setGMute();
       connect(song, SIGNAL(muteChanged(Track*,bool)), SLOT(setGMute()));
       connect(gmute, SIGNAL(clicked(bool)), SLOT(offGMute()));
 
-      gsolo = newSoloButton(ttools);
+      gsolo = newSoloButton();
       gsolo->setFixedWidth(rulerHeight);
       gsolo->setToolTip(tr("all solo off"));
+      gsolo->setFixedHeight(rulerHeight-4);
       ttoolsLayout->addWidget(gsolo);
       setGSolo();
       connect(song, SIGNAL(soloChanged(Track*,bool)), SLOT(setGSolo()));
       connect(gsolo, SIGNAL(clicked(bool)), SLOT(offGSolo()));
 
-      gar   = newAutoReadButton(ttools);
+      gar   = newAutoReadButton();
       gar->setFixedWidth(rulerHeight);
       gar->setToolTip(tr("all autoRead off"));
+      gar->setFixedHeight(rulerHeight-4);
       ttoolsLayout->addWidget(gar);
       setGar();
       connect(song, SIGNAL(autoReadChanged(Track*,bool)), SLOT(setGar()));
       connect(gar, SIGNAL(clicked(bool)), SLOT(offGar()));
 
-      gaw   = newAutoWriteButton(ttools);
+      gaw   = newAutoWriteButton();
       gaw->setFixedWidth(rulerHeight);
       gaw->setToolTip(tr("all autoWrite off"));
+      gaw->setFixedHeight(rulerHeight-4);
       ttoolsLayout->addWidget(gaw);
       setGaw();
       connect(song, SIGNAL(autoWriteChanged(Track*,bool)), SLOT(setGaw()));
@@ -424,7 +426,10 @@ Arranger::Arranger(QMainWindow* parent)
       trackListGrid->setSpacing(0);
       tw->setLayout(trackListGrid);
 
-      trackListGrid->addWidget(ttools);
+      trackListGrid->addLayout(ttoolsLayout);
+      QFrame* ruler = hLine(0);
+      ruler->setLineWidth(2);
+      trackListGrid->addWidget(ruler);
       trackListGrid->addWidget(tlsv, 100);
       trackListGrid->addLayout(infoboxLayout);
 

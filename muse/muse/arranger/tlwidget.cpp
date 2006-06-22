@@ -260,7 +260,7 @@ void TLWidget::configChanged()
       label->setText(_track->cname());
       label->setFixedHeight(11);
 
-      plus = newPlusButton(this);
+      plus = newPlusButton();
       l->addWidget(plus);
       plus->setToolTip(tr("Add Subtrack"));
       connect(plus, SIGNAL(clicked()), SLOT(labelPlusClicked()));
@@ -273,7 +273,7 @@ void TLWidget::configChanged()
                   switch(id) {
                         case TR_NAME:
                               nameEdit = new TLLineEdit(_track->name(), this);
-                        	nameEdit->setBackgroundRole(QPalette::Window);
+//                        	nameEdit->setBackgroundRole(QPalette::Window);
                               nameEdit->setFixedHeight(trackRowHeight);
                               connect(nameEdit, SIGNAL(contentChanged(QString)), SLOT(nameChanged(QString)));
                               connect(nameEdit, SIGNAL(mousePress()), SLOT(select()));
@@ -312,10 +312,10 @@ void TLWidget::configChanged()
 
                         case TR_OFF:
                               {
-                              off = newOffButton(this);
+                              off = newOffButton();
                               off->setFixedSize(trackRowHeight, trackRowHeight);
                               off->setChecked(_track->off());
-      				off->setAutoFillBackground(true);
+//      				off->setAutoFillBackground(true);
                               connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
                               connect(_track, SIGNAL(offChanged(bool)), this, SLOT(updateOffState()));
                               l->addWidget(off);
@@ -325,7 +325,7 @@ void TLWidget::configChanged()
 
                         case TR_DRUMMAP:
                               {
-                              SimpleButton* dm = newDrumMapButton(this);
+                              SimpleButton* dm = newDrumMapButton();
                               MidiChannel* mt = (MidiChannel*)_track;
                               dm->setFixedSize(trackRowHeight, trackRowHeight);
                               dm->setChecked(mt->useDrumMap());
@@ -338,7 +338,7 @@ void TLWidget::configChanged()
 
                         case TR_MUTE:
                               {
-                              SimpleButton* mute = newMuteButton(this);
+                              SimpleButton* mute = newMuteButton();
                               mute->setFixedSize(trackRowHeight, trackRowHeight);
                               mute->setChecked(_track->isMute());
                               connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
@@ -350,7 +350,7 @@ void TLWidget::configChanged()
 
                         case TR_SOLO:
                               {
-                              SimpleButton* solo = newSoloButton(this);
+                              SimpleButton* solo = newSoloButton();
                               solo->setFixedSize(trackRowHeight, trackRowHeight);
                               solo->setChecked(_track->solo());
                               connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
@@ -362,7 +362,7 @@ void TLWidget::configChanged()
 
                         case TR_MONITOR:
                               {
-                              SimpleButton* monitor = newMonitorButton(this);
+                              SimpleButton* monitor = newMonitorButton();
                               monitor->setFixedSize(trackRowHeight+4, trackRowHeight);
                               monitor->setChecked(_track->monitor());
                               connect(monitor, SIGNAL(clicked(bool)), SLOT(monitorToggled(bool)));
@@ -374,10 +374,10 @@ void TLWidget::configChanged()
 
                         case TR_RECORD:
                               {
-                              record  = newRecordButton(this);
+                              record  = newRecordButton();
                               record->setFixedSize(trackRowHeight, trackRowHeight);
                               record->setChecked(_track->recordFlag());
-      				record->setAutoFillBackground(true);
+//      				record->setAutoFillBackground(true);
                               connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
                               connect(_track, SIGNAL(recordChanged(bool)), record, SLOT(setChecked(bool)));
                               l->addWidget(record);
@@ -387,7 +387,7 @@ void TLWidget::configChanged()
 
                         case TR_AREAD:
                               {
-                              SimpleButton* b = newAutoReadButton(this);
+                              SimpleButton* b = newAutoReadButton();
                               b->setFixedSize(trackRowHeight, trackRowHeight);
                               b->setChecked(_track->autoRead());
                               connect(b, SIGNAL(clicked(bool)), SLOT(autoReadToggled(bool)));
@@ -399,7 +399,7 @@ void TLWidget::configChanged()
 
                         case TR_AWRITE:
                               {
-                              SimpleButton* b = newAutoWriteButton(this);
+                              SimpleButton* b = newAutoWriteButton();
                               b->setFixedSize(trackRowHeight, trackRowHeight);
                               b->setChecked(_track->autoWrite());
                               connect(b, SIGNAL(clicked(bool)), SLOT(autoWriteToggled(bool)));
@@ -628,5 +628,9 @@ void TLWidget::paintEvent(QPaintEvent* ev)
       QColor color(_track->selected() ? selectBgColor : bgColor);
       p.fillRect(r, color);
       paintHLine(p, r.x(), r.x() + r.width(), height() - splitWidth);
+      QPalette pl = nameEdit->palette();
+      pl.setColor(QPalette::Window, color);
+      pl.setColor(QPalette::Base, color);
+      nameEdit->setPalette(pl);
       }
 

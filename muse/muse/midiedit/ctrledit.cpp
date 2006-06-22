@@ -50,7 +50,8 @@ CtrlEdit::CtrlEdit(QWidget* parent, TimeCanvas* timeCanvas, Track* t)
       sel->setToolTip(tr("select controller"));
       sel->setAutoRaise(false);
 
-      minus = newMinusButton(parent);
+      minus = newMinusButton();
+      minus->setParent(parent);
       minus->setToolTip(tr("remove controller view"));
       minus->setAutoRaise(false);
 

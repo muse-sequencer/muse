@@ -166,7 +166,7 @@ void PartCanvas::paint(QPainter& p, QRect r)
             if (at->tw == 0)
                   continue;
 
-            int y = at->tw->y() - splitWidth/2;
+            int y = at->tw->y(); //  - splitWidth/2;
             int h = at->tw->height() - 1;
 
             PartList* pl = t->parts();

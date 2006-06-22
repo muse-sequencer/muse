@@ -134,12 +134,12 @@ MidiChannelStrip::MidiChannelStrip(Mixer* m, MidiChannel* t, bool align)
       if (_align)
             layout->addSpacing(STRIP_WIDTH/3);
 
-      mute  = newMuteButton(this);
+      mute  = newMuteButton();
       mute->setChecked(track->isMute());
       mute->setFixedSize(buttonSize);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
-      solo  = newSoloButton(this);
+      solo  = newSoloButton();
       solo->setFixedSize(buttonSize);
       solo->setChecked(track->solo());
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
@@ -428,18 +428,18 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       //    record, mixdownfile
       //---------------------------------------------------
 
-      SimpleButton* record = newRecordButton(this);
+      SimpleButton* record = newRecordButton();
       record->setFixedSize(buttonSize);
       record->setChecked(track->recordFlag());
       connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
       connect(t, SIGNAL(recordChanged(bool)), record, SLOT(setChecked(bool)));
 
-      mute  = newMuteButton(this);
+      mute  = newMuteButton();
       mute->setChecked(track->isMute());
       mute->setFixedSize(buttonSize);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
-      solo  = newSoloButton(this);
+      solo  = newSoloButton();
       solo->setFixedSize(buttonSize);
       solo->setChecked(track->solo());
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
@@ -724,7 +724,7 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       //    mute, solo
       //---------------------------------------------------
 
-      sync = newSyncButton(this);
+      sync = newSyncButton();
       sync->setFixedHeight(buttonSize.height());
       sync->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       sync->setChecked(((MidiOutPort*)track)->sendSync());
@@ -732,12 +732,12 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       connect(sync, SIGNAL(clicked(bool)), SLOT(syncToggled(bool)));
       connect(track, SIGNAL(sendSyncChanged(bool)), sync, SLOT(setChecked(bool)));
 
-      mute  = newMuteButton(this);
+      mute  = newMuteButton();
       mute->setChecked(track->isMute());
       mute->setFixedSize(buttonSize);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
-      solo  = newSoloButton(this);
+      solo  = newSoloButton();
       solo->setFixedSize(buttonSize);
       solo->setChecked(track->solo());
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
@@ -1062,12 +1062,12 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
       //    record, mixdownfile
       //---------------------------------------------------
 
-      mute  = newMuteButton(this);
+      mute  = newMuteButton();
       mute->setChecked(track->isMute());
       mute->setFixedSize(buttonSize);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
-      solo  = newSoloButton(this);
+      solo  = newSoloButton();
       solo->setFixedSize(buttonSize);
       solo->setChecked(track->solo());
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
@@ -1374,12 +1374,12 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
       //    mute, solo
       //---------------------------------------------------
 
-      mute  = newMuteButton(this);
+      mute  = newMuteButton();
       mute->setChecked(track->isMute());
       mute->setFixedSize(buttonSize);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
-      solo  = newSoloButton(this);
+      solo  = newSoloButton();
       solo->setFixedSize(buttonSize);
       solo->setChecked(track->solo());
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));

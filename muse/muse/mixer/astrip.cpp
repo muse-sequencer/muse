@@ -382,7 +382,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       //---------------------------------------------------
 
       QHBoxLayout* ppBox = new QHBoxLayout;
-      stereo  = newStereoButton(this);
+      stereo  = newStereoButton();
       stereo->setChecked(channel == 2);
       stereo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       stereo->setFixedHeight(LABEL_HEIGHT);
@@ -469,21 +469,21 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       QHBoxLayout* smBox1 = new QHBoxLayout(0);
       QHBoxLayout* smBox2 = new QHBoxLayout(0);
 
-      mute  = newMuteButton(this);
+      mute  = newMuteButton();
       mute->setChecked(t->mute());
       mute->setFixedSize(buttonSize);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
       connect(t, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));
       smBox2->addWidget(mute);
 
-      solo  = newSoloButton(this);
+      solo  = newSoloButton();
       solo->setDisabled(true);
       solo->setFixedSize(buttonSize);
       smBox2->addWidget(solo);
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
       connect(t, SIGNAL(soloChanged(bool)), solo, SLOT(setChecked(bool)));
 
-      off  = newOffButton(this);
+      off  = newOffButton();
       off->setFixedSize(buttonSize);
       off->setChecked(t->off());
       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
@@ -492,7 +492,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       smBox1->addWidget(off);
 
       if (track->canRecord()) {
-            record = newRecordButton(this);
+            record = newRecordButton();
             record->setFixedSize(buttonSize);
             if (type == Track::AUDIO_OUTPUT)
                   record->setToolTip(tr("record downmix"));
