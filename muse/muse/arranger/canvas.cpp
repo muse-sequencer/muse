@@ -869,13 +869,16 @@ void PartCanvas::splitPart(Part* part, const QPoint& p)
 
 void PartCanvas::renamePart(Part* part)
       {
+      bool ok;
+
       QString s = QInputDialog::getText(this, 
          tr("MusE: Change Part Name"),
          tr("PartName:"),
          QLineEdit::Normal,
-         part->name()
+         part->name(), 
+         &ok
          );
-      if (s != part->name()) {
+      if (ok && s != part->name()) {
             song->startUndo();
             Part* newPart = new Part(*part);
             newPart->setName(s);            

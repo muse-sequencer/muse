@@ -61,9 +61,15 @@ static bool copyWaveFileToProject(const QString& path)
       QString dst(song->absoluteProjectPath());
       QFile dstFile(dst + "/" + srcInfo.fileName());
       if (dstFile.exists()) {
-            // TODO: rename file, check for identity
+            // TODO: rename file or check for identity
+            //       we cannot easily check for identity if destination
+            //       file is sample rate converted
+            //
+            // for now we assume that the file has already 
+            // be imported:
+            // 
             printf("File already exists\n");
-            return false;
+            return true;
             }
 
       SF_INFO sfinfoSrc;
