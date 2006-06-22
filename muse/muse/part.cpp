@@ -402,7 +402,10 @@ void Part::write(Xml& xml) const
       int id              = -1;
       bool dumpEvents     = true;
 
-      if (el->arefCount() > 1) {
+      if (isCloned()) {
+            // we have to dump the event list only on first
+            // incarnation of clone
+
             for (iClone i = cloneList.begin(); i != cloneList.end(); ++i) {
                   if (i->el == el) {
                         id = i->id;
@@ -421,7 +424,8 @@ void Part::write(Xml& xml) const
             xml.tag("part cloneId=\"%d\"", id);
       else
             xml.tag("part");
-      xml.strTag("name", _name);
+      if (!_name.isEmpty())
+            xml.strTag("name", _name);
 
       PosLen::write(xml, "poslen");
       if (_selected)
@@ -453,11 +457,12 @@ void Part::write(Xml& xml) const
 
 void Part::read(QDomNode node)
       {
-      int id = -1;
+      QDomElement e = node.toElement();
+      int id = e.attribute("cloneId", "-1").toInt();
       bool containsEvents = false;
 
 	ctrlCanvasList.clear();
-      while (!node.isNull()) {
+      for (node = node.firstChild(); !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
             QString tag(e.tagName());
             QString s(e.text());
@@ -518,11 +523,8 @@ void Part::read(QDomNode node)
                               _events->add(e);
                         }
                   }
-            else if (tag == "cloneId")
-                  id = i;
             else
                   printf("MusE:read: unknown tag %s\n", e.tagName().toLatin1().data());
-            node = node.nextSibling();
             }
 
       if (id != -1) {
@@ -549,4 +551,12 @@ void Part::read(QDomNode node)
             }
       }
 
+//---------------------------------------------------------
+//   isCloned
+//    return true if this part is cloned
+//---------------------------------------------------------
 
+bool Part::isCloned() const
+      {
+      return _events->arefCount() > 1;
+      }

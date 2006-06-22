@@ -182,20 +182,21 @@ void PartCanvas::paint(QPainter& p, QRect r)
                         break;
 
                   QRect pr(x1, y, len, h - partBorderWidth);
+                  bool clone = part->isCloned();
+                  QPen pen(Qt::black, partBorderWidth, clone ? Qt::DashLine : Qt::SolidLine);
 
                   if (part->mute()) {
-                        p.setPen(QPen(Qt::red, partBorderWidth));
+                        pen.setColor(Qt::red);
                         p.setBrush(Qt::gray);
                         }
                   else if (part->selected()) {
-                        p.setPen(QPen(config.partColors[part->colorIndex()], partBorderWidth));
+                        pen.setColor(config.partColors[part->colorIndex()]);
                         p.setBrush(config.selectPartBg);
                         }
                   else {
-                        bool clone = part->events()->arefCount() > 1;
-                        p.setPen(QPen(Qt::black, partBorderWidth, clone ? Qt::DashLine : Qt::SolidLine));
                         p.setBrush(config.partColors[part->colorIndex()]);
                         }
+                  p.setPen(pen);
 
                   //
                   // we want to draw the rectangle without transformation
@@ -797,23 +798,10 @@ void PartCanvas::mouseDoubleClick(QMouseEvent* me)
 //TD            mousePress(pos);
             return;
             }
-      searchPart(pos);
       bool shift  = keyState & Qt::ShiftModifier;
-      if (part) {
+      if (searchPart(pos) == HIT_PART) {
             if (button == Qt::LeftButton && shift) {
-#if 0 //TODO1
-                  editPart = (NPart*)curItem;
-                  QRect r = map(curItem->bbox());
-                  if (lineEditor == 0) {
-                        lineEditor = new QLineEdit(this);
-                        lineEditor->setFrame(true);
-                        }
-                  editMode = true;
-                  lineEditor->setGeometry(r);
-                  lineEditor->setText(editPart->name());
-                  lineEditor->setFocus();
-                  lineEditor->show();
-#endif
+                  renamePart(part);
                   }
             else if (button == Qt::LeftButton) {
                   emit doubleClickPart(part);
@@ -879,9 +867,22 @@ void PartCanvas::splitPart(Part* part, const QPoint& p)
 //   renamePart
 //---------------------------------------------------------
 
-void PartCanvas::renamePart(Part*)
+void PartCanvas::renamePart(Part* part)
       {
-      printf("rename part: not impl.\n");
+      QString s = QInputDialog::getText(this, 
+         tr("MusE: Change Part Name"),
+         tr("PartName:"),
+         QLineEdit::Normal,
+         part->name()
+         );
+      if (s != part->name()) {
+            song->startUndo();
+            Part* newPart = new Part(*part);
+            newPart->setName(s);            
+            song->cmdChangePart(part, newPart);
+            song->endUndo(SC_PART_MODIFIED);
+            widget()->update();
+            }
       }
 
 //---------------------------------------------------------

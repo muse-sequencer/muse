@@ -123,6 +123,8 @@ class Part : public AL::PosLen {
       void read(QDomNode);
       void write(Xml&) const;
       void dump(int n = 0) const;
+
+      bool isCloned() const;
       };
 
 //---------------------------------------------------------

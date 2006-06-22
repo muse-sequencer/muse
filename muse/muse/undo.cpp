@@ -29,8 +29,8 @@
 // iundo points to last Undo() in Undo-list
 
 static bool undoMode = false;  // for debugging
-
 std::list<QString> temporaryWavFiles;
+
 //---------------------------------------------------------
 //   typeName
 //---------------------------------------------------------
@@ -38,12 +38,13 @@ std::list<QString> temporaryWavFiles;
 const char* UndoOp::typeName()
       {
       static const char* name[] = {
-            "AddTrack", "DeleteTrack",
+            "AddTrack", "DeleteTrack", "RenameTrack",
             "AddPart",  "DeletePart",  "ModifyPart",
             "AddEvent", "DeleteEvent", "ModifyEvent",
             "AddTempo", "DeleteTempo",
             "AddSig", "DeleteSig",
             "SwapTrack",
+            "ModifyClip",
             "AddCtrl", "RemoveCtrl", "ModifyCtrl"
             };
       return name[type];
@@ -121,9 +122,9 @@ void Song::doUndo2()
       {
       Undo& u = undoList->back();
 
-//printf("doUndo2\n");
+// printf("doUndo2\n");
       for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
-//printf("  doUndo2 %s\n", i->typeName());
+// printf("  doUndo2 %s\n", i->typeName());
             switch(i->type) {
                   case UndoOp::AddTrack:
                         removeTrack2(i->track);
@@ -160,8 +161,6 @@ void Song::doUndo2()
                         break;
                   case UndoOp::ModifyPart:
                         changePart(i->oPart, i->nPart);
-                        i->oPart->events()->incARef(-1);
-                        i->nPart->events()->incARef(1);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::AddEvent:
@@ -201,6 +200,8 @@ void Song::doUndo2()
                   case UndoOp::ModifyCtrl:
                         i->track->addControllerVal(i->id, i->time, i->cval2);
                         break;
+                  case UndoOp::ModifyClip:
+                        break;
                   }
             }
       }
@@ -212,9 +213,9 @@ void Song::doUndo2()
 void Song::doRedo2()
       {
       Undo& u = redoList->back();
-//printf("doRedo2\n");
+// printf("doRedo2\n");
       for (iUndoOp i = u.begin(); i != u.end(); ++i) {
-//printf("  doUndo2 %s\n", i->typeName());
+// printf("  doRedo2 %s\n", i->typeName());
             switch(i->type) {
                   case UndoOp::AddTrack:
                         insertTrack2(i->track);
@@ -251,8 +252,6 @@ void Song::doRedo2()
                   case UndoOp::ModifyPart:
                         changePart(i->nPart, i->oPart);
                         updateFlags |= SC_PART_MODIFIED;
-                        i->oPart->events()->incARef(1);
-                        i->nPart->events()->incARef(-1);
                         break;
                   case UndoOp::AddEvent:
                         addEvent(i->nEvent, i->part);
@@ -291,6 +290,8 @@ void Song::doRedo2()
                         break;
                   case UndoOp::ModifyCtrl:
                         i->track->addControllerVal(i->id, i->time, i->cval1);
+                        break;
+                  case UndoOp::ModifyClip:
                         break;
                   }
             }
@@ -424,8 +425,10 @@ bool Song::doUndo1()
       {
       if (undoList->empty())
             return true;
+// printf("doUndo1\n");
       Undo& u = undoList->back();
       for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
+// printf("  doUndo1 %s\n", i->typeName());
             switch(i->type) {
                   case UndoOp::AddTrack:
                         removeTrack1(i->track);
@@ -450,8 +453,10 @@ bool Song::doUndo1()
 
 void Song::doUndo3()
       {
+// printf("doUndo3\n");
       Undo& u = undoList->back();
       for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
+// printf("  doUndo3 %s\n", i->typeName());
             switch(i->type) {
                   case UndoOp::AddTrack:
                         removeTrack3(i->track);
@@ -490,8 +495,10 @@ bool Song::doRedo1()
       {
       if (redoList->empty())
             return true;
+// printf("doRedo1\n");
       Undo& u = redoList->back();
       for (iUndoOp i = u.begin(); i != u.end(); ++i) {
+// printf("  doRedo1 %s\n", i->typeName());
             switch(i->type) {
                   case UndoOp::AddTrack:
                         insertTrack1(i->track, i->id);
@@ -518,8 +525,10 @@ bool Song::doRedo1()
 
 void Song::doRedo3()
       {
+// printf("doRedo3\n");
       Undo& u = redoList->back();
       for (iUndoOp i = u.begin(); i != u.end(); ++i) {
+// printf("  doRedo3 %s\n", i->typeName());
             switch(i->type) {
                   case UndoOp::AddTrack:
                         emit trackAdded(i->track, i->id);

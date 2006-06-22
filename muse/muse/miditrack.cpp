@@ -119,7 +119,7 @@ void MidiTrack::read(QDomNode node)
                   compression = i;
             else if (tag == "part") {
                   Part* p = newPart();
-                  p->read(node.firstChild());
+                  p->read(node);
                   parts()->add(p);
                   }
             else if (tag == "locked")

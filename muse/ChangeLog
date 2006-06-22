@@ -1,3 +1,7 @@
+22.6. (ws)
+      * fix: get reference count right when undo "split part"
+      * implement: rename part
+      * fix loading of cloned midi parts
 21.6. (ws)
       * show controller name in controller canvas of midi editor
       * fix save/restore of controller editors in midi editor
