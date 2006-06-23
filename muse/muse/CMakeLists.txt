@@ -45,8 +45,14 @@ subdirs(
       )
 
 set (muse_uics
-      muse preferences exportmididialog configmidifile
-      transport aboutbox transpose
+      muse 
+      preferences 
+      exportmididialog 
+      configmidifile
+      transport 
+      aboutbox 
+      transpose
+      projectpropsdialog
       projectdialog
       templatedialog
       midiedit/quantconfig
@@ -58,6 +64,7 @@ set (muse_uics
       )
 
 set(muse_mocs
+      projectpropsdialog
 	projectdialog templatedialog 
       preferences plugingui midiplugin muse 
       song transport conf editor

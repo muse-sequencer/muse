@@ -1,3 +1,5 @@
+23.6. (ws)
+      * new project property dialog to edit the project comment
 22.6. (ws)
       * fix: get reference count right when undo "split part"
       * implement: rename part

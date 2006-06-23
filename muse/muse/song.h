@@ -407,6 +407,7 @@ class Song : public QObject {
       void setComment(const QString& s) { _comment = s; }
       void setCreated(bool val)         { _created = val; }
       bool created() const              { return _created; }
+      QDateTime createDate() const      { return _createDate; }
 
       bool read(QFile* qf);
       void read20(QDomNode node);

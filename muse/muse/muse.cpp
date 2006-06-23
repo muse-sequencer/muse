@@ -65,6 +65,7 @@
 #include "part.h"
 #include "projectdialog.h"
 #include "templatedialog.h"
+#include "projectpropsdialog.h"
 
 static pthread_t watchdogThread;
 
@@ -463,6 +464,7 @@ MusE::MusE()
       mixer2                = 0;
       markerView            = 0;
       exportMidiDialog      = 0;
+      projectPropsDialog    = 0;
 
       song->blockSignals(true);
       heartBeatTimer = new QTimer(this);
@@ -684,15 +686,19 @@ MusE::MusE()
 
       menuEdit->addSeparator();
       menuEdit->addAction(pianoAction);
-      menu_ids[CMD_OPEN_DRUMS] = menuEdit->addAction(QIcon(*edit_drummsIcon), tr("Drums"), this, SLOT(startDrumEditor()), 0);
-      menu_ids[CMD_OPEN_LIST]  = menuEdit->addAction(QIcon(*edit_listIcon), tr("List"), this, SLOT(startListEditor()), 0);
-
+      menu_ids[CMD_OPEN_DRUMS]          = menuEdit->addAction(QIcon(*edit_drummsIcon), tr("Drums"));
+      menu_ids[CMD_OPEN_LIST]           = menuEdit->addAction(QIcon(*edit_listIcon),   tr("List"));
       menu_ids[CMD_OPEN_GRAPHIC_MASTER] = menuEdit->addAction(QIcon(*mastertrack_graphicIcon),tr("Mastertrack"));
+      menu_ids[CMD_OPEN_PROJECT_PROPS]  = menuEdit->addAction(*saveIcon, tr("Project Properties"));
+
+      connect(menu_ids[CMD_OPEN_DRUMS], SIGNAL(triggered()), SLOT(startDrumEditor()));
+      connect(menu_ids[CMD_OPEN_LIST],  SIGNAL(triggered()), SLOT(startListEditor()));
       connect(menu_ids[CMD_OPEN_GRAPHIC_MASTER], SIGNAL(triggered()), SLOT(startMasterEditor()));
+      connect(menu_ids[CMD_OPEN_PROJECT_PROPS], SIGNAL(triggered()), SLOT(showProjectPropsDialog()));
 
       menuEdit->addSeparator();
       connect(menuEdit, SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
-      connect(select, SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
+      connect(select,   SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
 
       midiEdit = menuEdit->addMenu(QIcon(*edit_midiIcon), tr("Midi"));
 //      menu_ids[CMD_OPEN_MIDI_TRANSFORM] = midiEdit->addAction(QIcon(*midi_transformIcon), tr("Midi &Transform"), this, SLOT(startMidiTransformer()), 0);
@@ -1541,6 +1547,17 @@ void MusE::startMasterEditor()
       {
       MasterEdit* masterEditor = new MasterEdit();
       masterEditor->show();
+      }
+
+//---------------------------------------------------------
+//   showProjectPropsDialog
+//---------------------------------------------------------
+
+void MusE::showProjectPropsDialog()
+      {
+      if (projectPropsDialog == 0)
+            projectPropsDialog = new ProjectPropsDialog(this);
+      projectPropsDialog->show();
       }
 
 //---------------------------------------------------------

@@ -111,8 +111,8 @@
 #include "xpm/flagS.xpm"
 #include "xpm/lock.xpm"
 #include "xpm/toc.xpm"
-#include "xpm/piano.xpm"
-// #include "xpm/pianoS.xpm"
+// #include "xpm/piano.xpm"
+#include "xpm/pianoS.xpm"
 #include "xpm/exitS.xpm"
 
 #include "xpm/undo.xpm"
@@ -512,7 +512,7 @@ void initIcons()
       select_inside_loopIcon        = new QPixmap(select_inside_loop_xpm);
       select_invert_selectionIcon   = new QPixmap(select_invert_selection);
       select_outside_loopIcon       = new QPixmap(select_outside_loop_xpm);
-      pianoIconSet = new QIcon(QPixmap(piano_xpm));
+      pianoIconSet                  = new QIcon(QPixmap(pianoS_xpm));
 
       audio_bounce_to_fileIcon                      = new QPixmap(audio_bounce_to_file_xpm);
       audio_bounce_to_trackIcon                     = new QPixmap(audio_bounce_to_track_xpm);

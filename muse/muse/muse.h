@@ -84,6 +84,7 @@ class MusE : public QMainWindow, public Ui::MuseBase
             CMD_MIXER_SNAPSHOT, CMD_MIXER_AUTOMATION_CLEAR, CMD_OPEN_HELP, CMD_OPEN_HOMEPAGE,
             CMD_OPEN_BUG, CMD_START_WHATSTHIS,
             CMD_AUDIO_BOUNCE_TO_FILE, CMD_AUDIO_BOUNCE_TO_TRACK, CMD_AUDIO_RESTART,
+            CMD_OPEN_PROJECT_PROPS,
             CMD_LAST };
 
       QAction* menu_ids[CMD_LAST];
@@ -147,6 +148,8 @@ class MusE : public QMainWindow, public Ui::MuseBase
       QMenu* openRecent;
       QSpinBox* globalTempoSpinBox;
 
+      QDialog* projectPropsDialog;
+
       //------------------------------------------
 
       bool readMidi(FILE*);
@@ -206,6 +209,7 @@ class MusE : public QMainWindow, public Ui::MuseBase
       void startWaveEditor(PartList*);
       void writeGlobalConfiguration() const;
       void startEditInstrument();
+      void showProjectPropsDialog();
 
       void openRecentMenu();
       void selectProject(QAction*);
