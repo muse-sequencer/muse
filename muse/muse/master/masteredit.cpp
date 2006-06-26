@@ -115,6 +115,8 @@ MasterEdit::MasterEdit()
       connect(song, SIGNAL(tempoChanged()), tcanvas, SLOT(tempoChanged()));
 
       connect(tcanvas, SIGNAL(posChanged(int,const AL::Pos&)), song, SLOT(setPos(int,const AL::Pos&)));
+      connect(tcanvas, SIGNAL(cursorPos(const AL::Pos&,bool)),  cursorPos, SLOT(setValue(const AL::Pos&,bool)));
+
       connect(tcanvas, SIGNAL(tempoChanged(int)), SLOT(setTempo(int)));
       connect(tools2, SIGNAL(toolChanged(int)), tcanvas, SLOT(setTool(int)));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));

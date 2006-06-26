@@ -215,7 +215,7 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
       setCentralWidget(tcanvas);
       tcanvas->setCornerWidget(new QSizeGrip(tcanvas));
 
-      connect(song,   SIGNAL(posChanged(int,const AL::Pos&,bool)), canvas(), SLOT(setLocatorPos(int,const AL::Pos&,bool)));
+      connect(song,     SIGNAL(posChanged(int,const AL::Pos&,bool)), canvas(), SLOT(setLocatorPos(int,const AL::Pos&,bool)));
       connect(canvas(), SIGNAL(posChanged(int,const AL::Pos&)), SLOT(setPos(int,const AL::Pos&)));
 
       connect(canvas(), SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
