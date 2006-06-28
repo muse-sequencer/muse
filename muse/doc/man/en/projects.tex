@@ -52,4 +52,41 @@
       choose from. The template can be a complete project but 
       without any wave data and normally without any midi data.
 
+      \M\ sucht Templates an zwei Orten:
+            im globalen \M\ Installationspfad (Factory Presets) sowie im 
+                  \M\ Verzeichnis relativ zum {\tt HOME} Verzeichnis des
+                        Anwenders (User Presets)
 
+   \section{Projekt backup}
+
+      There is no special build in function in \M\ to backup a project.
+      But as all project data is contained in one folder, standard system
+      tool can be used to backup.
+
+      Project are always complete in itself and do not contain any 
+      references to outside files. One execption are soundfonts \index{soundfonts}
+      as used by the fluid \index{fluid} synthesizer. 
+      Its recommended to manually copy these files also to the 
+      project folder.
+
+      Projects can be moved in the folder hierarchy without problems 
+      as they do not contain any absolute file paths.
+
+   \section{Wave files and samplerate}
+
+      \index{wave files}\index{audio projecs}\index{midi projects}
+      \index{samplerate}
+
+      \M\ differences between midi projects and audio projects.
+      Audio projects contain in addition to midi data wave files.
+      
+      Audio project have a defined samplerate and can only be loaded
+      and edited if the project samplerate is identical to the
+      current samplerate.
+
+      The current sample rate is defined by the JACK audio server and
+      can not be changed within \M.
+                              
+      If you want to import wave files with a samplerate different from
+      the current sample rate, they must be converted 
+      (resampled\index{resample})

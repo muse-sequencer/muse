@@ -1,0 +1,122 @@
+\chapter{Midi}
+  \section{Midi Routing}
+  \section{Midi Setup}
+  \subsection{Simple Setup}
+
+      In a simple setup every midi connector of the computer is connected
+      to a single midi device. Every midi track corresponds to a
+      different midi channel.
+      This setup is the most flexible and should always be used if
+      possible.
+
+  \subsection{Extended Setup}
+
+      \index{several midi tracks for a midi channel}
+      In an extended setup more than one midi track is routed to the
+      same midi channel. Of course a midi controller is associated with
+      a midi channel so you cannot different controller values for
+      each individual track.
+
+  \subsection{Complex Setup}
+      \index{multiple devices connected to one midi connector}
+      We call a setup complex if there is more than one midi device
+      connected to a midi connector.
+      Every device uses one ore more of the available 16 midi channel.
+      You have to make sure the channels do not overlap. For this
+      the midi devices must be configured to only listen on their 
+      assigned channels.
+      Midi messages which are not bound to a midi channel (Sysex
+      messages) can be send to inividual devices by assigning a
+      different device id for every device. This device id can be
+      configure in \M\ to adress specific devices.
+
+      Because midi connections have only a very limited 
+      bandwidth \index{midi bandwidth}, the complex setup should be
+      avoided.
+      
+  \section{Midi Inputs}
+      Midi Inputs are repesented as a track in the mixer and in the
+      arranger.
+
+      A midi input has the following properties:
+
+      \blank[big]
+      \Input{Alsa Port:} this is the route to an ALSA input port.
+         A ALSA port can be connected to more than one midi input.
+      \Input{Plugins:} midi events read from the ALSA port can be routed
+            through several midi plugins. Available plugins can
+            filter or modify midi events.
+      \Input{Outputs:} a midi input has 16 outputs, one for every midi
+            channel. Every midi channel can be routed to a different
+            midi track.
+            Midi events received in a midi track do not have any
+            channel information anymore.
+            In a simple setup all channel of all midi inputs are
+            routed to all midi tracks. This is the default.
+
+      \blank[big]
+
+  \section{Midi Track}
+      The midi track contains all midi note on/off events.
+      Its represented as a strip in the mixer and as a track in the
+      arranger. The mixer strip representation is not very interesting
+      because a midi track has not many mixer relevant parameters.
+      For this midi tracks are not shown in the mixer by default.
+
+      Midi track properties:
+
+      \blank[big]
+      \Input{Record:} switches the track into record mode
+
+      \Input{Monitor:} when the monitor switch is on, on record all
+            midi events are routed to the track output.
+            Attention: this can lead to a midi feed back loop.
+      
+      \Input{Mute:} mutes the track
+
+      \Input{Solo:} ---not yet defined---
+
+      \Input{Input:} track inputs can be routed to midi inputs
+
+      \Input{Output:} the track output can be routed to one or more
+            midi channels. Midi channels are always connected to
+            a midi port.
+
+      \blank[big]
+
+  \section{Midi Channel}
+      Midi channel normally contain all midi controller events.
+
+      Midi channel properties:
+
+      \blank[big]
+
+      \blank[big]
+
+  \section{Midi Port}
+
+      \index{Midi Port} A midi port represents an external midi device
+      and has the following properties:
+
+      \blank[big]
+      \Input{Instrument:} \index{Midi instrument} describes the properties
+        of an external midi instrument. The instrument can be
+        selected from a list of available instrument descriptions.
+
+      \Input{Master Volume:} \index{Midi Master Volume} is a midi
+        controller to change the volume of all midi channels of a port.
+
+      \Input{Device Id:} \index{Midi Device Id} if there are more than
+      one midi devices connected to a midi connctor then every device
+      must be assigned a unique device id. 
+      The configured device id selects one of the connected devices.
+
+      \Input{Alsa Port:} this is the route to an ALSA midi port.
+        A port output can be connected to more than one ALSA port.
+
+      \blank[big]
+
+      Every midi port has 16 midi channel.
+
+  \section{Midi Synthesizer}
+
