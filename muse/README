@@ -1,4 +1,3 @@
-
 ====================================================================
       MusE  ---  Linux Music Editor
 ====================================================================
@@ -27,7 +26,6 @@ details.
       - QT: Qt 4.1.0 or above
         ftp://ftp.trolltech.com/qt/source
         MusE does _not_ compile with older versions
-        MAKE SURE YOU SET YOUR 'QTDIR' ENVIRONMENT VARIABLE
 
       - ALSA 1.0 or newer
         http://www.alsa-project.org/
@@ -37,31 +35,74 @@ details.
       - libsndfile >= 1.0.1 
         http://www.zip.com.au/~erikd/libsndfile/
 
+      - libsamplerate
+
       - JACK
 	  http://jackit.sourceforge.net/download/
+
+      Optional:
 
       - fluidsynth-1.0.3 (formerly known as iiwusynth) from
         http://savannah.nongnu.org/download/fluid
 
+      - DSSI
 
   =============================
       Compiling:
   =============================
 
       - download source from http://lmuse.sourceforge.net/
-      - uncompress source:
-            bunzip2 muse-x.x.x.tar.bz2
-      - untar source:
-            tar xvof muse-x.x.x.tar </code>
-        or if you have a recent tar, you can combine both steps:
-            tar xvofj muse-x.x.x.tar.bz2
 
-      - enter dirctory muse-x.x.x:
-            run "gen" script
+      - unpack source:
+            tar xvofz muse-xyz.tar.gz </code>
 
-      - enter the just build "build" directory and as root run:
-            make install
-        to install MusE
+      - to compile MusE, run the following commands:
+            mkdir muse                    # create build directory
+            cd muse                       # enter build directory
+            cmake ../muse-xyz             # create make system
+            make                          # compile muse
+
+      - install MusE:
+            run "make install"
+
+  =============================
+      running MusE
+  =============================
+
+      MusE is a realtime program which requires special rights to
+      work poperly.
+      Recommended setup:
+
+      - check if you are running a sufficiently new linux kernel > 2.6.x
+
+      - create an "audio" group if it does not already exists
+        and put yourself into this group
+
+      - make sure you can acces the realtime clock (RTC)
+            chmod 660 /dev/rtc
+            chgrp audio /dev/rtc
+
+      - make sure MusE cat set the rtc clock:
+            echo 8192 > /proc/sys/dev/rtc/max-user-freq 
+            inspect with:
+            cat /proc/sys/dev/rtc/max-user-freq
+
+      - for MusE to gain RT priviledges load the "realtime-lsm"
+        modul; the modul should be configured to give all "audio"
+        group members realtime priviledges
+
+      - make sure the alsa sequencer modul is loaded:
+            /sbin/modprobe snd-seq
+        (same distros (ubuntu) do not load it by default :-( )
+
+      - start qjackctl 
+            - start JACK with qjackctl
+
+      - start MusE
+
+      (JACK and all its clients (qjackctl & MusE) must run with the 
+      same user id)
+
 
   =============================
       known bugs

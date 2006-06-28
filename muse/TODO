@@ -1,9 +1,12 @@
 -----------------------------TODO-------------------------------------------
-(10.5.2006)
+  * - done
+(28.6.2006)
+----------------------------------------------------------------------------
+
       - check for samplerate when loading project
       * compute song len in seconds when saving project
       * save project creation date/time in project
-      - create dialog to edit project comment
+      * create dialog to edit project comment
 
 BUGS
 	- updating the gui during midi recording is too slow;
@@ -13,6 +16,12 @@ BUGS
         as one undoable action.
 
       - Do not allow switch track recording on/off during recording
+
+      - audio prefetching is not stable
+
+      - looping does not work sample accurate due to jack transport
+        limitations; looping should be implemented internally to work
+        around this
 
 FEATURES
 	- wave editor is completely broken

@@ -1,3 +1,16 @@
+NOTE:
+The following information is outdated. There are now other mechanisms
+available to give audio programs the necessary priviledges:
+
+      realtime-lsm kernel modul
+  or the upcoming
+      set_rtlimits
+
+The advice is to use one of this methods and _never_ run any audio program
+with root priviledges.
+
+
+
 MusE Security Information
 =========================
 
