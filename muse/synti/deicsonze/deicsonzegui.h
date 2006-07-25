@@ -118,11 +118,12 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     QString lastDir;
     private slots:
     void readMessage(int);
+    void setPanic();
     void setNbrVoices(int);
     void setSaveOnlyUsed(bool);
     void setSaveOnlyUsedComp(bool);
     void setSaveConfig(bool);
-    void setMidiInCh(int);
+    void setMidiInCh(int); //to change
     void setQuality(const QString&);
     void saveConfiguration();
     void saveDefaultConfiguration();
@@ -133,7 +134,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setInitSetPath(const QString&);
     void setBrowseInitSetPath();
     //quick edit
-    void setVolKnob(float val);
+    void setChannelVolKnob(float val);
     void setBrightnessKnob(float val);
     void setModulationKnob(float val);
     void setDetuneKnob(float val);
@@ -176,6 +177,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setLBank(int);
     void setProg(int);
    //Global
+    void setPanVol(int);
     void setMasterVol(int);
     void setFeedback(int);
     void setLfoWave(int);
@@ -299,7 +301,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     //update the gui
     void setEnabledPreset(bool b);
     void updateNbrVoices(int val);
-    void updateMidiInCh(int val);
+    void updateMidiInCh(int val); //to change
     void updateQuality(int val);
     void updateSaveOnlyUsed(bool);
     void updateSaveConfig(bool);
@@ -369,7 +371,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void updateOSW(int op, int val);
     void updateSHFT(int op, int val);
     void updateGLOBALDETUNE(int val);
-    void updateMASTERVOLUME(int val);
+    void updateMASTERVOLUME(int val); //to change
     void updateCategoryName(QString cn, bool enable);
     void updateSubcategoryName(QString sn, bool enable);
     void updatePresetName(QString pn, bool enable);

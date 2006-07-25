@@ -269,7 +269,6 @@
 #define MIDRELEASE 64
 #define NBRVOICESSTR "NumberOfVoices"
 #define CTRL_NBRVOICES 127+CTRLOFFSET
-#define MAXNBRVOICES 64
 
 class Preset;
 class Subcategory;

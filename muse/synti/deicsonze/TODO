@@ -13,3 +13,5 @@
 - getPatchInfo
 - Optimize the code, make 3 level of quality sound
 - Remember the last directory
+- instance for each channel
+- Create SutulaBank.dei

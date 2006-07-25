@@ -77,6 +77,8 @@
 
 #define NBRWAVES 8 //number wave forms, do not change
 #define NBRBANKPRESETS 32
+#define MAXNBRVOICES 64
+#define NBRCHANNEL 16
 
 #define SYSEX_INIT_DATA 1
 #define SYSEX_INIT_DATA_VERSION 1
@@ -109,6 +111,7 @@
 #define EDITBACKGROUNDCOLORSTR "EditBackgroundColor"
 #define COLORSYSEXLENGTH 12
 #define SYSEX_UPDATESETGUI 25
+#define SYSEX_PANIC 30
 
 #define NUMMASTERVOL SAVEINITLENGTH
 #define NUMCURRENTPROG SAVEINITLENGTH+1
@@ -291,6 +294,7 @@ class DeicsOnze : public Mess {
   Preset* findPreset(int hbank, int lbank, int prog);
   void initCtrls();
   void initGlobal();
+  void resetVoices(); //when panic is pressed
   void initVoice(unsigned char v);
   void initVoices();
   void initPreset();

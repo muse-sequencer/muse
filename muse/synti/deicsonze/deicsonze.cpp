@@ -426,6 +426,13 @@ void DeicsOnze::initGlobal() {
 }
 
 //---------------------------------------------------------
+// resetVoices
+//---------------------------------------------------------
+void DeicsOnze::resetVoices() {
+  initVoices(); //take care of this if initVoices() changes
+}
+
+//---------------------------------------------------------
 // initVoice
 //---------------------------------------------------------
 void DeicsOnze::initVoice(unsigned char v) {
@@ -1812,6 +1819,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
       _gui->writeEvent(evSysex);
     }
     break;
+  case SYSEX_PANIC:
+    resetVoices();
   default:
     break;
   }

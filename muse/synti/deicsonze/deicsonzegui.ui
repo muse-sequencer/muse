@@ -8,8 +8,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>544</width>
-    <height>570</height>
+    <width>586</width>
+    <height>663</height>
    </rect>
   </property>
   <property name="font" >
@@ -40,6 +40,395 @@
     <number>6</number>
    </property>
    <item row="0" column="0" >
+    <widget class="QLabel" name="masterVolumeLabel" >
+     <property name="frameShape" >
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="text" >
+      <string>Vol</string>
+     </property>
+     <property name="alignment" >
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" >
+    <widget class="Awl::VolKnob" name="masterVolKnob" >
+     <property name="minimumSize" >
+      <size>
+       <width>40</width>
+       <height>40</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2" >
+    <widget class="QGroupBox" name="generalBox" >
+     <property name="title" >
+      <string/>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="0" column="4" >
+       <widget class="QSpinBox" name="nbrVoicesSpinBox" >
+        <property name="enabled" >
+         <bool>true</bool>
+        </property>
+        <property name="toolTip" >
+         <string>Number of Voices</string>
+        </property>
+        <property name="maximum" >
+         <number>64</number>
+        </property>
+        <property name="minimum" >
+         <number>1</number>
+        </property>
+        <property name="value" >
+         <number>8</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3" >
+       <widget class="QLabel" name="numberVoicesLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Number of voices</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" >
+       <widget class="QCheckBox" name="ChannelCheckBox" >
+        <property name="text" >
+         <string>Enable</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QSpinBox" name="ChannelNumSpinBox" >
+        <property name="maximum" >
+         <number>16</number>
+        </property>
+        <property name="minimum" >
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="channelNumLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Channel</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="3" >
+    <widget class="QPushButton" name="panicButton" >
+     <property name="maximumSize" >
+      <size>
+       <width>1000</width>
+       <height>1000</height>
+      </size>
+     </property>
+     <property name="palette" >
+      <palette>
+       <active>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>237</red>
+         <green>237</green>
+         <blue>237</blue>
+        </color>
+        <color>
+         <red>231</red>
+         <green>231</green>
+         <blue>231</blue>
+        </color>
+        <color>
+         <red>121</red>
+         <green>125</green>
+         <blue>121</blue>
+        </color>
+        <color>
+         <red>166</red>
+         <green>166</green>
+         <blue>166</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>231</red>
+         <green>231</green>
+         <blue>231</blue>
+        </color>
+       </active>
+       <inactive>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>237</red>
+         <green>237</green>
+         <blue>237</blue>
+        </color>
+        <color>
+         <red>231</red>
+         <green>231</green>
+         <blue>231</blue>
+        </color>
+        <color>
+         <red>121</red>
+         <green>125</green>
+         <blue>121</blue>
+        </color>
+        <color>
+         <red>166</red>
+         <green>166</green>
+         <blue>166</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>231</red>
+         <green>231</green>
+         <blue>231</blue>
+        </color>
+       </inactive>
+       <disabled>
+        <color>
+         <red>121</red>
+         <green>125</green>
+         <blue>121</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>237</red>
+         <green>237</green>
+         <blue>237</blue>
+        </color>
+        <color>
+         <red>231</red>
+         <green>231</green>
+         <blue>231</blue>
+        </color>
+        <color>
+         <red>121</red>
+         <green>125</green>
+         <blue>121</blue>
+        </color>
+        <color>
+         <red>166</red>
+         <green>166</green>
+         <blue>166</blue>
+        </color>
+        <color>
+         <red>121</red>
+         <green>125</green>
+         <blue>121</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>121</red>
+         <green>125</green>
+         <blue>121</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>121</red>
+         <green>125</green>
+         <blue>121</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>231</red>
+         <green>231</green>
+         <blue>231</blue>
+        </color>
+       </disabled>
+      </palette>
+     </property>
+     <property name="font" >
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <italic>false</italic>
+       <bold>true</bold>
+       <underline>false</underline>
+       <strikeout>false</strikeout>
+      </font>
+     </property>
+     <property name="text" >
+      <string>Panic!</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="4" >
     <widget class="QGroupBox" name="quickEditGroupBox" >
      <property name="minimumSize" >
       <size>
@@ -48,7 +437,7 @@
       </size>
      </property>
      <property name="title" >
-      <string>Quick Edit</string>
+      <string>Quick Edit (per channel)</string>
      </property>
      <layout class="QGridLayout" >
       <property name="margin" >
@@ -135,7 +524,7 @@
        </widget>
       </item>
       <item row="1" column="0" >
-       <widget class="QLabel" name="GlobalVolumeLabel" >
+       <widget class="QLabel" name="channelVolumeLabel" >
         <property name="frameShape" >
          <enum>QFrame::StyledPanel</enum>
         </property>
@@ -148,7 +537,7 @@
        </widget>
       </item>
       <item row="0" column="0" >
-       <widget class="Awl::Knob" name="volumeKnob" >
+       <widget class="Awl::Knob" name="channelVolumeKnob" >
         <property name="maxValue" >
          <double>1</double>
         </property>
@@ -188,9 +577,9 @@
          <font>
           <family>Sans Serif</family>
           <pointsize>9</pointsize>
-          <weight>75</weight>
+          <weight>50</weight>
           <italic>false</italic>
-          <bold>true</bold>
+          <bold>false</bold>
           <underline>false</underline>
           <strikeout>false</strikeout>
          </font>
@@ -209,7 +598,7 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0" >
+   <item row="2" column="0" colspan="4" >
     <widget class="QTabWidget" name="deicsOnzeTabWidget" >
      <property name="sizePolicy" >
       <sizepolicy>
@@ -231,6 +620,9 @@
      <property name="tabShape" >
       <enum>QTabWidget::Rounded</enum>
      </property>
+     <property name="currentIndex" >
+      <number>0</number>
+     </property>
      <widget class="QWidget" name="PresetsTab" >
       <attribute name="title" >
        <string>&amp;Presets</string>
@@ -242,81 +634,78 @@
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item row="0" column="5" >
-        <widget class="QLineEdit" name="presetLineEdit" >
+       <item row="0" column="0" >
+        <widget class="QSpinBox" name="hbankSpinBox" >
+         <property name="enabled" >
+          <bool>false</bool>
+         </property>
+         <property name="toolTip" >
+          <string>Bank numerous</string>
+         </property>
+         <property name="maximum" >
+          <number>128</number>
+         </property>
+         <property name="minimum" >
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" >
+        <widget class="QLineEdit" name="categoryLineEdit" >
          <property name="enabled" >
           <bool>false</bool>
          </property>
          <property name="text" >
-          <string>INITVOICE</string>
+          <string>NONE</string>
          </property>
          <property name="maxLength" >
           <number>12</number>
          </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="6" >
-        <widget class="QLabel" name="presentTextLAbel" >
-         <property name="font" >
-          <font>
-           <family>Sans Serif</family>
-           <pointsize>8</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-           <underline>false</underline>
-           <strikeout>false</strikeout>
-          </font>
+       <item row="0" column="2" >
+        <widget class="QSpinBox" name="lbankSpinBox" >
+         <property name="enabled" >
+          <bool>false</bool>
          </property>
-         <property name="frameShape" >
-          <enum>QFrame::NoFrame</enum>
+         <property name="toolTip" >
+          <string>Bank numerous</string>
          </property>
-         <property name="frameShadow" >
-          <enum>QFrame::Plain</enum>
+         <property name="maximum" >
+          <number>128</number>
+         </property>
+         <property name="minimum" >
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3" >
+        <widget class="QLineEdit" name="subcategoryLineEdit" >
+         <property name="enabled" >
+          <bool>false</bool>
          </property>
          <property name="text" >
-          <string>DeicsOnze v0.3 Copyright (c) 2004-2006 Nil Geisweiller. Published under GPL licence.</string>
+          <string>NONE</string>
+         </property>
+         <property name="maxLength" >
+          <number>12</number>
          </property>
         </widget>
        </item>
-       <item row="1" column="2" colspan="2" >
-        <widget class="QTreeWidget" name="subcategoryListView" >
-         <property name="contextMenuPolicy" >
-          <enum>Qt::CustomContextMenu</enum>
-         </property>
-         <property name="rootIsDecorated" >
+       <item row="0" column="4" >
+        <widget class="QSpinBox" name="progSpinBox" >
+         <property name="enabled" >
           <bool>false</bool>
          </property>
-         <column>
-          <property name="text" >
-           <string>LBank</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Subcategory</string>
-          </property>
-         </column>
-        </widget>
-       </item>
-       <item row="1" column="4" colspan="2" >
-        <widget class="QTreeWidget" name="presetListView" >
-         <property name="contextMenuPolicy" >
-          <enum>Qt::CustomContextMenu</enum>
+         <property name="toolTip" >
+          <string>Program numerous</string>
          </property>
-         <property name="rootIsDecorated" >
-          <bool>false</bool>
+         <property name="maximum" >
+          <number>128</number>
          </property>
-         <column>
-          <property name="text" >
-           <string>Prog</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Preset</string>
-          </property>
-         </column>
+         <property name="minimum" >
+          <number>1</number>
+         </property>
         </widget>
        </item>
        <item row="1" column="0" colspan="2" >
@@ -363,77 +752,80 @@
          </column>
         </widget>
        </item>
-       <item row="0" column="4" >
-        <widget class="QSpinBox" name="progSpinBox" >
-         <property name="enabled" >
+       <item row="1" column="4" colspan="2" >
+        <widget class="QTreeWidget" name="presetListView" >
+         <property name="contextMenuPolicy" >
+          <enum>Qt::CustomContextMenu</enum>
+         </property>
+         <property name="rootIsDecorated" >
           <bool>false</bool>
          </property>
-         <property name="toolTip" >
-          <string>Program numerous</string>
+         <column>
+          <property name="text" >
+           <string>Prog</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Preset</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item row="1" column="2" colspan="2" >
+        <widget class="QTreeWidget" name="subcategoryListView" >
+         <property name="contextMenuPolicy" >
+          <enum>Qt::CustomContextMenu</enum>
          </property>
-         <property name="maximum" >
-          <number>128</number>
+         <property name="rootIsDecorated" >
+          <bool>false</bool>
          </property>
-         <property name="minimum" >
-          <number>1</number>
+         <column>
+          <property name="text" >
+           <string>LBank</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Subcategory</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="6" >
+        <widget class="QLabel" name="presentTextLAbel" >
+         <property name="font" >
+          <font>
+           <family>Sans Serif</family>
+           <pointsize>8</pointsize>
+           <weight>50</weight>
+           <italic>false</italic>
+           <bold>false</bold>
+           <underline>false</underline>
+           <strikeout>false</strikeout>
+          </font>
+         </property>
+         <property name="frameShape" >
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow" >
+          <enum>QFrame::Plain</enum>
+         </property>
+         <property name="text" >
+          <string>DeicsOnze v0.3 Copyright (c) 2004-2006 Nil Geisweiller. Published under GPL licence.</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="3" >
-        <widget class="QLineEdit" name="subcategoryLineEdit" >
+       <item row="0" column="5" >
+        <widget class="QLineEdit" name="presetLineEdit" >
          <property name="enabled" >
           <bool>false</bool>
          </property>
          <property name="text" >
-          <string>NONE</string>
+          <string>INITVOICE</string>
          </property>
          <property name="maxLength" >
           <number>12</number>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2" >
-        <widget class="QSpinBox" name="lbankSpinBox" >
-         <property name="enabled" >
-          <bool>false</bool>
-         </property>
-         <property name="toolTip" >
-          <string>Bank numerous</string>
-         </property>
-         <property name="maximum" >
-          <number>128</number>
-         </property>
-         <property name="minimum" >
-          <number>1</number>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1" >
-        <widget class="QLineEdit" name="categoryLineEdit" >
-         <property name="enabled" >
-          <bool>false</bool>
-         </property>
-         <property name="text" >
-          <string>NONE</string>
-         </property>
-         <property name="maxLength" >
-          <number>12</number>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" >
-        <widget class="QSpinBox" name="hbankSpinBox" >
-         <property name="enabled" >
-          <bool>false</bool>
-         </property>
-         <property name="toolTip" >
-          <string>Bank numerous</string>
-         </property>
-         <property name="maximum" >
-          <number>128</number>
-         </property>
-         <property name="minimum" >
-          <number>1</number>
          </property>
         </widget>
        </item>
@@ -1095,9 +1487,9 @@
         </widget>
        </item>
        <item row="0" column="0" >
-        <widget class="QGroupBox" name="masterVolGroupBox" >
+        <widget class="QGroupBox" name="channelPanGroupBox" >
          <property name="title" >
-          <string>Master Volume</string>
+          <string>Channel Panoramic</string>
          </property>
          <layout class="QHBoxLayout" >
           <property name="margin" >
@@ -1107,18 +1499,24 @@
            <number>6</number>
           </property>
           <item>
-           <widget class="QSlider" name="masterVolSlider" >
+           <widget class="QSlider" name="channelPanSlider" >
             <property name="cursor" >
              <cursor>13</cursor>
             </property>
             <property name="toolTip" >
              <string>Master Volume</string>
             </property>
+            <property name="minimum" >
+             <number>-127</number>
+            </property>
             <property name="maximum" >
-             <number>255</number>
+             <number>127</number>
             </property>
             <property name="value" >
-             <number>64</number>
+             <number>0</number>
+            </property>
+            <property name="sliderPosition" >
+             <number>0</number>
             </property>
             <property name="orientation" >
              <enum>Qt::Horizontal</enum>
@@ -1131,10 +1529,13 @@
              <string>Master volume</string>
             </property>
             <property name="maximum" >
-             <number>255</number>
+             <number>127</number>
+            </property>
+            <property name="minimum" >
+             <number>-127</number>
             </property>
             <property name="value" >
-             <number>64</number>
+             <number>0</number>
             </property>
            </widget>
           </item>
@@ -4137,6 +4538,9 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
        </property>
        <item row="0" column="0" colspan="4" >
         <widget class="QTabWidget" name="controlTabWidget" >
+         <property name="currentIndex" >
+          <number>0</number>
+         </property>
          <widget class="QWidget" name="FCTab" >
           <attribute name="title" >
            <string>Foot Control</string>
@@ -5178,7 +5582,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
      </widget>
      <widget class="QWidget" name="ConfigureTab" >
       <attribute name="title" >
-       <string>&amp;Configure</string>
+       <string>&amp;Configure (global)</string>
       </attribute>
       <layout class="QGridLayout" >
        <property name="margin" >
@@ -5187,7 +5591,176 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item row="0" column="0" colspan="4" >
+       <item row="2" column="0" >
+        <widget class="QGroupBox" name="qualityGroupBox" >
+         <property name="title" >
+          <string>Quality</string>
+         </property>
+         <layout class="QHBoxLayout" >
+          <property name="margin" >
+           <number>10</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QComboBox" name="qualityComboBox" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+            <item>
+             <property name="text" >
+              <string>High</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Middle</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Low</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2" >
+        <widget class="QGroupBox" name="pathGroupBox" >
+         <property name="title" >
+          <string>Set Path</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" colspan="2" >
+           <widget class="QCheckBox" name="initSetCheckBox" >
+            <property name="text" >
+             <string>Load the following set at the initialization :</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" >
+           <widget class="QPushButton" name="browsePushButton" >
+            <property name="text" >
+             <string>Browse...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QLineEdit" name="pathLineEdit" >
+            <property name="maxLength" >
+             <number>128</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="0" >
+        <widget class="QGroupBox" name="fileGroupBox" >
+         <property name="title" >
+          <string>Configuration File</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="1" >
+           <widget class="QPushButton" name="saveConfPushButton" >
+            <property name="enabled" >
+             <bool>true</bool>
+            </property>
+            <property name="text" >
+             <string>Save...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2" >
+           <widget class="QPushButton" name="loadConfPushButton" >
+            <property name="enabled" >
+             <bool>true</bool>
+            </property>
+            <property name="text" >
+             <string>Load...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QPushButton" name="saveDefaultPushButton" >
+            <property name="text" >
+             <string>Save as default</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item rowspan="2" row="2" column="1" >
+        <widget class="QGroupBox" name="saveModeButtonGroup" >
+         <property name="title" >
+          <string>Save Mode (into the song)</string>
+         </property>
+         <layout class="QVBoxLayout" >
+          <property name="margin" >
+           <number>10</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QRadioButton" name="minSaveRadioButton" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="text" >
+             <string>Save only the used presets</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="hugeSaveRadioButton" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="text" >
+             <string>Save the entire set</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="saveConfigCheckBox" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="text" >
+             <string>Save the configuration</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2" >
         <widget class="QGroupBox" name="colorGroupBox" >
          <property name="title" >
           <string>Colors</string>
@@ -5376,316 +5949,6 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
          </layout>
         </widget>
        </item>
-       <item rowspan="2" row="2" column="3" >
-        <widget class="QGroupBox" name="saveModeButtonGroup" >
-         <property name="title" >
-          <string>Save Mode (into the song)</string>
-         </property>
-         <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>10</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QRadioButton" name="minSaveRadioButton" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="text" >
-             <string>Save only the used presets</string>
-            </property>
-            <property name="checked" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="hugeSaveRadioButton" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="text" >
-             <string>Save the entire set</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="saveConfigCheckBox" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="text" >
-             <string>Save the configuration</string>
-            </property>
-            <property name="checked" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="3" column="0" colspan="3" >
-        <widget class="QGroupBox" name="fileGroupBox" >
-         <property name="title" >
-          <string>Configuration File</string>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="0" column="1" >
-           <widget class="QPushButton" name="saveConfPushButton" >
-            <property name="enabled" >
-             <bool>true</bool>
-            </property>
-            <property name="text" >
-             <string>Save...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2" >
-           <widget class="QPushButton" name="loadConfPushButton" >
-            <property name="enabled" >
-             <bool>true</bool>
-            </property>
-            <property name="text" >
-             <string>Load...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" >
-           <widget class="QPushButton" name="saveDefaultPushButton" >
-            <property name="text" >
-             <string>Save as default</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="4" >
-        <widget class="QGroupBox" name="pathGroupBox" >
-         <property name="title" >
-          <string>Set Path</string>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="0" column="0" colspan="2" >
-           <widget class="QCheckBox" name="initSetCheckBox" >
-            <property name="text" >
-             <string>Load the following set at the initialization :</string>
-            </property>
-            <property name="checked" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" >
-           <widget class="QPushButton" name="browsePushButton" >
-            <property name="text" >
-             <string>Browse...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" >
-           <widget class="QLineEdit" name="pathLineEdit" >
-            <property name="maxLength" >
-             <number>128</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="1" >
-        <widget class="QGroupBox" name="nbrVoicesGroupBox" >
-         <property name="title" >
-          <string>Nbr Voices</string>
-         </property>
-         <layout class="QHBoxLayout" >
-          <property name="margin" >
-           <number>10</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QSpinBox" name="nbrVoicesSpinBox" >
-            <property name="enabled" >
-             <bool>true</bool>
-            </property>
-            <property name="toolTip" >
-             <string>Number of Voices</string>
-            </property>
-            <property name="maximum" >
-             <number>64</number>
-            </property>
-            <property name="minimum" >
-             <number>1</number>
-            </property>
-            <property name="value" >
-             <number>8</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="0" >
-        <widget class="QGroupBox" name="qualityGroupBox" >
-         <property name="title" >
-          <string>Quality</string>
-         </property>
-         <layout class="QHBoxLayout" >
-          <property name="margin" >
-           <number>10</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QComboBox" name="qualityComboBox" >
-            <property name="enabled" >
-             <bool>false</bool>
-            </property>
-            <item>
-             <property name="text" >
-              <string>High</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Middle</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Low</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="2" >
-        <widget class="QGroupBox" name="MidiChInGroupBox" >
-         <property name="title" >
-          <string>Midi Input Ch</string>
-         </property>
-         <layout class="QHBoxLayout" >
-          <property name="margin" >
-           <number>10</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QComboBox" name="MidiInChComboBox" >
-            <property name="enabled" >
-             <bool>true</bool>
-            </property>
-            <item>
-             <property name="text" >
-              <string>All</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>1</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>2</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>3</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>4</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>5</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>6</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>7</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>8</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>9</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>10</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>11</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>12</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>13</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>14</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>15</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>16</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
       </layout>
      </widget>
     </widget>
@@ -5696,8 +5959,15 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
  <pixmapfunction></pixmapfunction>
  <customwidgets>
   <customwidget>
+   <class>Awl::VolKnob</class>
+   <extends>Awl::Knob</extends>
+   <header>awl/volknob.h</header>
+   <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
    <class>Awl::Knob</class>
-   <extends></extends>
+   <extends>QWidget</extends>
    <header>awl/knob.h</header>
    <container>0</container>
    <pixmap></pixmap>
@@ -5706,7 +5976,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
  <tabstops>
   <tabstop>deicsOnzeTabWidget</tabstop>
   <tabstop>presetLineEdit</tabstop>
-  <tabstop>masterVolSlider</tabstop>
+  <tabstop>channelPanSlider</tabstop>
   <tabstop>feedbackSlider</tabstop>
   <tabstop>LFOSyncCheckBox</tabstop>
   <tabstop>PModSensSlider</tabstop>
@@ -5829,7 +6099,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
  <resources/>
  <connections>
   <connection>
-   <sender>masterVolSlider</sender>
+   <sender>channelPanSlider</sender>
    <signal>valueChanged(int)</signal>
    <receiver>masterVolSpinBox</receiver>
    <slot>setValue(int)</slot>
@@ -5847,7 +6117,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
   <connection>
    <sender>masterVolSpinBox</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>masterVolSlider</receiver>
+   <receiver>channelPanSlider</receiver>
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >

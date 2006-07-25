@@ -53,9 +53,11 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   envelopeGraph[2] = new QFrameEnvelope(envelope3Frame, this, 2);
   envelopeGraph[3] = new QFrameEnvelope(envelope4Frame, this, 3);
 
+  //Panic
+  connect(panicButton, SIGNAL(pressed()), this, SLOT(setPanic()));
   //Quick edit
-  connect(volumeKnob, SIGNAL(valueChanged(float, int)),
-	  this, SLOT(setVolKnob(float)));
+  connect(channelVolumeKnob, SIGNAL(valueChanged(float, int)),
+	  this, SLOT(setChannelVolKnob(float)));
   connect(brightnessKnob, SIGNAL(valueChanged(float, int)),
 	  this, SLOT(setBrightnessKnob(float)));
   connect(modulationKnob, SIGNAL(valueChanged(float, int)),
@@ -88,8 +90,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setBrowseInitSetPath()));
 
   //Midi in channel
-  connect(MidiInChComboBox, SIGNAL(activated(int)),
-	  this, SLOT(setMidiInCh(int)));
+  //connect(MidiInChComboBox, SIGNAL(activated(int)),
+  //  this, SLOT(setMidiInCh(int)));
   //Save mode ratio button
   connect(minSaveRadioButton, SIGNAL(toggled(bool)),
 	  this, SLOT(setSaveOnlyUsed(bool)));
@@ -130,8 +132,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setLBank(int)));
   connect(progSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setProg(int)));
   //Global
-  connect(masterVolSlider, SIGNAL(valueChanged(int)),
-	  this, SLOT(setMasterVol(int)));
+  connect(channelPanSlider, SIGNAL(valueChanged(int)),
+	  this, SLOT(setPanVol(int)));
   connect(feedbackSlider, SIGNAL(valueChanged(int)),
 	  this, SLOT(setFeedback(int)));
   connect(LFOWaveComboBox, SIGNAL(activated(int)),
@@ -325,6 +327,15 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
      ("/usr/local/share/muse-1.0pre1/presets/deicsonze/SutulaBank.dei")
      );
 
+}
+
+//-----------------------------------------------------------
+// setPanic
+//-----------------------------------------------------------
+void DeicsOnzeGui::setPanic() {
+  unsigned char* message = new unsigned char[1];
+  message[0]=SYSEX_PANIC;
+  sendSysex(message, 1); 
 }
 
 //-----------------------------------------------------------
@@ -593,6 +604,49 @@ void DeicsOnzeGui::setTextColor(const QColor & c) {
   QPalette p = this->palette();
   p.setColor(QPalette::WindowText, c);
   this->setPalette(p);
+  quickEditGroupBox->setPalette(p);
+  channelPanGroupBox->setPalette(p);
+  FeedbackGroupBox->setPalette(p);
+  LFOGroupBox->setPalette(p);
+  ModulationMatrixGroupBox->setPalette(p);
+  FeedbackGroupBox->setPalette(p);
+  pitchEnvGroupBox->setPalette(p);
+  Frequency1groupBox->setPalette(p);
+  OUT1groupBox->setPalette(p);
+  Env1GroupBox->setPalette(p);
+  Scaling1GroupBox->setPalette(p);
+  DetWaveEGS1GroupBox->setPalette(p);
+  sensitivity1groupBox->setPalette(p);
+  Frequency2groupBox->setPalette(p);
+  OUT2groupBox->setPalette(p);
+  Env2GroupBox->setPalette(p);
+  Scaling2GroupBox->setPalette(p);
+  DetWaveEGS2GroupBox->setPalette(p);
+  sensitivity2groupBox->setPalette(p);
+  Frequency3groupBox->setPalette(p);
+  OUT3groupBox->setPalette(p);
+  Env3GroupBox->setPalette(p);
+  Scaling3GroupBox->setPalette(p);
+  DetWaveEGS3GroupBox->setPalette(p);
+  sensitivity3groupBox->setPalette(p);
+  Frequency4groupBox->setPalette(p);
+  OUT4groupBox->setPalette(p);
+  Env4GroupBox->setPalette(p);
+  Scaling4GroupBox->setPalette(p);
+  DetWaveEGS4GroupBox->setPalette(p);
+  sensitivity4groupBox->setPalette(p);
+  transposeGroupBox->setPalette(p);
+  detuneGroupBox->setPalette(p);
+  footSWGroupBox->setPalette(p);
+  pitchBendRangeGroupBox->setPalette(p);
+  reverbGroupBox->setPalette(p);
+  modeGroupBox->setPalette(p);
+  portamentoGroupBox->setPalette(p);
+  colorGroupBox->setPalette(p);
+  pathGroupBox->setPalette(p);
+  qualityGroupBox->setPalette(p);
+  saveModeButtonGroup->setPalette(p);
+  fileGroupBox->setPalette(p);
 }
 void DeicsOnzeGui::setBackgroundColor(const QColor & c) {
   QPalette p = this->palette();
@@ -603,12 +657,15 @@ void DeicsOnzeGui::setEditTextColor(const QColor & c) {
   QPalette p = this->palette();
   p.setColor(QPalette::Text, c);
   this->setPalette(p);
-  volumeKnob->setScaleValueColor(c);
+  masterVolKnob->setScaleValueColor(c);
+  channelVolumeKnob->setScaleValueColor(c);
   brightnessKnob->setScaleValueColor(c);
   modulationKnob->setScaleValueColor(c);
   detuneKnob->setScaleValueColor(c);
   attackKnob->setScaleValueColor(c);
   releaseKnob->setScaleValueColor(c);
+  p.setColor(QPalette::WindowText, c);
+  presetNameLabel->setPalette(p);
 }
 void DeicsOnzeGui::setEditBackgroundColor(const QColor & c) {
   QPalette p = this->palette();
@@ -629,7 +686,8 @@ void DeicsOnzeGui::setEditBackgroundColor(const QColor & c) {
   p = envelope4Frame->palette();
   p.setColor(QPalette::Window, c);
   envelope4Frame->setPalette(p);
-  volumeKnob->setScaleColor(c);
+  masterVolKnob->setScaleColor(c);
+  channelVolumeKnob->setScaleColor(c);
   brightnessKnob->setScaleColor(c);
   modulationKnob->setScaleColor(c);
   detuneKnob->setScaleColor(c);
@@ -2014,8 +2072,8 @@ void DeicsOnzeGui::setBrowseInitSetPath() {
 //-----------------------------------------------------------
 // Quick Edit
 //-----------------------------------------------------------
-void DeicsOnzeGui::setVolKnob(float val) {
-  masterVolSlider->setValue((int)(val*MAXMASTERVOLUME));
+void DeicsOnzeGui::setChannelVolKnob(float val) {
+  channelVolumeKnob->setValue((int)(val*MAXMASTERVOLUME)); //TODO to change
 }
 void DeicsOnzeGui::setBrightnessKnob(float val) {
   sendController(0, CTRL_FINEBRIGHTNESS, (int)(val*(float)MAXFINEBRIGHTNESS));
@@ -2035,10 +2093,16 @@ void DeicsOnzeGui::setReleaseKnob(float val) {
 //-----------------------------------------------------------
 // Global control
 //-----------------------------------------------------------
-void DeicsOnzeGui::setMasterVol(int mv) {
-  volumeKnob->blockSignals(true);
-  volumeKnob->setValue((float)mv/(float)MAXMASTERVOLUME);
-  volumeKnob->blockSignals(false);
+void DeicsOnzeGui::setPanVol(int mv) { //TODO
+  //volumeKnob->blockSignals(true);
+  //volumeKnob->setValue((float)mv/(float)MAXMASTERVOLUME);
+  //volumeKnob->blockSignals(false);
+  //sendController(0, CTRL_MASTERVOLUME, mv);
+}
+void DeicsOnzeGui::setMasterVol(int mv) { //to change
+  //volumeKnob->blockSignals(true);
+  //volumeKnob->setValue((float)mv/(float)MAXMASTERVOLUME);
+  //volumeKnob->blockSignals(false);
   sendController(0, CTRL_MASTERVOLUME, mv);
 }
 
@@ -2517,9 +2581,9 @@ void DeicsOnzeGui::updateNbrVoices(int val) {
   nbrVoicesSpinBox->blockSignals(false);  
 }
 void DeicsOnzeGui::updateMidiInCh(int val) {
-  MidiInChComboBox->blockSignals(true);
-  MidiInChComboBox->setCurrentIndex(val);		
-  MidiInChComboBox->blockSignals(false);
+  //MidiInChComboBox->blockSignals(true);
+  //MidiInChComboBox->setCurrentIndex(val);		
+  //MidiInChComboBox->blockSignals(false);
 }
 void DeicsOnzeGui::updateQuality(int val) {
   qualityComboBox->blockSignals(true);
@@ -3351,15 +3415,15 @@ void DeicsOnzeGui::updateGLOBALDETUNE(int val) {
   detuneKnob->blockSignals(false);
 }
 void DeicsOnzeGui::updateMASTERVOLUME(int val) {
-  masterVolSlider->blockSignals(true);
-  masterVolSlider->setValue(val);
-  masterVolSlider->blockSignals(false);
-  masterVolSpinBox->blockSignals(true);
-  masterVolSpinBox->setValue(val);
-  masterVolSpinBox->blockSignals(false);
-  volumeKnob->blockSignals(true);
-  volumeKnob->setValue(((float)val)/(float)MAXMASTERVOLUME);
-  volumeKnob->blockSignals(false);
+  //masterVolSlider->blockSignals(true);
+  //masterVolSlider->setValue(val);
+  //masterVolSlider->blockSignals(false);
+  //masterVolSpinBox->blockSignals(true);
+  //masterVolSpinBox->setValue(val);
+  //masterVolSpinBox->blockSignals(false);
+  channelVolumeKnob->blockSignals(true);
+  channelVolumeKnob->setValue(((float)val)/(float)MAXMASTERVOLUME);
+  channelVolumeKnob->blockSignals(false);
 }
 void DeicsOnzeGui::updateCategoryName(QString cn, bool enable) {
   categoryLineEdit->setEnabled(enable);

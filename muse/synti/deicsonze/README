@@ -3,15 +3,11 @@ FM synthesis of the YAMAHA DX11 synthesizer/TX81Z sound module.
 
 It contains over 2000 presets archived by Bryan Sutula belonging to the public
 domain. If by any chance you find some of them that are under copyright please
-contact me to take it off as soon as possible.
+contact me to take them off.
 
-Not every function is implemented but it starts to sound like the original
-(and even better). Pitch envelope, portamento, pitch bend, modulation and some
+Not every function is implemented but it's already sounding like the original
+(even better). Pitch envelope, portamento, pitch bend, modulation and some
 others are not implemented yet.
-
-The vertical sliders are inverted because QTDesigner doesn't have the feature
-of slider invertion, since I think that it will get it before I will finish
-DeicsOnze I'm waiting for a QT improvement.
 
 The files with the extention .fig in the directory pics have been made 
 with xfig.
