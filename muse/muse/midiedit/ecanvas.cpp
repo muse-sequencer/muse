@@ -63,10 +63,10 @@ EventCanvas::EventCanvas(MidiEditor* pr, TimeCanvasType type)
 //   range
 //---------------------------------------------------------
 
-void EventCanvas::range(int* s, int* e) const
+void EventCanvas::range(AL::Pos& s, AL::Pos& e) const
       {
-      *s = startTick;
-      *e = endTick;
+      s.setTick(startTick);
+      e.setTick(endTick);
       }
 
 //---------------------------------------------------------

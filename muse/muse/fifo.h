@@ -44,49 +44,64 @@ struct FifoBuffer {
             }
       };
 
-class Fifo {
-      int nbuffer;
-      int ridx;               // read index; only touched by reader
-      int widx;               // write index; only touched by writer
-      volatile int counter;   // buffer count; writer increments, reader decrements
+//---------------------------------------------------------
+//   FifoBase
+//    - works only for one reader/writer
+//    - reader writes ridx
+//    - writer writes widx
+//    - reader decrements counter
+//    - writer increments counter
+//    - counter increment/decrement must be atomic
+//---------------------------------------------------------
+
+class FifoBase {
+
+   protected:
+      int ridx;               // read index
+      int widx;               // write index
+      volatile int counter;   // objects in fifo
+
+   public:
+      FifoBase()          { clear(); }
+      virtual ~FifoBase() {}
+      void clear();
+      virtual void push();    // put object on fifo
+      virtual void pop();     // remove object from fifo
+      int count() const     { return counter; }
+      int readIndex() const { return ridx; }
+      };
+
+//---------------------------------------------------------
+//   Fifo
+//---------------------------------------------------------
+
+class Fifo : public FifoBase {
+      int nbuffer;            // max buffer size (fifo-size)
       FifoBuffer** buffer;
 
    public:
       Fifo();
       ~Fifo();
-      void clear();
       bool put(int, unsigned long, float** buffer, unsigned pos);
       bool getWriteBuffer(int, unsigned long, float** buffer, unsigned pos);
-      void add();
       bool get(int, unsigned long, float** buffer, unsigned pos);
       bool get(int, unsigned long, float** buffer);
-      void remove();
-      int count() const { return counter; }
       };
-
 
 //---------------------------------------------------------
 //   Fifo1
 //---------------------------------------------------------
 
-class Fifo1 {
+class Fifo1 : public FifoBase {
    public:
       unsigned positions[FIFO_BUFFER];
-      int ridx;               // read index; only touched by reader
-      int widx;               // write index; only touched by writer
-      volatile int counter;  // buffer count; writer increments, reader decrements
 
-      Fifo1();
-      ~Fifo1();
-      void clear();
+      Fifo1() : FifoBase() {}
       int setWritePos(unsigned pos) {
             positions[widx] = pos;
             return widx;
             }
-      int count() const        { return counter; }
       unsigned readPos() const { return positions[ridx]; }
-      void put();
-      void get();
       };
 
 #endif

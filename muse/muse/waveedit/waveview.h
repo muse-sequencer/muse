@@ -8,6 +8,7 @@
 #ifndef WAVE_VIEW_H
 #define WAVE_VIEW_H
 
+#include "al/pos.h"
 #include "wave.h"
 #include "awl/tcanvas.h"
 
@@ -38,11 +39,10 @@ typedef std::list<WaveEventSelection>::iterator iWaveSelection;
 class WaveView : public TimeCanvas {
       WaveEdit* editor;
 
-      int startSample;
-      int endSample;
+      int startFrame;
+      int endFrame;
 
       Part* curPart;
-      int curPartId;
 
       enum { NORMAL, DRAG } mode;
       enum { MUTE = 0, NORMALIZE, FADE_IN, FADE_OUT, REVERSE, GAIN, EDIT_EXTERNAL }; //!< Modify operations
@@ -83,6 +83,7 @@ class WaveView : public TimeCanvas {
       WaveView(WaveEdit*);
       QString getCaption() const;
       void cmd(int n);
+      void range(AL::Pos&, AL::Pos&) const;
       };
 
 #endif

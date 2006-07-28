@@ -25,23 +25,24 @@
 WaveView::WaveView(WaveEdit* pr)
    : TimeCanvas(TIME_CANVAS)
       {
-      curPart = 0;
       selectionStart = 0;
       selectionStop  = 0;
-      lastGainvalue = 100;
-      editor = pr;
+      lastGainvalue  = 100;
+      editor         = pr;
 
       if (editor->parts()->empty()) {
             curPart = 0;
-            curPartId = -1;
             }
       else {
             curPart   = editor->parts()->begin()->second;
             }
 
+      songChanged(SC_TRACK_INSERTED);
+#if 0
       int start = curPart->frame();
       int end   = start + curPart->lenFrame();
       setTimeRange(start, end);
+#endif
       }
 
 //---------------------------------------------------------
@@ -50,7 +51,7 @@ WaveView::WaveView(WaveEdit* pr)
 
 void WaveView::paint(QPainter&, QRect)
       {
-      printf("paint\n");
+//      printf("paint\n");
       }
 
 //---------------------------------------------------------
@@ -209,44 +210,37 @@ QString WaveView::getCaption() const
 
 void WaveView::songChanged(int flags)
       {
-#if 0
-      if (flags & SC_SELECTION) {
-            startSample  = MAXINT;
-            endSample    = 0;
-            curPart      = 0;
+      if (flags & ~SC_SELECTION) {
+            startFrame  = MAXINT;
+            endFrame    = 0;
             for (iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
                   Part* part = p->second;
-                  if (part->sn() == curPartId)
-                        curPart = part;
-                  int ssample = part->frame();
-                  int esample = ssample + part->lenFrame();
-                  if (ssample < startSample) {
-                        startSample = ssample;
-                        //printf("startSample = %d\n", startSample);
-                        }
-                  if (esample > endSample) {
-                        endSample = esample;
-                        //printf("endSample = %d\n", endSample);
-                        }
+                  int sframe = part->frame();
+                  int eframe = sframe + part->lenFrame();
+                  if (sframe < startFrame)
+                        startFrame = sframe;
+                  if (eframe > endFrame)
+                        endFrame = eframe;
                   }
             }
-      if (flags & SC_CLIP_MODIFIED) {
-            update(); // Boring, but the only thing possible to do
-            }
-      if (flags & SC_TEMPO) {
+//      if (flags & SC_CLIP_MODIFIED) {
+//            update(); // Boring, but the only thing possible to do
+//            }
+/*      if (flags & SC_TEMPO) {
             setPos(0, song->cpos(), false);
             setPos(1, song->lpos(), false);
             setPos(2, song->rpos(), false);
             }
-      update();
-#endif
+*/
+      setPart(*curPart, curPart->end());
+      widget()->update();
       }
 
 //---------------------------------------------------------
 //   viewMousePressEvent
 //---------------------------------------------------------
 
-void WaveView::viewMousePressEvent(QMouseEvent* event)
+void WaveView::viewMousePressEvent(QMouseEvent* /*event*/)
       {
 #if 0
       button = event->button();
@@ -295,7 +289,7 @@ void WaveView::viewMouseReleaseEvent(QMouseEvent*)
 //   viewMouseMoveEvent
 //---------------------------------------------------------
 
-void WaveView::viewMouseMoveEvent(QMouseEvent* event)
+void WaveView::viewMouseMoveEvent(QMouseEvent* /*event*/)
       {
 #if 0
       unsigned x = event->x();
@@ -334,7 +328,7 @@ void WaveView::viewMouseMoveEvent(QMouseEvent* event)
 //   cmd
 //---------------------------------------------------------
 
-void WaveView::cmd(int n)
+void WaveView::cmd(int /*n*/)
       {
 #if 0
       int modifyoperation = -1;
@@ -440,7 +434,7 @@ void WaveView::cmd(int n)
 //   getSelection
 //---------------------------------------------------------
 
-WaveSelectionList WaveView::getSelection(unsigned startpos, unsigned stoppos)
+WaveSelectionList WaveView::getSelection(unsigned /*startpos*/, unsigned /*stoppos*/)
       {
       WaveSelectionList selection;
 #if 0
@@ -489,7 +483,7 @@ WaveSelectionList WaveView::getSelection(unsigned startpos, unsigned stoppos)
 //   modifySelection
 //---------------------------------------------------------
 
-void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppos, double paramA)
+void WaveView::modifySelection(int /*operation*/, unsigned /*startpos*/, unsigned /*stoppos*/, double /*paramA*/)
       {
 #if 0
          song->startUndo();
@@ -593,7 +587,7 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
 //   muteSelection
 //---------------------------------------------------------
 
-void WaveView::muteSelection(unsigned channels, float** data, unsigned length)
+void WaveView::muteSelection(unsigned /*channels*/, float** /*data*/, unsigned /*length*/)
       {
 #if 0
       // Set everything to 0!
@@ -609,7 +603,7 @@ void WaveView::muteSelection(unsigned channels, float** data, unsigned length)
 //   normalizeSelection
 //---------------------------------------------------------
 
-void WaveView::normalizeSelection(unsigned channels, float** data, unsigned length)
+void WaveView::normalizeSelection(unsigned /*channels*/, float** /*data*/, unsigned /*length*/)
       {
 #if 0
       float loudest = 0.0;
@@ -635,7 +629,7 @@ void WaveView::normalizeSelection(unsigned channels, float** data, unsigned leng
 //   fadeInSelection
 //---------------------------------------------------------
 
-void WaveView::fadeInSelection(unsigned channels, float** data, unsigned length)
+void WaveView::fadeInSelection(unsigned /*channels*/, float** /*data*/, unsigned /*length*/)
       {
 #if 0
       for (unsigned i=0; i<channels; i++) {
@@ -651,7 +645,7 @@ void WaveView::fadeInSelection(unsigned channels, float** data, unsigned length)
 //   fadeOutSelection
 //---------------------------------------------------------
 
-void WaveView::fadeOutSelection(unsigned channels, float** data, unsigned length)
+void WaveView::fadeOutSelection(unsigned /*channels*/, float** /*data*/, unsigned /*length*/)
       {
 #if 0
       for (unsigned i=0; i<channels; i++) {
@@ -797,3 +791,14 @@ bool WaveView::getUniqueTmpfileName(QString& newFilename)
       printf("Could not find a suitable tmpfilename (more than 10000 tmpfiles in tmpdir - clean up!\n");
       return false;
       }
+
+//---------------------------------------------------------
+//   range
+//---------------------------------------------------------
+
+void WaveView::range(AL::Pos& s, AL::Pos& e) const
+      {
+      s.setFrame(startFrame);
+      e.setFrame(endFrame);
+      }
+

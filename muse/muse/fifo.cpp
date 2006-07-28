@@ -22,6 +22,37 @@
 #include "globals.h"
 
 //---------------------------------------------------------
+//   clear
+//---------------------------------------------------------
+
+void FifoBase::clear()
+	{
+	ridx    = 0;
+      widx    = 0;
+      counter = 0;
+      }
+
+//---------------------------------------------------------
+//   push
+//---------------------------------------------------------
+
+void FifoBase::push()
+      {
+      widx = (widx + 1) % FIFO_BUFFER;
+      q_atomic_increment(&counter);
+      }
+
+//---------------------------------------------------------
+//   pop
+//---------------------------------------------------------
+
+void FifoBase::pop()
+      {
+      ridx = (ridx + 1) % FIFO_BUFFER;
+      q_atomic_decrement(&counter);
+      }
+
+//---------------------------------------------------------
 //   Fifo
 //---------------------------------------------------------
 
@@ -39,17 +70,6 @@ Fifo::~Fifo()
       for (int i = 0; i < nbuffer; ++i)
             delete buffer[i];
       delete[] buffer;
-      }
-
-//---------------------------------------------------------
-//   clear
-//---------------------------------------------------------
-
-void Fifo::clear()
-	{
-	ridx = 0;
-      widx = 0;
-      counter = 0;
       }
 
 //---------------------------------------------------------
@@ -76,7 +96,7 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
       b->pos  = pos;
       for (int i = 0; i < segs; ++i)
             memcpy(b->buffer + i * samples, src[i], samples * sizeof(float));
-      add();
+      push();
       return false;
       }
 
@@ -104,12 +124,12 @@ bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned pos)
 //            if (errMsg)
 			printf("Fifo %p::get(0x%x) n=%d, discard wrong prefetch block(s) 0x%x\n",
                      this, pos, counter, b->pos);
-            remove();
+            pop();
             errMsg = false;
             }
       for (int i = 0; i < segs; ++i)
             dst[i] = b->buffer + samples * (i % b->segs);
-      remove();
+      pop();
       return false;
       }
 
@@ -128,18 +148,8 @@ bool Fifo::get(int segs, unsigned long samples, float** dst)
   	b = buffer[ridx];
       for (int i = 0; i < segs; ++i)
             dst[i] = b->buffer + samples * (i % b->segs);
-      remove();
+      pop();
       return false;
-      }
-
-//---------------------------------------------------------
-//   remove
-//---------------------------------------------------------
-
-void Fifo::remove()
-      {
-      ridx = (ridx + 1) % nbuffer;
-      q_atomic_decrement(&counter);
       }
 
 //---------------------------------------------------------
@@ -168,56 +178,3 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
       return false;
       }
 
-//---------------------------------------------------------
-//   add
-//---------------------------------------------------------
-
-void Fifo::add()
-      {
-      widx = (widx + 1) % nbuffer;
-      q_atomic_increment(&counter);
-      }
-
-//---------------------------------------------------------
-//   Fifo1
-//---------------------------------------------------------
-
-Fifo1::Fifo1()
-      {
-      clear();
-      }
-
-Fifo1::~Fifo1()
-      {
-      }
-
-//---------------------------------------------------------
-//   clear
-//---------------------------------------------------------
-
-void Fifo1::clear()
-	{
-	ridx = 0;
-      widx = 0;
-      counter = 0;
-      }
-
-//---------------------------------------------------------
-//   put
-//---------------------------------------------------------
-
-void Fifo1::put()
-      {
-      widx = (widx + 1) % FIFO_BUFFER;
-      q_atomic_increment(&counter);
-      }
-
-//---------------------------------------------------------
-//   get
-//---------------------------------------------------------
-
-void Fifo1::get()
-      {
-      ridx = (ridx + 1) % FIFO_BUFFER;
-      q_atomic_decrement(&counter);
-      }

@@ -90,7 +90,6 @@ void AudioPrefetch::processMsg1(const void* m)
       const PrefetchMsg* msg = (PrefetchMsg*)m;
       switch(msg->id) {
             case PREFETCH_TICK:
-// printf("!");fflush(stdout);
                   prefetch(false);
                   seekPos = ~0;     // invalidate cached last seek position
                   break;
@@ -175,11 +174,11 @@ void AudioPrefetch::prefetch(bool seekFlag)
                   WaveTrack* track = *it;
                   if (!seekFlag && ((audio->isRecording() && track->recordFlag()) || !audio->isPlaying()))
                       continue;
-                  int ch = track->channels();
+                  // int ch = track->channels();
                   track->fetchData(writePos, segmentSize, widx);
                   }
             writePos += segmentSize;
-            fifo.put();
+            fifo.push();
             }
       }
 

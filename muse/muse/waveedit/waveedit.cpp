@@ -17,14 +17,14 @@
 #include "part.h"
 #include "muse.h"
 
-int WaveEdit::_widthInit = 600;
-int WaveEdit::_heightInit = 400;
+int WaveEdit::initWidth  = WaveEdit::INIT_WIDTH;
+int WaveEdit::initHeight = WaveEdit::INIT_HEIGHT;
 
 //---------------------------------------------------------
 //   WaveEdit
 //---------------------------------------------------------
 
-WaveEdit::WaveEdit(PartList* pl)
+WaveEdit::WaveEdit(PartList* pl, bool init)
    : Editor()
       {
       _parts = pl;
@@ -109,13 +109,15 @@ WaveEdit::WaveEdit(PartList* pl)
       //    Rest
       //---------------------------------------------------
 
-      if (!parts()->empty()) { // Roughly match total size of part
-            Part* firstPart = parts()->begin()->second;
+//      if (!parts()->empty()) { // Roughly match total size of part
+//            Part* firstPart = parts()->begin()->second;
 //            xscale = 0 - firstPart->lenFrame()/_widthInit;
-            }
+//            }
 
       view = new WaveView(this);
       view->setRaster(0);
+      view->setFollow(INIT_FOLLOW);
+
       connect(song, SIGNAL(posChanged(int,const AL::Pos&,bool)), view, SLOT(setLocatorPos(int,const AL::Pos&,bool)));
       view->setLocatorPos(0, song->cpos(), true);
       view->setLocatorPos(1, song->lpos(), false);
@@ -124,10 +126,22 @@ WaveEdit::WaveEdit(PartList* pl)
       connect(view, SIGNAL(posChanged(int,const AL::Pos&)), song, SLOT(setPos(int,const AL::Pos&)));
 
       setCentralWidget(view);
+      view->setCornerWidget(new QSizeGrip(view));
       setWindowTitle(view->getCaption());
+
+      Pos p1(0, AL::FRAMES), p2(0, AL::FRAMES);
+      view->range(p1, p2);
+      p2 += AL::sigmap.ticksMeasure(p2.tick());  // show one more measure
+      view->setTimeRange(p1, p2);
 
       configChanged();
 //      initSettings();
+
+      if (init)
+            ;  // initFromPart();
+      else {
+	      resize(initWidth, initHeight);
+            }
       }
 
 //---------------------------------------------------------

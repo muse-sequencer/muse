@@ -371,6 +371,10 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       drumEditorWidth->setValue(DrumEdit::initWidth);
       drumEditorHeight->setValue(DrumEdit::initHeight);
 
+      waveEditorWidth->setValue(WaveEdit::initWidth);
+      waveEditorHeight->setValue(WaveEdit::initHeight);
+
+
       connect(recordStop,         SIGNAL(clicked(bool)), SLOT(recordStopToggled(bool)));
       connect(recordRecord,       SIGNAL(clicked(bool)), SLOT(recordRecordToggled(bool)));
       connect(recordGotoLeftMark, SIGNAL(clicked(bool)), SLOT(recordGotoLeftMarkToggled(bool)));

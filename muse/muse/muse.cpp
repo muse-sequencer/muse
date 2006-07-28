@@ -1596,7 +1596,7 @@ void MusE::startWaveEditor()
 
 void MusE::startWaveEditor(PartList* pl)
       {
-      WaveEdit* waveEditor = new WaveEdit(pl);
+      WaveEdit* waveEditor = new WaveEdit(pl, false);
       waveEditor->show();
       connect(muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
       }

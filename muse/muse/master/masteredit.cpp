@@ -58,10 +58,10 @@ MasterEdit::MasterEdit()
          PointerTool | PencilTool | RubberTool);
       addToolBar(tools2);
 
-      QToolBar* enableMaster = addToolBar(tr("EnableMaster"));
-      enableMasterAction = enableMaster->addAction(tr("Enable"));
+      QToolBar* enableMaster = addToolBar(tr("EnableTempomap"));
+      enableMasterAction = enableMaster->addAction(tr("Tempomap"));
       enableMasterAction->setCheckable(true);
-      enableMasterAction->setToolTip(tr("Enable usage of master track"));
+      enableMasterAction->setToolTip(tr("Enable use of tempo map"));
       enableMasterAction->setChecked(song->masterFlag());
       connect(enableMasterAction, SIGNAL(triggered(bool)), song, SLOT(setMasterFlag(bool)));
 

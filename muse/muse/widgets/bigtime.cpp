@@ -18,12 +18,12 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#include "al/al.h"
 #include "globals.h"
 #include "bigtime.h"
 #include "song.h"
-// #include "app.h"
 #include "gconfig.h"
+
+#include "al/al.h"
 #include "al/sig.h"
 #include "al/tempo.h"
 

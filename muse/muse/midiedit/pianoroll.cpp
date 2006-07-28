@@ -229,10 +229,10 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
       info->setEnabled(false);
 
       setWindowTitle(canvas()->getCaption());
-      int s1, e;
-      canvas()->range(&s1, &e);
-      e += AL::sigmap.ticksMeasure(e);  // show one more measure
-      canvas()->setTimeRange(s1, e);
+      Pos p1(0, AL::TICKS), p2(0, AL::TICKS);
+      canvas()->range(p1, p2);
+      p2 += AL::sigmap.ticksMeasure(p2.tick());  // show one more measure
+      canvas()->setTimeRange(p1, p2);
 
       // connect to toolbar
       connect(canvas(), SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));

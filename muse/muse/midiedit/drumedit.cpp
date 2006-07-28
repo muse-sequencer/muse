@@ -147,10 +147,10 @@ DrumEdit::DrumEdit(PartList* pl, bool init)
 
       setWindowTitle(canvas()->getCaption());
 
-      int st, e;
-      canvas()->range(&st, &e);
-      e += AL::sigmap.ticksMeasure(e);  // show one more measure
-      canvas()->setTimeRange(st, e);
+      Pos p1(0, AL::TICKS), p2(0, AL::TICKS);
+      canvas()->range(p1, p2);
+      p2 += AL::sigmap.ticksMeasure(p2.tick());  // show one more measure
+      canvas()->setTimeRange(p1, p2);
 
       // connect toolbar
       connect(canvas(), SIGNAL(cursorPos(const AL::Pos&,bool)), toolbar, SLOT(setTime(const AL::Pos&,bool)));

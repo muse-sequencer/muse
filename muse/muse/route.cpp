@@ -412,7 +412,7 @@ void Song::readRoute(QDomNode node)
             stype = Route::SYNTIPORT;
       else {
             printf("Song::readRoute(): unknown type <%s>\n", dt.toLatin1().data());
-            dtype = Route::TRACK;
+            stype = Route::TRACK;
             }
 
       if (dt == "TRACK")

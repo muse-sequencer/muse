@@ -33,7 +33,7 @@ using AL::Xml;
 class TopWin : public QMainWindow
       {
       Q_OBJECT
-      Q_PROPERTY(bool  muse)
+      Q_PROPERTY(bool  muse)        // hack: start MusE property list
       Q_PROPERTY(QRect geometry READ geometry WRITE setGeometry)
 
    public:

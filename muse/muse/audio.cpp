@@ -479,24 +479,24 @@ void Audio::process(unsigned frames)
                   bool msg = true;
                   do {
 	                  unsigned fifoPos = fifo->readPos();
-                  	if (fifoPos != framePos) {
+                  	if (fifoPos == framePos) {
+                  		_curReadIndex = fifo->readIndex();
+                              break;
+                              }
+                        else {
                               if (msg) {
 	                              printf("Muse::Audio: wrong prefetch data 0x%x, expected 0x%x\n",
       	                     	   fifoPos, framePos);
                               	msg = false;
                                     }
-                              if (fifoPos > framePos)
+                              if (fifoPos > framePos) {
+                                    // discard whole prefetch buffer
+                                    seek(_pos + frames);
                                     break;
-                              fifo->get();      // discard buffer
+                                    }
+                              fifo->pop();      // discard buffer
                               }
-                        else {
-                  		_curReadIndex = fifo->ridx;
-                              break;
-                        	}
               		} while (fifo->count());
-                  if (_curReadIndex == -1) {
-                        seek(_pos + frames);
-                        }
                   }
             }
       for (iWaveTrack i = wl->begin(); i != wl->end(); ++i) {
@@ -534,8 +534,8 @@ void Audio::process(unsigned frames)
                   // consume prefetch buffer
                   //
                   if (_curReadIndex != -1) {
-                        audioPrefetch->getFifo()->get();
-			      audioPrefetch->msgTick();
+                        audioPrefetch->getFifo()->pop();
+			      audioPrefetch->msgTick();  // wakeup prefetch thread
                         }
                   }
             if (recording && (_bounce == 0 || _bounce == 1))

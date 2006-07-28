@@ -51,7 +51,7 @@ class WaveEdit : public Editor {
       void configChanged();
 
    public:
-      WaveEdit(PartList*);
+      WaveEdit(PartList*, bool);
       ~WaveEdit();
       PartList* parts() const { return _parts; }
 
@@ -59,7 +59,12 @@ class WaveEdit : public Editor {
              CMD_GAIN_FREE, CMD_GAIN_200, CMD_GAIN_150, CMD_GAIN_75, CMD_GAIN_50, CMD_GAIN_25,
              CMD_EDIT_EXTERNAL,
              CMD_SELECT_ALL, CMD_SELECT_NONE };
+      static int initWidth, initHeight;
+      static const int INIT_WIDTH  = 650;
+      static const int INIT_HEIGHT = 450;
       };
+
+static const bool INIT_FOLLOW = false;
 
 #endif
 

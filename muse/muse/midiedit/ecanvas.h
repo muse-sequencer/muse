@@ -21,6 +21,7 @@
 #ifndef __ECANVAS_H__
 #define __ECANVAS_H__
 
+#include "al/pos.h"
 #include "awl/tcanvas.h"
 #include "widgets/noteinfo.h"
 #include "citem.h"
@@ -150,7 +151,7 @@ class EventCanvas : public TimeCanvas {
       MidiTrack* track() const;
       Part* part() const       	{ return curPart; }
       QString getCaption() const;
-      void range(int* s, int* e) const;
+      void range(AL::Pos& s, AL::Pos& e) const;
       void selectFirst();
       virtual void modifySelected(NoteInfo::ValType, int) {}
       virtual void keyPress(QKeyEvent*);
