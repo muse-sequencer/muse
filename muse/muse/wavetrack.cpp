@@ -77,10 +77,16 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, int widx)
       float** bp = readBuffer[widx];
       for (int i = 0; i < channels(); ++i)
             memset(bp[i], 0, samples * sizeof(float));
-      PartList* pl = parts();
 
+      PartList* pl = parts();
       for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
             Part* part = ip->second;
+
+            // DEBUG
+            int type = int(part->type());
+            if (type != AL::FRAMES)
+                  printf("part has wrong type\n");
+
             if (part->mute())
                   continue;
             unsigned p_spos = part->frame();
@@ -117,11 +123,14 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, int widx)
                         if (nn > samples)
                               nn = samples;
                         }
-                  float* bpp[channels()];
-                  for (int i = 0; i < channels(); ++i)
-                        bpp[i] = bp[i] + dstOffset;
-
-                  event.read(srcOffset, bpp, channels(), nn);
+                  if (dstOffset) {
+                        float* bpp[channels()];
+                        for (int i = 0; i < channels(); ++i)
+                              bpp[i] = bp[i] + dstOffset;
+                        event.read(srcOffset, bpp, channels(), nn);
+                        }
+                  else
+                        event.read(srcOffset, bp, channels(), nn);
                   }
             }
       }
@@ -381,7 +390,7 @@ void WaveTrack::process()
 
 void WaveTrack::clone(WaveTrack* t)
       {
-printf("cline WaveTrack\n");
+printf("clone WaveTrack\n");
       QString name;
       for (int i = 1; ; ++i) {
             name.sprintf("%s-%d", t->name().toLatin1().data(), i);

@@ -231,7 +231,7 @@ Plugin* PluginList::find(const QString& file, const QString& name)
             if ((file == (*i)->lib()) && (name == (*i)->label()))
                   return *i;
             }
-      printf("Plugin <%s> not found\n", name.toLatin1().data());
+      printf("MusE: Plugin <%s> not found\n", name.toAscii().data());
       return 0;
       }
 

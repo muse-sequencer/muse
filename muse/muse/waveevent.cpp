@@ -115,7 +115,7 @@ void WaveEventBase::read(unsigned offset, float** buffer, int channel, int n)
       {
       if (f.isNull())
             return;
-      f.seek(offset + _spos, 0);
+      f.seek(offset + _spos);
       f.read(channel, buffer, n);
       }
 

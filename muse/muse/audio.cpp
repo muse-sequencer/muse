@@ -307,7 +307,7 @@ void Audio::process(unsigned frames)
       ++watchAudio;           // make a simple watchdog happy
 
       if (msg) {
-// printf("msg\n");
+// printf("---msg\n");
             processMsg(msg);
             int sn = msg->serialNo;
             msg    = 0;    // dont process again
@@ -363,7 +363,6 @@ void Audio::process(unsigned frames)
                   (*i)->silence(frames);
             return;
             }
-
       unsigned framePos = _pos.frame();
 
       if (state == PLAY) {
@@ -552,7 +551,7 @@ void Audio::process(unsigned frames)
 void Audio::processMsg(AudioMsg* msg)
       {
 // if (_running)
-//      printf("audio process %d\n", msg->id);
+      printf("audio process %d\n", msg->id);
 
       switch(msg->id) {
             case AUDIO_ROUTEADD:

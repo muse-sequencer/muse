@@ -231,6 +231,8 @@ void Thread::loop()
       while (_running) {
             if (debugMode)          // DEBUG
                   _pollWait = 10;   // ms
+            else
+                  _pollWait = -1;
 
             int n = poll(pfd, npfd, _pollWait);
             if (n < 0) {

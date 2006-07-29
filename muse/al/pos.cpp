@@ -422,8 +422,10 @@ void PosLen::setLenTick(unsigned len)
       {
       _lenTick = len;
       sn       = -1;
-//      if (type() == FRAMES)
+      if (type() == FRAMES)
             _lenFrame = tempomap.tick2frame(len, &sn);
+      else
+            _lenTick = len;
       }
 
 //---------------------------------------------------------
@@ -432,10 +434,11 @@ void PosLen::setLenTick(unsigned len)
 
 void PosLen::setLenFrame(unsigned len)
       {
-      _lenFrame = len;
       sn      = -1;
-//      if (type() == TICKS)
+      if (type() == TICKS)
             _lenTick = tempomap.frame2tick(len, &sn);
+      else
+            _lenFrame = len;
       }
 
 //---------------------------------------------------------

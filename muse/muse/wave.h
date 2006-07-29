@@ -48,8 +48,10 @@ class SndFile {
       static QHash<QString, SndFile*> sndFiles;
       static QList<SndFile*> createdFiles;
       static int recFileNumber;
+
       QFileInfo _finfo;
-      SNDFILE* sf;
+      SNDFILE* sfRT;          // used by rt process (prefetch)
+      SNDFILE* sfUI;          // used by ui process
       SF_INFO sfinfo;
       SampleV** cache;
       int csize;                    // frames in cache
@@ -90,7 +92,7 @@ class SndFile {
       size_t read(int channel, float**, size_t);
       size_t write(int channel, float**, size_t);
 
-      off_t seek(off_t frames, int whence);
+      off_t seek(off_t frames);
       void read(SampleV* s, int mag, unsigned pos);
       QString strerror() const;
 
@@ -147,8 +149,8 @@ class SndFileR {
       size_t write(int channel, float** f, size_t n) {
             return sf->write(channel, f, n);
             }
-      off_t seek(off_t frames, int whence) {
-            return sf->seek(frames, whence);
+      off_t seek(off_t frames) {
+            return sf->seek(frames);
             }
       void read(SampleV* s, int mag, unsigned pos) {
             sf->read(s, mag, pos);

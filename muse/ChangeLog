@@ -1,3 +1,6 @@
+29.7 (ws)
+      * fixed drawing of waveform in wave track. Concurrent wave file 
+        accesses from gui and rt task produced distortions ("crackling").
 25.7  (ng) DeicsOnze
       * add panic button
 28.6. (ws)

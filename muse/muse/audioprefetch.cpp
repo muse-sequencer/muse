@@ -111,9 +111,9 @@ void AudioPrefetch::processMsg1(const void* m)
 
 void AudioPrefetch::msgTick()
       {
-      PrefetchMsg msg;
-      msg.id  = PREFETCH_TICK;
       if (fifo.count() < FIFO_BUFFER/3) {
+            PrefetchMsg msg;
+            msg.id  = PREFETCH_TICK;
             while (sendMsg1(&msg, sizeof(msg))) {
                   printf("AudioPrefetch::msgTick(): send failed!\n");
                   }
@@ -174,7 +174,6 @@ void AudioPrefetch::prefetch(bool seekFlag)
                   WaveTrack* track = *it;
                   if (!seekFlag && ((audio->isRecording() && track->recordFlag()) || !audio->isPlaying()))
                       continue;
-                  // int ch = track->channels();
                   track->fetchData(writePos, segmentSize, widx);
                   }
             writePos += segmentSize;

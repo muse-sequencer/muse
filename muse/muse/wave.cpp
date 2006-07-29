@@ -253,7 +253,8 @@ SndFile::SndFile(const QString& name)
       {
       refCount = 0;
       _finfo.setFile(name);
-      sf    = 0;
+      sfRT  = 0;
+      sfUI  = 0;
       csize = 0;
       cache = 0;
       openFlag = false;
@@ -284,8 +285,11 @@ bool SndFile::openRead()
             return false;
             }
 	QString p = _finfo.absoluteFilePath();
-      sf = sf_open(p.toLatin1().data(), SFM_READ, &sfinfo);
-      if (sf == 0)
+      sfinfo.format = 0;
+      sfUI = sf_open(p.toAscii().data(), SFM_READ, &sfinfo);
+      sfinfo.format = 0;
+      sfRT = sf_open(p.toAscii().data(), SFM_READ, &sfinfo);
+      if (sfUI == 0 || sfRT == 0)
             return true;
       writeFlag = false;
       openFlag  = true;
@@ -335,7 +339,7 @@ void SndFile::readCache(const QString& path, bool showProgress)
       for (unsigned ch = 0; ch < channels(); ++ch)
             cache[ch] = new SampleV[csize];
 
-      FILE* cfile = fopen(path.toLatin1().data(), "r");
+      FILE* cfile = fopen(path.toAscii().data(), "r");
       if (cfile) {
             for (unsigned ch = 0; ch < channels(); ++ch)
                   fread(cache[ch], csize * sizeof(SampleV), 1, cfile);
@@ -368,7 +372,7 @@ void SndFile::readCache(const QString& path, bool showProgress)
                         // TODO
                         }
                   }
-            seek(i * cacheMag, 0);
+            seek(i * cacheMag);
             read(channels(), fp, cacheMag);
             for (unsigned ch = 0; ch < channels(); ++ch) {
                   float rms = 0.0;
@@ -426,18 +430,44 @@ void SndFile::read(SampleV* s, int mag, unsigned pos)
             s[ch].peak = 0;
             s[ch].rms  = 0;
             }
-      if (pos > samples()) {
-//            printf("%p pos %d > samples %d\n", this, pos, samples());
+      if (pos > samples())
             return;
-            }
 
       if (mag < cacheMag) {
             float data[channels()][mag];
             float* fp[channels()];
             for (unsigned i = 0; i < channels(); ++i)
                   fp[i] = &data[i][0];
-            seek(pos, 0);
-            read(channels(), fp, mag);
+            sf_seek(sfUI, pos, SEEK_SET);
+            {
+            int srcChannels = channels();
+            int dstChannels = sfinfo.channels;
+            size_t n        = mag;
+            float** dst     = fp;
+            float buffer[n * dstChannels];
+            size_t rn  = sf_readf_float(sfUI, buffer, n);
+            float* src = buffer;
+
+            if (srcChannels == dstChannels) {
+                  for (size_t i = 0; i < rn; ++i) {
+                        for (int ch = 0; ch < srcChannels; ++ch)
+                              *(dst[ch]+i) = *src++;
+                        }
+                  }
+            else if ((srcChannels == 1) && (dstChannels == 2)) {
+                  // stereo to mono
+                  for (size_t i = 0; i < rn; ++i)
+                        *(dst[0] + i) = src[i + i] + src[i + i + 1];
+                  }
+            else if ((srcChannels == 2) && (dstChannels == 1)) {
+                  // mono to stereo
+                  for (size_t i = 0; i < rn; ++i) {
+                        float data = *src++;
+                        *(dst[0]+i) = data;
+                        *(dst[1]+i) = data;
+                        }
+                  }
+            }
 
             for (unsigned ch = 0; ch < channels(); ++ch) {
                   s[ch].peak = 0;
@@ -459,7 +489,7 @@ void SndFile::read(SampleV* s, int mag, unsigned pos)
             int rest = csize - (pos/cacheMag);
             int end  = mag;
             if (rest < mag)
-                              end = rest;
+                  end = rest;
 
             for (unsigned ch = 0; ch < channels(); ++ch) {
                   int rms = 0;
@@ -485,15 +515,16 @@ bool SndFile::openWrite()
             return false;
             }
 	QString p = _finfo.filePath();
-      sf = sf_open(p.toLatin1().data(), SFM_RDWR, &sfinfo);
-      if (sf) {
+      sfRT = sf_open(p.toLatin1().data(), SFM_RDWR, &sfinfo);
+      sfUI = 0;
+      if (sfRT) {
             openFlag  = true;
             writeFlag = true;
             QString cacheName = _finfo.absolutePath() +
                QString("/") + _finfo.baseName() + QString(".wca");
             readCache(cacheName, true);
             }
-      return sf == 0;
+      return sfRT == 0;
       }
 
 //---------------------------------------------------------
@@ -506,7 +537,9 @@ void SndFile::close()
             printf("SndFile:: alread closed\n");
             return;
             }
-      sf_close(sf);
+      sf_close(sfRT);
+      if (sfUI)
+            sf_close(sfUI);
       openFlag = false;
       }
 
@@ -521,9 +554,9 @@ void SndFile::remove()
       QString cacheName = _finfo.absolutePath() + QString("/") + _finfo.baseName() + QString(".wca");
       // QFile::remove(_finfo.filePath());
       // QFile::remove(cacheName);
+      // DEBUG:
       QFile::rename(_finfo.filePath(), _finfo.filePath() + ".del");
       QFile::rename(cacheName, cacheName + ".del");
-
       }
 
 //---------------------------------------------------------
@@ -532,10 +565,7 @@ void SndFile::remove()
 
 unsigned SndFile::samples() const
       {
-      sf_count_t curPos = sf_seek(sf, 0, SEEK_CUR);
-      int frames = sf_seek(sf, 0, SEEK_END);
-      sf_seek(sf, curPos, SEEK_SET);
-      return frames;
+      return sfinfo.frames;
       }
 
 //---------------------------------------------------------
@@ -547,15 +577,27 @@ unsigned SndFile::channels() const
       return sfinfo.channels;
       }
 
+//---------------------------------------------------------
+//   samplerate
+//---------------------------------------------------------
+
 unsigned SndFile::samplerate() const
       {
       return sfinfo.samplerate;
       }
 
+//---------------------------------------------------------
+//   format
+//---------------------------------------------------------
+
 unsigned SndFile::format() const
       {
       return sfinfo.format;
       }
+
+//---------------------------------------------------------
+//   setFormat
+//---------------------------------------------------------
 
 void SndFile::setFormat(int fmt, int ch, int rate)
       {
@@ -573,7 +615,9 @@ void SndFile::setFormat(int fmt, int ch, int rate)
 size_t SndFile::read(int srcChannels, float** dst, size_t n)
       {
       float buffer[n * sfinfo.channels];
-      size_t rn       = sf_readf_float(sf, buffer, n);
+      size_t rn       = sf_readf_float(sfRT, buffer, n);
+//      sf_seek(sfRT, n, SEEK_CUR);   //libsndfile does not update position??
+
       float* src      = buffer;
       int dstChannels = sfinfo.channels;
 
@@ -637,16 +681,16 @@ size_t SndFile::write(int srcChannels, float** src, size_t n)
                srcChannels, dstChannels);
             return 0;
             }
-      return sf_writef_float(sf, buffer, n) ;
+      return sf_writef_float(sfRT, buffer, n) ;
       }
 
 //---------------------------------------------------------
 //   seek
 //---------------------------------------------------------
 
-off_t SndFile::seek(off_t frames, int whence)
+off_t SndFile::seek(off_t frames)
       {
-      return sf_seek(sf, frames, whence);
+      return sf_seek(sfRT, frames, SEEK_SET);
       }
 
 //---------------------------------------------------------
@@ -657,7 +701,7 @@ QString SndFile::strerror() const
       {
       char buffer[128];
       buffer[0] = 0;
-      sf_error_str(sf, buffer, 128);
+      sf_error_str(sfRT, buffer, 128);
       return QString(buffer);
       }
 
@@ -705,6 +749,7 @@ SndFile* SndFile::getWave(const QString& inName, bool writeFlag)
 //---------------------------------------------------------
 //   applyUndoFile
 //---------------------------------------------------------
+
 void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, unsigned startframe, unsigned endframe)
       {
       // This one is called on both undo and redo of a wavfile
@@ -750,7 +795,7 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
       for (unsigned i=0; i<file_channels; i++) {
             data2beoverwritten[i] = new float[tmpdatalen];
             }
-      orig->seek(startframe, 0);
+      orig->seek(startframe);
       orig->read(file_channels, data2beoverwritten, tmpdatalen);
 
       orig->close();
@@ -760,7 +805,7 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
       for (unsigned i=0; i<file_channels; i++) {
             tmpfiledata[i] = new float[tmpdatalen];
             }
-      tmp.seek(0, 0);
+      tmp.seek(0);
       tmp.read(file_channels, tmpfiledata, tmpdatalen);
       tmp.close();
 
@@ -770,7 +815,7 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
             return;
             }
 
-      orig->seek(startframe, 0);
+      orig->seek(startframe);
       orig->write(file_channels, tmpfiledata, tmpdatalen);
 
       // Delete dataholder for temporary file
@@ -784,7 +829,7 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
             audio->msgIdle(false);
             return;
             }
-      tmp.seek(0, 0);
+      tmp.seek(0);
       tmp.write(file_channels, data2beoverwritten, tmpdatalen);
       tmp.close();
 

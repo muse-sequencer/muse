@@ -503,8 +503,8 @@ bool AudioTrack::multiplyCopy(int dstChannels, float** dstBuffer, int ctrl)
       if (_mute || bufferEmpty || _volume == 0.0)
             return false;
       int srcChannels = channels();
-      double vol[2];
-      double _pan = ctrlVal(AC_PAN).f;
+      float vol[2];
+      float _pan = ctrlVal(AC_PAN).f;
       vol[0] = _volume * (1.0 - _pan);
       vol[1] = _volume * (1.0 + _pan);
 

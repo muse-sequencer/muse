@@ -60,6 +60,7 @@ static void readMsg(void* p, void*)
 
 void MidiSeq::processMsg(const ThreadMsg* m)
       {
+
       AudioMsg* msg = (AudioMsg*)m;
       switch (msg->id) {
             case MS_PROCESS:
@@ -397,12 +398,12 @@ void MidiSeq::updatePollFd()
       if (!isRunning())
             return;
       clearPollFd();
+
       if (timer) {
             int timerFd = timer->getFd();
             if (timerFd != -1)
                   addPollFd(timerFd, POLLIN, midiTick, this, 0);
             }
-
       addPollFd(toThreadFdr, POLLIN, ::readMsg, this, 0);
 
       struct pollfd* pfd;

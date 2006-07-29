@@ -729,7 +729,7 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
                   }
             else {
                   // Re-read file again
-                  exttmpFile.seek(0, 0);
+                  exttmpFile.seek(0);
                   size_t sz = exttmpFile.read(file_channels, tmpdata, tmpdatalen);
                   if (sz != tmpdatalen) {
                         // File must have been shrunken - not good. Alert user.
