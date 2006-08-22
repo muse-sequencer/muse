@@ -18,10 +18,30 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-subdirs(libmidiplugin filter metronom transform trigg )
+QT4_WRAP_CPP ( trigg_mocs trigggui.h )
+QT4_WRAP_UI (  trigg_uis trigggui.ui )
 
-set ( CMAKE_CXX_FLAGS 
-      "${CMAKE_CXX_FLAGS} -DQT_NO_DEBUG -DQT_PLUGIN -DQT_SHARED -fPIC"
+add_library ( trigg SHARED 
+      trigg.cpp 
+      trigggui.cpp
+      trigggui.h
+      ${trigg_mocs}
+      ${trigg_uis}
       )
 
-set ( CMAKE_LDD_FLAGS -module -avoid-version )
+target_link_libraries( trigg
+   midiplugin awl
+   ${QT_LIBRARIES}
+   )
+
+# - tell cmake to name target name.so instead of 
+#   libname.so
+# - use precompiled header files
+#
+set_target_properties ( trigg
+   PROPERTIES PREFIX ""
+   COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
+   )
+
+install_targets ( /lib/${MusE_INSTALL_NAME}/midiplugins/ trigg )
+

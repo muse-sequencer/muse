@@ -1,3 +1,5 @@
+22.8 (rj)
+      * playing with midi plugins, one new example plugin: trigg
 29.7 (ws)
       * fixed drawing of waveform in wave track. Concurrent wave file 
         accesses from gui and rt task produced distortions ("crackling").
