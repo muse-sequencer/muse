@@ -551,7 +551,7 @@ void Audio::process(unsigned frames)
 void Audio::processMsg(AudioMsg* msg)
       {
 // if (_running)
-      printf("audio process %d\n", msg->id);
+//      printf("audio process %d\n", msg->id);
 
       switch(msg->id) {
             case AUDIO_ROUTEADD:

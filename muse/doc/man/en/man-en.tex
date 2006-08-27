@@ -158,7 +158,7 @@
    \startstandardmakeup[page=no]
       \vfill
       \M\ is hosted on SourceForge:\par
-      \type{http://mscore.sourceforge.net/}
+      \type{http://sourceforge.net/projects/lmuse}
       \blank[line]
       This document was created using \pdfTeX\ and the macro package
       \ConTeXt\.
@@ -245,21 +245,20 @@
 
 \chapter{Invoking \M}
    \section{Invoking \M}
-      \M\ is invoked from the command line by typing in:
+      \M\ is invoked from the command line by typing:
 
       \Cmd{muse}
 
       Optionally, you can use command line options of the form:
 
-      \Cmd{muse <options> <midifile>}
+      \Cmd{muse <options> <project-name>}
 
       \definedescription[Mops][location=left,headstyle=bold]
 
       \Mops{\tt <options>:}
             see below for a list of available options.
-      \Mops{\tt <midifile>:}
-            can be either a standard MIDI file or a \M\ file
-            ({\tt *.med, *.med.gz or *.med.bz2}).
+      \Mops{\tt <project-name>:}
+            name of a \M\ project
 
    \section{Command Line Options}
 
@@ -277,9 +276,9 @@
 
       Example:
 
-       \Cmd{muse -i mysong.med}
+       \Cmd{muse -i mysong}
 
-       will add trace midi input and open mysong.med on startup.
+       will add trace midi input and open project mysong on startup.
 
    \section{File types used by \M}
 
@@ -305,3 +304,4 @@
    \completeindex
    \stopappendices
 \stoptext
+

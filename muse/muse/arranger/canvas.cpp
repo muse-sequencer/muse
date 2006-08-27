@@ -183,21 +183,22 @@ void PartCanvas::paint(QPainter& p, QRect r)
 
                   QRect pr(x1, y, len, h - partBorderWidth);
                   bool clone = part->isCloned();
-                  QPen pen(Qt::black, partBorderWidth, clone ? Qt::DashLine : Qt::SolidLine);
 
+                  QPen pen(Qt::black, partBorderWidth, clone ? Qt::DashLine : Qt::SolidLine);
+                  QBrush brush(Qt::SolidPattern);
                   if (part->mute()) {
                         pen.setColor(Qt::red);
-                        p.setBrush(Qt::gray);
+                        brush.setColor(Qt::gray);
                         }
                   else if (part->selected()) {
                         pen.setColor(config.partColors[part->colorIndex()]);
-                        p.setBrush(config.selectPartBg);
+                        brush.setColor(config.selectPartBg);
                         }
                   else {
-                        p.setBrush(config.partColors[part->colorIndex()]);
+                        brush.setColor(config.partColors[part->colorIndex()]);
                         }
                   p.setPen(pen);
-
+                  p.setBrush(brush);
                   //
                   // we want to draw the rectangle without transformation
                   // to get equal border width horizontal and vertical
@@ -222,7 +223,16 @@ void PartCanvas::paint(QPainter& p, QRect r)
                   p.drawText(x1 + 3, yy, len - 6,
                      partLabelHeight-1, Qt::AlignVCenter | Qt::AlignLeft,
                      part->name());
+
+                  // redraw border
+                  p.save();
+                  p.resetMatrix();
+                  p.setPen(pen);
+                  p.setBrush(Qt::NoBrush);
+                  p.drawRect(rr);
+                  p.restore();
                   }
+
             p.setPen(QPen(Qt::lightGray, 1, Qt::SolidLine));
             if (i != tl->begin())
 	            p.drawLine(from, y-2, to, y-2);
@@ -254,7 +264,7 @@ void PartCanvas::paint(QPainter& p, QRect r)
       }
 
 //---------------------------------------------------------
-//   drawMidiSubPart
+//   drawMidiPart
 //---------------------------------------------------------
 
 void PartCanvas::drawMidiPart(QPainter& p, Part* mp, int y, int th, int from, int to)

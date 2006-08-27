@@ -293,7 +293,7 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
   SET(CPACK_PACKAGE_FILE_NAME "${CPACK_SOURCE_PACKAGE_FILE_NAME}-${CPACK_SYSTEM_NAME}")
   SET(CPACK_STRIP_FILES "bin/muse;bin/grepmidi")
-  SET(CPACK_PACKAGE_EXECUTABLES "muse" "grepmidi")
+  SET(CPACK_PACKAGE_EXECUTABLES "muse" "MusE" "grepmidi" "grepmidi")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 

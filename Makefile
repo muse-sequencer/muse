@@ -50,6 +50,9 @@ dist:
 	cd build; make package_source
 	mv build/muse-*.tar.gz .
 
+install:
+	cd build; make install
+
 #
 # this creates a shell archive / installer for
 #     MusE binary
