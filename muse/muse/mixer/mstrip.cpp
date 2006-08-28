@@ -683,9 +683,19 @@ void MidiStrip::oRoutePressed()
 MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
    : Strip(m, t, align)
       {
+      //---------------------------------------------------
+      //    plugin rack
+      //---------------------------------------------------
+
+      MidiRack* rack = new MidiRack(this, t);
+      rack->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      rack->setFixedSize(STRIP_WIDTH, rack->sizeHint().height()+2);
+      layout->addWidget(rack);
+
       int auxsSize = song->auxs()->size();
       if (_align)
-            layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize + STRIP_WIDTH/2 * 3);
+//            layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize + STRIP_WIDTH/2 * 3);
+            layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize + STRIP_WIDTH/2);
 
       volumeTouched = false;
 

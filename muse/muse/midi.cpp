@@ -36,6 +36,7 @@
 #include "al/tempo.h"
 #include "al/sig.h"
 #include "part.h"
+#include "midiplugin.h"
 
 extern void dump(const unsigned char* p, int n);
 
@@ -738,64 +739,75 @@ void MidiOutPort::process(unsigned from, unsigned to, const Pos& pos, unsigned f
                   }
             }
       addMidiMeter(portVelo);
+
+      // TODO: maybe this copying can be avoided
+      //
+      MPEventList il;
+      for (iMPEvent i = _playEvents.begin(); i != _playEvents.end(); ++i) {
+            il.add(*i);
+            }
+      _playEvents.clear();
+      pipeline()->apply(from, to, &il, &_playEvents);
+
       _nextPlayEvent = _playEvents.begin();
 
       //
       // route events to destination
       //
 
-      if (_playEvents.size() > 0) {
-            //printf("_playEvents.size() == %d\n", _playEvents.size());
-            unsigned endFrame = pos.frame() + frames + audio->getFrameOffset();
-            for (iRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
-                  switch (r->type) {
+      if (_playEvents.empty())
+            return;
 
-                        //
-                        // Send events to software synthesizer
-                        //
-                        case Route::SYNTIPORT: {
-                              SynthI* s       = (SynthI*)(r->track);
-                              MPEventList* el = s->playEvents();
-                              iMPEvent is     = _playEvents.begin();
-                              iMPEvent ie     = _playEvents.end();
+      //printf("_playEvents.size() == %d\n", _playEvents.size());
+      unsigned endFrame = pos.frame() + frames + audio->getFrameOffset();
+      for (iRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
+            switch (r->type) {
 
-                              for (; is != ie; ++is) {
-                                    if ((from != to) && (is->time() >= endFrame)) {
-                                          break;
-                                          }
+                  //
+                  // Send events to software synthesizer
+                  //
+                  case Route::SYNTIPORT: {
+                        SynthI* s       = (SynthI*)(r->track);
+                        MPEventList* el = s->playEvents();
+                        iMPEvent is     = _playEvents.begin();
+                        iMPEvent ie     = _playEvents.end();
 
-                                    el->insert(*is);
-                                    _nextPlayEvent = is;
-                                    _nextPlayEvent++;
+                        for (; is != ie; ++is) {
+                              if ((from != to) && (is->time() >= endFrame)) {
+                                    break;
                                     }
+
+                              el->insert(*is);
+                              _nextPlayEvent = is;
+                              _nextPlayEvent++;
                               }
-                              break;
-
-                        //
-                        // Send events to midi port
-                        //
-                        case Route::MIDIPORT: {
-                              //playEventList();
-                              for (iMPEvent ev = _playEvents.begin(); ev != _playEvents.end(); ev++) {
-                                    if ((from != to) && (ev->time() >= endFrame)) {
-                                          break;
-                                          }
-
-                                    midiDriver->putEvent(alsaPort, *ev);
-                                    _nextPlayEvent = ev;
-                                    _nextPlayEvent++;
-                                    }
-                              }
-                              break;
-
-
-                        // Invalid routetypes to send midi events to - should not happen
-                        case Route::AUDIOPORT:
-                        case Route::TRACK:
-                        default:
-                              printf("Error - invalid routetype\n");
-                              break;
                         }
+                        break;
+
+                  //
+                  // Send events to midi port
+                  //
+                  case Route::MIDIPORT: {
+                        //playEventList();
+                        for (iMPEvent ev = _playEvents.begin(); ev != _playEvents.end(); ev++) {
+                              if ((from != to) && (ev->time() >= endFrame)) {
+                                    break;
+                                    }
+
+                              midiDriver->putEvent(alsaPort, *ev);
+                              _nextPlayEvent = ev;
+                              _nextPlayEvent++;
+                              }
+                        }
+                        break;
+
+
+                  // Invalid routetypes to send midi events to - should not happen
+                  case Route::AUDIOPORT:
+                  case Route::TRACK:
+                  default:
+                        printf("Error - invalid routetype\n");
+                        break;
                   }
             }
       }

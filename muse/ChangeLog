@@ -1,4 +1,6 @@
 28.8 (ws)
+      * added simple midi event dump plugin
+      * add midi plugin rack to midi port strips
       * supply correct position information to midi plugins in midi input
         strips
       * fixed: playing synti from midi track
