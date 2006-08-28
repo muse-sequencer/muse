@@ -812,7 +812,7 @@ void Song::beat()
       {
       updateFlags = 0;
       if (audio->isPlaying()) {
-            int tick = audio->tickPos();
+            int tick = audio->curTickPos();
             setPos(0, tick, true, false, true);
             }
       if (audio->isRecording()) {
@@ -1226,7 +1226,7 @@ void Song::seqSignal(int fd)
                         setRecord(true);
                         break;
                   case MSG_SEEK:
-	                  setPos(0, audio->tickPos(), true, false, !seekInProgress);
+	                  setPos(0, audio->curTickPos(), true, false, !seekInProgress);
                   	seekInProgress = false;
                         beat();           // update controller guis
                         break;

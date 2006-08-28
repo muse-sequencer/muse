@@ -100,8 +100,8 @@ Audio::Audio()
       _pos.setType(AL::FRAMES);
       _pos.setFrame(~0);      // make sure first seek is not optimized away
 
-      curTickPos    = 0;
-      nextTickPos   = 0;
+      _curTickPos   = 0;
+      _nextTickPos  = 0;
 
       midiClick     = 0;
       clickno       = 0;
@@ -392,7 +392,7 @@ void Audio::process(unsigned frames)
             //
             //  check for end of song
             //
-            if ((curTickPos >= song->len())
+            if ((_curTickPos >= song->len())
                && !(song->record() || _bounce || song->loop())) {
                   audioDriver->stopTransport();
                   return;
@@ -416,7 +416,7 @@ void Audio::process(unsigned frames)
 
             Pos ppp(_pos);
             ppp += frames;
-            nextTickPos = ppp.tick();
+            _nextTickPos = ppp.tick();
             }
 
       //
@@ -471,7 +471,7 @@ void Audio::process(unsigned frames)
    	      Fifo1* fifo = audioPrefetch->getFifo();
 // printf("process %3d\n", fifo->count());
       	if (fifo->count() == 0) {
-            	printf("MusE::Audio: fifo underflow at 0x%x\n", curTickPos);
+            	printf("MusE::Audio: fifo underflow at 0x%x\n", _curTickPos);
                   audioPrefetch->msgTick();
                   }
             else {
@@ -540,7 +540,7 @@ void Audio::process(unsigned frames)
             if (recording && (_bounce == 0 || _bounce == 1))
                   audioWriteback->trigger();
             _pos      += frames;
-            curTickPos = nextTickPos;
+            _curTickPos = _nextTickPos;
             }
       }
 
@@ -591,7 +591,7 @@ void Audio::processMsg(AudioMsg* msg)
             case SEQM_SET_TEMPO:
                   song->processMsg(msg);
                   if (isPlaying()) {
-                        _pos.setTick(curTickPos);
+                        _pos.setTick(_curTickPos);
                         int framePos = _pos.frame();
                         syncFrame     = audioDriver->framePos();
                         syncTime      = curTime();
@@ -619,8 +619,8 @@ void Audio::seek(const Pos& p)
       _pos.setFrame(p.frame());
       syncFrame   = audioDriver->framePos();
       frameOffset = syncFrame - _pos.frame();
-      curTickPos  = _pos.tick();
-      nextTickPos = curTickPos;
+      _curTickPos  = _pos.tick();
+      _nextTickPos = _curTickPos;
 
       loopPassed = true;      // for record loop mode
       if (state != LOOP2 && !freewheel())
@@ -679,7 +679,7 @@ void Audio::startRolling()
             //
             int bar, beat;
             unsigned tick;
-            AL::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
+            AL::sigmap.tickValues(_curTickPos, &bar, &beat, &tick);
             if (tick)
                   beat += 1;
             midiClick = AL::sigmap.bar2tick(bar, beat, 0);

@@ -1,4 +1,6 @@
 28.8 (ws)
+      * supply correct position information to midi plugins in midi input
+        strips
       * fixed: playing synti from midi track
 22.8 (rj)
       * playing with midi plugins, one new example plugin: trigg

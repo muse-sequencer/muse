@@ -638,7 +638,7 @@ void Audio::processMidi(unsigned frames)
       {
       MidiOutPortList* ol = song->midiOutPorts();
       for (iMidiOutPort id = ol->begin(); id != ol->end(); ++id) {
-            (*id)->process(curTickPos, nextTickPos, _pos, frames);
+            (*id)->process(_curTickPos, _nextTickPos, _pos, frames);
             }
 
       MidiInPortList* il = song->midiInPorts();

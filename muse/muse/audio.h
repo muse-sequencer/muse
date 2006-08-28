@@ -162,8 +162,8 @@ class Audio {
 
       Pos _pos;               // current play position
 
-      unsigned curTickPos;    // pos at start of frame during play/record
-      unsigned nextTickPos;   // pos at start of next frame during play/record
+      unsigned _curTickPos;   // pos at start of frame during play/record
+      unsigned _nextTickPos;  // pos at start of next frame during play/record
       int _curReadIndex;
 
       //metronome values
@@ -264,7 +264,9 @@ class Audio {
       const Pos& getStartRecordPos() const { return startRecordPos; }
       const Pos& getEndRecordPos() const { return endRecordPos; }
 
-      int tickPos() const         { return curTickPos; }
+      int curTickPos() const        { return _curTickPos;  }
+      int nextTickPos() const       { return _nextTickPos; }
+
       int timestamp() const;
       unsigned curFrame() const;
       bool freewheel() const       { return _freewheel; }

@@ -637,7 +637,7 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
 
       MPEventList il, ol;
       il.insert(event);
-      pipeline()->apply(0, 0, &il, &ol);
+      pipeline()->apply(audio->curTickPos(), audio->nextTickPos(), &il, &ol);
 
       //
       // update midi meter

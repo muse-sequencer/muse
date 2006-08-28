@@ -128,7 +128,7 @@ void MidiSeq::processStart()
                   if (genMMC)
                         mp->sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
                   if (genMCSync) {
-                        if (audio->tickPos())
+                        if (audio->curTickPos())
                               mp->sendContinue();
                         else
                               mp->sendStart();
@@ -193,7 +193,7 @@ void MidiSeq::processStop()
                               0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
                               0, 0, 0, 0, 0
                               };
-                        int frame = AL::tempomap.tick2frame(audio->tickPos());
+                        int frame = AL::tempomap.tick2frame(audio->curTickPos());
                         MTC mtc(double(frame) / double(AL::sampleRate));
                         mmcPos[6] = mtc.h() | (AL::mtcType << 5);
                         mmcPos[7] = mtc.m();
@@ -207,7 +207,7 @@ void MidiSeq::processStop()
                         // send STOP and
                         // "set song position pointer"
                         mp->sendStop();
-                        mp->sendSongpos(audio->tickPos() * 4 / config.division);
+                        mp->sendSongpos(audio->curTickPos() * 4 / config.division);
                         }
                   }
             }
@@ -234,7 +234,7 @@ void MidiSeq::resetDevices()
 
 void MidiSeq::processSeek()
       {
-      int pos = audio->tickPos();
+      int pos = audio->curTickPos();
       if (genMCSync) {
             MidiOutPortList* ol = song->midiOutPorts();
             for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i) {
