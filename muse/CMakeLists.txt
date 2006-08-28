@@ -21,8 +21,8 @@
 project(muse)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
 
-set(CMAKE_BUILD_TYPE Debug)
-# set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
@@ -43,7 +43,7 @@ option ( ENABLE_VST    "enable VST/win support"                 OFF)
 option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"    ON)
 
 # for debugging the make system uncomment next line:
-#set(CMAKE_VERBOSE_MAKEFILE ON)
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)

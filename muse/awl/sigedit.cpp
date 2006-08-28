@@ -147,7 +147,8 @@ void SigEdit::fixup(QString& input) const
 
 QValidator::State SigEdit::validate(QString&,int&) const
       {
-      printf("validate\n");
+      // TODO
+      // printf("validate\n");
       return QValidator::Acceptable;
       }
 

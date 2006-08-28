@@ -5,7 +5,7 @@
 //   main
 //---------------------------------------------------------
 
-int main(int argc, char* argv[])
+int main(int /*argc*/, char* /*argv*/[])
       {
       printf("Hello MusE\n");      
       new KnobPlugin;

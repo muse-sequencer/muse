@@ -284,7 +284,8 @@ void PosEdit::fixup(QString& input) const
 
 QValidator::State PosEdit::validate(QString&,int&) const
       {
-      printf("validate\n");
+      // TODO
+//      printf("validate\n");
       return QValidator::Acceptable;
       }
 

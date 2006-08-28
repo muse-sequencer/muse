@@ -503,7 +503,8 @@ iMPEvent MessSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, int por
                   // printf("\t510: frame=%d endPos=%d curPos=%d pos=%d\n", frame, endPos, curPos, pos);
                   if (frame >= endPos)
                         break;
-                  if (frame > curPos) { // Several following notes during same segmentsize?
+                  if (frame > curPos) { 
+                        // Several following notes during same segmentsize?
                         _mess->process(buffer, curPos-pos, frame - curPos);
                         curPos = frame; // don't process this piece again
                         }
@@ -544,7 +545,7 @@ void SynthI::collectInputData()
       while (!_eventFifo.isEmpty())
             _playEvents.add(_eventFifo.get());
       iMPEvent ie = _playEvents.begin();
-      unsigned pos = 0;
+      unsigned pos = audio->pos().frame();
       _sif->getData(&_playEvents, ie, pos, channels(), segmentSize, buffer);
       _playEvents.clear();
       }
