@@ -328,7 +328,7 @@ bool Track::readProperties(QDomNode node)
                   }
             }
       else if (tag == "height")
-            arrangerTrack.h = i;
+            arrangerTrack.h = i < minTrackHeight ? minTrackHeight : i;
       else if (tag == "subtrack") {
             ArrangerTrack* st = new ArrangerTrack;
             for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {

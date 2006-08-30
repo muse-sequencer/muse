@@ -1179,7 +1179,7 @@ void MidiInPortStrip::oRoutePressed()
       SynthIList* asl   = song->syntis();
 
       int sn = 0;
-      for (iSynthI i = asl->begin(); i != asl->end(); ++i) {
+      for (iSynthI i = asl->begin(); i != asl->end(); ++i,++sn) {
             QAction* action = pup->addAction((*i)->name());
 
             QMap<QString, QVariant> data;
