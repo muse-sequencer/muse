@@ -18,32 +18,23 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-QT4_WRAP_CPP ( filter_mocs filtergui.h ctrlcombo.h )
-QT4_WRAP_UI (  filter_uis filtergui.ui )
-
-add_library ( filter SHARED 
-      filter.cpp 
-      filtergui.cpp
-      filtergui.h
-      ctrlcombo.cpp
-      ctrlcombo.h
-      ${filter_mocs}
-      ${filter_uis}
+add_library ( dump SHARED 
+      dump.cpp 
       )
 
-target_link_libraries( filter
+target_link_libraries( dump
    midiplugin awl
    ${QT_LIBRARIES}
    )
 
-# - tell cmake to name target filter.so instead of 
-#   libfilter.so
+# - tell cmake to name target dump.so instead of 
+#   libdump.so
 # - use precompiled header files
 #
-set_target_properties ( filter 
+set_target_properties ( dump
    PROPERTIES PREFIX ""
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
-install_targets ( /lib/${MusE_INSTALL_NAME}/midiplugins/ filter )
+install_targets ( /lib/${MusE_INSTALL_NAME}/midiplugins/ dump )
 
