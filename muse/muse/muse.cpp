@@ -246,21 +246,23 @@ bool MusE::seqStart()
             	   strerror(rv));
             pthread_attr_destroy(attributes);
             }
-#if 1
-      //
-      // start audio prefetch threads with realtime
-      // priority
-      //
-      audioPrefetch->start(realTimePriority-5);
-      audioWriteback->start(realTimePriority-5);
-#else
-      //
-      // start audio prefetch threads as normal
-      // (non realtime) threads
-      //
-      audioPrefetch->start(0);
-      audioWriteback->start(0);
-#endif
+      if (realTimePriority) {
+            //
+            // start audio prefetch threads with realtime
+            // priority
+            //
+            audioPrefetch->start(realTimePriority-5);
+            audioWriteback->start(realTimePriority-5);
+            }
+            else {
+            printf("MusE: Warning - starting threads without realtime priority since audio is not running realtime.\n");
+            //
+            // start audio prefetch threads as normal
+            // (non realtime) threads
+            //
+            audioPrefetch->start(0);
+            audioWriteback->start(0);
+            }
       audioState = AUDIO_RUNNING;
       //
       // do connections

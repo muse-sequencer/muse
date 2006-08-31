@@ -159,7 +159,8 @@ TimeCanvas::TimeCanvas(TimeCanvasType t)
 
       _raster = 0;
       updateScrollBars();
-      connect(hbar, SIGNAL(sliderMoved(int)), SLOT(moveX(int)));
+      //connect(hbar, SIGNAL(sliderMoved(int)), SLOT(moveX(int)));
+      connect(hbar, SIGNAL(valueChanged(int)), SLOT(moveX(int)));
       connect(vbar, SIGNAL(valueChanged(int)), SLOT(moveY(int)));
       connect(hmag, SIGNAL(valueChanged(int)), SLOT(scaleX(int)));
       if (vmag)
@@ -193,22 +194,22 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
 
       switch(event->type()) {
             case QEvent::Paint:
-            	{
-			QRect r(((QPaintEvent*)event)->rect());
+                {
+                QRect r(((QPaintEvent*)event)->rect());
 
 // if (r == _widget->geometry())
 //	printf("full paint event\n");
 
-                  QPixmap pm(_widget->width(), _widget->height());
-			QPainter p;
-                  p.begin(&pm);
-                  canvasPaintEvent(r, p);
-                  p.end();
-                  p.begin(_widget);
-			p.drawPixmap(r.topLeft(), pm, r);
-                  p.end();
-                  }
-                  return true;
+                QPixmap pm(_widget->width(), _widget->height());
+                QPainter p;
+                p.begin(&pm);
+                canvasPaintEvent(r, p);
+                p.end();
+                p.begin(_widget);
+                p.drawPixmap(r.topLeft(), pm, r);
+                p.end();
+                }
+                return true;
 
             case QEvent::Resize:
                   updateGeometry();
@@ -934,6 +935,7 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
 
 void TimeCanvas::paintCanvas(QPainter& p, const QRect& cr)
       {
+      return;
       QPoint off(rCanvasA.topLeft());
 
       if (type == TIME_CANVAS_PIANOROLL) {
@@ -1241,7 +1243,7 @@ void TimeCanvas::setCornerWidget(QWidget* w)
       0   1   2  3  4  5  6  7  8  9  10
       c-2 c-1 C0 C1 C2 C3 C4 C5 C6 C7 C8 - G8
 
-      Grid üve:
+      Grid ve:
 
            +------------+ ------------------------------
        11  |            |
