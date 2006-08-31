@@ -181,11 +181,7 @@ void Audio::msgAddPlugin(AudioTrack* node, int idx, PluginI* plugin)
       msg.track  = node;
       msg.ival   = idx;
       msg.plugin = plugin;
-      PluginI* oldPlugin = node->plugin(idx);
       sendMsg(&msg);
-      if (oldPlugin) {
-            delete oldPlugin;
-            }
       }
 
 //---------------------------------------------------------

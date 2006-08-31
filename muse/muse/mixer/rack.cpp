@@ -6,8 +6,6 @@
 //  (C) Copyright 2000-2003 Werner Schweer (ws@seh.de)
 //=========================================================
 
-//#include <QDrag>
-//#include <QMimeData>
 #include "rack.h"
 #include "song.h"
 #include "audio.h"
@@ -16,6 +14,9 @@
 #include "plugin.h"
 #include "plugingui.h"
 #include "widgets/filedialog.h"
+#include "muse.h"
+
+static const int PipelineDepth = 4;
 
 //---------------------------------------------------------
 //   EffectRack
@@ -25,19 +26,15 @@ EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
    : QListWidget(parent)
       {
       setAttribute(Qt::WA_DeleteOnClose, true);
+      verticalScrollBar()->setStyle(smallStyle);
+
       track = t;
       setFont(*config.fonts[1]);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-      setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
       setSelectionMode(QAbstractItemView::SingleSelection);
-      for (int i = 0; i < PipelineDepth; ++i) {
-            QListWidgetItem* item = new QListWidgetItem;
-            item->setText(t->efxPipe()->name(i));
-            item->setBackgroundColor(t->efxPipe()->isOn(i) ? Qt::white : Qt::gray);
-            addItem(item);
-            }
+      songChanged(SC_RACK);   // force update
       connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
          this, SLOT(doubleClicked(QListWidgetItem*)));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
@@ -63,10 +60,15 @@ QSize EffectRack::sizeHint() const
 void EffectRack::songChanged(int typ)
       {
       if (typ & (SC_ROUTE | SC_RACK)) {
-            for (int i = 0; i < PipelineDepth; ++i) {
-                  QListWidgetItem* it = item(i);
-                  it->setText(track->efxPipe()->name(i));
-                  it->setBackgroundColor(track->efxPipe()->isOn(i) ? Qt::white : Qt::gray);
+            clear();
+            foreach(PluginI* plugin, *(track->efxPipe())) {
+                  QListWidgetItem* item = new QListWidgetItem;
+                  item->setText(plugin->name());
+                  // tooltip should only be set if name does not fit
+                  // (is elided)
+                  item->setToolTip(plugin->name());
+                  item->setBackgroundColor(plugin->on() ? Qt::white : Qt::gray);
+                  addItem(item);
                   }
             }
       }
@@ -79,40 +81,25 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
       {
       QPoint pt(ev->pos());
       QListWidgetItem* item = itemAt(pt);
-      if (item == 0 || track == 0)
-            return;
 
-      int idx = row(item);
+      int idx = -1;
       QString name;
-      bool mute;
       Pipeline* pipe = track->efxPipe();
-      if (pipe) {
-            name = pipe->name(idx);
-            mute = pipe->isOn(idx);
-            }
 
-      QAction* newAction;
-      QAction* upAction;
-      QAction* downAction;
-      QAction* removeAction;
-      QAction* bypassAction;
-      QAction* showAction;
-      QAction* showCustomAction;
+      QMenu* menu               = new QMenu;
+      QAction* upAction         = menu->addAction(QIcon(*upIcon), tr("move up"));
+      QAction* downAction       = menu->addAction(QIcon(*downIcon), tr("move down"));
+      QAction* removeAction     = menu->addAction(tr("remove"));
+      QAction* bypassAction     = menu->addAction(tr("bypass"));
+      QAction* showAction       = menu->addAction(tr("show gui"));
+      QAction* showCustomAction = menu->addAction(tr("show native gui"));
+      QAction* newAction        = menu->addAction(tr("new"));
 
-      QMenu* menu      = new QMenu;
-      upAction         = menu->addAction(QIcon(*upIcon), tr("move up"));
-      downAction       = menu->addAction(QIcon(*downIcon), tr("move down"));
-      removeAction     = menu->addAction(tr("remove"));
-      bypassAction     = menu->addAction(tr("bypass"));
-      showAction       = menu->addAction(tr("show gui"));
-      showCustomAction = menu->addAction(tr("show native gui"));
+      bypassAction->setCheckable(true);
+      showAction->setCheckable(true);
+      showCustomAction->setCheckable(true);
 
-      bypassAction->setChecked(!pipe->isOn(idx));
-      showAction->setChecked(pipe->guiVisible(idx));
-      showCustomAction->setChecked(pipe->nativeGuiVisible(idx));
-
-      if (pipe->empty(idx)) {
-            newAction = menu->addAction(tr("new"));
+      if (!item) {
             upAction->setEnabled(false);
             downAction->setEnabled(false);
             removeAction->setEnabled(false);
@@ -121,12 +108,18 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
             showCustomAction->setEnabled(false);
             }
       else {
-            newAction = menu->addAction(tr("change"));
-            if (idx == 0)
-                  upAction->setEnabled(false);
-            if (idx == (PipelineDepth-1))
-                  downAction->setEnabled(false);
+            idx = row(item);
+            upAction->setEnabled(idx != 0);
+            downAction->setEnabled(idx < pipe->size()-1);
             showCustomAction->setEnabled(pipe->hasNativeGui(idx));
+
+            bypassAction->setEnabled(true);
+            showAction->setEnabled(true);
+            showCustomAction->setEnabled(true);
+
+            bypassAction->setChecked(!pipe->isOn(idx));
+            showAction->setChecked(pipe->guiVisible(idx));
+            showCustomAction->setChecked(pipe->nativeGuiVisible(idx));
             }
 
       QAction* sel = menu->exec(mapToGlobal(pt), newAction);
@@ -184,13 +177,13 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
 
 void EffectRack::doubleClicked(QListWidgetItem* it)
       {
-      if (it == 0 || track == 0)
+      if (track == 0)
             return;
-      int idx        = row(it);
-      Pipeline* pipe = track->efxPipe();
 
-      if (!pipe->empty(idx)) {
-            bool flag = !pipe->guiVisible(idx);
+      if (it) {
+            int idx        = row(it);
+            Pipeline* pipe = track->efxPipe();
+            bool flag      = !pipe->guiVisible(idx);
             pipe->showGui(idx, flag);
             }
       else {
@@ -203,7 +196,7 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
                         delete plugi;
                         }
                   else {
-                        audio->msgAddPlugin(track, idx, plugi);
+                        audio->msgAddPlugin(track, -1, plugi);
                         }
                   song->update(SC_RACK);
                   }

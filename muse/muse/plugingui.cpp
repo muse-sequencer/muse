@@ -660,9 +660,9 @@ void PluginGui::bypassToggled(bool val)
 
 void PluginGui::setOn(bool val)
       {
-      onOff->blockSignals(true);
+//      onOff->blockSignals(true);
       onOff->setChecked(val);
-      onOff->blockSignals(false);
+//      onOff->blockSignals(false);
       }
 
 //---------------------------------------------------------

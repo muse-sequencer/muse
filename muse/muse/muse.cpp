@@ -98,6 +98,8 @@ extern void initDSSI();
 extern bool initJackAudio();
 extern void exitJackAudio();
 
+QStyle* smallStyle;
+
 int watchAudio, watchAudioPrefetch, watchMidi;
 pthread_t splashThread;
 MusE* muse;
@@ -2820,7 +2822,10 @@ int main(int argc, char* argv[])
       gmDrumMap.initGm();    // init default drum map
       readConfiguration();
 
-       QApplication::setFont(*config.fonts[0]);
+      QApplication::setFont(*config.fonts[0]);
+
+      // this style is used for scrollbars in mixer plugin racks:
+      smallStyle = new QWindowsStyle();
 
       // SHOW MUSE SPLASH SCREEN
       if (config.showSplashScreen) {

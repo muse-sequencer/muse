@@ -769,13 +769,13 @@ bool MidiTrackBase::readProperties(QDomNode node)
 
 MidiPluginI* MidiTrackBase::plugin(int idx) const
       {
-      return (*_pipeline)[idx];
+      return _pipeline->value(idx);
       }
-
 
 //---------------------------------------------------------
 //   addPlugin
-//    idx = -1   insert into first free slot
+//    idx = -1     append
+//    plugin = 0   remove slot
 //---------------------------------------------------------
 
 void MidiTrackBase::addPlugin(MidiPluginI* plugin, int idx)
@@ -792,20 +792,11 @@ void MidiTrackBase::addPlugin(MidiPluginI* plugin, int idx)
                   }
 #endif
             }
-      if (idx == -1) {
-            idx = 0;
-            for (; idx < 4; ++idx) {
-                  if ((*_pipeline)[idx] == 0)
-                        break;
-                  }
-            if (idx == 4) {
-                  printf("internal error: too many plugins\n");
-                  return;
-                  }
-            }
+      if (idx == -1)
+            idx = _pipeline->size();
 
-      _pipeline->insert(plugin, idx);
       if (plugin) {
+            _pipeline->insert(idx, plugin);
 #if 0
             int ncontroller = plugin->plugin()->parameter();
             for (int i = 0; i < ncontroller; ++i) {
@@ -826,6 +817,9 @@ void MidiTrackBase::addPlugin(MidiPluginI* plugin, int idx)
                   plugin->setControllerList(cl);
                   }
 #endif
+            }
+      else {
+            _pipeline->removeAt(idx);
             }
       }
 

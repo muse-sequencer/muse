@@ -103,19 +103,10 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx)
                         }
                   }
             }
-      if (idx == -1) {
-            idx = 0;
-            for (; idx < 4; ++idx) {
-                  if ((*_efxPipe)[idx] == 0)
-                        break;
-                  }
-            if (idx == 4) {
-                  printf("internal error: too many plugins\n");
-                  return;
-                  }
-            }
+      if (idx == -1)
+            idx = _efxPipe->size();
 
-      efxPipe()->insert(plugin, idx);
+      efxPipe()->insert(idx, plugin);
       if (plugin) {
             int ncontroller = plugin->plugin()->parameter();
             for (int i = 0; i < ncontroller; ++i) {

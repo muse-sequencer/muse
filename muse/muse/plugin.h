@@ -308,12 +308,12 @@ class PluginI {
 //    chain of connected efx inserts
 //---------------------------------------------------------
 
-const int PipelineDepth = 4;
+// const int PipelineDepth = 4;
 
-class Pipeline : public std::vector<PluginI*> {
+class Pipeline : public QList<PluginI*> {
    public:
-      Pipeline();
-      void insert(PluginI* p, int index);
+      Pipeline() {}
+//      void insert(PluginI* p, int index);
       bool isOn(int idx) const;
       void setOn(int, bool);
       QString label(int idx) const;
@@ -325,9 +325,9 @@ class Pipeline : public std::vector<PluginI*> {
       void showNativeGui(int, bool);
       void apply(int ports, unsigned long nframes, float** buffer);
       void move(int idx, bool up);
-      bool empty(int idx) const;
+//      bool empty(int idx) const;
       void setChannels(int);
-      PluginI* plugin(int idx) { return (*this)[idx]; }
+      PluginI* plugin(int idx) { return value(idx); }
       };
 
 typedef Pipeline::iterator iPluginI;

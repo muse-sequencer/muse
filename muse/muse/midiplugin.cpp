@@ -267,20 +267,8 @@ MidiPlugin* MidiPluginList::find(const QString& /*file*/, const QString& name)
 //---------------------------------------------------------
 
 MidiPipeline::MidiPipeline()
-   : std::vector<MidiPluginI*>()
+   : QList<MidiPluginI*>()
       {
-      for (int i = 0; i < MidiPipelineDepth; ++i)
-            push_back(0);
-      }
-
-//---------------------------------------------------------
-//   insert
-//    give ownership of object plugin to Pipeline
-//---------------------------------------------------------
-
-void MidiPipeline::insert(MidiPluginI* plugin, int index)
-      {
-      (*this)[index] = plugin;
       }
 
 //---------------------------------------------------------
@@ -319,6 +307,7 @@ QString MidiPipeline::name(int idx) const
       return QString("empty");
       }
 
+#if 0
 //---------------------------------------------------------
 //   empty
 //---------------------------------------------------------
@@ -328,6 +317,7 @@ bool MidiPipeline::empty(int idx) const
       MidiPluginI* p = (*this)[idx];
       return p == 0;
       }
+#endif
 
 //---------------------------------------------------------
 //   move
@@ -361,11 +351,23 @@ void MidiPipeline::showGui(int idx, bool flag)
 //   guiVisible
 //---------------------------------------------------------
 
-bool MidiPipeline::guiVisible(int idx)
+bool MidiPipeline::guiVisible(int idx) const
       {
       MidiPluginI* p = (*this)[idx];
       if (p)
             return p->guiVisible();
+      return false;
+      }
+
+//---------------------------------------------------------
+//   hasGui
+//---------------------------------------------------------
+
+bool MidiPipeline::hasGui(int idx) const
+      {
+      MidiPluginI* p = (*this)[idx];
+      if (p)
+            return p->hasGui();
       return false;
       }
 

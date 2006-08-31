@@ -1,3 +1,7 @@
+31.8 (ws)
+      * plugin racks can now hold an unlimited number of plugins
+29.8 (ws)
+      * fixed drawing of y-magnified pianoroll canvas
 28.8 (ws)
       * added simple midi event dump plugin
       * add midi plugin rack to midi port strips

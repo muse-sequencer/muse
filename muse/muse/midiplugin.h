@@ -72,9 +72,9 @@ class MidiPlugin {
 //   MidiPluginList
 //---------------------------------------------------------
 
-typedef std::list<MidiPlugin*>::iterator iMidiPlugin;
+typedef QList<MidiPlugin*>::iterator iMidiPlugin;
 
-class MidiPluginList : public std::list<MidiPlugin*> {
+class MidiPluginList : public QList<MidiPlugin*> {
    public:
       MidiPlugin* find(const QString&, const QString&);
       MidiPluginList() {}
@@ -115,9 +115,9 @@ class MidiPluginI {
       void showGui();
       void showGui(bool);
       bool hasGui() const { return mempi->hasGui(); }
+      bool guiVisible() const;
       void getInitData(int* len, const unsigned char** p) { mempi->getInitData(len, p); }
       void setInitData(int len, const unsigned char* p)   { mempi->setInitData(len, p); }
-      bool guiVisible() const;
       };
 
 //---------------------------------------------------------
@@ -125,21 +125,17 @@ class MidiPluginI {
 //    chain of connected efx inserts
 //---------------------------------------------------------
 
-const int MidiPipelineDepth = 4;
-
-class MidiPipeline : public std::vector<MidiPluginI*> {
+class MidiPipeline : public QList<MidiPluginI*> {
    public:
       MidiPipeline();
-      void insert(MidiPluginI* p, int index);
       bool isOn(int idx) const;
       void setOn(int, bool);
       QString name(int idx) const;
       void showGui(int, bool);
-      bool guiVisible(int);
+      bool guiVisible(int) const;
+      bool hasGui(int) const;
       void apply(unsigned, unsigned, MPEventList*, MPEventList*);
       void move(int idx, bool up);
-      bool empty(int idx) const;
-      MidiPluginI* plugin(int idx) { return (*this)[idx]; }
       };
 
 typedef MidiPipeline::iterator iMidiPluginI;
@@ -162,6 +158,8 @@ class MidiPluginDialog : public QDialog {
   public slots:
       void fillPlugs();
       };
+
+static const int MidiPipelineDepth = 4;
 
 extern void initMidiPlugins();
 extern MidiPluginList midiPlugins;

@@ -295,6 +295,7 @@ class MusE : public QMainWindow, public Ui::MuseBase
       };
 
 extern MusE* muse;
+extern QStyle* smallStyle;
 
 #endif
 

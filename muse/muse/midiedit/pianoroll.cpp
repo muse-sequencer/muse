@@ -64,7 +64,7 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
       tcanvas = new PianoCanvas(this);
       QMenuBar* mb = menuBar();
 
-      //---------Menü----------------------------------
+      //---------Menu----------------------------------
       menuEdit->addSeparator();
 
       QAction* a;

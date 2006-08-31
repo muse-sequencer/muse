@@ -1241,7 +1241,7 @@ void TimeCanvas::setCornerWidget(QWidget* w)
       0   1   2  3  4  5  6  7  8  9  10
       c-2 c-1 C0 C1 C2 C3 C4 C5 C6 C7 C8 - G8
 
-      Grid über Oktave:
+      Grid üve:
 
            +------------+ ------------------------------
        11  |            |
@@ -1476,11 +1476,11 @@ int TimeCanvas::pitch2y(int pitch) const
       	static int tt[] = {
 	            12, 19, 25, 32, 38, 51, 58, 64, 71, 77, 84, 90
       	      };
-	      y = (75 * keyHeight) - (tt[pitch%12] + (7 * keyHeight) * (pitch/12));
+	      y = (75 * keyHeight) - (tt[pitch % 12] + (7 * keyHeight) * (pitch / 12));
       	if (y < 0)
 	            y = 0;
             }
-      return lrint(y * _ymag) - wpos.y();
+      return lrint(y - wpos.y() / _ymag);
       }
 
 //---------------------------------------------------------
@@ -1541,7 +1541,7 @@ void TimeCanvas::paintPiano(QPainter& p, QRect r)
       p.drawTiledPixmap(QRectF(x, y, qreal(r.width()), h), *octave, offset);
 
       if (curPitch != -1) {
-            int y = pitch2y(curPitch); //  - lrint(wpos.y() / _ymag);
+            int y = pitch2y(curPitch);
             QPixmap* pm;
             switch(curPitch % 12) {
                   case 0:

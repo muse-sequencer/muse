@@ -236,35 +236,13 @@ Plugin* PluginList::find(const QString& file, const QString& name)
       }
 
 //---------------------------------------------------------
-//   Pipeline
-//---------------------------------------------------------
-
-Pipeline::Pipeline()
-   : std::vector<PluginI*>()
-      {
-      for (int i = 0; i < PipelineDepth; ++i)
-            push_back(0);
-      }
-
-//---------------------------------------------------------
 //   setChannels
 //---------------------------------------------------------
 
 void Pipeline::setChannels(int n)
       {
-      for (int i = 0; i < PipelineDepth; ++i)
-            if ((*this)[i])
-                  (*this)[i]->setChannels(n);
-      }
-
-//---------------------------------------------------------
-//   insert
-//    give ownership of object plugin to Pipeline
-//---------------------------------------------------------
-
-void Pipeline::insert(PluginI* plugin, int index)
-      {
-      (*this)[index] = plugin;
+      foreach(PluginI* plugin, *this)
+            plugin->setChannels(n);
       }
 
 //---------------------------------------------------------
@@ -273,7 +251,7 @@ void Pipeline::insert(PluginI* plugin, int index)
 
 bool Pipeline::isOn(int idx) const
       {
-      PluginI* p = (*this)[idx];
+      PluginI* p = value(idx);
       if (p)
             return p->on();
       return false;
@@ -285,7 +263,7 @@ bool Pipeline::isOn(int idx) const
 
 void Pipeline::setOn(int idx, bool flag)
       {
-      PluginI* p = (*this)[idx];
+      PluginI* p = value(idx);
       if (p) {
             p->setOn(flag);
             if (p->gui())
@@ -299,7 +277,7 @@ void Pipeline::setOn(int idx, bool flag)
 
 QString Pipeline::label(int idx) const
       {
-      PluginI* p = (*this)[idx];
+      PluginI* p = value(idx);
       if (p)
             return p->label();
       return QString("");
@@ -311,7 +289,7 @@ QString Pipeline::label(int idx) const
 
 QString Pipeline::name(int idx) const
       {
-      PluginI* p = (*this)[idx];
+      PluginI* p = value(idx);
       if (p)
             return p->name();
       return QString("empty");
@@ -323,20 +301,10 @@ QString Pipeline::name(int idx) const
 
 bool Pipeline::hasNativeGui(int idx) const
       {
-      PluginI* p = (*this)[idx];
+      PluginI* p = value(idx);
       if (p)
             return p->hasNativeGui();
       return false;
-      }
-
-//---------------------------------------------------------
-//   empty
-//---------------------------------------------------------
-
-bool Pipeline::empty(int idx) const
-      {
-      PluginI* p = (*this)[idx];
-      return p == 0;
       }
 
 //---------------------------------------------------------

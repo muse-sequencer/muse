@@ -13,6 +13,7 @@
 #include "song.h"
 #include "midiplugin.h"
 #include "audio.h"
+#include "muse.h"
 
 //---------------------------------------------------------
 //   MidiRack
@@ -22,19 +23,14 @@ MidiRack::MidiRack(QWidget* parent, MidiTrackBase* t)
    : QListWidget(parent)
       {
       setAttribute(Qt::WA_DeleteOnClose, true);
+      verticalScrollBar()->setStyle(smallStyle);
       track = t;
       setFont(*config.fonts[1]);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-      setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
       setSelectionMode(QAbstractItemView::SingleSelection);
-      for (int i = 0; i < MidiPipelineDepth; ++i) {
-            QListWidgetItem* item = new QListWidgetItem;
-            item->setText(t->pipeline()->name(i));
-            item->setBackgroundColor(t->pipeline()->isOn(i) ? Qt::white : Qt::gray);
-            addItem(item);
-            }
+      songChanged(SC_RACK);   // force update
       connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
          this, SLOT(doubleClicked(QListWidgetItem*)));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
@@ -59,48 +55,41 @@ QSize MidiRack::sizeHint() const
 void MidiRack::songChanged(int typ)
       {
       if (typ & (SC_ROUTE | SC_RACK)) {
-            for (int i = 0; i < MidiPipelineDepth; ++i) {
-                  QListWidgetItem* it = item(i);
-                  it->setText(track->pipeline()->name(i));
-                  it->setBackgroundColor(track->pipeline()->isOn(i) ? Qt::white : Qt::gray);
+            clear();
+            foreach(MidiPluginI* plugin, *(track->pipeline())) {
+                  QListWidgetItem* item = new QListWidgetItem;
+                  item->setText(plugin->name());
+                  // tooltip should only be set if name does not fit
+                  // (is elided)
+                  item->setToolTip(plugin->name());
+                  item->setBackgroundColor(plugin->on() ? Qt::white : Qt::gray);
+                  addItem(item);
                   }
             }
       }
 
 //---------------------------------------------------------
-//   menuRequested
+//   contextMenuEvent
 //---------------------------------------------------------
 
 void MidiRack::contextMenuEvent(QContextMenuEvent* ev)
       {
       QPoint pt(ev->pos());
       QListWidgetItem* item = itemAt(pt);
+      MidiPipeline* pipe    = track->pipeline();
 
-      if (item == 0 || track == 0)
-            return;
-
-      int idx = row(item);
-      QString name;
-      bool mute;
-
-      MidiPipeline* pipe = track->pipeline();
-      name  = pipe->name(idx);
-      mute  = pipe->isOn(idx);
-
-      QMenu* menu = new QMenu;
-
-      QAction* upAction = menu->addAction(QIcon(*upIcon), tr("move up"));
-      QAction* downAction = menu->addAction(QIcon(*downIcon), tr("move down"));
+      QMenu* menu           = new QMenu;
+      QAction* upAction     = menu->addAction(QIcon(*upIcon), tr("move up"));
+      QAction* downAction   = menu->addAction(QIcon(*downIcon), tr("move down"));
       QAction* removeAction = menu->addAction(tr("remove"));
       QAction* bypassAction = menu->addAction(tr("bypass"));
       QAction* showAction   = menu->addAction(tr("show gui"));
-      QAction* newAction;
+      QAction* newAction    = menu->addAction(tr("new"));
+      bypassAction->setCheckable(true);
+      showAction->setCheckable(true);
 
-      bypassAction->setChecked(!pipe->isOn(idx));
-      showAction->setChecked(pipe->guiVisible(idx));
-
-      if (pipe->empty(idx)) {
-            newAction = menu->addAction(tr("new"));
+      int idx = -1;
+      if (item == 0) {
             upAction->setEnabled(false);
             downAction->setEnabled(false);
             removeAction->setEnabled(false);
@@ -108,11 +97,13 @@ void MidiRack::contextMenuEvent(QContextMenuEvent* ev)
             showAction->setEnabled(false);
             }
       else {
-            newAction = menu->addAction(tr("change"));
-            if (idx == 0)
-                  upAction->setEnabled(false);
-            if (idx == (MidiPipelineDepth-1))
-                  downAction->setEnabled(false);
+            idx = row(item);
+            upAction->setEnabled(idx != 0);
+            downAction->setEnabled(idx < (pipe->size() - 1));
+            showAction->setEnabled(pipe->hasGui(idx));
+            bypassAction->setEnabled(true);
+            bypassAction->setChecked(!pipe->isOn(idx));
+            showAction->setChecked(pipe->guiVisible(idx));
             }
 
       QAction* sel = menu->exec(mapToGlobal(pt), newAction);
@@ -130,7 +121,7 @@ void MidiRack::contextMenuEvent(QContextMenuEvent* ev)
                         delete plugi;
                         }
                   else
-                        audio->msgAddMidiPlugin(track, idx, plugi);
+                        audio->msgAddMidiPlugin(track, pipe->size(), plugi);
                   }
             }
       else if (sel == removeAction) {
@@ -151,7 +142,7 @@ void MidiRack::contextMenuEvent(QContextMenuEvent* ev)
                   }
             }
       else if (sel == downAction) {
-            if (idx < (MidiPipelineDepth-1)) {
+            if (idx < (pipe->size() - 1)) {
                   setCurrentRow(idx+1);
                   pipe->move(idx, false);
                   }
@@ -172,7 +163,7 @@ void MidiRack::doubleClicked(QListWidgetItem* it)
       int idx = row(it);
       MidiPipeline* pipe = track->pipeline();
 
-      if (!pipe->empty(idx)) {
+      if (!pipe->value(idx)) {
             bool flag = !pipe->guiVisible(idx);
             pipe->showGui(idx, flag);
             }
@@ -190,5 +181,6 @@ void MidiRack::doubleClicked(QListWidgetItem* it)
                         }
                   }
             }
+      song->update(SC_RACK);
       }
 
