@@ -383,6 +383,18 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       }
 
 //---------------------------------------------------------
+//   setButtonColor
+//---------------------------------------------------------
+
+static void setButtonColor(QAbstractButton* b, const QRgb c)
+      {
+      QPalette p(b->palette());
+      p.setColor(QPalette::Button, QColor(c));
+      p.setColor(b->backgroundRole(), QColor(c));
+      b->setPalette(p);
+      }
+
+//---------------------------------------------------------
 //   resetValues
 //---------------------------------------------------------
 
@@ -390,39 +402,22 @@ void PreferencesDialog::resetValues()
       {
       *config = ::config;  // init with global config values
       updateFonts();
-      QPalette p(palette0->palette());
-      p.setColor(QPalette::Button, config->palette[0]);
-      palette0->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[1]);
-      palette1->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[2]);
-      palette2->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[3]);
-      palette3->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[4]);
-      palette4->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[5]);
-      palette5->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[6]);
-      palette6->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[7]);
-      palette7->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[8]);
-      palette8->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[9]);
-      palette9->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[10]);
-      palette10->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[11]);
-      palette11->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[12]);
-      palette12->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[13]);
-      palette13->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[14]);
-      palette14->setPalette(p);
-      p.setColor(QPalette::Button, config->palette[15]);
-      palette15->setPalette(p);
+
+      setButtonColor(palette0,  QColorDialog::customColor(0));
+      setButtonColor(palette1,  QColorDialog::customColor(1));
+      setButtonColor(palette2,  QColorDialog::customColor(2));
+      setButtonColor(palette3,  QColorDialog::customColor(3));
+      setButtonColor(palette4,  QColorDialog::customColor(4));
+      setButtonColor(palette5,  QColorDialog::customColor(5));
+      setButtonColor(palette6,  QColorDialog::customColor(6));
+      setButtonColor(palette7,  QColorDialog::customColor(7));
+      setButtonColor(palette8,  QColorDialog::customColor(8));
+      setButtonColor(palette9,  QColorDialog::customColor(9));
+      setButtonColor(palette10, QColorDialog::customColor(10));
+      setButtonColor(palette11, QColorDialog::customColor(11));
+      setButtonColor(palette12, QColorDialog::customColor(12));
+      setButtonColor(palette13, QColorDialog::customColor(13));
+      setButtonColor(palette14, QColorDialog::customColor(14));
       }
 
 //---------------------------------------------------------
@@ -836,14 +831,8 @@ void PreferencesDialog::addToPaletteClicked()
             }
       if (button) {
             int id = colorGroup->checkedId();
-            config->palette[id] = *color;
-            QPalette p(button->palette());
-            // p.setColor(QPalette::Active, QPalette::Button, *color);
-            p.setColor(QPalette::Button, *color);
-            p.setColor(button->backgroundRole(), *color);
-
-            p.setColor(QPalette::Inactive, QPalette::Button, *color);
-            button->setPalette(p);
+            QColorDialog::setCustomColor(id, color->rgb());
+            setButtonColor(button,  color->rgb());
             }
       }
 
@@ -853,6 +842,8 @@ void PreferencesDialog::addToPaletteClicked()
 
 void PreferencesDialog::paletteClicked(QAbstractButton* button)
       {
+      if (color == 0)
+            return;
       QColor c = button->palette().color(QPalette::Button);
       int r, g, b;
       c.getRgb(&r, &g, &b);

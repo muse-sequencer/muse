@@ -1,7 +1,4 @@
 <ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>PreferencesDialogBase</class>
  <widget class="QDialog" name="PreferencesDialogBase" >
   <property name="geometry" >
@@ -9,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>731</width>
-    <height>713</height>
+    <height>590</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -24,6 +21,9 @@
    </property>
    <item>
     <widget class="QTabWidget" name="tabWidget" >
+     <property name="currentIndex" >
+      <number>1</number>
+     </property>
      <widget class="QWidget" name="tab" >
       <attribute name="title" >
        <string>Application</string>
@@ -78,6 +78,19 @@
             </item>
             <item>
              <widget class="QLineEdit" name="startProjectEntry" />
+            </item>
+            <item>
+             <spacer>
+              <property name="orientation" >
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" >
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </item>
@@ -406,28 +419,66 @@
        </property>
        <item>
         <widget class="QTabWidget" name="tabWidget2" >
+         <property name="currentIndex" >
+          <number>0</number>
+         </property>
          <widget class="QWidget" name="tab_61" >
           <attribute name="title" >
            <string>Arranger</string>
           </attribute>
-          <layout class="QGridLayout" >
+          <layout class="QVBoxLayout" >
            <property name="margin" >
             <number>9</number>
            </property>
            <property name="spacing" >
             <number>6</number>
            </property>
-           <item row="2" column="0" colspan="2" >
-            <widget class="QCheckBox" name="arrGrid" >
-             <property name="text" >
-              <string>show snap grid</string>
+           <item>
+            <widget class="QGroupBox" name="ButtonGroup3" >
+             <property name="title" >
+              <string>Parts</string>
              </property>
+             <property name="flat" >
+              <bool>true</bool>
+             </property>
+             <layout class="QVBoxLayout" >
+              <property name="margin" >
+               <number>11</number>
+              </property>
+              <property name="spacing" >
+               <number>6</number>
+              </property>
+              <item>
+               <widget class="QCheckBox" name="partShownames" >
+                <property name="text" >
+                 <string>show names</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="partShowevents" >
+                <property name="text" >
+                 <string>show events</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="partShowCakes" >
+                <property name="text" >
+                 <string>show Cakewalk Style</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
-           <item row="0" column="1" >
+           <item>
             <widget class="QGroupBox" name="eventButtonGroup" >
              <property name="title" >
               <string>Events</string>
+             </property>
+             <property name="flat" >
+              <bool>true</bool>
              </property>
              <layout class="QGridLayout" >
               <property name="margin" >
@@ -488,10 +539,13 @@
              </layout>
             </widget>
            </item>
-           <item row="1" column="0" colspan="2" >
+           <item>
             <widget class="QGroupBox" name="useCanvasBgPixmap" >
              <property name="title" >
               <string>Background</string>
+             </property>
+             <property name="flat" >
+              <bool>true</bool>
              </property>
              <property name="checkable" >
               <bool>false</bool>
@@ -503,34 +557,6 @@
               <property name="spacing" >
                <number>6</number>
               </property>
-              <item row="1" column="2" >
-               <widget class="QToolButton" name="selectCanvasBgColor" >
-                <property name="text" >
-                 <string>select...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2" >
-               <widget class="QToolButton" name="selectCanvasBgPixmap" >
-                <property name="text" >
-                 <string>select...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0" >
-               <widget class="QRadioButton" name="useColor" >
-                <property name="text" >
-                 <string>Color</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0" >
-               <widget class="QRadioButton" name="usePixmap" >
-                <property name="text" >
-                 <string>Pixmap</string>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="1" >
                <widget class="QLabel" name="currentBgLabel" >
                 <property name="sizePolicy" >
@@ -552,6 +578,13 @@
                 </property>
                </widget>
               </item>
+              <item row="0" column="0" >
+               <widget class="QRadioButton" name="usePixmap" >
+                <property name="text" >
+                 <string>Pixmap</string>
+                </property>
+               </widget>
+              </item>
               <item row="1" column="1" >
                <widget class="QLabel" name="canvasBackgroundColor" >
                 <property name="text" >
@@ -562,43 +595,48 @@
                 </property>
                </widget>
               </item>
+              <item row="1" column="0" >
+               <widget class="QRadioButton" name="useColor" >
+                <property name="text" >
+                 <string>Color</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2" >
+               <widget class="QToolButton" name="selectCanvasBgColor" >
+                <property name="text" >
+                 <string>select...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2" >
+               <widget class="QToolButton" name="selectCanvasBgPixmap" >
+                <property name="text" >
+                 <string>select...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0" >
+               <spacer>
+                <property name="orientation" >
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" >
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
              </layout>
             </widget>
            </item>
-           <item row="0" column="0" >
-            <widget class="QGroupBox" name="ButtonGroup3" >
-             <property name="title" >
-              <string>Parts</string>
+           <item>
+            <widget class="QCheckBox" name="arrGrid" >
+             <property name="text" >
+              <string>show snap grid</string>
              </property>
-             <layout class="QVBoxLayout" >
-              <property name="margin" >
-               <number>11</number>
-              </property>
-              <property name="spacing" >
-               <number>6</number>
-              </property>
-              <item>
-               <widget class="QCheckBox" name="partShownames" >
-                <property name="text" >
-                 <string>show names</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="partShowevents" >
-                <property name="text" >
-                 <string>show events</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="partShowCakes" >
-                <property name="text" >
-                 <string>show Cakewalk Style</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
             </widget>
            </item>
           </layout>
@@ -1432,7 +1470,198 @@
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item row="3" column="1" colspan="2" >
+       <item row="0" column="1" >
+        <widget class="QGroupBox" name="colorPalette" >
+         <property name="focusPolicy" >
+          <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="title" >
+          <string>Palette</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="4" column="0" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QToolButton" name="palette0" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QToolButton" name="palette1" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2" >
+           <widget class="QToolButton" name="palette2" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3" >
+           <widget class="QToolButton" name="palette3" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QToolButton" name="palette4" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" >
+           <widget class="QToolButton" name="palette8" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" >
+           <widget class="QToolButton" name="palette12" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" >
+           <widget class="QToolButton" name="palette5" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1" >
+           <widget class="QToolButton" name="palette9" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1" >
+           <widget class="QToolButton" name="palette13" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2" >
+           <widget class="QToolButton" name="palette6" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3" >
+           <widget class="QToolButton" name="palette7" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2" >
+           <widget class="QToolButton" name="palette10" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3" >
+           <widget class="QToolButton" name="palette11" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2" >
+           <widget class="QToolButton" name="palette14" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3" >
+           <widget class="QToolButton" name="palette15" >
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="checkable" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="4" column="1" colspan="2" >
         <layout class="QHBoxLayout" >
          <property name="margin" >
           <number>0</number>
@@ -1441,9 +1670,9 @@
           <number>6</number>
          </property>
          <item>
-          <widget class="QLabel" name="textLabel5_2" >
+          <widget class="QLabel" name="textLabel6_2" >
            <property name="text" >
-            <string>S</string>
+            <string>V</string>
            </property>
            <property name="alignment" >
             <set>Qt::AlignCenter</set>
@@ -1451,7 +1680,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="sslider" >
+          <widget class="QSlider" name="vslider" >
            <property name="maximum" >
             <number>255</number>
            </property>
@@ -1461,6 +1690,51 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item rowspan="5" row="0" column="0" >
+        <widget class="QTreeWidget" name="itemList" >
+         <property name="sizePolicy" >
+          <sizepolicy>
+           <hsizetype>1</hsizetype>
+           <vsizetype>7</vsizetype>
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="rootIsDecorated" >
+          <bool>true</bool>
+         </property>
+         <column>
+          <property name="text" >
+           <string>Items</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item row="1" column="1" >
+        <widget class="QPushButton" name="addToPalette" >
+         <property name="text" >
+          <string>add to palette</string>
+         </property>
+        </widget>
+       </item>
+       <item rowspan="2" row="0" column="2" >
+        <widget class="QFrame" name="colorframe" >
+         <property name="sizePolicy" >
+          <sizepolicy>
+           <hsizetype>7</hsizetype>
+           <vsizetype>7</vsizetype>
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="frameShape" >
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow" >
+          <enum>QFrame::Sunken</enum>
+         </property>
+        </widget>
        </item>
        <item row="2" column="1" colspan="2" >
         <layout class="QHBoxLayout" >
@@ -1492,230 +1766,7 @@
          </item>
         </layout>
        </item>
-       <item rowspan="2" row="0" column="2" >
-        <widget class="QFrame" name="colorframe" >
-         <property name="sizePolicy" >
-          <sizepolicy>
-           <hsizetype>7</hsizetype>
-           <vsizetype>7</vsizetype>
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="frameShape" >
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow" >
-          <enum>QFrame::Sunken</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1" >
-        <widget class="QPushButton" name="addToPalette" >
-         <property name="text" >
-          <string>add to palette</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1" >
-        <widget class="QGroupBox" name="colorPalette" >
-         <property name="focusPolicy" >
-          <enum>Qt::NoFocus</enum>
-         </property>
-         <property name="title" >
-          <string>Palette</string>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="3" column="3" >
-           <widget class="QToolButton" name="palette15" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="2" >
-           <widget class="QToolButton" name="palette14" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3" >
-           <widget class="QToolButton" name="palette11" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2" >
-           <widget class="QToolButton" name="palette10" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3" >
-           <widget class="QToolButton" name="palette7" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2" >
-           <widget class="QToolButton" name="palette6" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1" >
-           <widget class="QToolButton" name="palette13" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1" >
-           <widget class="QToolButton" name="palette9" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" >
-           <widget class="QToolButton" name="palette5" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" >
-           <widget class="QToolButton" name="palette12" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" >
-           <widget class="QToolButton" name="palette8" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" >
-           <widget class="QToolButton" name="palette4" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3" >
-           <widget class="QToolButton" name="palette3" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2" >
-           <widget class="QToolButton" name="palette2" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1" >
-           <widget class="QToolButton" name="palette1" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" >
-           <widget class="QToolButton" name="palette0" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item rowspan="5" row="0" column="0" >
-        <widget class="QTreeWidget" name="itemList" >
-         <property name="sizePolicy" >
-          <sizepolicy>
-           <hsizetype>1</hsizetype>
-           <vsizetype>7</vsizetype>
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="rootIsDecorated" >
-          <bool>true</bool>
-         </property>
-         <column>
-          <property name="text" >
-           <string>Items</string>
-          </property>
-         </column>
-        </widget>
-       </item>
-       <item row="4" column="1" colspan="2" >
+       <item row="3" column="1" colspan="2" >
         <layout class="QHBoxLayout" >
          <property name="margin" >
           <number>0</number>
@@ -1724,9 +1775,9 @@
           <number>6</number>
          </property>
          <item>
-          <widget class="QLabel" name="textLabel6_2" >
+          <widget class="QLabel" name="textLabel5_2" >
            <property name="text" >
-            <string>V</string>
+            <string>S</string>
            </property>
            <property name="alignment" >
             <set>Qt::AlignCenter</set>
@@ -1734,7 +1785,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="vslider" >
+          <widget class="QSlider" name="sslider" >
            <property name="maximum" >
             <number>255</number>
            </property>
@@ -2314,35 +2365,26 @@
    </item>
   </layout>
  </widget>
- <pixmapfunction></pixmapfunction>
  <customwidgets>
   <customwidget>
    <class>QuantCombo</class>
    <extends>QComboBox</extends>
    <header>quantcombo.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
   </customwidget>
   <customwidget>
    <class>RecordButton</class>
    <extends>QToolButton</extends>
    <header>recordbutton.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
   </customwidget>
   <customwidget>
    <class>GreendotButton</class>
    <extends>QToolButton</extends>
    <header>greendotbutton.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
   </customwidget>
   <customwidget>
    <class>RasterCombo</class>
    <extends>QComboBox</extends>
    <header>rastercombo.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
   </customwidget>
  </customwidgets>
  <resources/>

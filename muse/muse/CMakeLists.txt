@@ -126,6 +126,8 @@ add_executable ( muse
 
       midiedit/drummap.cpp 
       midiedit/citem.cpp 
+      midiedit/midicmd.h
+      midiedit/midicmd.cpp
 
       ${muse_mocCPP}
       ${muse_moc_headers}

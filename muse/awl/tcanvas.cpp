@@ -935,7 +935,6 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
 
 void TimeCanvas::paintCanvas(QPainter& p, const QRect& cr)
       {
-      return;
       QPoint off(rCanvasA.topLeft());
 
       if (type == TIME_CANVAS_PIANOROLL) {

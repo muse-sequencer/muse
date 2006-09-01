@@ -78,39 +78,37 @@ void readConfiguration(QDomNode node)
             else if (tag == "font5")
                   config.fonts[5]->fromString(s);
             else if (tag == "palette0")
-                  config.palette[0] = readColor(node);
+                  QColorDialog::setCustomColor(0, readColor(node).rgb());
             else if (tag == "palette1")
-                  config.palette[1] = readColor(node);
+                  QColorDialog::setCustomColor(1, readColor(node).rgb());
             else if (tag == "palette2")
-                  config.palette[2] = readColor(node);
+                  QColorDialog::setCustomColor(2, readColor(node).rgb());
             else if (tag == "palette3")
-                  config.palette[3] = readColor(node);
+                  QColorDialog::setCustomColor(3, readColor(node).rgb());
             else if (tag == "palette4")
-                  config.palette[4] = readColor(node);
+                  QColorDialog::setCustomColor(4, readColor(node).rgb());
             else if (tag == "palette5")
-                  config.palette[5] = readColor(node);
+                  QColorDialog::setCustomColor(5, readColor(node).rgb());
             else if (tag == "palette6")
-                  config.palette[6] = readColor(node);
+                  QColorDialog::setCustomColor(6, readColor(node).rgb());
             else if (tag == "palette7")
-                  config.palette[7] = readColor(node);
+                  QColorDialog::setCustomColor(7, readColor(node).rgb());
             else if (tag == "palette8")
-                  config.palette[8] = readColor(node);
+                  QColorDialog::setCustomColor(8, readColor(node).rgb());
             else if (tag == "palette9")
-                  config.palette[9] = readColor(node);
+                  QColorDialog::setCustomColor(9, readColor(node).rgb());
             else if (tag == "palette10")
-                  config.palette[10] = readColor(node);
+                  QColorDialog::setCustomColor(10, readColor(node).rgb());
             else if (tag == "palette11")
-                  config.palette[11] = readColor(node);
+                  QColorDialog::setCustomColor(11, readColor(node).rgb());
             else if (tag == "palette12")
-                  config.palette[12] = readColor(node);
+                  QColorDialog::setCustomColor(12, readColor(node).rgb());
             else if (tag == "palette13")
-                  config.palette[13] = readColor(node);
+                  QColorDialog::setCustomColor(13, readColor(node).rgb());
             else if (tag == "palette14")
-                  config.palette[14] = readColor(node);
+                  QColorDialog::setCustomColor(14, readColor(node).rgb());
             else if (tag == "palette15")
-                  config.palette[15] = readColor(node);
-            else if (tag == "palette16")
-                  config.palette[16] = readColor(node);
+                  QColorDialog::setCustomColor(15, readColor(node).rgb());
             else if (tag == "selectPartBg")
                   config.selectPartBg = readColor(node);
             else if (tag == "outputTrackBg")
@@ -405,10 +403,10 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
             sprintf(buffer, "font%d", i);
             xml.strTag(buffer, config.fonts[i]->toString());
             }
-      for (int i = 0; i < 16; ++i) {
+      for (int i = 0; i < QColorDialog::customCount(); ++i) {
             char buffer[32];
-            sprintf(buffer, "palette%d", i);
-            xml.colorTag(buffer, config.palette[i]);
+            snprintf(buffer, 32, "palette%d", i);
+            xml.colorTag(buffer, QColorDialog::customColor(i));
             }
 
       xml.colorTag("selectPartBg",  config.selectPartBg);
