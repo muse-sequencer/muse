@@ -101,13 +101,14 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx)
                         int id = (idx + 1) * 0x1000 + i;
                         removeController(id);
                         }
+                        _efxPipe->removeAt(idx);
                   }
             }
       if (idx == -1)
             idx = _efxPipe->size();
 
-      efxPipe()->insert(idx, plugin);
       if (plugin) {
+            efxPipe()->insert(idx, plugin);
             int ncontroller = plugin->plugin()->parameter();
             for (int i = 0; i < ncontroller; ++i) {
                   int id = (idx + 1) * 0x1000 + i;
@@ -115,6 +116,7 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx)
                   float min, max;
                   plugin->range(i, &min, &max);
                   Ctrl* cl = getController(id);
+                  //printf("Plugin name: %s id:%d\n",name.toLatin1().data(), id);
                   if (cl == 0) {
                         cl = new Ctrl(id, name);
                         cl->setRange(min, max);
@@ -123,6 +125,8 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx)
                         cl->setCurVal(defaultValue);
                         addController(cl);
                         }
+                  cl->setRange(min, max);
+                  cl->setName(name);
                   plugin->setParam(i, cl->schedVal().f);
                   plugin->setControllerList(cl);
                   }

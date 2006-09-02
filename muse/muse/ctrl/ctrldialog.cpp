@@ -36,6 +36,8 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
       QTreeWidgetItem* header = tw->headerItem();
       header->setTextAlignment(0, Qt::AlignLeft);
       header->setTextAlignment(1, Qt::AlignHCenter);
+
+      /* COMMENT: setSizeHint does not work in qt4.1, Scheduled for  4.2.0 */
       header->setSizeHint(1, QSize(30, 20));
       header->setToolTip(0, tr("controller name"));
       header->setToolTip(1, tr("flag if controller contains data"));
