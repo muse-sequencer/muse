@@ -79,7 +79,7 @@ void Thread::start(int prio, void* ptr)
             }
 
       int rv;
-      if (rv = pthread_create(&thread, attributes, ::loop, this)) {
+      if ((rv = pthread_create(&thread, attributes, ::loop, this))) {
             fprintf(stderr, "creating thread <%s> failed: %s\n",
                _name, strerror(rv));
             thread = 0;
@@ -222,7 +222,7 @@ void Thread::loop()
 */
       if (debugMsg)
             printf("Thread <%s, id %p> has %s priority %d\n",
-               _name, pthread_self(), policy == SCHED_FIFO ? "SCHED_FIFO" : "SCHED_OTHER",
+               _name, (void *)pthread_self(), policy == SCHED_FIFO ? "SCHED_FIFO" : "SCHED_OTHER",
                 realTimePriority);
 
       _running = true;

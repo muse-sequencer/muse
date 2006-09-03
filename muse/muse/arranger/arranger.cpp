@@ -698,27 +698,38 @@ void Arranger::appendSubtrack(TLWidget* trackWidget)
       at->h    = minTrackHeight;
       at->ctrl = CTRL_NO_CTRL;
       t->subtracks.push_back(at);
-      initSubtrack(t, at);
-      updateIndex();
+      if(initSubtrack(t, at)==true) {
+            updateIndex();
+            }
+      else {
+            t->subtracks.remove(at);
+            delete at;
+            }
       }
 
 //---------------------------------------------------------
 //   initSubtrack
 //---------------------------------------------------------
 
-void Arranger::initSubtrack(Track* t, ArrangerTrack* at)
+bool Arranger::initSubtrack(Track* t, ArrangerTrack* at)
       {
       TLSWidget* tw = new TLSWidget(t, at, canvas);
       tw->setFixedHeight(at->h);
-      tl->insertWidget(tlIndex(at), tw);
 
-      tw->setCtrl(at->ctrl);
-      at->tw = tw;
-      connect(tw, SIGNAL(minusClicked(TLSWidget*)), SLOT(removeSubtrack(TLSWidget*)));
-      connect(tw, SIGNAL(controllerChanged(int)), canvas->widget(), SLOT(update()));
-      connect(tw, SIGNAL(drag(int, int)), SLOT(drag(int,int)));
-      connect(tw, SIGNAL(startDrag(int)), SLOT(startDrag(int)));
-      tw->show();
+      if(tw->setCtrl(at->ctrl) == true) {
+            tl->insertWidget(tlIndex(at), tw);
+            at->tw = tw;
+            connect(tw, SIGNAL(minusClicked(TLSWidget*)), SLOT(removeSubtrack(TLSWidget*)));
+            connect(tw, SIGNAL(controllerChanged(int)), canvas->widget(), SLOT(update()));
+            connect(tw, SIGNAL(drag(int, int)), SLOT(drag(int,int)));
+            connect(tw, SIGNAL(startDrag(int)), SLOT(startDrag(int)));
+            tw->show();
+            }
+      else {
+            delete tw;
+            return false;
+            }
+      return true;
       }
 
 //---------------------------------------------------------

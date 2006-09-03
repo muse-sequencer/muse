@@ -116,7 +116,7 @@ class Arranger : public QWidget {
       TrackInfo* createTrackInfo();
       int tlIndex(Track*) const;
       int tlIndex(ArrangerTrack* t) const;
-      void initSubtrack(Track* t, ArrangerTrack*);
+      bool initSubtrack(Track* t, ArrangerTrack*);
       ArrangerTrack* atrack(int idx);
       void insertTrack1(Track*);
 

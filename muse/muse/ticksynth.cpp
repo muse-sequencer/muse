@@ -91,10 +91,10 @@ class MetronomeSynthIF : public SynthIF
 
 iMPEvent MetronomeSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, int/*ports*/, unsigned n, float** buffer)
       {
-      int curPos      = pos;
-      int endPos      = pos + n;
-      int off         = pos;
-      int frameOffset = audio->getFrameOffset();
+      unsigned curPos      = pos;
+      unsigned endPos      = pos + n;
+      unsigned off         = pos;
+      unsigned frameOffset = audio->getFrameOffset();
 
       for (; i != el->end(); ++i) {
             unsigned frame = i->time() - frameOffset;

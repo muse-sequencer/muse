@@ -58,7 +58,7 @@ class TLSWidget : public QWidget, public CtrlEditor {
 
    private slots:
       void labelMinusClicked();
-      void showControllerList();
+      bool showControllerList();
       void selectionChanged();
       void configChanged();
       void controllerListChanged(int);
@@ -74,7 +74,7 @@ class TLSWidget : public QWidget, public CtrlEditor {
       TLSWidget(Track*, ArrangerTrack*, TimeCanvas* tc);
       Track* track() const     { return _track; }
       Track* ctrlTrack() const { return _ctrlTrack; }
-      void setCtrl(int ctrl);
+      bool setCtrl(int ctrl);
       void setIdx(int n) { trackIdx = n; }
       };
 

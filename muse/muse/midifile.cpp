@@ -338,9 +338,9 @@ int MidiFile::readEvent(MidiEvent* event, MidiFileTrack* t)
                   event->setType(ME_SYSEX);
                   event->setData(buffer, len);
 
-                  if ((len == gmOnMsgLen) && memcmp(buffer, gmOnMsg, gmOnMsgLen) == 0)
+                  if ((len == (signed)gmOnMsgLen) && memcmp(buffer, gmOnMsg, gmOnMsgLen) == 0)
                         _midiType = MT_GM;
-                  else if ((len == gsOnMsgLen) && memcmp(buffer, gsOnMsg, gsOnMsgLen) == 0)
+                  else if ((len == (signed)gsOnMsgLen) && memcmp(buffer, gsOnMsg, gsOnMsgLen) == 0)
                         _midiType = MT_GS;
 
                   if (buffer[0] == 0x43) {    // Yamaha

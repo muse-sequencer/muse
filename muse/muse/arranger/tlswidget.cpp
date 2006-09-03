@@ -193,7 +193,7 @@ void TLSWidget::configChanged()
 //   showControllerList
 //---------------------------------------------------------
 
-void TLSWidget::showControllerList()
+bool TLSWidget::showControllerList()
       {
       Ctrl* c = ctrl();
       int id;
@@ -205,10 +205,10 @@ void TLSWidget::showControllerList()
             CtrlDialog cd(_ctrlTrack, id);
             int rv = cd.exec();
             if (rv != 1)
-                  return;
+                  return false;
             id = cd.curId();
             if (id == CTRL_NO_CTRL)
-                  return;
+                  return false;
             if (id != CTRL_OTHER)
                   break;
             ConfigMidiCtrl* mce = new ConfigMidiCtrl((MidiTrack*)_track);
@@ -216,19 +216,19 @@ void TLSWidget::showControllerList()
             delete mce;
             }
       setCtrl(id);
+      return true;
       }
 
 //---------------------------------------------------------
 //   setCtrl
 //---------------------------------------------------------
 
-void TLSWidget::setCtrl(int ctrl)
+bool TLSWidget::setCtrl(int ctrl)
       {
       if (ctrl == CTRL_NO_CTRL || ctrl == CTRL_OTHER) {
             // this controller subtrack is new, ask user for 
             // controller:
-            showControllerList();
-            return;
+            return showControllerList();
             }
       
       if (_ctrlTrack && _ctrlTrack != _track) {
@@ -255,6 +255,7 @@ void TLSWidget::setCtrl(int ctrl)
             ctrlList->setText(at->controller->name());
             emit controllerChanged(ctrl);
             }
+      return true;
       }
 
 //---------------------------------------------------------

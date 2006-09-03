@@ -255,6 +255,7 @@ void TLWidget::configChanged()
       label = new QLabel;
       l->addWidget(label);
       label->setIndent(3);
+      //label->setAlignment(Qt::AlignCener);
 
       label->setFont(*config.fonts[1]);
       label->setText(_track->cname());
@@ -627,10 +628,18 @@ void TLWidget::paintEvent(QPaintEvent* ev)
       QRect r(ev->rect());
       QColor color(_track->selected() ? selectBgColor : bgColor);
       p.fillRect(r, color);
-      paintHLine(p, r.x(), r.x() + r.width(), height() - splitWidth);
+
+      if (r==rect()) // only draw on full redraw
+            paintHLine(p, r.x(), r.x() + r.width(), height() - splitWidth);
       QPalette pl = nameEdit->palette();
       pl.setColor(QPalette::Window, color);
       pl.setColor(QPalette::Base, color);
       nameEdit->setPalette(pl);
+      
+      // The selected track will get a 4 pixel red bar to the left
+      if ( _track->selected() && r==rect() /* only draw on full redraw */) {
+            QColor color(200,10,10);
+            QRect qr(0, 0, 4,r.height()-splitWidth); 
+            p.fillRect(qr, color);
+            }
       }
-

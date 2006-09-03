@@ -160,7 +160,7 @@ class Song : public QObject {
       void setMeasureLen(int l);
       void changePart(Part*, unsigned, unsigned);
       void createLRPart(Track* track);
-      void setTickPos(int, unsigned);
+      //void setTickPos(int, unsigned);
 
       void setPos(int, const AL::Pos&);
       void setPos(int, const AL::Pos&, bool sig, bool isSeek = true,

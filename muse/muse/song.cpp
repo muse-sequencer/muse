@@ -494,13 +494,13 @@ void Song::swapTracks(int i1, int i2)
 //---------------------------------------------------------
 //   setTickPos
 //---------------------------------------------------------
-
+/*
 void Song::setTickPos(int idx, unsigned int tick)
       {
       Pos pos(tick);
       setPos(idx, pos);
       }
-
+*/
 //---------------------------------------------------------
 //   setPos
 //   song->setPos(Song::CPOS, pos, true, true, true);
