@@ -18,27 +18,48 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-QT4_WRAP_CPP (ctrl_mocs       
-      configmidictrl.h 
-      ctrleditor.h 
-      ctrldialog.h
-      )
-QT4_WRAP_UI (ctrl_ui_headers 
-      configmidictrl.ui 
-      ctrldialog.ui
+QT4_WRAP_CPP ( midiedit_mocs
+      gatetime.h
+      velocity.h
+      quantconfig.h
+      ctrledit.h
+      dcanvas.h
+      drumedit.h
+      ecanvas.h
+      midieditor.h
+      pianoroll.h
+      prcanvas.h
       )
 
-add_library ( ctrl STATIC 
-      configmidictrl.cpp 
-      ctrldialog.cpp
-      ctrldialog.h
-      ctrleditor.cpp
-      configmidictrl.h
-      ctrleditor.h
-      ${ctrl_mocs}
-      ${ctrl_ui_headers}
+QT4_WRAP_UI ( midiedit_ui_headers 
+      gatetime.ui
+      velocity.ui
+      quantconfig.ui
       )
-set_target_properties( ctrl
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
-   )
+
+add_library ( midiedit STATIC 
+      gatetime.cpp
+      velocity.cpp
+      quantconfig.cpp
+      citem.h
+      cmd.h
+      drummap.h
+      midicmd.h
+      citem.cpp
+      ctrledit.cpp
+      dcanvas.cpp
+      drumedit.cpp
+      drummap.cpp
+      ecanvas.cpp
+      midicmd.cpp
+      midieditor.cpp
+      pianoroll.cpp
+      prcanvas.cpp
+      ${midiedit_mocs}
+      ${midiedit_ui_headers}
+      )
+
+set_target_properties( midiedit
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+      )
 

@@ -23,6 +23,22 @@
 
 #include "citem.h"
 
+class MidiEditor;
+class MidiCmdDialog;
+
+//---------------------------------------------------------
+//   MidiCmdDialog
+//---------------------------------------------------------
+
+class MidiCmdDialog : public QDialog
+      {
+
+   public:
+      MidiCmdDialog();
+      int range() const { return 0; }
+      void setRange(int /*val*/) { }
+      };
+      
 //---------------------------------------------------------
 //   MidiCmd
 //    abstract base class for midi commands
@@ -32,6 +48,7 @@ class MidiCmd {
       int modified;
 
    protected:
+      MidiEditor* editor;
       int range;
 
       // convenience classes for derived classes
@@ -39,10 +56,11 @@ class MidiCmd {
       void changeEvent(Event oldEvent, Event newEvent, Part* part);
 
       // virtual functions provided by derived classes
-      virtual void process(CItemList*, int*) = 0;
+      virtual void process(CItemList*) = 0;
+      virtual MidiCmdDialog* guiDialog() { return 0; }
 
    public:
-      MidiCmd() {}
+      MidiCmd(MidiEditor*);
       virtual ~MidiCmd() {}
       void processEvents(CItemList*);
       };

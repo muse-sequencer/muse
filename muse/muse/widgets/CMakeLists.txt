@@ -34,8 +34,7 @@ QT4_WRAP_CPP (widget_mocs
       comboQuant.h bigtime.h
       midisync.h
       mixdowndialog.h 
-      comment.h gatetime.h
-      velocity.h 
+      comment.h 
       shortcutconfig.h 
       shortcutcapturedialog.h
       greendotbutton.h recordbutton.h
@@ -47,8 +46,6 @@ QT4_WRAP_UI (widget_ui_headers
       mixdowndialog.ui
       shortcutcapturedialog.ui 
       shortcutconfig.ui 
-      gatetime.ui 
-      velocity.ui
       )
 
 # add_custom_command(OUTPUT ui_midisync.h
@@ -70,8 +67,6 @@ add_library ( widgets STATIC
       midisync.cpp 
       comment.cpp
       mixdowndialog.cpp
-      velocity.cpp
-      gatetime.cpp
       tools.cpp
       doublelabel.cpp 
       noteinfo.cpp 

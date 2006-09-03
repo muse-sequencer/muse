@@ -41,7 +41,7 @@
 #include "marker/markerview.h"
 #include "transpose.h"
 #include "preferences.h"
-#include "widgets/gatetime.h"
+// #include "widgets/gatetime.h"
 #include "audio.h"
 #include "midiseq.h"
 #include "audioprefetch.h"
@@ -441,7 +441,7 @@ void MusE::setupTransportToolbar(QToolBar* tb) const
 MusE::MusE()
    : QMainWindow()
       {
-      setupUi(this);
+//      setupUi(this);
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::WheelFocus);
 
@@ -469,6 +469,12 @@ MusE::MusE()
       markerView            = 0;
       exportMidiDialog      = 0;
       projectPropsDialog    = 0;
+
+      startAction   = new QAction(QIcon(":/xpm/start.xpm"), "start", this);
+      rewindAction  = new QAction(QIcon(":/xpm/frewind.xpm"), "rewind", this);
+      forwardAction = new QAction(QIcon(":/xpm/fforward.xpm"), "forward", this);
+      stopAction    = new QAction(QIcon(":/xpm/stop.xpm"), "stop", this);
+      playAction    = new QAction(QIcon(":/xpm/play.xpm"), "play", this);
 
       song->blockSignals(true);
       heartBeatTimer = new QTimer(this);
@@ -1954,8 +1960,8 @@ void MusE::transpose()
 
 void MusE::modifyGateTime()
       {
-      GateTime* w = new GateTime(this);
-      w->show();
+//TODO      GateTime* w = new GateTime(this);
+//      w->show();
       }
 
 //---------------------------------------------------------

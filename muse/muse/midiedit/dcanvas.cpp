@@ -23,7 +23,7 @@
 #include "midieditor.h"
 #include "drummap.h"
 #include "audio.h"
-#include "widgets/velocity.h"
+#include "velocity.h"
 #include "gconfig.h"
 #include "part.h"
 

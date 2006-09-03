@@ -18,16 +18,17 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#ifndef __GATETIME_H__
-#define __GATETIME_H__
+#ifndef __VELOCITY_H__
+#define __VELOCITY_H__
 
-#include "ui_gatetime.h"
+#include "ui_velocity.h"
+#include "midicmd.h"
 
 //---------------------------------------------------------
-//   GateTime
+//   Velocity
 //---------------------------------------------------------
 
-class GateTime : public QDialog, public Ui::GateTimeBase {
+class Velocity : public MidiCmdDialog, public Ui::VelocityBase {
       Q_OBJECT
 
       QButtonGroup* rangeGroup;
@@ -39,7 +40,7 @@ class GateTime : public QDialog, public Ui::GateTimeBase {
       void accept();
 
    public:
-      GateTime(QWidget* parent = 0);
+      Velocity(QWidget* parent = 0);
       void setRange(int id);
       int range() const     { return _range; }
       int rateVal() const   { return _rateVal; }

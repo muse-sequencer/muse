@@ -27,7 +27,7 @@
 //---------------------------------------------------
 //    NoteInfo
 //    ToolBar
-//    Start, Länge, Note, Velo an, Velo aus, Kanal
+//    Start, Len, Note, Velo on, Velo off, Channel
 //---------------------------------------------------
 
 NoteInfo::NoteInfo(QMainWindow* parent)

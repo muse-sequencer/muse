@@ -41,11 +41,10 @@ MACRO(WRAP_UI outfiles )
    ENDMACRO(WRAP_UI)
 
 subdirs(
-      ctrl widgets master driver instruments marker liste
+      ctrl midiedit widgets master driver instruments marker liste
       )
 
 set (muse_uics
-      muse 
       preferences 
       exportmididialog 
       configmidifile
@@ -55,7 +54,6 @@ set (muse_uics
       projectpropsdialog
       projectdialog
       templatedialog
-      midiedit/quantconfig
       mixer/routedialog
       arranger/configtrack
       arranger/miditrackinfo
@@ -71,14 +69,6 @@ set(muse_mocs
 	cobject transpose track midisynti
       miditrack wavetrack audiotrack audioaux audiooutput
       audioinput audiogroup exportmidi
-      midiedit/pianoroll 
-      midiedit/prcanvas 
-      midiedit/quantconfig 
-      midiedit/drumedit
-      midiedit/dcanvas 
-      midiedit/ecanvas 
-      midiedit/ctrledit
-      midiedit/midieditor
       mixer/mixer 
       mixer/rack 
       mixer/midirack 
@@ -124,11 +114,6 @@ add_executable ( muse
       gconfig.cpp midirc.cpp midififo.cpp
       midiport.cpp
 
-      midiedit/drummap.cpp 
-      midiedit/citem.cpp 
-      midiedit/midicmd.h
-      midiedit/midicmd.cpp
-
       ${muse_mocCPP}
       ${muse_moc_headers}
       ${ui_headers}
@@ -139,8 +124,8 @@ set_target_properties( muse
       )
 
 target_link_libraries(muse
-      widgets  ctrl master driver instruments marker liste
-      al awl synti
+      ctrl midiedit master driver instruments marker liste
+      al synti widgets awl
       ${QT_LIBRARIES}
       ${ALSA_LIB}
       ${JACK_LIB}

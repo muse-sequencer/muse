@@ -20,8 +20,35 @@
 
 #include "midicmd.h"
 #include "song.h"
-#include "widgets/gatetime.h"
+#include "gatetime.h"
+#include "velocity.h"
 #include "audio.h"
+#include "midieditor.h"
+
+//==========================================================
+//     class MidiCmd is an attempt to formalize the 
+//     interface between midi command code and MusE.
+//     Maybe this can be extended to an specialized
+//     plugin interface
+//==========================================================
+
+//---------------------------------------------------------
+//   MidiCmdDialog
+//---------------------------------------------------------
+
+MidiCmdDialog::MidiCmdDialog()
+   : QDialog(0)
+      {
+      }
+
+//---------------------------------------------------------
+//   MidiCmd
+//---------------------------------------------------------
+
+MidiCmd::MidiCmd(MidiEditor* e)
+      {
+      editor = e;      
+      }
 
 //---------------------------------------------------------
 //   processEvents
@@ -29,11 +56,21 @@
 
 void MidiCmd::processEvents(CItemList* items)
       {
+      MidiCmdDialog* dialog = guiDialog();
+      editor->applyTo();
+      dialog->setRange(range);
+      bool rv = dialog->exec();
+      if (!rv) {
+            delete dialog;
+            return;
+            }
+      range = dialog->range();        // all, selected, looped, sel+loop
+      editor->setApplyTo(range);
+      delete dialog;
+      
       modified = 0;
       song->startUndo();
-      range = 0; //editor->applyTo();
-      process(items, &range);
-//      editor->setApplyTo(range);
+      process(items);
       song->endUndo(modified);
       }
 
@@ -65,6 +102,8 @@ void MidiCmd::changeEvent(Event oldEvent, Event newEvent, Part* part)
       }
 
 //==================================================================
+//    process midi event lists
+//==================================================================
 
 //---------------------------------------------------------
 //   ModifyGateTimeCmd
@@ -72,27 +111,43 @@ void MidiCmd::changeEvent(Event oldEvent, Event newEvent, Part* part)
 
 class ModifyGateTimeCmd : public MidiCmd
       {
-   protected:
-      virtual void process(CItemList* items, int* range);
+      GateTime* dialog;
+      virtual MidiCmdDialog* guiDialog();
+      virtual void process(CItemList* items);
 
    public:
-      ModifyGateTimeCmd() {}
+      ModifyGateTimeCmd(MidiEditor* e);
       };
 
 //---------------------------------------------------------
-//   process
-//    return true if events are modified
+//   MidifyGateTime
 //---------------------------------------------------------
 
-void ModifyGateTimeCmd::process(CItemList* items, int* range)
+ModifyGateTimeCmd::ModifyGateTimeCmd(MidiEditor* e)
+   : MidiCmd(e)
       {
-      GateTime w(0);
-      w.setRange(*range);
-      if (!w.exec())
-            return;
-      *range     = w.range();        // all, selected, looped, sel+loop
-      int rate   = w.rateVal();
-      int offset = w.offsetVal();
+      dialog = 0;      
+      }
+
+//---------------------------------------------------------
+//   guiDialog
+//---------------------------------------------------------
+
+MidiCmdDialog* ModifyGateTimeCmd::guiDialog()
+      {
+      if (dialog == 0)
+            dialog = new GateTime(0);
+      return dialog;
+      }
+
+//---------------------------------------------------------
+//   process
+//---------------------------------------------------------
+
+void ModifyGateTimeCmd::process(CItemList* items)
+      {
+      int rate   = dialog->rateVal();
+      int offset = dialog->offsetVal();
 
       for (iCItem k = items->begin(); k != items->end(); ++k) {
             CItem* item = k->second;
@@ -111,6 +166,73 @@ void ModifyGateTimeCmd::process(CItemList* items, int* range)
                         Event newEvent = event.clone();
                         newEvent.setLenTick(len);
                         changeEvent(event, newEvent, item->part);
+                        }
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   ModifyVelocityCmd
+//---------------------------------------------------------
+
+class ModifyVelocityCmd : public MidiCmd
+      {
+      Velocity* dialog;
+      virtual MidiCmdDialog* guiDialog();
+      virtual void process(CItemList* items);
+
+   public:
+      ModifyVelocityCmd(MidiEditor* e);
+      };
+
+//---------------------------------------------------------
+//   ModifyVelocityCmd
+//---------------------------------------------------------
+
+ModifyVelocityCmd::ModifyVelocityCmd(MidiEditor* e)
+   : MidiCmd(e)
+      {
+      dialog = 0;      
+      }
+
+//---------------------------------------------------------
+//   guiDialog
+//---------------------------------------------------------
+
+MidiCmdDialog* ModifyVelocityCmd::guiDialog()
+      {
+      if (dialog == 0)
+            dialog = new Velocity(0);
+      return dialog;
+      }
+
+//---------------------------------------------------------
+//   process
+//---------------------------------------------------------
+
+void ModifyVelocityCmd::process(CItemList* items)
+      {
+      int rate   = dialog->rateVal();
+      int offset = dialog->offsetVal();
+
+      for (iCItem k = items->begin(); k != items->end(); ++k) {
+            CItem* item = k->second;
+            Event event = item->event;
+            if (event.type() != Note)
+                  continue;
+            if (itemInRange(item)) {
+                  int velo = event.velo();
+                  velo = (velo * rate) / 100;
+                  velo += offset;
+
+                  if (velo <= 0)
+                        velo = 1;
+                  if (velo > 127)
+                        velo = 127;
+                  if (event.velo() != velo) {
+                        Event newEvent = event.clone();
+                        newEvent.setVelo(velo);
+                        audio->msgChangeEvent(event, newEvent, item->part, false);
                         }
                   }
             }

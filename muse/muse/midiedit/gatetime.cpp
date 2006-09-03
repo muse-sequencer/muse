@@ -18,16 +18,16 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#include "velocity.h"
+#include "gatetime.h"
 #include "song.h"
 #include "tb1.h"
 
 //---------------------------------------------------------
-//   Velocity
+//   GateTime
 //---------------------------------------------------------
 
-Velocity::Velocity(QWidget* parent)
-   : QDialog(parent)
+GateTime::GateTime(QWidget*)
+   : MidiCmdDialog()
       {
       setupUi(this);
       rangeGroup = new QButtonGroup(this);
@@ -43,7 +43,7 @@ Velocity::Velocity(QWidget* parent)
 //   accept
 //---------------------------------------------------------
 
-void Velocity::accept()
+void GateTime::accept()
       {
       _range     = rangeGroup->checkedId();
       _rateVal   = rate->value();
@@ -55,7 +55,7 @@ void Velocity::accept()
 //   setRange
 //---------------------------------------------------------
 
-void Velocity::setRange(int id)
+void GateTime::setRange(int id)
       {
       if (rangeGroup->button(id))
             rangeGroup->button(id)->setChecked(true);

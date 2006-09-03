@@ -21,7 +21,6 @@
 #ifndef __APP_H__
 #define __APP_H__
 
-#include "ui_muse.h"
 #include "cobject.h"
 #include "widgets/tools.h"
 
@@ -61,7 +60,7 @@ extern void configMidiController();
 //   MusE
 //---------------------------------------------------------
 
-class MusE : public QMainWindow, public Ui::MuseBase
+class MusE : public QMainWindow // , public Ui::MuseBase
       {
       Q_OBJECT
       enum {
@@ -93,6 +92,7 @@ class MusE : public QMainWindow, public Ui::MuseBase
       QAction* fileOpenAction;
       QAction* pianoAction;
       QAction* fileNewAction;
+
       QString appName;
 
       QToolBar *tools;
@@ -292,6 +292,12 @@ class MusE : public QMainWindow, public Ui::MuseBase
 	int raster() const { return _raster; }
 	void setupTransportToolbar(QToolBar* tb) const;
       void readToplevels(QDomNode);
+
+      QAction* startAction;
+      QAction* rewindAction;
+      QAction* forwardAction;
+      QAction* stopAction;
+      QAction* playAction;
       };
 
 extern MusE* muse;
