@@ -65,6 +65,7 @@
 #include "part.h"
 #include "projectdialog.h"
 #include "templatedialog.h"
+#include "midiedit/miditracker.h"
 #include "projectpropsdialog.h"
 
 static pthread_t watchdogThread;
@@ -572,6 +573,9 @@ MusE::MusE()
       pianoAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
       connect(pianoAction, SIGNAL(triggered()), SLOT(startPianoroll()));
 
+      trackerAction = new QAction(*pianoIconSet, tr("MidiTracker"), this);
+      connect(trackerAction, SIGNAL(triggered()), SLOT(startMidiTrackerEditor()));
+
       connect(fileOpenAction, SIGNAL(triggered()), SLOT(loadProject()));
       connect(fileSaveAction, SIGNAL(triggered()), SLOT(save()));
 
@@ -696,6 +700,7 @@ MusE::MusE()
 
       menuEdit->addSeparator();
       menuEdit->addAction(pianoAction);
+      menuEdit->addAction(trackerAction);
       menu_ids[CMD_OPEN_DRUMS]          = menuEdit->addAction(QIcon(*edit_drummsIcon), tr("Drums"));
       menu_ids[CMD_OPEN_LIST]           = menuEdit->addAction(QIcon(*edit_listIcon),   tr("List"));
       menu_ids[CMD_OPEN_GRAPHIC_MASTER] = menuEdit->addAction(QIcon(*mastertrack_graphicIcon),tr("Mastertrack"));
@@ -1452,6 +1457,7 @@ void MusE::startEditor(PartList* pl, int type)
       switch (type) {
             case 0: startPianoroll(pl); break;
             case 1: startListEditor(pl); break;
+            case 2: startMidiTrackerEditor(pl); break;
             case 3: startDrumEditor(pl); break;
             case 4: startWaveEditor(pl); break;
             }
@@ -1547,6 +1553,25 @@ void MusE::startListEditor(PartList* /*pl*/)
       {
 //      ListEdit* listEditor = new ListEdit(0, pl);
 //      listEditor->show();
+      }
+
+//---------------------------------------------------------
+//   startMidiTrackerEditor
+//---------------------------------------------------------
+
+void MusE::startMidiTrackerEditor()
+      {
+      PartList* pl = getMidiPartsToEdit();
+      if (pl == 0)
+            return;
+      startMidiTrackerEditor(pl);
+      }
+
+void MusE::startMidiTrackerEditor(PartList* pl)
+      {
+	//MidiTrackerEditor* miditracker = new MidiTrackerEditor(pl, false);
+	//miditracker->show();
+	//connect(muse, SIGNAL(configChanged()), miditracker, SLOT(configChanged()));
       }
 
 //---------------------------------------------------------
@@ -2495,6 +2520,7 @@ void MusE::updateConfiguration()
       mk_id->setShortcutContext(Qt::ApplicationShortcut);
 
       pianoAction->setShortcut(shortcuts[SHRT_OPEN_PIANO].key); //pianoroll
+      trackerAction->setShortcut(shortcuts[SHRT_OPEN_TRACKER].key); //midiTracker
 
       menu_ids[CMD_GLOBAL_CUT]->setShortcut(shortcuts[SHRT_GLOBAL_CUT].key);
       menu_ids[CMD_GLOBAL_INSERT]->setShortcut(shortcuts[SHRT_GLOBAL_INSERT].key);

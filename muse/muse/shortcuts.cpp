@@ -248,6 +248,8 @@ void initShortCuts()
 //      defShrt(SHRT_DESEL_PARTS,           Qt::CTRL + Qt::Key_B, "Deselect all parts", ARRANG_SHRT, "deselect_parts");
       defShrt(SHRT_SELECT_PRTSTRACK,      Qt::CTRL+ Qt::ALT + Qt::Key_P, 24, ARRANG_SHRT, "select_parts_on_track");
       defShrt(SHRT_OPEN_PIANO,            Qt::CTRL + Qt::Key_E, 25, ARRANG_SHRT, "open_pianoroll");
+      //Warning it is the same ShortcutConfig::ls than Open pianoroll
+      defShrt(SHRT_OPEN_TRACKER,          Qt::CTRL + Qt::Key_T, 25, ARRANG_SHRT, "open_miditracker");
       defShrt(SHRT_OPEN_DRUMS,            Qt::CTRL + Qt::Key_D, 26, ARRANG_SHRT, "open_drumedit");
       defShrt(SHRT_OPEN_LIST,             Qt::CTRL + Qt::Key_L, 27, ARRANG_SHRT, "open_listedit");
       defShrt(SHRT_OPEN_GRAPHIC_MASTER,   Qt::CTRL + Qt::Key_M, 28, ARRANG_SHRT, "open_graph_master");

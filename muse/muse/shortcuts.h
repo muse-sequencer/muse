@@ -135,6 +135,7 @@ enum {
       SHRT_DESEL_PARTS, //Ctrl+B
       SHRT_SELECT_PRTSTRACK, //Default: undefined
       SHRT_OPEN_PIANO, //Ctrl+E
+      SHRT_OPEN_TRACKER, //Ctrl+T
       SHRT_OPEN_SCORE, //Ctrl+R
       SHRT_OPEN_DRUMS, //Ctrl+D
       SHRT_OPEN_LIST, //Ctrl+L

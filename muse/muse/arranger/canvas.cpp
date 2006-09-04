@@ -441,7 +441,8 @@ void PartCanvas::contextMenu(const QPoint& pos)
                         a = pop->addAction(*pianoIconSet, tr("pianoroll"));
                         a->setData(10);
                         }
-		  a = pop->addAction(*edit_listIcon, tr("soundtracker"));
+		  a = pop->addAction(*edit_listIcon, tr("miditracker"));
+		  a->setData(11);
                   a = pop->addAction(*edit_listIcon, tr("list"));
                   a->setData(12);
                   }
@@ -476,6 +477,9 @@ void PartCanvas::contextMenu(const QPoint& pos)
                         case 10:    // pianoroll edit
                               emit startEditor(part, 0);
                               break;
+		        case 11:    //miditracker edit
+			      emit startEditor(part, 2);
+			      break;
                         case 12:    // list edit
                               emit startEditor(part, 1);
                               break;

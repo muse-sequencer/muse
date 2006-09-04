@@ -39,7 +39,7 @@ class MessGui {
       int readFd;
       void readMessage();
       void sendEvent(const MidiEvent& ev);
-      void sendController(int,int,int);
+      void sendController(int ch, int idx, int val);
       void sendSysex(unsigned char*, int);
 
       virtual void processEvent(const MidiEvent&) {};

@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.3
+//    Version 0.4
 //
 //    deicsonzegui.h
 //
@@ -84,14 +84,14 @@ class QTreeCategory:public QTreeWidgetItem {
 
 class QTreeSubcategory:public QTreeWidgetItem {
  public:
-    Subcategory* _subcategory;
-    QTreeSubcategory(QTreeWidget* p, QString slbank,
-			     QString l, Subcategory* s)
-	:QTreeWidgetItem(p) {
-            setText(0, slbank);
-            setText(1, l);
-           _subcategory=s;
-            };
+  Subcategory* _subcategory;
+  QTreeSubcategory(QTreeWidget* p, QString slbank,
+		   QString l, Subcategory* s)
+    :QTreeWidgetItem(p) {
+    setText(0, slbank);
+    setText(1, l);
+    _subcategory=s;
+  };
 };
 
 class QTreePreset:public QTreeWidgetItem {
@@ -118,6 +118,8 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     QString lastDir;
     private slots:
     void readMessage(int);
+    void setEnabledChannel(bool);
+    void setChangeChannel(int);
     void setPanic();
     void setNbrVoices(int);
     void setSaveOnlyUsed(bool);
@@ -125,6 +127,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setSaveConfig(bool);
     void setMidiInCh(int); //to change
     void setQuality(const QString&);
+    void setFontSize(int);
     void saveConfiguration();
     void saveDefaultConfiguration();
     void loadConfiguration();
@@ -133,8 +136,13 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setIsInitSet(bool);
     void setInitSetPath(const QString&);
     void setBrowseInitSetPath();
+    //load init set
+    void setIsBackgroundPix(bool);
+    void setBackgroundPixPath(const QString&);
+    void setBrowseBackgroundPixPath();
     //quick edit
     void setChannelVolKnob(float val);
+    void setChannelPan(float val);
     void setBrightnessKnob(float val);
     void setModulationKnob(float val);
     void setDetuneKnob(float val);
@@ -177,7 +185,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setLBank(int);
     void setProg(int);
    //Global
-    void setPanVol(int);
+    void setMasterVolKnob(float);
     void setMasterVol(int);
     void setFeedback(int);
     void setLfoWave(int);
@@ -188,7 +196,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setLfoAModDepth(int);
     void setLfoAmpSens(int);
     void setTranspose(int);
-    void setGlobalDetune(int);
+    void setChannelDetune(float);
     void setAlgorithm(int);
     void setPitchBendRange(int);
     //Pitch Envelope
@@ -297,22 +305,34 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setPreset(QTreeWidgetItem*);
  public:
     virtual void processEvent(const MidiEvent&);
-    void setPreset(int hbank, int lbank, int prog);
+    void updateSelectPreset(int hbank, int lbank, int prog);
     //update the gui
     void setEnabledPreset(bool b);
+    void updateChannelCheckBox(bool b);
+    void updateEnabledChannel(bool e);//put enabled the display concerning channel and preset
+    void updateChannelEnable(bool e);//update channel enable
+    void updateMasterVolume(int val);
     void updateNbrVoices(int val);
-    void updateMidiInCh(int val); //to change
+    //void updateMidiInCh(int val); //to change
     void updateQuality(int val);
+    void updateFontSize(int fs);
+    void applyFontSize(int fs);
     void updateSaveOnlyUsed(bool);
     void updateSaveConfig(bool);
     //update load init set
     void updateInitSetCheckBox(bool);
     void updateInitSetPath(QString);
+    //update background pix
+    void updateBackgroundPixCheckBox(bool);
+    void updateBackgroundPixPath(QString);
+    void applyBackgroundPix();
     //update quick edit
+    void updateChannelPan(int val);
     void updateBrightness(int val);
     void updateModulation(int val);
     void updateAttack(int val);
     void updateRelease(int val);
+    void updateQuickEdit();
     //update pitch envelope
     void updatePL1(int val);
     void updatePL2(int val);
@@ -370,8 +390,8 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void updateFIXRANGE(int op, int val);
     void updateOSW(int op, int val);
     void updateSHFT(int op, int val);
-    void updateGLOBALDETUNE(int val);
-    void updateMASTERVOLUME(int val); //to change
+    void updateChannelDetune(int val);
+    void updateChannelVolume(int val);
     void updateCategoryName(QString cn, bool enable);
     void updateSubcategoryName(QString sn, bool enable);
     void updatePresetName(QString pn, bool enable);
@@ -381,8 +401,11 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void updateProg(int prog, bool enable);
     void updatePreset(Preset* p);
     void updatePreset(void); //update gui following the current preset
+    void updateCurrentChannel(); //update gui channel attributes
     QString num3Digits(int);
     DeicsOnzeGui(DeicsOnze*);
+
+    int _currentChannel;
 
     QColor* tColor; //text color
     QColor* bColor; //background color

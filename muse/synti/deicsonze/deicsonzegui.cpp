@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.3
+//    Version 0.4
 //
 //    deicsonzegui.cpp
 //
@@ -29,6 +29,7 @@
 
 #include "muse/midi.h"
 #include "muse/midictrl.h"
+#include "config.h"
 
 #include "deicsonzegui.h"
 
@@ -39,6 +40,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   setupUi(this);
   _deicsOnze = deicsOnze;
   lastDir= "";
+
+  _currentChannel = 0;
 
   tColor = new TCOLOR;
   bColor = new BCOLOR;
@@ -53,11 +56,21 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   envelopeGraph[2] = new QFrameEnvelope(envelope3Frame, this, 2);
   envelopeGraph[3] = new QFrameEnvelope(envelope4Frame, this, 3);
 
+  //change/enable channel
+  connect(ChannelCheckBox, SIGNAL(toggled(bool)), this,
+	  SLOT(setEnabledChannel(bool)));
+  connect(ChannelNumSpinBox, SIGNAL(valueChanged(int)), this,
+	  SLOT(setChangeChannel(int)));
+  //MasterVolume
+  connect(masterVolKnob, SIGNAL(valueChanged(float, int)),
+	  this, SLOT(setMasterVolKnob(float)));
   //Panic
   connect(panicButton, SIGNAL(pressed()), this, SLOT(setPanic()));
   //Quick edit
   connect(channelVolumeKnob, SIGNAL(valueChanged(float, int)),
 	  this, SLOT(setChannelVolKnob(float)));
+  connect(channelPanKnob, SIGNAL(valueChanged(float, int)),
+	  this, SLOT(setChannelPan(float)));
   connect(brightnessKnob, SIGNAL(valueChanged(float, int)),
 	  this, SLOT(setBrightnessKnob(float)));
   connect(modulationKnob, SIGNAL(valueChanged(float, int)),
@@ -74,6 +87,9 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   //quality
   connect(qualityComboBox, SIGNAL(activated(const QString&)),
 	  this, SLOT(setQuality(const QString&)));
+  //change font size
+  connect(fontSizeSpinBox, SIGNAL(valueChanged(int)), 
+	  this, SLOT(setFontSize(int)));
   //load save configuration
   connect(saveConfPushButton, SIGNAL(pressed()),
 	  this, SLOT(saveConfiguration()));
@@ -84,10 +100,17 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   //load init set
   connect(initSetCheckBox, SIGNAL(toggled(bool)),
 	  this, SLOT(setIsInitSet(bool)));
-  connect(pathLineEdit, SIGNAL(textChanged(const QString&)),
+  connect(initSetPathLineEdit, SIGNAL(textChanged(const QString&)),
 	  this, SLOT(setInitSetPath(const QString&)));
-  connect(browsePushButton, SIGNAL(pressed()),
+  connect(initSetBrowsePushButton, SIGNAL(pressed()),
 	  this, SLOT(setBrowseInitSetPath()));
+  //load background pix
+  connect(imageCheckBox, SIGNAL(toggled(bool)),
+	  this, SLOT(setIsBackgroundPix(bool)));
+  connect(imagePathLineEdit, SIGNAL(textChanged(const QString&)),
+	  this, SLOT(setBackgroundPixPath(const QString&)));
+  connect(imageBrowsePushButton, SIGNAL(pressed()),
+	  this, SLOT(setBrowseBackgroundPixPath()));
 
   //Midi in channel
   //connect(MidiInChComboBox, SIGNAL(activated(int)),
@@ -132,8 +155,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setLBank(int)));
   connect(progSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setProg(int)));
   //Global
-  connect(channelPanSlider, SIGNAL(valueChanged(int)),
-	  this, SLOT(setPanVol(int)));
+  //connect(channelPanSlider, SIGNAL(valueChanged(int)),
+  //this, SLOT(setChannelPan(int)));
   connect(feedbackSlider, SIGNAL(valueChanged(int)),
 	  this, SLOT(setFeedback(int)));
   connect(LFOWaveComboBox, SIGNAL(activated(int)),
@@ -152,8 +175,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setLfoAmpSens(int)));
   connect(transposeSlider, SIGNAL(valueChanged(int)),
 	  this, SLOT(setTranspose(int)));
-  connect(globalDetuneSlider, SIGNAL(valueChanged(int)),
-	  this, SLOT(setGlobalDetune(int)));
+  connect(detuneKnob, SIGNAL(valueChanged(float, int)),
+	  this, SLOT(setChannelDetune(float)));
   connect(algorithmComboBox, SIGNAL(activated(int)),
 	  this, SLOT(setAlgorithm(int)));
   connect(pitchBendRangeSlider, SIGNAL(valueChanged(int)),
@@ -318,17 +341,56 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   p.setColor(QPalette::Window, (reinterpret_cast<const QColor &>(*tColor)));
   colorFrame->setPalette(p);
 
+  //update maaster volume
+  updateMasterVolume(INITMASTERVOL);
+  //update Quick edit
+  updateQuickEdit();
+
   //updatePreset();
   _enabledPreset = true;
   setEnabledPreset(false);
   
   updateInitSetPath
-    (QString
-     ("/usr/local/share/muse-1.0pre1/presets/deicsonze/SutulaBank.dei")
-     );
-
+    (INSTPREFIX "/share/muse-" VERSION "/presets/deicsonze/ARCH_ALIN");
+    //"/usr/local/share/muse-1.0pre1/presets/deicsonze/SutulaBank.dei")
+    //);
+  updateBackgroundPixPath
+    (INSTPREFIX "/share/muse-" VERSION "/wallpapers/paper2.jpg");
+  updateBackgroundPixCheckBox(true);
+  applyBackgroundPix();
 }
 
+//-----------------------------------------------------------
+// setEnabledChannel
+//-----------------------------------------------------------
+void DeicsOnzeGui::setEnabledChannel(bool e) {
+  sendController(_currentChannel, CTRL_CHANNELENABLE, (int)e);
+  updateEnabledChannel(e);
+}
+//-----------------------------------------------------------
+// setUpdateEnabledChannelCheckBox
+//-----------------------------------------------------------
+void DeicsOnzeGui::updateChannelCheckBox(bool b) {
+  ChannelCheckBox->blockSignals(true);
+  ChannelCheckBox->setChecked(b);
+  ChannelCheckBox->blockSignals(false);
+}
+
+//-----------------------------------------------------------
+// setChangeChannel
+//-----------------------------------------------------------
+void DeicsOnzeGui::setChangeChannel(int c) {
+  _currentChannel = c-1;
+  updateChannelEnable(_deicsOnze->getChannelEnable(_currentChannel));
+  updateNbrVoices(_deicsOnze->getNbrVoices(_currentChannel));
+  //update quick edit
+  updateQuickEdit();
+  //update preset
+  int p, l, h;
+  _deicsOnze->_preset[_currentChannel]->getHBankLBankProg(&h, &l, &p);
+  updateSelectPreset(h, l, p);
+  updatePreset();
+}
 //-----------------------------------------------------------
 // setPanic
 //-----------------------------------------------------------
@@ -342,18 +404,18 @@ void DeicsOnzeGui::setPanic() {
 // setNbrVoices
 //-----------------------------------------------------------
 void DeicsOnzeGui::setNbrVoices(int nv) {
-  sendController(0, CTRL_NBRVOICES, nv);
+  sendController(_currentChannel, CTRL_NBRVOICES, nv);
 }
 
 //----------------------------------------------------------
 // setMidiInCh
 //----------------------------------------------------------
-void DeicsOnzeGui::setMidiInCh(int m) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_CHANNELNUM;
-  message[1]=(unsigned char)(m-1);
-  sendSysex(message, 2);
-}
+//void DeicsOnzeGui::setMidiInCh(int m) {
+//  unsigned char* message = new unsigned char[2];
+//  message[0]=SYSEX_CHANNELNUM;
+//  message[1]=(unsigned char)(m-1);
+//  sendSysex(message, 2);
+//}
 
 //-----------------------------------------------------------
 // saveConfiguration
@@ -382,7 +444,7 @@ void DeicsOnzeGui::saveConfiguration() {
 // saveDefaultConfiguration
 //-----------------------------------------------------------
 void DeicsOnzeGui::saveDefaultConfiguration() {
-  QString filename = QString(getenv("HOME")) + QString("/." DEICSONZESTR);
+  QString filename = QString(getenv("HOME")) + QString("/." DEICSONZESTR ".dco");
   if(!filename.isEmpty()) {
     QFile f(filename);
     f.open(QIODevice::WriteOnly);
@@ -462,7 +524,16 @@ void DeicsOnzeGui::setQuality(const QString& q) {
   message[1]=(unsigned char)(q=="High"?high:(q=="Middle"?middle:low));
   sendSysex(message, 2);
 }
-
+//-----------------------------------------------------------
+// setFontSize
+//-----------------------------------------------------------
+void DeicsOnzeGui::setFontSize(int fs) {
+  applyFontSize(fs);
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_FONTSIZE;
+  message[1]=(unsigned char)fs;
+  sendSysex(message, 2);
+}
 //-----------------------------------------------------------
 // setSaveOnlyUsed
 //-----------------------------------------------------------
@@ -604,8 +675,8 @@ void DeicsOnzeGui::setTextColor(const QColor & c) {
   QPalette p = this->palette();
   p.setColor(QPalette::WindowText, c);
   this->setPalette(p);
-  quickEditGroupBox->setPalette(p);
-  channelPanGroupBox->setPalette(p);
+  channelCtrlGroupBox->setPalette(p);
+  //channelPanGroupBox->setPalette(p);
   FeedbackGroupBox->setPalette(p);
   LFOGroupBox->setPalette(p);
   ModulationMatrixGroupBox->setPalette(p);
@@ -649,28 +720,117 @@ void DeicsOnzeGui::setTextColor(const QColor & c) {
   fileGroupBox->setPalette(p);
 }
 void DeicsOnzeGui::setBackgroundColor(const QColor & c) {
-  QPalette p = this->palette();
-  p.setColor(QPalette::Window, c);
-  this->setPalette(p);
+  if(imageCheckBox->checkState()==Qt::Unchecked) {
+    QPalette p = this->palette();
+    p.setColor(QPalette::Window, c);
+    this->setPalette(p);
+  }
 }
 void DeicsOnzeGui::setEditTextColor(const QColor & c) {
   QPalette p = this->palette();
   p.setColor(QPalette::Text, c);
   this->setPalette(p);
+  channelCtrlGroupBox->setPalette(p);
+  //channelPanGroupBox->setPalette(p);
+  FeedbackGroupBox->setPalette(p);
+  LFOGroupBox->setPalette(p);
+  ModulationMatrixGroupBox->setPalette(p);
+  FeedbackGroupBox->setPalette(p);
+  pitchEnvGroupBox->setPalette(p);
+  Frequency1groupBox->setPalette(p);
+  OUT1groupBox->setPalette(p);
+  Env1GroupBox->setPalette(p);
+  Scaling1GroupBox->setPalette(p);
+  DetWaveEGS1GroupBox->setPalette(p);
+  sensitivity1groupBox->setPalette(p);
+  Frequency2groupBox->setPalette(p);
+  OUT2groupBox->setPalette(p);
+  Env2GroupBox->setPalette(p);
+  Scaling2GroupBox->setPalette(p);
+  DetWaveEGS2GroupBox->setPalette(p);
+  sensitivity2groupBox->setPalette(p);
+  Frequency3groupBox->setPalette(p);
+  OUT3groupBox->setPalette(p);
+  Env3GroupBox->setPalette(p);
+  Scaling3GroupBox->setPalette(p);
+  DetWaveEGS3GroupBox->setPalette(p);
+  sensitivity3groupBox->setPalette(p);
+  Frequency4groupBox->setPalette(p);
+  OUT4groupBox->setPalette(p);
+  Env4GroupBox->setPalette(p);
+  Scaling4GroupBox->setPalette(p);
+  DetWaveEGS4GroupBox->setPalette(p);
+  sensitivity4groupBox->setPalette(p);
+  transposeGroupBox->setPalette(p);
+  detuneGroupBox->setPalette(p);
+  footSWGroupBox->setPalette(p);
+  pitchBendRangeGroupBox->setPalette(p);
+  reverbGroupBox->setPalette(p);
+  modeGroupBox->setPalette(p);
+  portamentoGroupBox->setPalette(p);
+  colorGroupBox->setPalette(p);
+  pathGroupBox->setPalette(p);
+  qualityGroupBox->setPalette(p);
+  saveModeButtonGroup->setPalette(p);
+  fileGroupBox->setPalette(p);
   masterVolKnob->setScaleValueColor(c);
   channelVolumeKnob->setScaleValueColor(c);
+  channelPanKnob->setScaleValueColor(c);
   brightnessKnob->setScaleValueColor(c);
   modulationKnob->setScaleValueColor(c);
   detuneKnob->setScaleValueColor(c);
   attackKnob->setScaleValueColor(c);
   releaseKnob->setScaleValueColor(c);
-  p.setColor(QPalette::WindowText, c);
-  presetNameLabel->setPalette(p);
+  //p.setColor(QPalette::WindowText, c);
+  //presetNameLabel->setPalette(p);
 }
 void DeicsOnzeGui::setEditBackgroundColor(const QColor & c) {
   QPalette p = this->palette();
   p.setColor(QPalette::Base, c);
   this->setPalette(p);
+  channelCtrlGroupBox->setPalette(p);
+  //channelPanGroupBox->setPalette(p);
+  FeedbackGroupBox->setPalette(p);
+  LFOGroupBox->setPalette(p);
+  ModulationMatrixGroupBox->setPalette(p);
+  FeedbackGroupBox->setPalette(p);
+  pitchEnvGroupBox->setPalette(p);
+  Frequency1groupBox->setPalette(p);
+  OUT1groupBox->setPalette(p);
+  Env1GroupBox->setPalette(p);
+  Scaling1GroupBox->setPalette(p);
+  DetWaveEGS1GroupBox->setPalette(p);
+  sensitivity1groupBox->setPalette(p);
+  Frequency2groupBox->setPalette(p);
+  OUT2groupBox->setPalette(p);
+  Env2GroupBox->setPalette(p);
+  Scaling2GroupBox->setPalette(p);
+  DetWaveEGS2GroupBox->setPalette(p);
+  sensitivity2groupBox->setPalette(p);
+  Frequency3groupBox->setPalette(p);
+  OUT3groupBox->setPalette(p);
+  Env3GroupBox->setPalette(p);
+  Scaling3GroupBox->setPalette(p);
+  DetWaveEGS3GroupBox->setPalette(p);
+  sensitivity3groupBox->setPalette(p);
+  Frequency4groupBox->setPalette(p);
+  OUT4groupBox->setPalette(p);
+  Env4GroupBox->setPalette(p);
+  Scaling4GroupBox->setPalette(p);
+  DetWaveEGS4GroupBox->setPalette(p);
+  sensitivity4groupBox->setPalette(p);
+  transposeGroupBox->setPalette(p);
+  detuneGroupBox->setPalette(p);
+  footSWGroupBox->setPalette(p);
+  pitchBendRangeGroupBox->setPalette(p);
+  reverbGroupBox->setPalette(p);
+  modeGroupBox->setPalette(p);
+  portamentoGroupBox->setPalette(p);
+  colorGroupBox->setPalette(p);
+  pathGroupBox->setPalette(p);
+  qualityGroupBox->setPalette(p);
+  saveModeButtonGroup->setPalette(p);
+  fileGroupBox->setPalette(p);
   p = pitchEnvFrame->palette();
   p.setColor(QPalette::Window, c);
   pitchEnvFrame->setPalette(p);
@@ -688,6 +848,7 @@ void DeicsOnzeGui::setEditBackgroundColor(const QColor & c) {
   envelope4Frame->setPalette(p);
   masterVolKnob->setScaleColor(c);
   channelVolumeKnob->setScaleColor(c);
+  channelPanKnob->setScaleColor(c);
   brightnessKnob->setScaleColor(c);
   modulationKnob->setScaleColor(c);
   detuneKnob->setScaleColor(c);
@@ -709,7 +870,8 @@ void QFramePitchEnvelope::paintEvent(QPaintEvent* /*e*/) {
     resize(_deicsOnzeGui->pitchEnvFrame->width(),
 	   _deicsOnzeGui->pitchEnvFrame->height());
     //update the positions of the envelope
-    PitchEg* pe=&_deicsOnzeGui->_deicsOnze->_preset->pitchEg;
+    PitchEg* pe = &_deicsOnzeGui->_deicsOnze
+      ->_preset[_deicsOnzeGui->_currentChannel]->pitchEg;
     env2Points(pe->pl1, pe->pl2, pe->pl3, pe->pr1, pe->pr2, pe->pr3);
   }
   //Draw the verticale line on the release time
@@ -813,7 +975,8 @@ void QFrameEnvelope::paintEvent(QPaintEvent* /*e*/) {
   //and update the envelope
   int op = _deicsOnzeGui->deicsOnzeTabWidget->currentIndex()-2;
                               //-2 because of the presetsTab and globalTab
-  Eg* eg=&(_deicsOnzeGui->_deicsOnze->_preset->eg[op]);
+  Eg* eg=&(_deicsOnzeGui->_deicsOnze->
+	   _preset[_deicsOnzeGui->_currentChannel]->eg[op]);
   switch(op) {
   case 0 :
     if(_deicsOnzeGui->envelope1Frame->width()!=width() ||
@@ -1042,129 +1205,139 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
   if (ev.type() == ME_CONTROLLER) {
     //printf("ME_CONTROLLER\n");
     int id=ev.dataA();
+    int ch=ev.channel();
     int val=ev.dataB();
-    switch(id) {
-    case CTRL_AR: updateAR(0, val); break;
-    case CTRL_D1R: updateD1R(0, val); break;
-    case CTRL_D2R: updateD2R(0, val); break;
-    case CTRL_RR: updateRR(0, val); break;
-    case CTRL_D1L: updateD1L(0, val); break;
-    case CTRL_LS: updateLS(0, val); break;
-    case CTRL_RS: updateRS(0, val); break;
-    case CTRL_EBS: updateEBS(0, val); break;
-    case CTRL_AME: updateAME(0, val==1); break;
-    case CTRL_KVS: updateKVS(0, val); break;
-    case CTRL_OUT: updateOUT(0, val); break;
-    case CTRL_RATIO: updateRATIO(0, val); break;
-    case CTRL_DET: updateDET(0, val); break;
-    case CTRL_AR+DECAPAR1: updateAR(1, val); break;
-    case CTRL_D1R+DECAPAR1: updateD1R(1, val); break;
-    case CTRL_D2R+DECAPAR1: updateD2R(1, val); break;
-    case CTRL_RR+DECAPAR1: updateRR(1, val); break;
-    case CTRL_D1L+DECAPAR1: updateD1L(1, val); break;
-    case CTRL_LS+DECAPAR1: updateLS(1, val); break;
-    case CTRL_RS+DECAPAR1: updateRS(1, val); break;
-    case CTRL_EBS+DECAPAR1: updateEBS(1, val); break;
-    case CTRL_AME+DECAPAR1: updateAME(1, val==1); break;
-    case CTRL_KVS+DECAPAR1: updateKVS(1, val); break;
-    case CTRL_OUT+DECAPAR1: updateOUT(1, val); break;
-    case CTRL_RATIO+DECAPAR1: updateRATIO(1, val); break;
-    case CTRL_DET+DECAPAR1: updateDET(1, val); break;
-    case CTRL_AR+2*DECAPAR1: updateAR(2, val); break;
-    case CTRL_D1R+2*DECAPAR1: updateD1R(2, val); break;
-    case CTRL_D2R+2*DECAPAR1: updateD2R(2, val); break;
-    case CTRL_RR+2*DECAPAR1: updateRR(2, val); break;
-    case CTRL_D1L+2*DECAPAR1: updateD1L(2, val); break;
-    case CTRL_LS+2*DECAPAR1: updateLS(2, val); break;
-    case CTRL_RS+2*DECAPAR1: updateRS(2, val); break;
-    case CTRL_EBS+2*DECAPAR1: updateEBS(2, val); break;
-    case CTRL_AME+2*DECAPAR1: updateAME(2, val==1); break;
-    case CTRL_KVS+2*DECAPAR1: updateKVS(2, val); break;
-    case CTRL_OUT+2*DECAPAR1: updateOUT(2, val); break;
-    case CTRL_RATIO+2*DECAPAR1: updateRATIO(2, val); break;
-    case CTRL_DET+2*DECAPAR1: updateDET(2, val); break;
-    case CTRL_AR+3*DECAPAR1: updateAR(3, val); break;
-    case CTRL_D1R+3*DECAPAR1: updateD1R(3, val); break;
-    case CTRL_D2R+3*DECAPAR1: updateD2R(3, val); break;
-    case CTRL_RR+3*DECAPAR1: updateRR(3, val); break;
-    case CTRL_D1L+3*DECAPAR1: updateD1L(3, val); break;
-    case CTRL_LS+3*DECAPAR1: updateLS(3, val); break;
-    case CTRL_RS+3*DECAPAR1: updateRS(3, val); break;
-    case CTRL_EBS+3*DECAPAR1: updateEBS(3, val); break;
-    case CTRL_AME+3*DECAPAR1: updateAME(3, val==1); break;
-    case CTRL_KVS+3*DECAPAR1: updateKVS(3, val); break;
-    case CTRL_OUT+3*DECAPAR1: updateOUT(3, val); break;
-    case CTRL_RATIO+3*DECAPAR1: updateRATIO(3, val); break;
-    case CTRL_DET+3*DECAPAR1: updateDET(3, val); break;
-    case CTRL_ALG: updateALG(val); break;
-    case CTRL_FEEDBACK: updateFEEDBACK(val); break;
-    case CTRL_SPEED: updateSPEED(val); break;
-    case CTRL_DELAY: updateDELAY(val); break;
-    case CTRL_PMODDEPTH: updatePMODDEPTH(val); break;
-    case CTRL_AMODDEPTH: updateAMODDEPTH(val); break;
-    case CTRL_SYNC: updateSYNC(val==1); break;
-    case CTRL_WAVE: updateWAVE(val); break;
-    case CTRL_PMODSENS: updatePMODSENS(val); break;
-    case CTRL_AMS: updateAMS(val); break;
-    case CTRL_TRANSPOSE: updateTRANSPOSE(val); break;
-    case CTRL_POLYMODE: updatePOLYMODE(val); break;
-    case CTRL_PBENDRANGE: updatePBENDRANGE(val); break;
-    case CTRL_PORTAMODE: updatePORTAMODE(val); break;
-    case CTRL_PORTATIME: updatePORTATIME(val); break;
-    case CTRL_FCVOLUME: updateFcVolume(val); break;
-    case CTRL_FSW:
-      break;
-    case CTRL_MWPITCH: updateMwPitch(val); break;
-    case CTRL_MWAMPLITUDE: updateMwAmplitude(val); break;
-    case CTRL_BCPITCH: updateBcPitch(val); break;
-    case CTRL_BCAMPLITUDE: updateBcAmplitude(val); break;
-    case CTRL_BCPITCHBIAS: updateBcPitchBias(val); break;
-    case CTRL_BCEGBIAS: updateBcEgBias(val); break;
-    case CTRL_PR1: updatePR1(val); break;
-    case CTRL_PR2: updatePR2(val); break;
-    case CTRL_PR3: updatePR3(val); break;
-    case CTRL_PL1: updatePL1(val); break;
-    case CTRL_PL2: updatePL2(val); break;
-    case CTRL_PL3: updatePL3(val); break;
-    case CTRL_FIX: updateFIX(0, val==1); break;
-    case CTRL_FIXRANGE: updateFIXRANGE(0, val); break;
-    case CTRL_OSW: updateOSW(0, val); break;
-    case CTRL_SHFT: updateSHFT(0, val); break;
-    case CTRL_FIX+DECAPAR2: updateFIX(1, val==1); break;
-    case CTRL_FIXRANGE+DECAPAR2: updateFIXRANGE(1, val); break;
-    case CTRL_OSW+DECAPAR2: updateOSW(1, val); break;
-    case CTRL_SHFT+DECAPAR2: updateSHFT(1, val); break;
-    case CTRL_FIX+2*DECAPAR2: updateFIX(2, val==1); break;
-    case CTRL_FIXRANGE+2*DECAPAR2: updateFIXRANGE(2, val); break;
-    case CTRL_OSW+2*DECAPAR2: updateOSW(2, val); break;
-    case CTRL_SHFT+2*DECAPAR2: updateSHFT(2, val); break;
-    case CTRL_FIX+3*DECAPAR2: updateFIX(3, val==1); break;
-    case CTRL_FIXRANGE+3*DECAPAR2: updateFIXRANGE(3, val); break;
-    case CTRL_OSW+3*DECAPAR2: updateOSW(3, val); break;
-    case CTRL_SHFT+3*DECAPAR2: updateSHFT(3, val); break;
-    case CTRL_REVERBRATE: updateReverbRate(val); break;
-    case CTRL_FCPITCH: updateFcPitch(val); break;
-    case CTRL_FCAMPLITUDE: updateFcAmplitude(val); break;
-    case CTRL_GLOBALDETUNE: updateGLOBALDETUNE(val); break;
-    case CTRL_MASTERVOLUME: updateMASTERVOLUME(val); break;
-    case CTRL_NBRVOICES: updateNbrVoices(val); break;
-    case CTRL_FINEBRIGHTNESS: updateBrightness(val); break;
-    case CTRL_ATTACK_TIME: updateAttack(val); break;
-    case CTRL_RELEASE_TIME: updateRelease(val); break;
-    case CTRL_PROGRAM :	
-      int hbank = (val & 0xff0000) >> 16;
-      int lbank = (val & 0xff00) >> 8;
-      if (hbank > 127)  // map "dont care" to 0
-	hbank = 0;
-      if (lbank > 127)
-	lbank = 0;
-      int prog  = val & 0x7f;
-      //change the _deicsonze preset
-      _deicsOnze->programSelect(hbank, lbank, prog);
-      //only display _deicsonze preset
-      setPreset(hbank, lbank, prog);
-      updatePreset();
-      break;
+    if(ch == _currentChannel || id == CTRL_CHANNELENABLE) {
+      switch(id) {
+      case CTRL_AR: updateAR(0, val); break;
+      case CTRL_D1R: updateD1R(0, val); break;
+      case CTRL_D2R: updateD2R(0, val); break;
+      case CTRL_RR: updateRR(0, val); break;
+      case CTRL_D1L: updateD1L(0, val); break;
+      case CTRL_LS: updateLS(0, val); break;
+      case CTRL_RS: updateRS(0, val); break;
+      case CTRL_EBS: updateEBS(0, val); break;
+      case CTRL_AME: updateAME(0, val==1); break;
+      case CTRL_KVS: updateKVS(0, val); break;
+      case CTRL_OUT: updateOUT(0, val); break;
+      case CTRL_RATIO: updateRATIO(0, val); break;
+      case CTRL_DET: updateDET(0, val); break;
+      case CTRL_AR+DECAPAR1: updateAR(1, val); break;
+      case CTRL_D1R+DECAPAR1: updateD1R(1, val); break;
+      case CTRL_D2R+DECAPAR1: updateD2R(1, val); break;
+      case CTRL_RR+DECAPAR1: updateRR(1, val); break;
+      case CTRL_D1L+DECAPAR1: updateD1L(1, val); break;
+      case CTRL_LS+DECAPAR1: updateLS(1, val); break;
+      case CTRL_RS+DECAPAR1: updateRS(1, val); break;
+      case CTRL_EBS+DECAPAR1: updateEBS(1, val); break;
+      case CTRL_AME+DECAPAR1: updateAME(1, val==1); break;
+      case CTRL_KVS+DECAPAR1: updateKVS(1, val); break;
+      case CTRL_OUT+DECAPAR1: updateOUT(1, val); break;
+      case CTRL_RATIO+DECAPAR1: updateRATIO(1, val); break;
+      case CTRL_DET+DECAPAR1: updateDET(1, val); break;
+      case CTRL_AR+2*DECAPAR1: updateAR(2, val); break;
+      case CTRL_D1R+2*DECAPAR1: updateD1R(2, val); break;
+      case CTRL_D2R+2*DECAPAR1: updateD2R(2, val); break;
+      case CTRL_RR+2*DECAPAR1: updateRR(2, val); break;
+      case CTRL_D1L+2*DECAPAR1: updateD1L(2, val); break;
+      case CTRL_LS+2*DECAPAR1: updateLS(2, val); break;
+      case CTRL_RS+2*DECAPAR1: updateRS(2, val); break;
+      case CTRL_EBS+2*DECAPAR1: updateEBS(2, val); break;
+      case CTRL_AME+2*DECAPAR1: updateAME(2, val==1); break;
+      case CTRL_KVS+2*DECAPAR1: updateKVS(2, val); break;
+      case CTRL_OUT+2*DECAPAR1: updateOUT(2, val); break;
+      case CTRL_RATIO+2*DECAPAR1: updateRATIO(2, val); break;
+      case CTRL_DET+2*DECAPAR1: updateDET(2, val); break;
+      case CTRL_AR+3*DECAPAR1: updateAR(3, val); break;
+      case CTRL_D1R+3*DECAPAR1: updateD1R(3, val); break;
+      case CTRL_D2R+3*DECAPAR1: updateD2R(3, val); break;
+      case CTRL_RR+3*DECAPAR1: updateRR(3, val); break;
+      case CTRL_D1L+3*DECAPAR1: updateD1L(3, val); break;
+      case CTRL_LS+3*DECAPAR1: updateLS(3, val); break;
+      case CTRL_RS+3*DECAPAR1: updateRS(3, val); break;
+      case CTRL_EBS+3*DECAPAR1: updateEBS(3, val); break;
+      case CTRL_AME+3*DECAPAR1: updateAME(3, val==1); break;
+      case CTRL_KVS+3*DECAPAR1: updateKVS(3, val); break;
+      case CTRL_OUT+3*DECAPAR1: updateOUT(3, val); break;
+      case CTRL_RATIO+3*DECAPAR1: updateRATIO(3, val); break;
+      case CTRL_DET+3*DECAPAR1: updateDET(3, val); break;
+      case CTRL_ALG: updateALG(val); break;
+      case CTRL_FEEDBACK: updateFEEDBACK(val); break;
+      case CTRL_SPEED: updateSPEED(val); break;
+      case CTRL_DELAY: updateDELAY(val); break;
+      case CTRL_PMODDEPTH: updatePMODDEPTH(val); break;
+      case CTRL_AMODDEPTH: updateAMODDEPTH(val); break;
+      case CTRL_SYNC: updateSYNC(val==1); break;
+      case CTRL_WAVE: updateWAVE(val); break;
+      case CTRL_PMODSENS: updatePMODSENS(val); break;
+      case CTRL_AMS: updateAMS(val); break;
+      case CTRL_TRANSPOSE: updateTRANSPOSE(val); break;
+      case CTRL_POLYMODE: updatePOLYMODE(val); break;
+      case CTRL_PBENDRANGE: updatePBENDRANGE(val); break;
+      case CTRL_PORTAMODE: updatePORTAMODE(val); break;
+      case CTRL_PORTATIME: updatePORTATIME(val); break;
+      case CTRL_FCVOLUME: updateFcVolume(val); break;
+      case CTRL_FSW:
+	break;
+      case CTRL_MWPITCH: updateMwPitch(val); break;
+      case CTRL_MWAMPLITUDE: updateMwAmplitude(val); break;
+      case CTRL_BCPITCH: updateBcPitch(val); break;
+      case CTRL_BCAMPLITUDE: updateBcAmplitude(val); break;
+      case CTRL_BCPITCHBIAS: updateBcPitchBias(val); break;
+      case CTRL_BCEGBIAS: updateBcEgBias(val); break;
+      case CTRL_PR1: updatePR1(val); break;
+      case CTRL_PR2: updatePR2(val); break;
+      case CTRL_PR3: updatePR3(val); break;
+      case CTRL_PL1: updatePL1(val); break;
+      case CTRL_PL2: updatePL2(val); break;
+      case CTRL_PL3: updatePL3(val); break;
+      case CTRL_FIX: updateFIX(0, val==1); break;
+      case CTRL_FIXRANGE: updateFIXRANGE(0, val); break;
+      case CTRL_OSW: updateOSW(0, val); break;
+      case CTRL_SHFT: updateSHFT(0, val); break;
+      case CTRL_FIX+DECAPAR2: updateFIX(1, val==1); break;
+      case CTRL_FIXRANGE+DECAPAR2: updateFIXRANGE(1, val); break;
+      case CTRL_OSW+DECAPAR2: updateOSW(1, val); break;
+      case CTRL_SHFT+DECAPAR2: updateSHFT(1, val); break;
+      case CTRL_FIX+2*DECAPAR2: updateFIX(2, val==1); break;
+      case CTRL_FIXRANGE+2*DECAPAR2: updateFIXRANGE(2, val); break;
+      case CTRL_OSW+2*DECAPAR2: updateOSW(2, val); break;
+      case CTRL_SHFT+2*DECAPAR2: updateSHFT(2, val); break;
+      case CTRL_FIX+3*DECAPAR2: updateFIX(3, val==1); break;
+      case CTRL_FIXRANGE+3*DECAPAR2: updateFIXRANGE(3, val); break;
+      case CTRL_OSW+3*DECAPAR2: updateOSW(3, val); break;
+      case CTRL_SHFT+3*DECAPAR2: updateSHFT(3, val); break;
+      case CTRL_REVERBRATE: updateReverbRate(val); break;
+      case CTRL_FCPITCH: updateFcPitch(val); break;
+      case CTRL_FCAMPLITUDE: updateFcAmplitude(val); break;
+      case CTRL_CHANNELENABLE:
+	if(ch == _currentChannel) updateChannelEnable(val);
+	break;
+      case CTRL_CHANNELDETUNE: updateChannelDetune(val); break;
+      case CTRL_CHANNELPAN: updateChannelPan(val); break;
+      case CTRL_CHANNELVOLUME: updateChannelVolume(val); break;
+      case CTRL_NBRVOICES: updateNbrVoices(val); break;
+      case CTRL_FINEBRIGHTNESS: updateBrightness(val); break;
+      case CTRL_ATTACK_TIME: updateAttack(val); break;
+      case CTRL_RELEASE_TIME: updateRelease(val); break;
+      case CTRL_PROGRAM :	
+	int hbank = (val & 0xff0000) >> 16;
+	int lbank = (val & 0xff00) >> 8;
+	if (hbank > 127)  // map "dont care" to 0
+	  hbank = 0;
+	if (lbank > 127)
+	  lbank = 0;
+	int prog  = val & 0x7f;
+	//printf("GUI program : ch = %d, hbank = %d, lbank = %d, prog = %d\n", 
+	//       ch, hbank, lbank, prog);
+	//change the _deicsonze preset
+	//to update the right preset
+	_deicsOnze->programSelect(ch, hbank, lbank, prog);
+	//only display _deicsonze preset
+	updateSelectPreset(hbank, lbank, prog);
+	updatePreset();
+	break;
+      }
     }
   }
   // Sysexes
@@ -1176,8 +1349,12 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
     case SYSEX_QUALITY :
       updateQuality((int)data[1]);
       break;
-    case SYSEX_CHANNELNUM :
-      updateMidiInCh((int)(((char)data[1])+1));
+    case SYSEX_FONTSIZE :
+      updateFontSize((int)data[1]);
+      applyFontSize((int)data[1]);
+      break;
+    case SYSEX_MASTERVOL :
+      updateMasterVolume((int)data[1]);
       break;
     case SYSEX_SAVECONFIG :
       updateSaveConfig((bool)data[1]);
@@ -1201,6 +1378,14 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
       break;
     case SYSEX_INITSETPATH :
       updateInitSetPath(QString((char*)&data[1]));
+      break;
+    case SYSEX_ISBACKGROUNDPIX :
+      updateBackgroundPixCheckBox((bool)data[1]);
+      if((bool)data[1]) applyBackgroundPix();
+      break;
+    case SYSEX_BACKGROUNDPIXPATH :
+      updateBackgroundPixPath(QString((char*)&data[1]));
+      applyBackgroundPix();
       break;
     case SYSEX_UPDATESETGUI :
       setSet();
@@ -1284,20 +1469,22 @@ QString DeicsOnzeGui::num3Digits(int n) {
 // deleteSet
 //-----------------------------------------------------------
 void DeicsOnzeGui::deleteSetDialog() {
-    _deicsOnze->_preset=_deicsOnze->_initialPreset;
-    while(!_deicsOnze->_set->_categoryVector.empty())
-	delete(*_deicsOnze->_set->_categoryVector.begin());
-    setSet();
-    //_currentQLVCategory = NULL;
-    presetListView->clear();
-    subcategoryListView->clear();
-    updateCategoryName("NONE", false);
-    hbankSpinBox->setEnabled(false);
-    updateSubcategoryName("NONE", false);
-    lbankSpinBox->setEnabled(false);
-    updatePresetName("INITVOICE", false);
-    progSpinBox->setEnabled(false);
-    updatePreset();
+  //TODO : maybe to put this in sysex to deicsonze.cpp
+  for(int c = 0; c < NBRCHANNELS; c++)
+    _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
+  while(!_deicsOnze->_set->_categoryVector.empty())
+    delete(*_deicsOnze->_set->_categoryVector.begin());
+  setSet();
+  //_currentQLVCategory = NULL;
+  presetListView->clear();
+  subcategoryListView->clear();
+  updateCategoryName("NONE", false);
+  hbankSpinBox->setEnabled(false);
+  updateSubcategoryName("NONE", false);
+  lbankSpinBox->setEnabled(false);
+  updatePresetName("INITVOICE", false);
+  progSpinBox->setEnabled(false);
+  updatePreset();
 }
 //-----------------------------------------------------------
 // loadSetDialog
@@ -1340,7 +1527,8 @@ void DeicsOnzeGui::loadSetDialog() {
       if (e.tagName() == "deicsOnzeSet") {
 	QString version = e.attribute(QString("version"));
 	if (version == "1.0") {
-	  _deicsOnze->_preset=_deicsOnze->_initialPreset;
+	  for(int c = 0; c < NBRCHANNELS; c++)
+	    _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
 	  while(!_deicsOnze->_set->_categoryVector.empty())
 	    delete(*_deicsOnze->_set->_categoryVector.begin());
 	  _deicsOnze->_set->readSet(node.firstChild());
@@ -1482,6 +1670,7 @@ void DeicsOnzeGui::newCategoryDialog() {
 	QTreeWidgetItem* ci=
 	    categoryListView->findItems(num3Digits(nhbank+1), Qt::MatchExactly).at(0);
 	categoryListView->setItemSelected(ci, true);
+	categoryListView->setCurrentItem(ci);
 	setCategory(ci);
 	categoryListView->scrollToItem(ci);
     }
@@ -1501,7 +1690,8 @@ void DeicsOnzeGui::deleteCategoryDialog() {
 			      tr("&Yes"), tr("&No"),
 			      QString::null, 0, 1 ))
       {
-	_deicsOnze->_preset=_deicsOnze->_initialPreset;
+	for(int c = 0; c < NBRCHANNELS; c++)
+	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
 	delete(cat->_category);
 	delete(cat);
 	subcategoryListView->clear();
@@ -1647,6 +1837,7 @@ void DeicsOnzeGui::newSubcategoryDialog() {
 	subcategoryListView->findItems(num3Digits(nlbank+1),
 				       Qt::MatchExactly).at(0);
       subcategoryListView->setItemSelected(si, true);
+      subcategoryListView->setCurrentItem(si);
       setSubcategory(si);
       subcategoryListView->scrollToItem(si);
     }
@@ -1668,7 +1859,8 @@ void DeicsOnzeGui::deleteSubcategoryDialog() {
 				   ->_subcategoryName.c_str()),
 			      tr("&Yes"), tr("&No"),
 			      QString::null, 0, 1 )) {
-      _deicsOnze->_preset=_deicsOnze->_initialPreset;
+      	for(int c = 0; c < NBRCHANNELS; c++)
+	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
       delete(sub->_subcategory);
       delete(sub);
       presetListView->clear();
@@ -1816,6 +2008,7 @@ void DeicsOnzeGui::newPresetDialog() {
 	presetListView->findItems(num3Digits(nprog+1),
 				  Qt::MatchExactly).at(0);
       presetListView->setItemSelected(pi, true);
+      presetListView->setCurrentItem(pi);
       setPreset(pi);
       presetListView->scrollToItem(pi);
     }
@@ -1836,7 +2029,8 @@ void DeicsOnzeGui::deletePresetDialog() {
 				.arg(pre->_preset->name.c_str()),
 				tr("&Yes"), tr("&No"),
 				QString::null, 0, 1 )) {
-	_deicsOnze->_preset=_deicsOnze->_initialPreset;
+	for(int c = 0; c < NBRCHANNELS; c++)
+	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
 	delete(pre->_preset);
 	delete(pre);
 	presetLineEdit->setEnabled(false);
@@ -1968,7 +2162,8 @@ void DeicsOnzeGui::savePresetDialog() {
 void DeicsOnzeGui::setPresetName(const QString& n) {
   QTreeWidgetItem* pre = presetListView->currentItem();
   if(pre) {
-    _deicsOnze->_preset->name=n.toAscii().data();//must be changed with SysEx
+    //TODO : must be changed with SysEx
+    _deicsOnze->_preset[_currentChannel]->name = n.toAscii().data();
     pre->setText(1,n.toAscii().data());
   }
 }
@@ -2044,8 +2239,8 @@ void DeicsOnzeGui::setProg(int pr) {//must be changed with SysEx
 // load init set
 //-----------------------------------------------------------
 void DeicsOnzeGui::setIsInitSet(bool b) {
-  pathLineEdit->setEnabled(b);
-  browsePushButton-> setEnabled(b);
+  initSetPathLineEdit->setEnabled(b);
+  initSetBrowsePushButton->setEnabled(b);
   unsigned char* message = new unsigned char[2];
   message[0]=SYSEX_ISINITSET;
   message[1]=(unsigned char)b;
@@ -2064,80 +2259,119 @@ void DeicsOnzeGui::setBrowseInitSetPath() {
 				 tr("Browse set dialog"),
 				 lastDir,
 				 QString("*.dei"));
-  QFileInfo fi(fileName);
-  lastDir = fi.path();
-  updateInitSetPath(fileName);
-  setInitSetPath(fileName);
+  if(!fileName.isEmpty()) {
+    QFileInfo fi(fileName);
+    lastDir = fi.path();
+    updateInitSetPath(fileName);
+    setInitSetPath(fileName);
+  }
+}
+//-----------------------------------------------------------
+// load background pix
+//-----------------------------------------------------------
+void DeicsOnzeGui::setIsBackgroundPix(bool b) {
+  if(b && !imagePathLineEdit->text().isEmpty()) applyBackgroundPix();
+  else setBackgroundColor(reinterpret_cast<const QColor &>(*bColor));
+  imagePathLineEdit->setEnabled(b);
+  imageBrowsePushButton->setEnabled(b);
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_ISBACKGROUNDPIX;
+  message[1]=(unsigned char)b;
+  sendSysex(message, 2);
+}
+void DeicsOnzeGui::setBackgroundPixPath(const QString& s) {
+  applyBackgroundPix();
+  unsigned char* message = new unsigned char[1+MAXSTRLENGTHBACKGROUNDPIXPATH];
+  message[0]=SYSEX_BACKGROUNDPIXPATH;
+  strncpy((char*)&message[1], s.toAscii().data(),
+	  MAXSTRLENGTHBACKGROUNDPIXPATH);
+  sendSysex(message, 1+MAXSTRLENGTHBACKGROUNDPIXPATH);
+}
+void DeicsOnzeGui::setBrowseBackgroundPixPath() {
+  QString fileName =
+    QFileDialog::getOpenFileName(
+				 this,
+				 tr("Browse image dialog"),
+				 lastDir,
+				 QString("*.jpg *.png"));
+  if(!fileName.isEmpty()) {
+    QFileInfo fi(fileName);
+    lastDir = fi.path();
+    updateBackgroundPixPath(fileName);
+    setBackgroundPixPath(fileName);
+  }
 }
 //-----------------------------------------------------------
 // Quick Edit
 //-----------------------------------------------------------
 void DeicsOnzeGui::setChannelVolKnob(float val) {
-  channelVolumeKnob->setValue((int)(val*MAXMASTERVOLUME)); //TODO to change
+  sendController(_currentChannel, CTRL_CHANNELVOLUME,
+		 (int)(val*(float)MAXCHANNELVOLUME));
 }
 void DeicsOnzeGui::setBrightnessKnob(float val) {
-  sendController(0, CTRL_FINEBRIGHTNESS, (int)(val*(float)MAXFINEBRIGHTNESS));
+  sendController(_currentChannel, CTRL_FINEBRIGHTNESS,
+		 (int)(val*(float)MAXFINEBRIGHTNESS));
 }
 void DeicsOnzeGui::setModulationKnob(float val) {
-  sendController(0, CTRL_MODULATION, (int)(val*(float)MAXMODULATION));
+  sendController(_currentChannel, CTRL_MODULATION,
+		 (int)(val*(float)MAXMODULATION));
 }
 void DeicsOnzeGui::setDetuneKnob(float val) {
-  globalDetuneSlider->setValue((int)((2.0*val-1.0)*(float)MAXGLOBALDETUNE));
+  channelDetuneSlider->setValue((int)((2.0*val-1.0)*(float)MAXCHANNELDETUNE));
 }
 void DeicsOnzeGui::setAttackKnob(float val) {
-  sendController(0, CTRL_ATTACK_TIME, (int)(val*(float)MAXATTACK));
+  sendController(_currentChannel, CTRL_ATTACK_TIME, (int)(val*(float)MAXATTACK));
 }
 void DeicsOnzeGui::setReleaseKnob(float val) {
-  sendController(0, CTRL_RELEASE_TIME, (int)(val*(float)MAXRELEASE));
+  sendController(_currentChannel, CTRL_RELEASE_TIME, (int)(val*(float)MAXRELEASE));
 }
 //-----------------------------------------------------------
 // Global control
 //-----------------------------------------------------------
-void DeicsOnzeGui::setPanVol(int mv) { //TODO
-  //volumeKnob->blockSignals(true);
-  //volumeKnob->setValue((float)mv/(float)MAXMASTERVOLUME);
-  //volumeKnob->blockSignals(false);
-  //sendController(0, CTRL_MASTERVOLUME, mv);
+void DeicsOnzeGui::setChannelPan(float mv) {
+  sendController(_currentChannel, CTRL_CHANNELPAN,
+		 (int)((mv-0.5)*2*(float)MAXCHANNELPAN));
 }
-void DeicsOnzeGui::setMasterVol(int mv) { //to change
-  //volumeKnob->blockSignals(true);
-  //volumeKnob->setValue((float)mv/(float)MAXMASTERVOLUME);
-  //volumeKnob->blockSignals(false);
-  sendController(0, CTRL_MASTERVOLUME, mv);
+void DeicsOnzeGui::setMasterVolKnob(float mv) {
+  setMasterVol((int)(mv*(float)MAXMASTERVOLUME));
+}
+void DeicsOnzeGui::setMasterVol(int mv) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_MASTERVOL;
+  message[1]=(unsigned char)mv;
+  sendSysex(message, 2);
 }
 
-void DeicsOnzeGui::setFeedback(int f) {sendController(0, CTRL_FEEDBACK, f);}
+void DeicsOnzeGui::setFeedback(int f) {sendController(_currentChannel, CTRL_FEEDBACK, f);}
 
-void DeicsOnzeGui::setLfoWave(int lw) {sendController(0, CTRL_WAVE, lw);}
+void DeicsOnzeGui::setLfoWave(int lw) {sendController(_currentChannel, CTRL_WAVE, lw);}
 
-void DeicsOnzeGui::setLfoSpeed(int ls) {sendController(0, CTRL_SPEED, ls);}
+void DeicsOnzeGui::setLfoSpeed(int ls) {sendController(_currentChannel, CTRL_SPEED, ls);}
 
-void DeicsOnzeGui::setLfoDelay(int ld) {sendController(0, CTRL_DELAY, ld);}
+void DeicsOnzeGui::setLfoDelay(int ld) {sendController(_currentChannel, CTRL_DELAY, ld);}
 
 void DeicsOnzeGui::setLfoPModDepth(int lpmd) {
-  sendController(0, CTRL_PMODDEPTH, lpmd);
+  sendController(_currentChannel, CTRL_PMODDEPTH, lpmd);
 }
 
 void DeicsOnzeGui::setLfoPitchSens(int lps) {
-  sendController(0, CTRL_PMODSENS, lps);
+  sendController(_currentChannel, CTRL_PMODSENS, lps);
 }
 
 void DeicsOnzeGui::setLfoAModDepth(int lamd) {
-  sendController(0, CTRL_AMODDEPTH, lamd);
+  sendController(_currentChannel, CTRL_AMODDEPTH, lamd);
 }
-void DeicsOnzeGui::setLfoAmpSens(int las) {sendController(0, CTRL_AMS, las);}
+void DeicsOnzeGui::setLfoAmpSens(int las) {sendController(_currentChannel, CTRL_AMS, las);}
 
-void DeicsOnzeGui::setTranspose(int t) {sendController(0, CTRL_TRANSPOSE, t);}
+void DeicsOnzeGui::setTranspose(int t) {sendController(_currentChannel, CTRL_TRANSPOSE, t);}
 
-void DeicsOnzeGui::setGlobalDetune(int gd) {
-  detuneKnob->blockSignals(true);
-  detuneKnob->setValue((((float)gd)/((float)MAXGLOBALDETUNE))/2.0+0.5);
-  detuneKnob->blockSignals(false);
-  sendController(0, CTRL_GLOBALDETUNE, gd);
+void DeicsOnzeGui::setChannelDetune(float d) {
+  sendController(_currentChannel, CTRL_CHANNELDETUNE,
+		 (int)((d-0.5)*2.0*(float)MAXCHANNELDETUNE));
 }
 
 void DeicsOnzeGui::setAlgorithm(int a) {
-    sendController(0, CTRL_ALG, (int) (a==0?FIRST:
+    sendController(_currentChannel, CTRL_ALG, (int) (a==0?FIRST:
 				       (a==1?SECOND:
 					(a==2?THIRD:
 					 (a==3?FOURTH:
@@ -2147,324 +2381,324 @@ void DeicsOnzeGui::setAlgorithm(int a) {
 }
 
 void DeicsOnzeGui::setPitchBendRange(int pbr) {
-    sendController(0, CTRL_PBENDRANGE, pbr);
+    sendController(_currentChannel, CTRL_PBENDRANGE, pbr);
 }
 	
 //---------------------------------------------------------------
 // Pitch Envelope
 //---------------------------------------------------------------
 void DeicsOnzeGui::setPL1(int val) {
-  PitchEg* pe=&_deicsOnze->_preset->pitchEg;
+  PitchEg* pe=&_deicsOnze->_preset[_currentChannel]->pitchEg;
   pitchEnvelopeGraph->env2Points(val, pe->pl2, pe->pl3,
 				 pe->pr1, pe->pr2, pe->pr3);
   pitchEnvelopeGraph->updateEnv();
-  sendController(0, CTRL_PL1, val);
+  sendController(_currentChannel, CTRL_PL1, val);
 }
 void DeicsOnzeGui::setPL2(int val) {
-  PitchEg* pe=&_deicsOnze->_preset->pitchEg;
+  PitchEg* pe=&_deicsOnze->_preset[_currentChannel]->pitchEg;
   pitchEnvelopeGraph->env2Points(pe->pl1, val, pe->pl3,
 				 pe->pr1, pe->pr2, pe->pr3);
   pitchEnvelopeGraph->updateEnv();
-  sendController(0, CTRL_PL2, val);
+  sendController(_currentChannel, CTRL_PL2, val);
 }
 void DeicsOnzeGui::setPL3(int val) {
-  PitchEg* pe=&_deicsOnze->_preset->pitchEg;
+  PitchEg* pe=&_deicsOnze->_preset[_currentChannel]->pitchEg;
   pitchEnvelopeGraph->env2Points(pe->pl1, pe->pl2, val,
 				 pe->pr1, pe->pr2, pe->pr3);
   pitchEnvelopeGraph->updateEnv();
-  sendController(0, CTRL_PL3, val);
+  sendController(_currentChannel, CTRL_PL3, val);
 }
 void DeicsOnzeGui::setPR1(int val) {
-  PitchEg* pe=&_deicsOnze->_preset->pitchEg;
+  PitchEg* pe=&_deicsOnze->_preset[_currentChannel]->pitchEg;
   pitchEnvelopeGraph->env2Points(pe->pl1, pe->pl2, pe->pl3,
 				 val, pe->pr2, pe->pr3);
   pitchEnvelopeGraph->updateEnv();
-  sendController(0, CTRL_PR1, val);
+  sendController(_currentChannel, CTRL_PR1, val);
 }
 void DeicsOnzeGui::setPR2(int val) {
-  PitchEg* pe=&_deicsOnze->_preset->pitchEg;
+  PitchEg* pe=&_deicsOnze->_preset[_currentChannel]->pitchEg;
   pitchEnvelopeGraph->env2Points(pe->pl1, pe->pl2, pe->pl3,
 				 pe->pr1, val, pe->pr3);
   pitchEnvelopeGraph->updateEnv();
-  sendController(0, CTRL_PR2, val);
+  sendController(_currentChannel, CTRL_PR2, val);
 }
 void DeicsOnzeGui::setPR3(int val) {
-  PitchEg* pe=&_deicsOnze->_preset->pitchEg;
+  PitchEg* pe=&_deicsOnze->_preset[_currentChannel]->pitchEg;
   pitchEnvelopeGraph->env2Points(pe->pl1, pe->pl2, pe->pl3,
 				 pe->pr1, pe->pr2, val);
   pitchEnvelopeGraph->updateEnv();
-  sendController(0, CTRL_PR3, val);
+  sendController(_currentChannel, CTRL_PR3, val);
 }
 //---------------------------------------------------------------
 // Function
 //---------------------------------------------------------------
-void DeicsOnzeGui::setFcVolume(int val){sendController(0, CTRL_FCVOLUME, val);}
-void DeicsOnzeGui::setFcPitch(int val){sendController(0, CTRL_FCPITCH, val);}
+void DeicsOnzeGui::setFcVolume(int val){sendController(_currentChannel, CTRL_FCVOLUME, val);}
+void DeicsOnzeGui::setFcPitch(int val){sendController(_currentChannel, CTRL_FCPITCH, val);}
 void DeicsOnzeGui::setFcAmplitude(int val) {
-  sendController(0, CTRL_FCAMPLITUDE, val);
+  sendController(_currentChannel, CTRL_FCAMPLITUDE, val);
 }
-void DeicsOnzeGui::setMwPitch(int val){sendController(0, CTRL_MWPITCH, val);}
+void DeicsOnzeGui::setMwPitch(int val){sendController(_currentChannel, CTRL_MWPITCH, val);}
 void DeicsOnzeGui::setMwAmplitude(int val) {
-  sendController(0, CTRL_MWAMPLITUDE, val);
+  sendController(_currentChannel, CTRL_MWAMPLITUDE, val);
 }
-void DeicsOnzeGui::setBcPitch(int val){sendController(0, CTRL_BCPITCH, val);}
+void DeicsOnzeGui::setBcPitch(int val){sendController(_currentChannel, CTRL_BCPITCH, val);}
 void DeicsOnzeGui::setBcAmplitude(int val) {
-  sendController(0, CTRL_BCAMPLITUDE, val);
+  sendController(_currentChannel, CTRL_BCAMPLITUDE, val);
 }
 void DeicsOnzeGui::setBcPitchBias(int val) {
-  sendController(0, CTRL_BCPITCHBIAS, val);}
+  sendController(_currentChannel, CTRL_BCPITCHBIAS, val);}
 void DeicsOnzeGui::setBcEgBias(int val) {
-  sendController(0, CTRL_BCEGBIAS, val);
+  sendController(_currentChannel, CTRL_BCEGBIAS, val);
 }
-void DeicsOnzeGui::setAtPitch(int val){sendController(0, CTRL_ATPITCH, val);}
+void DeicsOnzeGui::setAtPitch(int val){sendController(_currentChannel, CTRL_ATPITCH, val);}
 void DeicsOnzeGui::setAtAmplitude(int val) {
-  sendController(0, CTRL_ATAMPLITUDE, val);
+  sendController(_currentChannel, CTRL_ATAMPLITUDE, val);
 }
 void DeicsOnzeGui::setAtPitchBias(int val) {
-  sendController(0, CTRL_ATPITCHBIAS, val);}
+  sendController(_currentChannel, CTRL_ATPITCHBIAS, val);}
 void DeicsOnzeGui::setAtEgBias(int val) {
-  sendController(0, CTRL_ATEGBIAS, val);
+  sendController(_currentChannel, CTRL_ATEGBIAS, val);
 }
 void DeicsOnzeGui::setReverbRate(int val) {
   //printf("Envoie\n");
-  sendController(0, CTRL_REVERBRATE, val);
+  sendController(_currentChannel, CTRL_REVERBRATE, val);
 }
 //---------------------------------------------------------------
 // envelope controle
 //---------------------------------------------------------------
 void DeicsOnzeGui::setAR1(int val) {
-  Eg* _eg=&(_deicsOnze->_preset->eg[0]);
-  printf("ar : %d, d1r : %d, d1l : %d, d2r : %d, rr : %d\n", 
-	 val, _eg->d1r, _eg->d1l, _eg->d2r, _eg->rr);
+  Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[0]);
+  //printf("ar : %d, d1r : %d, d1l : %d, d2r : %d, rr : %d\n", 
+  // val, _eg->d1r, _eg->d1l, _eg->d2r, _eg->rr);
   envelopeGraph[0]->env2Points(val, _eg->d1r, _eg->d1l, _eg->d2r, _eg->rr);
   envelopeGraph[0]->updateEnv();
-  sendController(0, CTRL_AR, val);
+  sendController(_currentChannel, CTRL_AR, val);
 }
 void DeicsOnzeGui::setD1R1(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[0]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[0]);
     envelopeGraph[0]->env2Points(_eg->ar, val, _eg->d1l, _eg->d2r, _eg->rr);
     envelopeGraph[0]->updateEnv();
-    sendController(0, CTRL_D1R, val);
+    sendController(_currentChannel, CTRL_D1R, val);
 }
 void DeicsOnzeGui::setD1L1(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[0]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[0]);
     envelopeGraph[0]->env2Points(_eg->ar, _eg->d1r, val, _eg->d2r, _eg->rr);
     envelopeGraph[0]->updateEnv();
-    sendController(0, CTRL_D1L, val);
+    sendController(_currentChannel, CTRL_D1L, val);
 }
 void DeicsOnzeGui::setD2R1(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[0]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[0]);
     envelopeGraph[0]->env2Points(_eg->ar, _eg->d1r, _eg->d1l, val, _eg->rr);
     envelopeGraph[0]->updateEnv();
-    sendController(0, CTRL_D2R, val);
+    sendController(_currentChannel, CTRL_D2R, val);
 }
 void DeicsOnzeGui::setRR1(int val){
-    Eg* _eg=&(_deicsOnze->_preset->eg[0]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[0]);
     envelopeGraph[0]->env2Points(_eg->ar, _eg->d1r, _eg->d1l, _eg->d2r, val);
     envelopeGraph[0]->updateEnv();
-    sendController(0, CTRL_RR, val);
+    sendController(_currentChannel, CTRL_RR, val);
 }
 void DeicsOnzeGui::setAR2(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[1]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[1]);
     envelopeGraph[1]->env2Points(val, _eg->d1r, _eg->d1l, _eg->d2r, _eg->rr);
     envelopeGraph[1]->updateEnv();
-    sendController(0, CTRL_AR+DECAPAR1, val);
+    sendController(_currentChannel, CTRL_AR+DECAPAR1, val);
 }
 void DeicsOnzeGui::setD1R2(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[1]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[1]);
     envelopeGraph[1]->env2Points(_eg->ar, val, _eg->d1l, _eg->d2r, _eg->rr);
     envelopeGraph[1]->updateEnv();
-    sendController(0, CTRL_D1R+DECAPAR1, val);
+    sendController(_currentChannel, CTRL_D1R+DECAPAR1, val);
 }
 void DeicsOnzeGui::setD1L2(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[1]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[1]);
     envelopeGraph[1]->env2Points(_eg->ar, _eg->d1r, val, _eg->d2r, _eg->rr);
     envelopeGraph[1]->updateEnv();
-    sendController(0, CTRL_D1L+DECAPAR1, val);
+    sendController(_currentChannel, CTRL_D1L+DECAPAR1, val);
 }
 void DeicsOnzeGui::setD2R2(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[1]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[1]);
     envelopeGraph[1]->env2Points(_eg->ar, _eg->d1r, _eg->d1l, val, _eg->rr);
     envelopeGraph[1]->updateEnv();
-    sendController(0, CTRL_D2R+DECAPAR1, val);
+    sendController(_currentChannel, CTRL_D2R+DECAPAR1, val);
 }
 void DeicsOnzeGui::setRR2(int val){
-    Eg* _eg=&(_deicsOnze->_preset->eg[1]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[1]);
     envelopeGraph[1]->env2Points(_eg->ar, _eg->d1r, _eg->d1l, _eg->d2r, val);
     envelopeGraph[1]->updateEnv();
-    sendController(0, CTRL_RR+DECAPAR1, val);
+    sendController(_currentChannel, CTRL_RR+DECAPAR1, val);
 }
 void DeicsOnzeGui::setAR3(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[2]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[2]);
     envelopeGraph[2]->env2Points(val, _eg->d1r, _eg->d1l, _eg->d2r, _eg->rr);
     envelopeGraph[2]->updateEnv();
-    sendController(0, CTRL_AR+2*DECAPAR1, val);
+    sendController(_currentChannel, CTRL_AR+2*DECAPAR1, val);
 }
 void DeicsOnzeGui::setD1R3(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[2]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[2]);
     envelopeGraph[2]->env2Points(_eg->ar, val, _eg->d1l, _eg->d2r, _eg->rr);
     envelopeGraph[2]->updateEnv();
-    sendController(0, CTRL_D1R+2*DECAPAR1, val);
+    sendController(_currentChannel, CTRL_D1R+2*DECAPAR1, val);
 }
 void DeicsOnzeGui::setD1L3(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[2]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[2]);
     envelopeGraph[2]->env2Points(_eg->ar, _eg->d1r, val, _eg->d2r, _eg->rr);
     envelopeGraph[2]->updateEnv();
-    sendController(0, CTRL_D1L+2*DECAPAR1, val);
+    sendController(_currentChannel, CTRL_D1L+2*DECAPAR1, val);
 }
 void DeicsOnzeGui::setD2R3(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[2]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[2]);
     envelopeGraph[2]->env2Points(_eg->ar, _eg->d1r, _eg->d1l, val, _eg->rr);
     envelopeGraph[2]->updateEnv();
-    sendController(0, CTRL_D2R+2*DECAPAR1, val);
+    sendController(_currentChannel, CTRL_D2R+2*DECAPAR1, val);
 }
 void DeicsOnzeGui::setRR3(int val){
-    Eg* _eg=&(_deicsOnze->_preset->eg[2]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[2]);
     envelopeGraph[2]->env2Points(_eg->ar, _eg->d1r, _eg->d1l, _eg->d2r, val);
     envelopeGraph[2]->updateEnv();
-    sendController(0, CTRL_RR+2*DECAPAR1, val);
+    sendController(_currentChannel, CTRL_RR+2*DECAPAR1, val);
 }
 void DeicsOnzeGui::setAR4(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[3]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[3]);
     envelopeGraph[3]->env2Points(val, _eg->d1r, _eg->d1l, _eg->d2r, _eg->rr);
     envelopeGraph[3]->updateEnv();
-    sendController(0, CTRL_AR+3*DECAPAR1, val);
+    sendController(_currentChannel, CTRL_AR+3*DECAPAR1, val);
 }
 void DeicsOnzeGui::setD1R4(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[3]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[3]);
     envelopeGraph[3]->env2Points(_eg->ar, val, _eg->d1l, _eg->d2r, _eg->rr);
     envelopeGraph[3]->updateEnv();
-    sendController(0, CTRL_D1R+3*DECAPAR1, val);
+    sendController(_currentChannel, CTRL_D1R+3*DECAPAR1, val);
 }
 void DeicsOnzeGui::setD1L4(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[3]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[3]);
     envelopeGraph[3]->env2Points(_eg->ar, _eg->d1r, val, _eg->d2r, _eg->rr);
     envelopeGraph[3]->updateEnv();
-    sendController(0, CTRL_D1L+3*DECAPAR1, val);
+    sendController(_currentChannel, CTRL_D1L+3*DECAPAR1, val);
 }
 void DeicsOnzeGui::setD2R4(int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[3]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[3]);
     envelopeGraph[3]->env2Points(_eg->ar, _eg->d1r, _eg->d1l, val, _eg->rr);
     envelopeGraph[3]->updateEnv();
-    sendController(0, CTRL_D2R+3*DECAPAR1, val);
+    sendController(_currentChannel, CTRL_D2R+3*DECAPAR1, val);
 }
 void DeicsOnzeGui::setRR4(int val){
-    Eg* _eg=&(_deicsOnze->_preset->eg[3]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[3]);
     envelopeGraph[3]->env2Points(_eg->ar, _eg->d1r, _eg->d1l, _eg->d2r, val);
     envelopeGraph[3]->updateEnv();
-    sendController(0, CTRL_RR+3*DECAPAR1, val);
+    sendController(_currentChannel, CTRL_RR+3*DECAPAR1, val);
 }
 
 //--------------------------------------------------------------
 // set Scaling
 //--------------------------------------------------------------
-void DeicsOnzeGui::setLS1(int val){sendController(0, CTRL_LS, val);}
-void DeicsOnzeGui::setRS1(int val){sendController(0, CTRL_RS, val);}
-void DeicsOnzeGui::setLS2(int val){sendController(0, CTRL_LS+DECAPAR1, val);}
-void DeicsOnzeGui::setRS2(int val){sendController(0, CTRL_RS+DECAPAR1, val);}
-void DeicsOnzeGui::setLS3(int val){sendController(0, CTRL_LS+2*DECAPAR1, val);}
-void DeicsOnzeGui::setRS3(int val){sendController(0, CTRL_RS+2*DECAPAR1, val);}
-void DeicsOnzeGui::setLS4(int val){sendController(0, CTRL_LS+3*DECAPAR1, val);}
-void DeicsOnzeGui::setRS4(int val){sendController(0, CTRL_RS+3*DECAPAR1, val);}
+void DeicsOnzeGui::setLS1(int val){sendController(_currentChannel, CTRL_LS, val);}
+void DeicsOnzeGui::setRS1(int val){sendController(_currentChannel, CTRL_RS, val);}
+void DeicsOnzeGui::setLS2(int val){sendController(_currentChannel, CTRL_LS+DECAPAR1, val);}
+void DeicsOnzeGui::setRS2(int val){sendController(_currentChannel, CTRL_RS+DECAPAR1, val);}
+void DeicsOnzeGui::setLS3(int val){sendController(_currentChannel, CTRL_LS+2*DECAPAR1, val);}
+void DeicsOnzeGui::setRS3(int val){sendController(_currentChannel, CTRL_RS+2*DECAPAR1, val);}
+void DeicsOnzeGui::setLS4(int val){sendController(_currentChannel, CTRL_LS+3*DECAPAR1, val);}
+void DeicsOnzeGui::setRS4(int val){sendController(_currentChannel, CTRL_RS+3*DECAPAR1, val);}
 
 //--------------------------------------------------------------
 // set Volume
 //--------------------------------------------------------------
-void DeicsOnzeGui::setVol1(int val){sendController(0, CTRL_OUT, val);}
-void DeicsOnzeGui::setVol2(int val){sendController(0, CTRL_OUT+DECAPAR1, val);}
-void DeicsOnzeGui::setVol3(int val){sendController(0,CTRL_OUT+2*DECAPAR1,val);}
-void DeicsOnzeGui::setVol4(int val){sendController(0,CTRL_OUT+3*DECAPAR1,val);}
+void DeicsOnzeGui::setVol1(int val){sendController(_currentChannel, CTRL_OUT, val);}
+void DeicsOnzeGui::setVol2(int val){sendController(_currentChannel, CTRL_OUT+DECAPAR1, val);}
+void DeicsOnzeGui::setVol3(int val){sendController(_currentChannel,CTRL_OUT+2*DECAPAR1,val);}
+void DeicsOnzeGui::setVol4(int val){sendController(_currentChannel,CTRL_OUT+3*DECAPAR1,val);}
 
 //--------------------------------------------------------------
 // set Ratio and Frequency
 //--------------------------------------------------------------
 void DeicsOnzeGui::setCoarseRatio1(int val) {
-    sendController(0, CTRL_RATIO, val*100+FineRatio1SpinBox->value());
+    sendController(_currentChannel, CTRL_RATIO, val*100+FineRatio1SpinBox->value());
 }
 void DeicsOnzeGui::setFineRatio1(int val) {
-    sendController(0, CTRL_RATIO, val+CoarseRatio1SpinBox->value()*100);
+    sendController(_currentChannel, CTRL_RATIO, val+CoarseRatio1SpinBox->value()*100);
 }
 void DeicsOnzeGui::setFreq1(int val) {
-    sendController(0,CTRL_FIXRANGE,val*100);}
+    sendController(_currentChannel,CTRL_FIXRANGE,val*100);}
 void DeicsOnzeGui::setFix1(bool f)  {
-    sendController(0, CTRL_FIX, (f==false?0:1));}
+    sendController(_currentChannel, CTRL_FIX, (f==false?0:1));}
 void DeicsOnzeGui::setCoarseRatio2(int val) {
-    sendController(0, CTRL_RATIO+DECAPAR1, val*100+FineRatio1SpinBox->value());
+    sendController(_currentChannel, CTRL_RATIO+DECAPAR1, val*100+FineRatio1SpinBox->value());
 }
 void DeicsOnzeGui::setFineRatio2(int val) {
-    sendController(0,CTRL_RATIO+DECAPAR1,val+CoarseRatio1SpinBox->value()*100);
+    sendController(_currentChannel,CTRL_RATIO+DECAPAR1,val+CoarseRatio1SpinBox->value()*100);
 }
 void DeicsOnzeGui::setFreq2(int val) {
-    sendController(0,CTRL_FIXRANGE+DECAPAR1,val*100);}
+    sendController(_currentChannel,CTRL_FIXRANGE+DECAPAR1,val*100);}
 void DeicsOnzeGui::setFix2(bool f)  {
-    sendController(0, CTRL_FIX+DECAPAR1, (f==false?0:1));}
+    sendController(_currentChannel, CTRL_FIX+DECAPAR1, (f==false?0:1));}
 void DeicsOnzeGui::setCoarseRatio3(int val) {
-    sendController(0,CTRL_RATIO+2*DECAPAR1,val*100+FineRatio1SpinBox->value());
+    sendController(_currentChannel,CTRL_RATIO+2*DECAPAR1,val*100+FineRatio1SpinBox->value());
 }
 void DeicsOnzeGui::setFineRatio3(int val) {
-    sendController(0,CTRL_RATIO+2*DECAPAR1,
+    sendController(_currentChannel,CTRL_RATIO+2*DECAPAR1,
 		   val+CoarseRatio1SpinBox->value()*100);
 }
 void DeicsOnzeGui::setFreq3(int val) {
-    sendController(0,CTRL_FIXRANGE+2*DECAPAR1,val*100);}
+    sendController(_currentChannel,CTRL_FIXRANGE+2*DECAPAR1,val*100);}
 void DeicsOnzeGui::setFix3(bool f)  {
-    sendController(0, CTRL_FIX+2*DECAPAR1, (f==false?0:1));}
+    sendController(_currentChannel, CTRL_FIX+2*DECAPAR1, (f==false?0:1));}
 void DeicsOnzeGui::setCoarseRatio4(int val) {
-    sendController(0,CTRL_RATIO+3*DECAPAR1,val*100+FineRatio1SpinBox->value());
+    sendController(_currentChannel,CTRL_RATIO+3*DECAPAR1,val*100+FineRatio1SpinBox->value());
 }
 void DeicsOnzeGui::setFineRatio4(int val) {
-    sendController(0,CTRL_RATIO+3*DECAPAR1,
+    sendController(_currentChannel,CTRL_RATIO+3*DECAPAR1,
 		   val+CoarseRatio1SpinBox->value()*100);
 }
 void DeicsOnzeGui::setFreq4(int val) {
-    sendController(0,CTRL_FIXRANGE+3*DECAPAR1,val*100);}
+    sendController(_currentChannel,CTRL_FIXRANGE+3*DECAPAR1,val*100);}
 void DeicsOnzeGui::setFix4(bool f)  {
-    sendController(0, CTRL_FIX+3*DECAPAR1, (f==false?0:1));}
+    sendController(_currentChannel, CTRL_FIX+3*DECAPAR1, (f==false?0:1));}
 
 //--------------------------------------------------------------
 // set Sensitivity
 //--------------------------------------------------------------
-void DeicsOnzeGui::setAME1(bool val) {sendController(0, CTRL_AME, val);}
-void DeicsOnzeGui::setEBS1(int val) {sendController(0, CTRL_EBS, val);}
-void DeicsOnzeGui::setKVS1(int val) {sendController(0, CTRL_KVS, val);}
-void DeicsOnzeGui::setAME2(bool val) {sendController(0,CTRL_AME+DECAPAR1,val);}
-void DeicsOnzeGui::setEBS2(int val) {sendController(0,CTRL_EBS+DECAPAR1,val);}
-void DeicsOnzeGui::setKVS2(int val) {sendController(0,CTRL_KVS+DECAPAR1,val);}
+void DeicsOnzeGui::setAME1(bool val) {sendController(_currentChannel, CTRL_AME, val);}
+void DeicsOnzeGui::setEBS1(int val) {sendController(_currentChannel, CTRL_EBS, val);}
+void DeicsOnzeGui::setKVS1(int val) {sendController(_currentChannel, CTRL_KVS, val);}
+void DeicsOnzeGui::setAME2(bool val) {sendController(_currentChannel,CTRL_AME+DECAPAR1,val);}
+void DeicsOnzeGui::setEBS2(int val) {sendController(_currentChannel,CTRL_EBS+DECAPAR1,val);}
+void DeicsOnzeGui::setKVS2(int val) {sendController(_currentChannel,CTRL_KVS+DECAPAR1,val);}
 void DeicsOnzeGui::setAME3(bool val) {
-    sendController(0,CTRL_AME+2*DECAPAR1,val);}
+    sendController(_currentChannel,CTRL_AME+2*DECAPAR1,val);}
 void DeicsOnzeGui::setEBS3(int val) {
-    sendController(0, CTRL_EBS+2*DECAPAR1, val);}
+    sendController(_currentChannel, CTRL_EBS+2*DECAPAR1, val);}
 void DeicsOnzeGui::setKVS3(int val) {
-    sendController(0, CTRL_KVS+2*DECAPAR1, val);}
+    sendController(_currentChannel, CTRL_KVS+2*DECAPAR1, val);}
 void DeicsOnzeGui::setAME4(bool val) {
-    sendController(0, CTRL_AME+3*DECAPAR1, val);}
+    sendController(_currentChannel, CTRL_AME+3*DECAPAR1, val);}
 void DeicsOnzeGui::setEBS4(int val) {
-    sendController(0, CTRL_EBS+3*DECAPAR1, val);}
+    sendController(_currentChannel, CTRL_EBS+3*DECAPAR1, val);}
 void DeicsOnzeGui::setKVS4(int val) {
-    sendController(0, CTRL_KVS+3*DECAPAR1, val);}
+    sendController(_currentChannel, CTRL_KVS+3*DECAPAR1, val);}
 
 //--------------------------------------------------------------
 // set detune
 //--------------------------------------------------------------
-void DeicsOnzeGui::setDET1(int val){sendController(0, CTRL_DET, val);}
-void DeicsOnzeGui::setDET2(int val){sendController(0, CTRL_DET+DECAPAR1, val);}
-void DeicsOnzeGui::setDET3(int val){sendController(0,CTRL_DET+2*DECAPAR1,val);}
-void DeicsOnzeGui::setDET4(int val){sendController(0,CTRL_DET+3*DECAPAR1,val);}
+void DeicsOnzeGui::setDET1(int val){sendController(_currentChannel, CTRL_DET, val);}
+void DeicsOnzeGui::setDET2(int val){sendController(_currentChannel, CTRL_DET+DECAPAR1, val);}
+void DeicsOnzeGui::setDET3(int val){sendController(_currentChannel,CTRL_DET+2*DECAPAR1,val);}
+void DeicsOnzeGui::setDET4(int val){sendController(_currentChannel,CTRL_DET+3*DECAPAR1,val);}
 
 //--------------------------------------------------------------
 // set WaveForm
 //--------------------------------------------------------------
 void DeicsOnzeGui::setWaveForm1(int w) {
-    sendController(0, CTRL_OSW, w);
+    sendController(_currentChannel, CTRL_OSW, w);
 }
 void DeicsOnzeGui::setWaveForm2(int w) {
-    sendController(0, CTRL_OSW+DECAPAR2, w);
+    sendController(_currentChannel, CTRL_OSW+DECAPAR2, w);
 }
 void DeicsOnzeGui::setWaveForm3(int w) {
-    sendController(0, CTRL_OSW+2*DECAPAR2, w);
+    sendController(_currentChannel, CTRL_OSW+2*DECAPAR2, w);
 }
 void DeicsOnzeGui::setWaveForm4(int w) {
-    sendController(0, CTRL_OSW+3*DECAPAR2, w);
+    sendController(_currentChannel, CTRL_OSW+3*DECAPAR2, w);
 }
 //--------------------------------------------------------------
 // setSet
@@ -2554,7 +2788,7 @@ void DeicsOnzeGui::setPreset(QTreeWidgetItem* pre) {
     int hbank = cpre->_preset->_subcategory->_category->_hbank;
     setEnabledPreset(true);
     updatePreset(cpre->_preset);
-    sendController(0, CTRL_PROGRAM, (hbank<<16)+(lbank<<8)+prog);
+    sendController(_currentChannel, CTRL_PROGRAM, (hbank<<16)+(lbank<<8)+prog);
   }
 }
 //--------------------------------------------------------------
@@ -2575,20 +2809,45 @@ void DeicsOnzeGui::setEnabledPreset(bool b) {
     _enabledPreset=b;
   }
 }
+void DeicsOnzeGui::updateChannelEnable(bool e) {
+  updateChannelCheckBox(e);
+  updateEnabledChannel(e);
+}
+void DeicsOnzeGui::updateEnabledChannel(bool e) {
+  numberVoicesLabel->setEnabled(e);
+  nbrVoicesSpinBox->setEnabled(e);
+  channelCtrlGroupBox->setEnabled(e);
+  deicsOnzeTabWidget->setEnabled(e);
+}
 void DeicsOnzeGui::updateNbrVoices(int val) {
   nbrVoicesSpinBox->blockSignals(true);
   nbrVoicesSpinBox->setValue(val);
   nbrVoicesSpinBox->blockSignals(false);  
 }
-void DeicsOnzeGui::updateMidiInCh(int val) {
+void DeicsOnzeGui::updateMasterVolume(int val) {
+  masterVolKnob->blockSignals(true);
+  masterVolKnob->setValue(((float)val)/((float)MAXMASTERVOLUME));
+  masterVolKnob->blockSignals(false);
+}
+//void DeicsOnzeGui::updateMidiInCh(int val) {
   //MidiInChComboBox->blockSignals(true);
   //MidiInChComboBox->setCurrentIndex(val);		
   //MidiInChComboBox->blockSignals(false);
-}
+//}
 void DeicsOnzeGui::updateQuality(int val) {
   qualityComboBox->blockSignals(true);
   qualityComboBox->setCurrentIndex(val);		
   qualityComboBox->blockSignals(false);
+}
+void DeicsOnzeGui::updateFontSize(int val) {
+  fontSizeSpinBox->blockSignals(true);
+  fontSizeSpinBox->setValue(val);
+  fontSizeSpinBox->blockSignals(false);
+}
+void DeicsOnzeGui::applyFontSize(int fs) {
+  QFont f = font();
+  f.setPointSize(fs);
+  setFont(f);
 }
 void DeicsOnzeGui::updateSaveConfig(bool usc) {
   saveConfigCheckBox->blockSignals(true);
@@ -2749,7 +3008,7 @@ void DeicsOnzeGui::updateReverbRate(int val) {
 }
 //Envelope
 void DeicsOnzeGui::updateAR(int op, int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[op]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[op]);
     envelopeGraph[op]->env2Points(val, _eg->d1r, _eg->d1l, _eg->d2r, _eg->rr);
     envelopeGraph[op]->updateEnv();
     switch(op) {
@@ -2778,7 +3037,7 @@ void DeicsOnzeGui::updateAR(int op, int val) {
 }
 	
 void DeicsOnzeGui::updateD1R(int op, int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[op]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[op]);
     envelopeGraph[op]->env2Points(_eg->ar, val, _eg->d1l, _eg->d2r, _eg->rr);
     envelopeGraph[op]->updateEnv();
     switch(op) {
@@ -2806,7 +3065,7 @@ void DeicsOnzeGui::updateD1R(int op, int val) {
     }
 }
 void DeicsOnzeGui::updateD2R(int op, int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[op]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[op]);
     envelopeGraph[op]->env2Points(_eg->ar, _eg->d1r, _eg->d1l, val, _eg->rr);
     envelopeGraph[op]->updateEnv();
     switch(op) {
@@ -2834,7 +3093,7 @@ void DeicsOnzeGui::updateD2R(int op, int val) {
     }
 }
 void DeicsOnzeGui::updateRR(int op, int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[op]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[op]);
     envelopeGraph[op]->env2Points(_eg->ar, _eg->d1r, _eg->d1l, _eg->d2r, val);
     envelopeGraph[op]->updateEnv();
     switch(op) {
@@ -2862,7 +3121,7 @@ void DeicsOnzeGui::updateRR(int op, int val) {
     }
 }
 void DeicsOnzeGui::updateD1L(int op, int val) {
-    Eg* _eg=&(_deicsOnze->_preset->eg[op]);
+    Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[op]);
     envelopeGraph[op]->env2Points(_eg->ar, _eg->d1r, val, _eg->d2r, _eg->rr);
     envelopeGraph[op]->updateEnv();
     switch(op) {
@@ -3403,26 +3662,14 @@ void DeicsOnzeGui::updateSHFT(int op, int val) {
   default: printf("DeicsOnzeGui::updateSHFT : Error switch\n");
   }
 }
-void DeicsOnzeGui::updateGLOBALDETUNE(int val) {
-  globalDetuneSlider->blockSignals(true);
-  globalDetuneSlider->setValue(val);
-  globalDetuneSlider->blockSignals(false);
-  globalDetuneSpinBox->blockSignals(true);
-  globalDetuneSpinBox->setValue(val);
-  globalDetuneSpinBox->blockSignals(false);
+void DeicsOnzeGui::updateChannelDetune(int val) {
   detuneKnob->blockSignals(true);
-  detuneKnob->setValue((((float)val)/((float)MAXGLOBALDETUNE))/2.0+0.5);
+  detuneKnob->setValue((((float)val)/((float)MAXCHANNELDETUNE))/2.0+0.5);
   detuneKnob->blockSignals(false);
 }
-void DeicsOnzeGui::updateMASTERVOLUME(int val) {
-  //masterVolSlider->blockSignals(true);
-  //masterVolSlider->setValue(val);
-  //masterVolSlider->blockSignals(false);
-  //masterVolSpinBox->blockSignals(true);
-  //masterVolSpinBox->setValue(val);
-  //masterVolSpinBox->blockSignals(false);
+void DeicsOnzeGui::updateChannelVolume(int val) {
   channelVolumeKnob->blockSignals(true);
-  channelVolumeKnob->setValue(((float)val)/(float)MAXMASTERVOLUME);
+  channelVolumeKnob->setValue(((float)val)/(float)MAXCHANNELVOLUME);
   channelVolumeKnob->blockSignals(false);
 }
 void DeicsOnzeGui::updateCategoryName(QString cn, bool enable) {
@@ -3441,7 +3688,7 @@ void DeicsOnzeGui::updatePresetName(QString pn) {
   //presetNameLineEdit->blockSignals(true);
   //presetNameLineEdit->setText(pn);
   //presetNameLineEdit->blockSignals(false);
-  presetNameLabel->setText(pn);
+  //presetNameLabel->setText(pn);
   presetLineEdit->blockSignals(true);
   presetLineEdit->setText(pn);
   presetLineEdit->blockSignals(false);
@@ -3473,13 +3720,39 @@ void DeicsOnzeGui::updateInitSetCheckBox(bool b) {
   initSetCheckBox->blockSignals(true);
   initSetCheckBox->setChecked(b);
   initSetCheckBox->blockSignals(false);
-  pathLineEdit->setEnabled(b);
-  browsePushButton-> setEnabled(b);
+  initSetPathLineEdit->setEnabled(b);
+  initSetBrowsePushButton-> setEnabled(b);
 }
 void DeicsOnzeGui::updateInitSetPath(QString s) {
-  pathLineEdit->blockSignals(true);
-  pathLineEdit->setText(s);
-  pathLineEdit->blockSignals(false);
+  initSetPathLineEdit->blockSignals(true);
+  initSetPathLineEdit->setText(s);
+  initSetPathLineEdit->blockSignals(false);
+}
+void DeicsOnzeGui::updateBackgroundPixCheckBox(bool b) {
+  imageCheckBox->blockSignals(true);
+  imageCheckBox->setChecked(b);
+  imageCheckBox->blockSignals(false);
+  imagePathLineEdit->setEnabled(b);
+  imageBrowsePushButton-> setEnabled(b);
+}
+void DeicsOnzeGui::updateBackgroundPixPath(QString s) {
+  imagePathLineEdit->blockSignals(true);
+  imagePathLineEdit->setText(s);
+  imagePathLineEdit->blockSignals(false);
+}
+void DeicsOnzeGui::applyBackgroundPix() {
+  QPalette p = this->palette();
+  QPixmap pixmap = QPixmap(imagePathLineEdit->text());
+  p.setBrush((this)->backgroundRole(), QBrush(pixmap));
+  (this)->setPalette(p);
+}
+void DeicsOnzeGui::updateChannelPan(int val) {
+  channelPanKnob->blockSignals(true);
+  channelPanKnob->setValue((((float)val/(float)MAXCHANNELPAN)+1.0)/2.0);
+  channelPanKnob->blockSignals(false);
+  //channelPanSpinBox->blockSignals(true);
+  //channelPanSpinBox->setValue(val);
+  //channelPanSpinBox->blockSignals(false);
 }
 void DeicsOnzeGui::updateBrightness(int val) {
   brightnessKnob->blockSignals(true);
@@ -3501,19 +3774,23 @@ void DeicsOnzeGui::updateRelease(int val) {
   releaseKnob->setValue((float)val/((float)MAXRELEASE));
   releaseKnob->blockSignals(false);
 }
+void DeicsOnzeGui::updateQuickEdit() {
+  updateChannelVolume(_deicsOnze->getChannelVol(_currentChannel));
+  updateChannelPan(_deicsOnze->getChannelPan(_currentChannel));
+  updateBrightness(_deicsOnze->getChannelBrightness(_currentChannel));
+  updateModulation(_deicsOnze->getChannelModulation(_currentChannel));
+  updateChannelDetune(_deicsOnze->getChannelDetune(_currentChannel));
+  updateAttack(_deicsOnze->getChannelAttack(_currentChannel));
+  updateRelease(_deicsOnze->getChannelRelease(_currentChannel));
+}
 //--------------------------------------------------------------
 // updatePreset
 //--------------------------------------------------------------
 void DeicsOnzeGui::updatePreset(Preset* p) {
-    //global
-    updateMASTERVOLUME(_deicsOnze->getMasterVol()); //to change
-    updateBrightness(p->brightness);
-    updateModulation(p->modulation);
+    //TODO : why updateMasterVolume
+    //updateMasterVolume(_deicsOnze->getMasterVol()); //to change
     updatePresetName(p->name.c_str());
     updateFEEDBACK(p->feedback);
-    updateGLOBALDETUNE(p->globalDetune);
-    updateAttack(p->attack);
-    updateRelease(p->release);
     updateWAVE((int)p->lfo.wave);
     updateSPEED(p->lfo.speed);
     updateDELAY(p->lfo.delay);
@@ -3579,54 +3856,54 @@ void DeicsOnzeGui::updatePreset(Preset* p) {
 	//Waveform
 	updateOSW(k, (int)p->oscWave[0]);
     }
-
+}
+void DeicsOnzeGui::updateCurrentChannel() {
+  updateBrightness(_deicsOnze->_global.channel[_currentChannel].brightness);
+  updateModulation(_deicsOnze->_global.channel[_currentChannel].modulation);
+  updateChannelDetune(_deicsOnze->_global.channel[_currentChannel].detune);
+  updateAttack(_deicsOnze->_global.channel[_currentChannel].attack);
+  updateRelease(_deicsOnze->_global.channel[_currentChannel].release);
 }
 void DeicsOnzeGui::updatePreset() {
-  updatePreset(_deicsOnze->_preset);
+  updatePreset(_deicsOnze->_preset[_currentChannel]);
 }
 
-void DeicsOnzeGui::setPreset(int hbank, int lbank, int prog) {
+void DeicsOnzeGui::updateSelectPreset(int hbank, int lbank, int prog) {
   QTreeWidgetItem* cat = categoryListView->currentItem();
   QTreeWidgetItem* sub = subcategoryListView->currentItem();
   QTreeWidgetItem* pre = presetListView->currentItem();
   //select category, subcategory, preset
   //category
-  QTreeWidgetItem* qcat=categoryListView->findItems(num3Digits(hbank+1),
-						    Qt::MatchExactly).at(0);
+  QList<QTreeWidgetItem *> qlcat =
+    categoryListView->findItems(num3Digits(hbank+1), Qt::MatchExactly);
+  QTreeWidgetItem* qcat = qlcat.empty()? NULL:qlcat.at(0);
   //if the category is different than the last one then select the new one
-  if(!cat || qcat!= cat) {
-    if(qcat) {
-      categoryListView->setItemSelected(qcat, true);
-      categoryListView->scrollToItem(qcat);
-      setEnabledPreset(true);
-    }
-    else {
-      updateCategoryName(QString("NONE"), false);
-      updateHBank(hbank, false);
-      categoryListView->clearSelection();
-      subcategoryListView->clear();
-      setEnabledPreset(false);
-    }
+  //if(!cat || !qcat || qcat!= cat) {
+  if(qcat) {
+    categoryListView->setItemSelected(qcat, true);
+    categoryListView->setCurrentItem(qcat);
+    categoryListView->scrollToItem(qcat);
+    setEnabledPreset(true);
   }
+  else {
+    updateCategoryName(QString("NONE"), false);
+    updateHBank(hbank, false);
+    categoryListView->clearSelection();
+    subcategoryListView->clear();
+    setEnabledPreset(false);
+  }
+  //}
   //subcategory
-  if(cat) {
-    QTreeWidgetItem* qsub;
-    qsub=subcategoryListView->findItems(num3Digits(lbank+1),
-					Qt::MatchExactly).at(0);
-    if(!sub || qsub!=sub) {
-      if(qsub) {
-	subcategoryListView->setItemSelected(qsub, true);
-	subcategoryListView->scrollToItem(qsub);
-	setEnabledPreset(true);
-      }
-      else {
-	updateSubcategoryName(QString("NONE"), false);
-	updateLBank(lbank, false);
-	subcategoryListView->clearSelection();
-	presetListView->clear();
-	setEnabledPreset(false);
-      }
-    }
+  //if(cat) {
+  QList<QTreeWidgetItem *> qlsub =
+    subcategoryListView->findItems(num3Digits(lbank+1), Qt::MatchExactly);
+  QTreeWidgetItem* qsub = qlsub.empty()? NULL:qlsub.at(0);
+  //  if(!sub || qsub!=sub) {
+  if(qsub) {
+    subcategoryListView->setItemSelected(qsub, true);
+    subcategoryListView->setCurrentItem(qsub);
+    subcategoryListView->scrollToItem(qsub);
+    setEnabledPreset(true);
   }
   else {
     updateSubcategoryName(QString("NONE"), false);
@@ -3635,26 +3912,30 @@ void DeicsOnzeGui::setPreset(int hbank, int lbank, int prog) {
     presetListView->clear();
     setEnabledPreset(false);
   }
+  //  }
+  //}
+  //else {
+  //  updateSubcategoryName(QString("NONE"), false);
+  //  updateLBank(lbank, false);
+  //  subcategoryListView->clearSelection();
+  //  presetListView->clear();
+  //  setEnabledPreset(false);
+  //}
   //preset
-  if(sub) {
-    QTreeWidgetItem* qpre=presetListView->findItems(num3Digits(prog+1),
-						    Qt::MatchExactly).at(0);
-    if(qpre) {
-      presetListView->blockSignals(true);
-      presetListView->setItemSelected(qpre, true);
-      presetListView->blockSignals(false);
-      presetListView->scrollToItem(qpre);
-      updatePresetName(qpre->text(1), true);
-      updateProg(prog, true);
-      pre=(QTreePreset*) qpre;
-      setEnabledPreset(true);
-    }
-    else {
-      updatePresetName(QString("INITVOICE"), false);
-      updateProg(prog, false);
-      presetListView->clearSelection();
-      setEnabledPreset(false);
-    }
+  //if(sub) {
+  QList<QTreeWidgetItem *> qlpre =
+    presetListView->findItems(num3Digits(prog+1), Qt::MatchExactly);
+  QTreeWidgetItem* qpre = qlpre.empty()? NULL:qlpre.at(0);
+  if(qpre) {
+    presetListView->blockSignals(true);
+    presetListView->setItemSelected(qpre, true);
+    presetListView->setCurrentItem(qpre);
+    presetListView->blockSignals(false);
+    presetListView->scrollToItem(qpre);
+    updatePresetName(qpre->text(1), true);
+    updateProg(prog, true);
+    pre=(QTreePreset*) qpre;
+    setEnabledPreset(true);
   }
   else {
     updatePresetName(QString("INITVOICE"), false);
@@ -3662,4 +3943,11 @@ void DeicsOnzeGui::setPreset(int hbank, int lbank, int prog) {
     presetListView->clearSelection();
     setEnabledPreset(false);
   }
+  //}
+  //else {
+  //  updatePresetName(QString("INITVOICE"), false);
+  //  updateProg(prog, false);
+  //  presetListView->clearSelection();
+  //  setEnabledPreset(false);
+  //}
 }

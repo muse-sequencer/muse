@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.3
+//    Version 0.4
 //
 //    deicsonzepreset.h
 //
@@ -246,14 +246,17 @@
 #define FCAMPLITUDELONGSTR "FootControllerAmplitude"
 #define CTRL_FCAMPLITUDE 122+CTRLOFFSET
 #define MAXFCAMPLITUDE 99
-#define GLOBALDETUNESTR "GlobalDetune"
-#define CTRL_GLOBALDETUNE 123+CTRLOFFSET
-#define MAXGLOBALDETUNE 31
-#define MASTERVOLUMESTR "MasterVolume"
-#define CTRL_MASTERVOLUME 124+CTRLOFFSET
-#define MAXMASTERVOLUME 255
-#define CTRL_FINEBRIGHTNESS 125+CTRLOFFSET
+#define CHANNELPANSTR "ChannelPan"
+#define CTRL_CHANNELPAN 123+CTRLOFFSET
+#define MAXCHANNELPAN 127
+#define CHANNELDETUNESTR "ChannelDetune"
+#define CTRL_CHANNELDETUNE 124+CTRLOFFSET
+#define MAXCHANNELDETUNE 63
+#define CHANNELVOLUMESTR "ChannelVolume"
+#define CTRL_CHANNELVOLUME 125+CTRLOFFSET
+#define MAXCHANNELVOLUME 255
 #define FINEBRIGHTNESSSTR "FineBrightness"
+#define CTRL_FINEBRIGHTNESS 126+CTRLOFFSET
 #define MAXFINEBRIGHTNESS 4095
 #define MIDFINEBRIGHTNESS (MAXFINEBRIGHTNESS+1)/2
 #define BRIGHTNESSSTR "Brightness"
@@ -268,7 +271,12 @@
 #define MAXRELEASE 127
 #define MIDRELEASE 64
 #define NBRVOICESSTR "NumberOfVoices"
+#define MINNBRVOICES 1
 #define CTRL_NBRVOICES 127+CTRLOFFSET
+#define CHANNELENABLESTR "ChannelEnable"
+#define MAXCHANNELENABLE 1
+#define MINCHANNELENABLE 0
+#define CTRL_CHANNELENABLE 128+CTRLOFFSET
 
 class Preset;
 class Subcategory;
@@ -445,9 +453,6 @@ class Preset {
     //Attributes
     Algorithm algorithm;
     unsigned char feedback; //0 to 7
-    unsigned short brightness; //0 to 4095
-    unsigned char attack; //0 to 127
-    unsigned char release; //0 to 127    
     Lfo lfo;
     Sensitivity sensitivity;
     Frequency frequency[NBROP];
@@ -458,7 +463,7 @@ class Preset {
     unsigned char outLevel[NBROP]; //0 to 99
     Scaling scaling;
     Function function;
-    int globalDetune; //-31 to 31
+    //int globalDetune; //-31 to 31 //now to the channel
     std::string name;
     unsigned char modulation; //0 to 127
     int prog; //0 to 127
@@ -470,6 +475,7 @@ class Preset {
     void linkSubcategory(Subcategory* sub);
     void merge(Preset* p); //copy the data of p in the preset
     void setIsUsed(bool b); //set flag _isUsed and transmit in the parents
+    void getHBankLBankProg(int* h, int* l, int* p); //return the hbank, lbank and prog of the preset
     //Constructor destructor
     Preset();
     Preset(Subcategory* sub);

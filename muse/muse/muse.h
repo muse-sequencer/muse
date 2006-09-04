@@ -91,6 +91,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       QAction* fileSaveAction;
       QAction* fileOpenAction;
       QAction* pianoAction;
+      QAction* trackerAction;
       QAction* fileNewAction;
 
       QString appName;
@@ -205,6 +206,8 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       void startEditor(PartList*, int);
       void startPianoroll();
       void startPianoroll(PartList* pl);
+      void startMidiTrackerEditor();
+      void startMidiTrackerEditor(PartList* pl);
       void startWaveEditor();
       void startWaveEditor(PartList*);
       void writeGlobalConfiguration() const;

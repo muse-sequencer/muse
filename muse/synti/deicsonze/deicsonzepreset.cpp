@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.3
+//    Version 0.4
 //
 //    deicsonzepreset.cpp
 //
@@ -70,6 +70,19 @@ void Preset::setIsUsed(bool b) {
 	_subcategory->_category->_isUsed=b;
       }
     }
+  }
+}
+//----------------------------------------------------------
+// getHBankLBankProg
+// return the hbank, lbank and prog of the preset
+// warning : if there is not subcategory of category
+// the value l or h are let unchanged
+//----------------------------------------------------------
+void Preset::getHBankLBankProg(int* h, int* l, int* p) {
+  *p = prog;
+  if(_subcategory) {
+    *l = _subcategory->_lbank;
+    if(_subcategory->_category) *h = _subcategory->_category->_hbank;
   }
 }
 //----------------------------------------------------------
@@ -186,11 +199,6 @@ void Preset::initPreset() {
     algorithm=FIRST;
     //feedeback
     feedback=0;
-    //quick edit
-    brightness=MIDFINEBRIGHTNESS;
-    attack=MIDATTACK;
-    release=MIDRELEASE;
-    modulation=0;
     //lfo
     lfo.wave=TRIANGL;
     lfo.speed=35;
@@ -302,7 +310,7 @@ void Preset::initPreset() {
     function.atPitchBias=0;
     function.atEgBias=0;
     function.reverbRate=0;
-    globalDetune=0;
+    //globalDetune=0;
     //Name
     name="INITVOICE";
 }
@@ -378,7 +386,7 @@ void Preset::merge(Preset* p) {
 	function.atPitchBias=p->function.atPitchBias;
 	function.atEgBias=p->function.atEgBias;
 	function.reverbRate=p->function.reverbRate;
-	globalDetune=p->globalDetune;
+	//globalDetune=p->globalDetune;
 	//Name
 	name=p->name;
     }
@@ -650,16 +658,16 @@ void Preset::readPreset(QDomNode presetNode) {
     else if(presetEl.tagName()==FEEDBACKSTR)
       feedback=presetEl.text().toInt();
     //quick edit
-    else if(presetEl.tagName()==FINEBRIGHTNESSSTR)
-      brightness=presetEl.text().toInt();
-    else if(presetEl.tagName()==MODULATIONSTR)
-      modulation=(unsigned char)presetEl.text().toInt();
-    else if(presetEl.tagName()==GLOBALDETUNESTR)
-      globalDetune=presetEl.text().toInt();
-    else if(presetEl.tagName()==ATTACKSTR)
-      attack=presetEl.text().toInt();
-    else if(presetEl.tagName()==RELEASESTR)
-      release=presetEl.text().toInt();
+    //else if(presetEl.tagName()==FINEBRIGHTNESSSTR)
+    //  brightness=presetEl.text().toInt();
+    //else if(presetEl.tagName()==MODULATIONSTR)
+    //  modulation=(unsigned char)presetEl.text().toInt();
+    //else if(presetEl.tagName()==GLOBALDETUNESTR)
+    //  globalDetune=presetEl.text().toInt();
+    //else if(presetEl.tagName()==ATTACKSTR)
+    //  attack=presetEl.text().toInt();
+    //else if(presetEl.tagName()==RELEASESTR)
+    //  release=presetEl.text().toInt();
     //lfo
     else if(presetEl.tagName()=="lfo") {
       QDomNode lfoNode = presetNode.firstChild();
@@ -882,8 +890,8 @@ void Preset::readPreset(QDomNode presetNode) {
       }
     }
     //globalDetune
-    else if(presetEl.tagName()=="globalDetune")
-      globalDetune=presetEl.text().toInt();
+    //else if(presetEl.tagName()=="globalDetune")
+    //  globalDetune=presetEl.text().toInt();
     //Names
     else if(presetEl.tagName()=="name")
       name=presetEl.text().toAscii().data();
@@ -914,11 +922,11 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	//feedback
 	xml->intTag(FEEDBACKSTR, feedback);
 	//quick edit
-	xml->intTag(FINEBRIGHTNESSSTR, brightness);
-	xml->intTag(MODULATIONSTR, (int)modulation);
-	xml->intTag(GLOBALDETUNESTR, globalDetune);	
-	xml->intTag(ATTACKSTR, attack);	
-	xml->intTag(RELEASESTR, release);
+	//xml->intTag(FINEBRIGHTNESSSTR, brightness);
+	//xml->intTag(MODULATIONSTR, (int)modulation);
+	//xml->intTag(GLOBALDETUNESTR, globalDetune);	
+	//xml->intTag(ATTACKSTR, attack);	
+	//xml->intTag(RELEASESTR, release);
 	//lfo
 	xml->tag("lfo");
 	xml->strTag(WAVESTR, (lfo.wave==SAWUP? "SAWUP":
@@ -1057,7 +1065,7 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	xml->intTag(REVERBRATESTR, function.reverbRate);
 	xml->etag("function");
 	//globalDetune
-	xml->intTag("globalDetune", globalDetune);
+	//xml->intTag("globalDetune", globalDetune);
 	//preset name
 	xml->strTag("name", name.c_str());
 	//bank prog

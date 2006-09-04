@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.3
+//    Version 0.4
 //
 //
 //
@@ -36,7 +36,7 @@
 #include "deicsonzegui.h"
 #include "libsynti/mess.h"
 
-#define DEICSONZESTR "deicsonze-0.3"
+#define DEICSONZESTR "deicsonze"
 
 #define MAXPITCHBENDVALUE 8191
 
@@ -56,12 +56,14 @@
 
 #define MAXVELO 127
 #define MAXVOLUME 100.0
-#define MAXSTRLENGTHINITSETPATH 128
+#define MAXSTRLENGTHINITSETPATH 256
+#define MAXSTRLENGTHBACKGROUNDPIXPATH 256
 
 //coef determined by ear to sound like the YAMAHA DX11
 #define COEFFEEDBACK 0.3
 #define COEFPLFO(x) (x==0?0.0:(x==1?0.06:(x==2?0.12:(x==3?0.25:(x==4?0.5:(x==5?0.9:(x==6?3.9:7.9))))))) //return pitch amplitude with respect to sensitivity pitch
 #define COEFALFO(x) (x==0?0.0:(x==1?0.4:(x==2?0.9:1.0)))
+#define MAX(x,y) (x<y?y:x)
 #define COEFLEVEL 1.0//19.0
 #define COEFMAXATTACK 7.5
 #define COEFERRDECSUS 0.01 //for the transition between DECAY and SUSTAIN
@@ -78,21 +80,24 @@
 #define NBRWAVES 8 //number wave forms, do not change
 #define NBRBANKPRESETS 32
 #define MAXNBRVOICES 64
-#define NBRCHANNEL 16
+#define NBRCHANNELS 16
 
 #define SYSEX_INIT_DATA 1
 #define SYSEX_INIT_DATA_VERSION 1
 #define SAVEINITLENGTH 2
 
 #define DEICSONZECONFIGURATIONSTR "deicsOnzeConfiguation"
+#define SYSEX_MASTERVOL 4
+#define MASTERVOLSTR "MasterVolume"
+#define MAXMASTERVOLUME 255
+#define INITMASTERVOL 96
 #define SYSEX_QUALITY 5
 #define QUALITYSTR "Quality"
 #define HIGHSTR "High"
 #define MIDDLESTR "Middle"
 #define LOWSTR "Low"
-#define SYSEX_CHANNELNUM 6
-#define CHANNELNUMSTR "ChannelNumber"
-#define ALLSTR "All"
+#define SYSEX_FONTSIZE 6
+#define FONTSIZESTR "fontSize"
 #define SYSEX_SAVECONFIG 7
 #define SAVECONFIGSTR "SaveConfig"
 #define SYSEX_SAVEONLYUSED 8
@@ -104,6 +109,10 @@
 #define ISINITSETSTR "IsInitSet"
 #define SYSEX_INITSETPATH 13
 #define INITSETPATHSTR "InitSetPath"
+#define SYSEX_ISBACKGROUNDPIX 14
+#define ISBACKGROUNDPIXSTR "IsBackgroundPix"
+#define SYSEX_BACKGROUNDPIXPATH 15
+#define BACKGROUNDPIXPATHSTR "backgroundPixPath"
 #define SYSEX_COLORGUI 20
 #define TEXTCOLORSTR "TextColor"
 #define BACKGROUNDCOLORSTR "BackgroundColor"
@@ -113,33 +122,42 @@
 #define SYSEX_UPDATESETGUI 25
 #define SYSEX_PANIC 30
 
-#define NUMMASTERVOL SAVEINITLENGTH
-#define NUMCURRENTPROG SAVEINITLENGTH+1
-#define NUMCURRENTLBANK SAVEINITLENGTH+2
-#define NUMCURRENTHBANK SAVEINITLENGTH+3
-#define NUMSAVEONLYUSED SAVEINITLENGTH+4
-#define NUMSAVECONFIG SAVEINITLENGTH+5
-#define NUMNBRVOICES SAVEINITLENGTH+6
-#define NUMCHANNELNUM SAVEINITLENGTH+7
-#define SAVEGLOBALLENGTH 10
-
-#define NUMREDTEXT SAVEINITLENGTH+SAVEGLOBALLENGTH
-#define NUMGREENTEXT SAVEINITLENGTH+SAVEGLOBALLENGTH+1
-#define NUMBLUETEXT SAVEINITLENGTH+SAVEGLOBALLENGTH+2
-#define NUMREDBACKGROUND SAVEINITLENGTH+SAVEGLOBALLENGTH+3
-#define NUMGREENBACKGROUND SAVEINITLENGTH+SAVEGLOBALLENGTH+4
-#define NUMBLUEBACKGROUND SAVEINITLENGTH+SAVEGLOBALLENGTH+5
-#define NUMREDEDITTEXT SAVEINITLENGTH+SAVEGLOBALLENGTH+6
-#define NUMGREENEDITTEXT SAVEINITLENGTH+SAVEGLOBALLENGTH+7
-#define NUMBLUEEDITTEXT SAVEINITLENGTH+SAVEGLOBALLENGTH+8
-#define NUMREDEDITBACKGROUND SAVEINITLENGTH+SAVEGLOBALLENGTH+9
-#define NUMGREENEDITBACKGROUND SAVEINITLENGTH+SAVEGLOBALLENGTH+10
-#define NUMBLUEEDITBACKGROUND SAVEINITLENGTH+SAVEGLOBALLENGTH+11
-#define NUMQUALITY SAVEINITLENGTH+SAVEGLOBALLENGTH+12
-#define SAVECONFIGLENGTH 20
-
-#define NUMISINITSET SAVEINITLENGTH+SAVEGLOBALLENGTH+SAVECONFIGLENGTH
-#define NUMINITSETPATH SAVEINITLENGTH+SAVEGLOBALLENGTH+SAVECONFIGLENGTH+1
+enum {
+  NUMMASTERVOL = SAVEINITLENGTH,
+  NUMCHANNELENABLE,
+  NUMCHANNELVOL = NUMCHANNELENABLE + NBRCHANNELS + 1,
+  NUMCHANNELPAN = NUMCHANNELVOL + NBRCHANNELS + 1,
+  NUMCHANNELBRIGHTNESS = NUMCHANNELPAN + NBRCHANNELS + 1,
+  NUMCHANNELMODULATION = NUMCHANNELBRIGHTNESS + 2*NBRCHANNELS +1,
+  NUMCHANNELDETUNE = NUMCHANNELMODULATION + NBRCHANNELS + 1,
+  NUMCHANNELATTACK = NUMCHANNELDETUNE + NBRCHANNELS + 1,
+  NUMCHANNELRELEASE = NUMCHANNELATTACK + NBRCHANNELS + 1,
+  NUMCURRENTPROG = NUMCHANNELRELEASE + NBRCHANNELS + 1,
+  NUMCURRENTLBANK = NUMCURRENTPROG + NBRCHANNELS + 1,
+  NUMCURRENTHBANK = NUMCURRENTLBANK + NBRCHANNELS + 1,
+  NUMNBRVOICES  = NUMCURRENTHBANK + NBRCHANNELS + 1,
+  NUMSAVEONLYUSED  = NUMNBRVOICES + NBRCHANNELS + 1,
+  NUMSAVECONFIG,
+  NUMREDTEXT,
+  NUMGREENTEXT,
+  NUMBLUETEXT,
+  NUMREDBACKGROUND,
+  NUMGREENBACKGROUND,
+  NUMBLUEBACKGROUND,
+  NUMREDEDITTEXT,
+  NUMGREENEDITTEXT,
+  NUMBLUEEDITTEXT,
+  NUMREDEDITBACKGROUND,
+  NUMGREENEDITBACKGROUND,
+  NUMBLUEEDITBACKGROUND,
+  NUMQUALITY,
+  NUMFONTSIZE,
+  NUMISINITSET,
+  NUMINITSETPATH,
+  NUMISBACKGROUNDPIX = NUMINITSETPATH + MAXSTRLENGTHINITSETPATH +1,
+  NUMBACKGROUNDPIXPATH,
+  NUMCONFIGLENGTH = NUMBACKGROUNDPIXPATH + MAXSTRLENGTHBACKGROUNDPIXPATH + 1
+};
 
 class DeicsOnzeGui;
 
@@ -214,26 +232,30 @@ struct OpVoice {
 //---------------------------------------------------------
 
 struct Voice {
+  bool hasAttractor;//true iff the voice has an attractor (portamento occuring)
+  double attractor; //contain the current inct for portamento
   bool isOn;
   bool isSustained;
-  int pitch;
+  int pitch; //number of the note
   double volume;
   OpVoice op[NBROP];
   float sampleFeedback;
 };
 
 //---------------------------------------------------------
-// Global
+// Channel
 //---------------------------------------------------------
-
-enum Quality {
-  high,
-  middle,
-  low
-};
-
-struct Global {
-  float amp;
+struct Channel {
+  bool isEnable;
+  float ampLeft;
+  float ampRight;
+  int volume; //0 to 255
+  int pan; //TODO -63 +64 or -127 +128 
+  int modulation;//0 to 127
+  int detune;//-31 to 31
+  int brightness; //0 to 4095
+  int attack; //0 to 127
+  int release; //0 to 127    
   float feedbackAmp;
   float lfoFreq;
   float lfoPitch;
@@ -252,11 +274,27 @@ struct Global {
   bool delayPassed;
   bool sustain;
   double pitchBendCoef;//speed coef to read the sample
-  Quality  quality; //0=high, 1=medium, 2=low
   unsigned char nbrVoices;
-  char channelNum;//-1 to 15, -1 means all
+  Voice voices[MAXNBRVOICES];
+  Voice* lastVoice;// keep in memory the last voice played to
+                   // the right attractor for portamento
 };
 
+//---------------------------------------------------------
+// Global
+//---------------------------------------------------------
+enum Quality {
+  high,
+  middle,
+  low
+};
+
+struct Global {
+  float masterVolume;
+  Quality quality;
+  int fontSize;
+  Channel channel[NBRCHANNELS];
+};
 
 //---------------------------------------------------------
 //   DeicsOnze : DX11 emulator
@@ -277,16 +315,17 @@ class DeicsOnze : public Mess {
   
   QString _initSetPath;
   bool _isInitSet;
+  QString _backgroundPixPath;
+  bool _isBackgroundPix;
   bool _saveOnlyUsed;
   bool _saveConfig;
   DeicsOnzeCtlr _ctrl[NBRCTRLS];
   Global _global;
-  Voice _voices[MAXNBRVOICES];
-  Preset* _preset;
+  Preset* _preset[NBRCHANNELS];
   Preset* _initialPreset;
   
   mutable MidiPatch _patch;
-  int _numPatch;
+  int _numPatch; //what is this? TODO
   
   //preset tree 
   Set* _set;
@@ -294,35 +333,55 @@ class DeicsOnze : public Mess {
   Preset* findPreset(int hbank, int lbank, int prog);
   void initCtrls();
   void initGlobal();
+  void initChannels();
+  void initChannel(int c);
   void resetVoices(); //when panic is pressed
-  void initVoice(unsigned char v);
-  void initVoices();
-  void initPreset();
-  void setPreset();
-  void setFeedback();
-  void setLfo();
-  void setOutLevel(int k); //set the output level of the operator k
-  void setOutLevel(); //do the same for all operators
-  void setEnvAttack(int v, int k); //set envInct of voice v and operator k
-  void setEnvAttack(int k); //do the same for all voices of operator k
-  void setEnvAttack(); //do the same for all voices all operators
-  void setEnvRelease(int v, int k); //set coefVLevel of voice v and operator k
-  void setEnvRelease(int k); //do the same for all voices of operator k
-  void setEnvRelease(); //do the same for all voices all operators  
-  double brightness2Amp(int k); //get the brightness of the operator k
+  void initVoice(int c, int v);
+  void initVoices(int c);
+  void setPreset(int c);
+  void setFeedback(int c);
+  void setLfo(int c);
+  void setOutLevel(int c, int k); //set the output level of the op k
+  void setOutLevel(int c); //do the same for all operators
+  void setEnvAttack(int c, int v, int k); //set envInct of voice v and op k
+  void setEnvAttack(int c, int k); //do the same for all voices of operator k
+  void setEnvAttack(int c); //do the same for all voices all operators
+  void setEnvRelease(int c, int v, int k); //set coefVLevel of voice v and op k
+  void setEnvRelease(int c, int k); //do the same for all voices of operator k
+  void setEnvRelease(int c); //do the same for all voices all operators  
+  double brightness2Amp(int c, int k); //get the brightness of the operator k
   //void loadSutulaPresets();
   void loadSet(QString s);
-  int noteOff2Voice();
-  int minVolu2Voice();
-  int pitchOn2Voice(int pitch);
-  void programSelect(int hbank, int lbank, int prog);
+  int noteOff2Voice(int c); //return the first free voice
+  bool allNoteOff(int c); //return true iff all notes of channel c are off
+  int minVolu2Voice(int c);
+  int pitchOn2Voice(int c, int pitch);
+  void programSelect(int c, int hbank, int lbank, int prog);
   
-  void setNbrVoices(unsigned char nv);
-  void setMasterVol(int mv);
-  int getMasterVol(void);
-  void setPitchBendCoef(int val);
-  void setModulation(int val);
-  void setSustain(int val);
+  void setNbrVoices(int c, int nv);
+  void setMasterVol(int v);
+  void setChannelEnable(int c, bool e);
+  void setChannelVol(int c, int v);
+  void setChannelPan(int c, int v);
+  void applyChannelAmp(int c);
+  void setChannelDetune(int c, int d);
+  void setChannelBrightness(int c, int b);
+  void setChannelModulation(int c, int m);
+  void setChannelAttack(int c, int a);
+  void setChannelRelease(int c, int r);
+  bool getChannelEnable(int c) const;
+  int getNbrVoices(int c) const;
+  int getMasterVol(void) const;
+  int getChannelVol(int c) const;
+  int getChannelPan(int c) const;
+  int getChannelDetune(int c) const;
+  int getChannelBrightness(int c) const;
+  int getChannelModulation(int c) const;
+  int getChannelAttack(int c) const;
+  int getChannelRelease(int c) const;
+  void setPitchBendCoef(int c, int val);
+  void setModulation(int c, int val); //TODO check between setChannelModulation
+  void setSustain(int c, int val);
 
   void readConfiguration(QDomNode qdn);
   void writeConfiguration(AL::Xml* xml);

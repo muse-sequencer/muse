@@ -29,6 +29,7 @@ QT4_WRAP_CPP ( midiedit_mocs
       midieditor.h
       pianoroll.h
       prcanvas.h
+      miditracker.h
       )
 
 QT4_WRAP_UI ( midiedit_ui_headers 
@@ -55,6 +56,7 @@ add_library ( midiedit STATIC
       midieditor.cpp
       pianoroll.cpp
       prcanvas.cpp
+      miditracker.cpp
       ${midiedit_mocs}
       ${midiedit_ui_headers}
       )

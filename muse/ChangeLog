@@ -1,3 +1,12 @@
+4.9  (ng)
+      * DeicsOnze 0.4
+        - 16 instances (one per channel)
+	- stereo
+	- font size config
+	- load pixmap background config
+	- lots of bugs corrected
+      * add wallpaper paper2.jpg
+      * add miditracker (not working yet)
 3.9  (rj)
       * added red line to the left of track to identify selected track
       * various fixes, adding controllers etc
