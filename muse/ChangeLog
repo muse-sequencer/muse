@@ -1,4 +1,7 @@
-4.9  (ng)
+4.9  
+      (ws)
+      - remove html documentation and replace with *pdf version
+      (ng)
       * DeicsOnze 0.4
         - 16 instances (one per channel)
 	- stereo

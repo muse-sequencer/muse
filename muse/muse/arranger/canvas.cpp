@@ -477,9 +477,9 @@ void PartCanvas::contextMenu(const QPoint& pos)
                         case 10:    // pianoroll edit
                               emit startEditor(part, 0);
                               break;
-		        case 11:    //miditracker edit
-			      emit startEditor(part, 2);
-			      break;
+		            case 11:    //miditracker edit
+			            emit startEditor(part, 2);
+			            break;
                         case 12:    // list edit
                               emit startEditor(part, 1);
                               break;

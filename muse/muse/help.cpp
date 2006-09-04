@@ -31,17 +31,18 @@
 void MusE::startHelpBrowser()
       {
       QString lang(getenv("LANG"));
-      QString museHelp = museGlobalShare + QString("/html/index_") + lang + QString(".html");
-      if (access(museHelp.toLatin1().data(), R_OK) != 0) {
-    	      museHelp = museGlobalShare + QString("/html/index.html");
-            if (access(museHelp.toLatin1().data(), R_OK) != 0) {
-                  QString info(tr("no help found at: "));
-                  info += museHelp;
+      QFileInfo museHelp(museGlobalShare + QString("/doc/man-") + lang + QString(".pdf"));
+      if (!museHelp.isReadable()) {
+    	      museHelp.setFile(museGlobalShare + QString("/doc/man-en.pdf"));
+            if (!museHelp.isReadable()) {
+                  QString info(tr("MusE manual not found at: "));
+                  info += museHelp.filePath();
                   QMessageBox::critical(this, tr("MusE: Open Help"), info);
                   return;
                   }
             }
-      launchBrowser(museHelp);
+      QString url("file://" + museHelp.filePath());
+      launchBrowser(url);
       }
 
 //---------------------------------------------------------
@@ -89,11 +90,11 @@ void MusE::aboutQt()
 //   launchBrowser
 //---------------------------------------------------------
 
-void MusE::launchBrowser(QString &whereTo)
+void MusE::launchBrowser(const QString& whereTo)
       {
       char testStr[40];
       strcpy(testStr, "which ");
-      strcat(testStr, config.helpBrowser.toLatin1().data());
+      strcat(testStr, config.helpBrowser.toAscii().data());
       if (config.helpBrowser == "" || system(testStr)) {
             QMessageBox::information(this,
                tr("Unable to launch help"),

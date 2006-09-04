@@ -18,5 +18,5 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-subdirs( html instruments locale plugins templates wallpapers )
+subdirs( instruments locale plugins templates wallpapers )
 
