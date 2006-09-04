@@ -21,6 +21,7 @@
 #include "velocity.h"
 #include "song.h"
 #include "tb1.h"
+#include "audio.h"
 
 //---------------------------------------------------------
 //   Velocity
@@ -29,14 +30,15 @@
 Velocity::Velocity(QWidget*)
    : MidiCmdDialog()
       {
-      setupUi(this);
-      rangeGroup = new QButtonGroup(this);
-      rangeGroup->setExclusive(true);
-      rangeGroup->addButton(allEventsButton, RANGE_ALL);
-      rangeGroup->addButton(selectedEventsButton, RANGE_SELECTED);
-      rangeGroup->addButton(loopedEventsButton, RANGE_LOOPED);
-      rangeGroup->addButton(selectedLoopedButton, RANGE_SELECTED | RANGE_LOOPED);
-      allEventsButton->setChecked(true);
+      setWindowTitle(tr("MusE: Modify Velocity"));
+      QWidget* velocityWidget = new QWidget;
+      velo.setupUi(velocityWidget);
+      layout->addWidget(velocityWidget);
+      layout->addStretch(10);
+      _rateVal   = 0;
+      _offsetVal = 0;
+      velo.rate->setValue(_rateVal);
+      velo.offset->setValue(_offsetVal);
       }
 
 //---------------------------------------------------------
@@ -45,21 +47,62 @@ Velocity::Velocity(QWidget*)
 
 void Velocity::accept()
       {
-      _range     = rangeGroup->checkedId();
-      _rateVal   = rate->value();
-      _offsetVal = offset->value();
-      QDialog::accept();
+      _rateVal   = velo.rate->value();
+      _offsetVal = velo.offset->value();
+      MidiCmdDialog::accept();
       }
 
 //---------------------------------------------------------
-//   setRange
+//   ModifyVelocityCmd
 //---------------------------------------------------------
 
-void Velocity::setRange(int id)
+ModifyVelocityCmd::ModifyVelocityCmd(MidiEditor* e)
+   : MidiCmd(e)
       {
-      if (rangeGroup->button(id))
-            rangeGroup->button(id)->setChecked(true);
-      else
-            printf("setRange: not button %d!\n", id);
+      dialog = 0;      
       }
+
+//---------------------------------------------------------
+//   guiDialog
+//---------------------------------------------------------
+
+MidiCmdDialog* ModifyVelocityCmd::guiDialog()
+      {
+      if (dialog == 0)
+            dialog = new Velocity(0);
+      return dialog;
+      }
+
+//---------------------------------------------------------
+//   process
+//---------------------------------------------------------
+
+void ModifyVelocityCmd::process(CItemList* items)
+      {
+      int rate   = dialog->rateVal();
+      int offset = dialog->offsetVal();
+
+      for (iCItem k = items->begin(); k != items->end(); ++k) {
+            CItem* item = k->second;
+            Event event = item->event;
+            if (event.type() != Note)
+                  continue;
+            if (itemInRange(item)) {
+                  int velo = event.velo();
+                  velo = (velo * rate) / 100;
+                  velo += offset;
+
+                  if (velo <= 0)
+                        velo = 1;
+                  if (velo > 127)
+                        velo = 127;
+                  if (event.velo() != velo) {
+                        Event newEvent = event.clone();
+                        newEvent.setVelo(velo);
+                        audio->msgChangeEvent(event, newEvent, item->part, false);
+                        }
+                  }
+            }
+      }
+
 

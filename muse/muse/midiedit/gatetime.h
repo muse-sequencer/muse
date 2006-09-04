@@ -28,11 +28,10 @@
 //   GateTime
 //---------------------------------------------------------
 
-class GateTime : public MidiCmdDialog, public Ui::GateTimeBase {
+class GateTime : public MidiCmdDialog {
       Q_OBJECT
-
-      QButtonGroup* rangeGroup;
-      int _range;
+      
+      Ui::GateTimeBase gt;
       int _rateVal;
       int _offsetVal;
 
@@ -41,10 +40,22 @@ class GateTime : public MidiCmdDialog, public Ui::GateTimeBase {
 
    public:
       GateTime(QWidget* parent = 0);
-      void setRange(int id);
-      int range() const     { return _range; }
       int rateVal() const   { return _rateVal; }
       int offsetVal() const { return _offsetVal; }
+      };
+
+//---------------------------------------------------------
+//   ModifyGateTimeCmd
+//---------------------------------------------------------
+
+class ModifyGateTimeCmd : public MidiCmd
+      {
+      GateTime* dialog;
+      virtual MidiCmdDialog* guiDialog();
+      virtual void process(CItemList* items);
+
+   public:
+      ModifyGateTimeCmd(MidiEditor* e);
       };
 
 #endif

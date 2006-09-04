@@ -19,6 +19,7 @@
 #=============================================================================
 
 QT4_WRAP_CPP ( midiedit_mocs
+      midicmd.h
       gatetime.h
       velocity.h
       quantconfig.h
@@ -33,12 +34,18 @@ QT4_WRAP_CPP ( midiedit_mocs
       )
 
 QT4_WRAP_UI ( midiedit_ui_headers 
+      midicmd.ui
       gatetime.ui
       velocity.ui
       quantconfig.ui
       )
 
 add_library ( midiedit STATIC 
+      midicmd.h
+      gatetime.h
+      ${midiedit_ui_headers}
+      ${midiedit_mocs}
+      midicmd.cpp
       gatetime.cpp
       velocity.cpp
       quantconfig.cpp
@@ -52,13 +59,10 @@ add_library ( midiedit STATIC
       drumedit.cpp
       drummap.cpp
       ecanvas.cpp
-      midicmd.cpp
       midieditor.cpp
       pianoroll.cpp
       prcanvas.cpp
       miditracker.cpp
-      ${midiedit_mocs}
-      ${midiedit_ui_headers}
       )
 
 set_target_properties( midiedit

@@ -29,14 +29,15 @@
 GateTime::GateTime(QWidget*)
    : MidiCmdDialog()
       {
-      setupUi(this);
-      rangeGroup = new QButtonGroup(this);
-      rangeGroup->setExclusive(true);
-      rangeGroup->addButton(allEventsButton, RANGE_ALL);
-      rangeGroup->addButton(selectedEventsButton, RANGE_SELECTED);
-      rangeGroup->addButton(loopedEventsButton, RANGE_LOOPED);
-      rangeGroup->addButton(selectedLoopedButton, RANGE_SELECTED | RANGE_LOOPED);
-      allEventsButton->setChecked(true);
+      setWindowTitle(tr("MusE: Modify Gate Time"));
+      QWidget* gateTime = new QWidget;
+      gt.setupUi(gateTime);
+      layout->addWidget(gateTime);
+      layout->addStretch(10);
+      _rateVal = 0;
+      _offsetVal = 0;
+      gt.rate->setValue(_rateVal);
+      gt.offset->setValue(_offsetVal);
       }
 
 //---------------------------------------------------------
@@ -45,21 +46,60 @@ GateTime::GateTime(QWidget*)
 
 void GateTime::accept()
       {
-      _range     = rangeGroup->checkedId();
-      _rateVal   = rate->value();
-      _offsetVal = offset->value();
-      QDialog::accept();
+      _rateVal   = gt.rate->value();
+      _offsetVal = gt.offset->value();
+      MidiCmdDialog::accept();
       }
 
 //---------------------------------------------------------
-//   setRange
+//   MidifyGateTime
 //---------------------------------------------------------
 
-void GateTime::setRange(int id)
+ModifyGateTimeCmd::ModifyGateTimeCmd(MidiEditor* e)
+   : MidiCmd(e)
       {
-      if (rangeGroup->button(id))
-            rangeGroup->button(id)->setChecked(true);
-      else
-            printf("setRange: not button %d!\n", id);
+      dialog = 0;      
+      }
+
+//---------------------------------------------------------
+//   guiDialog
+//---------------------------------------------------------
+
+MidiCmdDialog* ModifyGateTimeCmd::guiDialog()
+      {
+      if (dialog == 0)
+            dialog = new GateTime(0);
+      return dialog;
+      }
+
+//---------------------------------------------------------
+//   process
+//---------------------------------------------------------
+
+void ModifyGateTimeCmd::process(CItemList* items)
+      {
+      int rate   = dialog->rateVal();
+      int offset = dialog->offsetVal();
+
+      for (iCItem k = items->begin(); k != items->end(); ++k) {
+            CItem* item = k->second;
+            Event event = item->event;
+            if (event.type() != Note)
+                  continue;
+
+            if (itemInRange(item)) {
+                  unsigned len   = event.lenTick();
+                  len = rate ? (len * 100) / rate : 1;
+                  len += offset;
+                  if (len <= 1)
+                        len = 1;
+
+                  if (event.lenTick() != len) {
+                        Event newEvent = event.clone();
+                        newEvent.setLenTick(len);
+                        changeEvent(event, newEvent, item->part);
+                        }
+                  }
+            }
       }
 

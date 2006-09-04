@@ -3,7 +3,7 @@
  <comment></comment>
  <exportmacro></exportmacro>
  <class>VelocityBase</class>
- <widget class="QDialog" name="VelocityBase" >
+ <widget class="QWidget" name="VelocityBase" >
   <property name="geometry" >
    <rect>
     <x>0</x>
@@ -22,52 +22,6 @@
    <property name="spacing" >
     <number>6</number>
    </property>
-   <item>
-    <widget class="QGroupBox" name="rangeGroup" >
-     <property name="title" >
-      <string>Apply To</string>
-     </property>
-     <layout class="QVBoxLayout" >
-      <property name="margin" >
-       <number>6</number>
-      </property>
-      <property name="spacing" >
-       <number>3</number>
-      </property>
-      <item>
-       <widget class="QRadioButton" name="allEventsButton" >
-        <property name="text" >
-         <string>All Events</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="selectedEventsButton" >
-        <property name="text" >
-         <string>Selected Events</string>
-        </property>
-        <property name="checked" >
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="loopedEventsButton" >
-        <property name="text" >
-         <string>Looped Events</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="selectedLoopedButton" >
-        <property name="text" >
-         <string>Selected AND Looped</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item>
     <widget class="QGroupBox" name="GroupBox3" >
      <property name="title" >
@@ -123,89 +77,10 @@
      </layout>
     </widget>
    </item>
-   <item>
-    <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
-     </property>
-     <property name="spacing" >
-      <number>6</number>
-     </property>
-     <item>
-      <spacer>
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType" >
-        <enum>QSizePolicy::Expanding</enum>
-       </property>
-       <property name="sizeHint" >
-        <size>
-         <width>20</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="okButton" >
-       <property name="text" >
-        <string>OK</string>
-       </property>
-       <property name="autoDefault" >
-        <bool>false</bool>
-       </property>
-       <property name="default" >
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="cancelButton" >
-       <property name="text" >
-        <string>Cancel</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11" />
  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
  <resources/>
- <connections>
-  <connection>
-   <sender>okButton</sender>
-   <signal>clicked()</signal>
-   <receiver>VelocityBase</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel" >
-     <x>204</x>
-     <y>362</y>
-    </hint>
-    <hint type="destinationlabel" >
-     <x>59</x>
-     <y>357</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>cancelButton</sender>
-   <signal>clicked()</signal>
-   <receiver>VelocityBase</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel" >
-     <x>322</x>
-     <y>377</y>
-    </hint>
-    <hint type="destinationlabel" >
-     <x>127</x>
-     <y>377</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

@@ -28,11 +28,10 @@
 //   Velocity
 //---------------------------------------------------------
 
-class Velocity : public MidiCmdDialog, public Ui::VelocityBase {
+class Velocity : public MidiCmdDialog {
       Q_OBJECT
 
-      QButtonGroup* rangeGroup;
-      int _range;
+      Ui::VelocityBase velo;
       int _rateVal;
       int _offsetVal;
 
@@ -41,10 +40,22 @@ class Velocity : public MidiCmdDialog, public Ui::VelocityBase {
 
    public:
       Velocity(QWidget* parent = 0);
-      void setRange(int id);
-      int range() const     { return _range; }
       int rateVal() const   { return _rateVal; }
       int offsetVal() const { return _offsetVal; }
+      };
+
+//---------------------------------------------------------
+//   ModifyVelocityCmd
+//---------------------------------------------------------
+
+class ModifyVelocityCmd : public MidiCmd
+      {
+      Velocity* dialog;
+      virtual MidiCmdDialog* guiDialog();
+      virtual void process(CItemList* items);
+
+   public:
+      ModifyVelocityCmd(MidiEditor* e);
       };
 
 #endif

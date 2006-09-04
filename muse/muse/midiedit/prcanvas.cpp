@@ -27,6 +27,9 @@
 #include "audio.h"
 #include "part.h"
 
+#include "velocity.h"
+#include "gatetime.h"
+
 //---------------------------------------------------------
 //   PianoCanvas
 //---------------------------------------------------------
@@ -38,6 +41,10 @@ PianoCanvas::PianoCanvas(MidiEditor* pr)
       playedPitch = -1;
       colorMode   = 0;
       canvasTools = PointerTool | PencilTool | RubberTool | DrawTool;
+
+      // register midi commands
+      cmdModifyGateTime = new ModifyGateTimeCmd(pr);
+      cmdModifyVelocity = new ModifyVelocityCmd(pr);
 
       songChanged(SC_TRACK_INSERTED);
       }
@@ -442,91 +449,11 @@ void PianoCanvas::cmd(int cmd, int quantStrength, int quantLimit, bool quantLen)
                         }
                   break;
             case CMD_MODIFY_GATE_TIME:
-                  {
-                  GateTime w(this);
-                  w.setRange(editor->applyTo());
-                  if (!w.exec())
-                        break;
-                  int range  = w.range();        // all, selected, looped, sel+loop
-                  int rate   = w.rateVal();
-                  int offset = w.offsetVal();
-                  editor->setApplyTo(range);
-
-                  song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        CItem* item = k->second;
-                        Event event = item->event;
-                        if (event.type() != Note)
-                              continue;
-                        unsigned tick = event.tick();
-                        bool selected = k->second->isSelected();
-                        bool inLoop   = (tick >= song->lpos()) && (tick < song->rpos());
-
-                        if ((range == 0)
-                           || (range == 1 && selected)
-                           || (range == 2 && inLoop)
-                           || (range == 3 && selected && inLoop)) {
-                              unsigned len   = event.lenTick();
-
-                              len = rate ? (len * 100) / rate : 1;
-                              len += offset;
-                              if (len <= 1)
-                                    len = 1;
-
-                              if (event.lenTick() != len) {
-                                    Event newEvent = event.clone();
-                                    newEvent.setLenTick(len);
-                                    audio->msgChangeEvent(event, newEvent, item->part, false);
-                                    }
-                              }
-                        }
-                  song->endUndo(SC_EVENT_MODIFIED);
-                  }
+                  cmdModifyGateTime->processEvents(&items);
                   break;
 
             case CMD_MODIFY_VELOCITY:
-                  {
-                  Velocity w(this);
-                  w.setRange(editor->applyTo());
-                  if (!w.exec())
-                        break;
-                  int range  = w.range();        // all, selected, looped, sel+loop
-                  int rate   = w.rateVal();
-                  int offset = w.offsetVal();
-
-                  song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        CItem* item = k->second;
-                        Event event = item->event;
-                        if (event.type() != Note)
-                              continue;
-                        unsigned tick      = event.tick();
-                        bool selected = k->second->isSelected();
-                        bool inLoop   = (tick >= song->lpos()) && (tick < song->rpos());
-
-                        if ((range == 0)
-                           || (range == 1 && selected)
-                           || (range == 2 && inLoop)
-                           || (range == 3 && selected && inLoop)) {
-                              int velo = event.velo();
-
-                              //velo = rate ? (velo * 100) / rate : 64;
-                              velo = (velo * rate) / 100;
-                              velo += offset;
-
-                              if (velo <= 0)
-                                    velo = 1;
-                              if (velo > 127)
-                                    velo = 127;
-                              if (event.velo() != velo) {
-                                    Event newEvent = event.clone();
-                                    newEvent.setVelo(velo);
-                                    audio->msgChangeEvent(event, newEvent, item->part, false);
-                                    }
-                              }
-                        }
-                  song->endUndo(SC_EVENT_MODIFIED);
-                  }
+                  cmdModifyVelocity->processEvents(&items);
                   break;
 
             case CMD_CRESCENDO:

@@ -22,21 +22,32 @@
 #define __MIDICMD_H__
 
 #include "citem.h"
+#include "ui_midicmd.h"
 
 class MidiEditor;
 class MidiCmdDialog;
 
 //---------------------------------------------------------
 //   MidiCmdDialog
+//    GUI base class for midiCmd
 //---------------------------------------------------------
 
 class MidiCmdDialog : public QDialog
       {
+      Q_OBJECT
+
+      QButtonGroup* rangeGroup;
+      int _range;
+      Ui::MidiCmd mc;
+
+   protected:
+      void accept();
+      QVBoxLayout* layout;
 
    public:
       MidiCmdDialog();
-      int range() const { return 0; }
-      void setRange(int /*val*/) { }
+      int range() const { return _range; }
+      void setRange(int);
       };
       
 //---------------------------------------------------------

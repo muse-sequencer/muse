@@ -24,6 +24,7 @@
 #include "ecanvas.h"
 
 class CItem;
+class MidiCmd;
 
 //---------------------------------------------------------
 //   PianoCanvas
@@ -34,6 +35,9 @@ class PianoCanvas : public EventCanvas {
 
       int colorMode;
       int playedPitch;
+
+      MidiCmd* cmdModifyGateTime;
+      MidiCmd* cmdModifyVelocity;
 
       virtual void paint(QPainter&, QRect);
       virtual CItem* searchItem(const QPoint& p) const;
