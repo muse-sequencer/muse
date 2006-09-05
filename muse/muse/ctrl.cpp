@@ -246,8 +246,8 @@ void Ctrl::read(QDomNode node, bool midi)
             int frame = sl.at(0).toInt(&ok, 0);
             if (!ok) {
                   printf("Ctrl::read(1): conversion <%s><%s> to int failed\n",
-                     vp.at(i).simplified().toLatin1().data(),
-                     sl.at(0).toLatin1().data());
+                     vp.at(i).simplified().toAscii().data(),
+                     sl.at(0).toAscii().data());
                   break;
                   }
             CVal val;
@@ -257,8 +257,8 @@ void Ctrl::read(QDomNode node, bool midi)
                   val.f = sl.at(1).toDouble(&ok);
             if (!ok) {
                   printf("Ctrl::read(2): conversion <%s><%s> failed\n",
-                     vp.at(i).simplified().toLatin1().data(),
-                     sl.at(1).toLatin1().data());
+                     vp.at(i).simplified().toAscii().data(),
+                     sl.at(1).toAscii().data());
                   break;
                   }
             add(frame, val);
@@ -284,15 +284,15 @@ void Ctrl::write(Xml& xml)
 
       if (empty()) {
             if (_type & INT)
-                  xml.tagE(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toLatin1().data());
+                  xml.tagE(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
             else
-                  xml.tagE(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toLatin1().data());
+                  xml.tagE(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
             return;
             }
       if (_type & INT)
-            xml.tag(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toLatin1().data());
+            xml.tag(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
       else
-            xml.tag(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toLatin1().data());
+            xml.tag(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
 
       int i = 0;
       for (ciCtrlVal ic = begin(); ic != end(); ++ic) {
@@ -310,7 +310,7 @@ void Ctrl::write(Xml& xml)
                   fval.setNum(val.f);
                   ttime.setNum(time);
                   QString str=ttime + " "+ fval + ",";
-                  xml.nput(str.toLatin1().data());
+                  xml.nput(str.toAscii().data());
                   }
             ++i;
             if (i >= 4) {

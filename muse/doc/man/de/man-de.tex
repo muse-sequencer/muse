@@ -15,7 +15,10 @@
 \setupcolors[state=start]
 \setupbodyfont[Palatino]
 \language[de]
-\enableregime[il1]
+
+% typeset in unicode (utf8)
+% \enableregime[il1]
+\enableregime[utf]
 
 \startuseMPgraphic{FunnyFrame}
       picture p; numeric o; path a, b; pair c;
@@ -156,14 +159,15 @@
       Dieses Dokument wurde mit \pdfTeX\ und dem Macro Paket
       \ConTeXt\ erstellt.
       \blank
-      \copyright 2006 Werner Schweer und Andere
+      \copyright 2006 Werner Schweer und Andere\par
+      Titelgrafik \copyright Joachim Schiele 
       \stopstandardmakeup
 
    \completecontent
 
-\chapter{Einführung}
+\chapter{EinfÃ¼hrung}
    \section{Was ist \M?}
-      \M\ ist ein ein ''open source'' Programm, veröffentlicht unter der GNU General
+      \M\ ist ein ein ''open source'' Programm, verÃ¶ffentlicht unter der GNU General
       Public License (GPL) (siehe Anhang).
 
 \component projekte.tex

@@ -305,6 +305,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
 
 extern MusE* muse;
 extern QStyle* smallStyle;
+extern void addProject(const QString& name);
 
 #endif
 

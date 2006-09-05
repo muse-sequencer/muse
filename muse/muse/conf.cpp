@@ -208,7 +208,7 @@ void readConfiguration(QDomNode node)
             else if (tag == "mtcoffset") {
                   QStringList l = s.simplified().split(":", QString::SkipEmptyParts);
                   if (l.size() != 5) {
-                        printf("cannot convert mtcoffset <%s>n\n", s.toLatin1().data());
+                        printf("cannot convert mtcoffset <%s>n\n", s.toAscii().data());
                         }
                   else {
 	                  int h = l.at(0).toInt();
@@ -269,7 +269,7 @@ void readConfiguration(QDomNode node)
                   DrumEdit::readConfiguration(node);
             else {
                   printf("MusE:readConfiguration(): unknown tag %s\n",
-                     e.tagName().toLatin1().data());
+                     e.tagName().toAscii().data());
                   }
             }
       }
@@ -306,19 +306,19 @@ static void probeMachineSpecificConfiguration()
 bool readConfiguration()
       {
       if (debugMsg)
-            printf("readConfiguration <%s>\n", configName.toLatin1().data());
+            printf("readConfiguration <%s>\n", configName.toAscii().data());
 
       QFile qf(configName);
       if (!qf.open(QIODevice::ReadOnly)) {
             if (debugMsg || debugMode)
-                  fprintf(stderr, "NO Config File <%s> found\n", configName.toLatin1().data());
+                  fprintf(stderr, "NO Config File <%s> found\n", configName.toAscii().data());
 
             // if the config file does not exist launch probeMachineSpecificConfiguration
             probeMachineSpecificConfiguration();
             return true;
             }
       if (debugMsg)
-            printf("readConfiguration <%s>\n", configName.toLatin1().data());
+            printf("readConfiguration <%s>\n", configName.toAscii().data());
 
       QDomDocument doc;
       int line, column;
@@ -328,7 +328,7 @@ bool readConfiguration()
             col.setNum(column);
             ln.setNum(line);
             error = err + "\n    at line: " + ln + " col: " + col;
-            printf("error reading med file: %s\n", error.toLatin1().data());
+            printf("error reading med file: %s\n", error.toAscii().data());
             return true;
             }
       QDomNode node = doc.documentElement();
@@ -344,12 +344,12 @@ bool readConfiguration()
                         if (e.tagName() == "configuration")
                               readConfiguration(node.firstChild());
                         else
-                              printf("MusE:readConfiguration(): unknown tag %s\n", e.tagName().toLatin1().data());
+                              printf("MusE:readConfiguration(): unknown tag %s\n", e.tagName().toAscii().data());
                         node = node.nextSibling();
                         }
                   }
             else
-                  printf("MusE:readConfiguration() %s not supported\n", e.tagName().toLatin1().data());
+                  printf("MusE:readConfiguration() %s not supported\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       return false;
@@ -364,7 +364,7 @@ void MusE::writeGlobalConfiguration() const
       QFile f(configName);
       if (!f.open(QIODevice::WriteOnly)) {
             printf("save configuration to <%s> failed: %s\n",
-               configName.toLatin1().data(), strerror(errno));
+               configName.toAscii().data(), strerror(errno));
             return;
             }
       Xml xml(&f);
@@ -706,7 +706,7 @@ void MixerConfig::read(QDomNode node)
             else if (tag == "showMidiChannels")
                   showMidiChannels = i;
             else
-                  printf("MusE:MixerConfig: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:MixerConfig: unknown tag %s\n", e.tagName().toAscii().data());
             }
       }
 

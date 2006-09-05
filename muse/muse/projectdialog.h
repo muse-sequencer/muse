@@ -65,6 +65,8 @@ class ProjectDialog : public QDialog, public Ui_ProjectDialogBase {
    public:
       ProjectDialog(QWidget* parent = 0);
       QString projectPath() const;
+      QString projectName() const;
+      void setProjectName(const QString&); 
       };
 
 #endif

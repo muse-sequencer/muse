@@ -22,101 +22,130 @@ include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}
       )
 
-MACRO(WRAP_CPP outfiles )
-   FOREACH(it ${ARGN})
-      SET(${outfiles} ${${outfiles}} ${it}.cpp)
-      ENDFOREACH(it)
-   ENDMACRO(WRAP_CPP)
-
-MACRO(WRAP_H outfiles )
-   FOREACH(it ${ARGN})
-      SET(${outfiles} ${${outfiles}} ${it}.h)
-      ENDFOREACH(it)
-   ENDMACRO(WRAP_H)
-
-MACRO(WRAP_UI outfiles )
-   FOREACH(it ${ARGN})
-      SET(${outfiles} ${${outfiles}} ${it}.ui)
-      ENDFOREACH(it)
-   ENDMACRO(WRAP_UI)
-
-subdirs(
-      ctrl midiedit widgets master driver instruments marker liste
+subdirs (
+      ctrl 
+      midiedit 
+      widgets 
+      master 
+      driver 
+      instruments 
+      marker 
+      liste 
+      mixer
+      arranger
+      waveedit
       )
 
-set (muse_uics
-      preferences 
-      exportmididialog 
-      configmidifile
-      transport 
-      aboutbox 
-      transpose
-      projectpropsdialog
-      projectdialog
-      templatedialog
-      mixer/routedialog
-      arranger/configtrack
-      arranger/miditrackinfo
-      arranger/midiportinfo
-      arranger/midichannelinfo
+QT4_WRAP_UI  (muse_ui_headers
+      preferences.ui
+      exportmididialog.ui
+      configmidifile.ui
+      transport.ui
+      aboutbox.ui
+      transpose.ui
+      projectpropsdialog.ui
+      projectdialog.ui
+      templatedialog.ui
+      importmidi.ui
       )
 
-set(muse_mocs
-      projectpropsdialog
-	projectdialog templatedialog 
-      preferences plugingui midiplugin muse 
-      song transport conf editor
-	cobject transpose track midisynti
-      miditrack wavetrack audiotrack audioaux audiooutput
-      audioinput audiogroup exportmidi
-      mixer/mixer 
-      mixer/rack 
-      mixer/midirack 
-      mixer/routedialog 
-      mixer/strip 
-      mixer/astrip 
-      mixer/mstrip
-      arranger/arranger 
-      arranger/canvas 
-      arranger/configtrack 
-      arranger/partdrag 
-      arranger/tllineedit
-      arranger/tlswidget 
-      arranger/tlwidget 
-      arranger/tlwlayout
-      arranger/trackdrag 
-      arranger/trackinfo
-      waveedit/waveedit 
-      waveedit/waveview
+QT4_WRAP_CPP ( muse_moc_headers
+      projectpropsdialog.h
+	projectdialog.h
+      templatedialog.h
+      preferences.h
+      plugingui.h
+      midiplugin.h
+      muse.h
+      song.h
+      transport.h
+      conf.h
+      editor.h
+	cobject.h
+      transpose.h
+      track.h
+      midisynti.h
+      miditrack.h
+      wavetrack.h
+      audiotrack.h
+      audioaux.h
+      audiooutput.h
+      audioinput.h
+      audiogroup.h
+      exportmidi.h
+      importmidi.h
       )
 
-WRAP_H(muse_mocH ${muse_mocs})
-WRAP_CPP(muse_mocCPP ${muse_mocs})
-WRAP_UI(muse_uiUI ${muse_uics})
-
-QT4_WRAP_CPP (muse_moc_headers ${muse_mocH})
-QT4_WRAP_UI  (ui_headers ${muse_uiUI})
-QT4_ADD_RESOURCES (qrc_files muse.qrc)
+QT4_ADD_RESOURCES (muse_qrc_files muse.qrc)
 
 add_executable ( muse
-      ${qrc_files}
+      ${muse_qrc_files}
+      ${muse_moc_headers}
+      ${muse_ui_headers}
+
       ticksynth.cpp
-      vst.cpp dssihost.cpp synth.cpp plugin.cpp
-	mtc.cpp thread.cpp audio.cpp
-	audioprefetch.cpp audiowriteback.cpp globals.cpp sync.cpp
-	part.cpp undo.cpp songfile.cpp midi.cpp
-      importmidi.cpp midifile.cpp icons.cpp event.cpp 
-      eventlist.cpp midievent.cpp waveevent.cpp mpevent.cpp
-	wave.cpp seqmsg.cpp
+      vst.cpp 
+      dssihost.cpp 
+      synth.cpp 
+      plugin.cpp
+	mtc.cpp 
+      thread.cpp 
+      audio.cpp
+	audioprefetch.cpp 
+      audiowriteback.cpp 
+      globals.cpp 
+      sync.cpp
+	part.cpp 
+      undo.cpp 
+      songfile.cpp 
+      midi.cpp
+      importmidi.cpp 
+      importmidi.h
+      midifile.cpp 
+      icons.cpp 
+      event.cpp 
+      eventlist.cpp 
+      midievent.cpp 
+      waveevent.cpp 
+      mpevent.cpp
+	wave.cpp 
+      seqmsg.cpp
 	help.cpp
-	midictrl.cpp fifo.cpp
-	midiseq.cpp helper.cpp route.cpp shortcuts.cpp ctrl.cpp
-      gconfig.cpp midirc.cpp midififo.cpp
+	midictrl.cpp 
+      fifo.cpp
+	midiseq.cpp 
+      helper.cpp 
+      route.cpp 
+      shortcuts.cpp 
+      ctrl.cpp
+      gconfig.cpp 
+      midirc.cpp 
+      midififo.cpp
       midiport.cpp
 
-      ${muse_mocCPP}
-      ${muse_moc_headers}
-      ${ui_headers}
+      projectpropsdialog.cpp
+	projectdialog.cpp
+      templatedialog.cpp
+      preferences.cpp
+      plugingui.cpp
+      midiplugin.cpp
+      muse.cpp
+      song.cpp
+      transport.cpp
+      conf.cpp
+      editor.cpp
+	cobject.cpp
+      transpose.cpp
+      track.cpp
+      midisynti.cpp
+      miditrack.cpp
+      wavetrack.cpp
+      audiotrack.cpp
+      audioaux.cpp
+      audiooutput.cpp
+      audioinput.cpp
+      audiogroup.cpp
+      exportmidi.cpp
       )
 
 set_target_properties( muse
@@ -124,8 +153,21 @@ set_target_properties( muse
       )
 
 target_link_libraries(muse
-      ctrl midiedit master driver instruments marker liste
-      al synti widgets awl
+      ctrl 
+      midiedit 
+      master 
+      driver 
+      instruments 
+      marker 
+      liste
+      synti 
+      arranger 
+      mixer 
+      waveedit 
+      widgets 
+      ctrl
+      al 
+      awl
       ${QT_LIBRARIES}
       ${ALSA_LIB}
       ${JACK_LIB}

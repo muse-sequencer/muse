@@ -3,10 +3,10 @@
   \section{Projekte}
 
       Ein \M\ Projekt \index{Projekt} ist ein Ordner, der alle 
-      Dateien des Projekts enthält. Dies sind im wesentlichen die 
+      Dateien des Projekts enthÃ¤lt. Dies sind im wesentlichen die 
       aufgenommenen Wavedateien und die Projektdatei \index{Projektdatei}.
-      Die Projektdatei enthält alle
-      Informationen über das Projekt sowie alle Midi Daten soweit
+      Die Projektdatei enthÃ¤lt alle
+      Informationen Ã¼ber das Projekt sowie alle Midi Daten soweit
       vorhanden.
 
       Beispiel einer Projekt Ordnerstruktur:
@@ -28,33 +28,33 @@
       Im oberen Beispiel ist {\tt song1} der Projektordner
       \index{Projektordner} und
       {\tt song1.med} die Projektdatei. Die {\tt *.wav} Dateien sind
-      Audio Aufzeichnungen und die zugehörigen {\tt *.wca} Dateien 
+      Audio Aufzeichnungen und die zugehÃ¶rigen {\tt *.wca} Dateien 
       enthalten vorberechnete Daten zum schnellen Zeichnen der 
       Wellenformdarstellung auf den Bildschirm.
 
       Der Standard-Projektordner \index{Standard-Projektordners}
-      {\tt ~/MusE/projects} kann im ''Präferenzen'' Menü eingestellt 
+      {\tt ~/MusE/projects} kann im ''PrÃ¤ferenzen'' MenÃ¼ eingestellt 
       werden.
 
-   \section{Projekt auswählen}
+   \section{Projekt auswÃ¤hlen}
 
-      Nach dem Start von \M\ muß immer zunächst ein Projekt geladen oder
+      Nach dem Start von \M\ muÃŸ immer zunÃ¤chst ein Projekt geladen oder
       ein neues Projekt erzeugt werden.
 
       Normalerweise wird nach dem Start von \M\ das zuletzt bearbeitete
-      Projekt geladen. Wer das nicht mag kann unter ''Präferenzen'' 
+      Projekt geladen. Wer das nicht mag kann unter ''PrÃ¤ferenzen'' 
       einstellen, ob beim Start ein Standardprojekt \index{Standardprojekt}
-      geladen oder immer zunächst nach einen Projekt gefragt werden soll.
+      geladen oder immer zunÃ¤chst nach einen Projekt gefragt werden soll.
 
    \section{Templates}
 
-      Wird bei der Projektauswahl ein neues Projekt ausgewählt, dann
-      wird im nächsten Schritt ein Dialog gezeigt, in dem ein Template
-      aus einer Liste von verfügbaren Templates ausgewählt werden kann.
-      Ein Template bestimmt die Grundeinstellungen für ein neues
+      Wird bei der Projektauswahl ein neues Projekt ausgewÃ¤hlt, dann
+      wird im nÃ¤chsten Schritt ein Dialog gezeigt, in dem ein Template
+      aus einer Liste von verfÃ¼gbaren Templates ausgewÃ¤hlt werden kann.
+      Ein Template bestimmt die Grundeinstellungen fÃ¼r ein neues
       Projekt. Ein Template kann ein ein komplettes Projekt sein welches
       jedoch keine Audiodaten enthalten kann und welches in der Regel
-      auch keine Midi Daten enthält.
+      auch keine Midi Daten enthÃ¤lt.
 
       \M\ sucht Templates an zwei Orten:
       im globalen \M\ Installationspfad (Factory Presets) sowie im 
@@ -65,16 +65,16 @@
 
       Es gibt keine in \M\ eingebaute Funktion zum Sichern von Projekten.
       Da sich aber alle Projektdaten in einem Ordner befinden,
-      können Standard-Tools zum Sichern verwendet werden.
+      kÃ¶nnen Standard-Tools zum Sichern verwendet werden.
 
       Projekte sind immer in sich komplett und enthalten keine Verweise
-      auf Dateien außerhalb des Projektordners. Dies gilt nicht
-      für Soundfonts \index{Soundfonts}, die z.B. vom Fluid-Synthesizer 
-      Plugin verwendet
-      werden. Es wird empfohlen, diese Soundfonts\index{Soundfonts} 
+      auf Dateien auÃŸerhalb des Projektordners. Dies gilt nicht
+      fÃ¼r Soundfonts \index{Soundfonts}, die z.B. vom Fluid-Synthesizer 
+      Plugin verwendet werden. 
+      Es wird empfohlen, diese Soundfonts\index{Soundfonts} 
       auch als Kopie im Projektordner abzulegen.
 
-      Projekte können auf der Platte ohne Probleme verschoben werden,
+      Projekte kÃ¶nnen auf der Platte ohne Probleme verschoben werden,
       da sie keine absoluten Pfade enthalten.
 
    \section{Wavedateien und Samplerate}
@@ -82,17 +82,17 @@
       \index{Wavedateien}\index{Audioprojekte}\index{Midiprojekte}
       \index{Samplerate}
       MusE unterscheidet zwischen Midiprojekten und Audioprojekten.
-      Audioprojekte enthalten zusätzlich zu eventuell vorhandenen
+      Audioprojekte enthalten zusÃ¤tzlich zu eventuell vorhandenen
       Mididaten Wavedateien.
       
       Audioprojekte sind immer mit einer bestimmten Samplerate
-      verbunden und können nur geladen und bearbeitet werden, wenn
-      die Projekt Samplerate mit der aktuellen Samplerate übereinstimmt.
+      verbunden und kÃ¶nnen nur geladen und bearbeitet werden, wenn
+      die Projekt Samplerate mit der aktuellen Samplerate Ã¼bereinstimmt.
 
       Die aktuelle Samplerate wird immer vom JACK Server bestimmt und
-      kann von \M\ nicht verändert werden.
+      kann von \M\ nicht verÃ¤ndert werden.
 
       Werden Wavedateien mit einer anderen Samplerate als der aktuellen
-      importiert, so müssen sie konvertiert (resampled\index{resample}) 
+      importiert, so mÃ¼ssen sie konvertiert (resampled\index{resample}) 
       werden.
 

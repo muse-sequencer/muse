@@ -32,6 +32,76 @@
 #include "gconfig.h"
 #include "driver/mididev.h"
 #include "part.h"
+#include "importmidi.h"
+#include "projectdialog.h"
+#include "templatedialog.h"
+#include "audio.h"
+#include "mixer/mixer.h"
+#include "arranger/arranger.h"
+#include "midictrl.h"
+
+//---------------------------------------------------------
+//   ImportMidiDialog
+//---------------------------------------------------------
+
+ImportMidiDialog::ImportMidiDialog(QWidget* parent)
+  : QDialog(parent)
+      {
+      setupUi(this);
+      bg = new QButtonGroup(this);
+      bg->setExclusive(true);
+      bg->addButton(addToProject, 0);
+      bg->addButton(createNewProject, 1);
+      createNewProject->setChecked(true);
+      connect(selectTemplate,SIGNAL(clicked()), SLOT(selectTemplateClicked()));
+      connect(selectProject, SIGNAL(clicked()), SLOT(selectProjectClicked()));
+      }
+
+//---------------------------------------------------------
+//   selectTemplateClicked
+//---------------------------------------------------------
+
+void ImportMidiDialog::selectTemplateClicked()
+      {
+      TemplateDialog templateDialog;
+      templateDialog.setTemplatePath(templateName->text());
+      int rv = templateDialog.exec();
+      if (rv == 0)
+            return;
+      templateName->setText(templateDialog.templatePath());
+      }
+
+//---------------------------------------------------------
+//   selectProjectClicked
+//---------------------------------------------------------
+
+void ImportMidiDialog::selectProjectClicked()
+      {
+      ProjectDialog projectDialog;
+      projectDialog.setProjectName(projectName->text());
+      int rv = projectDialog.exec();
+      if (rv == 0)
+            return;
+      projectName->setText(projectDialog.projectName());
+      }
+
+//---------------------------------------------------------
+//   setProjectName
+//---------------------------------------------------------
+
+void ImportMidiDialog::setProjectName(const QString& name)
+      {
+      projectName->setText(name);      
+      }
+
+//---------------------------------------------------------
+//   setTemplateName
+//---------------------------------------------------------
+
+void ImportMidiDialog::setTemplateName(const QString& name)
+      {
+      templateName->setText(name);      
+      }
 
 //---------------------------------------------------------
 //   importMidi
@@ -39,8 +109,7 @@
 
 void MusE::importMidi()
       {
-      QString empty("");
-      importMidi(empty);
+      importMidi(QString());
       }
 
 void MusE::importMidi(const QString &file)
@@ -62,22 +131,156 @@ void MusE::importMidi(const QString &file)
       else
             fn = file;
 
-      int n = QMessageBox::question(this, appName,
-         tr("Add midi file to current project?\n"),
-         tr("&Add to Project"),
-         tr("&Replace"),
-         tr("&Abort"), 0, 2);
+      QFileInfo fi(fn);
 
-      switch (n) {
-            case 0:
-                  importMidi(fn, true);
-                  song->update(-1);
-                  break;
-            case 1:
-//TODO                  loadProjectFile(fn, false, false);    // replace
-                  break;
-            default:
+      ImportMidiDialog mid(this);
+      mid.setProjectName(fi.baseName());
+      mid.setTemplateName("");
+
+      if (mid.exec() == 0)
+            return;
+
+      if (mid.doCreateNewProject()) {
+            QString header = tr("MusE: import midi file");
+            QString path(mid.projectName->text());
+            QDir pd(QDir::homePath() + "/" + config.projectPath + "/" + path);
+
+            if (leaveProject())
                   return;
+            if (!pd.mkdir(pd.path())) {
+                  QString s(tr("Cannot create project folder <%1>"));
+                  QMessageBox::critical(this, header, s.arg(pd.path()));
+                  return;
+                  }
+            if (audio->isPlaying()) {
+                  audio->msgPlay(false);
+                  while (audio->isPlaying())
+                        qApp->processEvents();
+                  }
+            addProject(path);       // add to history
+            seqStop();
+            if (mixer1)
+                  mixer1->clear();
+            if (mixer2)
+                  mixer2->clear();
+//===========================================================
+            //
+            // close all toplevel windows
+            //
+            foreach(QWidget* w, QApplication::topLevelWidgets()) {
+                  if (!w->isVisible())
+                        continue;
+                  if (strcmp("DrumEdit", w->metaObject()->className()) == 0)
+                        w->close();
+                  else if (strcmp("PianoRoll", w->metaObject()->className()) == 0)
+                        w->close();
+                  else if (strcmp("MasterEdit", w->metaObject()->className()) == 0)
+                        w->close();
+                  else if (strcmp("WaveEdit", w->metaObject()->className()) == 0)
+                        w->close();
+                  else if (strcmp("ListEdit", w->metaObject()->className()) == 0)
+                        w->close();
+                  }
+            emit startLoadSong();
+            song->setProjectPath(path);
+            song->clear(false);
+            song->setCreated(true);
+
+            QString s = mid.templateName->text();
+            bool rv = true;
+            if (!s.isEmpty()) {
+                  QFile f(s);
+                  if (f.open(QIODevice::ReadOnly)) {
+                        rv = song->read(&f);
+                        f.close();
+                        }
+                  else {
+                        QString msg(tr("Cannot open template file\n%1"));
+                        QMessageBox::critical(this, header, msg.arg(s));
+                        }
+                  }
+            if (!rv) {
+                  QString msg(tr("File <%1> read error"));
+                  QMessageBox::critical(this, header, msg.arg(s));
+                  }
+            importMidi(fn, true);
+
+            tr_id->setChecked(config.transportVisible);
+            bt_id->setChecked(config.bigTimeVisible);
+
+            //
+            // dont emit song->update():
+            song->blockSignals(true);
+
+            showBigtime(config.bigTimeVisible);
+            showMixer1(config.mixer1Visible);
+            showMixer2(config.mixer2Visible);
+            if (mixer1 && config.mixer1Visible)
+                  mixer1->setUpdateMixer();
+            if (mixer2 && config.mixer2Visible)
+                  mixer2->setUpdateMixer();
+
+            resize(config.geometryMain.size());
+            move(config.geometryMain.topLeft());
+
+            if (config.transportVisible)
+                  transport->show();
+            transport->move(config.geometryTransport.topLeft());
+            showTransport(config.transportVisible);
+
+            song->blockSignals(false);
+            
+            transport->setMasterFlag(song->masterFlag());
+            punchinAction->setChecked(song->punchin());
+            punchoutAction->setChecked(song->punchout());
+            loopAction->setChecked(song->loop());
+            clipboardChanged();           // enable/disable "Paste"
+            song->setLen(song->len());    // emit song->lenChanged() signal
+
+            //
+            // add connected channels
+            //
+            MidiChannelList* mcl = song->midiChannel();
+            TrackList* tl       = song->tracks();
+            for (iMidiChannel i = mcl->begin(); i != mcl->end(); ++i) {
+                  MidiChannel* mc = (MidiChannel*)*i;
+                  if (mc->noInRoute() || song->trackExists(mc))
+                        continue;
+                  tl->push_back(mc);
+                  }
+
+            selectionChanged();           // enable/disable "Copy" & "Paste"
+            arranger->endLoadSong();
+            song->updatePos();
+            //
+            // send "cur" controller values to devices
+            //
+
+            for (iTrack i = tl->begin(); i != tl->end(); ++i) {
+                  Track* track = *i;
+                  track->blockSignals(true);
+                  CtrlList* cl = track->controller();
+                  for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
+                        Ctrl* ctrl = ic->second;
+                        if (ctrl->type() & Ctrl::INT) {
+                              CVal val;
+                              val = ctrl->curVal();
+                              ctrl->setCurVal(CTRL_VAL_UNKNOWN);
+                              song->setControllerVal(track, ctrl, val);
+                              }
+                        }
+                  track->blockSignals(false);
+                  }
+            setWindowTitle(QString("MusE: Song: ") + path);
+//===========================================================
+
+            seqStart();
+            audio->msgSeek(song->cPos());
+            }
+      else {
+            // add to project
+            importMidi(fn, true);
+            song->update(-1);
             }
       }
 

@@ -172,7 +172,7 @@ void MusE::exportMidi()
             //-----------------------------------
 
             if (!track->name().isEmpty()) {
-                  const char* name = track->name().toLatin1().data();
+                  const char* name = track->name().toAscii().data();
                   int len = strlen(name);
                   MidiEvent ev(0, ME_META, (unsigned char*)name, len+1);
                   ev.setA(0x3);    // Meta Sequence/Track Name
@@ -184,7 +184,7 @@ void MusE::exportMidi()
             //-----------------------------------
 
             if (!track->comment().isEmpty()) {
-                  const char* comment = track->comment().toLatin1().data();
+                  const char* comment = track->comment().toAscii().data();
                   int len = strlen(comment);
                   MidiEvent ev(0, ME_META, (unsigned char*)comment, len+1);
                   ev.setA(0xf);    // Meta Text
@@ -276,7 +276,7 @@ void MusE::exportMidi()
       //
       AL::MarkerList* ml = song->marker();
       for (AL::ciMarker m = ml->begin(); m != ml->end(); ++m) {
-            const char* name = m->second.name().toLatin1().data();
+            const char* name = m->second.name().toAscii().data();
             int len = strlen(name);
             MidiEvent ev(m->first, ME_META, (unsigned char*)name, len);
             ev.setA(0x6);
@@ -286,7 +286,7 @@ void MusE::exportMidi()
       //---------------------------------------------------
       //    Write Copyright
       //
-      const char* copyright = config.copyright.toLatin1().data();
+      const char* copyright = config.copyright.toAscii().data();
       if (copyright && *copyright) {
             int len = strlen(copyright);
             MidiEvent ev(0, ME_META, (unsigned char*)copyright, len);

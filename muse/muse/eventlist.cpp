@@ -38,7 +38,7 @@ void EventList::read(QDomNode node, bool midi)
                   add(e);
                   }
             else
-                  printf("EventList:read(): unknown tag %s\n", tag.toLatin1().data());
+                  printf("EventList:read(): unknown tag %s\n", tag.toAscii().data());
             }
       }
 

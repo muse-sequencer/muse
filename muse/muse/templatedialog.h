@@ -44,6 +44,7 @@ class TemplateDialog : public QDialog, public Ui_TemplateDialogBase {
    public:
       TemplateDialog(QWidget* parent = 0);
       QString templatePath() const;
+      void setTemplatePath(const QString&);
       };
 
 #endif

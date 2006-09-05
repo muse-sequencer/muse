@@ -122,9 +122,9 @@
 #include "xpm/editpaste.xpm"
 #include "xpm/undoS.xpm"
 #include "xpm/redoS.xpm"
-#include "xpm/editcutS.xpm"
-#include "xpm/editcopyS.xpm"
-#include "xpm/editpasteS.xpm"
+// #include "xpm/editcutS.xpm"
+// #include "xpm/editcopyS.xpm"
+// #include "xpm/editpasteS.xpm"
 #include "xpm/editmute.xpm"
 #include "xpm/editmuteS.xpm"
 

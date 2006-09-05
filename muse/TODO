@@ -23,10 +23,12 @@ BUGS
         limitations; looping should be implemented internally to work
         around this
 
+      - midi import does not work as expected
+
 FEATURES
 	- wave editor is completely broken
 
-	- list editor
+	- list editor is missing
 
 	- missing time signature ruler in master editor
 

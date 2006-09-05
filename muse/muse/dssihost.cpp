@@ -116,7 +116,7 @@ int DssiSynthIF::oscUpdate(lo_arg **argv)
       */
 
       lo_send(uiTarget, uiOscConfigurePath, "ss",
-         DSSI_PROJECT_DIRECTORY_KEY, song->projectDirectory().toLatin1().data());
+         DSSI_PROJECT_DIRECTORY_KEY, song->projectDirectory().toAscii().data());
 
 #if 0
       /* Send current bank/program  (-FIX- another race...) */
@@ -161,8 +161,8 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
       SynthI* synti = 0;
 
       for (iSynthI si = sl->begin(); si != sl->end(); ++si) {
-            int l = strlen((*si)->name().toLatin1().data());
-            if (!strncmp(p, (*si)->name().toLatin1().data(), l)) {
+            int l = strlen((*si)->name().toAscii().data());
+            if (!strncmp(p, (*si)->name().toAscii().data(), l)) {
                   synti = *si;
                   instance = (DssiSynthIF*)(synti->sif());
                   p += l;
@@ -197,7 +197,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
 
 static void scanDSSILib(const QFileInfo& fi)
       {
-      void* handle = dlopen(fi.filePath().toLatin1().data(), RTLD_NOW);
+      void* handle = dlopen(fi.filePath().toAscii().data(), RTLD_NOW);
       if (handle == 0) {
             fprintf(stderr, "dlopen(%s) failed: %s\n",
               fi.filePath().toAscii().data(), dlerror());
@@ -236,7 +236,7 @@ static void scanDSSILib(const QFileInfo& fi)
 static void scanDSSIDir(const QString& s)
       {
       if (debugMsg)
-            printf("scan dssi plugin dir <%s>\n", s.toLatin1().data());
+            printf("scan dssi plugin dir <%s>\n", s.toAscii().data());
 
 #ifdef __APPLE__
       QDir pluginDir(s, QString("*.dylib"), QDir::Unsorted, QDir::Files);
@@ -354,7 +354,7 @@ bool DssiSynthIF::init(DssiSynth* s)
             }
       if (dssi->configure) {
             char *rv = dssi->configure(handle, DSSI_PROJECT_DIRECTORY_KEY,
-               museProject.toLatin1().data());
+               museProject.toAscii().data());
             if (rv)
                   fprintf(stderr, "MusE: Warning: plugin doesn't like project directory: \"%s\"\n", rv);
             }
@@ -546,7 +546,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
                   }
             }
       if (dssi == 0) {
-            fprintf(stderr, "cannot found DSSI synti %s\n", _name.toLatin1().data());
+            fprintf(stderr, "cannot found DSSI synti %s\n", _name.toAscii().data());
             dlclose(handle);
             handle = 0;
             df     = 0;
@@ -560,7 +560,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
       //  start gui
       //
       static char oscUrl[1024];
-      snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toLatin1().data());
+      snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toAscii().data());
 
       QString guiPath(info.path() + "/" + info.baseName());
       QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
@@ -572,7 +572,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
                   if (gui.contains('_') == 0)
                         continue;
                   struct stat buf;
-                  if (stat(gui.toLatin1().data(), &buf)) {
+                  if (stat(gui.toAscii().data(), &buf)) {
                         perror("stat failed");
                         continue;
                         }
@@ -581,17 +581,17 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
                      (buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))) {
                         if ((sif->guiPid = fork()) == 0) {
                               execlp(
-                                 fi.filePath().toLatin1().data(),
-                                 fi.fileName().toLatin1().data(),
+                                 fi.filePath().toAscii().data(),
+                                 fi.fileName().toAscii().data(),
                                  oscUrl,
-                                 info.filePath().toLatin1().data(),
-                                 name().toLatin1().data(),
+                                 info.filePath().toAscii().data(),
+                                 name().toAscii().data(),
                                  "channel 1", (void*)0);
                               fprintf(stderr, "exec %s %s %s %s failed: %s\n",
-                                 fi.filePath().toLatin1().data(),
-                                 fi.fileName().toLatin1().data(),
+                                 fi.filePath().toAscii().data(),
+                                 fi.fileName().toAscii().data(),
                                  oscUrl,
-                                 name().toLatin1().data(),
+                                 name().toAscii().data(),
                                  strerror(errno));
                               exit(1);
                               }
@@ -601,7 +601,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
             }
       else {
             printf("%s: no dir for dssi gui found: %s\n",
-               name().toLatin1().data(), guiPath.toLatin1().data());
+               name().toAscii().data(), guiPath.toAscii().data());
             _hasGui = false;
             }
       return sif;
@@ -768,14 +768,14 @@ int DssiSynthIF::oscConfigure(lo_arg** argv)
       if (!strncmp(key, DSSI_RESERVED_CONFIGURE_PREFIX,
          strlen(DSSI_RESERVED_CONFIGURE_PREFIX))) {
             fprintf(stderr, "MusE: OSC: UI for plugin '%s' attempted to use reserved configure key \"%s\", ignoring\n",
-               synti->name().toLatin1().data(), key);
+               synti->name().toAscii().data(), key);
             return 0;
             }
 
       char* message = synth->dssi->configure(handle, key, value);
       if (message) {
             printf("MusE: on configure '%s' '%s', plugin '%s' returned error '%s'\n",
-               key, value, synti->name().toLatin1().data(), message);
+               key, value, synti->name().toAscii().data(), message);
             free(message);
             }
 

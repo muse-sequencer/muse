@@ -95,7 +95,7 @@ void AudioInput::activate1()
       {
       for (int i = 0; i < channels(); ++i) {
             char buffer[128];
-            snprintf(buffer, 128, "%s-%d", _name.toLatin1().data(), i);
+            snprintf(buffer, 128, "%s-%d", _name.toAscii().data(), i);
             if (jackPorts[i])
                   printf("AudioInput::activate(): already active!\n");
             else
@@ -159,7 +159,7 @@ void AudioInput::setName(const QString& s)
       for (int i = 0; i < channels(); ++i) {
             if (jackPorts[i]) {
                   char buffer[128];
-                  snprintf(buffer, 128, "%s-%d", _name.toLatin1().data(), i);
+                  snprintf(buffer, 128, "%s-%d", _name.toAscii().data(), i);
                   if (jackPorts[i])
                         audioDriver->setPortName(jackPorts[i], buffer);
                   }

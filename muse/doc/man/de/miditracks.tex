@@ -3,41 +3,41 @@
   \section{Midi Setup}
   \subsection{Einfaches Setup}
 
-      In einem einfachen Setup ist jeder Midi Anschluß des Rechners 
-      jeweils mit nur einem Midi Gerät verbunden. Außerdem hat jede
+      In einem einfachen Setup ist jeder Midi Anschluss des Rechners 
+      jeweils mit nur einem Midi GerÃ¤t verbunden. AuÃŸerdem hat jede
       Midi Spur einen eigenen Midi Kanal.
-      Dieses Setup ist am flexibelsten und sollte nach Möglichkeit
+      Dieses Setup ist am flexibelsten und sollte nach MÃ¶glichkeit
       immer verwendet werden.
 
   \subsection{Erweitertes Setup}
 
-      \index{mehrere Midi Spuren für einen Midi Kanal}
+      \index{mehrere Midi Spuren fÃ¼r einen Midi Kanal}
       Im erweiterten Setup werden mehrere Midi Spuren auf den gleichen
       Midi Kanal geroutet. Es ist zu beachten, das Midi Controller
-      natürlich immer für alle Spuren des Kanals gelten. Controller 
-      können nicht individuell für jede Spur eingestellt werden.
+      natÃ¼rlich immer fÃ¼r alle Spuren des Kanals gelten. Controller 
+      kÃ¶nnen nicht individuell fÃ¼r jede Spur eingestellt werden.
 
   \subsection{Komplexes Setup}
-      \index{mehrere Geräte an einem Midi Anschluß}
-      Als komplex bezeichnen wir ein Setup, in dem an einem Midi Anschluß
-      mehrere Midi Geräte angeschlossen sind.
-      Jedes Gerät belegt einen oder mehrere der verfügbaren 16 Midi
-      Kanäle. Es ist darauf zu achten, das die vergebenen Kanäle nicht
-      überlappen. Dazu müssen die angeschlossenen Midi Geräte so 
-      konfiguriert werden, das sie nur auf die ihnen zugewiesenen Kanäle
+      \index{mehrere GerÃ¤te an einem Midi AnschluÃŸ}
+      Als komplex bezeichnen wir ein Setup, in dem an einem Midi AnschluÃŸ
+      mehrere Midi GerÃ¤te angeschlossen sind.
+      Jedes GerÃ¤t belegt einen oder mehrere der verfÃ¼gbaren 16 Midi
+      KanÃ¤le. Es ist darauf zu achten, das die vergebenen KanÃ¤le nicht
+      Ã¼berlappen. Dazu mÃ¼ssen die angeschlossenen Midi GerÃ¤te so 
+      konfiguriert werden, das sie nur auf die ihnen zugewiesenen KanÃ¤le
       reagieren.
 
       Midi Meldungen, die nicht kanalgebunden sind (wie z.B. Sysex 
-      Meldungen) können an bestimmte Geräte gesendet werden, indem
-      man jedem Gerät eine individuelle Geräte-Id gibt. Diese Geräte-Id
-      muß dann in die entsprechenden Meldungen als Zieladresse angegeben 
+      Meldungen) kÃ¶nnen an bestimmte GerÃ¤te gesendet werden, indem
+      man jedem GerÃ¤t eine individuelle GerÃ¤te-Id gibt. Diese GerÃ¤te-Id
+      muÃŸ dann in die entsprechenden Meldungen als Zieladresse angegeben
       werden. 
 
       Da Midi Verbindungen nur eine sehr bescheidene \index{Midi Bandbreite}
-      Bandbreite besitzen, sollte nach Möglichkeit das komplexe Setup 
+      Bandbreite besitzen, sollte nach MÃ¶glichkeit das komplexe Setup 
       vermieden werden.
       
-  \section{Midi Eingänge}
+  \section{Midi EingÃ¤nge}
       Ein Midi Eingang wird im Mixer als Strip und im Arranger als
       eigene Spur gezeigt.
 
@@ -45,23 +45,23 @@
 
       \blank[big]
       \Input{Alsa Port:} dies ist die Route zu einem ALSA Midi Eingangs
-         Port. Ein ALSA Port kann mit mehreren Midi Eingängen verbunden
+         Port. Ein ALSA Port kann mit mehreren Midi EingÃ¤ngen verbunden
          werden.
-      \Input{Plugins:} die von ALSA gelesenen Midi Events können durch
-         mehrere Plugins geroutet werden. Verfügbare Plugins filtern oder
-         verändern die Midi Events.
-      \Input{Outputs:} ein Midi Eingang hat 16 Ausgänge, jeweils ein
-         Ausgang für jeden Midi Kanal. Jeder Midi Kanal kann individuell
+      \Input{Plugins:} die von ALSA gelesenen Midi Events kÃ¶nnen durch
+         mehrere Plugins geroutet werden. VerfÃ¼gbare Plugins filtern oder
+         verÃ¤ndern die Midi Events.
+      \Input{Outputs:} ein Midi Eingang hat 16 AusgÃ¤nge, jeweils ein
+         Ausgang fÃ¼r jeden Midi Kanal. Jeder Midi Kanal kann individuell
          zu einem oder mehreren Midi Spuren geroutet werden.
          Midi Events, die von den Midi Spuren empfangen werden, haben
          keine Kanal-Information mehr.
-         In einem einfachen Setup werden alle Kanäle aller Midi Eingänge
+         In einem einfachen Setup werden alle KanÃ¤le aller Midi EingÃ¤nge
          zu allen Midi Spuren geroutet. Dies ist die Standard Vorgabe.
 
       \blank[big]
 
   \section{Midi Spur}
-      Die Midi Spur enthält alle Midi Note On/off Events. Sie wird im
+      Die Midi Spur enthÃ¤lt alle Midi Note On/off Events. Sie wird im
       Mixer als Strip und im Arranger als Spur dargestellt. Die
       Strip Darstellung im Mixer ist nicht sehr interessant, da eine
       Midi Spur kaum eigene Mixer relevante Parameter besitzt. In einem 
@@ -74,24 +74,24 @@
 
       \Input{Monitor:} ist der Monitor Schalter eingeschaltet, werden
             bei Record alle Input Events zum Ausgang weitergereicht.
-            Achtung: dies kann möglicherweise zu Midi Rückkopplungen
-            führen!
+            Achtung: dies kann mÃ¶glicherweise zu Midi RÃ¼ckkopplungen
+            fÃ¼hren!
 
       \Input{Mute:} schaltet die Spur stumm
 
       \Input{Solo:} ---nocht nicht definiert---
 
-      \Input{Eingang:} die Spur Eingänge können zu Midi Eingängen
+      \Input{Eingang:} die Spur EingÃ¤nge kÃ¶nnen zu Midi EingÃ¤ngen
             geroutet werden
 
       \Input{Ausgang:} der Spur Ausgang kann zu einem oder mehreren
-            Midi Kanälen geroutet werden. Midi Kanäle sind immer mit
+            Midi KanÃ¤len geroutet werden. Midi KanÃ¤le sind immer mit
             einem Midi Port verbunden.
 
       \blank[big]
 
-  \section{Midi Kanäle}
-      Midi Kanäle enthalten normalerweise alle Midi Controller Events.
+  \section{Midi KanÃ¤le}
+      Midi KanÃ¤le enthalten normalerweise alle Midi Controller Events.
 
       Midi Kanal Eigenschaften:
 
@@ -102,30 +102,30 @@
   \section{Midi Port}
 
       \index{Midi Port} Ein Midi Port representiert ein externes Midi 
-      Gerät und hat folgende Eigenschaften:
+      Gerä und hat folgende Eigenschaften:
 
       \blank[big]
       \Input{Instrument:} \index{Midi Instrument} beschreibt die 
         Eigenschaften des externen
-        Midi Instruments. Das Instrument kann aus einer Liste verfügbarer
-        Instrumentbeschreibungen ausgewählt werden.
+        Midi Instruments. Das Instrument kann aus einer Liste verfÃ¼gbarer
+        Instrumentbeschreibungen ausgewÃ¤hlt werden.
 
       \Input{Master Volume:} \index{Midi Master Volume} ist ein Midi 
-      Controller, der die Lautstärke für alle Channel des Midi Ports 
+      Controller, der die LautstÃ¤rke fÃ¼r alle Channel des Midi Ports 
       einstellt.
 
-      \Input{Geräte Id:} \index{Midi Geräte Id} werden mehrere Midigeräte 
+      \Input{GerÃ¤te Id:} \index{Midi GerÃ¤te Id} werden mehrere MidigerÃ¤te 
       an einen Midi Port
-      angeschlossen, so müssen alle Geräte eine eindeutige Geräte Id
-      besitzen. Mit dieser Id kann dann ein bestimmtes Gerät
-      ausgewählt werden.
+      angeschlossen, so mÃ¼ssen alle GerÃ¤te eine eindeutige GerÃ¤te Id
+      besitzen. Mit dieser Id kann dann ein bestimmtes GerÃ¤t
+      ausgewÃ¤hlt werden.
 
       \Input{Alsa Port:} dies ist die Route zu einem ALSA Midi Port.
       Ein Port Ausgang kann mit mehreren ALSA Ports verbunden werden.
 
       \blank[big]
 
-      Jeder Midi Port besitzt 16 Kanäle.
+      Jeder Midi Port besitzt 16 KanÃ¤le.
 
   \section{Midi Synthesizer}
 

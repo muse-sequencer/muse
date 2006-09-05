@@ -1113,7 +1113,8 @@ void MusE::loadProject(const QString& path)
 
 void MusE::loadProject1(const QString& path)
       {
-      QString header(tr("MusE: new project"));
+      QFileInfo file(path);
+      QString header = tr("MusE: new project");
 
       if (leaveProject())
             return;
@@ -1122,9 +1123,10 @@ void MusE::loadProject1(const QString& path)
             mixer1->clear();
       if (mixer2)
             mixer2->clear();
-      QString name = path.split("/").last();
+      
+      QString name(file.fileName());
       QDir pd(QDir::homePath() + "/" + config.projectPath + "/" + path);
-
+      
       addProject(path);       // add to history
 
       bool newProject = false;
@@ -1567,7 +1569,7 @@ void MusE::startMidiTrackerEditor()
       startMidiTrackerEditor(pl);
       }
 
-void MusE::startMidiTrackerEditor(PartList* pl)
+void MusE::startMidiTrackerEditor(PartList* /*pl*/)
       {
 	//MidiTrackerEditor* miditracker = new MidiTrackerEditor(pl, false);
 	//miditracker->show();

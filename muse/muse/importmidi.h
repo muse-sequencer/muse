@@ -18,30 +18,29 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#ifndef __MIDITRACKINFO_H__
-#define __MIDITRACKINFO_H__
+#ifndef __IMPORTMIDI_H__
+#define __IMPORTMIDI_H__
 
-
-#include "mtrackinfobase.h"
-
-class MidiTrack;
+#include "ui_importmidi.h"
 
 //---------------------------------------------------------
-//   MidiTrackInfo
+//   ImportMidiDialog
 //---------------------------------------------------------
 
-class MidiTrackInfo : public MidiTrackInfoBase {
-       Q_OBJECT
-
-      MidiTrack* track;
-      int volume, pan, program;
+class ImportMidiDialog : public QDialog, public Ui::ImportMidiDialogBase {
+      Q_OBJECT
+      QButtonGroup* bg;
 
    private slots:
-      void programChanged();
+      void selectProjectClicked();
+      void selectTemplateClicked();
 
    public:
-      MidiTrackInfo(QWidget* parent);
-      void setTrack(MidiTrack* t) { track = t; }
+      ImportMidiDialog(QWidget*);
+      void setProjectName(const QString&);
+      void setTemplateName(const QString&);
+      bool doCreateNewProject() const { return bg->checkedId() == 1; }
       };
+
 
 #endif

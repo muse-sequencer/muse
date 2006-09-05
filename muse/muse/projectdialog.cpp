@@ -394,6 +394,24 @@ QString ProjectDialog::projectPath() const
       }
 
 //---------------------------------------------------------
+//   projectName
+//---------------------------------------------------------
+
+QString ProjectDialog::projectName() const
+      {
+      return projectNameEntry->text();      
+      }
+
+//---------------------------------------------------------
+//   setProjectName
+//---------------------------------------------------------
+
+void ProjectDialog::setProjectName(const QString& name)
+      {
+      projectNameEntry->setText(name);      
+      }
+
+//---------------------------------------------------------
 //   newFolderClicked
 //---------------------------------------------------------
 

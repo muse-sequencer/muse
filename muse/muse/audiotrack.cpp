@@ -116,7 +116,7 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx)
                   float min, max;
                   plugin->range(i, &min, &max);
                   Ctrl* cl = getController(id);
-                  //printf("Plugin name: %s id:%d\n",name.toLatin1().data(), id);
+                  //printf("Plugin name: %s id:%d\n",name.toAscii().data(), id);
                   if (cl == 0) {
                         cl = new Ctrl(id, name);
                         cl->setRange(min, max);
@@ -275,7 +275,7 @@ void AudioTrack::readRecfile(QDomNode node)
             else if (tag == "format")
                   format = e.text().toInt();
             else
-                  printf("MusE:readRecfile: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:readRecfile: unknown tag %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       if (QFile::exists(path)) {
@@ -286,7 +286,7 @@ void AudioTrack::readRecfile(QDomNode node)
             recFile()->setFormat(format, channels, AL::sampleRate);
             if (recFile()->openWrite()) {
                   fprintf(stderr, "create wave file(%s) failed: %s\n",
-                     path.toLatin1().data(), recFile()->strerror().toLatin1().data());
+                     path.toAscii().data(), recFile()->strerror().toAscii().data());
                   delete _recFile;
                   _recFile = 0;
                   }
@@ -300,7 +300,7 @@ void AudioTrack::readRecfile(QDomNode node)
 void AudioTrack::putFifo(int channels, unsigned long n, float** bp)
       {
       if (fifo.put(channels, n, bp, audio->pos().frame())) {
-            printf("AudioTrack(%s)::putFifo(): overrun\n", name().toLatin1().data());
+            printf("AudioTrack(%s)::putFifo(): overrun\n", name().toAscii().data());
             }
       }
 
@@ -352,7 +352,7 @@ void AudioTrack::record()
 
       if (fifo.get(_channels, segmentSize, recBuffer)) {
             printf("AudioTrack(%s)::record():: fifo underflow\n",
-               name().toLatin1().data());
+               name().toAscii().data());
             return;
             }
       if (_recFile) {
@@ -360,7 +360,7 @@ void AudioTrack::record()
             }
       else {
             printf("AudioTrack(%s)::record(): no recFile\n",
-               name().toLatin1().data());
+               name().toAscii().data());
             }
       }
 
@@ -392,7 +392,7 @@ void AudioTrack::startRecording()
       _recFile->openWrite();
       if (debugMsg)
             printf("AudioTrack::startRecording: create internal file %s\n",
-               _recFile->finfo()->filePath().toLatin1().data());
+               _recFile->finfo()->filePath().toAscii().data());
       }
 
 //---------------------------------------------------------

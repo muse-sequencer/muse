@@ -1,3 +1,8 @@
+5.9   (ws)
+      - midi import fixes
+      - change german documentation encoding to utf8
+      - dont assume system encoding is isoLatin1, first patches
+        (ubuntu and others use utf8)
 4.9  
       (ws)
       - remove html documentation and replace with *pdf version

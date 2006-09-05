@@ -38,7 +38,7 @@ void CtrlEditSettings::readStatus(QDomNode node)
             else if (tag == "height")
                   height = i;
             else
-                  printf("MusE:CtrlEditSettings: unknown tag: %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:CtrlEditSettings: unknown tag: %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       }
@@ -77,7 +77,7 @@ void EditorSettings::readStatus(QDomNode node)
             else if (tag == "raster")
                   _raster = i;
             else
-                  printf("MusE:EditorSettings: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:EditorSettings: unknown tag %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       }
@@ -120,7 +120,7 @@ void GraphEditorSettings::readStatus(QDomNode node)
             else if (tag == "ypos")
                   _pos.setY(i);
             else
-                  printf("MusE:GraphEditorSettings: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:GraphEditorSettings: unknown tag %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       }
@@ -211,7 +211,7 @@ void ExtEditorSettings::readStatic(QDomNode node)
             else if (tag == "midiin")
                   _midiin = i;
             else
-                  printf("MusE:ExtEditorSettings Static: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:ExtEditorSettings Static: unknown tag %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       }
@@ -255,7 +255,7 @@ void ExtEditorSettings::readStatus(QDomNode node)
                   _numOfCtrlEdits++;
                   }
             else
-                  printf("MusE:ExtEditorSettings: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:ExtEditorSettings: unknown tag %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       }
@@ -341,7 +341,7 @@ void DrumEditorSettings::readStatus(QDomNode node)
             else if (tag == "dcanvaswidth")
                   _dcanvasWidth = i;
             else
-                  printf("MusE:DrumEditorSettings: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:DrumEditorSettings: unknown tag %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       }
@@ -405,7 +405,7 @@ void DrumEditorSettings::readStatic(QDomNode node)
             else if (tag == "heightDefault")
                   _heightInit = i;
             else
-                  printf("MusE:DrumEditorSettings Static: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:DrumEditorSettings Static: unknown tag %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       }
@@ -487,7 +487,7 @@ void PianorollSettings::readStatus(QDomNode node)
             else if (tag == "pianowidth")
                   _pianoWidth = i;
             else
-                  printf("MusE:PianorollSettings: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:PianorollSettings: unknown tag %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       }
@@ -565,7 +565,7 @@ void PianorollSettings::readStatic(QDomNode node)
             else if (tag == "heightDefault")
                   _heightInit = i;
             else
-                  printf("MusE:PianorollSettings Static: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:PianorollSettings Static: unknown tag %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       }
@@ -712,7 +712,7 @@ void SettingsList::readStatus(QDomNode node)
             else if (tag == "drumeditorstatic")
                   DrumEditorSettings::readStatic(node.firstChild());
             else
-                  printf("MusE:SettingsList: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:SettingsList: unknown tag %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       }
@@ -752,7 +752,7 @@ void SettingsList::readElem(QDomNode node)
             else if (tag == "id")
                   id = i;
             else
-                  printf("MusE:SettingsList element: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:SettingsList element: unknown tag %s\n", e.tagName().toAscii().data());
             node = node.nextSibling();
             }
       }
