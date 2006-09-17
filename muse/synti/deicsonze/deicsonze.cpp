@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4
+//    Version 0.4.1
 //
 //
 //
@@ -94,7 +94,7 @@ DeicsOnze::DeicsOnze() : Mess(2)
   _saveOnlyUsed = true;
   _saveConfig = true;
   _isInitSet = true; //false if an initial bank must be download
-  _initSetPath = INSTPREFIX "/share/muse-" VERSION "/presets/deicsonze/ARCH_ALIN";
+  _initSetPath = INSTPREFIX "/share/muse-" VERSION "/presets/deicsonze/SutulaBank.dei";
   //"/usr/local/share/muse-1.0pre1/presets/deicsonze/SutulaBank.dei";
   //TODO
   //INSTPREFIX + "/share/" + PACKAGEVERSION + "/presets/deicsonze/ARCH_ALIN";
@@ -119,6 +119,8 @@ DeicsOnze::DeicsOnze() : Mess(2)
   //load Set
   _set=new Set("Initial Bank");
   if(_isInitSet) loadSet(_initSetPath);
+  
+  //loadSutulaPresets();
 
   _initialPreset = new 
     Preset(new Subcategory(new Category(NULL, "NONE", 0), "NONE", 0), 0);
@@ -126,6 +128,14 @@ DeicsOnze::DeicsOnze() : Mess(2)
     _preset[c]=_initialPreset;
     setPreset(c);
   }
+
+  //display load preset
+  unsigned char dataUpdateGuiSet[1];
+  dataUpdateGuiSet[0]=SYSEX_UPDATESETGUI;
+  MidiEvent evSysexUpdateGuiSet(0, ME_SYSEX, 
+				(const unsigned char*)dataUpdateGuiSet,
+				1);
+  _gui->writeEvent(evSysexUpdateGuiSet);
 }
 
 //---------------------------------------------------------
@@ -450,7 +460,7 @@ void DeicsOnze::initChannel(int c) {
   _global.channel[c].pitchBendCoef = 1.0;
   _global.channel[c].lfoIndex = 0;
   _global.channel[c].nbrVoices = 8;
-  _global.channel[c].lastVoice = NULL;
+  _global.channel[c].isLastNote = false;
   applyChannelAmp(c);
   initVoices(c);
 }
@@ -469,6 +479,7 @@ void DeicsOnze::resetVoices() {
 void DeicsOnze::initVoice(int c /*channel*/, int v) {
   _global.channel[c].voices[v].hasAttractor=false;
   _global.channel[c].voices[v].isOn=false;
+  _global.channel[c].voices[v].keyOn=false;
   _global.channel[c].voices[v].isSustained=false;
 }
 //---------------------------------------------------------
@@ -485,6 +496,19 @@ Preset* DeicsOnze::findPreset(int hbank, int lbank, int prog) {
     return _set->findPreset(hbank, lbank, prog);
 }
 
+
+//---------------------------------------------------------
+// existsKeyOn
+//---------------------------------------------------------
+inline bool existsKeyOn(Channel* c) {
+  bool exKeyOn;
+  exKeyOn = false;
+  for(int v = 0; v < MAXNBRVOICES; v++) {
+    exKeyOn = c->voices[v].keyOn; 
+    if(exKeyOn) return exKeyOn;
+  }
+  return exKeyOn;
+}
 
 //---------------------------------------------------------
 // note2Amp
@@ -897,7 +921,7 @@ void DeicsOnze::loadSet(QString fileName) {
 //---------------------------------------------------------------
 // loadSutulaPreset
 //---------------------------------------------------------------
-/*
+
 void DeicsOnze::loadSutulaPresets()
 {
     FILE* file;
@@ -919,8 +943,10 @@ void DeicsOnze::loadSutulaPresets()
     nlBank=0;
     nPreset=0;
 
-    QString presetPath(INSTPREFIX);
-    presetPath += "/share/" PACKAGEVERSION "/presets/deicsonze/ARCH_ALIN";
+    //QString presetPath(INSTPREFIX);
+    //presetPath += "/share/" PACKAGEVERSION "/presets/deicsonze/ARCH_ALIN";
+
+    QString presetPath("/home/a-lin/sources/svnMusEDev/lmuse/muse/synti/deicsonze/ARCH_ALIN");
 
     file = fopen (presetPath.toLatin1().data(), "rt");
     if (file == NULL) {
@@ -1084,7 +1110,7 @@ void DeicsOnze::loadSutulaPresets()
 	    presetTemp->function.fcPitch=v;
 	    fscanf(file, "%x", &v);//83
 	    presetTemp->function.fcAmplitude=v;
-	    presetTemp->globalDetune=0;
+	    //presetTemp->globalDetune=0;
 	    presetTemp->prog=nPreset;
             // End of filling the preset
 
@@ -1110,7 +1136,7 @@ void DeicsOnze::loadSutulaPresets()
 	}
     }
     fclose(file);
-}*/
+}
 
 //---------------------------------------------------------
 // minVolu2Voice
@@ -1131,18 +1157,6 @@ int DeicsOnze::minVolu2Voice(int c) {
       minVoice=(min==_global.channel[c].voices[i].volume?i:minVoice);
     }
   return minVoice;
-}
-//---------------------------------------------------------
-// allNoteOff
-//  return true iff all notes are off
-//---------------------------------------------------------
-bool DeicsOnze::allNoteOff(int c) {
-  bool allOff = true;
-  for(int i=0; i<_global.channel[c].nbrVoices; i++) {
-    allOff = !_global.channel[c].voices[i].isOn;
-    if(!allOff) return allOff;
-  }
-  return allOff;
 }
 
 //---------------------------------------------------------
@@ -1201,6 +1215,12 @@ int DeicsOnze::pitchOn2Voice(int c, int pitch) {
   return pitchVoice;
 }
 
+//---------------------------------------------------------
+// getAttractor
+//---------------------------------------------------------
+inline double getAttractor(int portamentoTime) {
+  return(1.0 + COEFPORTA/(double)(portamentoTime*portamentoTime));
+}
 
 //---------------------------------------------------------
 // pitch2freq
@@ -1306,6 +1326,37 @@ inline void lfoUpdate(Preset* p, Channel* p_c, float* wt) {
       break;
     }
   p_c->lfoIndex=(p_c->lfoIndex<p_c->lfoMaxIndex?p_c->lfoIndex+1:0);
+}
+
+//---------------------------------------------------------
+// portamento update
+//---------------------------------------------------------
+inline void portamentoUpdate(Channel* p_c, Voice* p_v) {
+  double inctTemp;
+  bool allTargetReached;
+  if(p_v->hasAttractor) {
+    allTargetReached = true;
+    for(int k = 0; k<NBROP; k++) {
+      if(p_v->op[k].inct < p_v->op[k].targetInct) {
+	inctTemp = p_v->op[k].inct * p_v->attractor;
+	if(inctTemp < p_v->op[k].targetInct) {
+	  allTargetReached = false;
+	  p_v->op[k].inct = inctTemp;
+	}
+	else p_v->op[k].inct = p_v->op[k].targetInct;
+      }
+      else if(p_v->op[k].inct > p_v->op[k].targetInct) {
+	inctTemp = p_v->op[k].inct / p_v->attractor;
+	if(inctTemp > p_v->op[k].targetInct) {
+	  allTargetReached = false;
+	  p_v->op[k].inct = inctTemp;
+	}
+	else p_v->op[k].inct = p_v->op[k].targetInct;
+      }
+      p_c->lastInc[k] = p_v->op[k].inct;
+    }
+    if(allTargetReached) p_v->hasAttractor = false;
+  }
 }
 
 //---------------------------------------------------------
@@ -1519,10 +1570,11 @@ void DeicsOnze::setSustain(int c, int val) {
     for(int i=0; i<_global.channel[c].nbrVoices; i++)
       if(_global.channel[c].voices[i].isSustained) {
 	for(int j=0; j<NBROP; j++) {
-	  _global.channel[c].voices[i].op[j].envState=RELEASE;
+	  _global.channel[c].voices[i].op[j].envState = RELEASE;
 	  setEnvRelease(c, i, j);
 	}
-	_global.channel[c].voices[i].isSustained=false;
+	_global.channel[c].voices[i].isSustained = false;
+	_global.channel[c].voices[i].keyOn = false;
       }
 }
 
@@ -2822,6 +2874,7 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
   int newVoice;
   int nO2V;
   int p2V;
+  double tempFreq, tempTargetFreq;
   if(_global.channel[ch].isEnable) {    
     if(velo==0) {//Note off
       p2V=pitchOn2Voice(ch, pitch);
@@ -2835,6 +2888,7 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	    _global.channel[ch].voices[p2V].op[i].coefVLevel=
 	      envRR2coef(_preset[ch]->eg[i].rr, sampleRate(),
 			 getChannelRelease(ch));
+	    _global.channel[ch].voices[p2V].keyOn = false;
 	  }
  	return false;}
       //else printf("error over NBRVOICES\n");
@@ -2844,31 +2898,33 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	nO2V=noteOff2Voice(ch);
 	newVoice=((nO2V==MAXNBRVOICES)?minVolu2Voice(ch):nO2V);
 	printf("Note On : ch = %d, v = %d, p = %d\n", ch, newVoice, pitch);
+
+	//portamento
+	//if there is no previous note (isthere is no portamento
+	if(_preset[ch]->function.portamentoTime!=0
+	   && _global.channel[ch].isLastNote &&
+	   (_preset[ch]->function.portamento==FULL) ||
+	   (_preset[ch]->function.portamento==FINGER &&
+	    existsKeyOn(&_global.channel[ch]))) {
+	  _global.channel[ch].voices[newVoice].hasAttractor = true;
+	  _global.channel[ch].voices[newVoice].attractor =
+	    getAttractor(_preset[ch]->function.portamentoTime);
+	}
+	else _global.channel[ch].voices[newVoice].hasAttractor = false;
 	//some initializations
-	// hasAttractor is false by default but can become true if 
-	// a portamento is appliable
-	_global.channel[ch].voices[newVoice].hasAttractor = false;
+	_global.channel[ch].voices[newVoice].keyOn = true;
 	_global.channel[ch].voices[newVoice].isOn = true;
 	_global.channel[ch].voices[newVoice].sampleFeedback = 0.0;
 	_global.channel[ch].voices[newVoice].pitch = pitch;
 
-
-	//portamento
-	//if there is no previous note there is no portamento
-	if(_preset[ch]->function.portamentoTime!=0
-	   && _global.channel[ch].lastVoice &&
-	   (_preset[ch]->function.portamento==FULL) ||
-	   (_preset[ch]->function.portamento==FINGER && !allNoteOff(ch))) {
-	  _global.channel[ch].voices[newVoice].hasAttractor = true;
-	  _global.channel[ch].voices[newVoice].attractor =
-	    _global.channel[ch].lastVoice->pitch; //TODO : all to do...
-	}
-		
 	/*if(_preset->lfo.sync)*/ _global.channel[ch].lfoIndex=0;//a revoir
 	_global.channel[ch].lfoDelayIndex=0.0;
 	_global.channel[ch].delayPassed=false;
 	
 	for(int i=0; i<NBROP; i++) {
+	  //------
+	  //VOLUME
+	  //------
 	  _global.channel[ch].voices[newVoice].op[i].ampVeloNote =
 	    velo2AmpR(velo, _preset[ch]->sensitivity.keyVelocity[i])
 	    *note2Amp((double) (pitch+_preset[ch]->function.transpose),
@@ -2880,9 +2936,12 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	  //index get 0.0, it means that the offset is 0
 	  // for monophonic it will be different
 	  _global.channel[ch].voices[newVoice].op[i].index=0.0;
+	  //----
+	  //FREQ
+	  //----
 	  //the frequence for each operator is calculated
 	  //and is used later to calculate inct
-	  _global.channel[ch].voices[newVoice].op[i].freq=
+	  tempTargetFreq = 
 	    (pitch2freq((double)getChannelDetune(ch)
 			/(double)MAXCHANNELDETUNE)
 	     /LOWERNOTEFREQ)*
@@ -2891,17 +2950,28 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	     (_preset[ch]->frequency[i].ratio
 	      *pitch2freq((double)(pitch+_preset[ch]->function.transpose)
 			  +(double)_preset[ch]->detune[i]*COEFDETUNE)));
+	  //----
+	  //INCT
+	  //----
 	  //compute inct
-	  _global.channel[ch].voices[newVoice].op[i].inct=(double)RESOLUTION
-	    /((double)sampleRate()
-	      /_global.channel[ch].voices[newVoice].op[i].freq);
+	  _global.channel[ch].voices[newVoice].op[i].targetInct =
+	    (double)RESOLUTION / ( (double)sampleRate() / tempTargetFreq );
+	  if(_global.channel[ch].voices[newVoice].hasAttractor &&
+	     !_preset[ch]->frequency[i].isFix)
+	    _global.channel[ch].voices[newVoice].op[i].inct =
+	      _global.channel[ch].lastInc[i];
+	  else _global.channel[ch].voices[newVoice].op[i].inct =
+	    _global.channel[ch].voices[newVoice].op[i].targetInct;
 	  _global.channel[ch].voices[newVoice].op[i].envState=ATTACK;
 	  _global.channel[ch].voices[newVoice].op[i].envIndex=0.0;
 	  setEnvAttack(ch, newVoice, i);
 	  //printf("Coef Attack = %e envInct = %e\n",
 	  //coefAttack(_preset->attack), _voices[newVoice].op[i].envInct);
 	}
-	_global.channel[ch].lastVoice = &_global.channel[ch].voices[newVoice];
+	_global.channel[ch].isLastNote = true;
+	for(int k = 0; k < NBROP; k++)
+	  _global.channel[ch].lastInc[k] =
+	    _global.channel[ch].voices[newVoice].op[k].inct;
 	return false;
       }
   }
@@ -2912,8 +2982,7 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 // plusMod
 //  add two doubles modulo RESOLUTION
 //---------------------------------------------------------
-inline double plusMod(double x, double y)
-{
+inline double plusMod(double x, double y) {
   double res;
   res=x+y;
   if (res>=0) while (res >= (double)RESOLUTION) res-=(double)RESOLUTION;
@@ -2942,11 +3011,12 @@ void DeicsOnze::process(float** buffer, int offset, int n)
   }
   float* leftOutput = buffer[0] + offset;
   float* rightOutput = buffer[1] + offset; 
-  //maybe to put outside to optimize
+
   float sample[MAXNBRVOICES];
   float tempLeftOutput;
   float tempRightOutput;
   float tempChannelOutput;
+  float tempIncChannel; //for optimization
   float sampleOp[NBROP];
   float ampOp[NBROP];
   for(int i = 0; i < n; i++) {
@@ -2959,18 +3029,24 @@ void DeicsOnze::process(float** buffer, int offset, int n)
 	//lfo, trick : we use the first quater of the wave W2
 	lfoUpdate(_preset[c], &_global.channel[c], waveTable[W2]);
 	
+	//optimization
+	tempIncChannel =
+	  _global.channel[c].lfoCoefInct * _global.channel[c].pitchBendCoef;
+
 	//per voice
 	for(int j=0; j<_global.channel[c].nbrVoices; j++) {
 	  if (_global.channel[c].voices[j].isOn) {
+	    //portamento
+	    portamentoUpdate(&_global.channel[c],
+			     &_global.channel[c].voices[j]);
 	    //per op
 	    for(int k=0; k<NBROP; k++) {
 	      //compute the next index on the wavetable,
 	      //without taking account of the feedback and FM modulation
 	      _global.channel[c].voices[j].op[k].index=
 		plusMod(_global.channel[c].voices[j].op[k].index,
-			_global.channel[c].lfoCoefInct*
 			_global.channel[c].voices[j].op[k].inct
-			*_global.channel[c].pitchBendCoef);
+			* tempIncChannel);
 	      
 	      ampOp[k]=_global.channel[c].voices[j].op[k].amp*COEFLEVEL
 		*(_preset[c]->sensitivity.ampOn[k]?
@@ -3215,7 +3291,7 @@ extern "C" {
     static MESS descriptor = {
 	"DeicsOnze",
 	"DeicsOnze FM DX11 emulator",
-	"0.4",      // version string
+	"0.4.1",      // version string
 	MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
 	instantiate
     };

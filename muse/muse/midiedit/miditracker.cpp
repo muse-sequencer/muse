@@ -106,8 +106,8 @@ MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool init)
   for (ciPart p = _pl->begin(); p != _pl->end(); ++p) {
     //Part* part = p->second;
     tracksDock[i] = new QDockWidget(/*part->track()->name()*/"trackName");
-    tracksDock[i]->setAllowedAreas(Qt::LeftDockWidgetArea |
-				   Qt::RightDockWidgetArea);
+    //tracksDock[i]->setAllowedAreas(Qt::LeftDockWidgetArea |
+    //			   Qt::RightDockWidgetArea);
     tracksDock[i]->setFeatures(QDockWidget::DockWidgetClosable |
 			       QDockWidget::DockWidgetMovable);
     addDockWidget(Qt::AllDockWidgetAreas, tracksDock[i]);

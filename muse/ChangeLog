@@ -1,3 +1,7 @@
+17.9  (ng) DeicsOnze 4.0.1
+      - add optimization -O3, execution twice faster, but compilation longer
+      - add portamento
+      - started to clean SutulaBank.dei
 5.9   (ws)
       - midi import fixes
       - change german documentation encoding to utf8
@@ -9,10 +13,10 @@
       (ng)
       * DeicsOnze 0.4
         - 16 instances (one per channel)
-	- stereo
-	- font size config
-	- load pixmap background config
-	- lots of bugs corrected
+        - stereo
+        - font size config
+        - load pixmap background config
+        - lots of bugs corrected
       * add wallpaper paper2.jpg
       * add miditracker (not working yet)
 3.9  (rj)

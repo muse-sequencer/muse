@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4
+//    Version 0.4.1
 //
 //    deicsonzegui.cpp
 //
@@ -217,6 +217,12 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setAtEgBias(int)));
   connect(reverbSpinBox, SIGNAL(valueChanged(int)),
 	  this, SLOT(setReverbRate(int)));
+  connect(polyMonoComboBox, SIGNAL(activated(int)),
+	  this, SLOT(setPolyMode(int)));
+  connect(PortFingerFullComboBox, SIGNAL(activated(int)),
+	  this, SLOT(setPortFingerFull(int)));
+  connect(PortamentoTimeSlider, SIGNAL(valueChanged(int)),
+	  this, SLOT(setPortaTime(int)));
   //envelope
   connect(AR1SpinBox, SIGNAL(valueChanged(int)), this, SLOT(setAR1(int)));
   connect(D1R1SpinBox, SIGNAL(valueChanged(int)), this, SLOT(setD1R1(int)));
@@ -351,7 +357,7 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   setEnabledPreset(false);
   
   updateInitSetPath
-    (INSTPREFIX "/share/muse-" VERSION "/presets/deicsonze/ARCH_ALIN");
+    (INSTPREFIX "/share/muse-" VERSION "/presets/deicsonze/SutulaBank.dei");
     //"/usr/local/share/muse-1.0pre1/presets/deicsonze/SutulaBank.dei")
     //);
   updateBackgroundPixPath
@@ -2460,9 +2466,15 @@ void DeicsOnzeGui::setAtEgBias(int val) {
   sendController(_currentChannel, CTRL_ATEGBIAS, val);
 }
 void DeicsOnzeGui::setReverbRate(int val) {
-  //printf("Envoie\n");
   sendController(_currentChannel, CTRL_REVERBRATE, val);
 }
+void DeicsOnzeGui::setPortFingerFull(int val) {
+  sendController(_currentChannel, CTRL_PORTAMODE, val);
+}
+void DeicsOnzeGui::setPortaTime(int val) {
+  sendController(_currentChannel, CTRL_PORTATIME, val);
+}
+
 //---------------------------------------------------------------
 // envelope controle
 //---------------------------------------------------------------
@@ -3533,9 +3545,9 @@ void DeicsOnzeGui::updatePORTATIME(int val) {
     PortamentoTimeSlider->blockSignals(true);
     PortamentoTimeSlider->setValue(val);
     PortamentoTimeSlider->blockSignals(false);
-    PortamentoTimeSlider->blockSignals(true);
-    PortamentoTimeSlider->setValue(val);
-    PortamentoTimeSlider->blockSignals(false);
+    PortamentoTimeSpinBox->blockSignals(true);
+    PortamentoTimeSpinBox->setValue(val);
+    PortamentoTimeSpinBox->blockSignals(false);
 }
 void DeicsOnzeGui::updateFIX(int op, bool val) {
     switch(op) {
@@ -3827,6 +3839,9 @@ void DeicsOnzeGui::updatePreset(Preset* p) {
     updateAtPitchBias(p->function.atPitchBias);
     updateAtEgBias(p->function.atEgBias);
     updateReverbRate(p->function.reverbRate);
+    updatePOLYMODE((int)p->function.mode);
+    updatePORTAMODE((int)p->function.portamento);
+    updatePORTATIME((int)p->function.portamentoTime);
     for(int k=0; k<NBROP; k++) {
 	//envelope
 	Eg* _eg=&(p->eg[k]);

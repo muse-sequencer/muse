@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4
+//    Version 0.4.1
 //
 //
 //
@@ -68,6 +68,8 @@
 #define COEFMAXATTACK 7.5
 #define COEFERRDECSUS 0.01 //for the transition between DECAY and SUSTAIN
 #define COEFERRSUSREL 0.001 //from SUSTAIN or RELEASE until no sound
+//#define ERRPORTA 0.001 //dectection to stop portamento
+#define COEFPORTA 0.01 //adjusted such that 10 second/octave with max porta
 #define COEFDECAY 1.0
 #define COEFSUSTAIN 0.2
 #define COEFRELEASE 1.0
@@ -213,9 +215,9 @@ enum EnvState{
 //---------------------------------------------------------
 
 struct OpVoice {
-  double freq;
   double index;
   double inct;
+  double targetInct; //used if portamento
   double amp; //between 0 and 1
   double ampVeloNote; //keeps the ratio amplitude from velo2AmpR and note2Amp
                       //in order to change independently the output level
@@ -233,8 +235,9 @@ struct OpVoice {
 
 struct Voice {
   bool hasAttractor;//true iff the voice has an attractor (portamento occuring)
-  double attractor; //contain the current inct for portamento
+  double attractor; //contains some coeficent for portamento TODO
   bool isOn;
+  bool keyOn;
   bool isSustained;
   int pitch; //number of the note
   double volume;
@@ -276,8 +279,8 @@ struct Channel {
   double pitchBendCoef;//speed coef to read the sample
   unsigned char nbrVoices;
   Voice voices[MAXNBRVOICES];
-  Voice* lastVoice;// keep in memory the last voice played to
-                   // the right attractor for portamento
+  double lastInc[NBROP];
+  bool isLastNote;
 };
 
 //---------------------------------------------------------
@@ -350,10 +353,9 @@ class DeicsOnze : public Mess {
   void setEnvRelease(int c, int k); //do the same for all voices of operator k
   void setEnvRelease(int c); //do the same for all voices all operators  
   double brightness2Amp(int c, int k); //get the brightness of the operator k
-  //void loadSutulaPresets();
+  void loadSutulaPresets();
   void loadSet(QString s);
   int noteOff2Voice(int c); //return the first free voice
-  bool allNoteOff(int c); //return true iff all notes of channel c are off
   int minVolu2Voice(int c);
   int pitchOn2Voice(int c, int pitch);
   void programSelect(int c, int hbank, int lbank, int prog);

@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4
+//    Version 0.4.1
 //
 //    deicsonzepreset.cpp
 //

@@ -1,16 +1,48 @@
+DeicsOnze
+
+Copyright (C) 2005-2006 by Nil Geisweiller
+
+-------
+License
+-------
+
+DeicsOnze is distributed under the terms of the GNU General Public License 
+(see COPYING file).
+
+----------
+Descripion
+----------
+
 DeicsOnze is a virtual synthesizer plugin for MusE which reproduces the
 FM synthesis of the YAMAHA DX11 synthesizer/TX81Z sound module.
+
+-------
+Remarks
+-------
 
 It contains over 2000 presets archived by Bryan Sutula belonging to the public
 domain. If by any chance you find some of them that are under copyright please
 contact me to take them off.
 
 Not every function is implemented but it's already sounding like the original
-(even better). Pitch envelope, portamento, pitch bend, modulation and some
+(even better). Pitch envelope, pitch bend, modulation and some
 others are not implemented yet.
 
 The files with the extention .fig in the directory pics have been made 
 with xfig.
 
+-----------
+Compilation
+-----------
+
+DeicsOnze is compiled with the optimization -O3. This permits it to be
+twice faster than without optimization, however the compilation time is longer
+(10 minutes on my Athlon XP-M 2000) and may not pass on any machine. If not
+remove -O3 in the file CMakeLists.txt.
+
+-------
+Contact
+-------
+
 Nil Geisweiller
-a-lin@users.sourceforge.net
+a-lin[NO_SPAM]@users.sourceforge.net

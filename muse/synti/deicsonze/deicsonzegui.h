@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4
+//    Version 0.4.1
 //
 //    deicsonzegui.h
 //
@@ -221,6 +221,9 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setAtPitchBias(int);
     void setAtEgBias(int);
     void setReverbRate(int);
+    void setPolyMode(int);
+    void setPortFingerFull(int);
+    void setPortaTime(int);
     //envelope
     void setAR1(int val);
     void setD1R1(int val);

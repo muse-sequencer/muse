@@ -1569,12 +1569,12 @@ void MusE::startMidiTrackerEditor()
       startMidiTrackerEditor(pl);
       }
 
-void MusE::startMidiTrackerEditor(PartList* /*pl*/)
-      {
-	//MidiTrackerEditor* miditracker = new MidiTrackerEditor(pl, false);
-	//miditracker->show();
-	//connect(muse, SIGNAL(configChanged()), miditracker, SLOT(configChanged()));
-      }
+void MusE::startMidiTrackerEditor(PartList* pl)
+{
+  MidiTrackerEditor* miditracker = new MidiTrackerEditor(pl, false);
+  miditracker->show();
+  connect(muse, SIGNAL(configChanged()), miditracker, SLOT(configChanged()));
+}
 
 //---------------------------------------------------------
 //   startMasterEditor

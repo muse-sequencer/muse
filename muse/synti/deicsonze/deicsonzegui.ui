@@ -868,7 +868,7 @@
           <enum>QFrame::Plain</enum>
          </property>
          <property name="text" >
-          <string>DeicsOnze v0.4 Copyright (c) 2004-2006 Nil Geisweiller. Published under GPL licence.</string>
+          <string>DeicsOnze v0.4.1 Copyright (c) 2004-2006 Nil Geisweiller. Published under GPL licence.</string>
          </property>
         </widget>
        </item>
@@ -4576,7 +4576,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
        <item row="0" column="0" colspan="3" >
         <widget class="QTabWidget" name="controlTabWidget" >
          <property name="currentIndex" >
-          <number>3</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="FCTab" >
           <attribute name="title" >
@@ -5403,7 +5403,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
           <item>
            <widget class="QComboBox" name="PortFingerFullComboBox" >
             <property name="enabled" >
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="cursor" >
              <cursor>13</cursor>
@@ -5439,7 +5439,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
           <item>
            <widget class="QSlider" name="PortamentoTimeSlider" >
             <property name="enabled" >
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="cursor" >
              <cursor>13</cursor>
@@ -5467,7 +5467,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
           <item>
            <widget class="QSpinBox" name="PortamentoTimeSpinBox" >
             <property name="enabled" >
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="toolTip" >
              <string>Portamento Time</string>
@@ -6145,12 +6145,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>443</x>
-     <y>265</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>553</x>
-     <y>268</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6161,12 +6161,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>268</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>443</x>
-     <y>265</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6177,12 +6177,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>242</x>
-     <y>354</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>302</x>
-     <y>357</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6193,12 +6193,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>302</x>
-     <y>357</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>242</x>
-     <y>354</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6209,12 +6209,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>242</x>
-     <y>393</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>302</x>
-     <y>396</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6225,12 +6225,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>302</x>
-     <y>396</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>242</x>
-     <y>393</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6241,12 +6241,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>302</x>
-     <y>435</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>194</x>
-     <y>432</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6257,12 +6257,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>302</x>
-     <y>474</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>194</x>
-     <y>471</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6273,12 +6273,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>194</x>
-     <y>510</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>302</x>
-     <y>513</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6289,12 +6289,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>302</x>
-     <y>513</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>194</x>
-     <y>510</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6305,12 +6305,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>194</x>
-     <y>549</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>302</x>
-     <y>552</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6321,12 +6321,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>302</x>
-     <y>552</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>194</x>
-     <y>549</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6337,12 +6337,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>194</x>
-     <y>432</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>302</x>
-     <y>435</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6353,12 +6353,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>478</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6369,12 +6369,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>327</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6385,12 +6385,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>176</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6401,12 +6401,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>55</x>
-     <y>519</y>
+     <x>66</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>85</x>
-     <y>338</y>
+     <x>96</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6417,12 +6417,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>85</x>
-     <y>338</y>
+     <x>96</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>55</x>
-     <y>519</y>
+     <x>66</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6433,12 +6433,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>463</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6449,12 +6449,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>463</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6465,12 +6465,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>523</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>553</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6481,12 +6481,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>523</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6497,12 +6497,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>187</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>247</x>
-     <y>614</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6513,12 +6513,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>247</x>
-     <y>614</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>187</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6529,12 +6529,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>608</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>553</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6545,12 +6545,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>608</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6561,12 +6561,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>433</x>
-     <y>647</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>650</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6577,12 +6577,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>650</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>433</x>
-     <y>647</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6593,12 +6593,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>478</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6609,12 +6609,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>327</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6625,12 +6625,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>176</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6641,12 +6641,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>85</x>
-     <y>338</y>
+     <x>96</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>55</x>
-     <y>519</y>
+     <x>66</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6657,12 +6657,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>463</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6673,12 +6673,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>463</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6689,12 +6689,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>523</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>553</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6705,12 +6705,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>523</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6721,12 +6721,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>187</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>247</x>
-     <y>614</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6737,12 +6737,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>247</x>
-     <y>614</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>187</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6753,12 +6753,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>608</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6769,12 +6769,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>608</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>553</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6785,12 +6785,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>433</x>
-     <y>647</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>650</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6801,12 +6801,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>650</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>433</x>
-     <y>647</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6817,12 +6817,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>478</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6833,12 +6833,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>327</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6849,12 +6849,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>176</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6865,12 +6865,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>55</x>
-     <y>519</y>
+     <x>66</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>85</x>
-     <y>338</y>
+     <x>96</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6881,12 +6881,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>85</x>
-     <y>338</y>
+     <x>96</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>55</x>
-     <y>519</y>
+     <x>66</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6897,12 +6897,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>463</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6913,12 +6913,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>463</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6929,12 +6929,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>523</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>553</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6945,12 +6945,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>523</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6961,12 +6961,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>187</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>247</x>
-     <y>614</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6977,12 +6977,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>247</x>
-     <y>614</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>187</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -6993,12 +6993,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>608</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>553</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7009,12 +7009,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>608</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7025,12 +7025,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>433</x>
-     <y>647</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>650</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7041,12 +7041,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>650</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>433</x>
-     <y>647</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7057,12 +7057,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>478</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7073,12 +7073,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>327</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7089,12 +7089,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>254</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>176</x>
-     <y>258</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7105,12 +7105,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>55</x>
-     <y>519</y>
+     <x>66</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>85</x>
-     <y>338</y>
+     <x>96</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7121,12 +7121,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>85</x>
-     <y>338</y>
+     <x>96</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>55</x>
-     <y>519</y>
+     <x>66</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7137,12 +7137,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>463</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7153,12 +7153,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>463</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7169,12 +7169,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>523</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>553</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7185,12 +7185,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>338</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>523</x>
-     <y>506</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7201,12 +7201,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>187</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>247</x>
-     <y>614</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7217,12 +7217,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>247</x>
-     <y>614</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>187</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7233,12 +7233,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>608</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>553</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7249,12 +7249,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>553</x>
-     <y>611</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>608</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7265,12 +7265,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>433</x>
-     <y>647</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>493</x>
-     <y>650</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7281,12 +7281,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>493</x>
-     <y>650</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>433</x>
-     <y>647</y>
+     <x>110</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>
@@ -7297,12 +7297,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>453</x>
+     <y>144</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>554</x>
+     <y>147</y>
     </hint>
    </hints>
   </connection>
@@ -7313,12 +7313,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>554</x>
+     <y>147</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>453</x>
+     <y>144</y>
     </hint>
    </hints>
   </connection>
@@ -7329,12 +7329,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>453</x>
+     <y>183</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>554</x>
+     <y>186</y>
     </hint>
    </hints>
   </connection>
@@ -7345,12 +7345,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>554</x>
+     <y>186</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>453</x>
+     <y>183</y>
     </hint>
    </hints>
   </connection>
@@ -7361,12 +7361,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>453</x>
+     <y>222</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>554</x>
+     <y>225</y>
     </hint>
    </hints>
   </connection>
@@ -7377,12 +7377,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>554</x>
+     <y>225</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>219</y>
+     <x>453</x>
+     <y>222</y>
     </hint>
    </hints>
   </connection>
@@ -7393,12 +7393,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>130</x>
-     <y>277</y>
+     <x>194</x>
+     <y>167</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>536</x>
-     <y>280</y>
+     <x>554</x>
+     <y>170</y>
     </hint>
    </hints>
   </connection>
@@ -7409,12 +7409,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>536</x>
-     <y>280</y>
+     <x>554</x>
+     <y>170</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>130</x>
-     <y>277</y>
+     <x>194</x>
+     <y>167</y>
     </hint>
    </hints>
   </connection>
@@ -7425,12 +7425,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>130</x>
-     <y>333</y>
+     <x>194</x>
+     <y>223</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>536</x>
-     <y>336</y>
+     <x>554</x>
+     <y>226</y>
     </hint>
    </hints>
   </connection>
@@ -7441,12 +7441,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>536</x>
-     <y>336</y>
+     <x>554</x>
+     <y>226</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>130</x>
-     <y>333</y>
+     <x>194</x>
+     <y>223</y>
     </hint>
    </hints>
   </connection>
@@ -7457,12 +7457,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>536</x>
-     <y>392</y>
+     <x>554</x>
+     <y>282</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>130</x>
-     <y>389</y>
+     <x>194</x>
+     <y>279</y>
     </hint>
    </hints>
   </connection>
@@ -7473,12 +7473,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>130</x>
-     <y>389</y>
+     <x>194</x>
+     <y>279</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>536</x>
-     <y>392</y>
+     <x>554</x>
+     <y>282</y>
     </hint>
    </hints>
   </connection>
@@ -7490,11 +7490,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>553</x>
-     <y>490</y>
+     <y>380</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>345</x>
-     <y>487</y>
+     <x>377</x>
+     <y>377</y>
     </hint>
    </hints>
   </connection>
@@ -7505,12 +7505,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>345</x>
-     <y>487</y>
+     <x>377</x>
+     <y>377</y>
     </hint>
     <hint type="destinationlabel" >
      <x>553</x>
-     <y>490</y>
+     <y>380</y>
     </hint>
    </hints>
   </connection>
@@ -7521,12 +7521,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>226</x>
-     <y>567</y>
+     <x>277</x>
+     <y>457</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>286</x>
-     <y>570</y>
+     <x>337</x>
+     <y>460</y>
     </hint>
    </hints>
   </connection>
@@ -7537,12 +7537,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>286</x>
-     <y>570</y>
+     <x>337</x>
+     <y>460</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>226</x>
-     <y>567</y>
+     <x>277</x>
+     <y>457</y>
     </hint>
    </hints>
   </connection>
@@ -7553,12 +7553,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>427</x>
-     <y>567</y>
+     <x>493</x>
+     <y>457</y>
     </hint>
     <hint type="destinationlabel" >
      <x>553</x>
-     <y>570</y>
+     <y>460</y>
     </hint>
    </hints>
   </connection>
@@ -7570,11 +7570,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>553</x>
-     <y>570</y>
+     <y>460</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>427</x>
-     <y>567</y>
+     <x>493</x>
+     <y>457</y>
     </hint>
    </hints>
   </connection>
@@ -7585,12 +7585,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>371</x>
-     <y>647</y>
+     <x>493</x>
+     <y>537</y>
     </hint>
     <hint type="destinationlabel" >
      <x>553</x>
-     <y>650</y>
+     <y>540</y>
     </hint>
    </hints>
   </connection>
@@ -7602,11 +7602,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>553</x>
-     <y>650</y>
+     <y>540</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>371</x>
-     <y>647</y>
+     <x>493</x>
+     <y>537</y>
     </hint>
    </hints>
   </connection>
@@ -7618,11 +7618,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7634,11 +7634,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7650,11 +7650,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7666,11 +7666,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7682,11 +7682,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7698,11 +7698,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7714,11 +7714,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7730,11 +7730,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7746,11 +7746,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7762,11 +7762,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7777,12 +7777,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>210</x>
+     <y>156</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>554</x>
+     <y>159</y>
     </hint>
    </hints>
   </connection>
@@ -7793,12 +7793,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>554</x>
+     <y>204</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>210</x>
+     <y>201</y>
     </hint>
    </hints>
   </connection>
@@ -7809,12 +7809,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>210</x>
+     <y>201</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>554</x>
+     <y>204</y>
     </hint>
    </hints>
   </connection>
@@ -7825,12 +7825,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>210</x>
+     <y>246</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>554</x>
+     <y>249</y>
     </hint>
    </hints>
   </connection>
@@ -7841,12 +7841,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>554</x>
+     <y>249</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>210</x>
+     <y>246</y>
     </hint>
    </hints>
   </connection>
@@ -7857,12 +7857,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>210</x>
+     <y>291</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>554</x>
+     <y>294</y>
     </hint>
    </hints>
   </connection>
@@ -7873,12 +7873,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>554</x>
+     <y>159</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>210</x>
+     <y>156</y>
     </hint>
    </hints>
   </connection>
@@ -7889,12 +7889,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>554</x>
+     <y>294</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>253</y>
+     <x>210</x>
+     <y>291</y>
     </hint>
    </hints>
   </connection>
@@ -7906,11 +7906,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7922,11 +7922,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7938,11 +7938,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7954,11 +7954,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <hints>
     <hint type="sourcelabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel" >
      <x>121</x>
-     <y>253</y>
+     <y>143</y>
     </hint>
    </hints>
   </connection>
@@ -7969,12 +7969,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>55</x>
-     <y>519</y>
+     <x>66</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>85</x>
-     <y>338</y>
+     <x>96</x>
+     <y>109</y>
     </hint>
    </hints>
   </connection>

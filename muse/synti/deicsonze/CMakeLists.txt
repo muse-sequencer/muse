@@ -37,7 +37,7 @@ target_link_libraries( deicsonze synti )
 #
 set_target_properties ( deicsonze 
    PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
+   COMPILE_FLAGS "-O3 -include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
 target_link_libraries(deicsonze
@@ -47,3 +47,4 @@ target_link_libraries(deicsonze
 
 install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ deicsonze )
 
+install_files ( /share/${MusE_INSTALL_NAME}/presets/deicsonze SutulaBank.dei )
