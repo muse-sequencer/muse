@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.1
+//    Version 0.4.2
 //
 //
 //
@@ -70,6 +70,7 @@
 #define COEFERRSUSREL 0.001 //from SUSTAIN or RELEASE until no sound
 //#define ERRPORTA 0.001 //dectection to stop portamento
 #define COEFPORTA 0.01 //adjusted such that 10 second/octave with max porta
+#define COEFPITCHENV 0.000001 //adjust according to a real DX11....???
 #define COEFDECAY 1.0
 #define COEFSUSTAIN 0.2
 #define COEFRELEASE 1.0
@@ -230,12 +231,29 @@ struct OpVoice {
 };
 
 //---------------------------------------------------------
+// PitchEnvState
+//---------------------------------------------------------
+enum PitchEnvState{
+  PHASE1,
+  PHASE2,
+  RELEASE_PE,
+  OFF_PE
+};
+
+//---------------------------------------------------------
 // Voice
 //---------------------------------------------------------
 
 struct Voice {
   bool hasAttractor;//true iff the voice has an attractor (portamento occuring)
   double attractor; //contains some coeficent for portamento TODO
+  PitchEnvState pitchEnvState;
+  double pitchEnvCoefInct;
+  double pitchEnvCoefInctPhase1;
+  double pitchEnvCoefInctPhase2;
+  double pitchEnvCoefInctPhase3;
+  double pitchEnvCoefInctRelease;
+  double pitchEnvCoefInctInct;
   bool isOn;
   bool keyOn;
   bool isSustained;
@@ -352,6 +370,7 @@ class DeicsOnze : public Mess {
   void setEnvRelease(int c, int v, int k); //set coefVLevel of voice v and op k
   void setEnvRelease(int c, int k); //do the same for all voices of operator k
   void setEnvRelease(int c); //do the same for all voices all operators  
+  void setPitchEnvRelease(int c, int v);
   double brightness2Amp(int c, int k); //get the brightness of the operator k
   void loadSutulaPresets();
   void loadSet(QString s);

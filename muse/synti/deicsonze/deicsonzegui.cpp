@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.1
+//    Version 0.4.2
 //
 //    deicsonzegui.cpp
 //
@@ -175,8 +175,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setLfoAmpSens(int)));
   connect(transposeSlider, SIGNAL(valueChanged(int)),
 	  this, SLOT(setTranspose(int)));
-  connect(detuneKnob, SIGNAL(valueChanged(float, int)),
-	  this, SLOT(setChannelDetune(float)));
+  connect(channelDetuneSlider, SIGNAL(valueChanged(int)),
+	  this, SLOT(setChannelDetune(int)));
   connect(algorithmComboBox, SIGNAL(activated(int)),
 	  this, SLOT(setAlgorithm(int)));
   connect(pitchBendRangeSlider, SIGNAL(valueChanged(int)),
@@ -2326,7 +2326,8 @@ void DeicsOnzeGui::setDetuneKnob(float val) {
   channelDetuneSlider->setValue((int)((2.0*val-1.0)*(float)MAXCHANNELDETUNE));
 }
 void DeicsOnzeGui::setAttackKnob(float val) {
-  sendController(_currentChannel, CTRL_ATTACK_TIME, (int)(val*(float)MAXATTACK));
+  sendController(_currentChannel, CTRL_ATTACK_TIME,
+		 (int)(val*(float)MAXATTACK));
 }
 void DeicsOnzeGui::setReleaseKnob(float val) {
   sendController(_currentChannel, CTRL_RELEASE_TIME, (int)(val*(float)MAXRELEASE));
@@ -2371,9 +2372,9 @@ void DeicsOnzeGui::setLfoAmpSens(int las) {sendController(_currentChannel, CTRL_
 
 void DeicsOnzeGui::setTranspose(int t) {sendController(_currentChannel, CTRL_TRANSPOSE, t);}
 
-void DeicsOnzeGui::setChannelDetune(float d) {
-  sendController(_currentChannel, CTRL_CHANNELDETUNE,
-		 (int)((d-0.5)*2.0*(float)MAXCHANNELDETUNE));
+void DeicsOnzeGui::setChannelDetune(int d) {
+  sendController(_currentChannel, CTRL_CHANNELDETUNE, d);
+  updateChannelDetuneKnob(d);
 }
 
 void DeicsOnzeGui::setAlgorithm(int a) {
@@ -3675,9 +3676,21 @@ void DeicsOnzeGui::updateSHFT(int op, int val) {
   }
 }
 void DeicsOnzeGui::updateChannelDetune(int val) {
+  updateChannelDetuneKnob(val);
+  updateChannelDetuneSlider(val);
+}
+void DeicsOnzeGui::updateChannelDetuneKnob(int val) {
   detuneKnob->blockSignals(true);
   detuneKnob->setValue((((float)val)/((float)MAXCHANNELDETUNE))/2.0+0.5);
   detuneKnob->blockSignals(false);
+}
+void DeicsOnzeGui::updateChannelDetuneSlider(int val) {
+  channelDetuneSlider->blockSignals(true);
+  channelDetuneSlider->setValue(val);
+  channelDetuneSlider->blockSignals(false);
+  channelDetuneSpinBox->blockSignals(true);
+  channelDetuneSpinBox->setValue(val);
+  channelDetuneSpinBox->blockSignals(false);
 }
 void DeicsOnzeGui::updateChannelVolume(int val) {
   channelVolumeKnob->blockSignals(true);

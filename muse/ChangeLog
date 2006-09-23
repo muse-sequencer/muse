@@ -1,3 +1,6 @@
+23.9  (ng) DeicsOnze 4.0.2
+      - add pitch envelope (but does not sound yet like DeicsOnze's)
+      - keep cleaning SutulaBank.dei
 17.9  (ng) DeicsOnze 4.0.1
       - add optimization -O3, execution twice faster, but compilation longer
       - add portamento

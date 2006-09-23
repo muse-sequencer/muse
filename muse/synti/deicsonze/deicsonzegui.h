@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.1
+//    Version 0.4.2
 //
 //    deicsonzegui.h
 //
@@ -196,7 +196,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setLfoAModDepth(int);
     void setLfoAmpSens(int);
     void setTranspose(int);
-    void setChannelDetune(float);
+    void setChannelDetune(int);
     void setAlgorithm(int);
     void setPitchBendRange(int);
     //Pitch Envelope
@@ -394,6 +394,8 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void updateOSW(int op, int val);
     void updateSHFT(int op, int val);
     void updateChannelDetune(int val);
+    void updateChannelDetuneKnob(int val);
+    void updateChannelDetuneSlider(int val);
     void updateChannelVolume(int val);
     void updateCategoryName(QString cn, bool enable);
     void updateSubcategoryName(QString sn, bool enable);

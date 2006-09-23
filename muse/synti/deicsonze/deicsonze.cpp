@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.1
+//    Version 0.4.2
 //
 //
 //
@@ -477,10 +477,14 @@ void DeicsOnze::resetVoices() {
 // initVoice
 //---------------------------------------------------------
 void DeicsOnze::initVoice(int c /*channel*/, int v) {
-  _global.channel[c].voices[v].hasAttractor=false;
-  _global.channel[c].voices[v].isOn=false;
-  _global.channel[c].voices[v].keyOn=false;
-  _global.channel[c].voices[v].isSustained=false;
+  _global.channel[c].voices[v].hasAttractor = false;
+  _global.channel[c].voices[v].isOn = false;
+  _global.channel[c].voices[v].keyOn = false;
+  _global.channel[c].voices[v].isSustained = false;
+  _global.channel[c].voices[v].pitchEnvCoefInct = 1.0; 
+  _global.channel[c].voices[v].pitchEnvCoefInctInct = 1.0;
+  _global.channel[c].voices[v].pitchEnvState = OFF_PE;
+ 
 }
 //---------------------------------------------------------
 // initVoices
@@ -496,6 +500,39 @@ Preset* DeicsOnze::findPreset(int hbank, int lbank, int prog) {
     return _set->findPreset(hbank, lbank, prog);
 }
 
+//---------------------------------------------------------
+// isPitchEnv
+//  return true iff all levels are in the middle
+//---------------------------------------------------------
+inline bool isPitchEnv(PitchEg* pe) {
+  return(pe->pl1 != 50 || pe->pl2 != 50 || pe->pl3 != 50);
+}
+//---------------------------------------------------------
+// getPitchEnvCoefInct
+//  returns the coefInct according to level pl
+//---------------------------------------------------------
+inline double getPitchEnvCoefInct(int pl) {
+  /*
+    y = a * exp((pl - 50)/b)
+    1.0 = a*exp(0) ==> a = 1.0
+    8.0 = exp(50/b) ==> log 8.0 = 50/b ==> b = 50/log(8.0)
+  */
+  double b = 50.0/log(8.0);
+  return exp((pl-50.0)/b);
+}
+
+//---------------------------------------------------------
+// getPitchEnvCoefInctInct
+//---------------------------------------------------------
+inline double getPitchEnvCoefInctInct(int pl1, int pl2, int pr) {
+  //TODO : depending on the sampleRate
+  int a = pr;
+  double coef = 0.00000025/*COEFPITCHENV*/;
+  if(pl1<pl2) return 1.0+coef*((double)(a*a)+1.0);
+  else if(pl1>pl2)
+    return 1.0/(1.0+coef*((double)(a*a)+1.0));
+  else return 1.0;
+}
 
 //---------------------------------------------------------
 // existsKeyOn
@@ -740,7 +777,7 @@ void DeicsOnze::setEnvAttack(int c, int k) {
 }
 void DeicsOnze::setEnvAttack(int c) {
   for(int k=0; k<NBROP; k++) setEnvAttack(c, k);
-}  
+}
 //-----------------------------------------------------------------
 // setEnvRelease
 //-----------------------------------------------------------------
@@ -756,6 +793,29 @@ void DeicsOnze::setEnvRelease(int c, int k) {
 void DeicsOnze::setEnvRelease(int c) {
   for(int k=0; k<NBROP; k++) setEnvRelease(c, k);
 }  
+//-----------------------------------------------------------------
+// setPitchEnvRelease
+//-----------------------------------------------------------------
+void DeicsOnze::setPitchEnvRelease(int c, int v) {
+  if(isPitchEnv(&_preset[c]->pitchEg)) {
+    if(_global.channel[c].voices[v].pitchEnvCoefInct
+       > _global.channel[c].voices[v].pitchEnvCoefInctPhase1) {
+      _global.channel[c].voices[v].pitchEnvCoefInctInct = 
+	getPitchEnvCoefInctInct(1, 0, _preset[c]->pitchEg.pr3);
+      _global.channel[c].voices[v].pitchEnvState = RELEASE_PE;
+    }
+    else if(_global.channel[c].voices[v].pitchEnvCoefInct
+	    < _global.channel[c].voices[v].pitchEnvCoefInctPhase1) {
+      _global.channel[c].voices[v].pitchEnvCoefInctInct = 
+	getPitchEnvCoefInctInct(0, 1, _preset[c]->pitchEg.pr3);
+      _global.channel[c].voices[v].pitchEnvState = RELEASE_PE;
+    }
+    else {
+      _global.channel[c].voices[v].pitchEnvCoefInctInct = 1.0;
+      _global.channel[c].voices[v].pitchEnvState = OFF_PE;
+    }
+  }
+}
 //-----------------------------------------------------------------
 // brightness2Amp
 //-----------------------------------------------------------------
@@ -1359,6 +1419,68 @@ inline void portamentoUpdate(Channel* p_c, Voice* p_v) {
   }
 }
 
+
+//---------------------------------------------------------
+// pitchEnvelopeUpdate
+//---------------------------------------------------------
+inline void pitchEnvelopeUpdate(Voice* v, PitchEg* pe) {
+  if(v->pitchEnvState != OFF_PE) {
+    switch(v->pitchEnvState) {
+    case PHASE1 :
+      //printf("PHASE1 %f\n", v->pitchEnvCoefInctInct);
+      if( //to change to phase2
+	 (v->pitchEnvCoefInctInct == 1.0)
+	 || (v->pitchEnvCoefInctInct > 1.0 &&
+	     v->pitchEnvCoefInct > v->pitchEnvCoefInctPhase2)
+	 || (v->pitchEnvCoefInctInct < 1.0 &&
+	     v->pitchEnvCoefInct < v->pitchEnvCoefInctPhase2)
+	 ) {
+	v->pitchEnvState = PHASE2;
+	v->pitchEnvCoefInct = getPitchEnvCoefInct(pe->pl2);
+	v->pitchEnvCoefInctInct =
+	  getPitchEnvCoefInctInct(pe->pl2, pe->pl3, pe->pr2);
+      }
+      else v->pitchEnvCoefInct *= v->pitchEnvCoefInctInct;
+      break;
+    case PHASE2 :
+      //printf("PHASE2\n");
+      if( //to change to off (temporarely)
+	 (v->pitchEnvCoefInctInct == 1.0)
+	 || (v->pitchEnvCoefInctInct > 1.0 &&
+	     v->pitchEnvCoefInct > v->pitchEnvCoefInctPhase3)
+	 || (v->pitchEnvCoefInctInct < 1.0 &&
+	     v->pitchEnvCoefInct < v->pitchEnvCoefInctPhase3)
+	 ) {
+	v->pitchEnvState = OFF_PE;
+	v->pitchEnvCoefInct = getPitchEnvCoefInct(pe->pl3);
+	v->pitchEnvCoefInctInct = 1.0;
+      }
+      else v->pitchEnvCoefInct *= v->pitchEnvCoefInctInct;
+      break;
+    case RELEASE_PE :
+      if( //to change to release2
+	 (v->pitchEnvCoefInctInct == 1.0)
+	 || (v->pitchEnvCoefInctInct > 1.0 &&
+	     v->pitchEnvCoefInct > v->pitchEnvCoefInctPhase1)
+	 || (v->pitchEnvCoefInctInct < 1.0 &&
+	     v->pitchEnvCoefInct < v->pitchEnvCoefInctPhase1)
+	 ) {
+	v->pitchEnvState = OFF_PE;
+	v->pitchEnvCoefInct = getPitchEnvCoefInct(pe->pl1);
+	v->pitchEnvCoefInctInct = 1.0;
+      }
+      else v->pitchEnvCoefInct *= v->pitchEnvCoefInctInct;
+      break;
+    case OFF_PE :
+      //do nothing, should not appear anyway
+      break;
+    default :
+      printf("Error switch pitchEnvelopeUpdate, no such case\n");
+      break;
+    }
+  }
+}
+
 //---------------------------------------------------------
 // outLevel2Amp, Amp for amplitude //between 0.0 and 2.0 or more
 //  100->2.0, 90->1.0, 80->0.5 ...
@@ -1526,6 +1648,7 @@ inline double env2AmpR(int sr, float* wt, Eg eg, OpVoice* p_opVoice) {
     default: printf("Error case envelopeState");
       break;
     }
+  return p_opVoice->envLevel;
 }
 
 //---------------------------------------------------------
@@ -1573,6 +1696,7 @@ void DeicsOnze::setSustain(int c, int val) {
 	  _global.channel[c].voices[i].op[j].envState = RELEASE;
 	  setEnvRelease(c, i, j);
 	}
+	setPitchEnvRelease(c, i);
 	_global.channel[c].voices[i].isSustained = false;
 	_global.channel[c].voices[i].keyOn = false;
       }
@@ -2874,23 +2998,24 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
   int newVoice;
   int nO2V;
   int p2V;
-  double tempFreq, tempTargetFreq;
+  double tempTargetFreq;
   if(_global.channel[ch].isEnable) {    
     if(velo==0) {//Note off
       p2V=pitchOn2Voice(ch, pitch);
       printf("Note Off : pitchOn2Voice = %d\n", p2V);
       if(p2V<_global.channel[ch].nbrVoices) {
 	if(_global.channel[ch].sustain)
-	  _global.channel[ch].voices[p2V].isSustained=true;
-	else
+	  _global.channel[ch].voices[p2V].isSustained = true;
+	else {
 	  for(int i=0; i<NBROP; i++) {
-	    _global.channel[ch].voices[p2V].op[i].envState=RELEASE;
-	    _global.channel[ch].voices[p2V].op[i].coefVLevel=
-	      envRR2coef(_preset[ch]->eg[i].rr, sampleRate(),
-			 getChannelRelease(ch));
-	    _global.channel[ch].voices[p2V].keyOn = false;
+	    _global.channel[ch].voices[p2V].op[i].envState = RELEASE;
+	    setEnvRelease(ch, p2V, i);
 	  }
- 	return false;}
+	  setPitchEnvRelease(ch, p2V);
+	  _global.channel[ch].voices[p2V].keyOn = false;
+	}
+	return false;
+      }
       //else printf("error over NBRVOICES\n");
     }
     else //Note on
@@ -2898,8 +3023,10 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	nO2V=noteOff2Voice(ch);
 	newVoice=((nO2V==MAXNBRVOICES)?minVolu2Voice(ch):nO2V);
 	printf("Note On : ch = %d, v = %d, p = %d\n", ch, newVoice, pitch);
-
+	
+	//----------
 	//portamento
+	//----------
 	//if there is no previous note (isthere is no portamento
 	if(_preset[ch]->function.portamentoTime!=0
 	   && _global.channel[ch].isLastNote &&
@@ -2911,16 +3038,41 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	    getAttractor(_preset[ch]->function.portamentoTime);
 	}
 	else _global.channel[ch].voices[newVoice].hasAttractor = false;
+	//--------------------
 	//some initializations
+	//--------------------
 	_global.channel[ch].voices[newVoice].keyOn = true;
 	_global.channel[ch].voices[newVoice].isOn = true;
 	_global.channel[ch].voices[newVoice].sampleFeedback = 0.0;
 	_global.channel[ch].voices[newVoice].pitch = pitch;
-
+	
 	/*if(_preset->lfo.sync)*/ _global.channel[ch].lfoIndex=0;//a revoir
 	_global.channel[ch].lfoDelayIndex=0.0;
 	_global.channel[ch].delayPassed=false;
 	
+	//--------------
+	//PITCH ENVELOPE
+	//--------------
+	if(isPitchEnv(&_preset[ch]->pitchEg)) {
+	  _global.channel[ch].voices[newVoice].pitchEnvState = PHASE1;
+	  _global.channel[ch].voices[newVoice].pitchEnvCoefInctPhase1 =
+	    getPitchEnvCoefInct(_preset[ch]->pitchEg.pl1);
+	  _global.channel[ch].voices[newVoice].pitchEnvCoefInctPhase2 =
+	    getPitchEnvCoefInct(_preset[ch]->pitchEg.pl2);
+	  _global.channel[ch].voices[newVoice].pitchEnvCoefInctPhase3 =
+	    getPitchEnvCoefInct(_preset[ch]->pitchEg.pl3);
+	  _global.channel[ch].voices[newVoice].pitchEnvCoefInct =
+	    _global.channel[ch].voices[newVoice].pitchEnvCoefInctPhase1;
+	  _global.channel[ch].voices[newVoice].pitchEnvCoefInctInct =
+	    getPitchEnvCoefInctInct(_preset[ch]->pitchEg.pl1,
+				    _preset[ch]->pitchEg.pl2,
+				    _preset[ch]->pitchEg.pr1);
+	}
+	else {
+	  _global.channel[ch].voices[newVoice].pitchEnvState = OFF_PE;
+	  _global.channel[ch].voices[newVoice].pitchEnvCoefInct = 1.0;
+	}
+	//per operator
 	for(int i=0; i<NBROP; i++) {
 	  //------
 	  //VOLUME
@@ -2962,8 +3114,11 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	      _global.channel[ch].lastInc[i];
 	  else _global.channel[ch].voices[newVoice].op[i].inct =
 	    _global.channel[ch].voices[newVoice].op[i].targetInct;
-	  _global.channel[ch].voices[newVoice].op[i].envState=ATTACK;
-	  _global.channel[ch].voices[newVoice].op[i].envIndex=0.0;
+	  //--------
+	  //ENVELOPE
+	  //--------
+	  _global.channel[ch].voices[newVoice].op[i].envState = ATTACK;
+	  _global.channel[ch].voices[newVoice].op[i].envIndex = 0.0;
 	  setEnvAttack(ch, newVoice, i);
 	  //printf("Coef Attack = %e envInct = %e\n",
 	  //coefAttack(_preset->attack), _voices[newVoice].op[i].envInct);
@@ -2995,8 +3150,7 @@ inline double plusMod(double x, double y) {
 //   write
 //    synthesize n samples into buffer+offset
 //---------------------------------------------------------
-void DeicsOnze::process(float** buffer, int offset, int n)
-{
+void DeicsOnze::process(float** buffer, int offset, int n) {
   //Process messages from the gui
   while (_gui->fifoSize()) {
     MidiEvent ev = _gui->readEvent();
@@ -3028,7 +3182,7 @@ void DeicsOnze::process(float** buffer, int offset, int n)
       if(_global.channel[c].isEnable) {
 	//lfo, trick : we use the first quater of the wave W2
 	lfoUpdate(_preset[c], &_global.channel[c], waveTable[W2]);
-	
+
 	//optimization
 	tempIncChannel =
 	  _global.channel[c].lfoCoefInct * _global.channel[c].pitchBendCoef;
@@ -3039,6 +3193,9 @@ void DeicsOnze::process(float** buffer, int offset, int n)
 	    //portamento
 	    portamentoUpdate(&_global.channel[c],
 			     &_global.channel[c].voices[j]);
+	    //pitch envelope
+	    pitchEnvelopeUpdate(&_global.channel[c].voices[j],
+				&_preset[c]->pitchEg);
 	    //per op
 	    for(int k=0; k<NBROP; k++) {
 	      //compute the next index on the wavetable,
@@ -3046,7 +3203,8 @@ void DeicsOnze::process(float** buffer, int offset, int n)
 	      _global.channel[c].voices[j].op[k].index=
 		plusMod(_global.channel[c].voices[j].op[k].index,
 			_global.channel[c].voices[j].op[k].inct
-			* tempIncChannel);
+			* tempIncChannel
+			* _global.channel[c].voices[j].pitchEnvCoefInct);
 	      
 	      ampOp[k]=_global.channel[c].voices[j].op[k].amp*COEFLEVEL
 		*(_preset[c]->sensitivity.ampOn[k]?
