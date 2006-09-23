@@ -430,8 +430,10 @@ void Song::setMasterFlag(bool val)
 void Song::setPlay(bool f)
       {
       // only allow the user to set the button "on"
-      if (!f)
+      if (!f) {
+            printf("  setPlay checked\n");
             muse->playAction->setChecked(true);
+            }
       else {
             if (recordAction->isChecked()) {
                   startUndo();

@@ -476,6 +476,8 @@ MusE::MusE()
       forwardAction = new QAction(QIcon(":/xpm/fforward.xpm"), "forward", this);
       stopAction    = new QAction(QIcon(":/xpm/stop.xpm"), "stop", this);
       playAction    = new QAction(QIcon(":/xpm/play.xpm"), "play", this);
+      playAction->setCheckable(true);
+      stopAction->setCheckable(true);
 
       song->blockSignals(true);
       heartBeatTimer = new QTimer(this);
@@ -1698,7 +1700,6 @@ void MusE::kbAccel(int key)
                   }
             }
       else if (key == shortcuts[SHRT_STOP].key) {
-            //song->setPlay(false);
             song->setStop(true);
             }
       else if (key == shortcuts[SHRT_PLAY_SONG].key ) {
