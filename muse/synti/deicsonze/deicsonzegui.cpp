@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.2
+//    Version 0.4.3
 //
 //    deicsonzegui.cpp
 //
@@ -2468,6 +2468,9 @@ void DeicsOnzeGui::setAtEgBias(int val) {
 }
 void DeicsOnzeGui::setReverbRate(int val) {
   sendController(_currentChannel, CTRL_REVERBRATE, val);
+}
+void DeicsOnzeGui::setPolyMode(int val) {
+  sendController(_currentChannel, CTRL_POLYMODE, val);
 }
 void DeicsOnzeGui::setPortFingerFull(int val) {
   sendController(_currentChannel, CTRL_PORTAMODE, val);

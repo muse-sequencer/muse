@@ -1,9 +1,7 @@
 - Pitch Bend CTRL
 - Modulation CTRL
 - LFO Delay (bug)
-- EG Pitch
 - Rate Scaling
-- Monophony
 - Foot Control, Modulation Wheel, Breath Control, After Touch
 - Reverb
 - Change presetName subcategoryName category with SysEx
@@ -11,7 +9,6 @@
 - getPatchInfo...
 - Optimize the code, make 3 level of quality sound
 - Remember the last directory
-- Clean SutulaBank.dei
 - Pan per voices
 - Load BUMP preset
 - Correct portamento for different samplerates

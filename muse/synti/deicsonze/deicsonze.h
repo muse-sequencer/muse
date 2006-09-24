@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.2
+//    Version 0.4.3
 //
 //
 //
@@ -31,6 +31,7 @@
 #ifndef __DEICSONZE_H
 #define __DEICSONZE_H
 
+#include <list>
 
 #include "deicsonzepreset.h"
 #include "deicsonzegui.h"
@@ -298,6 +299,8 @@ struct Channel {
   unsigned char nbrVoices;
   Voice voices[MAXNBRVOICES];
   double lastInc[NBROP];
+  std::list<int> lastVoiceKeyOn; //stack of the voice number
+  int lastVoiceKeyOff;
   bool isLastNote;
 };
 
@@ -378,7 +381,7 @@ class DeicsOnze : public Mess {
   int minVolu2Voice(int c);
   int pitchOn2Voice(int c, int pitch);
   void programSelect(int c, int hbank, int lbank, int prog);
-  
+  bool existsKeyOn(int ch);
   void setNbrVoices(int c, int nv);
   void setMasterVol(int v);
   void setChannelEnable(int c, bool e);

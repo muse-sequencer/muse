@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.2
+//    Version 0.4.3
 //
 //    deicsonzepreset.h
 //
@@ -90,6 +90,7 @@
 #define CTRL_OUT 10+CTRLOFFSET
 #define MAXOUT 99
 #define RATIOSTR "Ratio"
+#define RATIOLONGSTR "Ratio"
 #define CTRL_RATIO 11+CTRLOFFSET
 #define MAXRATIO 64
 #define DETSTR "DET"
@@ -107,7 +108,7 @@
 #define SPEEDLONGSTR "LFOSpeed"
 #define CTRL_SPEED 54+CTRLOFFSET
 #define MAXSPEED 99
-#define DELAYSTR "Delay"
+#define DELAYSTR "Delay" //TODO LFOD
 #define DELAYLONGSTR "LFODelay"
 #define CTRL_DELAY 55+CTRLOFFSET
 #define MAXDELAY 99

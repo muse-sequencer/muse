@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.2
+//    Version 0.4.3
 //
 //
 //
@@ -28,7 +28,7 @@
 //===========================================================================
 
 // #include <cmath>
-// #include <list>
+#include <list>
 
 // #include <stdio.h>
 
@@ -236,7 +236,7 @@ void DeicsOnze::initCtrls() {
 	_ctrl[i].num=CTRL_OUT+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXOUT;
-	_ctrl[i].name=(QString("Centi")+QString(RATIOSTR)+QString::number(k+1))
+	_ctrl[i].name=(QString("Centi")+QString(RATIOLONGSTR)+QString::number(k+1))
 	    .toAscii().data();
 	_ctrl[i].num=CTRL_RATIO+k*DECAPAR1;
 	_ctrl[i].min=0;
@@ -490,7 +490,10 @@ void DeicsOnze::initVoice(int c /*channel*/, int v) {
 // initVoices
 //---------------------------------------------------------
 void DeicsOnze::initVoices(int c) {
-  for(int v=0; v<MAXNBRVOICES; v++) initVoice(c, v);
+  for(int v=0; v<MAXNBRVOICES; v++) {
+    initVoice(c, v);
+    _global.channel[c].lastVoiceKeyOn.clear();
+  }
 }
 
 //--------------------------------------------------------
@@ -537,14 +540,8 @@ inline double getPitchEnvCoefInctInct(int pl1, int pl2, int pr) {
 //---------------------------------------------------------
 // existsKeyOn
 //---------------------------------------------------------
-inline bool existsKeyOn(Channel* c) {
-  bool exKeyOn;
-  exKeyOn = false;
-  for(int v = 0; v < MAXNBRVOICES; v++) {
-    exKeyOn = c->voices[v].keyOn; 
-    if(exKeyOn) return exKeyOn;
-  }
-  return exKeyOn;
+bool DeicsOnze::existsKeyOn(int ch) {
+  return !_global.channel[ch].lastVoiceKeyOn.empty();
 }
 
 //---------------------------------------------------------
@@ -1226,50 +1223,25 @@ int DeicsOnze::minVolu2Voice(int c) {
 int DeicsOnze::noteOff2Voice(int c) {
   int offVoice=MAXNBRVOICES;
   for(int i=0; i<_global.channel[c].nbrVoices; i++)
-    offVoice=(_global.channel[c].voices[i].isOn?offVoice:i);
+    offVoice = (_global.channel[c].voices[i].isOn
+		|| _global.channel[c].voices[i].keyOn?
+		offVoice:i);
   return offVoice;
 }
 
 //---------------------------------------------------------
 // pitchOn2Voice
 //  return the number of the voice which has the input
-//   pitch and is On and not release, MAXNBRVOICES otherwise
+//   pitch and is keyOn
 //---------------------------------------------------------
 int DeicsOnze::pitchOn2Voice(int c, int pitch) {
   int pitchVoice=MAXNBRVOICES;
   for(int i=0; i<_global.channel[c].nbrVoices; i++) {
     if(_global.channel[c].voices[i].pitch==
-       pitch && _global.channel[c].voices[i].isOn
+       pitch && _global.channel[c].voices[i].keyOn
        && !_global.channel[c].voices[i].isSustained) {
-      if((_preset[c]->algorithm == FIRST || _preset[c]->algorithm == SECOND
-	  || _preset[c]->algorithm == THIRD || _preset[c]->algorithm == FOURTH)
-	 && _global.channel[c].voices[i].op[0].envState!=RELEASE
-	 && _global.channel[c].voices[i].op[0].envState!=OFF)
-	pitchVoice = i;
-      if(_preset[c]->algorithm == FIFTH
-	 && ((_global.channel[c].voices[i].op[0].envState!=RELEASE
-	      && _global.channel[c].voices[i].op[0].envState!=OFF)
-	     || (_global.channel[c].voices[i].op[2].envState!=RELEASE
-		 && _global.channel[c].voices[i].op[2].envState!=OFF)))
-	pitchVoice = i;
-      if((_preset[c]->algorithm == SIXTH ||  _preset[c]->algorithm == SEVENTH)
-	 && ((_global.channel[c].voices[i].op[0].envState!=RELEASE
-	      && _global.channel[c].voices[i].op[0].envState!=OFF)
-	     || (_global.channel[c].voices[i].op[1].envState!=RELEASE
-		 && _global.channel[c].voices[i].op[1].envState!=OFF)
-	     || (_global.channel[c].voices[i].op[2].envState!=RELEASE
-		 && _global.channel[c].voices[i].op[2].envState!=OFF)))
-	pitchVoice = i;
-      if(_preset[c]->algorithm == EIGHTH
-	 && ((_global.channel[c].voices[i].op[0].envState!=RELEASE
-	      && _global.channel[c].voices[i].op[0].envState!=OFF)
-	     || (_global.channel[c].voices[i].op[1].envState!=RELEASE
-		 && _global.channel[c].voices[i].op[1].envState!=OFF)
-	     || (_global.channel[c].voices[i].op[2].envState!=RELEASE
-		 && _global.channel[c].voices[i].op[2].envState!=OFF)
-	     || (_global.channel[c].voices[i].op[3].envState!=RELEASE
-		 && _global.channel[c].voices[i].op[3].envState!=OFF)))
-	pitchVoice = i;
+      pitchVoice = i;
+      return pitchVoice;
     }
   }
   return pitchVoice;
@@ -3007,12 +2979,51 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	if(_global.channel[ch].sustain)
 	  _global.channel[ch].voices[p2V].isSustained = true;
 	else {
-	  for(int i=0; i<NBROP; i++) {
-	    _global.channel[ch].voices[p2V].op[i].envState = RELEASE;
-	    setEnvRelease(ch, p2V, i);
-	  }
-	  setPitchEnvRelease(ch, p2V);
 	  _global.channel[ch].voices[p2V].keyOn = false;
+	  _global.channel[ch].lastVoiceKeyOff = p2V;
+	  _global.channel[ch].lastVoiceKeyOn.remove(p2V);
+	  if(_preset[ch]->function.mode == MONO && existsKeyOn(ch)
+	     && _global.channel[ch].voices[p2V].isOn) {
+	    newVoice = _global.channel[ch].lastVoiceKeyOn.back();
+	    //portamento
+	    if(_preset[ch]->function.portamentoTime!=0) {
+	      _global.channel[ch].voices[newVoice].hasAttractor = true;
+	      _global.channel[ch].voices[newVoice].attractor =
+		getAttractor(_preset[ch]->function.portamentoTime);
+	    }
+	    else _global.channel[ch].voices[newVoice].hasAttractor = false;
+	    //feedback
+	    _global.channel[ch].voices[newVoice].sampleFeedback =
+	      _global.channel[ch].voices[p2V].sampleFeedback;
+	    //on/off
+	    _global.channel[ch].voices[p2V].isOn = false;
+	    _global.channel[ch].voices[newVoice].isOn = true;
+	    //per op
+	    for(int i = 0; i < NBROP; i++) {
+	      _global.channel[ch].voices[newVoice].op[i].index =
+		_global.channel[ch].voices[p2V].op[i].index;
+	      _global.channel[ch].voices[newVoice].op[i].envState = 
+		_global.channel[ch].voices[p2V].op[i].envState;
+	      _global.channel[ch].voices[newVoice].op[i].envIndex = 
+		_global.channel[ch].voices[p2V].op[i].envIndex;
+	      _global.channel[ch].voices[newVoice].op[i].envInct = 
+		_global.channel[ch].voices[p2V].op[i].envInct;
+	      _global.channel[ch].voices[newVoice].op[i].envLevel = 
+		_global.channel[ch].voices[p2V].op[i].envLevel;
+	      _global.channel[ch].voices[newVoice].op[i].coefVLevel = 
+		_global.channel[ch].voices[p2V].op[i].coefVLevel;
+	      if(_global.channel[ch].voices[newVoice].hasAttractor)
+		_global.channel[ch].voices[newVoice].op[i].inct =
+		  _global.channel[ch].voices[p2V].op[i].inct;
+	    }
+	  }
+	  else {
+	    setPitchEnvRelease(ch, p2V);
+	    for(int i=0; i<NBROP; i++) {
+	      _global.channel[ch].voices[p2V].op[i].envState = RELEASE;
+	      setEnvRelease(ch, p2V, i);
+	    }
+	  }
 	}
 	return false;
       }
@@ -3027,26 +3038,18 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	//----------
 	//portamento
 	//----------
-	//if there is no previous note (isthere is no portamento
+	//if there is no previous note there is no portamento
 	if(_preset[ch]->function.portamentoTime!=0
 	   && _global.channel[ch].isLastNote &&
 	   (_preset[ch]->function.portamento==FULL) ||
-	   (_preset[ch]->function.portamento==FINGER &&
-	    existsKeyOn(&_global.channel[ch]))) {
+	   (_preset[ch]->function.portamento==FINGER && existsKeyOn(ch))) {
 	  _global.channel[ch].voices[newVoice].hasAttractor = true;
 	  _global.channel[ch].voices[newVoice].attractor =
 	    getAttractor(_preset[ch]->function.portamentoTime);
 	}
 	else _global.channel[ch].voices[newVoice].hasAttractor = false;
-	//--------------------
-	//some initializations
-	//--------------------
-	_global.channel[ch].voices[newVoice].keyOn = true;
-	_global.channel[ch].voices[newVoice].isOn = true;
-	_global.channel[ch].voices[newVoice].sampleFeedback = 0.0;
-	_global.channel[ch].voices[newVoice].pitch = pitch;
 	
-	/*if(_preset->lfo.sync)*/ _global.channel[ch].lfoIndex=0;//a revoir
+	/*if(_preset->lfo.sync)*/ _global.channel[ch].lfoIndex=0;//TODO
 	_global.channel[ch].lfoDelayIndex=0.0;
 	_global.channel[ch].delayPassed=false;
 	
@@ -3085,9 +3088,50 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	    outLevel2Amp(_preset[ch]->outLevel[i])
 	    *_global.channel[ch].voices[newVoice].op[i].ampVeloNote
 	    * brightness2Amp(ch, i);
-	  //index get 0.0, it means that the offset is 0
-	  // for monophonic it will be different
-	  _global.channel[ch].voices[newVoice].op[i].index=0.0;
+	  //----------------
+	  //INDEX & ENVELOPE
+	  //----------------
+	  //if index get 0.0, it means that the offset is 0
+	  if(existsKeyOn(ch)) {
+	    int lastVoice = _global.channel[ch].lastVoiceKeyOn.back();
+	    if(_preset[ch]->function.mode == MONO) {
+	      _global.channel[ch].voices[newVoice].op[i].index =
+		_global.channel[ch].voices[lastVoice].op[i].index;
+	      _global.channel[ch].voices[newVoice].sampleFeedback =
+		_global.channel[ch].voices[lastVoice].sampleFeedback;
+	      _global.channel[ch].voices[newVoice].op[i].envState = 
+		_global.channel[ch].voices[lastVoice].op[i].envState;
+	      _global.channel[ch].voices[newVoice].op[i].envIndex = 
+		_global.channel[ch].voices[lastVoice].op[i].envIndex;
+	      _global.channel[ch].voices[newVoice].op[i].envInct = 
+		_global.channel[ch].voices[lastVoice].op[i].envInct;
+	      _global.channel[ch].voices[newVoice].op[i].envLevel = 
+		_global.channel[ch].voices[lastVoice].op[i].envLevel;
+	      _global.channel[ch].voices[newVoice].op[i].coefVLevel = 
+		_global.channel[ch].voices[lastVoice].op[i].coefVLevel;
+	      _global.channel[ch].voices[lastVoice].isOn = false;
+	    }
+	    else {
+	      _global.channel[ch].voices[newVoice].op[i].index = 0.0;
+	      _global.channel[ch].voices[newVoice].sampleFeedback = 0.0;
+	      _global.channel[ch].voices[newVoice].op[i].envState = ATTACK;
+	      _global.channel[ch].voices[newVoice].op[i].envIndex = 0.0;
+	      setEnvAttack(ch, newVoice, i);
+	    }
+	  }
+	  else {
+	    _global.channel[ch].voices[newVoice].op[i].index = 0.0;
+	    _global.channel[ch].voices[newVoice].sampleFeedback = 0.0;
+	    _global.channel[ch].voices[newVoice].op[i].envState = ATTACK;
+	    _global.channel[ch].voices[newVoice].op[i].envIndex = 0.0;
+	    setEnvAttack(ch, newVoice, i);
+	    if(_preset[ch]->function.mode == MONO &&
+	       _global.channel[ch].isLastNote) {
+	      _global.channel[ch].voices[_global.channel[ch].lastVoiceKeyOff]
+		.isOn = false;
+	    }
+	  }
+	  
 	  //----
 	  //FREQ
 	  //----
@@ -3114,16 +3158,15 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	      _global.channel[ch].lastInc[i];
 	  else _global.channel[ch].voices[newVoice].op[i].inct =
 	    _global.channel[ch].voices[newVoice].op[i].targetInct;
-	  //--------
-	  //ENVELOPE
-	  //--------
-	  _global.channel[ch].voices[newVoice].op[i].envState = ATTACK;
-	  _global.channel[ch].voices[newVoice].op[i].envIndex = 0.0;
-	  setEnvAttack(ch, newVoice, i);
-	  //printf("Coef Attack = %e envInct = %e\n",
-	  //coefAttack(_preset->attack), _voices[newVoice].op[i].envInct);
 	}
+	//--------------------
+	//some initializations
+	//--------------------
+	_global.channel[ch].voices[newVoice].keyOn = true;
+	_global.channel[ch].voices[newVoice].isOn = true;
+	_global.channel[ch].voices[newVoice].pitch = pitch;
 	_global.channel[ch].isLastNote = true;
+	_global.channel[ch].lastVoiceKeyOn.push_back(newVoice);
 	for(int k = 0; k < NBROP; k++)
 	  _global.channel[ch].lastInc[k] =
 	    _global.channel[ch].voices[newVoice].op[k].inct;
@@ -3449,7 +3492,7 @@ extern "C" {
     static MESS descriptor = {
 	"DeicsOnze",
 	"DeicsOnze FM DX11 emulator",
-	"0.4.1",      // version string
+	"0.4.3",      // version string
 	MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
 	instantiate
     };

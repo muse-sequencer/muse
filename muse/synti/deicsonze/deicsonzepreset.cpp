@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.2
+//    Version 0.4.3
 //
 //    deicsonzepreset.cpp
 //
@@ -876,13 +876,13 @@ void Preset::readPreset(QDomNode presetNode) {
 	  function.bcPitchBias=functionEl.text().toInt();
 	else if(ft==BCEGBIASSTR)
 	  function.bcEgBias=functionEl.text().toInt();
-	else if(ft=="atPitch")
+	else if(ft==ATPITCHSTR)
 	  function.atPitch=functionEl.text().toInt();
-	else if(ft=="atAmplitude")
+	else if(ft==ATAMPLITUDESTR)
 	  function.atAmplitude=functionEl.text().toInt();
-	else if(ft=="atPitchBias")
+	else if(ft==ATPITCHBIASSTR)
 	  function.atPitchBias=functionEl.text().toInt();
-	else if(ft=="atEgBias")
+	else if(ft==ATEGBIASSTR)
 	  function.atEgBias=functionEl.text().toInt();
 	else if(ft==REVERBRATESTR)
 	  function.reverbRate=functionEl.text().toInt();
@@ -943,36 +943,36 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	xml->intTag(PMODSENSSTR, sensitivity.pitch);
 	xml->intTag(AMSSTR, sensitivity.amplitude);
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"AME%d",i+1);
+	    sprintf(s, AMESTR "%d",i+1);
 	    xml->strTag(s, (sensitivity.ampOn[i]==true? "on":"off"));
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"EBS%d",i+1);
+	    sprintf(s,EBSSTR "%d",i+1);
 	    xml->intTag(s, sensitivity.egBias[i]);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"KVS%d",i+1);
+	    sprintf(s, KVSSTR "%d",i+1);
 	    xml->intTag(s, sensitivity.keyVelocity[i]);
 	}
 	xml->etag("sensitivity");
 	//frequency
 	xml->tag("frequency");
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"Ratio%d",i+1);
+	  sprintf(s, RATIOSTR "%d",i+1);
 	    xml->floatTag(s, frequency[i].ratio);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"FIX%d",i+1);
+	    sprintf(s, FIXSTR "%d",i+1);
 	    xml->strTag(s, (frequency[i].isFix==true? "yes":"no"));
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"FixRange%d",i+1);
+	    sprintf(s, FIXRANGESTR "%d",i+1);
 	    xml->floatTag(s, frequency[i].freq);
 	}
 	xml->etag("frequency");
 	//oscWave
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"OSW%d",i+1);
+	    sprintf(s, OSWSTR "%d",i+1);
 	    xml->strTag(s, (oscWave[i]==W1?"W1":
 			    (oscWave[i]==W2?"W2":
 			     (oscWave[i]==W3?"W3":
@@ -983,33 +983,33 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	}
 	//detune
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"DET%d",i+1);
+	    sprintf(s, DETSTR "%d",i+1);
 	    xml->intTag(s, detune[i]);
 	}
 	//eg
 	xml->tag("eg");
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"AR%d",i+1);
+	    sprintf(s, ARSTR "%d",i+1);
 	    xml->intTag(s, eg[i].ar);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"D1R%d",i+1);
+	    sprintf(s, D1RSTR "%d",i+1);
 	    xml->intTag(s, eg[i].d1r);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"D1L%d",i+1);
+	    sprintf(s, D1LSTR "%d",i+1);
 	    xml->intTag(s, eg[i].d1l);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"D2R%d",i+1);
+	    sprintf(s, D2RSTR "%d",i+1);
 	    xml->intTag(s, eg[i].d2r);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"RR%d",i+1);
+	    sprintf(s, RRSTR "%d",i+1);
 	    xml->intTag(s, eg[i].rr);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"SHFT%d",i+1);
+	    sprintf(s, SHFTSTR "%d",i+1);
 	    xml->strTag(s, (eg[i].egShift==VOF?"VOF":
 			    (eg[i].egShift==V48?"V48":
 			     (eg[i].egShift==V24?"V24":"V12"))));
@@ -1026,17 +1026,17 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	xml->etag("pitchEg");
 	//outLevel
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"OUT%d",i+1);
+	    sprintf(s, OUTSTR "%d",i+1);
 	    xml->intTag(s, outLevel[i]);
 	}
 	//scaling
 	xml->tag("scaling");
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"RS%d",i+1);
+	    sprintf(s, RSSTR "%d",i+1);
 	    xml->intTag(s, scaling.rate[i]);
 	}
 	for(int i=0; i<NBROP; i++) {
-	    sprintf(s,"LS%d",i+1);
+	    sprintf(s, LSSTR "%d",i+1);
 	    xml->intTag(s, scaling.level[i]);
 	}
 	xml->etag("scaling");
@@ -1058,10 +1058,10 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	xml->intTag(BCAMPLITUDESTR, function.bcAmplitude);
 	xml->intTag(BCPITCHBIASSTR, function.bcPitchBias);
 	xml->intTag(BCEGBIASSTR, function.bcEgBias);
-	xml->intTag("atPitch", function.atPitch);
-	xml->intTag("atAmplitude", function.atAmplitude);
-	xml->intTag("atPitchBias", function.atPitchBias);
-	xml->intTag("atEgBias", function.atEgBias);
+	xml->intTag(ATPITCHSTR, function.atPitch);
+	xml->intTag(ATAMPLITUDESTR, function.atAmplitude);
+	xml->intTag(ATPITCHBIASSTR, function.atPitchBias);
+	xml->intTag(ATEGBIASSTR, function.atEgBias);
 	xml->intTag(REVERBRATESTR, function.reverbRate);
 	xml->etag("function");
 	//globalDetune
