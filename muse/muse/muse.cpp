@@ -1240,6 +1240,7 @@ void MusE::loadProject1(const QString& path)
       selectionChanged();           // enable/disable "Copy" & "Paste"
       arranger->endLoadSong();
       song->updatePos();
+      song->updateCurrentMarker();
       //
       // send "cur" controller values to devices
       //

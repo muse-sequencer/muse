@@ -1,0 +1,45 @@
+\chapter{Installation}
+  \section{Tips für Ubuntu/Kubuntu}
+
+    \subsection{Alsa-Sequencer}
+
+      \M\ benötigt das ALSA Sequencer Modul. Dies wird von Ubuntu leider
+      beim Systemstart nicht installiert.
+
+      Wir können das aber leicht durch einen Eintrag in {\tt /etc/modules}
+      beheben:
+
+      \starttyping
+            sudo bash
+            modprobe snd-seq
+            echo snd-seq >> /etc/modules
+      \stoptyping
+
+
+    \subsection{Realtime Clock}
+
+      Normalen Programmen ist der Zugriff auf die Echtzeituhr 
+      (RTC = "realtime clock") von Linux
+      verwehrt. \M\ benötigt jedoch eine genaue Uhr, um ein exaktes
+      Miditiming erzeugen zu können.
+      Zunächst wollen wir daher die RTC für alle Audioprogrammen
+      verfügbar machen:
+
+      \starttyping
+            sudo chown -vv root:audio /dev/rtc
+            sudo chmod g+rw /dev/rtc
+      \stoptyping
+
+      Jetzt haben alle Programme der audio Gruppe Zugriff auf die
+      RTC, dürfen jedoch noch nicht die hohen von \M\ benötigten
+      Auflösungen einstellen.
+      Um dies zu Erlauben geben wir ein:
+
+      \starttyping
+            sudo bash
+            echo 1024 > /proc/sys/dev/rtc/max-user-freq
+            echo dev.rtc.max-user-freq=1024 >> /etc/sysctl.conf
+      \stoptyping
+
+      Durch den Eintrag in der Datei {\tt /etc/sysctl.conf} erfolgt diese
+      Einstellung nun auch nach jedem Systemstart.

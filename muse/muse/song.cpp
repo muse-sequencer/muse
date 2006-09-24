@@ -548,38 +548,47 @@ void Song::setPos(int idx, const Pos& val, bool sig, bool isSeek, bool follow)
                   emit posChanged(idx, pos[idx], follow);
             }
 
-      if (idx == CPOS) {
-            AL::iMarker i1 = _markerList->begin();
-            AL::iMarker i2 = i1;
-            bool currentChanged = false;
-            for (; i1 != _markerList->end(); ++i1) {
-                  ++i2;
-                  if (val.tick() >= i1->first && (i2==_markerList->end() || val.tick() < i2->first)) {
-                        if (i1->second.current())
-                              return;
-                        i1->second.setCurrent(true);
-                        if (currentChanged) {
-                              emit markerChanged(MARKER_CUR);
-                              return;
-                              }
-                        ++i1;
-                        for (; i1 != _markerList->end(); ++i1) {
-                              if (i1->second.current())
-                                    i1->second.setCurrent(false);
-                              }
+      if (idx == CPOS)
+            updateCurrentMarker();
+      }
+
+//---------------------------------------------------------
+//   updateCurrentMarker
+//---------------------------------------------------------
+
+void Song::updateCurrentMarker()
+      {
+      AL::iMarker i1 = _markerList->begin();
+      AL::iMarker i2 = i1;
+      bool currentChanged = false;
+      Pos& val = pos[CPOS];
+      for (; i1 != _markerList->end(); ++i1) {
+            ++i2;
+            if (val.tick() >= i1->first && (i2==_markerList->end() || val.tick() < i2->first)) {
+                  if (i1->second.current())
+                        return;
+                  i1->second.setCurrent(true);
+                  if (currentChanged) {
                         emit markerChanged(MARKER_CUR);
                         return;
                         }
-                  else {
-                        if (i1->second.current()) {
-                              currentChanged = true;
+                  ++i1;
+                  for (; i1 != _markerList->end(); ++i1) {
+                        if (i1->second.current())
                               i1->second.setCurrent(false);
-                              }
+                        }
+                  emit markerChanged(MARKER_CUR);
+                  return;
+                  }
+            else {
+                  if (i1->second.current()) {
+                        currentChanged = true;
+                        i1->second.setCurrent(false);
                         }
                   }
-            if (currentChanged)
-                  emit markerChanged(MARKER_CUR);
             }
+      if (currentChanged)
+            emit markerChanged(MARKER_CUR);
       }
 
 //---------------------------------------------------------
@@ -881,6 +890,7 @@ void Song::setMeasureLen(int b)
 AL::Marker* Song::addMarker(const QString& s, const AL::Pos& pos)
       {
       AL::Marker* marker = _markerList->add(s, pos);
+      updateCurrentMarker();
       emit markerChanged(MARKER_ADD);
       return marker;
       }
@@ -892,8 +902,13 @@ AL::Marker* Song::addMarker(const QString& s, const AL::Pos& pos)
 void Song::removeMarker(AL::Marker* marker)
       {
       _markerList->remove(marker);
+      updateCurrentMarker();
       emit markerChanged(MARKER_REMOVE);
       }
+
+//---------------------------------------------------------
+//   setMarkerName
+//---------------------------------------------------------
 
 AL::Marker* Song::setMarkerName(AL::Marker* m, const QString& s)
       {
@@ -908,6 +923,7 @@ AL::Marker* Song::setMarkerTick(AL::Marker* m, int t)
       _markerList->remove(m);
       mm.setTick(t);
       m = _markerList->add(mm);
+      updateCurrentMarker();
       emit markerChanged(MARKER_TICK);
       return m;
       }
@@ -915,6 +931,7 @@ AL::Marker* Song::setMarkerTick(AL::Marker* m, int t)
 AL::Marker* Song::setMarkerLock(AL::Marker* m, bool f)
       {
       m->setType(f ? AL::FRAMES : AL::TICKS);
+      updateCurrentMarker();
       emit markerChanged(MARKER_LOCK);
       return m;
       }

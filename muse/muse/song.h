@@ -412,6 +412,7 @@ class Song : public QObject {
       bool read(QFile* qf);
       void read20(QDomNode node);
       void read10(QDomNode);
+      void updateCurrentMarker();
       };
 
 extern Song* song;

@@ -69,9 +69,7 @@ MarkerItem::MarkerItem(QTreeWidget* parent, AL::Marker* m)
       _marker = m;
       setText(COL_NAME, m->name());
       setTick(m->tick());
-      if (m->type() == AL::FRAMES)
-            setIcon(COL_LOCK, *lockIcon);
-      setLock(m->type() == AL::FRAMES);
+      setIcon(COL_LOCK, m->type() == AL::FRAMES ? *lockIcon : QIcon());
       }
 
 //---------------------------------------------------------
@@ -217,8 +215,7 @@ MarkerView::MarkerView()
          editSMPTE, SLOT(setValue(const Pos&)));
       connect(lock, SIGNAL(toggled(bool)),
          SLOT(lockChanged(bool)));
-      connect(song, SIGNAL(markerChanged(int)),
-         SLOT(markerChanged(int)));
+      connect(song, SIGNAL(markerChanged(int)), SLOT(markerChanged(int)));
 
       vbox->addWidget(table);
       vbox->addWidget(props);
@@ -227,17 +224,9 @@ MarkerView::MarkerView()
       //    Rest
       //---------------------------------------------------
 
-      connect(song, SIGNAL(songChanged(int)), SLOT(updateList()));
+//      connect(song, SIGNAL(songChanged(int)), SLOT(updateList()));
       updateList();
-      }
-
-//---------------------------------------------------------
-//   MArkerView
-//---------------------------------------------------------
-
-MarkerView::~MarkerView()
-      {
-//      undoRedo->removeFrom(tools);
+      markerChanged(Song::MARKER_CUR);    // select current marker
       }
 
 //---------------------------------------------------------
@@ -251,20 +240,9 @@ void MarkerView::addMarker()
 
 void MarkerView::addMarker(const AL::Pos& pos)
       {
-      AL::Marker* m = song->addMarker(QString(""), pos);
-      MarkerItem* newItem = new MarkerItem(table, m);
-      table->setCurrentItem(newItem);
-      table->setItemSelected(newItem, true);
+//      new MarkerItem(table, m);
+      song->addMarker(QString(""), pos);
       table->sortItems(0, Qt::AscendingOrder);
-      }
-
-//---------------------------------------------------------
-//   removeMarker
-//---------------------------------------------------------
-
-void MarkerView::removeMarker(const AL::Pos&)
-      {
-      printf("delete marker: not implemented\n");
       }
 
 //---------------------------------------------------------
@@ -275,8 +253,9 @@ void MarkerView::deleteMarker()
       {
       MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item) {
-            song->removeMarker(item->marker());
+            AL::Marker* marker = item->marker();
             delete item;
+            song->removeMarker(marker);
             }
       }
 
@@ -290,8 +269,6 @@ void MarkerView::updateList()
       AL::MarkerList* marker = song->marker();
       for (AL::iMarker i = marker->begin(); i != marker->end(); ++i) {
             AL::Marker* m = &i->second;
-            QString tick;
-            tick.setNum(i->first);
             new MarkerItem(table, m);
             }
       }
@@ -324,6 +301,10 @@ void MarkerView::markerSelectionChanged(QTreeWidgetItem* i)
             editTick->setEnabled(!item->lock());
             }
       }
+
+//---------------------------------------------------------
+//   clicked
+//---------------------------------------------------------
 
 void MarkerView::clicked(QTreeWidgetItem* i)
       {
@@ -377,28 +358,37 @@ void MarkerView::lockChanged(bool lck)
       }
 
 //---------------------------------------------------------
-//   posChanged
-//    select appropriate Marker
+//   markerChanged
 //---------------------------------------------------------
 
-void MarkerView::markerChanged(int)
+void MarkerView::markerChanged(int val)
       {
-#if 0
-      if (val != Song::MARKER_CUR)
-            return;
-      MarkerList* marker = song->marker();
-      for (iMarker i = marker->begin(); i != marker->end(); ++i) {
-            if (i->second.current()) {
-                  MarkerItem* item = (MarkerItem*)table->firstChild();
-                  while (item) {
-                        if (item->marker() == &i->second) {
-                              table->setSelected(item, true);
-                              return;
+      switch (val) {
+            case Song::MARKER_ADD:
+            case Song::MARKER_REMOVE:
+                  updateList();
+                  // fall through
+            case Song::MARKER_CUR:
+                  {
+                  AL::MarkerList* marker = song->marker();
+                  for (AL::iMarker i = marker->begin(); i != marker->end(); ++i) {
+                        if (i->second.current()) {
+                              int n = table->topLevelItemCount();
+                              for (int k = 0; k < n; ++k) {
+                                    MarkerItem* item = (MarkerItem*)(table->topLevelItem(k));
+                                    if (item->marker() == &i->second) {
+                                          table->setCurrentItem(item);
+                                          return;
+                                          }
+                                    }
                               }
-                        item = (MarkerItem*)item->nextSibling();
                         }
                   }
+                  break;
+            case Song::MARKER_NAME:
+            case Song::MARKER_TICK:
+            case Song::MARKER_LOCK:
+                  break;
             }
-#endif
       }
 

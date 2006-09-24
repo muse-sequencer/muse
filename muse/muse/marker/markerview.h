@@ -78,7 +78,6 @@ class MarkerView : public TopWin {
    private slots:
       void addMarker();
       void addMarker(const AL::Pos&);
-      void removeMarker(const AL::Pos&);
       void deleteMarker();
       void markerSelectionChanged(QTreeWidgetItem*);
       void nameChanged(const QString&);
@@ -90,7 +89,6 @@ class MarkerView : public TopWin {
 
    public:
       MarkerView();
-      virtual ~MarkerView();
       };
 
 #endif
