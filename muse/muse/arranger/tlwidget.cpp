@@ -42,8 +42,8 @@
 TLWidget::TLWidget(Track* t, TrGroupList* tgl)
       {
 //      setAttribute(Qt::WA_OpaquePaintEvent);
-      setAttribute(Qt::WA_NoSystemBackground);
-      setAttribute(Qt::WA_StaticContents);
+//      setAttribute(Qt::WA_NoSystemBackground);
+//      setAttribute(Qt::WA_StaticContents);
       setMouseTracking(true);
 
       state   = S_NORMAL;

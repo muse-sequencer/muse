@@ -141,13 +141,13 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setBackgroundPixPath(const QString&);
     void setBrowseBackgroundPixPath();
     //quick edit
-    void setChannelVolKnob(float val);
-    void setChannelPan(float val);
-    void setBrightnessKnob(float val);
-    void setModulationKnob(float val);
-    void setDetuneKnob(float val);
-    void setAttackKnob(float val);
-    void setReleaseKnob(float val);
+    void setChannelVolKnob(double val);
+    void setChannelPan(double val);
+    void setBrightnessKnob(double val);
+    void setModulationKnob(double val);
+    void setDetuneKnob(double val);
+    void setAttackKnob(double val);
+    void setReleaseKnob(double val);
     //Color
     void setRedColor(int);
     void setGreenColor(int);
@@ -185,7 +185,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setLBank(int);
     void setProg(int);
    //Global
-    void setMasterVolKnob(float);
+    void setMasterVolKnob(double);
     void setMasterVol(int);
     void setFeedback(int);
     void setLfoWave(int);

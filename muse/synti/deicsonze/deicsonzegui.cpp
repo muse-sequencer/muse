@@ -62,25 +62,25 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   connect(ChannelNumSpinBox, SIGNAL(valueChanged(int)), this,
 	  SLOT(setChangeChannel(int)));
   //MasterVolume
-  connect(masterVolKnob, SIGNAL(valueChanged(float, int)),
-	  this, SLOT(setMasterVolKnob(float)));
+  connect(masterVolKnob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setMasterVolKnob(double)));
   //Panic
   connect(panicButton, SIGNAL(pressed()), this, SLOT(setPanic()));
   //Quick edit
-  connect(channelVolumeKnob, SIGNAL(valueChanged(float, int)),
-	  this, SLOT(setChannelVolKnob(float)));
-  connect(channelPanKnob, SIGNAL(valueChanged(float, int)),
-	  this, SLOT(setChannelPan(float)));
-  connect(brightnessKnob, SIGNAL(valueChanged(float, int)),
-	  this, SLOT(setBrightnessKnob(float)));
-  connect(modulationKnob, SIGNAL(valueChanged(float, int)),
-	  this, SLOT(setModulationKnob(float)));
-  connect(detuneKnob, SIGNAL(valueChanged(float, int)),
-	  this, SLOT(setDetuneKnob(float)));
-  connect(attackKnob, SIGNAL(valueChanged(float, int)),
-	  this, SLOT(setAttackKnob(float)));
-  connect(releaseKnob, SIGNAL(valueChanged(float, int)),
-	  this, SLOT(setReleaseKnob(float)));
+  connect(channelVolumeKnob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setChannelVolKnob(double)));
+  connect(channelPanKnob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setChannelPan(double)));
+  connect(brightnessKnob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setBrightnessKnob(double)));
+  connect(modulationKnob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setModulationKnob(double)));
+  connect(detuneKnob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setDetuneKnob(double)));
+  connect(attackKnob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setAttackKnob(double)));
+  connect(releaseKnob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setReleaseKnob(double)));
   //nbr of voices
   connect(nbrVoicesSpinBox, SIGNAL(valueChanged(int)), 
 	  this, SLOT(setNbrVoices(int)));
@@ -2310,37 +2310,37 @@ void DeicsOnzeGui::setBrowseBackgroundPixPath() {
 //-----------------------------------------------------------
 // Quick Edit
 //-----------------------------------------------------------
-void DeicsOnzeGui::setChannelVolKnob(float val) {
+void DeicsOnzeGui::setChannelVolKnob(double val) {
   sendController(_currentChannel, CTRL_CHANNELVOLUME,
-		 (int)(val*(float)MAXCHANNELVOLUME));
+		 (int)(val*(double)MAXCHANNELVOLUME));
 }
-void DeicsOnzeGui::setBrightnessKnob(float val) {
+void DeicsOnzeGui::setBrightnessKnob(double val) {
   sendController(_currentChannel, CTRL_FINEBRIGHTNESS,
-		 (int)(val*(float)MAXFINEBRIGHTNESS));
+		 (int)(val*(double)MAXFINEBRIGHTNESS));
 }
-void DeicsOnzeGui::setModulationKnob(float val) {
+void DeicsOnzeGui::setModulationKnob(double val) {
   sendController(_currentChannel, CTRL_MODULATION,
-		 (int)(val*(float)MAXMODULATION));
+		 (int)(val*(double)MAXMODULATION));
 }
-void DeicsOnzeGui::setDetuneKnob(float val) {
-  channelDetuneSlider->setValue((int)((2.0*val-1.0)*(float)MAXCHANNELDETUNE));
+void DeicsOnzeGui::setDetuneKnob(double val) {
+  channelDetuneSlider->setValue((int)((2.0*val-1.0)*(double)MAXCHANNELDETUNE));
 }
-void DeicsOnzeGui::setAttackKnob(float val) {
+void DeicsOnzeGui::setAttackKnob(double val) {
   sendController(_currentChannel, CTRL_ATTACK_TIME,
-		 (int)(val*(float)MAXATTACK));
+		 (int)(val*(double)MAXATTACK));
 }
-void DeicsOnzeGui::setReleaseKnob(float val) {
-  sendController(_currentChannel, CTRL_RELEASE_TIME, (int)(val*(float)MAXRELEASE));
+void DeicsOnzeGui::setReleaseKnob(double val) {
+  sendController(_currentChannel, CTRL_RELEASE_TIME, (int)(val*(double)MAXRELEASE));
 }
 //-----------------------------------------------------------
 // Global control
 //-----------------------------------------------------------
-void DeicsOnzeGui::setChannelPan(float mv) {
+void DeicsOnzeGui::setChannelPan(double mv) {
   sendController(_currentChannel, CTRL_CHANNELPAN,
-		 (int)((mv-0.5)*2*(float)MAXCHANNELPAN));
+		 (int)((mv-0.5)*2*(double)MAXCHANNELPAN));
 }
-void DeicsOnzeGui::setMasterVolKnob(float mv) {
-  setMasterVol((int)(mv*(float)MAXMASTERVOLUME));
+void DeicsOnzeGui::setMasterVolKnob(double mv) {
+  setMasterVol((int)(mv*(double)MAXMASTERVOLUME));
 }
 void DeicsOnzeGui::setMasterVol(int mv) {
   unsigned char* message = new unsigned char[2];
@@ -2842,7 +2842,7 @@ void DeicsOnzeGui::updateNbrVoices(int val) {
 }
 void DeicsOnzeGui::updateMasterVolume(int val) {
   masterVolKnob->blockSignals(true);
-  masterVolKnob->setValue(((float)val)/((float)MAXMASTERVOLUME));
+  masterVolKnob->setValue(((double)val)/((double)MAXMASTERVOLUME));
   masterVolKnob->blockSignals(false);
 }
 //void DeicsOnzeGui::updateMidiInCh(int val) {
@@ -3684,7 +3684,7 @@ void DeicsOnzeGui::updateChannelDetune(int val) {
 }
 void DeicsOnzeGui::updateChannelDetuneKnob(int val) {
   detuneKnob->blockSignals(true);
-  detuneKnob->setValue((((float)val)/((float)MAXCHANNELDETUNE))/2.0+0.5);
+  detuneKnob->setValue((((double)val)/((double)MAXCHANNELDETUNE))/2.0+0.5);
   detuneKnob->blockSignals(false);
 }
 void DeicsOnzeGui::updateChannelDetuneSlider(int val) {
@@ -3697,7 +3697,7 @@ void DeicsOnzeGui::updateChannelDetuneSlider(int val) {
 }
 void DeicsOnzeGui::updateChannelVolume(int val) {
   channelVolumeKnob->blockSignals(true);
-  channelVolumeKnob->setValue(((float)val)/(float)MAXCHANNELVOLUME);
+  channelVolumeKnob->setValue(((double)val)/(double)MAXCHANNELVOLUME);
   channelVolumeKnob->blockSignals(false);
 }
 void DeicsOnzeGui::updateCategoryName(QString cn, bool enable) {
@@ -3776,7 +3776,7 @@ void DeicsOnzeGui::applyBackgroundPix() {
 }
 void DeicsOnzeGui::updateChannelPan(int val) {
   channelPanKnob->blockSignals(true);
-  channelPanKnob->setValue((((float)val/(float)MAXCHANNELPAN)+1.0)/2.0);
+  channelPanKnob->setValue((((double)val/(double)MAXCHANNELPAN)+1.0)/2.0);
   channelPanKnob->blockSignals(false);
   //channelPanSpinBox->blockSignals(true);
   //channelPanSpinBox->setValue(val);
@@ -3784,22 +3784,22 @@ void DeicsOnzeGui::updateChannelPan(int val) {
 }
 void DeicsOnzeGui::updateBrightness(int val) {
   brightnessKnob->blockSignals(true);
-  brightnessKnob->setValue((float)val/((float)MAXFINEBRIGHTNESS));
+  brightnessKnob->setValue((double)val/((double)MAXFINEBRIGHTNESS));
   brightnessKnob->blockSignals(false);
 }
 void DeicsOnzeGui::updateModulation(int val) {
   modulationKnob->blockSignals(true);
-  modulationKnob->setValue((float)val/((float)MAXMODULATION));
+  modulationKnob->setValue((double)val/((double)MAXMODULATION));
   modulationKnob->blockSignals(false);
 }
 void DeicsOnzeGui::updateAttack(int val) {
   attackKnob->blockSignals(true);
-  attackKnob->setValue((float)val/((float)MAXATTACK));
+  attackKnob->setValue((double)val/((double)MAXATTACK));
   attackKnob->blockSignals(false);
 }
 void DeicsOnzeGui::updateRelease(int val) {
   releaseKnob->blockSignals(true);
-  releaseKnob->setValue((float)val/((float)MAXRELEASE));
+  releaseKnob->setValue((double)val/((double)MAXRELEASE));
   releaseKnob->blockSignals(false);
 }
 void DeicsOnzeGui::updateQuickEdit() {
