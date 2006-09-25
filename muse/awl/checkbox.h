@@ -35,13 +35,13 @@ class CheckBox : public QCheckBox {
 
    private slots:
       void hasToggled(bool val) {
-            emit valueChanged(float(val), _id);
+            emit valueChanged(double(val), _id);
             }
    signals:
       void valueChanged(float, int);
 
    public slots:
-      void setValue(float val) { setDown(val > 0.5f); }
+      void setValue(double val) { setDown(val > 0.5f); }
 
    public:
       CheckBox(QWidget* parent);

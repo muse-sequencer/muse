@@ -74,8 +74,8 @@ void MidiChannelStrip::addKnob(int ctrl, int idx, const QString& tt, const QStri
       grid->addWidget(knob, 0, 1, 2, 1);
       layout->addLayout(grid);
 
-      connect(knob, SIGNAL(valueChanged(float,int)), slot);
-      connect(dl, SIGNAL(valueChanged(float,int)), slot);
+      connect(knob, SIGNAL(valueChanged(double,int)), slot);
+      connect(dl, SIGNAL(valueChanged(double,int)), slot);
       connect(knob, SIGNAL(sliderPressed(int)), SLOT(sliderPressed(int)));
       connect(knob, SIGNAL(sliderReleased(int)), SLOT(sliderReleased(int)));
       }
@@ -93,9 +93,9 @@ MidiChannelStrip::MidiChannelStrip(Mixer* m, MidiChannel* t, bool align)
       variSendTouched   = false;
       chorusSendTouched = false;
 
-      addKnob(CTRL_VARIATION_SEND, KNOB_VAR_SEND, tr("VariationSend"), tr("Var"), SLOT(ctrlChanged(float,int)), true);
-      addKnob(CTRL_REVERB_SEND, KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(ctrlChanged(float,int)), true);
-      addKnob(CTRL_CHORUS_SEND, KNOB_CHOR_SEND, tr("ChorusSend"), tr("Cho"), SLOT(ctrlChanged(float,int)), true);
+      addKnob(CTRL_VARIATION_SEND, KNOB_VAR_SEND, tr("VariationSend"), tr("Var"), SLOT(ctrlChanged(double,int)), true);
+      addKnob(CTRL_REVERB_SEND, KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(ctrlChanged(double,int)), true);
+      addKnob(CTRL_CHORUS_SEND, KNOB_CHOR_SEND, tr("ChorusSend"), tr("Cho"), SLOT(ctrlChanged(double,int)), true);
 
       int auxsSize = song->auxs()->size();
       if (auxsSize)
@@ -114,17 +114,17 @@ MidiChannelStrip::MidiChannelStrip(Mixer* m, MidiChannel* t, bool align)
       sl->setId(CTRL_VOLUME);
       sl->setFont(*config.fonts[1]);
 
-      connect(slider, SIGNAL(valueChanged(float,int)), SLOT(ctrlChanged(float, int)));
+      connect(slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(sliderPressed(int)));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(sliderReleased(int)));
-      connect(sl,     SIGNAL(valueChanged(float,int)), SLOT(ctrlChanged(float, int)));
+      connect(sl,     SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
       layout->addWidget(sl);
 
       //---------------------------------------------------
       //    pan, balance
       //---------------------------------------------------
 
-      addKnob(CTRL_PANPOT, KNOB_PAN, tr("Pan/Balance"), tr("Pan"), SLOT(ctrlChanged(float,int)), true);
+      addKnob(CTRL_PANPOT, KNOB_PAN, tr("Pan/Balance"), tr("Pan"), SLOT(ctrlChanged(double,int)), true);
 
       //---------------------------------------------------
       //    ---   record
@@ -199,7 +199,7 @@ void MidiChannelStrip::songChanged(int val)
 
 void MidiChannelStrip::heartBeat()
       {
-      float a = track->meter(0); // fast_log10(track->meter(0)) * .2f;
+      double a = track->meter(0); // fast_log10(track->meter(0)) * .2f;
       slider->setMeterVal(a * 0.008);
       track->setMeter(0, a * 0.8);  // hack
       }
@@ -210,7 +210,7 @@ void MidiChannelStrip::heartBeat()
 
 void MidiChannelStrip::controllerChanged(int id)
       {
-      float val = float(track->ctrlVal(id).i);
+      double val = double(track->ctrlVal(id).i);
 
       switch (id) {
             case CTRL_VOLUME:
@@ -246,7 +246,7 @@ void MidiChannelStrip::controllerChanged(int id)
 //	called when user changes controller
 //---------------------------------------------------------
 
-void MidiChannelStrip::ctrlChanged(float val, int num)
+void MidiChannelStrip::ctrlChanged(double val, int num)
       {
       int ival = int(val);
       CVal cval;
@@ -509,7 +509,7 @@ void MidiStrip::songChanged(int val)
 
 void MidiStrip::heartBeat()
       {
-      float a = track->meter(0); // fast_log10(track->meter(0)) * .2f;
+      double a = track->meter(0); // fast_log10(track->meter(0)) * .2f;
       meter->setMeterVal(a * 0.008);
       track->setMeter(0, a * 0.8);  // hack
       }
@@ -716,10 +716,10 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
 
       controllerChanged(CTRL_MASTER_VOLUME);
 
-      connect(slider, SIGNAL(valueChanged(float,int)), SLOT(ctrlChanged(float, int)));
+      connect(slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(sliderPressed(int)));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(sliderReleased(int)));
-      connect(sl,     SIGNAL(valueChanged(float,int)), SLOT(ctrlChanged(float, int)));
+      connect(sl,     SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
       layout->addWidget(sl);
 
       //---------------------------------------------------
@@ -808,7 +808,7 @@ void MidiOutPortStrip::songChanged(int val)
 
 void MidiOutPortStrip::heartBeat()
       {
-      float a = track->meter(0); // fast_log10(track->meter(0)) * .2f;
+      double a = track->meter(0); // fast_log10(track->meter(0)) * .2f;
       slider->setMeterVal(a * 0.008);
       track->setMeter(0, a * 0.8);  // hack
       }
@@ -817,7 +817,7 @@ void MidiOutPortStrip::heartBeat()
 //   ctrlChanged
 //---------------------------------------------------------
 
-void MidiOutPortStrip::ctrlChanged(float val, int num)
+void MidiOutPortStrip::ctrlChanged(double val, int num)
       {
       int ival = int(val);
       CVal cval;
@@ -910,7 +910,7 @@ void MidiOutPortStrip::autoWriteToggled(bool val)
 void MidiOutPortStrip::controllerChanged(int id)
       {
       if (id == CTRL_MASTER_VOLUME) {
-            float val = float(track->ctrlVal(id).i);
+            double val = double(track->ctrlVal(id).i);
       	if (!volumeTouched)
             	slider->setValue(val);
             sl->setValue(val);
@@ -1141,7 +1141,7 @@ void MidiInPortStrip::songChanged(int val)
 
 void MidiInPortStrip::heartBeat()
       {
-      float a = track->meter(0); // fast_log10(track->meter(0)) * .2f;
+      double a = track->meter(0); // fast_log10(track->meter(0)) * .2f;
       meter->setMeterVal(a * 0.008);
       track->setMeter(0, a * 0.8);  // hack
       }
@@ -1366,10 +1366,10 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
       sl->setFont(*config.fonts[1]);
       sl->setFixedWidth(STRIP_WIDTH-2);
 
-      connect(slider, SIGNAL(valueChanged(float,int)), SLOT(ctrlChanged(float, int)));
+      connect(slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(sliderPressed(int)));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(sliderReleased(int)));
-      connect(sl,     SIGNAL(valueChanged(float,int)), SLOT(ctrlChanged(float, int)));
+      connect(sl,     SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
       layout->addWidget(sl);
 
       //---------------------------------------------------
@@ -1458,7 +1458,7 @@ void MidiSyntiStrip::songChanged(int val)
 
 void MidiSyntiStrip::heartBeat()
       {
-      float a = track->meter(0); // fast_log10(track->meter(0)) * .2f;
+      double a = track->meter(0); // fast_log10(track->meter(0)) * .2f;
       slider->setMeterVal(a * 0.008);
       track->setMeter(0, a * 0.8);  // hack
       }
@@ -1467,7 +1467,7 @@ void MidiSyntiStrip::heartBeat()
 //   ctrlChanged
 //---------------------------------------------------------
 
-void MidiSyntiStrip::ctrlChanged(float val, int num)
+void MidiSyntiStrip::ctrlChanged(double val, int num)
       {
       int ival = int(val);
       CVal cval;
@@ -1560,7 +1560,7 @@ void MidiSyntiStrip::autoWriteToggled(bool val)
 void MidiSyntiStrip::controllerChanged(int id)
       {
       if (id == CTRL_MASTER_VOLUME) {
-            float val = float(track->ctrlVal(id).i);
+            double val = double(track->ctrlVal(id).i);
       	if (!volumeTouched)
             	slider->setValue(val);
             sl->setValue(val);

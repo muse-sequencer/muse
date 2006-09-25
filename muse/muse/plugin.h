@@ -67,7 +67,7 @@ class Plugin {
 
       virtual PluginIF* createPIF(PluginI*) = 0;
 
-      virtual void range(int, float* min, float* max) const {
+      virtual void range(int, double* min, double* max) const {
             *min = 0.0f;
             *max = 1.0f;
             }
@@ -81,7 +81,7 @@ class Plugin {
       virtual bool isLog(int) const       { return false; }
       virtual bool isBool(int) const      { return false; }
       virtual bool isInt(int) const       { return false; }
-      virtual float defaultValue(int) const { return 0.0f;  }
+      virtual double defaultValue(int) const { return 0.0f;  }
       };
 
 //---------------------------------------------------------
@@ -117,7 +117,7 @@ class LadspaPlugin : public Plugin {
       virtual QString copyright() const { return QString(plugin->Copyright); }
 
       void* instantiate();
-      virtual void range(int i, float*, float*) const;
+      virtual void range(int i, double*, double*) const;
       virtual int parameter() const { return _parameter;     }
       virtual int inports() const   { return _inports; }
       virtual int outports() const  { return _outports; }
@@ -137,7 +137,7 @@ class LadspaPlugin : public Plugin {
             LADSPA_PortRangeHint r = plugin->PortRangeHints[pIdx[k]];
             return LADSPA_IS_HINT_INTEGER(r.HintDescriptor);
             }
-      virtual float defaultValue(int) const;
+      virtual double defaultValue(int) const;
       };
 
 //---------------------------------------------------------
@@ -179,7 +179,7 @@ class PluginIF {
       virtual void activate() = 0;
       virtual void deactivate() = 0;
       virtual void cleanup() = 0;
-      virtual void setParam(int i, float val) = 0;
+      virtual void setParam(int i, double val) = 0;
       virtual float param(int i) const = 0;
       virtual const char* getParameterName(int) const           { return ""; }
       virtual const char* getParameterLabel(int) const          { return 0; }
@@ -216,7 +216,7 @@ class LadspaPluginIF : public PluginIF {
       virtual const char* getParameterName(int i) const {
             return plugin->plugin->PortNames[plugin->pIdx[i]];
             }
-      virtual void setParam(int i, float val) { controls[i].val = val; }
+      virtual void setParam(int i, double val) { controls[i].val = val; }
       virtual float param(int i) const        { return controls[i].val; }
       bool init(Plugin*);
       };
@@ -285,17 +285,17 @@ class PluginI {
       void setControllerList(Ctrl* cl)           { controllerList.push_back(cl); }
       Ctrl* controller(int idx) const            { return controllerList[idx]; }
       bool setParameter(const QString& s, double val);
-      void setParam(int i, float val);
-      float param(int i) const                   { return pif[0]->param(i); }
+      void setParam(int i, double val);
+      double param(int i) const                   { return pif[0]->param(i); }
 
       const char* getParameterName(int i) const  { return pif[0]->getParameterName(i); }
       const char* getParameterLabel(int i) const { return pif[0]->getParameterLabel(i); }
       const char* getParameterDisplay(int i, float v) const { return pif[0]->getParameterDisplay(i, v); }
 
-      void range(int i, float* min, float* max) const {
+      void range(int i, double* min, double* max) const {
             _plugin->range(i, min, max);
             }
-      float defaultValue(int i) const { return _plugin->defaultValue(i);   }
+      double defaultValue(int i) const { return _plugin->defaultValue(i);   }
       bool inPlaceCapable() const   { return _plugin->inPlaceCapable(); }
 
       bool isLog(int k) const   { return _plugin->isLog(k);  }
@@ -313,7 +313,6 @@ class PluginI {
 class Pipeline : public QList<PluginI*> {
    public:
       Pipeline() {}
-//      void insert(PluginI* p, int index);
       bool isOn(int idx) const;
       void setOn(int, bool);
       QString label(int idx) const;
@@ -325,7 +324,6 @@ class Pipeline : public QList<PluginI*> {
       void showNativeGui(int, bool);
       void apply(int ports, unsigned long nframes, float** buffer);
       void move(int idx, bool up);
-//      bool empty(int idx) const;
       void setChannels(int);
       PluginI* plugin(int idx) { return value(idx); }
       };

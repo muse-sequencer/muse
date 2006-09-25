@@ -126,8 +126,8 @@ class Track : public QObject {
       bool _monitor;
       int _channels;                // 1 - mono, 2 - stereo
       CtrlRecList _recEvents;       // recorded automation events
-      float _meter[MAX_CHANNELS];
-      float _peak[MAX_CHANNELS];
+      double _meter[MAX_CHANNELS];
+      double _peak[MAX_CHANNELS];
       int _peakTimer[MAX_CHANNELS];
       bool _locked;                 // true if parts are locked to frames
       bool _selected;
@@ -262,21 +262,21 @@ class Track : public QObject {
       void resetMeter();
       void resetPeaks();
       static void resetAllMeter();
-      float meter(int ch) const          { return _meter[ch]; }
+      double meter(int ch) const          { return _meter[ch]; }
       void addMidiMeter(int velo) {
             _meter[0] += velo/5;
             if (_meter[0] > 127.0f)
                   _meter[0] = 127.0f;
             }
-      float peak(int ch) const           { return _peak[ch];      }
-      void setPeak(int ch, float v)      { _peak[ch] = v;         }
+      double peak(int ch) const           { return _peak[ch];      }
+      void setPeak(int ch, double v)      { _peak[ch] = v;         }
       void resetPeak(int ch) {
             _peak[ch] = 0;
             _peakTimer[ch] = 0;
             }
       int peakTimer(int ch) const        { return _peakTimer[ch]; }
       void setPeakTimer(int ch, int v)   { _peakTimer[ch] = v;    }
-      void setMeter(int ch, float v)     {
+      void setMeter(int ch, double v)     {
             _meter[ch] = v;
 		if (v > _peak[ch]) {
 			_peak[ch] = v;

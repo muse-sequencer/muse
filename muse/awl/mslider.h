@@ -37,8 +37,8 @@ class MeterSlider : public VolSlider
       Q_OBJECT
 
       int _channel;
-      std::vector<float> meterval;
-      std::vector<float> meterPeak;
+      std::vector<double> meterval;
+      std::vector<double> meterPeak;
       int yellowScale, redScale;
       int _meterWidth;
 
@@ -50,7 +50,7 @@ class MeterSlider : public VolSlider
 
    public slots:
       void resetPeaks();
-      void setMeterVal(int channel, float value, float peak);
+      void setMeterVal(int channel, double value, double peak);
 
    public:
       MeterSlider(QWidget* parent = 0);

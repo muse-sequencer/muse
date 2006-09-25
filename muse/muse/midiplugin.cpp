@@ -181,8 +181,8 @@ MidiPluginI::~MidiPluginI()
 static void loadMidiPlugin(QFileInfo* fi)
       {
       if (debugMsg)
-            printf("  load midi plugin <%s>\n", fi->filePath().toLatin1().data());
-      void* handle = dlopen(fi->filePath().toLatin1().data(), RTLD_NOW);
+            printf("  load midi plugin <%s>\n", fi->filePath().toAscii().data());
+      void* handle = dlopen(fi->filePath().toLocal8Bit().data(), RTLD_NOW);
       if (handle == 0) {
             fprintf(stderr, "loadMidiPlugin::dlopen(%s) failed: %s\n",
               fi->filePath().toLatin1().data(), dlerror());

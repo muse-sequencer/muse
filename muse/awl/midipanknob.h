@@ -42,12 +42,12 @@ class MidiPanKnob : public Knob {
             }
 
    public slots:
-      virtual void setValue(float v) {
+      virtual void setValue(double v) {
             AbstractSlider::setValue(v - 64.0f);
             }
    public:
       MidiPanKnob(QWidget* parent = 0);
-      virtual float value() const { return _value + 64.0f; }
+      virtual double value() const { return _value + 64.0f; }
       };
 }
 

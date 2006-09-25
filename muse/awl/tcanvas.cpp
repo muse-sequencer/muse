@@ -891,6 +891,26 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
 
       int y1 = r.y();
       int y2 = y1 + r.height();
+      if (drawRuler) {
+            p.setClipRect(hor);
+            int w  = r.width();
+            int x  = r.x();
+            int y  = rulerHeight - 16;
+            QColor lcColors[3] = { Qt::red, Qt::blue, Qt::blue };
+
+            for (int i = 0; i < 3; ++i) {
+                  p.setPen(lcColors[i]);
+                  int xp      = pos2pix(pos[i]) + rRuler.x();
+                  QPixmap* pm = markIcon[i];
+                  int pw = (pm->width() + 1) / 2;
+                  int x1 = x - pw;
+                  int x2 = x + w + pw;
+                  if (xp >= x1 && xp < x2) {
+                        p.drawPixmap(xp - pw, y-2, *pm);
+                        p.drawLine(xp, y1, xp, y2);
+                        }
+                  }
+            }
       if (marker) {
             int yy1 = y1;
             if (yy1 < rCanvasA.x())
@@ -900,31 +920,12 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
             if (start != marker->begin())
                   --start;
             AL::iMarker end = marker->lower_bound(pos2.tick());
+            if (end != marker->end())
+                  ++end;
             for (AL::iMarker m = start; m != end; ++m) {
                   AL::Pos pm(m->second);
                   int x = pos2pix(pm) + rRuler.x();
                   p.drawLine(x, yy1, x, y2);
-                  }
-            }
-      if (!drawRuler)
-            return;
-
-      p.setClipRect(hor);
-      int w  = r.width();
-      int x  = r.x();
-      int y  = rulerHeight - 16;
-      QColor lcColors[3] = { Qt::red, Qt::blue, Qt::blue };
-
-      for (int i = 0; i < 3; ++i) {
-            p.setPen(lcColors[i]);
-            int xp      = pos2pix(pos[i]) + rRuler.x();
-            QPixmap* pm = markIcon[i];
-            int pw = (pm->width() + 1) / 2;
-            int x1 = x - pw;
-            int x2 = x + w + pw;
-            if (xp >= x1 && xp < x2) {
-                  p.drawPixmap(xp - pw, y-2, *pm);
-                  p.drawLine(xp, y1, xp, y2);
                   }
             }
       }

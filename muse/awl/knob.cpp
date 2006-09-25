@@ -134,7 +134,7 @@ void Knob::mouseReleaseEvent(QMouseEvent*)
 void Knob::mouseMoveEvent(QMouseEvent* ev)
       {
       int y       = ev->y();
-      float delta = (maxValue() - minValue()) / 100.0f;
+      double delta = (maxValue() - minValue()) / 100.0f;
       if (delta == 0)
             delta = 1;
       _value  += (startY - y) * delta;
@@ -188,7 +188,7 @@ void Knob::paint(const QRect& r)
       // draw arc
       //-----------------------------------------
 
-      float dvalue = maxValue() - minValue();
+      double dvalue = maxValue() - minValue();
       if (_center) {
             int size = _scaleSize * 8;
             if (_value >= 0) {

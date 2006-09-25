@@ -141,7 +141,7 @@ void Song::read(QDomNode node)
             QString tag(e.tagName());
             int i = e.text().toInt();
             if (tag == "configuration")
-                  readConfiguration(node.firstChild());
+                  ; // readConfiguration(node.firstChild());
             else if (tag == "master")
                   setMasterFlag(i);
             else if (tag == "loop")

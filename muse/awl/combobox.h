@@ -35,14 +35,14 @@ class ComboBox : public QComboBox {
 
    private slots:
       void activatedIntern(int val) {
-            emit valueChanged(float(val), _id);
+            emit valueChanged(double(val), _id);
             }
 
    signals:
-      void valueChanged(float, int);
+      void valueChanged(double, int);
 
    public slots:
-      void setValue(float val) { setCurrentIndex(int(val)); }
+      void setValue(double val) { setCurrentIndex(int(val)); }
 
    public:
       ComboBox(QWidget* parent);

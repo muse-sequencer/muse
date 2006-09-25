@@ -42,9 +42,9 @@ MidiVolEntry::MidiVolEntry(QWidget* parent)
 //   setValue
 //---------------------------------------------------------
 
-void MidiVolEntry::setValue(float v)
+void MidiVolEntry::setValue(double v)
       {
-      FloatEntry::setValue(-fast_log10(float(_max*_max)/(v*v))*20.0f);
+      FloatEntry::setValue(-fast_log10(double(_max*_max)/(v*v))*20.0f);
       }
 }
 

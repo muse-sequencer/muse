@@ -532,7 +532,7 @@ void Track::setController(Pos pos, int id, int v)
       setController(pos, id, val);
       }
 
-void Track::setController(Pos pos, int id, float v)
+void Track::setController(Pos pos, int id, double v)
       {
       CVal val;
       val.f = v;
@@ -802,13 +802,13 @@ void MidiTrackBase::addPlugin(MidiPluginI* plugin, int idx)
             for (int i = 0; i < ncontroller; ++i) {
                   int id = (idx + 1) * 0x1000 + i;
                   QString name(plugin->getParameterName(i));
-                  float min, max;
+                  double min, max;
                   plugin->range(i, &min, &max);
                   Ctrl* cl = getController(id);
                   if (cl == 0) {
                         cl = new Ctrl(id, name);
                         cl->setRange(min, max);
-                        float defaultValue = plugin->defaultValue(i);
+                        double defaultValue = plugin->defaultValue(i);
                         cl->setDefault(defaultValue);
                         cl->setCurVal(defaultValue);
                         addController(cl);

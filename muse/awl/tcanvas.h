@@ -244,6 +244,7 @@ class TimeCanvas : public QFrame {
       void setCanvasBackground(const QPixmap& pm);
 
       void updateCanvasB() { _widget->update(rCanvasB); }
+      void updateRuler()   { _widget->update(rRuler);   }
 
       static FollowMode followMode;
       friend class CtrlEdit;

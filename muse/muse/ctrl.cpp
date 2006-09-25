@@ -202,7 +202,7 @@ void Ctrl::del(unsigned frame)
 //   read
 //---------------------------------------------------------
 
-void Ctrl::read(QDomNode node, bool midi)
+void Ctrl::read(QDomNode node, bool)
       {
       QDomElement e = node.toElement();
       _id           = e.attribute("id").toInt();
@@ -379,7 +379,7 @@ CVal Ctrl::pixel2val(int pixel, int maxpixel)
 //   setRange
 //---------------------------------------------------------
 
-void Ctrl::setRange(float _min, float _max)
+void Ctrl::setRange(double _min, double _max)
       {
       if (_type & LOG) {
             min.f = fast_log10(_min);

@@ -138,7 +138,7 @@ bool precountPrerecord = false;
 bool precountPreroll = false;
 bool midiClickFlag   = true;
 bool audioClickFlag  = true;
-float audioClickVolume = 0.1f;
+double audioClickVolume = 0.1f;
 
 bool rcEnable = false;
 bool midiSeqRunning = false;

@@ -55,7 +55,7 @@ FloatEntry::FloatEntry(QWidget* parent)
 //   setString
 //---------------------------------------------------------
 
-bool FloatEntry::setString(float v)
+bool FloatEntry::setString(double v)
       {
       QString s;
 //      if (v < _minValue || v > _maxValue) {
@@ -80,7 +80,7 @@ bool FloatEntry::setString(float v)
 void FloatEntry::setSValue(const QString& s)
       {
       bool ok;
-      float v = s.toFloat(&ok);
+      double v = s.toFloat(&ok);
       if (ok && (v != _value)) {
             if (v < _minValue)
                   v = _minValue;
@@ -105,7 +105,7 @@ void FloatEntry::valueChange()
 //   incValue
 //---------------------------------------------------------
 
-void FloatEntry::incValue(float)
+void FloatEntry::incValue(double)
       {
       if (_value + 1.0 < _maxValue) {
             _value = _value + 1.0;
@@ -118,7 +118,7 @@ void FloatEntry::incValue(float)
 //   decValue
 //---------------------------------------------------------
 
-void FloatEntry::decValue(float)
+void FloatEntry::decValue(double)
       {
       if (_value - 1.0 > _minValue) {
             _value = _value - 1.0;
@@ -169,7 +169,7 @@ void FloatEntry::mousePressEvent(QMouseEvent* event)
       {
       button = event->button();
       starty = event->y();
-      evx    = float(event->x());
+      evx    = double(event->x());
       timecount = 0;
       repeat();
       timer->start(TIMER1);
@@ -272,7 +272,7 @@ void FloatEntry::mouseDoubleClickEvent(QMouseEvent* event)
 //   setValue
 //---------------------------------------------------------
 
-void FloatEntry::setValue(float val)
+void FloatEntry::setValue(double val)
       {
       if (_log) {
             if (val == 0.0f)
@@ -304,9 +304,9 @@ void FloatEntry::updateValue()
 //   value
 //---------------------------------------------------------
 
-float FloatEntry::value() const
+double FloatEntry::value() const
       {
-      float rv;
+      double rv;
       if (_log)
             rv = pow(10.0, _value * 0.05f);
       else

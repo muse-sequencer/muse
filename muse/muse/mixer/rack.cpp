@@ -389,7 +389,7 @@ void EffectRack::initPlugin(QDomNode &node, int idx)
                             //QString name  = e.attribute("name"); // currently this value is just thrown.
                             QString value  = e.attribute("val");
                             QLocale::setDefault(QLocale::C);
-                            float val = value.toFloat();
+                            double val = value.toFloat();
                             CVal cval;
                             cval.f = val;
                             song->setControllerVal(plugi->track(), plugi->controller(i), cval);

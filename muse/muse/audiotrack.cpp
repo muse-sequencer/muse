@@ -113,7 +113,7 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx)
             for (int i = 0; i < ncontroller; ++i) {
                   int id = (idx + 1) * 0x1000 + i;
                   QString name(plugin->getParameterName(i));
-                  float min, max;
+                  double min, max;
                   plugin->range(i, &min, &max);
                   Ctrl* cl = getController(id);
                   //printf("Plugin name: %s id:%d\n",name.toAscii().data(), id);

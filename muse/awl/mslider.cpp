@@ -67,7 +67,7 @@ void MeterSlider::setChannel(int n)
 //   setMeterVal
 //---------------------------------------------------------
 
-void MeterSlider::setMeterVal(int channel, float v, float peak)
+void MeterSlider::setMeterVal(int channel, double v, double peak)
       {
       bool mustRedraw = false;
       if (meterval[channel] != v) {

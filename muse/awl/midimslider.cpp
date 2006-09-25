@@ -44,7 +44,7 @@ MidiMeterSlider::MidiMeterSlider(QWidget* parent)
 //    v -  0.0 < 1.0
 //---------------------------------------------------------
 
-void MidiMeterSlider::setMeterVal(float v)
+void MidiMeterSlider::setMeterVal(double v)
       {
       if (v < 0.001)
             v = .0f;
@@ -72,7 +72,7 @@ void MidiMeterSlider::mouseDoubleClickEvent(QMouseEvent*)
 void MidiMeterSlider::paint(const QRect& r)
       {
       int pixel = height() - sliderSize().height();
-      float range = maxValue() - minValue();
+      double range = maxValue() - minValue();
       int ppos = int(pixel * (_value - minValue()) / range);
       if (_invert)
             ppos = pixel - ppos;

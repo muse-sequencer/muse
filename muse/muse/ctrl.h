@@ -190,7 +190,7 @@ class Ctrl : public CTRL {
       bool changed() const           { return _changed; }
       void setTouched(bool val)      { _touched = val;  }
       bool touched() const           { return _touched; }
-      void setRange(float min, float max);
+      void setRange(double min, double max);
       void setRange(int min, int max);
       CVal minVal() const            { return min; }
       CVal maxVal() const            { return max; }

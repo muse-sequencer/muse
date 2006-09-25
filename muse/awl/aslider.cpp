@@ -134,7 +134,7 @@ void AbstractSlider::wheelEvent(QWheelEvent* ev)
 
 void AbstractSlider::keyPressEvent(QKeyEvent* ev)
       {
-      float oval = _value;
+      double oval = _value;
 
       switch (ev->key()) {
             case Qt::Key_Home:    _value = _minValue; break;
@@ -160,7 +160,7 @@ void AbstractSlider::keyPressEvent(QKeyEvent* ev)
 //   setValue
 //---------------------------------------------------------
 
-void AbstractSlider::setValue(float val)
+void AbstractSlider::setValue(double val)
       {
       if (_log) {
             if (val == 0.0f)
@@ -189,7 +189,7 @@ void AbstractSlider::valueChange()
 //   value
 //---------------------------------------------------------
 
-float AbstractSlider::value() const
+double AbstractSlider::value() const
       {
       return _log ? (_value <= _minValue) ? 0.0f : pow(10.0, _value*0.05f)
                   : _value;

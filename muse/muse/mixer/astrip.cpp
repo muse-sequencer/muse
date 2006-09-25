@@ -34,7 +34,7 @@ void AudioStrip::heartBeat()
       for (int ch = 0; ch < channel; ++ch) {
             int n = track->peakTimer(ch);
             ++n;
-            float f = track->peak(ch);
+            double f = track->peak(ch);
             if (n >= peakHold) {
             	// track->resetPeak(ch);
                   track->setPeak(ch, f * 0.7);
@@ -129,7 +129,7 @@ void AudioStrip::stereoToggled(bool val)
 //   auxChanged
 //---------------------------------------------------------
 
-void AudioStrip::auxChanged(float v, int idx)
+void AudioStrip::auxChanged(double v, int idx)
       {
       if (auxValue[idx] != v) {
             CVal val;
@@ -143,7 +143,7 @@ void AudioStrip::auxChanged(float v, int idx)
 //   volumeChanged
 //---------------------------------------------------------
 
-void AudioStrip::volumeChanged(float v)
+void AudioStrip::volumeChanged(double v)
       {
       CVal val;
       val.f = v;
@@ -154,7 +154,7 @@ void AudioStrip::volumeChanged(float v)
 //   setAux
 //---------------------------------------------------------
 
-void AudioStrip::setAux(float val, int idx)
+void AudioStrip::setAux(double val, int idx)
       {
       auxKnob[idx]->setValue(val);
       auxLabel[idx]->setValue(val);
@@ -201,7 +201,7 @@ void AudioStrip::volumeReleased()
 //   panChanged
 //---------------------------------------------------------
 
-void AudioStrip::panChanged(float v)
+void AudioStrip::panChanged(double v)
       {
       if (v != panVal) {
             CVal val;
@@ -215,7 +215,7 @@ void AudioStrip::panChanged(float v)
 //   setPan
 //---------------------------------------------------------
 
-void AudioStrip::setPan(float val)
+void AudioStrip::setPan(double val)
       {
       if (val != panVal) {
             panVal = val;
@@ -299,8 +299,8 @@ Awl::VolKnob* AudioStrip::addAuxKnob(int id, Awl::VolEntry** dlabel)
 
       connect(knob, SIGNAL(sliderPressed(int)),  SLOT(auxPressed(int)));
       connect(knob, SIGNAL(sliderReleased(int)), SLOT(auxReleased(int)));
-      connect(knob, SIGNAL(valueChanged(float, int)), SLOT(auxChanged(float, int)));
-      connect(pl,   SIGNAL(valueChanged(float, int)), SLOT(auxChanged(float, int)));
+      connect(knob, SIGNAL(valueChanged(double, int)), SLOT(auxChanged(double, int)));
+      connect(pl,   SIGNAL(valueChanged(double, int)), SLOT(auxChanged(double, int)));
       return knob;
       }
 
@@ -339,8 +339,8 @@ Awl::PanKnob* AudioStrip::addPanKnob(Awl::PanEntry** dlabel)
       pangrid->addWidget(knob, 0, 1, 2, 1);
       layout->addLayout(pangrid);
 
-      connect(knob, SIGNAL(valueChanged(float,int)), SLOT(panChanged(float)));
-      connect(pl,   SIGNAL(valueChanged(float,int)), SLOT(panChanged(float)));
+      connect(knob, SIGNAL(valueChanged(double,int)), SLOT(panChanged(double)));
+      connect(pl,   SIGNAL(valueChanged(double,int)), SLOT(panChanged(double)));
       connect(knob, SIGNAL(sliderPressed(int)), SLOT(panPressed()));
       connect(knob, SIGNAL(sliderReleased(int)), SLOT(panReleased()));
       return knob;
@@ -414,7 +414,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
                   auxKnob.push_back(ak);
                   auxLabel.push_back(al);
                   auxValue.push_back(0.0f);
-                  float as = t->getController(AC_AUX+idx)->curVal().f;
+                  double as = t->getController(AC_AUX+idx)->curVal().f;
                   ak->setValue(as);
                   al->setValue(as);
                   }
@@ -431,7 +431,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       slider->setFixedWidth(60);
       slider->setChannel(channel);
       Ctrl* ctrl = t->getController(AC_VOLUME);
-      float vol = 0.0;
+      double vol = 0.0f;
       if (ctrl)
             vol = ctrl->curVal().f;
       slider->setValue(vol);
@@ -443,8 +443,8 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       sl->setFrame(true);
       sl->setValue(vol);
 
-      connect(slider, SIGNAL(valueChanged(float,int)), SLOT(volumeChanged(float)));
-      connect(sl,     SIGNAL(valueChanged(float,int)), SLOT(volumeChanged(float)));
+      connect(slider, SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double)));
+      connect(sl,     SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double)));
 
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(volumePressed()));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(volumeReleased()));
@@ -456,7 +456,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       //---------------------------------------------------
 
       pan = addPanKnob(&panl);
-      float panv = t->getController(AC_PAN)->curVal().f;
+      double panv = t->getController(AC_PAN)->curVal().f;
       pan->setValue(panv);
       panl->setValue(panv);
 
@@ -964,7 +964,7 @@ void AudioStrip::recordToggled(bool val)
 
 void AudioStrip::controllerChanged(int id)
       {
-      float val = track->getController(id)->curVal().f;
+      double val = track->getController(id)->curVal().f;
       switch (id) {
             case AC_VOLUME:
                   slider->setValue(val);

@@ -92,7 +92,7 @@ extern bool precountPrerecord;
 extern bool precountPreroll;
 extern bool midiClickFlag;
 extern bool audioClickFlag;
-extern float audioClickVolume;
+extern double audioClickVolume;
 
 extern bool rcEnable;
 #endif

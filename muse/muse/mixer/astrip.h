@@ -36,15 +36,15 @@ class AudioStrip : public Strip {
 
       Awl::MeterSlider* slider;
       Awl::VolEntry* sl;
-      float volume;
+      double volume;
 
       Awl::PanKnob* pan;
       Awl::PanEntry* panl;
-      float panVal;
+      double panVal;
 
       std::vector<Awl::VolKnob*> auxKnob;
       std::vector<Awl::VolEntry*> auxLabel;
-      std::vector<float> auxValue;
+      std::vector<double> auxValue;
 
       QToolButton* stereo;
       QToolButton* pre;
@@ -65,15 +65,15 @@ class AudioStrip : public Strip {
       void offToggled(bool);
       void iRoutePressed();
       void oRoutePressed();
-      void auxChanged(float, int);
-      void volumeChanged(float);
+      void auxChanged(double, int);
+      void volumeChanged(double);
       void volumePressed();
       void volumeReleased();
-      void panChanged(float);
-      void setPan(float);
+      void panChanged(double);
+      void setPan(double);
       void panPressed();
       void panReleased();
-      void setAux(float, int);
+      void setAux(double, int);
       void auxPressed(int);
       void auxReleased(int);
       void muteToggled(bool);

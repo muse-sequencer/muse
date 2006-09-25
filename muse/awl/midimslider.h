@@ -34,7 +34,7 @@ class MidiMeterSlider : public Slider
       Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
       Q_OBJECT
 
-      float meterval;
+      double meterval;
       int _meterWidth;
 
       virtual void paint(const QRect& r);
@@ -43,7 +43,7 @@ class MidiMeterSlider : public Slider
       virtual void mouseDoubleClickEvent(QMouseEvent*);
 
    public slots:
-      void setMeterVal(float value);
+      void setMeterVal(double value);
 
    public:
       MidiMeterSlider(QWidget* parent = 0);

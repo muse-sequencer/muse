@@ -52,6 +52,17 @@ PartCanvas::PartCanvas()
       lselected  = -1;
       starty     = -1;
       setMarkerList(song->marker());
+      connect(song, SIGNAL(markerChanged(int)), SLOT(markerChanged(int)));
+      }
+
+//---------------------------------------------------------
+//   markerChanged
+//---------------------------------------------------------
+
+void PartCanvas::markerChanged(int val)
+      {
+      if (val == Song::MARKER_CUR)
+            updateRuler();      
       }
 
 //---------------------------------------------------------

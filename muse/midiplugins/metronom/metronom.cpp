@@ -47,8 +47,8 @@ bool Metronom::init()
       data.beatVelo    = 70;
 
       gui = new MetronomGui(this, 0);
+      gui->hide();
       gui->setWindowTitle(QString(name()));
-      gui->show();
 
       return false;
       }

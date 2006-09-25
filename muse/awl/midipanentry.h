@@ -36,12 +36,12 @@ class MidiPanEntry : public FloatEntry {
       virtual void valueChange();
 
    public slots:
-      virtual void setValue(float v) {
+      virtual void setValue(double v) {
             FloatEntry::setValue(v - 64.0f);
             }
    public:
       MidiPanEntry(QWidget* parent);
-      virtual float value() const  { return _value + 64.0f; }
+      virtual double value() const  { return _value + 64.0f; }
       };
 }
 

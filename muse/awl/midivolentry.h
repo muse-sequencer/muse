@@ -36,7 +36,7 @@ class MidiVolEntry : public FloatEntry {
   	int _max;
 
    public:
-      virtual void setValue(float);
+      virtual void setValue(double);
    	void setMax(int val) { _max = val; }
       int max() const      { return _max; }
       MidiVolEntry(QWidget* parent);

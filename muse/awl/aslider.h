@@ -26,7 +26,8 @@ namespace Awl {
 //---------------------------------------------------------
 //    AbstractSlider
 //
-//!   The AwlAbstractSlider class provides an float value within a range
+//!   The AwlAbstractSlider class provides an double value 
+//!   within a range
 //
 //!   The class is designed as a common super class for
 //!   widgets like AwlKnob and AwlSlider
@@ -35,7 +36,7 @@ namespace Awl {
 
 class AbstractSlider : public QWidget {
       Q_OBJECT
-      Q_PROPERTY(float value READ value WRITE setValue)
+      Q_PROPERTY(double value READ value WRITE setValue)
       Q_PROPERTY(bool center READ center WRITE setCenter)
       Q_PROPERTY(bool invertedAppearance READ invertedAppearance WRITE setInvertedAppearance)
 
@@ -55,7 +56,7 @@ class AbstractSlider : public QWidget {
 
    protected:
       int _id;
-      float _value;
+      double _value;
       double _minValue, _maxValue, _lineStep, _pageStep;
       bool _center;
       bool _invert;
@@ -70,10 +71,10 @@ class AbstractSlider : public QWidget {
       virtual void valueChange();
 
    signals:
-      void valueChanged(float, int);
+      void valueChanged(double, int);
 
    public slots:
-      virtual void setValue(float v);
+      virtual void setValue(double v);
 
    public:
       AbstractSlider(QWidget* parent = 0);
@@ -101,7 +102,7 @@ class AbstractSlider : public QWidget {
       int id() const { return _id; }
       void setId(int i) { _id = i; }
 
-      virtual float value() const;
+      virtual double value() const;
 
       double minValue() const    { return _minValue; }
       void setMinValue(double v) { _minValue = v; }

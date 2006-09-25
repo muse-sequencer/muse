@@ -80,7 +80,7 @@ class MidiChannelStrip : public Strip {
 
    private slots:
       virtual void controllerChanged(int id);
-      void ctrlChanged(float val, int num);
+      void ctrlChanged(double val, int num);
       void muteToggled(bool);
       void soloToggled(bool);
       void autoChanged();
@@ -116,7 +116,7 @@ class MidiOutPortStrip : public Strip {
 
    private slots:
       virtual void controllerChanged(int id);
-      void ctrlChanged(float val, int num);
+      void ctrlChanged(double val, int num);
       void muteToggled(bool);
       void soloToggled(bool);
       void autoChanged();
@@ -153,7 +153,7 @@ class MidiSyntiStrip : public Strip {
 
    private slots:
       virtual void controllerChanged(int id);
-      void ctrlChanged(float val, int num);
+      void ctrlChanged(double val, int num);
       void muteToggled(bool);
       void soloToggled(bool);
       void autoChanged();

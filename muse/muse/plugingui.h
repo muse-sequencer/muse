@@ -72,14 +72,14 @@ class PluginGui : public QMainWindow {
       void save();
       void bypassToggled(bool);
 
-      void setController(float, int);
+      void setController(double, int);
       void autoChanged();
 
    public:
       PluginGui(PluginI*);
       ~PluginGui();
       void setOn(bool);
-      void updateValue(int, float);
+      void updateValue(int, double);
       void updateValues();
 
    public slots:

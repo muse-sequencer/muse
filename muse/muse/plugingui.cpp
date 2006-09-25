@@ -398,12 +398,12 @@ printf("build gui from ui <path><%s>\n", path.toLatin1().data());
             int h           = fm.height() + 4;
 
             for (int i = 0; i < n; ++i) {
-                  float lower;
-                  float upper;
-                  float dlower;
-                  float dupper;
-                  float val   = plugin->param(i);
-                  float dval  = val;
+                  double lower;
+                  double upper;
+                  double dlower;
+                  double dupper;
+                  double val   = plugin->param(i);
+                  double dval  = val;
 
                   plugin->range(i, &lower, &upper);
                   dlower = lower;
@@ -433,7 +433,7 @@ printf("build gui from ui <path><%s>\n", path.toLatin1().data());
                         w.type      = GuiWidget::CHECKBOX;
                         gw.push_back(w);
                         grid->addWidget(cb, i, 0, 1, 3);
-                        connect(cb, SIGNAL(valueChanged(float,int)), SLOT(setController(float, int)));
+                        connect(cb, SIGNAL(valueChanged(double,int)), SLOT(setController(double, int)));
                         }
                   else {
                         QLabel* label    = new QLabel(QString(plugin->getParameterName(i)), mw);
@@ -474,8 +474,8 @@ printf("build gui from ui <path><%s>\n", path.toLatin1().data());
                               grid->addWidget(l, i, 2);
                               }
                         grid->addWidget(s,     i, 3);
-                        connect(s, SIGNAL(valueChanged(float,int)), SLOT(setController(float,int)));
-                        connect(e, SIGNAL(valueChanged(float,int)), SLOT(setController(float,int)));
+                        connect(s, SIGNAL(valueChanged(double,int)), SLOT(setController(double,int)));
+                        connect(e, SIGNAL(valueChanged(double,int)), SLOT(setController(double,int)));
                         }
                   updateValue(i, val);
                   }
@@ -506,24 +506,24 @@ void PluginGui::connectPrebuiltGui(QWidget* wContainer)
             GuiWidget w;
             w.widget = (QWidget*)obj;
             if (strcmp(obj->metaObject()->className(), "Awl::Slider") == 0) {
-                  connect((Slider*)obj, SIGNAL(valueChanged(float,int)), SLOT(setController(float,int)));
+                  connect((Slider*)obj, SIGNAL(valueChanged(double,int)), SLOT(setController(double,int)));
                   w.type = GuiWidget::SLIDER;
                   w.parameter = ((Slider*)obj)->id();
                   }
             else if (strcmp(obj->metaObject()->className(), "Awl::FloatEntry") == 0) {
-                  connect((FloatEntry*)obj, SIGNAL(valueChanged(float,int)), SLOT(setController(float,int)));
+                  connect((FloatEntry*)obj, SIGNAL(valueChanged(double,int)), SLOT(setController(double,int)));
                   w.type = GuiWidget::FLOAT_ENTRY;
                   w.parameter = ((FloatEntry*)obj)->id();
                   }
             else if (strcmp(obj->metaObject()->className(), "Awl::CheckBox") == 0) {
                   w.type = GuiWidget::CHECKBOX;
                   w.parameter = ((CheckBox*)obj)->id();
-                  connect(obj, SIGNAL(valueChanged(float, int)), SLOT(setController(float, int)));
+                  connect(obj, SIGNAL(valueChanged(double, int)), SLOT(setController(double, int)));
                   }
             else if (strcmp(obj->metaObject()->className(), "Awl::ComboBox") == 0) {
                   w.type = GuiWidget::COMBOBOX;
                   w.parameter = ((ComboBox*)obj)->id();
-                  connect(obj, SIGNAL(valueChanged(float, int)), SLOT(setController(float,int)));
+                  connect(obj, SIGNAL(valueChanged(double, int)), SLOT(setController(double,int)));
                   }
             else {
                   printf("PluginGui::unknown widget class %s\n", obj->metaObject()->className());
@@ -546,7 +546,7 @@ PluginGui::~PluginGui()
 //   setController
 //---------------------------------------------------------
 
-void PluginGui::setController(float val, int param)
+void PluginGui::setController(double val, int param)
       {
       if (plugin->isInt(param))
             val = rint(val);
@@ -669,7 +669,7 @@ void PluginGui::setOn(bool val)
 //   updateValue
 //---------------------------------------------------------
 
-void PluginGui::updateValue(int parameter, float value)
+void PluginGui::updateValue(int parameter, double value)
       {
       for (std::vector<GuiWidget>::iterator i = gw.begin(); i != gw.end(); ++i) {
             int idx = i->parameter;
@@ -706,7 +706,7 @@ void PluginGui::updateValues()
       {
       int n = plugin->plugin()->parameter();
       for (int i = 0; i < n; ++i) {
-            float val = plugin->param(i);
+            double val = plugin->param(i);
             updateValue(i, val);
             }
       }
@@ -717,7 +717,7 @@ void PluginGui::updateValues()
 
 void PluginGui::controllerChanged(int id)
       {
-      float value = plugin->track()->ctrlVal(id).f;
+      double value = plugin->track()->ctrlVal(id).f;
       for (std::vector<GuiWidget>::iterator i = gw.begin(); i != gw.end(); ++i) {
             int idx = i->parameter;
             if (plugin->controller(idx)->id() != id)

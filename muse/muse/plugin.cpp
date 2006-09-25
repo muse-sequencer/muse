@@ -447,7 +447,7 @@ PluginI::~PluginI()
 //   range
 //---------------------------------------------------------
 
-void LadspaPlugin::range(int i, float* min, float* max) const
+void LadspaPlugin::range(int i, double* min, double* max) const
       {
       i = pIdx[i];
       LADSPA_PortRangeHint range = plugin->PortRangeHints[i];
@@ -457,7 +457,7 @@ void LadspaPlugin::range(int i, float* min, float* max) const
             *max = 1.0;
             return;
             }
-      float m = (desc & LADSPA_HINT_SAMPLE_RATE) ? float(AL::sampleRate) : 1.0f;
+      double m = (desc & LADSPA_HINT_SAMPLE_RATE) ? float(AL::sampleRate) : 1.0f;
 
       if (desc & LADSPA_HINT_BOUNDED_BELOW)
             *min =  range.LowerBound * m;
@@ -600,7 +600,7 @@ void PluginI::setChannels(int c)
 //   defaultValue
 //---------------------------------------------------------
 
-float LadspaPlugin::defaultValue(int k) const
+double LadspaPlugin::defaultValue(int k) const
       {
       k = pIdx[k];
       return ladspaDefaultValue(plugin, k);
@@ -804,7 +804,7 @@ void PluginI::deactivate()
 //   setParam
 //---------------------------------------------------------
 
-void PluginI::setParam(int idx, float val)
+void PluginI::setParam(int idx, double val)
       {
       if (_gui)
             _gui->updateValue(idx, val);

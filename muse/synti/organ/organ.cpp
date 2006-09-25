@@ -153,8 +153,8 @@ static inline float table_pos (float* table, unsigned long freq_256, unsigned *a
 bool Organ::init(const char* name)
       {
       gui = new OrganGui;
+      gui->hide();
       gui->setWindowTitle(QString(name));
-      gui->show();
 
       for (int i = 0; i < NUM_CONTROLLER; ++i)
             setController(0, synthCtrl[i].num, synthCtrl[i].val);

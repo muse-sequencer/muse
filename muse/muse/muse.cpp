@@ -442,7 +442,7 @@ void MusE::setupTransportToolbar(QToolBar* tb) const
 MusE::MusE()
    : QMainWindow()
       {
-//      setupUi(this);
+      setWindowIcon(*museIcon);
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::WheelFocus);
 
@@ -746,19 +746,19 @@ MusE::MusE()
 
       tr_id = menuView->addAction(QIcon(*view_transport_windowIcon), tr("Transport Panel"));
       tr_id->setCheckable(true);
-      connect(tr_id, SIGNAL(toggled(bool)), this, SLOT(showTransport(bool)));
+      connect(tr_id, SIGNAL(triggered(bool)), this, SLOT(showTransport(bool)));
       bt_id = menuView->addAction(QIcon(*view_bigtime_windowIcon), tr("Bigtime window"));
       bt_id->setCheckable(true);
-      connect(bt_id, SIGNAL(toggled(bool)), this, SLOT(showBigtime(bool)));
+      connect(bt_id, SIGNAL(triggered(bool)), this, SLOT(showBigtime(bool)));
       aid1a = menuView->addAction(QIcon(*mixerSIcon), tr("Mixer 1"));
       aid1a->setCheckable(true);
-      connect(aid1a, SIGNAL(toggled(bool)), this, SLOT(showMixer1(bool)));
+      connect(aid1a, SIGNAL(triggered(bool)), this, SLOT(showMixer1(bool)));
       aid1b = menuView->addAction(QIcon(*mixerSIcon), tr("Mixer 2"));
       aid1b->setCheckable(true);
-      connect(aid1b, SIGNAL(toggled(bool)), this, SLOT(showMixer2(bool)));
+      connect(aid1b, SIGNAL(triggered(bool)), this, SLOT(showMixer2(bool)));
       mk_id = menuView->addAction(QIcon(*view_markerIcon), tr("Marker"));
       mk_id->setCheckable(true);
-      connect(mk_id , SIGNAL(toggled(bool)), this, SLOT(showMarker(bool)));
+      connect(mk_id , SIGNAL(triggered(bool)), this, SLOT(showMarker(bool)));
 
       //-------------------------------------------------------------
       //    Structure
@@ -1022,6 +1022,7 @@ MusE::MusE()
       initMidiSynth();
 
       transport = new Transport;
+      transport->hide();
 	connect(transport, SIGNAL(closed()), SLOT(transportClosed()));
 
       QClipboard* cb = QApplication::clipboard();
@@ -1158,6 +1159,7 @@ void MusE::loadProject1(const QString& path)
                   w->close();
             }
       emit startLoadSong();
+
       song->setProjectPath(path);
       song->clear(false);
       song->setCreated(newProject);
@@ -1165,6 +1167,8 @@ void MusE::loadProject1(const QString& path)
       QString s = pd.absoluteFilePath(name + ".med");
 
       QFile f(s);
+
+      song->blockSignals(true);
 
       bool rv = true;
       if (f.open(QIODevice::ReadOnly)) {
@@ -1192,13 +1196,8 @@ void MusE::loadProject1(const QString& path)
             QString msg(tr("File <%1> read error"));
             QMessageBox::critical(this, header, msg.arg(s));
             }
-
       tr_id->setChecked(config.transportVisible);
       bt_id->setChecked(config.bigTimeVisible);
-
-      //
-      // dont emit song->update():
-      song->blockSignals(true);
 
       showBigtime(config.bigTimeVisible);
       showMixer1(config.mixer1Visible);
@@ -1207,17 +1206,13 @@ void MusE::loadProject1(const QString& path)
             mixer1->setUpdateMixer();
       if (mixer2 && config.mixer2Visible)
             mixer2->setUpdateMixer();
-
       resize(config.geometryMain.size());
       move(config.geometryMain.topLeft());
-
       if (config.transportVisible)
             transport->show();
       transport->move(config.geometryTransport.topLeft());
       showTransport(config.transportVisible);
-
       song->blockSignals(false);
-      
       transport->setMasterFlag(song->masterFlag());
       punchinAction->setChecked(song->punchin());
       punchoutAction->setChecked(song->punchout());
@@ -2990,7 +2985,6 @@ int main(int argc, char* argv[])
       song = new Song();
       muse = new MusE();
       app.setMuse(muse);
-      muse->setWindowIcon(*museIcon);
 
       //---------------------------------------------------
       //  load project
@@ -3103,7 +3097,6 @@ int main(int argc, char* argv[])
 
       muse->loadProject(path);
       muse->changeConfig(false);
-
       if (!debugMode) {
             if (mlockall(MCL_CURRENT | MCL_FUTURE))
                   perror("WARNING: Cannot lock memory:");

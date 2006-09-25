@@ -507,7 +507,7 @@ bool MusE::importMidi(const QString name, bool merge)
             int n = sig.n;
 
             transport->setTimesig(z, n);
-//TD          int tempo = AL::tempomap.tempo(0);
+//            int tempo = AL::tempomap.tempo(0);
 //            transport->setTempo(tempo);
 
             bool masterF = !AL::tempomap.empty();
@@ -531,11 +531,11 @@ void MusE::processTrack(MidiTrack* track)
             return;
 
       //---------------------------------------------------
-      //    Parts ermitteln
-      //    die Midi-Spuren werden in Parts aufgebrochen;
-      //    ein neuer Part wird bei einer Lcke von einem
-      //    Takt gebildet; die L�ge wird jeweils auf
-      //    Takte aufgerundet und aligned
+      //    create parts
+      //    Break midi tracks into parts.
+      //    A new part is created when a gap of at least
+      //    one measure is detected. Part len is aligned
+      //    to one measure.
       //---------------------------------------------------
 
       PartList* pl = track->parts();
@@ -575,7 +575,6 @@ void MusE::processTrack(MidiTrack* track)
                         part->setType(AL::TICKS);
                         part->setTick(st);
                         part->setLenTick(x1-st);
-// printf("new part %d len: %d\n", st, x1-st);
                         part->setName(partname);
                         pl->add(part);
                         st = -1;
@@ -600,7 +599,6 @@ void MusE::processTrack(MidiTrack* track)
             Part* part = new Part(track);
             part->setType(AL::TICKS);
             part->setTick(st);
-// printf("new part %d len: %d\n", st, x2-st);
             part->setLenTick(x2-st);
             part->setName(partname);
             pl->add(part);

@@ -97,6 +97,9 @@ class PartCanvas : public TimeCanvas {
             }
       void contextMenu(const QPoint&);
 
+   private slots:
+      void markerChanged(int);
+
    signals:
       void kbdMovementUpdate(Track* t, Part* p);
       void startEditor(Part*, int);

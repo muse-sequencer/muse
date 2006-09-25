@@ -135,9 +135,11 @@ Synth::Synth(const QFileInfo* fi, QString s)
 void* MessSynth::instantiate(const QString& instanceName)
       {
       ++_instances;
-      const char* path = strdup(info.filePath().toLatin1().data());
+      const char* path = strdup(info.filePath().toAscii().data());
 
       // load Synti dll
+      if (debugMsg)
+            printf("  load synti <%s>\n", path);
       // void* handle = dlopen(path, RTLD_NOW);
       void* handle = dlopen(path, RTLD_LAZY);
       if (handle == 0) {
@@ -448,8 +450,8 @@ void SynthI::read(QDomNode node)
       if (initInstance(s))
             return;
       song->insertTrack0(this, -1);
-      showGui(startGui);
       setGeometry(r.x(), r.y(), r.width(), r.height());
+      showGui(startGui);
       }
 
 //---------------------------------------------------------

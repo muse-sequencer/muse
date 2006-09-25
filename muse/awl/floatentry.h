@@ -56,15 +56,15 @@ class FloatEntry : public QLineEdit {
       virtual void mouseDoubleClickEvent(QMouseEvent*);
       virtual void mouseReleaseEvent(QMouseEvent*);
       virtual void setSValue(const QString&);
-      virtual bool setString(float);
-      virtual void incValue(float);
-      virtual void decValue(float);
+      virtual bool setString(double);
+      virtual void incValue(double);
+      virtual void decValue(double);
 
       void updateValue();
 
    protected:
       int _id;
-      float _value;
+      double _value;
       virtual void valueChange();
 
    private slots:
@@ -74,15 +74,15 @@ class FloatEntry : public QLineEdit {
       void endEdit();
 
    public slots:
-      virtual void setValue(float);
+      virtual void setValue(double);
 
    signals:
-      void valueChanged(float, int);
+      void valueChanged(double, int);
 
    public:
       FloatEntry(QWidget*);
       virtual QSize sizeHint() const;
-      virtual float value() const;
+      virtual double value() const;
       int id() const                        { return _id; }
       void setId(int i)                     { _id = i; }
       double minValue() const               { return _minValue; }
