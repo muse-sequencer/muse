@@ -868,7 +868,7 @@
           <enum>QFrame::Plain</enum>
          </property>
          <property name="text" >
-          <string>DeicsOnze v0.4.3 Copyright (c) 2004-2006 Nil Geisweiller. Published under GPL licence.</string>
+          <string>DeicsOnze v0.4.5 Copyright (c) 2004-2006 Nil Geisweiller. Published under GPL licence.</string>
          </property>
         </widget>
        </item>
@@ -5941,7 +5941,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
           <item>
            <widget class="QComboBox" name="qualityComboBox" >
             <property name="enabled" >
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <item>
              <property name="text" >
@@ -5956,6 +5956,11 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
             <item>
              <property name="text" >
               <string>Low</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Ultra low</string>
              </property>
             </item>
            </widget>

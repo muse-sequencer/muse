@@ -7,9 +7,8 @@
 - Change presetName subcategoryName category with SysEx
 - Internal restructure, private vs public, add comment, etc
 - getPatchInfo...
-- Optimize the code, make 3 level of quality sound
+- Optimize the code
 - Remember the last directory
 - Pan per voices
 - Load BUMP preset
-- Correct portamento for different samplerates
 - calibrate portamento and pitch envelope to fit real DX11

@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.3
+//    Version 0.4.5
 //
 //    deicsonzegui.cpp
 //
@@ -527,7 +527,9 @@ void DeicsOnzeGui::loadConfiguration() {
 void DeicsOnzeGui::setQuality(const QString& q) {
   unsigned char* message = new unsigned char[2];
   message[0]=SYSEX_QUALITY;
-  message[1]=(unsigned char)(q=="High"?high:(q=="Middle"?middle:low));
+  message[1]=(unsigned char)(q=="High"?
+			     high:(q=="Middle"?
+				   middle:(q=="Low"?low:ultralow)));
   sendSysex(message, 2);
 }
 //-----------------------------------------------------------

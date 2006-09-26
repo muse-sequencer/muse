@@ -1,10 +1,12 @@
-24.9  (ng) DeicsOnze 4.0.3
+26.9  (ng) DeicsOnze 0.4.5
+      - add four level of quality
+24.9  (ng) DeicsOnze 0.4.3
       - add monophony
       - finish to clean SutulaBank.dei
-23.9  (ng) DeicsOnze 4.0.2
+23.9  (ng) DeicsOnze 0.4.2
       - add pitch envelope (but does not sound yet like DeicsOnze's)
       - keep cleaning SutulaBank.dei
-17.9  (ng) DeicsOnze 4.0.1
+17.9  (ng) DeicsOnze 0.4.1
       - add optimization -O3, execution twice faster, but compilation longer
       - add portamento
       - started to clean SutulaBank.dei

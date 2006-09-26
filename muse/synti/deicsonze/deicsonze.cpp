@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.3
+//    Version 0.4.5
 //
 //
 //
@@ -175,6 +175,11 @@ void DeicsOnze::getGeometry(int* x, int* y, int* w, int* h) const {
     *y = pos.y();
     *w = size.width();
     *h = size.height();
+}
+
+void DeicsOnze::setSampleRate(int sr) {
+  Mess::setSampleRate(sr);
+  setQuality(_global.quality);
 }
 
 //---------------------------------------------------------
@@ -516,6 +521,8 @@ inline bool isPitchEnv(PitchEg* pe) {
 //---------------------------------------------------------
 inline double getPitchEnvCoefInct(int pl) {
   /*
+    pl = 0 <--> -4oct, pl = 50 <--> 0oct, pl = 100 <--> 4oct
+
     y = a * exp((pl - 50)/b)
     1.0 = a*exp(0) ==> a = 1.0
     8.0 = exp(50/b) ==> log 8.0 = 50/b ==> b = 50/log(8.0)
@@ -527,13 +534,14 @@ inline double getPitchEnvCoefInct(int pl) {
 //---------------------------------------------------------
 // getPitchEnvCoefInctInct
 //---------------------------------------------------------
-inline double getPitchEnvCoefInctInct(int pl1, int pl2, int pr) {
+inline double getPitchEnvCoefInctInct(int pl1, int pl2, int pr, double sr) {
   //TODO : depending on the sampleRate
   int a = pr;
-  double coef = 0.00000025/*COEFPITCHENV*/;
-  if(pl1<pl2) return 1.0+coef*((double)(a*a)+1.0);
+  double c = 1.0 + COEFPITCHENV*((double)(a*a)+1.0);
+  double inctInct = exp(log(c)*48000.0/sr);
+  if(pl1<pl2) return(inctInct);
   else if(pl1>pl2)
-    return 1.0/(1.0+coef*((double)(a*a)+1.0));
+    return(1.0/inctInct);
   else return 1.0;
 }
 
@@ -725,7 +733,7 @@ void DeicsOnze::setLfo(int c/*channel*/)
     //Pitch LFO
     _global.channel[c].lfoMaxIndex =
       (_global.channel[c].lfoFreq==0?0:(int)((1.0/_global.channel[c].lfoFreq)
-				  *(double)sampleRate()));
+				  *(double)_global.deiSampleRate));
     _global.channel[c].lfoPitch = 
       (((double)_preset[c]->lfo.pModDepth/(double)MAXPMODDEPTH)
        *(COEFPLFO(_preset[c]->sensitivity.pitch)));
@@ -766,7 +774,7 @@ void DeicsOnze::setEnvAttack(int c, int v, int k) {
     _global.channel[c].voices[v].op[k].envInct=
       (_preset[c]->eg[k].ar==0?0:
        (double)(RESOLUTION/4)/(envAR2s(_preset[c]->eg[k].ar)
-			       *(double)sampleRate()))
+			       *_global.deiSampleRate))
       *coefAttack(_global.channel[c].attack);
 }
 void DeicsOnze::setEnvAttack(int c, int k) {
@@ -781,7 +789,7 @@ void DeicsOnze::setEnvAttack(int c) {
 void DeicsOnze::setEnvRelease(int c, int v, int k) {
   if(_global.channel[c].voices[v].op[k].envState==RELEASE)
     _global.channel[c].voices[v].op[k].coefVLevel =
-      envRR2coef(_preset[c]->eg[k].rr, sampleRate(),
+      envRR2coef(_preset[c]->eg[k].rr, _global.deiSampleRate,
 		 _global.channel[c].release);
 }
 void DeicsOnze::setEnvRelease(int c, int k) {
@@ -798,13 +806,15 @@ void DeicsOnze::setPitchEnvRelease(int c, int v) {
     if(_global.channel[c].voices[v].pitchEnvCoefInct
        > _global.channel[c].voices[v].pitchEnvCoefInctPhase1) {
       _global.channel[c].voices[v].pitchEnvCoefInctInct = 
-	getPitchEnvCoefInctInct(1, 0, _preset[c]->pitchEg.pr3);
+	getPitchEnvCoefInctInct(1, 0, _preset[c]->pitchEg.pr3,
+				_global.deiSampleRate);
       _global.channel[c].voices[v].pitchEnvState = RELEASE_PE;
     }
     else if(_global.channel[c].voices[v].pitchEnvCoefInct
 	    < _global.channel[c].voices[v].pitchEnvCoefInctPhase1) {
       _global.channel[c].voices[v].pitchEnvCoefInctInct = 
-	getPitchEnvCoefInctInct(0, 1, _preset[c]->pitchEg.pr3);
+	getPitchEnvCoefInctInct(0, 1, _preset[c]->pitchEg.pr3,
+				_global.deiSampleRate);
       _global.channel[c].voices[v].pitchEnvState = RELEASE_PE;
     }
     else {
@@ -813,6 +823,33 @@ void DeicsOnze::setPitchEnvRelease(int c, int v) {
     }
   }
 }
+
+//-----------------------------------------------------------------
+// setQuality
+//-----------------------------------------------------------------
+void DeicsOnze::setQuality(Quality q) {
+  _global.quality = q;
+  switch(q) {
+  case high :
+    _global.qualityCounterTop = 1;
+    break;
+  case middle :
+    _global.qualityCounterTop = 2;
+    break;
+  case low :
+    _global.qualityCounterTop = 4;
+    break;
+  case ultralow :
+    _global.qualityCounterTop = 6;
+    break;
+  default : printf("Error switch setQuality : out of value\n");
+    break;
+  }
+  _global.deiSampleRate = (double)sampleRate()
+    / (double)_global.qualityCounterTop;
+  _global.qualityCounter = 0;
+}
+
 //-----------------------------------------------------------------
 // brightness2Amp
 //-----------------------------------------------------------------
@@ -1250,8 +1287,30 @@ int DeicsOnze::pitchOn2Voice(int c, int pitch) {
 //---------------------------------------------------------
 // getAttractor
 //---------------------------------------------------------
-inline double getAttractor(int portamentoTime) {
-  return(1.0 + COEFPORTA/(double)(portamentoTime*portamentoTime));
+inline double getAttractor(int portamentoTime, double sr) {
+  /* some explanations
+
+     c(48000) = c > 1
+     
+     f_sr(0) = 1000, f_sr(t) = 2000
+     
+     f_sr*2(0) = 1000, f_sr*2(t*2) = 2000
+     
+     f_sr(t) = exp(t*ln(c(sr))) * 1000
+     
+     2000 = exp(t*ln(c(48000))) * 1000
+     
+     2000 = exp(t*2*ln(c(48000*2))) * 1000
+     
+     t*ln(c(48000)) = t*2*ln(c(48000*2))
+     
+     c(48000*m) = exp(ln(c)/m)
+     
+     sr = 48000*m
+  */
+  double c;
+  c = 1.0 + COEFPORTA/(double)(portamentoTime*portamentoTime);
+  return(exp(log(c)*48000.0/sr));
 }
 
 //---------------------------------------------------------
@@ -1395,7 +1454,7 @@ inline void portamentoUpdate(Channel* p_c, Voice* p_v) {
 //---------------------------------------------------------
 // pitchEnvelopeUpdate
 //---------------------------------------------------------
-inline void pitchEnvelopeUpdate(Voice* v, PitchEg* pe) {
+inline void pitchEnvelopeUpdate(Voice* v, PitchEg* pe, double sr) {
   if(v->pitchEnvState != OFF_PE) {
     switch(v->pitchEnvState) {
     case PHASE1 :
@@ -1410,7 +1469,7 @@ inline void pitchEnvelopeUpdate(Voice* v, PitchEg* pe) {
 	v->pitchEnvState = PHASE2;
 	v->pitchEnvCoefInct = getPitchEnvCoefInct(pe->pl2);
 	v->pitchEnvCoefInctInct =
-	  getPitchEnvCoefInctInct(pe->pl2, pe->pl3, pe->pr2);
+	  getPitchEnvCoefInctInct(pe->pl2, pe->pl3, pe->pr2, sr);
       }
       else v->pitchEnvCoefInct *= v->pitchEnvCoefInctInct;
       break;
@@ -1489,7 +1548,7 @@ inline double envAR2s(int ar) {
 //  return the coefficient for the exponential decrease
 //  with respect to d1r and sampleRate, sr
 //---------------------------------------------------------
-inline double envD1R2coef(int d1r, int sr) {
+inline double envD1R2coef(int d1r, double sr) {
   double dt;//such that amp(t+dt)=amp(t)/2
   double alpha;//such that amp(t)=exp(alpha*t)
 
@@ -1505,7 +1564,7 @@ inline double envD1R2coef(int d1r, int sr) {
       //amp(t+mt)
       //following the above equational system we found :
       alpha=-log(2)/dt;
-      return exp(alpha/(double)sr);
+      return exp(alpha/sr);
     }
 }
 
@@ -1524,7 +1583,7 @@ inline double coefRelease(unsigned char release) {
 //  return the coefficient for the exponential decrease
 //  with respect to rr and sampleRate, sr
 //---------------------------------------------------------
-inline double envRR2coef(int rr, int sr, unsigned char release) {
+inline double envRR2coef(int rr, double sr, unsigned char release) {
   double dt;//such that amp(t+dt)=amp(t)/2
   double alpha;//such that amp(t)=exp(alpha*t)
 
@@ -1539,7 +1598,7 @@ inline double envRR2coef(int rr, int sr, unsigned char release) {
   //amp(t+mt)
   //following the above equational system we found :
   alpha=-log(2)/dt;
-  return exp(alpha/(double)sr);
+  return exp(alpha/sr);
 }
 
 //---------------------------------------------------------
@@ -1558,7 +1617,7 @@ inline double coefAttack(unsigned char attack) {
 //   envelope state, making evoluate the envelope
 //  sr is the sample rate and st the sine_table
 //---------------------------------------------------------
-inline double env2AmpR(int sr, float* wt, Eg eg, OpVoice* p_opVoice) {
+inline double env2AmpR(double sr, float* wt, Eg eg, OpVoice* p_opVoice) {
   switch(p_opVoice->envState)
     {
     case ATTACK:
@@ -1720,7 +1779,9 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
     //quality
     if(qdEl.tagName()==QUALITYSTR) {
       _global.quality = (qdEl.text()==HIGHSTR?high:
-			 (qdEl.text()==MIDDLESTR?middle:low));
+			 (qdEl.text()==MIDDLESTR?middle:
+			  (qdEl.text()==LOWSTR?low:ultralow)));
+      setQuality(_global.quality);
       unsigned char *dataQuality = new unsigned char[2];
       dataQuality[0]=SYSEX_QUALITY;
       dataQuality[1]=(unsigned char)_global.quality;
@@ -1886,7 +1947,8 @@ void DeicsOnze::writeConfiguration(AL::Xml* xml) {
   //xml->strTag(CHANNELNUMSTR, (_global.channelNum==-1?ALLSTR:
   //                            str.setNum(_global.channelNum+1)));
   xml->strTag(QUALITYSTR, (_global.quality==high?HIGHSTR:
-			   (_global.quality==middle?MIDDLESTR:LOWSTR)));
+			   (_global.quality==middle?MIDDLESTR:
+			    (_global.quality==low?LOWSTR:ULTRALOWSTR))));
   xml->intTag(FONTSIZESTR, _global.fontSize);
   xml->strTag(SAVECONFIGSTR, (_saveConfig?YESSTRDEI:NOSTRDEI));
   xml->strTag(SAVEONLYUSEDSTR, (_saveOnlyUsed?YESSTRDEI:NOSTRDEI));  
@@ -2096,6 +2158,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       unsigned char dataQuality[2];
       dataQuality[0]=SYSEX_QUALITY;
       dataQuality[1]=data[NUMQUALITY];
+      setQuality((Quality)data[NUMQUALITY]);
       MidiEvent evQuality(0, ME_SYSEX, (const unsigned char*)dataQuality, 2);
       _gui->writeEvent(evQuality);
       //font size
@@ -2249,7 +2312,7 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     //}
     //break;
   case SYSEX_QUALITY:
-    _global.quality = (Quality)data[1];
+    setQuality((Quality)data[1]);
     if(!fromGui) {
       MidiEvent evSysex(0, ME_SYSEX, data, length);
       _gui->writeEvent(evSysex);
@@ -2989,7 +3052,8 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	    if(_preset[ch]->function.portamentoTime!=0) {
 	      _global.channel[ch].voices[newVoice].hasAttractor = true;
 	      _global.channel[ch].voices[newVoice].attractor =
-		getAttractor(_preset[ch]->function.portamentoTime);
+		getAttractor(_preset[ch]->function.portamentoTime, 
+			     _global.deiSampleRate);
 	    }
 	    else _global.channel[ch].voices[newVoice].hasAttractor = false;
 	    //feedback
@@ -3045,7 +3109,8 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	   (_preset[ch]->function.portamento==FINGER && existsKeyOn(ch))) {
 	  _global.channel[ch].voices[newVoice].hasAttractor = true;
 	  _global.channel[ch].voices[newVoice].attractor =
-	    getAttractor(_preset[ch]->function.portamentoTime);
+	    getAttractor(_preset[ch]->function.portamentoTime,
+			 _global.deiSampleRate);
 	}
 	else _global.channel[ch].voices[newVoice].hasAttractor = false;
 	
@@ -3069,7 +3134,8 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	  _global.channel[ch].voices[newVoice].pitchEnvCoefInctInct =
 	    getPitchEnvCoefInctInct(_preset[ch]->pitchEg.pl1,
 				    _preset[ch]->pitchEg.pl2,
-				    _preset[ch]->pitchEg.pr1);
+				    _preset[ch]->pitchEg.pr1,
+				    _global.deiSampleRate);
 	}
 	else {
 	  _global.channel[ch].voices[newVoice].pitchEnvState = OFF_PE;
@@ -3151,7 +3217,7 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	  //----
 	  //compute inct
 	  _global.channel[ch].voices[newVoice].op[i].targetInct =
-	    (double)RESOLUTION / ( (double)sampleRate() / tempTargetFreq );
+	    (double)RESOLUTION / ( _global.deiSampleRate / tempTargetFreq );
 	  if(_global.channel[ch].voices[newVoice].hasAttractor &&
 	     !_preset[ch]->frequency[i].isFix)
 	    _global.channel[ch].voices[newVoice].op[i].inct =
@@ -3217,260 +3283,266 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
   float sampleOp[NBROP];
   float ampOp[NBROP];
   for(int i = 0; i < n; i++) {
-    tempLeftOutput = 0.0;
-    tempRightOutput = 0.0;
-    //per channel
-    for(int c = 0; c < NBRCHANNELS; c++) {
-      tempChannelOutput = 0.0;
-      if(_global.channel[c].isEnable) {
-	//lfo, trick : we use the first quater of the wave W2
-	lfoUpdate(_preset[c], &_global.channel[c], waveTable[W2]);
-
-	//optimization
-	tempIncChannel =
-	  _global.channel[c].lfoCoefInct * _global.channel[c].pitchBendCoef;
-
-	//per voice
-	for(int j=0; j<_global.channel[c].nbrVoices; j++) {
-	  if (_global.channel[c].voices[j].isOn) {
-	    //portamento
-	    portamentoUpdate(&_global.channel[c],
-			     &_global.channel[c].voices[j]);
-	    //pitch envelope
-	    pitchEnvelopeUpdate(&_global.channel[c].voices[j],
-				&_preset[c]->pitchEg);
-	    //per op
-	    for(int k=0; k<NBROP; k++) {
-	      //compute the next index on the wavetable,
-	      //without taking account of the feedback and FM modulation
-	      _global.channel[c].voices[j].op[k].index=
-		plusMod(_global.channel[c].voices[j].op[k].index,
-			_global.channel[c].voices[j].op[k].inct
-			* tempIncChannel
-			* _global.channel[c].voices[j].pitchEnvCoefInct);
+    if(_global.qualityCounter == 0) {
+      tempLeftOutput = 0.0;
+      tempRightOutput = 0.0;
+      //per channel
+      for(int c = 0; c < NBRCHANNELS; c++) {
+	tempChannelOutput = 0.0;
+	if(_global.channel[c].isEnable) {
+	  //lfo, trick : we use the first quater of the wave W2
+	  lfoUpdate(_preset[c], &_global.channel[c], waveTable[W2]);
+	  
+	  //optimization
+	  tempIncChannel =
+	    _global.channel[c].lfoCoefInct * _global.channel[c].pitchBendCoef;
+	  
+	  //per voice
+	  for(int j=0; j<_global.channel[c].nbrVoices; j++) {
+	    if (_global.channel[c].voices[j].isOn) {
+	      //portamento
+	      portamentoUpdate(&_global.channel[c],
+			       &_global.channel[c].voices[j]);
+	      //pitch envelope
+	      pitchEnvelopeUpdate(&_global.channel[c].voices[j],
+				  &_preset[c]->pitchEg, _global.deiSampleRate);
+	      //per op
+	      for(int k=0; k<NBROP; k++) {
+		//compute the next index on the wavetable,
+		//without taking account of the feedback and FM modulation
+		_global.channel[c].voices[j].op[k].index=
+		  plusMod(_global.channel[c].voices[j].op[k].index,
+			  _global.channel[c].voices[j].op[k].inct
+			  * tempIncChannel
+			  * _global.channel[c].voices[j].pitchEnvCoefInct);
+		
+		ampOp[k]=_global.channel[c].voices[j].op[k].amp*COEFLEVEL
+		  *(_preset[c]->sensitivity.ampOn[k]?
+		    _global.channel[c].lfoAmp:1.0)
+		  *env2AmpR(_global.deiSampleRate, waveTable[W2],
+			    _preset[c]->eg[k],
+			    &_global.channel[c].voices[j].op[k]);
+	      }
+	      switch(_preset[c]->algorithm) {
+	      case FIRST :
+		sampleOp[3]=ampOp[3]
+		  *waveTable[_preset[c]->oscWave[3]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[3].index,
+				(float)RESOLUTION
+				*_global.channel[c].voices[j].sampleFeedback)];
+		sampleOp[2]=ampOp[2]
+		  *waveTable[_preset[c]->oscWave[2]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[2].index,
+				(float)RESOLUTION*sampleOp[3])];
+		sampleOp[1]=ampOp[1]
+		  *waveTable[_preset[c]->oscWave[1]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[1].index,
+				(float)RESOLUTION*sampleOp[2])];
+		sampleOp[0]=ampOp[0]
+		  *waveTable[_preset[c]->oscWave[0]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[0].index,
+				(float)RESOLUTION*sampleOp[1])];
+		
+		sample[j]=sampleOp[0];///COEFLEVEL;
+		
+		_global.channel[c].voices[j].isOn =
+		  (_global.channel[c].voices[j].op[0].envState!=OFF);
+		break;
+	      case SECOND :
+		sampleOp[3]=ampOp[3]
+		  *waveTable[_preset[c]->oscWave[3]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[3].index,
+				(float)RESOLUTION
+				*_global.channel[c].voices[j].sampleFeedback)];
+		sampleOp[2]=ampOp[2]
+		  *waveTable[_preset[c]->oscWave[2]]
+		  [(int)_global.channel[c].voices[j].op[2].index];
+		sampleOp[1]=ampOp[1]
+		  *waveTable[_preset[c]->oscWave[1]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[1].index,
+				(float)RESOLUTION
+				*(sampleOp[2]+sampleOp[3])/2.0)];
+		sampleOp[0]=ampOp[0]
+		  *waveTable[_preset[c]->oscWave[0]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[0].index,
+				(float)RESOLUTION
+				*sampleOp[1])];
+		
+		sample[j]=sampleOp[0];///COEFLEVEL;
+		
+		_global.channel[c].voices[j].isOn =
+		  (_global.channel[c].voices[j].op[0].envState!=OFF);
+		break;
+	      case THIRD :
+		sampleOp[3]=ampOp[3]
+		  *waveTable[_preset[c]->oscWave[3]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[3].index,
+				(float)RESOLUTION
+				*_global.channel[c].voices[j].sampleFeedback)];
+		sampleOp[2]=ampOp[2]
+		  *waveTable[_preset[c]->oscWave[2]]
+		  [(int)_global.channel[c].voices[j].op[2].index];
+		sampleOp[1]=ampOp[1]
+		  *waveTable[_preset[c]->oscWave[1]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[1].index,
+				(float)RESOLUTION*sampleOp[2])];
+		sampleOp[0]=ampOp[0]
+		  *waveTable[_preset[c]->oscWave[0]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[0].index,
+				(float)RESOLUTION
+				*(sampleOp[3]+sampleOp[1])/2.0)];
+		
+		sample[j]=sampleOp[0];///COEFLEVEL;
+		
+		_global.channel[c].voices[j].isOn = 
+		  (_global.channel[c].voices[j].op[0].envState!=OFF);
+		break;
+	      case FOURTH :
+		sampleOp[3]=ampOp[3]
+		  *waveTable[_preset[c]->oscWave[3]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[3].index,
+				(float)RESOLUTION
+				*_global.channel[c].voices[j].sampleFeedback)];
+		sampleOp[2]=ampOp[2]
+		  *waveTable[_preset[c]->oscWave[2]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[2].index,
+				(float)RESOLUTION
+				*sampleOp[3])];
+		sampleOp[1]=ampOp[1]
+		  *waveTable[_preset[c]->oscWave[1]]
+		  [(int)_global.channel[c].voices[j].op[1].index];
+		sampleOp[0]=ampOp[0]
+		  *waveTable[_preset[c]->oscWave[0]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[0].index,
+				(float)RESOLUTION
+				*(sampleOp[1]+sampleOp[2])/2.0)];
+		
+		sample[j]=sampleOp[0];///COEFLEVEL;
+		
+		_global.channel[c].voices[j].isOn =
+		  (_global.channel[c].voices[j].op[0].envState!=OFF);
+		break;
+	      case FIFTH :
+		sampleOp[3]=ampOp[3]
+		  *waveTable[_preset[c]->oscWave[3]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[3].index,
+				(float)RESOLUTION
+				*_global.channel[c].voices[j].sampleFeedback)];
+		sampleOp[2]=ampOp[2]
+		  *waveTable[_preset[c]->oscWave[2]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[2].index,
+				(float)RESOLUTION*sampleOp[3])];
+		sampleOp[1]=ampOp[1]
+		  *waveTable[_preset[c]->oscWave[1]]
+		  [(int)_global.channel[c].voices[j].op[1].index];
+		sampleOp[0]=ampOp[0]
+		  *waveTable[_preset[c]->oscWave[0]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[0].index,
+				(float)RESOLUTION*sampleOp[1])];
+		
+		sample[j]=(sampleOp[0]+sampleOp[2])/2.0;///COEFLEVEL;
+		
+		_global.channel[c].voices[j].isOn = 
+		  (_global.channel[c].voices[j].op[0].envState!=OFF
+		   ||_global.channel[c].voices[j].op[2].envState!=OFF);
+		break;
+	      case SIXTH :
+		sampleOp[3]=ampOp[3]
+		  *waveTable[_preset[c]->oscWave[3]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[3].index,
+				(float)RESOLUTION
+				*_global.channel[c].voices[j].sampleFeedback)];
+		sampleOp[2]=ampOp[2]
+		  *waveTable[_preset[c]->oscWave[2]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[2].index,
+				(float)RESOLUTION*sampleOp[3])];
+		sampleOp[1]=ampOp[1]
+		  *waveTable[_preset[c]->oscWave[1]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[1].index,
+				(float)RESOLUTION*sampleOp[3])];
+		sampleOp[0]=ampOp[0]
+		  *waveTable[_preset[c]->oscWave[0]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[0].index,
+				(float)RESOLUTION*sampleOp[3])];
+		
+		sample[j]=(sampleOp[0]+sampleOp[1]+sampleOp[2])/3.0;
+		
+		_global.channel[c].voices[j].isOn = 
+		  (_global.channel[c].voices[j].op[0].envState!=OFF);
+		break;
+	      case SEVENTH :
+		sampleOp[3]=ampOp[3]
+		  *waveTable[_preset[c]->oscWave[3]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[3].index,
+				(float)RESOLUTION
+				*_global.channel[c].voices[j].sampleFeedback)];
+		sampleOp[2]=ampOp[2]
+		  *waveTable[_preset[c]->oscWave[2]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[2].index,
+				(float)RESOLUTION*sampleOp[3])];
+		sampleOp[1]=ampOp[1]
+		  *waveTable[_preset[c]->oscWave[1]]
+		  [(int)_global.channel[c].voices[j].op[1].index];
+		sampleOp[0]=ampOp[0]*waveTable[_preset[c]->oscWave[0]]
+		  [(int)_global.channel[c].voices[j].op[0].index];
+		
+		sample[j]=(sampleOp[0]+sampleOp[1]+sampleOp[2])/3.0;
+		
+		_global.channel[c].voices[j].isOn =
+		  (_global.channel[c].voices[j].op[0].envState!=OFF);
+		break;		
+	      case EIGHTH :
+		sampleOp[3]=ampOp[3]
+		  *waveTable[_preset[c]->oscWave[3]]
+		  [(int)plusMod(_global.channel[c].voices[j].op[3].index,
+				(float)RESOLUTION
+				*_global.channel[c].voices[j].sampleFeedback)];
+		sampleOp[2]=ampOp[2]
+		  *waveTable[_preset[c]->oscWave[2]]
+		  [(int)_global.channel[c].voices[j].op[2].index];
+		sampleOp[1]=ampOp[1]
+		  *waveTable[_preset[c]->oscWave[1]]
+		  [(int)_global.channel[c].voices[j].op[1].index];
+		sampleOp[0]=ampOp[0]
+		  *waveTable[_preset[c]->oscWave[0]]
+		  [(int)_global.channel[c].voices[j].op[0].index];
+		
+		sample[j]=
+		  (sampleOp[0]+sampleOp[1]+sampleOp[2]+sampleOp[3])
+		  /4.0;
+		
+		_global.channel[c].voices[j].isOn =
+		  (_global.channel[c].voices[j].op[0].envState!=OFF
+		   || _global.channel[c].voices[j].op[1].envState!=OFF
+		   || _global.channel[c].voices[j].op[2].envState!=OFF
+		   || _global.channel[c].voices[j].op[3].envState!=OFF);
+		break;
+	      default : printf("Error : No algorithm");
+		break;
+	      }
 	      
-	      ampOp[k]=_global.channel[c].voices[j].op[k].amp*COEFLEVEL
-		*(_preset[c]->sensitivity.ampOn[k]?
-		  _global.channel[c].lfoAmp:1.0)
-		*env2AmpR(sampleRate(), waveTable[W2],
-			  _preset[c]->eg[k],
-			  &_global.channel[c].voices[j].op[k]);
+	      _global.channel[c].voices[j].volume=
+		ampOp[0]+ampOp[1]+ampOp[2]+ampOp[3];
+	      
+	      _global.channel[c].voices[j].sampleFeedback =
+		sampleOp[3]*_global.channel[c].feedbackAmp;
+	      
+	      tempChannelOutput += sample[j];
 	    }
-	    switch(_preset[c]->algorithm) {
-	    case FIRST :
-	      sampleOp[3]=ampOp[3]
-		*waveTable[_preset[c]->oscWave[3]]
-		[(int)plusMod(_global.channel[c].voices[j].op[3].index,
-			      (float)RESOLUTION
-			      *_global.channel[c].voices[j].sampleFeedback)];
-	      sampleOp[2]=ampOp[2]
-		*waveTable[_preset[c]->oscWave[2]]
-		[(int)plusMod(_global.channel[c].voices[j].op[2].index,
-			      (float)RESOLUTION*sampleOp[3])];
-	      sampleOp[1]=ampOp[1]
-		*waveTable[_preset[c]->oscWave[1]]
-		[(int)plusMod(_global.channel[c].voices[j].op[1].index,
-			      (float)RESOLUTION*sampleOp[2])];
-	      sampleOp[0]=ampOp[0]
-		*waveTable[_preset[c]->oscWave[0]]
-		[(int)plusMod(_global.channel[c].voices[j].op[0].index,
-			      (float)RESOLUTION*sampleOp[1])];
-	      
-	      sample[j]=sampleOp[0];///COEFLEVEL;
-	      
-	      _global.channel[c].voices[j].isOn =
-		(_global.channel[c].voices[j].op[0].envState!=OFF);
-	      break;
-	    case SECOND :
-	      sampleOp[3]=ampOp[3]
-		*waveTable[_preset[c]->oscWave[3]]
-		[(int)plusMod(_global.channel[c].voices[j].op[3].index,
-			      (float)RESOLUTION
-			      *_global.channel[c].voices[j].sampleFeedback)];
-	      sampleOp[2]=ampOp[2]
-		*waveTable[_preset[c]->oscWave[2]]
-		[(int)_global.channel[c].voices[j].op[2].index];
-	      sampleOp[1]=ampOp[1]
-		*waveTable[_preset[c]->oscWave[1]]
-		[(int)plusMod(_global.channel[c].voices[j].op[1].index,
-			      (float)RESOLUTION
-			      *(sampleOp[2]+sampleOp[3])/2.0)];
-	      sampleOp[0]=ampOp[0]
-		*waveTable[_preset[c]->oscWave[0]]
-		[(int)plusMod(_global.channel[c].voices[j].op[0].index,
-			      (float)RESOLUTION
-			      *sampleOp[1])];
-	      
-	      sample[j]=sampleOp[0];///COEFLEVEL;
-	      
-	      _global.channel[c].voices[j].isOn =
-		(_global.channel[c].voices[j].op[0].envState!=OFF);
-	      break;
-	    case THIRD :
-	      sampleOp[3]=ampOp[3]
-		*waveTable[_preset[c]->oscWave[3]]
-		[(int)plusMod(_global.channel[c].voices[j].op[3].index,
-			      (float)RESOLUTION
-			      *_global.channel[c].voices[j].sampleFeedback)];
-	      sampleOp[2]=ampOp[2]
-		*waveTable[_preset[c]->oscWave[2]]
-		[(int)_global.channel[c].voices[j].op[2].index];
-	      sampleOp[1]=ampOp[1]
-		*waveTable[_preset[c]->oscWave[1]]
-		[(int)plusMod(_global.channel[c].voices[j].op[1].index,
-			      (float)RESOLUTION*sampleOp[2])];
-	      sampleOp[0]=ampOp[0]
-		*waveTable[_preset[c]->oscWave[0]]
-		[(int)plusMod(_global.channel[c].voices[j].op[0].index,
-			      (float)RESOLUTION
-			      *(sampleOp[3]+sampleOp[1])/2.0)];
-	      
-	      sample[j]=sampleOp[0];///COEFLEVEL;
-	      
-	      _global.channel[c].voices[j].isOn = 
-		(_global.channel[c].voices[j].op[0].envState!=OFF);
-	      break;
-	    case FOURTH :
-	      sampleOp[3]=ampOp[3]
-		*waveTable[_preset[c]->oscWave[3]]
-		[(int)plusMod(_global.channel[c].voices[j].op[3].index,
-			      (float)RESOLUTION
-			      *_global.channel[c].voices[j].sampleFeedback)];
-	      sampleOp[2]=ampOp[2]
-		*waveTable[_preset[c]->oscWave[2]]
-		[(int)plusMod(_global.channel[c].voices[j].op[2].index,
-			      (float)RESOLUTION
-			      *sampleOp[3])];
-	      sampleOp[1]=ampOp[1]
-		*waveTable[_preset[c]->oscWave[1]]
-		[(int)_global.channel[c].voices[j].op[1].index];
-	      sampleOp[0]=ampOp[0]
-		*waveTable[_preset[c]->oscWave[0]]
-		[(int)plusMod(_global.channel[c].voices[j].op[0].index,
-			      (float)RESOLUTION
-			      *(sampleOp[1]+sampleOp[2])/2.0)];
-	      
-	      sample[j]=sampleOp[0];///COEFLEVEL;
-	      
-	      _global.channel[c].voices[j].isOn =
-		(_global.channel[c].voices[j].op[0].envState!=OFF);
-	      break;
-	    case FIFTH :
-	      sampleOp[3]=ampOp[3]
-		*waveTable[_preset[c]->oscWave[3]]
-		[(int)plusMod(_global.channel[c].voices[j].op[3].index,
-			      (float)RESOLUTION
-			      *_global.channel[c].voices[j].sampleFeedback)];
-	      sampleOp[2]=ampOp[2]
-		*waveTable[_preset[c]->oscWave[2]]
-		[(int)plusMod(_global.channel[c].voices[j].op[2].index,
-			      (float)RESOLUTION*sampleOp[3])];
-	      sampleOp[1]=ampOp[1]
-		*waveTable[_preset[c]->oscWave[1]]
-		[(int)_global.channel[c].voices[j].op[1].index];
-	      sampleOp[0]=ampOp[0]
-		*waveTable[_preset[c]->oscWave[0]]
-		[(int)plusMod(_global.channel[c].voices[j].op[0].index,
-			      (float)RESOLUTION*sampleOp[1])];
-	      
-	      sample[j]=(sampleOp[0]+sampleOp[2])/2.0;///COEFLEVEL;
-	      
-	      _global.channel[c].voices[j].isOn = 
-		(_global.channel[c].voices[j].op[0].envState!=OFF
-		 ||_global.channel[c].voices[j].op[2].envState!=OFF);
-	      break;
-	    case SIXTH :
-	      sampleOp[3]=ampOp[3]
-		*waveTable[_preset[c]->oscWave[3]]
-		[(int)plusMod(_global.channel[c].voices[j].op[3].index,
-			      (float)RESOLUTION
-			      *_global.channel[c].voices[j].sampleFeedback)];
-	      sampleOp[2]=ampOp[2]
-		*waveTable[_preset[c]->oscWave[2]]
-		[(int)plusMod(_global.channel[c].voices[j].op[2].index,
-			      (float)RESOLUTION*sampleOp[3])];
-	      sampleOp[1]=ampOp[1]
-		*waveTable[_preset[c]->oscWave[1]]
-		[(int)plusMod(_global.channel[c].voices[j].op[1].index,
-			      (float)RESOLUTION*sampleOp[3])];
-	      sampleOp[0]=ampOp[0]
-		*waveTable[_preset[c]->oscWave[0]]
-		[(int)plusMod(_global.channel[c].voices[j].op[0].index,
-			      (float)RESOLUTION*sampleOp[3])];
-	      
-	      sample[j]=(sampleOp[0]+sampleOp[1]+sampleOp[2])/3.0;
-	      
-	      _global.channel[c].voices[j].isOn = 
-		(_global.channel[c].voices[j].op[0].envState!=OFF);
-	      break;
-	    case SEVENTH :
-	      sampleOp[3]=ampOp[3]
-		*waveTable[_preset[c]->oscWave[3]]
-		[(int)plusMod(_global.channel[c].voices[j].op[3].index,
-			      (float)RESOLUTION
-			      *_global.channel[c].voices[j].sampleFeedback)];
-	      sampleOp[2]=ampOp[2]
-		*waveTable[_preset[c]->oscWave[2]]
-		[(int)plusMod(_global.channel[c].voices[j].op[2].index,
-			      (float)RESOLUTION*sampleOp[3])];
-	      sampleOp[1]=ampOp[1]
-		*waveTable[_preset[c]->oscWave[1]]
-		[(int)_global.channel[c].voices[j].op[1].index];
-	      sampleOp[0]=ampOp[0]*waveTable[_preset[c]->oscWave[0]]
-		[(int)_global.channel[c].voices[j].op[0].index];
-	      
-	      sample[j]=(sampleOp[0]+sampleOp[1]+sampleOp[2])/3.0;
-	      
-	      _global.channel[c].voices[j].isOn =
-		(_global.channel[c].voices[j].op[0].envState!=OFF);
-	      break;		
-	    case EIGHTH :
-	      sampleOp[3]=ampOp[3]
-		*waveTable[_preset[c]->oscWave[3]]
-		[(int)plusMod(_global.channel[c].voices[j].op[3].index,
-			      (float)RESOLUTION
-			      *_global.channel[c].voices[j].sampleFeedback)];
-	      sampleOp[2]=ampOp[2]
-		*waveTable[_preset[c]->oscWave[2]]
-		[(int)_global.channel[c].voices[j].op[2].index];
-	      sampleOp[1]=ampOp[1]
-		*waveTable[_preset[c]->oscWave[1]]
-		[(int)_global.channel[c].voices[j].op[1].index];
-	      sampleOp[0]=ampOp[0]
-		*waveTable[_preset[c]->oscWave[0]]
-		[(int)_global.channel[c].voices[j].op[0].index];
-	      
-	      sample[j]=
-		(sampleOp[0]+sampleOp[1]+sampleOp[2]+sampleOp[3])
-		/4.0;
-	      
-	      _global.channel[c].voices[j].isOn =
-		(_global.channel[c].voices[j].op[0].envState!=OFF
-		 || _global.channel[c].voices[j].op[1].envState!=OFF
-		 || _global.channel[c].voices[j].op[2].envState!=OFF
-		 || _global.channel[c].voices[j].op[3].envState!=OFF);
-	      break;
-	    default : printf("Error : No algorithm");
-	      break;
-	    }
-	    
-	    _global.channel[c].voices[j].volume=
-	      ampOp[0]+ampOp[1]+ampOp[2]+ampOp[3];
-	    
-	    _global.channel[c].voices[j].sampleFeedback =
-	      sampleOp[3]*_global.channel[c].feedbackAmp;
-	    
-	    tempChannelOutput += sample[j];
 	  }
+	  //printf("left out = %f, temp out = %f, left amp = %f\n",
+	  //tempLeftOutput, tempChannelOutput, _global.channel[c].ampLeft);
+	  tempLeftOutput += tempChannelOutput*_global.channel[c].ampLeft;
+	  tempRightOutput += tempChannelOutput*_global.channel[c].ampRight;
 	}
-	//printf("left out = %f, temp out = %f, left amp = %f\n",
-	//tempLeftOutput, tempChannelOutput, _global.channel[c].ampLeft);
-	tempLeftOutput += tempChannelOutput*_global.channel[c].ampLeft;
-	tempRightOutput += tempChannelOutput*_global.channel[c].ampRight;
       }
+      _global.lastLeftSample = tempLeftOutput*_global.masterVolume;
+      _global.lastRightSample = tempRightOutput*_global.masterVolume;
     }
-    leftOutput[i] += tempLeftOutput*_global.masterVolume;
-    rightOutput[i] += tempRightOutput*_global.masterVolume;
+    leftOutput[i] += _global.lastLeftSample;
+    rightOutput[i] += _global.lastRightSample;
+    _global.qualityCounter++;
+    _global.qualityCounter %= _global.qualityCounterTop;
   }
 }
 
@@ -3491,8 +3563,8 @@ static Mess* instantiate(int sr, QWidget*, const char*)
 extern "C" {
     static MESS descriptor = {
 	"DeicsOnze",
-	"DeicsOnze FM DX11 emulator",
-	"0.4.3",      // version string
+	"DeicsOnze FM DX11/TX81Z emulator",
+	"0.4.5",      // version string
 	MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
 	instantiate
     };

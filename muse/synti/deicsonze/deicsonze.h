@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.3
+//    Version 0.4.5
 //
 //
 //
@@ -71,7 +71,7 @@
 #define COEFERRSUSREL 0.001 //from SUSTAIN or RELEASE until no sound
 //#define ERRPORTA 0.001 //dectection to stop portamento
 #define COEFPORTA 0.01 //adjusted such that 10 second/octave with max porta
-#define COEFPITCHENV 0.000001 //adjust according to a real DX11....???
+#define COEFPITCHENV 0.00000025 //adjust according to a real DX11....???
 #define COEFDECAY 1.0
 #define COEFSUSTAIN 0.2
 #define COEFRELEASE 1.0
@@ -100,6 +100,7 @@
 #define HIGHSTR "High"
 #define MIDDLESTR "Middle"
 #define LOWSTR "Low"
+#define ULTRALOWSTR "UltraLow"
 #define SYSEX_FONTSIZE 6
 #define FONTSIZESTR "fontSize"
 #define SYSEX_SAVECONFIG 7
@@ -188,7 +189,7 @@ inline double coefAttack(unsigned char attack);
 //  return the coefficient for the exponential decrease
 //  with respect to rr and sampleRate, sr
 //---------------------------------------------------------
-inline double envRR2coef(int rr, int sr, unsigned char release);
+inline double envRR2coef(int rr, double sr, unsigned char release);
 
 //--------------------------------------------------------
 // DeicsOnzeCtrl
@@ -310,13 +311,19 @@ struct Channel {
 enum Quality {
   high,
   middle,
-  low
+  low,
+  ultralow
 };
 
 struct Global {
   float masterVolume;
-  Quality quality;
+  Quality quality; //high, middle, low
+  int qualityCounter; //counter to skip some sample depending on quality
+  int qualityCounterTop; //number of sample - 1 to skip
+  double deiSampleRate; //depending on quality deicsOnze sample rate varies
   int fontSize;
+  float lastLeftSample;
+  float lastRightSample;
   Channel channel[NBRCHANNELS];
 };
 
@@ -354,6 +361,7 @@ class DeicsOnze : public Mess {
   //preset tree 
   Set* _set;
   
+  void setSampleRate(int sr);
   Preset* findPreset(int hbank, int lbank, int prog);
   void initCtrls();
   void initGlobal();
@@ -374,6 +382,7 @@ class DeicsOnze : public Mess {
   void setEnvRelease(int c, int k); //do the same for all voices of operator k
   void setEnvRelease(int c); //do the same for all voices all operators  
   void setPitchEnvRelease(int c, int v);
+  void setQuality(Quality q);
   double brightness2Amp(int c, int k); //get the brightness of the operator k
   void loadSutulaPresets();
   void loadSet(QString s);
