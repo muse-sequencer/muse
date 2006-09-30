@@ -246,8 +246,6 @@ bool MusE::seqStart()
                   fprintf(stderr, "MusE: creating watchdog thread failed: %s\n",
             	   strerror(rv));
             pthread_attr_destroy(attributes);
-            }
-      if (realTimePriority) {
             //
             // start audio prefetch threads with realtime
             // priority
@@ -255,7 +253,7 @@ bool MusE::seqStart()
             audioPrefetch->start(realTimePriority-5);
             audioWriteback->start(realTimePriority-5);
             }
-            else {
+      else {
             printf("MusE: Warning - starting threads without realtime priority since audio is not running realtime.\n");
             //
             // start audio prefetch threads as normal
@@ -281,7 +279,7 @@ bool MusE::seqStart()
 
 void MusE::seqStop()
       {
-      audio->msgIdle(true);
+//      audio->msgIdle(true);
       song->setStop(true);
       song->setStopPlay(false);
       midiSeq->stop(true);

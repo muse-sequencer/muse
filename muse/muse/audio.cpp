@@ -153,6 +153,21 @@ bool Audio::start()
       {
       TrackList* tl = song->tracks();
 
+      _curTickPos   = 0;
+      _nextTickPos  = 0;
+
+      midiClick     = 0;
+      clickno       = 0;
+      clicksMeasure = 0;
+      ticksBeat     = 0;
+
+      syncTime      = 0.0;
+      syncFrame     = 0;
+      frameOffset   = 0;
+
+      msg           = 0;
+      _pos.setFrame(~0);      // make sure seek is not optimized away
+
       //
       // init marker for synchronous loop processing
       //
@@ -377,12 +392,15 @@ void Audio::process(unsigned frames)
                   //
                   // invalidate audio prefetch buffer
                   //
+printf("invalidate prefetch buffer\n");
                   audioPrefetch->getFifo()->clear();
                   audioPrefetch->msgSeek(framePos);
                   lmark = llmark;
                   rmark = rrmark;
                   }
             }
+
+// printf("---%d %d  \n", state == PLAY, state);
 
       if (isPlaying()) {
             if (_bounce == 1 && _pos >= song->rPos()) {

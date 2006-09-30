@@ -176,7 +176,8 @@ MarkerView::MarkerView()
       table->header()->resizeSection(2, 50);
       table->header()->resizeSection(3, 200);
 //      table->header()->resizeSection(mnWidthMode(3, QTreeWidget::Maximum);
-      connect(table, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), SLOT(markerSelectionChanged(QTreeWidgetItem*)));
+      connect(table, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), SLOT(currentChanged(QTreeWidgetItem*)));
+      connect(table, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
       connect(table, SIGNAL(itemClicked(QTreeWidgetItem*,int)), SLOT(clicked(QTreeWidgetItem*)));
 
       QGroupBox* props = new QGroupBox(tr("Marker Properties"));
@@ -274,11 +275,12 @@ void MarkerView::updateList()
       }
 
 //---------------------------------------------------------
-//   markerSelected
+//   currentChanged
 //---------------------------------------------------------
 
-void MarkerView::markerSelectionChanged(QTreeWidgetItem* i)
+void MarkerView::currentChanged(QTreeWidgetItem* i)
       {
+printf("current changed\n");
       MarkerItem* item = (MarkerItem*)i;
       if (item == 0) {  // never triggered
             editTick->setValue(0);
@@ -303,11 +305,21 @@ void MarkerView::markerSelectionChanged(QTreeWidgetItem* i)
       }
 
 //---------------------------------------------------------
+//   selectionChanged
+//---------------------------------------------------------
+
+void MarkerView::selectionChanged()
+      {
+printf("selection changed\n");
+      }
+
+//---------------------------------------------------------
 //   clicked
 //---------------------------------------------------------
 
 void MarkerView::clicked(QTreeWidgetItem* i)
       {
+printf("clicked\n");
       MarkerItem* item = (MarkerItem*)i;
       if (item == 0) {
             table->clearSelection();
@@ -377,7 +389,8 @@ void MarkerView::markerChanged(int val)
                               for (int k = 0; k < n; ++k) {
                                     MarkerItem* item = (MarkerItem*)(table->topLevelItem(k));
                                     if (item->marker() == &i->second) {
-                                          table->setCurrentItem(item);
+                                          ((QTreeWidgetItem*)item)->setSelected(true);
+//                                          table->setCurrentItem(item);
                                           return;
                                           }
                                     }

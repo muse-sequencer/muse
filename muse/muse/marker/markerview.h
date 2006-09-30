@@ -79,7 +79,8 @@ class MarkerView : public TopWin {
       void addMarker();
       void addMarker(const AL::Pos&);
       void deleteMarker();
-      void markerSelectionChanged(QTreeWidgetItem*);
+      void currentChanged(QTreeWidgetItem*);
+      void selectionChanged();
       void nameChanged(const QString&);
       void tickChanged(const Pos&);
       void lockChanged(bool);
