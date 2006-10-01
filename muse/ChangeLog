@@ -1,3 +1,6 @@
+1.10 (ws)
+      - changed locking of audio and midi sequencer thread (in my setup this
+        results in xrun free operation at 2.9 msec latency (kernel 2.6.18-rt5)
 26.9  (ng) DeicsOnze 0.4.5
       - add four level of quality
 24.9  (ng) DeicsOnze 0.4.3

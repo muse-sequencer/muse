@@ -389,8 +389,8 @@ void MarkerView::markerChanged(int val)
                               for (int k = 0; k < n; ++k) {
                                     MarkerItem* item = (MarkerItem*)(table->topLevelItem(k));
                                     if (item->marker() == &i->second) {
-                                          ((QTreeWidgetItem*)item)->setSelected(true);
-//                                          table->setCurrentItem(item);
+//                                          ((QTreeWidgetItem*)item)->setSelected(true);
+                                          table->setCurrentItem(item);
                                           return;
                                           }
                                     }

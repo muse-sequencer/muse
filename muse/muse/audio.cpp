@@ -471,7 +471,7 @@ printf("invalidate prefetch buffer\n");
                   }
             }
 
-      midiSeq->msgProcess(frames);
+      processMidi(frames);
 
       GroupList* gl     = song->groups();
       AuxList* al       = song->auxs();

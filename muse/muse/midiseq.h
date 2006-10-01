@@ -84,7 +84,6 @@ class MidiSeq : public Thread {
       void mmcInput(int id, int cmd, const AL::Pos&);
 
       void msgMsg(int id);
-      void msgProcess(unsigned frames);
       void msgSeek();
       void msgStart();
       void msgStop();
@@ -94,5 +93,6 @@ class MidiSeq : public Thread {
       };
 
 extern MidiSeq* midiSeq;
+extern volatile bool midiBusy;
 #endif
 

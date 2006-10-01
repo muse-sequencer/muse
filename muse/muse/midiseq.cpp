@@ -44,6 +44,8 @@ MidiSeq* midiSeq;
 static const unsigned char mmcStopMsg[] =  { 0x7f, 0x7f, 0x06, 0x01 };
 static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
 
+volatile bool midiBusy;
+
 //---------------------------------------------------------
 //   readMsg
 //---------------------------------------------------------
@@ -60,12 +62,8 @@ static void readMsg(void* p, void*)
 
 void MidiSeq::processMsg(const ThreadMsg* m)
       {
-
       AudioMsg* msg = (AudioMsg*)m;
       switch (msg->id) {
-            case MS_PROCESS:
-                  audio->processMidi(msg->time);
-                  break;
             case SEQM_SEEK:
                   processSeek();
                   break;
@@ -513,6 +511,11 @@ void MidiSeq::processTimerTick()
       if (idle)
             return;
 
+      if (midiBusy) {
+            // we hit audio: midiSeq->msgProcess
+            // miss this timer tick
+            return;
+            }
       unsigned curFrame = audio->curFrame();
 
 /*      if (!extSyncFlag.value()) {
@@ -548,18 +551,6 @@ void MidiSeq::msgMsg(int id)
       {
       AudioMsg msg;
       msg.id = id;
-      Thread::sendMsg(&msg);
-      }
-
-//---------------------------------------------------------
-//   msgProcess
-//---------------------------------------------------------
-
-void MidiSeq::msgProcess(unsigned frames)
-      {
-      AudioMsg msg;
-      msg.id   = MS_PROCESS;
-      msg.time = frames;
       Thread::sendMsg(&msg);
       }
 
