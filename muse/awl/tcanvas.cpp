@@ -77,7 +77,7 @@ TimeCanvas::TimeCanvas(TimeCanvasType t)
       button = Qt::NoButton;
       grid   = new QGridLayout;
       grid->setMargin(0);
-      grid->setSpacing(5);
+      grid->setSpacing(1);
       setLayout(grid);
 
       _widget = new QWidget;
@@ -147,12 +147,12 @@ TimeCanvas::TimeCanvas(TimeCanvasType t)
             }
 
       grid->addWidget(_widget,  0, 0, 3, 2);
-      grid->addWidget(hbar,     3, 0);
-      grid->addWidget(hmag,     3, 1);
+      grid->addWidget(hbar,     3, 0, Qt::AlignVCenter);
+      grid->addWidget(hmag,     3, 1, Qt::AlignVCenter);
       grid->addWidget(timeTypeButton, 0, 2);
-      grid->addWidget(vbar,     1, 2);
+      grid->addWidget(vbar,     1, 2, Qt::AlignHCenter);
       if (vmag)
-            grid->addWidget(vmag,     2, 2);
+            grid->addWidget(vmag,     2, 2, Qt::AlignHCenter);
 
       grid->setColumnStretch(0, 100);
       grid->setRowStretch(1, 100);

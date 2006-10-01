@@ -26,6 +26,8 @@
 #include "gconfig.h"
 #include "song.h"
 #include "part.h"
+#include "tools.h"
+#include "muse.h"
 
 static const int HANDLE1 = 6;
 static const int HANDLE2 = 3;
@@ -69,6 +71,8 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
       int to = r.x() + r.width() + HANDLE1;
       int th = cheight();
 
+      p.save();
+      p.setRenderHint(QPainter::Antialiasing, true);
       bool aR = ctrlTrack()->autoRead();
       p.setPen(QPen(aR ? Qt::white : Qt::gray, 2));
 
@@ -141,12 +145,12 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
                         y1 = y2;
                         }
                   if (x1 < to) {
-                        drawHandle(p, x1, y1, lselected);
                         if (i == ctrl()->end())
                               x2 = to;
                         if (ctrl()->type() & Ctrl::DISCRETE)
                               y2 = y1;
                         p.drawLine(x1, y1, x2, y2);
+                        drawHandle(p, x1, y1, lselected);
                         }
                   }
             if (!aR) {
@@ -172,6 +176,7 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
             int ly = fm.lineSpacing() + 2;
             p.drawText(2, ly, s);
             }
+      p.restore();
       }
 
 //---------------------------------------------------------
@@ -180,14 +185,39 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
 
 void CtrlEditor::mousePress(const QPoint& pos, int button)
       {
+      Tool tool = tc()->tool();
+      if (button & Qt::RightButton) {
+            QMenu* pop = new QMenu(tc());
+            QAction* a;
+            for (int i = 0; i < TOOLS; ++i) {
+                  if ((arrangerTools & (1 << i)) == 0)
+                        continue;
+                  a = pop->addAction(**toolList[i].icon, tc()->tr(toolList[i].tip));
+                  int id = 1 << i;
+                  a->setData(id);
+                  a->setCheckable(true);
+                  if (id == (int)tool)
+                        a->setChecked(true);
+                  }
+            a = pop->exec(tc()->mapToGlobal(pos));
+            if (a) {
+                  int n = a->data().toInt();
+                  // tc()->setTool(n);
+                  muse->setTool(n);
+                  }
+            return;
+            }
+
       int wh = cheight();
       int y  = pos.y();
       int x  = pos.x();
 
-      if (tc()->tool() == PencilTool) {
+      int cid   = ctrl()->id();
+
+      if (tool == PencilTool) {
             CVal val = ctrl()->pixel2val(y, wh);
             selected = tc()->pix2pos(x);
-            if (ctrl()->id() == CTRL_VELOCITY || ctrl()->id() == CTRL_SVELOCITY)
+            if (cid == CTRL_VELOCITY || cid == CTRL_SVELOCITY)
                   song->startUndo();
             else {
                   song->addControllerVal(ctrlTrack(), ctrl(), selected, val);
@@ -197,8 +227,8 @@ void CtrlEditor::mousePress(const QPoint& pos, int button)
             dragy     = y;
             dragx     = x;
             }
-      else if (tc()->tool() == PointerTool) {
-      	if (ctrl()->id() == CTRL_VELOCITY || ctrl()->id() == CTRL_SVELOCITY) {
+      else if (tool == PointerTool || tool == RubberTool) {
+      	if (cid == CTRL_VELOCITY || cid == CTRL_SVELOCITY) {
                   dragx = x;
                   song->startUndo();
                   return;
@@ -219,7 +249,7 @@ void CtrlEditor::mousePress(const QPoint& pos, int button)
                         else
                               selected.setFrame(i->first);
                         lselected = tc()->pos2pix(selected);
-                        if (button == Qt::RightButton) {
+                        if (tool == RubberTool || button == Qt::RightButton) {
                               song->removeControllerVal(ctrlTrack(), ctrl()->id(), i->first);
                               dragy = -1;
                               }
@@ -232,7 +262,7 @@ void CtrlEditor::mousePress(const QPoint& pos, int button)
                         }
                   }
             }
-      else if (tc()->tool() == DrawTool) {
+      else if (tool == DrawTool) {
             ruler1 = ruler2 = pos;
             drawRuler = true;
             }
@@ -322,12 +352,15 @@ void CtrlEditor::mouseRelease()
 
 void CtrlEditor::mouseMove(const QPoint& pos)
       {
-      if (tc()->tool() == DrawTool) {
+      Tool tool = tc()->tool();
+      int cid   = ctrl()->id();
+
+      if (tool == DrawTool) {
             ruler2 = pos;
          	tc()->widget()->update();
             return;
             }
-      if (ctrl()->id() == CTRL_VELOCITY || ctrl()->id() == CTRL_SVELOCITY) {
+      if (cid == CTRL_VELOCITY || cid == CTRL_SVELOCITY) {
             AL::Pos p1(tc()->pix2pos(dragx));
             AL::Pos p2(tc()->pix2pos(pos.x()));
             dragx = pos.x();
@@ -373,6 +406,32 @@ void CtrlEditor::mouseMove(const QPoint& pos)
                   }
             }
       else {
+            if (tool == RubberTool) {
+                  int wh = cheight();
+                  int y  = pos.y();
+                  int x  = pos.x();
+
+                  Pos pos1(tc()->pix2pos(x - HANDLE2));
+                  Pos pos2(tc()->pix2pos(x + HANDLE2));
+
+                  TType tt = track()->timeType();
+                  ciCtrlVal s = ctrl()->upper_bound(pos1.time(tt));
+                  ciCtrlVal e = ctrl()->upper_bound(pos2.time(tt));
+                  for (ciCtrlVal i = s; i != e; ++i) {
+                        int yy = ctrl()->val2pixelR(i->second, wh);
+                        startY = yy;
+                        if ((yy >= (y-HANDLE2)) && (yy < (y + HANDLE2))) {
+                              if (tt == AL::TICKS)
+                                    selected.setTick(i->first);
+                              else
+                                    selected.setFrame(i->first);
+                              lselected = tc()->pos2pix(selected);
+                              song->removeControllerVal(ctrlTrack(), ctrl()->id(), i->first);
+                              dragy = -1;
+                              break;
+                              }
+                        }
+                  }
             if (dragy != -1)
                   dragy = pos.y() + dragYoffset;
             }
