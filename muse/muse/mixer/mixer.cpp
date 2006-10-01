@@ -66,17 +66,6 @@ Mixer::Mixer(QWidget* parent, MixerConfig* c)
       showAuxTracksId->setCheckable(true);
       showSyntiTracksId->setCheckable(true);
 
-      showMidiTracksId->setChecked(cfg->showMidiTracks);
-      showMidiInPortId->setChecked(cfg->showMidiInPorts);
-      showMidiOutPortId->setChecked(cfg->showMidiOutPorts);
-      showMidiChannelId->setChecked(cfg->showMidiChannels);
-      showWaveTracksId->setChecked(cfg->showWaveTracks);
-      showOutputTracksId->setChecked(cfg->showOutputTracks);
-      showGroupTracksId->setChecked(cfg->showGroupTracks);
-      showInputTracksId->setChecked(cfg->showInputTracks);
-      showAuxTracksId->setChecked(cfg->showAuxTracks);
-      showSyntiTracksId->setChecked(cfg->showSyntiTracks);
-
       QScrollArea* view = new QScrollArea;
       view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(view);
@@ -168,6 +157,17 @@ void Mixer::clear()
 
 void Mixer::updateMixer(int action)
       {
+      showMidiTracksId->setChecked(cfg->showMidiTracks);
+      showMidiInPortId->setChecked(cfg->showMidiInPorts);
+      showMidiOutPortId->setChecked(cfg->showMidiOutPorts);
+      showMidiChannelId->setChecked(cfg->showMidiChannels);
+      showWaveTracksId->setChecked(cfg->showWaveTracks);
+      showOutputTracksId->setChecked(cfg->showOutputTracks);
+      showGroupTracksId->setChecked(cfg->showGroupTracks);
+      showInputTracksId->setChecked(cfg->showInputTracks);
+      showAuxTracksId->setChecked(cfg->showAuxTracks);
+      showSyntiTracksId->setChecked(cfg->showSyntiTracks);
+
       int auxsSize = song->auxs()->size();
       if (action == STRIP_REMOVED && auxsSize == oldAuxsSize) {
             StripList::iterator si = stripList.begin();

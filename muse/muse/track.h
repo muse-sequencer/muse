@@ -164,6 +164,7 @@ class Track : public QObject {
       void setAutoWrite(bool);
 
    public:
+      Track();
       Track(TrackType);
       virtual ~Track();
 

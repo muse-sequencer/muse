@@ -27,7 +27,6 @@
 #include "gconfig.h"
 #include "al/xml.h"
 #include "widgets/midisync.h"
-// #include "genset.h"
 #include "sync.h"
 #include "mixer/mixer.h"
 #include "globals.h"

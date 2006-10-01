@@ -41,26 +41,18 @@
 
 void Audio::sendMsg(AudioMsg* m)
       {
-      static int sno = 0;
-
       if (audioState == AUDIO_RUNNING) {
-            m->serialNo = sno++;
-            //DEBUG:
             msg = m;
-            // wait for next audio "process" call to finish operation
-            int no = -1;
-            int rv = read(fromThreadFdr, &no, sizeof(int));
-            if (rv != sizeof(int))
+            char c;
+            int rv = read(fromThreadFdr, &c, 1);
+            if (rv != 1)
                   perror("Audio: read pipe failed");
-            else if (no != (sno-1)) {
-                  fprintf(stderr, "audio: bad serial number, read %d expected %d\n",
-                     no, sno-1);
-                  }
             }
       else {
             // if audio is not running (during initialization)
             // process commands immediatly
-            processMsg(m);
+            msg = m;
+            processMsg();
             }
       }
 

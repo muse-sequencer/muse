@@ -129,8 +129,9 @@ Audio::Audio()
             perror("creating pipe0");
             fatalError("cannot create pipe0");
             }
-      fromThreadFdw = filedes[1];
-      fromThreadFdr = filedes[0];
+      fromThreadFdw = filedes[1];   // blocking file descriptor
+      fromThreadFdr = filedes[0];   // non blocking file descriptor
+
       int rv = fcntl(fromThreadFdw, F_SETFL, O_NONBLOCK);
       if (rv == -1)
             perror("set pipe O_NONBLOCK");
@@ -322,12 +323,10 @@ void Audio::process(unsigned frames)
       ++watchAudio;           // make a simple watchdog happy
 
       if (msg) {
-// printf("---msg\n");
-            processMsg(msg);
-            int sn = msg->serialNo;
+            processMsg();
             msg    = 0;    // dont process again
-            int rv = write(fromThreadFdw, &sn, sizeof(int));
-            if (rv != sizeof(int)) {
+            int rv = write(fromThreadFdw, "x", 1);
+            if (rv != 1) {
                   fprintf(stderr, "audio: write(%d) pipe failed: %s\n",
                      fromThreadFdw, strerror(errno));
                   }
@@ -566,11 +565,9 @@ printf("invalidate prefetch buffer\n");
 //   processMsg
 //---------------------------------------------------------
 
-void Audio::processMsg(AudioMsg* msg)
+void Audio::processMsg()
       {
-// if (_running)
-//      printf("audio process %d\n", msg->id);
-
+//    printf("---msg %d\n", msg->id);
       switch(msg->id) {
             case AUDIO_ROUTEADD:
                   addRoute(msg->sroute, msg->droute);

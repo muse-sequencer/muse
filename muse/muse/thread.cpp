@@ -258,7 +258,7 @@ void Thread::loop()
       }
 
 //---------------------------------------------------------
-//   send
+//   sendMsg
 //    send request from gui to thread
 //    wait until request is processed
 //---------------------------------------------------------
@@ -300,7 +300,7 @@ bool Thread::sendMsg(const ThreadMsg* m)
       }
 
 //---------------------------------------------------------
-//   send
+//   sendMsg1
 //    send request from gui to thread
 //    do __not__ wait until request is processed
 //---------------------------------------------------------

@@ -62,6 +62,7 @@ TrackInfo* Arranger::createTrackInfo()
 TrackInfo::TrackInfo()
    : QWidget()
       {
+      track = 0;
       label = new QLabel;
       label->setToolTip(tr("Track Type"));
       label->setLineWidth(2);
@@ -78,6 +79,7 @@ TrackInfo::TrackInfo()
       grid->addWidget(label, 0, 0, 1, 2);
       grid->addWidget(name,  1, 0, 1, 2);
       connect(name, SIGNAL(contentChanged(QString)), SLOT(nameChanged(QString)));
+      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       resize(QSize(infoWidth, height()));
       }
 
@@ -98,13 +100,11 @@ void TrackInfo::nameChanged(QString s)
 void TrackInfo::init(Track* t)
       {
       track = t;
+      if (t == 0)
+            return;
       label->setText(track->clname());
       name->setText(track->name());
-      //
-      //TD disconnect previous tracks
-      //
       connect(track, SIGNAL(nameChanged(const QString&)), name, SLOT(setText(const QString&)));
-      connect(song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
       }
 
 //---------------------------------------------------------
@@ -113,7 +113,7 @@ void TrackInfo::init(Track* t)
 
 void TrackInfo::songChanged(int val)
       {
-      if (val & SC_ROUTE)
+      if ((val & SC_ROUTE) && track)
 		init(track);
       }
 

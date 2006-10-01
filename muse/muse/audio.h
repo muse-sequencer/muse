@@ -178,7 +178,7 @@ class Audio {
 
       State state;
 
-      AudioMsg* msg;
+      AudioMsg* volatile msg;
       int fromThreadFdw, fromThreadFdr;  // message pipe
 
       int sigFd;              // pipe fd for messages to gui
@@ -188,8 +188,8 @@ class Audio {
       void startRolling();
       void stopRolling();
 
-      void processMsg(AudioMsg* msg);
       void collectEvents(MidiTrack*, unsigned startTick, unsigned endTick);
+      void processMsg();
 
    public:
       Audio();
