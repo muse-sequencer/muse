@@ -25,6 +25,7 @@
 #include "plugingui.h"
 #include "icons.h"
 #include "al/xml.h"
+#include "gui.h"
 
 #include "awl/floatentry.h"
 #include "awl/slider.h"
@@ -339,6 +340,7 @@ static const char* presetBypassText = "Click this button to bypass effect unit";
 PluginGui::PluginGui(PluginI* p)
    : QMainWindow(0)
       {
+      setIconSize(ICON_SIZE);
       plugin = p;
       setWindowTitle(plugin->name());
 
@@ -353,7 +355,7 @@ PluginGui::PluginGui(PluginI* p)
 
       tools->addAction(QWhatsThis::createAction(this));
 
-      QAction* onOff = tools->addAction(QIcon(*exitIconS), tr("bypass plugin"));
+      QAction* onOff = tools->addAction(*onOffIcon, tr("bypass plugin"));
       onOff->setCheckable(true);
       onOff->setChecked(plugin->on());
       onOff->setWhatsThis(tr(presetBypassText));

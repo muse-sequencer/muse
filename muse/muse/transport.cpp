@@ -87,7 +87,7 @@ Transport::Transport()
       tb5->setWhatsThis(tr(playTransportText));
 
       buttons[5] = tb6;
-      tb6->setIcon(QIcon(*record_on_Icon));
+      tb6->setIcon(*recordIcon);
       tb6->setWhatsThis(tr(recordTransportText));
 
       connect(buttons[0], SIGNAL(clicked()),     song, SLOT(rewindStart()));

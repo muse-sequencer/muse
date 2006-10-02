@@ -644,7 +644,7 @@ MusE::MusE()
       menu_ids[CMD_IMPORT_AUDIO]->setEnabled(!midiOnly);
 
       menu_file->addSeparator();
-      menu_ids[CMD_QUIT] = menu_file->addAction(*exitIconS, tr("&Quit"));
+      menu_ids[CMD_QUIT] = menu_file->addAction(*onOffIcon, tr("&Quit"));
       connect(menu_ids[CMD_QUIT], SIGNAL(triggered()), this, SLOT(quitDoc()));
       menu_file->addSeparator();
 

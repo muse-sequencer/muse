@@ -28,11 +28,8 @@ extern QPixmap* punchin1Icon;
 extern QPixmap* punchout1Icon;
 extern QPixmap* loop1Icon;
 extern QPixmap* playIcon;
-extern QPixmap* dotIcon;
-extern QPixmap* dothIcon;
-extern QPixmap* dot1Icon;
-extern QPixmap* noteIcon;
-extern QPixmap* note1Icon;
+// extern QPixmap* noteIcon;
+// extern QPixmap* note1Icon;
 extern QPixmap* stickIcon;
 extern QPixmap* waveIcon;
 extern QPixmap* markIcon[3];
@@ -48,8 +45,6 @@ extern QPixmap* glueIcon;
 extern QPixmap* drawIcon;
 
 extern QPixmap* quantIcon;
-// extern QPixmap* printIcon;
-// extern QPixmap* printIconS;
 extern QPixmap* openIcon;
 extern QPixmap* saveIcon;
 extern QPixmap* openIconS;
@@ -80,7 +75,7 @@ extern QPixmap* flagIcon;
 extern QPixmap* flagIconS;
 extern QPixmap* lockIcon;
 extern QPixmap* tocIcon;
-extern QPixmap* exitIconS;
+// extern QPixmap* exitIconS;
 
 extern QPixmap* undoIcon;
 extern QPixmap* redoIcon;
@@ -102,11 +97,8 @@ extern QIcon* editmuteIconSet;
 extern QIcon* editcopyIconSet;
 extern QIcon* editpasteIconSet;
 
-extern QPixmap* exitIcon;
-extern QPixmap* exit1Icon;
-extern QPixmap* record_on_Icon;
-extern QPixmap* record_off_Icon;
-extern QIcon* recordIcon;
+// extern QPixmap* exitIcon;
+// extern QPixmap* exit1Icon;
 extern QPixmap* newmuteIcon;
 extern QPixmap* soloIcon;
 
@@ -115,10 +107,6 @@ extern QPixmap* muteIconOff;
 extern QPixmap* soloIconOn;
 extern QPixmap* soloIconOff;
 
-extern QPixmap* greendotIcon;
-extern QPixmap* darkgreendotIcon;
-extern QPixmap* graydotIcon;
-extern QPixmap* bluedotIcon;
 extern QPixmap* offIcon;
 
 extern QPixmap* mastertrackSIcon;
@@ -127,7 +115,6 @@ extern QPixmap* miditransformSIcon;
 extern QPixmap* midi_plugSIcon;
 extern QPixmap* miditransposeSIcon;
 extern QPixmap* mixerSIcon;
-// extern QPixmap* mustangSIcon;
 extern QPixmap* resetSIcon;
 extern QPixmap* track_addIcon;
 extern QPixmap* track_deleteIcon;
@@ -200,5 +187,8 @@ extern QPixmap* museIcon;
 extern QPixmap* configIcon;
 extern QPixmap* minusIcon;
 extern QPixmap* plusIcon;
+
+extern QIcon* recordIcon;
+extern QIcon* onOffIcon;
 #endif
 

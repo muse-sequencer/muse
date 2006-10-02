@@ -32,7 +32,7 @@ static const int BFONT = 4;   // simple button font
 //---------------------------------------------------------
 
 RecordButton::RecordButton(QWidget* parent)
-   : SimpleButton(record_on_Icon, record_off_Icon, parent)
+   : SimpleButton(":/xpm/recordOn.svg", ":/xpm/recordOff.svg", parent)
       {
       setCheckable(true);
       setToolTip(tr("record"));
@@ -43,7 +43,7 @@ RecordButton::RecordButton(QWidget* parent)
 //---------------------------------------------------------
 
 GreendotButton::GreendotButton(QWidget* parent)
-   : SimpleButton(greendotIcon, darkgreendotIcon, parent)
+   : SimpleButton(":/xpm/greendot.svg", ":/xpm/darkgreendot.svg", parent)
       {
       setCheckable(true);
       setToolTip(tr("record"));
@@ -274,7 +274,7 @@ SimpleButton* newDrumMapButton()
 
 SimpleButton* newOffButton()
       {
-      SimpleButton* off  = new SimpleButton(exit1Icon, exitIcon);
+      SimpleButton* off  = new SimpleButton(":/xpm/off.svg", ":/xpm/on.svg");
       off->setCheckable(true);
       off->setToolTip(QT_TR_NOOP("off"));
       return off;

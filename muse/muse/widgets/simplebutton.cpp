@@ -19,6 +19,23 @@
 //=============================================================================
 
 #include "simplebutton.h"
+#include "gui.h"
+
+//---------------------------------------------------------
+//   SimpleButton
+//---------------------------------------------------------
+
+SimpleButton::SimpleButton(const QString& on, const QString& off, QWidget* parent)
+   : QToolButton(parent)
+      {
+      setAutoRaise(true);
+      QIcon icon;
+      icon.addFile(on, ICON_SIZE, QIcon::Normal, QIcon::On);
+      icon.addFile(off, ICON_SIZE, QIcon::Normal, QIcon::Off);
+      QAction* a = new QAction(this);
+      a->setIcon(icon);
+      setDefaultAction(a);
+      }
 
 //---------------------------------------------------------
 //   SimpleButton
@@ -27,7 +44,6 @@
 SimpleButton::SimpleButton(QPixmap* on, QPixmap* off, QWidget* parent)
    : QToolButton(parent)
       {
-//      setStyle(new QWindowsStyle());
       setAutoRaise(true);
       QIcon icon(*off);
       icon.addPixmap(*on, QIcon::Normal, QIcon::On);

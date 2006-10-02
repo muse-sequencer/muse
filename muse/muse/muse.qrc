@@ -15,6 +15,12 @@
 	<file>xpm/frewind.xpm</file>
 	<file>xpm/fforward.xpm</file>
 	<file>xpm/folder_new.png</file>
+	<file>xpm/recordOn.svg</file>
+	<file>xpm/recordOff.svg</file>
+	<file>xpm/greendot.svg</file>
+	<file>xpm/darkgreendot.svg</file>
+	<file>xpm/on.svg</file>
+	<file>xpm/off.svg</file>
    </qresource>
 </RCC>
 

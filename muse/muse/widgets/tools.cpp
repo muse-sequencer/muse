@@ -36,7 +36,7 @@ const char* infoCut = QT_TR_NOOP("select Cut Tool:\n"
       "with the cut tool you can split a part");
 const char* infoGlue = QT_TR_NOOP("select Glue Tool:\n"
       "with the glue tool you can glue two parts");
-const char* infoScore = QT_TR_NOOP("select Score Tool:\n");
+// const char* infoScore = QT_TR_NOOP("select Score Tool:\n");
 const char* infoQuant = QT_TR_NOOP("select Quantize Tool:\n"
       "insert display quantize event");
 const char* infoDraw = QT_TR_NOOP("select Drawing Tool");
@@ -48,7 +48,7 @@ ToolB toolList[TOOLS] = {
       {&pencilIcon,   QT_TR_NOOP("pencil"),      infoPencil  },
       {&deleteIcon,   QT_TR_NOOP("eraser"),      infoDel     },
       {&cutIcon,      QT_TR_NOOP("cutter"),      infoCut     },
-      {&note1Icon,    QT_TR_NOOP("score"),       infoScore   },
+//      {&note1Icon,    QT_TR_NOOP("score"),       infoScore   },
       {&glueIcon,     QT_TR_NOOP("glue"),        infoGlue    },
       {&quantIcon,    QT_TR_NOOP("quantize"),    infoQuant   },
       {&drawIcon,     QT_TR_NOOP("draw"),        infoDraw    },

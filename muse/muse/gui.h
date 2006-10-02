@@ -41,7 +41,8 @@ static const int infoWidth   = 140;
 static const int STRIP_WIDTH = 66;
 static const int LABEL_HEIGHT = 20;
 
-static const QSize ICON_SIZE(18, 18);
+static const int ICON_WIDTH = 18;
+static const QSize ICON_SIZE(ICON_WIDTH, ICON_WIDTH);
 
 #endif
 

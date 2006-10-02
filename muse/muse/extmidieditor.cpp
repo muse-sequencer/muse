@@ -38,7 +38,7 @@
 GraphMidiEditor::GraphMidiEditor(PartList* pl)
    : MidiEditor(pl)
       {
-      setIconSize(QSize(18, 18));
+      setIconSize(QSize(ICON_SIZE);
       _followSong = true;
       }
 

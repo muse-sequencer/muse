@@ -33,6 +33,7 @@ class SimpleButton : public QToolButton {
 
    public:
       SimpleButton(QPixmap* on, QPixmap* off, QWidget* parent = 0);
+      SimpleButton(const QString& on, const QString& off, QWidget* parent = 0);
       SimpleButton(const QString& s, QWidget* parent = 0);
       };
 

@@ -19,6 +19,7 @@
 //=============================================================================
 
 #include "globals.h"
+#include "gui.h"
 
 #include "xpm/audio_bounce_to_file.xpm"
 #include "xpm/audio_bounce_to_track.xpm"
@@ -55,16 +56,11 @@
 #include "xpm/delete.xpm"
 #include "xpm/play.xpm"
 
-#include "xpm/record_on.xpm"
-#include "xpm/record_off.xpm"
 #include "xpm/punchin1.xpm"
 #include "xpm/punchout1.xpm"
 #include "xpm/loop1.xpm"
-#include "xpm/dot.xpm"
-#include "xpm/doth.xpm"
-#include "xpm/dot1.xpm"
-#include "xpm/note.xpm"
-#include "xpm/note1.xpm"
+// #include "xpm/note.xpm"
+// #include "xpm/note1.xpm"
 #include "xpm/stick.xpm"
 #include "xpm/wave.xpm"
 #include "xpm/cmark.xpm"
@@ -75,20 +71,14 @@
 #include "xpm/glue.xpm"
 #include "xpm/draw.xpm"
 #include "xpm/quant.xpm"
-// #include "xpm/fileprint.xpm"
-// #include "xpm/filesave.xpm"
-// #include "xpm/fileopen.xpm"
-// #include "xpm/fileprintS.xpm"
 #include "xpm/filesaveS.xpm"
 #include "xpm/fileopenS.xpm"
 #include "xpm/master.xpm"
-// #include "xpm/filenew.xpm"
 #include "xpm/filenewS.xpm"
 #include "xpm/home.xpm"
 #include "xpm/back.xpm"
 #include "xpm/forward.xpm"
 
-// #include "xpm/mute.xpm"
 #include "xpm/solobutton_on.xpm"
 #include "xpm/solobutton_off.xpm"
 #include "xpm/mutebutton_on.xpm"
@@ -111,9 +101,8 @@
 #include "xpm/flagS.xpm"
 #include "xpm/lock.xpm"
 #include "xpm/toc.xpm"
-// #include "xpm/piano.xpm"
 #include "xpm/pianoS.xpm"
-#include "xpm/exitS.xpm"
+// #include "xpm/exitS.xpm"
 
 #include "xpm/undo.xpm"
 #include "xpm/redo.xpm"
@@ -122,9 +111,6 @@
 #include "xpm/editpaste.xpm"
 #include "xpm/undoS.xpm"
 #include "xpm/redoS.xpm"
-// #include "xpm/editcutS.xpm"
-// #include "xpm/editcopyS.xpm"
-// #include "xpm/editpasteS.xpm"
 #include "xpm/editmute.xpm"
 #include "xpm/editmuteS.xpm"
 
@@ -137,13 +123,13 @@
 // next two lines will vanish soon
 #include "xpm/solobutton.xpm"
 #include "xpm/newmutebutton.xpm"
-#include "xpm/exit.xpm"
-#include "xpm/exit1.xpm"
+// #include "xpm/exit.xpm"
+// #include "xpm/exit1.xpm"
 
-#include "xpm/greendot.xpm"
-#include "xpm/darkgreendot.xpm"
-#include "xpm/bluedot.xpm"
-#include "xpm/graydot.xpm"
+// #include "xpm/greendot.xpm"
+// #include "xpm/darkgreendot.xpm"
+// #include "xpm/bluedot.xpm"
+// #include "xpm/graydot.xpm"
 #include "xpm/off.xpm"
 
 #include "xpm/mastertrackS.xpm"
@@ -211,8 +197,8 @@ QPixmap* cliplistSIcon;
 QPixmap* mixerAudioSIcon;
 QPixmap* initSIcon;
 
-QPixmap* exitIcon;
-QPixmap* exit1Icon;
+// QPixmap* exitIcon;
+// QPixmap* exit1Icon;
 QPixmap* newmuteIcon;
 QPixmap* soloIcon;
 
@@ -224,18 +210,14 @@ QPixmap* punchout1Icon;
 QPixmap* loop1Icon;
 QPixmap* playIcon;
 
-QPixmap* record_on_Icon;
-QPixmap* record_off_Icon;
-QIcon* recordIcon;
-
 QPixmap* stopIcon;
 QPixmap* fforwardIcon;
 QPixmap* frewindIcon;
-QPixmap* dotIcon;
-QPixmap* dothIcon;
-QPixmap* dot1Icon;
-QPixmap* note1Icon;
-QPixmap* noteIcon;
+// QPixmap* dotIcon;
+// QPixmap* dothIcon;
+// QPixmap* dot1Icon;
+// QPixmap* note1Icon;
+// QPixmap* noteIcon;
 QPixmap* stickIcon;
 QPixmap* waveIcon;
 QPixmap* markIcon[3];
@@ -244,8 +226,6 @@ QPixmap* steprecIcon;
 QPixmap* glueIcon;
 QPixmap* drawIcon;
 QPixmap* quantIcon;
-// QPixmap* printIcon;
-// QPixmap* printIconS;
 QPixmap* openIcon;
 QPixmap* saveIcon;
 QPixmap* openIconS;
@@ -274,7 +254,7 @@ QPixmap* flagIcon;
 QPixmap* flagIconS;
 QPixmap* lockIcon;
 QPixmap* tocIcon;
-QPixmap* exitIconS;
+// QPixmap* exitIconS;
 
 QPixmap* undoIcon;
 QPixmap* redoIcon;
@@ -300,11 +280,13 @@ QIcon* editcutIconSet;
 QIcon* editmuteIconSet;
 QIcon* editcopyIconSet;
 QIcon* editpasteIconSet;
+QIcon* recordIcon;
+QIcon* onOffIcon;
 
-QPixmap* greendotIcon;
-QPixmap* darkgreendotIcon;
-QPixmap* graydotIcon;
-QPixmap* bluedotIcon;
+// QPixmap* greendotIcon;
+// QPixmap* darkgreendotIcon;
+// QPixmap* graydotIcon;
+// QPixmap* bluedotIcon;
 QPixmap* offIcon;
 
 QPixmap* addtrack_addmiditrackIcon;
@@ -385,17 +367,8 @@ void initIcons()
       loop1Icon    = new QPixmap(loop1_xpm);
       playIcon     = new QPixmap(play_xpm);
 
-      record_on_Icon= new QPixmap(record_on_xpm);
-      record_off_Icon= new QPixmap(record_off_xpm);
-
-      recordIcon   = new QIcon(*record_off_Icon);
-      recordIcon->addPixmap(*record_on_Icon, QIcon::Normal, QIcon::On);
-
-      dotIcon      = new QPixmap(dot_xpm);
-      dothIcon     = new QPixmap(doth_xpm);
-      dot1Icon     = new QPixmap(dot1_xpm);
-      noteIcon     = new QPixmap(note_xpm);
-      note1Icon    = new QPixmap(note1_xpm);
+//       noteIcon     = new QPixmap(note_xpm);
+//       note1Icon    = new QPixmap(note1_xpm);
       stickIcon    = new QPixmap(stick_xpm);
       waveIcon     = new QPixmap(wave_xpm);
       markIcon[0]  = new QPixmap(cmark_xpm);
@@ -434,7 +407,7 @@ void initIcons()
       flagIconS   = new QPixmap(flagS_xpm);
       lockIcon    = new QPixmap(lock_xpm);
       tocIcon     = new QPixmap(toc_xpm);
-      exitIconS   = new QPixmap(exitS_xpm);
+//      exitIconS   = new QPixmap(exitS_xpm);
 
       undoIcon     = new QPixmap(undo_xpm);
       redoIcon     = new QPixmap(redo_xpm);
@@ -454,8 +427,8 @@ void initIcons()
       editpasteIconSet     = new QIcon(QPixmap(editpaste_xpm));
       editmuteIconSet      = new QIcon(QPixmap(editmute_xpm));
 
-      exitIcon             = new QPixmap(exit_xpm);
-      exit1Icon            = new QPixmap(exit1_xpm);
+//      exitIcon             = new QPixmap(exit_xpm);
+//      exit1Icon            = new QPixmap(exit1_xpm);
 
       // 2 lines odd code
       newmuteIcon          = new QPixmap(newmutebutton_xpm);
@@ -465,10 +438,6 @@ void initIcons()
       muteIconOff          = new QPixmap(mutebutton_off_xpm);
       soloIconOn           = new QPixmap(solobutton_on_xpm);
       soloIconOff          = new QPixmap(solobutton_off_xpm);
-      greendotIcon         = new QPixmap(greendot_xpm);
-      darkgreendotIcon     = new QPixmap(darkgreendot_xpm);
-      bluedotIcon          = new QPixmap(bluedot_xpm);
-      graydotIcon          = new QPixmap(graydot_xpm);
       offIcon              = new QPixmap(off_xpm);
 
       mastertrackSIcon     = new QPixmap(mastertrackS_xpm);
@@ -551,5 +520,12 @@ void initIcons()
       configIcon = new QPixmap(config_xpm);
       minusIcon = new QPixmap(minus_xpm);
       plusIcon = new QPixmap(plus_xpm);
+
+      recordIcon = new QIcon;
+      recordIcon->addFile(":/xpm/recordOn.svg",  ICON_SIZE, QIcon::Normal, QIcon::On);
+      recordIcon->addFile(":/xpm/recordOff.svg", ICON_SIZE, QIcon::Normal, QIcon::Off);
+      onOffIcon = new QIcon;
+      onOffIcon->addFile(":/xpm/on.svg",  ICON_SIZE, QIcon::Normal, QIcon::On);
+      onOffIcon->addFile(":/xpm/off.svg", ICON_SIZE, QIcon::Normal, QIcon::Off);
       }
 

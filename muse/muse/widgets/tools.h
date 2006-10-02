@@ -33,7 +33,7 @@ struct ToolB {
       const char* tip;
       const char* ltip;
       };
-const int TOOLS = 9;
+const int TOOLS = 8;
 extern ToolB toolList[TOOLS];
 
 //---------------------------------------------------------
