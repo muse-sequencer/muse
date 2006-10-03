@@ -61,6 +61,8 @@ class MarkerItem : public QTreeWidgetItem {
 class MarkerView : public TopWin {
       Q_OBJECT
 
+      bool lockChange;
+
       QTreeWidget* table;
       QLineEdit* editName;
       Awl::PosEdit* editSMPTE;

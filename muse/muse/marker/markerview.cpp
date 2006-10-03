@@ -121,6 +121,7 @@ void MarkerItem::setTick(unsigned v)
 MarkerView::MarkerView()
    : TopWin()
       {
+      lockChange = false;
       setWindowTitle(tr("MusE: Marker"));
 
       //---------Actions----------------------------
@@ -280,7 +281,6 @@ void MarkerView::updateList()
 
 void MarkerView::currentChanged(QTreeWidgetItem* i)
       {
-printf("current changed\n");
       MarkerItem* item = (MarkerItem*)i;
       if (item == 0) {  // never triggered
             editTick->setValue(0);
@@ -310,7 +310,10 @@ printf("current changed\n");
 
 void MarkerView::selectionChanged()
       {
-printf("selection changed\n");
+      QList<QTreeWidgetItem*> sel = table->selectedItems();
+      if (!sel.empty()) {
+            MarkerItem* item = (MarkerItem*)(sel[0]);
+            }
       }
 
 //---------------------------------------------------------
@@ -319,7 +322,6 @@ printf("selection changed\n");
 
 void MarkerView::clicked(QTreeWidgetItem* i)
       {
-printf("clicked\n");
       MarkerItem* item = (MarkerItem*)i;
       if (item == 0) {
             table->clearSelection();
@@ -348,10 +350,11 @@ void MarkerView::tickChanged(const Pos& pos)
       {
       MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item) {
+            lockChange = true;
             item->setTick(pos.tick());
             Pos p(pos.tick(), AL::TICKS);
             song->setPos(0, p, true, true, false);
-//            table->sort();
+            lockChange = false;
             }
       }
 
@@ -375,6 +378,8 @@ void MarkerView::lockChanged(bool lck)
 
 void MarkerView::markerChanged(int val)
       {
+      if (lockChange)
+            return;
       switch (val) {
             case Song::MARKER_ADD:
             case Song::MARKER_REMOVE:
@@ -389,7 +394,6 @@ void MarkerView::markerChanged(int val)
                               for (int k = 0; k < n; ++k) {
                                     MarkerItem* item = (MarkerItem*)(table->topLevelItem(k));
                                     if (item->marker() == &i->second) {
-//                                          ((QTreeWidgetItem*)item)->setSelected(true);
                                           table->setCurrentItem(item);
                                           return;
                                           }
