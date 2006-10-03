@@ -353,7 +353,7 @@ SimpleButton* newPlusButton()
 
 SimpleButton* newStereoButton()
       {
-      SimpleButton* stereo  = new SimpleButton(stereoIcon, monoIcon);
+      SimpleButton* stereo  = new SimpleButton(":/xpm/stereo.svg", ":/xpm/mono.svg");
       stereo->setCheckable(true);
       stereo->setToolTip(QT_TR_NOOP("1/2 channel"));
       return stereo;

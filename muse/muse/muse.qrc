@@ -21,6 +21,8 @@
 	<file>xpm/darkgreendot.svg</file>
 	<file>xpm/on.svg</file>
 	<file>xpm/off.svg</file>
+	<file>xpm/mono.svg</file>
+	<file>xpm/stereo.svg</file>
    </qresource>
 </RCC>
 
