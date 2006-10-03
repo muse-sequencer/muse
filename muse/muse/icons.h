@@ -32,11 +32,6 @@ extern QPixmap* stickIcon;
 extern QPixmap* waveIcon;
 extern QPixmap* markIcon[3];
 
-// extern QPixmap* muteIconOn;
-// extern QPixmap* muteIconOff;
-// extern QPixmap* soloIconOn;
-// extern QPixmap* soloIconOff;
-
 extern QPixmap* cutIcon;
 extern QPixmap* steprecIcon;
 extern QPixmap* glueIcon;
@@ -55,13 +50,11 @@ extern QPixmap* filenewIconS;
 extern QPixmap* homeIcon;
 extern QPixmap* backIcon;
 extern QPixmap* forwardIcon;
-//extern QPixmap* muteIcon;
 extern QPixmap* upIcon;
 extern QPixmap* downIcon;
 extern QPixmap* boldIcon;
 extern QPixmap* italicIcon;
 extern QPixmap* underlinedIcon;
-// extern QPixmap* gvIcon;
 extern QPixmap* midiinIcon;
 extern QPixmap* sysexIcon;
 extern QPixmap* ctrlIcon;
@@ -94,13 +87,13 @@ extern QIcon* editmuteIconSet;
 extern QIcon* editcopyIconSet;
 extern QIcon* editpasteIconSet;
 
-extern QPixmap* newmuteIcon;
-extern QPixmap* soloIcon;
+//extern QPixmap* newmuteIcon;
+//extern QPixmap* soloIcon;
 
-extern QPixmap* muteIconOn;
-extern QPixmap* muteIconOff;
-extern QPixmap* soloIconOn;
-extern QPixmap* soloIconOff;
+//extern QPixmap* muteIconOn;
+//extern QPixmap* muteIconOff;
+//extern QPixmap* soloIconOn;
+//extern QPixmap* soloIconOff;
 
 extern QPixmap* offIcon;
 
@@ -155,10 +148,7 @@ extern QPixmap* edit_midiIcon;
 extern QPixmap* midi_edit_instrumentIcon;
 extern QPixmap* midi_init_instrIcon;
 extern QPixmap* midi_inputpluginsIcon;
-// extern QPixmap* midi_inputplugins_midi_input_filterIcon;
-// extern QPixmap* midi_inputplugins_midi_input_transformIcon;
 extern QPixmap* midi_inputplugins_remote_controlIcon;
-// extern QPixmap* midi_inputplugins_transposeIcon;
 extern QPixmap* midi_local_offIcon;
 extern QPixmap* midi_reset_instrIcon;
 extern QPixmap* settings_appearance_settingsIcon;
@@ -167,16 +157,12 @@ extern QPixmap* settings_follow_songIcon;
 extern QPixmap* settings_globalsettingsIcon;
 extern QPixmap* settings_metronomeIcon;
 extern QPixmap* settings_midifileexportIcon;
-// extern QPixmap* settings_midiport_softsynthsIcon;
 extern QPixmap* settings_midisyncIcon;
 extern QPixmap* view_bigtime_windowIcon;
 extern QPixmap* view_cliplistIcon;
 extern QPixmap* view_markerIcon;
 extern QPixmap* view_mixerIcon;
 extern QPixmap* view_transport_windowIcon;
-
-extern QPixmap* monoIcon;
-extern QPixmap* stereoIcon;
 
 extern QPixmap* museIcon;
 extern QPixmap* configIcon;

@@ -31,10 +31,7 @@
 #include "xpm/midi_edit_instrument.xpm"
 #include "xpm/midi_init_instr.xpm"
 #include "xpm/midi_inputplugins.xpm"
-// #include "xpm/midi_inputplugins_midi_input_filter.xpm"
-// #include "xpm/midi_inputplugins_midi_input_transform.xpm"
 #include "xpm/midi_inputplugins_remote_control.xpm"
-// #include "xpm/midi_inputplugins_transpose.xpm"
 #include "xpm/midi_local_off.xpm"
 #include "xpm/midi_reset_instr.xpm"
 #include "xpm/settings_appearance_settings.xpm"
@@ -43,7 +40,6 @@
 #include "xpm/settings_globalsettings.xpm"
 #include "xpm/settings_metronome.xpm"
 #include "xpm/settings_midifileexport.xpm"
-// #include "xpm/settings_midiport_softsynths.xpm"
 #include "xpm/settings_midisync.xpm"
 #include "xpm/view_bigtime_window.xpm"
 #include "xpm/view_cliplist.xpm"
@@ -77,17 +73,11 @@
 #include "xpm/back.xpm"
 #include "xpm/forward.xpm"
 
-// #include "xpm/solobutton_on.xpm"
-// #include "xpm/solobutton_off.xpm"
-// #include "xpm/mutebutton_on.xpm"
-// #include "xpm/mutebutton_off.xpm"
-
 #include "xpm/up.xpm"
 #include "xpm/down.xpm"
 #include "xpm/bold.xpm"
 #include "xpm/italic.xpm"
 #include "xpm/underlined.xpm"
-// #include "xpm/gv.xpm"
 #include "xpm/midiin.xpm"
 #include "xpm/sysex.xpm"
 #include "xpm/ctrl.xpm"
@@ -118,9 +108,8 @@
 
 
 // next two lines will vanish soon
-#include "xpm/solobutton.xpm"
-#include "xpm/newmutebutton.xpm"
-// #include "xpm/off.xpm"
+//#include "xpm/solobutton.xpm"
+//#include "xpm/newmutebutton.xpm"
 
 #include "xpm/mastertrackS.xpm"
 #include "xpm/localoffS.xpm"
@@ -164,8 +153,6 @@
 #include "xpm/select_invert_selection.xpm"
 #include "xpm/select_outside_loop.xpm"
 
-#include "xpm/mono.xpm"
-#include "xpm/stereo.xpm"
 #include "xpm/muse_icon.xpm"
 #include "xpm/config.xpm"
 #include "xpm/minus.xpm"
@@ -187,8 +174,8 @@ QPixmap* cliplistSIcon;
 QPixmap* mixerAudioSIcon;
 QPixmap* initSIcon;
 
-QPixmap* newmuteIcon;
-QPixmap* soloIcon;
+//QPixmap* newmuteIcon;
+//QPixmap* soloIcon;
 
 QPixmap* pointerIcon;
 QPixmap* pencilIcon;
@@ -225,7 +212,6 @@ QPixmap* downIcon;
 QPixmap* boldIcon;
 QPixmap* italicIcon;
 QPixmap* underlinedIcon;
-//QPixmap* gvIcon;
 QPixmap* midiinIcon;
 QPixmap* sysexIcon;
 QPixmap* ctrlIcon;
@@ -246,11 +232,6 @@ QPixmap* redoIconS;
 QPixmap* speakerIcon;
 QPixmap* buttondownIcon;
 QPixmap* configureIcon;
-
-// QPixmap* muteIconOn;
-// QPixmap* muteIconOff;
-// QPixmap* soloIconOn;
-// QPixmap* soloIconOff;
 
 QPixmap* editmuteIcon;
 QPixmap* editmuteSIcon;
@@ -302,10 +283,7 @@ QPixmap* edit_midiIcon;
 QPixmap* midi_edit_instrumentIcon;
 QPixmap* midi_init_instrIcon;
 QPixmap* midi_inputpluginsIcon;
-// QPixmap* midi_inputplugins_midi_input_filterIcon;
-// QPixmap* midi_inputplugins_midi_input_transformIcon;
 QPixmap* midi_inputplugins_remote_controlIcon;
-// QPixmap* midi_inputplugins_transposeIcon;
 QPixmap* midi_local_offIcon;
 QPixmap* midi_reset_instrIcon;
 QPixmap* settings_appearance_settingsIcon;
@@ -314,7 +292,6 @@ QPixmap* settings_follow_songIcon;
 QPixmap* settings_globalsettingsIcon;
 QPixmap* settings_metronomeIcon;
 QPixmap* settings_midifileexportIcon;
-// QPixmap* settings_midiport_softsynthsIcon;
 QPixmap* settings_midisyncIcon;
 QPixmap* view_bigtime_windowIcon;
 QPixmap* view_cliplistIcon;
@@ -322,8 +299,6 @@ QPixmap* view_markerIcon;
 QPixmap* view_mixerIcon;
 QPixmap* view_transport_windowIcon;
 
-QPixmap* monoIcon;
-QPixmap* stereoIcon;
 QPixmap* museIcon;
 QPixmap* museIcon64;
 QPixmap* configIcon;
@@ -370,7 +345,6 @@ void initIcons()
       boldIcon     = new QPixmap(bold_xpm);
       italicIcon     = new QPixmap(italic_xpm);
       underlinedIcon = new QPixmap(underlined_xpm);
-//      gvIcon     = new QPixmap(gv_xpm);
       midiinIcon = new QPixmap(midiin_xpm);
       sysexIcon   = new QPixmap(sysex_xpm);
       ctrlIcon    = new QPixmap(ctrl_xpm);
@@ -402,14 +376,8 @@ void initIcons()
       editmuteIconSet      = new QIcon(QPixmap(editmute_xpm));
 
       // 2 lines odd code
-      newmuteIcon          = new QPixmap(newmutebutton_xpm);
-      soloIcon             = new QPixmap(solobutton_xpm);
-
-//      muteIconOn           = new QPixmap(mutebutton_on_xpm);
-//      muteIconOff          = new QPixmap(mutebutton_off_xpm);
-//      soloIconOn           = new QPixmap(solobutton_on_xpm);
-//      soloIconOff          = new QPixmap(solobutton_off_xpm);
-//      offIcon              = new QPixmap(off_xpm);
+//      newmuteIcon          = new QPixmap(newmutebutton_xpm);
+//      soloIcon             = new QPixmap(solobutton_xpm);
 
       mastertrackSIcon     = new QPixmap(mastertrackS_xpm);
       localoffSIcon        = new QPixmap(localoffS_xpm);
@@ -464,10 +432,7 @@ void initIcons()
       midi_edit_instrumentIcon                      = new QPixmap(midi_edit_instrument_xpm);
       midi_init_instrIcon                           = new QPixmap(midi_init_instr_xpm);
       midi_inputpluginsIcon                         = new QPixmap(midi_inputplugins_xpm);
-//      midi_inputplugins_midi_input_filterIcon       = new QPixmap(midi_inputplugins_midi_input_filter_xpm);
-//      midi_inputplugins_midi_input_transformIcon    = new QPixmap(midi_inputplugins_midi_input_transform_xpm);
       midi_inputplugins_remote_controlIcon          = new QPixmap(midi_inputplugins_remote_control_xpm);
-//      midi_inputplugins_transposeIcon               = new QPixmap(midi_inputplugins_transpose_xpm);
       midi_local_offIcon                            = new QPixmap(midi_local_off_xpm);
       midi_reset_instrIcon                          = new QPixmap(midi_reset_instr_xpm);
       settings_appearance_settingsIcon              = new QPixmap(settings_appearance_settings_xpm);
@@ -476,16 +441,12 @@ void initIcons()
       settings_globalsettingsIcon                   = new QPixmap(settings_globalsettings_xpm);
       settings_metronomeIcon                        = new QPixmap(settings_metronome_xpm);
       settings_midifileexportIcon                   = new QPixmap(settings_midifileexport_xpm);
-//       settings_midiport_softsynthsIcon              = new QPixmap(settings_midiport_softsynths_xpm);
       settings_midisyncIcon                         = new QPixmap(settings_midisync_xpm);
       view_bigtime_windowIcon                       = new QPixmap(view_bigtime_window_xpm);
       view_cliplistIcon                             = new QPixmap(view_cliplist_xpm);
       view_markerIcon                               = new QPixmap(view_marker_xpm);
       view_mixerIcon                                = new QPixmap(view_mixer_xpm);
       view_transport_windowIcon                     = new QPixmap(view_transport_window_xpm);
-
-      monoIcon   = new QPixmap(mono_xpm);
-      stereoIcon = new QPixmap(stereo_xpm);
 
       museIcon = new QPixmap(muse_icon_xpm);
       configIcon = new QPixmap(config_xpm);
