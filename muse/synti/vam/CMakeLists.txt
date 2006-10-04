@@ -46,5 +46,5 @@ target_link_libraries(vam
       ${QT_LIBRARIES}
       )
 
-install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ vam )
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ vam )
 

@@ -46,5 +46,5 @@ target_link_libraries(fluid
       ${FLUID_LIB}
       )
 
-install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ fluid )
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ fluid )
 

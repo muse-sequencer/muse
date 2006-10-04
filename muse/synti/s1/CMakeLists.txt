@@ -30,5 +30,5 @@ set_target_properties ( s1 PROPERTIES PREFIX "" )
 target_link_libraries(s1
       synti
       )
-install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ s1 )
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ s1 )
 

@@ -43,5 +43,5 @@ set_target_properties ( trigg
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
-install_targets ( /lib/${MusE_INSTALL_NAME}/midiplugins/ trigg )
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/midiplugins/ trigg )
 

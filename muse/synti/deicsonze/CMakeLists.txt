@@ -45,6 +45,6 @@ target_link_libraries(deicsonze
       ${QT_LIBRARIES}
       )
 
-install_targets ( /lib/${MusE_INSTALL_NAME}/synthi/ deicsonze )
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ deicsonze )
 
 install_files ( /share/${MusE_INSTALL_NAME}/presets/deicsonze SutulaBank.dei )

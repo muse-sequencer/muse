@@ -42,5 +42,5 @@ set_target_properties ( metronom
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
-install_targets ( /lib/${MusE_INSTALL_NAME}/midiplugins/ metronom )
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/midiplugins/ metronom )
 

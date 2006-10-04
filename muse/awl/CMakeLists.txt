@@ -90,7 +90,7 @@ ELSE (APPLE)
       al pthread asound
       )
 
-   install_targets ( /lib/${MusE_INSTALL_NAME}/designer/ awlplugin )
+   install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/designer/ awlplugin )
 
    add_executable( ltest ltest.cpp )
    target_link_libraries ( ltest 
