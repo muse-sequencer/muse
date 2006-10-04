@@ -1,3 +1,7 @@
+4.10 (rj)
+      - Select the right item when items are stacked on top of each other, for
+        pianoroll and arranger (rj)
+      - Print error message when name2route called in error (rj)
 4.10 (ws)
       - misc fixes for graphical controller editor
       - patch for x86_64-biarch systems from Detlef Reichelt

@@ -34,7 +34,19 @@
 static Route name2route(const QString& rn, Route::RouteType t)
       {
       int channel = -1;
+      
+      // mainly for debugging purposes, it happens that name2route is called without an entry
+      // possibly this should be removed if it's no longer the case.
+      if (rn.isEmpty()) {
+            static const char* names[] = {
+                    "TRACK", "AUDIOPORT", "MIDIPORT", "SYNTIPORT"
+                    };
+            printf("!!!!!!!!!!!!!!!!!!!!!! empty route!!!!!!!!!!!!!!name2route: %s: <%s> not found\n", names[t], rn.toLatin1().data());
+            return Route((Track*) 0, channel, Route::TRACK);
+            
+      }
       QString s(rn);
+
       if (rn[0].isNumber() && rn[1]==':') {
             int c = rn[0].toLatin1();
             channel = c - '1';

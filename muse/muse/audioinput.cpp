@@ -134,7 +134,7 @@ void AudioInput::deactivate()
                   jackPorts[i] = 0;
                   }
             else
-                  printf("AudioOutput::deactivate(): not active!\n");
+                  printf("AudioInput::deactivate(): not active!\n");
             }
       }
 

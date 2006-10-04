@@ -52,7 +52,7 @@ struct CItem {
       };
 
 typedef std::multimap<int, CItem*, std::less<int> >::iterator iCItem;
-typedef std::multimap<int, CItem*, std::less<int> >::const_iterator ciCItem;
+typedef std::multimap<int, CItem*, std::less<int> >::const_reverse_iterator rciCItem;
 
 //---------------------------------------------------------
 //   CItemList
