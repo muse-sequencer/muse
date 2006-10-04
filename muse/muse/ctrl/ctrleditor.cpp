@@ -28,6 +28,7 @@
 #include "part.h"
 #include "tools.h"
 #include "muse.h"
+#include "gui.h"
 
 static const int HANDLE1 = 6;
 static const int HANDLE2 = 3;
@@ -42,7 +43,6 @@ CtrlEditor::CtrlEditor()
       _drawCtrlName = false;
       dragy         = -1;
       lselected     = 0;
-      dragy         = -1;
       singlePitch   = -1;
       drawRuler     = false;
       }
@@ -215,17 +215,19 @@ void CtrlEditor::mousePress(const QPoint& pos, int button)
       int cid   = ctrl()->id();
 
       if (tool == PencilTool) {
-            CVal val = ctrl()->pixel2val(y, wh);
-            selected = tc()->pix2pos(x);
-            if (cid == CTRL_VELOCITY || cid == CTRL_SVELOCITY)
-                  song->startUndo();
-            else {
-                  song->addControllerVal(ctrlTrack(), ctrl(), selected, val);
-                  tc()->widget()->update();
-                  }
+            selected  = tc()->pix2pos(x);
             lselected = x;
             dragy     = y;
             dragx     = x;
+            dragYoffset = 0;
+            if (cid == CTRL_VELOCITY || cid == CTRL_SVELOCITY)
+                  song->startUndo();
+            else {
+                  // add controller:
+                  CVal val = ctrl()->pixel2val(dragy, wh);
+                  song->addControllerVal(ctrlTrack(), ctrl(), selected, val);
+                  tc()->widget()->update();
+                  }
             }
       else if (tool == PointerTool || tool == RubberTool) {
       	if (cid == CTRL_VELOCITY || cid == CTRL_SVELOCITY) {
@@ -340,8 +342,8 @@ void CtrlEditor::mouseRelease()
                   CVal val = ctrl()->pixel2val(dragy, wh);
                   // modify controller:
                   song->addControllerVal(ctrlTrack(), ctrl(), selected, val);
-                  dragy = -1;
                   }
+            dragy = -1;
             }
       }
 
@@ -432,8 +434,13 @@ void CtrlEditor::mouseMove(const QPoint& pos)
                               }
                         }
                   }
-            if (dragy != -1)
+            if (dragy != -1) {
                   dragy = pos.y() + dragYoffset;
+                  if (dragy < 0)
+                        dragy = 0;
+                  else if (dragy > cheight())
+                        dragy = cheight();
+                  }
             }
       tc()->widget()->update();
       }

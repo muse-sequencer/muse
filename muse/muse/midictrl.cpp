@@ -79,9 +79,9 @@ static MidiController programCtrl("Program",        CTRL_PROGRAM,       0, 0xfff
 static MidiController mastervolCtrl("MasterVolume", CTRL_MASTER_VOLUME, 0, 0x3fff, 0x3000);
 static MidiController volumeCtrl("MainVolume",      CTRL_VOLUME,        0, 127, 100);
 static MidiController panCtrl("Pan",                CTRL_PANPOT,        0, 127,  64);
-static MidiController reverbCtrl("ReverbSend",         CTRL_REVERB_SEND,   0, 127,  0);
-static MidiController chorusCtrl("ChorusSend",         CTRL_CHORUS_SEND,   0, 127,  0);
-static MidiController variationCtrl("VariationSend",      CTRL_VARIATION_SEND,0, 127,  0);
+static MidiController reverbCtrl("ReverbSend",      CTRL_REVERB_SEND,   0, 127,  0);
+static MidiController chorusCtrl("ChorusSend",      CTRL_CHORUS_SEND,   0, 127,  0);
+static MidiController variationCtrl("VariationSend",CTRL_VARIATION_SEND,0, 127,  0);
 
 //---------------------------------------------------------
 //   ctrlType2Int

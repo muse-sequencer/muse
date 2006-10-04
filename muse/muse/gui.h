@@ -34,8 +34,10 @@ static const int splitWidth = 6;
 static const int trackRowHeight = 24;
 static const int minTrackHeight = trackRowHeight + splitWidth + 1;
 static const int defaultTrackHeight = minTrackHeight;
-static const int infoHeight  = 20;
-static const int infoWidth   = 140;
+static const int infoHeight     = 20;
+static const int infoWidth      = 140;
+static const int trackSeparator = 1;
+static const int yTrackOffset   = -4;
 
 //  mixer:
 static const int STRIP_WIDTH = 66;

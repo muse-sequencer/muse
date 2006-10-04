@@ -2247,6 +2247,7 @@ void Song::addControllerVal(Track* t, Ctrl* c, const Pos& p, CVal val)
             }
       else {
             CVal oval = c->value(time);
+// printf("change controller %f -  %f\n", oval.f, val.f);
             startUndo();
             undoOp(UndoOp::ModifyCtrl, t, c->id(), time, val, oval);
             c->add(time, val);

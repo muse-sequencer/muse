@@ -165,7 +165,7 @@ Ctrl* TLSWidget::ctrl() const
 
 int TLSWidget::cheight() const
       {
-      return at->tw->height() - 4;
+      return at->tw->height() - splitWidth;
       }
 
 //---------------------------------------------------------

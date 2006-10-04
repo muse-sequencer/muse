@@ -244,17 +244,19 @@ void PartCanvas::paint(QPainter& p, QRect r)
                   p.restore();
                   }
 
-            p.setPen(QPen(Qt::lightGray, 1, Qt::SolidLine));
-            if (i != tl->begin())
-	            p.drawLine(from, y-2, to, y-2);
+            if (i != tl->begin()) {
+                  p.setPen(QPen(Qt::lightGray, trackSeparator, Qt::SolidLine));
+	            p.drawLine(from, y + yTrackOffset, to, y + yTrackOffset);
+                  }
             for (iArrangerTrack i = t->subtracks.begin(); i != t->subtracks.end(); ++i) {
                   at = *i;
                   if (at->tw == 0)
                         continue;
                   TLSWidget* tls = (TLSWidget*)(at->tw);
                   int y = tls->y();
-                  p.setPen(QPen(Qt::lightGray, 1, Qt::SolidLine));
-                  p.drawLine(from, y-2, to, y-2);
+                  int h = tls->height();
+                  p.setPen(QPen(Qt::lightGray, trackSeparator, Qt::SolidLine));
+                  p.drawLine(from, y + yTrackOffset, to, y + yTrackOffset);
                   QPoint off(0, y);
                   p.translate(off);
                   tls->paint(p, r);
@@ -263,9 +265,9 @@ void PartCanvas::paint(QPainter& p, QRect r)
             }
       if (at && at->tw) {
             // draw last line
-            int y = at->tw->y() + at->tw->height() - 2;
-            p.setPen(QPen(Qt::lightGray, 1, Qt::SolidLine));
-            p.drawLine(from, y-2, to, y-2);
+            int y = at->tw->y() + at->tw->height() + yTrackOffset;
+            p.setPen(QPen(Qt::lightGray, trackSeparator, Qt::SolidLine));
+            p.drawLine(from, y, to, y);
             }
       if (state == S_DRAG4 || state == S_DRAG1 || state == S_DRAG2 || state == S_DRAG5) {
             p.setBrush(Qt::NoBrush);
@@ -561,7 +563,7 @@ void PartCanvas::mousePress(QMouseEvent* me)
 
       if (hit == HIT_SUBTRACK) {
             TLSWidget* w = (TLSWidget*)(at->tw);
-            int y = pos.y() - w->y() + 2;
+            int y = wpos.y() + pos.y() - w->y();
             w->mousePress(QPoint(pos.x(), y), button);
             state = S_SUBTRACK;
             return;
@@ -653,7 +655,7 @@ void PartCanvas::mouseMove(QPoint pos)
       {
       if (state == S_SUBTRACK) {
             TLSWidget* w = (TLSWidget*)(at->tw);
-            int y = pos.y() - w->y() + 2 - rulerHeight;
+            int y = wpos.y() + pos.y() - w->y() - rulerHeight;
             w->mouseMove(QPoint(pos.x(), y));
             return;
             }

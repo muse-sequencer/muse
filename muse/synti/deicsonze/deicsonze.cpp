@@ -104,8 +104,8 @@ DeicsOnze::DeicsOnze() : Mess(2)
 
   //initialization GUI
   _gui = new DeicsOnzeGui(this);
+  _gui->hide();   // to avoid flicker during MusE startup
   _gui->setWindowTitle(QString("DeicsOnze"));
-  _gui->show();
 
   //Load configuration
   QString defaultConf = (QString(getenv("HOME")) + QString("/." DEICSONZESTR ".dco"));

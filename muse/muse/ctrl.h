@@ -199,6 +199,7 @@ class Ctrl : public CTRL {
       int val2pixelR(CVal, int maxpixel);
       int val2pixelR(int, int maxpixel);
       CVal pixel2val(int pixel, int maxpixel);
+      CVal pixel2valR(int pixel, int maxpixel);
       };
 
 //---------------------------------------------------------

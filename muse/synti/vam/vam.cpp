@@ -7,7 +7,7 @@
 //      Werner Schweer's organ softsynth for MusE.
 //	The music-dsp source archive.
 //
-//  (C) Copyright 2002 Jotsif Lindman Hörnlund (jotsif@linux.nu)
+//  (C) Copyright 2002 Jotsif Lindman Hönlund (jotsif@linux.nu)
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -301,8 +301,8 @@ float *VAM::wave_tbl(int wave)
 bool VAM::init(const char* name)
       {
       gui = new VAMGui;
+      gui->hide();      // to avoid flicker during MusE startup
       gui->setWindowTitle(QString(name));
-      gui->show();
 
 	if (useCount == 0) {
 		int i;

@@ -330,18 +330,18 @@ void Ctrl::write(Xml& xml)
 
 int Ctrl::val2pixelR(CVal val, int maxpixel)
       {
+      maxpixel -= 1;
       if (_type & INT)
-            return maxpixel - ((maxpixel * (val.i - min.i) + (max.i-min.i)/2) / (max.i-min.i));
+            return maxpixel - ((maxpixel * (val.i - min.i) + (max.i-min.i)/2) / (max.i - min.i));
       else
-            return maxpixel - lrint(float(maxpixel) * (val.f - min.f) / (max.f-min.f));
+            return maxpixel - lrint(double(maxpixel) * (val.f - min.f) / (max.f-min.f));
       }
 
 int Ctrl::val2pixelR(int val, int maxpixel)
       {
-      if (_type & INT)
-            return maxpixel - (maxpixel * (val - min.i) / (max.i-min.i));
-      else
-            return maxpixel - lrint(float(maxpixel) * (val - min.f) / (max.f-min.f));
+      maxpixel -= 1;
+      int range = max.i - min.i;
+      return maxpixel - ((maxpixel * (val - min.i) + range / 2) / range);
       }
 
 //---------------------------------------------------------
@@ -350,6 +350,7 @@ int Ctrl::val2pixelR(int val, int maxpixel)
 
 CVal Ctrl::pixel2val(int pixel, int maxpixel)
       {
+      maxpixel -= 1;
       pixel = maxpixel - pixel;
 
 // printf("pixel2val %d(%d) int %d, min %d, max %d\n",
@@ -363,15 +364,43 @@ CVal Ctrl::pixel2val(int pixel, int maxpixel)
                   rv.i = max.i;
             }
       else {
-            rv.f = float(pixel) * (max.f - min.f) / float(maxpixel) + min.f;
+            rv.f = double(pixel) * (max.f - min.f) / double(maxpixel) + min.f;
+            if (rv.f < min.f)
+                  rv.f = min.f;
+            else if (rv.f > max.f)
+                  rv.f = max.f;
+            if (_type & LOG)
+                  rv.f = pow(10.0f, rv.f);
+            }
+      return rv;
+      }
+
+//---------------------------------------------------------
+//   pixel2valR
+//---------------------------------------------------------
+
+CVal Ctrl::pixel2valR(int pixel, int maxpixel)
+      {
+      maxpixel -= 1;
+      pixel = maxpixel - pixel;
+
+// printf("pixel2val %d(%d) int %d, min %d, max %d\n",
+//   pixel, maxpixel, _type & INT, min.i, max.i);
+      CVal rv;
+      if (_type & INT) {
+            rv.i = (pixel * (max.i - min.i) + (maxpixel+min.i)/2) / maxpixel + min.i;
+            if (rv.i < min.i)
+                  rv.i = min.i;
+            else if (rv.i > max.i)
+                  rv.i = max.i;
+            }
+      else {
+            rv.f = double(pixel) * (max.f - min.f) / double(maxpixel) + min.f;
             if (rv.f < min.f)
                   rv.f = min.f;
             else if (rv.f > max.f)
                   rv.f = max.f;
             }
-
-      if (_type & LOG)
-            rv.f = pow(10.0f, rv.f);
       return rv;
       }
 

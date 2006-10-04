@@ -513,8 +513,8 @@ bool ISynth::init(const char* name)
             }
 
       gui = new FLUIDGui;
+      gui->hide();            // to avoid flicker during MusE startup
       gui->setWindowTitle(QString(name));
-      gui->show();
       return false;
       }
 
