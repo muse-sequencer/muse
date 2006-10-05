@@ -107,7 +107,7 @@ enum {
       MS_SET_RTC,
 
       SEQM_IDLE,
-      SEQM_SEEK,
+//      SEQM_SEEK,
       SEQM_ADD_CTRL,
       SEQM_REMOVE_CTRL
       };

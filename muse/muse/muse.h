@@ -148,6 +148,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
       QSpinBox* globalTempoSpinBox;
+      QComboBox* rasterCombo;
 
       QDialog* projectPropsDialog;
 
@@ -244,10 +245,10 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       void markerClosed();
       void mixer1Closed();
       void mixer2Closed();
-      void setRaster(int);
       void syncChanged();
       void preferences();
       void aboutToShowAddTrack();
+      void setRaster(int);
 
    public slots:
       void bounceToFile();
@@ -294,6 +295,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
 	int raster() const { return _raster; }
 	void setupTransportToolbar(QToolBar* tb) const;
       void readToplevels(QDomNode);
+      void initRaster(int);
 
       QAction* startAction;
       QAction* rewindAction;

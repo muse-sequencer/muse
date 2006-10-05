@@ -904,13 +904,13 @@ MusE::MusE()
       label->setIndent(5);
       aToolBar->addWidget(label);
 
-      QComboBox* raster = new QComboBox;
-      raster->setFixedHeight(24);
-      aToolBar->addWidget(raster);
+      rasterCombo = new QComboBox;
+      rasterCombo->setFixedHeight(24);
+      aToolBar->addWidget(rasterCombo);
       for (unsigned i = 0; i < sizeof(rasterTable)/sizeof(*rasterTable); i++)
-            raster->addItem(rasterTable[i].label, i);
-      raster->setCurrentIndex(1);
-      connect(raster, SIGNAL(activated(int)), SLOT(setRaster(int)));
+            rasterCombo->addItem(rasterTable[i].label, i);
+      rasterCombo->setCurrentIndex(1);
+      connect(rasterCombo, SIGNAL(activated(int)), SLOT(setRaster(int)));
 
       // Song len
       label = new QLabel(tr("Len"));
@@ -1046,6 +1046,23 @@ void MusE::setRaster(int val)
       {
       _raster = rasterTable[val].val;
       emit rasterChanged(_raster);
+      }
+
+//---------------------------------------------------------
+//   initRaster
+//---------------------------------------------------------
+
+void MusE::initRaster(int val)
+      {
+      for (int i = 0; i < sizeof(rasterTable)/sizeof(*rasterTable); ++i) {
+            if (rasterTable[i].val == val) {
+                  _raster = val;
+                  rasterCombo->setCurrentIndex(i);
+                  return;
+                  }
+            }
+      _raster = rasterTable[1].val;
+      rasterCombo->setCurrentIndex(1);
       }
 
 //---------------------------------------------------------

@@ -64,9 +64,6 @@ void MidiSeq::processMsg(const ThreadMsg* m)
       {
       AudioMsg* msg = (AudioMsg*)m;
       switch (msg->id) {
-            case SEQM_SEEK:
-                  processSeek();
-                  break;
             case MS_START:
                   processStart();
                   break;
@@ -554,7 +551,6 @@ void MidiSeq::msgMsg(int id)
       Thread::sendMsg(&msg);
       }
 
-void MidiSeq::msgSeek()         { msgMsg(SEQM_SEEK); }
 void MidiSeq::msgStop()         { msgMsg(MS_STOP); }
 void MidiSeq::msgStart()        { msgMsg(MS_START); }
 void MidiSeq::msgSetRtc()       { msgMsg(MS_SET_RTC); }

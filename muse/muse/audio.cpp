@@ -75,7 +75,7 @@ const char* seqMsgList[] = {
       "MS_STOP",
       "MS_SET_RTC",
       "SEQM_IDLE",
-      "SEQM_SEEK",
+//      "SEQM_SEEK",
       "SEQM_ADD_CTRL",
       "SEQM_REMOVE_CTRL"
       };
@@ -638,8 +638,11 @@ void Audio::seek(const Pos& p)
       if (state != LOOP2 && !freewheel())
             audioPrefetch->msgSeek(_pos.frame());
 
-      midiSeq->msgSeek();     // handle stuck notes and set
+      midiBusy = true;
+      midiSeq->processSeek(); // handle stuck notes and set
                               // controller for new position
+      midiBusy = false;
+
       sendMsgToGui(MSG_SEEK);
       }
 

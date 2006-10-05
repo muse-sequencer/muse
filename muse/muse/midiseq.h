@@ -60,7 +60,6 @@ class MidiSeq : public Thread {
       bool initRealtimeTimer();
       static void midiTick(void* p, void*);
       void processTimerTick();
-      void processSeek();
       void processStart();
       void processStop();
       void resetDevices();
@@ -84,12 +83,13 @@ class MidiSeq : public Thread {
       void mmcInput(int id, int cmd, const AL::Pos&);
 
       void msgMsg(int id);
-      void msgSeek();
       void msgStart();
       void msgStop();
       void msgSetRtc();
       void msgAddSynthI(SynthI* synth);
       void msgRemoveSynthI(SynthI* synth);
+
+      void processSeek();
       };
 
 extern MidiSeq* midiSeq;

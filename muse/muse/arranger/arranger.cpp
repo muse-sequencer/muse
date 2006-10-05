@@ -991,6 +991,10 @@ void Arranger::readStatus(QDomNode node)
             else if (tag == "namesize") {
                   Arranger::trackNameWidth = i;
                   }
+            else if (tag == "raster") {
+                  muse->initRaster(i);
+                  canvas->setRaster(i);
+                  }
             else if (tag == "splitter") {
                   split->readStatus(node);
                   QList<int> sizes = split->sizes();
@@ -1029,6 +1033,7 @@ void Arranger::writeStatus(Xml& xml)
       xml.doubleTag("vmag", canvas->ymag());
       xml.intTag("hpos", canvas->getWPos().x());
       xml.intTag("vpos", canvas->getWPos().y());
+      xml.intTag("raster", muse->raster());
       split->writeStatus("splitter", xml);
       xml.etag("arranger");
       }
