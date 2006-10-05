@@ -318,7 +318,6 @@ printf("JACK: shutdown callback\n");
 void Audio::process(unsigned frames)
       {
 // printf("process %d\n", frames);
-      bool updateController = false;
       extern int watchAudio;
       ++watchAudio;           // make a simple watchdog happy
 
@@ -391,15 +390,12 @@ void Audio::process(unsigned frames)
                   //
                   // invalidate audio prefetch buffer
                   //
-printf("invalidate prefetch buffer\n");
                   audioPrefetch->getFifo()->clear();
                   audioPrefetch->msgSeek(framePos);
                   lmark = llmark;
                   rmark = rrmark;
                   }
             }
-
-// printf("---%d %d  \n", state == PLAY, state);
 
       if (isPlaying()) {
             if (_bounce == 1 && _pos >= song->rPos()) {
@@ -567,7 +563,7 @@ printf("invalidate prefetch buffer\n");
 
 void Audio::processMsg()
       {
-//    printf("---msg %d\n", msg->id);
+printf("---msg %d\n", msg->id);
       switch(msg->id) {
             case AUDIO_ROUTEADD:
                   addRoute(msg->sroute, msg->droute);
@@ -632,10 +628,11 @@ void Audio::processMsg()
 void Audio::seek(const Pos& p)
       {
       _pos.setFrame(p.frame());
-      syncFrame   = audioDriver->framePos();
-      frameOffset = syncFrame - _pos.frame();
-      _curTickPos  = _pos.tick();
-      _nextTickPos = _curTickPos;
+      syncFrame        = audioDriver->framePos();
+      frameOffset      = syncFrame - _pos.frame();
+      _curTickPos      = _pos.tick();
+      _nextTickPos     = _curTickPos;
+      updateController = true;
 
       loopPassed = true;      // for record loop mode
       if (state != LOOP2 && !freewheel())

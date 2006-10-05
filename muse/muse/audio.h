@@ -177,6 +177,7 @@ class Audio {
       unsigned frameOffset;   // offset to free running hw frame counter
 
       State state;
+      bool updateController;
 
       AudioMsg* volatile msg;
       int fromThreadFdw, fromThreadFdr;  // message pipe
