@@ -824,6 +824,8 @@ void Arranger::updateIndex()
       canvas->setVSize(h);
       trackList->setFixedHeight(h + 32);
       canvas->widget()->update();
+      QPoint p(canvas->getWPos());
+      setTLViewPos(0, p.y());
       }
 
 //---------------------------------------------------------
