@@ -585,7 +585,7 @@ void Arranger::removeTrack(Track* t)
       at->tw = 0;
 
       for (iArrangerTrack i = t->subtracks.begin(); i != t->subtracks.end(); ++i) {
-            ArrangerTrack* at = &t->arrangerTrack;
+            ArrangerTrack* at = *i;
             tl->removeWidget(at->tw);
             at->tw->close();
             }
