@@ -563,7 +563,7 @@ void Audio::process(unsigned frames)
 
 void Audio::processMsg()
       {
-printf("---msg %d\n", msg->id);
+// printf("---msg %d\n", msg->id);
       switch(msg->id) {
             case AUDIO_ROUTEADD:
                   addRoute(msg->sroute, msg->droute);
