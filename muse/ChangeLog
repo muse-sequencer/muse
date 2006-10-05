@@ -1,3 +1,5 @@
+5.10 (ws)
+      - QT4.2 is now minimum required version
 4.10 (rj)
       - Select the right item when items are stacked on top of each other, for
         pianoroll and arranger (rj)
