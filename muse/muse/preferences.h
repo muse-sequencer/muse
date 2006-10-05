@@ -52,13 +52,6 @@ class PreferencesDialog : public QDialog, public Ui::PreferencesDialogBase {
       void configCanvasBgColor();
       void configCanvasBgPixmap();
       void colorItemSelectionChanged();
-      void browseFont(int);
-      void browseFont0();
-      void browseFont1();
-      void browseFont2();
-      void browseFont3();
-      void browseFont4();
-      void browseFont5();
       void hsliderChanged(int);
       void ssliderChanged(int);
       void vsliderChanged(int);

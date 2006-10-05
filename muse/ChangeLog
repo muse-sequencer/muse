@@ -1,5 +1,8 @@
 5.10 (ws)
       - QT4.2 is now minimum required version
+      - changed font selector in "preferences" to QFontCombobox
+      - replace "lauchBrowser()" with "QDesktopServices::openUrl()"
+      - fix for drag&drop for audio plugins
 4.10 (rj)
       - Select the right item when items are stacked on top of each other, for
         pianoroll and arranger (rj)

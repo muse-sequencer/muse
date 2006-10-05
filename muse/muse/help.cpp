@@ -42,7 +42,7 @@ void MusE::startHelpBrowser()
                   }
             }
       QString url("file://" + museHelp.filePath());
-      launchBrowser(url);
+      QDesktopServices::openUrl(url);
       }
 
 //---------------------------------------------------------
@@ -53,7 +53,7 @@ void MusE::startHomepageBrowser()
       {
       QString museHome = QString("http://lmuse.sourceforge.net");
 
-      launchBrowser(museHome);
+      QDesktopServices::openUrl(museHome);
       }
 
 //---------------------------------------------------------
@@ -63,7 +63,7 @@ void MusE::startHomepageBrowser()
 void MusE::startBugBrowser()
       {
       QString museBugPage("http://lmuse.sourceforge.net/bugs.html");
-      launchBrowser(museBugPage);
+      QDesktopServices::openUrl(museBugPage);
       }
 
 //---------------------------------------------------------
@@ -84,30 +84,5 @@ void MusE::about()
 void MusE::aboutQt()
       {
       QMessageBox::aboutQt(this, QString("MusE"));
-      }
-
-//---------------------------------------------------------
-//   launchBrowser
-//---------------------------------------------------------
-
-void MusE::launchBrowser(const QString& whereTo)
-      {
-      char testStr[40];
-      strcpy(testStr, "which ");
-      strcat(testStr, config.helpBrowser.toAscii().data());
-      if (config.helpBrowser == "" || system(testStr)) {
-            QMessageBox::information(this,
-               tr("Unable to launch help"),
-               tr("For some reason MusE has failed to detect or launch\n"
-               "a browser on your machine. Please go to Settings->Global Settings->GUI\n"
-               "and insert the program name of your favourite browser."),
-               tr("Ok"),
-               0 );
-          return;
-          }
-      QStringList sl;
-      sl.append("-c");
-      sl.append(config.helpBrowser + " " + whereTo);
-      QProcess::startDetached("/bin/sh", sl);
       }
 

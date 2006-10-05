@@ -25,6 +25,8 @@ class EffectRack : public QListWidget {
       
 
       virtual void contextMenuEvent(QContextMenuEvent*);
+      virtual void mouseDoubleClickEvent(QMouseEvent*);
+      void selectNew();
       
       void startDrag(int idx);
       void initPlugin(QDomNode &node, int idx);

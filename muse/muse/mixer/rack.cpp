@@ -29,7 +29,7 @@ EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
       verticalScrollBar()->setStyle(smallStyle);
 
       track = t;
-      setFont(*config.fonts[1]);
+      setFont(config.fonts[1]);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
@@ -128,19 +128,10 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
             return;
 
       if (sel == newAction) {
-            Plugin* plugin = PluginDialog::getPlugin(this);
-            if (plugin) {
-                  PluginI* plugi = new PluginI(track);
-                  if (plugi->initPluginInstance(plugin, track->channels())) {
-                        printf("cannot instantiate plugin <%s>\n",
-                           plugin->name().toLatin1().data());
-                        delete plugi;
-                        }
-                  else
-                        audio->msgAddPlugin(track, idx, plugi);
-                  }
+            selectNew();
+            return;
             }
-      else if (sel == removeAction) {
+      if (sel == removeAction) {
             audio->msgAddPlugin(track, idx, 0);
             }
       else if (sel == bypassAction) {
@@ -179,28 +170,10 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
       {
       if (track == 0)
             return;
-
-      if (it) {
-            int idx        = row(it);
-            Pipeline* pipe = track->efxPipe();
-            bool flag      = !pipe->guiVisible(idx);
-            pipe->showGui(idx, flag);
-            }
-      else {
-            Plugin* plugin = PluginDialog::getPlugin(this);
-            if (plugin) {
-                  PluginI* plugi = new PluginI(track);
-                  if (plugi->initPluginInstance(plugin, track->channels())) {
-                        printf("cannot instantiate plugin <%s>\n",
-                           plugin->name().toLatin1().data());
-                        delete plugi;
-                        }
-                  else {
-                        audio->msgAddPlugin(track, -1, plugi);
-                        }
-                  song->update(SC_RACK);
-                  }
-            }
+      int idx        = row(it);
+      Pipeline* pipe = track->efxPipe();
+      bool flag      = !pipe->guiVisible(idx);
+      pipe->showGui(idx, flag);
       }
 
 //---------------------------------------------------------
@@ -256,16 +229,19 @@ void EffectRack::startDrag(int idx)
 //---------------------------------------------------------
 //   startDrag
 //---------------------------------------------------------
+
 void EffectRack::dropEvent(QDropEvent *event)
       {
-      //printf("drop!\n");
+      // printf("drop!\n");
       QString text;
-      QListWidgetItem *i = itemAt( (event->pos()) );
-      int idx = row(i);
+      QListWidgetItem* i = itemAt( (event->pos()) );
+      int idx = -1;
+      if (i)
+            idx = row(i);
 
       Pipeline* pipe = track->efxPipe();
       if (pipe) {
-            if ((*pipe)[idx] != NULL) {
+            if (i) {
                 if(!QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
                       tr("&Yes"), tr("&No"),
                       QString::null, 0, 1 ))
@@ -399,3 +375,39 @@ void EffectRack::initPlugin(QDomNode &node, int idx)
                   }
             }
       }
+
+//---------------------------------------------------------
+//   mouseDoubleClickEvent
+//---------------------------------------------------------
+
+void EffectRack::mouseDoubleClickEvent(QMouseEvent* event)
+      {
+      QListWidgetItem* it = itemAt(event->pos());
+      if (it || (track == 0)) {
+            QListWidget::mouseDoubleClickEvent(event);
+            return;
+            }
+      selectNew();
+      }
+
+//---------------------------------------------------------
+//   selectNew
+//---------------------------------------------------------
+
+void EffectRack::selectNew()
+      {
+      Plugin* plugin = PluginDialog::getPlugin(this);
+      if (plugin) {
+            PluginI* plugi = new PluginI(track);
+            if (plugi->initPluginInstance(plugin, track->channels())) {
+                  printf("cannot instantiate plugin <%s>\n",
+                     plugin->name().toLatin1().data());
+                  delete plugi;
+                  }
+            else
+                  audio->msgAddPlugin(track, -1, plugi);
+            }
+      song->update(SC_RACK);
+      }
+
+

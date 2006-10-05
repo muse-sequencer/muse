@@ -257,7 +257,7 @@ void TLWidget::configChanged()
       label->setIndent(3);
       //label->setAlignment(Qt::AlignCener);
 
-      label->setFont(*config.fonts[1]);
+      label->setFont(config.fonts[1]);
       label->setText(_track->cname());
       label->setFixedHeight(11);
 

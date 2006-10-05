@@ -114,6 +114,7 @@
 #include <QtGui/QSplashScreen>
 #include <QtGui/QStyleFactory>
 #include <QtGui/QDockWidget>
+#include <QtGui/QDesktopServices>
 
 #endif
 

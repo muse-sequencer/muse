@@ -187,7 +187,6 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       void startHelpBrowser();
       void startHomepageBrowser();
       void startBugBrowser();
-      void launchBrowser(const QString &whereTo);
       void importMidi();
       void importWave();
       bool importWave(const QString&);

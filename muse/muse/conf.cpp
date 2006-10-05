@@ -65,17 +65,17 @@ void readConfiguration(QDomNode node)
             if (tag == "theme")
                   config.style = s;
             else if (tag == "font0")
-                  config.fonts[0]->fromString(s);
+                  config.fonts[0].fromString(s);
             else if (tag == "font1")
-                  config.fonts[1]->fromString(s);
+                  config.fonts[1].fromString(s);
             else if (tag == "font2")
-                  config.fonts[2]->fromString(s);
+                  config.fonts[2].fromString(s);
             else if (tag == "font3")
-                  config.fonts[3]->fromString(s);
+                  config.fonts[3].fromString(s);
             else if (tag == "font4")
-                  config.fonts[4]->fromString(s);
+                  config.fonts[4].fromString(s);
             else if (tag == "font5")
-                  config.fonts[5]->fromString(s);
+                  config.fonts[5].fromString(s);
             else if (tag == "palette0")
                   QColorDialog::setCustomColor(0, readColor(node).rgb());
             else if (tag == "palette1")
@@ -400,7 +400,7 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
       for (int i = 0; i < 6; ++i) {
             char buffer[32];
             sprintf(buffer, "font%d", i);
-            xml.strTag(buffer, config.fonts[i]->toString());
+            xml.strTag(buffer, config.fonts[i].toString());
             }
       for (int i = 0; i < QColorDialog::customCount(); ++i) {
             char buffer[32];

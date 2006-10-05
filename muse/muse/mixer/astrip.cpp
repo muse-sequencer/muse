@@ -278,12 +278,12 @@ Awl::VolKnob* AudioStrip::addAuxKnob(int id, Awl::VolEntry** dlabel)
 
       if (dlabel)
             *dlabel = pl;
-      pl->setFont(*config.fonts[1]);
+      pl->setFont(config.fonts[1]);
       pl->setFrame(true);
       pl->setFixedWidth(STRIP_WIDTH/2-2);
 
       QLabel* plb = new QLabel(label, this);
-      plb->setFont(*config.fonts[1]);
+      plb->setFont(config.fonts[1]);
       plb->setFixedWidth(STRIP_WIDTH/2-2);
       plb->setAlignment(Qt::AlignCenter);
 
@@ -319,7 +319,7 @@ Awl::PanKnob* AudioStrip::addPanKnob(Awl::PanEntry** dlabel)
 
       if (dlabel)
             *dlabel = pl;
-      pl->setFont(*config.fonts[1]);
+      pl->setFont(config.fonts[1]);
       pl->setFrame(true);
 
       pl->setFixedSize(entrySize);
@@ -327,7 +327,7 @@ Awl::PanKnob* AudioStrip::addPanKnob(Awl::PanEntry** dlabel)
       QLabel* plb = new QLabel;
       plb->setText(tr("Pan"));
 
-      plb->setFont(*config.fonts[1]);
+      plb->setFont(config.fonts[1]);
       plb->setFixedSize(entrySize);
       plb->setAlignment(Qt::AlignCenter);
 
@@ -389,7 +389,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       connect(stereo, SIGNAL(clicked(bool)), SLOT(stereoToggled(bool)));
 
       pre = new QToolButton;
-      pre->setFont(*config.fonts[1]);
+      pre->setFont(config.fonts[1]);
       pre->setCheckable(true);
       pre->setText(tr("Pre"));
       pre->setToolTip(tr("pre fader - post fader"));
@@ -438,7 +438,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       layout->addWidget(slider, 100, Qt::AlignRight);
 
       sl = new Awl::VolEntry(this);
-      sl->setFont(*config.fonts[1]);
+      sl->setFont(config.fonts[1]);
       sl->setSuffix(tr("dB"));
       sl->setFrame(true);
       sl->setValue(vol);
@@ -523,7 +523,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
 //      if (type != Track::AUDIO_AUX && type != Track::AUDIO_SOFTSYNTH) {
       if (type != Track::AUDIO_AUX) {
             iR = new QToolButton(this);
-            iR->setFont(*config.fonts[1]);
+            iR->setFont(config.fonts[1]);
             iR->setFixedWidth((STRIP_WIDTH-4)/2);
             iR->setText(tr("iR"));
             iR->setCheckable(false);
@@ -534,7 +534,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       else 
             rBox->addSpacing((STRIP_WIDTH-4)/2);
       oR = new QToolButton(this);
-      oR->setFont(*config.fonts[1]);
+      oR->setFont(config.fonts[1]);
       oR->setFixedWidth((STRIP_WIDTH-4)/2);
       oR->setText(tr("oR"));
       oR->setCheckable(false);

@@ -2131,7 +2131,7 @@ void MusE::changeConfig(bool writeFlag)
       if (writeFlag)
             writeGlobalConfiguration();
 	loadTheme(config.style);
-      QApplication::setFont(*config.fonts[0]);
+      QApplication::setFont(config.fonts[0]);
       updateConfiguration();
       emit configChanged();
       }
@@ -2842,18 +2842,18 @@ int main(int argc, char* argv[])
       initMidiController();
       MuseApplication app(argc, argv);
 
-      config.fonts[0] = new QFont(QString("arial"), 10, QFont::Normal);
-      config.fonts[1] = new QFont(QString("arial"),  8, QFont::Normal);
-      config.fonts[2] = new QFont(QString("arial"), 10, QFont::Normal);
-      config.fonts[3] = new QFont(QString("arial"),  8, QFont::Bold);
-      config.fonts[4] = new QFont(QString("arial"),  8,  QFont::Bold);    // simple buttons, timescale numbers
-      config.fonts[5] = new QFont(QString("Lucidatypewriter"), 14,  QFont::Bold);
+      config.fonts[0] = QFont(QString("arial"), 10, QFont::Normal);
+      config.fonts[1] = QFont(QString("arial"),  8, QFont::Normal);
+      config.fonts[2] = QFont(QString("arial"), 10, QFont::Normal);
+      config.fonts[3] = QFont(QString("arial"),  8, QFont::Bold);
+      config.fonts[4] = QFont(QString("arial"),  8,  QFont::Bold);    // simple buttons, timescale numbers
+      config.fonts[5] = QFont(QString("Lucidatypewriter"), 14,  QFont::Bold);
 
       initShortCuts();
       gmDrumMap.initGm();    // init default drum map
       readConfiguration();
 
-      QApplication::setFont(*config.fonts[0]);
+      QApplication::setFont(config.fonts[0]);
 
       // this style is used for scrollbars in mixer plugin racks:
       smallStyle = new QWindowsStyle();

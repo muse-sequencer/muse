@@ -22,7 +22,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>1</number>
+      <number>6</number>
      </property>
      <widget class="QWidget" name="tab" >
       <attribute name="title" >
@@ -1973,54 +1973,6 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1" >
-           <widget class="QLineEdit" name="fontName0" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>7</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1" >
-           <widget class="QLineEdit" name="fontName1" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>7</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1" >
-           <widget class="QLineEdit" name="fontName2" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>7</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1" >
-           <widget class="QLineEdit" name="fontName3" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>7</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0" >
            <widget class="QLabel" name="textLabel3_3" >
             <property name="text" >
@@ -2132,66 +2084,6 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="5" >
-           <widget class="QToolButton" name="fontBrowse0" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>4</hsizetype>
-              <vsizetype>1</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="5" >
-           <widget class="QToolButton" name="fontBrowse1" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>4</hsizetype>
-              <vsizetype>1</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="5" >
-           <widget class="QToolButton" name="fontBrowse2" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>4</hsizetype>
-              <vsizetype>1</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="5" >
-           <widget class="QToolButton" name="fontBrowse3" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>4</hsizetype>
-              <vsizetype>1</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
           <item row="5" column="0" >
            <widget class="QLabel" name="textLabel7_4" >
             <property name="text" >
@@ -2199,34 +2091,10 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="1" >
-           <widget class="QLineEdit" name="fontName4" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>7</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
           <item row="6" column="0" >
            <widget class="QLabel" name="textLabel7_5" >
             <property name="text" >
              <string>Font 5</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1" >
-           <widget class="QLineEdit" name="fontName5" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>7</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
             </property>
            </widget>
           </item>
@@ -2282,35 +2150,23 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="5" >
-           <widget class="QToolButton" name="fontBrowse4" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>4</hsizetype>
-              <vsizetype>1</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>...</string>
-            </property>
-           </widget>
+          <item row="1" column="1" >
+           <widget class="QFontComboBox" name="fontName0" />
           </item>
-          <item row="6" column="5" >
-           <widget class="QToolButton" name="fontBrowse5" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>4</hsizetype>
-              <vsizetype>1</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>...</string>
-            </property>
-           </widget>
+          <item row="2" column="1" >
+           <widget class="QFontComboBox" name="fontName1" />
+          </item>
+          <item row="3" column="1" >
+           <widget class="QFontComboBox" name="fontName2" />
+          </item>
+          <item row="4" column="1" >
+           <widget class="QFontComboBox" name="fontName3" />
+          </item>
+          <item row="5" column="1" >
+           <widget class="QFontComboBox" name="fontName4" />
+          </item>
+          <item row="6" column="1" >
+           <widget class="QFontComboBox" name="fontName5" />
           </item>
          </layout>
         </widget>

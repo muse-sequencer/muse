@@ -66,7 +66,7 @@ struct GlobalConfigValues {
 	QColor bigTimeForegroundColor;
 	QColor bigTimeBackgroundColor;
       QColor waveEditBackgroundColor;
-      QFont* fonts[6];
+      QFont fonts[6];
 
       QColor trackBg[Track::TRACK_TYPES];
 

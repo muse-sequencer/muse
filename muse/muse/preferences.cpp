@@ -222,19 +222,6 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
 	//    Fonts
       //---------------------------------------------------
 
-      fontBrowse0->setIcon(*openIcon);
-      fontBrowse1->setIcon(*openIcon);
-      fontBrowse2->setIcon(*openIcon);
-      fontBrowse3->setIcon(*openIcon);
-      fontBrowse4->setIcon(*openIcon);
-      fontBrowse5->setIcon(*openIcon);
-      connect(fontBrowse0, SIGNAL(clicked()), SLOT(browseFont0()));
-      connect(fontBrowse1, SIGNAL(clicked()), SLOT(browseFont1()));
-      connect(fontBrowse2, SIGNAL(clicked()), SLOT(browseFont2()));
-      connect(fontBrowse3, SIGNAL(clicked()), SLOT(browseFont3()));
-      connect(fontBrowse4, SIGNAL(clicked()), SLOT(browseFont4()));
-      connect(fontBrowse5, SIGNAL(clicked()), SLOT(browseFont5()));
-
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
       connect(okButton, SIGNAL(clicked()), SLOT(ok()));
       connect(cancelButton, SIGNAL(clicked()), SLOT(cancel()));
@@ -435,35 +422,35 @@ PreferencesDialog::~PreferencesDialog()
 
 void PreferencesDialog::updateFonts()
       {
-      fontSize0->setValue(config->fonts[0]->pointSize());
-      fontName0->setText(config->fonts[0]->family());
-      italic0->setChecked(config->fonts[0]->italic());
-      bold0->setChecked(config->fonts[0]->bold());
+      fontSize0->setValue(config->fonts[0].pointSize());
+      fontName0->setCurrentFont(config->fonts[0]);
+      italic0->setChecked(config->fonts[0].italic());
+      bold0->setChecked(config->fonts[0].bold());
 
-      fontSize1->setValue(config->fonts[1]->pointSize());
-      fontName1->setText(config->fonts[1]->family());
-      italic1->setChecked(config->fonts[1]->italic());
-      bold1->setChecked(config->fonts[1]->bold());
+      fontSize1->setValue(config->fonts[1].pointSize());
+      fontName1->setCurrentFont(config->fonts[1]);
+      italic1->setChecked(config->fonts[1].italic());
+      bold1->setChecked(config->fonts[1].bold());
 
-      fontSize2->setValue(config->fonts[2]->pointSize());
-      fontName2->setText(config->fonts[2]->family());
-      italic2->setChecked(config->fonts[2]->italic());
-      bold2->setChecked(config->fonts[2]->bold());
+      fontSize2->setValue(config->fonts[2].pointSize());
+      fontName2->setCurrentFont(config->fonts[2]);
+      italic2->setChecked(config->fonts[2].italic());
+      bold2->setChecked(config->fonts[2].bold());
 
-      fontSize3->setValue(config->fonts[3]->pointSize());
-      fontName3->setText(config->fonts[3]->family());
-      italic3->setChecked(config->fonts[3]->italic());
-      bold3->setChecked(config->fonts[3]->bold());
+      fontSize3->setValue(config->fonts[3].pointSize());
+      fontName3->setCurrentFont(config->fonts[3]);
+      italic3->setChecked(config->fonts[3].italic());
+      bold3->setChecked(config->fonts[3].bold());
 
-      fontSize4->setValue(config->fonts[4]->pointSize());
-      fontName4->setText(config->fonts[4]->family());
-      italic4->setChecked(config->fonts[4]->italic());
-      bold4->setChecked(config->fonts[4]->bold());
+      fontSize4->setValue(config->fonts[4].pointSize());
+      fontName4->setCurrentFont(config->fonts[4]);
+      italic4->setChecked(config->fonts[4].italic());
+      bold4->setChecked(config->fonts[4].bold());
 
-      fontSize5->setValue(config->fonts[5]->pointSize());
-      fontName5->setText(config->fonts[5]->family());
-      italic5->setChecked(config->fonts[5]->italic());
-      bold5->setChecked(config->fonts[5]->bold());
+      fontSize5->setValue(config->fonts[5].pointSize());
+      fontName5->setCurrentFont(config->fonts[5]);
+      italic5->setChecked(config->fonts[5].italic());
+      bold5->setChecked(config->fonts[5].bold());
       }
 
 //---------------------------------------------------------
@@ -500,31 +487,38 @@ void PreferencesDialog::apply()
       config->canvasUseBgPixmap = usePixmap->isChecked();
       if (currentBg != "<none>")
             config->canvasBgPixmap = currentBg;
-      config->fonts[0]->setPointSize(fontSize0->value());
-      config->fonts[0]->setItalic(italic0->isChecked());
-      config->fonts[0]->setBold(bold0->isChecked());
 
-	QApplication::setFont(*config->fonts[0]);
+      config->fonts[0] = fontName0->currentFont();
+      config->fonts[0].setPointSize(fontSize0->value());
+      config->fonts[0].setItalic(italic0->isChecked());
+      config->fonts[0].setBold(bold0->isChecked());
 
-      config->fonts[1]->setPointSize(fontSize1->value());
-      config->fonts[1]->setItalic(italic1->isChecked());
-      config->fonts[1]->setBold(bold1->isChecked());
+	QApplication::setFont(config->fonts[0]);
 
-      config->fonts[2]->setPointSize(fontSize2->value());
-      config->fonts[2]->setItalic(italic2->isChecked());
-      config->fonts[2]->setBold(bold2->isChecked());
+      config->fonts[1] = fontName1->currentFont();
+      config->fonts[1].setPointSize(fontSize1->value());
+      config->fonts[1].setItalic(italic1->isChecked());
+      config->fonts[1].setBold(bold1->isChecked());
 
-      config->fonts[3]->setPointSize(fontSize3->value());
-      config->fonts[3]->setItalic(italic3->isChecked());
-      config->fonts[3]->setBold(bold3->isChecked());
+      config->fonts[2] = fontName2->currentFont();
+      config->fonts[2].setPointSize(fontSize2->value());
+      config->fonts[2].setItalic(italic2->isChecked());
+      config->fonts[2].setBold(bold2->isChecked());
 
-      config->fonts[4]->setPointSize(fontSize4->value());
-      config->fonts[4]->setItalic(italic4->isChecked());
-      config->fonts[4]->setBold(bold4->isChecked());
+      config->fonts[3] = fontName3->currentFont();
+      config->fonts[3].setPointSize(fontSize3->value());
+      config->fonts[3].setItalic(italic3->isChecked());
+      config->fonts[3].setBold(bold3->isChecked());
 
-      config->fonts[5]->setPointSize(fontSize5->value());
-      config->fonts[5]->setItalic(italic5->isChecked());
-      config->fonts[5]->setBold(bold5->isChecked());
+      config->fonts[4] = fontName4->currentFont();
+      config->fonts[4].setPointSize(fontSize4->value());
+      config->fonts[4].setItalic(italic4->isChecked());
+      config->fonts[4].setBold(bold4->isChecked());
+
+      config->fonts[5] = fontName5->currentFont();
+      config->fonts[5].setPointSize(fontSize5->value());
+      config->fonts[5].setItalic(italic5->isChecked());
+      config->fonts[5].setBold(bold5->isChecked());
 
 	config->style = themeComboBox->currentText();
 	// setting up a new theme might change the fontsize, so re-read
@@ -851,27 +845,6 @@ void PreferencesDialog::paletteClicked(QAbstractButton* button)
             return;     // interpret palette slot as empty
       *color = c;
       updateColor();
-      }
-
-//---------------------------------------------------------
-//   browseFont
-//---------------------------------------------------------
-
-void PreferencesDialog::browseFont0() { browseFont(0); }
-void PreferencesDialog::browseFont1() { browseFont(1); }
-void PreferencesDialog::browseFont2() { browseFont(2); }
-void PreferencesDialog::browseFont3() { browseFont(3); }
-void PreferencesDialog::browseFont4() { browseFont(4); }
-void PreferencesDialog::browseFont5() { browseFont(5); }
-
-void PreferencesDialog::browseFont(int n)
-      {
-      bool ok;
-      QFont font = QFontDialog::getFont(&ok, *config->fonts[n], this);
-      if (ok) {
-            config->fonts[n] = new QFont(font);
-            updateFonts();
-            }
       }
 
 //---------------------------------------------------------

@@ -46,7 +46,12 @@ GlobalConfigValues config = {
 	QColor(0, 0, 0),        // bigTimeBackgroundColor;
       QColor(200, 200, 200),  // waveEditBackgroundColor;
       {
-        0, 0, 0, 0, 0, 0
+        QFont(),
+        QFont(),
+        QFont(),
+        QFont(),
+        QFont(),
+        QFont()
         },
       {
             QColor(Qt::white),            // outputTrackBg;
@@ -120,4 +125,3 @@ GlobalConfigValues config = {
       QString("MusE/projects"),     // projectPath
       QString("MusE/templates"),    // templatePath
       };
-

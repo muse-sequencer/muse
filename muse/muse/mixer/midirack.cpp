@@ -25,7 +25,7 @@ MidiRack::MidiRack(QWidget* parent, MidiTrackBase* t)
       setAttribute(Qt::WA_DeleteOnClose, true);
       verticalScrollBar()->setStyle(smallStyle);
       track = t;
-      setFont(*config.fonts[1]);
+      setFont(config.fonts[1]);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
@@ -112,19 +112,10 @@ void MidiRack::contextMenuEvent(QContextMenuEvent* ev)
             return;
 
       if (sel == newAction) {
-            MidiPlugin* plugin = MidiPluginDialog::getPlugin(this);
-            if (plugin) {
-                  MidiPluginI* plugi = plugin->instantiate(track);
-                  if (plugi == 0) {
-                        printf("cannot instantiate plugin <%s>\n",
-                           plugin->name().toLatin1().data());
-                        delete plugi;
-                        }
-                  else
-                        audio->msgAddMidiPlugin(track, pipe->size(), plugi);
-                  }
+            selectNew();
+            return;
             }
-      else if (sel == removeAction) {
+      if (sel == removeAction) {
             audio->msgAddMidiPlugin(track, idx, 0);
             }
       else if (sel == bypassAction) {
@@ -157,30 +148,46 @@ void MidiRack::contextMenuEvent(QContextMenuEvent* ev)
 
 void MidiRack::doubleClicked(QListWidgetItem* it)
       {
-      if (it == 0 || track == 0)
+      if (track == 0)
             return;
-
       int idx = row(it);
       MidiPipeline* pipe = track->pipeline();
-
-      if (!pipe->value(idx)) {
-            bool flag = !pipe->guiVisible(idx);
-            pipe->showGui(idx, flag);
-            }
-      else {
-            MidiPlugin* plugin = MidiPluginDialog::getPlugin(this);
-            if (plugin) {
-                  MidiPluginI* plugi = plugin->instantiate(track);
-                  if (plugi == 0) {
-                        printf("cannot instantiate plugin <%s>\n",
-                           plugin->name().toLatin1().data());
-                        delete plugi;
-                        }
-                  else {
-                        audio->msgAddMidiPlugin(track, idx, plugi);
-                        }
-                  }
-            }
+      bool flag = !pipe->guiVisible(idx);
+      pipe->showGui(idx, flag);
       song->update(SC_RACK);
+      }
+
+//---------------------------------------------------------
+//   mouseDoubleClickEvent
+//---------------------------------------------------------
+
+void MidiRack::mouseDoubleClickEvent(QMouseEvent* event)
+      {
+      QListWidgetItem* it = itemAt(event->pos());
+      if (it || (track == 0)) {
+            QListWidget::mouseDoubleClickEvent(event);
+            return;
+            }
+      selectNew();
+      }
+
+//---------------------------------------------------------
+//   selectNew
+//---------------------------------------------------------
+
+void MidiRack::selectNew()
+      {
+      MidiPlugin* plugin = MidiPluginDialog::getPlugin(this);
+      if (plugin) {
+            MidiPluginI* plugi = plugin->instantiate(track);
+            if (plugi == 0) {
+                  printf("cannot instantiate plugin <%s>\n",
+                     plugin->name().toLatin1().data());
+                  delete plugi;
+                  }
+            else
+                  audio->msgAddMidiPlugin(track, track->pipeline()->size(), plugi);
+            song->update(SC_RACK);
+            }
       }
 

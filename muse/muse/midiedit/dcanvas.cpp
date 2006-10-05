@@ -612,7 +612,7 @@ void DrumCanvas::paintDrumList(QPainter& p, QRect r)
       {
       p.fillRect(r, QColor(0xe0, 0xe0, 0xe0));
       paintVLine(p, 0, rPanelB.y(), rPanelA.x() + rPanelA.width());
-      p.setFont(*config.fonts[1]);
+      p.setFont(config.fonts[1]);
 
       int yoff = wpos.y() - rPanelA.y();
       int i = (r.y() + yoff) / drumHeight;

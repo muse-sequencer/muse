@@ -433,7 +433,7 @@ void MidiInstrument::populatePatchPopup(QMenu* menu, int)
       if (pg.size() > 1) {
             for (std::vector<PatchGroup>::iterator i = pg.begin(); i != pg.end(); ++i) {
                   QMenu* pm = menu->addMenu(i->name);
-                  pm->setFont(*config.fonts[0]);
+                  pm->setFont(config.fonts[0]);
                   PatchList& pl = i->patches;
                   for (PatchList::const_iterator ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                         const Patch* mp = *ipl;

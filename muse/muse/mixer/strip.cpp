@@ -35,7 +35,7 @@ void Strip::updateLabel()
       // qt4.1.0 specific
       label->setAutoFillBackground(true);
 
-      label->setFont(*config.fonts[4]);
+      label->setFont(config.fonts[4]);
       label->setText(track->name());
       label->setToolTip(track->name());
       }

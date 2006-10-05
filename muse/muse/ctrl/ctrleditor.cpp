@@ -170,9 +170,9 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
       //
       if (_drawCtrlName) {
             QString s(ctrl()->name());
-            p.setFont(*config.fonts[3]);
+            p.setFont(config.fonts[3]);
             p.setPen(Qt::black);
-            QFontMetrics fm(*config.fonts[3]);
+            QFontMetrics fm(config.fonts[3]);
             int ly = fm.lineSpacing() + 2;
             p.drawText(2, ly, s);
             }

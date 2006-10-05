@@ -500,7 +500,7 @@ void TimeCanvas::paintClockRuler(QPainter& p, const QRect& r)
 
       int y = rulerHeight - 16;
       p.setPen(Qt::black);
-      p.setFont(*config.fonts[4]);
+      p.setFont(config.fonts[4]);
       QRect tr(r);
       tr.setHeight(12);
 
@@ -557,12 +557,12 @@ void TimeCanvas::paintClockRuler(QPainter& p, const QRect& r)
                   int yy;
                   QString s;
                   if (sr == 0) {
-                        p.setFont(*config.fonts[3]);
+                        p.setFont(config.fonts[3]);
                         s.sprintf("%d:00", min);
                         yy = y;
                         }
                   else {
-                        p.setFont(*config.fonts[1]);
+                        p.setFont(config.fonts[1]);
                         s.sprintf("%02d", sr);
                         yy = y + 7;
                         }
@@ -580,7 +580,7 @@ void TimeCanvas::paintClockRuler(QPainter& p, const QRect& r)
             int min2 = (sec2+59)/60;
             for (int min = min1; min < min2; ++min) {
                   QString s;
-                  p.setFont(*config.fonts[3]);
+                  p.setFont(config.fonts[3]);
                   s.sprintf("%d", min);
                   int xp = pos2pix(AL::Pos(min * AL::sampleRate * 60, AL::FRAMES));
                   p.setPen(Qt::black);
@@ -632,7 +632,7 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
       int w = r.width();
       int y = rulerHeight - 16;
 
-      p.setFont(*config.fonts[4]);
+      p.setFont(config.fonts[4]);
 
       int h  = 14;
       int y1 = r.y();
@@ -692,7 +692,7 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
       for (int bar = bar1; bar <= bar2;) {
       	AL::Pos stick(bar, 0, 0);
             if (metronomeRulerMag) {
-			p.setFont(*config.fonts[3]);
+			p.setFont(config.fonts[3]);
                   int x = pos2pix(stick);
                   QString s;
                   s.setNum(bar + 1);
@@ -719,12 +719,12 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
                         if (beat == 0) {
                               num = bar + 1;
                               y3  = y + 2;
-                              p.setFont(*config.fonts[3]);
+                              p.setFont(config.fonts[3]);
                               }
                         else {
                               num = beat + 1;
                               y3  = y + 8;
-                              p.setFont(*config.fonts[1]);
+                              p.setFont(config.fonts[1]);
                               r.setY(y+3);
                               }
                         s.setNum(num);
@@ -961,7 +961,7 @@ void TimeCanvas::setLocatorPos(int idx, const AL::Pos& val, bool follow)
       {
       if (pos[idx] == val)
             return;
-      QFontMetrics fm(*config.fonts[3]);
+      QFontMetrics fm(config.fonts[3]);
       int fw  = fm.width("123") + 2;
       int w   = qMax(markIcon[idx]->width() + 2, fw);
       int h   = widget()->height();

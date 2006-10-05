@@ -55,13 +55,13 @@ void MidiChannelStrip::addKnob(int ctrl, int idx, const QString& tt, const QStri
       knob->setEnabled(enabled);
 
       controller[idx].dl = dl;
-      dl->setFont(*config.fonts[1]);
+      dl->setFont(config.fonts[1]);
       dl->setFixedSize(entrySize);
       dl->setEnabled(enabled);
 
       QLabel* lb = new QLabel(label, this);
       controller[idx].lb = lb;
-      lb->setFont(*config.fonts[1]);
+      lb->setFont(config.fonts[1]);
       lb->setFixedSize(entrySize);
       lb->setAlignment(Qt::AlignCenter);
       lb->setEnabled(enabled);
@@ -112,7 +112,7 @@ MidiChannelStrip::MidiChannelStrip(Mixer* m, MidiChannel* t, bool align)
 
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_VOLUME);
-      sl->setFont(*config.fonts[1]);
+      sl->setFont(config.fonts[1]);
 
       connect(slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(sliderPressed(int)));
@@ -164,7 +164,7 @@ MidiChannelStrip::MidiChannelStrip(Mixer* m, MidiChannel* t, bool align)
       QHBoxLayout* rBox = new QHBoxLayout(0);
       iR = new QToolButton(this);
       iR->setCheckable(false);
-      iR->setFont(*config.fonts[1]);
+      iR->setFont(config.fonts[1]);
       iR->setFixedWidth((STRIP_WIDTH-4)/2);
       iR->setText(tr("iR"));
       iR->setToolTip(tr("input routing"));
@@ -468,7 +468,7 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
 
       QHBoxLayout* rBox = new QHBoxLayout(0);
       iR = new QToolButton(this);
-      iR->setFont(*config.fonts[1]);
+      iR->setFont(config.fonts[1]);
       iR->setFixedWidth((STRIP_WIDTH-4)/2);
       iR->setText(tr("iR"));
       iR->setCheckable(false);
@@ -477,7 +477,7 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
 
       oR = new QToolButton(this);
-      oR->setFont(*config.fonts[1]);
+      oR->setFont(config.fonts[1]);
       oR->setFixedWidth((STRIP_WIDTH-4)/2);
       oR->setText(tr("oR"));
       oR->setCheckable(false);
@@ -712,7 +712,7 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_MASTER_VOLUME);
       sl->setMax(128 * 128 - 1);
-      sl->setFont(*config.fonts[1]);
+      sl->setFont(config.fonts[1]);
 
       controllerChanged(CTRL_MASTER_VOLUME);
 
@@ -773,7 +773,7 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       rBox->addStretch(100);
 
       oR = new QToolButton(this);
-      oR->setFont(*config.fonts[1]);
+      oR->setFont(config.fonts[1]);
       oR->setFixedWidth((STRIP_WIDTH-4)/2);
       oR->setText(tr("oR"));
       oR->setCheckable(false);
@@ -1100,7 +1100,7 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
 
       QHBoxLayout* rBox = new QHBoxLayout(0);
       iR = new QToolButton(this);
-      iR->setFont(*config.fonts[1]);
+      iR->setFont(config.fonts[1]);
       iR->setFixedWidth((STRIP_WIDTH-4)/2);
       iR->setText(tr("iR"));
       iR->setCheckable(false);
@@ -1109,7 +1109,7 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
 
       oR = new QToolButton(this);
-      oR->setFont(*config.fonts[1]);
+      oR->setFont(config.fonts[1]);
       oR->setFixedWidth((STRIP_WIDTH-4)/2);
       oR->setText(tr("oR"));
       oR->setCheckable(false);
@@ -1363,7 +1363,7 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
 
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_MASTER_VOLUME);
-      sl->setFont(*config.fonts[1]);
+      sl->setFont(config.fonts[1]);
       sl->setFixedWidth(STRIP_WIDTH-2);
 
       connect(slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
@@ -1414,7 +1414,7 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
       QHBoxLayout* rBox = new QHBoxLayout(0);
 
       iR = new QToolButton(this);
-      iR->setFont(*config.fonts[1]);
+      iR->setFont(config.fonts[1]);
       iR->setFixedWidth((STRIP_WIDTH-4)/2);
       iR->setText(tr("iR"));
       iR->setCheckable(false);
@@ -1423,7 +1423,7 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
 
       oR = new QToolButton(this);
-      oR->setFont(*config.fonts[1]);
+      oR->setFont(config.fonts[1]);
       oR->setFixedWidth((STRIP_WIDTH-4)/2);
       oR->setText(tr("oR"));
       oR->setCheckable(false);

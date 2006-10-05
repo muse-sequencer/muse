@@ -20,6 +20,8 @@ class MidiRack : public QListWidget {
       Q_OBJECT
 
       virtual void contextMenuEvent(QContextMenuEvent*);
+      virtual void mouseDoubleClickEvent(QMouseEvent*);
+      void selectNew();
 
    private slots:
       void doubleClicked(QListWidgetItem*);
