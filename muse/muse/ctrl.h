@@ -31,12 +31,13 @@ class MidiController;
 //
 // predefined audio controller id's:
 //
+const int NUM_AUX   = 32;     // max number of aux channels
+
 const int AC_VOLUME = 0;
 const int AC_PAN    = 1;
 const int AC_MUTE   = 2;
 const int AC_AUX    = 3;      // 3 -- 3+NUM_AUX
-
-const int NUM_AUX   = 32;     // max number of aux channels
+const int AC_AUX_PAN = AC_AUX + NUM_AUX;
 
 inline int genACnum(int plugin, int ctrl) { return plugin * 0x10000 + ctrl; }
 

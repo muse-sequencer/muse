@@ -318,7 +318,7 @@ void WaveTrack::collectInputData()
       	if (song->bounceTrack == this && audio->isPlaying()) {
       		OutputList* ol = song->outputs();
             	if (!ol->empty())
-      			ol->front()->multiplyCopy(channels(), buffer);
+      			ol->front()->multiplyCopy(channels(), buffer, 0);
             	}
             else
       		AudioTrack::collectInputData();

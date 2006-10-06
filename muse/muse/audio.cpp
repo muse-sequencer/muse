@@ -68,14 +68,12 @@ const char* seqMsgList[] = {
 /*20*/"AUDIO_ADDPLUGIN",
       "AUDIO_ADDMIDIPLUGIN",
       "AUDIO_SET_SEG_SIZE",
-      "AUDIO_SET_PREFADER",
       "AUDIO_SET_CHANNELS",
       "MS_PROCESS",
       "MS_START",
       "MS_STOP",
       "MS_SET_RTC",
       "SEQM_IDLE",
-//      "SEQM_SEEK",
       "SEQM_ADD_CTRL",
       "SEQM_REMOVE_CTRL"
       };
@@ -532,7 +530,7 @@ void Audio::process(unsigned frames)
 	            else
       	            printf("PANIC: process(): no buffer from audio driver\n");
                   }
-      	if (!ao->multiplyCopy(och, buffer)) {
+      	if (!ao->multiplyCopy(och, buffer, 0)) {
                   for (int i = 0; i < och; ++i)
                         memset(buffer[i], 0, sizeof(float) * frames);
                   }
@@ -570,9 +568,6 @@ void Audio::processMsg()
                   break;
             case AUDIO_ROUTEREMOVE:
                   removeRoute(msg->sroute, msg->droute);
-                  break;
-            case AUDIO_SET_PREFADER:
-                  ((AudioTrack*)msg->track)->setPrefader(msg->ival);
                   break;
             case AUDIO_SET_CHANNELS:
                   msg->track->setChannels(msg->ival);

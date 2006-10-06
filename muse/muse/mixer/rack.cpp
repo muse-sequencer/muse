@@ -59,18 +59,27 @@ QSize EffectRack::sizeHint() const
 
 void EffectRack::songChanged(int typ)
       {
-      if (typ & (SC_ROUTE | SC_RACK)) {
-            clear();
-            foreach(PluginI* plugin, *(track->efxPipe())) {
-                  QListWidgetItem* item = new QListWidgetItem;
-                  item->setText(plugin->name());
-                  // tooltip should only be set if name does not fit
-                  // (is elided)
-                  item->setToolTip(plugin->name());
-                  item->setBackgroundColor(plugin->on() ? Qt::white : Qt::gray);
-                  addItem(item);
-                  }
+      if (!(typ & (SC_ROUTE | SC_RACK)))
+            return;
+
+      clear();
+      int i = 0;
+      foreach (PluginI* plugin, *(track->efxPipe())) {
+            QListWidgetItem* item = new QListWidgetItem(this, EFFECT_TYPE + i);
+            ++i;
+            item->setText(plugin->name());
+            // tooltip should only be set if name does not fit
+            // (is elided)
+            item->setToolTip(plugin->name());
+            item->setBackgroundColor(plugin->on() ? Qt::white : Qt::gray);
             }
+      //
+      // debug: dummy
+      //
+      QListWidgetItem* item = new QListWidgetItem(this, SEND_TYPE);
+      item->setText("Aux 1");
+      item->setToolTip("Auxiliary Send 1");
+      item->setBackgroundColor(Qt::white);
       }
 
 //---------------------------------------------------------
@@ -90,10 +99,13 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
       QAction* upAction         = menu->addAction(QIcon(*upIcon), tr("move up"));
       QAction* downAction       = menu->addAction(QIcon(*downIcon), tr("move down"));
       QAction* removeAction     = menu->addAction(tr("remove"));
+                                  menu->addSeparator();
       QAction* bypassAction     = menu->addAction(tr("bypass"));
       QAction* showAction       = menu->addAction(tr("show gui"));
       QAction* showCustomAction = menu->addAction(tr("show native gui"));
-      QAction* newAction        = menu->addAction(tr("new"));
+                                  menu->addSeparator();
+      QAction* newAction        = menu->addAction(tr("New Plugin"));
+      QAction* auxAction        = menu->addAction(tr("New Aux Send"));
 
       bypassAction->setCheckable(true);
       showAction->setCheckable(true);
@@ -111,15 +123,21 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
             idx = row(item);
             upAction->setEnabled(idx != 0);
             downAction->setEnabled(idx < pipe->size()-1);
-            showCustomAction->setEnabled(pipe->hasNativeGui(idx));
+            if (item->type() < SEND_TYPE) {
+                  idx = item->type();
+                  showCustomAction->setEnabled(pipe->hasNativeGui(idx));
+                  bypassAction->setEnabled(true);
+                  showAction->setEnabled(true);
 
-            bypassAction->setEnabled(true);
-            showAction->setEnabled(true);
-            showCustomAction->setEnabled(true);
-
-            bypassAction->setChecked(!pipe->isOn(idx));
-            showAction->setChecked(pipe->guiVisible(idx));
-            showCustomAction->setChecked(pipe->nativeGuiVisible(idx));
+                  bypassAction->setChecked(!pipe->isOn(idx));
+                  showAction->setChecked(pipe->guiVisible(idx));
+                  showCustomAction->setChecked(pipe->nativeGuiVisible(idx));
+                  }
+            else {
+                  showCustomAction->setEnabled(false);
+                  bypassAction->setEnabled(false);
+                  showAction->setEnabled(false);
+                  }
             }
 
       QAction* sel = menu->exec(mapToGlobal(pt), newAction);
@@ -158,6 +176,10 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
                   pipe->move(idx, false);
                   }
             }
+      else if (sel == auxAction) {
+            printf("add new aux send: not implemented\n");
+            }
+
       song->update(SC_RACK);
       }
 

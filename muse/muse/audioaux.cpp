@@ -81,17 +81,9 @@ void AudioAux::setChannels(int n)
 void AudioAux::collectInputData()
 	{
       bufferEmpty = false;
-      int ctrl = AC_AUX;
       AuxList* al = song->auxs();          // aux sends
-      int idx = 0;
-      for (iAudioAux i = al->begin(); i != al->end(); ++i, ++idx) {
-            if (*i == this) {
-            	ctrl += idx;
-                  break;
-                  }
-            }
-//      RouteList* rl = inRoutes();
-      bool copy = true;
+      int bus    = AC_AUX + al->index(this) + 1;
+      bool copy   = true;
 
       TrackList* tl = song->tracks();
       for (iTrack i = tl->begin(); i != tl->end(); ++i) {
@@ -100,11 +92,10 @@ void AudioAux::collectInputData()
             AudioTrack* track = (AudioTrack*)(*i);
             if (!track->hasAuxSend() || track->off() || song->bounceTrack == track)
                   continue;
-            if (copy) {
-      		copy = !track->multiplyCopy(channels(), buffer, ctrl);
-                  }
+            if (copy)
+      		copy = !track->multiplyCopy(channels(), buffer, bus);
             else
-	            track->multiplyAdd(channels(), buffer, ctrl);
+	            track->multiplyAdd(channels(), buffer, bus);
             }
       if (copy) {
       	for (int i = 0; i < channels(); ++i)

@@ -65,6 +65,10 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
             }
       else if (!track->isMidiTrack()) {
             //
+            // aux send streams
+            //
+            
+            //
             // present plugin parameter
             //
             Pipeline* pl = ((AudioTrack*)track)->efxPipe();

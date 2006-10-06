@@ -107,7 +107,7 @@ void AudioStrip::updateOffState()
 
 void AudioStrip::preToggled(bool val)
       {
-      audio->msgSetPrefader((AudioTrack*)track, val);
+      ((AudioTrack*)track)->setPrefader(val);
       resetPeaks();
       song->update(SC_ROUTE);
       }
@@ -348,14 +348,6 @@ Awl::PanKnob* AudioStrip::addPanKnob(Awl::PanEntry** dlabel)
 
 //---------------------------------------------------------
 //   AudioStrip
-//---------------------------------------------------------
-
-AudioStrip::~AudioStrip()
-      {
-      }
-
-//---------------------------------------------------------
-//   AudioStrip
 //    create mixer strip
 //---------------------------------------------------------
 
@@ -520,7 +512,6 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       //---------------------------------------------------
 
       QHBoxLayout* rBox = new QHBoxLayout(0);
-//      if (type != Track::AUDIO_AUX && type != Track::AUDIO_SOFTSYNTH) {
       if (type != Track::AUDIO_AUX) {
             iR = new QToolButton(this);
             iR->setFont(config.fonts[1]);

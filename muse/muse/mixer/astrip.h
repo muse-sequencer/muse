@@ -91,7 +91,6 @@ class AudioStrip : public Strip {
 
    public:
       AudioStrip(Mixer*, AudioTrack*, bool align);
-      ~AudioStrip();
       };
 
 #endif

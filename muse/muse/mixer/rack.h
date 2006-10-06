@@ -13,6 +13,13 @@
 
 class AudioTrack;
 
+//
+// EffectRack can contain effect plugins and aux send's:
+//
+static const int EFFECT_TYPE = 0;
+static const int SEND_TYPE   = 32000; // this is the implicit maximal number
+                                      // of possible effect plugins in the rack
+
 //---------------------------------------------------------
 //   EffectRack
 //---------------------------------------------------------

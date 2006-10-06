@@ -159,6 +159,16 @@ void AudioTrack::addAuxSend(int n)
             QString s("AuxSend-");
             s += QString("%1").arg(i+1);
             Ctrl* ctrl = new Ctrl(AC_AUX + i, s);
+            ctrl->setRange(pow(10.0f, config.minSlider*0.05f), 2.0f);
+            addController(ctrl);
+
+            c = getController(AC_AUX_PAN + i);
+            if (c)
+                  continue;
+            s = ("AuxSendPan-");
+            s += QString("%1").arg(i+1);
+            ctrl = new Ctrl(AC_AUX_PAN + i, s);
+            ctrl->setRange(-1.0f, +1.0f);
             addController(ctrl);
             }
       }
@@ -418,9 +428,9 @@ void AudioTrack::process()
       //    metering
       //---------------------------------------------------
 
-      double vol[2];
-      double _volume = ctrlVal(AC_VOLUME).f;
-    	if (_volume == 0.0 || bufferEmpty) {
+      double vol[channels()];
+      double _volume = _mute ? 0.0 : ctrlVal(AC_VOLUME).f;
+    	if (bufferEmpty || (!_prefader && _volume == 0.0)) {
             for (int i = 0; i < channels(); ++i)
                   setMeter(i, 0.0);
             }
@@ -439,7 +449,7 @@ void AudioTrack::process()
 				++p;
       	            }
 	      	if (!_prefader)
-      	            meter *= (vol[i] * (_mute ? 0.0 : 1.0));
+      	            meter *= vol[i];
 	         	setMeter(i, meter);
       	      }
 	      }
@@ -447,16 +457,30 @@ void AudioTrack::process()
 
 //---------------------------------------------------------
 //   multiplyAdd
+//    apply _volume and _pan to track buffer and add to
+//    destination buffer
 //---------------------------------------------------------
 
-void AudioTrack::multiplyAdd(int dstChannels, float** dstBuffer, int ctrl)
+void AudioTrack::multiplyAdd(int dstChannels, float** dstBuffer, int bus)
 	{
-      double _volume = ctrlVal(ctrl).f;
-      if (_mute || bufferEmpty || _volume == 0.0)
+      if (_mute || bufferEmpty)
+            return;
+      int volCtrl;
+      int panCtrl;
+      if (bus == 0) {
+            volCtrl = AC_VOLUME;
+            panCtrl = AC_PAN;
+            }
+      else {
+            volCtrl = AC_AUX + bus - 1;
+            panCtrl = AC_AUX_PAN + bus - 1;
+            }
+      double _volume = ctrlVal(volCtrl).f;
+      if (_volume == 0.0)
             return;
       int srcChannels = channels();
       double vol[2];
-      double _pan = ctrlVal(AC_PAN).f;
+      double _pan = ctrlVal(panCtrl).f;
       vol[0] = _volume * (1.0 - _pan);
       vol[1] = _volume * (1.0 + _pan);
 
@@ -469,15 +493,23 @@ void AudioTrack::multiplyAdd(int dstChannels, float** dstBuffer, int ctrl)
                         dp[k] += (sp[k] * v);
                   }
             }
+      //
+      // mix mono to stereo
+      //
       else if (srcChannels == 1 && dstChannels == 2) {
-            for (int c = 0; c < dstChannels; ++c) {
-                  float* dp = dstBuffer[c];
-                  float* sp = buffer[0];
-                  float v   = vol[c];
-                  for (unsigned k = 0; k < segmentSize; ++k)
-                        dp[k] += (sp[k] * v);
+            float* dp1 = dstBuffer[0];
+            float* dp2 = dstBuffer[1];
+            float* sp = buffer[0];
+            double v1   = vol[0];
+            double v2   = vol[1];
+            for (unsigned k = 0; k < segmentSize; ++k) {
+                  dp1[k] += (sp[k] * v1);
+                  dp2[k] += (sp[k] * v2);
                   }
             }
+      //
+      // downmix stereo to mono
+      //
       else if (srcChannels == 2 && dstChannels == 1) {
             float* sp1 = buffer[0];
             float* sp2 = buffer[1];
@@ -489,17 +521,29 @@ void AudioTrack::multiplyAdd(int dstChannels, float** dstBuffer, int ctrl)
 
 //---------------------------------------------------------
 //   multiplyCopy
-//	return false if multiply by zero
+//	return false if resulting buffer would be silence
 //---------------------------------------------------------
 
-bool AudioTrack::multiplyCopy(int dstChannels, float** dstBuffer, int ctrl)
+bool AudioTrack::multiplyCopy(int dstChannels, float** dstBuffer, int bus)
 	{
-      double _volume = ctrlVal(ctrl).f;
-      if (_mute || bufferEmpty || _volume == 0.0)
+      if (_mute || bufferEmpty)
+            return false;
+      int volCtrl;
+      int panCtrl;
+      if (bus == 0) {
+            volCtrl = AC_VOLUME;
+            panCtrl = AC_PAN;
+            }
+      else {
+            volCtrl = AC_AUX + bus - 1;
+            panCtrl = AC_AUX_PAN + bus - 1;
+            }
+      double _volume = ctrlVal(volCtrl).f;
+      if (_volume == 0.0)
             return false;
       int srcChannels = channels();
       float vol[2];
-      float _pan = ctrlVal(AC_PAN).f;
+      float _pan = ctrlVal(panCtrl).f;
       vol[0] = _volume * (1.0 - _pan);
       vol[1] = _volume * (1.0 + _pan);
 
@@ -535,6 +579,7 @@ bool AudioTrack::multiplyCopy(int dstChannels, float** dstBuffer, int ctrl)
 
 //---------------------------------------------------------
 //   collectInputData
+//    if buffer contains silence, set bufferEmpty to true
 //---------------------------------------------------------
 
 void AudioTrack::collectInputData()
@@ -547,9 +592,9 @@ void AudioTrack::collectInputData()
             if (track->off() || song->bounceTrack == track)
                   continue;
             if (copy)
-      		copy = !track->multiplyCopy(channels(), buffer);
+      		copy = !track->multiplyCopy(channels(), buffer, 0);
             else
-	            track->multiplyAdd(channels(), buffer);
+	            track->multiplyAdd(channels(), buffer, 0);
             }
       if (copy) {
             //

@@ -98,7 +98,6 @@ enum {
       AUDIO_ADDPLUGIN,
       AUDIO_ADDMIDIPLUGIN,
       AUDIO_SET_SEG_SIZE,
-      AUDIO_SET_PREFADER,
       AUDIO_SET_CHANNELS,
 
       MS_PROCESS,
@@ -107,7 +106,6 @@ enum {
       MS_SET_RTC,
 
       SEQM_IDLE,
-//      SEQM_SEEK,
       SEQM_ADD_CTRL,
       SEQM_REMOVE_CTRL
       };
@@ -247,7 +245,6 @@ class Audio {
       void msgAddSynthI(SynthI* synth);
       void msgRemoveSynthI(SynthI* synth);
       void msgSetSegSize(int, int);
-      void msgSetPrefader(AudioTrack*, int);
       void msgSetChannels(AudioTrack*, int);
       void msgSetOff(AudioTrack*, bool);
       void msgUndo();

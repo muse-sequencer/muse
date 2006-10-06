@@ -27,6 +27,14 @@
 class PluginI;
 
 //---------------------------------------------------------
+//   AuxSend
+//---------------------------------------------------------
+
+struct AuxSend {
+      bool postfader;
+      };
+
+//---------------------------------------------------------
 //   AudioTrack
 //---------------------------------------------------------
 
@@ -35,11 +43,14 @@ class AudioTrack : public Track {
 
       bool _prefader;               // prefader metering
       Pipeline* _efxPipe;
+      QList<AuxSend> sends;
 
       void readRecfile(QDomNode);
 
    protected:
-      float** buffer;
+      float** buffer;               // this buffer is filled by process()
+                                    // _volume and _pan is not applied
+
       bool bufferEmpty;			// set by process() to optimize
       					// data flow
 
@@ -79,7 +90,6 @@ class AudioTrack : public Track {
 
       bool prefader() const              { return _prefader; }
       void addAuxSend(int n);
-
       void setPrefader(bool val);
       Pipeline* efxPipe()                { return _efxPipe;  }
       void addPlugin(PluginI* plugin, int idx);
@@ -87,8 +97,8 @@ class AudioTrack : public Track {
 
       virtual bool hasAuxSend() const { return false; }
       virtual void process();
-      void multiplyAdd(int channel, float**, int ctrl = AC_VOLUME);
-      bool multiplyCopy(int channel, float**, int ctrl = AC_VOLUME);
+      void multiplyAdd(int channel,  float**, int bus);
+      bool multiplyCopy(int channel, float**, int bus);
       };
 
 #endif

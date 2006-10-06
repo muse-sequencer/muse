@@ -177,19 +177,6 @@ void Audio::msgAddPlugin(AudioTrack* node, int idx, PluginI* plugin)
       }
 
 //---------------------------------------------------------
-//   msgSetPrefader
-//---------------------------------------------------------
-
-void Audio::msgSetPrefader(AudioTrack* node, int val)
-      {
-      AudioMsg msg;
-      msg.id    = AUDIO_SET_PREFADER;
-      msg.track = node;
-      msg.ival  = val;
-      sendMsg(&msg);
-      }
-
-//---------------------------------------------------------
 //   msgSetChannels
 //---------------------------------------------------------
 
