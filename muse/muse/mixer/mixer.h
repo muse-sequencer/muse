@@ -46,10 +46,8 @@ class Mixer : public QMainWindow {
       QAction* showWaveTracksId;
       QAction* showGroupTracksId;
       QAction* showInputTracksId;
-      QAction* showAuxTracksId;
       QAction* showSyntiTracksId;
 
-      int oldAuxsSize;
       bool mustUpdateMixer;
 
       virtual void closeEvent(QCloseEvent*);

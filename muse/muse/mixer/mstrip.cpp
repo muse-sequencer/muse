@@ -97,10 +97,6 @@ MidiChannelStrip::MidiChannelStrip(Mixer* m, MidiChannel* t, bool align)
       addKnob(CTRL_REVERB_SEND, KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(ctrlChanged(double,int)), true);
       addKnob(CTRL_CHORUS_SEND, KNOB_CHOR_SEND, tr("ChorusSend"), tr("Cho"), SLOT(ctrlChanged(double,int)), true);
 
-      int auxsSize = song->auxs()->size();
-      if (auxsSize)
-            layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize);
-
       //---------------------------------------------------
       //    slider, label, meter
       //---------------------------------------------------
@@ -399,9 +395,8 @@ void MidiChannelStrip::iRoutePressed()
 MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
    : Strip(m, t, align)
       {
-      int auxsSize = song->auxs()->size();
       if (_align)
-            layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize + STRIP_WIDTH/2 * 3);
+            layout->addSpacing(STRIP_WIDTH/2 * 3);
 
       //---------------------------------------------------
       //    slider, label, meter
@@ -692,10 +687,8 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       rack->setFixedSize(STRIP_WIDTH, rack->sizeHint().height()+2);
       layout->addWidget(rack);
 
-      int auxsSize = song->auxs()->size();
       if (_align)
-//            layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize + STRIP_WIDTH/2 * 3);
-            layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize + STRIP_WIDTH/2);
+            layout->addSpacing(STRIP_WIDTH/2);
 
       volumeTouched = false;
 
@@ -1045,10 +1038,6 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
       //      layout->addSpacing(STRIP_WIDTH/2);
             layout->addSpacing(LABEL_HEIGHT);
 
-      int auxsSize = song->auxs()->size();
-      if (_align && auxsSize)
-            layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize);
-
       //---------------------------------------------------
       //    slider, label, meter
       //---------------------------------------------------
@@ -1345,9 +1334,8 @@ void MidiInPortStrip::iRoutePressed()
 MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
    : Strip(m, t, align)
       {
-      int auxsSize = song->auxs()->size();
       if (_align)
-            layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize + STRIP_WIDTH/2 * 3);
+            layout->addSpacing(STRIP_WIDTH/2 * 3);
 
       volumeTouched = false;
 

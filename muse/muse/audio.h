@@ -239,7 +239,7 @@ class Audio {
       void msgRemoveRoute1(Route, Route);
       void msgAddRoute(Route, Route);
       void msgAddRoute1(Route, Route);
-      void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
+      void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin, bool prefader);
       void msgAddMidiPlugin(MidiTrackBase*, int idx, MidiPluginI* plugin);
       void msgSetMute(AudioTrack*, bool val);
       void msgAddSynthI(SynthI* synth);

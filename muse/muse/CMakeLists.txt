@@ -68,7 +68,6 @@ QT4_WRAP_CPP ( muse_moc_headers
       miditrack.h
       wavetrack.h
       audiotrack.h
-      audioaux.h
       audiooutput.h
       audioinput.h
       audiogroup.h
@@ -88,6 +87,9 @@ add_executable ( muse
       dssihost.cpp 
       synth.cpp 
       plugin.cpp
+      ladspaplugin.cpp
+      auxplugin.cpp
+      pipeline.cpp
 	mtc.cpp 
       thread.cpp 
       audio.cpp
@@ -141,7 +143,6 @@ add_executable ( muse
       miditrack.cpp
       wavetrack.cpp
       audiotrack.cpp
-      audioaux.cpp
       audiooutput.cpp
       audioinput.cpp
       audiogroup.cpp

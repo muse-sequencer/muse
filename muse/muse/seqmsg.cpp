@@ -148,14 +148,14 @@ void Audio::msgAddRoute1(Route src, Route dst)
 //   msgAddMidiPlugin
 //---------------------------------------------------------
 
-void Audio::msgAddMidiPlugin(MidiTrackBase* node, int idx, MidiPluginI* plugin)
+void Audio::msgAddMidiPlugin(MidiTrackBase* track, int idx, MidiPluginI* plugin)
       {
       AudioMsg msg;
-      msg.id     = AUDIO_ADDMIDIPLUGIN;
-      msg.track  = node;
-      msg.ival   = idx;
+      msg.id      = AUDIO_ADDMIDIPLUGIN;
+      msg.track   = track;
+      msg.ival    = idx;
       msg.mplugin = plugin;
-      MidiPluginI* oldPlugin = node->plugin(idx);
+      MidiPluginI* oldPlugin = track->plugin(idx);
       sendMsg(&msg);
       if (oldPlugin) {
             delete oldPlugin;
@@ -166,12 +166,14 @@ void Audio::msgAddMidiPlugin(MidiTrackBase* node, int idx, MidiPluginI* plugin)
 //   msgAddPlugin
 //---------------------------------------------------------
 
-void Audio::msgAddPlugin(AudioTrack* node, int idx, PluginI* plugin)
+void Audio::msgAddPlugin(AudioTrack* track, int idx, PluginI* plugin,
+   bool prefader)
       {
       AudioMsg msg;
       msg.id     = AUDIO_ADDPLUGIN;
-      msg.track  = node;
+      msg.track  = track;
       msg.ival   = idx;
+      msg.iival  = prefader;
       msg.plugin = plugin;
       sendMsg(&msg);
       }

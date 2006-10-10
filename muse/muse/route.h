@@ -35,20 +35,20 @@ struct Route {
             Track* track;
             Port   port;
             };
-      int channel;
+      int channel;      // route to/from JACK can specify a channel to connect to
+      int stream;       // 0 - main, 1-n - aux send
       RouteType type;
 
+      Route();
       Route(const QString&, int ch, RouteType);
       Route(Port, RouteType);
+      Route(Track*);
       Route(Track*, RouteType);
       Route(Track*, int, RouteType);
-      Route();
-      Route(const Route& r) {
-            track   = r.track;
-            channel = r.channel;
-            type    = r.type;
-            }
       QString name() const;
+      void read(QDomNode node);
+      void write(Xml&, const char* name);
+
       bool operator==(const Route& a) const;
       bool isValid() const { return track != 0; }
       void dump() const;

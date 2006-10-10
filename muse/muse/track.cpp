@@ -74,7 +74,6 @@ QPixmap* Track::pixmap(TrackType t)
       switch(t) {
             case AUDIO_OUTPUT: return addtrack_audiooutputIcon;
             case AUDIO_GROUP:  return addtrack_audiogroupIcon;
-            case AUDIO_AUX:    return addtrack_auxsendIcon;
             case WAVE:         return addtrack_wavetrackIcon;
             case AUDIO_INPUT:  return addtrack_audioinputIcon;
             case AUDIO_SOFTSYNTH: return addtrack_audioinputIcon; // DEBUG
@@ -167,9 +166,6 @@ void Track::setDefaultName()
                   break;
             case AUDIO_GROUP:
                   base = QString("Group");
-                  break;
-            case AUDIO_AUX:
-                  base = QString("Aux");
                   break;
             case AUDIO_INPUT:
                   base = QString("AudioIn");
@@ -673,34 +669,18 @@ void Track::writeRouting(Xml& xml) const
             for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
                   Route dst(name(), r->channel, Route::TRACK);
                   xml.tag("Route");
-                  xml.put("<srcNode type=\"%s\">%s</srcNode>",
+                  xml.put("<src type=\"%s\" name=\"%s\"\>",
                      Route::tname(rt), r->name().toLatin1().data());
-                  xml.put("<dstNode type=\"TRACK\">%s</dstNode>", dst.name().toLatin1().data());
+                  xml.put("<dst type=\"TRACK\" name=\"%s\"\>", 
+                     dst.name().toLatin1().data());
                   xml.etag("Route");
                   }
             }
       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
             xml.tag("Route");
-            const char* tname = type() == AUDIO_SOFTSYNTH ? "SYNTIPORT" : "TRACK";
-            if (r->channel != -1)
-                  xml.put("<srcNode type=\"%s\">%d:%s</srcNode>", tname, r->channel + 1, name().toLatin1().data());
-            else
-                  xml.put("<srcNode type=\"%s\">%s</srcNode>", tname, name().toLatin1().data());
-
-            switch(r->type) {
-                  case Route::AUDIOPORT:
-                        xml.put("<dstNode type=\"AUDIOPORT\">%s</dstNode>", r->name().toLatin1().data());
-                        break;
-                  case Route::MIDIPORT:
-                        xml.put("<dstNode type=\"MIDIPORT\">%s</dstNode>", r->name().toLatin1().data());
-                        break;
-                  case Route::SYNTIPORT:
-                        xml.put("<dstNode type=\"SYNTIPORT\">%s</dstNode>", r->name().toLatin1().data());
-                        break;
-                  case Route::TRACK:
-                        xml.put("<dstNode type=\"TRACK\">%s</dstNode>", r->name().toLatin1().data());
-                        break;
-                  }
+            Route src(this);
+            src->write(xml, "src");
+            r->write(xml, "dst");
             xml.etag("Route");
             }
       }

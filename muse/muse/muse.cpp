@@ -391,8 +391,6 @@ void populateAddTrack(QMenu* m)
             a->setData(Track::AUDIO_GROUP);
             a = m->addAction(QIcon(*addtrack_audioinputIcon),  QT_TR_NOOP("Add Audio Input"));
             a->setData(Track::AUDIO_INPUT);
-            a = m->addAction(QIcon(*addtrack_auxsendIcon),     QT_TR_NOOP("Add Aux Send"));
-            a->setData(Track::AUDIO_AUX);
 
             ps = m->addMenu(QMenu::tr("Add Soft Synth..."));
 
@@ -1054,7 +1052,7 @@ void MusE::setRaster(int val)
 
 void MusE::initRaster(int val)
       {
-      for (int i = 0; i < sizeof(rasterTable)/sizeof(*rasterTable); ++i) {
+      for (unsigned i = 0; i < sizeof(rasterTable)/sizeof(*rasterTable); ++i) {
             if (rasterTable[i].val == val) {
                   _raster = val;
                   rasterCombo->setCurrentIndex(i);
@@ -2603,7 +2601,6 @@ void MusE::updateConfiguration()
       addTrack->setShortcut(shortcuts[SHRT_ADD_AUDIO_OUTPUT].key, Track::AUDIO_OUTPUT);
       addTrack->setShortcut(shortcuts[SHRT_ADD_AUDIO_GROUP].key, Track::AUDIO_GROUP);
       addTrack->setShortcut(shortcuts[SHRT_ADD_AUDIO_INPUT].key, Track::AUDIO_INPUT);
-      addTrack->setShortcut(shortcuts[SHRT_ADD_AUDIO_AUX].key, Track::AUDIO_AUX);
 #endif
       }
 

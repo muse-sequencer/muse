@@ -193,7 +193,6 @@ enum {
       SHRT_ADD_AUDIO_OUTPUT, //Default: undefined
       SHRT_ADD_AUDIO_GROUP, //Default: undefined
       SHRT_ADD_AUDIO_INPUT, //Default: undefined
-      SHRT_ADD_AUDIO_AUX, //Default: undefined
       SHRT_RESET_MIDI, //Ctrl+Alt+Z
 
       SHRT_OPEN_HELP, //F1

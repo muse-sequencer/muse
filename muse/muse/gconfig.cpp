@@ -56,7 +56,6 @@ GlobalConfigValues config = {
       {
             QColor(Qt::white),            // outputTrackBg;
             QColor(Qt::yellow),           // groupTrackBg;
-            QColor(Qt::cyan),             // auxTrackBg;
             QColor(Qt::green),            // waveTrackBg;
             QColor(Qt::red),              // inputTrackBg;
             QColor(Qt::blue),             // synthTrackBg;

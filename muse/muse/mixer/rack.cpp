@@ -11,7 +11,8 @@
 #include "audio.h"
 #include "icons.h"
 #include "gconfig.h"
-#include "plugin.h"
+#include "pipeline.h"
+#include "auxplugin.h"
 #include "plugingui.h"
 #include "widgets/filedialog.h"
 #include "muse.h"
@@ -22,9 +23,10 @@ static const int PipelineDepth = 4;
 //   EffectRack
 //---------------------------------------------------------
 
-EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
+EffectRack::EffectRack(QWidget* parent, AudioTrack* t, bool flag)
    : QListWidget(parent)
       {
+      prefader = flag;
       setAttribute(Qt::WA_DeleteOnClose, true);
       verticalScrollBar()->setStyle(smallStyle);
 
@@ -63,23 +65,15 @@ void EffectRack::songChanged(int typ)
             return;
 
       clear();
-      int i = 0;
-      foreach (PluginI* plugin, *(track->efxPipe())) {
-            QListWidgetItem* item = new QListWidgetItem(this, EFFECT_TYPE + i);
-            ++i;
+      Pipeline* pipe = prefader ? track->prePipe() : track->postPipe();
+      foreach (PluginI* plugin, *pipe) {
+            QListWidgetItem* item = new QListWidgetItem(this);
             item->setText(plugin->name());
             // tooltip should only be set if name does not fit
             // (is elided)
             item->setToolTip(plugin->name());
             item->setBackgroundColor(plugin->on() ? Qt::white : Qt::gray);
             }
-      //
-      // debug: dummy
-      //
-      QListWidgetItem* item = new QListWidgetItem(this, SEND_TYPE);
-      item->setText("Aux 1");
-      item->setToolTip("Auxiliary Send 1");
-      item->setBackgroundColor(Qt::white);
       }
 
 //---------------------------------------------------------
@@ -93,7 +87,7 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
 
       int idx = -1;
       QString name;
-      Pipeline* pipe = track->efxPipe();
+      Pipeline* pipe = prefader ? track->prePipe() : track->postPipe();
 
       QMenu* menu               = new QMenu;
       QAction* upAction         = menu->addAction(QIcon(*upIcon), tr("move up"));
@@ -123,21 +117,14 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
             idx = row(item);
             upAction->setEnabled(idx != 0);
             downAction->setEnabled(idx < pipe->size()-1);
-            if (item->type() < SEND_TYPE) {
-                  idx = item->type();
-                  showCustomAction->setEnabled(pipe->hasNativeGui(idx));
-                  bypassAction->setEnabled(true);
-                  showAction->setEnabled(true);
+            idx = item->type();
+            showCustomAction->setEnabled(pipe->hasNativeGui(idx));
+            bypassAction->setEnabled(true);
+            showAction->setEnabled(true);
 
-                  bypassAction->setChecked(!pipe->isOn(idx));
-                  showAction->setChecked(pipe->guiVisible(idx));
-                  showCustomAction->setChecked(pipe->nativeGuiVisible(idx));
-                  }
-            else {
-                  showCustomAction->setEnabled(false);
-                  bypassAction->setEnabled(false);
-                  showAction->setEnabled(false);
-                  }
+            bypassAction->setChecked(!pipe->isOn(idx));
+            showAction->setChecked(pipe->guiVisible(idx));
+            showCustomAction->setChecked(pipe->nativeGuiVisible(idx));
             }
 
       QAction* sel = menu->exec(mapToGlobal(pt), newAction);
@@ -150,7 +137,7 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
             return;
             }
       if (sel == removeAction) {
-            audio->msgAddPlugin(track, idx, 0);
+            audio->msgAddPlugin(track, idx, 0, prefader);
             }
       else if (sel == bypassAction) {
             bool flag = !pipe->isOn(idx);
@@ -176,10 +163,8 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
                   pipe->move(idx, false);
                   }
             }
-      else if (sel == auxAction) {
-            printf("add new aux send: not implemented\n");
-            }
-
+      else if (sel == auxAction)
+            addPlugin(auxPlugin);
       song->update(SC_RACK);
       }
 
@@ -193,7 +178,7 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
       if (track == 0)
             return;
       int idx        = row(it);
-      Pipeline* pipe = track->efxPipe();
+      Pipeline* pipe = prefader ? track->prePipe() : track->postPipe();
       bool flag      = !pipe->guiVisible(idx);
       pipe->showGui(idx, flag);
       }
@@ -207,14 +192,14 @@ void EffectRack::startDrag(int idx)
       QString buffer;
       AL::Xml xml(NULL);
       xml.setString(&buffer);
-      Pipeline* pipe = track->efxPipe();
+      Pipeline* pipe = prefader ? track->prePipe() : track->postPipe();
       if (pipe) {
             if ((*pipe)[idx] != NULL) {
                 PluginI *plug  = (*pipe)[idx];
                 xml.header();
                 xml.tag("muse version=\"1.0\"");
                 // header info
-                plug->writeConfiguration1(xml); // wC1 does not append endtag
+                plug->writeConfiguration1(xml, prefader); // wC1 does not append endtag
                 // parameters
                 int noParams = plug->plugin()->parameter();
                 for (int i=0;i<noParams;i++) {
@@ -245,7 +230,7 @@ void EffectRack::startDrag(int idx)
       QMimeData *mime = new QMimeData();
       mime->setData("text/x-muse-plugin", xmldump);
       drag->setMimeData(mime);
-      Qt::DropAction dropAction = drag->start();
+/*      Qt::DropAction dropAction =*/ drag->start();
       }
 
 //---------------------------------------------------------
@@ -261,14 +246,14 @@ void EffectRack::dropEvent(QDropEvent *event)
       if (i)
             idx = row(i);
 
-      Pipeline* pipe = track->efxPipe();
+      Pipeline* pipe = prefader ? track->prePipe() : track->postPipe();
       if (pipe) {
             if (i) {
                 if(!QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
                       tr("&Yes"), tr("&No"),
                       QString::null, 0, 1 ))
                       {
-                      audio->msgAddPlugin(track, idx, 0);
+                      audio->msgAddPlugin(track, idx, 0, prefader);
                       song->update(SC_RACK);
                       }
                 else {
@@ -378,7 +363,7 @@ void EffectRack::initPlugin(QDomNode &node, int idx)
                   delete plugi;
                   }
             else {
-                  audio->msgAddPlugin(track, idx, plugi);
+                  audio->msgAddPlugin(track, idx, plugi, prefader);
                   song->update(SC_RACK);
                   int i = 0;
                   for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
@@ -419,17 +404,25 @@ void EffectRack::mouseDoubleClickEvent(QMouseEvent* event)
 void EffectRack::selectNew()
       {
       Plugin* plugin = PluginDialog::getPlugin(this);
-      if (plugin) {
-            PluginI* plugi = new PluginI(track);
-            if (plugi->initPluginInstance(plugin, track->channels())) {
-                  printf("cannot instantiate plugin <%s>\n",
-                     plugin->name().toLatin1().data());
-                  delete plugi;
-                  }
-            else
-                  audio->msgAddPlugin(track, -1, plugi);
-            }
+      addPlugin(plugin);
       song->update(SC_RACK);
       }
 
+//---------------------------------------------------------
+//   addPlugin
+//---------------------------------------------------------
+
+void EffectRack::addPlugin(Plugin* plugin)
+      {
+      if (plugin == 0)
+            return;
+      PluginI* plugi = new PluginI(track);
+      if (plugi->initPluginInstance(plugin, track->channels())) {
+            printf("cannot instantiate plugin <%s>\n",
+               plugin->name().toLatin1().data());
+            delete plugi;
+            }
+      else
+            audio->msgAddPlugin(track, -1, plugi, prefader);
+      }
 

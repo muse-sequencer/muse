@@ -42,7 +42,8 @@ class AudioTrack : public Track {
       Q_OBJECT
 
       bool _prefader;               // prefader metering
-      Pipeline* _efxPipe;
+      Pipeline* _prePipe;
+      Pipeline* _postPipe;
       QList<AuxSend> sends;
 
       void readRecfile(QDomNode);
@@ -91,9 +92,10 @@ class AudioTrack : public Track {
       bool prefader() const              { return _prefader; }
       void addAuxSend(int n);
       void setPrefader(bool val);
-      Pipeline* efxPipe()                { return _efxPipe;  }
-      void addPlugin(PluginI* plugin, int idx);
-      PluginI* plugin(int idx) const;
+      Pipeline* prePipe()                { return _prePipe;  }
+      Pipeline* postPipe()               { return _postPipe;  }
+      void addPlugin(PluginI* plugin, int idx, bool pre);
+      PluginI* plugin(int idx, bool prefader) const;
 
       virtual bool hasAuxSend() const { return false; }
       virtual void process();

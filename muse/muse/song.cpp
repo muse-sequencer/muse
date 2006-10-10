@@ -35,6 +35,7 @@
 #include "al/tempo.h"
 #include "midi.h"
 #include "plugin.h"
+#include "pipeline.h"
 #include "synth.h"
 #include "midiplugin.h"
 #include "midirc.h"
@@ -1178,7 +1179,6 @@ void Song::clear(bool signal)
       _inputs.clearDelete();     // audio input ports
       _outputs.clearDelete();    // audio output ports
       _groups.clearDelete();     // mixer groups
-      _auxs.clearDelete();       // aux sends
       _synthIs.clearDelete();
 
       _midiSyntis.clearDelete();
@@ -1538,7 +1538,6 @@ printf("set instance name <%s>\n", instanceName.toLatin1().data());
             track = si;
             }
       else {
-            int lastAuxIdx = _auxs.size();
             switch (type) {
                   case Track::MIDI:
                         track = new MidiTrack();
@@ -1552,21 +1551,15 @@ printf("set instance name <%s>\n", instanceName.toLatin1().data());
                         break;
                   case Track::WAVE:
                         track = new WaveTrack();
-                        ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
                         break;
                   case Track::AUDIO_OUTPUT:
                         track = new AudioOutput();
                         break;
                   case Track::AUDIO_GROUP:
                         track = new AudioGroup();
-                        ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
-                        break;
-                  case Track::AUDIO_AUX:
-                        track = new AudioAux();
                         break;
                   case Track::AUDIO_INPUT:
                         track = new AudioInput();
-                        ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
                         break;
                   case Track::AUDIO_SOFTSYNTH:
                   case Track::TRACK_TYPES:
@@ -1640,10 +1633,6 @@ void Song::insertTrack(Track* track, int idx)
 
             case Track::WAVE:
             case Track::AUDIO_GROUP:
-            case Track::AUDIO_AUX:
-                  if (ao)
-                        track->outRoutes()->push_back(Route(ao, -1, Route::TRACK));
-                  break;
             case Track::AUDIO_INPUT:
                   {
                   // connect first input channel to first available jack output
@@ -1765,9 +1754,6 @@ void Song::insertTrack2(Track* track)
             case Track::AUDIO_GROUP:
                   _groups.push_back((AudioGroup*)track);
                   break;
-            case Track::AUDIO_AUX:
-                  _auxs.push_back((AudioAux*)track);
-                  break;
             case Track::AUDIO_INPUT:
                   _inputs.push_back((AudioInput*)track);
                   break;
@@ -1782,22 +1768,6 @@ void Song::insertTrack2(Track* track)
                   fprintf(stderr, "insertTrack2: unknown track type %d\n", track->type());
                   // abort();
                   return;
-            }
-
-      //
-      // initialize missing aux send
-      //
-
-      int n = _auxs.size();
-      if (n) {
-            for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
-                  if ((*i)->isMidiTrack())
-                        continue;
-                  WaveTrack* wt = (WaveTrack*)*i;
-                  if (wt->hasAuxSend()) {
-                        wt->addAuxSend(n);
-                        }
-                  }
             }
 
       //
@@ -1899,9 +1869,6 @@ void Song::removeTrack2(Track* track)
                   break;
             case Track::AUDIO_GROUP:
                   _groups.erase(track);
-                  break;
-            case Track::AUDIO_AUX:
-                  _auxs.erase(track);
                   break;
             case Track::AUDIO_SOFTSYNTH:
                   {
@@ -2307,11 +2274,13 @@ void Song::setControllerVal(Track* t, Ctrl* c, CVal val)
             }
       else {
             c->setCurVal(val);
-            if (c->id() & 0xf000) {
+            if (c->id() & 0x3ffff000) {
                   // plugin controller
-                  Pipeline* pipe  = ((AudioTrack*)t)->efxPipe();
-                  int pluginIndex = (c->id() & 0xf000) / 0x1000 - 1;
-                  int ctrlIndex   = c->id() & 0xfff;
+                  AudioTrack* track = (AudioTrack*) t;
+                  bool prefader;
+                  int pluginIndex, ctrlIndex;
+                  getCtrlPlugin(c->id(), &prefader, &pluginIndex, &ctrlIndex);
+                  Pipeline* pipe  = prefader ? track->prePipe() : track->postPipe();
                   pipe->plugin(pluginIndex)->setParam(ctrlIndex, val.f);
                   }
             }

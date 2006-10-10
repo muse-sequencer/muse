@@ -26,7 +26,6 @@
 #include "wavetrack.h"
 #include "audioinput.h"
 #include "audiooutput.h"
-#include "audioaux.h"
 #include "audiogroup.h"
 #include "midisynti.h"
 #include "synth.h"
@@ -104,7 +103,6 @@ class Song : public QObject {
       InputList _inputs;      // audio input ports
       OutputList _outputs;    // audio output ports
       GroupList _groups;      // mixer groups
-      AuxList _auxs;          // aux sends
       SynthIList _synthIs;
       MidiSyntiList _midiSyntis;
       MidiOutPortList _midiOutPorts;
@@ -307,7 +305,6 @@ class Song : public QObject {
       InputList* inputs()             { return &_inputs;       }
       OutputList* outputs()           { return &_outputs;      }
       GroupList* groups()             { return &_groups;       }
-      AuxList* auxs()                 { return &_auxs;         }
       SynthIList* syntis()            { return &_synthIs;      }
       MidiOutPortList* midiOutPorts()   { return &_midiOutPorts; }
       MidiOutPort* midiOutPort(int idx) { return _midiOutPorts.index(idx); }

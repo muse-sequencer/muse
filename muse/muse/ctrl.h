@@ -39,7 +39,34 @@ const int AC_MUTE   = 2;
 const int AC_AUX    = 3;      // 3 -- 3+NUM_AUX
 const int AC_AUX_PAN = AC_AUX + NUM_AUX;
 
-inline int genACnum(int plugin, int ctrl) { return plugin * 0x10000 + ctrl; }
+const int CTRL_PLUGIN_MASK   = 0x3ff0000;
+const int CTRL_PLUGIN_OFFSET = 0x10000;
+const int CTRL_INDEX_MASK    = 0xffff;
+const int CTRL_PREFADER      = 0x40000000;
+
+//---------------------------------------------------------
+//   genACnum
+//    create a controller number out of plugin index,
+//    controller index and prefader flag
+//---------------------------------------------------------
+
+inline static int genACnum(int plugin, int ctrl, bool prefader) {
+      int pre = prefader ? CTRL_PREFADER : 0;
+      return pre | ((plugin+1) * CTRL_PLUGIN_OFFSET + ctrl);
+      }
+
+//---------------------------------------------------------
+//   getCtrlPlugin
+//    destill plugin index, controller index and prefader
+//    flag from controller id
+//---------------------------------------------------------
+
+inline static void getCtrlPlugin(int id, bool* prefader, int* pluginIndex, 
+   int* ctrlIndex) {
+      *prefader    = (id & CTRL_PREFADER) ? true : false;
+      *pluginIndex = ((id & CTRL_PLUGIN_MASK) / CTRL_PLUGIN_OFFSET) - 1;
+      *ctrlIndex   = id  & CTRL_INDEX_MASK;
+      }
 
 //---------------------------------------------------------
 //   ControllerName

@@ -25,7 +25,8 @@
 #include "audio.h"
 #include "wave.h"
 #include "al/xml.h"
-#include "plugin.h"
+#include "auxplugin.h"
+#include "pipeline.h"
 #include "driver/audiodev.h"
 #include "gconfig.h"
 
@@ -38,7 +39,8 @@ AudioTrack::AudioTrack(TrackType t)
       {
       _tt       = AL::FRAMES;
       _prefader = false;
-      _efxPipe  = new Pipeline();
+      _prePipe  = new Pipeline();
+      _postPipe = new Pipeline();
       _recFile  = 0;
       _channels = 0;
       bufferEmpty = false;
@@ -69,7 +71,8 @@ AudioTrack::AudioTrack(TrackType t)
 
 AudioTrack::~AudioTrack()
       {
-      delete _efxPipe;
+      delete _prePipe;
+      delete _postPipe;
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             if (buffer[i])
             	delete[] buffer[i];
@@ -91,45 +94,44 @@ Part* AudioTrack::newPart(Part*, bool /*clone*/)
 //    idx = -1   insert into first free slot
 //---------------------------------------------------------
 
-void AudioTrack::addPlugin(PluginI* plugin, int idx)
+void AudioTrack::addPlugin(PluginI* plugin, int idx, bool pre)
       {
+      Pipeline* pipe = pre ? _prePipe : _postPipe;
       if (plugin == 0) {
-            PluginI* oldPlugin = (*_efxPipe)[idx];
+            PluginI* oldPlugin = (*pipe)[idx];
             if (oldPlugin) {
                   int controller = oldPlugin->plugin()->parameter();
                   for (int i = 0; i < controller; ++i) {
-                        int id = (idx + 1) * 0x1000 + i;
+                        int id = genACnum(idx, i, pre);
                         removeController(id);
                         }
-                        _efxPipe->removeAt(idx);
+                  pipe->removeAt(idx);
                   }
+            return;
             }
       if (idx == -1)
-            idx = _efxPipe->size();
-
-      if (plugin) {
-            efxPipe()->insert(idx, plugin);
-            int ncontroller = plugin->plugin()->parameter();
-            for (int i = 0; i < ncontroller; ++i) {
-                  int id = (idx + 1) * 0x1000 + i;
-                  QString name(plugin->getParameterName(i));
-                  double min, max;
-                  plugin->range(i, &min, &max);
-                  Ctrl* cl = getController(id);
-                  //printf("Plugin name: %s id:%d\n",name.toAscii().data(), id);
-                  if (cl == 0) {
-                        cl = new Ctrl(id, name);
-                        cl->setRange(min, max);
-                        float defaultValue = plugin->defaultValue(i);
-                        cl->setDefault(defaultValue);
-                        cl->setCurVal(defaultValue);
-                        addController(cl);
-                        }
+            idx = pipe->size();
+      pipe->insert(idx, plugin);
+      int ncontroller = plugin->plugin()->parameter();
+      for (int i = 0; i < ncontroller; ++i) {
+            int id = genACnum(idx, i, pre);
+            QString name(plugin->getParameterName(i));
+            double min, max;
+            plugin->range(i, &min, &max);
+            Ctrl* cl = getController(id);
+            //printf("Plugin name: %s id:%d\n",name.toAscii().data(), id);
+            if (cl == 0) {
+                  cl = new Ctrl(id, name);
                   cl->setRange(min, max);
-                  cl->setName(name);
-                  plugin->setParam(i, cl->schedVal().f);
-                  plugin->setControllerList(cl);
+                  float defaultValue = plugin->defaultValue(i);
+                  cl->setDefault(defaultValue);
+                  cl->setCurVal(defaultValue);
+                  addController(cl);
                   }
+            cl->setRange(min, max);
+            cl->setName(name);
+            plugin->setParam(i, cl->schedVal().f);
+            plugin->setControllerList(cl);
             }
       }
 
@@ -137,9 +139,10 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx)
 //   plugin
 //---------------------------------------------------------
 
-PluginI* AudioTrack::plugin(int idx) const
+PluginI* AudioTrack::plugin(int idx, bool prefader) const
       {
-      return (*_efxPipe)[idx];
+      Pipeline* pipe = prefader ? _prePipe : _postPipe;
+      return (*pipe)[idx];
       }
 
 //---------------------------------------------------------
@@ -180,11 +183,10 @@ void AudioTrack::addAuxSend(int n)
 void AudioTrack::writeProperties(Xml& xml) const
       {
       Track::writeProperties(xml);
-      xml.intTag("prefader", prefader());
-      for (ciPluginI ip = _efxPipe->begin(); ip != _efxPipe->end(); ++ip) {
-            if (*ip)
-                  (*ip)->writeConfiguration(xml);
-            }
+      foreach (PluginI* plugin, *_prePipe)
+            plugin->writeConfiguration(xml, true);
+      foreach (PluginI* plugin, *_postPipe)
+            plugin->writeConfiguration(xml, false);
       }
 
 //---------------------------------------------------------
@@ -197,13 +199,14 @@ bool AudioTrack::readProperties(QDomNode node)
       QString tag(e.tagName());
       if (tag == "plugin") {
             PluginI* pi = new PluginI(this);
-            if (pi->readConfiguration(node)) {
+            bool prefader;
+            if (pi->readConfiguration(node, &prefader)) {
                   delete pi;
                   }
             else {
                   // insert plugin into first free slot
                   // of plugin rack
-                  addPlugin(pi, -1);
+                  addPlugin(pi, -1, prefader);
                   }
             }
       else if (tag == "prefader")
@@ -385,8 +388,10 @@ void AudioTrack::setChannels(int n)
             abort();
             }
       Track::setChannels(n);
-      if (_efxPipe)
-            _efxPipe->setChannels(n);
+      if (_prePipe)
+            _prePipe->setChannels(n);
+      if (_postPipe)
+            _postPipe->setChannels(n);
       }
 
 //---------------------------------------------------------
@@ -422,7 +427,7 @@ void AudioTrack::process()
       // apply plugin chain
       //---------------------------------------------------
 
-      _efxPipe->apply(channels(), segmentSize, buffer);
+      _prePipe->apply(channels(), segmentSize, buffer);
 
       //---------------------------------------------------
       //    metering

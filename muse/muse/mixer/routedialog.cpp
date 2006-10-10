@@ -58,7 +58,7 @@ void RouteDialog::routingChanged()
                         new QListWidgetItem(routeList, r->name(), dst.name());
                         }
                   }
-            else if (track->type() != Track::AUDIO_AUX)
+            else 
                   newDstList->insertItem(Route(track, -1).name());
             if (track->type() == Track::AUDIO_OUTPUT) {
                   for (int channel = 0; channel < track->channels(); ++channel) {

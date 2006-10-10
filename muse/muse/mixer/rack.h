@@ -12,24 +12,19 @@
 #include <al/xml.h>
 
 class AudioTrack;
-
-//
-// EffectRack can contain effect plugins and aux send's:
-//
-static const int EFFECT_TYPE = 0;
-static const int SEND_TYPE   = 32000; // this is the implicit maximal number
-                                      // of possible effect plugins in the rack
+class Plugin;
 
 //---------------------------------------------------------
 //   EffectRack
 //---------------------------------------------------------
 
 class EffectRack : public QListWidget {
+      Q_OBJECT
+
+      bool prefader;
       AudioTrack* track;
       
       QPoint dragPos;
-      Q_OBJECT
-      
 
       virtual void contextMenuEvent(QContextMenuEvent*);
       virtual void mouseDoubleClickEvent(QMouseEvent*);
@@ -37,6 +32,7 @@ class EffectRack : public QListWidget {
       
       void startDrag(int idx);
       void initPlugin(QDomNode &node, int idx);
+      void addPlugin(Plugin* plugin);
 
    private slots:
       void doubleClicked(QListWidgetItem*);
@@ -50,7 +46,7 @@ class EffectRack : public QListWidget {
       void dragMoveEvent(QDragMoveEvent *event);
 
    public:
-      EffectRack(QWidget*, AudioTrack* t);
+      EffectRack(QWidget*, AudioTrack*, bool);
       QSize sizeHint() const;
       };
 

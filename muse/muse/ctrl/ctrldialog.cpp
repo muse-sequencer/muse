@@ -24,6 +24,7 @@
 #include "miditrack.h"
 #include "audiotrack.h"
 #include "plugin.h"
+#include "pipeline.h"
 
 //---------------------------------------------------------
 //   CtrlDialog
@@ -71,12 +72,29 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
             //
             // present plugin parameter
             //
-            Pipeline* pl = ((AudioTrack*)track)->efxPipe();
+            Pipeline* pl = ((AudioTrack*)track)->prePipe();
             int idx = 0;
-            for (iPluginI i = pl->begin(); i != pl->end(); ++i, ++idx) {
-                  PluginI* plugin = *i;
-                  if (plugin == 0)
-                        continue;
+            foreach (PluginI* plugin, *pl) {
+                  ci = new QTreeWidgetItem(tw, CTRL_NO_CTRL);
+                  ci->setText(0, plugin->name());
+                  int ncontroller = plugin->plugin()->parameter();
+                  for (int i = 0; i < ncontroller; ++i) {
+                        QString name(plugin->getParameterName(i));
+                        int id = (idx + 1) * 0x1000 + i;
+                        QTreeWidgetItem* cci = new QTreeWidgetItem(ci, id);
+                        cci->setText(0, name);
+                        Ctrl* ctrl = track->getController(id);
+                        if (!ctrl->empty())
+                              cci->setText(1, "*");
+                        if (id == currentId) {
+                              tw->setCurrentItem(cci);
+                              tw->setItemSelected(cci, true);
+                              }
+                        }
+                  }
+            pl = ((AudioTrack*)track)->postPipe();
+            idx = 0;
+            foreach (PluginI* plugin, *pl) {
                   ci = new QTreeWidgetItem(tw, CTRL_NO_CTRL);
                   ci->setText(0, plugin->name());
                   int ncontroller = plugin->plugin()->parameter();

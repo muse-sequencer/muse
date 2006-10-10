@@ -32,7 +32,8 @@ class AudioStrip : public Strip {
       Q_OBJECT
 
       int channel;
-      EffectRack* rack;
+      EffectRack* rack1;
+      EffectRack* rack2;
 
       Awl::MeterSlider* slider;
       Awl::VolEntry* sl;
@@ -42,14 +43,9 @@ class AudioStrip : public Strip {
       Awl::PanEntry* panl;
       double panVal;
 
-      std::vector<Awl::VolKnob*> auxKnob;
-      std::vector<Awl::VolEntry*> auxLabel;
-      std::vector<double> auxValue;
-
       QToolButton* stereo;
       QToolButton* pre;
 
-      Awl::VolKnob* addAuxKnob(int, Awl::VolEntry**);
       Awl::PanKnob* addPanKnob(Awl::PanEntry**);
 
       QToolButton* iR;
@@ -65,7 +61,6 @@ class AudioStrip : public Strip {
       void offToggled(bool);
       void iRoutePressed();
       void oRoutePressed();
-      void auxChanged(double, int);
       void volumeChanged(double);
       void volumePressed();
       void volumeReleased();
@@ -73,9 +68,6 @@ class AudioStrip : public Strip {
       void setPan(double);
       void panPressed();
       void panReleased();
-      void setAux(double, int);
-      void auxPressed(int);
-      void auxReleased(int);
       void muteToggled(bool);
       void soloToggled(bool);
       void recordToggled(bool);

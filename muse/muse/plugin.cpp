@@ -22,61 +22,14 @@
 
 #include "al/al.h"
 #include "plugin.h"
+#include "ladspaplugin.h"
+#include "auxplugin.h"
 #include "plugingui.h"
 #include "al/xml.h"
 #include "fastlog.h"
 #include "ctrl.h"
 
 PluginList plugins;
-
-//---------------------------------------------------------
-//   defaultValue
-//---------------------------------------------------------
-
-float ladspaDefaultValue(const LADSPA_Descriptor* plugin, int k)
-      {
-      LADSPA_PortRangeHint range = plugin->PortRangeHints[k];
-      LADSPA_PortRangeHintDescriptor rh = range.HintDescriptor;
-//      bool isLog = LADSPA_IS_HINT_LOGARITHMIC(rh);
-      double val = 1.0;
-      float m = (rh & LADSPA_HINT_SAMPLE_RATE) ? float(AL::sampleRate) : 1.0f;
-      if (LADSPA_IS_HINT_DEFAULT_MINIMUM(rh)) {
-            val = range.LowerBound * m;
-            }
-      else if (LADSPA_IS_HINT_DEFAULT_LOW(rh)) {
-            if (LADSPA_IS_HINT_LOGARITHMIC(rh))
-                  val = exp(fast_log10(range.LowerBound * m) * .75 +
-                     log(range.UpperBound * m) * .25);
-            else
-                  val = range.LowerBound*.75*m + range.UpperBound*.25*m;
-            }
-      else if (LADSPA_IS_HINT_DEFAULT_MIDDLE(rh)) {
-            if (LADSPA_IS_HINT_LOGARITHMIC(rh))
-                  val = exp(log(range.LowerBound * m) * .5 +
-                     log10(range.UpperBound * m) * .5);
-            else
-                  val = range.LowerBound*.5*m + range.UpperBound*.5*m;
-            }
-      else if (LADSPA_IS_HINT_DEFAULT_HIGH(rh)) {
-            if (LADSPA_IS_HINT_LOGARITHMIC(rh))
-                  val = exp(log(range.LowerBound * m) * .25 +
-                     log(range.UpperBound * m) * .75);
-            else
-                  val = range.LowerBound*.25*m + range.UpperBound*.75*m;
-            }
-      else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(rh)) {
-            val = range.UpperBound*m;
-            }
-      else if (LADSPA_IS_HINT_DEFAULT_0(rh))
-            val = 0.0;
-      else if (LADSPA_IS_HINT_DEFAULT_1(rh))
-            val = 1.0;
-      else if (LADSPA_IS_HINT_DEFAULT_100(rh))
-            val = 100.0;
-      else if (LADSPA_IS_HINT_DEFAULT_440(rh))
-            val = 440.0;
-      return val;
-      }
 
 //---------------------------------------------------------
 //   Plugin
@@ -86,49 +39,6 @@ Plugin::Plugin(const QFileInfo* f)
    : fi(*f)
       {
       _instances = 0;
-      }
-
-//---------------------------------------------------------
-//   LadpsaPlugin
-//---------------------------------------------------------
-
-LadspaPlugin::LadspaPlugin(const QFileInfo* f,
-   const LADSPA_Descriptor_Function ldf,
-   const LADSPA_Descriptor* d)
-   : Plugin(f), ladspa(ldf), plugin(d)
-      {
-      _inports        = 0;
-      _outports       = 0;
-      _parameter      = 0;
-      for (unsigned k = 0; k < plugin->PortCount; ++k) {
-            LADSPA_PortDescriptor pd = d->PortDescriptors[k];
-            static const int CI = LADSPA_PORT_CONTROL | LADSPA_PORT_INPUT;
-            if ((pd &  CI) == CI) {
-                  ++_parameter;
-                  pIdx.push_back(k);
-                  }
-            else if (pd &  LADSPA_PORT_INPUT) {
-                  ++_inports;
-                  iIdx.push_back(k);
-                  }
-            else if (pd &  LADSPA_PORT_OUTPUT) {
-                  ++_outports;
-                  oIdx.push_back(k);
-                  }
-            }
-      LADSPA_Properties properties = plugin->Properties;
-      _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(properties);
-      if (_inports != _outports)
-            _inPlaceCapable = false;
-      }
-
-//---------------------------------------------------------
-//   instantiate
-//---------------------------------------------------------
-
-void* LadspaPlugin::instantiate()
-      {
-      return plugin->instantiate(plugin, AL::sampleRate);
       }
 
 //---------------------------------------------------------
@@ -219,6 +129,7 @@ void initPlugins()
             if (*p == ':')
                   p++;
             }
+      auxPlugin = new AuxPlugin;
       }
 
 //---------------------------------------------------------
@@ -233,181 +144,6 @@ Plugin* PluginList::find(const QString& file, const QString& name)
             }
       printf("MusE: Plugin <%s> not found\n", name.toAscii().data());
       return 0;
-      }
-
-//---------------------------------------------------------
-//   setChannels
-//---------------------------------------------------------
-
-void Pipeline::setChannels(int n)
-      {
-      foreach(PluginI* plugin, *this)
-            plugin->setChannels(n);
-      }
-
-//---------------------------------------------------------
-//   isOn
-//---------------------------------------------------------
-
-bool Pipeline::isOn(int idx) const
-      {
-      PluginI* p = value(idx);
-      if (p)
-            return p->on();
-      return false;
-      }
-
-//---------------------------------------------------------
-//   setOn
-//---------------------------------------------------------
-
-void Pipeline::setOn(int idx, bool flag)
-      {
-      PluginI* p = value(idx);
-      if (p) {
-            p->setOn(flag);
-            if (p->gui())
-                  p->gui()->setOn(flag);
-            }
-      }
-
-//---------------------------------------------------------
-//   label
-//---------------------------------------------------------
-
-QString Pipeline::label(int idx) const
-      {
-      PluginI* p = value(idx);
-      if (p)
-            return p->label();
-      return QString("");
-      }
-
-//---------------------------------------------------------
-//   name
-//---------------------------------------------------------
-
-QString Pipeline::name(int idx) const
-      {
-      PluginI* p = value(idx);
-      if (p)
-            return p->name();
-      return QString("empty");
-      }
-
-//---------------------------------------------------------
-//   hasNativeGui
-//---------------------------------------------------------
-
-bool Pipeline::hasNativeGui(int idx) const
-      {
-      PluginI* p = value(idx);
-      if (p)
-            return p->hasNativeGui();
-      return false;
-      }
-
-//---------------------------------------------------------
-//   move
-//---------------------------------------------------------
-
-void Pipeline::move(int idx, bool up)
-      {
-      PluginI* p1 = (*this)[idx];
-      if (up) {
-            (*this)[idx]   = (*this)[idx-1];
-            (*this)[idx-1] = p1;
-            }
-      else {
-            (*this)[idx]   = (*this)[idx+1];
-            (*this)[idx+1] = p1;
-            }
-      }
-
-//---------------------------------------------------------
-//   showGui
-//---------------------------------------------------------
-
-void Pipeline::showGui(int idx, bool flag)
-      {
-      PluginI* p = (*this)[idx];
-      if (p)
-            p->showGui(flag);
-      }
-
-//---------------------------------------------------------
-//   showNativeGui
-//---------------------------------------------------------
-
-void Pipeline::showNativeGui(int idx, bool flag)
-      {
-      PluginI* p = (*this)[idx];
-      if (p)
-            p->showNativeGui(flag);
-      }
-
-//---------------------------------------------------------
-//   guiVisible
-//---------------------------------------------------------
-
-bool Pipeline::guiVisible(int idx)
-      {
-      PluginI* p = (*this)[idx];
-      if (p)
-            return p->guiVisible();
-      return false;
-      }
-
-//---------------------------------------------------------
-//   nativeGuiVisible
-//---------------------------------------------------------
-
-bool Pipeline::nativeGuiVisible(int idx)
-      {
-      PluginI* p = (*this)[idx];
-      if (p)
-            return p->nativeGuiVisible();
-      return false;
-      }
-
-//---------------------------------------------------------
-//   apply
-//---------------------------------------------------------
-
-void Pipeline::apply(int ports, unsigned long nframes, float** buffer1)
-      {
-      // prepare a second set of buffers in case a plugin is not
-      // capable of inPlace processing
-
-      float* buffer2[ports];
-      float data[nframes * ports];
-      for (int i = 0; i < ports; ++i)
-            buffer2[i] = data + i * nframes;
-
-      bool swap = false;
-
-      for (iPluginI ip = begin(); ip != end(); ++ip) {
-            PluginI* p = *ip;
-            if (p && p->on()) {
-                  if (p->inPlaceCapable()) {
-                        if (swap)
-                              p->apply(nframes, ports, buffer2, buffer2);
-                        else
-                              p->apply(nframes, ports, buffer1, buffer1);
-                        }
-                  else {
-                        if (swap)
-                              p->apply(nframes, ports, buffer2, buffer1);
-                        else
-                              p->apply(nframes, ports, buffer1, buffer2);
-                        swap = !swap;
-                        }
-                  }
-            }
-      if (swap) {
-            for (int i = 0; i < ports; ++i)
-                  memcpy(buffer1[i], buffer2[i], sizeof(float) * nframes);
-            }
       }
 
 //---------------------------------------------------------
@@ -444,75 +180,6 @@ PluginI::~PluginI()
       }
 
 //---------------------------------------------------------
-//   range
-//---------------------------------------------------------
-
-void LadspaPlugin::range(int i, double* min, double* max) const
-      {
-      i = pIdx[i];
-      LADSPA_PortRangeHint range = plugin->PortRangeHints[i];
-      LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
-      if (desc & LADSPA_HINT_TOGGLED) {
-            *min = 0.0;
-            *max = 1.0;
-            return;
-            }
-      double m = (desc & LADSPA_HINT_SAMPLE_RATE) ? float(AL::sampleRate) : 1.0f;
-
-      if (desc & LADSPA_HINT_BOUNDED_BELOW)
-            *min =  range.LowerBound * m;
-      else
-            *min = 0.0;
-      if (desc & LADSPA_HINT_BOUNDED_ABOVE)
-            *max =  range.UpperBound * m;
-      else
-            *max = 1.0;
-      }
-
-//---------------------------------------------------------
-//   createPIF
-//---------------------------------------------------------
-
-PluginIF* LadspaPlugin::createPIF(PluginI* pi)
-      {
-      LadspaPluginIF* pif = new LadspaPluginIF(pi);
-      pif->init(pi->plugin());
-      return pif;
-      }
-
-//---------------------------------------------------------
-//   LadspaPluginIF
-//---------------------------------------------------------
-
-LadspaPluginIF::LadspaPluginIF(PluginI* pi)
-   : PluginIF(pi)
-      {
-      descr  = 0;
-      plugin = (LadspaPlugin*)(pi->plugin());
-      }
-
-//---------------------------------------------------------
-//   init
-//    return true on error
-//---------------------------------------------------------
-
-bool LadspaPluginIF::init(Plugin* pl)
-      {
-      handle = (LADSPA_Descriptor*) ((LadspaPlugin*)pl)->instantiate();
-      plugin = (LadspaPlugin*)pl;
-      descr  = plugin->ladspaDescriptor();
-
-      int controlPorts = plugin->parameter();
-      controls = new LadspaPort[controlPorts];
-
-      for (int k = 0; k < controlPorts; ++k) {
-            controls[k].val = plugin->defaultValue(k);
-            descr->connect_port(handle, plugin->pIdx[k], &controls[k].val);
-            }
-      return handle == 0;
-      }
-
-//---------------------------------------------------------
 //   apply
 //---------------------------------------------------------
 
@@ -539,46 +206,20 @@ void PluginI::apply(unsigned nframes, int ports, float** src, float** dst)
       }
 
 //---------------------------------------------------------
-//   apply
-//---------------------------------------------------------
-
-void LadspaPluginIF::apply(unsigned nframes, float** src, float** dst)
-      {
-      int iports = plugin->inports();
-      int oports = plugin->outports();
-      int cports = plugin->parameter();
-
-      //
-      // update parameter
-      //
-      for (int i = 0; i < cports; ++i)
-            controls[i].val = pluginI->controllerList[i]->curVal().f;
-      //
-      // set connections
-      //
-      for (int k = 0; k < iports; ++k)
-            descr->connect_port(handle, plugin->iIdx[k], src[k]);
-      for (int k = 0; k < oports; ++k)
-            descr->connect_port(handle, plugin->oIdx[k], dst[k]);
-
-      descr->run(handle, nframes);
-      }
-
-//---------------------------------------------------------
 //   setChannel
 //---------------------------------------------------------
 
 void PluginI::setChannels(int c)
       {
-      if (channel == c)
+      if (_channel == c)
             return;
       int ni = c / _plugin->outports();
       if (ni == 0)
             ni = 1;
-      channel = c;
+      _channel = c;
       if (ni == instances)
             return;
-      channel = c;
+      _channel = c;
 
       // remove old instances:
       deactivate();
@@ -597,16 +238,6 @@ void PluginI::setChannels(int c)
       }
 
 //---------------------------------------------------------
-//   defaultValue
-//---------------------------------------------------------
-
-double LadspaPlugin::defaultValue(int k) const
-      {
-      k = pIdx[k];
-      return ladspaDefaultValue(plugin, k);
-      }
-
-//---------------------------------------------------------
 //   initPluginInstance
 //    return true on error
 //---------------------------------------------------------
@@ -617,14 +248,14 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
             printf("initPluginInstance: zero plugin\n");
             return true;
             }
-      channel = c;
+      _channel = c;
       _plugin = plug;
       _plugin->incInstances(1);
       QString inst("-" + QString::number(_plugin->instances()));
       _name  = _plugin->name() + inst;
       _label = _plugin->label() + inst;
 
-      instances = channel / plug->outports();
+      instances = _channel / plug->outports();
       if (instances < 1)
             instances = 1;
       pif = new PluginIF*[instances];
@@ -663,9 +294,9 @@ bool PluginI::setParameter(const QString& s, double val)
 //   saveConfiguration
 //---------------------------------------------------------
 
-void PluginI::writeConfiguration(Xml& xml)
+void PluginI::writeConfiguration(Xml& xml, bool prefader)
       {
-      writeConfiguration1(xml);
+      writeConfiguration1(xml, prefader);
       xml.etag("plugin"); // append endtag
       }
 
@@ -673,10 +304,14 @@ void PluginI::writeConfiguration(Xml& xml)
 //   saveConfiguration
 //---------------------------------------------------------
 
-void PluginI::writeConfiguration1(Xml& xml)
+void PluginI::writeConfiguration1(Xml& xml, bool prefader)
       {
-      xml.tag("plugin file=\"%s\" label=\"%s\" channel=\"%d\"",
-         _plugin->lib().toLatin1().data(), _plugin->label().toLatin1().data(), instances * _plugin->inports());
+      xml.tag("plugin pre=\"%d\" file=\"%s\" label=\"%s\" channel=\"%d\"",
+         prefader, 
+         _plugin->lib().toLatin1().data(), 
+         _plugin->label().toLatin1().data(), 
+         _channel);
+//         instances * _plugin->inports());
       if (_on == false)
             xml.intTag("on", _on);
       if (guiVisible()) {
@@ -692,18 +327,23 @@ void PluginI::writeConfiguration1(Xml& xml)
 //    return true on error
 //---------------------------------------------------------
 
-bool PluginI::readConfiguration(QDomNode node)
+bool PluginI::readConfiguration(QDomNode node, bool* prefader)
       {
       QDomElement e = node.toElement();
       QString file  = e.attribute("file");
       QString label = e.attribute("label");
-      channel       = e.attribute("channel").toInt();
+      _channel      = e.attribute("channel").toInt();
+      *prefader     = e.attribute("pre", "1").toInt();
 
       if (_plugin == 0) {
-            _plugin = plugins.find(file, label);
+            // special case: internal plugin Aux
+            if (file.isEmpty() && label == "Aux")
+                  _plugin = auxPlugin;
+            else
+                  _plugin = plugins.find(file, label);
             if (_plugin == 0)
                   return true;
-            if (initPluginInstance(_plugin, channel))
+            if (initPluginInstance(_plugin, _channel))
                   return true;
             }
       node = node.firstChild();
@@ -821,27 +461,4 @@ void PluginI::activate()
       for (int i = 0; i < instances; ++i)
             pif[i]->activate();
       }
-
-//---------------------------------------------------------
-//   activate
-//---------------------------------------------------------
-
-void LadspaPluginIF::activate()
-      {
-      //
-      // TODO: init values?
-      //
-      if (descr->activate)
-            descr->activate(handle);
-      }
-#if 0
-//---------------------------------------------------------
-//   controllerId
-//---------------------------------------------------------
-
-int PluginI::controllerId(int idx) const
-      {
-      return controllerList[idx]->id();
-      }
-#endif
 

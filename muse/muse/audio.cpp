@@ -467,7 +467,6 @@ void Audio::process(unsigned frames)
       processMidi(frames);
 
       GroupList* gl     = song->groups();
-      AuxList* al       = song->auxs();
       SynthIList* sl    = song->syntis();
       InputList* il     = song->inputs();
       WaveTrackList* wl = song->waves();
@@ -515,9 +514,6 @@ void Audio::process(unsigned frames)
             }
       for (iAudioGroup i = gl->begin(); i != gl->end(); ++i)
             (*i)->process();
-      for (iAudioAux i = al->begin(); i != al->end(); ++i)
-            (*i)->process();
-
       for (iAudioOutput i = ol->begin(); i != ol->end(); ++i) {
             AudioOutput* ao = *i;
             ao->process();
@@ -573,7 +569,8 @@ void Audio::processMsg()
                   msg->track->setChannels(msg->ival);
                   break;
             case AUDIO_ADDPLUGIN:
-                  ((AudioTrack*)msg->track)->addPlugin(msg->plugin, msg->ival);
+                  ((AudioTrack*)msg->track)->addPlugin(msg->plugin, msg->ival,
+                     msg->iival);
                   break;
 
             case AUDIO_SET_SEG_SIZE:

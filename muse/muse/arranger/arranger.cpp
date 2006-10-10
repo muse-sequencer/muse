@@ -52,7 +52,6 @@ const TrElement trElements[] = {
       TrElement(TR_OFF,      2, "off",
           Track::M_AUDIO_OUTPUT
         | Track::M_AUDIO_GROUP
-        | Track::M_AUDIO_AUX
         | Track::M_WAVE
         | Track::M_AUDIO_INPUT
         | Track::M_AUDIO_SOFTSYNTH),

@@ -114,8 +114,6 @@ void readConfiguration(QDomNode node)
                   config.trackBg[Track::AUDIO_OUTPUT] = readColor(node);
             else if (tag == "groupTrackBg")
                   config.trackBg[Track::AUDIO_GROUP] = readColor(node);
-            else if (tag == "auxTrackBg")
-                  config.trackBg[Track::AUDIO_AUX] = readColor(node);
             else if (tag == "waveTrackBg")
                   config.trackBg[Track::WAVE] = readColor(node);
             else if (tag == "inputTrackBg")
@@ -413,7 +411,6 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
       static const char* colorNames[Track::TRACK_TYPES] = {
             "outputTrackBg",
             "groupTrackBg",
-            "auxTrackBg",
             "waveTrackBg",
             "inputTrackBg",
             "synthTrackBg",

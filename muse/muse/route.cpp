@@ -43,8 +43,7 @@ static Route name2route(const QString& rn, Route::RouteType t)
                     };
             printf("!!!!!!!!!!!!!!!!!!!!!! empty route!!!!!!!!!!!!!!name2route: %s: <%s> not found\n", names[t], rn.toLatin1().data());
             return Route((Track*) 0, channel, Route::TRACK);
-            
-      }
+            }
       QString s(rn);
 
       if (rn[0].isNumber() && rn[1]==':') {
@@ -213,13 +212,7 @@ bool addRoute(Route src, Route dst)
                   }
             outRoutes->push_back(dst);
             RouteList* inRoutes = dst.track->inRoutes();
-            //
-            // make sure AUDIO_AUX is processed last
-            //
-            if (src.track->type() == Track::AUDIO_AUX)
-                  inRoutes->push_back(src);
-            else
-                  inRoutes->insert(inRoutes->begin(), src);
+            inRoutes->insert(inRoutes->begin(), src);
             }
       return true;
       }
@@ -303,9 +296,7 @@ error:
 
 static QString track2name(const Track* n)
       {
-      if (n == 0)
-            return QWidget::tr("None");
-      return n->name();
+      return n ? n->name() : "None";
       }
 
 //---------------------------------------------------------
@@ -315,21 +306,15 @@ static QString track2name(const Track* n)
 
 QString Route::name() const
       {
-      QString s;
-      if (type == TRACK || type == SYNTIPORT) {
-            if (channel != -1) {
-                  QString c;
-                  c.setNum(channel+1);
-                  s = c + ":";
-                  }
-            return s + track2name(track);
+      switch (type) {
+            case TRACK:
+            case SYNTIPORT:
+                  return track2name(track);
+            case AUDIOPORT:
+                  return audioDriver->portName(port);
+            case MIDIPORT:
+                  return midiDriver->portName(port);
             }
-      if (type == AUDIOPORT) {
-            s = audioDriver->portName(port);
-            }
-      else if (type == MIDIPORT)
-            s = midiDriver->portName(port);
-      return s;
       }
 
 //---------------------------------------------------------
@@ -339,53 +324,6 @@ QString Route::name() const
 
 bool checkRoute(const QString& /*s*/, const QString& /*d*/)
       {
-#if 0  // TODO1
-      Route src(s, false, -1);
-      Route dst(d, true, -1);
-
-      if (!(src.isValid() && dst.isValid()) || (src == dst))
-            return false;
-      if (src.type == Route::AUDIOPORT || src.type == Route::MIDIPORT) {
-            if (dst.type != Route::TRACK) {
-                  return false;
-                  }
-            if (dst.track->type() != Track::AUDIO_INPUT) {
-                  return false;
-                  }
-            src.channel = dst.channel;
-            RouteList* inRoutes = dst.track->inRoutes();
-            for (iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) {
-                  if (*i == src) {   // route already there
-                        return false;
-                        }
-                  }
-            }
-      else if (dst.type == Route::AUDIOPORT || dst.type == Route::MIDIPORT) {
-            if (src.type != Route::TRACK) {
-                  return false;
-                  }
-            if (src.track->type() != Track::AUDIO_OUTPUT
-             && src.track->type() != Track::MIDI_OUT
-             && src.track->type() != Track::MIDI_IN) {
-                  return false;
-                  }
-            RouteList* outRoutes = src.track->outRoutes();
-            dst.channel = src.channel;
-            for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) {
-                  if (*i == dst) {   // route already there
-                        return false;
-                        }
-                  }
-            }
-      else {
-            RouteList* outRoutes = src.track->outRoutes();
-            for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) {
-                  if (*i == dst) {   // route already there
-                        return false;
-                        }
-                  }
-            }
-#endif
       return true;
       }
 
@@ -514,5 +452,15 @@ const char* Route::tname(RouteType t)
 const char* Route::tname() const
       {
       return tname(type);
+      }
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void Route::write(Xml& xml, const char* name)
+      {
+      xml.put("<%s type=\"%s\" channel=\"%d\" stream=\"%d\" name=\"%s\"\>", 
+         name, tname(), channel + 1, stream,  name().toUtf8().data());
       }
 

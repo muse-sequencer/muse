@@ -131,7 +131,6 @@
 #include "xpm/addtrack_audiogroup.xpm"
 #include "xpm/addtrack_audioinput.xpm"
 #include "xpm/addtrack_audiooutput.xpm"
-#include "xpm/addtrack_auxsend.xpm"
 #include "xpm/addtrack_drumtrack.xpm"
 #include "xpm/addtrack_wavetrack.xpm"
 #include "xpm/edit_drumms.xpm"
@@ -251,7 +250,6 @@ QPixmap* addtrack_addmiditrackIcon;
 QPixmap* addtrack_audiogroupIcon;
 QPixmap* addtrack_audioinputIcon;
 QPixmap* addtrack_audiooutputIcon;
-QPixmap* addtrack_auxsendIcon;
 QPixmap* addtrack_drumtrackIcon;
 QPixmap* addtrack_wavetrackIcon;
 QPixmap* edit_drummsIcon;
@@ -399,7 +397,6 @@ void initIcons()
       addtrack_audiogroupIcon       = new QPixmap(addtrack_audiogroup_xpm);
       addtrack_audioinputIcon       = new QPixmap(addtrack_audioinput_xpm);
       addtrack_audiooutputIcon      = new QPixmap(addtrack_audiooutput_xpm);
-      addtrack_auxsendIcon          = new QPixmap(addtrack_auxsend_xpm);
       addtrack_drumtrackIcon        = new QPixmap(addtrack_drumtrack_xpm);
       addtrack_wavetrackIcon        = new QPixmap(addtrack_wavetrack_xpm);
       edit_drummsIcon               = new QPixmap(edit_drumms_xpm);

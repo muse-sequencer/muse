@@ -601,8 +601,9 @@ void PluginGui::load()
                   node = node.firstChild();
                   while (!node.isNull()) {
                         QDomElement e = node.toElement();
+                        bool prefader;
                         if (e.tagName() == "plugin")
-                              plugin->readConfiguration(node.firstChild());
+                              plugin->readConfiguration(node.firstChild(), &prefader);
                         else
                               printf("MusE:PluginGui: unknown tag %s\n", e.tagName().toLatin1().data());
                         node = node.nextSibling();
@@ -640,7 +641,7 @@ void PluginGui::save()
       Xml xml(f);
       xml.header();
       xml.tag("muse version=\"1.0\"");
-      plugin->writeConfiguration(xml);
+      plugin->writeConfiguration(xml, true);
       xml.etag("muse");
       f->close();
       delete f;

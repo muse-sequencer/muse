@@ -84,7 +84,6 @@ class Track : public QObject {
       enum TrackType {
             AUDIO_OUTPUT,
             AUDIO_GROUP,
-            AUDIO_AUX,
             WAVE,
             AUDIO_INPUT,
             AUDIO_SOFTSYNTH,
@@ -98,7 +97,6 @@ class Track : public QObject {
       enum {
             M_AUDIO_OUTPUT    = 1 << AUDIO_OUTPUT,
             M_AUDIO_GROUP     = 1 << AUDIO_GROUP,
-            M_AUDIO_AUX       = 1 << AUDIO_AUX,
             M_WAVE            = 1 << WAVE,
             M_AUDIO_INPUT     = 1 << AUDIO_INPUT,
             M_AUDIO_SOFTSYNTH = 1 << AUDIO_SOFTSYNTH,

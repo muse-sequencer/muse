@@ -25,6 +25,191 @@
 #include "awl/panentry.h"
 
 //---------------------------------------------------------
+//   AudioStrip
+//    create mixer strip
+//---------------------------------------------------------
+
+AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
+   : Strip(m, t, align)
+      {
+      iR            = 0;
+      oR            = 0;
+      off           = 0;
+      volume        = -1.0;
+      channel       = t->channels();
+
+      //---------------------------------------------------
+      //    prefader plugin rack
+      //---------------------------------------------------
+
+      rack1 = new EffectRack(this, t, true);
+      rack1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+      rack1->setFixedHeight(rack1->sizeHint().height() + 2);
+      layout->addWidget(rack1);
+
+      //---------------------------------------------------
+      //    mono/stereo  pre/post
+      //---------------------------------------------------
+
+      QHBoxLayout* ppBox = new QHBoxLayout;
+      stereo  = newStereoButton();
+      stereo->setChecked(channel == 2);
+      stereo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+      stereo->setFixedHeight(LABEL_HEIGHT);
+      connect(stereo, SIGNAL(clicked(bool)), SLOT(stereoToggled(bool)));
+
+      pre = new QToolButton;
+      pre->setFont(config.fonts[1]);
+      pre->setCheckable(true);
+      pre->setText(tr("Pre"));
+      pre->setToolTip(tr("pre fader - post fader"));
+      pre->setChecked(t->prefader());
+      pre->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+      pre->setFixedHeight(LABEL_HEIGHT);
+      connect(pre, SIGNAL(clicked(bool)), SLOT(preToggled(bool)));
+
+      ppBox->addWidget(stereo);
+      ppBox->addWidget(pre);
+      layout->addLayout(ppBox);
+
+      //---------------------------------------------------
+      //    slider, label
+      //---------------------------------------------------
+
+      slider = new Awl::MeterSlider(this);
+      slider->setRange(config.minSlider-0.1f, 10.0f);
+      slider->setFixedWidth(60);
+      slider->setChannel(channel);
+      Ctrl* ctrl = t->getController(AC_VOLUME);
+      double vol = 0.0f;
+      if (ctrl)
+            vol = ctrl->curVal().f;
+      slider->setValue(vol);
+      layout->addWidget(slider, 100, Qt::AlignRight);
+
+      sl = new Awl::VolEntry(this);
+      sl->setFont(config.fonts[1]);
+      sl->setSuffix(tr("dB"));
+      sl->setFrame(true);
+      sl->setValue(vol);
+
+      connect(slider, SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double)));
+      connect(sl,     SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double)));
+
+      connect(slider, SIGNAL(sliderPressed(int)), SLOT(volumePressed()));
+      connect(slider, SIGNAL(sliderReleased(int)), SLOT(volumeReleased()));
+      connect(slider, SIGNAL(meterClicked()), SLOT(resetPeaks()));
+      layout->addWidget(sl);
+
+      //---------------------------------------------------
+      //    pan, balance
+      //---------------------------------------------------
+
+      pan = addPanKnob(&panl);
+      double panv = t->getController(AC_PAN)->curVal().f;
+      pan->setValue(panv);
+      panl->setValue(panv);
+
+      //---------------------------------------------------
+      //    postfader plugin rack
+      //---------------------------------------------------
+
+      rack2 = new EffectRack(this, t, false);
+      rack2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+      rack2->setFixedHeight(rack1->sizeHint().height() + 2);
+      layout->addWidget(rack2);
+
+      //---------------------------------------------------
+      //    mute, solo, record
+      //---------------------------------------------------
+
+      Track::TrackType type = t->type();
+
+      QHBoxLayout* smBox1 = new QHBoxLayout(0);
+      QHBoxLayout* smBox2 = new QHBoxLayout(0);
+
+      mute  = newMuteButton();
+      mute->setChecked(t->mute());
+      mute->setFixedSize(buttonSize);
+      connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
+      connect(t, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));
+      smBox2->addWidget(mute);
+
+      solo  = newSoloButton();
+      solo->setDisabled(true);
+      solo->setFixedSize(buttonSize);
+      smBox2->addWidget(solo);
+      connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
+      connect(t, SIGNAL(soloChanged(bool)), solo, SLOT(setChecked(bool)));
+
+      off  = newOffButton();
+      off->setFixedSize(buttonSize);
+      off->setChecked(t->off());
+      connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
+      connect(t, SIGNAL(offChanged(bool)), this, SLOT(updateOffState()));
+
+      smBox1->addWidget(off);
+
+      if (track->canRecord()) {
+            record = newRecordButton();
+            record->setFixedSize(buttonSize);
+            if (type == Track::AUDIO_OUTPUT)
+                  record->setToolTip(tr("record downmix"));
+            record->setChecked(t->recordFlag());
+            connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
+            connect(t, SIGNAL(recordChanged(bool)), record, SLOT(setChecked(bool)));
+            smBox1->addWidget(record);
+            }
+      else {
+            record = 0;
+            smBox1->addStretch(100);
+            }
+
+      layout->addLayout(smBox1);
+      layout->addLayout(smBox2);
+
+      //---------------------------------------------------
+      //    automation read write
+      //---------------------------------------------------
+
+      addAutomationButtons();
+
+      //---------------------------------------------------
+      //    routing
+      //---------------------------------------------------
+
+      QHBoxLayout* rBox = new QHBoxLayout(0);
+      iR = new QToolButton(this);
+      iR->setFont(config.fonts[1]);
+      iR->setFixedWidth((STRIP_WIDTH-4)/2);
+      iR->setText(tr("iR"));
+      iR->setCheckable(false);
+      iR->setToolTip(tr("input routing"));
+      rBox->addWidget(iR);
+      connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
+      oR = new QToolButton(this);
+      oR->setFont(config.fonts[1]);
+      oR->setFixedWidth((STRIP_WIDTH-4)/2);
+      oR->setText(tr("oR"));
+      oR->setCheckable(false);
+      oR->setToolTip(tr("output routing"));
+      rBox->addWidget(oR);
+      connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
+
+      layout->addLayout(rBox);
+
+      if (off) {
+            updateOffState();   // init state
+            }
+      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
+      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(track, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));
+      connect(track, SIGNAL(autoReadChanged(bool)), SLOT(autoChanged()));
+      connect(track, SIGNAL(autoWriteChanged(bool)), SLOT(autoChanged()));
+      autoChanged();
+      }
+
+//---------------------------------------------------------
 //   heartBeat
 //---------------------------------------------------------
 
@@ -83,7 +268,8 @@ void AudioStrip::updateOffState()
       pan->setEnabled(val);
       panl->setEnabled(val);
       pre->setEnabled(val);
-      rack->setEnabled(val);
+      rack1->setEnabled(val);
+      rack2->setEnabled(val);
 
       if (track->type() != Track::AUDIO_SOFTSYNTH)
             stereo->setEnabled(val);
@@ -126,20 +312,6 @@ void AudioStrip::stereoToggled(bool val)
       }
 
 //---------------------------------------------------------
-//   auxChanged
-//---------------------------------------------------------
-
-void AudioStrip::auxChanged(double v, int idx)
-      {
-      if (auxValue[idx] != v) {
-            CVal val;
-            val.f = v;
-            song->setControllerVal(track, AC_AUX+idx, val);
-            auxValue[idx] = v;
-            }
-      }
-
-//---------------------------------------------------------
 //   volumeChanged
 //---------------------------------------------------------
 
@@ -148,35 +320,6 @@ void AudioStrip::volumeChanged(double v)
       CVal val;
       val.f = v;
       song->setControllerVal(track, AC_VOLUME, val);
-      }
-
-//---------------------------------------------------------
-//   setAux
-//---------------------------------------------------------
-
-void AudioStrip::setAux(double val, int idx)
-      {
-      auxKnob[idx]->setValue(val);
-      auxLabel[idx]->setValue(val);
-      auxValue[idx] = val;
-      }
-
-//---------------------------------------------------------
-//   auxPressed
-//---------------------------------------------------------
-
-void AudioStrip::auxPressed(int n)
-      {
-      ((AudioTrack*)track)->startAutoRecord(AC_AUX+n);
-      }
-
-//---------------------------------------------------------
-//   auxReleased
-//---------------------------------------------------------
-
-void AudioStrip::auxReleased(int n)
-      {
-      ((AudioTrack*)track)->stopAutoRecord(AC_AUX+n);
       }
 
 //---------------------------------------------------------
@@ -258,53 +401,6 @@ void AudioStrip::updateChannels()
       }
 
 //---------------------------------------------------------
-//   addAuxKnob
-//---------------------------------------------------------
-
-Awl::VolKnob* AudioStrip::addAuxKnob(int id, Awl::VolEntry** dlabel)
-      {
-      QString label;
-
-      Awl::VolKnob* knob = new Awl::VolKnob(this);
-      knob->setToolTip(tr("aux send level"));
-      knob->setRange(config.minSlider-0.1f, 10.0f);
-
-      Awl::VolEntry* pl = new Awl::VolEntry(this);
-      pl->setRange(config.minSlider, 10.0f);
-      label.sprintf("Aux%d", id+1);
-
-      knob->setFixedWidth(STRIP_WIDTH/2-2);
-      knob->setFixedHeight(STRIP_WIDTH/2);
-
-      if (dlabel)
-            *dlabel = pl;
-      pl->setFont(config.fonts[1]);
-      pl->setFrame(true);
-      pl->setFixedWidth(STRIP_WIDTH/2-2);
-
-      QLabel* plb = new QLabel(label, this);
-      plb->setFont(config.fonts[1]);
-      plb->setFixedWidth(STRIP_WIDTH/2-2);
-      plb->setAlignment(Qt::AlignCenter);
-
-      QGridLayout* pangrid = new QGridLayout;
-      pangrid->setSpacing(0);
-      pangrid->setMargin(0);
-      pangrid->addWidget(plb, 0, 0);
-      pangrid->addWidget(pl, 1, 0);
-      pangrid->addWidget(knob, 0, 1, 2, 1);
-      layout->addLayout(pangrid);
-
-      knob->setId(id);
-
-      connect(knob, SIGNAL(sliderPressed(int)),  SLOT(auxPressed(int)));
-      connect(knob, SIGNAL(sliderReleased(int)), SLOT(auxReleased(int)));
-      connect(knob, SIGNAL(valueChanged(double, int)), SLOT(auxChanged(double, int)));
-      connect(pl,   SIGNAL(valueChanged(double, int)), SLOT(auxChanged(double, int)));
-      return knob;
-      }
-
-//---------------------------------------------------------
 //   addPanKnob
 //---------------------------------------------------------
 
@@ -344,229 +440,6 @@ Awl::PanKnob* AudioStrip::addPanKnob(Awl::PanEntry** dlabel)
       connect(knob, SIGNAL(sliderPressed(int)), SLOT(panPressed()));
       connect(knob, SIGNAL(sliderReleased(int)), SLOT(panReleased()));
       return knob;
-      }
-
-//---------------------------------------------------------
-//   AudioStrip
-//    create mixer strip
-//---------------------------------------------------------
-
-AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
-   : Strip(m, t, align)
-      {
-      iR            = 0;
-      oR            = 0;
-      off           = 0;
-      volume        = -1.0;
-      channel       = t->channels();
-
-      //---------------------------------------------------
-      //    plugin rack
-      //---------------------------------------------------
-
-      rack = new EffectRack(this, t);
-      rack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-      rack->setFixedHeight(rack->sizeHint().height() + 2);
-      layout->addWidget(rack);
-
-      //---------------------------------------------------
-      //    mono/stereo  pre/post
-      //---------------------------------------------------
-
-      QHBoxLayout* ppBox = new QHBoxLayout;
-      stereo  = newStereoButton();
-      stereo->setChecked(channel == 2);
-      stereo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-      stereo->setFixedHeight(LABEL_HEIGHT);
-      connect(stereo, SIGNAL(clicked(bool)), SLOT(stereoToggled(bool)));
-
-      pre = new QToolButton;
-      pre->setFont(config.fonts[1]);
-      pre->setCheckable(true);
-      pre->setText(tr("Pre"));
-      pre->setToolTip(tr("pre fader - post fader"));
-      pre->setChecked(t->prefader());
-      pre->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-      pre->setFixedHeight(LABEL_HEIGHT);
-      connect(pre, SIGNAL(clicked(bool)), SLOT(preToggled(bool)));
-
-      ppBox->addWidget(stereo);
-      ppBox->addWidget(pre);
-      layout->addLayout(ppBox);
-
-      //---------------------------------------------------
-      //    aux send
-      //---------------------------------------------------
-
-      int auxsSize = song->auxs()->size();
-      if (t->hasAuxSend()) {
-            for (int idx = 0; idx < auxsSize; ++idx) {
-                  Awl::VolEntry* al;
-                  Awl::VolKnob* ak = addAuxKnob(idx, &al);
-                  auxKnob.push_back(ak);
-                  auxLabel.push_back(al);
-                  auxValue.push_back(0.0f);
-                  double as = t->getController(AC_AUX+idx)->curVal().f;
-                  ak->setValue(as);
-                  al->setValue(as);
-                  }
-            }
-      else if (auxsSize && _align)
-            layout->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);
-
-      //---------------------------------------------------
-      //    slider, label
-      //---------------------------------------------------
-
-      slider = new Awl::MeterSlider(this);
-      slider->setRange(config.minSlider-0.1f, 10.0f);
-      slider->setFixedWidth(60);
-      slider->setChannel(channel);
-      Ctrl* ctrl = t->getController(AC_VOLUME);
-      double vol = 0.0f;
-      if (ctrl)
-            vol = ctrl->curVal().f;
-      slider->setValue(vol);
-      layout->addWidget(slider, 100, Qt::AlignRight);
-
-      sl = new Awl::VolEntry(this);
-      sl->setFont(config.fonts[1]);
-      sl->setSuffix(tr("dB"));
-      sl->setFrame(true);
-      sl->setValue(vol);
-
-      connect(slider, SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double)));
-      connect(sl,     SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double)));
-
-      connect(slider, SIGNAL(sliderPressed(int)), SLOT(volumePressed()));
-      connect(slider, SIGNAL(sliderReleased(int)), SLOT(volumeReleased()));
-      connect(slider, SIGNAL(meterClicked()), SLOT(resetPeaks()));
-      layout->addWidget(sl);
-
-      //---------------------------------------------------
-      //    pan, balance
-      //---------------------------------------------------
-
-      pan = addPanKnob(&panl);
-      double panv = t->getController(AC_PAN)->curVal().f;
-      pan->setValue(panv);
-      panl->setValue(panv);
-
-      //---------------------------------------------------
-      //    mute, solo, record
-      //---------------------------------------------------
-
-      Track::TrackType type = t->type();
-
-      QHBoxLayout* smBox1 = new QHBoxLayout(0);
-      QHBoxLayout* smBox2 = new QHBoxLayout(0);
-
-      mute  = newMuteButton();
-      mute->setChecked(t->mute());
-      mute->setFixedSize(buttonSize);
-      connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
-      connect(t, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));
-      smBox2->addWidget(mute);
-
-      solo  = newSoloButton();
-      solo->setDisabled(true);
-      solo->setFixedSize(buttonSize);
-      smBox2->addWidget(solo);
-      connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
-      connect(t, SIGNAL(soloChanged(bool)), solo, SLOT(setChecked(bool)));
-
-      off  = newOffButton();
-      off->setFixedSize(buttonSize);
-      off->setChecked(t->off());
-      connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
-      connect(t, SIGNAL(offChanged(bool)), this, SLOT(updateOffState()));
-
-      smBox1->addWidget(off);
-
-      if (track->canRecord()) {
-            record = newRecordButton();
-            record->setFixedSize(buttonSize);
-            if (type == Track::AUDIO_OUTPUT)
-                  record->setToolTip(tr("record downmix"));
-            record->setChecked(t->recordFlag());
-            connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
-            connect(t, SIGNAL(recordChanged(bool)), record, SLOT(setChecked(bool)));
-            smBox1->addWidget(record);
-            }
-      else {
-            record = 0;
-            smBox1->addStretch(100);
-            }
-
-      layout->addLayout(smBox1);
-      layout->addLayout(smBox2);
-
-      //---------------------------------------------------
-      //    automation read write
-      //---------------------------------------------------
-
-      addAutomationButtons();
-
-      //---------------------------------------------------
-      //    routing
-      //---------------------------------------------------
-
-      QHBoxLayout* rBox = new QHBoxLayout(0);
-      if (type != Track::AUDIO_AUX) {
-            iR = new QToolButton(this);
-            iR->setFont(config.fonts[1]);
-            iR->setFixedWidth((STRIP_WIDTH-4)/2);
-            iR->setText(tr("iR"));
-            iR->setCheckable(false);
-            iR->setToolTip(tr("input routing"));
-            rBox->addWidget(iR);
-            connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
-            }
-      else 
-            rBox->addSpacing((STRIP_WIDTH-4)/2);
-      oR = new QToolButton(this);
-      oR->setFont(config.fonts[1]);
-      oR->setFixedWidth((STRIP_WIDTH-4)/2);
-      oR->setText(tr("oR"));
-      oR->setCheckable(false);
-      oR->setToolTip(tr("output routing"));
-      rBox->addWidget(oR);
-      connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
-
-      layout->addLayout(rBox);
-
-      if (off) {
-            updateOffState();   // init state
-            }
-      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      connect(track, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));
-      connect(track, SIGNAL(autoReadChanged(bool)), SLOT(autoChanged()));
-      connect(track, SIGNAL(autoWriteChanged(bool)), SLOT(autoChanged()));
-      autoChanged();
-      }
-
-//---------------------------------------------------------
-//   addAuxPorts
-//---------------------------------------------------------
-
-static void addAuxPorts(AudioTrack* t, QMenu* lb, RouteList* r)
-      {
-      AuxList* al = song->auxs();
-      for (iAudioAux i = al->begin(); i != al->end(); ++i) {
-            Track* track = *i;
-            if (t == track)
-                  continue;
-            QString s(track->name());
-            QAction* it = lb->addAction(s); //int it = lb->insertItem(s);
-            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (ir->type == 0 && ir->track == track) {
-                        it->setCheckable(true); //lb->setItemChecked(it, true);
-                        it->setChecked(true);
-                        break;
-                        }
-                  }
-            }
       }
 
 //---------------------------------------------------------
@@ -780,7 +653,6 @@ void AudioStrip::iRoutePressed()
                   addWavePorts(t, pup, irl);
                   addInPorts(t, pup, irl);
                   addGroupPorts(t, pup, irl);
-                  addAuxPorts(t, pup, irl);
                   addSyntiPorts(t, pup, irl);
                   break;
             case Track::WAVE:
@@ -884,9 +756,6 @@ void AudioStrip::oRoutePressed()
                   addOutPorts(t, pup, orl);
                   addGroupPorts(t, pup, orl);
                   break;
-            case Track::AUDIO_AUX:
-                  addOutPorts(t, pup, orl);
-                  break;
             }
       QAction* n = pup->exec(QCursor::pos());
       if (n != 0) {
@@ -968,14 +837,6 @@ void AudioStrip::controllerChanged(int id)
                   break;
             case AC_MUTE:
                   break;
-            case AC_AUX...AC_AUX+NUM_AUX:
-                  {
-                  int idx = id - AC_AUX;
-                  auxKnob[idx]->setValue(val);
-                  auxLabel[idx]->setValue(val);
-                  auxValue[idx] = val;
-                  }
-                  break;
             default:
                   break;
             }
@@ -997,13 +858,6 @@ void AudioStrip::autoChanged()
       bool ec = !ar || (ar && aw);
       slider->setEnabled(ec);
       sl->setEnabled(ec);
-      if (((AudioTrack*)track)->hasAuxSend()) {
-            int auxsSize = song->auxs()->size();
-            for (int idx = 0; idx < auxsSize; ++idx) {
-                  auxKnob[idx]->setEnabled(ec);
-                  auxLabel[idx]->setEnabled(ec);
-                  }
-            }
       pan->setEnabled(ec);
       panl->setEnabled(ec);
       }

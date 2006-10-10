@@ -28,7 +28,6 @@ Mixer::Mixer(QWidget* parent, MixerConfig* c)
       {
       mustUpdateMixer = false;
       cfg = c;
-      oldAuxsSize = 0;
       routingDialog = 0;
       setWindowTitle(tr("MusE: Mixer"));
       setWindowIcon(*museIcon);
@@ -51,7 +50,6 @@ Mixer::Mixer(QWidget* parent, MixerConfig* c)
       showOutputTracksId = menuView->addAction(tr("Show Output Tracks"));
       showGroupTracksId  = menuView->addAction(tr("Show Group Tracks"));
       showInputTracksId  = menuView->addAction(tr("Show Input Tracks"));
-      showAuxTracksId    = menuView->addAction(tr("Show Aux Tracks"));
       showSyntiTracksId  = menuView->addAction(tr("Show Synthesizer"));
       connect(menuView, SIGNAL(triggered(QAction*)), SLOT(showTracksChanged(QAction*)));
 
@@ -63,7 +61,6 @@ Mixer::Mixer(QWidget* parent, MixerConfig* c)
       showOutputTracksId->setCheckable(true);
       showGroupTracksId->setCheckable(true);
       showInputTracksId->setCheckable(true);
-      showAuxTracksId->setCheckable(true);
       showSyntiTracksId->setCheckable(true);
 
       QScrollArea* view = new QScrollArea;
@@ -148,7 +145,6 @@ void Mixer::clear()
             delete i;
             }
       stripList.clear();
-      oldAuxsSize = -1;
       }
 
 //---------------------------------------------------------
@@ -165,11 +161,9 @@ void Mixer::updateMixer(int action)
       showOutputTracksId->setChecked(cfg->showOutputTracks);
       showGroupTracksId->setChecked(cfg->showGroupTracks);
       showInputTracksId->setChecked(cfg->showInputTracks);
-      showAuxTracksId->setChecked(cfg->showAuxTracks);
       showSyntiTracksId->setChecked(cfg->showSyntiTracks);
 
-      int auxsSize = song->auxs()->size();
-      if (action == STRIP_REMOVED && auxsSize == oldAuxsSize) {
+      if (action == STRIP_REMOVED) {
             StripList::iterator si = stripList.begin();
             for (; si != stripList.end();) {
                   Track* track = (*si)->getTrack();
@@ -190,7 +184,6 @@ void Mixer::updateMixer(int action)
             }
 
       clear();
-      oldAuxsSize = auxsSize;
 
       int idx = 0;
       //---------------------------------------------------
@@ -269,16 +262,6 @@ void Mixer::updateMixer(int action)
       if (cfg->showGroupTracks) {
             GroupList* gtl = song->groups();
             for (iAudioGroup i = gtl->begin(); i != gtl->end(); ++i)
-                  addStrip(*i, idx++);
-            }
-
-      //---------------------------------------------------
-      //  Aux
-      //---------------------------------------------------
-
-      if (cfg->showAuxTracks) {
-            AuxList* al = song->auxs();
-            for (iAudioAux i = al->begin(); i != al->end(); ++i)
                   addStrip(*i, idx++);
             }
 
@@ -377,8 +360,6 @@ void Mixer::showTracksChanged(QAction* id)
             cfg->showGroupTracks = val;
       else if (id == showInputTracksId)
             cfg->showInputTracks = val;
-      else if (id == showAuxTracksId)
-            cfg->showAuxTracks = val;
       else if (id == showSyntiTracksId)
             cfg->showSyntiTracks = val;
       else if (id == showMidiInPortId)
@@ -403,7 +384,6 @@ void Mixer::write(Xml& xml, const char* name)
       xml.intTag("showWaveTracks",   cfg->showWaveTracks);
       xml.intTag("showGroupTracks",  cfg->showGroupTracks);
       xml.intTag("showInputTracks",  cfg->showInputTracks);
-      xml.intTag("showAuxTracks",    cfg->showAuxTracks);
       xml.intTag("showSyntiTracks",  cfg->showSyntiTracks);
       xml.intTag("showMidiInPorts",  cfg->showMidiInPorts);
       xml.intTag("showMidiOutPorts", cfg->showMidiOutPorts);

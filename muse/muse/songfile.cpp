@@ -199,11 +199,6 @@ void Song::read(QDomNode node)
                   track->read(node.firstChild());
                   insertTrack0(track,-1);
                   }
-            else if (tag == "AudioAux") {
-                  AudioAux* track = new AudioAux();
-                  track->read(node.firstChild());
-                  insertTrack0(track, -1);
-                  }
             else if (tag == "SynthI") {
                   SynthI* track = new SynthI();
                   track->read(node.firstChild());

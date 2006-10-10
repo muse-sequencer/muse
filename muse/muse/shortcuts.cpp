@@ -262,7 +262,6 @@ void initShortCuts()
       defShrt(SHRT_ADD_AUDIO_OUTPUT,      0, 34, ARRANG_SHRT, "add_audio_output");
       defShrt(SHRT_ADD_AUDIO_GROUP,       0, 35, ARRANG_SHRT, "add_audio_group");
       defShrt(SHRT_ADD_AUDIO_INPUT,       0, 36, ARRANG_SHRT, "add_audio_input");
-      defShrt(SHRT_ADD_AUDIO_AUX  ,       0, 37, ARRANG_SHRT, "add_audio_aux");
       defShrt(SHRT_GLOBAL_CUT,            0, 38, ARRANG_SHRT, "global_cut");
       defShrt(SHRT_GLOBAL_INSERT,         0, 39, ARRANG_SHRT, "global_insert");
 

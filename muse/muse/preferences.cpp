@@ -156,7 +156,6 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       id = twi(aid, "Track List", 0);
       twi(id, "Audio Output",   0x500 + Track::AUDIO_OUTPUT);
       twi(id, "Audio Group",    0x500 + Track::AUDIO_GROUP);
-      twi(id, "Audio Aux",      0x500 + Track::AUDIO_AUX);
       twi(id, "Wave Track",     0x500 + Track::WAVE);
       twi(id, "Audio Input",    0x500 + Track::AUDIO_INPUT);
       twi(id, "Synthesizer",    0x500 + Track::AUDIO_SOFTSYNTH);

@@ -41,7 +41,6 @@ TrackInfo* Arranger::createTrackInfo()
             case Track::MIDI:            return new MidiTrackInfo();
             case Track::AUDIO_OUTPUT:    return new AudioOutputInfo();
             case Track::AUDIO_GROUP:     return new AudioGroupInfo();
-            case Track::AUDIO_AUX:       return new AudioAuxInfo();
             case Track::WAVE:            return new WaveTrackInfo();
             case Track::AUDIO_INPUT:     return new AudioInputInfo();
             case Track::AUDIO_SOFTSYNTH: return new SynthIInfo();
