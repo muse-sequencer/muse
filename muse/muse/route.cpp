@@ -112,6 +112,7 @@ Route::Route(Port p, RouteType t)
       {
       port    = p;
       channel = -1;
+      stream  = 0;
       type    = t;
       }
 
@@ -119,6 +120,7 @@ Route::Route(Track* tr, RouteType t)
       {
       track   = tr;
       channel = -1;
+      stream  = 0;
       type    = t;
       }
 
@@ -126,6 +128,7 @@ Route::Route(Track* tr)
       {
       track   = tr;
       channel = -1;
+      stream  = 0;
       type    = TRACK;
       }
 
@@ -133,6 +136,7 @@ Route::Route(Track* tr, int ch, RouteType t)
       {
       track   = tr;
       channel = ch;
+      stream  = 0;
       type    = t;
       }
 
@@ -151,11 +155,11 @@ Route::Route(const QString& s, int ch, RouteType t)
             }
       }
 
-
 Route::Route()
       {
       track   = 0;
       channel = -1;
+      stream  = 0;
       type    = TRACK;
       }
 
@@ -339,55 +343,18 @@ bool checkRoute(const QString& /*s*/, const QString& /*d*/)
 //   read
 //---------------------------------------------------------
 
-void Song::readRoute(QDomNode node)
+void Song::readRoute(QDomNode n)
       {
-      QDomElement e = node.toElement();
-      node = node.firstChild();
-      QString src, dst, st, dt;
-
-      while (!node.isNull()) {
+      Route s, d;
+      for (QDomNode node = n.firstChild(); !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
-            if (e.tagName() == "srcNode") {
-                  st  = e.attribute("type", "TRACK");
-                  src = e.text();
-                  }
-            else if (e.tagName() == "dstNode") {
-                  dt  = e.attribute("type", "TRACK");
-                  dst = e.text();
-                  }
+            if (e.tagName() == "src")
+                  s.read(node);
+            else if (e.tagName() == "dst")
+                  d.read(node);
             else
                   printf("MusE:readRoute: unknown tag %s\n", e.tagName().toLatin1().data());
-            node = node.nextSibling();
             }
-      Route::RouteType stype, dtype;
-      if (st == "TRACK")
-            stype = Route::TRACK;
-      else if (st == "AUDIOPORT")
-            stype = Route::AUDIOPORT;
-      else if (st == "MIDIPORT")
-            stype = Route::MIDIPORT;
-      else if (st == "SYNTIPORT")
-            stype = Route::SYNTIPORT;
-      else {
-            printf("Song::readRoute(): unknown type <%s>\n", dt.toLatin1().data());
-            stype = Route::TRACK;
-            }
-
-      if (dt == "TRACK")
-            dtype = Route::TRACK;
-      else if (dt == "AUDIOPORT")
-            dtype = Route::AUDIOPORT;
-      else if (dt == "MIDIPORT")
-            dtype = Route::MIDIPORT;
-      else if (dt == "SYNTIPORT") {
-            dtype = Route::SYNTIPORT;
-            }
-      else {
-            printf("Song::readRoute(): unknown type <%s>\n", dt.toLatin1().data());
-            dtype = Route::TRACK;
-            }
-      Route s = name2route(src, stype);
-      Route d = name2route(dst, dtype);
       addRoute(s, d);
       }
 
@@ -468,7 +435,7 @@ const char* Route::tname() const
 
 void Route::write(Xml& xml, const char* label) const
       {
-      xml.put("<%s type=\"%s\" channel=\"%d\" stream=\"%d\" name=\"%s\"\>", 
+      xml.put("<%s type=\"%s\" channel=\"%d\" stream=\"%d\" name=\"%s\"/>", 
          label, tname(), channel + 1, stream,  name().toUtf8().data());
       }
 
@@ -478,8 +445,8 @@ void Route::write(Xml& xml, const char* label) const
 
 void Route::write(Xml& xml, const char* label, const Track* track)
       {
-//      xml.put("<%s type=\"%s\" channel=\"%d\" stream=\"%d\" name=\"%s\"\>", 
-//         label, tname(), channel + 1, stream,  name().toUtf8().data());
+      xml.put("<%s type=\"TRACK\" channel=\"0\" stream=\"0\" name=\"%s\"/>", 
+         label, track->name().toUtf8().data());
       }
 
 //---------------------------------------------------------
@@ -489,22 +456,59 @@ void Route::write(Xml& xml, const char* label, const Track* track)
 void Route::read(QDomNode node)
       {
       QDomElement e = node.toElement();
-      QString st = e.attribute("type", "TRACK");
-      if (st == "TRACK")
+      channel       = e.attribute("channel","0").toInt() - 1;
+      stream        = e.attribute("stream", "0").toInt();
+      QString s     = e.attribute("name");
+      QString st    = e.attribute("type", "TRACK");
+
+      if (st == "TRACK") {
             type = Route::TRACK;
-      else if (st == "AUDIOPORT")
+            track = 0;
+            TrackList* tl = song->tracks();
+            for (iTrack i = tl->begin(); i != tl->end(); ++i) {
+                  Track* t = *i;
+                  if (t->name() == s) {
+                        track = t;
+                        break;
+                        }
+                  }
+            if (track == 0) {
+                  MidiChannelList* mc = song->midiChannel();
+                  for (iMidiChannel i = mc->begin(); i != mc->end(); ++i) {
+                        MidiChannel* t = *i;
+                        if (t->name() == s) {
+                              track = t;
+                              break;
+                              }
+                        }
+                  }
+            }
+      else if (st == "AUDIOPORT") {
             type = Route::AUDIOPORT;
-      else if (st == "MIDIPORT")
+            port = audioDriver->findPort(s);
+            if (port == 0)
+                  printf("Route::read(): audioport not found\n");
+            }
+      else if (st == "MIDIPORT") {
             type = Route::MIDIPORT;
-      else if (st == "SYNTIPORT")
+            port = midiDriver->findPort(s);
+            if (port == 0)
+                  printf("Route::read(): midiport not found\n");
+            }
+      else if (st == "SYNTIPORT") {
             type = Route::SYNTIPORT;
+            SynthIList* tl = song->syntis();
+            for (iSynthI i = tl->begin(); i != tl->end(); ++i) {
+                  SynthI* t = *i;
+                  if (t->name() == s) {
+                        track = t;
+                        break;
+                        }
+                  }
+            }
       else {
             printf("Route::read(): unknown type <%s>\n", st.toLatin1().data());
             type = Route::TRACK;
             }
-      channel = e.attribute("channel","0").toInt() - 1;
-      stream  = e.attribute("stream", "0").toInt();
-      QString nm = e.attribute("name");
       }
-
 
