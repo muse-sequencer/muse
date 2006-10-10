@@ -122,6 +122,13 @@ Route::Route(Track* tr, RouteType t)
       type    = t;
       }
 
+Route::Route(Track* tr)
+      {
+      track   = tr;
+      channel = -1;
+      type    = TRACK;
+      }
+
 Route::Route(Track* tr, int ch, RouteType t)
       {
       track   = tr;
@@ -315,6 +322,7 @@ QString Route::name() const
             case MIDIPORT:
                   return midiDriver->portName(port);
             }
+      return QString("?");
       }
 
 //---------------------------------------------------------
@@ -458,9 +466,45 @@ const char* Route::tname() const
 //   write
 //---------------------------------------------------------
 
-void Route::write(Xml& xml, const char* name)
+void Route::write(Xml& xml, const char* label) const
       {
       xml.put("<%s type=\"%s\" channel=\"%d\" stream=\"%d\" name=\"%s\"\>", 
-         name, tname(), channel + 1, stream,  name().toUtf8().data());
+         label, tname(), channel + 1, stream,  name().toUtf8().data());
       }
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void Route::write(Xml& xml, const char* label, const Track* track)
+      {
+//      xml.put("<%s type=\"%s\" channel=\"%d\" stream=\"%d\" name=\"%s\"\>", 
+//         label, tname(), channel + 1, stream,  name().toUtf8().data());
+      }
+
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+void Route::read(QDomNode node)
+      {
+      QDomElement e = node.toElement();
+      QString st = e.attribute("type", "TRACK");
+      if (st == "TRACK")
+            type = Route::TRACK;
+      else if (st == "AUDIOPORT")
+            type = Route::AUDIOPORT;
+      else if (st == "MIDIPORT")
+            type = Route::MIDIPORT;
+      else if (st == "SYNTIPORT")
+            type = Route::SYNTIPORT;
+      else {
+            printf("Route::read(): unknown type <%s>\n", st.toLatin1().data());
+            type = Route::TRACK;
+            }
+      channel = e.attribute("channel","0").toInt() - 1;
+      stream  = e.attribute("stream", "0").toInt();
+      QString nm = e.attribute("name");
+      }
+
 

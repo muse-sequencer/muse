@@ -669,17 +669,16 @@ void Track::writeRouting(Xml& xml) const
             for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
                   Route dst(name(), r->channel, Route::TRACK);
                   xml.tag("Route");
-                  xml.put("<src type=\"%s\" name=\"%s\"\>",
+                  xml.put("<src type=\"%s\" name=\"%s\"/>",
                      Route::tname(rt), r->name().toLatin1().data());
-                  xml.put("<dst type=\"TRACK\" name=\"%s\"\>", 
+                  xml.put("<dst type=\"TRACK\" name=\"%s\"/>", 
                      dst.name().toLatin1().data());
                   xml.etag("Route");
                   }
             }
       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
             xml.tag("Route");
-            Route src(this);
-            src->write(xml, "src");
+            Route::write(xml, "src", this);
             r->write(xml, "dst");
             xml.etag("Route");
             }

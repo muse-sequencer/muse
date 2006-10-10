@@ -22,6 +22,12 @@
 #define __ROUTE_H__
 
 class Track;
+namespace AL {
+      class Xml;
+      };
+using AL::Xml;
+
+
 typedef void* Port;
 
 //---------------------------------------------------------
@@ -47,7 +53,8 @@ struct Route {
       Route(Track*, int, RouteType);
       QString name() const;
       void read(QDomNode node);
-      void write(Xml&, const char* name);
+      void write(Xml&, const char* name) const;
+      static void write(Xml&, const char* name, const Track*);
 
       bool operator==(const Route& a) const;
       bool isValid() const { return track != 0; }
