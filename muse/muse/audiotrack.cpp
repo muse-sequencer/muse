@@ -449,6 +449,7 @@ void AudioTrack::process()
 	         	setMeter(i, meter);
       	      }
             }
+
       double vol[channels()];
       double _volume = _mute ? 0.0 : ctrlVal(AC_VOLUME).f;
       double _pan    = ctrlVal(AC_PAN).f;

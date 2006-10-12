@@ -19,7 +19,6 @@
 //=============================================================================
 
 #include "audiooutput.h"
-// #include "driver/alsamidi.h"
 #include "driver/jackaudio.h"
 #include "audio.h"
 #include "globals.h"
@@ -197,6 +196,15 @@ void AudioOutput::process()
       {
       AudioTrack::process();
 
+      for (int c = 0; c < channels(); ++c) {
+            float* sp = buffer[c];
+if (jackPorts[c] == 0)
+      abort();
+            float* dp = audioDriver->getBuffer(jackPorts[c], segmentSize);
+            for (unsigned k = 0; k < segmentSize; ++k)
+                  *dp++ = *sp++;
+            }
+#if 0
       int n = segmentSize;
       if (audio->isRecording() && recordFlag() && _recFile) {
             // bounce to file
@@ -205,6 +213,8 @@ void AudioOutput::process()
             else
                   putFifo(channels(), n, buffer);
             }
+#endif
+
 #if 0
       if (audioClickFlag && song->click() && metronome) {
             float b[n];

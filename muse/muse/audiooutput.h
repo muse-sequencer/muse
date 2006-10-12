@@ -31,7 +31,7 @@ class AudioOutput : public AudioTrack {
       Q_OBJECT
 
       void* jackPorts[MAX_CHANNELS];
-      float* buffer[MAX_CHANNELS];
+//      float* buffer[MAX_CHANNELS];
       unsigned long _nframes;
 
       float* _monitorBuffer[MAX_CHANNELS];
