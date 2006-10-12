@@ -91,5 +91,7 @@ typedef tracklist<MidiTrack*>::iterator iMidiTrack;
 typedef tracklist<MidiTrack*>::const_iterator ciMidiTrack;
 typedef tracklist<MidiTrack*> MidiTrackList;
 
+Q_DECLARE_METATYPE(class MidiTrack*);
+
 #endif
 

@@ -350,6 +350,7 @@ void addProject(const QString& name)
 
 void populateAddTrack(QMenu* m)
       {
+      m->setSeparatorsCollapsible(false);
       m->clear();
       QAction* a;
 
@@ -357,6 +358,7 @@ void populateAddTrack(QMenu* m)
       a->setText(QT_TR_NOOP("Midi"));
       QFont f(a->font());
       f.setBold(true);
+      f.setPointSize(8);
       a->setFont(f);
 
       a = m->addAction(QIcon(*addtrack_addmiditrackIcon), QT_TR_NOOP("Add Midi Track"));
@@ -380,7 +382,7 @@ void populateAddTrack(QMenu* m)
 
       if (!midiOnly) {
             a = m->addSeparator();
-            a->setText(QT_TR_NOOP("Audio Strips"));
+            a->setText(QT_TR_NOOP("Audio"));
             a->setFont(f);
 
             a = m->addAction(QIcon(*addtrack_wavetrackIcon),   QT_TR_NOOP("Add Wave Track"));

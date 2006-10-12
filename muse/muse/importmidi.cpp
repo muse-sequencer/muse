@@ -318,6 +318,7 @@ bool MusE::importMidi(const QString name, bool merge)
             outPort->setDefaultName();
             song->insertTrack0(outPort, -1);
 
+#if 0
             //
             // route output to preferred midi device
             //
@@ -325,6 +326,7 @@ bool MusE::importMidi(const QString name, bool merge)
                   Route dst(config.defaultMidiOutputDevice, 0, Route::MIDIPORT);
                   outPort->outRoutes()->push_back(dst);
                   }
+#endif
             //
             // set preferred instrument
             //
@@ -337,11 +339,12 @@ bool MusE::importMidi(const QString name, bool merge)
                   }
 
             if (config.createDefaultMidiInput) {
+#if 0
                   inPort = new MidiInPort();
                   inPort->setDefaultName();
                   song->insertTrack0(inPort, -1);
                   if (config.connectToAllMidiDevices) {
-                        std::list<PortName>* ol = midiDriver->inputPorts();
+                        QList<PortName> ol = midiDriver->inputPorts();
                         for (std::list<PortName>::iterator ip = ol->begin(); ip != ol->end(); ++ip) {
                               Route src(ip->name, 0, Route::MIDIPORT);
                               inPort->inRoutes()->push_back(src);
@@ -351,6 +354,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         Route src(config.defaultMidiInputDevice, 0, Route::MIDIPORT);
                         inPort->inRoutes()->push_back(src);
                         }
+#endif
                   }
 
             //

@@ -45,8 +45,8 @@ class AlsaMidi : public Driver {
       AlsaMidi();
       virtual bool init();
 
-      virtual std::list<PortName>* outputPorts();
-      virtual std::list<PortName>* inputPorts();
+      virtual QList<PortName> outputPorts();
+      virtual QList<PortName> inputPorts();
 
       virtual Port registerOutPort(const QString& name);
       virtual Port registerInPort(const QString& name);

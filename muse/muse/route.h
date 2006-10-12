@@ -22,6 +22,8 @@
 #define __ROUTE_H__
 
 class Track;
+class AuxPluginIF;
+
 namespace AL {
       class Xml;
       };
@@ -30,31 +32,53 @@ using AL::Xml;
 
 typedef void* Port;
 
+// Routing Types:
+//
+// Audio:
+//    Port - Track::Channel         Audio Input
+//    Track::Channel - Port         Audio Ouput
+//    Track - Track
+//    Aux   - Track                 Audio Aux Send
+// Midi:
+//    Port  - Track                 Midi Input
+//    Track - Port                  Midi Output
+//    Track - Track
+//
+// A software synthesizer is somewhat special as it has
+//    a midi input and an audio output
+
 //---------------------------------------------------------
 //   Route
+//    this describes one endpoint of a route
+//       Track
+//       Track/Channel
+//       AuxPlugin
+//       Port
+//       SYNTI
 //---------------------------------------------------------
 
 struct Route {
-      enum RouteType { TRACK, AUDIOPORT, MIDIPORT, SYNTIPORT};
+      enum RouteType { TRACK, AUDIOPORT, MIDIPORT, SYNTIPORT, AUXPLUGIN};
 
       union {
             Track* track;
             Port   port;
+            AuxPluginIF* plugin;
             };
       int channel;      // route to/from JACK can specify a channel to connect to
-      int stream;       // 0 - main, 1-n - aux send
       RouteType type;
 
       Route();
-      Route(const QString&, int ch, RouteType);
+      Route(Port, int, RouteType);
       Route(Port, RouteType);
       Route(Track*);
-      Route(Track*, RouteType);
-      Route(Track*, int, RouteType);
+      Route(Track*, int, RouteType t = TRACK);
+      Route(AuxPluginIF*);
+
       QString name() const;
       void read(QDomNode node);
       void write(Xml&, const char* name) const;
-      static void write(Xml&, const char* name, const Track*);
+//      static void write(Xml&, const char* name, const Track*);
 
       bool operator==(const Route& a) const;
       bool isValid() const { return track != 0; }
@@ -63,6 +87,7 @@ struct Route {
       static const char* tname(RouteType);
       };
 
+Q_DECLARE_METATYPE(struct Route);
 
 //---------------------------------------------------------
 //   RouteList

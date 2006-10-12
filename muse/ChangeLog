@@ -1,3 +1,8 @@
+12.10 (ws)
+      - added post fader plugins for mixer
+      - removed special aux send track type. Aux send is now implemented as
+        a special build in audio plugin.
+      - many routing changes
 5.10 (ws)
       - QT4.2 is now minimum required version
       - changed font selector in "preferences" to QFontCombobox

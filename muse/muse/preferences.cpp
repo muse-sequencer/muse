@@ -241,16 +241,16 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
                   break;
                   }
             }
-      std::list<PortName>* ol = midiDriver->inputPorts();
+      QList<PortName> ol = midiDriver->inputPorts();
       int i = 0;
-      for (std::list<PortName>::iterator ip = ol->begin(); ip != ol->end(); ++ip, ++i) {
+      for (QList<PortName>::iterator ip = ol.begin(); ip != ol.end(); ++ip, ++i) {
             preferredInput->addItem(ip->name);
             if (ip->name == config->defaultMidiInputDevice)
                   preferredInput->setCurrentIndex(i);
             }
       ol = midiDriver->outputPorts();
       i = 0;
-      for (std::list<PortName>::iterator ip = ol->begin(); ip != ol->end(); ++ip, ++i) {
+      for (QList<PortName>::iterator ip = ol.begin(); ip != ol.end(); ++ip, ++i) {
             preferredOutput->addItem(ip->name);
             if (ip->name == config->defaultMidiOutputDevice)
                   preferredOutput->setCurrentIndex(i);

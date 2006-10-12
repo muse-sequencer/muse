@@ -514,23 +514,9 @@ void Audio::process(unsigned frames)
             }
       for (iAudioGroup i = gl->begin(); i != gl->end(); ++i)
             (*i)->process();
-      for (iAudioOutput i = ol->begin(); i != ol->end(); ++i) {
-            AudioOutput* ao = *i;
-            ao->process();
-            int och = ao->channels();
-            float* buffer[och];
-      	for (int i = 0; i < och; ++i) {
-            	void* port = ao->jackPort(i);
-            	if (port)
-                  	buffer[i] = audioDriver->getBuffer(port, frames);
-	            else
-      	            printf("PANIC: process(): no buffer from audio driver\n");
-                  }
-      	if (!ao->multiplyCopy(och, buffer, 0)) {
-                  for (int i = 0; i < och; ++i)
-                        memset(buffer[i], 0, sizeof(float) * frames);
-                  }
-            }
+      for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
+            (*i)->process();
+
       if (_bounce == 1 && song->bounceTrack && song->bounceTrack->type() == Track::WAVE)
             song->bounceTrack->process();
 

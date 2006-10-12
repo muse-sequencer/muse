@@ -97,9 +97,9 @@ bool CoreMidi::init()
 //   outputPorts
 //---------------------------------------------------------
 
-std::list<PortName>* CoreMidi::outputPorts()
+QList<PortName> CoreMidi::outputPorts()
       {
-      std::list<PortName>* clientList = new std::list<PortName>;
+      QList<PortName> clientList;
 /*      snd_seq_client_info_t* cinfo;
       snd_seq_client_info_alloca(&cinfo);
       snd_seq_client_info_set_client(cinfo, 0);
@@ -121,7 +121,7 @@ std::list<PortName>* CoreMidi::outputPorts()
                               adr->port   = snd_seq_port_info_get_port(pinfo);
                               adr->client = client;
                               pn.port     = adr;
-                              clientList->push_back(pn);
+                              clientList.append(pn);
                               }
                         }
                   }
@@ -133,9 +133,9 @@ std::list<PortName>* CoreMidi::outputPorts()
 //   inputPorts
 //---------------------------------------------------------
 
-std::list<PortName>* CoreMidi::inputPorts()
+QList<PortName> CoreMidi::inputPorts()
       {
-      std::list<PortName>* clientList = new std::list<PortName>;
+      QList<PortName> clientList;
 
   /*    snd_seq_client_info_t* cinfo;
       snd_seq_client_info_alloca(&cinfo);
@@ -158,7 +158,7 @@ std::list<PortName>* CoreMidi::inputPorts()
                               adr->port   = snd_seq_port_info_get_port(pinfo);
                               adr->client = client;
                               pn.port     = adr;
-                              clientList->push_back(pn);
+                              clientList.append(pn);
                               }
                         }
                   }

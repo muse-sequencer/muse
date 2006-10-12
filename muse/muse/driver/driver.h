@@ -41,8 +41,8 @@ class Driver {
       virtual ~Driver() {}
       virtual bool init() = 0;
 
-      virtual std::list<PortName>* outputPorts() = 0;
-      virtual std::list<PortName>* inputPorts()  = 0;
+      virtual QList<PortName> outputPorts() = 0;
+      virtual QList<PortName> inputPorts()  = 0;
 
       virtual Port registerOutPort(const QString&) = 0;
       virtual Port registerInPort(const QString&) = 0;

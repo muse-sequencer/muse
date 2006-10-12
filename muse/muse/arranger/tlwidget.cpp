@@ -532,8 +532,8 @@ void TLWidget::outChannelChanged(int n)
       int id = mc->channelNo();
       if (id == n)
             return;
-      audio->msgRemoveRoute(Route(_track, -1, Route::TRACK), Route(mc,-1, Route::TRACK));
-      audio->msgAddRoute(Route(_track, -1, Route::TRACK), Route(mp->channel(n),-1, Route::TRACK));
+      audio->msgRemoveRoute(Route(_track), Route(mc));
+      audio->msgAddRoute(Route(_track), Route(mp->channel(n)));
       song->update(SC_ROUTE);
       }
 

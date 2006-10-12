@@ -60,7 +60,7 @@ class AuxPlugin : public Plugin {
 class AuxPluginIF : public PluginIF {
       double volume;
       double pan;
-      float** buffer;               // this buffer is filled by apply()
+      float** _buffer;              // this buffer is filled by apply()
                                     // _volume and _pan is applied
 
    public:
@@ -75,6 +75,8 @@ class AuxPluginIF : public PluginIF {
       virtual void setParam(int i, double val);
       virtual float param(int i) const;
       bool init(Plugin*);
+      float** buffer() { return _buffer; }
+      int channel() const { return pluginInstance()->channel(); }
       };
 
 extern AuxPlugin* auxPlugin;

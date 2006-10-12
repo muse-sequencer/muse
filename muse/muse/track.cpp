@@ -663,22 +663,27 @@ void Track::updateController()
 
 void Track::writeRouting(Xml& xml) const
       {
-      if (type() == AUDIO_INPUT || type() == MIDI_IN) {
-            const RouteList* rl = &_inRoutes;
-            Route::RouteType rt = type() == AUDIO_INPUT ? Route::AUDIOPORT : Route::MIDIPORT;
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-                  Route dst(name(), r->channel, Route::TRACK);
+      const RouteList* rl = &_inRoutes;
+      for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
+            if (type() == AUDIO_INPUT || type() == MIDI_IN) {
                   xml.tag("Route");
-                  xml.put("<src type=\"%s\" name=\"%s\"/>",
-                     Route::tname(rt), r->name().toLatin1().data());
-                  xml.put("<dst type=\"TRACK\" name=\"%s\"/>", 
-                     dst.name().toLatin1().data());
+                  Route dst((Track*)this, r->channel);
+                  r->write(xml, "src");
+                  dst.write(xml, "dst");
+                  xml.etag("Route");
+                  }
+            if (r->type == Route::AUXPLUGIN) {
+                  xml.tag("Route");
+                  Route dst((Track*)this);
+                  r->write(xml, "src");
+                  dst.write(xml, "dst");
                   xml.etag("Route");
                   }
             }
       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
+            Route dst((Track*)this);
             xml.tag("Route");
-            Route::write(xml, "src", this);
+            dst.write(xml, "src");
             r->write(xml, "dst");
             xml.etag("Route");
             }
@@ -726,19 +731,13 @@ bool MidiTrackBase::readProperties(QDomNode node)
       QString tag(e.tagName());
       if (tag == "midiPlugin") {
             MidiPluginI* pi = new MidiPluginI(this);
-            if (pi->readConfiguration(node)) {
+            if (pi->readConfiguration(node))
                   delete pi;
-                  }
-            else {
-                  // insert plugin into first free slot
-                  // of plugin rack
+            else
                   addPlugin(pi, -1);
-                  }
             }
-      else {
-            bool rv = Track::readProperties(node);
-            return rv;
-            }
+      else
+            return Track::readProperties(node);
       return false;
       }
 
@@ -753,7 +752,7 @@ MidiPluginI* MidiTrackBase::plugin(int idx) const
 
 //---------------------------------------------------------
 //   addPlugin
-//    idx = -1     append
+//    idx    = -1     append
 //    plugin = 0   remove slot
 //---------------------------------------------------------
 

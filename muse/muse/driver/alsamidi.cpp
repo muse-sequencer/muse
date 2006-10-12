@@ -97,9 +97,9 @@ bool AlsaMidi::init()
 //   outputPorts
 //---------------------------------------------------------
 
-std::list<PortName>* AlsaMidi::outputPorts()
+QList<PortName> AlsaMidi::outputPorts()
       {
-      std::list<PortName>* clientList = new std::list<PortName>;
+      QList<PortName> clientList;
       snd_seq_client_info_t* cinfo;
       snd_seq_client_info_alloca(&cinfo);
       snd_seq_client_info_set_client(cinfo, 0);
@@ -121,7 +121,7 @@ std::list<PortName>* AlsaMidi::outputPorts()
                               adr->port   = snd_seq_port_info_get_port(pinfo);
                               adr->client = client;
                               pn.port     = adr;
-                              clientList->push_back(pn);
+                              clientList.append(pn);
                               }
                         }
                   }
@@ -133,9 +133,9 @@ std::list<PortName>* AlsaMidi::outputPorts()
 //   inputPorts
 //---------------------------------------------------------
 
-std::list<PortName>* AlsaMidi::inputPorts()
+QList<PortName> AlsaMidi::inputPorts()
       {
-      std::list<PortName>* clientList = new std::list<PortName>;
+      QList<PortName> clientList;
 
       snd_seq_client_info_t* cinfo;
       snd_seq_client_info_alloca(&cinfo);
@@ -158,7 +158,7 @@ std::list<PortName>* AlsaMidi::inputPorts()
                               adr->port   = snd_seq_port_info_get_port(pinfo);
                               adr->client = client;
                               pn.port     = adr;
-                              clientList->push_back(pn);
+                              clientList.append(pn);
                               }
                         }
                   }
@@ -372,7 +372,7 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
                         }
                   if (ir == orl->end()) {
                         snd_seq_addr_t* adr = new snd_seq_addr_t(ev->dest);
-                        orl->push_back(Route(Port(adr), Route::MIDIPORT));
+                        orl->push_back(Route(Port(adr), -1, Route::MIDIPORT));
                         }
                   break;
                   }
@@ -393,7 +393,7 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
                         }
                   if (ir == irl->end()) {
                         snd_seq_addr_t* adr = new snd_seq_addr_t(ev->sender);
-                        irl->push_back(Route(Port(adr), Route::MIDIPORT));
+                        irl->push_back(Route(Port(adr), -1, Route::MIDIPORT));
                         }
                   break;
                   }

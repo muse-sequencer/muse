@@ -329,12 +329,11 @@ void JackAudio::graphChanged()
                         for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                               if (irl->channel != channel)
                                     continue;
-                              QString name = irl->name();
-                              const char* portName = name.toLatin1().data();
+                              const char* name = jack_port_name((jack_port_t*)irl->port);
                               bool found = false;
                               const char** pn = ports;
                               while (pn && *pn) {
-                                    if (strcmp(*pn, portName) == 0) {
+                                    if (strcmp(*pn, name) == 0) {
                                           found = true;
                                           break;
                                           }
@@ -342,8 +341,8 @@ void JackAudio::graphChanged()
                                     }
                               if (!found) {
                                     audio->msgRemoveRoute1(
-                                       Route(portName, channel, Route::AUDIOPORT),
-                                       Route(it, channel, Route::TRACK)
+                                       Route(irl->port, channel, Route::AUDIOPORT),
+                                       Route(it, channel)
                                        );
                                     erased = true;
                                     break;
@@ -361,20 +360,21 @@ void JackAudio::graphChanged()
                         const char** pn = ports;
                         while (*pn) {
                               bool found = false;
+                              Port port;
                               for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                                     if (irl->channel != channel)
                                           continue;
-                                    QString name = irl->name();
-                                    const char* portName = name.toLatin1().data();
-                                    if (strcmp(*pn, portName) == 0) {
+                                    port = irl->port;
+                                    const char* name = jack_port_name((jack_port_t*)port);
+                                    if (strcmp(*pn, name) == 0) {
                                           found = true;
                                           break;
                                           }
                                     }
                               if (!found) {
                                     audio->msgAddRoute1(
-                                       Route(*pn, channel, Route::AUDIOPORT),
-                                       Route(it, channel, Route::TRACK)
+                                       Route(port, channel, Route::AUDIOPORT),
+                                       Route(it, channel)
                                        );
                                     }
                               ++pn;
@@ -405,12 +405,11 @@ void JackAudio::graphChanged()
                         for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                               if (irl->channel != channel)
                                     continue;
-                              QString name = irl->name();
-                              const char* portName = name.toLatin1().data();
+                              const char* name = jack_port_name((jack_port_t*)irl->port);
                               bool found = false;
                               const char** pn = ports;
                               while (pn && *pn) {
-                                    if (strcmp(*pn, portName) == 0) {
+                                    if (strcmp(*pn, name) == 0) {
                                           found = true;
                                           break;
                                           }
@@ -418,8 +417,8 @@ void JackAudio::graphChanged()
                                     }
                               if (!found) {
                                     audio->msgRemoveRoute1(
-                                       Route(it, channel, Route::TRACK),
-                                       Route(portName, channel, Route::AUDIOPORT)
+                                       Route(it, channel),
+                                       Route(irl->port, channel, Route::AUDIOPORT)
                                        );
                                     erased = true;
                                     break;
@@ -437,20 +436,21 @@ void JackAudio::graphChanged()
                         const char** pn = ports;
                         while (*pn) {
                               bool found = false;
+                              Port port;
                               for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                                     if (irl->channel != channel)
                                           continue;
-                                    QString name = irl->name();
-                                    const char* portName = name.toLatin1().data();
-                                    if (strcmp(*pn, portName) == 0) {
+                                    port = irl->port;
+                                    const char* name = jack_port_name((jack_port_t*)port);
+                                    if (strcmp(*pn, name) == 0) {
                                           found = true;
                                           break;
                                           }
                                     }
                               if (!found) {
                                     audio->msgAddRoute1(
-                                       Route(it, channel, Route::TRACK),
-                                       Route(*pn, channel, Route::AUDIOPORT)
+                                       Route(it, channel),
+                                       Route(port, channel, Route::AUDIOPORT)
                                        );
                                     }
                               ++pn;
@@ -490,7 +490,7 @@ void JackAudio::registerClient()
 //---------------------------------------------------------
 //   registerInPort
 //---------------------------------------------------------
-
+                                    
 Port JackAudio::registerInPort(const QString& name)
       {
       void* p = jack_port_register(_client, name.toLatin1().data(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
@@ -537,8 +537,8 @@ bool JackAudio::connect(Port src, Port dst)
             }
       int rv = jack_connect(_client, sn, dn);
       if (rv) {
-            fprintf(stderr, "%d: jack connect <%s>%p - <%s>%p failed\n",
-               rv, sn, src, dn, dst);
+            fprintf(stderr, "%d: jack connect <%s> - <%s> failed\n",
+               rv, sn, dn);
             if (rv == EEXIST)
                   fprintf(stderr, "  connection already made\n");
             return false;
@@ -607,10 +607,10 @@ unsigned JackAudio::framePos() const
 //   outputPorts
 //---------------------------------------------------------
 
-std::list<PortName>* JackAudio::outputPorts()
+QList<PortName> JackAudio::outputPorts()
       {
       const char** ports = jack_get_ports(_client, 0, 0, 0);
-      std::list<PortName>* clientList = new std::list<PortName>;
+      QList<PortName> clientList;
       for (const char** p = ports; p && *p; ++p) {
             jack_port_t* port = jack_port_by_name(_client, *p);
             int flags = jack_port_flags(port);
@@ -622,7 +622,8 @@ std::list<PortName>* JackAudio::outputPorts()
                   continue;
             PortName pn;
             pn.name = QString(buffer);
-            clientList->push_back(pn);
+            pn.port = port;
+            clientList.append(pn);
             }
       return clientList;
       }
@@ -631,10 +632,10 @@ std::list<PortName>* JackAudio::outputPorts()
 //   inputPorts
 //---------------------------------------------------------
 
-std::list<PortName>* JackAudio::inputPorts()
+QList<PortName> JackAudio::inputPorts()
       {
       const char** ports = jack_get_ports(_client, 0, 0, 0);
-      std::list<PortName>* clientList = new std::list<PortName>;
+      QList<PortName> clientList;
       for (const char** p = ports; p && *p; ++p) {
             jack_port_t* port = jack_port_by_name(_client, *p);
             int flags = jack_port_flags(port);
@@ -646,7 +647,8 @@ std::list<PortName>* JackAudio::inputPorts()
                   continue;
             PortName pn;
             pn.name = QString(buffer);
-            clientList->push_back(pn);
+            pn.port = port;
+            clientList.append(pn);
             }
       return clientList;
       }

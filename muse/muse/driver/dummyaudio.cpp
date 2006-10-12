@@ -68,8 +68,8 @@ class DummyAudio : public AudioDriver {
             return buffer;
             }
 
-      virtual std::list<PortName>* outputPorts();
-      virtual std::list<PortName>* inputPorts();
+      virtual QList<PortName> outputPorts();
+      virtual QList<PortName> inputPorts();
 
       virtual void registerClient() {}
 
@@ -162,17 +162,17 @@ bool initDummyAudio()
 //   outputPorts
 //---------------------------------------------------------
 
-std::list<PortName>* DummyAudio::outputPorts()
+QList<PortName> DummyAudio::outputPorts()
       {
-      std::list<PortName>* clientList = new std::list<PortName>;
+      QList<PortName> clientList;
       PortName p1;
       p1.name = QString("output1");
       p1.port = (void*)100;
       PortName p2;
       p2.name = QString("output2");
       p2.port = (void*)101;
-      clientList->push_back(p1);
-      clientList->push_back(p2);
+      clientList.append(p1);
+      clientList.append(p2);
       return clientList;
       }
 
@@ -180,17 +180,17 @@ std::list<PortName>* DummyAudio::outputPorts()
 //   inputPorts
 //---------------------------------------------------------
 
-std::list<PortName>* DummyAudio::inputPorts()
+QList<PortName> DummyAudio::inputPorts()
       {
-      std::list<PortName>* clientList = new std::list<PortName>;
+      QList<PortName> clientList;
       PortName p1;
       p1.name = QString("input1");
       p1.port = (void*)0;
       PortName p2;
       p2.name = QString("input2");
       p2.port = (void*)1;
-      clientList->push_back(p1);
-      clientList->push_back(p2);
+      clientList.append(p1);
+      clientList.append(p2);
       return clientList;
       }
 

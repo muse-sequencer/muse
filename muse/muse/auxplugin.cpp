@@ -107,9 +107,9 @@ double AuxPlugin::defaultValue(int idx) const
 AuxPluginIF::AuxPluginIF(PluginI* pi)
    : PluginIF(pi)
       {
-      buffer = new float*[MAX_CHANNELS];
+      _buffer = new float*[MAX_CHANNELS];
       for (int i = 0; i < MAX_CHANNELS; ++i)
-            buffer[i] = new float[segmentSize];
+            _buffer[i] = new float[segmentSize];
       }
 
 //---------------------------------------------------------
@@ -119,10 +119,10 @@ AuxPluginIF::AuxPluginIF(PluginI* pi)
 AuxPluginIF::~AuxPluginIF()
       {
       for (int i = 0; i < MAX_CHANNELS; ++i) {
-            if (buffer[i])
-            	delete[] buffer[i];
+            if (_buffer[i])
+            	delete[] _buffer[i];
             }
-      delete[] buffer;
+      delete[] _buffer;
       }
 
 //---------------------------------------------------------
@@ -137,10 +137,10 @@ void AuxPluginIF::apply(unsigned nframes, float** s, float** /*dst*/)
       vol[1] = volume * (1.0 + pan);
 
       for (int i = 0; i < pluginI->channel(); ++i) {
-            float* dst = buffer[i];
+            float* dst = _buffer[i];
             float* src = s[i];
             double v   = vol[i];
-            for (int k = 0; k < nframes; ++k)
+            for (unsigned k = 0; k < nframes; ++k)
                   *dst++ = (*src++) * v;
             }
       }

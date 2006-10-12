@@ -25,14 +25,7 @@
 #include "track.h"
 
 class PluginI;
-
-//---------------------------------------------------------
-//   AuxSend
-//---------------------------------------------------------
-
-struct AuxSend {
-      bool postfader;
-      };
+class AuxPluginIF;
 
 //---------------------------------------------------------
 //   AudioTrack
@@ -44,7 +37,8 @@ class AudioTrack : public Track {
       bool _prefader;               // prefader metering
       Pipeline* _prePipe;
       Pipeline* _postPipe;
-      QList<AuxSend> sends;
+      QList<AuxPluginIF*> _preAux;
+      QList<AuxPluginIF*> _postAux;
 
       void readRecfile(QDomNode);
 
@@ -94,13 +88,17 @@ class AudioTrack : public Track {
       void setPrefader(bool val);
       Pipeline* prePipe()                { return _prePipe;  }
       Pipeline* postPipe()               { return _postPipe;  }
+
       void addPlugin(PluginI* plugin, int idx, bool pre);
       PluginI* plugin(int idx, bool prefader) const;
 
       virtual bool hasAuxSend() const { return false; }
       virtual void process();
-      void multiplyAdd(int channel,  float**, int bus);
-      bool multiplyCopy(int channel, float**, int bus);
+      void add(int channel,  float**);
+      bool copy(int channel, float**);
+      bool isBufferEmpty() const { return bufferEmpty; }
+      QList<AuxPluginIF*> preAux() const  { return _preAux; }
+      QList<AuxPluginIF*> postAux() const { return _postAux; }
       };
 
 #endif

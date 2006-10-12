@@ -126,6 +126,8 @@ void EffectRack::contextMenuEvent(QContextMenuEvent* ev)
             showAction->setChecked(pipe->guiVisible(idx));
             showCustomAction->setChecked(pipe->nativeGuiVisible(idx));
             }
+      if (track->type() != Track::WAVE && track->type() != Track::AUDIO_INPUT)
+            auxAction->setEnabled(false);
 
       QAction* sel = menu->exec(mapToGlobal(pt), newAction);
       delete menu;

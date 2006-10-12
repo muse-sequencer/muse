@@ -91,7 +91,8 @@ Part* AudioTrack::newPart(Part*, bool /*clone*/)
 
 //---------------------------------------------------------
 //   addPlugin
-//    idx = -1   insert into first free slot
+//    idx = -1     append
+//    plugin = 0   remove plugin
 //---------------------------------------------------------
 
 void AudioTrack::addPlugin(PluginI* plugin, int idx, bool pre)
@@ -107,31 +108,42 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx, bool pre)
                         }
                   pipe->removeAt(idx);
                   }
-            return;
             }
-      if (idx == -1)
-            idx = pipe->size();
-      pipe->insert(idx, plugin);
-      int ncontroller = plugin->plugin()->parameter();
-      for (int i = 0; i < ncontroller; ++i) {
-            int id = genACnum(idx, i, pre);
-            QString name(plugin->getParameterName(i));
-            double min, max;
-            plugin->range(i, &min, &max);
-            Ctrl* cl = getController(id);
-            //printf("Plugin name: %s id:%d\n",name.toAscii().data(), id);
-            if (cl == 0) {
-                  cl = new Ctrl(id, name);
+      else {
+            if (idx == -1)
+                  idx = pipe->size();
+            pipe->insert(idx, plugin);
+            int ncontroller = plugin->plugin()->parameter();
+            for (int i = 0; i < ncontroller; ++i) {
+                  int id = genACnum(idx, i, pre);
+                  QString name(plugin->getParameterName(i));
+                  double min, max;
+                  plugin->range(i, &min, &max);
+                  Ctrl* cl = getController(id);
+                  //printf("Plugin name: %s id:%d\n",name.toAscii().data(), id);
+                  if (cl == 0) {
+                        cl = new Ctrl(id, name);
+                        cl->setRange(min, max);
+                        float defaultValue = plugin->defaultValue(i);
+                        cl->setDefault(defaultValue);
+                        cl->setCurVal(defaultValue);
+                        addController(cl);
+                        }
                   cl->setRange(min, max);
-                  float defaultValue = plugin->defaultValue(i);
-                  cl->setDefault(defaultValue);
-                  cl->setCurVal(defaultValue);
-                  addController(cl);
+                  cl->setName(name);
+                  plugin->setParam(i, cl->schedVal().f);
+                  plugin->setControllerList(cl);
                   }
-            cl->setRange(min, max);
-            cl->setName(name);
-            plugin->setParam(i, cl->schedVal().f);
-            plugin->setControllerList(cl);
+            }
+      _preAux.clear();
+      _postAux.clear();
+      foreach(PluginI* pi, *_prePipe) {
+            if (pi->plugin() == auxPlugin)
+                  _preAux.append((AuxPluginIF*)(pi->pluginIF(0)));
+            }
+      foreach(PluginI* pi, *_postPipe) {
+            if (pi->plugin() == auxPlugin)
+                  _postAux.append((AuxPluginIF*)(pi->pluginIF(0)));
             }
       }
 
@@ -417,33 +429,40 @@ void AudioTrack::startRecording()
 
 void AudioTrack::process()
       {
+      bufferEmpty = false;
       if (_off) {
             bufferEmpty = true;
             return;
             }
       collectInputData();
-
-      //---------------------------------------------------
-      // apply plugin chain
-      //---------------------------------------------------
-
       _prePipe->apply(channels(), segmentSize, buffer);
 
-      //---------------------------------------------------
-      //    metering
-      //---------------------------------------------------
-
+      if (_prefader) {
+		for (int i = 0; i < channels(); ++i) {
+      		float* p = buffer[i];
+	            float meter = 0.0;
+      	      for (unsigned k = 0; k < segmentSize; ++k) {
+            		double f = fabs(*p++);
+	                  if (f > meter)
+      	            	meter = f;
+      	            }
+	         	setMeter(i, meter);
+      	      }
+            }
       double vol[channels()];
       double _volume = _mute ? 0.0 : ctrlVal(AC_VOLUME).f;
-    	if (bufferEmpty || (!_prefader && _volume == 0.0)) {
-            for (int i = 0; i < channels(); ++i)
-                  setMeter(i, 0.0);
-            }
-      else {
-	      double _pan = ctrlVal(AC_PAN).f;
-      	vol[0]      = _volume * (1.0 - _pan);
-	      vol[1]      = _volume * (1.0 + _pan);
+      double _pan    = ctrlVal(AC_PAN).f;
+      vol[0]         = _volume * (1.0 - _pan);
+	vol[1]         = _volume * (1.0 + _pan);
 
+      for (int i = 0; i < channels(); ++i) {
+            float* p = buffer[i];
+            for (unsigned k = 0; k < segmentSize; ++k)
+                  *p++ *= vol[i];
+            }
+      _postPipe->apply(channels(), segmentSize, buffer);
+
+    	if (!_prefader) {
 		for (int i = 0; i < channels(); ++i) {
       		float* p = buffer[i];
 	            float meter = 0.0;
@@ -453,49 +472,27 @@ void AudioTrack::process()
       	            	meter = f;
 				++p;
       	            }
-	      	if (!_prefader)
-      	            meter *= vol[i];
 	         	setMeter(i, meter);
       	      }
 	      }
       }
 
 //---------------------------------------------------------
-//   multiplyAdd
-//    apply _volume and _pan to track buffer and add to
-//    destination buffer
+//   add
+//    add audio buffer to track buffer
 //---------------------------------------------------------
 
-void AudioTrack::multiplyAdd(int dstChannels, float** dstBuffer, int bus)
+void AudioTrack::add(int srcChannels, float** srcBuffer)
 	{
-      if (_mute || bufferEmpty)
-            return;
-      int volCtrl;
-      int panCtrl;
-      if (bus == 0) {
-            volCtrl = AC_VOLUME;
-            panCtrl = AC_PAN;
-            }
-      else {
-            volCtrl = AC_AUX + bus - 1;
-            panCtrl = AC_AUX_PAN + bus - 1;
-            }
-      double _volume = ctrlVal(volCtrl).f;
-      if (_volume == 0.0)
-            return;
-      int srcChannels = channels();
-      double vol[2];
-      double _pan = ctrlVal(panCtrl).f;
-      vol[0] = _volume * (1.0 - _pan);
-      vol[1] = _volume * (1.0 + _pan);
+      int dstChannels   = channels();
+      float** dstBuffer = buffer;
 
       if (srcChannels == dstChannels) {
             for (int c = 0; c < dstChannels; ++c) {
-                  float* sp = buffer[c];
+                  float* sp = srcBuffer[c];
                   float* dp = dstBuffer[c];
-                  float  v  = vol[c];
                   for (unsigned k = 0; k < segmentSize; ++k)
-                        dp[k] += (sp[k] * v);
+                        dp[k] += sp[k];
                   }
             }
       //
@@ -504,80 +501,56 @@ void AudioTrack::multiplyAdd(int dstChannels, float** dstBuffer, int bus)
       else if (srcChannels == 1 && dstChannels == 2) {
             float* dp1 = dstBuffer[0];
             float* dp2 = dstBuffer[1];
-            float* sp = buffer[0];
-            double v1   = vol[0];
-            double v2   = vol[1];
+            float* sp  = srcBuffer[0];
             for (unsigned k = 0; k < segmentSize; ++k) {
-                  dp1[k] += (sp[k] * v1);
-                  dp2[k] += (sp[k] * v2);
+                  dp1[k] += sp[k];
+                  dp2[k] += sp[k];
                   }
             }
       //
       // downmix stereo to mono
       //
       else if (srcChannels == 2 && dstChannels == 1) {
-            float* sp1 = buffer[0];
-            float* sp2 = buffer[1];
-            float* dp = dstBuffer[0];
+            float* sp1 = srcBuffer[0];
+            float* sp2 = srcBuffer[1];
+            float* dp  = dstBuffer[0];
             for (unsigned k = 0; k < segmentSize; ++k)
-                  dp[k] += (sp1[k] * vol[0] + sp2[k] * vol[1]);
+                  dp[k] += sp1[k] + sp2[k];
             }
       }
 
 //---------------------------------------------------------
-//   multiplyCopy
-//	return false if resulting buffer would be silence
+//   copy
+//    add audio buffer to track buffer
 //---------------------------------------------------------
 
-bool AudioTrack::multiplyCopy(int dstChannels, float** dstBuffer, int bus)
+bool AudioTrack::copy(int srcChannels, float** srcBuffer)
 	{
-      if (_mute || bufferEmpty)
-            return false;
-      int volCtrl;
-      int panCtrl;
-      if (bus == 0) {
-            volCtrl = AC_VOLUME;
-            panCtrl = AC_PAN;
-            }
-      else {
-            volCtrl = AC_AUX + bus - 1;
-            panCtrl = AC_AUX_PAN + bus - 1;
-            }
-      double _volume = ctrlVal(volCtrl).f;
-      if (_volume == 0.0)
-            return false;
-      int srcChannels = channels();
-      float vol[2];
-      float _pan = ctrlVal(panCtrl).f;
-      vol[0] = _volume * (1.0 - _pan);
-      vol[1] = _volume * (1.0 + _pan);
+      int dstChannels   = channels();
+      float** dstBuffer = buffer;
 
       if (srcChannels == dstChannels) {
             for (int c = 0; c < dstChannels; ++c) {
-                  float* sp = buffer[c];
+                  float* sp = srcBuffer[c];
                   float* dp = dstBuffer[c];
-                  for (unsigned k = 0; k < segmentSize; ++k) {
-                        *dp++ = *sp++ * vol[c];
-                        }
+                  for (unsigned k = 0; k < segmentSize; ++k)
+                        *dp++ = *sp++;
                   }
             }
       else if (srcChannels == 1 && dstChannels == 2) {
-            float* sp = buffer[0];
+            float* sp = srcBuffer[0];
             for (unsigned k = 0; k < segmentSize; ++k) {
                   float val = *sp++;
-                  *(dstBuffer[0] + k) = val * vol[0];
-                  *(dstBuffer[1] + k) = val * vol[1];
+                  *(dstBuffer[0] + k) = val;
+                  *(dstBuffer[1] + k) = val;
                   }
             }
       else if (srcChannels == 2 && dstChannels == 1) {
-            float* sp1 = buffer[0];
-            float* sp2 = buffer[1];
+            float* sp1 = srcBuffer[0];
+            float* sp2 = srcBuffer[1];
             float* dp = dstBuffer[0];
-            for (unsigned k = 0; k < segmentSize; ++k) {
-                  float val1 = *sp1++ * vol[0];
-                  float val2 = *sp2++ * vol[1];
-                  *dp++ = (val1 + val2);
-                  }
+            for (unsigned k = 0; k < segmentSize; ++k)
+                  dp[k] = sp1[k] + sp2[k];
             }
       return true;
       }
@@ -591,17 +564,30 @@ void AudioTrack::collectInputData()
       {
       bufferEmpty = false;
       RouteList* rl = inRoutes();
-      bool copy = true;
+      bool copyFlag = true;
       for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
-            AudioTrack* track = (AudioTrack*)ir->track;
-            if (track->off() || song->bounceTrack == track)
-                  continue;
-            if (copy)
-      		copy = !track->multiplyCopy(channels(), buffer, 0);
+            float** ptr;
+            float* b[channels()];
+            int ch;
+            if (ir->type == Route::TRACK) {
+                  AudioTrack* track = (AudioTrack*)ir->track;
+                  if (track->off() || song->bounceTrack == track)
+                        continue;
+                  ptr = track->buffer;
+                  ch  = track->channels();
+                  }
+            else if (ir->type == Route::AUXPLUGIN) {
+                  ch  = ir->plugin->channel();
+                  ptr = ir->plugin->buffer();
+                  }
+            if (copyFlag) {
+                  copy(ch, ptr);
+                  copyFlag = false;
+                  }
             else
-	            track->multiplyAdd(channels(), buffer, 0);
+	            add(ch, ptr);
             }
-      if (copy) {
+      if (copyFlag) {
             //
             // no input,
             // fill with silence

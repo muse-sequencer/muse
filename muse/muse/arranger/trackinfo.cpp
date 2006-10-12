@@ -246,10 +246,10 @@ void MidiTrackInfo::portSelected(int portno)
             return;
       --portno;
 
-	Route srcRoute(track, -1, Route::TRACK);
+	Route srcRoute(track);
       MidiChannel* midic = ((MidiTrack*)track)->channel();
       if (midic) {
-      	Route odstRoute(midic, -1, Route::TRACK);
+      	Route odstRoute(midic);
 	      audio->msgRemoveRoute(srcRoute, odstRoute);
             }
 
@@ -257,7 +257,7 @@ void MidiTrackInfo::portSelected(int portno)
       MidiOutPort* midip = song->midiOutPort(portno);
       midic = midip->channel(channel);
 
-      Route dstRoute(midic, -1, Route::TRACK);
+      Route dstRoute(midic);
       audio->msgAddRoute(srcRoute, dstRoute);
 
 	song->update(SC_ROUTE);
@@ -272,16 +272,16 @@ void MidiTrackInfo::channelSelected(int ch)
 	if (ch == 0)
       	return;
 	--ch;
-	Route srcRoute(track, -1, Route::TRACK);
+	Route srcRoute(track);
       MidiChannel* midic = ((MidiTrack*)track)->channel();
       MidiOutPort* midip = midic->port();
       if (midic) {
-      	Route odstRoute(midic, -1, Route::TRACK);
+      	Route odstRoute(midic);
 	      audio->msgRemoveRoute(srcRoute, odstRoute);
             }
 
       midic = midip->channel(ch);
-      Route dstRoute(midic, -1, Route::TRACK);
+      Route dstRoute(midic);
       audio->msgAddRoute(srcRoute, dstRoute);
 
 	song->update(SC_ROUTE);

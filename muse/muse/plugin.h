@@ -110,6 +110,7 @@ class PluginIF {
       virtual ~PluginIF() {}
 
       PluginI* pluginInstance() { return pluginI; }
+      const PluginI* pluginInstance() const { return pluginI; }
 
       virtual void apply(unsigned nframes, float** src, float** dst) = 0;
       virtual void activate() = 0;
@@ -206,6 +207,8 @@ class PluginI {
       bool isLog(int k) const          { return _plugin->isLog(k);  }
       bool isBool(int k) const         { return _plugin->isBool(k); }
       bool isInt(int k) const          { return _plugin->isInt(k);  }
+
+      PluginIF* pluginIF(int idx)      { return pif[idx]; }
       };
 
 extern void initPlugins();

@@ -260,20 +260,6 @@ MidiTrack* Song::findTrack(const Part* part) const
       }
 
 //---------------------------------------------------------
-//   findTrack
-//    find track by name
-//---------------------------------------------------------
-
-Track* Song::findTrack(const QString& name) const
-      {
-      for (ciTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
-            if ((*i)->name() == name)
-                  return *i;
-            }
-      return 0;
-      }
-
-//---------------------------------------------------------
 //   setLoop
 //    set transport loop flag
 //---------------------------------------------------------
@@ -1633,30 +1619,33 @@ void Song::insertTrack(Track* track, int idx)
 
             case Track::WAVE:
             case Track::AUDIO_GROUP:
+                  if (ao)
+                        track->outRoutes()->push_back(Route(ao));
+                  break;
+
             case Track::AUDIO_INPUT:
                   {
                   // connect first input channel to first available jack output
                   // etc.
-                  std::list<PortName>* op = audioDriver->outputPorts();
-                  std::list<PortName>::iterator is = op->begin();
+                  QList<PortName> op = audioDriver->outputPorts();
+                  QList<PortName>::iterator is = op.begin();
                   for (int ch = 0; ch < track->channels(); ++ch) {
-                        if (is != op->end()) {
-                              track->inRoutes()->push_back(Route(is->name, ch, Route::AUDIOPORT));
+                        if (is != op.end()) {
+                              track->inRoutes()->push_back(Route(is->port, ch, Route::AUDIOPORT));
                               ++is;
                               }
                         }
-                  delete op;
                   if (ao)
-                        track->outRoutes()->push_back(Route(ao, -1, Route::TRACK));
+                        track->outRoutes()->push_back(Route(ao));
                   }
                   break;
             case Track::AUDIO_OUTPUT:
                   {
-                  std::list<PortName>* op = audioDriver->inputPorts();
-                  std::list<PortName>::iterator is = op->begin();
+                  QList<PortName> op = audioDriver->inputPorts();
+                  QList<PortName>::iterator is = op.begin();
                   for (int ch = 0; ch < track->channels(); ++ch) {
-                        if (is != op->end()) {
-                              track->outRoutes()->push_back(Route(is->name, ch, Route::AUDIOPORT));
+                        if (is != op.end()) {
+                              track->outRoutes()->push_back(Route(is->port, ch, Route::AUDIOPORT));
                               ++is;
                               }
                         }
@@ -1774,7 +1763,7 @@ void Song::insertTrack2(Track* track)
       //  connect routes
       //
 
-      Route src(track, -1, Route::TRACK);
+      Route src(track);
       if (track->type() == Track::AUDIO_SOFTSYNTH)
             src.type = Route::SYNTIPORT;
       if (track->type() == Track::AUDIO_OUTPUT || track->type() == Track::MIDI_OUT) {
@@ -1794,12 +1783,17 @@ void Song::insertTrack2(Track* track)
       else {
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-                  src.channel = r->channel;
-                  r->track->outRoutes()->push_back(src);
+                  Route rt = *r;
+                  src.channel = rt.channel;
+                  if (rt.type == Route::AUXPLUGIN)
+                        continue;
+                  rt.track->outRoutes()->push_back(src);
                   }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
                   src.channel = r->channel;
+                  if (r->type == Route::AUXPLUGIN)
+                        continue;
                   r->track->inRoutes()->push_back(src);
                   }
             }

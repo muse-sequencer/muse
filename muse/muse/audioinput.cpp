@@ -37,14 +37,6 @@ AudioInput::AudioInput()
             jackPorts[i] = 0;
       _channels = 0;
       setChannels(2);
-      //
-      // buffer pointer are filled in collectInputData()
-      //  (pointer to jack buffer)
-
-      for (int i = 0; i < MAX_CHANNELS; ++i) {
-		delete[] buffer[i];
-            buffer[i] = 0;
-            }
       }
 
 //---------------------------------------------------------
@@ -53,14 +45,10 @@ AudioInput::AudioInput()
 
 AudioInput::~AudioInput()
       {
-      for (int i = 0; i < _channels; ++i)
-            audioDriver->unregisterPort(jackPorts[i]);
-      //
-      // buffers belong to JACK: zero pointer so they are
-      // not free'd by AudioTrack destructor
-      //
-      for (int i = 0; i < MAX_CHANNELS; ++i)
-            buffer[i] = 0;
+      for (int i = 0; i < _channels; ++i) {
+            if (jackPorts[i])
+                  audioDriver->unregisterPort(jackPorts[i]);
+            }
       }
 
 //---------------------------------------------------------
@@ -168,7 +156,7 @@ void AudioInput::setName(const QString& s)
 
 //---------------------------------------------------------
 //   collectInputData
-//    return true if data
+//    if buffer contains silence, set bufferEmpty to true
 //---------------------------------------------------------
 
 void AudioInput::collectInputData()
@@ -177,12 +165,12 @@ void AudioInput::collectInputData()
       for (int ch = 0; ch < channels(); ++ch) {
             void* jackPort = jackPorts[ch];
             if (jackPort)
-                  buffer[ch] = audioDriver->getBuffer(jackPort, segmentSize);
+                        buffer[ch] = audioDriver->getBuffer(jackPort, segmentSize);
             else {
-                  //TODO: this should crash
                   printf("NO JACK PORT\n");
-                  memset(buffer[ch], 0, segmentSize * sizeof(float));
+                  abort();
                   }
             }
       }
+
 

@@ -315,12 +315,14 @@ void WaveTrack::collectInputData()
 	{
       bufferEmpty = false;
       if (recordFlag() && (audio->isRecording() || !audio->isPlaying())) {
+#if 0 // TODO bounce track
       	if (song->bounceTrack == this && audio->isPlaying()) {
       		OutputList* ol = song->outputs();
             	if (!ol->empty())
       			ol->front()->multiplyCopy(channels(), buffer, 0);
             	}
             else
+#endif
       		AudioTrack::collectInputData();
             return;
             }

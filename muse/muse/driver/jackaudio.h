@@ -47,8 +47,8 @@ class JackAudio : public AudioDriver {
             return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
             }
 
-      virtual std::list<PortName>* outputPorts();
-      virtual std::list<PortName>* inputPorts();
+      virtual QList<PortName> outputPorts();
+      virtual QList<PortName> inputPorts();
 
       virtual void registerClient();
 
