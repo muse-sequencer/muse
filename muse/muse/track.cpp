@@ -681,9 +681,11 @@ void Track::writeRouting(Xml& xml) const
                   }
             }
       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
-            Route dst((Track*)this);
+            Route src((Track*)this);
+            if (type() == AUDIO_OUTPUT)
+                  src.channel = r->channel;
             xml.tag("Route");
-            dst.write(xml, "src");
+            src.write(xml, "src");
             r->write(xml, "dst");
             xml.etag("Route");
             }

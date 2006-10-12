@@ -117,7 +117,6 @@ void Audio::msgAddRoute(Route src, Route dst)
       msgAddRoute1(src, dst);
       if (src.type == Route::AUDIOPORT) {
             AudioInput* ai = (AudioInput*)dst.track;
-printf("  dst channel: %d\n", dst.channel);
             audioDriver->connect(src.port, ai->jackPort(dst.channel));
             }
       if (src.type == Route::MIDIPORT) {
@@ -125,7 +124,6 @@ printf("  dst channel: %d\n", dst.channel);
             }
       else if (dst.type == Route::AUDIOPORT) {
             AudioOutput* ao = (AudioOutput*)src.track;
-printf("  src channel: %d\n", src.channel);
             audioDriver->connect(ao->jackPort(src.channel), dst.port);
             }
       else if (dst.type == Route::MIDIPORT) {
