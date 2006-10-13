@@ -36,6 +36,18 @@ AudioOutput::AudioOutput()
             jackPorts[i] = 0;
       _channels = 0;
       setChannels(2);
+
+      //
+      // buffers are allocated from AudioTrack()
+      // and not needed by AudioOutput which uses
+      // the JACK supplied buffers
+
+      for (int i = 0; i < MAX_CHANNELS; ++i) {
+            if (buffer[i]) {
+            	delete[] buffer[i];
+                  buffer[i] = 0;
+                  }
+            }
       }
 
 //---------------------------------------------------------
@@ -44,8 +56,14 @@ AudioOutput::AudioOutput()
 
 AudioOutput::~AudioOutput()
       {
-      for (int i = 0; i < _channels; ++i)
-            audioDriver->unregisterPort(jackPorts[i]);
+      for (int i = 0; i < _channels; ++i) {
+            if (jackPorts[i])
+                  audioDriver->unregisterPort(jackPorts[i]);
+            }
+      // AudioOutput does not own buffers (they are from JACK)
+      // make sure ~AudioTrack() does not delete them:
+      for (int i = 0; i < MAX_CHANNELS; ++i)
+            buffer[i] = 0;
       }
 
 //---------------------------------------------------------
@@ -71,7 +89,6 @@ void AudioOutput::read(QDomNode node)
             }
       setName(name());  // allocate jack ports
       }
-
 
 //---------------------------------------------------------
 //   setChannels
@@ -194,17 +211,11 @@ void AudioOutput::stopRecording(const Pos& /*s*/, const Pos& /*e*/)
 
 void AudioOutput::process()
       {
+      for (int c = 0; c < channels(); ++c)
+            buffer[c] = audioDriver->getBuffer(jackPorts[c], segmentSize);
+
       AudioTrack::process();
 
-      for (int c = 0; c < channels(); ++c) {
-            float* sp = buffer[c];
-if (jackPorts[c] == 0)
-      abort();
-            float* dp = audioDriver->getBuffer(jackPorts[c], segmentSize);
-            for (unsigned k = 0; k < segmentSize; ++k)
-                  *dp++ = *sp++;
-            }
-#if 0
       int n = segmentSize;
       if (audio->isRecording() && recordFlag() && _recFile) {
             // bounce to file
@@ -213,7 +224,6 @@ if (jackPorts[c] == 0)
             else
                   putFifo(channels(), n, buffer);
             }
-#endif
 
 #if 0
       if (audioClickFlag && song->click() && metronome) {
@@ -228,5 +238,4 @@ if (jackPorts[c] == 0)
             }
 #endif
       }
-
 

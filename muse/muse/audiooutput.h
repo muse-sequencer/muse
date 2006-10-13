@@ -31,10 +31,6 @@ class AudioOutput : public AudioTrack {
       Q_OBJECT
 
       void* jackPorts[MAX_CHANNELS];
-//      float* buffer[MAX_CHANNELS];
-      unsigned long _nframes;
-
-      float* _monitorBuffer[MAX_CHANNELS];
 
    public:
       AudioOutput();
@@ -55,7 +51,6 @@ class AudioOutput : public AudioTrack {
       virtual bool canRecord() const { return true; }
       virtual void stopRecording(const AL::Pos&, const AL::Pos&);
 
-      float** monitorBuffer() { return _monitorBuffer; }
 	void silence(unsigned);
       virtual void process();
       };

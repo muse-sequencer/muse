@@ -37,6 +37,16 @@ AudioInput::AudioInput()
             jackPorts[i] = 0;
       _channels = 0;
       setChannels(2);
+      //
+      // buffers are allocated from AudioTrack()
+      // and not needed by AudioInput which uses
+      // the JACK supplied buffers
+      for (int i = 0; i < MAX_CHANNELS; ++i) {
+            if (buffer[i]) {
+            	delete[] buffer[i];
+                  buffer[i] = 0;
+                  }
+            }
       }
 
 //---------------------------------------------------------
@@ -49,6 +59,10 @@ AudioInput::~AudioInput()
             if (jackPorts[i])
                   audioDriver->unregisterPort(jackPorts[i]);
             }
+      // AudioInput does not own buffers (they are from JACK)
+      // make sure ~AudioTrack() does not delete them:
+      for (int i = 0; i < MAX_CHANNELS; ++i)
+            buffer[i] = 0;
       }
 
 //---------------------------------------------------------

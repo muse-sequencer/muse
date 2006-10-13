@@ -60,7 +60,6 @@ AudioTrack::AudioTrack(TrackType t)
       c->setRange(-1.0f, +1.0f);
       addController(c);
 
-      buffer = new float*[MAX_CHANNELS];
       for (int i = 0; i < MAX_CHANNELS; ++i)
             buffer[i] = new float[segmentSize];
       }
@@ -77,7 +76,6 @@ AudioTrack::~AudioTrack()
             if (buffer[i])
             	delete[] buffer[i];
             }
-      delete[] buffer;
       }
 
 //---------------------------------------------------------

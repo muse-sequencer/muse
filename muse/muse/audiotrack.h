@@ -43,8 +43,7 @@ class AudioTrack : public Track {
       void readRecfile(QDomNode);
 
    protected:
-      float** buffer;               // this buffer is filled by process()
-                                    // _volume and _pan is not applied
+      float* buffer[MAX_CHANNELS];  // this buffer is filled by process()
 
       bool bufferEmpty;			// set by process() to optimize
       					// data flow
