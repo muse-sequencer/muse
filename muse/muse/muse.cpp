@@ -1162,16 +1162,16 @@ void MusE::loadProject1(const QString& path)
       foreach(QWidget* w, QApplication::topLevelWidgets()) {
             if (!w->isVisible())
                   continue;
-            if (strcmp("DrumEdit", w->metaObject()->className()) == 0)
-                  w->close();
-            else if (strcmp("PianoRoll", w->metaObject()->className()) == 0)
-                  w->close();
-            else if (strcmp("MasterEdit", w->metaObject()->className()) == 0)
-                  w->close();
-            else if (strcmp("WaveEdit", w->metaObject()->className()) == 0)
-                  w->close();
-            else if (strcmp("ListEdit", w->metaObject()->className()) == 0)
-                  w->close();
+            static const char* const top[] = {
+                  "DrumEdit", "PianoRoll", "MasterEdit", "WaveEdit",
+                  "ListEdit", "PluginGui"
+                  };
+            for (unsigned i = 0; i < sizeof(top)/sizeof(*top); ++i) {
+                  if (strcmp(top[i], w->metaObject()->className()) == 0) {
+                        w->close();
+                        break;
+                        }
+                  }
             }
       emit startLoadSong();
 
@@ -1358,11 +1358,6 @@ void MusE::quitDoc()
 
 bool MusE::leaveProject()
       {
-      //
-      // delete all wave files created in this session and not
-      // referenced any more
-      //
-
       if (song->dirty) {
             int n = 0;
             n = QMessageBox::warning(this, appName,
