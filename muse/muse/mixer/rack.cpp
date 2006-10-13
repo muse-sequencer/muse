@@ -26,6 +26,8 @@ static const int PipelineDepth = 4;
 EffectRack::EffectRack(QWidget* parent, AudioTrack* t, bool flag)
    : QListWidget(parent)
       {
+      setUniformItemSizes(true);
+      setAlternatingRowColors(true);
       prefader = flag;
       setAttribute(Qt::WA_DeleteOnClose, true);
       verticalScrollBar()->setStyle(smallStyle);

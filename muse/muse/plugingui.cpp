@@ -355,7 +355,7 @@ PluginGui::PluginGui(PluginI* p)
 
       tools->addAction(QWhatsThis::createAction(this));
 
-      QAction* onOff = tools->addAction(*onOffIcon, tr("bypass plugin"));
+      onOff = tools->addAction(*onOffIcon, tr("bypass plugin"));
       onOff->setCheckable(true);
       onOff->setChecked(plugin->on());
       onOff->setWhatsThis(tr(presetBypassText));

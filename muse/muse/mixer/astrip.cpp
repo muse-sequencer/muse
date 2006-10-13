@@ -285,7 +285,7 @@ void AudioStrip::updateOffState()
 
       if (track->type() != Track::AUDIO_SOFTSYNTH)
             stereo->setEnabled(val);
-//TD      label->setEnabled(val);
+      label->setEnabled(val);
       if (solo)
             solo->setEnabled(val);
       if (mute)
@@ -670,6 +670,8 @@ static void addSyntiPorts(AudioTrack* t, QMenu* lb, RouteList* r)
 void AudioStrip::iRoutePressed()
       {
       QMenu pup(iR);
+      pup.setSeparatorsCollapsible(false);
+
       AudioTrack* t  = (AudioTrack*)track;
       RouteList* irl = t->inRoutes();
 
@@ -745,6 +747,8 @@ void AudioStrip::iRoutePressed()
 void AudioStrip::oRoutePressed()
       {
       QMenu pup(oR);
+      pup.setSeparatorsCollapsible(false);
+
       AudioTrack* t = (AudioTrack*)track;
       RouteList* orl = t->outRoutes();
 

@@ -22,6 +22,8 @@
 MidiRack::MidiRack(QWidget* parent, MidiTrackBase* t)
    : QListWidget(parent)
       {
+      setUniformItemSizes(true);
+      setAlternatingRowColors(true);
       setAttribute(Qt::WA_DeleteOnClose, true);
       verticalScrollBar()->setStyle(smallStyle);
       track = t;

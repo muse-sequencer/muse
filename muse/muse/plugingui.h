@@ -64,7 +64,7 @@ class PluginGui : public QMainWindow {
       PluginI* plugin;        // plugin instance
       std::vector<GuiWidget> gw;
 
-      QToolButton* onOff;
+      QAction* onOff;
       void connectPrebuiltGui(QWidget* wContainer);
 
    private slots:
