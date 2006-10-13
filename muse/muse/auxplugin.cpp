@@ -20,6 +20,7 @@
 
 #include "globaldefs.h"
 #include "auxplugin.h"
+#include "gconfig.h"
 
 AuxPlugin* auxPlugin;
 
@@ -40,8 +41,8 @@ void AuxPlugin::range(int idx, double* min, double* max) const
       {
       switch(idx) {
             case 0:           // volume
-                  *min = -60.0;
-                  *max = 10.0;
+                  *min = pow(10.0f, config.minSlider * 0.05f);
+                  *max = 2.0;
                   break;
             case 1:           // pan
                   *min = -1.0;

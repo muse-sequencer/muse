@@ -32,7 +32,6 @@ AudioInput::AudioInput()
       {
       // set Default for Input Ports:
       _mute = true;
-//TODO      setVolume(0.0);
       for (int i = 0; i < MAX_CHANNELS; ++i)
             jackPorts[i] = 0;
       _channels = 0;
