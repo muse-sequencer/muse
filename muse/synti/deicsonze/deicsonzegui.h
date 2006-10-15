@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.5
+//    Version 0.5
 //
 //    deicsonzegui.h
 //
@@ -34,6 +34,13 @@
 #include "deicsonzepreset.h"
 #include "ui_deicsonzegui.h"
 #include "libsynti/gui.h"
+#include "awl/floatentry.h"
+#include "awl/slider.h"
+#include "awl/checkbox.h"
+
+using Awl::FloatEntry;
+using Awl::Slider;
+using Awl::CheckBox;
 
 //Envelope Gui constants
 #define XOFFSET 2
@@ -114,9 +121,18 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     QFramePitchEnvelope* pitchEnvelopeGraph;
     QFrameEnvelope* envelopeGraph[NBROP];
 
+    QWidget* _chorusSuperWidget;
+    QWidget* _reverbSuperWidget;
+    std::vector<Slider*> _chorusSliderVector;
+    std::vector<FloatEntry*> _chorusFloatEntryVector;
+    std::vector<CheckBox*> _chorusCheckBoxVector;
+    std::vector<Slider*> _reverbSliderVector;
+    std::vector<FloatEntry*> _reverbFloatEntryVector;
+    std::vector<CheckBox*> _reverbCheckBoxVector;
+
     Q_OBJECT
     QString lastDir;
-    private slots:
+  private slots:
     void readMessage(int);
     void setEnabledChannel(bool);
     void setChangeChannel(int);
@@ -140,6 +156,21 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setIsBackgroundPix(bool);
     void setBackgroundPixPath(const QString&);
     void setBrowseBackgroundPixPath();
+    //FX
+    void setChorusActiv(bool a); 
+    void setChannelChorus(int c);
+    void setChorusReturn(int al);
+    void setSelectChorusPlugin();
+    void setReverbCheckBox(double v, int i);
+    void setChorusCheckBox(double v, int i);
+    void setReverbActiv(bool a);
+    void setChannelReverb(int r);
+    void setReverbReturn(int val);
+    void setSelectReverbPlugin();
+    void setReverbFloatEntry(double v, int i);
+    void setReverbSlider(double v, int i);
+    void setChorusFloatEntry(double v, int i);
+    void setChorusSlider(double v, int i);
     //quick edit
     void setChannelVolKnob(double val);
     void setChannelPan(double val);
@@ -322,6 +353,29 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void applyFontSize(int fs);
     void updateSaveOnlyUsed(bool);
     void updateSaveConfig(bool);
+    //FX
+    void updateChorusActiv(bool a);
+    void updateChannelChorus(int c);
+    void updateChorusReturn(int r);
+    void updateReverbActiv(bool a);
+    void updateChannelReverb(int r);
+    void updateReverbReturn(int r);
+    void updateLadspaReverbLineEdit(QString s);
+    void updateLadspaChorusLineEdit(QString s);
+    void addPluginCheckBox(int index, QString text, bool toggled,
+			   QWidget* parent, QGridLayout* grid, bool isReverb);
+    void addPluginIntSlider(int index, QString text, double min, double max,
+			    double val, QWidget* parent, QGridLayout* grid,
+			    bool isReverb);
+    void addPluginSlider(int index, QString text, bool isLog, double min,
+			 double max, double val, QWidget* parent,
+			 QGridLayout* grid, bool isReverb);
+    void buildGuiReverb();
+    void buildGuiChorus();
+    void updateReverbSlider(double v, int i);
+    void updateReverbFloatEntry(double v, int i);
+    void updateChorusSlider(double v, int i);
+    void updateChorusFloatEntry(double v, int i);
     //update load init set
     void updateInitSetCheckBox(bool);
     void updateInitSetPath(QString);
@@ -406,7 +460,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void updateProg(int prog, bool enable);
     void updatePreset(Preset* p);
     void updatePreset(void); //update gui following the current preset
-    void updateCurrentChannel(); //update gui channel attributes
+    //void updateCurrentChannel(); //update gui channel attributes
     QString num3Digits(int);
     DeicsOnzeGui(DeicsOnze*);
 

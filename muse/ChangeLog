@@ -1,3 +1,8 @@
+15.10 (ng)
+      - DeicsOnze 0.5, add FX send
+      - fix installation path for freeverb
+      - fix ladspa checkbox parameter
+      - add LADSPA plugin doublechorus
 12.10 (ws)
       - added post fader plugins for mixer
       - removed special aux send track type. Aux send is now implemented as

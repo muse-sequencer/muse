@@ -425,7 +425,7 @@ printf("build gui from ui <path><%s>\n", path.toLatin1().data());
                         CheckBox* cb = new CheckBox(mw);
                         cb->setId(i);
                         cb->setText(QString(plugin->getParameterName(i)));
-                        cb->setChecked(plugin->param(i) > 0.5);
+                        cb->setChecked(plugin->param(i) > 0.0);
                         cb->setFixedHeight(h);
                         cb->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum));
 

@@ -27,6 +27,7 @@ add_library ( freeverb SHARED
 #
 set_target_properties (freeverb
       PROPERTIES PREFIX ""
+      #COMPILE_FLAGS "-O3"
       )
 
-install_files( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_PATH}/plugins freeverb)
+install_targets ( /lib/${MusE_INSTALL_NAME}/plugins freeverb)

@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.5
+//    Version 0.5
 //
 //    deicsonzegui.cpp
 //
@@ -30,8 +30,12 @@
 #include "muse/midi.h"
 #include "muse/midictrl.h"
 #include "config.h"
+#include "plugin.h"
+#include "plugingui.h"
 
 #include "deicsonzegui.h"
+
+class PluginDialog;
 
 DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
     : QDialog(0),
@@ -42,6 +46,10 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   lastDir= "";
 
   _currentChannel = 0;
+
+  //FX
+  _chorusSuperWidget = NULL;
+  _reverbSuperWidget = NULL;
 
   tColor = new TCOLOR;
   bColor = new BCOLOR;
@@ -66,6 +74,35 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setMasterVolKnob(double)));
   //Panic
   connect(panicButton, SIGNAL(pressed()), this, SLOT(setPanic()));
+  //FX
+  connect(chorusActivCheckBox, SIGNAL(toggled(bool)),
+	  this, SLOT(setChorusActiv(bool)));
+  connect(chChorusSlider, SIGNAL(valueChanged(int)),
+	  this, SLOT(setChannelChorus(int)));
+  connect(returnChorusSlider, SIGNAL(valueChanged(int)),
+	  this, SLOT(setChorusReturn(int)));
+  connect(selectLadspaChorusPushButton, SIGNAL(pressed()),
+	  this, SLOT(setSelectChorusPlugin()));
+  /*connect(panChorus1Knob, SIGNAL(valueChanged(double, int)),
+    this, SLOT(setPanChorus1(double)));
+  connect(LFOFreqChorus1Knob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setLFOFreqChorus1(double)));
+  connect(depthChorus1Knob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setDepthChorus1(double)));
+  connect(panChorus2Knob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setPanChorus2(double)));
+  connect(LFOFreqChorus2Knob, SIGNAL(valueChanged(double, int)),
+	  this, SLOT(setLFOFreqChorus2(double)));
+  connect(depthChorus2Knob, SIGNAL(valueChanged(double, int)),
+  this, SLOT(setDepthChorus2(double)));*/
+  connect(reverbActivCheckBox, SIGNAL(toggled(bool)),
+	  this, SLOT(setReverbActiv(bool)));
+  connect(chReverbSlider, SIGNAL(valueChanged(int)),
+	  this, SLOT(setChannelReverb(int)));
+  connect(returnReverbSlider, SIGNAL(valueChanged(int)),
+	  this, SLOT(setReverbReturn(int)));
+  connect(selectLadspaReverbPushButton, SIGNAL(pressed()),
+	  this, SLOT(setSelectReverbPlugin()));
   //Quick edit
   connect(channelVolumeKnob, SIGNAL(valueChanged(double, int)),
 	  this, SLOT(setChannelVolKnob(double)));
@@ -726,6 +763,14 @@ void DeicsOnzeGui::setTextColor(const QColor & c) {
   qualityGroupBox->setPalette(p);
   saveModeButtonGroup->setPalette(p);
   fileGroupBox->setPalette(p);
+  onReverbGroupBox->setPalette(p);
+  selectLadspaReverbGroupBox->setPalette(p);
+  channelReverbGroupBox->setPalette(p);
+  parametersReverbGroupBox->setPalette(p);
+  onChorusGroupBox->setPalette(p);
+  selectLadspaChorusGroupBox->setPalette(p);
+  channelChorusGroupBox->setPalette(p);
+  parametersChorusGroupBox->setPalette(p);
 }
 void DeicsOnzeGui::setBackgroundColor(const QColor & c) {
   if(imageCheckBox->checkState()==Qt::Unchecked) {
@@ -789,6 +834,10 @@ void DeicsOnzeGui::setEditTextColor(const QColor & c) {
   detuneKnob->setScaleValueColor(c);
   attackKnob->setScaleValueColor(c);
   releaseKnob->setScaleValueColor(c);
+  for(int i=0; i < (int)_chorusSliderVector.size(); i++)
+    if(_chorusSliderVector[i]) _chorusSliderVector[i]->setScaleValueColor(c);
+  for(int i=0; i < (int)_reverbSliderVector.size(); i++)
+    if(_reverbSliderVector[i]) _reverbSliderVector[i]->setScaleValueColor(c);
   //p.setColor(QPalette::WindowText, c);
   //presetNameLabel->setPalette(p);
 }
@@ -862,6 +911,10 @@ void DeicsOnzeGui::setEditBackgroundColor(const QColor & c) {
   detuneKnob->setScaleColor(c);
   attackKnob->setScaleColor(c);
   releaseKnob->setScaleColor(c);
+  for(int i=0; i < (int)_chorusSliderVector.size(); i++)
+    if(_chorusSliderVector[i]) _chorusSliderVector[i]->setScaleColor(c);
+  for(int i=0; i < (int)_reverbSliderVector.size(); i++)
+    if(_reverbSliderVector[i]) _reverbSliderVector[i]->setScaleColor(c);
 }
 
 //-----------------------------------------------------------
@@ -1328,6 +1381,8 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
       case CTRL_FINEBRIGHTNESS: updateBrightness(val); break;
       case CTRL_ATTACK_TIME: updateAttack(val); break;
       case CTRL_RELEASE_TIME: updateRelease(val); break;
+      case CTRL_CHORUS_SEND: updateChannelChorus(val); break;
+      case CTRL_REVERB_SEND: updateChannelReverb(val); break;
       case CTRL_PROGRAM :	
 	int hbank = (val & 0xff0000) >> 16;
 	int lbank = (val & 0xff00) >> 8;
@@ -1354,6 +1409,36 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
     unsigned char* data = ev.data();
     int cmd = *data;
     switch (cmd) {
+    case SYSEX_CHORUSACTIV :
+      updateChorusActiv((bool)data[1]);
+      break;
+    case SYSEX_CHORUSRETURN :
+      updateChorusReturn((int)data[1]);
+      break;
+    case SYSEX_REVERBACTIV :
+      updateReverbActiv((bool)data[1]);
+      break;
+    case SYSEX_REVERBRETURN :
+      updateReverbReturn((int)data[1]);
+      break;
+      /*case SYSEX_CHORUS1PAN :
+      updatePanChorus1((int)data[1]);
+      break;
+    case SYSEX_CHORUS1LFOFREQ :
+      updateLFOFreqChorus1((int)data[1]);
+      break;
+    case SYSEX_CHORUS1DEPTH :
+      updateDepthChorus1((int)data[1]);
+      break;
+    case SYSEX_CHORUS2PAN :
+      updatePanChorus2((int)data[1]);
+      break;
+    case SYSEX_CHORUS2LFOFREQ :
+      updateLFOFreqChorus2((int)data[1]);
+      break;
+    case SYSEX_CHORUS2DEPTH :
+      updateDepthChorus2((int)data[1]);
+      break;*/
     case SYSEX_QUALITY :
       updateQuality((int)data[1]);
       break;
@@ -1405,6 +1490,12 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
       updateSubcategoryName("NONE", false);
       progSpinBox->setEnabled(false);
       updatePresetName("INITVOICE", false);
+      break;
+    case SYSEX_BUILDGUIREVERB :
+      buildGuiReverb();
+      break;
+    case SYSEX_BUILDGUICHORUS :
+      buildGuiChorus();
       break;
     case SYSEX_LOADSET :
       //printf("LoadSet\n");
@@ -2310,6 +2401,94 @@ void DeicsOnzeGui::setBrowseBackgroundPixPath() {
   }
 }
 //-----------------------------------------------------------
+// FX
+//-----------------------------------------------------------
+void DeicsOnzeGui::setChorusActiv(bool a) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_CHORUSACTIV;
+  message[1]=(unsigned char)a;
+  sendSysex(message, 2);  
+}
+void DeicsOnzeGui::setChannelChorus(int c) {
+  sendController(_currentChannel, CTRL_CHORUS_SEND, c);
+}
+void DeicsOnzeGui::setChorusReturn(int val) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_CHORUSRETURN;
+  message[1]=(unsigned char)val;
+  sendSysex(message, 2);
+}
+void DeicsOnzeGui::setSelectChorusPlugin() {
+  Plugin* pluginChorus = PluginDialog::getPlugin(this);
+  if(pluginChorus) {
+    unsigned char* message = new unsigned char[1+sizeof(Plugin*)];
+    message[0]=SYSEX_SELECTCHORUS;
+    memcpy(&message[1], &pluginChorus, sizeof(Plugin*));
+    sendSysex(message, 1+sizeof(Plugin*));
+  }
+}
+/*void DeicsOnzeGui::setPanChorus1(double i) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_CHORUS1PAN;
+  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 2);  
+}
+void DeicsOnzeGui::setLFOFreqChorus1(double i) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_CHORUS1LFOFREQ;
+  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 2);  
+}
+void DeicsOnzeGui::setDepthChorus1(double i) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_CHORUS1DEPTH;
+  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 2);  
+}
+void DeicsOnzeGui::setPanChorus2(double i) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_CHORUS2PAN;
+  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 2);  
+}
+void DeicsOnzeGui::setLFOFreqChorus2(double i) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_CHORUS2LFOFREQ;
+  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 2);  
+}
+void DeicsOnzeGui::setDepthChorus2(double i) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_CHORUS2DEPTH;
+  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 2);  
+  }*/
+void DeicsOnzeGui::setReverbActiv(bool a) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_REVERBACTIV;
+  message[1]=(unsigned char)a;
+  sendSysex(message, 2);
+}
+void DeicsOnzeGui::setChannelReverb(int r) {
+  sendController(_currentChannel, CTRL_REVERB_SEND, r);
+}
+void DeicsOnzeGui::setReverbReturn(int val) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_REVERBRETURN;
+  message[1]=(unsigned char)val;
+  sendSysex(message, 2);
+}
+void DeicsOnzeGui::setSelectReverbPlugin() {
+  Plugin* pluginReverb = PluginDialog::getPlugin(this);
+  if(pluginReverb) {
+    unsigned char* message = new unsigned char[1+sizeof(Plugin*)];
+    message[0]=SYSEX_SELECTREVERB;
+    memcpy(&message[1], &pluginReverb, sizeof(Plugin*));
+    sendSysex(message, 1+sizeof(Plugin*));
+  }
+}
+
+//-----------------------------------------------------------
 // Quick Edit
 //-----------------------------------------------------------
 void DeicsOnzeGui::setChannelVolKnob(double val) {
@@ -2862,6 +3041,84 @@ void DeicsOnzeGui::updateFontSize(int val) {
   fontSizeSpinBox->setValue(val);
   fontSizeSpinBox->blockSignals(false);
 }
+//FX
+void DeicsOnzeGui::updateChorusActiv(bool a) {
+  chorusActivCheckBox->blockSignals(true);
+  chorusActivCheckBox->setChecked(a);		
+  chorusActivCheckBox->blockSignals(false);
+}
+void DeicsOnzeGui::updateChannelChorus(int c) {
+  chChorusSlider->blockSignals(true);
+  chChorusSlider->setValue(c);
+  chChorusSlider->blockSignals(false);
+  chChorusSpinBox->blockSignals(true);
+  chChorusSpinBox->setValue(c);
+  chChorusSpinBox->blockSignals(false);
+}
+void DeicsOnzeGui::updateChorusReturn(int r) {
+  returnChorusSlider->blockSignals(true);
+  returnChorusSlider->setValue(r);
+  returnChorusSlider->blockSignals(false);
+}
+/*void DeicsOnzeGui::updatePanChorus1(int c) {
+  panChorus1Knob->blockSignals(true);
+  panChorus1Knob->setValue((double)c/(double)MAXCHORUSPARAM);
+  panChorus1Knob->blockSignals(false);
+}
+void DeicsOnzeGui::updateLFOFreqChorus1(int c) {
+  LFOFreqChorus1Knob->blockSignals(true);
+  LFOFreqChorus1Knob->setValue((double)c/(double)MAXCHORUSPARAM);
+  LFOFreqChorus1Knob->blockSignals(false);
+}
+void DeicsOnzeGui::updateDepthChorus1(int c) {
+  depthChorus1Knob->blockSignals(true);
+  depthChorus1Knob->setValue((double)c/(double)MAXCHORUSPARAM);
+  depthChorus1Knob->blockSignals(false);
+}
+void DeicsOnzeGui::updatePanChorus2(int c) {
+  panChorus2Knob->blockSignals(true);
+  panChorus2Knob->setValue((double)c/(double)MAXCHORUSPARAM);
+  panChorus2Knob->blockSignals(false);
+}
+void DeicsOnzeGui::updateLFOFreqChorus2(int c) {
+  LFOFreqChorus2Knob->blockSignals(true);
+  LFOFreqChorus2Knob->setValue((double)c/(double)MAXCHORUSPARAM);
+  LFOFreqChorus2Knob->blockSignals(false);
+}
+void DeicsOnzeGui::updateDepthChorus2(int c) {
+  depthChorus2Knob->blockSignals(true);
+  depthChorus2Knob->setValue((double)c/(double)MAXCHORUSPARAM);
+  depthChorus2Knob->blockSignals(false);
+  }*/
+void DeicsOnzeGui::updateReverbActiv(bool a) {
+  reverbActivCheckBox->blockSignals(true);
+  reverbActivCheckBox->setChecked(a);		
+  reverbActivCheckBox->blockSignals(false);
+}
+void DeicsOnzeGui::updateChannelReverb(int r) {
+  chReverbSlider->blockSignals(true);
+  chReverbSlider->setValue(r);
+  chReverbSlider->blockSignals(false);
+  chReverbSpinBox->blockSignals(true);
+  chReverbSpinBox->setValue(r);
+  chReverbSpinBox->blockSignals(false);
+}
+void DeicsOnzeGui::updateReverbReturn(int r) {
+  returnReverbSlider->blockSignals(true);
+  returnReverbSlider->setValue(r);
+  returnReverbSlider->blockSignals(false);
+}
+void DeicsOnzeGui::updateLadspaReverbLineEdit(QString s) {
+  selectLadspaReverbLineEdit->blockSignals(true);
+  selectLadspaReverbLineEdit->setText(s);
+  selectLadspaReverbLineEdit->blockSignals(false);
+}
+void DeicsOnzeGui::updateLadspaChorusLineEdit(QString s) {
+  selectLadspaChorusLineEdit->blockSignals(true);
+  selectLadspaChorusLineEdit->setText(s);
+  selectLadspaChorusLineEdit->blockSignals(false);
+}
+
 void DeicsOnzeGui::applyFontSize(int fs) {
   QFont f = font();
   f.setPointSize(fs);
@@ -3812,6 +4069,8 @@ void DeicsOnzeGui::updateQuickEdit() {
   updateChannelDetune(_deicsOnze->getChannelDetune(_currentChannel));
   updateAttack(_deicsOnze->getChannelAttack(_currentChannel));
   updateRelease(_deicsOnze->getChannelRelease(_currentChannel));
+  updateChannelReverb(_deicsOnze->getChannelReverb(_currentChannel));
+  updateChannelChorus(_deicsOnze->getChannelChorus(_currentChannel));
 }
 //--------------------------------------------------------------
 // updatePreset
@@ -3890,20 +4149,20 @@ void DeicsOnzeGui::updatePreset(Preset* p) {
 	updateOSW(k, (int)p->oscWave[0]);
     }
 }
-void DeicsOnzeGui::updateCurrentChannel() {
+/*void DeicsOnzeGui::updateCurrentChannel() {
   updateBrightness(_deicsOnze->_global.channel[_currentChannel].brightness);
   updateModulation(_deicsOnze->_global.channel[_currentChannel].modulation);
   updateChannelDetune(_deicsOnze->_global.channel[_currentChannel].detune);
   updateAttack(_deicsOnze->_global.channel[_currentChannel].attack);
   updateRelease(_deicsOnze->_global.channel[_currentChannel].release);
-}
+  }*/
 void DeicsOnzeGui::updatePreset() {
   updatePreset(_deicsOnze->_preset[_currentChannel]);
 }
 
 void DeicsOnzeGui::updateSelectPreset(int hbank, int lbank, int prog) {
-  QTreeWidgetItem* cat = categoryListView->currentItem();
-  QTreeWidgetItem* sub = subcategoryListView->currentItem();
+  //QTreeWidgetItem* cat = categoryListView->currentItem();
+  //QTreeWidgetItem* sub = subcategoryListView->currentItem();
   QTreeWidgetItem* pre = presetListView->currentItem();
   //select category, subcategory, preset
   //category
@@ -3984,3 +4243,4 @@ void DeicsOnzeGui::updateSelectPreset(int hbank, int lbank, int prog) {
   //  setEnabledPreset(false);
   //}
 }
+

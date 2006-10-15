@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.5
+//    Version 0.5
 //
 //
 //
@@ -35,13 +35,19 @@
 
 #include "deicsonzepreset.h"
 #include "deicsonzegui.h"
+#include "deicsonzeplugin.h"
 #include "libsynti/mess.h"
+#include "plugin.h"
 
 #define DEICSONZESTR "deicsonze"
 
 #define MAXPITCHBENDVALUE 8191
 
-#define RESOLUTION   96000
+#define RESOLUTION 96000
+
+#define MAXFXBUFFERSIZE 48000
+#define NBRFXINPUTS 2
+#define NBRFXOUTPUTS 2
 
 #define NBRCTRLS 127
 
@@ -126,6 +132,18 @@
 #define COLORSYSEXLENGTH 12
 #define SYSEX_UPDATESETGUI 25
 #define SYSEX_PANIC 30
+#define SYSEX_CHORUSACTIV 40
+#define SYSEX_CHORUSPARAM 41
+#define SYSEX_REVERBACTIV 60
+#define SYSEX_REVERBPARAM 61
+#define SYSEX_CHORUSRETURN 80
+#define SYSEX_REVERBRETURN 81
+#define MAXFXRETURN 255
+#define SYSEX_SELECTREVERB 82
+#define SYSEX_SELECTCHORUS 83
+#define SYSEX_BUILDGUIREVERB 84
+#define SYSEX_BUILDGUICHORUS 85
+//REVERB PARAMETERS
 
 enum {
   NUMMASTERVOL = SAVEINITLENGTH,
@@ -165,6 +183,7 @@ enum {
 };
 
 class DeicsOnzeGui;
+class DeicsOnzePlugin;
 
 //---------------------------------------------------------
 // outLevel2Amp, Amp for amplitude //between 0.0 and 2.0 or more
@@ -303,6 +322,9 @@ struct Channel {
   std::list<int> lastVoiceKeyOn; //stack of the voice number
   int lastVoiceKeyOff;
   bool isLastNote;
+  //FX
+  float chorusAmount; //between 0.0 and 1.0
+  float reverbAmount; //between 0.0 and 1.0
 };
 
 //---------------------------------------------------------
@@ -325,6 +347,10 @@ struct Global {
   float lastLeftSample;
   float lastRightSample;
   Channel channel[NBRCHANNELS];
+  bool isChorusActivated;
+  float chorusReturn;
+  bool isReverbActivated;
+  float reverbReturn;
 };
 
 //---------------------------------------------------------
@@ -333,17 +359,24 @@ struct Global {
 
 class DeicsOnze : public Mess {
   DeicsOnzeGui* _gui;
-  
+
   static int useCount;
   static float waveTable[NBRWAVES][RESOLUTION];
-  
+
  private:
   void parseInitData(int length, const unsigned char* data);
   void loadConfiguration(QString fileName);
-  
+
  public:
+  float** tempInputChorus;
+  float** tempInputReverb;
+  float** tempOutputChorus;
+  float** tempOutputReverb;
+
+  float* getSinusWaveTable();
+
   int nbrCtrl;
-  
+
   QString _initSetPath;
   bool _isInitSet;
   QString _backgroundPixPath;
@@ -354,6 +387,13 @@ class DeicsOnze : public Mess {
   Global _global;
   Preset* _preset[NBRCHANNELS];
   Preset* _initialPreset;
+
+  //FX
+  PluginI* _pluginIReverb;
+  PluginI* _pluginIChorus;
+
+  void initPluginReverb(Plugin*);
+  void initPluginChorus(Plugin*);
   
   mutable MidiPatch _patch;
   int _numPatch; //what is this? TODO
@@ -402,6 +442,10 @@ class DeicsOnze : public Mess {
   void setChannelModulation(int c, int m);
   void setChannelAttack(int c, int a);
   void setChannelRelease(int c, int r);
+  void setChannelReverb(int c, int r);
+  void setChannelChorus(int c, int val);
+  void setChorusReturn(int val);
+  void setReverbReturn(int val);
   bool getChannelEnable(int c) const;
   int getNbrVoices(int c) const;
   int getMasterVol(void) const;
@@ -412,6 +456,10 @@ class DeicsOnze : public Mess {
   int getChannelModulation(int c) const;
   int getChannelAttack(int c) const;
   int getChannelRelease(int c) const;
+  int getChannelReverb(int c) const;
+  int getChannelChorus(int c) const;
+  int getChorusReturn(void) const;
+  int getReverbReturn(void) const;
   void setPitchBendCoef(int c, int val);
   void setModulation(int c, int val); //TODO check between setChannelModulation
   void setSustain(int c, int val);

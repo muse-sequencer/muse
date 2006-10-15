@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.4.5
+//    Version 0.5
 //
 //
 //
@@ -34,6 +34,7 @@
 
 #include "muse/midi.h"
 #include "libsynti/mess.h"
+#include "plugin.h"
 #include "muse/midictrl.h"
 #include "deicsonze.h"
 #include "config.h"
@@ -48,42 +49,55 @@ int DeicsOnze::useCount = 0;
 //   DeicsOnze
 //---------------------------------------------------------
 
-DeicsOnze::DeicsOnze() : Mess(2)
-{
-    if (useCount++ == 0) {
-	// create sinus wave table, W1
-	for(int i = 0; i < RESOLUTION; i++)
-	    waveTable[W1][i] =
-		(float)(sin((i * 2.0 * M_PI) / (double)RESOLUTION));
-	// create sinus*abs(sinus) wave table, W2
-	for(int i = 0; i < RESOLUTION; i++){
-	    double t = (i * 2.0 * M_PI) / (double)RESOLUTION;
-	    waveTable[W2][i] = (float)(ABS(sin(t))*sin(t));}
-	// create halfsinus_ wave table, W3
-	for(int i = 0; i < RESOLUTION; i++)
-	    waveTable[W3][i] = (float)
-		(i<RESOLUTION/2?sin((i*2.0*M_PI)/(double)RESOLUTION):0.0);
-	// create halfsinus*abs(sinus)_ wave table, W4
-	for(int i = 0; i < RESOLUTION; i++){
-	    double t = (i * 2.0 * M_PI) / (double)RESOLUTION;
-	    waveTable[W4][i] = (float)(i<RESOLUTION/2?ABS(sin(t))*sin(t):0.0);}
-	// create sinus_ wave table, W5
-	for(int i = 0; i < RESOLUTION; i++)
-	    waveTable[W5][i] = (float)
-		(i<RESOLUTION/2?sin((i*4.0*M_PI) / (double)RESOLUTION):0.0);
-	// create sinus*abs(sinus)_ wave table, W6
-	for(int i = 0; i < RESOLUTION; i++){
-	    double t = (i*4.0*M_PI) / (double)RESOLUTION;
-	    waveTable[W6][i] = (float)(i<RESOLUTION/2?ABS(sin(t))*sin(t):0.0);}
+DeicsOnze::DeicsOnze() : Mess(2) {
+  if (useCount++ == 0) {
+    // create sinus wave table, W1
+    for(int i = 0; i < RESOLUTION; i++)
+      waveTable[W1][i] =
+	(float)(sin((i * 2.0 * M_PI) / (double)RESOLUTION));
+    // create sinus*abs(sinus) wave table, W2
+    for(int i = 0; i < RESOLUTION; i++){
+      double t = (i * 2.0 * M_PI) / (double)RESOLUTION;
+      waveTable[W2][i] = (float)(ABS(sin(t))*sin(t));}
+    // create halfsinus_ wave table, W3
+    for(int i = 0; i < RESOLUTION; i++)
+      waveTable[W3][i] = (float)
+	(i<RESOLUTION/2?sin((i*2.0*M_PI)/(double)RESOLUTION):0.0);
+    // create halfsinus*abs(sinus)_ wave table, W4
+    for(int i = 0; i < RESOLUTION; i++){
+      double t = (i * 2.0 * M_PI) / (double)RESOLUTION;
+      waveTable[W4][i] = (float)(i<RESOLUTION/2?ABS(sin(t))*sin(t):0.0);}
+    // create sinus_ wave table, W5
+    for(int i = 0; i < RESOLUTION; i++)
+      waveTable[W5][i] = (float)
+	(i<RESOLUTION/2?sin((i*4.0*M_PI) / (double)RESOLUTION):0.0);
+    // create sinus*abs(sinus)_ wave table, W6
+    for(int i = 0; i < RESOLUTION; i++){
+      double t = (i*4.0*M_PI) / (double)RESOLUTION;
+      waveTable[W6][i] = (float)(i<RESOLUTION/2?ABS(sin(t))*sin(t):0.0);}
 	// create 2halfsinus_ wave table, W7
-	for(int i = 0; i < RESOLUTION; i++)
-	    waveTable[W7][i] = (float)
-		(i<RESOLUTION/2?ABS(sin((i*4.0*M_PI)/(double)RESOLUTION)):0.0);
-	// create 2halfsinus*abs(sinus)_ wave table, W8
-	for(int i = 0; i < RESOLUTION; i++){
-	    double t = (i * 4.0 * M_PI) / (double)RESOLUTION;
-	    waveTable[W8][i] = (float)(i<RESOLUTION/2?sin(t)*sin(t):0.0);}
-    }
+    for(int i = 0; i < RESOLUTION; i++)
+      waveTable[W7][i] = (float)
+	(i<RESOLUTION/2?ABS(sin((i*4.0*M_PI)/(double)RESOLUTION)):0.0);
+    // create 2halfsinus*abs(sinus)_ wave table, W8
+    for(int i = 0; i < RESOLUTION; i++){
+      double t = (i * 4.0 * M_PI) / (double)RESOLUTION;
+      waveTable[W8][i] = (float)(i<RESOLUTION/2?sin(t)*sin(t):0.0);}
+  }
+  
+  //alloc temp buffers chorus and reverb
+  tempInputChorus = (float**) malloc(sizeof(float*)*NBRFXINPUTS);
+  for(int i = 0; i < NBRFXINPUTS; i++)
+    tempInputChorus[i] = (float*) malloc(sizeof(float*)*MAXFXBUFFERSIZE);
+  tempInputReverb = (float**) malloc(sizeof(float*)*NBRFXINPUTS);
+  for(int i = 0; i < NBRFXINPUTS; i++)
+    tempInputReverb[i] = (float*) malloc(sizeof(float*)*MAXFXBUFFERSIZE);
+  tempOutputChorus = (float**) malloc(sizeof(float*)*NBRFXOUTPUTS);
+  for(int i = 0; i < NBRFXOUTPUTS; i++)
+    tempOutputChorus[i] = (float*) malloc(sizeof(float*)*MAXFXBUFFERSIZE);
+  tempOutputReverb = (float**) malloc(sizeof(float*)*NBRFXOUTPUTS);
+  for(int i = 0; i < NBRFXOUTPUTS; i++)
+    tempOutputReverb[i] = (float*) malloc(sizeof(float*)*MAXFXBUFFERSIZE);
 
   srand(time(0));   // initialize random number generator
 
@@ -100,12 +114,16 @@ DeicsOnze::DeicsOnze() : Mess(2)
   //INSTPREFIX + "/share/" + PACKAGEVERSION + "/presets/deicsonze/ARCH_ALIN";
   _isBackgroundPix = true; //false if an initial bank must be download
   _backgroundPixPath = INSTPREFIX "/share/muse-" VERSION "/wallpapers/paper2.jpg";
-    //"/usr/local/share/muse-1.0pre1/wallpapers/abstractdeicsonze1.jpg";
+  //"/usr/local/share/muse-1.0pre1/wallpapers/abstractdeicsonze1.jpg";
 
   //initialization GUI
   _gui = new DeicsOnzeGui(this);
   _gui->hide();   // to avoid flicker during MusE startup
   _gui->setWindowTitle(QString("DeicsOnze"));
+
+  //FX
+  initPluginReverb(plugins.find("freeverb", "freeverb1"));
+  initPluginChorus(plugins.find("doublechorus", "doublechorus1"));
 
   //Load configuration
   QString defaultConf = (QString(getenv("HOME")) + QString("/." DEICSONZESTR ".dco"));
@@ -146,6 +164,22 @@ DeicsOnze::~DeicsOnze()
 {
   //if (--useCount == 0)
   //delete[] sine_table;
+  //dealloc temp buffers chorus and reverb
+  for(int i = 0; i < NBRFXINPUTS; i++) free(tempInputChorus[i]);
+  free(tempInputChorus);
+  for(int i = 0; i < NBRFXINPUTS; i++) free(tempInputReverb[i]);
+  free(tempInputReverb);
+  for(int i = 0; i < NBRFXOUTPUTS; i++) free(tempOutputChorus[i]);
+  free(tempOutputChorus);
+  for(int i = 0; i < NBRFXOUTPUTS; i++) free(tempOutputReverb[i]);
+  free(tempOutputReverb);
+}
+
+//---------------------------------------------------------
+// getSinusWaveTable
+//---------------------------------------------------------
+float* DeicsOnze::getSinusWaveTable() {
+  return waveTable[W1];
 }
 
 //---------------------------------------------------------
@@ -444,6 +478,10 @@ void DeicsOnze::initGlobal() {
   setMasterVol(INITMASTERVOL);
   _global.quality = high;
   _global.fontSize = 9;
+  _global.isChorusActivated = false;
+  _global.chorusReturn = 128.0/(float)MAXFXRETURN;
+  _global.isReverbActivated = false;
+  _global.reverbReturn = 128.0/(float)MAXFXRETURN;
   initChannels();
 }
 
@@ -466,6 +504,8 @@ void DeicsOnze::initChannel(int c) {
   _global.channel[c].lfoIndex = 0;
   _global.channel[c].nbrVoices = 8;
   _global.channel[c].isLastNote = false;
+  _global.channel[c].chorusAmount = 0.0;
+  _global.channel[c].reverbAmount = 0.0;
   applyChannelAmp(c);
   initVoices(c);
 }
@@ -623,38 +663,65 @@ void DeicsOnze::applyChannelAmp(int c) {
 // setChannelPan
 //----------------------------------------------------------------
 void DeicsOnze::setChannelPan(int c, int p) {
-    _global.channel[c].pan = p;
+  _global.channel[c].pan = p;
 }
 //----------------------------------------------------------------
 // setChannelDetune
 //----------------------------------------------------------------
 void DeicsOnze::setChannelDetune(int c, int p) {
-    _global.channel[c].detune = p;
+  _global.channel[c].detune = p;
 }
 //----------------------------------------------------------------
 // setChannelBrightness
 //----------------------------------------------------------------
 void DeicsOnze::setChannelBrightness(int c, int b) {
-    _global.channel[c].brightness = b;
+  _global.channel[c].brightness = b;
 }
 //----------------------------------------------------------------
 // setChannelModulation
 //----------------------------------------------------------------
 void DeicsOnze::setChannelModulation(int c, int m) {
-    _global.channel[c].modulation = m;
+  _global.channel[c].modulation = m;
 }
 //----------------------------------------------------------------
 // setChannelAttack
 //----------------------------------------------------------------
 void DeicsOnze::setChannelAttack(int c, int a) {
-    _global.channel[c].attack = a;
+  _global.channel[c].attack = a;
 }
 //----------------------------------------------------------------
 // setChannelRelease
 //----------------------------------------------------------------
 void DeicsOnze::setChannelRelease(int c, int r) {
-    _global.channel[c].release = r;
+  _global.channel[c].release = r;
 }
+//----------------------------------------------------------------
+// setChannelReverb
+//----------------------------------------------------------------
+void DeicsOnze::setChannelReverb(int c, int r) {
+  _global.channel[c].reverbAmount = (float)r/127.0;
+}
+//----------------------------------------------------------------
+// setChannelChorus
+//----------------------------------------------------------------
+void DeicsOnze::setChannelChorus(int c, int val) {
+  _global.channel[c].chorusAmount = (float)val/127.0;
+}
+
+//----------------------------------------------------------------
+// setChorusReturn
+//----------------------------------------------------------------
+void DeicsOnze::setChorusReturn(int val) {
+  _global.chorusReturn = 2.0*(float)val/(float)MAXFXRETURN;
+}
+
+//----------------------------------------------------------------
+// setReverbReturn
+//----------------------------------------------------------------
+void DeicsOnze::setReverbReturn(int val) {
+  _global.reverbReturn = 2.0*(float)val/(float)MAXFXRETURN;
+}
+
 //----------------------------------------------------------------
 // getNbrVoices
 //----------------------------------------------------------------
@@ -717,6 +784,30 @@ int DeicsOnze::getChannelAttack(int c) const {
 //----------------------------------------------------------------
 int DeicsOnze::getChannelRelease(int c) const {
   return(_global.channel[c].release);
+}
+//----------------------------------------------------------------
+// getChannelReverb
+//----------------------------------------------------------------
+int DeicsOnze::getChannelReverb(int c) const {
+  return((int)(_global.channel[c].reverbAmount*127.0));
+}
+//----------------------------------------------------------------
+// getChannelChorus
+//----------------------------------------------------------------
+int DeicsOnze::getChannelChorus(int c) const {
+  return((int)(_global.channel[c].chorusAmount*127.0));
+}
+//----------------------------------------------------------------
+// getChorusReturn
+//----------------------------------------------------------------
+int DeicsOnze::getChorusReturn() const {
+  return((int)(_global.chorusReturn*(float)MAXFXRETURN/2.0));
+}
+//----------------------------------------------------------------
+// getReturnReturn
+//----------------------------------------------------------------
+int DeicsOnze::getReverbReturn() const {
+  return((int)(_global.reverbReturn*(float)MAXFXRETURN/2.0));
 }
 
 //----------------------------------------------------------------
@@ -848,6 +939,10 @@ void DeicsOnze::setQuality(Quality q) {
   _global.deiSampleRate = (double)sampleRate()
     / (double)_global.qualityCounterTop;
   _global.qualityCounter = 0;
+  /* TODO
+    _chorus1->setSampleRate(_global.deiSampleRate);
+    _chorus2->setSampleRate(_global.deiSampleRate);
+  */
 }
 
 //-----------------------------------------------------------------
@@ -1028,8 +1123,8 @@ void DeicsOnze::loadSutulaPresets()
     int k;
     int nhBank, nlBank, nPreset;
     Preset* presetTemp;
-    Subcategory* subcategoryTemp;
-    Category* categoryTemp;
+    Subcategory* subcategoryTemp = NULL;
+    Category* categoryTemp = NULL;
 
     if(!_set) _set=new Set("Sutula Bank");
 
@@ -2293,6 +2388,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data) {
 }
 bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
   int cmd=data[0];
+  int index;
+  float f;
   switch(cmd) {
   case SYSEX_INIT_DATA:
     parseInitData(length, data);
@@ -2369,6 +2466,66 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     break;
   case SYSEX_PANIC:
     resetVoices();
+    break;
+  case SYSEX_CHORUSACTIV:
+    _global.isChorusActivated = (bool)data[1];
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  case SYSEX_CHORUSPARAM:
+    index = (int)data[1];
+    memcpy(&f, &data[2], sizeof(float));
+    printf("Chorus, param %d, value %f\n", index, f);
+    _pluginIChorus->setParam(index, (double)f); 
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;       
+  case SYSEX_REVERBACTIV:
+    _global.isReverbActivated = (bool)data[1];
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  case SYSEX_REVERBPARAM:
+    index = (int)data[1];
+    memcpy(&f, &data[2], sizeof(float));
+    printf("Reverb, param %d, value %f\n", index, f);
+    _pluginIReverb->setParam(index, (double)f); 
+    printf("param value %f\n", _pluginIReverb->param(index));
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;       
+  case SYSEX_CHORUSRETURN:
+    setChorusReturn((int)data[1]);
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  case SYSEX_REVERBRETURN:
+    setReverbReturn((int)data[1]);
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  case SYSEX_SELECTREVERB:
+    Plugin* pluginReverb;
+    memcpy(&pluginReverb, &data[1], sizeof(Plugin*));
+    initPluginReverb(pluginReverb);
+    break;
+  case SYSEX_SELECTCHORUS:
+    Plugin* pluginChorus;
+    memcpy(&pluginChorus, &data[1], sizeof(Plugin*));
+    initPluginChorus(pluginChorus);
+    break;
   default:
     break;
   }
@@ -2938,6 +3095,20 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
 	_gui->writeEvent(ev);
       }
       break;
+    case CTRL_REVERB_SEND:
+      setChannelReverb(ch, val);
+      if(!fromGui) {
+	MidiEvent ev(0,ch, ME_CONTROLLER, CTRL_REVERB_SEND, val);
+	_gui->writeEvent(ev);
+      }
+      break;
+    case CTRL_CHORUS_SEND:
+      setChannelChorus(ch, val);
+      if(!fromGui) {
+	MidiEvent ev(0,ch, ME_CONTROLLER, CTRL_CHORUS_SEND, val);
+	_gui->writeEvent(ev);
+      }
+      break;
     case CTRL_SUSTAIN:
       setSustain(ch, val);
       break;
@@ -3279,6 +3450,8 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
   float tempLeftOutput;
   float tempRightOutput;
   float tempChannelOutput;
+  float tempChannelLeftOutput;
+  float tempChannelRightOutput;
   float tempIncChannel; //for optimization
   float sampleOp[NBROP];
   float ampOp[NBROP];
@@ -3286,6 +3459,10 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
     if(_global.qualityCounter == 0) {
       tempLeftOutput = 0.0;
       tempRightOutput = 0.0;
+      tempInputChorus[0][i] = 0.0;
+      tempInputChorus[1][i] = 0.0;
+      tempInputReverb[0][i] = 0.0;
+      tempInputReverb[1][i] = 0.0;
       //per channel
       for(int c = 0; c < NBRCHANNELS; c++) {
 	tempChannelOutput = 0.0;
@@ -3532,17 +3709,54 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
 	  }
 	  //printf("left out = %f, temp out = %f, left amp = %f\n",
 	  //tempLeftOutput, tempChannelOutput, _global.channel[c].ampLeft);
-	  tempLeftOutput += tempChannelOutput*_global.channel[c].ampLeft;
-	  tempRightOutput += tempChannelOutput*_global.channel[c].ampRight;
+ 
+	  tempChannelLeftOutput = tempChannelOutput*_global.channel[c].ampLeft;
+	  tempChannelRightOutput=tempChannelOutput*_global.channel[c].ampRight;
+	  
+	  if(_global.isChorusActivated) {
+	    tempInputChorus[0][i] += tempChannelLeftOutput *
+	      _global.channel[c].chorusAmount;
+	    tempInputChorus[1][i] += tempChannelRightOutput *
+	      _global.channel[c].chorusAmount;
+	  }
+	  if(_global.isReverbActivated) {
+	    tempInputReverb[0][i] += tempChannelLeftOutput *
+	      _global.channel[c].reverbAmount;
+	    tempInputReverb[0][i] += tempChannelRightOutput *
+	      _global.channel[c].reverbAmount;
+	  }
+	  tempLeftOutput += tempChannelLeftOutput;
+	  tempRightOutput += tempChannelRightOutput;
 	}
       }
-      _global.lastLeftSample = tempLeftOutput*_global.masterVolume;
-      _global.lastRightSample = tempRightOutput*_global.masterVolume;
+      _global.lastLeftSample = tempLeftOutput;
+      _global.lastRightSample = tempRightOutput;
     }
-    leftOutput[i] += _global.lastLeftSample;
-    rightOutput[i] += _global.lastRightSample;
+    leftOutput[i] += _global.lastLeftSample * _global.masterVolume;
+    rightOutput[i] += _global.lastRightSample * _global.masterVolume;
+
     _global.qualityCounter++;
     _global.qualityCounter %= _global.qualityCounterTop;
+  }
+  //Chorus
+  if(_global.isChorusActivated) {
+    _pluginIChorus->apply(n, 2, tempInputChorus, tempOutputChorus);
+    for(int i = 0; i < n; i++) {
+      leftOutput[i] += 
+	tempOutputChorus[0][i] * _global.chorusReturn * _global.masterVolume;
+      rightOutput[i] +=
+	tempOutputChorus[1][i] * _global.chorusReturn * _global.masterVolume;
+    }
+  }
+  //Reverb
+  if(_global.isReverbActivated) {
+    _pluginIReverb->apply(n, 2, tempInputReverb, tempOutputReverb);
+    for(int i = 0; i < n; i++) {
+      leftOutput[i] +=
+	tempOutputReverb[0][i] * _global.reverbReturn * _global.masterVolume;
+      rightOutput[i] +=
+	tempOutputReverb[1][i] * _global.reverbReturn * _global.masterVolume;
+    }
   }
 }
 
@@ -3564,7 +3778,7 @@ extern "C" {
     static MESS descriptor = {
 	"DeicsOnze",
 	"DeicsOnze FM DX11/TX81Z emulator",
-	"0.4.5",      // version string
+	"0.5",      // version string
 	MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
 	instantiate
     };

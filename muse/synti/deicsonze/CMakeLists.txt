@@ -22,8 +22,9 @@ QT4_WRAP_CPP ( deicsonze_mocs deicsonzegui.h )
 QT4_WRAP_UI (  deicsonze_uis deicsonzegui.ui )
 
 add_library ( deicsonze SHARED 
-      deicsonze.cpp 
+      deicsonze.cpp
       deicsonzepreset.cpp
+      deicsonzeplugin.cpp
       deicsonzegui.cpp
       deicsonzegui.h
       ${deicsonze_mocs}
@@ -37,7 +38,8 @@ target_link_libraries( deicsonze synti )
 #
 set_target_properties ( deicsonze 
    PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-O3 -include ${PROJECT_BINARY_DIR}/all-pic.h"
+   #COMPILE_FLAGS "-O3 -include ${PROJECT_BINARY_DIR}/all-pic.h"
+   COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
 target_link_libraries(deicsonze
