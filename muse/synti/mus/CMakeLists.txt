@@ -18,21 +18,10 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-include_directories(
-   . 
-   ${CMAKE_CURRENT_BINARY}
-   ${PROJECT_SOURCE_DIR} 
-   ${PROJECT_SOURCE_DIR}/muse
-   ${PROJECT_SOURCE_DIR}/muse/widgets
-   ${PROJECT_SOURCE_DIR}/synti
-   )
-
-set (SubDirs libsynti s1 organ deicsonze simpledrums vam mus)
-
-if (ENABLE_FLUID)
-      set (SubDirs ${SubDirs} fluid fluidsynth )
-endif (ENABLE_FLUID)
-
-subdirs(${SubDirs})
-
+add_executable ( mus mus.cpp )
+install_targets ( /bin mus )
+target_link_libraries(mus
+      ${QT_LIBRARIES}
+      ${JACK_LIB}
+      )
 

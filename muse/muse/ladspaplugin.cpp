@@ -125,7 +125,7 @@ void LadspaPlugin::range(int i, double* min, double* max) const
       LADSPA_PortRangeHint range = plugin->PortRangeHints[i];
       LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
       if (desc & LADSPA_HINT_TOGGLED) {
-            *min = 0.0;
+            *min = -1.0;
             *max = 1.0;
             return;
             }

@@ -218,14 +218,6 @@ bool Audio::start()
                }
           }
       audioDriver->stopTransport();
-
-      //
-      // do connections
-      //
-// done in seqStart
-//      for (iTrack i = tl->begin(); i != tl->end(); ++i) {
-//            (*i)->activate2();
-//      	}
       return true;
       }
 
@@ -702,10 +694,6 @@ void Audio::stopRolling()
 
 unsigned int Audio::curFrame() const
       {
-//      return lrint((curTime() - syncTime) * AL::sampleRate) + syncFrame;
-      //
-      // this should be the same:
-      //
       return audioDriver->framePos();
       }
 
