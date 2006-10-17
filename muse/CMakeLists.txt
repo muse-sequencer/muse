@@ -26,8 +26,15 @@ if (NOT CMAKE_INSTALL_LIBDIR)
 	SET(CMAKE_INSTALL_LIBDIR "lib")
 endif (NOT CMAKE_INSTALL_LIBDIR)
 
-set(CMAKE_BUILD_TYPE Debug)
-# set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE debug)
+# set(CMAKE_BUILD_TYPE release)
+
+# for debugging the make system uncomment next line:
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+
+set(CMAKE_CXX_FLAGS         "-Wall -Wextra -Winvalid-pch -fno-exceptions")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+set(CMAKE_CXX_FLAGS_DEBUG   "-g")
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
@@ -46,9 +53,6 @@ include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
 option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface" ON)
 option ( ENABLE_VST    "enable VST/win support"                 OFF)
 option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"    ON)
-
-# for debugging the make system uncomment next line:
-# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(QT_MIN_VERSION "4.2.0")
 set(QT_USE_QTXML TRUE)
@@ -250,10 +254,6 @@ add_custom_target(all-pic-debug.h.pch
      ${PROJECT_SOURCE_DIR}/all.h
    DEPENDS ${PROJECT_SOURCE_DIR}/all.h
    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-   )
-
-set(CMAKE_CXX_FLAGS 
-   "-g -Wall -Wextra -Winvalid-pch -fno-exceptions"
    )
 
 subdirs(al awl grepmidi plugins midiplugins synti muse share doc)
