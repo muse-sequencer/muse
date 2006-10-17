@@ -3,7 +3,7 @@
 - LFO Delay (bug)
 - Rate Scaling
 - Foot Control, Modulation Wheel, Breath Control, After Touch
-- Reverb
+- analogue reverb
 - Change presetName subcategoryName category with SysEx
 - Internal restructure, private vs public, add comment, etc
 - getPatchInfo...
