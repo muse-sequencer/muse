@@ -138,12 +138,12 @@ else (NOT SAMPLERATE_INCDIR)
 endif (NOT SAMPLERATE_INCDIR)
 
 ##
-## find jack >= 0.98.0
+## find jack >= 0.102.1
 ##
 
-PKGCONFIG (jack 0.98.0 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
+PKGCONFIG (jack 0.102.1 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
 if (NOT JACK_INCDIR)
-      message(FATAL_ERROR "Fatal error: JACK >= 0.98.0 required")
+      message(FATAL_ERROR "Fatal error: JACK >= 0.102.1 required")
 else (NOT JACK_INCDIR)
 	message("Jack detected")
 endif (NOT JACK_INCDIR)
