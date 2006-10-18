@@ -41,11 +41,11 @@ class Driver {
       virtual ~Driver() {}
       virtual bool init() = 0;
 
-      virtual QList<PortName> outputPorts() = 0;
-      virtual QList<PortName> inputPorts()  = 0;
+      virtual QList<PortName> outputPorts(bool midi) = 0;
+      virtual QList<PortName> inputPorts(bool midi)  = 0;
 
-      virtual Port registerOutPort(const QString&) = 0;
-      virtual Port registerInPort(const QString&) = 0;
+      virtual Port registerOutPort(const QString&, bool midi) = 0;
+      virtual Port registerInPort(const QString&, bool midi) = 0;
       virtual void unregisterPort(Port) = 0;
       virtual void setPortName(Port p, const QString&) = 0;
       virtual QString portName(Port) = 0;

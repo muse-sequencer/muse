@@ -68,16 +68,16 @@ class DummyAudio : public AudioDriver {
             return buffer;
             }
 
-      virtual QList<PortName> outputPorts();
-      virtual QList<PortName> inputPorts();
+      virtual QList<PortName> outputPorts(bool midi = false);
+      virtual QList<PortName> inputPorts(bool midi = false);
 
       virtual void registerClient() {}
 
-      virtual void* registerOutPort(const QString& s) {
+      virtual void* registerOutPort(const QString& s, bool midi = false) {
             iPorts.push_back(QString(s));
             return (void*)(iPorts.size() + 3000);
             }
-      virtual void* registerInPort(const QString& s) {
+      virtual void* registerInPort(const QString& s, bool midi = false) {
             oPorts.push_back(QString(s));
             return (void*)(oPorts.size() + 4000);
             }
@@ -162,17 +162,19 @@ bool initDummyAudio()
 //   outputPorts
 //---------------------------------------------------------
 
-QList<PortName> DummyAudio::outputPorts()
+QList<PortName> DummyAudio::outputPorts(bool midi)
       {
       QList<PortName> clientList;
-      PortName p1;
-      p1.name = QString("output1");
-      p1.port = (void*)100;
-      PortName p2;
-      p2.name = QString("output2");
-      p2.port = (void*)101;
-      clientList.append(p1);
-      clientList.append(p2);
+      if (!midi) {
+            PortName p1;
+            p1.name = QString("output1");
+            p1.port = (void*)100;
+            PortName p2;
+            p2.name = QString("output2");
+            p2.port = (void*)101;
+            clientList.append(p1);
+            clientList.append(p2);
+            }
       return clientList;
       }
 
@@ -180,17 +182,19 @@ QList<PortName> DummyAudio::outputPorts()
 //   inputPorts
 //---------------------------------------------------------
 
-QList<PortName> DummyAudio::inputPorts()
+QList<PortName> DummyAudio::inputPorts(bool midi)
       {
       QList<PortName> clientList;
-      PortName p1;
-      p1.name = QString("input1");
-      p1.port = (void*)0;
-      PortName p2;
-      p2.name = QString("input2");
-      p2.port = (void*)1;
-      clientList.append(p1);
-      clientList.append(p2);
+      if (!midi) {
+            PortName p1;
+            p1.name = QString("input1");
+            p1.port = (void*)0;
+            PortName p2;
+            p2.name = QString("input2");
+            p2.port = (void*)1;
+            clientList.append(p1);
+            clientList.append(p2);
+            }
       return clientList;
       }
 

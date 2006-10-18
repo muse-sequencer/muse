@@ -21,6 +21,7 @@
 add_executable ( mus mus.cpp )
 install_targets ( /bin mus )
 target_link_libraries(mus
+      synti
       ${QT_LIBRARIES}
       ${JACK_LIB}
       )

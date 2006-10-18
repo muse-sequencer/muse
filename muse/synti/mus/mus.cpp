@@ -36,9 +36,9 @@ static int segmentSize;
 
 static Mess* mess;
 static const int MAX_OUTPORTS = 8;
-jack_port_t* inPort;
-jack_port_t* outPorts[MAX_OUTPORTS];
-float* outBuffer[MAX_OUTPORTS];
+static jack_port_t* inPort;
+static jack_port_t* outPorts[MAX_OUTPORTS];
+static float* outBuffer[MAX_OUTPORTS];
 
 //---------------------------------------------------------
 //   processAudio
@@ -48,8 +48,13 @@ float* outBuffer[MAX_OUTPORTS];
 static int processAudio(jack_nframes_t nFrames, void*)
       {
       int nch = mess->channels();
-      for (int i = 0; i < nch; ++i)
+      for (int i = 0; i < nch; ++i) {
             outBuffer[i] = (float*)jack_port_get_buffer(outPorts[i], nFrames);
+            memset(outBuffer[i], 0, sizeof(float) * nFrames);
+            }
+      while(mess->eventsPending())
+            mess->processEvent(mess->receiveEvent());
+            
       void* midi = jack_port_get_buffer(inPort, nFrames);
       int n = jack_midi_port_get_info(midi, nFrames)->event_count;
       unsigned offset = 0;
@@ -185,7 +190,7 @@ int main(int argc, char* argv[])
       else
             jack_set_error_function(noJackError);
 
-      jack_client_t* client = 0;
+      jack_client_t* client;
       int i = 0;
       QString instanceName;
       QString s(pluginName.left(pluginName.size()-3));
@@ -193,7 +198,7 @@ int main(int argc, char* argv[])
       static const int MAX_INSTANCES = 500;
       for (i = 0; i < MAX_INSTANCES; ++i) {
             instanceName = s.arg(i);
-            const char* jackIdString = instanceName.toLocal8Bit().data();
+            const char* jackIdString = strdup(instanceName.toLocal8Bit().data());
             client = jack_client_new(jackIdString);
             if (client)
                   break;
@@ -247,6 +252,7 @@ int main(int argc, char* argv[])
          JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
       if (mess->hasGui())
             mess->showGui(true);
+      jack_activate(client);
       qApp->exec();
       }
 

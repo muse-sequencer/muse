@@ -58,7 +58,8 @@ typedef void* Port;
 //---------------------------------------------------------
 
 struct Route {
-      enum RouteType { TRACK, AUDIOPORT, MIDIPORT, SYNTIPORT, AUXPLUGIN};
+      enum RouteType { TRACK, AUDIOPORT, MIDIPORT, JACKMIDIPORT,
+         SYNTIPORT, AUXPLUGIN};
 
       union {
             Track* track;
@@ -78,10 +79,8 @@ struct Route {
       QString name() const;
       void read(QDomNode node);
       void write(Xml&, const char* name) const;
-//      static void write(Xml&, const char* name, const Track*);
 
       bool operator==(const Route& a) const;
-      bool isValid() const { return track != 0; }
       void dump() const;
       const char* tname() const;
       static const char* tname(RouteType);

@@ -45,11 +45,11 @@ class AlsaMidi : public Driver {
       AlsaMidi();
       virtual bool init();
 
-      virtual QList<PortName> outputPorts();
-      virtual QList<PortName> inputPorts();
+      virtual QList<PortName> outputPorts(bool midi);
+      virtual QList<PortName> inputPorts(bool midi);
 
-      virtual Port registerOutPort(const QString& name);
-      virtual Port registerInPort(const QString& name);
+      virtual Port registerOutPort(const QString& name, bool midi);
+      virtual Port registerInPort(const QString& name, bool midi);
       virtual void unregisterPort(Port);
       virtual void setPortName(Port p, const QString& n);
       virtual QString portName(Port);

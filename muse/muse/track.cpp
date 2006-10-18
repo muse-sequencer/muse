@@ -32,15 +32,17 @@
 #include "part.h"
 #include "gui.h"
 
+// synchronize with TrackType!:
+
 const char* Track::_cname[] = {
-      "Output", "Group", "Aux", "Wave", "Input",
-      "Synti", "Midi", "M-Out", "M-In", "M-Ch", "M-Synt"
+      "Output", "Group", "Wave", "Input",
+      "Synti", "Midi", "MidiOut", "MidiIn", "M-Ch", "M-Synth"
       };
 
 const char* Track::_clname[] = {
-      "Audio Output", "Audio Group", "Audio Aux", "Wave Track", "Audio Input",
+      "Audio Output", "Audio Group", "Wave Track", "Audio Input",
       "Synti", "Midi Track", "Midi Outport", "Midi Inport", "Midi Channel",
-      "Midi Synti"
+      "Midi Synth"
       };
 
 //---------------------------------------------------------
@@ -143,15 +145,6 @@ void Track::setDefaultName()
             case WAVE:
                   base = QString("Track");
                   break;
-            case MIDI_OUT:
-                  base = QString("MP");
-                  break;
-            case MIDI_IN:
-                  base = QString("M-In");
-                  break;
-            case MIDI_SYNTI:
-                  base = QString("M-Synth");
-                  break;
             case MIDI_CHANNEL:
                   {
                   MidiOutPort* mop = ((MidiChannel*)this)->port();
@@ -161,20 +154,20 @@ void Track::setDefaultName()
                   return;
                   }
                   break;
-            case AUDIO_OUTPUT:
-                  base = QString("AudioOut");
-                  break;
             case AUDIO_GROUP:
                   base = QString("Group");
-                  break;
-            case AUDIO_INPUT:
-                  base = QString("AudioIn");
                   break;
             case AUDIO_SOFTSYNTH:
                   // base = QString("Synth");
             	return;
                   break;
+            case AUDIO_OUTPUT:
+            case AUDIO_INPUT:
+            case MIDI_OUT:
+            case MIDI_IN:
+            case MIDI_SYNTI:
             case TRACK_TYPES:
+                  base = cname();
                   break;
             };
       base += " ";

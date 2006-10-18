@@ -566,7 +566,6 @@ void AudioTrack::collectInputData()
       bool copyFlag = true;
       for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
             float** ptr;
-            float* b[channels()];
             int ch;
             if (ir->type == Route::TRACK) {
                   AudioTrack* track = (AudioTrack*)ir->track;

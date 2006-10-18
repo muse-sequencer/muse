@@ -47,13 +47,13 @@ class JackAudio : public AudioDriver {
             return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
             }
 
-      virtual QList<PortName> outputPorts();
-      virtual QList<PortName> inputPorts();
+      virtual QList<PortName> outputPorts(bool midi);
+      virtual QList<PortName> inputPorts(bool midi);
 
       virtual void registerClient();
 
-      virtual Port registerOutPort(const QString& name);
-      virtual Port registerInPort(const QString& name);
+      virtual Port registerOutPort(const QString& name, bool midi);
+      virtual Port registerInPort(const QString& name, bool midi);
 
       virtual char* getJackName();
 

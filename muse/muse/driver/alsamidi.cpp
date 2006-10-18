@@ -97,7 +97,7 @@ bool AlsaMidi::init()
 //   outputPorts
 //---------------------------------------------------------
 
-QList<PortName> AlsaMidi::outputPorts()
+QList<PortName> AlsaMidi::outputPorts(bool)
       {
       QList<PortName> clientList;
       snd_seq_client_info_t* cinfo;
@@ -133,7 +133,7 @@ QList<PortName> AlsaMidi::outputPorts()
 //   inputPorts
 //---------------------------------------------------------
 
-QList<PortName> AlsaMidi::inputPorts()
+QList<PortName> AlsaMidi::inputPorts(bool)
       {
       QList<PortName> clientList;
 
@@ -170,7 +170,7 @@ QList<PortName> AlsaMidi::inputPorts()
 //   registerOutPort
 //---------------------------------------------------------
 
-Port AlsaMidi::registerOutPort(const QString& name)
+Port AlsaMidi::registerOutPort(const QString& name, bool)
       {
       int port  = snd_seq_create_simple_port(alsaSeq, name.toLatin1().data(),
          outCap | SND_SEQ_PORT_CAP_WRITE, SND_SEQ_PORT_TYPE_APPLICATION);
@@ -199,7 +199,7 @@ bool AlsaMidi::equal(Port p1, Port p2)
 //   registerInPort
 //---------------------------------------------------------
 
-Port AlsaMidi::registerInPort(const QString& name)
+Port AlsaMidi::registerInPort(const QString& name, bool)
       {
       int port  = snd_seq_create_simple_port(alsaSeq, name.toLatin1().data(),
          inCap | SND_SEQ_PORT_CAP_READ, SND_SEQ_PORT_TYPE_APPLICATION);
@@ -360,7 +360,7 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
       MidiOutPortList* opl = song->midiOutPorts();
       for (iMidiOutPort i = opl->begin(); i != opl->end(); ++i) {
             MidiOutPort* oport = *i;
-            Port src = oport->port();
+            Port src = oport->alsaPort();
 
             if (equal(src, rs)) {
                   RouteList* orl = oport->outRoutes();
@@ -381,7 +381,7 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
       MidiInPortList* ipl = song->midiInPorts();
       for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i) {
             MidiInPort* iport = *i;
-            Port dst = iport->port();
+            Port dst = iport->alsaPort();
 
             if (equal(dst, rd)) {
                   RouteList* irl = iport->inRoutes();
@@ -413,7 +413,7 @@ void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
       MidiInPortList* ipl = song->midiInPorts();
       for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i) {
             MidiInPort* iport = *i;
-            Port dst = iport->port();
+            Port dst = iport->alsaPort();
 
             if (equal(dst, rd)) {
                   RouteList* irl = iport->inRoutes();
@@ -432,7 +432,7 @@ void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
       MidiOutPortList* opl = song->midiOutPorts();
       for (iMidiOutPort i = opl->begin(); i != opl->end(); ++i) {
             MidiOutPort* oport = *i;
-            Port src = oport->port();
+            Port src = oport->alsaPort();
 
             if (equal(src, rs)) {
                   RouteList* orl = oport->outRoutes();
@@ -528,7 +528,7 @@ void AlsaMidi::read(MidiSeq* seq)
                         MidiInPortList* mpl = song->midiInPorts();
                         for (iMidiInPort i = mpl->begin(); i != mpl->end(); ++i) {
                               MidiInPort* inPort = *i;
-                              if (equal(port, inPort->port())) {
+                              if (equal(port, inPort->alsaPort())) {
                                     inPort->eventReceived(ev);
                                     }
                               }

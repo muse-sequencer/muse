@@ -684,7 +684,7 @@ void AudioStrip::iRoutePressed()
                         char buffer[128];
                         snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().data(), i+1);
                         pup.addSeparator()->setText(QString(buffer));
-                        QList<PortName> ol = audioDriver->outputPorts();
+                        QList<PortName> ol = audioDriver->outputPorts(false);
                         foreach (PortName ip, ol) {
                               QAction* id = pup.addAction(ip.name);
                               id->setCheckable(true);
@@ -762,7 +762,7 @@ void AudioStrip::oRoutePressed()
                         snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().data(), i+1);
                         pup.addSeparator()->setText(QString(buffer));
 
-                        QList<PortName> ol = audioDriver->inputPorts();
+                        QList<PortName> ol = audioDriver->inputPorts(false);
                         foreach (PortName ip, ol) {
                               QAction* action = pup.addAction(ip.name);
                               action->setCheckable(true);

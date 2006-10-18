@@ -81,14 +81,12 @@ Route::Route()
 
 bool addRoute(Route src, Route dst)
       {
-      if (!src.isValid() || !dst.isValid())
-            return false;
-
 // printf("addRoute %s.%d:<%s> %s.%d:<%s>\n",
 //         src.tname(), src.channel, src.name().toLatin1().data(),
 //         dst.tname(), dst.channel, dst.name().toLatin1().data());
 
-      if (src.type == Route::AUDIOPORT || src.type == Route::MIDIPORT) {
+      if (src.type == Route::AUDIOPORT || src.type == Route::MIDIPORT 
+         || src.type == Route::JACKMIDIPORT) {
             if (dst.type != Route::TRACK) {
                   fprintf(stderr, "addRoute: bad route 1\n");
                   return false;
@@ -105,8 +103,8 @@ bool addRoute(Route src, Route dst)
                   }
             inRoutes->push_back(src);
             }
-      else if (dst.type == Route::AUDIOPORT || dst.type == Route::MIDIPORT) {
-//         || dst.type == Route::SYNTIPORT) {
+      else if (dst.type == Route::AUDIOPORT || dst.type == Route::MIDIPORT
+         || dst.type == Route::JACKMIDIPORT) {
             if (src.type != Route::TRACK) {
                   fprintf(stderr, "addRoute: bad route 3\n");
                   return false;
@@ -149,11 +147,8 @@ bool addRoute(Route src, Route dst)
 
 void removeRoute(Route src, Route dst)
       {
-//    printf("removeRoute %s.%d:<%s> %s.%d:<%s>\n",
-//         src.tname(), src.channel, src.name().toLatin1().data(),
-//         dst.tname(), dst.channel, dst.name().toLatin1().data());
-
-      if (src.type == Route::AUDIOPORT || src.type == Route::MIDIPORT) {
+      if (src.type == Route::AUDIOPORT || src.type == Route::MIDIPORT
+         || src.type == Route::JACKMIDIPORT) {
             if (dst.type != Route::TRACK && dst.type != Route::SYNTIPORT) {
                   fprintf(stderr, "removeRoute: bad route 1\n");
                   goto error;
@@ -173,7 +168,8 @@ void removeRoute(Route src, Route dst)
                         }
                   }
             }
-      else if (dst.type == Route::AUDIOPORT || dst.type == Route::MIDIPORT) {
+      else if (dst.type == Route::AUDIOPORT || dst.type == Route::MIDIPORT
+         || dst.type == Route::JACKMIDIPORT) {
 //         | dst.type == Route::SYNTIPORT) {
             if (src.type != Route::TRACK) {
                   fprintf(stderr, "removeRoute: bad route 3\n");
@@ -252,22 +248,14 @@ QString Route::name() const
                   return track2name(track);
             case AUDIOPORT:
                   return audioDriver->portName(port);
+            case JACKMIDIPORT:
+                  return audioDriver->portName(port);
             case MIDIPORT:
                   return midiDriver->portName(port);
             case AUXPLUGIN:
                   return plugin->pluginInstance()->name();
             }
       return QString("?");
-      }
-
-//---------------------------------------------------------
-//   checkRoute
-//    return true if route is valid
-//---------------------------------------------------------
-
-bool checkRoute(const QString& /*s*/, const QString& /*d*/)
-      {
-      return true;
       }
 
 //---------------------------------------------------------
@@ -339,6 +327,8 @@ bool Route::operator==(const Route& a) const
                   return channel == a.channel && track == a.track;
             case MIDIPORT:
                   return midiDriver->equal(port, a.port);
+            case JACKMIDIPORT:
+                  return audioDriver->equal(port, a.port);
             case AUDIOPORT:
                   return channel == a.channel && audioDriver->equal(port, a.port);
             case AUXPLUGIN:
@@ -354,7 +344,8 @@ bool Route::operator==(const Route& a) const
 const char* Route::tname(RouteType t)
       {
       static const char* names[] = {
-            "TRACK", "AUDIOPORT", "MIDIPORT", "SYNTIPORT", "AUX"
+            "TRACK", "AUDIOPORT", "MIDIPORT", "JACKMIDIPORT", 
+            "SYNTIPORT", "AUX"
             };
       if (t > (int)(sizeof(names)/sizeof(*names)))
             return "???";
@@ -374,6 +365,7 @@ void Route::write(Xml& xml, const char* label) const
       {
       switch (type) {
             case AUDIOPORT:
+            case JACKMIDIPORT:
             case MIDIPORT:
             case AUXPLUGIN:
                   xml.put("<%s type=\"%s\" name=\"%s\"/>", 
@@ -431,6 +423,12 @@ void Route::read(QDomNode node)
             port = audioDriver->findPort(s);
             if (port == 0)
                   printf("Route::read(): audioport not found\n");
+            }
+      else if (st == "JACKMIDIPORT") {
+            type = Route::JACKMIDIPORT;
+            port = audioDriver->findPort(s);
+            if (port == 0)
+                  printf("Route::read(): jack midiport not found\n");
             }
       else if (st == "MIDIPORT") {
             type = Route::MIDIPORT;
@@ -504,5 +502,3 @@ Track* Song::findTrack(const QString& s) const
       printf("track <%s> not found\n", s.toLatin1().data());
       return 0;
       }
-
-

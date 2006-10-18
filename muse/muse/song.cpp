@@ -1627,7 +1627,7 @@ void Song::insertTrack(Track* track, int idx)
                   {
                   // connect first input channel to first available jack output
                   // etc.
-                  QList<PortName> op = audioDriver->outputPorts();
+                  QList<PortName> op = audioDriver->outputPorts(false);
                   QList<PortName>::iterator is = op.begin();
                   for (int ch = 0; ch < track->channels(); ++ch) {
                         if (is != op.end()) {
@@ -1641,7 +1641,7 @@ void Song::insertTrack(Track* track, int idx)
                   break;
             case Track::AUDIO_OUTPUT:
                   {
-                  QList<PortName> op = audioDriver->inputPorts();
+                  QList<PortName> op = audioDriver->inputPorts(false);
                   QList<PortName>::iterator is = op.begin();
                   for (int ch = 0; ch < track->channels(); ++ch) {
                         if (is != op.end()) {

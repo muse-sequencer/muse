@@ -493,10 +493,11 @@ void JackAudio::registerClient()
 //   registerInPort
 //---------------------------------------------------------
                                     
-Port JackAudio::registerInPort(const QString& name)
+Port JackAudio::registerInPort(const QString& name, bool midi)
       {
-      void* p = jack_port_register(_client, name.toLatin1().data(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
- //printf("JACK: registerInPort: <%s> %p\n", name.toLatin1().data(), p);
+      const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
+      void* p = jack_port_register(_client, name.toLatin1().data(), type, JackPortIsInput, 0);
+// printf("JACK: registerInPort<%s>: <%s> %p\n", type, name.toLatin1().data(), p);
       return p;
       }
 
@@ -504,10 +505,11 @@ Port JackAudio::registerInPort(const QString& name)
 //   registerOutPort
 //---------------------------------------------------------
 
-Port JackAudio::registerOutPort(const QString& name)
+Port JackAudio::registerOutPort(const QString& name, bool midi)
       {
-      void* p = jack_port_register(_client, name.toLatin1().data(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
- //printf("JACK: registerOutPort: <%s> %p\n", name.toLatin1().data(), p);
+      const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
+      void* p = jack_port_register(_client, name.toLatin1().data(), type, JackPortIsOutput, 0);
+// printf("JACK: registerOutPort<%s>: <%s> %p\n", type, name.toLatin1().data(), p);
       return p;
       }
 
@@ -528,13 +530,17 @@ void exitJackAudio()
 
 bool JackAudio::connect(Port src, Port dst)
       {
+      if (src == 0 || dst == 0) {
+            fprintf(stderr, "JackAudio::connect(1): unknown jack ports\n");
+            return false;
+            }
       const char* sn = jack_port_name((jack_port_t*) src);
       const char* dn = jack_port_name((jack_port_t*) dst);
 
 // printf("jack connect <%s>%p - <%s>%p\n", sn, src, dn, dst);
 
       if (sn == 0 || dn == 0) {
-            fprintf(stderr, "JackAudio::connect: unknown jack ports\n");
+            fprintf(stderr, "JackAudio::connect(2): unknown jack ports\n");
             return false;
             }
       int rv = jack_connect(_client, sn, dn);
@@ -543,6 +549,14 @@ bool JackAudio::connect(Port src, Port dst)
                rv, sn, dn);
             if (rv == EEXIST)
                   fprintf(stderr, "  connection already made\n");
+            else {
+                  int pf = jack_port_flags((jack_port_t*)src);
+                  if (!(pf & JackPortIsOutput))
+                        fprintf(stderr, "  src is not an output port\n");
+                  pf = jack_port_flags((jack_port_t*)dst);
+                  if (!(pf & JackPortIsInput))
+                        fprintf(stderr, "  dst is not an input port\n");
+                  }
             return false;
             }
       return true;
@@ -609,15 +623,13 @@ unsigned JackAudio::framePos() const
 //   outputPorts
 //---------------------------------------------------------
 
-QList<PortName> JackAudio::outputPorts()
+QList<PortName> JackAudio::outputPorts(bool midi)
       {
-      const char** ports = jack_get_ports(_client, 0, 0, 0);
+      const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
+      const char** ports = jack_get_ports(_client, 0, type, JackPortIsOutput);
       QList<PortName> clientList;
       for (const char** p = ports; p && *p; ++p) {
             jack_port_t* port = jack_port_by_name(_client, *p);
-            int flags = jack_port_flags(port);
-            if (!(flags & JackPortIsOutput))
-                  continue;
             char buffer[128];
             strncpy(buffer, *p, 128);
             if (strncmp(buffer, "MusE", 4) == 0)
@@ -634,15 +646,13 @@ QList<PortName> JackAudio::outputPorts()
 //   inputPorts
 //---------------------------------------------------------
 
-QList<PortName> JackAudio::inputPorts()
+QList<PortName> JackAudio::inputPorts(bool midi)
       {
-      const char** ports = jack_get_ports(_client, 0, 0, 0);
+      const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
+      const char** ports = jack_get_ports(_client, 0, type, JackPortIsInput);
       QList<PortName> clientList;
       for (const char** p = ports; p && *p; ++p) {
             jack_port_t* port = jack_port_by_name(_client, *p);
-            int flags = jack_port_flags(port);
-            if (!(flags & JackPortIsInput))
-                  continue;
             char buffer[128];
             strncpy(buffer, *p, 128);
             if (strncmp(buffer, "MusE", 4) == 0)

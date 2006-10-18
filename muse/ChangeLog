@@ -1,3 +1,5 @@
+18.10 (ws)
+      - added routing for jack midi ports. Fixes for "mus".
 17.10 (ws)
       - added new program "mus". Mus is a wrapper to operate MusE MESS 
         synthesizer standalone with JACK audio/midi interface. The

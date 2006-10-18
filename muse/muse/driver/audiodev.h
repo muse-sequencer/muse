@@ -38,8 +38,8 @@ class AudioDriver : public Driver {
       virtual unsigned framePos() const = 0;
       virtual float* getBuffer(void* port, unsigned long nframes) = 0;
       virtual void registerClient() = 0;
-      virtual Port registerOutPort(const QString& name) = 0;
-      virtual Port registerInPort(const QString& name) = 0;
+      virtual Port registerOutPort(const QString& name, bool midi) = 0;
+      virtual Port registerInPort(const QString& name, bool midi) = 0;
       virtual int getState() = 0;
       virtual unsigned getCurFrame() = 0;
       virtual int realtimePriority() const = 0;	// return zero if not realtime

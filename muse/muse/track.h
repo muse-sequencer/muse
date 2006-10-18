@@ -345,7 +345,9 @@ class MidiTrackBase : public Track {
 class MidiInPort : public MidiTrackBase {
       Q_OBJECT
 
-      Port alsaPort;
+      Port _alsaPort;
+      Port _jackPort;
+
       MPEventList _recordEvents;
 
    public:
@@ -353,6 +355,7 @@ class MidiInPort : public MidiTrackBase {
       ~MidiInPort();
 
       virtual void activate1();
+      virtual void activate2();
       virtual void deactivate();
       virtual void setName(const QString& s);
       virtual void write(Xml&) const;
@@ -360,7 +363,8 @@ class MidiInPort : public MidiTrackBase {
       virtual Track* newTrack() const     { return new MidiInPort(); }
       virtual bool isMute() const         { return _mute; }
       virtual Part* newPart(Part*, bool)  { return 0; }
-      Port port() const                   { return alsaPort; }
+      Port alsaPort() const               { return _alsaPort; }
+      Port jackPort() const               { return _jackPort; }
 
 #ifndef __APPLE__      
       void eventReceived(snd_seq_event_t*);
@@ -423,7 +427,8 @@ class MidiOutPort : public MidiTrackBase {
 
       MidiInstrument* _instrument;
       MidiChannel* _channel[MIDI_CHANNELS];
-      Port alsaPort;
+      Port _alsaPort;
+      Port _jackPort;
 
       bool _sendSync;   // this port sends mtc mmc events
       int _deviceId;    // 0-126; 127 == all
@@ -445,6 +450,7 @@ class MidiOutPort : public MidiTrackBase {
       ~MidiOutPort();
 
       virtual void activate1();
+      virtual void activate2();
       virtual void deactivate();
 
       MidiChannel* channel(int n)         { return _channel[n]; }
@@ -462,7 +468,8 @@ class MidiOutPort : public MidiTrackBase {
       bool guiVisible() const;
       bool hasGui() const;
 
-      Port port() const { return alsaPort; }
+      Port alsaPort() const               { return _alsaPort; }
+      Port jackPort() const               { return _jackPort; }
       void putEvent(const MidiEvent&);
 
       MPEventList* playEvents()          { return &_playEvents;   }

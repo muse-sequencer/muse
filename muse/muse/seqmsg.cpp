@@ -82,15 +82,21 @@ void Audio::msgRemoveRoute(Route src, Route dst)
             AudioInput* ai = (AudioInput*)(dst.track);
             audioDriver->disconnect(src.port, ai->jackPort(dst.channel));
             }
+      else if (src.type == Route::JACKMIDIPORT) {
+            audioDriver->disconnect(src.port, ((MidiInPort*)dst.track)->jackPort());
+            }
       else if (src.type == Route::MIDIPORT) {
-            midiDriver->disconnect(src.port, ((MidiInPort*)dst.track)->port());
+            midiDriver->disconnect(src.port, ((MidiInPort*)dst.track)->alsaPort());
             }
       else if (dst.type == Route::AUDIOPORT) {
             AudioOutput* ai = (AudioOutput*)(src.track);
             audioDriver->disconnect(ai->jackPort(src.channel), dst.port);
             }
       else if (dst.type == Route::MIDIPORT) {
-            midiDriver->disconnect(((MidiOutPort*)src.track)->port(), dst.port);
+            midiDriver->disconnect(((MidiOutPort*)src.track)->alsaPort(), dst.port);
+            }
+      else if (dst.type == Route::JACKMIDIPORT) {
+            audioDriver->disconnect(((MidiOutPort*)src.track)->jackPort(), dst.port);
             }
       msgRemoveRoute1(src, dst);
       }
@@ -119,15 +125,21 @@ void Audio::msgAddRoute(Route src, Route dst)
             AudioInput* ai = (AudioInput*)dst.track;
             audioDriver->connect(src.port, ai->jackPort(dst.channel));
             }
-      if (src.type == Route::MIDIPORT) {
-            midiDriver->connect(src.port, ((MidiInPort*)dst.track)->port());
+      else if (src.type == Route::JACKMIDIPORT) {
+            audioDriver->connect(src.port, ((MidiInPort*)dst.track)->jackPort());
+            }
+      else if (src.type == Route::MIDIPORT) {
+            midiDriver->connect(src.port, ((MidiInPort*)dst.track)->alsaPort());
             }
       else if (dst.type == Route::AUDIOPORT) {
             AudioOutput* ao = (AudioOutput*)src.track;
             audioDriver->connect(ao->jackPort(src.channel), dst.port);
             }
       else if (dst.type == Route::MIDIPORT) {
-            midiDriver->connect(((MidiOutPort*)src.track)->port(), dst.port);
+            midiDriver->connect(((MidiOutPort*)src.track)->alsaPort(), dst.port);
+            }
+      else if (dst.type == Route::JACKMIDIPORT) {
+            audioDriver->connect(((MidiOutPort*)src.track)->jackPort(), dst.port);
             }
       }
 
@@ -196,7 +208,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                         if (i < n && ai->jackPort(i) == 0) {
                               char buffer[128];
                               snprintf(buffer, 128, "%s-%d", name.toLatin1().data(), i);
-                              ai->setJackPort(i, audioDriver->registerInPort(QString(buffer)));
+                              ai->setJackPort(i, audioDriver->registerInPort(QString(buffer), false));
                               }
                         else if ((i >= n) && ai->jackPort(i)) {
                               RouteList* ir = node->inRoutes();
@@ -219,7 +231,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                         if (i < n && jp == 0) {
                               char buffer[128];
                               snprintf(buffer, 128, "%s-%d", name.toLatin1().data(), i);
-                              ao->setJackPort(i, audioDriver->registerOutPort(QString(buffer)));
+                              ao->setJackPort(i, audioDriver->registerOutPort(QString(buffer), false));
                               }
                         else if (i >= n && jp) {
                               RouteList* ir = node->outRoutes();

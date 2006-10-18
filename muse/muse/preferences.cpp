@@ -241,14 +241,14 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
                   break;
                   }
             }
-      QList<PortName> ol = midiDriver->inputPorts();
+      QList<PortName> ol = midiDriver->inputPorts(true);
       int i = 0;
       for (QList<PortName>::iterator ip = ol.begin(); ip != ol.end(); ++ip, ++i) {
             preferredInput->addItem(ip->name);
             if (ip->name == config->defaultMidiInputDevice)
                   preferredInput->setCurrentIndex(i);
             }
-      ol = midiDriver->outputPorts();
+      ol = midiDriver->outputPorts(true);
       i = 0;
       for (QList<PortName>::iterator ip = ol.begin(); ip != ol.end(); ++ip, ++i) {
             preferredOutput->addItem(ip->name);

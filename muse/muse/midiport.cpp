@@ -26,6 +26,7 @@
 #include "instruments/minstrument.h"
 #include "al/xml.h"
 #include "driver/mididev.h"
+#include "driver/audiodev.h"
 #include "audio.h"
 #include "midiedit/drummap.h"
 
@@ -54,7 +55,8 @@ MidiOutPort::MidiOutPort()
       _instrument = genericMidiInstrument;
       for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
             _channel[ch] = new MidiChannel(this, ch);
-      alsaPort        = 0;
+      _alsaPort       = 0;
+      _jackPort       = 0;
       _nextPlayEvent  = _playEvents.end();
       _sendSync       = false;
       _deviceId       = 127;        // all
@@ -77,11 +79,12 @@ void MidiOutPort::playFifo()
 
 MidiOutPort::~MidiOutPort()
       {
-      if (alsaPort)
-            midiDriver->unregisterPort(alsaPort);
-      for (int ch = 0; ch < MIDI_CHANNEL; ++ch) {
+      if (_alsaPort)
+            midiDriver->unregisterPort(_alsaPort);
+      if (_jackPort)
+            audioDriver->unregisterPort(_jackPort);
+      for (int ch = 0; ch < MIDI_CHANNEL; ++ch)
             delete _channel[ch];
-            }
       }
 
 //---------------------------------------------------------
@@ -91,10 +94,10 @@ MidiOutPort::~MidiOutPort()
 void MidiOutPort::setName(const QString& s)
       {
       Track::setName(s);
-      if (alsaPort)
-            midiDriver->setPortName(alsaPort, s);
-      else
-            alsaPort = midiDriver->registerInPort(s);
+      if (_alsaPort)
+            midiDriver->setPortName(_alsaPort, s);
+      if (_jackPort)
+            audioDriver->setPortName(_jackPort, s);
       for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
             _channel[ch]->setDefaultName();
       }
@@ -150,19 +153,35 @@ void MidiOutPort::read(QDomNode node)
 
 void MidiOutPort::activate1()
       {
-      if (alsaPort == 0) {
-            _outRoutes.clear();
-            return;
+      if (_jackPort)
+            printf("MidiOutPort::activate1(): jack port already active!\n");
+      else
+            _jackPort = audioDriver->registerOutPort(_name, true);
+      if (_alsaPort)
+            printf("MidiOutPort::activate1(): alsa port already active!\n");
+      else
+            _alsaPort = midiDriver->registerInPort(_name, true);
+      }
+
+//---------------------------------------------------------
+//   activate2
+//    connect all routes to jack; can only be done if
+//    jack is activ running
+//---------------------------------------------------------
+
+void MidiOutPort::activate2()
+      {
+      if (audioState != AUDIO_RUNNING) {
+            printf("MidiOutPort::activate2(): no audio running !\n");
+            abort();
             }
-      for (iRoute i = _outRoutes.begin(); i != _outRoutes.end();) {
-            iRoute ni = i;
-            ++ni;
-            Route r = *i;
-            if (r.type == Route::MIDIPORT) {
-                  if (!midiDriver->connect(alsaPort, i->port))
-                        _outRoutes.erase(i);
-                  }
-            i = ni;
+      for (iRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i) {
+            if (i->type == Route::JACKMIDIPORT)
+                  audioDriver->connect(_jackPort, i->port);
+            else if (i->type == Route::MIDIPORT)
+                  midiDriver->connect(_alsaPort, i->port);
+            else
+                  printf("MidiOutPort::activate2(): bad route type\n");
             }
       }
 
@@ -172,8 +191,24 @@ void MidiOutPort::activate1()
 
 void MidiOutPort::deactivate()
       {
-      for (ciRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i)
-            midiDriver->disconnect(alsaPort, i->port);
+      for (ciRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i) {
+            if (i->type ==Route::JACKMIDIPORT)
+                  audioDriver->disconnect(_jackPort, i->port);
+            else if (i->type == Route::MIDIPORT)
+                  midiDriver->disconnect(_alsaPort, i->port);
+            }
+      if (_jackPort) {
+            audioDriver->unregisterPort(_jackPort);
+            _jackPort = 0;
+            }
+      else
+            printf("MidiInPort::deactivate(): jack port not active!\n");
+      if (_alsaPort) {
+            midiDriver->unregisterPort(_alsaPort);
+            _alsaPort = 0;
+            }
+      else
+            printf("MidiInPort::deactivate(): alsa port not active!\n");
       }
 
 //---------------------------------------------------------
@@ -204,7 +239,7 @@ void MidiOutPort::putEvent(const MidiEvent& ev)
                   }
 
             if (a == CTRL_PITCH) {
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_PITCHBEND, b, 0));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_PITCHBEND, b, 0));
                   return;
                   }
             if (a == CTRL_PROGRAM) {
@@ -214,10 +249,10 @@ void MidiOutPort::putEvent(const MidiEvent& ev)
                         int lb = (b >> 8) & 0xff;
                         int pr = b & 0x7f;
                         if (hb != 0xff)
-                              midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HBANK, hb));
+                              midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HBANK, hb));
                         if (lb != 0xff)
-                              midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LBANK, lb));
-                        midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_PROGRAM, pr, 0));
+                              midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LBANK, lb));
+                        midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_PROGRAM, pr, 0));
                         return;
 //                        }
                   }
@@ -229,63 +264,63 @@ void MidiOutPort::putEvent(const MidiEvent& ev)
                   sysex[4] = b & 0x7f;
                   sysex[5] = (b >> 7) & 0x7f;
                   MidiEvent e(ev.time(), ME_SYSEX, sysex, 6);
-                  midiDriver->putEvent(alsaPort, e);
+                  midiDriver->putEvent(_alsaPort, e);
                   return;
                   }
 
 #if 1 // if ALSA cannot handle RPN NRPN etc.
             if (a < 0x1000) {          // 7 Bit Controller
                   //putMidiEvent(MidiEvent(0, chn, ME_CONTROLLER, a, b));
-                  midiDriver->putEvent(alsaPort, ev);
+                  midiDriver->putEvent(_alsaPort, ev);
                   }
             else if (a < 0x20000) {     // 14 bit high resolution controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, ctrlH, dataH));
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, ctrlL, dataL));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, ctrlH, dataH));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, ctrlL, dataL));
                   }
             else if (a < 0x30000) {     // RPN 7-Bit Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, b));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, b));
                   }
             else if (a < 0x40000) {     // NRPN 7-Bit Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, b));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, b));
                   }
             else if (a < 0x60000) {     // RPN14 Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
                   }
             else if (a < 0x70000) {     // NRPN14 Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-                  midiDriver->putEvent(alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+                  midiDriver->putEvent(_alsaPort, MidiEvent(0, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
                   }
             else {
                   printf("putEvent: unknown controller type 0x%x\n", a);
                   }
 #endif
             }
-      midiDriver->putEvent(alsaPort, ev);
+      midiDriver->putEvent(_alsaPort, ev);
       }
 
 //---------------------------------------------------------
@@ -295,7 +330,7 @@ void MidiOutPort::putEvent(const MidiEvent& ev)
 void MidiOutPort::playEventList()
       {
       for (; _nextPlayEvent != _playEvents.end(); ++_nextPlayEvent)
-            midiDriver->putEvent(alsaPort, *_nextPlayEvent);
+            midiDriver->putEvent(_alsaPort, *_nextPlayEvent);
       }
 
 //---------------------------------------------------------
@@ -479,7 +514,8 @@ void MidiOutPort::setSendSync(bool val)
 MidiInPort::MidiInPort()
    : MidiTrackBase(MIDI_IN)
       {
-      alsaPort = 0;
+      _alsaPort = 0;
+      _jackPort = 0;
       }
 
 //---------------------------------------------------------
@@ -488,8 +524,10 @@ MidiInPort::MidiInPort()
 
 MidiInPort::~MidiInPort()
       {
-      if (alsaPort)
-            midiDriver->unregisterPort(alsaPort);
+      if (_alsaPort)
+            midiDriver->unregisterPort(_alsaPort);
+      if (_jackPort)
+            audioDriver->unregisterPort(_jackPort);
       }
 
 //---------------------------------------------------------
@@ -499,10 +537,10 @@ MidiInPort::~MidiInPort()
 void MidiInPort::setName(const QString& s)
       {
       Track::setName(s);
-      if (alsaPort)
-            midiDriver->setPortName(alsaPort, s);
-      else
-            alsaPort = midiDriver->registerOutPort(s);
+      if (_alsaPort)
+            midiDriver->setPortName(_alsaPort, s);
+      if (_jackPort)
+            audioDriver->setPortName(_jackPort, s);
       }
 
 //---------------------------------------------------------
@@ -537,17 +575,35 @@ void MidiInPort::read(QDomNode node)
 
 void MidiInPort::activate1()
       {
-      if (alsaPort == 0) {
-            _inRoutes.clear();
-            return;
+      if (_alsaPort)
+            printf("MidiInPort::activate1(): alsa port already active!\n");
+      else
+            _alsaPort = midiDriver->registerOutPort(_name, true);
+      if (_jackPort)
+            printf("MidiInPort::activate1(): jack port already active!\n");
+      else
+            _jackPort = audioDriver->registerInPort(_name, true);
+      }
+
+//---------------------------------------------------------
+//   activate2
+//    connect all routes to jack; can only be done if
+//    jack is activ running
+//---------------------------------------------------------
+
+void MidiInPort::activate2()
+      {
+      if (audioState != AUDIO_RUNNING) {
+            printf("MidiInPort::activate2(): no audio running !\n");
+            abort();
             }
-      for (iRoute i = _inRoutes.begin(); i != _inRoutes.end();) {
-            iRoute ni = i;
-            ++ni;
-            Route r = *i;
-            if (!midiDriver->connect(i->port, alsaPort))
-                  _inRoutes.erase(i);
-            i = ni;
+      for (iRoute i = _inRoutes.begin(); i != _inRoutes.end(); ++i) {
+            if (i->type == Route::JACKMIDIPORT)
+                  audioDriver->connect(i->port, _jackPort);
+            else if (i->type == Route::MIDIPORT)
+                  midiDriver->connect(i->port, _alsaPort);
+            else
+                  printf("MidiInPort::activate2(): bad route type\n");
             }
       }
 
@@ -557,8 +613,26 @@ void MidiInPort::activate1()
 
 void MidiInPort::deactivate()
       {
-      for (ciRoute i = _inRoutes.begin(); i != _inRoutes.end(); ++i)
-            midiDriver->disconnect(i->port, alsaPort);
+      for (ciRoute i = _inRoutes.begin(); i != _inRoutes.end(); ++i) {
+            if (i->type == Route::JACKMIDIPORT)
+                  audioDriver->disconnect(i->port, _jackPort);
+            else if (i->type == Route::MIDIPORT)
+                  midiDriver->disconnect(i->port, _alsaPort);
+            else
+                  printf("MidiInPort::deactivate(): bad route type\n");
+            }
+      if (_jackPort) {
+            audioDriver->unregisterPort(_jackPort);
+            _jackPort = 0;
+            }
+      else
+            printf("MidiInPort::deactivate(): jack port not active!\n");
+      if (_alsaPort) {
+            audioDriver->unregisterPort(_alsaPort);
+            _alsaPort = 0;
+            }
+      else
+            printf("MidiInPort::deactivate(): alsa port not active!\n");
       }
 
 //---------------------------------------------------------

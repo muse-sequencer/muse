@@ -30,7 +30,7 @@
 class AudioInput : public AudioTrack {
       Q_OBJECT
 
-      void* jackPorts[MAX_CHANNELS];
+      Port jackPorts[MAX_CHANNELS];
       void collectInputData();
 
    public:

@@ -100,7 +100,7 @@ void AudioInput::activate1()
             if (jackPorts[i])
                   printf("AudioInput::activate(): already active!\n");
             else
-                  jackPorts[i] = audioDriver->registerInPort(buffer);
+                  jackPorts[i] = audioDriver->registerInPort(buffer, false);
             }
       }
 
@@ -116,9 +116,8 @@ void AudioInput::activate2()
             printf("AudioInput::activate2(): no audio running !\n");
             abort();
             }
-      for (iRoute i = _inRoutes.begin(); i != _inRoutes.end(); ++i) {
+      for (iRoute i = _inRoutes.begin(); i != _inRoutes.end(); ++i)
             audioDriver->connect(i->port, jackPorts[i->channel]);
-            }
       }
 
 //---------------------------------------------------------

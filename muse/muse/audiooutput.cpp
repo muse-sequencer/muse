@@ -149,7 +149,7 @@ void AudioOutput::activate1()
                   printf("AudioOutput::activate(): already active!\n");
                   }
             else
-                  jackPorts[i] = audioDriver->registerOutPort(QString(buffer));
+                  jackPorts[i] = audioDriver->registerOutPort(QString(buffer), false);
             }
       }
 
@@ -163,10 +163,8 @@ void AudioOutput::activate2()
             printf("AudioOutput::activate2(): no audio running !\n");
             abort();
             }
-      for (iRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i) {
-            i->port = audioDriver->findPort(i->name());
+      for (iRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i)
             audioDriver->connect(jackPorts[i->channel], i->port);
-            }
       }
 
 //---------------------------------------------------------

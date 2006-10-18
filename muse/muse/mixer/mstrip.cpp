@@ -14,6 +14,7 @@
 #include "widgets/simplebutton.h"
 #include "widgets/utils.h"
 #include "driver/mididev.h"
+#include "driver/audiodev.h"
 #include "synth.h"
 #include "midirack.h"
 #include "midiplugin.h"
@@ -377,9 +378,9 @@ void MidiChannelStrip::iRoutePressed()
             Route srcRoute(track, -1, Route::TRACK);
 
             if (n->isChecked())
-                  audio->msgRemoveRoute(srcRoute, dstRoute);
-            else
                   audio->msgAddRoute(srcRoute, dstRoute);
+            else
+                  audio->msgRemoveRoute(srcRoute, dstRoute);
             song->update(SC_ROUTE);
             }
       delete pup;
@@ -918,14 +919,13 @@ void MidiOutPortStrip::oRoutePressed()
       pup->addSeparator()->setText(tr("MidiDevices"));
       RouteList* orl = track->outRoutes();
 
-      QList<PortName> ol = midiDriver->outputPorts();
-      int idx = 0;
+      QList<PortName> ol = midiDriver->outputPorts(true);
       foreach (PortName ip, ol) {
             QAction* oa = pup->addAction(ip.name);
             oa->setCheckable(true);
-            oa->setData(qVariantFromValue(ip.port));
-
             Route dst(ip.port, Route::MIDIPORT);
+            oa->setData(QVariant::fromValue(dst));
+
             for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
                   if (*ir == dst) {
                         oa->setChecked(true);
@@ -937,15 +937,32 @@ void MidiOutPortStrip::oRoutePressed()
       //
       // add software synthesizer to list
       //
-      idx = 1000;
       SynthIList* sl = song->syntis();
-      for (iSynthI i = sl->begin(); i != sl->end(); ++i, ++idx) {
+      for (iSynthI i = sl->begin(); i != sl->end(); ++i) {
             SynthI* track = *i;
             QAction* oa = pup->addAction(track->name());
             oa->setCheckable(true);
-            oa->setData(QVariant(idx));
-
             Route dst(track, -1, Route::SYNTIPORT);
+            oa->setData(QVariant::fromValue(dst));
+
+            for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
+                  if (*ir == dst) {
+                        oa->setChecked(true);
+                        break;
+                        }
+                  }
+            }
+
+      //
+      // add JACK midi port to list
+      //
+      ol = audioDriver->inputPorts(true);
+      foreach (PortName ip, ol) {
+            QAction* oa = pup->addAction(ip.name);
+            oa->setCheckable(true);
+            Route dst(ip.port, Route::JACKMIDIPORT);
+            oa->setData(QVariant::fromValue(dst));
+
             for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
                   if (*ir == dst) {
                         oa->setChecked(true);
@@ -956,30 +973,13 @@ void MidiOutPortStrip::oRoutePressed()
 
       QAction* action = pup->exec(QCursor::pos());
       if (action) {
-            QString s(action->text());
-            int n = action->data().toInt();
-
+            Route dstRoute = action->data().value<Route>();
             Route srcRoute(track);
-            if (n < 1000) {
-                  PortName ip = ol[n];
-                  Route dstRoute(ip.port, Route::MIDIPORT);
-                  if (action->isChecked())
-                        audio->msgRemoveRoute(srcRoute, dstRoute);
-                  else
-                        audio->msgAddRoute(srcRoute, dstRoute);
-                  }
-            else {
-                  for (iSynthI i = sl->begin(); i != sl->end(); ++i) {
-                        if ((*i)->name() == s) {
-                              Route dstRoute(*i, -1, Route::SYNTIPORT);
-                              if (action->isChecked())
-                                    audio->msgRemoveRoute(srcRoute, dstRoute);
-                              else
-                                    audio->msgAddRoute(srcRoute, dstRoute);
-                              break;
-                              }
-                        }
-                  }
+
+            if (action->isChecked())
+                  audio->msgAddRoute(srcRoute, dstRoute);
+            else
+                  audio->msgRemoveRoute(srcRoute, dstRoute);
             song->update(SC_ROUTE);
             }
       delete pup;
@@ -1263,13 +1263,31 @@ void MidiInPortStrip::iRoutePressed()
 
       RouteList* irl = track->inRoutes();
 
-      QList<PortName> ol = midiDriver->inputPorts();
+      QList<PortName> ol = midiDriver->inputPorts(false);
       foreach (PortName ip, ol) {
             QAction* action = pup->addAction(ip.name);
             action->setCheckable(true);
-            Route dst(ip.port, Route::MIDIPORT);
+            Route src(ip.port, Route::MIDIPORT);
+            action->setData(QVariant::fromValue(src));
             for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
-                  if (*ir == dst) {
+                  if (*ir == src) {
+                        action->setChecked(true);
+                        break;
+                        }
+                  }
+            }
+      //
+      // add JACK midi ports to list
+      //
+      ol = audioDriver->outputPorts(true);
+      foreach (PortName ip, ol) {
+            QAction* action = pup->addAction(ip.name);
+            action->setCheckable(true);
+            Route src(ip.port, Route::JACKMIDIPORT);
+            action->setData(QVariant::fromValue(src));
+
+            for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
+                  if (*ir == src) {
                         action->setChecked(true);
                         break;
                         }
@@ -1277,9 +1295,7 @@ void MidiInPortStrip::iRoutePressed()
             }
       QAction* action = pup->exec(QCursor::pos());
       if (action) {
-            QString s(action->text());
-            Port port = midiDriver->findPort(s.toAscii().data());
-            Route srcRoute(port, Route::MIDIPORT);
+            Route srcRoute = action->data().value<Route>();
             Route dstRoute(track, -1, Route::TRACK);
 
             // check if route src->dst exists:
@@ -1551,12 +1567,13 @@ void MidiSyntiStrip::oRoutePressed()
                   QString s;
                   s.setNum(channel+1);
                   QAction* action = m->addAction(s);
-                  action->setData(pn * 16 + channel);
                   MidiChannel* mc = op->channel(channel);
                   Route r(mc, -1, Route::TRACK);
+                  action->setData(QVariant::fromValue(r));
+                  action->setCheckable(true);
+            
                   for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
                         if (r == *ir) {
-                              action->setCheckable(true);
                               action->setChecked(true);
                               break;
                               }
@@ -1565,13 +1582,8 @@ void MidiSyntiStrip::oRoutePressed()
             }
       QAction* action = pup.exec(QCursor::pos());
       if (action) {
-            int n = action->data().toInt();
-            int portno  = n >> 4;
-            int channel = n & 0xf;
-            MidiOutPort* mp = mpl->index(portno);
-            MidiChannel* mc = mp->channel(channel);
+            Route dstRoute = action->data().value<Route>();
             Route srcRoute(track, -1, Route::TRACK);
-            Route dstRoute(mc, -1, Route::TRACK);
 
             // remove old route
             // note: audio->msgRemoveRoute() changes orl list
@@ -1610,8 +1622,7 @@ void MidiSyntiStrip::iRoutePressed()
       RouteList* irl = t->inRoutes();
 
       MidiInPortList* ipl = song->midiInPorts();
-      int tn = 0;
-      for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i, ++tn) {
+      for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i) {
             QMenu* m = pup.addMenu((*i)->name());
             m->addSeparator()->setText(tr("Channel"));
             QAction* action = m->addAction(tr("All"));
