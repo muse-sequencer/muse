@@ -454,10 +454,10 @@ void Song::setPlay(bool f)
 void Song::setStop(bool f)
       {
       // only allow the user to set the button "on"
-      if (!f)
-            muse->stopAction->setChecked(true);
-      else
+      if (f)
             audio->msgPlay(false);
+      else
+            muse->stopAction->setChecked(true);
       }
 
 //---------------------------------------------------------
@@ -1241,6 +1241,7 @@ void Song::seqSignal(int fd)
                   case MSG_JACK_SHUTDOWN:
                        {
                         muse->seqStop();
+
                         // give the user a sensible explanation
                         int btn = QMessageBox::critical( muse, tr("Jack shutdown!"),
                             tr("Jack has detected a performance problem which has lead to\n"
@@ -1259,8 +1260,11 @@ void Song::seqSignal(int fd)
                             "To proceed check the status of Jack and try to restart it and then .\n"
                             "click on the Restart button."), "restart", "cancel");
                         if (btn == 0) {
-                              printf("restarting!\n");
-                              muse->seqRestart();
+printf("restarting!\n");
+                              audioDriver->restart();
+	                        if (!muse->seqStart())
+      	                        return;
+	                        audioDriver->graphChanged();
                               }
                         }
                         break;

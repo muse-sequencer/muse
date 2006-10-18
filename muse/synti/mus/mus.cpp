@@ -195,7 +195,7 @@ int main(int argc, char* argv[])
       QString instanceName;
       QString s(pluginName.left(pluginName.size()-3));
       s += "-%1";
-      static const int MAX_INSTANCES = 500;
+      static const int MAX_INSTANCES = 100;
       for (i = 0; i < MAX_INSTANCES; ++i) {
             instanceName = s.arg(i);
             const char* jackIdString = strdup(instanceName.toLocal8Bit().data());

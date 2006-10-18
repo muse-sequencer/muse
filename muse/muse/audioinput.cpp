@@ -97,10 +97,10 @@ void AudioInput::activate1()
       for (int i = 0; i < channels(); ++i) {
             char buffer[128];
             snprintf(buffer, 128, "%s-%d", _name.toAscii().data(), i);
+            // following happens on reconnect to JACK server:
             if (jackPorts[i])
                   printf("AudioInput::activate(): already active!\n");
-            else
-                  jackPorts[i] = audioDriver->registerInPort(buffer, false);
+            jackPorts[i] = audioDriver->registerInPort(buffer, false);
             }
       }
 

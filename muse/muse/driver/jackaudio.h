@@ -39,6 +39,7 @@ class JackAudio : public AudioDriver {
       virtual ~JackAudio();
       virtual bool init();
       virtual void start(int);
+      virtual void restart();
       virtual void stop ();
       virtual void zeroClientPtr() { _client = 0; }
       virtual unsigned framePos() const;

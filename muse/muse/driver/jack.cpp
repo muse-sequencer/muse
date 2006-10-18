@@ -138,9 +138,6 @@ static void processShutdown(void*)
 	if (audioState == AUDIO_RUNNING)
 		fprintf(stderr, "MusE: sequencer still running, something is very wrong.\n");
       jackAudio->zeroClientPtr(); // jack disconnect client no longer valid
-//      delete jackAudio;
-//      jackAudio   = 0;
-//      audioDriver = 0;
       }
 
 //---------------------------------------------------------
@@ -223,23 +220,29 @@ bool initJackAudio()
 
       if (debugMsg)
             fprintf(stderr, "init Jack Audio: register device\n");
-      if (client) {
-            jack_set_error_function(jackError);
-            if (debugMsg)
-                  fprintf(stderr, "init Jack Audio: register device\n");
 
-            jackAudio = new JackAudio(client, jackIdString);
-            if (debugMsg)
-                  fprintf(stderr, "init Jack Audio: register client\n");
-            jackAudio->registerClient();
-            AL::sampleRate  = jack_get_sample_rate(client);
-            segmentSize = jack_get_buffer_size(client);
-            }
-      if (client) {
-            audioDriver = jackAudio;
-            return false;
-            }
-      return true;
+      jack_set_error_function(jackError);
+      if (debugMsg)
+            fprintf(stderr, "init Jack Audio: register device\n");
+
+      jackAudio = new JackAudio(client, jackIdString);
+      if (debugMsg)
+            fprintf(stderr, "init Jack Audio: register client\n");
+      jackAudio->registerClient();
+      AL::sampleRate  = jack_get_sample_rate(client);
+      segmentSize     = jack_get_buffer_size(client);
+      audioDriver     = jackAudio;
+      return false;
+      }
+
+//---------------------------------------------------------
+//   restart
+//---------------------------------------------------------
+
+void JackAudio::restart()
+      {
+      _client = jack_client_new(jackRegisteredName);
+      registerClient();
       }
 
 //---------------------------------------------------------
@@ -603,10 +606,10 @@ void JackAudio::start(int)
 
 void JackAudio::stop()
       {
-      if (jack_deactivate(_client)) {
-            fprintf (stderr, "JACK: cannot deactivate client");
-            }
-      //printf("JackAudio::stop() %p\n", _client);
+      if (_client == 0)
+            return;
+      if (jack_deactivate(_client))
+            fprintf (stderr, "JACK: cannot deactivate client\n");
       }
 
 //---------------------------------------------------------
@@ -615,8 +618,7 @@ void JackAudio::stop()
 
 unsigned JackAudio::framePos() const
       {
-      jack_nframes_t n = jack_frame_time(_client);
-      return n;
+      return _client ? jack_frame_time(_client) : 0;
       }
 
 //---------------------------------------------------------
@@ -730,7 +732,8 @@ void JackAudio::startTransport()
 void JackAudio::stopTransport()
       {
 //      printf("JACK: stopTransport\n");
-      jack_transport_stop(_client);
+      if (_client)
+            jack_transport_stop(_client);
       }
 
 //---------------------------------------------------------
