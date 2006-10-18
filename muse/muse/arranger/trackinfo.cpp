@@ -29,6 +29,9 @@
 #include "tllineedit.h"
 #include "audio.h"
 #include "gui.h"
+#include "midioutport.h"
+#include "midiinport.h"
+#include "midichannel.h"
 
 //---------------------------------------------------------
 //   createTrackInfo

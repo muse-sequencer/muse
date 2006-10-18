@@ -37,6 +37,7 @@
 #include "midictrl.h"
 #include "gconfig.h"
 #include "part.h"
+#include "midichannel.h"
 
 int Arranger::trackNameWidth = 80;
 

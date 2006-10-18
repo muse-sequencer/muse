@@ -36,6 +36,8 @@
 #include "al/tempo.h"
 #include "widgets/utils.h"
 #include "synth.h"
+#include "midioutport.h"
+#include "midiinport.h"
 
 extern double curTime();
 extern bool initJackAudio();

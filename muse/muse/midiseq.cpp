@@ -39,6 +39,9 @@
 #include "al/tempo.h"
 #include "al/al.h"
 #include "instruments/minstrument.h"
+#include "midichannel.h"
+#include "midiinport.h"
+#include "midioutport.h"
 
 MidiSeq* midiSeq;
 static const unsigned char mmcStopMsg[] =  { 0x7f, 0x7f, 0x06, 0x01 };

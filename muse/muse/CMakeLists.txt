@@ -73,6 +73,9 @@ QT4_WRAP_CPP ( muse_moc_headers
       audiogroup.h
       exportmidi.h
       importmidi.h
+      midichannel.h
+      midiinport.h
+      midioutport.h
       )
 
 QT4_ADD_RESOURCES (muse_qrc_files muse.qrc)
@@ -123,7 +126,9 @@ add_executable ( muse
       gconfig.cpp 
       midirc.cpp 
       midififo.cpp
-      midiport.cpp
+      midioutport.cpp
+      midiinport.cpp
+      midichannel.cpp
 
       projectpropsdialog.cpp
 	projectdialog.cpp

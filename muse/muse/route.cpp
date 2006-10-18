@@ -27,6 +27,7 @@
 #include "driver/mididev.h"
 #include "al/xml.h"
 #include "auxplugin.h"
+#include "midichannel.h"
 
 //---------------------------------------------------------
 //   Route

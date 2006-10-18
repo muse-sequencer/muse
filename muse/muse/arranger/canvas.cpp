@@ -31,6 +31,7 @@
 #include "tlswidget.h"
 #include "part.h"
 #include "gui.h"
+#include "midichannel.h"
 
 #include <samplerate.h>
 
@@ -254,7 +255,7 @@ void PartCanvas::paint(QPainter& p, QRect r)
                         continue;
                   TLSWidget* tls = (TLSWidget*)(at->tw);
                   int y = tls->y();
-                  int h = tls->height();
+                  // int h = tls->height();
                   p.setPen(QPen(Qt::lightGray, trackSeparator, Qt::SolidLine));
                   p.drawLine(from, y + yTrackOffset, to, y + yTrackOffset);
                   QPoint off(0, y);

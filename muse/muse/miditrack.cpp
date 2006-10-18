@@ -27,6 +27,7 @@
 #include "part.h"
 #include "al/tempo.h"
 #include "midiedit/drummap.h"
+#include "midichannel.h"
 
 //---------------------------------------------------------
 //   MidiTrack
@@ -546,7 +547,7 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MPEventList* dst)
                               if (velo < 1)           // no off event
                                     velo = 1;
                               int elen = (ev.lenTick() * len)/100;
-                              if (elen <= 0)     // don´t allow zero length
+                              if (elen <= 0)     // don´ allow zero length
                                     elen = 1;
                               int veloOff = ev.veloOff();
 

@@ -73,11 +73,11 @@ class DummyAudio : public AudioDriver {
 
       virtual void registerClient() {}
 
-      virtual void* registerOutPort(const QString& s, bool midi = false) {
+      virtual void* registerOutPort(const QString& s, bool) {
             iPorts.push_back(QString(s));
             return (void*)(iPorts.size() + 3000);
             }
-      virtual void* registerInPort(const QString& s, bool midi = false) {
+      virtual void* registerInPort(const QString& s, bool) {
             oPorts.push_back(QString(s));
             return (void*)(oPorts.size() + 4000);
             }

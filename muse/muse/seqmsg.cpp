@@ -34,6 +34,9 @@
 #include "midictrl.h"
 #include "midiplugin.h"
 #include "part.h"
+#include "midichannel.h"
+#include "midioutport.h"
+#include "midiinport.h"
 
 //---------------------------------------------------------
 //   sendMsg

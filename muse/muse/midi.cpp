@@ -37,6 +37,9 @@
 #include "al/sig.h"
 #include "part.h"
 #include "midiplugin.h"
+#include "midiinport.h"
+#include "midioutport.h"
+#include "midichannel.h"
 
 extern void dump(const unsigned char* p, int n);
 

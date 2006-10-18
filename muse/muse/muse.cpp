@@ -41,7 +41,6 @@
 #include "marker/markerview.h"
 #include "transpose.h"
 #include "preferences.h"
-// #include "widgets/gatetime.h"
 #include "audio.h"
 #include "midiseq.h"
 #include "audioprefetch.h"
@@ -67,6 +66,7 @@
 #include "templatedialog.h"
 #include "midiedit/miditracker.h"
 #include "projectpropsdialog.h"
+#include "midichannel.h"
 
 static pthread_t watchdogThread;
 

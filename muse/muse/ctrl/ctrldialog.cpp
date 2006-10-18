@@ -22,6 +22,7 @@
 #include "midictrl.h"
 #include "track.h"
 #include "miditrack.h"
+#include "midichannel.h"
 #include "audiotrack.h"
 #include "plugin.h"
 #include "pipeline.h"

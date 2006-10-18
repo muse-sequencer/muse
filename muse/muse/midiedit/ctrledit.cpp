@@ -26,6 +26,8 @@
 #include "ctrl/ctrldialog.h"
 #include "widgets/tools.h"
 #include "miditrack.h"
+#include "midioutport.h"
+#include "midichannel.h"
 
 static Ctrl veloList(CTRL_VELOCITY, "velocity", Ctrl::DISCRETE |Ctrl::INT, 0.0, 127.0);    // dummy
 static Ctrl sveloList(CTRL_SVELOCITY, "single velocity", Ctrl::DISCRETE |Ctrl::INT, 0.0, 127.0);    // dummy

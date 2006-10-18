@@ -14,6 +14,9 @@
 #include "mstrip.h"
 #include "routedialog.h"
 #include "synth.h"
+#include "midiinport.h"
+#include "midichannel.h"
+#include "midioutport.h"
 
 extern void populateAddTrack(QMenu* addTrack);
 

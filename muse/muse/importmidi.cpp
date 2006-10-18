@@ -39,6 +39,8 @@
 #include "mixer/mixer.h"
 #include "arranger/arranger.h"
 #include "midictrl.h"
+#include "midichannel.h"
+#include "midioutport.h"
 
 //---------------------------------------------------------
 //   ImportMidiDialog

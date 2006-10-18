@@ -24,7 +24,6 @@
 #include "midictrl.h"
 #include "globals.h"
 #include "widgets/filedialog.h"
-#include "track.h"
 #include "song.h"
 #include "mpevent.h"
 #include "event.h"
@@ -35,6 +34,7 @@
 #include "al/marker.h"
 #include "part.h"
 #include "exportmidi.h"
+#include "midichannel.h"
 
 //---------------------------------------------------------
 //   addController

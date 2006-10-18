@@ -20,6 +20,7 @@
 
 #include "song.h"
 #include "track.h"
+#include "midichannel.h"
 #include "tlswidget.h"
 #include "tlwlayout.h"
 #include "icons.h"

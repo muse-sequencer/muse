@@ -21,6 +21,8 @@
 #include "alsamidi.h"
 #include "globals.h"
 #include "midi.h"
+#include "midiinport.h"
+#include "midioutport.h"
 #include "../midiseq.h"
 #include "../song.h"
 #include "al/pos.h"

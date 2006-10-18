@@ -19,7 +19,7 @@
 //=============================================================================
 
 #include "minstrument.h"
-#include "track.h"
+#include "midioutport.h"
 #include "globals.h"
 #include "event.h"
 #include "mpevent.h"

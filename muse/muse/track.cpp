@@ -31,6 +31,8 @@
 #include "instruments/minstrument.h"
 #include "part.h"
 #include "gui.h"
+#include "midioutport.h"
+#include "midichannel.h"
 
 // synchronize with TrackType!:
 

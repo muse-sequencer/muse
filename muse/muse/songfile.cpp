@@ -38,6 +38,9 @@
 #include "midiedit/pianoroll.h"
 #include "part.h"
 #include "marker/markerview.h"
+#include "midioutport.h"
+#include "midiinport.h"
+// #include "midichannel.h"
 
 //---------------------------------------------------------
 //   readPart

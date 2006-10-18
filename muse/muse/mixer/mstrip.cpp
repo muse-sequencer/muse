@@ -18,6 +18,9 @@
 #include "synth.h"
 #include "midirack.h"
 #include "midiplugin.h"
+#include "midiinport.h"
+#include "midioutport.h"
+#include "midichannel.h"
 
 #include "awl/midimslider.h"
 #include "awl/midimeter.h"

@@ -20,6 +20,7 @@
 
 #include "outportcombo.h"
 #include "song.h"
+#include "midioutport.h"
 
 //---------------------------------------------------------
 //   OutportCombo

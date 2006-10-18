@@ -29,6 +29,8 @@
 #include "widgets/simplebutton.h"
 #include "widgets/utils.h"
 #include "auxplugin.h"
+#include "midiinport.h"
+#include "midioutport.h"
 
 #include "awl/volknob.h"
 #include "awl/panknob.h"

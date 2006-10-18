@@ -34,6 +34,8 @@
 #include "synth.h"
 #include "widgets/outportcombo.h"
 #include "audio.h"
+#include "midioutport.h"
+#include "midichannel.h"
 
 //---------------------------------------------------------
 //   TLWidget

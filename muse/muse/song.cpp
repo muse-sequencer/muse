@@ -41,6 +41,9 @@
 #include "midirc.h"
 #include "part.h"
 #include "conf.h"
+#include "midichannel.h"
+#include "midioutport.h"
+#include "midiinport.h"
 
 Song* song;
 

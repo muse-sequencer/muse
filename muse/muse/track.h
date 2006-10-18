@@ -45,9 +45,11 @@ class SynthI;
 class MidiPlugin;
 class MidiPluginI;
 class MidiInstrument;
-class MidiChannel;
 class PartList;
 class Part;
+class MidiOutPort;
+class MidiInPort;
+class MidiChannel;
 
 #ifndef __APPLE__
 // actually it should check for ALSA but I don't know how to do that
@@ -339,168 +341,6 @@ class MidiTrackBase : public Track {
       };
 
 //---------------------------------------------------------
-//   MidiInPort
-//---------------------------------------------------------
-
-class MidiInPort : public MidiTrackBase {
-      Q_OBJECT
-
-      Port _alsaPort;
-      Port _jackPort;
-
-      MPEventList _recordEvents;
-
-   public:
-      MidiInPort();
-      ~MidiInPort();
-
-      virtual void activate1();
-      virtual void activate2();
-      virtual void deactivate();
-      virtual void setName(const QString& s);
-      virtual void write(Xml&) const;
-      virtual void read(QDomNode);
-      virtual Track* newTrack() const     { return new MidiInPort(); }
-      virtual bool isMute() const         { return _mute; }
-      virtual Part* newPart(Part*, bool)  { return 0; }
-      Port alsaPort() const               { return _alsaPort; }
-      Port jackPort() const               { return _jackPort; }
-
-#ifndef __APPLE__      
-      void eventReceived(snd_seq_event_t*);
-#endif
-      virtual void getEvents(unsigned from, unsigned to, int channel, MPEventList* dst);
-      void afterProcess();
-      };
-
-//---------------------------------------------------------
-//   MidiChannel
-//---------------------------------------------------------
-
-class MidiOutPort;
-
-class MidiChannel : public MidiTrackBase {
-      Q_OBJECT
-
-      DrumMap* _drumMap;
-      bool _useDrumMap;
-      MidiOutPort* _port;
-      int _channelNo;
-
-      void clearDevice();
-
-   signals:
-      void useDrumMapChanged(bool);
-
-   public:
-      MidiChannel(MidiOutPort*, int);
-      ~MidiChannel();
-
-      MidiOutPort* port() const           { return _port; }
-      int channelNo() const               { return _channelNo; }
-
-      virtual void write(Xml&) const;
-      virtual void read(QDomNode);
-      virtual Track* newTrack() const     { return 0; }
-      virtual bool isMute() const;
-      virtual Part* newPart(Part*, bool)  { return 0; }
-
-      bool guiVisible() const;
-      bool hasGui() const;
-
-      // void putEvent(const MidiEvent&);
-      void playMidiEvent(MidiEvent* ev);
-
-      bool useDrumMap() const            { return _useDrumMap;    }
-      void setUseDrumMap(bool val);
-      DrumMap* drumMap() const           { return _drumMap; }
-
-      virtual void emitControllerChanged(int id);
-      };
-
-//---------------------------------------------------------
-//   MidiOutPort
-//---------------------------------------------------------
-
-class MidiOutPort : public MidiTrackBase {
-      Q_OBJECT
-
-      MidiInstrument* _instrument;
-      MidiChannel* _channel[MIDI_CHANNELS];
-      Port _alsaPort;
-      Port _jackPort;
-
-      bool _sendSync;   // this port sends mtc mmc events
-      int _deviceId;    // 0-126; 127 == all
-
-      MPEventList _playEvents;   // scheduled events to play
-      iMPEvent _nextPlayEvent;
-
-      // fifo for midi events send from gui
-      // direct to midi port:
-
-      MidiFifo eventFifo;
-
-   signals:
-      void instrumentChanged();
-      void sendSyncChanged(bool);
-
-   public:
-      MidiOutPort();
-      ~MidiOutPort();
-
-      virtual void activate1();
-      virtual void activate2();
-      virtual void deactivate();
-
-      MidiChannel* channel(int n)         { return _channel[n]; }
-
-      virtual void setName(const QString& s);
-      virtual void write(Xml&) const;
-      virtual void read(QDomNode);
-      virtual Track* newTrack() const     { return new MidiOutPort(); }
-      virtual bool isMute() const         { return _mute; }
-      virtual Part* newPart(Part*, bool)  { return 0; }
-
-      MidiInstrument* instrument() const        { return _instrument; }
-      void setInstrument(MidiInstrument* i);
-
-      bool guiVisible() const;
-      bool hasGui() const;
-
-      Port alsaPort() const               { return _alsaPort; }
-      Port jackPort() const               { return _jackPort; }
-      void putEvent(const MidiEvent&);
-
-      MPEventList* playEvents()          { return &_playEvents;   }
-      iMPEvent nextPlayEvent()           { return _nextPlayEvent; }
-
-      void process(unsigned from, unsigned to, const AL::Pos&, unsigned frames);
-
-      void setNextPlayEvent(iMPEvent i)  { _nextPlayEvent = i;    }
-      void playFifo();
-      void playMidiEvent(MidiEvent*);
-
-      void sendSysex(const unsigned char*, int);
-      void sendSongpos(int);
-      void sendGmOn();
-      void sendGsOn();
-      void sendXgOn();
-      void sendStart();
-      void sendStop();
-      void sendContinue();
-      void sendClock();
-
-      void playEventList();
-
-      bool sendSync() const      { return _sendSync; }
-      void setSendSync(bool val);
-
-      int deviceId() const      { return _deviceId; }
-      void setDeviceId(int val) { _deviceId = val; }
-      };
-
-//---------------------------------------------------------
 //   TrackList
 //---------------------------------------------------------
 
@@ -612,8 +452,6 @@ typedef tracklist<MidiOutPort*> MidiOutPortList;
 typedef tracklist<MidiChannel*>::iterator iMidiChannel;
 typedef tracklist<MidiChannel*>::const_iterator ciMidiChannel;
 typedef tracklist<MidiChannel*> MidiChannelList;
-
-extern QMenu* midiPortsPopup(QWidget*);
 
 #endif
 

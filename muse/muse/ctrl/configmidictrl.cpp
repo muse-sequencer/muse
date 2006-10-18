@@ -19,8 +19,9 @@
 //=============================================================================
 
 #include "configmidictrl.h"
-#include "track.h"
 #include "miditrack.h"
+#include "midioutport.h"
+#include "midichannel.h"
 #include "midictrl.h"
 #include "instruments/minstrument.h"
 
