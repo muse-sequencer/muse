@@ -614,58 +614,44 @@ void MidiStrip::iRoutePressed()
 
 void MidiStrip::oRoutePressed()
       {
-      QMenu* pup = new QMenu(oR);
-      pup->addSeparator()->setText(tr("OutputPorts"));
+      QMenu pup(oR);
+      pup.setSeparatorsCollapsible(false);
+      pup.addSeparator()->setText(tr("OutputPorts"));
       RouteList* orl = track->outRoutes();
 
       MidiOutPortList* mpl = song->midiOutPorts();
       int pn = 0;
       for (iMidiOutPort i = mpl->begin(); i != mpl->end(); ++i, ++pn) {
             MidiOutPort* op = *i;
-            QMenu* m = pup->addMenu(op->name());
+            QMenu* m = pup.addMenu(op->name());
             m->addSeparator()->setText(tr("Channel"));
             for (int channel = 0; channel < MIDI_CHANNELS; ++channel) {
                   QString s;
                   s.setNum(channel+1);
-                  QMap<QString, QVariant> data;
-                  QAction* action = m->addAction(s); //int id = m->insertItem(s, pn * 16 + channel);
-                  data["was_checked"] = false;
-                  data["trackid"] = pn * 16 + channel;
-                  action->setData(data);
-
+                  QAction* action = m->addAction(s);
+                  action->setCheckable(true);
                   MidiChannel* mc = op->channel(channel);
-                  Route r(mc, -1, Route::TRACK);
+                  Route dst(mc, -1, Route::TRACK);
+                  action->setData(QVariant::fromValue(dst));
                   for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
-                        if (r == *ir) {
-                              action->setCheckable(true);
+                        if (dst == *ir) {
                               action->setChecked(true);
-                              data["was_checked"] = true;
-                              action->setData(data);
                               break;
                               }
                         }
                   }
             }
-      QAction* n = pup->exec(QCursor::pos());
+      QAction* n = pup.exec(QCursor::pos());
       if (n) {
-            QMap<QString, QVariant> data = n->data().toMap();
-            int trackid = data["trackid"].toInt();
-            int was_checked = data["was_checked"].toInt();
-            int portno  = trackid >> 4;
-            int channel = trackid & 0xf;
-            MidiOutPort* mp = mpl->index(portno);
-            MidiChannel* mc = mp->channel(channel);
             Route srcRoute(track, -1, Route::TRACK);
-            Route dstRoute(mc, -1, Route::TRACK);
+            Route dstRoute = n->data().value<Route>();
 
-            if (was_checked == 1)
-                  audio->msgRemoveRoute(srcRoute, dstRoute);
-            else
+            if (n->isChecked())
                   audio->msgAddRoute(srcRoute, dstRoute);
-
+            else
+                  audio->msgRemoveRoute(srcRoute, dstRoute);
             song->update(SC_ROUTE);
             }
-      delete pup;
       oR->setDown(false);     // pup->exec() catches mouse release event
       }
 

@@ -298,6 +298,12 @@ void Mixer::songChanged(int flags)
                   action |= STRIP_REMOVED;
             if (flags & SC_TRACK_INSERTED)
                   action |= STRIP_INSERTED;
+            if (flags &SC_ROUTE) {
+                  // update if midi channel gets conncted/disconnected
+                  // delay update
+                  mustUpdateMixer = true;
+                  return;
+                  }
             }
       if (action != NO_UPDATE)
             updateMixer(action);
