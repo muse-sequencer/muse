@@ -360,25 +360,21 @@ void MidiChannelStrip::iRoutePressed()
       int tn = 0;
       for (iMidiTrack i = tl->begin();i != tl->end(); ++i, ++tn) {
             MidiTrack* track = *i;
-            QAction* id = pup->addAction(track->name());
-            id->setCheckable(true);
-            QVariant v(track);
-            id->setData(v);
-            Route dst(*i, -1, Route::TRACK);
+            QAction* action = pup->addAction(track->name());
+            action->setCheckable(true);
+            Route src(track, -1, Route::TRACK);
+            action->setData(QVariant::fromValue(src));
             for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
-                  if (*ir == dst) {
-                        id->setChecked(true);
+                  if (*ir == src) {
+                        action->setChecked(true);
                         break;
                         }
                   }
             }
-
       QAction* n = pup->exec(QCursor::pos());
       if (n) {
-            QString s(n->text());
-            MidiTrack* track = n->data().value<MidiTrack*>();
-            Route dstRoute(t, -1, Route::TRACK);
-            Route srcRoute(track, -1, Route::TRACK);
+            Route srcRoute = n->data().value<Route>();
+            Route dstRoute(track, -1, Route::TRACK);
 
             if (n->isChecked())
                   audio->msgAddRoute(srcRoute, dstRoute);
