@@ -171,7 +171,7 @@ static void* watchdog(void*)
                   }
 //            printf("wd %d %d %d\n", watchMidi, watchAudio, fatal);
             }
-      audio->stop(true);
+      audio->stop();
       audioWriteback->stop(true);
       audioPrefetch->stop(true);
       fatalError("watchdog timeout");
@@ -184,6 +184,7 @@ static void* watchdog(void*)
 
 bool MusE::seqStart()
       {
+//      audio->msgIdle(false);
       if (audioState != AUDIO_STOP) {
             printf("seqStart(): already running\n");
             return true;
@@ -283,7 +284,7 @@ void MusE::seqStop()
       song->setStop(true);
       song->setStopPlay(false);
       midiSeq->stop(true);
-      audio->stop(true);
+      audio->stop();
       audioWriteback->stop(true);
       audioPrefetch->stop(true);
       if (realTimePriority)

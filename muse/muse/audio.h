@@ -204,7 +204,7 @@ class Audio {
 
       // transport:
       bool start();
-      void stop(bool);
+      void stop();
       void seek(const Pos& pos);
 
       bool isPlaying() const    { return state == PLAY || state == LOOP1 || state == LOOP2; }

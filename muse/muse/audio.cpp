@@ -228,17 +228,16 @@ bool Audio::start()
 //    stop audio processing
 //---------------------------------------------------------
 
-void Audio::stop(bool)
+void Audio::stop()
       {
-      if (audioDriver)
-          audioDriver->stop();
-
       MidiOutPortList* opl = song->midiOutPorts();
       for (iMidiOutPort i = opl->begin(); i != opl->end(); ++i)
             (*i)->deactivate();
       MidiInPortList* ipl = song->midiInPorts();
       for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i)
             (*i)->deactivate();
+      if (audioDriver)
+          audioDriver->stop();
       }
 
 //---------------------------------------------------------

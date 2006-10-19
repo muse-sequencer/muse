@@ -149,7 +149,7 @@ void MidiInPort::deactivate()
       else
             printf("MidiInPort::deactivate(): jack port not active!\n");
       if (_alsaPort) {
-            audioDriver->unregisterPort(_alsaPort);
+            midiDriver->unregisterPort(_alsaPort);
             _alsaPort = 0;
             }
       else
