@@ -319,7 +319,7 @@ class Song : public QObject {
       void removeTrack1(Track* track);
       void removeTrack2(Track* track);
       void removeTrack3(Track* track);
-      void removeMarkedTracks();
+//      void removeMarkedTracks();
       void changeTrackName(Track* track, const QString&);
 
       MidiTrack* findTrack(const Part* part) const;

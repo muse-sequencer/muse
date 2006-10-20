@@ -184,7 +184,6 @@ static void* watchdog(void*)
 
 bool MusE::seqStart()
       {
-//      audio->msgIdle(false);
       if (audioState != AUDIO_STOP) {
             printf("seqStart(): already running\n");
             return true;

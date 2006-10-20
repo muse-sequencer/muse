@@ -88,15 +88,7 @@ struct Route {
 
 Q_DECLARE_METATYPE(struct Route);
 
-//---------------------------------------------------------
-//   RouteList
-//---------------------------------------------------------
-
-class RouteList : public std::vector<Route> {
-   public:
-      void removeRoute(const Route& r);
-      };
-
+typedef QList<Route> RouteList;
 typedef RouteList::iterator iRoute;
 typedef RouteList::const_iterator ciRoute;
 

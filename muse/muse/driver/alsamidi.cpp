@@ -368,8 +368,7 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
                   RouteList* orl = oport->outRoutes();
                   iRoute ir;
                   for (ir = orl->begin(); ir != orl->end(); ++ir) {
-                        Port dst = ir->port;
-                        if (equal(dst, rd))
+                        if (ir->port == rd)
                               break;
                         }
                   if (ir == orl->end()) {

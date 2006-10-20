@@ -159,6 +159,7 @@ void MidiInPort::deactivate()
 //---------------------------------------------------------
 //   midiReceived
 //---------------------------------------------------------
+
 #ifndef __APPLE__
 void MidiInPort::eventReceived(snd_seq_event_t* ev)
       {

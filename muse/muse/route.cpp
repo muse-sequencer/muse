@@ -283,28 +283,6 @@ void Song::readRoute(QDomNode n)
       }
 
 //---------------------------------------------------------
-//   removeRoute
-//---------------------------------------------------------
-
-void RouteList::removeRoute(const Route& r)
-      {
-      for (iRoute i = begin(); i != end(); ++i) {
-            if (r == *i) {
-                  erase(i);
-                  return;
-                  }
-            }
-      printf("RouteList::internal error: cannot remove Route\n  ");
-      r.dump();
-      printf("  found:\n");
-      for (iRoute i = begin(); i != end(); ++i) {
-            printf("  ");
-            i->dump();
-            }
-      printf("  -----\n");
-      }
-
-//---------------------------------------------------------
 //   dump
 //---------------------------------------------------------
 

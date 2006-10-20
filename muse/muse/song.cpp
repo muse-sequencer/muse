@@ -105,25 +105,6 @@ void Song::setSig(const AL::TimeSignature& sig)
       }
 
 //---------------------------------------------------------
-//   removeMarkedTracks
-//---------------------------------------------------------
-
-void Song::removeMarkedTracks()
-      {
-      bool loop;
-      do {
-            loop = false;
-            for (iTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
-                  if ((*t)->selected()) {
-                        removeTrack2(*t);
-                        loop = true;
-                        break;
-                        }
-                  }
-            } while (loop);
-      }
-
-//---------------------------------------------------------
 //   deselectTracks
 //---------------------------------------------------------
 
@@ -1827,7 +1808,7 @@ void Song::removeTrack2(Track* track)
                   _midiOutPorts.erase(track);
                   break;
             case Track::MIDI_IN:
-                  track->deactivate();
+//DEBUG                  track->deactivate();
                   _midiInPorts.erase(track);
                   break;
             case Track::MIDI_CHANNEL:
@@ -1861,34 +1842,25 @@ void Song::removeTrack2(Track* track)
       Route src(track, -1, Route::TRACK);
       if (track->type() == Track::AUDIO_SOFTSYNTH)
             src.type = Route::SYNTIPORT;
-      if (track->type() == Track::AUDIO_OUTPUT || track->type() == Track::MIDI_OUT) {
-            const RouteList* rl = track->inRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-                  src.channel = r->channel;
-                  r->track->outRoutes()->removeRoute(src);
-                  }
+      foreach (const Route r, *(track->inRoutes())) {
+            if (r.type != Route::TRACK && r.type != Route::SYNTIPORT)
+                  continue;
+            src.channel = r.channel;
+            int idx = r.track->outRoutes()->indexOf(src);
+            if (idx != -1)
+                  r.track->outRoutes()->removeAt(idx);
+            else
+                  printf("Song::removeTrack2(): input route not found\n");
             }
-      else if (track->type() == Track::AUDIO_INPUT || track->type() == Track::MIDI_IN) {
-            const RouteList* rl = track->outRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-                  src.channel = r->channel;
-                  r->track->inRoutes()->removeRoute(src);
-                  }
-            }
-      else {
-            const RouteList* rl = track->inRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-printf("remove route:\n");
-r->dump();
-
-                  src.channel = r->channel;
-                  r->track->outRoutes()->removeRoute(src);
-                  }
-            rl = track->outRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-                  src.channel = r->channel;
-                  r->track->inRoutes()->removeRoute(src);
-                  }
+      foreach (const Route r, *(track->outRoutes())) {
+            if (r.type != Route::TRACK && r.type != Route::SYNTIPORT)
+                  continue;
+            src.channel = r.channel;
+            int idx = r.track->inRoutes()->indexOf(src);
+            if (idx != -1)
+                  r.track->inRoutes()->removeAt(idx);
+            else
+                  printf("Song::removeTrack2(): output route not found\n");
             }
       }
 
