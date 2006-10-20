@@ -1239,35 +1239,9 @@ void Song::seqSignal(int fd)
                         beat();           // update controller guis
                         break;
                   case MSG_JACK_SHUTDOWN:
-                       {
-                        muse->seqStop();
-
-                        // give the user a sensible explanation
-                        int btn = QMessageBox::critical( muse, tr("Jack shutdown!"),
-                            tr("Jack has detected a performance problem which has lead to\n"
-                            "MusE being disconnected.\n"
-                            "This could happen due to a number of reasons:\n"
-                            "- a performance issue with your particular setup.\n"
-                            "- a bug in MusE (or possibly in another connected software).\n"
-                            "- a random hiccup which might never occur again.\n"
-                            "- jack was voluntary stopped by you or someone else\n"
-                            "- jack crashed\n"
-                            "If there is a persisting problem you are much welcome to discuss it\n"
-                            "on the MusE mailinglist.\n"
-                            "(there is information about joining the mailinglist on the MusE\n"
-                            " homepage which is available through the help menu)\n"
-                            "\n"
-                            "To proceed check the status of Jack and try to restart it and then .\n"
-                            "click on the Restart button."), "restart", "cancel");
-                        if (btn == 0) {
-printf("restarting!\n");
-                              audioDriver->restart();
-	                        if (!muse->seqStart())
-      	                        return;
-	                        audioDriver->graphChanged();
-                              }
-                        }
+                        restartJack();
                         break;
+
                   case MSG_START_BOUNCE:
                         {
                         bool useFreewheel = config.useJackFreewheelMode;
@@ -2467,5 +2441,45 @@ void Song::read20(QDomNode node)
             else
                   printf("MusE:read20(): unknown tag %s\n", e.tagName().toLatin1().data());
             }
+      }
+
+//---------------------------------------------------------
+//   restartJack
+//---------------------------------------------------------
+
+void Song::restartJack()
+      {
+      muse->seqStop();
+      audioState = AUDIO_STOP;
+      for (;;) {
+            // give the user a sensible explanation
+            int btn = QMessageBox::critical( muse, tr("Jack shutdown!"),
+               tr("Jack has detected a performance problem which has lead to\n"
+                 "MusE being disconnected.\n"
+                 "This could happen due to a number of reasons:\n"
+                 "- a performance issue with your particular setup.\n"
+                 "- a bug in MusE (or possibly in another connected software).\n"
+                 "- a random hiccup which might never occur again.\n"
+                 "- jack was voluntary stopped by you or someone else\n"
+                 "- jack crashed\n"
+                 "If there is a persisting problem you are much welcome to discuss it\n"
+                 "on the MusE mailinglist.\n"
+                 "(there is information about joining the mailinglist on the MusE\n"
+                 " homepage which is available through the help menu)\n"
+                 "\n"
+                 "To proceed check the status of Jack and try to restart it and then .\n"
+                 "click on the Restart button."), 
+               "restart", "cancel", "save project"
+               );
+            if (btn == 0) {
+                  if (!audioDriver->restart())
+                        break;
+                  }
+            else if (btn == 2)
+                  muse->save();
+            else if (btn == 1)
+                  exit(-1);
+            }
+      muse->seqRestart();
       }
 

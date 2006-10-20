@@ -192,57 +192,16 @@ char* JackAudio::getJackName()
       }
 
 //---------------------------------------------------------
-//   initJackAudio
-//    return true if JACK not found
-//---------------------------------------------------------
-
-bool initJackAudio()
-      {
-      if (debugMsg) {
-            fprintf(stderr, "init Jack Audio\n");
-            jack_set_error_function(jackError);
-            }
-      else
-            jack_set_error_function(noJackError);
-
-      jack_client_t* client = 0;
-      int i = 0;
-      char jackIdString[8];
-      for (i = 0; i < 5; ++i) {
-            sprintf(jackIdString, "MusE-%d", i+1);
-            client = jack_client_new(jackIdString);
-            if (client)
-                  break;
-            }
-
-      if (i == 5)
-            return true;
-
-      if (debugMsg)
-            fprintf(stderr, "init Jack Audio: register device\n");
-
-      jack_set_error_function(jackError);
-      if (debugMsg)
-            fprintf(stderr, "init Jack Audio: register device\n");
-
-      jackAudio = new JackAudio(client, jackIdString);
-      if (debugMsg)
-            fprintf(stderr, "init Jack Audio: register client\n");
-      jackAudio->registerClient();
-      AL::sampleRate  = jack_get_sample_rate(client);
-      segmentSize     = jack_get_buffer_size(client);
-      audioDriver     = jackAudio;
-      return false;
-      }
-
-//---------------------------------------------------------
 //   restart
 //---------------------------------------------------------
 
-void JackAudio::restart()
+bool JackAudio::restart()
       {
       _client = jack_client_new(jackRegisteredName);
+      if (!_client)
+            return true;
       registerClient();
+      return false;
       }
 
 //---------------------------------------------------------
@@ -685,7 +644,8 @@ QString JackAudio::portName(void* port)
 void JackAudio::unregisterPort(Port p)
       {
  //printf("JACK: unregister Port %p\n", p);
-      jack_port_unregister(_client, (jack_port_t*)p);
+      if (_client)
+            jack_port_unregister(_client, (jack_port_t*)p);
       }
 
 //---------------------------------------------------------
@@ -780,5 +740,54 @@ int JackAudio::realtimePriority() const
             return 0;
             }
       return param.sched_priority;
+      }
+
+//---------------------------------------------------------
+//   initJackAudio
+//    return true if JACK not found
+//---------------------------------------------------------
+
+bool initJackAudio()
+      {
+      if (debugMsg) {
+            fprintf(stderr, "init Jack Audio\n");
+            jack_set_error_function(jackError);
+            }
+      else
+            jack_set_error_function(noJackError);
+
+      jack_client_t* client = 0;
+      jack_status_t status;
+      jack_options_t options = JackNullOption;
+      client = jack_client_open("MusE", options, &status);
+      if (!client) {
+            if (status & JackServerStarted)
+                  printf("jack server started...\n");
+            if (status & JackServerFailed)
+                  printf("cannot connect to jack server\n");
+            if (status & JackServerError)
+                  printf("communication with jack server failed\n");
+            if (status & JackShmFailure)
+                  printf("jack cannot access shared memory\n");
+            if (status & JackVersionError)
+                  printf("jack server has wrong version\n");
+            return true;
+            }
+
+      if (debugMsg)
+            fprintf(stderr, "init Jack Audio: register device\n");
+
+      jack_set_error_function(jackError);
+      if (debugMsg)
+            fprintf(stderr, "init Jack Audio: register device\n");
+
+      jackAudio = new JackAudio(client, jack_get_client_name(client));
+      if (debugMsg)
+            fprintf(stderr, "init Jack Audio: register client\n");
+      jackAudio->registerClient();
+      AL::sampleRate = jack_get_sample_rate(client);
+      segmentSize    = jack_get_buffer_size(client);
+      audioDriver    = jackAudio;
+      return false;
       }
 

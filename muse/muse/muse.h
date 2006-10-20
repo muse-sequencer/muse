@@ -181,7 +181,6 @@ class MusE : public QMainWindow // , public Ui::MuseBase
 
    private slots:
       void loadProject();
-      bool save();
       void quitDoc();
       void about();
       void aboutQt();
@@ -271,6 +270,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       void setGlobalTempo(int val);
       void setTool(int);
       void startEditor(Part*, int);
+      bool save();
 
    public:
       MusE();

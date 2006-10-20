@@ -34,7 +34,7 @@ class AudioDriver : public Driver {
       virtual ~AudioDriver() {}
 
       virtual void start(int priority) = 0;
-      virtual void restart() {}
+      virtual bool restart() { return false; }           // return true on error
       virtual void stop () = 0;
       virtual unsigned framePos() const = 0;
       virtual float* getBuffer(void* port, unsigned long nframes) = 0;

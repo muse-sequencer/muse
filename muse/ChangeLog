@@ -1,3 +1,6 @@
+20.10 (ws)
+      - add first support for jack midi
+      - jack autostart
 18.10 (ws)
       - added routing for jack midi ports. Fixes for "mus".
 17.10 (ws)

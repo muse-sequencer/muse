@@ -130,6 +130,7 @@ class Song : public QObject {
       unsigned _len;         // song len in ticks
       int _globalPitchShift;
       void readMarker(QDomNode);
+      void restartJack();
 
    public slots:
       void beat();
