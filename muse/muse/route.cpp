@@ -98,9 +98,9 @@ bool addRoute(Route src, Route dst)
                   }
             src.channel = dst.channel;
             RouteList* inRoutes = dst.track->inRoutes();
-            for (iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) {
-                  if (*i == src)    // route already there
-                        return true;
+            if (inRoutes->indexOf(src) != -1) {
+                  printf("  route already there 1\n");
+                  return true;
                   }
             inRoutes->push_back(src);
             }
@@ -117,9 +117,9 @@ bool addRoute(Route src, Route dst)
             RouteList* outRoutes = src.track->outRoutes();
             dst.channel = src.channel;
 
-            for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) {
-                  if (*i == dst)    // route already there
-                        return true;
+            if (outRoutes->indexOf(dst) != -1) {
+                  printf("  route already there 2\n");
+                  return true;
                   }
             outRoutes->push_back(dst);
             }
@@ -128,16 +128,12 @@ bool addRoute(Route src, Route dst)
             inRoutes->insert(inRoutes->begin(), src);
             }
       else {
-            RouteList* outRoutes = src.track->outRoutes();
-            for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) {
-                  if (*i == dst) {    // route already there
-                        printf("  route already there\n");
-                        return true;
-                        }
+            if (src.track->outRoutes()->indexOf(dst) != -1) {
+                  printf("  route already there 3\n");
+                  return true;
                   }
-            outRoutes->push_back(dst);
-            RouteList* inRoutes = dst.track->inRoutes();
-            inRoutes->insert(inRoutes->begin(), src);
+            src.track->outRoutes()->push_back(dst);
+            dst.track->inRoutes()->push_back(src);
             }
       return true;
       }
@@ -148,6 +144,9 @@ bool addRoute(Route src, Route dst)
 
 void removeRoute(Route src, Route dst)
       {
+//      printf("removeRoute %s.%d:<%s> %s.%d:<%s>\n",
+//         src.tname(), src.channel, src.name().toLatin1().data(),
+//         dst.tname(), dst.channel, dst.name().toLatin1().data());
       if (src.type == Route::AUDIOPORT || src.type == Route::MIDIPORT
          || src.type == Route::JACKMIDIPORT) {
             if (dst.type != Route::TRACK && dst.type != Route::SYNTIPORT) {
@@ -279,6 +278,8 @@ void Song::readRoute(QDomNode n)
             s.channel = d.channel;
       if (d.type == Route::AUDIOPORT)
             d.channel = s.channel;
+      if (s.type == Route::TRACK && s.track->type() == Track::MIDI_IN)
+            d.channel = s.channel;
       addRoute(s, d);
       }
 
@@ -371,7 +372,6 @@ void Route::read(QDomNode node)
       {
       QDomElement e = node.toElement();
       channel       = e.attribute("channel","0").toInt() - 1;
-//      int stream    = e.attribute("stream", "0").toInt();
       QString s     = e.attribute("name");
       QString st    = e.attribute("type", "TRACK");
 
@@ -396,6 +396,8 @@ void Route::read(QDomNode node)
                               }
                         }
                   }
+            if (track == 0)
+                  printf("Route::read(): track <%s> not found\n", s.toLatin1().data());
             }
       else if (st == "AUDIOPORT") {
             type = Route::AUDIOPORT;
@@ -453,6 +455,8 @@ void Route::read(QDomNode node)
                               break;
                         }
                   }
+            if (plugin == 0)
+                  printf("Route::read(): plugin <%s> not found\n", s.toLatin1().data());
             }
       else {
             printf("Route::read(): unknown type <%s>\n", st.toLatin1().data());
@@ -460,24 +464,3 @@ void Route::read(QDomNode node)
             }
       }
 
-//---------------------------------------------------------
-//   findTrack
-//---------------------------------------------------------
-
-Track* Song::findTrack(const QString& s) const
-      {
-      TrackList* tl = song->tracks();
-      for (iTrack i = tl->begin(); i != tl->end(); ++i) {
-            Track* track = *i;
-            if (track->name() == s)
-                  return track;
-            }
-      MidiChannelList* mc = song->midiChannel();
-      for (iMidiChannel i = mc->begin(); i != mc->end(); ++i) {
-            MidiChannel* t = *i;
-            if (t->name() == s)
-                  return t;
-            }
-      printf("track <%s> not found\n", s.toLatin1().data());
-      return 0;
-      }

@@ -211,7 +211,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                         if (i < n && ai->jackPort(i) == 0) {
                               char buffer[128];
                               snprintf(buffer, 128, "%s-%d", name.toLatin1().data(), i);
-                              ai->setJackPort(i, audioDriver->registerInPort(QString(buffer), false));
+                              ai->setJackPort(audioDriver->registerInPort(QString(buffer), false), i);
                               }
                         else if ((i >= n) && ai->jackPort(i)) {
                               RouteList* ir = node->inRoutes();
@@ -223,7 +223,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                                           }
                                     }
                               audioDriver->unregisterPort(ai->jackPort(i));
-                              ai->setJackPort(i, 0);
+                              ai->setJackPort(0, i);
                               }
                         }
                   }
@@ -234,7 +234,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                         if (i < n && jp == 0) {
                               char buffer[128];
                               snprintf(buffer, 128, "%s-%d", name.toLatin1().data(), i);
-                              ao->setJackPort(i, audioDriver->registerOutPort(QString(buffer), false));
+                              ao->setJackPort(audioDriver->registerOutPort(QString(buffer), false), i);
                               }
                         else if (i >= n && jp) {
                               RouteList* ir = node->outRoutes();
@@ -246,7 +246,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                                           }
                                     }
                               audioDriver->unregisterPort(jp);
-                              ao->setJackPort(i, 0);
+                              ao->setJackPort(0, i);
                               }
                         }
                   }

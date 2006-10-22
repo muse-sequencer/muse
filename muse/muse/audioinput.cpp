@@ -32,8 +32,6 @@ AudioInput::AudioInput()
       {
       // set Default for Input Ports:
       _mute = true;
-      for (int i = 0; i < MAX_CHANNELS; ++i)
-            jackPorts[i] = 0;
       _channels = 0;
       setChannels(2);
       //
@@ -55,8 +53,8 @@ AudioInput::AudioInput()
 AudioInput::~AudioInput()
       {
       for (int i = 0; i < _channels; ++i) {
-            if (jackPorts[i])
-                  audioDriver->unregisterPort(jackPorts[i]);
+            if (jackPort(i))
+                  audioDriver->unregisterPort(jackPort(i));
             }
       // AudioInput does not own buffers (they are from JACK)
       // make sure ~AudioTrack() does not delete them:
@@ -88,57 +86,6 @@ void AudioInput::read(QDomNode node)
       }
 
 //---------------------------------------------------------
-//   activate1
-//    register jack port for every channel of this track
-//---------------------------------------------------------
-
-void AudioInput::activate1()
-      {
-      for (int i = 0; i < channels(); ++i) {
-            char buffer[128];
-            snprintf(buffer, 128, "%s-%d", _name.toAscii().data(), i);
-            // following happens on reconnect to JACK server:
-            if (jackPorts[i])
-                  printf("AudioInput::activate(): already active!\n");
-            jackPorts[i] = audioDriver->registerInPort(buffer, false);
-            }
-      }
-
-//---------------------------------------------------------
-//   activate2
-//    connect all routes to jack; can only be done if
-//    jack is activ running
-//---------------------------------------------------------
-
-void AudioInput::activate2()
-      {
-      if (audioState != AUDIO_RUNNING) {
-            printf("AudioInput::activate2(): no audio running !\n");
-            abort();
-            }
-      for (iRoute i = _inRoutes.begin(); i != _inRoutes.end(); ++i)
-            audioDriver->connect(i->port, jackPorts[i->channel]);
-      }
-
-//---------------------------------------------------------
-//   deactivate
-//---------------------------------------------------------
-
-void AudioInput::deactivate()
-      {
-      for (iRoute i = _inRoutes.begin(); i != _inRoutes.end(); ++i)
-            audioDriver->disconnect(i->port, jackPorts[i->channel]);
-      for (int i = 0; i < channels(); ++i) {
-            if (jackPorts[i]) {
-                  audioDriver->unregisterPort(jackPorts[i]);
-                  jackPorts[i] = 0;
-                  }
-            else
-                  printf("AudioInput::deactivate(): not active!\n");
-            }
-      }
-
-//---------------------------------------------------------
 //   setChannels
 //---------------------------------------------------------
 
@@ -157,11 +104,11 @@ void AudioInput::setName(const QString& s)
       {
       Track::setName(s);
       for (int i = 0; i < channels(); ++i) {
-            if (jackPorts[i]) {
+            if (jackPort(i)) {
                   char buffer[128];
                   snprintf(buffer, 128, "%s-%d", _name.toAscii().data(), i);
-                  if (jackPorts[i])
-                        audioDriver->setPortName(jackPorts[i], buffer);
+                  if (jackPort(i))
+                        audioDriver->setPortName(jackPort(i), buffer);
                   }
             }
       }
@@ -175,9 +122,9 @@ void AudioInput::collectInputData()
       {
       bufferEmpty = false;
       for (int ch = 0; ch < channels(); ++ch) {
-            void* jackPort = jackPorts[ch];
-            if (jackPort)
-                        buffer[ch] = audioDriver->getBuffer(jackPort, segmentSize);
+            Port port = jackPort(ch);
+            if (port)
+                  buffer[ch] = audioDriver->getBuffer(port, segmentSize);
             else {
                   printf("NO JACK PORT\n");
                   abort();

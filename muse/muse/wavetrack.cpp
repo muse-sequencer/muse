@@ -82,15 +82,11 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, int widx)
       for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
             Part* part = ip->second;
 
-            // DEBUG
-            int type = int(part->type());
-            if (type != AL::FRAMES)
-                  printf("part has wrong type\n");
-
             if (part->mute())
                   continue;
             unsigned p_spos = part->frame();
-            if (pos + samples < p_spos)
+//            if (pos + samples < p_spos)
+            if (pos + samples <= p_spos)
                   break;
             unsigned p_epos = p_spos + part->lenFrame();
             if (pos >= p_epos)
@@ -101,7 +97,8 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, int widx)
                   Event& event    = ie->second;
 
                   unsigned e_spos = event.frame() + p_spos;
-                  if (pos + samples < e_spos)
+                  // if (pos + samples < e_spos)
+                  if (pos + samples <= e_spos)
                         break;
                   unsigned nn     = event.lenFrame();
                   unsigned e_epos = e_spos + nn;

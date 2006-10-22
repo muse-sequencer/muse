@@ -799,7 +799,7 @@ void MidiOutPort::process(unsigned from, unsigned to, const Pos& pos, unsigned f
                                     break;
                                     }
 
-                              midiDriver->putEvent(_alsaPort, *ev);
+                              midiDriver->putEvent(alsaPort(), *ev);
                               _nextPlayEvent = ev;
                               _nextPlayEvent++;
                               }

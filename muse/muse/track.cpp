@@ -33,6 +33,8 @@
 #include "gui.h"
 #include "midioutport.h"
 #include "midichannel.h"
+#include "driver/audiodev.h"
+#include "driver/mididev.h"
 
 // synchronize with TrackType!:
 
@@ -111,6 +113,8 @@ void Track::init()
             _meter[i]     = 0.0f;
             _peak[i]      = 0.0f;
             _peakTimer[i] = 0;
+            _alsaPort[i]  = 0;
+            _jackPort[i]  = 0;
             }
       }
 
@@ -132,6 +136,10 @@ Track::Track(Track::TrackType t)
 Track::~Track()
 	{
       delete _parts;
+      if (_alsaPort)
+            midiDriver->unregisterPort(_alsaPort);
+      if (_jackPort)
+            audioDriver->unregisterPort(_jackPort);
       }
 
 //---------------------------------------------------------
@@ -172,13 +180,32 @@ void Track::setDefaultName()
                   base = cname();
                   break;
             };
+      //
+      // create unique name
+      //
       base += " ";
       for (int i = 1; true; ++i) {
             QString n;
             n.setNum(i);
             QString s = base + n;
-            Track* track = song->findTrack(s);
-            if (track == 0) {
+            bool found = false;
+            TrackList* tl = song->tracks();
+            for (iTrack i = tl->begin(); i != tl->end(); ++i) {
+                  Track* track = *i;
+                  if (track->name() == s) {
+                        found = true;
+                        break;
+                        }
+                  }
+            MidiChannelList* mc = song->midiChannel();
+            for (iMidiChannel i = mc->begin(); i != mc->end(); ++i) {
+                  MidiChannel* t = *i;
+                  if (t->name() == s) {
+                        found = true;
+                        break;
+                        }
+                  }
+            if (!found) {
                   setName(s);
                   break;
                   }
@@ -658,30 +685,34 @@ void Track::updateController()
 
 void Track::writeRouting(Xml& xml) const
       {
-      const RouteList* rl = &_inRoutes;
-      for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
+      foreach(Route src, _inRoutes) {
+            Route dst((Track*)this);
             if (type() == AUDIO_INPUT || type() == MIDI_IN) {
                   xml.tag("Route");
-                  Route dst((Track*)this, r->channel);
-                  r->write(xml, "src");
+                  dst.channel = src.channel;
+                  src.write(xml, "src");
                   dst.write(xml, "dst");
                   xml.etag("Route");
                   }
-            if (r->type == Route::AUXPLUGIN) {
+            else if (src.type == Route::AUXPLUGIN) {
                   xml.tag("Route");
-                  Route dst((Track*)this);
-                  r->write(xml, "src");
+                  src.write(xml, "src");
                   dst.write(xml, "dst");
                   xml.etag("Route");
                   }
             }
-      for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
+      foreach(Route r, _outRoutes) {
             Route src((Track*)this);
-            if (type() == AUDIO_OUTPUT)
-                  src.channel = r->channel;
+            Route dst(r);
+            if (type() == MIDI_IN) {
+                  src.channel = dst.channel;
+                  dst.channel = 0;
+                  }
+            else if (type() == AUDIO_OUTPUT)
+                  src.channel = r.channel;
             xml.tag("Route");
             src.write(xml, "src");
-            r->write(xml, "dst");
+            dst.write(xml, "dst");
             xml.etag("Route");
             }
       }
@@ -938,4 +969,101 @@ void Track::resetAllMeter()
             (*i)->resetMeter();
       }
 
+//---------------------------------------------------------
+//   activate
+//---------------------------------------------------------
+
+void Track::activate1()
+      {
+      if (isMidiTrack()) {
+            if (alsaPort(0))
+                  printf("Track::activate1() midi: alsa port already active!\n");
+            if (jackPort(0))
+                  printf("Track::activate1() midi: jack port already active!\n");
+            if (type() == MIDI_OUT) {
+                  _alsaPort[0] = midiDriver->registerInPort(_name, true);
+                  _jackPort[0] = audioDriver->registerOutPort(_name, true);
+                  }
+            else if (type() == MIDI_IN) {
+                  _alsaPort[0] = midiDriver->registerOutPort(_name, true);
+                  _jackPort[0] = audioDriver->registerInPort(_name, true);
+                  }
+            return;
+            }
+      for (int i = 0; i < channels(); ++i) {
+            if (jackPort(i))
+                  printf("Track::activate1(): already active!\n");
+            else {
+                  QString s(QString("%1-%2").arg(_name).arg(i));
+                  if (type() == AUDIO_OUTPUT)
+                        _jackPort[i] = audioDriver->registerOutPort(s, false);
+                  else if (type() == AUDIO_INPUT)
+                        _jackPort[i] = audioDriver->registerInPort(s, false);
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   activate2
+//    connect all in/out routes
+//    connect to JACK only works if JACK is running
+//---------------------------------------------------------
+
+void Track::activate2()
+      {
+      if (audioState != AUDIO_RUNNING) {
+            printf("Track::activate2(): no audio running !\n");
+            abort();
+            }
+      foreach(Route r, _outRoutes) {
+            if (r.type == Route::JACKMIDIPORT)
+                  audioDriver->connect(_jackPort[0], r.port);
+            else if (r.type == Route::MIDIPORT)
+                  midiDriver->connect(_alsaPort[0], r.port);
+            }
+      foreach(Route r, _inRoutes) {
+            if (r.type == Route::JACKMIDIPORT)
+                  audioDriver->connect(r.port, _jackPort[0]);
+            else if (r.type == Route::MIDIPORT)
+                  midiDriver->connect(r.port, _alsaPort[0]);
+            }
+      }
+
+//---------------------------------------------------------
+//   deactivate
+//---------------------------------------------------------
+
+void Track::deactivate()
+      {
+      foreach (Route r, _outRoutes) {
+            if (r.type == Route::JACKMIDIPORT)
+                  audioDriver->disconnect(_jackPort[0], r.port);
+            else if (r.type == Route::AUDIOPORT)
+                  audioDriver->disconnect(_jackPort[r.channel], r.port);
+            else if (r.type == Route::MIDIPORT)
+                  midiDriver->disconnect(_alsaPort[0], r.port);
+            }
+      foreach (Route r, _inRoutes) {
+            if (r.type == Route::JACKMIDIPORT)
+                  audioDriver->disconnect(r.port, _jackPort[0]);
+            else if (r.type == Route::AUDIOPORT)
+                  audioDriver->disconnect(r.port, _jackPort[r.channel]);
+            else if (r.type == Route::MIDIPORT)
+                  midiDriver->disconnect(r.port, _alsaPort[0]);
+            }
+      for (int i = 0; i < channels(); ++i) {
+            if (_jackPort[i]) {
+                  audioDriver->unregisterPort(_jackPort[i]);
+                  _jackPort[i] = 0;
+                  }
+            else
+                  printf("Track::deactivate(): jack port not active!\n");
+            if (_alsaPort[i]) {
+                  midiDriver->unregisterPort(_alsaPort[i]);
+                  _alsaPort[i] = 0;
+                  }
+            else
+                  printf("Track::deactivate(): alsa port not active!\n");
+            }
+      }
 

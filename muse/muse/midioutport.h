@@ -32,8 +32,6 @@ class MidiOutPort : public MidiTrackBase {
 
       MidiInstrument* _instrument;
       MidiChannel* _channel[MIDI_CHANNELS];
-      Port _alsaPort;
-      Port _jackPort;
 
       bool _sendSync;   // this port sends mtc mmc events
       int _deviceId;    // 0-126; 127 == all
@@ -54,10 +52,6 @@ class MidiOutPort : public MidiTrackBase {
       MidiOutPort();
       ~MidiOutPort();
 
-      virtual void activate1();
-      virtual void activate2();
-      virtual void deactivate();
-
       MidiChannel* channel(int n)         { return _channel[n]; }
 
       virtual void setName(const QString& s);
@@ -73,8 +67,6 @@ class MidiOutPort : public MidiTrackBase {
       bool guiVisible() const;
       bool hasGui() const;
 
-      Port alsaPort() const               { return _alsaPort; }
-      Port jackPort() const               { return _jackPort; }
       void putEvent(const MidiEvent&);
 
       MPEventList* playEvents()          { return &_playEvents;   }

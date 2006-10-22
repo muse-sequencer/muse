@@ -48,7 +48,6 @@ class Pos {
 
    public:
       Pos();
-      Pos(const Pos&);
       Pos(int measure, int beat, int tick);
       Pos(int minute, int sec, int frame, int subframe);
       Pos(unsigned, TType type = TICKS);

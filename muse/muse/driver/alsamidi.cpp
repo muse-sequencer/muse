@@ -362,18 +362,13 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
       MidiOutPortList* opl = song->midiOutPorts();
       for (iMidiOutPort i = opl->begin(); i != opl->end(); ++i) {
             MidiOutPort* oport = *i;
-            Port src = oport->alsaPort();
+            Port src = oport->alsaPort(0);
 
             if (equal(src, rs)) {
-                  RouteList* orl = oport->outRoutes();
-                  iRoute ir;
-                  for (ir = orl->begin(); ir != orl->end(); ++ir) {
-                        if (ir->port == rd)
-                              break;
-                        }
-                  if (ir == orl->end()) {
+                  Route r(rd, Route::MIDIPORT);
+                  if (oport->outRoutes()->indexOf(r) == -1) {
                         snd_seq_addr_t* adr = new snd_seq_addr_t(ev->dest);
-                        orl->push_back(Route(Port(adr), -1, Route::MIDIPORT));
+                        oport->outRoutes()->push_back(Route(Port(adr), -1, Route::MIDIPORT));
                         }
                   break;
                   }
@@ -385,16 +380,10 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
             Port dst = iport->alsaPort();
 
             if (equal(dst, rd)) {
-                  RouteList* irl = iport->inRoutes();
-                  iRoute ir;
-                  for (ir = irl->begin(); ir != irl->end(); ++ir) {
-                        Port src = ir->port;
-                        if (equal(src, rs))
-                              break;
-                        }
-                  if (ir == irl->end()) {
+                  Route r(rs, Route::MIDIPORT);
+                  if (iport->inRoutes()->indexOf(r) == -1) {
                         snd_seq_addr_t* adr = new snd_seq_addr_t(ev->sender);
-                        irl->push_back(Route(Port(adr), -1, Route::MIDIPORT));
+                        iport->inRoutes()->push_back(Route(Port(adr), -1, Route::MIDIPORT));
                         }
                   break;
                   }

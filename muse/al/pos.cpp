@@ -38,14 +38,6 @@ Pos::Pos()
       sn      = -1;
       }
 
-Pos::Pos(const Pos& p)
-      {
-      _type  = p._type;
-      sn     = p.sn;
-      _tick  = p._tick;
-      _frame = p._frame;
-      }
-
 Pos::Pos(unsigned t, TType timeType)
       {
  	_type = timeType;

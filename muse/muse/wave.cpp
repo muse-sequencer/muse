@@ -616,7 +616,6 @@ size_t SndFile::read(int srcChannels, float** dst, size_t n)
       {
       float buffer[n * sfinfo.channels];
       size_t rn       = sf_readf_float(sfRT, buffer, n);
-//      sf_seek(sfRT, n, SEEK_CUR);   //libsndfile does not update position??
 
       float* src      = buffer;
       int dstChannels = sfinfo.channels;

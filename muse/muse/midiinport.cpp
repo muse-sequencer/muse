@@ -35,8 +35,7 @@
 MidiInPort::MidiInPort()
    : MidiTrackBase(MIDI_IN)
       {
-      _alsaPort = 0;
-      _jackPort = 0;
+      _channels = 1;
       }
 
 //---------------------------------------------------------
@@ -45,10 +44,6 @@ MidiInPort::MidiInPort()
 
 MidiInPort::~MidiInPort()
       {
-      if (_alsaPort)
-            midiDriver->unregisterPort(_alsaPort);
-      if (_jackPort)
-            audioDriver->unregisterPort(_jackPort);
       }
 
 //---------------------------------------------------------
@@ -58,10 +53,10 @@ MidiInPort::~MidiInPort()
 void MidiInPort::setName(const QString& s)
       {
       Track::setName(s);
-      if (_alsaPort)
-            midiDriver->setPortName(_alsaPort, s);
-      if (_jackPort)
-            audioDriver->setPortName(_jackPort, s);
+      if (alsaPort(0))
+            midiDriver->setPortName(alsaPort(), s);
+      if (jackPort(0))
+            audioDriver->setPortName(jackPort(), s);
       }
 
 //---------------------------------------------------------
@@ -88,72 +83,6 @@ void MidiInPort::read(QDomNode node)
                   printf("MusE:MidiInPort: unknown tag %s\n", tag.toLatin1().data());
             node = node.nextSibling();
             }
-      }
-
-//---------------------------------------------------------
-//   activate
-//---------------------------------------------------------
-
-void MidiInPort::activate1()
-      {
-      if (_alsaPort)
-            printf("MidiInPort::activate1(): alsa port already active!\n");
-      else
-            _alsaPort = midiDriver->registerOutPort(_name, true);
-      if (_jackPort)
-            printf("MidiInPort::activate1(): jack port already active!\n");
-      else
-            _jackPort = audioDriver->registerInPort(_name, true);
-      }
-
-//---------------------------------------------------------
-//   activate2
-//    connect all routes to jack; can only be done if
-//    jack is activ running
-//---------------------------------------------------------
-
-void MidiInPort::activate2()
-      {
-      if (audioState != AUDIO_RUNNING) {
-            printf("MidiInPort::activate2(): no audio running !\n");
-            abort();
-            }
-      for (iRoute i = _inRoutes.begin(); i != _inRoutes.end(); ++i) {
-            if (i->type == Route::JACKMIDIPORT)
-                  audioDriver->connect(i->port, _jackPort);
-            else if (i->type == Route::MIDIPORT)
-                  midiDriver->connect(i->port, _alsaPort);
-            else
-                  printf("MidiInPort::activate2(): bad route type\n");
-            }
-      }
-
-//---------------------------------------------------------
-//   deactivate
-//---------------------------------------------------------
-
-void MidiInPort::deactivate()
-      {
-      for (ciRoute i = _inRoutes.begin(); i != _inRoutes.end(); ++i) {
-            if (i->type == Route::JACKMIDIPORT)
-                  audioDriver->disconnect(i->port, _jackPort);
-            else if (i->type == Route::MIDIPORT)
-                  midiDriver->disconnect(i->port, _alsaPort);
-            else
-                  printf("MidiInPort::deactivate(): bad route type\n");
-            }
-      if (_jackPort) {
-            audioDriver->unregisterPort(_jackPort);
-            _jackPort = 0;
-            }
-      else
-            printf("MidiInPort::deactivate(): jack port not active!\n");
-      if (_alsaPort) {
-            midiDriver->unregisterPort(_alsaPort);
-            _alsaPort = 0;
-            }
-      else
-            printf("MidiInPort::deactivate(): alsa port not active!\n");
       }
 
 //---------------------------------------------------------

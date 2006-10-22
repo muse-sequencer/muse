@@ -113,6 +113,7 @@ class Track : public QObject {
       TrackType _type;
       QString _comment;
       PartList* _parts;
+      Port _alsaPort[MAX_CHANNELS], _jackPort[MAX_CHANNELS];
 
       void init();
 
@@ -125,6 +126,8 @@ class Track : public QObject {
       bool _off;
       bool _monitor;
       int _channels;                // 1 - mono, 2 - stereo
+                                    // Note: midi out/in tracks have 
+                                    // 1 channel
       CtrlRecList _recEvents;       // recorded automation events
       double _meter[MAX_CHANNELS];
       double _peak[MAX_CHANNELS];
@@ -184,9 +187,9 @@ class Track : public QObject {
       //    (undo/redo)
       // connects/reconnects to the outside world
       //
-      virtual void activate1()   {}
-      virtual void activate2()   {}
-      virtual void deactivate()  {}
+      void activate1();
+      void activate2();
+      void deactivate();
 
       //----------------------------------------------------------
       //   controller handling
@@ -310,6 +313,16 @@ class Track : public QObject {
       bool noInRoute() const   { return _inRoutes.empty();  }
       bool noOutRoute() const  { return _outRoutes.empty(); }
       void writeRouting(Xml&) const;
+
+      Port alsaPort(int channel = 0) const    { return _alsaPort[channel]; }
+      Port jackPort(int channel = 0) const    { return _jackPort[channel]; }
+
+      void setAlsaPort(const Port& port, int channel = 0) { 
+            _alsaPort[channel] = port; 
+            }
+      void setJackPort(const Port& port, int channel = 0) { 
+            _jackPort[channel] = port; 
+            }
 
       struct ArrangerTrack arrangerTrack;
       ArrangerTrackList subtracks;

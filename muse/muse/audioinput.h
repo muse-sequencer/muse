@@ -30,7 +30,6 @@
 class AudioInput : public AudioTrack {
       Q_OBJECT
 
-      Port jackPorts[MAX_CHANNELS];
       void collectInputData();
 
    public:
@@ -38,15 +37,9 @@ class AudioInput : public AudioTrack {
       virtual ~AudioInput();
       virtual AudioInput* newTrack() const { return new AudioInput(); }
 
-      virtual void activate1();
-      virtual void activate2();
-      virtual void deactivate();
-
       virtual void read(QDomNode);
       virtual void write(Xml&) const;
       virtual void setName(const QString& s);
-      void* jackPort(int channel) { return jackPorts[channel]; }
-      void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
       virtual void setChannels(int n);
       virtual bool hasAuxSend() const { return true; }
       };

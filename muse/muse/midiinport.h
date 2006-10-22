@@ -30,26 +30,18 @@
 class MidiInPort : public MidiTrackBase {
       Q_OBJECT
 
-      Port _alsaPort;
-      Port _jackPort;
-
       MPEventList _recordEvents;
 
    public:
       MidiInPort();
       ~MidiInPort();
 
-      virtual void activate1();
-      virtual void activate2();
-      virtual void deactivate();
       virtual void setName(const QString& s);
       virtual void write(Xml&) const;
       virtual void read(QDomNode);
       virtual Track* newTrack() const     { return new MidiInPort(); }
       virtual bool isMute() const         { return _mute; }
       virtual Part* newPart(Part*, bool)  { return 0; }
-      Port alsaPort() const               { return _alsaPort; }
-      Port jackPort() const               { return _jackPort; }
 
 #ifndef __APPLE__      
       void eventReceived(snd_seq_event_t*);

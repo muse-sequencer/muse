@@ -32,8 +32,6 @@
 AudioOutput::AudioOutput()
    : AudioTrack(AUDIO_OUTPUT)
       {
-      for (int i = 0; i < MAX_CHANNELS; ++i)
-            jackPorts[i] = 0;
       _channels = 0;
       setChannels(2);
 
@@ -57,8 +55,8 @@ AudioOutput::AudioOutput()
 AudioOutput::~AudioOutput()
       {
       for (int i = 0; i < _channels; ++i) {
-            if (jackPorts[i])
-                  audioDriver->unregisterPort(jackPorts[i]);
+            if (jackPort(i))
+                  audioDriver->unregisterPort(jackPort(i));
             }
       // AudioOutput does not own buffers (they are from JACK)
       // make sure ~AudioTrack() does not delete them:
@@ -108,8 +106,8 @@ void AudioOutput::setChannels(int n)
 void AudioOutput::silence(unsigned n)
       {
       for (int i = 0; i < channels(); ++i) {
-            if (jackPorts[i])
-                  buffer[i] = audioDriver->getBuffer(jackPorts[i], n);
+            if (jackPort(i))
+                  buffer[i] = audioDriver->getBuffer(jackPort(i), n);
             else {
                   printf("PANIC: silence(): no buffer from audio driver\n");
                   abort();
@@ -128,62 +126,11 @@ void AudioOutput::setName(const QString& s)
       {
       Track::setName(s);
       for (int i = 0; i < channels(); ++i) {
-            if (jackPorts[i]) {
+            if (jackPort(i)) {
                   char buffer[128];
                   snprintf(buffer, 128, "%s-%d", _name.toAscii().data(), i);
-                  audioDriver->setPortName(jackPorts[i], buffer);
+                  audioDriver->setPortName(jackPort(i), buffer);
                   }
-            }
-      }
-
-//---------------------------------------------------------
-//   activate1
-//---------------------------------------------------------
-
-void AudioOutput::activate1()
-      {
-      for (int i = 0; i < channels(); ++i) {
-            char buffer[128];
-            snprintf(buffer, 128, "%s-%d", _name.toAscii().data(), i);
-            if (jackPorts[i]) {
-                  printf("AudioOutput::activate(): already active!\n");
-                  }
-            else
-                  jackPorts[i] = audioDriver->registerOutPort(QString(buffer), false);
-            }
-      }
-
-//---------------------------------------------------------
-//   activate2
-//---------------------------------------------------------
-
-void AudioOutput::activate2()
-      {
-      if (audioState != AUDIO_RUNNING) {
-            printf("AudioOutput::activate2(): no audio running !\n");
-            abort();
-            }
-      for (iRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i)
-            audioDriver->connect(jackPorts[i->channel], i->port);
-      }
-
-//---------------------------------------------------------
-//   deactivate
-//---------------------------------------------------------
-
-void AudioOutput::deactivate()
-      {
-      for (iRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i) {
-            Route r = *i;
-            audioDriver->disconnect(jackPorts[i->channel], i->port);
-            }
-      for (int i = 0; i < channels(); ++i) {
-            if (jackPorts[i]) {
-                  audioDriver->unregisterPort(jackPorts[i]);
-                  jackPorts[i] = 0;
-                  }
-            else
-                  printf("AudioOutput::deactivate(): not active!\n");
             }
       }
 
@@ -210,7 +157,7 @@ void AudioOutput::stopRecording(const Pos& /*s*/, const Pos& /*e*/)
 void AudioOutput::process()
       {
       for (int c = 0; c < channels(); ++c)
-            buffer[c] = audioDriver->getBuffer(jackPorts[c], segmentSize);
+            buffer[c] = audioDriver->getBuffer(jackPort(c), segmentSize);
 
       AudioTrack::process();
 

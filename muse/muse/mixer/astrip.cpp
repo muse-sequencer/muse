@@ -770,12 +770,8 @@ void AudioStrip::oRoutePressed()
                               action->setCheckable(true);
                               Route dst(ip.port, i, Route::AUDIOPORT);
                               action->setData(QVariant::fromValue(dst));
-                              for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
-                                    if (*ir == dst) {
-                                          action->setChecked(true);
-                                          break;
-                                          }
-                                    }
+                              int idx = orl->indexOf(dst);
+                              action->setChecked(idx != -1);
                               }
                         }
                   }

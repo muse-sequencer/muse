@@ -267,9 +267,8 @@ bool MusE::seqStart()
       // do connections
       //
       TrackList* tl = song->tracks();
-      for (iTrack i = tl->begin(); i != tl->end(); ++i) {
+      for (iTrack i = tl->begin(); i != tl->end(); ++i)
             (*i)->activate2();
-      	}
       return true;
       }
 

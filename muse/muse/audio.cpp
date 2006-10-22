@@ -201,7 +201,7 @@ bool Audio::start()
                 for (iAudioInput i = itl->begin(); i != itl->end(); ++i) {
 //                      printf("reconnecting input %s\n", (*i)->name().toLatin1().data());
                       for (int x=0; x < (*i)->channels();x++)
-                          (*i)->setJackPort(x,0); // zero out the old connection
+                          (*i)->setJackPort(0, x); // zero out the old connection
                       (*i)->activate1();
                       }
 
@@ -209,7 +209,7 @@ bool Audio::start()
                 for (iAudioOutput i = otl->begin(); i != otl->end(); ++i) {
 //                      printf("reconnecting output %s\n", (*i)->name().toLatin1().data());
                       for (int x=0; x < (*i)->channels();x++)
-                          (*i)->setJackPort(x,0);  // zero out the old connection
+                          (*i)->setJackPort(0,x);  // zero out the old connection
                       (*i)->activate1();
                       }
                audioDriver->start(realTimePriority);
@@ -231,12 +231,14 @@ bool Audio::start()
 
 void Audio::stop()
       {
+#if 0
       MidiOutPortList* opl = song->midiOutPorts();
       for (iMidiOutPort i = opl->begin(); i != opl->end(); ++i)
             (*i)->deactivate();
       MidiInPortList* ipl = song->midiInPorts();
       for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i)
             (*i)->deactivate();
+#endif
       if (audioDriver)
           audioDriver->stop();
       }
@@ -473,7 +475,6 @@ void Audio::process(unsigned frames)
       _curReadIndex = -1;
       if (isPlaying() && !wl->empty()) {
    	      Fifo1* fifo = audioPrefetch->getFifo();
-// printf("process %3d\n", fifo->count());
       	if (fifo->count() == 0) {
             	printf("MusE::Audio: fifo underflow at 0x%x\n", _curTickPos);
                   audioPrefetch->msgTick();
@@ -526,7 +527,7 @@ void Audio::process(unsigned frames)
                   }
             if (recording && (_bounce == 0 || _bounce == 1))
                   audioWriteback->trigger();
-            _pos      += frames;
+            _pos       += frames;
             _curTickPos = _nextTickPos;
             }
       }

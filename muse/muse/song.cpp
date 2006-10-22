@@ -227,23 +227,6 @@ void Song::deleteEvent(Event& event, Part* part)
       }
 
 //---------------------------------------------------------
-//   findTrack
-//---------------------------------------------------------
-
-MidiTrack* Song::findTrack(const Part* part) const
-      {
-      for (ciMidiTrack t = _midis.begin(); t != _midis.end(); ++t) {
-            MidiTrack* track = *t;
-            PartList* pl = track->parts();
-            for (iPart p = pl->begin(); p != pl->end(); ++p) {
-                  if (part == p->second)
-                        return track;
-                  }
-            }
-      return 0;
-      }
-
-//---------------------------------------------------------
 //   setLoop
 //    set transport loop flag
 //---------------------------------------------------------
@@ -1142,6 +1125,7 @@ void Song::clear(bool signal)
 
 //      for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i)
 //            (*i)->deactivate();
+
       _selectedTrack = 0;
       _tracks.clear();
       _midis.clearDelete();
@@ -1650,18 +1634,11 @@ void Song::insertTrack1(Track* track, int idx)
       {
       iTrack i = _tracks.index2iterator(idx);
       _tracks.insert(i, track);
-      switch(track->type()) {
-            case Track::AUDIO_SOFTSYNTH:
-                  {
-                  SynthI* s = (SynthI*)track;
-                  Synth* sy = s->synth();
-                  if (!s->isActivated()) {
-                        s->initInstance(sy);
-                        }
-                  }
-                  break;
-            default:
-                  break;
+      if (track->type() == Track::AUDIO_SOFTSYNTH) {
+            SynthI* s = (SynthI*)track;
+            Synth* sy = s->synth();
+            if (!s->isActivated())
+                  s->initInstance(sy);
             }
       if (audioState == AUDIO_RUNNING) {
             track->activate1();
@@ -1724,7 +1701,6 @@ void Song::insertTrack2(Track* track)
       //
       //  connect routes
       //
-
       Route src(track);
       if (track->type() == Track::AUDIO_SOFTSYNTH)
             src.type = Route::SYNTIPORT;
@@ -1784,8 +1760,8 @@ void Song::removeTrack(Track* track)
 
 void Song::removeTrack1(Track* track)
       {
-      if (track->type() != Track::MIDI_OUT && track->type() != Track::MIDI_IN)
-            track->deactivate();
+//      if (track->type() != Track::MIDI_OUT && track->type() != Track::MIDI_IN)
+      track->deactivate();
       _tracks.erase(track);
       }
 
@@ -1804,11 +1780,9 @@ void Song::removeTrack2(Track* track)
                   _midis.erase(track);
                   break;
             case Track::MIDI_OUT:
-                  track->deactivate();
                   _midiOutPorts.erase(track);
                   break;
             case Track::MIDI_IN:
-//DEBUG                  track->deactivate();
                   _midiInPorts.erase(track);
                   break;
             case Track::MIDI_CHANNEL:
@@ -1859,8 +1833,13 @@ void Song::removeTrack2(Track* track)
             int idx = r.track->inRoutes()->indexOf(src);
             if (idx != -1)
                   r.track->inRoutes()->removeAt(idx);
-            else
+            else {
                   printf("Song::removeTrack2(): output route not found\n");
+                  src.dump();
+                  printf("  in route list:\n");
+                  foreach (const Route rr, *(r.track->inRoutes()))
+                        rr.dump();
+                  }
             }
       }
 

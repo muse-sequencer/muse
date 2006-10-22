@@ -448,7 +448,10 @@ void AudioTrack::process()
       	      }
             }
 
-      double vol[channels()];
+      //
+      // TODO: we can only handle 1 or 2 channels
+      //
+      double vol[2];
       double _volume = _mute ? 0.0 : ctrlVal(AC_VOLUME).f;
       double _pan    = ctrlVal(AC_PAN).f;
       vol[0]         = _volume * (1.0 - _pan);
