@@ -18,8 +18,8 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#ifndef __MPEVENT_H__
-#define __MPEVENT_H__
+#ifndef __MIDIEVENT_H__
+#define __MIDIEVENT_H__
 
 #include <set>
 #include "evdata.h"

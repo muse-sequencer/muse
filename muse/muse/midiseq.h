@@ -22,7 +22,7 @@
 #define __MIDISEQ_H__
 
 #include "thread.h"
-#include "mpevent.h"
+#include "midievent.h"
 
 #include "driver/timerdev.h"
 namespace AL {

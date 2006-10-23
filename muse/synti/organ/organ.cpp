@@ -11,7 +11,7 @@
 //=========================================================
 
 #include "muse/midi.h"
-#include "libsynti/mpevent.h"
+#include "libsynti/midievent.h"
 
 #include "organ.h"
 #include "organgui.h"

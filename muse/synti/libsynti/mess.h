@@ -11,7 +11,7 @@
 #define MESS_MAJOR_VERSION 2
 #define MESS_MINOR_VERSION 1
 
-#include "mpevent.h"
+#include "midievent.h"
 
 class QWidget;
 class MessP;

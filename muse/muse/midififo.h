@@ -21,7 +21,7 @@
 #ifndef __MIDIFIFO_H__
 #define __MIDIFIFO_H__
 
-#include "mpevent.h"
+#include "midievent.h"
 
 #define MIDI_FIFO_SIZE    512
 

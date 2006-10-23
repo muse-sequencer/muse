@@ -12,7 +12,7 @@
 #include "ui_organgui.h"
 #include "organ.h"
 #include "libsynti/gui.h"
-#include "libsynti/mpevent.h"
+#include "libsynti/midievent.h"
 
 class QSignalMapper;
 

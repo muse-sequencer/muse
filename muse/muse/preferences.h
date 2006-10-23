@@ -22,7 +22,7 @@
 #define __PREFERENCES_H__
 
 #include "ui_preferences.h"
-#include "mpevent.h"
+#include "midievent.h"
 
 class MusE;
 class Arranger;

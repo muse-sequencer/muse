@@ -11,7 +11,7 @@
 #include "trigggui.h"
 #include "trigg.h"
 #include "midi.h"
-#include "mpevent.h"
+#include "midievent.h"
 
 //---------------------------------------------------------
 //   Trigg

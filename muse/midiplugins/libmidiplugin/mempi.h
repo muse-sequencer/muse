@@ -18,7 +18,7 @@
 #include <set>
 #include "evdata.h"
 #include "memory.h"
-#include "mpevent.h"
+#include "midievent.h"
 
 class MempiP;
 

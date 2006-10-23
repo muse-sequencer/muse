@@ -22,7 +22,7 @@
 #define __AUDIO_H__
 
 #include "thread.h"
-#include "mpevent.h"
+#include "midievent.h"
 #include "route.h"
 #include "al/pos.h"
 #include "event.h"

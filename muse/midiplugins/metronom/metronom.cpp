@@ -11,7 +11,7 @@
 #include "metronomgui.h"
 #include "metronom.h"
 #include "midi.h"
-#include "mpevent.h"
+#include "midievent.h"
 
 //---------------------------------------------------------
 //   Metronom
@@ -81,7 +81,7 @@ void Metronom::setGeometry(int x, int y, int w, int h)
 //   process
 //---------------------------------------------------------
 
-void Metronom::process(unsigned from, unsigned to, MPEventList* il, MPEventList* ol)
+void Metronom::process(unsigned from, unsigned to, MPEventList* /*il*/, MPEventList* ol)
       {
       if (from == to) {
             nextTick = 0;

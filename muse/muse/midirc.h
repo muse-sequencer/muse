@@ -22,7 +22,7 @@
 #define __MIDIRC_H__
 
 #include "event.h"
-#include "mpevent.h"
+#include "midievent.h"
 
 enum {
       RC_STOP, RC_PLAY, RC_RECORD, RC_GOTO_LEFT_MARK

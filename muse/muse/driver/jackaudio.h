@@ -22,6 +22,7 @@
 #define __JACKAUDIO_H__
 
 #include <jack/jack.h>
+#include <jack/midiport.h>
 #include "audiodev.h"
 
 //---------------------------------------------------------
@@ -79,7 +80,7 @@ class JackAudio : public AudioDriver {
       void graphChanged();
       virtual bool equal(Port a, Port b) { return a == b; }
       virtual void putEvent(Port, const MidiEvent&);
-      virutal void startMidiCycle(Port);
+      virtual void startMidiCycle(Port);
       };
 
 #endif

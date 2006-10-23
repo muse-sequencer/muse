@@ -25,7 +25,7 @@
 #include "route.h"
 #include "ctrl.h"
 #include "globaldefs.h"
-#include "mpevent.h"
+#include "midievent.h"
 #include "midififo.h"
 
 namespace AL {

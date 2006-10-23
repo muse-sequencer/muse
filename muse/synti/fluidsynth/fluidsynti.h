@@ -11,13 +11,12 @@
 #define __MUSE_FLUIDSYNTI_H__
 
 #include <fluidsynth.h>
-// #include <qstring.h>
 #include <pthread.h>
 #include <string>
 #include "fluidsynthgui.h"
 #include "libsynti/mess.h"
 #include "muse/debug.h"
-#include "libsynti/mpevent.h"
+#include "libsynti/midievent.h"
 #include "muse/midictrl.h"
 
 #define FS_DEBUG_DATA 0 //Turn on/off debug print of midi data sent to fluidsynth

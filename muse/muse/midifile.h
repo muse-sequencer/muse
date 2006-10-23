@@ -22,7 +22,7 @@
 #define __MIDIFILE_H__
 
 #include "globaldefs.h"
-#include "mpevent.h"
+#include "midievent.h"
 
 struct MPEventList;
 class MidiEvent;

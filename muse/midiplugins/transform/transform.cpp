@@ -6,7 +6,7 @@
 //  (C) Copyright 2001-2005 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include "mpevent.h"
+#include "midievent.h"
 #include "transform.h"
 
 static int eventTypeTable[] = {

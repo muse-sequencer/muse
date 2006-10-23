@@ -10,7 +10,7 @@
 #ifndef __SYNTH_GUI_H__
 #define __SYNTH_GUI_H__
 
-#include "mpevent.h"
+#include "midievent.h"
 
 const int EVENT_FIFO_SIZE = 256;
 class QWidget;

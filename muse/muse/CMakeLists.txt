@@ -110,9 +110,9 @@ add_executable ( muse
       icons.cpp 
       event.cpp 
       eventlist.cpp 
-      midievent.cpp 
+      midieventbase.cpp 
       waveevent.cpp 
-      mpevent.cpp
+      midievent.cpp
 	wave.cpp 
       seqmsg.cpp
 	help.cpp
