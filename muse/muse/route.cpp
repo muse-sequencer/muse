@@ -33,11 +33,20 @@
 //   Route
 //---------------------------------------------------------
 
+Route::Route()
+      {
+      track   = 0;
+      channel = -1;
+      type    = TRACK;
+      disconnected = false;
+      }
+
 Route::Route(Port p, int ch, RouteType t)
       {
       port    = p;
       channel = ch;
       type    = t;
+      disconnected = false;
       }
 
 Route::Route(Port p, RouteType t)
@@ -45,6 +54,7 @@ Route::Route(Port p, RouteType t)
       port    = p;
       channel = -1;
       type    = t;
+      disconnected = false;
       }
 
 Route::Route(Track* tr)
@@ -52,6 +62,7 @@ Route::Route(Track* tr)
       track   = tr;
       channel = -1;
       type    = TRACK;
+      disconnected = false;
       }
 
 Route::Route(AuxPluginIF* p)
@@ -59,6 +70,7 @@ Route::Route(AuxPluginIF* p)
       plugin  = p;
       channel = -1;
       type    = AUXPLUGIN;
+      disconnected = false;
       }
 
 Route::Route(Track* tr, int ch, RouteType t)
@@ -66,13 +78,7 @@ Route::Route(Track* tr, int ch, RouteType t)
       track   = tr;
       channel = ch;
       type    = t;
-      }
-
-Route::Route()
-      {
-      track   = 0;
-      channel = -1;
-      type    = TRACK;
+      disconnected = false;
       }
 
 //---------------------------------------------------------
@@ -280,6 +286,8 @@ void Song::readRoute(QDomNode n)
             d.channel = s.channel;
       if (s.type == Route::TRACK && s.track->type() == Track::MIDI_IN)
             d.channel = s.channel;
+      s.disconnected = true;
+      d.disconnected = true;
       addRoute(s, d);
       }
 

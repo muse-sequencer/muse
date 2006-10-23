@@ -66,7 +66,10 @@ struct Route {
             Port   port;
             AuxPluginIF* plugin;
             };
-      int channel;      // route to/from JACK can specify a channel to connect to
+      int channel;            // route to/from JACK can specify a channel to connect to
+      bool disconnected;      // if true, do not remove route in graphChanged()
+                              // or removeConnection()
+
       RouteType type;
 
       Route();

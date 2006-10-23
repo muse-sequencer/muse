@@ -350,8 +350,9 @@ void MidiChannelStrip::autoWriteToggled(bool val)
 
 void MidiChannelStrip::iRoutePressed()
       {
-      QMenu* pup = new QMenu(iR);
-      pup->addSeparator()->setText(tr("Tracks"));
+      QMenu pup(iR);
+      pup.setSeparatorsCollapsible(false);
+      pup.addSeparator()->setText(tr("Tracks"));
 
       MidiChannel* t = (MidiChannel*)track;
       RouteList* irl = t->inRoutes();
@@ -360,7 +361,7 @@ void MidiChannelStrip::iRoutePressed()
       int tn = 0;
       for (iMidiTrack i = tl->begin();i != tl->end(); ++i, ++tn) {
             MidiTrack* track = *i;
-            QAction* action = pup->addAction(track->name());
+            QAction* action = pup.addAction(track->name());
             action->setCheckable(true);
             Route src(track, -1, Route::TRACK);
             action->setData(QVariant::fromValue(src));
@@ -371,7 +372,9 @@ void MidiChannelStrip::iRoutePressed()
                         }
                   }
             }
-      QAction* n = pup->exec(QCursor::pos());
+      if (pup.isEmpty())
+            return;
+      QAction* n = pup.exec(QCursor::pos());
       if (n) {
             Route srcRoute = n->data().value<Route>();
             Route dstRoute(track, -1, Route::TRACK);
@@ -382,7 +385,6 @@ void MidiChannelStrip::iRoutePressed()
                   audio->msgRemoveRoute(srcRoute, dstRoute);
             song->update(SC_ROUTE);
             }
-      delete pup;
       iR->setDown(false);     // pup->exec() catches mouse release event
       }
 
@@ -540,15 +542,17 @@ void MidiStrip::recordToggled(bool val)
 
 void MidiStrip::iRoutePressed()
       {
-      QMenu* pup = new QMenu(oR);
-      pup->addSeparator()->setText(tr("Input Ports"));
+      QMenu pup(oR);
+      pup.setSeparatorsCollapsible(false);
+      pup.addSeparator()->setText(tr("Input Ports"));
+
       MidiOutPort* t = (MidiOutPort*)track;
       RouteList* irl = t->inRoutes();
 
       MidiInPortList* ipl = song->midiInPorts();
       int tn = 0;
       for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i, ++tn) {
-            QMenu* m = pup->addMenu((*i)->name());
+            QMenu* m = pup.addMenu((*i)->name());
             m->addSeparator()->setText(tr("Channel"));
             QAction* all_action = m->addAction(tr("All"));
             QMap<QString, QVariant> map;
@@ -576,8 +580,9 @@ void MidiStrip::iRoutePressed()
                         }
                   }
             }
-
-      QAction* n = pup->exec(QCursor::pos());
+      if (pup.isEmpty())
+            return;
+      QAction* n = pup.exec(QCursor::pos());
       if (n) {
             QMap<QString, QVariant> data = n->data().toMap();
             int trackid = data["id"].toInt();
@@ -604,7 +609,6 @@ void MidiStrip::iRoutePressed()
                   }
             song->update(SC_ROUTE);
             }
-      delete pup;
       iR->setDown(false);     // pup->exec() catches mouse release event
       }
 
@@ -641,6 +645,8 @@ void MidiStrip::oRoutePressed()
                         }
                   }
             }
+      if (pup.isEmpty())
+            return;
       QAction* n = pup.exec(QCursor::pos());
       if (n) {
             Route srcRoute(track, -1, Route::TRACK);
@@ -900,13 +906,14 @@ void MidiOutPortStrip::controllerChanged(int id)
 
 void MidiOutPortStrip::oRoutePressed()
       {
-      QMenu* pup = new QMenu(oR);
-      pup->addSeparator()->setText(tr("MidiDevices"));
+      QMenu pup(oR);
+      pup.setSeparatorsCollapsible(false);
+      pup.addSeparator()->setText(tr("MidiDevices"));
       RouteList* orl = track->outRoutes();
 
       QList<PortName> ol = midiDriver->outputPorts(true);
       foreach (PortName ip, ol) {
-            QAction* oa = pup->addAction(ip.name);
+            QAction* oa = pup.addAction(ip.name);
             oa->setCheckable(true);
             Route dst(ip.port, Route::MIDIPORT);
             oa->setData(QVariant::fromValue(dst));
@@ -925,7 +932,7 @@ void MidiOutPortStrip::oRoutePressed()
       SynthIList* sl = song->syntis();
       for (iSynthI i = sl->begin(); i != sl->end(); ++i) {
             SynthI* track = *i;
-            QAction* oa = pup->addAction(track->name());
+            QAction* oa = pup.addAction(track->name());
             oa->setCheckable(true);
             Route dst(track, -1, Route::SYNTIPORT);
             oa->setData(QVariant::fromValue(dst));
@@ -943,7 +950,7 @@ void MidiOutPortStrip::oRoutePressed()
       //
       ol = audioDriver->inputPorts(true);
       foreach (PortName ip, ol) {
-            QAction* oa = pup->addAction(ip.name);
+            QAction* oa = pup.addAction(ip.name);
             oa->setCheckable(true);
             Route dst(ip.port, Route::JACKMIDIPORT);
             oa->setData(QVariant::fromValue(dst));
@@ -955,8 +962,9 @@ void MidiOutPortStrip::oRoutePressed()
                         }
                   }
             }
-
-      QAction* action = pup->exec(QCursor::pos());
+      if (pup.isEmpty())
+            return;
+      QAction* action = pup.exec(QCursor::pos());
       if (action) {
             Route dstRoute = action->data().value<Route>();
             Route srcRoute(track);
@@ -967,7 +975,6 @@ void MidiOutPortStrip::oRoutePressed()
                   audio->msgRemoveRoute(srcRoute, dstRoute);
             song->update(SC_ROUTE);
             }
-      delete pup;
       oR->setDown(false);     // pup->exec() catches mouse release event
       }
 
@@ -1121,8 +1128,9 @@ void MidiInPortStrip::soloToggled(bool val)
 
 void MidiInPortStrip::oRoutePressed()
       {
-      QMenu* pup = new QMenu(tr("Channel"), oR);
-      pup->addSeparator()->setText(tr("Channel"));
+      QMenu pup(oR);
+      pup.setSeparatorsCollapsible(false);
+      pup.addSeparator()->setText(tr("Channel"));
 
       MidiTrackList* tl = song->midis();
       MidiSyntiList* sl = song->midiSyntis();
@@ -1131,7 +1139,7 @@ void MidiInPortStrip::oRoutePressed()
 
       int sn = 0;
       for (iSynthI i = asl->begin(); i != asl->end(); ++i,++sn) {
-            QAction* action = pup->addAction((*i)->name());
+            QAction* action = pup.addAction((*i)->name());
 
             QMap<QString, QVariant> data;
             data["id"] = QVariant(0x20000 + sn);
@@ -1150,7 +1158,7 @@ void MidiInPortStrip::oRoutePressed()
                   }
             }
       for (int channel = 0; channel < MIDI_CHANNELS; ++channel) {
-            QMenu* m = pup->addMenu(QString(tr("Channel %1")).arg(channel + 1));
+            QMenu* m = pup.addMenu(QString(tr("Channel %1")).arg(channel + 1));
             m->addSeparator()->setText(tr("Tracks"));
 
             //
@@ -1201,8 +1209,9 @@ void MidiInPortStrip::oRoutePressed()
                         }
                   }
             }
-
-      QAction* action = pup->exec(QCursor::pos());
+      if (pup.isEmpty())
+            return;
+      QAction* action = pup.exec(QCursor::pos());
       if (action) {
             int n = action->data().toMap()["id"].toInt();
             int was_checked = action->data().toMap()["was_checked"].toInt();
@@ -1233,7 +1242,6 @@ void MidiInPortStrip::oRoutePressed()
                   audio->msgAddRoute(srcRoute, dstRoute);
             song->update(SC_ROUTE);
             }
-      delete pup;
       oR->setDown(false);     // pup->exec() catches mouse release event
       }
 
@@ -1243,14 +1251,15 @@ void MidiInPortStrip::oRoutePressed()
 
 void MidiInPortStrip::iRoutePressed()
       {
-      QMenu* pup = new QMenu(oR);
-      pup->addSeparator()->setText(tr("AlsaDevices"));
+      QMenu pup(oR);
+      pup.setSeparatorsCollapsible(false);
+      pup.addSeparator()->setText(tr("AlsaDevices"));
 
       RouteList* irl = track->inRoutes();
 
       QList<PortName> ol = midiDriver->inputPorts(false);
       foreach (PortName ip, ol) {
-            QAction* action = pup->addAction(ip.name);
+            QAction* action = pup.addAction(ip.name);
             action->setCheckable(true);
             Route src(ip.port, Route::MIDIPORT);
             action->setData(QVariant::fromValue(src));
@@ -1266,7 +1275,7 @@ void MidiInPortStrip::iRoutePressed()
       //
       ol = audioDriver->outputPorts(true);
       foreach (PortName ip, ol) {
-            QAction* action = pup->addAction(ip.name);
+            QAction* action = pup.addAction(ip.name);
             action->setCheckable(true);
             Route src(ip.port, Route::JACKMIDIPORT);
             action->setData(QVariant::fromValue(src));
@@ -1278,7 +1287,9 @@ void MidiInPortStrip::iRoutePressed()
                         }
                   }
             }
-      QAction* action = pup->exec(QCursor::pos());
+      if (pup.isEmpty())
+            return;
+      QAction* action = pup.exec(QCursor::pos());
       if (action) {
             Route srcRoute = action->data().value<Route>();
             Route dstRoute(track, -1, Route::TRACK);
@@ -1299,7 +1310,6 @@ void MidiInPortStrip::iRoutePressed()
                   }
             song->update(SC_ROUTE);
             }
-      delete pup;
       iR->setDown(false);     // pup->exec() catches mouse release event
       }
 
@@ -1565,6 +1575,8 @@ void MidiSyntiStrip::oRoutePressed()
                         }
                   }
             }
+      if (pup.isEmpty())
+            return;
       QAction* action = pup.exec(QCursor::pos());
       if (action) {
             Route dstRoute = action->data().value<Route>();
@@ -1632,6 +1644,8 @@ void MidiSyntiStrip::iRoutePressed()
                   }
             }
 
+      if (pup.isEmpty())
+            return;
       QAction* action = pup.exec(QCursor::pos());
       if (action) {
             Route srcRoute = action->data().value<Route>();

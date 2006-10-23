@@ -406,12 +406,10 @@ void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
             Port dst = iport->alsaPort();
 
             if (equal(dst, rd)) {
-                  RouteList* irl = iport->inRoutes();
-                  for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
-                        Port src = ir->port;
-
-                        if (equal(src, rs)) {
-                              irl->erase(ir);
+                  RouteList* irl = iport->outRoutes();
+                  for (iRoute r = irl->begin(); r != irl->end(); ++r) {
+                        if (!r->disconnected && equal(r->port, rs)) {
+                              iport->inRoutes()->erase(r);
                               break;
                               }
                         }
@@ -427,11 +425,8 @@ void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
             if (equal(src, rs)) {
                   RouteList* orl = oport->outRoutes();
                   for (iRoute r = orl->begin(); r != orl->end(); ++r) {
-                        Port dst = r->port;
-
-                        if (equal(dst, rd)) {
+                        if (!r->disconnected && equal(r->port, rd)) {
                               orl->erase(r);
-printf("REMOVE OUT connection\n");
                               break;
                               }
                         }
@@ -678,12 +673,10 @@ bool AlsaMidi::putEvent(snd_seq_event_t* event)
             error   = snd_seq_event_output_direct(alsaSeq, event);
             int len = snd_seq_event_length(event);
             if (error == len) {
-//                  printf(".");fflush(stdout);
                   return false;
                   }
             if (error < 0) {
                   if (error == -12) {
-//                        printf("?");fflush(stdout);
                         return true;
                         }
                   else {

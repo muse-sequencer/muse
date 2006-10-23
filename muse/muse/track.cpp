@@ -970,7 +970,8 @@ void Track::resetAllMeter()
       }
 
 //---------------------------------------------------------
-//   activate
+//   activate1
+//    register JACK and ALSA ports
 //---------------------------------------------------------
 
 void Track::activate1()
@@ -990,6 +991,7 @@ void Track::activate1()
                   }
             return;
             }
+
       for (int i = 0; i < channels(); ++i) {
             if (jackPort(i))
                   printf("Track::activate1(): already active!\n");
@@ -1005,7 +1007,7 @@ void Track::activate1()
 
 //---------------------------------------------------------
 //   activate2
-//    connect all in/out routes
+//    connect all JACK/ALSA in/out routes
 //    connect to JACK only works if JACK is running
 //---------------------------------------------------------
 
@@ -1015,55 +1017,84 @@ void Track::activate2()
             printf("Track::activate2(): no audio running !\n");
             abort();
             }
-      foreach(Route r, _outRoutes) {
-            if (r.type == Route::JACKMIDIPORT)
+      for (iRoute ri = _outRoutes.begin(); ri != _outRoutes.end(); ++ri) {
+            Route& r = *ri;
+            if (r.type == Route::JACKMIDIPORT) {
                   audioDriver->connect(_jackPort[0], r.port);
-            else if (r.type == Route::MIDIPORT)
+                  r.disconnected = false;
+                  }
+            else if (r.type == Route::AUDIOPORT) {
+                  audioDriver->connect(_jackPort[r.channel], r.port);
+                  r.disconnected = false;
+                  }
+            else if (r.type == Route::MIDIPORT) {
                   midiDriver->connect(_alsaPort[0], r.port);
+                  r.disconnected = false;
+                  }
             }
-      foreach(Route r, _inRoutes) {
-            if (r.type == Route::JACKMIDIPORT)
+      for (iRoute ri = _inRoutes.begin(); ri != _inRoutes.end(); ++ri) {
+            Route& r = *ri;
+            if (r.type == Route::JACKMIDIPORT) {
                   audioDriver->connect(r.port, _jackPort[0]);
-            else if (r.type == Route::MIDIPORT)
+                  r.disconnected = false;
+                  }
+            else if (r.type == Route::AUDIOPORT) {
+                  audioDriver->connect(r.port, _jackPort[r.channel]);
+                  r.disconnected = false;
+                  }
+            else if (r.type == Route::MIDIPORT) {
                   midiDriver->connect(r.port, _alsaPort[0]);
+                  r.disconnected = false;
+                  }
             }
       }
 
 //---------------------------------------------------------
 //   deactivate
+//    disconnect and unregister JACK and ALSA ports
 //---------------------------------------------------------
 
 void Track::deactivate()
       {
-      foreach (Route r, _outRoutes) {
-            if (r.type == Route::JACKMIDIPORT)
+      for (iRoute ri = _outRoutes.begin(); ri != _outRoutes.end(); ++ri) {
+            Route& r = *ri;
+            if (r.type == Route::JACKMIDIPORT) {
+                  r.disconnected = true;
                   audioDriver->disconnect(_jackPort[0], r.port);
-            else if (r.type == Route::AUDIOPORT)
+                  }
+            else if (r.type == Route::AUDIOPORT) {
                   audioDriver->disconnect(_jackPort[r.channel], r.port);
-            else if (r.type == Route::MIDIPORT)
+                  r.disconnected = true;
+                  }
+            else if (r.type == Route::MIDIPORT) {
+                  r.disconnected = true;
                   midiDriver->disconnect(_alsaPort[0], r.port);
+                  }
             }
-      foreach (Route r, _inRoutes) {
-            if (r.type == Route::JACKMIDIPORT)
+      for (iRoute ri = _inRoutes.begin(); ri != _inRoutes.end(); ++ri) {
+            Route& r = *ri;
+            if (r.type == Route::JACKMIDIPORT) {
+                  r.disconnected = true;
                   audioDriver->disconnect(r.port, _jackPort[0]);
-            else if (r.type == Route::AUDIOPORT)
+                  }
+            else if (r.type == Route::AUDIOPORT) {
+                  r.disconnected = true;
                   audioDriver->disconnect(r.port, _jackPort[r.channel]);
-            else if (r.type == Route::MIDIPORT)
+                  }
+            else if (r.type == Route::MIDIPORT) {
+                  r.disconnected = true;
                   midiDriver->disconnect(r.port, _alsaPort[0]);
+                  }
             }
       for (int i = 0; i < channels(); ++i) {
             if (_jackPort[i]) {
                   audioDriver->unregisterPort(_jackPort[i]);
                   _jackPort[i] = 0;
                   }
-            else
-                  printf("Track::deactivate(): jack port not active!\n");
             if (_alsaPort[i]) {
                   midiDriver->unregisterPort(_alsaPort[i]);
                   _alsaPort[i] = 0;
                   }
-            else
-                  printf("Track::deactivate(): alsa port not active!\n");
             }
       }
 

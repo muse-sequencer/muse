@@ -1705,34 +1705,33 @@ void Song::insertTrack2(Track* track)
       if (track->type() == Track::AUDIO_SOFTSYNTH)
             src.type = Route::SYNTIPORT;
       if (track->type() == Track::AUDIO_OUTPUT || track->type() == Track::MIDI_OUT) {
-            const RouteList* rl = track->inRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-                  src.channel = r->channel;
-                  r->track->outRoutes()->push_back(src);
+            foreach(Route r, *(track->inRoutes())) {
+                  if (r.type != Route::AUXPLUGIN) {
+                        src.channel = r.channel;
+                        r.track->outRoutes()->push_back(src);
+                        }
                   }
             }
       else if (track->type() == Track::AUDIO_INPUT || track->type() == Track::MIDI_IN) {
-            const RouteList* rl = track->outRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-                  src.channel = r->channel;
-                  r->track->inRoutes()->push_back(src);
+            foreach(Route r, *(track->outRoutes())) {
+                  if (r.type != Route::AUXPLUGIN) {
+                        src.channel = r.channel;
+                        r.track->inRoutes()->push_back(src);
+                        }
                   }
             }
       else {
-            const RouteList* rl = track->inRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-                  Route rt = *r;
-                  src.channel = rt.channel;
-                  if (rt.type == Route::AUXPLUGIN)
-                        continue;
-                  rt.track->outRoutes()->push_back(src);
+            foreach(Route r, *(track->inRoutes())) {
+                  if (r.type != Route::AUXPLUGIN) {
+                        src.channel = r.channel;
+                        r.track->outRoutes()->push_back(src);
+                        }
                   }
-            rl = track->outRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-                  src.channel = r->channel;
-                  if (r->type == Route::AUXPLUGIN)
-                        continue;
-                  r->track->inRoutes()->push_back(src);
+            foreach(Route r, *(track->outRoutes())) {
+                  if (r.type != Route::AUXPLUGIN) {
+                        src.channel = r.channel;
+                        r.track->inRoutes()->push_back(src);
+                        }
                   }
             }
       }
@@ -1760,7 +1759,6 @@ void Song::removeTrack(Track* track)
 
 void Song::removeTrack1(Track* track)
       {
-//      if (track->type() != Track::MIDI_OUT && track->type() != Track::MIDI_IN)
       track->deactivate();
       _tracks.erase(track);
       }

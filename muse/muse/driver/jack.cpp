@@ -275,20 +275,15 @@ struct RouteRoute {
 
 void JackAudio::graphChanged()
       {
-      // under construction
-      return;
-
       QList<RouteRoute> rr;
       QList<RouteRoute> ra;
 
-printf("graphChanged\n");
+// printf("graphChanged\n");
       InputList* il = song->inputs();
       for (iAudioInput ii = il->begin(); ii != il->end(); ++ii) {
             AudioInput* it = *ii;
             int channels   = it->channels();
             RouteList* irl = it->inRoutes();
-
-printf("  inRoutes %d\n", irl->size());
 
             for (int channel = 0; channel < channels; ++channel) {
                   jack_port_t* port = (jack_port_t*)(it->jackPort(channel));
@@ -301,15 +296,12 @@ printf("  inRoutes %d\n", irl->size());
                   //---------------------------------------
 
                   foreach (Route r, *irl) {
-printf("  channel %d %d\n", r.channel, channel);
                         if (r.channel != channel)
                               continue;
                         const char* name = jack_port_name((jack_port_t*)r.port);
-printf("  port name <%s>\n", name);
                         bool found      = false;
                         for (const char** pn = ports; pn && *pn; ++pn) {
                               if (strcmp(*pn, name) == 0) {
-printf("  compare <%s><%s>\n", *pn, name);
                                     found = true;
                                     break;
                                     }
@@ -352,7 +344,7 @@ printf("  compare <%s><%s>\n", *pn, name);
                   }
             }
 
-printf("  input: remove %d add %d routes\n", rr.size(), ra.size());
+// printf("  input: remove %d add %d routes\n", rr.size(), ra.size());
       foreach(RouteRoute a, rr) {
             audio->msgRemoveRoute1(a.src, a.dst);
             }
@@ -377,10 +369,10 @@ printf("  input: remove %d add %d routes\n", rr.size(), ra.size());
                   // check for disconnects
                   //---------------------------------------
 
-                  for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
-                        if (irl->channel != channel)
+                  foreach(Route r, *rl) {
+                        if (r.channel != channel)
                               continue;
-                        const char* name = jack_port_name((jack_port_t*)irl->port);
+                        const char* name = jack_port_name((jack_port_t*)r.port);
                         bool found = false;
                         const char** pn = ports;
                         while (pn && *pn) {
@@ -393,7 +385,7 @@ printf("  input: remove %d add %d routes\n", rr.size(), ra.size());
                         if (!found) {
                               RouteRoute a;
                               a.src = Route(it, channel);
-                              a.dst = Route(irl->port, channel, Route::AUDIOPORT);
+                              a.dst = Route(r.port, channel, Route::AUDIOPORT);
                               rr.append(a);
                               }
                         }
@@ -406,12 +398,10 @@ printf("  input: remove %d add %d routes\n", rr.size(), ra.size());
                         const char** pn = ports;
                         while (*pn) {
                               bool found = false;
-                              Port port;
                               for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                                     if (irl->channel != channel)
                                           continue;
-                                    port = irl->port;
-                                    const char* name = jack_port_name((jack_port_t*)port);
+                                    const char* name = jack_port_name((jack_port_t*)irl->port);
                                     if (strcmp(*pn, name) == 0) {
                                           found = true;
                                           break;
@@ -420,6 +410,7 @@ printf("  input: remove %d add %d routes\n", rr.size(), ra.size());
                               if (!found) {
                                     RouteRoute a;
                                     a.src = Route(it, channel);
+                                    Port port = jack_port_by_name(_client, *pn);
                                     a.dst = Route(port, channel, Route::AUDIOPORT);
                                     ra.append(a);
                                     }
@@ -429,7 +420,7 @@ printf("  input: remove %d add %d routes\n", rr.size(), ra.size());
                         }
                   }
             }
-printf("  input: remove %d add %d routes\n", rr.size(), ra.size());
+// printf("  output: remove %d add %d routes\n", rr.size(), ra.size());
       foreach(RouteRoute a, rr)
             audio->msgRemoveRoute1(a.src, a.dst);
       foreach(RouteRoute a, ra)
@@ -653,9 +644,11 @@ QString JackAudio::portName(void* port)
 
 void JackAudio::unregisterPort(Port p)
       {
- //printf("JACK: unregister Port %p\n", p);
-      if (_client)
-            jack_port_unregister(_client, (jack_port_t*)p);
+      if (_client) {
+// printf("JACK: unregister Port %p\n", p);
+            if (jack_port_unregister(_client, (jack_port_t*)p))
+                  fprintf(stderr, "jack unregister port %p failed\n", p);
+            }
       }
 
 //---------------------------------------------------------

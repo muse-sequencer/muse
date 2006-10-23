@@ -722,6 +722,8 @@ void AudioStrip::iRoutePressed()
                   addMidiInPorts(t, &pup, irl);
                   break;
             }
+      if (pup.isEmpty())
+            return;
       QAction* n = pup.exec(QCursor::pos());
       if (n != 0) {
             Route srcRoute = n->data().value<Route>();
@@ -785,6 +787,8 @@ void AudioStrip::oRoutePressed()
                   addGroupPorts(t, &pup, orl);
                   break;
             }
+      if (pup.isEmpty())
+            return;
       QAction* n = pup.exec(QCursor::pos());
       if (n != 0) {
             QString s(n->text());
