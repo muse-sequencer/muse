@@ -40,6 +40,7 @@ class AlsaMidi : public Driver {
 
       void removeConnection(snd_seq_connect_t* ev);
       void addConnection(snd_seq_connect_t* ev);
+      bool putEvent(snd_seq_event_t* event);
 
    public:
       AlsaMidi();
@@ -58,15 +59,13 @@ class AlsaMidi : public Driver {
 
       virtual bool connect(Port, Port);
       virtual bool disconnect(Port, Port);
+      virtual void putEvent(Port, const MidiEvent&);
 
       void getInputPollFd(struct pollfd**, int* n);
       void getOutputPollFd(struct pollfd**, int* n);
 
       void read(MidiSeq*);      // process events
       void write();
-
-      void putEvent(Port, const MidiEvent&);
-      bool putEvent(snd_seq_event_t* event);
       };
 
 extern AlsaMidi alsaMidi;

@@ -37,7 +37,7 @@ class AudioDriver : public Driver {
       virtual bool restart() { return false; }           // return true on error
       virtual void stop () = 0;
       virtual unsigned framePos() const = 0;
-      virtual float* getBuffer(void* port, unsigned long nframes) = 0;
+      virtual float* getBuffer(Port, unsigned long nframes) = 0;
       virtual void registerClient() = 0;
       virtual Port registerOutPort(const QString& name, bool midi) = 0;
       virtual Port registerInPort(const QString& name, bool midi) = 0;
@@ -49,6 +49,7 @@ class AudioDriver : public Driver {
       virtual void seekTransport(unsigned frame) = 0;
       virtual void setFreewheel(bool f) = 0;
       virtual void graphChanged() {}
+      virtual void startMidiCycle(Port) {}
       };
 
 #endif

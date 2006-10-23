@@ -460,7 +460,9 @@ void Audio::process(unsigned frames)
                   }
             }
 
-      processMidi(frames);
+      MidiOutPortList* mol = song->midiOutPorts();
+      for (iMidiOutPort i = mol->begin(); i != mol->end(); ++i)
+            audioDriver->startMidiCycle(mol->jackPort(0));
 
       GroupList* gl     = song->groups();
       SynthIList* sl    = song->syntis();

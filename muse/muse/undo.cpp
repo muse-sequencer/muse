@@ -463,6 +463,10 @@ void Song::doUndo3()
                         break;
                   case UndoOp::DeleteTrack:
                         emit trackAdded(i->track, i->id);
+                        if (i->track->selected()) {
+                              i->track->setSelected(false);
+                              selectTrack(i->track);
+                              }
                         break;
                   case UndoOp::ModifyPart:
                         if (i->oPart->track() != i->nPart->track())

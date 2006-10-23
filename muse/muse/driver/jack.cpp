@@ -794,3 +794,32 @@ bool initJackAudio()
       return false;
       }
 
+//---------------------------------------------------------
+//   putEvent
+//---------------------------------------------------------
+
+void JackAudio::putEvent(Port p, const MidiEvent& e)
+      {
+      if (midiOutputTrace) {
+            printf("MidiOut<%s>: jackMidi: ", portName(p).toLatin1().data());
+            e.dump();
+            }
+      unsigned char* p = jack_midi_event_reserve(pb, pos, 3, segmentSize);
+      if (p == 0) {
+            fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
+            return;
+            }
+      p[0] = e.dataA();
+      p[1]
+      }
+
+//---------------------------------------------------------
+//    startMidiCycle
+//---------------------------------------------------------
+
+void JackAudio::startMidiCycle(Port port)
+      {
+      void* port_buf = jack_port_get_buffer(port, segmentSize);
+      jack_midi_clear_buffer(port_buf, segmentSize);
+      }
+

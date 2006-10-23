@@ -21,6 +21,7 @@
 #include "song.h"
 #include "midiplugin.h"
 #include "midictrl.h"
+#include "al/tempo.h"
 #include "al/xml.h"
 #include "driver/mididev.h"
 #include "driver/audiodev.h"
@@ -153,7 +154,7 @@ void MidiOutPort::putEvent(const MidiEvent& ev)
                   }
 
             if (a == CTRL_PITCH) {
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_PITCHBEND, b, 0));
+                  routeEvent(MidiEvent(0, chn, ME_PITCHBEND, b, 0));
                   return;
                   }
             if (a == CTRL_PROGRAM) {
@@ -163,10 +164,10 @@ void MidiOutPort::putEvent(const MidiEvent& ev)
                         int lb = (b >> 8) & 0xff;
                         int pr = b & 0x7f;
                         if (hb != 0xff)
-                              midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_HBANK, hb));
+                              routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_HBANK, hb));
                         if (lb != 0xff)
                               midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_LBANK, lb));
-                        midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_PROGRAM, pr, 0));
+                        routeEvent(MidiEvent(0, chn, ME_PROGRAM, pr, 0));
                         return;
 //                        }
                   }
@@ -178,63 +179,63 @@ void MidiOutPort::putEvent(const MidiEvent& ev)
                   sysex[4] = b & 0x7f;
                   sysex[5] = (b >> 7) & 0x7f;
                   MidiEvent e(ev.time(), ME_SYSEX, sysex, 6);
-                  midiDriver->putEvent(alsaPort(), e);
+                  routeEvent(e);
                   return;
                   }
 
 #if 1 // if ALSA cannot handle RPN NRPN etc.
             if (a < 0x1000) {          // 7 Bit Controller
                   //putMidiEvent(MidiEvent(0, chn, ME_CONTROLLER, a, b));
-                  midiDriver->putEvent(alsaPort(), ev);
+                  routeEvent(ev);
                   }
             else if (a < 0x20000) {     // 14 bit high resolution controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, ctrlH, dataH));
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, ctrlL, dataL));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, ctrlH, dataH));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, ctrlL, dataL));
                   }
             else if (a < 0x30000) {     // RPN 7-Bit Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, b));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, b));
                   }
             else if (a < 0x40000) {     // NRPN 7-Bit Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, b));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, b));
                   }
             else if (a < 0x60000) {     // RPN14 Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
                   }
             else if (a < 0x70000) {     // NRPN14 Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-                  midiDriver->putEvent(alsaPort(), MidiEvent(0, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+                  routeEvent(MidiEvent(0, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
                   }
             else {
                   printf("putEvent: unknown controller type 0x%x\n", a);
                   }
 #endif
             }
-      midiDriver->putEvent(alsaPort(), ev);
+      routeEvent(ev);
       }
 
 //---------------------------------------------------------
@@ -244,7 +245,7 @@ void MidiOutPort::putEvent(const MidiEvent& ev)
 void MidiOutPort::playEventList()
       {
       for (; _nextPlayEvent != _playEvents.end(); ++_nextPlayEvent)
-            midiDriver->putEvent(alsaPort(), *_nextPlayEvent);
+            routeEvent(*_nextPlayEvent);
       }
 
 //---------------------------------------------------------
@@ -385,21 +386,127 @@ void MidiOutPort::playMidiEvent(MidiEvent* ev)
       RouteList* orl = outRoutes();
       bool sendToFifo = false;
       for (iRoute i = orl->begin(); i != orl->end(); ++i) {
-            if (i->type == Route::MIDIPORT)
-                  sendToFifo = true;
-            else if (i->type == Route::SYNTIPORT) {
+            if (i->type == Route::SYNTIPORT) {
                   SynthI* synti = (SynthI*)i->track;
 	      	if (synti->eventFifo()->put(*ev))
       	      	printf("MidiOut::playMidiEvent(): synti overflow, drop event\n");
                   }
-            else
-                  printf("MidiOutPort::playMidiEvent: bad route type\n");
+            else 
+                  sendToFifo = true;
             }
       if (sendToFifo) {
 	      if (eventFifo.put(*ev))
       	      printf("MidiPort::playMidiEvent(): port overflow, drop event\n");
             }
       }
+
+//---------------------------------------------------------
+//   process
+//    "play" events for this process cycle
+//    if (from != to)  then transport state is "playing"
+//---------------------------------------------------------
+
+void MidiOutPort::process(unsigned from, unsigned to, const Pos& pos, unsigned frames)
+      {
+      //
+      // erase already played events:
+      //
+      _playEvents.erase(_playEvents.begin(), _nextPlayEvent);
+      playFifo();
+
+      if (mute())
+            return;
+
+      // collect port controller
+      if (from != to) {
+            CtrlList* cl = controller();
+            for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
+                  Ctrl* c = ic->second;
+                  iCtrlVal is = c->lower_bound(from);
+                  iCtrlVal ie = c->lower_bound(to);
+                  for (iCtrlVal ic = is; ic != ie; ++ic) {
+                        unsigned frame = AL::tempomap.tick2frame(ic->first);
+                        Event ev(Controller);
+                        ev.setA(c->id());
+                        ev.setB(ic->second.i);
+                        _playEvents.add(MidiEvent(frame, -1, ev));
+                        }
+                  }
+            }
+
+      int portVelo = 0;
+      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)  {
+            MidiChannel* mc = channel(ch);
+
+            if (mc->mute() || mc->noInRoute())
+                  continue;
+            // collect channel controller
+            if (from != to) {
+                  CtrlList* cl = mc->controller();
+                  for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
+                        Ctrl* c = ic->second;
+                        iCtrlVal is = c->lower_bound(from);
+                        iCtrlVal ie = c->lower_bound(to);
+                        for (; is != ie; ++is) {
+                              unsigned frame = AL::tempomap.tick2frame(is->first);
+                              Event ev(Controller);
+                              ev.setA(c->id());
+                              ev.setB(is->second.i);
+                              _playEvents.add(MidiEvent(frame, ch, ev));
+                              }
+                        }
+                  }
+
+            // Collect midievents from all input tracks for outport
+            RouteList* rl = mc->inRoutes();
+            for (iRoute i = rl->begin(); i != rl->end(); ++i) {
+                  MidiTrackBase* track = (MidiTrackBase*)i->track;
+                  if (track->isMute())
+                        continue;
+                  MPEventList el;
+                  track->getEvents(from, to, 0, &el);
+                  int velo = 0;
+                  for (iMPEvent i = el.begin(); i != el.end(); ++i) {
+                        MidiEvent ev = *i;
+                        ev.setChannel(ch);
+                        _playEvents.insert(ev);
+                        if (ev.type() == ME_NOTEON)
+                              velo += ev.dataB();
+                        }
+                  mc->addMidiMeter(velo);
+                  portVelo += velo;
+                  }
+            }
+      addMidiMeter(portVelo);
+
+      // TODO: maybe this copying can be avoided
+      //
+      MPEventList il;
+      for (iMPEvent i = _playEvents.begin(); i != _playEvents.end(); ++i) {
+            il.add(*i);
+            }
+      _playEvents.clear();
+      pipeline()->apply(from, to, &il, &_playEvents);
+
+      _nextPlayEvent = _playEvents.begin();
+
+      //
+      // route events to destination
+      //
+
+      unsigned endFrame = pos.frame() + frames + audio->getFrameOffset();
+      iMPEvent is = _playEvents.begin();
+      iMPEvent ie = _playEvents.end();
+
+      for (_nextPlayEvent = is; _nextPlayEvent != ie; _nextPlayEvent++) {
+            if ((from != to) && (_nextPlayEvent->time() >= endFrame)) {
+                  ++_nextPlayEvent;       // ??
+                  break;
+                  }
+            routeEvent(*_nextPlayEvent);
+            }
+      }
+
 
 //---------------------------------------------------------
 //   setInstrument
@@ -421,4 +528,27 @@ void MidiOutPort::setSendSync(bool val)
       emit sendSyncChanged(val);
       }
 
+//---------------------------------------------------------
+//    routeEvent
+//---------------------------------------------------------
+
+void MidiOutPort::routeEvent(const MidiEvent& event)
+      {
+      for (iRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
+            switch (r->type) {
+                  case Route::MIDIPORT:
+                        midiDriver->putEvent(alsaPort(0), *_nextPlayEvent);
+                        break;
+                  case Route::SYNTIPORT: 
+                        ((SynthI*)(r->track))->playEvents()->insert(*_nextPlayEvent);
+                        break;
+                  case Route::JACKMIDIPORT:
+                        audioDriver->putEvent(jackPort(0), *_nextPlayEvent);
+                        break;
+                  default:
+                        fprintf(stderr, "MidiOutPort::process(): invalid routetype\n");
+                        break;
+                  }
+            }
+      }
 

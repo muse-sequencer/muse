@@ -143,6 +143,7 @@ class DummyAudio : public AudioDriver {
       virtual bool equal(Port a, Port b) {
             return a == b;
             }
+      virtual void putEvent(Port, const MidiEvent&) {}
       };
 
 DummyAudio* dummyAudio;

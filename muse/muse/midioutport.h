@@ -44,6 +44,8 @@ class MidiOutPort : public MidiTrackBase {
 
       MidiFifo eventFifo;
 
+      void routeEvent(const MidiEvent&);
+
    signals:
       void instrumentChanged();
       void sendSyncChanged(bool);

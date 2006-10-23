@@ -44,7 +44,7 @@ class JackAudio : public AudioDriver {
       virtual void zeroClientPtr() { _client = 0; }
       virtual unsigned framePos() const;
 
-      virtual float* getBuffer(void* port, unsigned long nframes) {
+      virtual float* getBuffer(Port port, unsigned long nframes) {
             return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
             }
 
@@ -78,6 +78,8 @@ class JackAudio : public AudioDriver {
             }
       void graphChanged();
       virtual bool equal(Port a, Port b) { return a == b; }
+      virtual void putEvent(Port, const MidiEvent&);
+      virutal void startMidiCycle(Port);
       };
 
 #endif

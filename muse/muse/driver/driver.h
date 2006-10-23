@@ -28,6 +28,8 @@ struct PortName {
       QString name;
       };
 
+class MidiEvent;
+
 //---------------------------------------------------------
 //   Driver
 //    abstract driver base class; used for midi and
@@ -54,6 +56,7 @@ class Driver {
       virtual bool connect(Port, Port) = 0;
       virtual bool disconnect(Port, Port) = 0;
       virtual bool equal(Port, Port) = 0;
+      virtual void putEvent(Port, const MidiEvent&) = 0;
       };
 
 #endif
