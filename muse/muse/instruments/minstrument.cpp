@@ -22,7 +22,7 @@
 #include "midioutport.h"
 #include "globals.h"
 #include "event.h"
-#include "mpevent.h"
+#include "midievent.h"
 #include "midictrl.h"
 #include "gconfig.h"
 #include "midiedit/drummap.h"

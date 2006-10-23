@@ -21,7 +21,7 @@
 #include "event.h"
 #include "eventbase.h"
 #include "waveevent.h"
-#include "midievent.h"
+#include "midieventbase.h"
 
 using AL::Pos;
 

@@ -29,7 +29,7 @@
 #include "song.h"
 #include "audio.h"
 #include "event.h"
-#include "mpevent.h"
+#include "midievent.h"
 #include "audio.h"
 #include "midiseq.h"
 #include "midictrl.h"

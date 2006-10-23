@@ -25,7 +25,7 @@
 #include "globals.h"
 #include "widgets/filedialog.h"
 #include "song.h"
-#include "mpevent.h"
+#include "midievent.h"
 #include "event.h"
 #include "midiedit/drummap.h"
 #include "gconfig.h"

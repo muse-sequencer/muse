@@ -19,9 +19,9 @@
 //=============================================================================
 
 #include "event.h"
-#include "midievent.h"
+#include "midieventbase.h"
 #include "al/xml.h"
-#include "mpevent.h"
+#include "midievent.h"
 #include "midictrl.h"
 #include "muse.h"
 

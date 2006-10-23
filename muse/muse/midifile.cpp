@@ -26,7 +26,7 @@
 #include "globals.h"
 #include "midictrl.h"
 #include "midictrl.h"
-#include "mpevent.h"
+#include "midievent.h"
 #include "gconfig.h"
 
 const char* errString[] = {

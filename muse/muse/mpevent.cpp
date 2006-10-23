@@ -18,7 +18,7 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#include "mpevent.h"
+#include "midievent.h"
 
 #include "helper.h"
 #include "event.h"
