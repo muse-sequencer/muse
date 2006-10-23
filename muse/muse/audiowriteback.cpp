@@ -62,7 +62,7 @@ void AudioWriteback::start(int priority)
 //   processMsg
 //---------------------------------------------------------
 
-void AudioWriteback::processMsg1(const void* m)
+void AudioWriteback::processMsg1(const void*)
       {
       while (counter) {
             q_atomic_decrement(&counter);

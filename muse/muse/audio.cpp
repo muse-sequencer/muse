@@ -109,9 +109,6 @@ Audio::Audio()
       ticksBeat     = 0;
 
       syncTime      = 0.0;
-      syncFrame     = 0;
-      frameOffset   = 0;
-
       state         = STOP;
       lmark         = 0;      // left loop position
       rmark         = 0;      // right loop position
@@ -163,9 +160,6 @@ bool Audio::start()
       ticksBeat     = 0;
 
       syncTime      = 0.0;
-      syncFrame     = 0;
-      frameOffset   = 0;
-
       msg           = 0;
       _pos.setFrame(~0);      // make sure seek is not optimized away
 
@@ -184,7 +178,7 @@ bool Audio::start()
           for (iTrack i = tl->begin(); i != tl->end(); ++i)
                 (*i)->activate1();
           seek(song->cpos());
-          process(segmentSize);   // warm up caches; audio must be stopped
+          process(segmentSize, STOP);   // warm up caches; audio must be stopped
           audioDriver->start(realTimePriority);
           }
       else {
@@ -309,7 +303,7 @@ printf("JACK: shutdown callback\n");
 //    of size "frames"
 //---------------------------------------------------------
 
-void Audio::process(unsigned frames)
+void Audio::process(unsigned frames, int jackState)
       {
 // printf("process %d\n", frames);
       extern int watchAudio;
@@ -325,7 +319,6 @@ void Audio::process(unsigned frames)
                   }
             }
 
-      int jackState = audioDriver->getState();
       if (jackState != state) {
 // printf("process %s %s\n", audioStates[state], audioStates[jackState]);
             if (state == START_PLAY && jackState == PLAY) {
@@ -428,12 +421,9 @@ void Audio::process(unsigned frames)
 
       //
       // resync with audio interface
-      //    syncFrame - free running JACK frame counter
       //    syncTime  - corresponding wall clock time
       //
-      syncFrame   = audioDriver->framePos();
       syncTime    = curTime();
-      frameOffset = syncFrame - framePos;
 
       //
       //  compute current controller values
@@ -463,6 +453,8 @@ void Audio::process(unsigned frames)
       MidiOutPortList* mol = song->midiOutPorts();
       for (iMidiOutPort i = mol->begin(); i != mol->end(); ++i)
             audioDriver->startMidiCycle((*i)->jackPort(0));
+
+      processMidi(frames);
 
       GroupList* gl     = song->groups();
       SynthIList* sl    = song->syntis();
@@ -578,10 +570,8 @@ void Audio::processMsg()
                   song->processMsg(msg);
                   if (isPlaying()) {
                         _pos.setTick(_curTickPos);
-                        int framePos = _pos.frame();
-                        syncFrame     = audioDriver->framePos();
+//                        int framePos = _pos.frame();
                         syncTime      = curTime();
-                        frameOffset   = syncFrame - framePos;
                         }
                   break;
 
@@ -603,8 +593,6 @@ void Audio::processMsg()
 void Audio::seek(const Pos& p)
       {
       _pos.setFrame(p.frame());
-      syncFrame        = audioDriver->framePos();
-      frameOffset      = syncFrame - _pos.frame();
       _curTickPos      = _pos.tick();
       _nextTickPos     = _curTickPos;
       updateController = true;
@@ -693,26 +681,6 @@ void Audio::stopRolling()
       }
 
 //---------------------------------------------------------
-//   curFrame
-//    extrapolates current play frame on syncTime/syncFrame
-//---------------------------------------------------------
-
-unsigned int Audio::curFrame() const
-      {
-      return audioDriver->framePos();
-      }
-
-//---------------------------------------------------------
-//   timestamp
-//    timestamp has only meaning when rolling
-//---------------------------------------------------------
-
-int Audio::timestamp() const
-      {
-      return (state == PLAY) ? (audioDriver->framePos() - frameOffset) : 0;
-      }
-
-//---------------------------------------------------------
 //   sendMsgToGui
 //---------------------------------------------------------
 
@@ -720,3 +688,4 @@ void Audio::sendMsgToGui(char c)
       {
       write(sigFd, &c, 1);
       }
+

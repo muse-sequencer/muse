@@ -41,7 +41,6 @@ class AudioDriver : public Driver {
       virtual void registerClient() = 0;
       virtual Port registerOutPort(const QString& name, bool midi) = 0;
       virtual Port registerInPort(const QString& name, bool midi) = 0;
-      virtual int getState() = 0;
       virtual unsigned getCurFrame() = 0;
       virtual int realtimePriority() const = 0;	// return zero if not realtime
       virtual void startTransport() = 0;

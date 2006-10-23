@@ -31,20 +31,20 @@
 
 class JackAudio : public AudioDriver {
       jack_client_t* _client;
-      jack_transport_state_t transportState;
       jack_position_t pos;
       char jackRegisteredName[8];
+      jack_transport_state_t transportState;
 
    public:
       JackAudio(jack_client_t* cl, char * jack_id_string);
       virtual ~JackAudio();
+
+      int getTransportState();
       virtual bool init();
       virtual void start(int);
       virtual bool restart();
       virtual void stop ();
       virtual void zeroClientPtr() { _client = 0; }
-      virtual unsigned framePos() const;
-
       virtual float* getBuffer(Port port, unsigned long nframes) {
             return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
             }
@@ -67,13 +67,12 @@ class JackAudio : public AudioDriver {
             }
       virtual Port findPort(const QString& name);
       virtual QString portName(Port);
-      virtual int getState();
-      virtual unsigned int getCurFrame() { return pos.frame; }
       virtual int realtimePriority() const;
       virtual void startTransport();
       virtual void stopTransport();
       virtual void seekTransport(unsigned frame);
       virtual void setFreewheel(bool f);
+
       jack_transport_state_t transportQuery(jack_position_t* pos) {
             return jack_transport_query(_client, pos);
             }
@@ -81,6 +80,13 @@ class JackAudio : public AudioDriver {
       virtual bool equal(Port a, Port b) { return a == b; }
       virtual void putEvent(Port, const MidiEvent&);
       virtual void startMidiCycle(Port);
+      virtual unsigned int getCurFrame() { return pos.frame; }
+
+      virtual unsigned framePos() const { 
+            return pos.frame + jack_frames_since_cycle_start(_client);
+            }
+      unsigned lastFrameTime()        { return jack_last_frame_time(_client); }
+      unsigned framesSinceCyleStart() { return jack_frames_since_cycle_start(_client); }
       };
 
 #endif

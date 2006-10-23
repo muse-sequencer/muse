@@ -94,10 +94,9 @@ iMPEvent MetronomeSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, in
       unsigned curPos      = pos;
       unsigned endPos      = pos + n;
       unsigned off         = pos;
-      unsigned frameOffset = audio->getFrameOffset();
 
       for (; i != el->end(); ++i) {
-            unsigned frame = i->time() - frameOffset;
+            unsigned frame = i->time();
             if (frame >= endPos)
                   break;
             if (frame > curPos) {

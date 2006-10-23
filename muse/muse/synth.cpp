@@ -495,14 +495,12 @@ iMPEvent MessSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, int por
       // seems to be negative when sequencer not running, still 
       // working when entering notes from editor though. weird :-) (ml)
 
-      int frameOffset = audio->getFrameOffset();
       int curPos = pos;
       int endPos = pos + n;
 
       if (ports >= channels()) {
             for (; i != el->end(); ++i) {
-                  int frame = i->time() - frameOffset;
-                  // printf("\t510: frame=%d endPos=%d curPos=%d pos=%d\n", frame, endPos, curPos, pos);
+                  int frame = i->time();
                   if (frame >= endPos)
                         break;
                   if (frame > curPos) { 

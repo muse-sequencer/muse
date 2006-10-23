@@ -35,12 +35,12 @@ static double startTime;
 class DummyAudio : public AudioDriver {
       pthread_t dummyThread;
       float buffer[dummyFrames];
-      int state;
       std::vector<QString> oPorts;
       std::vector<QString> iPorts;
       int realTimePriority;
 
    public:
+      int state;
       bool seekflag;
       unsigned pos;
 
@@ -126,7 +126,6 @@ class DummyAudio : public AudioDriver {
             else
                   return QString(iPorts[long(p)-3000]);
             }
-      virtual int getState() { return state; }
       virtual unsigned getCurFrame() { return pos; }
       virtual int realtimePriority() const { return 40; }
       virtual void startTransport() {
@@ -234,7 +233,7 @@ static void* dummyLoop(void*)
 
       for (;;) {
             if (audioState == AUDIO_RUNNING)
-	            audio->process(segmentSize);
+	            audio->process(segmentSize, dummyAudio->state);
             else if (audioState == AUDIO_START1)
                   audioState = AUDIO_START2;
             usleep(dummyFrames*1000000/AL::sampleRate);
@@ -242,7 +241,7 @@ static void* dummyLoop(void*)
                   audio->sync(Audio::STOP, dummyAudio->pos);
                   dummyAudio->seekflag = false;
                   }
-            if (dummyAudio->getState() == Audio::PLAY) {
+            if (dummyAudio->state == Audio::PLAY) {
                   dummyAudio->pos += dummyFrames;
                   }
             }

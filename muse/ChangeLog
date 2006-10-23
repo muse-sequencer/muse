@@ -1,3 +1,5 @@
+23.10 (ws)
+      - simple jack midi output now works
 20.10 (ws)
       - add first support for jack midi
       - jack autostart

@@ -24,6 +24,7 @@
 #include "midictrl.h"
 #include "audio.h"
 #include "driver/mididev.h"
+#include "driver/audiodev.h"
 
 #ifdef __APPLE__
 #include "driver/coretimer.h"
@@ -516,7 +517,7 @@ void MidiSeq::processTimerTick()
             // miss this timer tick
             return;
             }
-      unsigned curFrame = audio->curFrame();
+      unsigned curFrame = audioDriver->framePos();
 
 /*      if (!extSyncFlag.value()) {
             int curTick = AL::tempomap.frame2tick(curFrame);

@@ -467,7 +467,7 @@ void MidiOutPort::process(unsigned from, unsigned to, const Pos& pos, unsigned f
                   track->getEvents(from, to, 0, &el);
                   int velo = 0;
                   for (iMPEvent i = el.begin(); i != el.end(); ++i) {
-                        MidiEvent ev = *i;
+                        MidiEvent ev(*i);
                         ev.setChannel(ch);
                         _playEvents.insert(ev);
                         if (ev.type() == ME_NOTEON)
@@ -494,19 +494,16 @@ void MidiOutPort::process(unsigned from, unsigned to, const Pos& pos, unsigned f
       // route events to destination
       //
 
-      unsigned endFrame = pos.frame() + frames + audio->getFrameOffset();
+      unsigned endFrame = pos.frame() + frames;
       iMPEvent is = _playEvents.begin();
       iMPEvent ie = _playEvents.end();
 
       for (_nextPlayEvent = is; _nextPlayEvent != ie; _nextPlayEvent++) {
-            if ((from != to) && (_nextPlayEvent->time() >= endFrame)) {
-                  ++_nextPlayEvent;       // ??
+            if ((from != to) && (_nextPlayEvent->time() >= endFrame))
                   break;
-                  }
             routeEvent(*_nextPlayEvent);
             }
       }
-
 
 //---------------------------------------------------------
 //   setInstrument
@@ -537,13 +534,13 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
       for (iRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
             switch (r->type) {
                   case Route::MIDIPORT:
-                        midiDriver->putEvent(alsaPort(0), *_nextPlayEvent);
+                        midiDriver->putEvent(alsaPort(0), event);
                         break;
                   case Route::SYNTIPORT: 
-                        ((SynthI*)(r->track))->playEvents()->insert(*_nextPlayEvent);
+                        ((SynthI*)(r->track))->playEvents()->insert(event);
                         break;
                   case Route::JACKMIDIPORT:
-                        audioDriver->putEvent(jackPort(0), *_nextPlayEvent);
+                        audioDriver->putEvent(jackPort(0), event);
                         break;
                   default:
                         fprintf(stderr, "MidiOutPort::process(): invalid routetype\n");

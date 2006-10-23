@@ -94,7 +94,7 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
       {
       MidiEvent event;
       event.setB(0);
-      event.setTime(audio->timestamp());
+      event.setTime(audioDriver->framePos());
 
       switch(ev->type) {
             case SND_SEQ_EVENT_NOTEON:

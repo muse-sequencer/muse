@@ -409,7 +409,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if (!audio->isPlaying() /*state == IDLE*/) {
                         //seek(0);
                         audioDriver->seekTransport(0);
-                        unsigned curFrame = audio->curFrame();
+                        unsigned curFrame = audioDriver->framePos();
                         recTick = recTick1 = recTick2 = 0;
                         mclock1 = 0.0; mclock2 = 0.0;
                         songtick1 = songtick2 = 0;
@@ -427,7 +427,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if (debugSync)
                         printf("   continue\n");
                   if (!audio->isPlaying() /*state == IDLE */) {
-                        unsigned curFrame = audio->curFrame();
+                        unsigned curFrame = audioDriver->framePos();
                         recTick = AL::tempomap.frame2tick(curFrame); // don't think this will work... (ml)
                         audio->msgPlay(true);
                         }

@@ -171,8 +171,7 @@ class Audio {
       int ticksBeat;
 
       double syncTime;        // wall clock at last sync point
-      unsigned syncFrame;     // corresponding frame no. to syncTime
-      unsigned frameOffset;   // offset to free running hw frame counter
+//      unsigned syncFrame;     // corresponding frame no. to syncTime
 
       State state;
       bool updateController;
@@ -197,7 +196,7 @@ class Audio {
       Pos startRecordPos;
       Pos endRecordPos;
 
-      void process(unsigned frames);
+      void process(unsigned frames, int jackState);
       void processMidi(unsigned frames);
       bool sync(int state, unsigned frame);
       void shutdown();
@@ -265,11 +264,8 @@ class Audio {
       int curTickPos() const        { return _curTickPos;  }
       int nextTickPos() const       { return _nextTickPos; }
 
-      int timestamp() const;
-      unsigned curFrame() const;
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);
-      int getFrameOffset() const   { return frameOffset; }
       void initDevices();
 
       void sendMsgToGui(char c);

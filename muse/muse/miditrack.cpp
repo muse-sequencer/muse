@@ -524,7 +524,7 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MPEventList* dst)
                         if (ev.type() == Meta)        // ignore meta events
                               continue;
                         unsigned tick  = ev.tick() + offset;
-                        unsigned frame = AL::tempomap.tick2frame(tick) + audio->getFrameOffset();
+                        unsigned frame = AL::tempomap.tick2frame(tick);
                         if (ev.type() == Note) {
                          	if (dm) {
                                     if (dm->entry(dm->outmap(ev.pitch()))->mute)
@@ -547,13 +547,13 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MPEventList* dst)
                               if (velo < 1)           // no off event
                                     velo = 1;
                               int elen = (ev.lenTick() * len)/100;
-                              if (elen <= 0)     // don´ allow zero length
+                              if (elen <= 0)     // dont allow zero length
                                     elen = 1;
                               int veloOff = ev.veloOff();
 
-                              unsigned eframe = AL::tempomap.tick2frame(tick+elen) + audio->getFrameOffset();
-                              dst->add(MidiEvent(frame, 0, 0x90, pitch, velo));
-                              dst->add(MidiEvent(eframe, 0, veloOff ? 0x80 : 0x90, pitch, veloOff));
+                              unsigned eframe = AL::tempomap.tick2frame(tick+elen);
+                              dst->add(MidiEvent(frame, 0, ME_NOTEON, pitch, velo));
+                              dst->add(MidiEvent(eframe, 0, veloOff ? ME_NOTEOFF : ME_NOTEON, pitch, veloOff));
                               _meter[0] += velo/2;
                               if (_meter[0] > 127.0f)
                                     _meter[0] = 127.0f;

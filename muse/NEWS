@@ -3,6 +3,7 @@ MusE 1.0:
       - new "project" paradigma
       - "auto fill" parts
       - DSSI support
+      - JACK midi support
       - controller automation in arranger
       - audio metronome
       - support for VST plugins

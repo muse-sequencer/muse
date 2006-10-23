@@ -58,6 +58,7 @@ static int processAudio(jack_nframes_t nFrames, void*)
       void* midi = jack_port_get_buffer(inPort, nFrames);
       int n = jack_midi_port_get_info(midi, nFrames)->event_count;
       unsigned offset = 0;
+
       for (int i = 0; i < n; ++i) {
             jack_midi_event_t event;
             jack_midi_event_get(&event, midi, i, nFrames);
