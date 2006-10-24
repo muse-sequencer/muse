@@ -113,8 +113,6 @@ void Track::init()
             _meter[i]     = 0.0f;
             _peak[i]      = 0.0f;
             _peakTimer[i] = 0;
-            _alsaPort[i]  = 0;
-            _jackPort[i]  = 0;
             }
       }
 
@@ -136,10 +134,14 @@ Track::Track(Track::TrackType t)
 Track::~Track()
 	{
       delete _parts;
-      if (_alsaPort)
-            midiDriver->unregisterPort(_alsaPort);
-      if (_jackPort)
-            audioDriver->unregisterPort(_jackPort);
+
+      for (int i = 0; i < MAX_CHANNELS; ++i) {
+            if (!_alsaPort[i].isZero())
+                  midiDriver->unregisterPort(_alsaPort[i]);
+            if (!_jackPort[i].isZero())
+                  audioDriver->unregisterPort(_jackPort[i]);
+            }
+      
       }
 
 //---------------------------------------------------------
@@ -733,6 +735,8 @@ MidiTrackBase::MidiTrackBase(TrackType t)
 
 MidiTrackBase::~MidiTrackBase()
       {
+      foreach(MidiPluginI* plugin, *_pipeline)
+            delete plugin;
       delete _pipeline;
       }
 
@@ -977,9 +981,9 @@ void Track::resetAllMeter()
 void Track::activate1()
       {
       if (isMidiTrack()) {
-            if (alsaPort(0))
+            if (!alsaPort(0).isZero())
                   printf("Track::activate1() midi: alsa port already active!\n");
-            if (jackPort(0))
+            if (!jackPort(0).isZero())
                   printf("Track::activate1() midi: jack port already active!\n");
             if (type() == MIDI_OUT) {
                   _alsaPort[0] = midiDriver->registerInPort(_name, true);
@@ -993,7 +997,7 @@ void Track::activate1()
             }
 
       for (int i = 0; i < channels(); ++i) {
-            if (jackPort(i))
+            if (!jackPort(i).isZero())
                   printf("Track::activate1(): already active!\n");
             else {
                   QString s(QString("%1-%2").arg(_name).arg(i));
@@ -1087,11 +1091,11 @@ void Track::deactivate()
                   }
             }
       for (int i = 0; i < channels(); ++i) {
-            if (_jackPort[i]) {
+            if (!_jackPort[i].isZero()) {
                   audioDriver->unregisterPort(_jackPort[i]);
                   _jackPort[i] = 0;
                   }
-            if (_alsaPort[i]) {
+            if (!_alsaPort[i].isZero()) {
                   midiDriver->unregisterPort(_alsaPort[i]);
                   _alsaPort[i] = 0;
                   }

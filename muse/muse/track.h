@@ -21,6 +21,7 @@
 #ifndef __TRACK_H__
 #define __TRACK_H__
 
+#include "driver/port.h"
 #include "al/pos.h"
 #include "route.h"
 #include "ctrl.h"
@@ -34,8 +35,6 @@ namespace AL {
       };
 using AL::Xml;
 using AL::TType;
-
-typedef void* Port;
 
 class DrumMap;
 class MidiPipeline;

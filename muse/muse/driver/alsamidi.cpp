@@ -119,10 +119,7 @@ QList<PortName> AlsaMidi::outputPorts(bool)
                         if (client != snd_seq_client_id(alsaSeq)) {
                               PortName pn;
                               pn.name = QString(snd_seq_port_info_get_name(pinfo));
-                              snd_seq_addr_t* adr = new snd_seq_addr_t;
-                              adr->port   = snd_seq_port_info_get_port(pinfo);
-                              adr->client = client;
-                              pn.port     = adr;
+                              pn.port = Port(client, snd_seq_port_info_get_port(pinfo));
                               clientList.append(pn);
                               }
                         }
@@ -156,10 +153,7 @@ QList<PortName> AlsaMidi::inputPorts(bool)
                         if (client != snd_seq_client_id(alsaSeq)) {
                               PortName pn;
                               pn.name = QString(snd_seq_port_info_get_name(pinfo));
-                              snd_seq_addr_t* adr = new snd_seq_addr_t;
-                              adr->port   = snd_seq_port_info_get_port(pinfo);
-                              adr->client = client;
-                              pn.port     = adr;
+                              pn.port = Port(client, snd_seq_port_info_get_port(pinfo));
                               clientList.append(pn);
                               }
                         }
@@ -174,27 +168,13 @@ QList<PortName> AlsaMidi::inputPorts(bool)
 
 Port AlsaMidi::registerOutPort(const QString& name, bool)
       {
-      int port  = snd_seq_create_simple_port(alsaSeq, name.toLatin1().data(),
+      int alsaPort  = snd_seq_create_simple_port(alsaSeq, name.toLatin1().data(),
          outCap | SND_SEQ_PORT_CAP_WRITE, SND_SEQ_PORT_TYPE_APPLICATION);
-      if (port < 0) {
-            perror("create port");
-            exit(1);
+      if (alsaPort < 0) {
+            perror("cannot create alsa out port");
+            return Port();
             }
-      snd_seq_addr_t* adr = new snd_seq_addr_t;
-      adr->port   = port;
-      adr->client = snd_seq_client_id(alsaSeq);
-      return adr;
-      }
-
-//---------------------------------------------------------
-//   equal
-//---------------------------------------------------------
-
-bool AlsaMidi::equal(Port p1, Port p2)
-      {
-      snd_seq_addr_t* a1 = (snd_seq_addr_t*)(p1);
-      snd_seq_addr_t* a2 = (snd_seq_addr_t*)(p2);
-      return (a1->port == a2->port) && (a1->client == a2->client);
+      return Port(snd_seq_client_id(alsaSeq), alsaPort);
       }
 
 //---------------------------------------------------------
@@ -203,16 +183,13 @@ bool AlsaMidi::equal(Port p1, Port p2)
 
 Port AlsaMidi::registerInPort(const QString& name, bool)
       {
-      int port  = snd_seq_create_simple_port(alsaSeq, name.toLatin1().data(),
+      int alsaPort  = snd_seq_create_simple_port(alsaSeq, name.toLatin1().data(),
          inCap | SND_SEQ_PORT_CAP_READ, SND_SEQ_PORT_TYPE_APPLICATION);
-      if (port < 0) {
-            perror("create port");
-            exit(1);
+      if (alsaPort < 0) {
+            perror("cannot create alsa in port");
+            return Port();
             }
-      snd_seq_addr_t* adr = new snd_seq_addr_t;
-      adr->port   = port;
-      adr->client = snd_seq_client_id(alsaSeq);
-      return adr;
+      return Port(snd_seq_client_id(alsaSeq), alsaPort);
       }
 
 //---------------------------------------------------------
@@ -221,8 +198,7 @@ Port AlsaMidi::registerInPort(const QString& name, bool)
 
 void AlsaMidi::unregisterPort(Port port)
       {
-      snd_seq_delete_simple_port(alsaSeq, AlsaPort(port)->port);
-      delete (snd_seq_addr_t*)port;
+      snd_seq_delete_simple_port(alsaSeq, port.alsaPort());
       }
 
 //---------------------------------------------------------
@@ -242,7 +218,7 @@ QString AlsaMidi::portName(Port p)
       {
       snd_seq_port_info_t* pinfo;
       snd_seq_port_info_alloca(&pinfo);
-      snd_seq_get_any_port_info(alsaSeq, AlsaPort(p)->client, AlsaPort(p)->port, pinfo);
+      snd_seq_get_any_port_info(alsaSeq, p.alsaClient(), p.alsaPort(), pinfo);
       return QString(snd_seq_port_info_get_name(pinfo));
       }
 
@@ -252,10 +228,6 @@ QString AlsaMidi::portName(Port p)
 
 Port AlsaMidi::findPort(const QString& name)
       {
-      snd_seq_addr_t* adr = new snd_seq_addr_t;
-      adr->port = 0;
-      adr->client = 0;
-
       snd_seq_client_info_t* cinfo;
       snd_seq_client_info_alloca(&cinfo);
       snd_seq_client_info_set_client(cinfo, 0);
@@ -268,14 +240,13 @@ Port AlsaMidi::findPort(const QString& name)
             while (snd_seq_query_next_port(alsaSeq, pinfo) >= 0) {
                   const char* pn = snd_seq_port_info_get_name(pinfo);
                   if (name == pn) {
-                        snd_seq_addr_t* adr = new snd_seq_addr_t;
-                        *adr = *snd_seq_port_info_get_addr(pinfo);
-                        return adr;
+                        return Port(snd_seq_port_info_get_client(pinfo),
+                           snd_seq_port_info_get_port(pinfo));
                         }
                   }
             }
       printf("AlsaMidi: port <%s> not found\n", name.toLatin1().data());
-      return 0;
+      return Port();
       }
 
 //---------------------------------------------------------
@@ -285,20 +256,22 @@ Port AlsaMidi::findPort(const QString& name)
 
 bool AlsaMidi::connect(Port src, Port dst)
       {
-      if (((AlsaPort)dst) == 0) {
-            printf("AlsaMidi::connect failed: invalid alsa port\n");
-            return false;
-            }
       snd_seq_port_subscribe_t* sub;
       snd_seq_port_subscribe_alloca(&sub);
 
-      snd_seq_port_subscribe_set_sender(sub, (AlsaPort)src);
-      snd_seq_port_subscribe_set_dest(sub, (AlsaPort)dst);
+      snd_seq_addr_t s, d;
+      s.port   = src.alsaPort();
+      s.client = src.alsaClient();
+      d.port   = dst.alsaPort();
+      d.client = dst.alsaClient();
+      snd_seq_port_subscribe_set_sender(sub, &s);
+      snd_seq_port_subscribe_set_dest(sub, &d);
+
       int rv = snd_seq_subscribe_port(alsaSeq, sub);
       if (rv < 0) {
             printf("AlsaMidi::connect(%d:%d, %d:%d) failed: %s\n",
-               ((AlsaPort)src)->client, ((AlsaPort)src)->port,
-               ((AlsaPort)dst)->client, ((AlsaPort)dst)->port,
+               src.alsaClient(), src.alsaPort(),
+               dst.alsaClient(), dst.alsaPort(),
                snd_strerror(rv));
             return false;
             }
@@ -314,8 +287,13 @@ bool AlsaMidi::disconnect(Port src, Port dst)
       {
       snd_seq_port_subscribe_t* sub;
       snd_seq_port_subscribe_alloca(&sub);
-      snd_seq_port_subscribe_set_sender(sub, (AlsaPort)src);
-      snd_seq_port_subscribe_set_dest(sub, (AlsaPort)dst);
+      snd_seq_addr_t s, d;
+      s.port   = src.alsaPort();
+      s.client = src.alsaClient();
+      d.port   = dst.alsaPort();
+      d.client = dst.alsaClient();
+      snd_seq_port_subscribe_set_sender(sub, &s);
+      snd_seq_port_subscribe_set_dest(sub, &d);
       int rv = snd_seq_unsubscribe_port(alsaSeq, sub);
       if (rv < 0)
             printf("AlsaMidi::disconnect() failed: %s\n",
@@ -356,19 +334,19 @@ void AlsaMidi::getOutputPollFd(struct pollfd** p, int* n)
 
 void AlsaMidi::addConnection(snd_seq_connect_t* ev)
       {
-      Port rs = Port(&ev->sender);
-      Port rd = Port(&ev->dest);
+      Port rs(ev->sender.client, ev->sender.port);
+      Port rd(ev->dest.client, ev->dest.port);
 
       MidiOutPortList* opl = song->midiOutPorts();
       for (iMidiOutPort i = opl->begin(); i != opl->end(); ++i) {
             MidiOutPort* oport = *i;
             Port src = oport->alsaPort(0);
 
-            if (equal(src, rs)) {
+            if (src == rs) {
                   Route r(rd, Route::MIDIPORT);
                   if (oport->outRoutes()->indexOf(r) == -1) {
-                        snd_seq_addr_t* adr = new snd_seq_addr_t(ev->dest);
-                        oport->outRoutes()->push_back(Route(Port(adr), -1, Route::MIDIPORT));
+                        Port port(ev->dest.client, ev->dest.port);
+                        oport->outRoutes()->push_back(Route(port, -1, Route::MIDIPORT));
                         }
                   break;
                   }
@@ -379,11 +357,11 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
             MidiInPort* iport = *i;
             Port dst = iport->alsaPort();
 
-            if (equal(dst, rd)) {
+            if (dst == rd) {
                   Route r(rs, Route::MIDIPORT);
                   if (iport->inRoutes()->indexOf(r) == -1) {
-                        snd_seq_addr_t* adr = new snd_seq_addr_t(ev->sender);
-                        iport->inRoutes()->push_back(Route(Port(adr), -1, Route::MIDIPORT));
+                        Port port(ev->sender.client, ev->sender.port);
+                        iport->inRoutes()->push_back(Route(port, -1, Route::MIDIPORT));
                         }
                   break;
                   }
@@ -397,18 +375,18 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
 
 void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
       {
-      Port rs = Port(&ev->sender);
-      Port rd = Port(&ev->dest);
+      Port rs(ev->sender.client, ev->sender.port);
+      Port rd(ev->dest.client, ev->dest.port);
 
       MidiInPortList* ipl = song->midiInPorts();
       for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i) {
             MidiInPort* iport = *i;
             Port dst = iport->alsaPort();
 
-            if (equal(dst, rd)) {
+            if (dst == rd) {
                   RouteList* irl = iport->outRoutes();
                   for (iRoute r = irl->begin(); r != irl->end(); ++r) {
-                        if (!r->disconnected && equal(r->port, rs)) {
+                        if (!r->disconnected && (r->port == rs)) {
                               iport->inRoutes()->erase(r);
                               break;
                               }
@@ -422,10 +400,10 @@ void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
             MidiOutPort* oport = *i;
             Port src = oport->alsaPort();
 
-            if (equal(src, rs)) {
+            if (src == rs) {
                   RouteList* orl = oport->outRoutes();
                   for (iRoute r = orl->begin(); r != orl->end(); ++r) {
-                        if (!r->disconnected && equal(r->port, rd)) {
+                        if (!r->disconnected && (r->port == rd)) {
                               orl->erase(r);
                               break;
                               }
@@ -509,11 +487,12 @@ void AlsaMidi::read(MidiSeq* seq)
                   case SND_SEQ_EVENT_PITCHBEND:
                   case SND_SEQ_EVENT_CONTROLLER:
                         {
-                        Port port = &ev->dest;
+                        Port port(ev->dest.client, ev->dest.port);
+
                         MidiInPortList* mpl = song->midiInPorts();
                         for (iMidiInPort i = mpl->begin(); i != mpl->end(); ++i) {
                               MidiInPort* inPort = *i;
-                              if (equal(port, inPort->alsaPort())) {
+                              if (port == inPort->alsaPort()) {
                                     inPort->eventReceived(ev);
                                     }
                               }
@@ -592,7 +571,7 @@ void AlsaMidi::putEvent(Port p, const MidiEvent& e)
       snd_seq_event_t event;
       memset(&event, 0, sizeof(event));
       snd_seq_ev_set_direct(&event);
-      snd_seq_ev_set_source(&event, ((snd_seq_addr_t*)p)->port);
+      snd_seq_ev_set_source(&event, p.alsaPort());
       snd_seq_ev_set_dest(&event, SND_SEQ_ADDRESS_SUBSCRIBERS, 0);
 
       switch(e.type()) {

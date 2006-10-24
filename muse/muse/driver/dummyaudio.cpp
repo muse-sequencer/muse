@@ -58,7 +58,7 @@ class DummyAudio : public AudioDriver {
             return lrint((curTime()-startTime) * AL::sampleRate);
             }
 
-      virtual float* getBuffer(void* /*port*/, unsigned long nframes)
+      virtual float* getBuffer(Port /*port*/, unsigned long nframes)
             {
             if (nframes > dummyFrames) {
                   fprintf(stderr, "error: segment size > %d\n", dummyFrames);
@@ -73,58 +73,60 @@ class DummyAudio : public AudioDriver {
 
       virtual void registerClient() {}
 
-      virtual void* registerOutPort(const QString& s, bool) {
+      virtual Port registerOutPort(const QString& s, bool) {
             iPorts.push_back(QString(s));
-            return (void*)(iPorts.size() + 3000);
+            Port port(0, iPorts.size() + 3000);
+            return port;
             }
-      virtual void* registerInPort(const QString& s, bool) {
+      virtual Port registerInPort(const QString& s, bool) {
             oPorts.push_back(QString(s));
-            return (void*)(oPorts.size() + 4000);
+            Port port(0, oPorts.size() + 40);
+            return port;
             }
-      virtual void unregisterPort(void*) {
+      virtual void unregisterPort(Port) {
 /*            if (long(p) >= 100)
-                  oPorts.erase(oPorts.begin() + (long(p)-4000));
+                  oPorts.erase(oPorts.begin() + (long(p)-40));
             else
-                  iPorts.erase(iPorts.begin() + long(p)-3000);
+                  iPorts.erase(iPorts.begin() + long(p)-30);
 */
             }
-      virtual bool connect(void*, void*)           { return true; }
-      virtual bool disconnect(void*, void*)        { return true; }
-      virtual void setPortName(void*, const QString&) {}
-      virtual void* findPort(const QString& s) {
+      virtual bool connect(Port, Port)           { return true; }
+      virtual bool disconnect(Port, Port)        { return true; }
+      virtual void setPortName(Port, const QString&) {}
+      virtual Port findPort(const QString& s) {
             if (s == "input1")
-                  return (void*)1000;
+                  return Port(0, 10);
             if (s == "input2")
-                  return (void*)1001;
+                  return Port(0, 11);
             if (s == "output1")
-                  return (void*)2000;
+                  return Port(0, 20);
             if (s == "output2")
-                  return (void*)2001;
+                  return Port(0, 21);
             int k = 0;
             for (std::vector<QString>::const_iterator i = iPorts.begin(); i != iPorts.end(); ++i, ++k) {
                   if (s == *i)
-                        return (void*)(3000+k);
+                        return Port(0, 30+k);
                   }
             k = 0;
             for (std::vector<QString>::const_iterator i = oPorts.begin(); i != oPorts.end(); ++i, ++k) {
                   if (s == *i)
-                        return (void*)(4000+k);
+                        return Port(0, 40);
                   }
-            return 0;
+            return Port();
             }
-      virtual QString portName(void* p) {
-            if (long(p) == 1000)
+      virtual QString portName(Port port) {
+            if (port.alsaPort() == 10)
                   return QString("input1");
-            if (long(p) == 1001)
+            if (port.alsaPort() == 11)
                   return QString("input2");
-            if (long(p) == 2000)
+            if (port.alsaPort() == 20)
                   return QString("output1");
-            if (long(p) == 2001)
+            if (port.alsaPort() == 21)
                   return QString("output2");
-            if (long(p) >= 4000)
-                  return QString(oPorts[long(p)-4000]);
+            if (port.alsaPort() >= 40)
+                  return QString(oPorts[port.alsaPort() - 40]);
             else
-                  return QString(iPorts[long(p)-3000]);
+                  return QString(iPorts[port.alsaPort() - 30]);
             }
       virtual unsigned getCurFrame() { return pos; }
       virtual int realtimePriority() const { return 40; }
@@ -139,9 +141,6 @@ class DummyAudio : public AudioDriver {
             pos = n;
             }
       virtual void setFreewheel(bool) {}
-      virtual bool equal(Port a, Port b) {
-            return a == b;
-            }
       virtual void putEvent(Port, const MidiEvent&) {}
       };
 
@@ -168,10 +167,10 @@ QList<PortName> DummyAudio::outputPorts(bool midi)
       if (!midi) {
             PortName p1;
             p1.name = QString("output1");
-            p1.port = (void*)100;
+            p1.port = Port(0, 100);
             PortName p2;
             p2.name = QString("output2");
-            p2.port = (void*)101;
+            p2.port = Port(0, 101);
             clientList.append(p1);
             clientList.append(p2);
             }
@@ -188,10 +187,10 @@ QList<PortName> DummyAudio::inputPorts(bool midi)
       if (!midi) {
             PortName p1;
             p1.name = QString("input1");
-            p1.port = (void*)0;
+            p1.port = Port(0, 0);
             PortName p2;
             p2.name = QString("input2");
-            p2.port = (void*)1;
+            p2.port = Port(0, 1);
             clientList.append(p1);
             clientList.append(p2);
             }

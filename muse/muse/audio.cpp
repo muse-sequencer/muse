@@ -194,8 +194,9 @@ bool Audio::start()
                 InputList* itl = song->inputs();
                 for (iAudioInput i = itl->begin(); i != itl->end(); ++i) {
 //                      printf("reconnecting input %s\n", (*i)->name().toLatin1().data());
-                      for (int x=0; x < (*i)->channels();x++)
-                          (*i)->setJackPort(0, x); // zero out the old connection
+                      for (int x=0; x < (*i)->channels();x++) {
+                          (*i)->setJackPort(Port(), x); // zero out the old connection
+                          }
                       (*i)->activate1();
                       }
 
@@ -203,7 +204,7 @@ bool Audio::start()
                 for (iAudioOutput i = otl->begin(); i != otl->end(); ++i) {
 //                      printf("reconnecting output %s\n", (*i)->name().toLatin1().data());
                       for (int x=0; x < (*i)->channels();x++)
-                          (*i)->setJackPort(0,x);  // zero out the old connection
+                          (*i)->setJackPort(Port(), x);  // zero out the old connection
                       (*i)->activate1();
                       }
                audioDriver->start(realTimePriority);

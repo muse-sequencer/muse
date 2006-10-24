@@ -53,9 +53,9 @@ MidiInPort::~MidiInPort()
 void MidiInPort::setName(const QString& s)
       {
       Track::setName(s);
-      if (alsaPort(0))
+      if (!alsaPort(0).isZero())
             midiDriver->setPortName(alsaPort(), s);
-      if (jackPort(0))
+      if (!jackPort(0).isZero())
             audioDriver->setPortName(jackPort(), s);
       }
 

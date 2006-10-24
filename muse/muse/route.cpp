@@ -280,6 +280,15 @@ void Song::readRoute(QDomNode n)
             else
                   printf("MusE:readRoute: unknown tag %s\n", e.tagName().toLatin1().data());
             }
+      if (!s.isValid()) {   // source port not found
+            printf("invalid source port\n");
+            return;
+            }
+      if (!d.isValid()) {    // destination port not found
+            printf("invalid destination port\n");
+            return;
+            }
+      
       if (s.type == Route::AUDIOPORT)
             s.channel = d.channel;
       if (d.type == Route::AUDIOPORT)
@@ -314,11 +323,10 @@ bool Route::operator==(const Route& a) const
             case SYNTIPORT:
                   return channel == a.channel && track == a.track;
             case MIDIPORT:
-                  return midiDriver->equal(port, a.port);
             case JACKMIDIPORT:
-                  return audioDriver->equal(port, a.port);
+                  return port == a.port;
             case AUDIOPORT:
-                  return channel == a.channel && audioDriver->equal(port, a.port);
+                  return (channel == a.channel) && (port == a.port);
             case AUXPLUGIN:
                   return plugin == a.plugin;
             }
@@ -410,20 +418,20 @@ void Route::read(QDomNode node)
       else if (st == "AUDIOPORT") {
             type = Route::AUDIOPORT;
             port = audioDriver->findPort(s);
-            if (port == 0)
-                  printf("Route::read(): audioport not found\n");
+            if (port.isZero())
+                  printf("Route::read(): audioport <%s> not found\n", s.toLatin1().data());
             }
       else if (st == "JACKMIDIPORT") {
             type = Route::JACKMIDIPORT;
             port = audioDriver->findPort(s);
-            if (port == 0)
-                  printf("Route::read(): jack midiport not found\n");
+            if (port.isZero())
+                  printf("Route::read(): jack midiport <%s> not found\n", s.toLatin1().data());
             }
       else if (st == "MIDIPORT") {
             type = Route::MIDIPORT;
             port = midiDriver->findPort(s);
-            if (port == 0)
-                  printf("Route::read(): midiport not found\n");
+            if (port.isZero())
+                  printf("Route::read(): midiport <%s> not found\n", s.toLatin1().data());
             }
       else if (st == "SYNTIPORT") {
             type = Route::SYNTIPORT;

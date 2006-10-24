@@ -21,15 +21,11 @@
 #ifndef __ALSAMIDI_H__
 #define __ALSAMIDI_H__
 
-// #include <config.h>
 #include <alsa/asoundlib.h>
-
 #include "driver.h"
 
 class MidiSeq;
 class MidiEvent;
-
-typedef snd_seq_addr_t* AlsaPort;
 
 //---------------------------------------------------------
 //   AlsaMidi
@@ -55,7 +51,6 @@ class AlsaMidi : public Driver {
       virtual void setPortName(Port p, const QString& n);
       virtual QString portName(Port);
       virtual Port findPort(const QString& name);
-      virtual bool equal(Port, Port);
 
       virtual bool connect(Port, Port);
       virtual bool disconnect(Port, Port);

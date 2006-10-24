@@ -21,7 +21,8 @@
 #ifndef __DRIVER_H__
 #define __DRIVER_H__
 
-typedef void* Port;
+#include <jack/midiport.h>
+#include "port.h"
 
 struct PortName {
       Port port;
@@ -55,7 +56,6 @@ class Driver {
 
       virtual bool connect(Port, Port) = 0;
       virtual bool disconnect(Port, Port) = 0;
-      virtual bool equal(Port, Port) = 0;
       virtual void putEvent(Port, const MidiEvent&) = 0;
       };
 

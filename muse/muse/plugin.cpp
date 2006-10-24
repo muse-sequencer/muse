@@ -167,8 +167,10 @@ PluginI::PluginI(AudioTrack* t)
 
 PluginI::~PluginI()
       {
-      if (_plugin)
+      if (_plugin) {
             deactivate();
+            _plugin->incInstances(-1);
+            }
       if (_gui)
             delete _gui;
       if (pif) {

@@ -55,7 +55,7 @@ AudioOutput::AudioOutput()
 AudioOutput::~AudioOutput()
       {
       for (int i = 0; i < _channels; ++i) {
-            if (jackPort(i))
+            if (!jackPort(i).isZero())
                   audioDriver->unregisterPort(jackPort(i));
             }
       // AudioOutput does not own buffers (they are from JACK)
@@ -106,7 +106,7 @@ void AudioOutput::setChannels(int n)
 void AudioOutput::silence(unsigned n)
       {
       for (int i = 0; i < channels(); ++i) {
-            if (jackPort(i))
+            if (!jackPort(i).isZero())
                   buffer[i] = audioDriver->getBuffer(jackPort(i), n);
             else {
                   printf("PANIC: silence(): no buffer from audio driver\n");
@@ -126,7 +126,7 @@ void AudioOutput::setName(const QString& s)
       {
       Track::setName(s);
       for (int i = 0; i < channels(); ++i) {
-            if (jackPort(i)) {
+            if (!jackPort(i).isZero()) {
                   char buffer[128];
                   snprintf(buffer, 128, "%s-%d", _name.toAscii().data(), i);
                   audioDriver->setPortName(jackPort(i), buffer);

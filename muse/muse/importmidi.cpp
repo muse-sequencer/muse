@@ -40,6 +40,7 @@
 #include "arranger/arranger.h"
 #include "midictrl.h"
 #include "midichannel.h"
+#include "midiinport.h"
 #include "midioutport.h"
 
 //---------------------------------------------------------

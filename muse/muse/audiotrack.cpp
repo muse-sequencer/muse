@@ -70,6 +70,10 @@ AudioTrack::AudioTrack(TrackType t)
 
 AudioTrack::~AudioTrack()
       {
+      foreach(PluginI* plugin, *_prePipe)
+            delete plugin;
+      foreach(PluginI* plugin, *_postPipe)
+            delete plugin;
       delete _prePipe;
       delete _postPipe;
       for (int i = 0; i < MAX_CHANNELS; ++i) {

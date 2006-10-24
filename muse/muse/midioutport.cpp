@@ -73,9 +73,9 @@ MidiOutPort::~MidiOutPort()
 void MidiOutPort::setName(const QString& s)
       {
       Track::setName(s);
-      if (alsaPort())
+      if (!alsaPort().isZero())
             midiDriver->setPortName(alsaPort(), s);
-      if (jackPort())
+      if (!jackPort().isZero())
             audioDriver->setPortName(jackPort(), s);
       for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
             _channel[ch]->setDefaultName();

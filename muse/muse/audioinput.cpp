@@ -53,7 +53,7 @@ AudioInput::AudioInput()
 AudioInput::~AudioInput()
       {
       for (int i = 0; i < _channels; ++i) {
-            if (jackPort(i))
+            if (!jackPort(i).isZero())
                   audioDriver->unregisterPort(jackPort(i));
             }
       // AudioInput does not own buffers (they are from JACK)
@@ -104,10 +104,10 @@ void AudioInput::setName(const QString& s)
       {
       Track::setName(s);
       for (int i = 0; i < channels(); ++i) {
-            if (jackPort(i)) {
+            if (!jackPort(i).isZero()) {
                   char buffer[128];
                   snprintf(buffer, 128, "%s-%d", _name.toAscii().data(), i);
-                  if (jackPort(i))
+                  if (!jackPort(i).isZero())
                         audioDriver->setPortName(jackPort(i), buffer);
                   }
             }
@@ -123,7 +123,7 @@ void AudioInput::collectInputData()
       bufferEmpty = false;
       for (int ch = 0; ch < channels(); ++ch) {
             Port port = jackPort(ch);
-            if (port)
+            if (!port.isZero())
                   buffer[ch] = audioDriver->getBuffer(port, segmentSize);
             else {
                   printf("NO JACK PORT\n");

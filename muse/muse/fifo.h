@@ -18,11 +18,8 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#ifndef __AUDIONODE_H__
-#define __AUDIONODE_H__
-
-class Pipeline;
-class SndFile;
+#ifndef __FIFO_H__
+#define __FIFO_H__
 
 const int FIFO_BUFFER = 256;
 

@@ -21,8 +21,6 @@
 #ifndef __JACKAUDIO_H__
 #define __JACKAUDIO_H__
 
-#include <jack/jack.h>
-#include <jack/midiport.h>
 #include "audiodev.h"
 
 //---------------------------------------------------------
@@ -46,7 +44,7 @@ class JackAudio : public AudioDriver {
       virtual void stop ();
       virtual void zeroClientPtr() { _client = 0; }
       virtual float* getBuffer(Port port, unsigned long nframes) {
-            return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
+            return (float*)jack_port_get_buffer(port.jackPort(), nframes);
             }
 
       virtual QList<PortName> outputPorts(bool midi);
@@ -63,7 +61,7 @@ class JackAudio : public AudioDriver {
       virtual bool connect(Port, Port);
       virtual bool disconnect(Port, Port);
       virtual void setPortName(Port p, const QString& n) {
-            jack_port_set_name((jack_port_t*)p, n.toLatin1().data());
+            jack_port_set_name(p.jackPort(), n.toLatin1().data());
             }
       virtual Port findPort(const QString& name);
       virtual QString portName(Port);
@@ -77,7 +75,6 @@ class JackAudio : public AudioDriver {
             return jack_transport_query(_client, pos);
             }
       void graphChanged();
-      virtual bool equal(Port a, Port b) { return a == b; }
       virtual void putEvent(Port, const MidiEvent&);
       virtual void startMidiCycle(Port);
       virtual unsigned int getCurFrame() { return pos.frame; }

@@ -208,12 +208,12 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
             if (node->type() == Track::AUDIO_INPUT) {
                   AudioInput* ai = (AudioInput*)node;
                   for (int i = 0; i < mc; ++i) {
-                        if (i < n && ai->jackPort(i) == 0) {
+                        if (i < n && ai->jackPort(i).isZero()) {
                               char buffer[128];
                               snprintf(buffer, 128, "%s-%d", name.toLatin1().data(), i);
                               ai->setJackPort(audioDriver->registerInPort(QString(buffer), false), i);
                               }
-                        else if ((i >= n) && ai->jackPort(i)) {
+                        else if ((i >= n) && ai->jackPort(i).isZero()) {
                               RouteList* ir = node->inRoutes();
                               for (iRoute ii = ir->begin(); ii != ir->end(); ++ii) {
                                     Route r = *ii;
@@ -223,14 +223,14 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                                           }
                                     }
                               audioDriver->unregisterPort(ai->jackPort(i));
-                              ai->setJackPort(0, i);
+                              ai->setJackPort(Port(), i);
                               }
                         }
                   }
             else if (node->type() == Track::AUDIO_OUTPUT) {
                   AudioOutput* ao = (AudioOutput*)node;
                   for (int i = 0; i < mc; ++i) {
-                        void* jp = ao->jackPort(i);
+                        void* jp = ao->jackPort(i).jackPort();
                         if (i < n && jp == 0) {
                               char buffer[128];
                               snprintf(buffer, 128, "%s-%d", name.toLatin1().data(), i);
@@ -245,8 +245,8 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                                           break;
                                           }
                                     }
-                              audioDriver->unregisterPort(jp);
-                              ao->setJackPort(0, i);
+                              audioDriver->unregisterPort(ao->jackPort(i));
+                              ao->setJackPort(Port(), i);
                               }
                         }
                   }

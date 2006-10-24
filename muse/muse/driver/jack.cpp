@@ -322,7 +322,7 @@ void JackAudio::graphChanged()
             RouteList* irl = it->inRoutes();
 
             for (int channel = 0; channel < channels; ++channel) {
-                  jack_port_t* port = (jack_port_t*)(it->jackPort(channel));
+                  jack_port_t* port = it->jackPort(channel).jackPort();
                   if (port == 0)
                         continue;
                   const char** ports = jack_port_get_all_connections(_client, port);
@@ -334,7 +334,7 @@ void JackAudio::graphChanged()
                   foreach (Route r, *irl) {
                         if (r.channel != channel)
                               continue;
-                        const char* name = jack_port_name((jack_port_t*)r.port);
+                        const char* name = jack_port_name(r.port.jackPort());
                         bool found      = false;
                         for (const char** pn = ports; pn && *pn; ++pn) {
                               if (strcmp(*pn, name) == 0) {
@@ -360,7 +360,7 @@ void JackAudio::graphChanged()
                               foreach(Route r, *irl) {
                                     if (r.channel != channel)
                                           continue;
-                                    const char* name = jack_port_name((jack_port_t*)r.port);
+                                    const char* name = jack_port_name(r.port.jackPort());
                                     if (strcmp(*pn, name) == 0) {
                                           found = true;
                                           break;
@@ -368,7 +368,7 @@ void JackAudio::graphChanged()
                                     }
                               if (!found) {
                                     RouteRoute a;
-                                    Port port = jack_port_by_name(_client, *pn);
+                                    Port port(jack_port_by_name(_client, *pn));
                                     a.src = Route(port, channel, Route::AUDIOPORT);
                                     a.dst = Route(it, channel);
                                     ra.append(a);
@@ -395,7 +395,7 @@ void JackAudio::graphChanged()
             AudioOutput* it = *ii;
             int channels = it->channels();
             for (int channel = 0; channel < channels; ++channel) {
-                  jack_port_t* port = (jack_port_t*)(it->jackPort(channel));
+                  jack_port_t* port = it->jackPort(channel).jackPort();
                   if (port == 0)
                         continue;
                   const char** ports = jack_port_get_all_connections(_client, port);
@@ -408,7 +408,7 @@ void JackAudio::graphChanged()
                   foreach(Route r, *rl) {
                         if (r.channel != channel)
                               continue;
-                        const char* name = jack_port_name((jack_port_t*)r.port);
+                        const char* name = jack_port_name(r.port.jackPort());
                         bool found = false;
                         const char** pn = ports;
                         while (pn && *pn) {
@@ -437,7 +437,7 @@ void JackAudio::graphChanged()
                               for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                                     if (irl->channel != channel)
                                           continue;
-                                    const char* name = jack_port_name((jack_port_t*)irl->port);
+                                    const char* name = jack_port_name(irl->port.jackPort());
                                     if (strcmp(*pn, name) == 0) {
                                           found = true;
                                           break;
@@ -446,7 +446,7 @@ void JackAudio::graphChanged()
                               if (!found) {
                                     RouteRoute a;
                                     a.src = Route(it, channel);
-                                    Port port = jack_port_by_name(_client, *pn);
+                                    Port port(jack_port_by_name(_client, *pn));
                                     a.dst = Route(port, channel, Route::AUDIOPORT);
                                     ra.append(a);
                                     }
@@ -495,8 +495,10 @@ void JackAudio::registerClient()
 Port JackAudio::registerInPort(const QString& name, bool midi)
       {
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
-      void* p = jack_port_register(_client, name.toLatin1().data(), type, JackPortIsInput, 0);
-// printf("JACK: registerInPort<%s>: <%s> %p\n", type, name.toLatin1().data(), p);
+      Port p(jack_port_register(_client, name.toLatin1().data(), type, JackPortIsInput, 0));
+// printf("JACK: registerInPort<%s>: <%s> %p\n", type, name.toLatin1().data(), p.jackPort());
+      if (!p.jackPort())
+            p.setZero();
       return p;
       }
 
@@ -507,12 +509,14 @@ Port JackAudio::registerInPort(const QString& name, bool midi)
 Port JackAudio::registerOutPort(const QString& name, bool midi)
       {
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
-      void* p = jack_port_register(_client, name.toLatin1().data(), type, JackPortIsOutput, 0);
-// printf("JACK: registerOutPort<%s>: <%s> %p\n", type, name.toLatin1().data(), p);
+      Port p(jack_port_register(_client, name.toLatin1().data(), type, JackPortIsOutput, 0));
+// printf("JACK: registerOutPort<%s>: <%s> %p\n", type, name.toLatin1().data(), p.jackPort());
       if (midi) {
             jack_nframes_t nframes = jack_get_buffer_size(_client);
-            jack_midi_reset_new_port(jack_port_get_buffer((jack_port_t*)p, nframes), nframes);
+            jack_midi_reset_new_port(jack_port_get_buffer(p.jackPort(), nframes), nframes);
             }
+      if (!p.jackPort())
+            p.setZero();
       return p;
       }
 
@@ -533,12 +537,12 @@ void exitJackAudio()
 
 bool JackAudio::connect(Port src, Port dst)
       {
-      if (src == 0 || dst == 0) {
+      if (src.isZero() || dst.isZero()) {
             fprintf(stderr, "JackAudio::connect(1): unknown jack ports\n");
             return false;
             }
-      const char* sn = jack_port_name((jack_port_t*) src);
-      const char* dn = jack_port_name((jack_port_t*) dst);
+      const char* sn = jack_port_name(src.jackPort());
+      const char* dn = jack_port_name(dst.jackPort());
 
 // printf("jack connect <%s>%p - <%s>%p\n", sn, src, dn, dst);
 
@@ -553,10 +557,10 @@ bool JackAudio::connect(Port src, Port dst)
             if (rv == EEXIST)
                   fprintf(stderr, "  connection already made\n");
             else {
-                  int pf = jack_port_flags((jack_port_t*)src);
+                  int pf = jack_port_flags(src.jackPort());
                   if (!(pf & JackPortIsOutput))
                         fprintf(stderr, "  src is not an output port\n");
-                  pf = jack_port_flags((jack_port_t*)dst);
+                  pf = jack_port_flags(dst.jackPort());
                   if (!(pf & JackPortIsInput))
                         fprintf(stderr, "  dst is not an input port\n");
                   }
@@ -571,8 +575,8 @@ bool JackAudio::connect(Port src, Port dst)
 
 bool JackAudio::disconnect(Port src, Port dst)
       {
-      const char* sn = jack_port_name((jack_port_t*) src);
-      const char* dn = jack_port_name((jack_port_t*) dst);
+      const char* sn = jack_port_name(src.jackPort());
+      const char* dn = jack_port_name(dst.jackPort());
 
 // printf("jack disconnect <%s>%p - <%s>%p\n", sn, src, dn, dst);
 
@@ -629,7 +633,7 @@ QList<PortName> JackAudio::outputPorts(bool midi)
                   continue;
             PortName pn;
             pn.name = QString(buffer);
-            pn.port = port;
+            pn.port = Port(port);
             clientList.append(pn);
             }
       return clientList;
@@ -652,7 +656,7 @@ QList<PortName> JackAudio::inputPorts(bool midi)
                   continue;
             PortName pn;
             pn.name = QString(buffer);
-            pn.port = port;
+            pn.port = Port(port);
             clientList.append(pn);
             }
       return clientList;
@@ -662,9 +666,9 @@ QList<PortName> JackAudio::inputPorts(bool midi)
 //   portName
 //---------------------------------------------------------
 
-QString JackAudio::portName(void* port)
+QString JackAudio::portName(Port port)
       {
-      const char *nameStrPtr = jack_port_name((jack_port_t*)port);
+      const char* nameStrPtr = jack_port_name(port.jackPort());
       QString s(nameStrPtr);
       return s;
       }
@@ -677,8 +681,8 @@ void JackAudio::unregisterPort(Port p)
       {
       if (_client) {
 // printf("JACK: unregister Port %p\n", p);
-            if (jack_port_unregister(_client, (jack_port_t*)p))
-                  fprintf(stderr, "jack unregister port %p failed\n", p);
+            if (jack_port_unregister(_client, p.jackPort()))
+                  fprintf(stderr, "jack unregister port %p failed\n", p.jackPort());
             }
       }
 
@@ -729,7 +733,7 @@ void JackAudio::seekTransport(unsigned frame)
 
 Port JackAudio::findPort(const QString& name)
       {
-      void* p = jack_port_by_name(_client, name.toLatin1().data());
+      Port p(jack_port_by_name(_client, name.toLatin1().data()));
 // printf("Jack::findPort <%s>, %p\n", name.toLatin1().data(), p);
       return p;
       }
@@ -818,7 +822,7 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             printf("MidiOut<%s>: jackMidi: ", portName(port).toLatin1().data());
             e.dump();
             }
-      void* pb    = jack_port_get_buffer((jack_port_t*)port, segmentSize);
+      void* pb    = jack_port_get_buffer(port.jackPort(), segmentSize);
       unsigned ft;
       if (transportState == JackTransportRolling) {
             ft = e.time() - pos.frame;
@@ -868,7 +872,7 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
 
 void JackAudio::startMidiCycle(Port port)
       {
-      void* port_buf = jack_port_get_buffer((jack_port_t*)port, segmentSize);
+      void* port_buf = jack_port_get_buffer(port.jackPort(), segmentSize);
       jack_midi_clear_buffer(port_buf, segmentSize);
       }
 

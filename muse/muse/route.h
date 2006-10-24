@@ -29,8 +29,7 @@ namespace AL {
       };
 using AL::Xml;
 
-
-typedef void* Port;
+#include "driver/driver.h"
 
 // Routing Types:
 //
@@ -61,9 +60,9 @@ struct Route {
       enum RouteType { TRACK, AUDIOPORT, MIDIPORT, JACKMIDIPORT,
          SYNTIPORT, AUXPLUGIN};
 
+      Port   port;
       union {
             Track* track;
-            Port   port;
             AuxPluginIF* plugin;
             };
       int channel;            // route to/from JACK can specify a channel to connect to
@@ -79,6 +78,14 @@ struct Route {
       Route(Track*, int, RouteType t = TRACK);
       Route(AuxPluginIF*);
 
+      bool isPortType() const {
+            return type==AUDIOPORT || type == MIDIPORT || type == JACKMIDIPORT;
+            }
+      bool isValid() const {
+            return (isPortType() && !port.isZero())
+               || ((type == TRACK || type == SYNTIPORT) && track)
+               || ((type == AUXPLUGIN) && plugin);
+            }
       QString name() const;
       void read(QDomNode node);
       void write(Xml&, const char* name) const;

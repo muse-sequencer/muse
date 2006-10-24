@@ -136,7 +136,7 @@ class SynthI : public AudioTrack, public MidiInstrument
    public:
       SynthI();
       virtual ~SynthI();
-      SynthI* clone() const { return 0; }
+//      SynthI* clone() const { return 0; }
 
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s);

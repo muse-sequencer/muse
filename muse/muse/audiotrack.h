@@ -24,6 +24,8 @@
 #include "fifo.h"
 #include "track.h"
 
+class Pipeline;
+class SndFile;
 class PluginI;
 class AuxPluginIF;
 
