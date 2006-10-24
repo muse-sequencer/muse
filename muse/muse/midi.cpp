@@ -639,12 +639,12 @@ void Audio::initDevices()
 //	Process one time slice of midi events
 //---------------------------------------------------------
 
-void Audio::processMidi(unsigned frames)
+void Audio::processMidi()
       {
       midiBusy = true;
       MidiOutPortList* ol = song->midiOutPorts();
       for (iMidiOutPort id = ol->begin(); id != ol->end(); ++id) {
-            (*id)->process(_curTickPos, _nextTickPos, _pos, frames);
+            (*id)->process(_curTickPos, _nextTickPos);
             }
 
       MidiInPortList* il = song->midiInPorts();

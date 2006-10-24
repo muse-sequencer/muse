@@ -435,7 +435,7 @@ void Audio::process(unsigned frames, int jackState)
       for (iMidiOutPort i = mol->begin(); i != mol->end(); ++i)
             audioDriver->startMidiCycle((*i)->jackPort(0));
 
-      processMidi(frames);
+      processMidi();
 
       GroupList* gl     = song->groups();
       SynthIList* sl    = song->syntis();

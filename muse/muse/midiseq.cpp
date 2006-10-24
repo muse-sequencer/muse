@@ -162,7 +162,6 @@ void MidiSeq::processStop()
                         }
                   }
             pel->clear();
-            md->setNextPlayEvent(pel->begin());
             }
 
       //---------------------------------------------------
@@ -274,8 +273,8 @@ void MidiSeq::processSeek()
                         }
                   el->clear();
                   }
-            else
-                  el->erase(el->begin(), op->nextPlayEvent());
+//            else
+//                  el->erase(el->begin(), op->nextPlayEvent());
             for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                   MidiChannel* mc = op->channel(ch);
                   if (mc->mute() || mc->noInRoute() || !mc->autoRead())
@@ -289,7 +288,7 @@ void MidiSeq::processSeek()
                               }
                         }
                   }
-            op->setNextPlayEvent(op->playEvents()->begin());
+//            op->setNextPlayEvent(op->playEvents()->begin());
             }
       }
 
@@ -534,14 +533,14 @@ void MidiSeq::processTimerTick()
       for (iMidiOutPort id = ol->begin(); id != ol->end(); ++id) {
             MidiOutPort* mp = *id;
             MPEventList* el = mp->playEvents();
-            iMPEvent i      = mp->nextPlayEvent();
 
+            iMPEvent i = el->begin();
             for (; i != el->end(); ++i) {
                   if (i->time() > curFrame)
                         break;
                   mp->putEvent(*i);
                   }
-            mp->setNextPlayEvent(i);
+            el->erase(el->begin(), i);
             }
       }
 

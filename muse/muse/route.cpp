@@ -280,12 +280,16 @@ void Song::readRoute(QDomNode n)
             else
                   printf("MusE:readRoute: unknown tag %s\n", e.tagName().toLatin1().data());
             }
-      if (!s.isValid()) {   // source port not found
-            printf("invalid source port\n");
+      if (!s.isValid()) {   // source port not found?
+            printf("Song::readRoute(): invalid source port: %s.%d:<%s> - %s.%d:<%s>\n",
+              s.tname(), s.channel, s.name().toLatin1().data(),
+              d.tname(), d.channel, d.name().toLatin1().data());
             return;
             }
-      if (!d.isValid()) {    // destination port not found
-            printf("invalid destination port\n");
+      if (!d.isValid()) {    // destination port not found?
+            printf("Song::readRoute(): invalid destination port: %s.%d:<%s> - %s.%d:<%s>\n",
+              s.tname(), s.channel, s.name().toLatin1().data(),
+              d.tname(), d.channel, d.name().toLatin1().data());
             return;
             }
       

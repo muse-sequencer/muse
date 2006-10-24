@@ -1,14 +1,13 @@
 -----------------------------TODO-------------------------------------------
   * - done
-(28.6.2006)
+(24.10.2006)
 ----------------------------------------------------------------------------
 
-      - check for samplerate when loading project
-      * compute song len in seconds when saving project
-      * save project creation date/time in project
-      * create dialog to edit project comment
-
 BUGS
+      - fix song len after importing midi
+      - set song "dirty" after importing midi
+      - update midi gm template
+
 	- updating the gui during midi recording is too slow;
         a new, faster implementation is needed
 

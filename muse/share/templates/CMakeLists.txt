@@ -25,5 +25,6 @@ install_files ( /share/${MusE_INSTALL_NAME}/templates .med
    midiGM.med
    monorecord.med
    synti.med 
+   ns5r.med
    )
 

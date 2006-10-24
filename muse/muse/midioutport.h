@@ -37,7 +37,6 @@ class MidiOutPort : public MidiTrackBase {
       int _deviceId;    // 0-126; 127 == all
 
       MPEventList _playEvents;   // scheduled events to play
-      iMPEvent _nextPlayEvent;
 
       // fifo for midi events send from gui
       // direct to midi port:
@@ -72,12 +71,9 @@ class MidiOutPort : public MidiTrackBase {
       void putEvent(const MidiEvent&);
 
       MPEventList* playEvents()          { return &_playEvents;   }
-      iMPEvent nextPlayEvent()           { return _nextPlayEvent; }
 
-      void process(unsigned from, unsigned to, const AL::Pos&, unsigned frames);
+      void process(unsigned from, unsigned to);
 
-      void setNextPlayEvent(iMPEvent i)  { _nextPlayEvent = i;    }
-      void playFifo();
       void playMidiEvent(MidiEvent*);
 
       void sendSysex(const unsigned char*, int);
@@ -89,8 +85,6 @@ class MidiOutPort : public MidiTrackBase {
       void sendStop();
       void sendContinue();
       void sendClock();
-
-      void playEventList();
 
       bool sendSync() const      { return _sendSync; }
       void setSendSync(bool val);

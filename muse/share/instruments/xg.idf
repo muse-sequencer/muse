@@ -2,6 +2,12 @@
 <muse version="1.0">
     <MidiInstrument name="XG">
       <Init>
+          <event tick="0" type="2" datalen="4">
+             7e 7f 09 01           
+             </event>
+          <event tick="0" type="2" datalen="7">
+             43 10 4c 00 00 7e 00           
+             </event>
         </Init>
       <PatchGroup name="Piano">
          <Patch name="Grand Piano"  hbank="0" lbank="0"  prog="0"/>
