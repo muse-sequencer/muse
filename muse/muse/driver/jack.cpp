@@ -826,14 +826,17 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
       unsigned ft;
       if (transportState == JackTransportRolling) {
             ft = e.time() - pos.frame;
-            if (pos.frame > e.time())
+            if (pos.frame > e.time()) {
+printf("time < 0 -- %d\n", pos.frame - e.time());
                   ft = 0;
-            else if (ft >= segmentSize)
-                  ft = segmentSize -1;
+                  }
+            else if (ft >= segmentSize) {
+                  ft = segmentSize - 1;
+printf("time >= segmentSize -- %d\n", segmentSize - ft);
+                  }
             }
       else
             ft = 0;
-
       switch(e.type()) {
             case ME_NOTEON:
             case ME_NOTEOFF:

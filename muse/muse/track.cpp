@@ -39,13 +39,13 @@
 // synchronize with TrackType!:
 
 const char* Track::_cname[] = {
-      "Output", "Group", "Wave", "Input",
-      "Synti", "Midi", "MidiOut", "MidiIn", "M-Ch", "M-Synth"
+      "AudioOut", "Group", "Wave", "AudioIn",
+      "Synth", "Midi", "MidiOut", "MidiIn", "M-Ch", "M-Synth"
       };
 
 const char* Track::_clname[] = {
       "Audio Output", "Audio Group", "Wave Track", "Audio Input",
-      "Synti", "Midi Track", "Midi Outport", "Midi Inport", "Midi Channel",
+      "Synti", "Midi Track", "Midi Output", "Midi Input", "Midi Channel",
       "Midi Synth"
       };
 

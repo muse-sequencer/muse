@@ -25,6 +25,7 @@
 #include "audio.h"
 #include "driver/mididev.h"
 #include "driver/audiodev.h"
+#include "driver/jackaudio.h"
 
 #ifdef __APPLE__
 #include "driver/coretimer.h"

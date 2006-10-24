@@ -170,9 +170,6 @@ class Audio {
       int clicksMeasure;
       int ticksBeat;
 
-      double syncTime;        // wall clock at last sync point
-//      unsigned syncFrame;     // corresponding frame no. to syncTime
-
       State state;
       bool updateController;
 

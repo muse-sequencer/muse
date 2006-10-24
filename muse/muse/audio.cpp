@@ -108,7 +108,6 @@ Audio::Audio()
       clicksMeasure = 0;
       ticksBeat     = 0;
 
-      syncTime      = 0.0;
       state         = STOP;
       lmark         = 0;      // left loop position
       rmark         = 0;      // right loop position
@@ -159,7 +158,6 @@ bool Audio::start()
       clicksMeasure = 0;
       ticksBeat     = 0;
 
-      syncTime      = 0.0;
       msg           = 0;
       _pos.setFrame(~0);      // make sure seek is not optimized away
 
@@ -321,7 +319,6 @@ void Audio::process(unsigned frames, int jackState)
             }
 
       if (jackState != state) {
-// printf("process %s %s\n", audioStates[state], audioStates[jackState]);
             if (state == START_PLAY && jackState == PLAY) {
                   startRolling();
                   if (_bounce)
@@ -332,34 +329,23 @@ void Audio::process(unsigned frames, int jackState)
                   seek(newPos);
                   startRolling();
                   }
-            else if (isPlaying() && jackState == STOP) {
+            else if (isPlaying() && jackState == STOP)
                   stopRolling();
-                  }
             else if (state == START_PLAY && jackState == STOP) {
                   state = STOP;
                   updateController = true;
-                  if (_bounce) {
+                  if (_bounce)
                         audioDriver->startTransport();
-                        }
-                  else {
+                  else
                         sendMsgToGui(MSG_STOP);
-                        }
                   }
-            else if (state == STOP && jackState == PLAY) {
+            else if (state == STOP && jackState == PLAY)
                   startRolling();
-                  }
-            else if (state == LOOP1 && jackState == PLAY)
-                  ;     // treat as play
-            else if (state == LOOP2 && jackState == START_PLAY)
-                  ;     // sync cycle, treat as play
-            else
-                  printf("JACK: state transition %s -> %s ?\n",
-                     audioStates[state], audioStates[jackState]);
             }
 
       OutputList* ol = song->outputs();
       if (idle || state == START_PLAY) {
-            // deliver no audio
+            // deliver silence
             for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
                   (*i)->silence(frames);
             return;
@@ -419,12 +405,6 @@ void Audio::process(unsigned frames, int jackState)
             ppp += frames;
             _nextTickPos = ppp.tick();
             }
-
-      //
-      // resync with audio interface
-      //    syncTime  - corresponding wall clock time
-      //
-      syncTime    = curTime();
 
       //
       //  compute current controller values
@@ -569,11 +549,8 @@ void Audio::processMsg()
             case SEQM_SET_GLOBAL_TEMPO:
             case SEQM_SET_TEMPO:
                   song->processMsg(msg);
-                  if (isPlaying()) {
+                  if (isPlaying())
                         _pos.setTick(_curTickPos);
-//                        int framePos = _pos.frame();
-                        syncTime      = curTime();
-                        }
                   break;
 
             case SEQM_IDLE:
