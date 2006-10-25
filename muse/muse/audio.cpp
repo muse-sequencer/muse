@@ -38,8 +38,10 @@
 #include "synth.h"
 #include "midioutport.h"
 #include "midiinport.h"
+#include "midichannel.h"
+#include "midictrl.h"
+#include "sync.h"
 
-extern double curTime();
 extern bool initJackAudio();
 
 Audio* audio;
@@ -579,11 +581,9 @@ void Audio::seek(const Pos& p)
       if (state != LOOP2 && !freewheel())
             audioPrefetch->msgSeek(_pos.frame());
 
-      midiBusy = true;
-      midiSeq->processSeek(); // handle stuck notes and set
-                              // controller for new position
-      midiBusy = false;
-
+      MidiOutPortList* ol = song->midiOutPorts();
+      for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
+            (*i)->seek(_curTickPos, _pos.frame());
       sendMsgToGui(MSG_SEEK);
       }
 
@@ -609,8 +609,10 @@ void Audio::startRolling()
       state = PLAY;
       sendMsgToGui(MSG_PLAY);
 
-      midiSeq->msgStart();
-
+      MidiOutPortList* ol = song->midiOutPorts();
+      for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
+            (*i)->start();
+      
       if (precountEnableFlag
          && song->click()
          && !extSyncFlag
@@ -650,7 +652,9 @@ void Audio::startRolling()
 void Audio::stopRolling()
       {
       state = STOP;
-      midiSeq->msgStop();
+      MidiOutPortList* ol = song->midiOutPorts();
+      for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
+            (*i)->stop();
 	recording    = false;
       endRecordPos = _pos;
       _bounce = 0;

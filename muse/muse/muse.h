@@ -173,6 +173,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       bool leaveProject();
 
       virtual void focusInEvent(QFocusEvent*);
+      void addMidiFile(const QString name);
 
    signals:
       void configChanged();
@@ -276,7 +277,6 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       MusE();
       Arranger* arranger;
       QRect configGeometryMain;
-      bool importMidi(const QString name, bool merge);
       void kbAccel(int);
       void changeConfig(bool writeFlag);
 

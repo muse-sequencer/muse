@@ -253,10 +253,13 @@ QString Route::name() const
             case SYNTIPORT:
                   return track2name(track);
             case AUDIOPORT:
-                  return audioDriver->portName(port);
             case JACKMIDIPORT:
+                  if (port.isZero())
+                        return QString("0");
                   return audioDriver->portName(port);
             case MIDIPORT:
+                  if (port.isZero())
+                        return QString("0");
                   return midiDriver->portName(port);
             case AUXPLUGIN:
                   return plugin->pluginInstance()->name();

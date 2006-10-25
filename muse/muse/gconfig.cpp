@@ -123,4 +123,6 @@ GlobalConfigValues config = {
       true,                         // createDefaultMidiInput
       QString("MusE/projects"),     // projectPath
       QString("MusE/templates"),    // templatePath
+      QString("MusE/"),             // midi import path
+      QString("MusE/"),             // wave import path
       };

@@ -328,6 +328,8 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       showSplash->setChecked(config->showSplashScreen);
       projectPath->setText(config->projectPath);
       templatePath->setText(config->templatePath);
+      midiImportPath->setText(config->importMidiPath);
+      waveImportPath->setText(config->importWavePath);
 
       stopActive->setChecked(midiRCList.isActive(RC_STOP));
       playActive->setChecked(midiRCList.isActive(RC_PLAY));
@@ -359,7 +361,6 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
 
       waveEditorWidth->setValue(WaveEdit::initWidth);
       waveEditorHeight->setValue(WaveEdit::initHeight);
-
 
       connect(recordStop,         SIGNAL(clicked(bool)), SLOT(recordStopToggled(bool)));
       connect(recordRecord,       SIGNAL(clicked(bool)), SLOT(recordRecordToggled(bool)));
@@ -587,8 +588,13 @@ void PreferencesDialog::apply()
       ::config.useJackFreewheelMode = freewheelMode->isChecked();
       ::config.showSplashScreen = showSplash->isChecked();
 
-      ::config.projectPath = projectPath->text();
-      ::config.templatePath = templatePath->text();
+      ::config.projectPath    = projectPath->text();
+      ::config.templatePath   = templatePath->text();
+      ::config.importMidiPath = midiImportPath->text();
+      ::config.importWavePath = waveImportPath->text();
+
+      lastMidiPath = museUser + "/" + ::config.importMidiPath;
+      lastWavePath = museUser + "/" + ::config.importWavePath;
 
       PianoRoll::initWidth  = pianorollWidth->value();
       PianoRoll::initHeight = pianorollHeight->value();

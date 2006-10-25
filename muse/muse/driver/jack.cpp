@@ -733,9 +733,9 @@ void JackAudio::seekTransport(unsigned frame)
 
 Port JackAudio::findPort(const QString& name)
       {
-      Port p(jack_port_by_name(_client, name.toLatin1().data()));
-// printf("Jack::findPort <%s>, %p\n", name.toLatin1().data(), p);
-      return p;
+      jack_port_t* port = jack_port_by_name(_client, name.toLatin1().data());
+// printf("Jack::findPort <%s>, %p\n", name.toLatin1().data(), port);
+      return (port == 0) ? Port() : Port(port);
       }
 
 //---------------------------------------------------------

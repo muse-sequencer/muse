@@ -33,10 +33,11 @@ class MidiOutPort : public MidiTrackBase {
       MidiInstrument* _instrument;
       MidiChannel* _channel[MIDI_CHANNELS];
 
-      bool _sendSync;   // this port sends mtc mmc events
+      bool _sendSync;   // this port sends mtc/mmc events
       int _deviceId;    // 0-126; 127 == all
 
-      MPEventList _playEvents;   // scheduled events to play
+      MPEventList _schedEvents;  // scheduled events by process()
+      MPEventList _playEvents;   // event queue for MidiSeq
 
       // fifo for midi events send from gui
       // direct to midi port:
@@ -72,7 +73,7 @@ class MidiOutPort : public MidiTrackBase {
 
       MPEventList* playEvents()          { return &_playEvents;   }
 
-      void process(unsigned from, unsigned to);
+      void process(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
 
       void playMidiEvent(MidiEvent*);
 
@@ -91,6 +92,11 @@ class MidiOutPort : public MidiTrackBase {
 
       int deviceId() const      { return _deviceId; }
       void setDeviceId(int val) { _deviceId = val; }
+
+      void seek(unsigned, unsigned);
+      void stop();
+      void start();
+      void reset();
       };
 
 #endif

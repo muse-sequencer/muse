@@ -2838,15 +2838,16 @@ int main(int argc, char* argv[])
       {
       museUser = QString(getenv("MUSEHOME"));
       if (museUser.isEmpty())
-            museUser = QString(getenv("HOME"));
+            museUser = QDir::homePath();
       QString museGlobal;
       const char* p = getenv("MUSE");
       museGlobal = p ? p : INSTPREFIX;
 
       museGlobalLib   =  museGlobal + "/lib/"   INSTALL_NAME;
       museGlobalShare =  museGlobal + "/share/" INSTALL_NAME;
-
-      configName  = museUser + QString("/." INSTALL_NAME);
+      configName      = museUser + QString("/." INSTALL_NAME);
+      lastMidiPath    = museUser + "/" + ::config.importMidiPath;
+      lastWavePath    = museUser + "/" + ::config.importWavePath;
 
       srand(time(0));   // initialize random number generator
       initMidiController();

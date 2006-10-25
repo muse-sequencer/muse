@@ -41,29 +41,23 @@ class MTC;
 class MidiSeq : public Thread {
       int realRtcTicks;
       Timer* timer;
-      int idle;
       int midiClock;
 
 /* Testing */
-      int recTick;            // ext sync tick position
-      int lastTickPos;        // position of last sync tick
+//      int lastTickPos;        // position of last sync tick
       // run values:
-      unsigned _midiTick;
-      double mclock1, mclock2;
-      double songtick1, songtick2;
-      int recTick1, recTick2;
-      int lastTempo;
-      double timediff[24];
-      int storedtimediffs;
+//      unsigned _midiTick;
+//      double mclock1, mclock2;
+//      double songtick1, songtick2;
+//      int recTick1, recTick2;
+//      int lastTempo;
+//      double timediff[24];
+//      int storedtimediffs;
 /* Testing */
 
       bool initRealtimeTimer();
       static void midiTick(void* p, void*);
       void processTimerTick();
-      void processStart();
-      void processStop();
-      void resetDevices();
-      void processMidiClock();
       virtual void processMsg(const ThreadMsg*);
       void updatePollFd();
 
@@ -84,12 +78,10 @@ class MidiSeq : public Thread {
 
       void msgMsg(int id);
       void msgStart();
-      void msgStop();
       void msgSetRtc();
       void msgAddSynthI(SynthI* synth);
       void msgRemoveSynthI(SynthI* synth);
 
-      void processSeek();
       };
 
 extern MidiSeq* midiSeq;

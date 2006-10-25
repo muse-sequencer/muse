@@ -21,6 +21,7 @@
 #include "song.h"
 #include "midiplugin.h"
 #include "midictrl.h"
+#include "al/al.h"
 #include "al/tempo.h"
 #include "al/xml.h"
 #include "driver/mididev.h"
@@ -28,6 +29,9 @@
 #include "audio.h"
 #include "midioutport.h"
 #include "midichannel.h"
+#include "midiseq.h"
+#include "sync.h"
+#include "gconfig.h"
 
 //---------------------------------------------------------
 //   MidiOutPort
@@ -382,14 +386,18 @@ void MidiOutPort::playMidiEvent(MidiEvent* ev)
             }
       }
 
-//---------------------------------------------------------
+//-------------------------------------------------------------------
 //   process
-//    "play" events for this process cycle
-//    from/to are midi ticks
-//    if (from != to)  then transport state is "playing"
-//---------------------------------------------------------
+//    Collect all midi events for the current process cycle and put
+//    into _schedEvents queue. For note on events create the proper
+//    note off events. The note off events maybe played after the
+//    current process cycle.
+//    From _schedEvents queue copy all events for the current cycle
+//    to all output routes. Events routed to ALSA go into the 
+//    _playEvents queue which is processed by the MidiSeq thread.
+//-------------------------------------------------------------------
 
-void MidiOutPort::process(unsigned from, unsigned to)
+void MidiOutPort::process(unsigned fromTick, unsigned toTick, unsigned, unsigned toFrame)
       {
       if (mute())
             return;
@@ -399,12 +407,12 @@ void MidiOutPort::process(unsigned from, unsigned to)
             el.add(eventFifo.get());
 
       // collect port controller
-      if (from != to) {
+      if (fromTick != toTick) {     // if rolling
             CtrlList* cl = controller();
             for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
                   Ctrl* c = ic->second;
-                  iCtrlVal is = c->lower_bound(from);
-                  iCtrlVal ie = c->lower_bound(to);
+                  iCtrlVal is = c->lower_bound(fromTick);
+                  iCtrlVal ie = c->lower_bound(toTick);
                   for (iCtrlVal ic = is; ic != ie; ++ic) {
                         unsigned frame = AL::tempomap.tick2frame(ic->first);
                         Event ev(Controller);
@@ -422,12 +430,12 @@ void MidiOutPort::process(unsigned from, unsigned to)
             if (mc->mute() || mc->noInRoute())
                   continue;
             // collect channel controller
-            if (from != to) {
+            if (fromTick != toTick) {
                   CtrlList* cl = mc->controller();
                   for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
                         Ctrl* c = ic->second;
-                        iCtrlVal is = c->lower_bound(from);
-                        iCtrlVal ie = c->lower_bound(to);
+                        iCtrlVal is = c->lower_bound(fromTick);
+                        iCtrlVal ie = c->lower_bound(toTick);
                         for (; is != ie; ++is) {
                               unsigned frame = AL::tempomap.tick2frame(is->first);
                               Event ev(Controller);
@@ -445,7 +453,7 @@ void MidiOutPort::process(unsigned from, unsigned to)
                   if (track->isMute())
                         continue;
                   MPEventList ell;
-                  track->getEvents(from, to, 0, &ell);
+                  track->getEvents(fromTick, toTick, 0, &ell);
                   int velo = 0;
                   for (iMPEvent i = ell.begin(); i != ell.end(); ++i) {
                         MidiEvent ev(*i);
@@ -460,29 +468,43 @@ void MidiOutPort::process(unsigned from, unsigned to)
             }
       addMidiMeter(portVelo);
 
-      MPEventList ol;
-      pipeline()->apply(from, to, &el, &ol);
+      pipeline()->apply(fromTick, toTick, &el, &_schedEvents);
 
       //
       // route events to destination
       //
 
-      for (iMPEvent i = ol.begin(); i != ol.end(); ++i) {
-            for (iRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
-                  switch (r->type) {
-                        case Route::MIDIPORT:
-                              _playEvents.add(*i);    // schedule
-                              break;
-                        case Route::SYNTIPORT: 
-                              ((SynthI*)(r->track))->playEvents()->insert(*i);
-                              break;
-                        case Route::JACKMIDIPORT:
-                              audioDriver->putEvent(jackPort(0), *i);
-                              break;
-                        default:
-                              fprintf(stderr, "MidiOutPort::process(): invalid routetype\n");
-                              break;
-                        }
+      for (iMPEvent i = _schedEvents.begin(); i != _schedEvents.end(); ++i) {
+            if (i->time() >= toFrame) {
+                  _schedEvents.erase(_schedEvents.begin(), i);
+                  break;
+                  }
+            routeEvent(*i);
+            }
+      }
+
+//---------------------------------------------------------
+//    routeEvent
+//---------------------------------------------------------
+
+void MidiOutPort::routeEvent(const MidiEvent& event)
+      {
+      for (iRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
+            switch (r->type) {
+                  case Route::MIDIPORT:
+                        midiBusy = true;
+                        _playEvents.insert(event);    // schedule
+                        midiBusy = false;
+                        break;
+                  case Route::SYNTIPORT: 
+                        ((SynthI*)(r->track))->playEvents()->insert(event);
+                        break;
+                  case Route::JACKMIDIPORT:
+                        audioDriver->putEvent(jackPort(0), event);
+                        break;
+                  default:
+                        fprintf(stderr, "MidiOutPort::process(): invalid routetype\n");
+                        break;
                   }
             }
       }
@@ -506,3 +528,145 @@ void MidiOutPort::setSendSync(bool val)
       _sendSync = val;
       emit sendSyncChanged(val);
       }
+
+//---------------------------------------------------------
+//    seek
+//---------------------------------------------------------
+
+void MidiOutPort::seek(unsigned tickPos, unsigned framePos)
+      {
+      if (genMCSync && sendSync()) {
+            int beat = (tickPos * 4) / config.division;
+            sendStop();
+            sendSongpos(beat);
+            sendContinue();
+            }
+      if (mute())
+            return;
+
+//    if (pos == 0 && !song->record())
+//          audio->initDevices();
+
+      //---------------------------------------------------
+      //    stop all notes
+      //---------------------------------------------------
+
+      for (iMPEvent i = _schedEvents.begin(); i != _schedEvents.end(); ++i) {
+            MidiEvent ev = *i;
+            if (ev.isNoteOff()) {
+                  ev.setTime(framePos);
+                  routeEvent(ev);
+                  }
+            }
+      _schedEvents.clear();
+
+      //---------------------------------------------------
+      //    set all controller
+      //---------------------------------------------------
+
+      for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
+            MidiChannel* mc = channel(ch);
+            if (mc->mute() || mc->noInRoute() || !mc->autoRead())
+                  continue;
+            CtrlList* cll = mc->controller();
+            for (iCtrl ivl = cll->begin(); ivl != cll->end(); ++ivl) {
+                  Ctrl* c   = ivl->second;
+                  int val = c->value(tickPos).i;
+                  if (val != CTRL_VAL_UNKNOWN && val != c->curVal().i) {
+                        routeEvent(MidiEvent(0, ch, ME_CONTROLLER, c->id(), val));
+                        }
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   stop
+//---------------------------------------------------------
+
+void MidiOutPort::stop()
+      {
+      int frame = AL::tempomap.tick2frame(audio->curTickPos());
+
+      //---------------------------------------------------
+      //    stop all notes
+      //---------------------------------------------------
+
+      for (iMPEvent i = _schedEvents.begin(); i != _schedEvents.end(); ++i) {
+            MidiEvent ev = *i;
+            if (ev.isNoteOff()) {
+                  ev.setTime(frame);
+                  routeEvent(ev);
+                  }
+            }
+      _schedEvents.clear();
+
+      //---------------------------------------------------
+      //    reset sustain
+      //---------------------------------------------------
+
+      for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
+            MidiChannel* mc = channel(ch);
+            if (mc->noInRoute())
+                  continue;
+            if (mc->hwCtrlState(CTRL_SUSTAIN) != CTRL_VAL_UNKNOWN) {
+                  MidiEvent ev(0, 0, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+                  ev.setChannel(mc->channelNo());
+                  routeEvent(ev);
+                  }
+            }
+
+      if (sendSync()) {
+            if (genMMC) {
+                  unsigned char mmcPos[] = {
+                        0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
+                        0, 0, 0, 0, 0
+                        };
+                  MTC mtc(double(frame) / double(AL::sampleRate));
+                  mmcPos[6] = mtc.h() | (AL::mtcType << 5);
+                  mmcPos[7] = mtc.m();
+                  mmcPos[8] = mtc.s();
+                  mmcPos[9] = mtc.f();
+                  mmcPos[10] = mtc.sf();
+//TODO                  mp->sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
+//                  mp->sendSysex(mmcPos, sizeof(mmcPos));
+                  }
+            if (genMCSync) {         // Midi Clock
+                  // send STOP and
+                  // "set song position pointer"
+//                  mp->sendStop();
+//                  mp->sendSongpos(audio->curTickPos() * 4 / config.division);
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   start
+//---------------------------------------------------------
+
+void MidiOutPort::start()
+      {
+#if 0
+      if (!(genMMC || genMCSync))
+            return;
+      if (!sendSync())
+            return;
+      if (genMMC)
+            sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
+      if (genMCSync) {
+            if (audio->curTickPos())
+                  sendContinue();
+            else
+                  sendStart();
+            }
+#endif
+      }
+
+//---------------------------------------------------------
+//   reset
+//---------------------------------------------------------
+
+void MidiOutPort::reset()
+      {
+      instrument()->reset(this);
+      }
+

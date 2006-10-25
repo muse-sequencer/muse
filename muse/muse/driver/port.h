@@ -23,6 +23,10 @@
 
 #include <jack/jack.h>
 
+//---------------------------------------------------------
+//    Port
+//---------------------------------------------------------
+
 class Port {
       enum { JACK_TYPE, ALSA_TYPE, ZERO_TYPE } type;
       union {
@@ -55,9 +59,9 @@ class Port {
             else 
                   return true;
             }
-      unsigned char alsaPort() const { return _alsaPort; }
+      unsigned char alsaPort() const   { return _alsaPort; }
       unsigned char alsaClient() const { return _alsaClient; }
-      jack_port_t* jackPort() const { return _jackPort; }
+      jack_port_t* jackPort() const    { return _jackPort; }
       };
 
 #endif

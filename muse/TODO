@@ -4,10 +4,6 @@
 ----------------------------------------------------------------------------
 
 BUGS
-      - fix song len after importing midi
-      - set song "dirty" after importing midi
-      - update midi gm template
-
 	- updating the gui during midi recording is too slow;
         a new, faster implementation is needed
 

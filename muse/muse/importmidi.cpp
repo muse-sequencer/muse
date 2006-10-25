@@ -127,9 +127,9 @@ void MusE::importMidi(const QString &file)
       if (file.isEmpty()) {
             fn = getOpenFileName(lastMidiPath, pattern, this,
                tr("MusE: Import Midi"));
+            lastMidiPath = fn;
             if (fn.isEmpty())
                   return;
-            lastMidiPath = fn;
             }
       else
             fn = file;
@@ -206,7 +206,7 @@ void MusE::importMidi(const QString &file)
                   QString msg(tr("File <%1> read error"));
                   QMessageBox::critical(this, header, msg.arg(s));
                   }
-            importMidi(fn, true);
+            addMidiFile(fn);
 
             tr_id->setChecked(config.transportVisible);
             bt_id->setChecked(config.bigTimeVisible);
@@ -282,21 +282,21 @@ void MusE::importMidi(const QString &file)
             }
       else {
             // add to project
-            importMidi(fn, true);
+            addMidiFile(fn);
             song->update(-1);
             }
       }
 
 //---------------------------------------------------------
-//   importMidi
+//   addMidiFile
 //    return true on error
 //---------------------------------------------------------
 
-bool MusE::importMidi(const QString name, bool merge)
+void MusE::addMidiFile(const QString name)
       {
       QFile* fp = fileOpen(this, name, QString(".mid"), QIODevice::ReadOnly);
       if (fp == 0)
-            return true;
+            return;
       MidiFile mf;
       bool rv = mf.read(fp);
       fp->close();
@@ -308,7 +308,7 @@ bool MusE::importMidi(const QString name, bool merge)
             s += tr("\nfailed: ");
             s += mf.error();
             QMessageBox::critical(this, QString("MusE"), s);
-            return rv;
+            return;
             }
       MidiFileTrackList* etl = mf.trackList();
       int division           = mf.division();
@@ -316,7 +316,7 @@ bool MusE::importMidi(const QString name, bool merge)
       MidiOutPort* outPort = 0;
       MidiInPort* inPort = 0;
 
-      if (!merge || song->midiOutPorts()->empty()) {
+      if (song->midiOutPorts()->empty()) {
             outPort = new MidiOutPort();
             outPort->setDefaultName();
             song->insertTrack0(outPort, -1);
@@ -427,8 +427,9 @@ bool MusE::importMidi(const QString name, bool merge)
                         continue;
 
                   MidiTrack* track = new MidiTrack();
-//TODO3                  if ((*t)->isDrumTrack)
-//                        track->setUseDrumMap(true);
+                  MidiChannel* mc = outPort->channel(channel);
+                  if ((*t)->isDrumTrack)
+                        mc->setUseDrumMap(true);
                   track->outRoutes()->push_back(Route(outPort->channel(channel), -1, Route::TRACK));
                   if (inPort && config.connectToAllMidiTracks) {
                         for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
@@ -446,19 +447,18 @@ bool MusE::importMidi(const QString name, bool merge)
                         if (event.type() == Controller) {
                               int ctrl = event.dataA();
                               MidiInstrument* instr = outPort->instrument();
-                              MidiChannel* mc = outPort->channel(channel);
                               mc->addMidiController(instr, ctrl);
                               CVal val;
                               val.i = event.dataB();
                               mc->addControllerVal(ctrl, event.tick(), val);
                               }
                         }
-#if 0 //TODO3
                   if (channel == 9) {
-                        track->setUseDrumMap(true);
+                        mc->setUseDrumMap(true);
                         //
                         // remap drum pitch with drumInmap
                         //
+#if 0 //TODO
                         EventList* tevents = track->events();
                         for (iEvent i = tevents->begin(); i != tevents->end(); ++i) {
                               Event ev  = i->second;
@@ -467,8 +467,8 @@ bool MusE::importMidi(const QString name, bool merge)
                                     ev.setPitch(pitch);
                                     }
                               }
-                        }
 #endif
+                        }
                   processTrack(track);
                   if (track->name().isEmpty())
                         track->setDefaultName();
@@ -490,40 +490,36 @@ bool MusE::importMidi(const QString name, bool merge)
                   }
             }
 
-      if (!merge) {
-            TrackList* tl = song->tracks();
-            if (!tl->empty()) {
-                  Track* track = tl->front();
-                  track->setSelected(true);
-                  }
-            unsigned int l = 1;
-            MidiTrackList* mtl = song->midis();
-            for (iMidiTrack t = mtl->begin(); t != mtl->end(); ++t) {
-                  MidiTrack* track = *t;
-                  PartList* parts = track->parts();
-                  for (iPart p = parts->begin(); p != parts->end(); ++p) {
-                        unsigned last = p->second->tick() + p->second->lenTick();
-                        if (last > l)
-                              l = last;
-                        }
-                  }
-            song->setLen(l);
-
-            AL::TimeSignature sig = AL::sigmap.timesig(0);
-            int z = sig.z;
-            int n = sig.n;
-
-            transport->setTimesig(z, n);
-//            int tempo = AL::tempomap.tempo(0);
-//            transport->setTempo(tempo);
-
-            bool masterF = !AL::tempomap.empty();
-            song->setMasterFlag(masterF);
-            transport->setMasterFlag(masterF);
-
-            song->updatePos();
+      TrackList* tl = song->tracks();
+      if (!tl->empty()) {
+            Track* track = tl->front();
+            track->setSelected(true);
             }
-      return false;
+      unsigned int l = 1;
+      MidiTrackList* mtl = song->midis();
+      for (iMidiTrack t = mtl->begin(); t != mtl->end(); ++t) {
+            MidiTrack* track = *t;
+            PartList* parts = track->parts();
+            for (iPart p = parts->begin(); p != parts->end(); ++p) {
+                  unsigned last = p->second->tick() + p->second->lenTick();
+                  if (last > l)
+                        l = last;
+                  }
+            }
+      song->setLen(l);
+      AL::TimeSignature sig = AL::sigmap.timesig(0);
+      int z = sig.z;
+      int n = sig.n;
+
+      transport->setTimesig(z, n);
+//    int tempo = AL::tempomap.tempo(0);
+//    transport->setTempo(tempo);
+
+      bool masterF = !AL::tempomap.empty();
+      song->setMasterFlag(masterF);
+      transport->setMasterFlag(masterF);
+
+      song->updatePos();
       }
 
 //---------------------------------------------------------

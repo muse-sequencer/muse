@@ -71,6 +71,7 @@ enum {
 
 void MidiSeq::mmcInput(int id, int cmd, const Pos& pos)
       {
+#if 0
       int rxDeviceId = 127;
 
       if (!extSyncFlag || !acceptMMC || (id != 127 && id != rxDeviceId))
@@ -120,6 +121,7 @@ void MidiSeq::mmcInput(int id, int cmd, const Pos& pos)
                   printf("MMC id %x cmd %x, unknown\n", id, cmd);
                   break;
             }
+#endif
       }
 
 //---------------------------------------------------------
@@ -129,6 +131,7 @@ void MidiSeq::mmcInput(int id, int cmd, const Pos& pos)
 
 void MidiSeq::mtcInputQuarter(int, unsigned char c)
       {
+#if 0
       static int hour, min, sec, frame;
 
       if (!extSyncFlag)
@@ -186,6 +189,7 @@ void MidiSeq::mtcInputQuarter(int, unsigned char c)
             mtcCurTime.incQuarter();
             mtcSyncMsg(mtcCurTime, false);
             }
+#endif
       }
 
 //---------------------------------------------------------
@@ -195,6 +199,7 @@ void MidiSeq::mtcInputQuarter(int, unsigned char c)
 
 void MidiSeq::mtcInputFull(const unsigned char* p, int n)
       {
+#if 0
       if (debugSync)
             printf("mtcInputFull\n");
       if (!extSyncFlag)
@@ -222,6 +227,7 @@ void MidiSeq::mtcInputFull(const unsigned char* p, int n)
       mtcState = 0;
       mtcValid = true;
       mtcLost  = 0;
+#endif
       }
 
 //---------------------------------------------------------
@@ -230,6 +236,7 @@ void MidiSeq::mtcInputFull(const unsigned char* p, int n)
 
 void MidiSeq::nonRealtimeSystemSysex(const unsigned char* p, int n)
       {
+#if 0
 //      int chan = p[2];
       switch(p[3]) {
             case 4:
@@ -240,6 +247,7 @@ void MidiSeq::nonRealtimeSystemSysex(const unsigned char* p, int n)
                   dump(p, n);
                   break;
            }
+#endif
       }
 
 //---------------------------------------------------------
@@ -252,6 +260,7 @@ void MidiSeq::nonRealtimeSystemSysex(const unsigned char* p, int n)
 
 void MidiSeq::setSongPosition(int port, int midiBeat)
       {
+#if 0
       if (midiInputTrace)
             printf("set song position port:%d %d\n", port, midiBeat);
       if (!extSyncFlag)
@@ -260,6 +269,7 @@ void MidiSeq::setSongPosition(int port, int midiBeat)
       audioDriver->seekTransport(pos.frame());
       if (debugSync)
             printf("setSongPosition %d\n", pos.tick());
+#endif
       }
 
 //---------------------------------------------------------
@@ -269,6 +279,7 @@ void MidiSeq::setSongPosition(int port, int midiBeat)
 
 void MidiSeq::realtimeSystemInput(int port, int c)
       {
+#if 0
       if (midiInputTrace)
             printf("realtimeSystemInput port:%d 0x%x\n", port+1, c);
 
@@ -443,6 +454,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
             case 0xff:  // system reset
                   break;
             }
+#endif
 
       }
 
@@ -483,5 +495,4 @@ void MidiSeq::mtcSyncMsg(const MTC& /*mtc*/, bool /*seekFlag*/)
             printf("   state %d diff %f\n", mtcState, diff);
 #endif
       }
-
 

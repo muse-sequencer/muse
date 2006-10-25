@@ -1,3 +1,5 @@
+25.10 (ws)
+      - make default path for midi- and wave import configurable
 23.10 (ws)
       - simple jack midi output now works
 20.10 (ws)

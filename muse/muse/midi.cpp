@@ -641,10 +641,9 @@ void Audio::initDevices()
 
 void Audio::processMidi()
       {
-      midiBusy = true;
       MidiOutPortList* ol = song->midiOutPorts();
       for (iMidiOutPort id = ol->begin(); id != ol->end(); ++id) {
-            (*id)->process(_curTickPos, _nextTickPos);
+            (*id)->process(_curTickPos, _nextTickPos, _pos.frame(), _pos.frame() + segmentSize);
             }
 
       MidiInPortList* il = song->midiInPorts();
@@ -664,6 +663,5 @@ void Audio::processMidi()
                   }
             port->afterProcess();
             }
-      midiBusy = false;
       }
 
