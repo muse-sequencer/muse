@@ -461,7 +461,7 @@ void AlsaMidi::read(MidiSeq* seq)
                         unsigned char* data = ((unsigned char*)ev->data.ext.ptr) + 1;
                         int len = ev->data.ext.len - 2;
                         if ((len == 4) && (data[0] == 0x7f) && (data[2] == 0x06)) {
-                              seq->mmcInput(data[1], data[3], 0);
+//TODO                              seq->mmcInput(data[1], data[3], 0);
                               break;
                               }
                         if ((len == 11) && (data[0] == 0x7f)
@@ -474,7 +474,7 @@ void AlsaMidi::read(MidiSeq* seq)
                               int f = data[9];
                               int sf = data[10];
                               AL::Pos pos(h * 60 + m, s, f, sf);
-                              seq->mmcInput(data[1], data[3], pos);
+//TODO                              seq->mmcInput(data[1], data[3], pos);
                               break;
                               }
                         }
@@ -500,27 +500,27 @@ void AlsaMidi::read(MidiSeq* seq)
                         break;
 
                   case SND_SEQ_EVENT_CLOCK:
-                        seq->realtimeSystemInput(0, 0xf8);
+//TODO                        seq->realtimeSystemInput(0, 0xf8);
                         break;
                   case SND_SEQ_EVENT_START:
-                        seq->realtimeSystemInput(0, 0xfa);
+//TODO                        seq->realtimeSystemInput(0, 0xfa);
                         break;
                   case SND_SEQ_EVENT_CONTINUE:
-                        seq->realtimeSystemInput(0, 0xfb);
+//TODO                        seq->realtimeSystemInput(0, 0xfb);
                         break;
                   case SND_SEQ_EVENT_STOP:
-                        seq->realtimeSystemInput(0, 0xfc);
+//TODO                        seq->realtimeSystemInput(0, 0xfc);
                         break;
                   case SND_SEQ_EVENT_TICK:
-                        seq->realtimeSystemInput(0, 0xf9);
+//TODO                        seq->realtimeSystemInput(0, 0xf9);
                         break;
                   case SND_SEQ_EVENT_SONGPOS:
-                        seq->setSongPosition(0, ev->data.control.value);
+//TODO                        seq->setSongPosition(0, ev->data.control.value);
                         break;
                   case SND_SEQ_EVENT_SENSING:
                         break;
                   case SND_SEQ_EVENT_QFRAME:
-                        seq->mtcInputQuarter(0, ev->data.control.value);
+//TODO                        seq->mtcInputQuarter(0, ev->data.control.value);
                         break;
                   // case SND_SEQ_EVENT_CLIENT_START:
                   // case SND_SEQ_EVENT_CLIENT_EXIT:

@@ -109,7 +109,6 @@ class MidiInstrument {
       void read(QDomNode);
       std::vector<SysEx>* sysexList()     { return &sysex; }
       MidiController* midiController(int num) const;
-      void reset(MidiOutPort*);
 
       std::vector<PatchGroup>* groups() { return &pg; }
       };

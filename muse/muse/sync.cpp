@@ -64,6 +64,7 @@ enum {
       MMC_GOTO = 0x44
       };
 
+#if 0
 //---------------------------------------------------------
 //  mmcInput
 //    Midi Machine Control Input received
@@ -495,4 +496,5 @@ void MidiSeq::mtcSyncMsg(const MTC& /*mtc*/, bool /*seekFlag*/)
             printf("   state %d diff %f\n", mtcState, diff);
 #endif
       }
+#endif
 

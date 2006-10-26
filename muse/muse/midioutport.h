@@ -45,6 +45,8 @@ class MidiOutPort : public MidiTrackBase {
       MidiFifo eventFifo;
 
       void routeEvent(const MidiEvent&);
+      void queueAlsaEvent(const MidiEvent& event);
+      void queueJackEvent(const MidiEvent& event);
 
    signals:
       void instrumentChanged();
@@ -69,7 +71,7 @@ class MidiOutPort : public MidiTrackBase {
       bool guiVisible() const;
       bool hasGui() const;
 
-      void putEvent(const MidiEvent&);
+//      void putEvent(const MidiEvent&);
 
       MPEventList* playEvents()          { return &_playEvents;   }
 
@@ -97,6 +99,8 @@ class MidiOutPort : public MidiTrackBase {
       void stop();
       void start();
       void reset();
+
+      void playAlsaEvent(const MidiEvent& event) const;
       };
 
 #endif

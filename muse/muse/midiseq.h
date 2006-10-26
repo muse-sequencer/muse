@@ -22,17 +22,7 @@
 #define __MIDISEQ_H__
 
 #include "thread.h"
-#include "midievent.h"
-
 #include "driver/timerdev.h"
-namespace AL {
-      class Pos;
-      };
-class AL::Pos;
-
-class MPEventList;
-class SynthI;
-class MTC;
 
 //---------------------------------------------------------
 //   MidiSeq
@@ -41,47 +31,17 @@ class MTC;
 class MidiSeq : public Thread {
       int realRtcTicks;
       Timer* timer;
-      int midiClock;
 
-/* Testing */
-//      int lastTickPos;        // position of last sync tick
-      // run values:
-//      unsigned _midiTick;
-//      double mclock1, mclock2;
-//      double songtick1, songtick2;
-//      int recTick1, recTick2;
-//      int lastTempo;
-//      double timediff[24];
-//      int storedtimediffs;
-/* Testing */
-
-      bool initRealtimeTimer();
       static void midiTick(void* p, void*);
-      void processTimerTick();
-      virtual void processMsg(const ThreadMsg*);
-      void updatePollFd();
-
-      void mtcSyncMsg(const MTC& mtc, bool seekFlag);
-      void mtcInputFull(const unsigned char* p, int n);
-      void nonRealtimeSystemSysex(const unsigned char* p, int n);
+      int getTimerTicks() { return timer->getTimerTicks(); }
 
    public:
       MidiSeq(const char* name);
       bool start(int);
       virtual void threadStop();
       virtual void threadStart(void*);
-
-      void realtimeSystemInput(int, int);
-      void mtcInputQuarter(int, unsigned char);
-      void setSongPosition(int, int);
-      void mmcInput(int id, int cmd, const AL::Pos&);
-
-      void msgMsg(int id);
-      void msgStart();
-      void msgSetRtc();
-      void msgAddSynthI(SynthI* synth);
-      void msgRemoveSynthI(SynthI* synth);
-
+      void updatePollFd();
+      bool initRealtimeTimer();
       };
 
 extern MidiSeq* midiSeq;

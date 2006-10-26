@@ -24,10 +24,6 @@
 #include "mtc.h"
 
 extern bool debugSync;
-
-// extern int rxDeviceId;
-// extern int txDeviceId;
-
 extern MTC mtcOffset;
 extern bool extSyncFlag;
 extern bool genMTCSync;       // output MTC Sync

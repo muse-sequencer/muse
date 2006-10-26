@@ -591,16 +591,11 @@ void Audio::msgPanic()
 
 void Audio::msgLocalOff()
       {
-#if 0 //TODO3
-      MidiEvent ev1(0, 0, 0, ME_CONTROLLER, CTRL_LOCAL_OFF, 0);
-      for (int i = 0; i < MIDI_PORTS; ++i) {
-            for (int chan = 0; chan < MIDI_CHANNELS; ++chan) {
-                  ev1.setPort(i);
-                  ev1.setChannel(chan);
-                  msgPlayMidiEvent(&ev1);
-                  }
-            }
-#endif
+      MidiEvent ev1(0, 0, ME_CONTROLLER, CTRL_LOCAL_OFF, 0);
+
+      MidiChannelList* cl = song->midiChannel();
+      for (iMidiChannel i = cl->begin(); i != cl->end(); ++i)
+            (*i)->playMidiEvent(&ev1);
       }
 
 //---------------------------------------------------------

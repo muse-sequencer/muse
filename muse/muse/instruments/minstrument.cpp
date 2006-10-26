@@ -205,25 +205,6 @@ MidiInstrument::~MidiInstrument()
       }
 
 //---------------------------------------------------------
-//   reset
-//    send note off to all channels
-//---------------------------------------------------------
-
-void MidiInstrument::reset(MidiOutPort* mp)
-      {
-      MidiEvent ev;
-      ev.setType(0x90);
-      for (int chan = 0; chan < MIDI_CHANNELS; ++chan) {
-            ev.setChannel(chan);
-            for (int pitch = 0; pitch < 128; ++pitch) {
-                  ev.setA(pitch);
-                  ev.setB(0);
-                  mp->putEvent(ev);
-                  }
-            }
-      }
-
-//---------------------------------------------------------
 //   readPatchGroup
 //---------------------------------------------------------
 

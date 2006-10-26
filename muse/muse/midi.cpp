@@ -63,7 +63,7 @@ unsigned const char gsOnMsg[] = {
       };
 unsigned const char xgOnMsg[] = { 
       0x43,       // yamaha id
-      0x10,       // device number
+      0x10,       // device number (0)
       0x4c,       // model id
       0x00,       // address (high, mid, low)
       0x00, 
@@ -609,10 +609,8 @@ void Audio::initDevices()
             MidiOutPort* mp = *i;
             MidiInstrument* instr = mp->instrument();
             if (!instr)
-                  continue;
+                  continue;         // TODO: use default instrument?
             EventList* events = instr->midiInit();
-            if (events->empty())
-                  continue;
             for (iEvent ie = events->begin(); ie != events->end(); ++ie) {
                   MidiEvent ev(0, 0, ie->second);
                   mp->playMidiEvent(&ev);

@@ -18,14 +18,10 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#include "globals.h"
-#include "midi.h"
 #include "midiseq.h"
-#include "midictrl.h"
 #include "audio.h"
 #include "driver/mididev.h"
 #include "driver/audiodev.h"
-#include "driver/jackaudio.h"
 
 #ifdef __APPLE__
 #include "driver/coretimer.h"
@@ -38,68 +34,10 @@
 #include "sync.h"
 #include "song.h"
 #include "gconfig.h"
-#include "al/tempo.h"
-#include "al/al.h"
-#include "instruments/minstrument.h"
-#include "midichannel.h"
-#include "midiinport.h"
 #include "midioutport.h"
 
 MidiSeq* midiSeq;
-static const unsigned char mmcStopMsg[] =  { 0x7f, 0x7f, 0x06, 0x01 };
-static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
-
 volatile bool midiBusy;
-
-//---------------------------------------------------------
-//   readMsg
-//---------------------------------------------------------
-
-static void readMsg(void* p, void*)
-      {
-      MidiSeq* at = (MidiSeq*)p;
-      at->readMsg();
-      }
-
-//---------------------------------------------------------
-//   processMsg
-//---------------------------------------------------------
-
-void MidiSeq::processMsg(const ThreadMsg* m)
-      {
-      AudioMsg* msg = (AudioMsg*)m;
-      switch (msg->id) {
-            case MS_SET_RTC:
-                  initRealtimeTimer();
-                  break;
-            case SEQM_ADD_TRACK:
-                  song->insertTrack2(msg->track);
-                  updatePollFd();
-                  break;
-            case SEQM_REMOVE_TRACK:
-                  song->removeTrack2(msg->track);
-                  updatePollFd();
-                  break;
-            case SEQM_ADD_PART:
-                  song->cmdAddPart((Part*)msg->p1);
-                  break;
-            case SEQM_REMOVE_PART:
-                  song->cmdRemovePart((Part*)msg->p1);
-                  break;
-            case SEQM_CHANGE_PART:
-                  song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2);
-                  break;
-            case SEQM_MOVE_TRACK:
-                  song->moveTrack((Track*)(msg->p1), (Track*)(msg->p2));
-                  break;
-            case AUDIO_ADDMIDIPLUGIN:
-                  ((MidiTrackBase*)msg->track)->addPlugin(msg->mplugin, msg->ival);
-                  break;
-            default:
-                  song->processMsg(msg);
-                  break;
-            }
-      }
 
 //---------------------------------------------------------
 //   MidiSeq
@@ -183,7 +121,6 @@ void MidiSeq::threadStart(void*)
 //   midiRead
 //---------------------------------------------------------
 
-
 static void midiRead(void*, void*)
       {
       midiDriver->read(midiSeq);
@@ -204,7 +141,7 @@ void MidiSeq::updatePollFd()
             if (timerFd != -1)
                   addPollFd(timerFd, POLLIN, midiTick, this, 0);
             }
-      addPollFd(toThreadFdr, POLLIN, ::readMsg, this, 0);
+//      addPollFd(toThreadFdr, POLLIN, ::readMsg, this, 0);
 
       struct pollfd* pfd;
       int n;
@@ -255,65 +192,28 @@ bool MidiSeq::start(int prio)
       return false;
       }
 
-#if 0
-//---------------------------------------------------------
-//   processMidiClock
-//---------------------------------------------------------
-
-void MidiSeq::processMidiClock()
-      {
-      if (genMCSync)
-            midiPorts[txSyncPort].sendClock();
-      if (state == START_PLAY) {
-            // start play on sync
-            state      = PLAY;
-            _midiTick  = playTickPos;
-            midiClock  = playTickPos;
-
-            int bar, beat, tick;
-            sigmap.tickValues(_midiTick, &bar, &beat, &tick);
-            midiClick      = sigmap.bar2tick(bar, beat+1, 0);
-
-            double cpos    = tempomap.tick2time(playTickPos);
-            samplePosStart = samplePos - lrint(cpos * sampleRate);
-            rtcTickStart   = rtcTick - lrint(cpos * realRtcTicks);
-
-            endSlice       = playTickPos;
-            lastTickPos    = playTickPos;
-
-            tempoSN = tempomap.tempoSN();
-
-            startRecordPos.setPosTick(playTickPos);
-            }
-      midiClock += config.division/24;
-      }
-#endif
-
 //---------------------------------------------------------
 //   midiTick
+//    schedule events in MidiOutPort->playEvents()
+//   midiBusy locks access to MidiOutPortList and
+//   MidiOutPort.
+//   Locking is somwhat special and assumes that MidiSeq
+//   is a realtime thread and has higher priority than
+//   the audio thread (JACK callback) and can therefore not
+//   be interrupted. Instead of waiting for midiBusy to
+//   get false we simply miss this clock tick.
 //---------------------------------------------------------
 
 void MidiSeq::midiTick(void* p, void*)
       {
-      MidiSeq* at = (MidiSeq*)p;
-      at->processTimerTick();
-      }
-
-//---------------------------------------------------------
-//   processTimerTick
-//---------------------------------------------------------
-
-void MidiSeq::processTimerTick()
-      {
       extern int watchMidi;
       ++watchMidi;            // make a simple watchdog happy
 
-      timer->getTimerTicks();  // read elapsed rtc timer ticks
+      MidiSeq* at = (MidiSeq*)p;
+      at->getTimerTicks();    // read elapsed rtc timer ticks
 
-      if (midiBusy) {
-            // miss this timer tick
+      if (midiBusy)
             return;
-            }
       //
       // schedule all events upto framePos-segmentSize
       // (previous segment)
@@ -328,22 +228,9 @@ void MidiSeq::processTimerTick()
             for (; i != el->end(); ++i) {
                   if (i->time() > curFrame)
                         break;
-                  mp->putEvent(*i);
+                  mp->playAlsaEvent(*i);
                   }
             el->erase(el->begin(), i);
             }
       }
-
-//---------------------------------------------------------
-//   msgMsg
-//---------------------------------------------------------
-
-void MidiSeq::msgMsg(int id)
-      {
-      AudioMsg msg;
-      msg.id = id;
-      Thread::sendMsg(&msg);
-      }
-
-void MidiSeq::msgSetRtc()       { msgMsg(MS_SET_RTC); }
 

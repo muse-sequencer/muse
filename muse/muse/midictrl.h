@@ -76,10 +76,12 @@ const int CTRL_NO_CTRL       = 0x40006;
 
 const int CTRL_VAL_UNKNOWN   = -1;        // used as unknown hwVal
 
+const int CTRL_14_OFFSET     = 0x10000;
 const int CTRL_RPN_OFFSET    = 0x20000;
 const int CTRL_NRPN_OFFSET   = 0x30000;
 const int CTRL_RPN14_OFFSET  = 0x50000;
 const int CTRL_NRPN14_OFFSET = 0x60000;
+const int CTRL_NONE_OFFSET   = 0x70000;
 
 namespace AL {
       class Xml;

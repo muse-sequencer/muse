@@ -822,7 +822,7 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             printf("MidiOut<%s>: jackMidi: ", portName(port).toLatin1().data());
             e.dump();
             }
-      void* pb    = jack_port_get_buffer(port.jackPort(), segmentSize);
+      void* pb = jack_port_get_buffer(port.jackPort(), segmentSize);
       unsigned ft;
       if (transportState == JackTransportRolling) {
             ft = e.time() - pos.frame;
@@ -837,9 +837,13 @@ printf("time >= segmentSize -- %d\n", segmentSize - ft);
             }
       else
             ft = 0;
+
       switch(e.type()) {
             case ME_NOTEON:
             case ME_NOTEOFF:
+            case ME_POLYAFTER:
+            case ME_CONTROLLER:
+            case ME_PITCHBEND:
                   {
                   unsigned char* p = jack_midi_event_reserve(pb, ft, 3, segmentSize);
                   if (p == 0) {
@@ -852,13 +856,32 @@ printf("time >= segmentSize -- %d\n", segmentSize - ft);
                   }
                   break;
             
-            case ME_POLYAFTER:
-            case ME_CONTROLLER:
             case ME_PROGRAM:
             case ME_AFTERTOUCH:
-            case ME_PITCHBEND:
+                  {
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, 2, segmentSize);
+                  if (p == 0) {
+                        fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
+                        return;
+                        }
+                  p[0] = e.type() | e.channel();
+                  p[1] = e.dataA();
+                  }
+                  break;
             case ME_SYSEX:
-            case ME_META:
+                  {
+                  const unsigned char* data = e.data();
+                  int len = e.len();
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, len+2, segmentSize);
+                  if (p == 0) {
+                        fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
+                        return;
+                        }
+                  p[0] = 0xf0;
+                  p[len+1] = 0xf7;
+                  memcpy(p+1, data, len);
+                  }
+                  break;
             case ME_SONGPOS:
             case ME_CLOCK:
             case ME_START:
