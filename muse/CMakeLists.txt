@@ -30,7 +30,7 @@ set(CMAKE_BUILD_TYPE debug)
 # set(CMAKE_BUILD_TYPE release)
 
 # for debugging the make system uncomment next line:
-#set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_CXX_FLAGS         "-Wall -Wextra -Winvalid-pch -fno-exceptions")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
@@ -50,9 +50,10 @@ SET(MusE_INSTALL_NAME  "muse-1.0pre1")
 
 include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
 
-option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface" ON)
+option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface"  ON)
 option ( ENABLE_VST    "enable VST/win support"                 OFF)
-option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"    ON)
+option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"     ON)
+option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin" ON)
 
 set(QT_MIN_VERSION "4.2.0")
 set(QT_USE_QTXML TRUE)
@@ -114,6 +115,27 @@ else (NOT ALSA_INCDIR)
 	message("Alsa detected.")
 endif (NOT ALSA_INCDIR)
 endif (APPLE)
+
+##
+## find packages for zyaddsubfx
+##
+## PKGCONFIG (fftw3
+
+if (ENABLE_ZYNADDSUBFX)
+      find_path( FLTK_FLUID_EXECUTABLE fluid )
+      find_path( FLTK_CONFIG_PATH fltk-config )
+#      set (FLTK_LIBRARIES $FLTK_CONFIG_PATH)
+#      FLTK_INCLUDE_DIR
+#      FLTK_FOUND
+#      
+#      if (NOT FLTK_FOUND)
+#            message(FATAL_ERROR "fltk toolkit not found, zynaddsubfx not build")
+#            set(ENABLE_ZYNADDSUBFX OFF)
+#      else (NOT FLTK_FOUND)
+#	      message("fltk toolkit found")
+#      endif (NOT FLTK_FOUND)
+endif (ENABLE_ZYNADDSUBFX)
+
 
 ##
 ## find sndfile >= 1.0.0

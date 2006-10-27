@@ -29,6 +29,10 @@ include_directories(
 
 set (SubDirs libsynti s1 organ deicsonze simpledrums vam mus)
 
+if (ENABLE_ZYNADDSUBFX)
+      set (SubDirs ${SubDirs} zynaddsubfx)
+endif (ENABLE_ZYNADDSUBFX)
+      
 if (ENABLE_FLUID)
       set (SubDirs ${SubDirs} fluid fluidsynth )
 endif (ENABLE_FLUID)
