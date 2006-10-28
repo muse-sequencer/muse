@@ -373,6 +373,7 @@ void MidiTrackInfo::patchClicked()
       if (rv != 0) {
             CVal cval;
             cval.i = rv->data().toInt();
+printf("set program %06x\n", cval.i);
             song->setControllerVal(midic, CTRL_PROGRAM, cval);
             }
       }
@@ -649,6 +650,7 @@ void MidiChannelInfo::init(Track* t)
       MidiInstrument* mi = op->instrument();
       int idx = 0;
       int curIdx = 0;
+      instrument->clear();
       for (iMidiInstrument i = midiInstruments.begin(); i != midiInstruments.end(); ++i, ++idx) {
             instrument->addItem((*i)->iname());
             if ((*i)->iname() == mi->iname())

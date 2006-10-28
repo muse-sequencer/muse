@@ -31,6 +31,7 @@
 
 #include "Config.h"
 #include "XMLwrapper.h"
+#include "config.h"
 
 Config::Config(){
 };
@@ -62,14 +63,10 @@ void Config::init(){
     cfg.Interpolation=0;
     cfg.CheckPADsynth=1;
 
-    cfg.UserInterfaceMode=0;
+    cfg.UserInterfaceMode=1;
     cfg.VirKeybLayout=1;
     winwavemax=1;winmidimax=1;
 //try to find out how many input midi devices are there
-#ifdef WINMIDIIN
-    winmidimax=midiInGetNumDevs();
-    if (winmidimax==0) winmidimax=1;
-#endif
     winmididevices=new winmidionedevice[winmidimax];
     for (int i=0;i<winmidimax;i++) {
 	winmididevices[i].name=new char[MAX_STRING_SIZE];
@@ -78,31 +75,23 @@ void Config::init(){
 
 
 //get the midi input devices name
-#ifdef WINMIDIIN
-    MIDIINCAPS midiincaps;
-    for (int i=0;i<winmidimax;i++){
-	if (! midiInGetDevCaps(i,&midiincaps,sizeof(MIDIINCAPS)))
-	    snprintf(winmididevices[i].name,MAX_STRING_SIZE,"%s",midiincaps.szPname);
-    };
-#endif
     for (int i=0;i<MAX_BANK_ROOT_DIRS;i++) cfg.bankRootDirList[i]=NULL;
     cfg.currentBankDir=new char[MAX_STRING_SIZE];
     sprintf(cfg.currentBankDir,"./testbnk");
     
     for (int i=0;i<MAX_BANK_ROOT_DIRS;i++) cfg.presetsDirList[i]=NULL;
     
-    char filename[MAX_STRING_SIZE];
-    getConfigFileName(filename,MAX_STRING_SIZE);
-    readConfig(filename);
+//    char filename[MAX_STRING_SIZE];
+//    getConfigFileName(filename,MAX_STRING_SIZE);
+//    readConfig(filename);
 
     if (cfg.bankRootDirList[0]==NULL){
-#if defined(OS_LINUX)
 	//banks
         cfg.bankRootDirList[0]=new char[MAX_STRING_SIZE];
 	sprintf(cfg.bankRootDirList[0],"~/banks");
 
 	cfg.bankRootDirList[1]=new char[MAX_STRING_SIZE];
-	sprintf(cfg.bankRootDirList[1],"./");
+	sprintf(cfg.bankRootDirList[1], INSTPREFIX "/share/" INSTALL_NAME "/presets/zynaddsubfx/banks");
 
         cfg.bankRootDirList[2]=new char[MAX_STRING_SIZE];
 	sprintf(cfg.bankRootDirList[2],"/usr/share/zynaddsubfx/banks");
@@ -115,23 +104,6 @@ void Config::init(){
 
 	cfg.bankRootDirList[5]=new char[MAX_STRING_SIZE];
 	sprintf(cfg.bankRootDirList[5],"banks");
-	
-#else
-	//banks
-	cfg.bankRootDirList[0]=new char[MAX_STRING_SIZE];
-	sprintf(cfg.bankRootDirList[0],"./");
-
-#ifdef VSTAUDIOOUT
-	cfg.bankRootDirList[1]=new char[MAX_STRING_SIZE];
-	sprintf(cfg.bankRootDirList[1],"c:/Program Files/ZynAddSubFX/banks");
-#else
-	cfg.bankRootDirList[1]=new char[MAX_STRING_SIZE];
-	sprintf(cfg.bankRootDirList[1],"../banks");
-#endif
-	cfg.bankRootDirList[2]=new char[MAX_STRING_SIZE];
-	sprintf(cfg.bankRootDirList[2],"banks");
-	
-#endif
     };
 
     if (cfg.presetsDirList[0]==NULL){

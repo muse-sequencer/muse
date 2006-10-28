@@ -117,3 +117,9 @@ target_link_libraries( zynaddsubfx
 
 install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ zynaddsubfx )
 
+INSTALL(
+      DIRECTORY banks
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${MusE_INSTALL_NAME}/presets/zynaddsubfx
+      )
+
+

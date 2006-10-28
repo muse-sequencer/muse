@@ -8,7 +8,7 @@
 #ifndef __MESS_H__
 #define __MESS_H__
 
-#define MESS_MAJOR_VERSION 2
+#define MESS_MAJOR_VERSION 3
 #define MESS_MINOR_VERSION 1
 
 #include "midievent.h"
@@ -48,6 +48,7 @@ class Mess {
 
       virtual void process(float** data, int offset, int len) = 0;
 
+      // return true on error (if synti is busy)
       // the synti has to (re-)implement processEvent() or provide
       // some of the next three functions:
 
@@ -60,6 +61,7 @@ class Mess {
       virtual int getControllerInfo(int, const char**, int*, int*, int*) const {return 0;}
       virtual const char* getPatchName(int, int, int) const { return "?"; }
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const { return 0; }
+      virtual const char* getBankName(int) const { return 0; }
 
       // synthesizer -> host communication
       void sendEvent(MidiEvent);  // called from synti

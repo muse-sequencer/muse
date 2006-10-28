@@ -99,20 +99,5 @@ struct MPEventList : public MPEL {
 typedef MPEventList::iterator iMPEvent;
 typedef MPEventList::const_iterator ciMPEvent;
 
-//---------------------------------------------------------
-//   MREventList
-//---------------------------------------------------------
-
-// typedef std::list<MidiEvent, __gnu_cxx::__mt_alloc<MidiEvent> > MREL;
-
-typedef std::list<MidiEvent> MREL;
-
-struct MREventList : public MREL {
-      void add(const MidiEvent& ev) { MREL::push_back(ev); }
-      };
-
-typedef MREventList::iterator iMREvent;
-typedef MREventList::const_iterator ciMREvent;
-
 #endif
 

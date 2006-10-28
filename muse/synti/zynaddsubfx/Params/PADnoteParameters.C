@@ -454,6 +454,7 @@ void PADnoteParameters::applyparameters(bool lockmutex){
     int profilesize=512;
     REALTYPE profile[profilesize];
 
+printf("applyparameters %d\n", lockmutex);
 
     REALTYPE bwadjust=getprofile(profile,profilesize);
 //    for (int i=0;i<profilesize;i++) profile[i]*=profile[i];

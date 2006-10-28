@@ -266,7 +266,7 @@ void MidiOutPort::playMidiEvent(MidiEvent* ev)
 //    _playEvents queue which is processed by the MidiSeq thread.
 //-------------------------------------------------------------------
 
-void MidiOutPort::process(unsigned fromTick, unsigned toTick, unsigned, unsigned toFrame)
+void MidiOutPort::process(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame)
       {
       if (mute())
             return;
@@ -310,6 +310,7 @@ void MidiOutPort::process(unsigned fromTick, unsigned toTick, unsigned, unsigned
                               ev.setA(c->id());
                               ev.setB(is->second.i);
                               el.add(MidiEvent(frame, ch, ev));
+printf("add controller %d %d %d\n", fromFrame, frame, toFrame);
                               }
                         }
                   }
@@ -364,8 +365,10 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
             int chn = event.channel();
             if (chn == 255) {
                   // port controller
-                  if (hwCtrlState(a) == event.dataB())
+                  if (hwCtrlState(a) == event.dataB()) {
+//                        printf(" controller change optimized away 1\n");
                         return;
+                        }
                   setHwCtrlState(a, b);
                   }
             else {
@@ -373,8 +376,10 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
                   //
                   //  optimize controller settings
                   //
-                  if (mc->hwCtrlState(a) == event.dataB())
+                  if (mc->hwCtrlState(a) == event.dataB()) {
+//                        printf(" controller change optimized away 2\n");
                         return;
+                        }
                   mc->setHwCtrlState(a, b);
                   }
             }
@@ -385,7 +390,6 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
                         queueAlsaEvent(event);
                         break;
                   case Route::SYNTIPORT: 
-printf("queue synti event\n");
                         ((SynthI*)(r->track))->playEvents()->insert(event);
                         break;
                   case Route::JACKMIDIPORT:
