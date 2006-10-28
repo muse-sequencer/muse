@@ -49,15 +49,12 @@ Master::Master(){
 	fakepeakpart[npart]=0;
     };
     
-    for (int i=0;i<SOUND_BUFFER_SIZE;i++) {
-	audiooutl[i]=0.0;
-	audiooutr[i]=0.0;
-    };
+      memset(audiooutl, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+      memset(audiooutr, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
 
     for (int npart=0;npart<NUM_MIDI_PARTS;npart++)
 	part[npart]=new Part(&microtonal,fft,&mutex);
     
-
 
     //Insertion Effects init        
     for (int nefx=0;nefx<NUM_INS_EFX;nefx++)
@@ -291,10 +288,8 @@ void Master::AudioOut(REALTYPE* outl, REALTYPE* outr)
 	if (sysefx[nefx]->geteffect()==0) continue;//the effect is disabled
 
     	//Clean up the samples used by the system effects
-	for (i=0;i<SOUND_BUFFER_SIZE;i++) {
-	    tmpmixl[i]=0.0;
-	    tmpmixr[i]=0.0;
-	};
+      memset(tmpmixl, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+      memset(tmpmixr, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
 
 	//Mix the channels according to the part settings about System Effect
 	for (npart=0;npart<NUM_MIDI_PARTS;npart++){

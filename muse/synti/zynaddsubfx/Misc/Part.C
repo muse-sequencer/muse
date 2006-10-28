@@ -137,19 +137,17 @@ void Part::defaultsinstrument(){
  */
 void Part::cleanup(){
     for (int k=0;k<POLIPHONY;k++) KillNotePos(k);
-    for (int i=0;i<SOUND_BUFFER_SIZE;i++){
-	partoutl[i]=denormalkillbuf[i];
-	partoutr[i]=denormalkillbuf[i];
-	tmpoutl[i]=0.0;
-	tmpoutr[i]=0.0;
-    };
+
+    memcpy(partoutl, denormalkillbuf, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+    memcpy(partoutr, denormalkillbuf, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+    memset(tmpoutl, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+    memset(tmpoutr, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+
     ctl.resetall();
     for (int nefx=0;nefx<NUM_PART_EFX;nefx++) partefx[nefx]->cleanup();
     for (int n=0;n<NUM_PART_EFX+1;n++) {
-	for (int i=0;i<SOUND_BUFFER_SIZE;i++){
-	    partfxinputl[n][i]=denormalkillbuf[i];
-	    partfxinputr[n][i]=denormalkillbuf[i];
-	};
+      memcpy(partfxinputl[n], denormalkillbuf, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+      memcpy(partfxinputr[n], denormalkillbuf, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
     };
 };
 
@@ -479,14 +477,12 @@ void Part::AllNotesOff(){
  * Compute Part samples and store them in the partoutl[] and partoutr[]
  */
 void Part::ComputePartSmps(){
-    int i,k;
+    int i, k;
     int noteplay;//0 if there is nothing activated
     for (int nefx=0;nefx<NUM_PART_EFX+1;nefx++){
-	for (i=0;i<SOUND_BUFFER_SIZE;i++){
-	    partfxinputl[nefx][i]=0.0;
-	    partfxinputr[nefx][i]=0.0;
+      memset(partfxinputl[nefx], 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+      memset(partfxinputr[nefx], 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
 	};
-    };
     
     for (k=0;k<POLIPHONY;k++){
     	if (partnote[k].status==KEY_OFF) continue;
@@ -505,7 +501,10 @@ void Part::ComputePartSmps(){
             if (adnote!=NULL) {
     		noteplay++;
 		if (adnote->ready!=0) adnote->noteout(&tmpoutl[0],&tmpoutr[0]);
-            	    else for (i=0;i<SOUND_BUFFER_SIZE;i++){tmpoutl[i]=0.0;tmpoutr[i]=0.0;};
+            	    else {
+                              memset(tmpoutl, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+                              memset(tmpoutr, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+                              }
 		if (adnote->finished()!=0){
 		    delete (adnote);
 		    partnote[k].kititem[item].adnote=NULL;
@@ -519,7 +518,10 @@ void Part::ComputePartSmps(){
     	    if (subnote!=NULL) {
     		noteplay++;
 		if (subnote->ready!=0) subnote->noteout(&tmpoutl[0],&tmpoutr[0]);
-            	    else for (i=0;i<SOUND_BUFFER_SIZE;i++){tmpoutl[i]=0.0;tmpoutr[i]=0.0;};
+            	    else {
+                              memset(tmpoutl, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+                              memset(tmpoutr, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+                              }
 
 	        for (i=0;i<SOUND_BUFFER_SIZE;i++){//add the SUBnote to part(mix)
 		    partfxinputl[sendcurrenttofx][i]+=tmpoutl[i];
@@ -534,7 +536,10 @@ void Part::ComputePartSmps(){
             if (padnote!=NULL) {
     		noteplay++;
 		if (padnote->ready!=0) padnote->noteout(&tmpoutl[0],&tmpoutr[0]);
-            	    else for (i=0;i<SOUND_BUFFER_SIZE;i++){tmpoutl[i]=0.0;tmpoutr[i]=0.0;};
+            	    else {
+                              memset(tmpoutl, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+                              memset(tmpoutr, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
+                              }
 		if (padnote->finished()!=0){
 		    delete (padnote);
 		    partnote[k].kititem[item].padnote=NULL;
