@@ -20,25 +20,16 @@
 
 */
 
-#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
-
 #include <unistd.h>
 #include <pthread.h>
 
 #include "Misc/Master.h"
 #include "Misc/Util.h"
-#include "Misc/Dump.h"
-extern Dump dump;
-
-#include "Input/NULLMidiIn.h"
 #include "MasterUI.h"
 
-int swaplr=0;                       //1 for left-right swapping
-MidiIn *Midi;
-int Pexitprogram = 0;//if the UI set this to 1, the program will exit
+int swaplr = 0;   //1 for left-right swapping
 
 //=========================================================
 //    MESS interface
@@ -90,7 +81,6 @@ void* guiThread(void *arg)
 Zynadd::Zynadd() : Mess(2)
       {
       instances++;
-      SAMPLE_RATE       = sampleRate();
       swaplr            = config.cfg.SwapStereo;
       Pexitprogram      = 0;
 
@@ -139,26 +129,54 @@ void Zynadd::process(float** outputs, int offset, int n)
 
 bool Zynadd::processEvent(const MidiEvent& e)
       {
+      int ch = e.channel();
 	pthread_mutex_lock(&vmaster->mutex);
       switch(e.type()) {
             case 0x80:  // note off
-	            vmaster->NoteOff(e.channel(), e.dataA());
+	            vmaster->NoteOff(ch, e.dataA());
                   break;
             case 0x90:  // note on
 	            if (e.dataB() == 0) 
-                        vmaster->NoteOff(e.channel(), e.dataA());
+                        vmaster->NoteOff(ch, e.dataA());
 		      else 
-                        vmaster->NoteOn(e.channel(), e.dataA(), e.dataB());
+                        vmaster->NoteOn(ch, e.dataA(), e.dataB());
 		      break;
 	      case 0xb0:  // controller
-                  if (e.dataA() == 0x4000)
-	                  // vmaster->setcontroller(e.channel(), C_pitchwheel, data[1]+data[2]*(long int) 128-8192);
-	                  vmaster->SetController(e.channel(), C_pitchwheel, e.dataB());
-                  else {
-                        int cntl = Midi->getcontroller(e.dataA());
-	      	      vmaster->SetController(e.channel(), cntl, e.dataB());
+                  switch(e.dataA()) {
+                        case 0x4000:
+	                        vmaster->SetController(ch, C_pitchwheel, e.dataB());
+                              break;
+                        default:
+                              {
+                              int ctl;
+                              switch (e.dataA()) {
+	                              case 1:    ctl = C_modwheel; break;
+                           	      case 7:    ctl = C_volume; break;
+                           	      case 10:   ctl = C_panning; break;
+                           	      case 11:   ctl = C_expression; break;
+                           	      case 64:   ctl = C_sustain; break;
+                           	      case 65:   ctl = C_portamento; break;
+                           	      case 71:   ctl = C_filterq; break;
+                           	      case 74:   ctl = C_filtercutoff; break;
+                           	      case 75:   ctl = C_bandwidth; break;
+                           	      case 76:   ctl = C_fmamp; break;
+                           	      case 77:   ctl = C_resonance_center; break;
+                           	      case 78:   ctl = C_resonance_bandwidth; break;
+                           	      case 120:  ctl = C_allsoundsoff; break;
+                           	      case 121:  ctl = C_resetallcontrollers; break;
+                           	      case 123:  ctl = C_allnotesoff; break;
+                           	      case 0x06: ctl = C_dataentryhi; break;
+                           	      case 0x26: ctl = C_dataentrylo; break;
+                           	      case 99:   ctl = C_nrpnhi; break;
+                           	      case 98:   ctl = C_nrpnlo; break;
+                           	      default:   ctl = C_NULL; break;
+                           	      }
+	      	            vmaster->SetController(ch, ctl, e.dataB());
+                              }
+                              break;
                         }
                   break;
+
             case 0xf0:
 	            pthread_mutex_unlock(&vmaster->mutex);
                   vmaster->putalldata((char*)e.data(), e.len());
@@ -179,11 +197,11 @@ static Mess* instantiate(int sr, QWidget*, const char*)
       {
       if (instances == -1) {
             config.init();
-            Midi = new NULLMidiIn();
 	      instances = 0;
             srand(time(0));
             SOUND_BUFFER_SIZE = 256;
             OSCIL_SIZE        = 512;      // config.cfg.OscilSize;
+            SAMPLE_RATE       = sr;
             denormalkillbuf = new REALTYPE [SOUND_BUFFER_SIZE];
             for (int i = 0; i < SOUND_BUFFER_SIZE; i++) 
                   denormalkillbuf[i] = (RND - 0.5) * 1e-16;

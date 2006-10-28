@@ -60,21 +60,6 @@ void MessGui::readMessage()
       }
 
 //---------------------------------------------------------
-//   sendEvent
-//---------------------------------------------------------
-
-void MessGui::sendEvent(const MidiEvent& ev)
-      {
-      if (wFifoSize == EVENT_FIFO_SIZE) {
-            printf("event gui->synti  fifo overflow\n");
-            return;
-            }
-      wFifo[wFifoWindex] = ev;
-      wFifoWindex = (wFifoWindex + 1) % EVENT_FIFO_SIZE;
-      ++wFifoSize;
-      }
-
-//---------------------------------------------------------
 //   sendController
 //---------------------------------------------------------
 
@@ -113,6 +98,21 @@ void MessGui::writeEvent(const MidiEvent& ev)
       rFifoWindex = (rFifoWindex + 1) % EVENT_FIFO_SIZE;
       ++rFifoSize;
       write(writeFd, "x", 1);  // wakeup GUI
+      }
+
+//---------------------------------------------------------
+//   sendEvent
+//---------------------------------------------------------
+
+void MessGui::sendEvent(const MidiEvent& ev)
+      {
+      if (wFifoSize == EVENT_FIFO_SIZE) {
+            printf("event gui->synti  fifo overflow\n");
+            return;
+            }
+      wFifo[wFifoWindex] = ev;
+      wFifoWindex = (wFifoWindex + 1) % EVENT_FIFO_SIZE;
+      ++wFifoSize;
       }
 
 //---------------------------------------------------------

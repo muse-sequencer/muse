@@ -140,8 +140,8 @@ void* MessSynth::instantiate(const QString& instanceName)
       // load Synti dll
       if (debugMsg)
             printf("  load synti <%s>\n", path);
-      // void* handle = dlopen(path, RTLD_NOW);
-      void* handle = dlopen(path, RTLD_LAZY);
+      void* handle = dlopen(path, RTLD_NOW);
+      // void* handle = dlopen(path, RTLD_LAZY);
       if (handle == 0) {
             fprintf(stderr, "Synth::instantiate: dlopen(%s) failed: %s\n",
                path, dlerror());

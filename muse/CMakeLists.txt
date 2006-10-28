@@ -30,7 +30,7 @@ set(CMAKE_BUILD_TYPE debug)
 # set(CMAKE_BUILD_TYPE release)
 
 # for debugging the make system uncomment next line:
-set(CMAKE_VERBOSE_MAKEFILE ON)
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_CXX_FLAGS         "-Wall -Wextra -Winvalid-pch -fno-exceptions")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
@@ -119,7 +119,9 @@ endif (APPLE)
 ##
 ## find packages for zyaddsubfx
 ##
-## PKGCONFIG (fftw3
+## fftw3
+## mxml
+## fltk + fluid
 
 if (ENABLE_ZYNADDSUBFX)
       find_path( FLTK_FLUID_EXECUTABLE fluid )

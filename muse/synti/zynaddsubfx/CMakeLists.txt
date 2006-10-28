@@ -49,6 +49,8 @@ FLTK_WRAP_UI ( fltk_ui
 # ${fltk_ui_FLTK_UI_SRCS}
 #      Output/JACKaudiooutput.C
 #      Input/MidiIn.C
+#      Input/ALSAMidiIn.C
+#      Input/NULLMidiIn.C
 
 add_library ( zynaddsubfx SHARED
       ${fltk_ui_FLTK_UI_SRCS}
@@ -68,8 +70,6 @@ add_library ( zynaddsubfx SHARED
       Effects/EffectMgr.C
       Effects/Phaser.C
       Effects/Reverb.C
-      Input/ALSAMidiIn.C
-      Input/NULLMidiIn.C
       Output/Recorder.C
       Misc/Bank.C
       Misc/Config.C
@@ -107,19 +107,12 @@ add_library ( zynaddsubfx SHARED
 
 set_target_properties ( zynaddsubfx
    PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-fvisibility=hidden -DOS_LINUX -DNONEMIDIIN -DFFTW_VERSION_3 -DASM_F2I_YES -DNONEAUDIOOUT"
+   COMPILE_FLAGS "-O6 -fvisibility=hidden -DASM_F2I_YES -DOS_LINUX -DFFTW_VERSION_3"
    )
 
 target_link_libraries( zynaddsubfx
-      synti
-      jack
-      asound
-      pthread
-      fftw3
-      mxml
-      m
-      z
-      fltk
+      synti jack asound pthread fftw3 mxml
+      m z fltk
       )
 
 install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ zynaddsubfx )

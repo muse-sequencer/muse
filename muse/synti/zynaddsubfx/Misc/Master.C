@@ -414,17 +414,18 @@ void Master::AudioOut(REALTYPE* outl, REALTYPE* outr)
 
 void Master::GetAudioOutSamples(int nsamples, REALTYPE* outl, REALTYPE* outr)
       {
+      int dstOffset = 0;
       while (nsamples) {
-            if (ksoundbuffersamples == 0) {
+            if (ksoundbuffersamples <= 0) {
                   AudioOut(audiooutl, audiooutr);
                   ksoundbuffersamples = SOUND_BUFFER_SIZE;
                   }
-            int n = nsamples > ksoundbuffersamples ? ksoundbuffersamples : nsamples;
-            memcpy(outl, audiooutl + SOUND_BUFFER_SIZE - ksoundbuffersamples,
-              n * sizeof(REALTYPE));
-            memcpy(outr, audiooutr + SOUND_BUFFER_SIZE - ksoundbuffersamples,
-              n * sizeof(REALTYPE));
-            nsamples -= n;
+            int n  = nsamples > ksoundbuffersamples ? ksoundbuffersamples : nsamples;
+            int srcOffset = SOUND_BUFFER_SIZE - ksoundbuffersamples;
+            memcpy(outl + dstOffset, audiooutl + srcOffset, n * sizeof(REALTYPE));
+            memcpy(outr + dstOffset, audiooutr + srcOffset, n * sizeof(REALTYPE));
+            nsamples  -= n;
+            dstOffset += n;
             ksoundbuffersamples -= n;
             }
       }
