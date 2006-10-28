@@ -21,6 +21,7 @@
 #include "song.h"
 #include "midiplugin.h"
 #include "midi.h"
+#include "midictrl.h"
 #include "al/xml.h"
 #include "driver/mididev.h"
 #include "driver/audiodev.h"
@@ -95,7 +96,6 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
       MidiEvent event;
       event.setB(0);
       event.setTime(audioDriver->framePos());
-
       switch(ev->type) {
             case SND_SEQ_EVENT_NOTEON:
                   event.setChannel(ev->data.note.channel);
@@ -139,8 +139,9 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
 
             case SND_SEQ_EVENT_PITCHBEND:
                   event.setChannel(ev->data.control.channel);
-                  event.setType(ME_PITCHBEND);
-                  event.setA(ev->data.control.value);
+                  event.setType(ME_CONTROLLER);
+                  event.setA(CTRL_PITCH);
+                  event.setB(ev->data.control.value);
                   break;
 
             case SND_SEQ_EVENT_CONTROLLER:
