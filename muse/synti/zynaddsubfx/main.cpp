@@ -76,11 +76,11 @@ void* guiThread(void *arg)
 
       z->ui->showUI();
 
-      while (z->Pexitprogram == 0) 
-            sleep(2);
-
 //      while (z->Pexitprogram == 0) 
-//            Fl::wait(0.01);
+//            sleep(2);
+
+      while (z->Pexitprogram == 0) 
+            Fl::wait(0.01);
 
       delete(z->ui);
       Fl::wait(0.01);
