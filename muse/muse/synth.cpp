@@ -554,6 +554,7 @@ iMPEvent MessSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, int por
 
 bool MessSynthIF::putEvent(const MidiEvent& ev)
       {
+// printf("put event %x %x %x\n", ev.type(), ev.dataA(), ev.dataB());
       if (midiOutputTrace)
             ev.dump();
       if (_mess)

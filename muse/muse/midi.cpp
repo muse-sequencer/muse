@@ -639,15 +639,16 @@ void Audio::initDevices()
 
 void Audio::processMidi()
       {
+      MidiInPortList* il = song->midiInPorts();
+      for (iMidiInPort id = il->begin(); id != il->end(); ++id)
+            (*id)->beforeProcess();
+            
       MidiOutPortList* ol = song->midiOutPorts();
       for (iMidiOutPort id = ol->begin(); id != ol->end(); ++id) {
             (*id)->process(_curTickPos, _nextTickPos, _pos.frame(), _pos.frame() + segmentSize);
             }
-
-      MidiInPortList* il = song->midiInPorts();
       for (iMidiInPort id = il->begin(); id != il->end(); ++id) {
             MidiInPort* port = *id;
-
             //
             // process routing to synti
             //

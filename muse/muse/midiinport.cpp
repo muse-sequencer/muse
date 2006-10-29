@@ -36,7 +36,10 @@
 MidiInPort::MidiInPort()
    : MidiTrackBase(MIDI_IN)
       {
-      _channels = 1;
+      _channels   = 1;
+      recordRead  = 0;
+      recordWrite = 0;
+      recordCount = 0;
       }
 
 //---------------------------------------------------------
@@ -88,6 +91,7 @@ void MidiInPort::read(QDomNode node)
 
 //---------------------------------------------------------
 //   midiReceived
+//    called from midiSeq context
 //---------------------------------------------------------
 
 #ifndef __APPLE__
@@ -96,6 +100,7 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
       MidiEvent event;
       event.setB(0);
       event.setTime(audioDriver->framePos());
+
       switch(ev->type) {
             case SND_SEQ_EVENT_NOTEON:
                   event.setChannel(ev->data.note.channel);
@@ -173,7 +178,15 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
             if (i->type() == ME_NOTEON)
                   addMidiMeter(i->dataB());
             song->putEvent(*i);
-            _recordEvents.add(*i);
+            if (recordCount == RECORD_FIFO_SIZE) {
+                  printf("MusE: eventReceived(): fifo overflow\n");
+                  continue;
+                  }
+            recordFifo[recordWrite] = *i;
+            ++recordWrite;
+            if (recordWrite == RECORD_FIFO_SIZE)
+                  recordWrite = 0;
+            ++recordCount;
             }
       }
 #endif
@@ -185,19 +198,36 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
 
 void MidiInPort::afterProcess()
       {
-      _recordEvents.clear();
+      while (tmpRecordCount--) {
+            ++recordRead;
+            if (recordRead >= RECORD_FIFO_SIZE)
+                  recordRead = 0;
+            --recordCount;
+            }
+      }
+
+//---------------------------------------------------------
+//   beforeProcess
+//---------------------------------------------------------
+
+void MidiInPort::beforeProcess()
+      {
+      tmpRecordCount = recordCount;
       }
 
 //---------------------------------------------------------
 //   getEvents
+//    called from jack process context
 //---------------------------------------------------------
 
 void MidiInPort::getEvents(unsigned, unsigned, int ch, MPEventList* dst)
       {
-      for (iMPEvent i = _recordEvents.begin(); i != _recordEvents.end(); ++i) {
-            if (i->channel() == ch || ch == -1)
-                  dst->insert(*i);
+      int tmpRecordRead = recordRead;
+      for (int i = 0; i < tmpRecordCount; ++i) {
+            dst->insert(recordFifo[tmpRecordRead]);
+            ++tmpRecordRead;
+            if (tmpRecordRead >= RECORD_FIFO_SIZE)
+                  tmpRecordRead = 0;
             }
       }
-
 

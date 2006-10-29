@@ -23,6 +23,8 @@
 
 #include "track.h"
 
+static const int RECORD_FIFO_SIZE = 512;
+
 //---------------------------------------------------------
 //   MidiInPort
 //---------------------------------------------------------
@@ -30,7 +32,10 @@
 class MidiInPort : public MidiTrackBase {
       Q_OBJECT
 
-      MPEventList _recordEvents;
+      MidiEvent recordFifo[RECORD_FIFO_SIZE];
+      int recordRead, recordWrite;
+      volatile int recordCount;
+      int tmpRecordCount;
 
    public:
       MidiInPort();
@@ -47,6 +52,7 @@ class MidiInPort : public MidiTrackBase {
       void eventReceived(snd_seq_event_t*);
 #endif
       virtual void getEvents(unsigned from, unsigned to, int channel, MPEventList* dst);
+      void beforeProcess();
       void afterProcess();
       };
 
