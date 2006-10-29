@@ -130,13 +130,11 @@ class SynthI : public AudioTrack, public MidiInstrument
 
       virtual QString open() { return QString("OK");}
       virtual void close()   {}
-      virtual Track* newTrack() const { return 0; }
       virtual void collectInputData();
 
    public:
       SynthI();
       virtual ~SynthI();
-//      SynthI* clone() const { return 0; }
 
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s);

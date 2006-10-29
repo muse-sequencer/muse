@@ -48,9 +48,10 @@ class Mess {
 
       virtual void process(float** data, int offset, int len) = 0;
 
-      // return true on error (if synti is busy)
-      // the synti has to (re-)implement processEvent() or provide
-      // some of the next three functions:
+      // The synti has to (re-)implement processEvent() or provide
+      // the playNote()/setControll()/sysex() functions.
+      // The even routines return true if synti is busy and the
+      // event must be send again.
 
       virtual bool processEvent(const MidiEvent&);
       virtual bool setController(int, int, int) { return false; }

@@ -1459,7 +1459,6 @@ Track* Song::addTrack(QAction* action)
                         }
                   if (sii == sl->end()) {
                         si->setName(instanceName);
-printf("set instance name <%s>\n", instanceName.toLatin1().data());
                         break;
                         }
                   }
@@ -1702,8 +1701,6 @@ void Song::insertTrack2(Track* track)
       //  connect routes
       //
       Route src(track);
-      if (track->type() == Track::AUDIO_SOFTSYNTH)
-            src.type = Route::SYNTIPORT;
       if (track->type() == Track::AUDIO_OUTPUT || track->type() == Track::MIDI_OUT) {
             foreach(Route r, *(track->inRoutes())) {
                   if (r.type != Route::AUXPLUGIN) {
@@ -1812,8 +1809,8 @@ void Song::removeTrack2(Track* track)
       //  remove routes
       //
       Route src(track, -1, Route::TRACK);
-      if (track->type() == Track::AUDIO_SOFTSYNTH)
-            src.type = Route::SYNTIPORT;
+//      if (track->type() == Track::AUDIO_SOFTSYNTH)
+//            src.type = Route::SYNTIPORT;
       foreach (const Route r, *(track->inRoutes())) {
             if (r.type != Route::TRACK && r.type != Route::SYNTIPORT)
                   continue;

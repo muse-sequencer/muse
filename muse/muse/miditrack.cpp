@@ -605,12 +605,11 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MPEventList* dst)
                                     event.setB(velo);
                                     }
                               }
-                        unsigned time = eventTime + segmentSize*(segmentCount-1);
+                        unsigned time = 0; // eventTime + segmentSize*(segmentCount-1);
                         event.setTime(time);
                         dst->add(event);
                         }
                   }
             }
       }
-
 

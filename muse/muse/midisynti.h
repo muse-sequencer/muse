@@ -41,7 +41,6 @@ class MidiSynti : public MidiTrackBase {
       virtual void write(Xml&) const;
       virtual bool isMute() const;
 
-      virtual MidiSynti* newTrack() const { return new MidiSynti(); }
       virtual Part* newPart(Part*, bool) { return 0; }
 
       bool initInstance(MidiPlugin*);

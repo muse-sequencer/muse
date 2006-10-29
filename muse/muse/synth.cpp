@@ -541,8 +541,11 @@ iMPEvent MessSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, int por
                   }
             }
       else {
-            printf("MessSynthIF::getData - ports < channels: TBW!" 
-               "(when does this occur? does it ever occur? mono/stereo?)");
+            // this happens if the synth has stereo and we switch the
+            // channel to mono
+
+            printf("MessSynthIF::getData - ports %d < channels %d\n", 
+               ports, channels());
             }
       return i;
       }
@@ -576,5 +579,4 @@ void SynthI::collectInputData()
       _sif->getData(&_playEvents, ie, pos, channels(), segmentSize, buffer);
       _playEvents.clear();
       }
-
 

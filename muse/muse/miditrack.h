@@ -75,7 +75,6 @@ class MidiTrack : public MidiTrackBase {
       virtual void read(QDomNode);
       virtual void write(Xml&) const;
 
-      virtual MidiTrack* newTrack() const { return new MidiTrack(); }
       virtual Part* newPart(Part*p=0, bool clone=false);
 
       virtual bool isMute() const;

@@ -53,7 +53,6 @@ class WaveTrack : public AudioTrack {
       ~WaveTrack();
       void clone(WaveTrack*);
 
-      virtual WaveTrack* newTrack() const { return new WaveTrack(); }
       virtual Part* newPart(Part*p=0, bool clone=false);
 
       virtual void read(QDomNode);

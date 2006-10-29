@@ -246,7 +246,6 @@ class Track : public QObject {
 	void addPart(Part* p);
 
       virtual void write(Xml&) const = 0;
-      virtual Track* newTrack() const = 0;
 
       void setRecordFlag(bool);
       virtual Part* newPart(Part*p=0, bool clone = false) = 0;

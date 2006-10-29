@@ -51,7 +51,6 @@ class MidiChannel : public MidiTrackBase {
 
       virtual void write(Xml&) const;
       virtual void read(QDomNode);
-      virtual Track* newTrack() const     { return 0; }
       virtual bool isMute() const;
       virtual Part* newPart(Part*, bool)  { return 0; }
 

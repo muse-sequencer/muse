@@ -33,7 +33,6 @@ class AudioOutput : public AudioTrack {
    public:
       AudioOutput();
       virtual ~AudioOutput();
-      virtual AudioOutput* newTrack() const { return new AudioOutput(); }
 
       virtual void read(QDomNode);
       virtual void write(Xml&) const;

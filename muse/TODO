@@ -1,8 +1,22 @@
 -----------------------------TODO-------------------------------------------
-  * - done
-(24.10.2006)
+(29.10.2006)
 ----------------------------------------------------------------------------
 
+      - Handle software synthesizer like an MidiOutPort. This eliminates
+        the extra routing from MidiOutPort to the synti and removes the
+        extra MidiOutPort. Synthesizer then have channels and MidiTrack's
+        can directly routed to synthesizer channels.
+      - change default: show MidiChannel in mixer, dont show MidiTrack
+      - Add "monitor" button to midi channel strip in mixer.
+      - add midi fifo for MESS synthesizer and repeat sending an event
+        in case the synthesizer is busy
+      - replace posix semaphores with simple "busy" flag in
+        zynaddsubfx
+      - change default: do not default to "automation read" when
+        creating new strips
+      - change default: when creating midi input strips, route input
+        to all available midi sources
+        
 BUGS
 	- updating the gui during midi recording is too slow;
         a new, faster implementation is needed
@@ -17,8 +31,6 @@ BUGS
       - looping does not work sample accurate due to jack transport
         limitations; looping should be implemented internally to work
         around this
-
-      - midi import does not work as expected
 
 FEATURES
 	- wave editor is completely broken

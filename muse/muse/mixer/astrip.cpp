@@ -653,7 +653,7 @@ static void addSyntiPorts(AudioTrack* t, QMenu* lb, RouteList* r)
                   continue;
             QAction* it = lb->addAction(track->name());
             it->setCheckable(true);
-            Route route(track, -1, Route::SYNTIPORT);
+            Route route(track, -1, Route::TRACK);
             it->setData(QVariant::fromValue(route));
 
             for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
@@ -795,9 +795,9 @@ void AudioStrip::oRoutePressed()
             Route srcRoute(t);
             Route dstRoute = n->data().value<Route>();
             
-            if (track->type() == Track::AUDIO_SOFTSYNTH)
-                  srcRoute.type = Route::SYNTIPORT;
-            else if (track->type() == Track::AUDIO_OUTPUT)
+//            if (track->type() == Track::AUDIO_SOFTSYNTH)
+//                  srcRoute.type = Route::SYNTIPORT;
+            if (track->type() == Track::AUDIO_OUTPUT)
                   srcRoute.channel = dstRoute.channel;
             if (n->isChecked())
                   audio->msgAddRoute(srcRoute, dstRoute);

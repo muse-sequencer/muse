@@ -32,7 +32,6 @@ class AudioGroup : public AudioTrack {
 
    public:
       AudioGroup() : AudioTrack(AUDIO_GROUP) {}
-      virtual AudioGroup* newTrack() const { return new AudioGroup(); }
       virtual void read(QDomNode);
       virtual void write(Xml&) const;
       virtual bool hasAuxSend() const { return true; }

@@ -574,8 +574,12 @@ void AudioTrack::collectInputData()
       for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
             float** ptr;
             int ch;
-            if (ir->type == Route::TRACK) {
+            if (ir->type == Route::TRACK /*|| ir->type == Route::SYNTIPORT*/) {
                   AudioTrack* track = (AudioTrack*)ir->track;
+//printf("collectInputData <%s><%s> channel %d off %d\n", 
+//   track->name().toLatin1().data(),
+//   name().toLatin1().data(),
+//   track->channels(), track->off());
                   if (track->off() || song->bounceTrack == track)
                         continue;
                   ptr = track->buffer;
@@ -585,6 +589,8 @@ void AudioTrack::collectInputData()
                   ch  = ir->plugin->channel();
                   ptr = ir->plugin->buffer();
                   }
+            else
+                  printf("AudioTrack::collectInputRoutes(): bad route type\n");
             if (copyFlag) {
                   copy(ch, ptr);
                   copyFlag = false;

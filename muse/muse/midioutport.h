@@ -61,7 +61,6 @@ class MidiOutPort : public MidiTrackBase {
       virtual void setName(const QString& s);
       virtual void write(Xml&) const;
       virtual void read(QDomNode);
-      virtual Track* newTrack() const     { return new MidiOutPort(); }
       virtual bool isMute() const         { return _mute; }
       virtual Part* newPart(Part*, bool)  { return 0; }
 

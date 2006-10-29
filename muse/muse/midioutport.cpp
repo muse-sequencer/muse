@@ -390,6 +390,7 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
                         queueAlsaEvent(event);
                         break;
                   case Route::SYNTIPORT: 
+                  case Route::TRACK: 
                         ((SynthI*)(r->track))->playEvents()->insert(event);
                         break;
                   case Route::JACKMIDIPORT:
