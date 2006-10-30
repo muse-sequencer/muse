@@ -396,7 +396,7 @@ void DssiSynthIF::write(Xml&) const
 //   getData
 //---------------------------------------------------------
 
-iMPEvent DssiSynthIF::getData(MPEventList* el, iMPEvent i, unsigned, int ch, unsigned samples, float** data)
+void DssiSynthIF::getData(MPEventList* el, unsigned pos, int ch, unsigned samples, float** data)
       {
       const DSSI_Descriptor* dssi = synth->dssi;
       const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
@@ -408,8 +408,13 @@ iMPEvent DssiSynthIF::getData(MPEventList* el, iMPEvent i, unsigned, int ch, uns
       memset(events, 0, sizeof(events));
 
       nevents = 0;
+      int endPos = pos + samples;
+      iMPEvent i = el->begin();
       for (; i != el->end(); ++i, ++nevents) {
+            if (i->time() >= endPos)
+                  break;
             MidiEvent e = *i;
+            
             int chn = e.channel();
             int a   = e.dataA();
             int b   = e.dataB();
@@ -449,6 +454,7 @@ iMPEvent DssiSynthIF::getData(MPEventList* el, iMPEvent i, unsigned, int ch, uns
                         break;
                   }
             }
+      el->erase(el->begin(), i);
 
       for (int k = 0; k < ch; ++k)
             descr->connect_port(handle, synth->oIdx[k], data[k]);
@@ -459,7 +465,6 @@ iMPEvent DssiSynthIF::getData(MPEventList* el, iMPEvent i, unsigned, int ch, uns
             snd_seq_event_t* ev = events;
             synth->dssi->run_multiple_synths(1, &handle, samples, &ev, &nevents);
             }
-      return i;
       }
 
 //---------------------------------------------------------

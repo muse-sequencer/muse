@@ -69,7 +69,7 @@ class MetronomeSynthIF : public SynthIF
       virtual bool hasGui() const { return false; }
       virtual void getGeometry(int*, int*, int*, int*) const {}
       virtual void setGeometry(int, int, int, int) {}
-      virtual iMPEvent getData(MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
+      virtual void getData(MPEventList*, unsigned pos, int ports, unsigned n, float** buffer);
       virtual bool putEvent(const MidiEvent& ev);
       virtual MidiEvent receiveEvent() { return MidiEvent(); }
       virtual int eventsPending() const { return 0; }
@@ -89,12 +89,13 @@ class MetronomeSynthIF : public SynthIF
 //   getData
 //---------------------------------------------------------
 
-iMPEvent MetronomeSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, int/*ports*/, unsigned n, float** buffer)
+void MetronomeSynthIF::getData(MPEventList* el, unsigned pos, int/*ports*/, unsigned n, float** buffer)
       {
       unsigned curPos      = pos;
       unsigned endPos      = pos + n;
       unsigned off         = pos;
 
+      iMPEvent i = el->begin();
       for (; i != el->end(); ++i) {
             unsigned frame = i->time();
             if (frame >= endPos)
@@ -110,7 +111,7 @@ iMPEvent MetronomeSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, in
             }
       if (endPos - curPos)
             process(buffer, curPos - off, endPos - curPos);
-      return el->end();
+      el->erase(el->begin(), i);
       }
 
 //---------------------------------------------------------

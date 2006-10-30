@@ -22,7 +22,7 @@
 #define __SYNTH_H__
 
 #include "globals.h"
-// #include "instruments/minstrument.h"
+#include "instruments/minstrument.h"
 #include "audiotrack.h"
 #include "midiout.h"
 
@@ -94,7 +94,7 @@ class SynthIF {
       virtual bool hasGui() const = 0;
       virtual void getGeometry(int*, int*, int*, int*) const = 0;
       virtual void setGeometry(int, int, int, int) = 0;
-      virtual iMPEvent getData(MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer) = 0;
+      virtual void getData(MPEventList*, unsigned pos, int ports, unsigned n, float** buffer) = 0;
       virtual bool putEvent(const MidiEvent& ev) = 0;
       virtual MidiEvent receiveEvent() = 0;
       virtual int eventsPending() const = 0;
@@ -115,10 +115,10 @@ class SynthIF {
 //    MidiInstrument
 //---------------------------------------------------------
 
-class SynthI : public AudioTrack, public MidiOut
+class SynthI : public AudioTrack, public MidiOut, public MidiInstrument
       {
       Q_OBJECT
-
+      
       SynthIF* _sif;
 
    protected:
@@ -167,8 +167,8 @@ class SynthI : public AudioTrack, public MidiOut
       void setGeometry(int x, int y, int w, int h) {
             _sif->setGeometry(x, y, w, h);
             }
-      MidiEvent receiveEvent() 	{ return _sif->receiveEvent(); }
-      int eventsPending() const    	{ return _sif->eventsPending(); }
+      MidiEvent receiveEvent() 	   { return _sif->receiveEvent(); }
+      int eventsPending() const    	   { return _sif->eventsPending(); }
       void deactivate2();
       void deactivate3();
       bool isActivated() const         { return synthesizer && _sif; }
@@ -193,7 +193,7 @@ class MessSynthIF : public SynthIF {
       virtual bool hasGui() const;
       virtual void getGeometry(int*, int*, int*, int*) const;
       virtual void setGeometry(int, int, int, int);
-      virtual iMPEvent getData(MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
+      virtual void getData(MPEventList*, unsigned pos, int ports, unsigned n, float** buffer);
       virtual bool putEvent(const MidiEvent& ev);
       virtual MidiEvent receiveEvent();
       virtual int eventsPending() const;

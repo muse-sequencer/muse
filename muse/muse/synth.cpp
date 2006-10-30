@@ -188,7 +188,7 @@ SynthI::SynthI()
       _sif        = 0;
       // setVolume(1.0);
       // setPan(0.0);
-      _instrument = genericMidiInstrument;      //TODO
+      _instrument = this;
       for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
             _channel[ch] = new MidiChannel(this, ch);
       }
@@ -256,7 +256,7 @@ bool SynthI::initInstance(Synth* s)
       synthesizer = s;
       _sif        = s->createSIF(this);
 
-      _instrument->setIName(name());   // set instrument name
+      setIName(name());   // set instrument name
       AudioTrack::setChannels(_sif->channels());
 
       //---------------------------------------------------
@@ -264,7 +264,7 @@ bool SynthI::initInstance(Synth* s)
       //---------------------------------------------------
 
       int id = 0;
-      MidiControllerList* cl = _instrument->controller();
+      MidiControllerList* cl = MidiInstrument::controller();
       for (;;) {
             const char* name;
             int ctrl;
@@ -277,7 +277,7 @@ bool SynthI::initInstance(Synth* s)
             cl->push_back(c);
             }
 
-      EventList* iel = _instrument->midiState();
+      EventList* iel = midiState();
       if (!iel->empty()) {
             for (iEvent i = iel->begin(); i != iel->end(); ++i) {
                   Event ev = i->second;
@@ -321,7 +321,7 @@ int MessSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
 
 void SynthI::deactivate2()
       {
-      removeMidiInstrument(_instrument);
+      removeMidiInstrument(this);
       }
 
 //---------------------------------------------------------
@@ -453,7 +453,7 @@ void SynthI::read(QDomNode node)
             else if (e.tagName() == "guiVisible")
                   startGui = e.text().toInt();
             else if (e.tagName() == "midistate")
-                  _instrument->readMidiState(node.firstChild());
+                  readMidiState(node.firstChild());
             else if (e.tagName() == "param") {
                   float val = e.text().toFloat();
                   initParams.push_back(val);
@@ -532,7 +532,7 @@ void MessSynthIF::populatePatchPopup(QMenu* menu, int ch)
 //   getData
 //---------------------------------------------------------
 
-iMPEvent MessSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, int ports, unsigned n, float** buffer)
+void MessSynthIF::getData(MPEventList* el, unsigned pos, int ports, unsigned n, float** buffer)
       {
       // Reset buffers first
       for (int port = 0; port < ports; ++port)
@@ -545,6 +545,7 @@ iMPEvent MessSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, int por
       int endPos = pos + n;
 
       if (ports >= channels()) {
+            iMPEvent i = el->begin();
             for (; i != el->end(); ++i) {
                   int frame = i->time();
                   if (frame >= endPos)
@@ -559,6 +560,7 @@ iMPEvent MessSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, int por
             if (endPos - curPos > 0) {
                   _mess->process(buffer, curPos-pos, endPos - curPos);
                   }
+            el->erase(el->begin(), i);
             }
       else {
             // this happens if the synth has stereo and we switch the
@@ -567,7 +569,6 @@ iMPEvent MessSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, int por
             printf("MessSynthIF::getData - ports %d < channels %d\n", 
                ports, channels());
             }
-      return i;
       }
 
 //---------------------------------------------------------
@@ -577,9 +578,10 @@ iMPEvent MessSynthIF::getData(MPEventList* el, iMPEvent i, unsigned pos, int por
 
 bool MessSynthIF::putEvent(const MidiEvent& ev)
       {
-// printf("put event %x %x %x\n", ev.type(), ev.dataA(), ev.dataB());
-      if (midiOutputTrace)
+      if (midiOutputTrace) {
+            printf("<%s>", synti->name().toLatin1().data());
             ev.dump();
+            }
       if (_mess)
             return _mess->processEvent(ev);
       return true;
@@ -592,12 +594,8 @@ bool MessSynthIF::putEvent(const MidiEvent& ev)
 void SynthI::collectInputData()
       {
       bufferEmpty = false;
-      while (!eventFifo.isEmpty())
-            _schedEvents.add(eventFifo.get());
-      iMPEvent ie = _schedEvents.begin();
       unsigned pos = audio->pos().frame();
-      _sif->getData(&_schedEvents, ie, pos, channels(), segmentSize, buffer);
-      _schedEvents.clear();
+      _sif->getData(&_schedEvents, pos, channels(), segmentSize, buffer);
       }
 
 //-------------------------------------------------------------------
@@ -606,9 +604,6 @@ void SynthI::collectInputData()
 //    into _schedEvents queue. For note on events create the proper
 //    note off events. The note off events maybe played after the
 //    current process cycle.
-//    From _schedEvents queue copy all events for the current cycle
-//    to all output routes. Events routed to ALSA go into the 
-//    _playEvents queue which is processed by the MidiSeq thread.
 //-------------------------------------------------------------------
 
 void SynthI::processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame)
@@ -617,3 +612,4 @@ void SynthI::processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame,
             return;
       MidiOut::processMidi(_schedEvents, fromTick, toTick, fromFrame, toFrame);
       }
+

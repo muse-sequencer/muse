@@ -1263,6 +1263,8 @@ void MusE::loadProject1(const QString& path)
                   if (ctrl->type() & Ctrl::INT) {
                         CVal val;
                         val = ctrl->curVal();
+                        if (track->isMidiTrack() && val.i == CTRL_VAL_UNKNOWN)
+                              continue;
                         ctrl->setCurVal(CTRL_VAL_UNKNOWN);
                         song->setControllerVal(track, ctrl, val);
                         }

@@ -650,6 +650,9 @@ void Audio::seek(const Pos& p)
       MidiOutPortList* ol = song->midiOutPorts();
       for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
             (*i)->seek(_curTickPos, _pos.frame());
+      SynthIList* sl      = song->syntis();
+      for (iSynthI i = sl->begin(); i != sl->end(); ++i)
+            (*i)->seek(_curTickPos, _pos.frame());
       sendMsgToGui(MSG_SEEK);
       }
 
@@ -677,6 +680,9 @@ void Audio::startRolling()
 
       MidiOutPortList* ol = song->midiOutPorts();
       for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
+            (*i)->start();
+      SynthIList* sl      = song->syntis();
+      for (iSynthI i = sl->begin(); i != sl->end(); ++i)
             (*i)->start();
       
       if (precountEnableFlag
@@ -721,6 +727,10 @@ void Audio::stopRolling()
       MidiOutPortList* ol = song->midiOutPorts();
       for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
             (*i)->stop();
+      SynthIList* sl      = song->syntis();
+      for (iSynthI i = sl->begin(); i != sl->end(); ++i)
+            (*i)->stop();
+
 	recording    = false;
       endRecordPos = _pos;
       _bounce = 0;

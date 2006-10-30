@@ -102,6 +102,8 @@ Zynadd::Zynadd() : Mess(2)
 
       vmaster           = new Master();
       vmaster->swaplr = swaplr;
+      vmaster->bank.rescanforbanks();
+      vmaster->defaults();
       pthread_create(&thr, NULL, guiThread, this);
       }
 
@@ -224,6 +226,10 @@ bool Zynadd::processEvent(const MidiEvent& e)
                               {
                               int bank = (e.dataB() >> 8) + 1;
                               if (bank != currentBank) {
+                                    if (vmaster->bank.banks[bank].dir == 0) {
+                                          printf("Zynaddsubfx: empty bank %d\n", bank);
+                                          return false;
+                                          }
                                     vmaster->bank.loadbank(vmaster->bank.banks[bank].dir);
                                     currentBank = bank;
                                     }

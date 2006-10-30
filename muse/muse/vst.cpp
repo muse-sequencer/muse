@@ -809,10 +809,17 @@ void VstSynthIF::write(Xml& xml) const
 //   getData
 //---------------------------------------------------------
 
-iMPEvent VstSynthIF::getData(MPEventList* el, iMPEvent i, unsigned /*pos*/, int ports, unsigned n, float** buffer)
+void VstSynthIF::getData(MPEventList* el, unsigned pos, int ports, unsigned n, float** buffer)
       {
-      for (; i != el->end(); ++i)
+      int endPos = pos + n;
+      iMPEvent i = el->begin();
+      for (; i != el->end(); ++i) {
+            if (i->time() >= endPos)
+                  break;
             putEvent(*i);
+            }
+      el->erase(el->begin(), i);
+
       int outputs = _fst->numOutputs();
       if (ports < outputs) {
             float* ob[outputs];
@@ -840,7 +847,6 @@ iMPEvent VstSynthIF::getData(MPEventList* el, iMPEvent i, unsigned /*pos*/, int 
                   _fst->process(0, buffer, n);
                   }
             }
-      return el->end();
       }
 
 //---------------------------------------------------------

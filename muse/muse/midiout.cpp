@@ -343,7 +343,6 @@ void MidiOut::processMidi(MPEventList& el, unsigned fromTick, unsigned toTick, u
                         }
                   }
             }
-
       for (int ch = 0; ch < MIDI_CHANNELS; ++ch)  {
             MidiChannel* mc = channel(ch);
 
