@@ -30,7 +30,7 @@
 //---------------------------------------------------------
 
 AudioOutput::AudioOutput()
-   : AudioTrack(AUDIO_OUTPUT)
+   : AudioTrack()
       {
       _channels = 0;
       setChannels(2);

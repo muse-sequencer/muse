@@ -34,7 +34,7 @@
 //---------------------------------------------------------
 
 MidiInPort::MidiInPort()
-   : MidiTrackBase(MIDI_IN)
+   : MidiTrackBase()
       {
       _channels   = 1;
       recordRead  = 0;

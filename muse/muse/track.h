@@ -109,12 +109,11 @@ class Track : public QObject {
             };
 
    private:
-      TrackType _type;
       QString _comment;
       PartList* _parts;
       Port _alsaPort[MAX_CHANNELS], _jackPort[MAX_CHANNELS];
-
-      void init();
+      bool _sendSync;   // this port sends mtc/mmc events
+      int _deviceId;    // midi device id: 0-126; 127 == all
 
    protected:
       TType _tt;            // time type
@@ -160,6 +159,7 @@ class Track : public QObject {
       void partsChanged();
       void nameChanged(const QString&);
       void routeChanged();
+      void sendSyncChanged(bool);
 
    private slots:
       void setAutoRead(bool);
@@ -167,7 +167,6 @@ class Track : public QObject {
 
    public:
       Track();
-      Track(TrackType);
       virtual ~Track();
 
       static const char* _cname[];
@@ -178,8 +177,8 @@ class Track : public QObject {
       TType timeType() const            { return _tt; }
       void setTimeType(TType t)         { _tt = t; }
 
-      QString cname() const             { return QString(_cname[_type]); }
-      QString clname() const            { return QString(_clname[_type]); }
+      QString cname() const             { return QString(_cname[type()]); }
+      QString clname() const            { return QString(_clname[type()]); }
 
       //
       // called before and after use
@@ -225,7 +224,7 @@ class Track : public QObject {
       //----------------------------------------------------------
 
       QColor ccolor() const;
-      QPixmap* pixmap() const         { return pixmap(_type); }
+      QPixmap* pixmap() const         { return pixmap(type()); }
       static QPixmap* pixmap(TrackType);
 
       bool selected() const           { return _selected; }
@@ -237,8 +236,7 @@ class Track : public QObject {
       const QString name() const      { return _name; }
       virtual void setName(const QString& s);
 
-      TrackType type() const          { return _type; }
-      void setType(TrackType t)       { _type = t; }
+      virtual TrackType type() const = 0;
 
       PartList* parts()               { return _parts; }
       const PartList* cparts() const  { return _parts; }
@@ -326,6 +324,12 @@ class Track : public QObject {
       ArrangerTrackList subtracks;
 
       friend class Song;
+
+      virtual void routeEvent(const MidiEvent&) {}
+      bool sendSync() const      { return _sendSync; }
+      void setSendSync(bool val);
+      int deviceId() const      { return _deviceId; }
+      void setDeviceId(int val) { _deviceId = val; }
       };
 
 //---------------------------------------------------------
@@ -338,7 +342,7 @@ class MidiTrackBase : public Track {
       MidiPipeline* _pipeline;
 
    public:
-      MidiTrackBase(TrackType t);
+      MidiTrackBase();
       virtual ~MidiTrackBase();
 
       bool readProperties(QDomNode);

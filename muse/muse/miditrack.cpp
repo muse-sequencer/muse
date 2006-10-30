@@ -34,7 +34,7 @@
 //---------------------------------------------------------
 
 MidiTrack::MidiTrack()
-   : MidiTrackBase(MIDI)
+   : MidiTrackBase()
       {
       init();
       _events = new EventList;

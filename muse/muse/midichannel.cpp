@@ -25,13 +25,14 @@
 #include "midichannel.h"
 #include "midioutport.h"
 #include "miditrack.h"
+#include "instruments/minstrument.h"
 
 //---------------------------------------------------------
 //   MidiChannel
 //---------------------------------------------------------
 
-MidiChannel::MidiChannel(MidiOutPort* p, int ch)
-   : MidiTrackBase(MIDI_CHANNEL)
+MidiChannel::MidiChannel(MidiOut* p, int ch)
+   : MidiTrackBase()
       {
       _port       = p;
       _channelNo  = ch;
@@ -88,7 +89,7 @@ void MidiChannel::read(QDomNode node)
                   printf("MusE:MidiChannel: unknown tag %s\n", tag.toLatin1().data());
             node = node.nextSibling();
             }
-      MidiOutPort* op = port();
+      MidiOut* op = port();
       if (op) {
             MidiInstrument* mi = op->instrument();
             int val = ctrlVal(CTRL_PROGRAM).i;
@@ -121,7 +122,7 @@ void MidiChannel::setUseDrumMap(bool val)
             _useDrumMap = val;
             if (_useDrumMap) {
                   int val = ctrlVal(CTRL_PROGRAM).i;
-                  MidiOutPort* op = port();
+                  MidiOut* op = port();
                   MidiInstrument* mi = op->instrument();
                   DrumMap* dm = mi->getDrumMap(val);
                   if (dm == 0)
@@ -146,7 +147,7 @@ void MidiChannel::emitControllerChanged(int id)
       {
       if (id == CTRL_PROGRAM && _useDrumMap) {
             int val = ctrlVal(id).i;
-            MidiOutPort* op = port();
+            MidiOut* op = port();
             MidiInstrument* mi = op->instrument();
             DrumMap* dm = mi->getDrumMap(val);
             if (dm == 0)

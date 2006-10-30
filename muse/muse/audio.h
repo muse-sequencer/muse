@@ -194,7 +194,6 @@ class Audio {
       Pos endRecordPos;
 
       void process(unsigned frames, int jackState);
-      void processMidi();
       bool sync(int state, unsigned frame);
       void shutdown();
 

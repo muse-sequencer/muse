@@ -37,7 +37,7 @@ bool WaveTrack::firstWaveTrack = true;
 //---------------------------------------------------------
 
 WaveTrack::WaveTrack()
-   : AudioTrack(Track::WAVE)
+   : AudioTrack()
       {
       //
       // allocate prefetch buffer

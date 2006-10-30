@@ -51,6 +51,8 @@ class WaveTrack : public AudioTrack {
 
       WaveTrack();
       ~WaveTrack();
+      virtual TrackType type() const { return WAVE; }
+
       void clone(WaveTrack*);
 
       virtual Part* newPart(Part*p=0, bool clone=false);

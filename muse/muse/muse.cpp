@@ -68,6 +68,8 @@
 #include "projectpropsdialog.h"
 #include "midichannel.h"
 
+extern void initMidiInstruments();
+
 static pthread_t watchdogThread;
 
 static const char* fileOpenText =
@@ -537,8 +539,6 @@ MusE::MusE()
       panicAction = new QAction(QIcon(*panicIcon), tr("Panic"), this);
       panicAction->setWhatsThis(tr(infoPanicButton));
       connect(panicAction, SIGNAL(triggered()), song, SLOT(panic()));
-
-      initMidiInstruments();
 
 #ifdef __APPLE__
       if (coreMidi.init()) {
@@ -2851,6 +2851,7 @@ int main(int argc, char* argv[])
 
       srand(time(0));   // initialize random number generator
       initMidiController();
+      initMidiInstruments();
       MuseApplication app(argc, argv);
 
       config.fonts[0] = QFont(QString("arial"), 10, QFont::Normal);

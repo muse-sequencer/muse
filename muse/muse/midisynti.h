@@ -35,6 +35,8 @@ class MidiSynti : public MidiTrackBase {
    public:
       MidiSynti();
       virtual ~MidiSynti();
+      virtual TrackType type() const { return MIDI_SYNTI; }
+
       void init();
 
       virtual void read(QDomNode);

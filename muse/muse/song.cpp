@@ -44,6 +44,7 @@
 #include "midichannel.h"
 #include "midioutport.h"
 #include "midiinport.h"
+#include "instruments/minstrument.h"
 
 Song* song;
 
@@ -592,6 +593,7 @@ void Song::update(int flags)
             //
             // remove unconnected channels
             //
+// printf("update tracks %d %d\n", _tracks.size(), _midiChannel.size());
             bool again;
             do {
                   again = false;
@@ -1472,7 +1474,6 @@ Track* Song::addTrack(QAction* action)
             switch (type) {
                   case Track::MIDI:
                         track = new MidiTrack();
-                        track->setType(Track::MIDI);
                         break;
                   case Track::MIDI_OUT:
                         track = new MidiOutPort();
@@ -1687,8 +1688,12 @@ void Song::insertTrack2(Track* track)
             case Track::AUDIO_SOFTSYNTH:
                   {
                   SynthI* s = (SynthI*)track;
-                  midiInstruments.push_back(s);
+                  midiInstruments.push_back(s->instrument());
                   _synthIs.push_back(s);
+                  for (int i = 0; i < MIDI_CHANNELS; ++i) {
+                        MidiChannel* mc = ((SynthI*)track)->channel(i);
+                        _midiChannel.push_back(mc);
+                        }
                   }
                   break;
             default:

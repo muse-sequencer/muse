@@ -53,8 +53,11 @@ class MidiTrack : public MidiTrackBase {
    public:
       MidiTrack();
       virtual ~MidiTrack();
-      void init();
+      virtual TrackType type() const { return MIDI; }
+
       void clone(MidiTrack*);
+
+      void init();
       MidiChannel* channel() const;
 
       void changeDrumMap() const;

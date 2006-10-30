@@ -35,6 +35,7 @@ class AudioInput : public AudioTrack {
    public:
       AudioInput();
       virtual ~AudioInput();
+      virtual TrackType type() const { return AUDIO_INPUT; }
 
       virtual void read(QDomNode);
       virtual void write(Xml&) const;

@@ -23,6 +23,8 @@
 
 #include "track.h"
 
+class MidiOut;
+
 //---------------------------------------------------------
 //   MidiChannel
 //---------------------------------------------------------
@@ -34,7 +36,7 @@ class MidiChannel : public MidiTrackBase {
 
       DrumMap* _drumMap;
       bool _useDrumMap;
-      MidiOutPort* _port;
+      MidiOut* _port;
       int _channelNo;
 
       void clearDevice();
@@ -43,10 +45,11 @@ class MidiChannel : public MidiTrackBase {
       void useDrumMapChanged(bool);
 
    public:
-      MidiChannel(MidiOutPort*, int);
+      MidiChannel(MidiOut*, int);
       ~MidiChannel();
+      virtual TrackType type() const { return MIDI_CHANNEL; }
 
-      MidiOutPort* port() const           { return _port; }
+      MidiOut* port() const               { return _port; }
       int channelNo() const               { return _channelNo; }
 
       virtual void write(Xml&) const;

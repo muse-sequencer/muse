@@ -204,7 +204,7 @@ void MidiTrackInfo::init(Track* t)
                   portIndex = k + 1;
             }
       if (midic) {
-            MidiOutPort* op = midic->port();
+            MidiOut* op = midic->port();
             for (int i = 0; i < MIDI_CHANNELS; ++i) {
                   MidiChannel* c = op->channel(i);
                   if (midic == c)
@@ -212,7 +212,7 @@ void MidiTrackInfo::init(Track* t)
                   channel->addItem(c->name(), i);
                   }
             connect(midic, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));
-            connect(op, SIGNAL(instrumentChanged()), SLOT(instrumentChanged()));
+//TODO            connect(op, SIGNAL(instrumentChanged()), SLOT(instrumentChanged()));
             channel->setCurrentIndex(channelIndex);
             port->setCurrentIndex(portIndex);
             MidiInstrument* mi = op->instrument();
@@ -224,7 +224,7 @@ void MidiTrackInfo::init(Track* t)
                         curIdx = idx;
                   }
             mp.instrument->setCurrentIndex(curIdx);
-            mp.deviceId->setValue(op->deviceId());
+//TODO            mp.deviceId->setValue(op->deviceId());
             autoChanged(midic, false);             // update enable
             int val = midic->ctrlVal(CTRL_PROGRAM).i;
             int channelno = midic->channelNo();
@@ -277,7 +277,7 @@ void MidiTrackInfo::channelSelected(int ch)
 	--ch;
 	Route srcRoute(track);
       MidiChannel* midic = ((MidiTrack*)track)->channel();
-      MidiOutPort* midip = midic->port();
+      MidiOut* midip = midic->port();
       if (midic) {
       	Route odstRoute(midic);
 	      audio->msgRemoveRoute(srcRoute, odstRoute);
@@ -299,7 +299,7 @@ void MidiTrackInfo::controllerChanged(int id)
       if (id == CTRL_PROGRAM) {
             MidiChannel* midic = ((MidiTrack*)track)->channel();
             if (midic) {
-                  MidiOutPort* op = midic->port();
+                  MidiOut* op = midic->port();
                   MidiInstrument* mi = op->instrument();
                   int val = midic->ctrlVal(id).i;
                   mc.patch->setText(mi->getPatchName(midic->channelNo(), val));
@@ -315,7 +315,7 @@ void MidiTrackInfo::instrumentChanged()
       {
       MidiChannel* midic = ((MidiTrack*)track)->channel();
       if (midic) {
-            MidiOutPort* op = midic->port();
+            MidiOut* op = midic->port();
             MidiInstrument* mi = op->instrument();
             int idx = 0;
             for (iMidiInstrument i = midiInstruments.begin(); i != midiInstruments.end(); ++i, ++idx) {
@@ -365,7 +365,7 @@ void MidiTrackInfo::patchClicked()
       if (!midic)
             return;
       
-      MidiOutPort* op = midic->port();
+      MidiOut* op = midic->port();
       MidiInstrument* mi = op->instrument();
       mi->populatePatchPopup(pop, 0);
 
@@ -387,7 +387,7 @@ void MidiTrackInfo::instrumentSelected(int n)
       MidiChannel* midic = ((MidiTrack*)track)->channel();
       if (midic == 0)
             return;
-      MidiOutPort* op = midic->port();
+      MidiOut* op = midic->port();
       op->setInstrument(midiInstruments[n]);
       }
 
@@ -436,8 +436,8 @@ void MidiTrackInfo::deviceIdChanged(int val)
       MidiChannel* midic = ((MidiTrack*)track)->channel();
       if (midic == 0)
             return;
-      MidiOutPort* op = midic->port();
-      op->setDeviceId(val);
+//      MidiOut* op = midic->port();
+//TODO      op->setDeviceId(val);
       }
 
 //---------------------------------------------------------
@@ -643,10 +643,10 @@ void MidiChannelInfo::init(Track* t)
       {
       TrackInfo::init(t);
       MidiChannel* midic = (MidiChannel*)t;
-      MidiOutPort* op = midic->port();
-      connect(op, SIGNAL(instrumentChanged()), SLOT(instrumentChanged()));
+      MidiOut* op = midic->port();
+//TODO      connect(op, SIGNAL(instrumentChanged()), SLOT(instrumentChanged()));
       connect(midic, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));
-      portName->setText(op->name());
+      portName->setText(op->track->name());
       MidiInstrument* mi = op->instrument();
       int idx = 0;
       int curIdx = 0;
@@ -666,7 +666,7 @@ void MidiChannelInfo::init(Track* t)
 void MidiChannelInfo::instrumentSelected(int n)
       {
       MidiChannel* midic = (MidiChannel*)track;
-      MidiOutPort* op = midic->port();
+      MidiOut* op = midic->port();
       op->setInstrument(midiInstruments[n]);
       }
 
@@ -677,7 +677,7 @@ void MidiChannelInfo::instrumentSelected(int n)
 void MidiChannelInfo::instrumentChanged()
       {
       MidiChannel* midic = (MidiChannel*)track;
-      MidiOutPort* op = midic->port();
+      MidiOut* op = midic->port();
       MidiInstrument* mi = op->instrument();
       int idx = 0;
       for (iMidiInstrument i = midiInstruments.begin(); i != midiInstruments.end(); ++i, ++idx) {
@@ -695,7 +695,7 @@ void MidiChannelInfo::instrumentChanged()
 void MidiChannelInfo::patchClicked()
       {
       MidiChannel* midic = (MidiChannel*)track;
-      MidiOutPort* op = midic->port();
+      MidiOut* op = midic->port();
       MidiInstrument* mi = op->instrument();
       mi->populatePatchPopup(pop, 0);
 
@@ -715,7 +715,7 @@ void MidiChannelInfo::controllerChanged(int id)
       {
       if (id == CTRL_PROGRAM) {
             MidiChannel* midic = (MidiChannel*)track;
-            MidiOutPort* op = midic->port();
+            MidiOut* op = midic->port();
             MidiInstrument* mi = op->instrument();
             int val = midic->ctrlVal(id).i;
             patch->setText(mi->getPatchName(midic->channelNo(), val));

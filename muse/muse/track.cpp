@@ -68,7 +68,7 @@ ArrangerTrack::ArrangerTrack()
 
 QColor Track::ccolor() const
       {
-      return config.trackBg[_type];
+      return config.trackBg[type()];
       }
 
 //---------------------------------------------------------
@@ -92,10 +92,10 @@ QPixmap* Track::pixmap(TrackType t)
       }
 
 //---------------------------------------------------------
-//   Track::init
+//   Track
 //---------------------------------------------------------
 
-void Track::init()
+Track::Track()
       {
       _tt            = AL::TICKS;
       _recordFlag    = false;
@@ -114,16 +114,8 @@ void Track::init()
             _peak[i]      = 0.0f;
             _peakTimer[i] = 0;
             }
-      }
-
-//---------------------------------------------------------
-//   Track
-//---------------------------------------------------------
-
-Track::Track(Track::TrackType t)
-      {
-      init();
-      _type = t;
+      _sendSync       = false;
+      _deviceId       = 127;
       _parts = new PartList;
       }
 
@@ -152,16 +144,16 @@ Track::~Track()
 void Track::setDefaultName()
       {
       QString base;
-      switch(_type) {
+      switch(type()) {
             case MIDI:
             case WAVE:
                   base = QString("Track");
                   break;
             case MIDI_CHANNEL:
                   {
-                  MidiOutPort* mop = ((MidiChannel*)this)->port();
+                  MidiOut* mop = ((MidiChannel*)this)->port();
                   int no = ((MidiChannel*)this)->channelNo();
-                  base.sprintf("%s:%d", mop->name().toLatin1().data(), no + 1);
+                  base = QString("%1:%2").arg(mop->track->name()).arg(no + 1);
                   setName(base);
                   return;
                   }
@@ -212,7 +204,7 @@ void Track::setDefaultName()
                   break;
                   }
             }
-      if (_type == MIDI_OUT) {
+      if (type() == MIDI_OUT) {
             MidiOutPort* mop = (MidiOutPort*) this;
             for (int i = 0; i < MIDI_CHANNELS; ++i)
                   mop->channel(i)->setDefaultName();
@@ -226,7 +218,7 @@ void Track::setDefaultName()
 void Track::dump() const
       {
       printf("Track <%s>: typ %d, parts %zd sel %d\n",
-         _name.toLatin1().data(), _type, _parts->size(), _selected);
+         _name.toLatin1().data(), type(), _parts->size(), _selected);
       }
 
 //---------------------------------------------------------
@@ -723,8 +715,8 @@ void Track::writeRouting(Xml& xml) const
 //   MidiTrackBase
 //---------------------------------------------------------
 
-MidiTrackBase::MidiTrackBase(TrackType t)
-   : Track(t)
+MidiTrackBase::MidiTrackBase()
+   : Track()
       {
       _pipeline = new MidiPipeline();
       }
@@ -1101,4 +1093,15 @@ void Track::deactivate()
                   }
             }
       }
+
+//---------------------------------------------------------
+//   setSendSync
+//---------------------------------------------------------
+
+void Track::setSendSync(bool val)
+      {
+      _sendSync = val;
+      emit sendSyncChanged(val);
+      }
+
 

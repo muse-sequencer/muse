@@ -32,6 +32,95 @@
 enum { KNOB_PAN, KNOB_CHOR_SEND, KNOB_VAR_SEND, KNOB_REV_SEND };
 
 //---------------------------------------------------------
+//   addSyntiPorts
+//---------------------------------------------------------
+
+static void addSyntiPorts(QMenu* menu, RouteList* r, int channel)
+      {
+      SynthIList* sl = song->syntis();
+      for (iSynthI i = sl->begin(); i != sl->end(); ++i) {
+            SynthI* track = *i;
+            QAction* oa = menu->addAction(track->name());
+            oa->setCheckable(true);
+            Route dst(track, channel, Route::SYNTIPORT);
+            oa->setData(QVariant::fromValue(dst));
+
+            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
+                  if (*ir == dst) {
+                        oa->setChecked(true);
+                        break;
+                        }
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   addMidiTracks
+//---------------------------------------------------------
+
+static void addMidiTracks(QMenu* menu, RouteList* r, int channel)
+      {
+      MidiTrackList* tl = song->midis();
+      for (iMidiTrack i = tl->begin();i != tl->end(); ++i) {
+            MidiTrack* track = *i;
+            QAction* action = menu->addAction(track->name());
+            action->setCheckable(true);
+            Route src(track, channel, Route::TRACK);
+            action->setData(QVariant::fromValue(src));
+            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
+                  if (*ir == src) {
+                        action->setChecked(true);
+                        break;
+                        }
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   addMidiOutPorts
+//---------------------------------------------------------
+
+static void addMidiOutPorts(QMenu* menu, RouteList* r, int channel)
+      {
+      MidiOutPortList* tl = song->midiOutPorts();
+      for (iMidiOutPort i = tl->begin();i != tl->end(); ++i) {
+            MidiChannel* track = (*i)->channel(channel);
+            QAction* action = menu->addAction(track->name());
+            action->setCheckable(true);
+            Route src(track, -1, Route::TRACK);
+            action->setData(QVariant::fromValue(src));
+            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
+                  if (*ir == src) {
+                        action->setChecked(true);
+                        break;
+                        }
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   addMidiInPorts
+//---------------------------------------------------------
+
+static void addMidiInPorts(QMenu* menu, RouteList* r, int channel)
+      {
+      MidiInPortList* tl = song->midiInPorts();
+      for (iMidiInPort i = tl->begin();i != tl->end(); ++i) {
+            MidiInPort* track = *i;
+            QAction* action = menu->addAction(track->name());
+            action->setCheckable(true);
+            Route src(track, channel, Route::TRACK);
+            action->setData(QVariant::fromValue(src));
+            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
+                  if (*ir == src) {
+                        action->setChecked(true);
+                        break;
+                        }
+                  }
+            }
+      }
+
+//---------------------------------------------------------
 //   addKnob
 //---------------------------------------------------------
 
@@ -357,21 +446,9 @@ void MidiChannelStrip::iRoutePressed()
       MidiChannel* t = (MidiChannel*)track;
       RouteList* irl = t->inRoutes();
 
-      MidiTrackList* tl = song->midis();
-      int tn = 0;
-      for (iMidiTrack i = tl->begin();i != tl->end(); ++i, ++tn) {
-            MidiTrack* track = *i;
-            QAction* action = pup.addAction(track->name());
-            action->setCheckable(true);
-            Route src(track, -1, Route::TRACK);
-            action->setData(QVariant::fromValue(src));
-            for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
-                  if (*ir == src) {
-                        action->setChecked(true);
-                        break;
-                        }
-                  }
-            }
+      addMidiTracks(&pup, irl, -1);  // add midi tracks to menu
+      addMidiInPorts(&pup, irl, -1); // add midi inputs to menu
+
       if (pup.isEmpty())
             return;
       QAction* n = pup.exec(QCursor::pos());
@@ -624,10 +701,32 @@ void MidiStrip::oRoutePressed()
       RouteList* orl = track->outRoutes();
 
       MidiOutPortList* mpl = song->midiOutPorts();
-      int pn = 0;
-      for (iMidiOutPort i = mpl->begin(); i != mpl->end(); ++i, ++pn) {
+      for (iMidiOutPort i = mpl->begin(); i != mpl->end(); ++i) {
             MidiOutPort* op = *i;
             QMenu* m = pup.addMenu(op->name());
+            m->setSeparatorsCollapsible(false);
+            m->addSeparator()->setText(tr("Channel"));
+            for (int channel = 0; channel < MIDI_CHANNELS; ++channel) {
+                  QString s;
+                  s.setNum(channel+1);
+                  QAction* action = m->addAction(s);
+                  action->setCheckable(true);
+                  MidiChannel* mc = op->channel(channel);
+                  Route dst(mc, -1, Route::TRACK);
+                  action->setData(QVariant::fromValue(dst));
+                  for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
+                        if (dst == *ir) {
+                              action->setChecked(true);
+                              break;
+                              }
+                        }
+                  }
+            }
+      SynthIList* sl = song->syntis();
+      for (iSynthI i = sl->begin(); i != sl->end(); ++i) {
+            SynthI* op = *i;
+            QMenu* m = pup.addMenu(op->name());
+            m->setSeparatorsCollapsible(false);
             m->addSeparator()->setText(tr("Channel"));
             for (int channel = 0; channel < MIDI_CHANNELS; ++channel) {
                   QString s;
@@ -911,6 +1010,9 @@ void MidiOutPortStrip::oRoutePressed()
       pup.addSeparator()->setText(tr("MidiDevices"));
       RouteList* orl = track->outRoutes();
 
+      //
+      // add ALSA midi ports to list
+      //
       QList<PortName> ol = midiDriver->outputPorts(true);
       foreach (PortName ip, ol) {
             QAction* oa = pup.addAction(ip.name);
@@ -927,26 +1029,7 @@ void MidiOutPortStrip::oRoutePressed()
             }
 
       //
-      // add software synthesizer to list
-      //
-      SynthIList* sl = song->syntis();
-      for (iSynthI i = sl->begin(); i != sl->end(); ++i) {
-            SynthI* track = *i;
-            QAction* oa = pup.addAction(track->name());
-            oa->setCheckable(true);
-            Route dst(track, -1, Route::SYNTIPORT);
-            oa->setData(QVariant::fromValue(dst));
-
-            for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
-                  if (*ir == dst) {
-                        oa->setChecked(true);
-                        break;
-                        }
-                  }
-            }
-
-      //
-      // add JACK midi port to list
+      // add JACK midi ports to list
       //
       ol = audioDriver->inputPorts(true);
       foreach (PortName ip, ol) {
@@ -1132,114 +1215,27 @@ void MidiInPortStrip::oRoutePressed()
       pup.setSeparatorsCollapsible(false);
       pup.addSeparator()->setText(tr("Channel"));
 
-      MidiTrackList* tl = song->midis();
-      MidiSyntiList* sl = song->midiSyntis();
-      RouteList* orl    = track->outRoutes();
-      SynthIList* asl   = song->syntis();
+      RouteList* orl = track->outRoutes();
 
-      int sn = 0;
-      for (iSynthI i = asl->begin(); i != asl->end(); ++i,++sn) {
-            QAction* action = pup.addAction((*i)->name());
-
-            QMap<QString, QVariant> data;
-            data["id"] = QVariant(0x20000 + sn);
-            data["was_checked"] = false;
-            action->setData(data);
-
-            Route dst(*i, -1, Route::SYNTIPORT);
-            for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
-                  if (*ir == dst) {
-                        action->setCheckable(true);
-                        action->setChecked(true);
-                        data["was_checked"] = true;
-                        action->setData(data);
-                        break;
-                        }
-                  }
-            }
       for (int channel = 0; channel < MIDI_CHANNELS; ++channel) {
             QMenu* m = pup.addMenu(QString(tr("Channel %1")).arg(channel + 1));
             m->addSeparator()->setText(tr("Tracks"));
 
-            //
-            //  route to midi track for recording
-            //  and monitoring
-            //
-            int tn = 0;
-            for (iMidiTrack i = tl->begin(); i != tl->end(); ++i, ++tn) {
-                  QAction* trackno_action = m->addAction((*i)->name());
-
-                  QMap<QString, QVariant> data;
-                  data["id"] = tn * 16 + channel;
-                  data["was_checked"] = false;
-                  trackno_action->setData(data);
-
-                  Route dst(*i, channel, Route::TRACK);
-                  for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
-                        if (*ir == dst) {
-                              trackno_action->setCheckable(true);
-                              trackno_action->setChecked(true);
-                              data["was_checked"] = true;
-                              trackno_action->setData(data);
-                              break;
-                              }
-                        }
-                  }
-            //
-            // route to midi synthesizer (arpeggiator etc.)
-            //
-            tn = 0;
-            for (iMidiSynti i = sl->begin(); i != sl->end(); ++i, ++tn) {
-                  QAction* trackno_action = m->addAction((*i)->name());
-
-                  QMap<QString, QVariant> data;
-                  data["id"] = 0x10000 + tn * 16 + channel;
-                  data["was_checked"] = false;
-                  trackno_action->setData(data);
-
-                  Route dst(*i, channel, Route::TRACK);
-                  for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
-                        if (*ir == dst) {
-                              trackno_action->setCheckable(true);
-                              trackno_action->setChecked(true);
-                              data["was_checked"] = true;
-                              trackno_action->setData(data);
-                              break;
-                              }
-                        }
-                  }
+            addMidiTracks(m, orl, channel);
+            addSyntiPorts(m, orl, channel);
+            addMidiOutPorts(m, orl, channel);
             }
+
       if (pup.isEmpty())
             return;
       QAction* action = pup.exec(QCursor::pos());
       if (action) {
-            int n = action->data().toMap()["id"].toInt();
-            int was_checked = action->data().toMap()["was_checked"].toInt();
             Route srcRoute(track, -1, Route::TRACK);
-            Route dstRoute;
-            if (n >= 0x20000) {
-                  dstRoute.track   = asl->index(n - 0x20000);
-                  dstRoute.channel = -1;
-                  dstRoute.type    = Route::SYNTIPORT;
-                  }
-            else if (n >= 0x10000) {
-                  int channel      = (n-0x10000) & 0xf;
-                  srcRoute.channel = channel;
-                  dstRoute.track   = sl->index((n - 0x10000) >> 4);
-                  dstRoute.channel = channel;
-                  dstRoute.type    = Route::TRACK;
-                  }
-            else {
-                  int channel      = n & 0xf;
-                  srcRoute.channel = channel;
-                  dstRoute.track   = tl->index(n >> 4);
-                  dstRoute.channel = channel;
-                  dstRoute.type    = Route::TRACK;
-                  }
-            if (was_checked)
-                  audio->msgRemoveRoute(srcRoute, dstRoute);
-            else
+            Route dstRoute = action->data().value<Route>();
+            if (action->isChecked())
                   audio->msgAddRoute(srcRoute, dstRoute);
+            else
+                  audio->msgRemoveRoute(srcRoute, dstRoute);
             song->update(SC_ROUTE);
             }
       oR->setDown(false);     // pup->exec() catches mouse release event
@@ -1397,6 +1393,7 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
 
       oR = new QToolButton(this);
+      rBox->addWidget(oR);
       oR->setFont(config.fonts[1]);
       oR->setFixedWidth((STRIP_WIDTH-4)/2);
       oR->setText(tr("oR"));
@@ -1604,7 +1601,6 @@ void MidiSyntiStrip::oRoutePressed()
             }
       oR->setDown(false);     // pup->exec() catches mouse release event
       }
-
 //---------------------------------------------------------
 //   iRoutePressed
 //---------------------------------------------------------

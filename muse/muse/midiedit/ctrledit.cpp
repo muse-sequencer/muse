@@ -91,8 +91,9 @@ void CtrlEdit::setCtrl(int id)
                   MidiChannel* mc = mt->channel();
                   if (mc) {
                         _ctrl = mc->getController(id);
-                        if (!_ctrl)
-                              _ctrl = mc->port()->getController(id);
+                        if (!_ctrl) {
+                              _ctrl = mc->port()->track->getController(id);
+                              }
                         }
                   }
             }

@@ -345,9 +345,9 @@ void Audio::process(unsigned frames, int jackState)
                   startRolling();
             }
 
-      OutputList* ol = song->outputs();
       if (idle || state == START_PLAY) {
             // deliver silence
+            OutputList* ol = song->outputs();
             for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
                   (*i)->silence(frames);
             return;
@@ -433,14 +433,32 @@ void Audio::process(unsigned frames, int jackState)
                   }
             }
 
-      MidiOutPortList* mol = song->midiOutPorts();
-      for (iMidiOutPort i = mol->begin(); i != mol->end(); ++i)
-            audioDriver->startMidiCycle((*i)->jackPort(0));
+      //-----------------------------------------
+      //  process midi
+      //-----------------------------------------
 
-      processMidi();
+      SynthIList* sl      = song->syntis();
+      {
+      MidiOutPortList* ol = song->midiOutPorts();
+      MidiInPortList* mil = song->midiInPorts();
+
+      for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
+            audioDriver->startMidiCycle((*i)->jackPort(0));
+      for (iMidiInPort i = mil->begin(); i != mil->end(); ++i)
+            (*i)->beforeProcess();
+      for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
+            (*i)->processMidi(_curTickPos, _nextTickPos, _pos.frame(), _pos.frame() + segmentSize);
+      for (iSynthI i = sl->begin(); i != sl->end(); ++i)
+            (*i)->processMidi(_curTickPos, _nextTickPos, _pos.frame(), _pos.frame() + segmentSize);
+      for (iMidiInPort i = mil->begin(); i != mil->end(); ++i)
+            (*i)->afterProcess();
+      }
+
+      //-----------------------------------------
+      //  process audio
+      //-----------------------------------------
 
       GroupList* gl     = song->groups();
-      SynthIList* sl    = song->syntis();
       InputList* il     = song->inputs();
       WaveTrackList* wl = song->waves();
 
@@ -486,7 +504,9 @@ void Audio::process(unsigned frames, int jackState)
             }
       for (iAudioGroup i = gl->begin(); i != gl->end(); ++i)
             (*i)->process();
-      for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
+      
+      OutputList* aol = song->outputs();
+      for (iAudioOutput i = aol->begin(); i != aol->end(); ++i)
             (*i)->process();
 
       if (_bounce == 1 && song->bounceTrack && song->bounceTrack->type() == Track::WAVE)

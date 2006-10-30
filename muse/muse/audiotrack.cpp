@@ -34,8 +34,8 @@
 //   AudioTrack
 //---------------------------------------------------------
 
-AudioTrack::AudioTrack(TrackType t)
-   : Track(t)
+AudioTrack::AudioTrack()
+   : Track()
       {
       _tt       = AL::FRAMES;
       _prefader = false;

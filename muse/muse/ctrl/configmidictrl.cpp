@@ -23,6 +23,7 @@
 #include "midioutport.h"
 #include "midichannel.h"
 #include "midictrl.h"
+#include "midiout.h"
 #include "instruments/minstrument.h"
 
 //---------------------------------------------------------
@@ -52,8 +53,8 @@ ConfigMidiCtrl::ConfigMidiCtrl(MidiTrack* t)
       else if (track->type() == Track::MIDI_CHANNEL)
             mc = (MidiChannel*)track;
       if (mc) {
-            MidiOutPort* mp = mc->port();
-            portName->setText(mp->name());
+            MidiOut* mp = mc->port();
+            portName->setText(mp->track->name());
             //
             // populate popup with all controllers available for
             // current instrument
@@ -148,7 +149,7 @@ void ConfigMidiCtrl::done(int code)
             mc = (MidiChannel*)track;
 
       if (mc) {
-            MidiOutPort* port = mc->port();
+            MidiOut* port           = mc->port();
             ControllerNameList* cn  = track->controllerNames();
             MidiInstrument* instr   = port->instrument();
             MidiControllerList* mcl = instr->controller();

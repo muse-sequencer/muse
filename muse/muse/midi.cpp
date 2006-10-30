@@ -41,6 +41,7 @@
 #include "midiinport.h"
 #include "midioutport.h"
 #include "midichannel.h"
+#include "instruments/minstrument.h"
 
 extern void dump(const unsigned char* p, int n);
 
@@ -627,40 +628,6 @@ void Audio::initDevices()
                         ic->second->setCurVal(CTRL_VAL_UNKNOWN);
                         }
                   }
-            }
-      }
-
-//---------------------------------------------------------
-//   processMidi
-//    - called from midiseq thread,
-//      executed in audio thread
-//	Process one time slice of midi events
-//---------------------------------------------------------
-
-void Audio::processMidi()
-      {
-      MidiInPortList* il = song->midiInPorts();
-      for (iMidiInPort id = il->begin(); id != il->end(); ++id)
-            (*id)->beforeProcess();
-            
-      MidiOutPortList* ol = song->midiOutPorts();
-      for (iMidiOutPort id = ol->begin(); id != ol->end(); ++id) {
-            (*id)->process(_curTickPos, _nextTickPos, _pos.frame(), _pos.frame() + segmentSize);
-            }
-      for (iMidiInPort id = il->begin(); id != il->end(); ++id) {
-            MidiInPort* port = *id;
-            //
-            // process routing to synti
-            //
-            RouteList* rl = port->outRoutes();
-            for (iRoute i = rl->begin(); i != rl->end(); ++i) {
-                  if (i->track->type() != Track::AUDIO_SOFTSYNTH)
-                        continue;
-                  SynthI* s = (SynthI*)(i->track);
-                  MPEventList* dl = s->playEvents();
-                  port->getEvents(0, 0, -1, dl);
-                  }
-            port->afterProcess();
             }
       }
 

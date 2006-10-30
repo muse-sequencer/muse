@@ -40,6 +40,7 @@ class MidiInPort : public MidiTrackBase {
    public:
       MidiInPort();
       ~MidiInPort();
+      virtual TrackType type() const { return MIDI_IN; }
 
       virtual void setName(const QString& s);
       virtual void write(Xml&) const;

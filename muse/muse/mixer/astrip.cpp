@@ -193,14 +193,20 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       //---------------------------------------------------
 
       QHBoxLayout* rBox = new QHBoxLayout(0);
-      iR = new QToolButton(this);
-      iR->setFont(config.fonts[1]);
-      iR->setFixedWidth((STRIP_WIDTH-4)/2);
-      iR->setText(tr("iR"));
-      iR->setCheckable(false);
-      iR->setToolTip(tr("input routing"));
-      rBox->addWidget(iR);
-      connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
+
+      if (track->type() == Track::AUDIO_SOFTSYNTH) {
+            rBox->addStretch(100);
+            }
+      else {
+            iR = new QToolButton(this);
+            iR->setFont(config.fonts[1]);
+            iR->setFixedWidth((STRIP_WIDTH-4)/2);
+            iR->setText(tr("iR"));
+            iR->setCheckable(false);
+            iR->setToolTip(tr("input routing"));
+            rBox->addWidget(iR);
+            connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
+            }
       oR = new QToolButton(this);
       oR->setFont(config.fonts[1]);
       oR->setFixedWidth((STRIP_WIDTH-4)/2);
@@ -716,10 +722,6 @@ void AudioStrip::iRoutePressed()
                   addInPorts(t, &pup, irl, true);
                   addGroupPorts(t, &pup, irl);
                   addSyntiPorts(t, &pup, irl);
-                  break;
-            case Track::AUDIO_SOFTSYNTH:
-                  addMidiOutPorts(t, &pup, irl);
-                  addMidiInPorts(t, &pup, irl);
                   break;
             }
       if (pup.isEmpty())

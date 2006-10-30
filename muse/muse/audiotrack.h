@@ -63,7 +63,7 @@ class AudioTrack : public Track {
       virtual void setAutoWrite(bool);
 
    public:
-      AudioTrack(TrackType t);
+      AudioTrack();
       virtual ~AudioTrack();
 
       bool readProperties(QDomNode);

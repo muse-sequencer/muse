@@ -22,27 +22,16 @@
 #define __MIDIOUTPORT_H__
 
 #include "track.h"
+#include "midiout.h"
 
 //---------------------------------------------------------
 //   MidiOutPort
 //---------------------------------------------------------
 
-class MidiOutPort : public MidiTrackBase {
+class MidiOutPort : public MidiTrackBase, public MidiOut {
       Q_OBJECT
 
-      MidiInstrument* _instrument;
-      MidiChannel* _channel[MIDI_CHANNELS];
-
-      bool _sendSync;   // this port sends mtc/mmc events
-      int _deviceId;    // 0-126; 127 == all
-
-      MPEventList _schedEvents;  // scheduled events by process()
       MPEventList _playEvents;   // event queue for MidiSeq
-
-      // fifo for midi events send from gui
-      // direct to midi port:
-
-      MidiFifo eventFifo;
 
       void routeEvent(const MidiEvent&);
       void queueAlsaEvent(const MidiEvent& event);
@@ -50,11 +39,11 @@ class MidiOutPort : public MidiTrackBase {
 
    signals:
       void instrumentChanged();
-      void sendSyncChanged(bool);
 
    public:
       MidiOutPort();
       ~MidiOutPort();
+      virtual TrackType type() const { return MIDI_OUT; }
 
       MidiChannel* channel(int n)         { return _channel[n]; }
 
@@ -64,42 +53,16 @@ class MidiOutPort : public MidiTrackBase {
       virtual bool isMute() const         { return _mute; }
       virtual Part* newPart(Part*, bool)  { return 0; }
 
-      MidiInstrument* instrument() const        { return _instrument; }
+      MidiInstrument* instrument() const  { return _instrument; }
       void setInstrument(MidiInstrument* i);
 
       bool guiVisible() const;
       bool hasGui() const;
 
-//      void putEvent(const MidiEvent&);
-
       MPEventList* playEvents()          { return &_playEvents;   }
 
-      void process(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
-
-      void playMidiEvent(MidiEvent*);
-
-      void sendSysex(const unsigned char*, int);
-      void sendSongpos(int);
-      void sendGmOn();
-      void sendGsOn();
-      void sendXgOn();
-      void sendStart();
-      void sendStop();
-      void sendContinue();
-      void sendClock();
-
-      bool sendSync() const      { return _sendSync; }
-      void setSendSync(bool val);
-
-      int deviceId() const      { return _deviceId; }
-      void setDeviceId(int val) { _deviceId = val; }
-
-      void seek(unsigned, unsigned);
-      void stop();
-      void start();
-      void reset();
-
       void playAlsaEvent(const MidiEvent& event) const;
+      void processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
       };
 
 #endif

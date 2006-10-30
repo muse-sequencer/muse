@@ -161,8 +161,8 @@ class MidiSyntiStrip : public Strip {
       void sliderReleased(int);
       void autoReadToggled(bool);
       void autoWriteToggled(bool);
-      void iRoutePressed();
       void oRoutePressed();
+      void iRoutePressed();
 
    protected slots:
       virtual void heartBeat();

@@ -30,7 +30,7 @@
 //---------------------------------------------------------
 
 MidiSynti::MidiSynti()
-   : MidiTrackBase(MIDI_SYNTI)
+   : MidiTrackBase()
       {
       _synti = 0;
       init();

@@ -21,18 +21,21 @@
 #include <dlfcn.h>
 
 #include "al/al.h"
+#include "al/xml.h"
+#include "al/tempo.h"
 #include "muse.h"
 #include "synth.h"
-#include "al/xml.h"
 #include "midi.h"
 #include "synti/libsynti/mess.h"
 #include "song.h"
 #include "audio.h"
 #include "event.h"
 #include "midievent.h"
+#include "midichannel.h"
 #include "audio.h"
 #include "midiseq.h"
 #include "midictrl.h"
+#include "instruments/minstrument.h"
 
 std::vector<Synth*> synthis;  // array of available synthis
 
@@ -178,12 +181,39 @@ void* MessSynth::instantiate(const QString& instanceName)
 //---------------------------------------------------------
 
 SynthI::SynthI()
-   : AudioTrack(AUDIO_SOFTSYNTH)
+   : AudioTrack()
       {
+      track      = this;
       synthesizer = 0;
       _sif        = 0;
       // setVolume(1.0);
       // setPan(0.0);
+      _instrument = genericMidiInstrument;      //TODO
+      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
+            _channel[ch] = new MidiChannel(this, ch);
+      }
+
+//---------------------------------------------------------
+//   ~SynthI
+//---------------------------------------------------------
+
+SynthI::~SynthI()
+      {
+      deactivate2();
+      deactivate3();
+      for (int ch = 0; ch < MIDI_CHANNEL; ++ch)
+            delete _channel[ch];
+      }
+
+//---------------------------------------------------------
+//   setName
+//---------------------------------------------------------
+
+void SynthI::setName(const QString& s)
+      {
+      Track::setName(s);
+      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
+            _channel[ch]->setDefaultName();
       }
 
 //---------------------------------------------------------
@@ -226,7 +256,7 @@ bool SynthI::initInstance(Synth* s)
       synthesizer = s;
       _sif        = s->createSIF(this);
 
-      setIName(name());   // set instrument name
+      _instrument->setIName(name());   // set instrument name
       AudioTrack::setChannels(_sif->channels());
 
       //---------------------------------------------------
@@ -234,7 +264,7 @@ bool SynthI::initInstance(Synth* s)
       //---------------------------------------------------
 
       int id = 0;
-      MidiControllerList* cl = MidiInstrument::controller();
+      MidiControllerList* cl = _instrument->controller();
       for (;;) {
             const char* name;
             int ctrl;
@@ -247,7 +277,7 @@ bool SynthI::initInstance(Synth* s)
             cl->push_back(c);
             }
 
-      EventList* iel = midiState();
+      EventList* iel = _instrument->midiState();
       if (!iel->empty()) {
             for (iEvent i = iel->begin(); i != iel->end(); ++i) {
                   Event ev = i->second;
@@ -291,7 +321,7 @@ int MessSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
 
 void SynthI::deactivate2()
       {
-      removeMidiInstrument(this);
+      removeMidiInstrument(_instrument);
       }
 
 //---------------------------------------------------------
@@ -315,16 +345,6 @@ void MessSynthIF::deactivate3()
 
 MessSynthIF::~MessSynthIF()
       {
-      deactivate3();
-      }
-
-//---------------------------------------------------------
-//   ~SynthI
-//---------------------------------------------------------
-
-SynthI::~SynthI()
-      {
-      deactivate2();
       deactivate3();
       }
 
@@ -433,7 +453,7 @@ void SynthI::read(QDomNode node)
             else if (e.tagName() == "guiVisible")
                   startGui = e.text().toInt();
             else if (e.tagName() == "midistate")
-                  readMidiState(node.firstChild());
+                  _instrument->readMidiState(node.firstChild());
             else if (e.tagName() == "param") {
                   float val = e.text().toFloat();
                   initParams.push_back(val);
@@ -572,11 +592,28 @@ bool MessSynthIF::putEvent(const MidiEvent& ev)
 void SynthI::collectInputData()
       {
       bufferEmpty = false;
-      while (!_eventFifo.isEmpty())
-            _playEvents.add(_eventFifo.get());
-      iMPEvent ie = _playEvents.begin();
+      while (!eventFifo.isEmpty())
+            _schedEvents.add(eventFifo.get());
+      iMPEvent ie = _schedEvents.begin();
       unsigned pos = audio->pos().frame();
-      _sif->getData(&_playEvents, ie, pos, channels(), segmentSize, buffer);
-      _playEvents.clear();
+      _sif->getData(&_schedEvents, ie, pos, channels(), segmentSize, buffer);
+      _schedEvents.clear();
       }
 
+//-------------------------------------------------------------------
+//   process
+//    Collect all midi events for the current process cycle and put
+//    into _schedEvents queue. For note on events create the proper
+//    note off events. The note off events maybe played after the
+//    current process cycle.
+//    From _schedEvents queue copy all events for the current cycle
+//    to all output routes. Events routed to ALSA go into the 
+//    _playEvents queue which is processed by the MidiSeq thread.
+//-------------------------------------------------------------------
+
+void SynthI::processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame)
+      {
+      if (mute())
+            return;
+      MidiOut::processMidi(_schedEvents, fromTick, toTick, fromFrame, toFrame);
+      }

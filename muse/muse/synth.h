@@ -22,8 +22,9 @@
 #define __SYNTH_H__
 
 #include "globals.h"
-#include "instruments/minstrument.h"
+// #include "instruments/minstrument.h"
 #include "audiotrack.h"
+#include "midiout.h"
 
 class Mess;
 struct MESS;
@@ -114,11 +115,11 @@ class SynthIF {
 //    MidiInstrument
 //---------------------------------------------------------
 
-class SynthI : public AudioTrack, public MidiInstrument
+class SynthI : public AudioTrack, public MidiOut
       {
+      Q_OBJECT
+
       SynthIF* _sif;
-      MPEventList _playEvents;
-      MidiFifo _eventFifo;
 
    protected:
       Synth* synthesizer;
@@ -135,6 +136,9 @@ class SynthI : public AudioTrack, public MidiInstrument
    public:
       SynthI();
       virtual ~SynthI();
+      virtual TrackType type() const { return AUDIO_SOFTSYNTH; }
+
+      virtual void setName(const QString& s);
 
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s);
@@ -169,8 +173,7 @@ class SynthI : public AudioTrack, public MidiInstrument
       void deactivate3();
       bool isActivated() const         { return synthesizer && _sif; }
       virtual bool hasAuxSend() const  { return _sif->hasAuxSend(); }
-      MPEventList* playEvents()        { return &_playEvents;   }
-      MidiFifo* eventFifo()            { return &_eventFifo;    }
+      void processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
       };
 
 //---------------------------------------------------------

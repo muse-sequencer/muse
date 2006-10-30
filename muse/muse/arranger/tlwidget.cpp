@@ -36,6 +36,7 @@
 #include "audio.h"
 #include "midioutport.h"
 #include "midichannel.h"
+#include "instruments/minstrument.h"
 
 //---------------------------------------------------------
 //   TLWidget
@@ -159,12 +160,12 @@ void TLWidget::mousePressEvent(QMouseEvent* ev)
                         {
 				int idx = song->tracks()->index(_track);
                         if (_track->type() == Track::MIDI) {
-	                        MidiTrack* t = new MidiTrack;
-      	                  t->clone((MidiTrack*)_track);
+	                        MidiTrack* t = new MidiTrack();
+                              t->clone((MidiTrack*)_track);
                   	      song->insertTrack(t, idx);
                               }
                         else {
-	                        WaveTrack* t = new WaveTrack;
+	                        WaveTrack* t = new WaveTrack();
       	                  t->clone((WaveTrack*)_track);
                   	      song->insertTrack(t, idx);
                               }
@@ -530,7 +531,7 @@ void TLWidget::outChannelChanged(int n)
       MidiChannel* mc = ((MidiTrack*)_track)->channel();
       if (mc == 0)		// no route to port?
             return;
-      MidiOutPort* mp = mc->port();
+      MidiOut* mp = mc->port();
       int id = mc->channelNo();
       if (id == n)
             return;
