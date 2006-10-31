@@ -141,7 +141,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setSaveOnlyUsed(bool);
     void setSaveOnlyUsedComp(bool);
     void setSaveConfig(bool);
-    void setMidiInCh(int); //to change
+//    void setMidiInCh(int); //to change
     void setQuality(const QString&);
     void setFontSize(int);
     void saveConfiguration();

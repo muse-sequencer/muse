@@ -284,15 +284,15 @@ void Ctrl::write(Xml& xml)
 
       if (empty()) {
             if (_type & INT)
-                  xml.tagE(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
+                  xml.tagE(s.arg(id()).arg(_name).arg(schedVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
             else
-                  xml.tagE(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
+                  xml.tagE(s.arg(id()).arg(_name).arg(schedVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
             return;
             }
       if (_type & INT)
-            xml.tag(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
+            xml.tag(s.arg(id()).arg(_name).arg(schedVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
       else
-            xml.tag(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
+            xml.tag(s.arg(id()).arg(_name).arg(schedVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
 
       int i = 0;
       for (ciCtrlVal ic = begin(); ic != end(); ++ic) {

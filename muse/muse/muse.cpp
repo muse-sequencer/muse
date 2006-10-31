@@ -1256,7 +1256,7 @@ void MusE::loadProject1(const QString& path)
 
       for (iTrack i = tl->begin(); i != tl->end(); ++i) {
             Track* track = *i;
-            track->blockSignals(true);
+//            track->blockSignals(true);
             CtrlList* cl = track->controller();
             for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
                   Ctrl* ctrl = ic->second;
@@ -1269,7 +1269,7 @@ void MusE::loadProject1(const QString& path)
                         song->setControllerVal(track, ctrl, val);
                         }
                   }
-            track->blockSignals(false);
+//            track->blockSignals(false);
             }
       setWindowTitle(QString("MusE: Song: ") + name);
       }

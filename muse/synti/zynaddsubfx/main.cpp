@@ -379,6 +379,7 @@ bool Zynadd::processEvent(const MidiEvent& e)
                            	      default:   ctl = C_NULL; break;
                            	      }
 	      	            SetController(ch, ctl, e.dataB());
+                              guiCmd = GUI_REFRESH;  // does not work
                               }
                               break;
                         }
