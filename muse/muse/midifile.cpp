@@ -241,13 +241,8 @@ bool MidiFile::readTrack(MidiFileTrack* t)
             lastchannel = -1;
 
             int rv = readEvent(&event, t);
-            if (lastport != -1) {
+            if (lastport != -1)
                   port = lastport;
-                  if (port >= MIDI_PORTS) {
-                        printf("port %d >= %d, reset to 0\n", port, MIDI_PORTS);
-                        port = 0;
-                        }
-                  }
             if (lastchannel != -1) {
                   channel = lastchannel;
                   if (channel >= MIDI_CHANNELS) {

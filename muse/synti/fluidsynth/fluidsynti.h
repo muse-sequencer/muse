@@ -97,10 +97,10 @@ public:
       virtual bool sysex(int, const unsigned char*);
       virtual bool setController(int, int, int);
       void setController(int, int , int, bool);
-      virtual void getInitData(int*, const unsigned char**) const;
+      virtual void getInitData(int*, const unsigned char**);
       virtual const char* getPatchName(int, int, int) const;
       virtual const MidiPatch* getPatchInfo(int i, const MidiPatch* patch) const;
-      virtual int getControllerInfo(int, const char**, int*, int*, int*) const;
+      virtual int getControllerInfo(int, const char**, int*, int*, int*);
       virtual bool processEvent(const MidiEvent&);
 
       virtual bool hasGui() const { return true; }

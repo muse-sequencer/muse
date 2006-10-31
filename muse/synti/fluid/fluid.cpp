@@ -22,9 +22,7 @@
 //   instantiate
 //---------------------------------------------------------
 
-class QWidget;
-
-static Mess* instantiate(int sr, QWidget*, const char* name)
+static Mess* instantiate(int sr, const char* name)
       {
       ISynth* synth = new ISynth();
       synth->setSampleRate(sr);

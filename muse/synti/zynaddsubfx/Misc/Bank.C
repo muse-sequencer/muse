@@ -214,20 +214,23 @@ void Bank::loadfromslot(unsigned int ninstrument,Part *part){
 /*
  * Makes current a bank directory
  */
-int Bank::loadbank(const char *bankdirname){
-    DIR *dir=opendir(bankdirname);
-    clearbank();
+int Bank::loadbank(const char *bankdirname)
+      {
+      DIR *dir = opendir(bankdirname);
+      clearbank();
 
-    if (dir==NULL) return(-1);
+      if (dir==NULL) 
+            return -1;
 
-    if (dirname!=NULL) delete(dirname);
-    dirname=new char[strlen(bankdirname)+1];
-    snprintf(dirname,strlen(bankdirname)+1,"%s",bankdirname);
+      if (dirname!=NULL) 
+            delete(dirname);
+      dirname = new char[strlen(bankdirname)+1];
+      snprintf(dirname, strlen(bankdirname)+1, "%s",bankdirname);
     
-    bankfiletitle=dirname;
+      bankfiletitle=dirname;
 
-   // printf("loadbank %s/\n",bankdirname);
-    struct dirent *fn;
+      // printf("loadbank %s/\n",bankdirname);
+      struct dirent *fn;
         
     while ((fn=readdir(dir))){
 	const char *filename= fn->d_name;

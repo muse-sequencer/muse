@@ -23,13 +23,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "EffectMgr.h"
+#include "../Misc/Master.h"
 
-EffectMgr::EffectMgr(int insertion_,pthread_mutex_t *mutex_){
+EffectMgr::EffectMgr(int insertion_,Master* master_){
     setpresettype("Peffect");
     efx=NULL;
     nefx=0;
     insertion=insertion_;
-    mutex=mutex_;
+    master=master_;
     efxoutl=new REALTYPE[SOUND_BUFFER_SIZE];
     efxoutr=new REALTYPE[SOUND_BUFFER_SIZE];;
     for (int i=0;i<SOUND_BUFFER_SIZE;i++){
@@ -117,9 +118,9 @@ void EffectMgr::changepreset_nolock(unsigned char npreset){
  * Change the preset of the current effect(with thread locking)
  */
 void EffectMgr::changepreset(unsigned char npreset){
-    pthread_mutex_lock(mutex);
+    master->lock();
     changepreset_nolock(npreset);
-    pthread_mutex_unlock(mutex);
+    master->unlock();
 };
 
 
@@ -135,9 +136,9 @@ void EffectMgr::seteffectpar_nolock(int npar,unsigned char value){
  * Change a parameter of the current effect (with thread locking)
  */
 void EffectMgr::seteffectpar(int npar,unsigned char value){
-    pthread_mutex_lock(mutex);
+    master->lock();
     seteffectpar_nolock(npar,value);
-    pthread_mutex_unlock(mutex);
+    master->unlock();
 };
 
 /*

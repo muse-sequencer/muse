@@ -38,10 +38,12 @@
 #include "../Effects/EffectMgr.h"
 #include "XMLwrapper.h"
 
+class Master;
+
 class Part{
 
     public:
-      Part(Microtonal *microtonal_,FFTwrapper *fft_,pthread_mutex_t *mutex_);
+      Part(Microtonal *microtonal_,FFTwrapper *fft_, Master* master);
       ~Part();
 
       /* Midi commands implemented */      
@@ -138,7 +140,7 @@ class Part{
       bool Pefxbypass[NUM_PART_EFX];//if the effects are bypassed
       
 
-      pthread_mutex_t *mutex;
+      Master* master;
       
       int lastnote;      
       

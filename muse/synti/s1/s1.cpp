@@ -135,9 +135,7 @@ void S1::process(float** buffer, int offset, int n)
 //   inst
 //---------------------------------------------------------
 
-class QWidget;
-
-static Mess* instantiate(int sr, QWidget*, const char*)
+static Mess* instantiate(int sr, const char*)
       {
       S1* s1 = new S1();
       s1->setSampleRate(sr);

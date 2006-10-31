@@ -231,7 +231,7 @@ int main(int argc, char* argv[])
       //
       //    instantiate Synthesizer
       //
-      mess = descr->instantiate(sampleRate, 0, instanceName.toLocal8Bit().data());
+      mess = descr->instantiate(sampleRate, instanceName.toLocal8Bit().data());
       if (mess == 0) {
             fprintf(stderr, "%s: instantiate failed\n",
                argv[0]);

@@ -1,24 +1,25 @@
-/*
-  ZynAddSubFX - a software synthesizer
-
-  main.c  -  Main file of the synthesizer
-  Copyright (C) 2002-2005 Nasca Octavian Paul
-  Author: Nasca Octavian Paul
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of version 2 of the GNU General Public License 
-  as published by the Free Software Foundation.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License (version 2) for more details.
-
-  You should have received a copy of the GNU General Public License (version 2)
-  along with this program; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-
-*/
+//=============================================================================
+//  MusE
+//  Linux Music Editor
+//  $Id:$
+//
+//  Copyright (C) 2002-2006 by Werner Schweer and others
+//
+//  ZynAddSubFX - a software synthesizer
+//  Copyright (C) 2002-2005 Nasca Octavian Paul
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -28,8 +29,6 @@
 #include "Misc/Master.h"
 #include "Misc/Util.h"
 #include "MasterUI.h"
-
-int swaplr = 0;   //1 for left-right swapping
 
 //=========================================================
 //    MESS interface
@@ -42,26 +41,38 @@ int instances = -1;
 //   Zynadd
 //---------------------------------------------------------
 
-class Zynadd : public Mess {
+class Zynadd : public Mess, public Master 
+      {
       virtual void process(float** buffer, int offset, int n);
       virtual bool processEvent(const MidiEvent&);
-      virtual void getInitData(int*, const unsigned char**) const;
-      virtual int getControllerInfo(int, const char**, int*, int*, int*) const;
+      virtual void getInitData(int*, const unsigned char**);
+      virtual int getControllerInfo(int, const char**, int*, int*, int*);
       virtual const char* getPatchName(int, int, int) const;
       virtual const char* getBankName(int) const;
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const;
+      virtual bool hasGui() const { return true; }
+      virtual bool guiVisible() const { return _guiVisible; }
+      virtual void showGui(bool val);
 
       mutable MidiPatch patch;
       mutable int currentBank;
 
+      bool _guiVisible;
+      bool loadBank(int);
+      char* messPatch[MAX_NUM_BANKS][128];
+
    public:
       int Pexitprogram;
 	MasterUI* ui;
-      Master* vmaster;
 	pthread_t thr;
 
       Zynadd();
       ~Zynadd();
+
+      enum {
+            GUI_NO_CMD, GUI_REFRESH, GUI_HIDE, GUI_SHOW
+            };
+      int guiCmd;
       };
 
 //---------------------------------------------------------
@@ -71,40 +82,69 @@ class Zynadd : public Mess {
 void* guiThread(void *arg)
       {
       Zynadd* z = (Zynadd *) arg;
-
-      z->ui = new MasterUI(z->vmaster, &z->Pexitprogram);
-
+      z->ui = new MasterUI(z, &z->Pexitprogram);
       z->ui->showUI();
-
-//      while (z->Pexitprogram == 0) 
-//            sleep(2);
-
-      while (z->Pexitprogram == 0) 
+      while (z->Pexitprogram == 0) {
+            switch(z->guiCmd) {
+                  case Zynadd::GUI_REFRESH:
+                        z->ui->refresh_master_ui();
+                        break;
+                  case Zynadd::GUI_HIDE:
+                        switch (config.cfg.UserInterfaceMode) {
+	                        case 0:   
+                                    z->ui->selectuiwindow->hide();
+	                              break;
+	                        case 1:
+                                    z->ui->masterwindow->hide();
+	                              break;
+	                        case 2:
+                                    z->ui->simplemasterwindow->hide();
+	                              break;
+                              }
+                        break;
+                  case Zynadd::GUI_SHOW:
+                        z->ui->showUI();
+                        break;
+                  }
+            z->guiCmd = Zynadd::GUI_NO_CMD;
             Fl::wait(0.01);
-
+            }
       delete(z->ui);
       Fl::wait(0.01);
-
       pthread_exit(0);
-      return(0);
+      return 0;
       }
 
 //---------------------------------------------------------
 //   Zynadd
 //---------------------------------------------------------
 
-Zynadd::Zynadd() : Mess(2)
+Zynadd::Zynadd() : Mess(2), Master()
       {
       instances++;
       swaplr        = config.cfg.SwapStereo;
       Pexitprogram  = 0;
       currentBank   = -1;
+      guiCmd        = 0;
 
-      vmaster           = new Master();
-      vmaster->swaplr = swaplr;
-      vmaster->bank.rescanforbanks();
-      vmaster->defaults();
+      swaplr = 0;   //1 for left-right swapping
+      memset(messPatch, 0, sizeof(messPatch));
+      bank.rescanforbanks();
+      defaults();
+
+      for (int i = 1; i < MAX_NUM_BANKS; ++i) {
+            if (bank.banks[i].dir == 0)
+                  break;
+            loadBank(i);
+            for (unsigned int k = 0; k < 128; ++k) {
+            	if (!bank.emptyslot(k)) {
+                        messPatch[i][k] = strdup(bank.getname(k));
+                        }
+                  }
+            }
+
       pthread_create(&thr, NULL, guiThread, this);
+      _guiVisible = true;
       }
 
 //---------------------------------------------------------
@@ -119,23 +159,83 @@ Zynadd::~Zynadd()
       }
 
 //---------------------------------------------------------
+//    showGui
+//---------------------------------------------------------
+
+void Zynadd::showGui(bool val)
+      {
+      if (val != _guiVisible)
+            guiCmd = val ? GUI_SHOW : GUI_HIDE;
+      _guiVisible = val;
+      }
+
+//---------------------------------------------------------
+//    loadBank
+//---------------------------------------------------------
+
+bool Zynadd::loadBank(int n)
+      {
+      if (n != currentBank) {
+            if (bank.banks[n].dir == 0) {
+                  printf("Zynaddsubfx: empty bank %d\n", n);
+                        return false;
+                  }
+            bank.loadbank(bank.banks[n].dir);
+            currentBank = n;
+            }
+      return true;
+      }
+
+//---------------------------------------------------------
 //   getBankName
 //---------------------------------------------------------
 
 const char* Zynadd::getBankName(int n) const
       {
       n += 1;     // bank 0 is always empty ?!
-//    printf("Zyn: getBankName %d <%s>\n", n, vmaster->bank.banks[n].name);
-      return vmaster->bank.banks[n].name;
+//    printf("Zyn: getBankName %d <%s>\n", n, bank.banks[n].name);
+      return bank.banks[n].name;
       }
 
 //---------------------------------------------------------
 //   getControllerInfo
 //---------------------------------------------------------
 
-int Zynadd::getControllerInfo(int, const char**, int*, int*, int*) const
+struct ZynCtrl {
+      const char* name;
+      int num;
+      int min;
+      int max;
+      };
+
+int Zynadd::getControllerInfo(int i, const char** name, int* num, int* min, int* max)
       {
-      return 0;
+      static const ZynCtrl ctrl[] = {
+            { "Pitch",          0x40000, -8191, 8190 },
+            { "ProgramChange",  0x40001,  0, 0xffffff },
+            { "Modulation",           1,  0, 127     },
+            { "MainVolume",           7,  0, 127     },
+            { "Pan",                 10,  0, 127     },
+            { "Expression",          11,  0, 127     },
+            { "Sustain",             64,  0, 127     },
+            { "Portamento",          65,  0, 127     },
+            { "FilterQ",	       71,  0, 127     },
+            { "FilterCutoff",	       74,  0, 127     },
+            { "Bandwidth",           75,  0, 127     },
+            { "ModulationAmp",       76,  0, 127     },
+            { "ResonanceCenter",     77,  0, 127     },
+            { "ResonanceBandwidth",  78,  0, 127     },
+            { "AllSoundsOff",       120,  0, 127     },
+            { "ResetAllController", 121,  0, 127     },
+            { "AllNotesOff",        123,  0, 127     },
+            };
+      if ((unsigned)i >= sizeof(ctrl)/sizeof(*ctrl))
+            return 0;
+      *name = ctrl[i].name;
+      *num  = ctrl[i].num;
+      *min  = ctrl[i].min;
+      *max  = ctrl[i].max;
+      return i+1;;
       }
 
 //---------------------------------------------------------
@@ -144,11 +244,9 @@ int Zynadd::getControllerInfo(int, const char**, int*, int*, int*) const
 
 const char* Zynadd::getPatchName(int, int val, int) const
       {
-      int bank = (val >> 8) + 1;
-      if (bank != currentBank)
-            return "--?--";
+      int bankNo = (val >> 8) + 1;
       int program = val & 0x7f;
-      return vmaster->bank.getname(program);
+      return messPatch[bankNo][program];
       }
 
 //---------------------------------------------------------
@@ -159,16 +257,10 @@ const MidiPatch* Zynadd::getPatchInfo(int, const MidiPatch* p) const
       {
       if (!p)
             return 0;
-
-      int bank = ((p->hbank << 8) & 0xff) + ((p->lbank) & 0xff) + 1;
-      if (bank != currentBank) {
-// printf("load new bank %d <%s>\n", bank, vmaster->bank.banks[bank].dir);
-            vmaster->bank.loadbank(vmaster->bank.banks[bank].dir);
-            currentBank = bank;
-            }
+      int bn = ((p->hbank << 8) & 0xff) + ((p->lbank) & 0xff) + 1;
       for (unsigned int i = p->prog + 1; i < 128; ++i) {
-            if (!vmaster->bank.emptyslot(i)) {
-                  patch.name  = vmaster->bank.getname(i);
+            if (messPatch[bn][i]) {
+                  patch.name  = messPatch[bn][i];
                   patch.typ   = 0xff;
                   patch.prog  = i;
                   patch.hbank = p->hbank;
@@ -183,9 +275,9 @@ const MidiPatch* Zynadd::getPatchInfo(int, const MidiPatch* p) const
 //    getInitData
 //---------------------------------------------------------
 
-void Zynadd::getInitData(int* n, const unsigned char** data) const
+void Zynadd::getInitData(int* n, const unsigned char** data)
       {
-      *n = vmaster->getalldata((char **)data);
+      *n = getalldata((char **)data);
       }
 
 //---------------------------------------------------------
@@ -197,9 +289,12 @@ void Zynadd::process(float** outputs, int offset, int n)
       {
       float* outl = outputs[0] + offset;
       float* outr = outputs[1] + offset;
-//      pthread_mutex_lock(&vmaster->mutex);
-      vmaster->GetAudioOutSamples(n, outl, outr);
-//      pthread_mutex_unlock(&vmaster->mutex);
+      if (busy) {
+            memset(outl, 0, sizeof(float) * n);
+            memset(outr, 0, sizeof(float) * n);
+            return;
+            }
+      GetAudioOutSamples(n, outl, outr);
       }
 
 //---------------------------------------------------------
@@ -208,42 +303,37 @@ void Zynadd::process(float** outputs, int offset, int n)
 
 bool Zynadd::processEvent(const MidiEvent& e)
       {
+      if (busy)
+            return true;
       int ch = e.channel();
-//	pthread_mutex_lock(&vmaster->mutex);
       switch(e.type()) {
             case 0x80:  // note off
-	            vmaster->NoteOff(ch, e.dataA());
+	            NoteOff(ch, e.dataA());
                   break;
             case 0x90:  // note on
-                  vmaster->NoteOn(ch, e.dataA(), e.dataB());
+                  NoteOn(ch, e.dataA(), e.dataB());
 		      break;
 	      case 0xb0:  // controller
                   switch(e.dataA()) {
                         case 0x40000:     // pitch
-	                        vmaster->SetController(ch, C_pitchwheel, e.dataB());
+	                        SetController(ch, C_pitchwheel, e.dataB());
                               break;
                         case 0x40001:     // program change
                               {
-                              int bank = (e.dataB() >> 8) + 1;
-                              if (bank != currentBank) {
-                                    if (vmaster->bank.banks[bank].dir == 0) {
-                                          printf("Zynaddsubfx: empty bank %d\n", bank);
-                                          return false;
-                                          }
-                                    vmaster->bank.loadbank(vmaster->bank.banks[bank].dir);
-                                    currentBank = bank;
-                                    }
+                              int bankNo = (e.dataB() >> 8) + 1;
+                              if (!loadBank(bankNo))
+                                    return false;
                               int program = e.dataB() & 0x7f;
-                              if (vmaster->bank.emptyslot(program)) {
+                              if (bank.emptyslot(program)) {
                                     printf("Zynaddsubfx: programslot %d is empty!\n", program);
                                     break;
                                     }
                               for (int npart = 0; npart < NUM_MIDI_PARTS; npart++) {
-                                    Part* part = vmaster->part[npart];
-	                              if ((ch == part->Prcvchn) && (part->Penabled != 0))
-	                                    vmaster->bank.loadfromslot(program, part);
+                                    Part* p = part[npart];
+	                              if ((ch == p->Prcvchn) && (p->Penabled != 0))
+	                                    bank.loadfromslot(program, p);
                                     }
-                              // TODO: gui does not change
+                              guiCmd = GUI_REFRESH;
                               }
                               break;
                         default:
@@ -271,19 +361,16 @@ bool Zynadd::processEvent(const MidiEvent& e)
                            	      case 98:   ctl = C_nrpnlo; break;
                            	      default:   ctl = C_NULL; break;
                            	      }
-	      	            vmaster->SetController(ch, ctl, e.dataB());
+	      	            SetController(ch, ctl, e.dataB());
                               }
                               break;
                         }
                   break;
 
             case 0xf0:
-//	            pthread_mutex_unlock(&vmaster->mutex);
-                  vmaster->putalldata((char*)e.data(), e.len());
-//	            pthread_mutex_lock(&vmaster->mutex);
+                  putalldata((char*)e.data(), e.len());
                   break;
             }
-//	pthread_mutex_unlock(&vmaster->mutex);
       return false;
       }
 
@@ -291,9 +378,7 @@ bool Zynadd::processEvent(const MidiEvent& e)
 //   instantiate
 //---------------------------------------------------------
 
-class QWidget;
-
-static Mess* instantiate(int sr, QWidget*, const char*)
+static Mess* instantiate(int sr, const char*)
       {
       if (instances == -1) {
             config.init();

@@ -21,12 +21,13 @@
 */
 #include <math.h>
 #include "PADnoteParameters.h"
+#include "../Misc/Master.h"
 
-PADnoteParameters::PADnoteParameters(FFTwrapper *fft_,pthread_mutex_t *mutex_):Presets(){
+PADnoteParameters::PADnoteParameters(FFTwrapper *fft_,Master* master_):Presets(){
     setpresettype("Ppadsyth");
 
     fft=fft_;
-    mutex=mutex_;
+    master=master_;
     
     resonance=new Resonance();
     oscilgen=new OscilGen(fft_,resonance);
@@ -508,12 +509,12 @@ printf("applyparameters %d\n", lockmutex);
 
 	//replace the current sample with the new computed sample
 	if (lockmutex){
-	    pthread_mutex_lock(mutex);
+	    master->lock();
 	     deletesample(nsample);
 	     sample[nsample].smp=newsample.smp;
     	     sample[nsample].size=samplesize;
 	     sample[nsample].basefreq=basefreq*basefreqadjust;
-	    pthread_mutex_unlock(mutex);
+	    master->unlock();
 	} else {
 	    deletesample(nsample);
 	    sample[nsample].smp=newsample.smp;
@@ -527,9 +528,9 @@ printf("applyparameters %d\n", lockmutex);
     
     //delete the additional samples that might exists and are not useful
     if (lockmutex){
-        pthread_mutex_lock(mutex);
+        master->lock();
 	for (int i=samplemax;i<PAD_MAX_SAMPLES;i++) deletesample(i);
-        pthread_mutex_unlock(mutex);
+        master->unlock();
     } else {
 	for (int i=samplemax;i<PAD_MAX_SAMPLES;i++) deletesample(i);
     };

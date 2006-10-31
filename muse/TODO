@@ -2,16 +2,10 @@
 (29.10.2006)
 ----------------------------------------------------------------------------
 
-      - Handle software synthesizer like an MidiOutPort. This eliminates
-        the extra routing from MidiOutPort to the synti and removes the
-        extra MidiOutPort. Synthesizer then have channels and MidiTrack's
-        can directly routed to synthesizer channels.
       - change default: show MidiChannel in mixer, dont show MidiTrack
       - Add "monitor" button to midi channel strip in mixer.
       - add midi fifo for MESS synthesizer and repeat sending an event
         in case the synthesizer is busy
-      - replace posix semaphores with simple "busy" flag in
-        zynaddsubfx
       - change default: do not default to "automation read" when
         creating new strips
       - change default: when creating midi input strips, route input

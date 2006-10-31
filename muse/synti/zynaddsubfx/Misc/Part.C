@@ -20,16 +20,17 @@
 
 */
 
+#include "Master.h"
 #include "Part.h"
 #include "Microtonal.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-Part::Part(Microtonal *microtonal_,FFTwrapper *fft_, pthread_mutex_t *mutex_){
+Part::Part(Microtonal *microtonal_,FFTwrapper *fft_, Master* master_){
     microtonal=microtonal_;    
     fft=fft_;
-    mutex=mutex_;
+    master=master_;
     partoutl=new REALTYPE [SOUND_BUFFER_SIZE];
     partoutr=new REALTYPE [SOUND_BUFFER_SIZE];
     tmpoutl=new REALTYPE [SOUND_BUFFER_SIZE];
@@ -42,13 +43,13 @@ Part::Part(Microtonal *microtonal_,FFTwrapper *fft_, pthread_mutex_t *mutex_){
 
     kit[0].adpars=new ADnoteParameters(fft);
     kit[0].subpars=new SUBnoteParameters();
-    kit[0].padpars=new PADnoteParameters(fft,mutex);
+    kit[0].padpars=new PADnoteParameters(fft,master);
 //    ADPartParameters=kit[0].adpars;
 //    SUBPartParameters=kit[0].subpars;
 
     //Part's Insertion Effects init
     for (int nefx=0;nefx<NUM_PART_EFX;nefx++) 
-    	partefx[nefx]=new EffectMgr(1,mutex);
+    	partefx[nefx]=new EffectMgr(1,master);
 
     for (int n=0;n<NUM_PART_EFX+1;n++) {
 	partfxinputl[n]=new REALTYPE [SOUND_BUFFER_SIZE];
@@ -632,7 +633,7 @@ void Part::setkititemstatus(int kititem,int Penabled_){
     } else {
 	if (kit[kititem].adpars==NULL) kit[kititem].adpars=new ADnoteParameters(fft);
 	if (kit[kititem].subpars==NULL) kit[kititem].subpars=new SUBnoteParameters();
-	if (kit[kititem].padpars==NULL) kit[kititem].padpars=new PADnoteParameters(fft,mutex);
+	if (kit[kititem].padpars==NULL) kit[kititem].padpars=new PADnoteParameters(fft,master);
     };
     
     if (resetallnotes) 	for (int k=0;k<POLIPHONY;k++) KillNotePos(k);

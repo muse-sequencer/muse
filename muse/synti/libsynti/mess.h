@@ -58,8 +58,8 @@ class Mess {
       virtual bool playNote(int, int, int) { return false; }
 	virtual bool sysex(int, const unsigned char*) { return false; }
 
-      virtual void getInitData(int*, const unsigned char**) const {}
-      virtual int getControllerInfo(int, const char**, int*, int*, int*) const {return 0;}
+      virtual void getInitData(int*, const unsigned char**) {}
+      virtual int getControllerInfo(int, const char**, int*, int*, int*) {return 0;}
       virtual const char* getPatchName(int, int, int) const { return "?"; }
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const { return 0; }
       virtual const char* getBankName(int) const { return 0; }
@@ -89,7 +89,7 @@ struct MESS {
       int majorMessVersion, minorMessVersion;
          // QWidget* parent allows for a threaded GUI using the Qt Library
          // can be ignored by synti
-      Mess* (*instantiate)(int sr, QWidget* parent, const char* name);
+      Mess* (*instantiate)(int sr, const char* name);
       };
 
 extern "C" {

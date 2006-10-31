@@ -172,7 +172,7 @@ void* MessSynth::instantiate(const QString& instanceName)
             fprintf(stderr, "Synth::instantiate: no MESS descr found\n");
             return 0;
             }
-      Mess* mess = descr->instantiate(AL::sampleRate, muse, instanceName.toLatin1().data());
+      Mess* mess = descr->instantiate(AL::sampleRate, instanceName.toLatin1().data());
       return mess;
       }
 
@@ -282,20 +282,8 @@ bool SynthI::initInstance(Synth* s)
             for (iEvent i = iel->begin(); i != iel->end(); ++i) {
                   Event ev = i->second;
                   MidiEvent pev(0, 0, ev);
-                  static const int TIMEOUT = 1;
-                  //
-                  // retry until timeout
-                  int to;
-                  for (to = 0; to < TIMEOUT; ++to) {
-                        if (!_sif->putEvent(pev))
-                              break;
-                        sleep(1);
-                        }
-                  if (to == TIMEOUT) {
-                        printf("cannot initialize software synthesizer <%s>: busy\n",
-                           name().toLatin1().data());
-                        break;
-                        }
+                  if (_sif->putEvent(pev))
+                        putFifo.put(pev);       // save for later retry
                   }
             iel->clear();
             }
@@ -544,6 +532,9 @@ void MessSynthIF::getData(MPEventList* el, unsigned pos, int ports, unsigned n, 
       int curPos = pos;
       int endPos = pos + n;
 
+      while (!synti->putFifo.isEmpty())
+            putEvent(synti->putFifo.get());
+
       if (ports >= channels()) {
             iMPEvent i = el->begin();
             for (; i != el->end(); ++i) {
@@ -555,11 +546,11 @@ void MessSynthIF::getData(MPEventList* el, unsigned pos, int ports, unsigned n, 
                         _mess->process(buffer, curPos-pos, frame - curPos);
                         curPos = frame; // don't process this piece again
                         }
-                  putEvent(*i);
+                  if (putEvent(*i))
+                        synti->putFifo.put(*i);
                   }
-            if (endPos - curPos > 0) {
+            if (endPos - curPos > 0)
                   _mess->process(buffer, curPos-pos, endPos - curPos);
-                  }
             el->erase(el->begin(), i);
             }
       else {
@@ -573,18 +564,21 @@ void MessSynthIF::getData(MPEventList* el, unsigned pos, int ports, unsigned n, 
 
 //---------------------------------------------------------
 //   putEvent
-//    return true on error (busy)
+//    return true on error (busy), event will later be
+//    resend
 //---------------------------------------------------------
 
 bool MessSynthIF::putEvent(const MidiEvent& ev)
       {
-      if (midiOutputTrace) {
-            printf("<%s>", synti->name().toLatin1().data());
-            ev.dump();
+      bool rv = true;
+      if (_mess) {
+            rv = _mess->processEvent(ev);
+            if (midiOutputTrace && !rv) {
+                  printf("<%s>", synti->name().toLatin1().data());
+                  ev.dump();
+                  }
             }
-      if (_mess)
-            return _mess->processEvent(ev);
-      return true;
+      return rv;
       }
 
 //---------------------------------------------------------

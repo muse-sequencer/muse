@@ -130,7 +130,10 @@ class Master{
 	Bank bank;
 	
 	FFTwrapper *fft;
-	pthread_mutex_t mutex;
+      volatile bool busy;     // if true,  is busy and cannot accept
+                              // events or deliver data
+      void lock()   { busy = true; }
+      void unlock() { busy = false; }
 
     private:
 	REALTYPE volume;	

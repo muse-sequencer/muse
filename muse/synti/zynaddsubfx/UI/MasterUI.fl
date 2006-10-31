@@ -81,7 +81,7 @@ oldrmsdbr=0.0;} {}
 
 int ox=x(); int oy=y(); int lx=w(); int ly=h();
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
 REALTYPE dbl=rap2dB(master->vuoutpeakl);
 REALTYPE dbr=rap2dB(master->vuoutpeakr);
 REALTYPE rmsdbl=rap2dB(master->vurmspeakl);
@@ -89,7 +89,7 @@ REALTYPE rmsdbr=rap2dB(master->vurmspeakr);
 REALTYPE maxdbl=rap2dB(master->vumaxoutpeakl);
 REALTYPE maxdbr=rap2dB(master->vumaxoutpeakr);
 int clipped=master->vuclipped;
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 dbl=(MIN_DB-dbl)/MIN_DB; 
 if (dbl<0.0) dbl=0.0;
@@ -181,9 +181,9 @@ if ((maxdbr>MIN_DB-20)){
 int ox=x(); int oy=y(); int lx=w(); int ly=h();
 
 if (!active_r()){
-  pthread_mutex_lock(&master->mutex);
+  master->lock();
    int fakedb=master->fakepeakpart[npart];
-  pthread_mutex_unlock(&master->mutex);
+  master->unlock();
   fl_rectf(ox,oy,lx,ly,140,140,140);
   if (fakedb>0){
     fakedb=(int)(fakedb/255.0*ly)+4;
@@ -194,9 +194,9 @@ if (!active_r()){
 };
 
 //draw the vu lines
-pthread_mutex_lock(&master->mutex);
+master->lock();
  REALTYPE db=rap2dB(master->vuoutpeakpart[npart]);
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 db=(MIN_DB-db)/MIN_DB; 
 if (db<0.0) db=0.0;
@@ -242,9 +242,9 @@ Fl::add_timeout(1.0/25.0,tick,v);//25 fps} {}
              break;
    case FL_PUSH:
              if (npart>=0) break;
-             pthread_mutex_lock(&master->mutex);
+             master->lock();
              master->vuresetpeaks();
-             pthread_mutex_unlock(&master->mutex);
+             master->unlock();
              break;
 };
 return(1);} {}
@@ -351,9 +351,9 @@ bankui->show();}
       }
       Fl_Check_Button partenabled {
         label 01
-        callback {pthread_mutex_lock(&master->mutex);
+        callback {master->lock();
  master->partonoff(npart,(int) o->value());
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 if ((int) o->value()==0) panellistitemgroup->deactivate();
   else {
@@ -455,13 +455,13 @@ if (fl_ask("Exit and leave the unsaved data?")) {
 filename=fl_file_chooser("Open:","({*.xsz})",NULL,0);
 if (filename==NULL) return;
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
   //clear all parameters
   master->microtonal.defaults();
 
   //load the data
   int result=master->microtonal.loadXML(filename);
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 
  delete microtonalui;  
@@ -488,9 +488,9 @@ if (result) {
 };
 
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
 result=master->microtonal.saveXML(filename);
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 if (result<0) fl_alert("Error: Could not save the file.");
 
@@ -527,9 +527,9 @@ updatepanel();}
             label {&Clear Instrument...}
             callback {if (fl_ask("Clear instrument's parameters ?")){
 //       int npart=(int)npartcounter->value()-1;
-       pthread_mutex_lock(&master->mutex);
+       master->lock();
        master->part[npart]->defaultsinstrument();
-       pthread_mutex_unlock(&master->mutex);
+       master->unlock();
 
        npartcounter->do_callback();
 };
@@ -544,7 +544,7 @@ filename=fl_file_chooser("Load:","({*.xiz})",NULL,0);
 if (filename==NULL) return;
 
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
 //  int npart=(int)npartcounter->value()-1;
 
   //clear all instrument parameters, first
@@ -553,7 +553,7 @@ pthread_mutex_lock(&master->mutex);
   //load the instr. parameters
   int result=master->part[npart]->loadXMLinstrument(filename);
 
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 master->part[npart]->applyparameters();
 
 npartcounter->do_callback();
@@ -579,9 +579,9 @@ if (result) {
 };
 
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
 result=master->part[npart]->saveXML(filename);
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 if (result<0) fl_alert("Error: Could not save the file.");
 
@@ -669,9 +669,9 @@ if (result!=0) fl_alert("Error: Could not save the file.");}
       Fl_Button {} {
         label {Panic!}
         callback {virkeyboard->relaseallkeys();
-pthread_mutex_lock(&master->mutex);
+master->lock();
 master->shutup=1;
-pthread_mutex_unlock(&master->mutex);}
+master->unlock();}
         xywh {293 29 92 31} box PLASTIC_UP_BOX color 231 labelfont 1
       }
       Fl_Group partuigroup {
@@ -702,9 +702,9 @@ syseffectui->refresh(master->sysefx[nsyseff]);}
           }
           Fl_Choice sysefftype {
             label EffType
-            callback {pthread_mutex_lock(&master->mutex);
+            callback {master->lock();
 master->sysefx[nsyseff]->changeeffect((int) o->value());
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 syseffectui->refresh(master->sysefx[nsyseff]);}
             xywh {315 125 70 15} down_box BORDER_BOX labelsize 11
             code0 {o->value(master->sysefx[nsyseff]->geteffect());}
@@ -767,9 +767,9 @@ syseffectui->refresh(master->sysefx[nsyseff]);}
           }
           Fl_Button {} {
             label P
-            callback {pthread_mutex_lock(&master->mutex);
+            callback {master->lock();
 presetsui->paste(master->sysefx[nsyseff],syseffectui);
-pthread_mutex_unlock(&master->mutex);}
+master->unlock();}
             xywh {245 124 25 15} box THIN_UP_BOX color 179 labelfont 1 labelsize 12 labelcolor 7
           }
         }
@@ -799,9 +799,9 @@ if (master->Pinsparts[ninseff]!=-1) {
           }
           Fl_Choice insefftype {
             label EffType
-            callback {pthread_mutex_lock(&master->mutex);
+            callback {master->lock();
 master->insefx[ninseff]->changeeffect((int) o->value());
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 inseffectui->refresh(master->insefx[ninseff]);
 inseffectui->show();}
             xywh {315 125 70 15} down_box BORDER_BOX labelsize 11
@@ -880,9 +880,9 @@ master->insefx[ninseff]->cleanup();} open
           }
           Fl_Button {} {
             label P
-            callback {pthread_mutex_lock(&master->mutex);
+            callback {master->lock();
 presetsui->paste(master->insefx[ninseff],inseffectui);
-pthread_mutex_unlock(&master->mutex);}
+master->unlock();}
             xywh {245 124 25 15} box THIN_UP_BOX color 179 labelfont 1 labelsize 12 labelcolor 7
           }
         }
@@ -1131,7 +1131,7 @@ filename=fl_file_chooser("Load:","({*.xiz})",NULL,0);
 if (filename==NULL) return;
 
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
 //  int npart=(int)npartcounter->value()-1;
 
   //clear all instrument parameters, first
@@ -1140,7 +1140,7 @@ pthread_mutex_lock(&master->mutex);
   //load the instr. parameters
   int result=master->part[npart]->loadXMLinstrument(filename);
 
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 master->part[npart]->applyparameters();
 
 simplenpartcounter->do_callback();
@@ -1272,9 +1272,9 @@ simplemaxkcounter->do_callback();}
       }
       Fl_Check_Button partenabled {
         label Enabled
-        callback {pthread_mutex_lock(&master->mutex);
+        callback {master->lock();
  master->partonoff(npart,(int) o->value());
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 if ((int) o->value()==0) simplelistitemgroup->deactivate();
   else {
@@ -1318,9 +1318,9 @@ simplerefresh();}
             }
             Fl_Choice simplesysefftype {
               label EffType
-              callback {pthread_mutex_lock(&master->mutex);
+              callback {master->lock();
 master->sysefx[nsyseff]->changeeffect((int) o->value());
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 simplesyseffectui->refresh(master->sysefx[nsyseff]);}
               xywh {515 80 70 15} down_box BORDER_BOX labelsize 11 align 5
               code0 {o->value(master->sysefx[nsyseff]->geteffect());}
@@ -1378,9 +1378,9 @@ simplesyseffectui->refresh(master->sysefx[nsyseff]);}
             }
             Fl_Button {} {
               label P
-              callback {pthread_mutex_lock(&master->mutex);
+              callback {master->lock();
 presetsui->paste(master->sysefx[nsyseff],simplesyseffectui);
-pthread_mutex_unlock(&master->mutex);}
+master->unlock();}
               xywh {560 65 25 15} box THIN_UP_BOX color 179 labelfont 1 labelsize 12 labelcolor 7
             }
           }
@@ -1410,9 +1410,9 @@ if (master->Pinsparts[ninseff]!=-1) {
             }
             Fl_Choice simpleinsefftype {
               label EffType
-              callback {pthread_mutex_lock(&master->mutex);
+              callback {master->lock();
 master->insefx[ninseff]->changeeffect((int) o->value());
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 simpleinseffectui->refresh(master->insefx[ninseff]);
 simpleinseffectui->show();}
               xywh {515 80 70 15} down_box BORDER_BOX labelsize 11 align 5
@@ -1486,9 +1486,9 @@ master->insefx[ninseff]->cleanup();} open
             } {}
             Fl_Button {} {
               label P
-              callback {pthread_mutex_lock(&master->mutex);
+              callback {master->lock();
 presetsui->paste(master->insefx[ninseff],simpleinseffectui);
-pthread_mutex_unlock(&master->mutex);}
+master->unlock();}
               xywh {560 65 25 15} box THIN_UP_BOX color 179 labelfont 1 labelsize 12 labelcolor 7
             }
           }
@@ -1521,9 +1521,9 @@ pthread_mutex_unlock(&master->mutex);}
       Fl_Button {} {
         label {Stop ALL sounds!}
         callback {virkeyboard->relaseallkeys();
-pthread_mutex_lock(&master->mutex);
+master->lock();
 master->shutup=1;
-pthread_mutex_unlock(&master->mutex);}
+master->unlock();}
         xywh {5 149 115 31} box PLASTIC_UP_BOX color 231 labelfont 1 labelsize 12
       }
       Fl_Button {} {
@@ -1690,9 +1690,9 @@ simplesyseffsend->value(master->Psysefxvol[nsyseff][npart]);} {}
     code {if (fl_ask("Clear *ALL* the parameters ?")){
        delete microtonalui;
 
-       pthread_mutex_lock(&master->mutex);
+       master->lock();
 	master->defaults();
-       pthread_mutex_unlock(&master->mutex);
+       master->unlock();
 	
        npartcounter->value(1);
        refresh_master_ui();
@@ -1707,13 +1707,13 @@ filename=fl_file_chooser("Open:","({*.xmz})",NULL,0);
 if (filename==NULL) return;
 
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
   //clear all parameters
   master->defaults();
 
   //load the data
   int result=master->loadXML(filename);
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 master->applyparameters();
 
 npartcounter->value(1);
@@ -1741,9 +1741,9 @@ if (result) {
 };
 
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
 result=master->saveXML(filename);
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 if (result<0) fl_alert("Error: Could not save the file.");
 	else setfilelabel(filename);

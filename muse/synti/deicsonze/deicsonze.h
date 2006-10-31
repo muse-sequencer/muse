@@ -475,8 +475,8 @@ class DeicsOnze : public Mess {
   virtual const char* getPatchName(int ch, int number, int) const;
   virtual const MidiPatch* getPatchInfo(int, const MidiPatch *) const;
   virtual int getControllerInfo(int arg1, const char** arg2, 
-				int* arg3, int* arg4, int* arg5) const;
-  virtual void getInitData(int* length, const unsigned char** data) const;
+				int* arg3, int* arg4, int* arg5);
+  virtual void getInitData(int* length, const unsigned char** data);
   virtual bool playNote(int channel, int pitch, int velo);
   virtual void process(float** buffer, int offset, int n);
   

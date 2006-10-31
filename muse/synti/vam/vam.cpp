@@ -7,7 +7,7 @@
 //      Werner Schweer's organ softsynth for MusE.
 //	The music-dsp source archive.
 //
-//  (C) Copyright 2002 Jotsif Lindman Hönlund (jotsif@linux.nu)
+//  (C) Copyright 2002 Jotsif Lindman Hölund (jotsif@linux.nu)
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -777,9 +777,7 @@ void VAM::setGeometry(int x, int y, int w, int h)
 //   inst
 //---------------------------------------------------------
 
-class QWidget;
-
-static Mess* instantiate(int sr, QWidget*, const char* name)
+static Mess* instantiate(int sr, const char* name)
       {
       VAM* vam = new VAM(sr);
       if (vam->init(name)) {

@@ -627,7 +627,7 @@ const MidiPatch* SimpleSynth::getPatchInfo(int index, const MidiPatch* patch) co
     \return 0 when done, otherwise return next desired controller index
  */
 //---------------------------------------------------------
-int SimpleSynth::getControllerInfo(int index, const char** name, int* controller, int* min, int* max) const
+int SimpleSynth::getControllerInfo(int index, const char** name, int* controller, int* min, int* max)
       {
       SS_TRACE_IN
       if (index >= SS_NR_OF_CONTROLLERS) {
@@ -838,7 +838,7 @@ bool SimpleSynth::init(const char* name)
     \param data - data that is sent as a sysex to the synth on reload of project
  */
 //---------------------------------------------------------
-void SimpleSynth::getInitData(int* n, const unsigned char** data) const
+void SimpleSynth::getInitData(int* n, const unsigned char** data)
       {
       SS_TRACE_IN
       // Calculate length of data
@@ -1304,7 +1304,7 @@ static void* loadSampleThread(void* p)
       }
 
 
-static Mess* instantiate(int sr, QWidget*, const char* name)
+static Mess* instantiate(int sr, const char* name)
       {
       printf("SimpleSynth sampleRate %d\n", sr);
       SimpleSynth* synth = new SimpleSynth(sr);

@@ -38,10 +38,11 @@
 #include "../Params/FilterParams.h"
 #include "../Params/Presets.h"
 
+class Master;
 
 class EffectMgr:public Presets{
     public:
-	EffectMgr(int insertion_,pthread_mutex_t *mutex_);
+	EffectMgr(int insertion_,Master*);
 	~EffectMgr();
 
 	void add2XML(XMLwrapper *xml);
@@ -76,7 +77,7 @@ class EffectMgr:public Presets{
     private:
 	int nefx;
 	Effect *efx;
-	pthread_mutex_t *mutex;
+	Master* master;
 	bool dryonly;
 };
 

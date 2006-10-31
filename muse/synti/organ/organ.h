@@ -175,7 +175,7 @@ class Organ : public Mess {
       virtual bool setController(int channel, int ctrl, int val);
 	virtual bool sysex(int, const unsigned char*);
 
-      virtual int getControllerInfo(int, const char**, int*, int*, int*) const;
+      virtual int getControllerInfo(int, const char**, int*, int*, int*);
       virtual void getInitData(int*, const unsigned char**);
 
       virtual bool guiVisible() const;

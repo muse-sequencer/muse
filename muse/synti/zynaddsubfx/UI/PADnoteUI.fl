@@ -147,9 +147,9 @@ int n=OSCIL_SIZE/2;
 REALTYPE spc[n];
 for (int i=0;i<n;i++) spc[i]=0.0;
 
-pthread_mutex_lock(&master->mutex);
+master->busy=true;
 pars->oscilgen->getspectrum(n,spc,0);
-pthread_mutex_unlock(&master->mutex);
+master->busy=false;
 
 
 //normalize

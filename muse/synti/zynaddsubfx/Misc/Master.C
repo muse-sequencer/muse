@@ -32,7 +32,7 @@
 Master::Master(){
     swaplr=0;
     
-    pthread_mutex_init(&mutex,NULL);
+    busy = false;
     fft=new FFTwrapper(OSCIL_SIZE);
 
     tmpmixl=new REALTYPE[SOUND_BUFFER_SIZE];
@@ -53,16 +53,16 @@ Master::Master(){
       memset(audiooutr, 0, sizeof(REALTYPE) * SOUND_BUFFER_SIZE);
 
     for (int npart=0;npart<NUM_MIDI_PARTS;npart++)
-	part[npart]=new Part(&microtonal,fft,&mutex);
+	part[npart]=new Part(&microtonal,fft,this);
     
 
     //Insertion Effects init        
     for (int nefx=0;nefx<NUM_INS_EFX;nefx++)
-    	insefx[nefx]=new EffectMgr(1,&mutex);
+    	insefx[nefx]=new EffectMgr(1,this);
 
     //System Effects init        
     for (int nefx=0;nefx<NUM_SYS_EFX;nefx++) {
-	sysefx[nefx]=new EffectMgr(0,&mutex);
+	sysefx[nefx]=new EffectMgr(0,this);
     };
 
     
@@ -436,7 +436,6 @@ Master::~Master(){
     delete [] tmpmixr;
     delete (fft);
 
-    pthread_mutex_destroy(&mutex);
 };
 
 
@@ -556,9 +555,9 @@ int Master::getalldata(char **data){
 
     xml->beginbranch("MASTER");
 
-    pthread_mutex_lock(&mutex);
+    busy = true;
     add2XML(xml);
-    pthread_mutex_unlock(&mutex);
+    busy = false;
 
     xml->endbranch();
 
@@ -576,9 +575,9 @@ void Master::putalldata(char *data,int size){
     
     if (xml->enterbranch("MASTER")==0) return;
 
-    pthread_mutex_lock(&mutex);
+    busy = true;
 	getfromXML(xml);
-    pthread_mutex_unlock(&mutex);
+    busy = false;
 
     xml->exitbranch();
     

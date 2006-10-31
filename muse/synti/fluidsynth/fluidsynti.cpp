@@ -156,7 +156,7 @@ void FluidSynth::process(float** ports, int offset, int len)
 //   getInitData
 // Prepare data that will restore the synth's state on load
 //---------------------------------------------------------
-void FluidSynth::getInitData(int* n, const unsigned char** data) const
+void FluidSynth::getInitData(int* n, const unsigned char** data)
       {
       // Data setup:
       // FS_INIT_DATA (1 byte)
@@ -823,7 +823,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
 //---------------------------------------------------------
 //   getControllerInfo
 //---------------------------------------------------------
-int FluidSynth::getControllerInfo(int id, const char** name, int* controller, int* min, int* max) const
+int FluidSynth::getControllerInfo(int id, const char** name, int* controller, int* min, int* max)
       {
       if (id >= NUM_CONTROLLER)
             return 0;
@@ -1149,7 +1149,7 @@ bool FluidSynth::popSoundfont (int ext_id)
 
 class QWidget;
 
-static Mess* instantiate(int sr, QWidget*, const char* name)
+static Mess* instantiate(int sr, const char* name)
       {
       printf("fluidsynth sampleRate %d\n", sr);
       FluidSynth* synth = new FluidSynth(sr);

@@ -561,7 +561,7 @@ void Organ::getInitData(int* n, const unsigned char**p)
 //---------------------------------------------------------
 
 int Organ::getControllerInfo(int id, const char** name, int* controller,
-   int* min, int* max) const
+   int* min, int* max)
       {
       if (id >= NUM_CONTROLLER)
             return 0;
@@ -619,7 +619,7 @@ void Organ::setGeometry(int x, int y, int w, int h)
 //    construct a new synthesizer instance
 //---------------------------------------------------------
 
-static Mess* instantiate(int sr, QWidget*, const char* name)
+static Mess* instantiate(int sr, const char* name)
       {
       Organ* synth = new Organ(sr);
       if (synth->init(name)) {

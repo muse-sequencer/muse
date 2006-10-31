@@ -35,10 +35,11 @@
 #include "FilterParams.h"
 #include "Presets.h"
 
+class Master;
 
 class PADnoteParameters:public Presets{
     public:
-	PADnoteParameters(FFTwrapper *fft_,pthread_mutex_t *mutex_);
+	PADnoteParameters(FFTwrapper *fft_,Master* master);
 	~PADnoteParameters();
 	
 	void defaults();
@@ -160,7 +161,7 @@ class PADnoteParameters:public Presets{
 	void deletesample(int n);
     
 	FFTwrapper *fft;
-	pthread_mutex_t *mutex;
+	Master* master;
 };
 
 

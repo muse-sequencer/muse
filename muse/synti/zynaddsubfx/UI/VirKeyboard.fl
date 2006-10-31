@@ -183,9 +183,9 @@ if (rndvelocity!=0){
   vel=midivel*(127.0-rndvelocity)/127.0+RND*rndvelocity;
 };
 
-pthread_mutex_lock(&master->mutex);
+master->busy=true;
  master->NoteOn(midich,nk+midioct*12,(int)vel);
-pthread_mutex_unlock(&master->mutex);} {}
+master->busy=false;} {}
   }
   Function {relasekey(int nk,int type)} {} {
     code {if ((nk<0)||(nk>=N_OCT*12)) return;
@@ -197,9 +197,9 @@ pressed[nk]=0;
 
 damage(1);
 
-pthread_mutex_lock(&master->mutex);
+master->busy=true;
  master->NoteOff(midich,nk+12*midioct);
-pthread_mutex_unlock(&master->mutex);} {}
+master->busy=false;} {}
   }
   Function {relaseallkeys(int type)} {} {
     code {for (int i=0;i<N_OCT*12;i++) relasekey(i,type);} {}
@@ -272,9 +272,9 @@ virkeyboardwindow->hide();}
         label Cval
         callback {int ctl=midictl;
 
-pthread_mutex_lock(&master->mutex);
+master->busy=true;
  master->SetController(virkeys->midich,ctl,(int) o->value());
-pthread_mutex_unlock(&master->mutex);
+master->busy=false;
 virkeys->take_focus();}
         tooltip {Controller value} xywh {605 10 15 115} type {Vert Fill} box ENGRAVED_BOX selection_color 229 labelsize 8 align 5 minimum 127 maximum 0 step 1 value 64 textsize 7
       }
@@ -354,9 +354,9 @@ virkeys->take_focus();}
       }
       Fl_Roller pitchwheelroller {
         label Pwh
-        callback {pthread_mutex_lock(&master->mutex);
+        callback {master->lock();
  master->SetController(virkeys->midich,C_pitchwheel,-(int) o->value());
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 virkeys->take_focus();}
         tooltip {Pitch Wheel} xywh {625 10 20 95} box PLASTIC_UP_BOX labelsize 8 align 1 when 3 minimum -8192 maximum 8192 step 64
       }

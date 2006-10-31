@@ -764,7 +764,7 @@ struct MidiPatch {
       for your MESS. They look something like this: (example taken from SimpleSynth/SimpleDrums)
 
 \starttyping
-static Mess* instantiate(int sr, QWidget*, const char* name)
+static Mess* instantiate(int sr, const char* name)
  {
   printf("SimpleSynth sampleRate %d\n", sr);
   SimpleSynth* synth = new SimpleSynth(sr);

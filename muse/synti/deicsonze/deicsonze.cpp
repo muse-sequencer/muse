@@ -2067,7 +2067,7 @@ void DeicsOnze::writeConfiguration(AL::Xml* xml) {
 //---------------------------------------------------------
 // getInitData
 //---------------------------------------------------------
-void DeicsOnze::getInitData(int* length, const unsigned char** data) const {
+void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   FILE* tmp;
   char* comptmp;
   QString cmd="bzip2 > ";
@@ -3183,7 +3183,7 @@ const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* /*p*/) con
 */
 //---------------------------------------------------------
 int DeicsOnze::getControllerInfo(int index, const char** name,
-				 int* controller, int* min, int* max) const
+				 int* controller, int* min, int* max)
 {
     if (index >= nbrCtrl) {
 	return 0;
@@ -3767,7 +3767,7 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
 
 class QWidget;
 
-static Mess* instantiate(int sr, QWidget*, const char*)
+static Mess* instantiate(int sr, const char*)
 {
     DeicsOnze* deicsonze = new DeicsOnze();
     deicsonze->setSampleRate(sr);

@@ -22,9 +22,7 @@
 #define __GLOBALDEFS_H__
 
 const int MAX_CHANNELS = 2;   // max audio channels
-const int MAX_PLUGINS  = 4;   // plugins in mixer rack
-
-const int MIDI_PORTS   = 16;  // max Number of Midi Ports
+// const int MIDI_PORTS   = 16;  // max Number of Midi Ports
 
 #ifndef MIDI_CHANNELS
 #define MIDI_CHANNELS 16       // Channels per Port

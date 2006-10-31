@@ -71,10 +71,10 @@ REALTYPE x;
 REALTYPE spc[n];
 for (i=0;i<n;i++) spc[i]=0.0;
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
 if (oscbase==0) oscil->getspectrum(n,spc,0);
     else oscil->getspectrum(n,spc,1);
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 //normalize
 REALTYPE max=0;
@@ -178,10 +178,10 @@ master=master_;} {}
   Function {draw()} {} {
     code {int ox=x(),oy=y(),lx=w(),ly=h()-1,i;
 REALTYPE smps[OSCIL_SIZE];
-pthread_mutex_lock(&master->mutex);
+master->lock();
 if (oscbase==0) oscil->get(smps,-1.0);
     else oscil->getcurrentbasefunction(smps);
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 if (damage()!=1){
  fl_color(0,0,0);
@@ -250,14 +250,14 @@ if (Fl::event_button3()) o->value(x);
 if (x==64) o->selection_color(0);
     else o->selection_color(222);
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
  oscil->Phmag[n]=x;
  if (x==64) {
     oscil->Phphase[n]=64;
     phase->value(64);
  };
  oscil->prepare();
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 display->redraw();
 oldosc->redraw();
@@ -276,10 +276,10 @@ if (cbwidget!=NULL) {
 if (Fl::event_button3()) o->value(x);
    else x=(int)o->value();
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
  oscil->Phphase[n]=x;
  oscil->prepare();
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 display->redraw();
 oldosc->redraw();
@@ -627,13 +627,13 @@ if (autoclearbutton->value()){
    sabutton->do_callback();
 };
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
  for (int i=0;i<MAX_AD_HARMONICS;i++){
    if (oscil->Phmag[i]==64) h[i]->mag->selection_color(0);
       else h[i]->mag->selection_color(222);
  };
  oscil->prepare();
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 basefuncdisplaygroup->redraw();
 redrawoscil();}
@@ -664,9 +664,9 @@ for (int i=0;i<MAX_AD_HARMONICS;i++){
 
 //harmonics->redraw();
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
  oscil->prepare();
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 redrawoscil();}
         xywh {670 505 55 15} box THIN_UP_BOX labelfont 1 labelsize 12
@@ -1020,9 +1020,9 @@ redrawoscil();}
         label Sine
         callback {if (!fl_ask("Convert to SINE?")) return;
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
  oscil->convert2sine(0);
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 redrawoscil();
 refresh();}
@@ -1108,9 +1108,9 @@ adhrtype->value(oscil->Padaptiveharmonicspar);
 
 for (int i=0;i<MAX_AD_HARMONICS;i++) h[i]->refresh();
 
-pthread_mutex_lock(&master->mutex);
+master->lock();
  oscil->prepare();
-pthread_mutex_unlock(&master->mutex);
+master->unlock();
 
 basefuncdisplaygroup->redraw();
 redrawoscil();} {}

@@ -15,7 +15,7 @@
 //   MidiTrackerEditor
 //---------------------------------------------------------
 
-MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool init)
+MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
   : MidiEditor(pl) {
 
   //---------menuView---------------------------------
@@ -215,7 +215,7 @@ void MidiTrackerEditor::setFollow(bool f) {
 //    pulldown menu commands
 //---------------------------------------------------------
 
-void MidiTrackerEditor::cmd(QAction* a) {
+void MidiTrackerEditor::cmd(QAction* /*a*/) {
   //int cmd = a->data().toInt();
   //canvas()->cmd(cmd, _quantStrength, _quantLimit, _quantLen);
 }

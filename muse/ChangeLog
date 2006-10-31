@@ -1,3 +1,14 @@
+31.10 (ws)
+      - MESS:
+        - remove useless QWidget parameter in instantiate()
+        - getInitData() and getControllerInfo()
+          are no longer const;
+        - Added getBankName() to interface to allow for simple structuring
+          of patches.
+      - queue midi events which cannot be send to busy(locked) software 
+        synthesizer
+      - zynaddsubfx: implement locking, showGui(), and getControllerInfo();
+        cache patch names
 29.10 (ws)
       - fixed crash after some time of midi recording: made midi 
         input queue thread safe.

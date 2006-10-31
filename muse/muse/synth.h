@@ -25,6 +25,7 @@
 #include "instruments/minstrument.h"
 #include "audiotrack.h"
 #include "midiout.h"
+#include "midififo.h"
 
 class Mess;
 struct MESS;
@@ -124,6 +125,7 @@ class SynthI : public AudioTrack, public MidiOut, public MidiInstrument
    protected:
       Synth* synthesizer;
       std::vector<float> initParams;
+      MidiFifo putFifo;
 
       bool putMidiEvent(const MidiEvent& ev) {
             return _sif->putEvent(ev);
@@ -134,6 +136,9 @@ class SynthI : public AudioTrack, public MidiOut, public MidiInstrument
       virtual void collectInputData();
 
    public:
+      friend class SynthIF;
+      friend class MessSynthIF;
+
       SynthI();
       virtual ~SynthI();
       virtual TrackType type() const { return AUDIO_SOFTSYNTH; }
@@ -180,6 +185,8 @@ class SynthI : public AudioTrack, public MidiOut, public MidiInstrument
 //   MessSynthIF
 //    mess synthesizer instance
 //---------------------------------------------------------
+
+static const int PUT_FIFO_SIZE = 64;
 
 class MessSynthIF : public SynthIF {
       Mess* _mess;
