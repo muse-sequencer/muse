@@ -51,6 +51,8 @@ MidiChannel::MidiChannel(MidiOut* p, int ch)
       addMidiController(mi, CTRL_REVERB_SEND);
       addMidiController(mi, CTRL_CHORUS_SEND);
       addMidiController(mi, CTRL_VARIATION_SEND);
+
+      // TODO: setDefault Values
       }
 
 //---------------------------------------------------------

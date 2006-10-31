@@ -373,6 +373,11 @@ void SynthI::write(Xml& xml) const
       AudioTrack::writeProperties(xml);
       xml.strTag("class", synth()->name());
 
+      for (int i = 0; i < MIDI_CHANNELS; ++i) {
+            if (!_channel[i]->noInRoute())
+                  _channel[i]->write(xml);
+            }
+
       //---------------------------------------------
       // if soft synth is attached to a midi port,
       // write out port number
@@ -387,9 +392,9 @@ void SynthI::write(Xml& xml) const
             if (h || w)
                   xml.qrectTag("geometry", QRect(x, y, w, h));
             }
-
       _sif->write(xml);
       xml.etag("SynthI");
+
       }
 
 void MessSynthIF::write(Xml& xml) const
@@ -432,25 +437,30 @@ void SynthI::read(QDomNode node)
       bool startGui = false;
       QRect r;
 
-      while (!node.isNull()) {
+      for (; !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
-            if (e.tagName() == "class")
+            QString tag(e.tagName());
+            if (tag == "class")
                   sclass = e.text();
-            else if (e.tagName() == "port")
+            else if (tag == "port")
                   port  = e.text().toInt();
-            else if (e.tagName() == "guiVisible")
+            else if (tag == "guiVisible")
                   startGui = e.text().toInt();
-            else if (e.tagName() == "midistate")
+            else if (tag == "midistate")
                   readMidiState(node.firstChild());
-            else if (e.tagName() == "param") {
+            else if (tag == "param") {
                   float val = e.text().toFloat();
                   initParams.push_back(val);
                   }
-            else if (e.tagName() == "geometry")
+            else if (tag == "geometry")
                   r = AL::readGeometry(node);
-            else if (AudioTrack::readProperties(node))
+            else if (tag == "MidiChannel") {
+                  int idx = e.attribute("idx", "0").toInt();
+                  _channel[idx]->read(node.firstChild());
+                  }
+            else if (AudioTrack::readProperties(node)) {
                   printf("MusE:SynthI: unknown tag %s\n", e.tagName().toLatin1().data());
-            node = node.nextSibling();
+                  }
             }
       Synth* s = findSynth(sclass);
       if (s == 0)

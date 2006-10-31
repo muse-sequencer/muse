@@ -208,6 +208,23 @@ struct ZynCtrl {
       int max;
       };
 
+//
+//  NRPN
+//    0x04 0     // System Effects
+//    0x04 1
+//    0x04 2
+//    0x04 3
+//
+//    0x08 0     // Insertion Effects
+//    0x08 1
+//    0x08 2
+//    0x08 3
+//    0x08 4
+//    0x08 5
+//    0x08 6
+//    0x08 7
+//    0x08 8
+
 int Zynadd::getControllerInfo(int i, const char** name, int* num, int* min, int* max)
       {
       static const ZynCtrl ctrl[] = {
