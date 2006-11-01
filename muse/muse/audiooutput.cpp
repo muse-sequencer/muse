@@ -150,7 +150,7 @@ void AudioOutput::stopRecording(const Pos& /*s*/, const Pos& /*e*/)
 
 //---------------------------------------------------------
 //   process
-//    synthesize "n" frames at buffer offset "offset"
+//    synthesize segmentSize frames at buffer offset "offset"
 //    current frame position is "pos"
 //---------------------------------------------------------
 
@@ -160,6 +160,11 @@ void AudioOutput::process()
             buffer[c] = audioDriver->getBuffer(jackPort(c), segmentSize);
 
       AudioTrack::process();
+
+      if (bufferEmpty) {
+            for (int c = 0; c < channels(); ++c)
+                  memset(buffer[c], 0, sizeof(float) * segmentSize);
+            }
 
       int n = segmentSize;
       if (audio->isRecording() && recordFlag() && _recFile) {
