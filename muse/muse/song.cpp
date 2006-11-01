@@ -593,7 +593,7 @@ void Song::update(int flags)
             //
             // remove unconnected channels
             //
-// printf("update tracks %d %d\n", _tracks.size(), _midiChannel.size());
+// printf("update tracks %d channels: %d\n", _tracks.size(), _midiChannel.size());
             bool again;
             do {
                   again = false;
@@ -1417,8 +1417,8 @@ Track* Song::addTrack(QAction* action)
             MidiSynti* si = new MidiSynti();
             QString sName(s->name());
             for (k = s->instances(); k < 1000; ++k) {
-                  QString instanceName = ("%1-%2");
-                  instanceName = instanceName.arg(sName).arg(k);
+                  QString instanceName = (k == 0) ? 
+                     sName : instanceName.arg(sName).arg(k);
 
                   MidiSyntiList* sl = midiSyntis();
                   iMidiSynti sii;
@@ -1450,8 +1450,8 @@ Track* Song::addTrack(QAction* action)
             SynthI* si = new SynthI();
             int i;
             for (i = s->instances(); i < 1000; ++i) {
-                  QString instanceName = ("%1-%2");
-                  instanceName = instanceName.arg(s->name()).arg(i);
+                  QString instanceName = (i == 0) ? 
+                     s->name() : QString("%1-%2").arg(s->name()).arg(i);
 
                   SynthIList* sl = syntis();
                   iSynthI sii;
@@ -1746,11 +1746,37 @@ void Song::insertTrack2(Track* track)
 void Song::removeTrack(Track* track)
       {
       startUndo();
+
+      if (track->type() == Track::AUDIO_SOFTSYNTH) {
+            for (int i = 0; i < MIDI_CHANNELS; ++i) {
+                  MidiChannel* mc = ((SynthI*)track)->channel(i);
+                  if (!mc->noInRoute()) {
+                        int idx = _tracks.index(mc);
+                        undoOp(UndoOp::DeleteTrack, idx, mc);
+                        removeTrack1(mc);
+                        audio->msgRemoveTrack(mc);
+                        removeTrack3(mc);
+                        }
+                  }
+            }
+      else if (track->type() == Track::MIDI_OUT) {
+            for (int i = 0; i < MIDI_CHANNELS; ++i) {
+                  MidiChannel* mc = ((MidiOutPort*)track)->channel(i);
+                  if (!mc->noInRoute()) {
+                        int idx = _tracks.index(mc);
+                        undoOp(UndoOp::DeleteTrack, idx, mc);
+                        removeTrack1(mc);
+                        audio->msgRemoveTrack(mc);
+                        removeTrack3(mc);
+                        }
+                  }
+            }
       int idx = _tracks.index(track);
       undoOp(UndoOp::DeleteTrack, idx, track);
       removeTrack1(track);
       audio->msgRemoveTrack(track);
       removeTrack3(track);
+
       endUndo(SC_TRACK_REMOVED | SC_ROUTE);
       }
 
@@ -1761,6 +1787,22 @@ void Song::removeTrack(Track* track)
 
 void Song::removeTrack1(Track* track)
       {
+#if 0
+      if (track->type() == Track::AUDIO_SOFTSYNTH) {
+            for (int i = 0; i < MIDI_CHANNELS; ++i) {
+                  MidiChannel* mc = ((SynthI*)track)->channel(i);
+                  if (!mc->noInRoute())
+                        removeTrack1(mc);
+                  }
+            }
+      else if (track->type() == Track::MIDI_OUT) {
+            for (int i = 0; i < MIDI_CHANNELS; ++i) {
+                  MidiChannel* mc = ((MidiOutPort*)track)->channel(i);
+                  if (!mc->noInRoute())
+                        removeTrack1(mc);
+                  }
+            }
+#endif
       track->deactivate();
       _tracks.erase(track);
       }
@@ -1780,6 +1822,8 @@ void Song::removeTrack2(Track* track)
                   _midis.erase(track);
                   break;
             case Track::MIDI_OUT:
+//                  for (int i = 0; i < MIDI_CHANNELS; ++i)
+//                        removeTrack2(((MidiOutPort*)track)->channel(i));
                   _midiOutPorts.erase(track);
                   break;
             case Track::MIDI_IN:
@@ -1803,6 +1847,8 @@ void Song::removeTrack2(Track* track)
             case Track::AUDIO_SOFTSYNTH:
                   {
                   SynthI* s = (SynthI*) track;
+//                  for (int i = 0; i < MIDI_CHANNELS; ++i)
+//                        removeTrack2(s->channel(i));
                   s->deactivate2();
                   _synthIs.erase(track);
                   }
@@ -1814,8 +1860,6 @@ void Song::removeTrack2(Track* track)
       //  remove routes
       //
       Route src(track, -1, Route::TRACK);
-//      if (track->type() == Track::AUDIO_SOFTSYNTH)
-//            src.type = Route::SYNTIPORT;
       foreach (const Route r, *(track->inRoutes())) {
             if (r.type != Route::TRACK && r.type != Route::SYNTIPORT)
                   continue;
@@ -1853,7 +1897,23 @@ void Song::removeTrack3(Track* track)
       if (track->type() == Track::AUDIO_SOFTSYNTH) {
             SynthI* s = (SynthI*) track;
             s->deactivate3();
+#if 0
+            for (int i = 0; i < MIDI_CHANNELS; ++i) {
+                  MidiChannel* mc = ((SynthI*)track)->channel(i);
+                  if (!mc->noInRoute())
+                        removeTrack3(mc);
+                  }
+#endif
             }
+#if 0
+      else if (track->type() == Track::MIDI_OUT) {
+            for (int i = 0; i < MIDI_CHANNELS; ++i) {
+                  MidiChannel* mc = ((MidiOutPort*)track)->channel(i);
+                  if (!mc->noInRoute())
+                        removeTrack3(mc);
+                  }
+            }
+#endif
       emit trackRemoved(track);
       }
 

@@ -164,7 +164,6 @@ void Track::setDefaultName()
             case AUDIO_SOFTSYNTH:
                   // base = QString("Synth");
             	return;
-                  break;
             case AUDIO_OUTPUT:
             case AUDIO_INPUT:
             case MIDI_OUT:
@@ -177,30 +176,27 @@ void Track::setDefaultName()
       //
       // create unique name
       //
-      base += " ";
       for (int i = 1; true; ++i) {
-            QString n;
-            n.setNum(i);
-            QString s = base + n;
+            QString s = QString("%1 $2").arg(base).arg(i);
             bool found = false;
             TrackList* tl = song->tracks();
-            for (iTrack i = tl->begin(); i != tl->end(); ++i) {
-                  Track* track = *i;
+            for (iTrack it = tl->begin(); it != tl->end(); ++it) {
+                  Track* track = *it;
                   if (track->name() == s) {
                         found = true;
                         break;
                         }
                   }
             MidiChannelList* mc = song->midiChannel();
-            for (iMidiChannel i = mc->begin(); i != mc->end(); ++i) {
-                  MidiChannel* t = *i;
+            for (iMidiChannel ic = mc->begin(); ic != mc->end(); ++ic) {
+                  MidiChannel* t = *ic;
                   if (t->name() == s) {
                         found = true;
                         break;
                         }
                   }
             if (!found) {
-                  setName(s);
+                  setName(i == 1 ? base : s);
                   break;
                   }
             }

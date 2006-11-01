@@ -155,7 +155,7 @@ class SynthI : public AudioTrack, public MidiOut, public MidiInstrument
       virtual bool isSynti() const  { return true; }
 
       virtual QString getPatchName(int ch, int prog) {
-            return _sif->getPatchName(ch, prog);
+            return _sif ? _sif->getPatchName(ch, prog) : "";
             }
       virtual void populatePatchPopup(QMenu* m, int i) {
             _sif->populatePatchPopup(m, i);
@@ -185,8 +185,6 @@ class SynthI : public AudioTrack, public MidiOut, public MidiInstrument
 //   MessSynthIF
 //    mess synthesizer instance
 //---------------------------------------------------------
-
-static const int PUT_FIFO_SIZE = 64;
 
 class MessSynthIF : public SynthIF {
       Mess* _mess;

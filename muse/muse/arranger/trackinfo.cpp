@@ -657,6 +657,13 @@ void MidiChannelInfo::init(Track* t)
                   curIdx = idx;
             }
       instrument->setCurrentIndex(curIdx);
+      int val = midic->ctrlVal(CTRL_PROGRAM).i;
+      patch->setText(mi->getPatchName(midic->channelNo(), val));
+      //
+      // instrument type cannot be changed for software
+      // synthesizer
+      //
+      instrument->setEnabled(op->track->type() != Track::AUDIO_SOFTSYNTH);
       }
 
 //---------------------------------------------------------
@@ -703,7 +710,7 @@ void MidiChannelInfo::patchClicked()
       if (rv != 0) {
             CVal cval;
             cval.i = rv->data().toInt();
-            song->setControllerVal(midic, CTRL_PROGRAM, cval);
+            song->setControllerVal(track, CTRL_PROGRAM, cval);
             }
       }
 

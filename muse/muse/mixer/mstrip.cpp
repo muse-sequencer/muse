@@ -39,10 +39,10 @@ static void addSyntiPorts(QMenu* menu, RouteList* r, int channel)
       {
       SynthIList* sl = song->syntis();
       for (iSynthI i = sl->begin(); i != sl->end(); ++i) {
-            SynthI* track = *i;
+            MidiChannel* track = (*i)->channel(channel);
             QAction* oa = menu->addAction(track->name());
             oa->setCheckable(true);
-            Route dst(track, channel, Route::SYNTIPORT);
+            Route dst(track, channel, Route::TRACK);
             oa->setData(QVariant::fromValue(dst));
 
             for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
@@ -67,6 +67,7 @@ static void addMidiTracks(QMenu* menu, RouteList* r, int channel)
             action->setCheckable(true);
             Route src(track, channel, Route::TRACK);
             action->setData(QVariant::fromValue(src));
+
             for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
                   if (*ir == src) {
                         action->setChecked(true);
