@@ -22,6 +22,8 @@
 #include "mixdowndialog.h"
 #include "globals.h"
 #include "wave.h"
+#include "song.h"
+#include "gconfig.h"
 
 //---------------------------------------------------------
 //   sndFileOpen
@@ -58,6 +60,20 @@ MixdownFileDialog::MixdownFileDialog(SndFile* _sf, QWidget* parent)
             editPath->setText(_sf->finfo()->filePath());
             comboChannel->setCurrentIndex(channels);
             comboFormat->setCurrentIndex(format);
+            }
+      else {
+            // create unique mixdown file path
+            QString path = QDir::homePath() + "/" + config.projectPath + "/" + song->projectPath();
+
+            QDir dir(path);
+            for (int i = 1; i < 1000; ++i) {
+                  QString fp = QString("md%2.wav").arg(i);
+                  if (!dir.exists(fp)) {
+                        path = dir.filePath(fp);
+                        break;
+                        }
+                  }
+            editPath->setText(path);
             }
       }
 
@@ -105,13 +121,10 @@ void MixdownFileDialog::accept()
 
 void MixdownFileDialog::fdialog()
       {
-      QString oldpath;
-      if (sf)
-            oldpath = sf->finfo()->filePath();
       QString path = QFileDialog::getSaveFileName(
          this,
          tr("MusE: set mixdown file name"),
-         oldpath,
+         editPath->text(),
          tr("Wave Files (*.wav);;All Files (*)")
          );
       if (!path.isEmpty())

@@ -1,7 +1,4 @@
 <ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>MixdownFileDialogBase</class>
  <widget class="QDialog" name="MixdownFileDialogBase" >
   <property name="geometry" >
@@ -105,7 +102,7 @@
         <string/>
        </property>
        <property name="icon" >
-        <iconset/>
+        <iconset resource="../muse.qrc" >:/xpm/fileopen.png</iconset>
        </property>
       </widget>
      </item>
@@ -175,8 +172,9 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
- <resources/>
+ <resources>
+  <include location="../muse.qrc" />
+ </resources>
  <connections>
   <connection>
    <sender>buttonOk</sender>

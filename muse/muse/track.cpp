@@ -986,7 +986,8 @@ void Track::activate1()
 
       for (int i = 0; i < channels(); ++i) {
             if (!jackPort(i).isZero())
-                  printf("Track::activate1(): already active!\n");
+                  printf("Track<%s>::activate1(): channel %d already active!\n",
+                    name().toLatin1().data(), i);
             else {
                   QString s(QString("%1-%2").arg(_name).arg(i));
                   if (type() == AUDIO_OUTPUT)
@@ -1048,6 +1049,7 @@ void Track::activate2()
 
 void Track::deactivate()
       {
+// printf("deactivate<%s>\n", name().toLatin1().data());
       for (iRoute ri = _outRoutes.begin(); ri != _outRoutes.end(); ++ri) {
             Route& r = *ri;
             if (r.type == Route::JACKMIDIPORT) {
@@ -1081,11 +1083,11 @@ void Track::deactivate()
       for (int i = 0; i < channels(); ++i) {
             if (!_jackPort[i].isZero()) {
                   audioDriver->unregisterPort(_jackPort[i]);
-                  _jackPort[i] = 0;
+                  _jackPort[i].setZero();
                   }
             if (!_alsaPort[i].isZero()) {
                   midiDriver->unregisterPort(_alsaPort[i]);
-                  _alsaPort[i] = 0;
+                  _alsaPort[i].setZero();
                   }
             }
       }
