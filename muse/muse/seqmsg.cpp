@@ -230,13 +230,13 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
             else if (node->type() == Track::AUDIO_OUTPUT) {
                   AudioOutput* ao = (AudioOutput*)node;
                   for (int i = 0; i < mc; ++i) {
-                        void* jp = ao->jackPort(i).jackPort();
-                        if (i < n && jp == 0) {
+                        Port port = ao->jackPort(i);
+                        if (i < n && port.isZero()) {
                               char buffer[128];
                               snprintf(buffer, 128, "%s-%d", name.toLatin1().data(), i);
                               ao->setJackPort(audioDriver->registerOutPort(QString(buffer), false), i);
                               }
-                        else if (i >= n && jp) {
+                        else if (i >= n && !port.isZero()) {
                               RouteList* ir = node->outRoutes();
                               for (iRoute ii = ir->begin(); ii != ir->end(); ++ii) {
                                     Route r = *ii;
