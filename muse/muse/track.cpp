@@ -176,8 +176,8 @@ void Track::setDefaultName()
       //
       // create unique name
       //
-      for (int i = 1; true; ++i) {
-            QString s = QString("%1 $2").arg(base).arg(i);
+      for (int i = 1;; ++i) {
+            QString s = QString("%1 %2").arg(base).arg(i);
             bool found = false;
             TrackList* tl = song->tracks();
             for (iTrack it = tl->begin(); it != tl->end(); ++it) {
