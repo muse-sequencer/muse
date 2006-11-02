@@ -1,7 +1,4 @@
 <ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>ProjectDialogBase</class>
  <widget class="QDialog" name="ProjectDialogBase" >
   <property name="geometry" >
@@ -218,26 +215,19 @@
    </item>
   </layout>
  </widget>
- <pixmapfunction></pixmapfunction>
  <customwidgets>
   <customwidget>
    <class>ProjectTree</class>
    <extends>QTreeWidget</extends>
    <header>projectdialog.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>projectNameEntry</tabstop>
   <tabstop>okButton</tabstop>
   <tabstop>cancelButton</tabstop>
-  <tabstop>projectNameEntry</tabstop>
-  <tabstop>projectTree</tabstop>
   <tabstop>newFolder</tabstop>
-  <tabstop>modifiedDate</tabstop>
-  <tabstop>length</tabstop>
-  <tabstop>createdDate</tabstop>
-  <tabstop>comment</tabstop>
+  <tabstop>projectTree</tabstop>
  </tabstops>
  <resources>
   <include location="muse.qrc" />

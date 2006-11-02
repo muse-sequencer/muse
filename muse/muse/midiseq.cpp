@@ -197,7 +197,7 @@ bool MidiSeq::start(int prio)
 //    schedule events in MidiOutPort->playEvents()
 //   midiBusy locks access to MidiOutPortList and
 //   MidiOutPort.
-//   Locking is somwhat special and assumes that MidiSeq
+//   Locking is special and assumes that MidiSeq
 //   is a realtime thread and has higher priority than
 //   the audio thread (JACK callback) and can therefore not
 //   be interrupted. Instead of waiting for midiBusy to

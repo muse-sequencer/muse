@@ -256,7 +256,7 @@ void Track::writeProperties(Xml& xml) const
             xml.strTag("comment", _comment);
       if (_recordFlag)
             xml.intTag("record", _recordFlag);
-      if (mute())
+//      if (mute())     // audioInput defaults to true
             xml.intTag("mute", mute());
       if (solo())
             xml.intTag("solo", solo());
