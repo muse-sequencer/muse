@@ -34,8 +34,6 @@ Ctrl::Ctrl(int id, const QString& s, int t)
       setRange(.0f, 1.f);
       _default.f  = 0.0f;
       _curVal.f   = 0.0f;
-      _schedVal.f = 0.0f;
-      _schedValRaw.f = 0.0f;
       _touched    = false;
       _changed    = false;
       }
@@ -49,7 +47,6 @@ Ctrl::Ctrl(int id, const QString& s, int t, float a, float b)
             setRange(a, b);
       _default.f  = 0.0f;
       _curVal.f   = 0.0f;
-      _schedValRaw.f = 0.0f;
       _touched    = false;
       _changed    = false;
       }
@@ -61,7 +58,6 @@ Ctrl::Ctrl()
       _id         = 0;
       _default.f  = 0.0f;
       _curVal.f   = 0.0f;
-      _schedValRaw.f = 0.0f;
       _touched    = false;
       _changed    = false;
       }
@@ -73,7 +69,6 @@ Ctrl::Ctrl(const MidiController* mc)
       _id         = mc->num();
       _default.i  = mc->initVal();
       _curVal.i   = CTRL_VAL_UNKNOWN;
-      _schedValRaw.i = CTRL_VAL_UNKNOWN;
       _name       = mc->name();
       _touched    = false;
       _changed    = false;
@@ -93,54 +88,59 @@ CVal Ctrl::value(unsigned time)
             //
             // midi controller
             //
-            ciCtrlVal i = upper_bound(time);
+            ciCtrlVal i = upperBound(time);
             if (i == end()) {
                   --i;
-                  rv = i->second;
+                  rv = i.value();
                   }
             else if (i == begin()) {
-                  if (i->first == time)
-                        rv = i->second;
+                  if (i.key() == time)
+                        rv = i.value();
                   else
                         return _curVal;
                   }
             else {
                   --i;
-                  rv = i->second;
+                  rv = i.value();
                   }
             }
       else {
-            ciCtrlVal i = upper_bound(time);
+            //
+            // linear interpolated audio
+            // controller
+            //
+            ciCtrlVal i = upperBound(time);
             if (i == end()) {
                   --i;
-                  return i->second;
-                  }
-            int frame2 = i->first;
-            CVal val2 = i->second;
-            int frame1;
-            CVal val1;
-            if (i == begin()) {
-                  frame1 = 0;
-                  val1   = _default;
+                  rv = i.value();
                   }
             else {
-                  --i;
-                  frame1 = i->first;
-                  val1   = i->second;
-                  }
-            time -= frame1;
-            frame2 -= frame1;
-            if (_type & INT) {
-                  val2.i -= val1.i;
-                  rv.i = val1.i + (time * val2.i)/frame2;
-                  }
-            else {
-                  val2.f  -= val1.f;
-                  rv.f = val1.f + (time * val2.f)/frame2;
+                  int frame2 = i.key();
+                  CVal val2  = i.value();
+                  int frame1;
+                  CVal val1;
+                  if (i == begin()) {
+                        rv = val2;
+                        }
+                  else {
+                        --i;
+                        frame1 = i.key();
+                        val1   = i.value();
+                        time   -= frame1;
+                        frame2 -= frame1;
+                        if (_type & INT) {
+                              val2.i -= val1.i;
+                              rv.i = val1.i + (time * val2.i)/frame2;
+                              }
+                        else {
+                              val2.f  -= val1.f;
+                              rv.f = val1.f + (time * val2.f)/frame2;
+                              }
+                        }
                   }
             }
       if (_type & LOG) {
-            if (rv.f == -1000.0f)
+            if (rv.f <= -1000.0f)
                   rv.f = 0.0f;
             else
                   rv.f = pow(10.0f, rv.f);
@@ -157,35 +157,13 @@ bool Ctrl::add(unsigned frame, CVal val)
       {
       if (_type & LOG) {
             if (val.f <= 0.0)
-                  val.f = -1000.0f;
+                  val.f = -1001.0f;
             else
                   val.f = fast_log10(val.f);
             }
-      iCtrlVal e = find(frame);
-      if (e != end()) {
-            e->second = val;
-            return false;
-            }
-      insert(std::pair<const int, CVal> (frame, val));
-      return true;
-      }
-
-//---------------------------------------------------------
-//   setSchedVal
-//---------------------------------------------------------
-
-void Ctrl::setSchedVal(CVal val)
-      {
-      if (_type & LOG) {
-            if (val.f <= 0.0)
-                  _schedValRaw.f = -1000.0f;
-            else
-                  _schedValRaw.f = fast_log10(val.f);
-            }
-      else {
-            _schedValRaw = val;
-            }
-      _schedVal = val;
+      bool rv = find(frame) == end();
+      insert(frame, val);
+      return rv;
       }
 
 //---------------------------------------------------------
@@ -228,7 +206,7 @@ void Ctrl::read(QDomNode node, bool)
             _curVal.f  = e.attribute("cur","0.0").toFloat();
             _default.f = e.attribute("default","0.0").toFloat();
             }
-      setSchedVal(_curVal);
+      setCurVal(_curVal);
       if (_type & INT) {
             min.i = e.attribute("min", minS).toInt();
             max.i = e.attribute("max", maxS).toInt();
@@ -284,24 +262,24 @@ void Ctrl::write(Xml& xml)
 
       if (empty()) {
             if (_type & INT)
-                  xml.tagE(s.arg(id()).arg(_name).arg(schedVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
+                  xml.tagE(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
             else
-                  xml.tagE(s.arg(id()).arg(_name).arg(schedVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
+                  xml.tagE(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
             return;
             }
       if (_type & INT)
-            xml.tag(s.arg(id()).arg(_name).arg(schedVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
+            xml.tag(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
       else
-            xml.tag(s.arg(id()).arg(_name).arg(schedVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
+            xml.tag(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
 
       int i = 0;
       for (ciCtrlVal ic = begin(); ic != end(); ++ic) {
             if (i == 0)
                   xml.putLevel();
-            int time  = ic->first;
-            CVal val = ic->second;
+            int time  = ic.key();
+            CVal val = ic.value();
             if (_type & LOG)
-                  val.f = (val.f == -1000.0) ? 0.0f : pow(10.0f, val.f);
+                  val.f = (val.f <= -1000.0) ? 0.0f : pow(10.0f, val.f);
             if (_type & INT) {
                   xml.nput("%d %d,", time, val.i);
                   }
@@ -333,8 +311,11 @@ int Ctrl::val2pixelR(CVal val, int maxpixel)
       maxpixel -= 1;
       if (_type & INT)
             return maxpixel - ((maxpixel * (val.i - min.i) + (max.i-min.i)/2) / (max.i - min.i));
-      else
+      else {
+            if ((_type & LOG) && (val.f <= -1000.0f))
+                  return maxpixel;
             return maxpixel - lrint(double(maxpixel) * (val.f - min.f) / (max.f-min.f));
+            }
       }
 
 int Ctrl::val2pixelR(int val, int maxpixel)
@@ -342,6 +323,26 @@ int Ctrl::val2pixelR(int val, int maxpixel)
       maxpixel -= 1;
       int range = max.i - min.i;
       return maxpixel - ((maxpixel * (val - min.i) + range / 2) / range);
+      }
+
+//---------------------------------------------------------
+//   cur2pixel
+//---------------------------------------------------------
+
+int Ctrl::cur2pixel(int maxpixel)
+      {
+      maxpixel -= 1;
+
+      if (_type & INT)
+            return maxpixel - ((maxpixel * (_curVal.i - min.i) + (max.i-min.i)/2) / (max.i - min.i));
+      float f = _curVal.f;
+      if (_type & LOG) {
+            if (f <= 0.0)
+                  return maxpixel;
+            else
+                  f = fast_log10(f);
+            }
+      return maxpixel - lrint(double(maxpixel) * (f - min.f) / (max.f-min.f));
       }
 
 //---------------------------------------------------------

@@ -133,7 +133,7 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx, bool pre)
                         }
                   cl->setRange(min, max);
                   cl->setName(name);
-                  plugin->setParam(i, cl->schedVal().f);
+                  plugin->setParam(i, cl->curVal().f);
                   plugin->setControllerList(cl);
                   }
             }

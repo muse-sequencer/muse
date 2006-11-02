@@ -601,7 +601,7 @@ static void addWavePorts(AudioTrack* t, QMenu* lb, RouteList* r, bool input)
 //---------------------------------------------------------
 //   addMidiOutPorts
 //---------------------------------------------------------
-
+#if 0
 static void addMidiOutPorts(Track* t, QMenu* lb, RouteList* r)
       {
       MidiOutPortList* al = song->midiOutPorts();
@@ -645,6 +645,7 @@ static void addMidiInPorts(Track* t, QMenu* lb, RouteList* r)
                   }
             }
       }
+#endif
 
 //---------------------------------------------------------
 //   addSyntiPorts

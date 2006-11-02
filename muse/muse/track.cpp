@@ -329,7 +329,7 @@ bool Track::readProperties(QDomNode node)
             else {  //???
                   Ctrl* d = icl->second;
                   for (iCtrlVal i = l->begin(); i != l->end(); ++i)
-                        d->insert(std::pair<const unsigned, CVal> (i->first, i->second));
+                        d->insert(i.key(), i.value());
                   d->setCurVal(l->curVal());
                   d->setDefault(l->getDefault());
                   delete l;

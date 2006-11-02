@@ -161,8 +161,8 @@ void MusE::exportMidi()
             	Ctrl* c  = ivl->second;
                   int id   = c->id();
                   for (iCtrlVal iv = c->begin(); iv != c->end(); ++iv) {
-                  	int tick = ivl->first;
-                        int val  = iv->second.i;
+                  	int tick = iv.key();
+                        int val  = iv.value().i;
                         addController(l, tick, port, channel, id, val);
                         }
                   }

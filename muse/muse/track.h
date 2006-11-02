@@ -206,7 +206,7 @@ class Track : public QObject {
       void setHwCtrlState(int ctrl, int val);
 
       // current value:
-      CVal ctrlVal(int id)  { return getController(id)->schedVal(); }
+      CVal ctrlVal(int id)  { return getController(id)->curVal(); }
 
       // editor interface:
       bool addControllerVal(int id, unsigned pos, CVal);

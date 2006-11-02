@@ -565,7 +565,7 @@ void PartCanvas::mousePress(QMouseEvent* me)
       if (hit == HIT_SUBTRACK) {
             TLSWidget* w = (TLSWidget*)(at->tw);
             int y = wpos.y() + pos.y() - w->y();
-            w->mousePress(QPoint(pos.x(), y), button);
+            w->mousePress(QPoint(pos.x(), y), button, me->modifiers());
             state = S_SUBTRACK;
             return;
             }

@@ -322,7 +322,7 @@ void MidiOut::reset()
 //    _playEvents queue which is processed by the MidiSeq thread.
 //-------------------------------------------------------------------
 
-void MidiOut::processMidi(MPEventList& el, unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame)
+void MidiOut::processMidi(MPEventList& el, unsigned fromTick, unsigned toTick, unsigned /*fromFrame*/, unsigned /*toFrame*/)
       {
       while (!eventFifo.isEmpty())
             el.add(eventFifo.get());
@@ -332,13 +332,13 @@ void MidiOut::processMidi(MPEventList& el, unsigned fromTick, unsigned toTick, u
             CtrlList* cl = track->controller();
             for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
                   Ctrl* c = ic->second;
-                  iCtrlVal is = c->lower_bound(fromTick);
-                  iCtrlVal ie = c->lower_bound(toTick);
+                  iCtrlVal is = c->lowerBound(fromTick);
+                  iCtrlVal ie = c->lowerBound(toTick);
                   for (iCtrlVal ic = is; ic != ie; ++ic) {
-                        unsigned frame = AL::tempomap.tick2frame(ic->first);
+                        unsigned frame = AL::tempomap.tick2frame(ic.key());
                         Event ev(Controller);
                         ev.setA(c->id());
-                        ev.setB(ic->second.i);
+                        ev.setB(ic.value().i);
                         el.add(MidiEvent(frame, -1, ev));
                         }
                   }
@@ -353,13 +353,13 @@ void MidiOut::processMidi(MPEventList& el, unsigned fromTick, unsigned toTick, u
                   CtrlList* cl = mc->controller();
                   for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
                         Ctrl* c = ic->second;
-                        iCtrlVal is = c->lower_bound(fromTick);
-                        iCtrlVal ie = c->lower_bound(toTick);
+                        iCtrlVal is = c->lowerBound(fromTick);
+                        iCtrlVal ie = c->lowerBound(toTick);
                         for (; is != ie; ++is) {
-                              unsigned frame = AL::tempomap.tick2frame(is->first);
+                              unsigned frame = AL::tempomap.tick2frame(is.key());
                               Event ev(Controller);
                               ev.setA(c->id());
-                              ev.setB(is->second.i);
+                              ev.setB(is.value().i);
                               el.add(MidiEvent(frame, ch, ev));
                               }
                         }

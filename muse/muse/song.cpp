@@ -1358,9 +1358,10 @@ void Song::stopRolling()
                                                 start = AL::tempomap.frame2tick(start);
                                                 end = AL::tempomap.frame2tick(end);
                                                 }
-                                          iCtrlVal s = cl->lower_bound(start);
-                                          iCtrlVal e = cl->lower_bound(end);
-                                          cl->erase(s, e);
+                                          iCtrlVal s = cl->lowerBound(start);
+                                          iCtrlVal e = cl->lowerBound(end);
+                                          while (s != e)
+                                                cl->erase(s++);
                                           hasEvents = true;
                                           break;
                                           }
@@ -2210,7 +2211,7 @@ void Song::addControllerVal(Track* t, Ctrl* c, const Pos& p, CVal val)
             // current value may have changed
             unsigned ctime = t->timeType() == AL::FRAMES ? pos[0].frame() : pos[0].tick();
             CVal cval = c->value(ctime);
-            if (c->schedVal().i != cval.i) {
+            if (c->curVal().i != cval.i) {
                   if (t->isMidiTrack()) {
                         if (t->type() == Track::MIDI_CHANNEL) {
                               MidiChannel* mc = (MidiChannel*)t;
@@ -2218,12 +2219,7 @@ void Song::addControllerVal(Track* t, Ctrl* c, const Pos& p, CVal val)
                               mc->playMidiEvent(&ev);
                               }
                         }
-                  else {
-                        // non midi controller are current once set
-                        c->setCurVal(cval);
-                        }
-                  c->setSchedVal(cval);
-                  // t->emitControllerChanged(c->id());
+                  c->setCurVal(cval);
                   }
             }
       t->emitControllerChanged(c->id()); //moved this out here, otherwise canvas is not updated
@@ -2270,7 +2266,7 @@ void Song::setControllerVal(Track* t, Ctrl* c, CVal val)
                   pipe->plugin(pluginIndex)->setParam(ctrlIndex, val.f);
                   }
             }
-      c->setSchedVal(val);
+      c->setCurVal(val);
 
       if (t->autoWrite()) {
             unsigned time = t->timeType() == AL::FRAMES ? pos[0].frame() : pos[0].tick();

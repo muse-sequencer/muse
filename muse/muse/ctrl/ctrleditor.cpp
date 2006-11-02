@@ -58,6 +58,17 @@ inline static void drawHandle(QPainter& p, int x, int y, int lselected)
       }
 
 //---------------------------------------------------------
+//    ctrlY
+//---------------------------------------------------------
+
+int CtrlEditor::ctrlY(int x, const CVal& val) const
+      {
+      if (dragy != -1 && lselected == x)
+            return dragy;
+      return ctrl()->val2pixelR(val, cheight());
+      }
+
+//---------------------------------------------------------
 //   paint
 //---------------------------------------------------------
 
@@ -111,51 +122,61 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
                   }
             }
       else {
-            if (!ctrl()->empty()) {
-                  int x1 = from, y1 = 0, x2 = 0, y2 = 0;
-                  ciCtrlVal i = ctrl()->begin();
-                  if (i != ctrl()->end()) {
-                        x1 = tc()->pos2pix(Pos(i->first, tt));
-                        if (dragy != -1 && lselected == x1)
-                              y1 = dragy;
-                        else
-                              y1 = ctrl()->val2pixelR(i->second, th);
-                        if (x1 >= from)
-                              drawHandle(p, x1, y1, lselected);
+            if (ctrl()->empty()) {
+                  if (aR) {
+                        int y = ctrl()->cur2pixel(th);
+                        p.drawLine(r.x(), y, r.x() + r.width(), y);
                         }
-                  for (; i != ctrl()->end(); ++i) {
-                        x2 = tc()->pos2pix(Pos(i->first, tt));
-                        if (dragy != -1 && lselected == x2)
-                              y2 = dragy;
-                        else {
-                              y2 = ctrl()->val2pixelR(i->second, th);
+                  }
+            else {
+                  int x1, y1, x2, y2;
+
+
+                  Pos pos1 = tc()->pix2pos(from);
+                  ciCtrlVal i = ctrl()->lowerBound(pos1.time(tt));
+
+                  if (i == ctrl()->end()) {
+                        --i;
+                        int x = tc()->pos2pix(Pos(i.key(), tt));
+                        int y = ctrlY(x, i.value());
+                        p.drawLine(r.x(), y, r.x() + r.width(), y);
+                        }
+                  else {
+                        if (i == ctrl()->begin()) {
+                              x1 = tc()->pos2pix(Pos(i.key(), tt));
+                              y1 = ctrlY(x1, i.value());
+                              x1 = r.x();
                               }
-                        if (x2 >= to)
-                              break;
-                        if (x2 >= from) {
+                        else {
+                              --i;
+                              x1 = tc()->pos2pix(Pos(i.key(), tt));
+                              y1 = ctrlY(x1, i.value());
+                              drawHandle(p, x1, y1, lselected);
+                              ++i;
+                              }
+                        do {
+                              x2 = tc()->pos2pix(Pos(i.key(), tt));
+                              y2 = ctrlY(x2, i.value());
                               if (ctrl()->type() & Ctrl::DISCRETE) {
                                     p.drawLine(x1, y1, x2, y1);
                                     p.drawLine(x2, y1, x2, y2);
                                     }
                               else
                                     p.drawLine(x1, y1, x2, y2);
-                              drawHandle(p, x1, y1, lselected);
+                              if (x2 >= to)
+                                    break;
+                              drawHandle(p, x2, y2, lselected);
+                              x1 = x2;
+                              y1 = y2;
+                              ++i;
+                              } while (i != ctrl()->end());
+                        if (x2 < to) {
+                              p.drawLine(x2, y1, to, y1);
                               }
-                        x1 = x2;
-                        y1 = y2;
-                        }
-                  if (x1 < to) {
-                        if (i == ctrl()->end())
-                              x2 = to;
-                        if (ctrl()->type() & Ctrl::DISCRETE)
-                              y2 = y1;
-                        p.drawLine(x1, y1, x2, y2);
-                        drawHandle(p, x1, y1, lselected);
                         }
                   }
             if (!aR) {
-                  p.setPen(QPen(Qt::white, 2));
-                  int y = ctrl()->val2pixelR(ctrl()->schedValRaw(), th);
+                  int y = ctrl()->cur2pixel(th);
                   p.drawLine(r.x(), y, r.x() + r.width(), y);
                   }
             }
@@ -183,7 +204,7 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
 //   mousePress
 //---------------------------------------------------------
 
-void CtrlEditor::mousePress(const QPoint& pos, int button)
+void CtrlEditor::mousePress(const QPoint& pos, int button, Qt::KeyboardModifiers modifiers)
       {
       Tool tool = tc()->tool();
       if (button & Qt::RightButton) {
@@ -214,7 +235,7 @@ void CtrlEditor::mousePress(const QPoint& pos, int button)
 
       int cid   = ctrl()->id();
 
-      if (tool == PencilTool) {
+      if (tool == PencilTool || (modifiers & Qt::ShiftModifier)) {
             selected  = tc()->pix2pos(x);
             lselected = x;
             dragy     = y;
@@ -240,19 +261,20 @@ void CtrlEditor::mousePress(const QPoint& pos, int button)
             Pos pos2(tc()->pix2pos(x + HANDLE2));
 
             TType tt = track()->timeType();
-            ciCtrlVal s = ctrl()->upper_bound(pos1.time(tt));
-            ciCtrlVal e = ctrl()->upper_bound(pos2.time(tt));
+            ciCtrlVal s = ctrl()->upperBound(pos1.time(tt));
+            ciCtrlVal e = ctrl()->upperBound(pos2.time(tt));
             for (ciCtrlVal i = s; i != e; ++i) {
-                  int yy = ctrl()->val2pixelR(i->second, wh);
+                  int yy = ctrl()->val2pixelR(i.value(), wh);
                   startY = yy;
                   if ((yy >= (y-HANDLE2)) && (yy < (y + HANDLE2))) {
                         if (tt == AL::TICKS)
-                              selected.setTick(i->first);
+                              selected.setTick(i.key());
                         else
-                              selected.setFrame(i->first);
+                              selected.setFrame(i.key());
                         lselected = tc()->pos2pix(selected);
-                        if (tool == RubberTool || button == Qt::RightButton) {
-                              song->removeControllerVal(ctrlTrack(), ctrl()->id(), i->first);
+                        if (tool == RubberTool || button == Qt::RightButton
+                          || modifiers & Qt::ControlModifier) {
+                              song->removeControllerVal(ctrlTrack(), ctrl()->id(), i.key());
                               dragy = -1;
                               }
                         else {
@@ -417,18 +439,18 @@ void CtrlEditor::mouseMove(const QPoint& pos)
                   Pos pos2(tc()->pix2pos(x + HANDLE2));
 
                   TType tt = track()->timeType();
-                  ciCtrlVal s = ctrl()->upper_bound(pos1.time(tt));
-                  ciCtrlVal e = ctrl()->upper_bound(pos2.time(tt));
+                  ciCtrlVal s = ctrl()->upperBound(pos1.time(tt));
+                  ciCtrlVal e = ctrl()->upperBound(pos2.time(tt));
                   for (ciCtrlVal i = s; i != e; ++i) {
-                        int yy = ctrl()->val2pixelR(i->second, wh);
+                        int yy = ctrl()->val2pixelR(i.value(), wh);
                         startY = yy;
                         if ((yy >= (y-HANDLE2)) && (yy < (y + HANDLE2))) {
                               if (tt == AL::TICKS)
-                                    selected.setTick(i->first);
+                                    selected.setTick(i.key());
                               else
-                                    selected.setFrame(i->first);
+                                    selected.setFrame(i.key());
                               lselected = tc()->pos2pix(selected);
-                              song->removeControllerVal(ctrlTrack(), ctrl()->id(), i->first);
+                              song->removeControllerVal(ctrlTrack(), ctrl()->id(), i.key());
                               dragy = -1;
                               break;
                               }

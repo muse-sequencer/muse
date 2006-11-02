@@ -26,6 +26,7 @@
 class Ctrl;
 class TimeCanvas;
 class Track;
+struct CVal;
 
 //---------------------------------------------------------
 //   CtrlEditor
@@ -50,6 +51,8 @@ class CtrlEditor {
       virtual Track* track()   const = 0;
       virtual Track* ctrlTrack()   const = 0;
 
+      int ctrlY(int x, const CVal&) const;
+
    protected:
       int singlePitch;
 
@@ -58,7 +61,7 @@ class CtrlEditor {
       virtual ~CtrlEditor() {}
       void paint(QPainter& p, const QRect& r);
       void setDrawCtrlName(bool val) { _drawCtrlName = val; }
-      void mousePress(const QPoint&, int);
+      void mousePress(const QPoint&, int, Qt::KeyboardModifiers);
       void mouseRelease();
       void mouseMove(const QPoint& pos);
       };

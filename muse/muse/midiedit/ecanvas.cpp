@@ -1192,7 +1192,7 @@ void EventCanvas::mousePress(QMouseEvent* me)
                   QRect r(rCanvasB.x(), rCanvasB.y() + c->y + splitWidth,
                      rCanvasB.width(), c->cheight());
                   if (r.contains(pos)) {
-                        c->mousePress(pos - r.topLeft(), me->button());
+                        c->mousePress(pos - r.topLeft(), me->button(), me->modifiers());
                         break;
                         }
                   }

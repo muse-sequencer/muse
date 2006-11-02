@@ -136,7 +136,7 @@ class CtrlRecList : public std::list<CtrlRecVal> {
       };
 
 typedef CtrlRecList::iterator iCtrlRec;
-typedef std::map<unsigned, CVal, std::less<unsigned> > CTRL;
+typedef QMap<unsigned, CVal> CTRL;
 
 typedef CTRL::iterator iCtrlVal;
 typedef CTRL::const_iterator ciCtrlVal;
@@ -162,10 +162,7 @@ class Ctrl : public CTRL {
       QString  _name;
       int   _type;         // bitmask of CtrlType
       CVal _default;
-      CVal _curVal;     // used to optimize controller events send to
-                        //   midi devices
-      CVal _schedVal;   // used by gui to determine "current" value
-      CVal _schedValRaw;
+      CVal _curVal;        // used to optimize controller events
       CVal min, max;
       bool _changed;
       bool _touched;
@@ -177,35 +174,16 @@ class Ctrl : public CTRL {
       Ctrl(int id, const QString& name, int t, float a, float b);
       int type() const               { return _type;    }
       void setType(int t)            { _type = t;       }
-      CVal getDefault() const        { return _default; }
+
+      const CVal& getDefault() const { return _default; }
       void setDefault(float val)     { _default.f = val;  }
       void setDefault(CVal val)      { _default = val;  }
       void setDefault(int val)       { _default.i = val;  }
 
-      CVal curVal() const            { return _curVal;  }
-      void setCurVal(CVal v) {
-            _curVal = v;
-            setSchedVal(v);
-            }
-      void setCurVal(float v) {
-            _curVal.f = v;
-            CVal val;
-            val.f = v;
-            setSchedVal(val);
-            }
-      void setCurVal(int v) {
-            _curVal.i = v;
-            _schedVal.i = v;
-            _schedValRaw.i = v;
-            }
-
-      void setSchedVal(int v)        { 
-            _schedVal.i = v; 
-            _schedValRaw.i = v; 
-            }
-      void setSchedVal(CVal v);
-      CVal schedVal() const          { return _schedVal; }
-      CVal schedValRaw() const       { return _schedValRaw; }
+      const CVal& curVal() const     { return _curVal;  }
+      void setCurVal(CVal v)         { _curVal   = v; }
+      void setCurVal(float v)        { _curVal.f = v; }
+      void setCurVal(int v)          { _curVal.i = v; }
 
       int id() const                 { return _id;      }
       void setId(int i)              { _id = i;         }
@@ -225,6 +203,7 @@ class Ctrl : public CTRL {
       void read(QDomNode node, bool midi);
       void write(Xml&);
       int val2pixelR(CVal, int maxpixel);
+      int cur2pixel(int maxpixel);
       int val2pixelR(int, int maxpixel);
       CVal pixel2val(int pixel, int maxpixel);
       CVal pixel2valR(int pixel, int maxpixel);
