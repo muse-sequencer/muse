@@ -478,7 +478,7 @@ void Song::setPos(int idx, const Pos& val, bool sig, bool isSeek, bool follow)
       if (pos[idx] == val)
             return;
       if (idx == CPOS) {
-            _vcpos = val;
+//            _vcpos = val;
             if (isSeek) {
                   seekInProgress = true;
                   audio->msgSeek(val);
@@ -1130,16 +1130,34 @@ void Song::clear(bool signal)
 
       _selectedTrack = 0;
       _tracks.clear();
-      _midis.clearDelete();
-      _waves.clearDelete();
-      _inputs.clearDelete();     // audio input ports
-      _outputs.clearDelete();    // audio output ports
-      _groups.clearDelete();     // mixer groups
-      _synthIs.clearDelete();
 
-      _midiSyntis.clearDelete();
-      _midiOutPorts.clearDelete();
-      _midiInPorts.clearDelete();
+      qDeleteAll(_midis);
+      _midis.clear();
+
+      qDeleteAll(_waves);
+      _waves.clear();
+
+      qDeleteAll(_inputs);     // audio input ports
+      _inputs.clear();
+
+      qDeleteAll(_outputs);    // audio output ports
+      _outputs.clear();
+
+      qDeleteAll(_groups);     // mixer groups
+      _groups.clear();
+
+      qDeleteAll(_synthIs);
+      _synthIs.clear();
+
+      qDeleteAll(_midiSyntis);
+      _midiSyntis.clear();
+
+      qDeleteAll(_midiOutPorts);
+      _midiOutPorts.clear();
+
+      qDeleteAll(_midiInPorts);
+      _midiInPorts.clear();
+
       _midiChannel.clear();
 
       AL::tempomap.clear();
@@ -1150,7 +1168,7 @@ void Song::clear(bool signal)
       pos[0].setTick(0);
       pos[1].setTick(0);
       pos[2].setTick(0);
-      _vcpos.setTick(0);
+//      _vcpos.setTick(0);
 
       _masterFlag    = true;
       loopFlag       = false;
@@ -1633,8 +1651,7 @@ void Song::insertTrack0(Track* track, int idx)
 
 void Song::insertTrack1(Track* track, int idx)
       {
-      iTrack i = _tracks.index2iterator(idx);
-      _tracks.insert(i, track);
+      _tracks.insert(idx, track);
       if (track->type() == Track::AUDIO_SOFTSYNTH) {
             SynthI* s = (SynthI*)track;
             Synth* sy = s->synth();
@@ -1752,7 +1769,7 @@ void Song::removeTrack(Track* track)
             for (int i = 0; i < MIDI_CHANNELS; ++i) {
                   MidiChannel* mc = ((SynthI*)track)->channel(i);
                   if (!mc->noInRoute()) {
-                        int idx = _tracks.index(mc);
+                        int idx = _tracks.indexOf(mc);
                         undoOp(UndoOp::DeleteTrack, idx, mc);
                         removeTrack1(mc);
                         audio->msgRemoveTrack(mc);
@@ -1764,7 +1781,7 @@ void Song::removeTrack(Track* track)
             for (int i = 0; i < MIDI_CHANNELS; ++i) {
                   MidiChannel* mc = ((MidiOutPort*)track)->channel(i);
                   if (!mc->noInRoute()) {
-                        int idx = _tracks.index(mc);
+                        int idx = _tracks.indexOf(mc);
                         undoOp(UndoOp::DeleteTrack, idx, mc);
                         removeTrack1(mc);
                         audio->msgRemoveTrack(mc);
@@ -1772,7 +1789,7 @@ void Song::removeTrack(Track* track)
                         }
                   }
             }
-      int idx = _tracks.index(track);
+      int idx = _tracks.indexOf(track);
       undoOp(UndoOp::DeleteTrack, idx, track);
       removeTrack1(track);
       audio->msgRemoveTrack(track);
@@ -1788,24 +1805,8 @@ void Song::removeTrack(Track* track)
 
 void Song::removeTrack1(Track* track)
       {
-#if 0
-      if (track->type() == Track::AUDIO_SOFTSYNTH) {
-            for (int i = 0; i < MIDI_CHANNELS; ++i) {
-                  MidiChannel* mc = ((SynthI*)track)->channel(i);
-                  if (!mc->noInRoute())
-                        removeTrack1(mc);
-                  }
-            }
-      else if (track->type() == Track::MIDI_OUT) {
-            for (int i = 0; i < MIDI_CHANNELS; ++i) {
-                  MidiChannel* mc = ((MidiOutPort*)track)->channel(i);
-                  if (!mc->noInRoute())
-                        removeTrack1(mc);
-                  }
-            }
-#endif
       track->deactivate();
-      _tracks.erase(track);
+      _tracks.removeAt(_tracks.indexOf(track));
       }
 
 //---------------------------------------------------------
@@ -1817,41 +1818,37 @@ void Song::removeTrack2(Track* track)
       {
       switch (track->type()) {
             case Track::MIDI_SYNTI:
-                  _midiSyntis.erase(track);
+                  _midiSyntis.removeAt(_midiSyntis.indexOf((MidiSynti*)track));
                   break;
             case Track::MIDI:
-                  _midis.erase(track);
+                  _midis.removeAt(_midis.indexOf((MidiTrack*)track));
                   break;
             case Track::MIDI_OUT:
-//                  for (int i = 0; i < MIDI_CHANNELS; ++i)
-//                        removeTrack2(((MidiOutPort*)track)->channel(i));
-                  _midiOutPorts.erase(track);
+                  _midiOutPorts.removeAt(_midiOutPorts.indexOf((MidiOutPort*)track));
                   break;
             case Track::MIDI_IN:
-                  _midiInPorts.erase(track);
+                  _midiInPorts.removeAt(_midiInPorts.indexOf((MidiInPort*)track));
                   break;
             case Track::MIDI_CHANNEL:
-                  _midiChannel.erase(track);
+                  _midiChannel.removeAt(_midiChannel.indexOf((MidiChannel*)track));
                   break;
             case Track::WAVE:
-                  _waves.erase(track);
+                  _waves.removeAt(_waves.indexOf((WaveTrack*)track));
                   break;
             case Track::AUDIO_OUTPUT:
-                  _outputs.erase(track);
+                  _outputs.removeAt(_outputs.indexOf((AudioOutput*)track));
                   break;
             case Track::AUDIO_INPUT:
-                  _inputs.erase(track);
+                  _inputs.removeAt(_inputs.indexOf((AudioInput*)track));
                   break;
             case Track::AUDIO_GROUP:
-                  _groups.erase(track);
+                  _groups.removeAt(_groups.indexOf((AudioGroup*)track));
                   break;
             case Track::AUDIO_SOFTSYNTH:
                   {
                   SynthI* s = (SynthI*) track;
-//                  for (int i = 0; i < MIDI_CHANNELS; ++i)
-//                        removeTrack2(s->channel(i));
                   s->deactivate2();
-                  _synthIs.erase(track);
+                  _synthIs.removeAt(_synthIs.indexOf(s));
                   }
                   break;
             case Track::TRACK_TYPES:
@@ -1898,23 +1895,7 @@ void Song::removeTrack3(Track* track)
       if (track->type() == Track::AUDIO_SOFTSYNTH) {
             SynthI* s = (SynthI*) track;
             s->deactivate3();
-#if 0
-            for (int i = 0; i < MIDI_CHANNELS; ++i) {
-                  MidiChannel* mc = ((SynthI*)track)->channel(i);
-                  if (!mc->noInRoute())
-                        removeTrack3(mc);
-                  }
-#endif
             }
-#if 0
-      else if (track->type() == Track::MIDI_OUT) {
-            for (int i = 0; i < MIDI_CHANNELS; ++i) {
-                  MidiChannel* mc = ((MidiOutPort*)track)->channel(i);
-                  if (!mc->noInRoute())
-                        removeTrack3(mc);
-                  }
-            }
-#endif
       emit trackRemoved(track);
       }
 
@@ -2306,8 +2287,8 @@ void Song::removeControllerVal(Track* t, int id, unsigned time)
 
 void Song::moveTrack(Track* src, Track* dst)
       {
-      iTrack si = _tracks.find(src);
-      iTrack di = _tracks.find(dst);
+      iTrack si = qFind(_tracks.begin(), _tracks.end(), src);
+      iTrack di = qFind(_tracks.begin(), _tracks.end(), dst);
       if (si == _tracks.end() || di == _tracks.end()) {
             printf("Song::moveTrack() track not found\n");
             return;

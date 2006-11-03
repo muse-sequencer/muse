@@ -46,7 +46,7 @@ class MidiSynti : public MidiTrackBase {
       virtual Part* newPart(Part*, bool) { return 0; }
 
       bool initInstance(MidiPlugin*);
-      virtual void getEvents(unsigned from, unsigned to, int channel, MPEventList* dst);
+      virtual void getEvents(unsigned from, unsigned to, int channel, MidiEventList* dst);
 
       bool hasGui() const;
       bool guiVisible() const;
@@ -54,9 +54,9 @@ class MidiSynti : public MidiTrackBase {
       };
 
 
-typedef tracklist<MidiSynti*>::iterator iMidiSynti;
-typedef tracklist<MidiSynti*>::const_iterator ciMidiSynti;
-typedef tracklist<MidiSynti*> MidiSyntiList;
+typedef QList<MidiSynti*> MidiSyntiList;
+typedef MidiSyntiList::iterator iMidiSynti;
+typedef MidiSyntiList::const_iterator ciMidiSynti;
 
 #endif
 

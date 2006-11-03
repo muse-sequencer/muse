@@ -40,14 +40,14 @@ class MidiOut
       Track* track;
       MidiInstrument* _instrument;
       MidiChannel* _channel[MIDI_CHANNELS];
-      MPEventList _schedEvents;  // scheduled events by process()
+      MidiEventList _schedEvents;  // scheduled events by process()
 
       // fifo for midi events send from gui
       // direct to midi port:
 
       MidiFifo eventFifo;
 
-      void processMidi(MPEventList& el, unsigned fromTick, unsigned toTick, 
+      void processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick, 
          unsigned fromFrame, unsigned toFrame);
       MidiChannel* channel(int n)           { return _channel[n]; }
       MidiInstrument* instrument()          { return _instrument; }

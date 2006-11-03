@@ -4,15 +4,11 @@
 
       - change default: show MidiChannel in mixer, dont show MidiTrack
       - Add "monitor" button to midi channel strip in mixer.
-      - add midi fifo for MESS synthesizer and repeat sending an event
-        in case the synthesizer is busy
       - change default: do not default to "automation read" when
         creating new strips
-      - change default: when creating midi input strips, route input
-        to all available midi sources
         
 BUGS
-	- updating the gui during midi recording is too slow;
+	? updating the gui during midi recording is too slow;
         a new, faster implementation is needed
 
 	- dont allow midi editing during recording. Treat recording

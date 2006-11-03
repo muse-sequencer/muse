@@ -22,12 +22,15 @@
 #define __SONG_H__
 
 #include "undo.h"
+#include "midiinport.h"
+#include "midioutport.h"
+#include "midichannel.h"
 #include "miditrack.h"
+#include "midisynti.h"
 #include "wavetrack.h"
 #include "audioinput.h"
 #include "audiooutput.h"
 #include "audiogroup.h"
-#include "midisynti.h"
 #include "synth.h"
 #include "ctrl.h"
 #include "midififo.h"
@@ -113,7 +116,7 @@ class Song : public QObject {
       UndoList* undoList;
       UndoList* redoList;
       Pos pos[3];
-      Pos _vcpos;               // virtual CPOS (locate in progress)
+//      Pos _vcpos;               // virtual CPOS (locate in progress)
       AL::MarkerList* _markerList;
       bool seekInProgress;	// user initiated a seek
 
@@ -159,8 +162,6 @@ class Song : public QObject {
       void setMeasureLen(int l);
       void changePart(Part*, unsigned, unsigned);
       void createLRPart(Track* track);
-      //void setTickPos(int, unsigned);
-
       void setPos(int, const AL::Pos&);
       void setPos(int, const AL::Pos&, bool sig, bool isSeek = true,
          bool adjustScrollbar = false);
@@ -236,8 +237,8 @@ class Song : public QObject {
       const Pos& lPos() const       { return pos[1]; }
       const Pos& rPos() const       { return pos[2]; }
       unsigned cpos() const         { return pos[0].tick(); }
-      unsigned vcpos() const        { return _vcpos.tick(); }
-      const Pos& vcPos() const      { return _vcpos; }
+//      unsigned vcpos() const        { return _vcpos.tick(); }
+//      const Pos& vcPos() const      { return _vcpos; }
       unsigned lpos() const         { return pos[1].tick(); }
       unsigned rpos() const         { return pos[2].tick(); }
 
@@ -294,8 +295,6 @@ class Song : public QObject {
       void copyPart(Part*, unsigned, Track*);
       void selectPart(Part*, bool add=false);
 
-//      SettingsList* settingsList() { return esettingsList; }
-
       //-----------------------------------------
       //   track manipulations
       //-----------------------------------------
@@ -307,11 +306,10 @@ class Song : public QObject {
       OutputList* outputs()           { return &_outputs;      }
       GroupList* groups()             { return &_groups;       }
       SynthIList* syntis()            { return &_synthIs;      }
-      MidiOutPortList* midiOutPorts()   { return &_midiOutPorts; }
-      MidiOutPort* midiOutPort(int idx) { return _midiOutPorts.index(idx); }
-      MidiSyntiList* midiSyntis()       { return &_midiSyntis;   }
-      MidiInPortList* midiInPorts()     { return &_midiInPorts;  }
-      MidiChannelList* midiChannel()    { return &_midiChannel;  }
+      MidiOutPortList* midiOutPorts() { return &_midiOutPorts; }
+      MidiSyntiList* midiSyntis()     { return &_midiSyntis;   }
+      MidiInPortList* midiInPorts()   { return &_midiInPorts;  }
+      MidiChannelList* midiChannel()  { return &_midiChannel;  }
 
       bool trackExists(Track*) const;
 
@@ -319,7 +317,6 @@ class Song : public QObject {
       void removeTrack1(Track* track);
       void removeTrack2(Track* track);
       void removeTrack3(Track* track);
-//      void removeMarkedTracks();
       void changeTrackName(Track* track, const QString&);
 
       void swapTracks(int i1, int i2);
@@ -362,12 +359,6 @@ class Song : public QObject {
       void doRedo3();
 
       void addUndo(UndoOp& i);
-
-      //-----------------------------------------
-      //   Configuration
-      //-----------------------------------------
-
-//      void rescanAlsaPorts();
 
       //-----------------------------------------
       //   Controller

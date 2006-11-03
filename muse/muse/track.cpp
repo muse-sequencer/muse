@@ -106,7 +106,7 @@ Track::Track()
       _channels      = 0;           // 1 - mono, 2 - stereo
       _selected      = false;
       _locked        = false;
-      _autoRead      = true;
+      _autoRead      = false;
       _autoWrite     = false;
 
       for (int i = 0; i < MAX_CHANNELS; ++i) {
@@ -256,7 +256,7 @@ void Track::writeProperties(Xml& xml) const
             xml.strTag("comment", _comment);
       if (_recordFlag)
             xml.intTag("record", _recordFlag);
-//      if (mute())     // audioInput defaults to true
+      if (mute() != muteDefault())
             xml.intTag("mute", mute());
       if (solo())
             xml.intTag("solo", solo());

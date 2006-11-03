@@ -197,7 +197,7 @@ QString nameSysex(unsigned int len, const unsigned char* buf)
 //      generally: how to handle incomplete messages?
 //---------------------------------------------------------
 
-void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
+void buildMidiEventList(EventList* del, const MidiEventList* el, MidiTrack* track,
    int div, bool addSysexMeta)
       {
       QString tname;
@@ -216,7 +216,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
 
       EventList mel;
       int metaChannel = -1;
-      for (iMPEvent i = el->begin(); i != el->end(); ++i) {
+      for (iMidiEvent i = el->begin(); i != el->end(); ++i) {
             MidiEvent ev = *i;
             if (ev.type() == ME_META) {
                   if (ev.dataA() == 0x20) {
@@ -282,7 +282,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     // check if a CTRL_LDATA follows
                                     // e.g. wie have a 14 bit controller:
                                     {
-                                    iMPEvent ii = i;
+                                    iMidiEvent ii = i;
                                     ++ii;
                                     bool found = false;
                                     for (; ii != el->end(); ++ii) {

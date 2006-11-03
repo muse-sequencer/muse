@@ -494,7 +494,7 @@ void MidiTrack::changeDrumMap() const
 //    from/to - midi ticks
 //---------------------------------------------------------
 
-void MidiTrack::getEvents(unsigned from, unsigned to, int, MPEventList* dst)
+void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
       {
       if (from > to) {
             printf("getEvents(): FATAL: cur > next %d > %d\n", from, to);
@@ -552,14 +552,14 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MPEventList* dst)
                               int veloOff = ev.veloOff();
 
                               unsigned eframe = AL::tempomap.tick2frame(tick+elen);
-                              dst->add(MidiEvent(frame, 0, ME_NOTEON, pitch, velo));
-                              dst->add(MidiEvent(eframe, 0, veloOff ? ME_NOTEOFF : ME_NOTEON, pitch, veloOff));
+                              dst->insert(MidiEvent(frame, 0, ME_NOTEON, pitch, velo));
+                              dst->insert(MidiEvent(eframe, 0, veloOff ? ME_NOTEOFF : ME_NOTEON, pitch, veloOff));
                               _meter[0] += velo/2;
                               if (_meter[0] > 127.0f)
                                     _meter[0] = 127.0f;
                               }
                         else {
-                              dst->add(MidiEvent(frame, 0, ev));
+                              dst->insert(MidiEvent(frame, 0, ev));
                               }
                         }
                   }
@@ -574,10 +574,10 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MPEventList* dst)
             MidiTrackBase* track = (MidiTrackBase*)i->track;
             if (track->isMute())
                   continue;
-            MPEventList el;
+            MidiEventList el;
             track->getEvents(from, to, i->channel, &el);
 
-            for (iMPEvent ie = el.begin(); ie != el.end(); ++ie) {
+            for (iMidiEvent ie = el.begin(); ie != el.end(); ++ie) {
                   MidiEvent event(*ie);
                   int eventTime = event.time();
                   if (recordFlag() && audio->isRecording()) {
@@ -607,7 +607,7 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MPEventList* dst)
                               }
                         unsigned time = 0; // eventTime + segmentSize*(segmentCount-1);
                         event.setTime(time);
-                        dst->add(event);
+                        dst->insert(event);
                         }
                   }
             }

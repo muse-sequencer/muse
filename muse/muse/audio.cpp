@@ -577,7 +577,6 @@ void Audio::processMsg()
 
             case SEQM_IDLE:
                   idle = msg->a;
-                  midiBusy = idle;
                   break;
 
             case MS_SET_RTC:
@@ -585,47 +584,31 @@ void Audio::processMsg()
                   break;
 
             case SEQM_ADD_TRACK:
-                  midiBusy = true;
                   song->insertTrack2(msg->track);
                   midiSeq->updatePollFd();
-                  midiBusy = false;
                   break;
 
             case SEQM_REMOVE_TRACK:
-                  midiBusy = true;
                   song->removeTrack2(msg->track);
                   midiSeq->updatePollFd();
-                  midiBusy = false;
                   break;
             case SEQM_ADD_PART:
-                  midiBusy = true;
                   song->cmdAddPart((Part*)msg->p1);
-                  midiBusy = false;
                   break;
             case SEQM_REMOVE_PART:
-                  midiBusy = true;
                   song->cmdRemovePart((Part*)msg->p1);
-                  midiBusy = false;
                   break;
             case SEQM_CHANGE_PART:
-                  midiBusy = true;
                   song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2);
-                  midiBusy = false;
                   break;
             case SEQM_MOVE_TRACK:
-                  midiBusy = true;
                   song->moveTrack((Track*)(msg->p1), (Track*)(msg->p2));
-                  midiBusy = false;
                   break;
             case AUDIO_ADDMIDIPLUGIN:
-                  midiBusy = true;
                   ((MidiTrackBase*)msg->track)->addPlugin(msg->mplugin, msg->ival);
-                  midiBusy = false;
                   break;
             default:
-                  midiBusy = true;
                   song->processMsg(msg);
-                  midiBusy = false;
                   break;
             }
       }

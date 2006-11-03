@@ -158,7 +158,7 @@ void TLWidget::mousePressEvent(QMouseEvent* ev)
                         break;
                   case 1:
                         {
-				int idx = song->tracks()->index(_track);
+				int idx = song->tracks()->indexOf(_track);
                         if (_track->type() == Track::MIDI) {
 	                        MidiTrack* t = new MidiTrack();
                               t->clone((MidiTrack*)_track);

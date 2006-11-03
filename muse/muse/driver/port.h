@@ -59,6 +59,14 @@ class Port {
             else 
                   return true;
             }
+      bool operator<(const Port& p) const {
+            if (type == ALSA_TYPE) {
+                  if (_alsaPort != p._alsaPort)
+                        return _alsaPort < p._alsaPort;
+                  return _alsaClient < p._alsaClient;
+                  }
+            return false;
+            }
       unsigned char alsaPort() const   { return _alsaPort; }
       unsigned char alsaClient() const { return _alsaClient; }
       jack_port_t* jackPort() const    { return _jackPort; }

@@ -668,7 +668,7 @@ void MidiStrip::iRoutePressed()
             int port = trackid >> 5;
             int channel = trackid & 0x1f;
 
-            MidiInPort* mip = ipl->index(port);
+            MidiInPort* mip = ipl->at(port);
             if (channel == MIDI_CHANNELS) {
                   for (channel = 0; channel < MIDI_CHANNELS; ++channel) {
                         Route srcRoute(mip, channel, Route::TRACK);

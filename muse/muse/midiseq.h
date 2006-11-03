@@ -23,6 +23,7 @@
 
 #include "thread.h"
 #include "driver/timerdev.h"
+#include "midififo.h"
 
 //---------------------------------------------------------
 //   MidiSeq
@@ -31,6 +32,9 @@
 class MidiSeq : public Thread {
       int realRtcTicks;
       Timer* timer;
+
+      MidiOutFifo fifo;
+      MidiOutEventList playEvents;
 
       static void midiTick(void* p, void*);
       int getTimerTicks() { return timer->getTimerTicks(); }
@@ -42,9 +46,11 @@ class MidiSeq : public Thread {
       virtual void threadStart(void*);
       void updatePollFd();
       bool initRealtimeTimer();
+      void putEvent(const Port& p, const MidiEvent& e) { 
+            fifo.put(MidiOutEvent(p,e)); 
+            }
       };
 
 extern MidiSeq* midiSeq;
-extern volatile bool midiBusy;
 #endif
 

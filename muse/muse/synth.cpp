@@ -530,7 +530,7 @@ void MessSynthIF::populatePatchPopup(QMenu* menu, int ch)
 //   getData
 //---------------------------------------------------------
 
-void MessSynthIF::getData(MPEventList* el, unsigned pos, int ports, unsigned n, float** buffer)
+void MessSynthIF::getData(MidiEventList* el, unsigned pos, int ports, unsigned n, float** buffer)
       {
       // Reset buffers first
       for (int port = 0; port < ports; ++port)
@@ -546,7 +546,7 @@ void MessSynthIF::getData(MPEventList* el, unsigned pos, int ports, unsigned n, 
             putEvent(synti->putFifo.get());
 
       if (ports >= channels()) {
-            iMPEvent i = el->begin();
+            iMidiEvent i = el->begin();
             for (; i != el->end(); ++i) {
                   int frame = i->time();
                   if (frame >= endPos)

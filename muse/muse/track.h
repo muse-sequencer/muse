@@ -26,8 +26,6 @@
 #include "route.h"
 #include "ctrl.h"
 #include "globaldefs.h"
-#include "midievent.h"
-#include "midififo.h"
 
 namespace AL {
       class Xml;
@@ -39,7 +37,7 @@ using AL::TType;
 class DrumMap;
 class MidiPipeline;
 class MidiEvent;
-class MPEventList;
+class MidiEventList;
 class SynthI;
 class MidiPlugin;
 class MidiPluginI;
@@ -54,8 +52,6 @@ class MidiChannel;
 // actually it should check for ALSA but I don't know how to do that
 typedef struct snd_seq_event snd_seq_event_t;
 #endif
-
-static const int EVENT_FIFO_SIZE = 128;
 
 //---------------------------------------------------------
 //   ArrangerTrack
@@ -330,6 +326,8 @@ class Track : public QObject {
       void setSendSync(bool val);
       int deviceId() const      { return _deviceId; }
       void setDeviceId(int val) { _deviceId = val; }
+
+      virtual bool muteDefault() const { return false; }
       };
 
 //---------------------------------------------------------
@@ -352,121 +350,13 @@ class MidiTrackBase : public Track {
       void addPlugin(MidiPluginI* plugin, int idx);
       MidiPluginI* plugin(int idx) const;
 
-      virtual void getEvents(unsigned /*from*/, unsigned /*to*/, int /*channel*/, MPEventList* /*dst*/) {}
+      virtual void getEvents(unsigned /*from*/, unsigned /*to*/, int /*channel*/, MidiEventList* /*dst*/) {}
       };
 
-//---------------------------------------------------------
-//   TrackList
-//---------------------------------------------------------
-
-template<class T> class tracklist : public std::vector<Track*> {
-      typedef std::vector<Track*> vlist;
-
-   public:
-      class iterator : public vlist::iterator {
-         public:
-            iterator() : vlist::iterator() {}
-            iterator(vlist::iterator i) : vlist::iterator(i) {}
-
-            T operator*() {
-                  return (T)(**((vlist::iterator*)this));
-                  }
-            iterator operator++(int) {
-                  return iterator ((*(vlist::iterator*)this).operator++(0));
-                  }
-            iterator& operator++() {
-                  return (iterator&) ((*(vlist::iterator*)this).operator++());
-                  }
-            };
-
-      class const_iterator : public vlist::const_iterator {
-         public:
-            const_iterator() : vlist::const_iterator() {}
-            const_iterator(vlist::const_iterator i) : vlist::const_iterator(i) {}
-            const_iterator(vlist::iterator i) : vlist::const_iterator(i) {}
-
-            const T operator*() const {
-                  return (T)(**((vlist::const_iterator*)this));
-                  }
-            };
-
-      class reverse_iterator : public vlist::reverse_iterator {
-         public:
-            reverse_iterator() : vlist::reverse_iterator() {}
-            reverse_iterator(vlist::reverse_iterator i) : vlist::reverse_iterator(i) {}
-
-            T operator*() {
-                  return (T)(**((vlist::reverse_iterator*)this));
-                  }
-            };
-
-      tracklist() : vlist() {}
-      virtual ~tracklist() {}
-
-      void push_back(T v)             { vlist::push_back(v); }
-      iterator begin()                { return vlist::begin(); }
-      iterator end()                  { return vlist::end(); }
-      const_iterator begin() const    { return vlist::begin(); }
-      const_iterator end() const      { return vlist::end(); }
-      reverse_iterator rbegin()       { return vlist::rbegin(); }
-      reverse_iterator rend()         { return vlist::rend(); }
-      T& back() const                 { return (T&)(vlist::back()); }
-      T& front() const                { return (T&)(vlist::front()); }
-      iterator find(const Track* t)       {
-            return std::find(begin(), end(), t);
-            }
-      const_iterator find(const Track* t) const {
-            return std::find(begin(), end(), t);
-            }
-      unsigned index(const Track* t) const {
-            unsigned n = 0;
-            for (vlist::const_iterator i = begin(); i != end(); ++i, ++n) {
-                  if (*i == t)
-                        return n;
-                  }
-            return -1;
-            }
-      T index(int k) const       { return (T)((*this)[k]); }
-
-      iterator index2iterator(int k) {
-            if ((unsigned)k >= size())
-                  return end();
-            return begin() + k;
-            }
-      void erase(Track* t)           { vlist::erase(find(t)); }
-
-      void clearDelete() {
-            for (vlist::iterator i = begin(); i != end(); ++i)
-                  delete *i;
-            vlist::clear();
-            }
-      void erase(vlist::iterator i) { vlist::erase(i); }
-      void replace(Track* ot, Track* nt) {
-            for (vlist::iterator i = begin(); i != end(); ++i) {
-                  if (*i == ot) {
-                        *i = nt;
-                        return;
-                        }
-                  }
-            }
-      };
-
-typedef tracklist<Track*> TrackList;
+typedef QList<Track*> TrackList;
 typedef TrackList::iterator iTrack;
-typedef TrackList::reverse_iterator irTrack;
 typedef TrackList::const_iterator ciTrack;
 
-typedef tracklist<MidiInPort*>::iterator iMidiInPort;
-typedef tracklist<MidiInPort*>::const_iterator ciMidiInPort;
-typedef tracklist<MidiInPort*> MidiInPortList;
-
-typedef tracklist<MidiOutPort*>::iterator iMidiOutPort;
-typedef tracklist<MidiOutPort*>::const_iterator ciMidiOutPort;
-typedef tracklist<MidiOutPort*> MidiOutPortList;
-
-typedef tracklist<MidiChannel*>::iterator iMidiChannel;
-typedef tracklist<MidiChannel*>::const_iterator ciMidiChannel;
-typedef tracklist<MidiChannel*> MidiChannelList;
 
 #endif
 

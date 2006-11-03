@@ -47,9 +47,9 @@ class AudioOutput : public AudioTrack {
       virtual void process();
       };
 
-typedef tracklist<AudioOutput*>::iterator iAudioOutput;
-typedef tracklist<AudioOutput*>::const_iterator ciAudioOutput;
-typedef tracklist<AudioOutput*> OutputList;
+typedef QList<AudioOutput*> OutputList;
+typedef OutputList::iterator iAudioOutput;
+typedef OutputList::const_iterator ciAudioOutput;
 
 #endif
 

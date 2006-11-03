@@ -31,7 +31,7 @@ AudioInput::AudioInput()
    : AudioTrack()
       {
       // set Default for Input Ports:
-      _mute = true;
+      _mute = muteDefault();
       _channels = 0;
       setChannels(2);
       //

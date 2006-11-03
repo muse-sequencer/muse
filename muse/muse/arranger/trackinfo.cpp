@@ -257,7 +257,7 @@ void MidiTrackInfo::portSelected(int portno)
             }
 
       int channel = midic ? midic->channelNo() : 0;
-      MidiOutPort* midip = song->midiOutPort(portno);
+      MidiOutPort* midip = song->midiOutPorts()->at(portno);
       midic = midip->channel(channel);
 
       Route dstRoute(midic);
@@ -431,7 +431,7 @@ void MidiTrackInfo::iKomprChanged(int val)
 //   deviceIdChanged
 //---------------------------------------------------------
 
-void MidiTrackInfo::deviceIdChanged(int val)
+void MidiTrackInfo::deviceIdChanged(int /*val*/)
       {
       MidiChannel* midic = ((MidiTrack*)track)->channel();
       if (midic == 0)

@@ -40,7 +40,7 @@ static const int trackSeparator = 1;
 static const int yTrackOffset   = -4;
 
 //  mixer:
-static const int STRIP_WIDTH = 66;
+static const int STRIP_WIDTH  = 66+4;
 static const int LABEL_HEIGHT = 20;
 
 static const int ICON_WIDTH = 18;

@@ -200,9 +200,9 @@ void MidiSynti::read(QDomNode node)
 //   getEvents
 //---------------------------------------------------------
 
-void MidiSynti::getEvents(unsigned from, unsigned to, int, MPEventList* dst)
+void MidiSynti::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
       {
-      MPEventList il;
+      MidiEventList il;
       RouteList* rl = inRoutes();
       for (iRoute i = rl->begin(); i != rl->end(); ++i) {
             MidiTrackBase* track = (MidiTrackBase*)i->track;
@@ -210,9 +210,9 @@ void MidiSynti::getEvents(unsigned from, unsigned to, int, MPEventList* dst)
                   continue;
             track->getEvents(from, to, i->channel, &il);
             }
-      MPEventList ol;
+      MidiEventList ol;
       _synti->apply(from, to, &il, &ol);
-      for (iMPEvent i = ol.begin(); i != ol.end(); ++i) {
+      for (iMidiEvent i = ol.begin(); i != ol.end(); ++i) {
             MidiEvent ev(*i);
             if (ev.type() == ME_NOTEON) {
                   _meter[0] += ev.dataB()/2;

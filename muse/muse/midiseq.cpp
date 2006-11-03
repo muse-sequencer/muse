@@ -34,10 +34,8 @@
 #include "sync.h"
 #include "song.h"
 #include "gconfig.h"
-#include "midioutport.h"
 
 MidiSeq* midiSeq;
-volatile bool midiBusy;
 
 //---------------------------------------------------------
 //   MidiSeq
@@ -194,14 +192,7 @@ bool MidiSeq::start(int prio)
 
 //---------------------------------------------------------
 //   midiTick
-//    schedule events in MidiOutPort->playEvents()
-//   midiBusy locks access to MidiOutPortList and
-//   MidiOutPort.
-//   Locking is special and assumes that MidiSeq
-//   is a realtime thread and has higher priority than
-//   the audio thread (JACK callback) and can therefore not
-//   be interrupted. Instead of waiting for midiBusy to
-//   get false we simply miss this clock tick.
+//    schedule events in playEvents
 //---------------------------------------------------------
 
 void MidiSeq::midiTick(void* p, void*)
@@ -212,25 +203,20 @@ void MidiSeq::midiTick(void* p, void*)
       MidiSeq* at = (MidiSeq*)p;
       at->getTimerTicks();    // read elapsed rtc timer ticks
 
-      if (midiBusy)
-            return;
+      while (!at->fifo.isEmpty())
+            at->playEvents.insert(at->fifo.get());
+
       //
       // schedule all events upto framePos-segmentSize
       // (previous segment)
       //
       unsigned curFrame = audioDriver->framePos() - segmentSize;
-      MidiOutPortList* ol = song->midiOutPorts();
-      for (iMidiOutPort id = ol->begin(); id != ol->end(); ++id) {
-            MidiOutPort* mp = *id;
-            MPEventList* el = mp->playEvents();
-
-            iMPEvent i = el->begin();
-            for (; i != el->end(); ++i) {
-                  if (i->time() > curFrame)
-                        break;
-                  mp->playAlsaEvent(*i);
-                  }
-            el->erase(el->begin(), i);
+      iMidiOutEvent i = at->playEvents.begin();
+      for (; i != at->playEvents.end(); ++i) {
+            if (i->event.time() > curFrame)
+                  break;
+            midiDriver->putEvent(i->port, i->event);
             }
+      at->playEvents.erase(at->playEvents.begin(), i);
       }
 

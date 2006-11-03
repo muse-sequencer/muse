@@ -21,15 +21,6 @@
 #include "midififo.h"
 
 //---------------------------------------------------------
-//   MidiFifo
-//---------------------------------------------------------
-
-MidiFifo::MidiFifo()
-      {
-      clear();
-      }
-
-//---------------------------------------------------------
 //   put
 //    return true on fifo overflow
 //---------------------------------------------------------
@@ -52,6 +43,34 @@ bool MidiFifo::put(const MidiEvent& event)
 MidiEvent MidiFifo::get()
       {
       MidiEvent event(fifo[rIndex]);
+      rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
+      q_atomic_decrement(&size);
+      return event;
+      }
+
+//---------------------------------------------------------
+//   put
+//    return true on fifo overflow
+//---------------------------------------------------------
+
+bool MidiOutFifo::put(const MidiOutEvent& event)
+      {
+      if (size < MIDI_FIFO_SIZE) {
+            fifo[wIndex] = event;
+            wIndex = (wIndex + 1) % MIDI_FIFO_SIZE;
+            q_atomic_increment(&size);
+            return false;
+            }
+      return true;
+      }
+
+//---------------------------------------------------------
+//   get
+//---------------------------------------------------------
+
+MidiOutEvent MidiOutFifo::get()
+      {
+      MidiOutEvent event(fifo[rIndex]);
       rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
       q_atomic_decrement(&size);
       return event;

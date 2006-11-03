@@ -51,13 +51,13 @@ Part* MusE::readPart(QDomNode node)
       QDomElement e = node.toElement();
       Part* part = 0;
       QString s = e.text();
-      unsigned trackIdx;
+      int trackIdx;
       int partIdx;
       sscanf(s.toLatin1().data(), "%d:%d", &trackIdx, &partIdx);
       TrackList* tl = song->tracks();
       Track* track = 0;
       if (trackIdx < tl->size()) {
-            track = tl->index(trackIdx);
+            track = tl->at(trackIdx);
             part = track->parts()->find(partIdx);
             }
       return part;

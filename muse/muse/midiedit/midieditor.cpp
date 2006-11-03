@@ -42,7 +42,7 @@ MidiEditor::MidiEditor(PartList* pl)
 
       QMenuBar* mb = menuBar();
 
-      //---------Menü----------------------------------
+      //---------Menü-------------------------------
       menuEdit = new QMenu(tr("&Edit"));
       mb->addMenu(menuEdit);
 
@@ -160,7 +160,7 @@ void MidiEditor::genPartlist()
       PartList* npl = new PartList;
       for (iPart ip = _pl->begin(); ip != _pl->end(); ++ip) {
             Part* part = ip->second;
-      	for (iTrack it = tl->begin(); it != tl->end(); ++it) {
+      	for (iMidiTrack it = tl->begin(); it != tl->end(); ++it) {
                   PartList* pl2 = (*it)->parts();
                   iPart ip2 = pl2->begin();
                   for (; ip2 != pl2->end(); ++ip2)
@@ -204,7 +204,7 @@ void MidiEditor::writePartList(Xml& xml) const
       for (ciPart p = _pl->begin(); p != _pl->end(); ++p) {
             Part* part   = p->second;
             Track* track = part->track();
-            int trkIdx   = song->tracks()->index(track);
+            int trkIdx   = song->tracks()->indexOf(track);
             int partIdx  = track->parts()->index(part);
             xml.tag("part");
             xml.put("%d:%d", trkIdx, partIdx);

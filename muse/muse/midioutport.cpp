@@ -156,12 +156,6 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
                   case Route::MIDIPORT:
                         queueAlsaEvent(event);
                         break;
-#if 0
-                  case Route::SYNTIPORT: 
-                  case Route::TRACK: 
-                        ((SynthI*)(r->track))->playEvents()->insert(event);
-                        break;
-#endif
                   case Route::JACKMIDIPORT:
                         queueJackEvent(event);
                         break;
@@ -177,9 +171,10 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
 //    called from MidiSeq
 //---------------------------------------------------------
 
+#define AO(e) midiSeq->putEvent(alsaPort(0), e);
+
 void MidiOutPort::queueAlsaEvent(const MidiEvent& ev)
       {
-      midiBusy = true;
       if (ev.type() == ME_CONTROLLER) {
             int a      = ev.dataA();
             int b      = ev.dataB();
@@ -193,11 +188,11 @@ void MidiOutPort::queueAlsaEvent(const MidiEvent& ev)
                         int lb = (b >> 8) & 0xff;
                         int pr = b & 0x7f;
                         if (hb != 0xff)
-                              _playEvents.insert(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HBANK, hb));
+                              AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HBANK, hb));
                         if (lb != 0xff)
-                              _playEvents.insert(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LBANK, lb));
-                        _playEvents.insert(MidiEvent(t+2, chn, ME_PROGRAM, pr, 0));
-//                        }
+                              AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LBANK, lb));
+                        AO(MidiEvent(t+2, chn, ME_PROGRAM, pr, 0));
+//                      }
                   }
             else if (a == CTRL_MASTER_VOLUME) {
                   unsigned char sysex[] = {
@@ -206,60 +201,62 @@ void MidiOutPort::queueAlsaEvent(const MidiEvent& ev)
                   sysex[1] = deviceId();
                   sysex[4] = b & 0x7f;
                   sysex[5] = (b >> 7) & 0x7f;
-                  _playEvents.insert(MidiEvent(t, ME_SYSEX, sysex, 6));
+                  AO(MidiEvent(t, ME_SYSEX, sysex, 6));
                   }
-            else if (a < CTRL_14_OFFSET)               // 7 Bit Controller
-                  _playEvents.insert(ev);
+            else if (a < CTRL_14_OFFSET) {               // 7 Bit Controller
+                  AO(ev);
+                  }
             else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  _playEvents.insert(MidiEvent(t, chn, ME_CONTROLLER, ctrlH, dataH));
-                  _playEvents.insert(MidiEvent(t+1, chn, ME_CONTROLLER, ctrlL, dataL));
+                  AO(MidiEvent(t, chn, ME_CONTROLLER, ctrlH, dataH));
+                  AO(MidiEvent(t+1, chn, ME_CONTROLLER, ctrlL, dataL));
                   }
             else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
-                  _playEvents.insert(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-                  _playEvents.insert(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-                  _playEvents.insert(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, b));
+                  AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+                  AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+                  AO(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, b));
                   }
             else if (a < CTRL_RPN14_OFFSET) {     // NRPN 7-Bit Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
-                  _playEvents.insert(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-                  _playEvents.insert(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-                  _playEvents.insert(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, b));
+                  AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+                  AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+                  AO(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, b));
                   }
             else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  _playEvents.insert(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-                  _playEvents.insert(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-                  _playEvents.insert(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-                  _playEvents.insert(MidiEvent(t+3, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+                  AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+                  AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+                  AO(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+                  AO(MidiEvent(t+3, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
                   }
             else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  _playEvents.insert(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-                  _playEvents.insert(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-                  _playEvents.insert(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-                  _playEvents.insert(MidiEvent(t+3, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+                  AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+                  AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+                  AO(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+                  AO(MidiEvent(t+3, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
                   }
             else {
                   printf("putEvent: unknown controller type 0x%x\n", a);
                   }
             }
-      else
-            _playEvents.insert(ev);
-      midiBusy = false;
+      else {
+            AO(ev);
+            }
       }
+#undef AO
 
 //---------------------------------------------------------
 //    queueJackEvent
@@ -354,16 +351,6 @@ void MidiOutPort::queueJackEvent(const MidiEvent& ev)
 #undef JO
 
 //---------------------------------------------------------
-//    playAlsaEvent
-//    called from MidiSeq
-//---------------------------------------------------------
-
-void MidiOutPort::playAlsaEvent(const MidiEvent& event) const
-      {
-      midiDriver->putEvent(alsaPort(), event);
-      }
-
-//---------------------------------------------------------
 //   setInstrument
 //---------------------------------------------------------
 
@@ -423,7 +410,7 @@ void MidiOutPort::processMidi(unsigned fromTick, unsigned toTick, unsigned fromF
       if (track->mute())
             return;
 
-      MPEventList el;
+      MidiEventList el;
       MidiOut::processMidi(el, fromTick, toTick, fromFrame, toFrame);
 
       pipeline()->apply(fromTick, toTick, &el, &_schedEvents);
@@ -433,7 +420,7 @@ void MidiOutPort::processMidi(unsigned fromTick, unsigned toTick, unsigned fromF
       //
 
       int portVelo = 0;
-      iMPEvent i = _schedEvents.begin();
+      iMidiEvent i = _schedEvents.begin();
       for (; i != _schedEvents.end(); ++i) {
             if (i->time() >= toFrame)
                   break;

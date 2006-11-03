@@ -95,7 +95,7 @@ class SynthIF {
       virtual bool hasGui() const = 0;
       virtual void getGeometry(int*, int*, int*, int*) const = 0;
       virtual void setGeometry(int, int, int, int) = 0;
-      virtual void getData(MPEventList*, unsigned pos, int ports, unsigned n, float** buffer) = 0;
+      virtual void getData(MidiEventList*, unsigned pos, int ports, unsigned n, float** buffer) = 0;
       virtual bool putEvent(const MidiEvent& ev) = 0;
       virtual MidiEvent receiveEvent() = 0;
       virtual int eventsPending() const = 0;
@@ -198,7 +198,7 @@ class MessSynthIF : public SynthIF {
       virtual bool hasGui() const;
       virtual void getGeometry(int*, int*, int*, int*) const;
       virtual void setGeometry(int, int, int, int);
-      virtual void getData(MPEventList*, unsigned pos, int ports, unsigned n, float** buffer);
+      virtual void getData(MidiEventList*, unsigned pos, int ports, unsigned n, float** buffer);
       virtual bool putEvent(const MidiEvent& ev);
       virtual MidiEvent receiveEvent();
       virtual int eventsPending() const;
@@ -212,9 +212,9 @@ class MessSynthIF : public SynthIF {
       bool init(Synth* s, SynthI* si);
       };
 
-typedef tracklist<SynthI*>::iterator iSynthI;
-typedef tracklist<SynthI*>::const_iterator ciSynthI;
-typedef tracklist<SynthI*> SynthIList;
+typedef QList<SynthI*> SynthIList;
+typedef SynthIList::iterator iSynthI;
+typedef SynthIList::const_iterator ciSynthI;
 
 extern std::vector<Synth*> synthis;  // array of available synthis
 extern Synth* findSynth(const QString& sclass);

@@ -396,20 +396,20 @@ void DssiSynthIF::write(Xml&) const
 //   getData
 //---------------------------------------------------------
 
-void DssiSynthIF::getData(MPEventList* el, unsigned pos, int ch, unsigned samples, float** data)
+void DssiSynthIF::getData(MidiEventList* el, unsigned pos, int ch, unsigned samples, float** data)
       {
       const DSSI_Descriptor* dssi = synth->dssi;
       const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
 
       unsigned long nevents = 0;
-      for (iMPEvent ii = i; ii != el->end(); ++ii, ++nevents)
+      for (iMidiEvent ii = i; ii != el->end(); ++ii, ++nevents)
             ;
       snd_seq_event_t events[nevents];
       memset(events, 0, sizeof(events));
 
       nevents = 0;
       int endPos = pos + samples;
-      iMPEvent i = el->begin();
+      iMidiEvent i = el->begin();
       for (; i != el->end(); ++i, ++nevents) {
             if (i->time() >= endPos)
                   break;

@@ -218,7 +218,7 @@ void MidiFile::putvl(unsigned val)
 
 bool MidiFile::readTrack(MidiFileTrack* t)
       {
-      MPEventList* el = &(t->events);
+      MidiEventList* el = &(t->events);
       char tmp[4];
       if (read(tmp, 4))
             return true;
@@ -262,7 +262,7 @@ bool MidiFile::readTrack(MidiFileTrack* t)
                   event.setChannel(channel);
             else
                   channel = event.channel();
-            el->add(event);
+            el->insert(event);
             }
       int end = curPos;
       if (end != endPos) {
@@ -501,14 +501,14 @@ int MidiFile::readEvent(MidiEvent* event, MidiFileTrack* t)
 
 bool MidiFile::writeTrack(const MidiFileTrack* t)
       {
-      const MPEventList* events = &(t->events);
+      const MidiEventList* events = &(t->events);
       write("MTrk", 4);
       int lenpos = fp->pos();
       writeLong(0);                 // dummy len
 
       status = -1;
       int tick = 0;
-      for (iMPEvent i = events->begin(); i != events->end(); ++i) {
+      for (iMidiEvent i = events->begin(); i != events->end(); ++i) {
             int ntick = i->time();
             if (ntick < tick) {
                   printf("MidiFile::writeTrack: ntick %d < tick %d\n", ntick, tick);
@@ -602,9 +602,9 @@ bool MidiFile::write(QFile* _fp)
             // ?? writeShort(1);
             MidiFileTrack dst;
             for (iMidiFileTrack i = _tracks->begin(); i != _tracks->end(); ++i) {
-                  MPEventList* sl = &((*i)->events);
-                  for (iMPEvent ie = sl->begin(); ie != sl->end(); ++ie)
-                        dst.events.add(*ie);
+                  MidiEventList* sl = &((*i)->events);
+                  for (iMidiEvent ie = sl->begin(); ie != sl->end(); ++ie)
+                        dst.events.insert(*ie);
                   }
             writeShort(1);
             writeShort(_division);

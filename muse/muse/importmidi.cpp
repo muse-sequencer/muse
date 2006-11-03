@@ -403,7 +403,7 @@ void MusE::addMidiFile(const QString name)
       //    - calculate tick value for internal resolution
       //
       for (iMidiFileTrack t = etl->begin(); t != etl->end(); ++t) {
-            MPEventList* el  = &((*t)->events);
+            MidiEventList* el  = &((*t)->events);
             if (el->empty())
                   continue;
             //
@@ -415,7 +415,7 @@ void MusE::addMidiFile(const QString name)
                   //
                   // check if there are any events for channel in track:
                   //
-                  iMPEvent i;
+                  iMidiEvent i;
                   for (i = el->begin(); i != el->end(); ++i) {
                         MidiEvent ev = *i;
                         if (ev.type() != ME_SYSEX

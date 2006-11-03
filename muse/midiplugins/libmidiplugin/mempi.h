@@ -59,7 +59,7 @@ class Mempi {
       const char* name() const        { return _name;  }
 
       // process interface
-      virtual void process(unsigned, unsigned, MPEventList*, MPEventList*) = 0;
+      virtual void process(unsigned, unsigned, MidiEventList*, MidiEventList*) = 0;
 
       // session interface
       virtual void getInitData(int*, const unsigned char**) const {}

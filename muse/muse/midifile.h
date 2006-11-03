@@ -24,7 +24,7 @@
 #include "globaldefs.h"
 #include "midievent.h"
 
-struct MPEventList;
+struct MidiEventList;
 class MidiEvent;
 
 //---------------------------------------------------------
@@ -32,7 +32,7 @@ class MidiEvent;
 //---------------------------------------------------------
 
 struct MidiFileTrack {
-      MPEventList events;
+      MidiEventList events;
       bool isDrumTrack;
       MidiFileTrack() {
             isDrumTrack = false;

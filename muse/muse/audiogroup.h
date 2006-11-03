@@ -38,9 +38,9 @@ class AudioGroup : public AudioTrack {
       virtual bool hasAuxSend() const { return true; }
       };
 
-typedef tracklist<AudioGroup*>::iterator iAudioGroup;
-typedef tracklist<AudioGroup*>::const_iterator ciAudioGroup;
-typedef tracklist<AudioGroup*> GroupList;
+typedef QList<AudioGroup*> GroupList;
+typedef GroupList::iterator iAudioGroup;
+typedef GroupList::const_iterator ciAudioGroup;
 
 #endif
 

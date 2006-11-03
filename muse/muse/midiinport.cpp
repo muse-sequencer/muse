@@ -166,7 +166,7 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
       // _recordEvents
       //
 
-      MPEventList il, ol;
+      MidiEventList il, ol;
       il.insert(event);
       pipeline()->apply(audio->curTickPos(), audio->nextTickPos(), &il, &ol);
 
@@ -174,7 +174,7 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
       // update midi meter
       // notify gui of new events
       //
-      for (iMPEvent i = ol.begin(); i != ol.end(); ++i) {
+      for (iMidiEvent i = ol.begin(); i != ol.end(); ++i) {
             if (i->type() == ME_NOTEON)
                   addMidiMeter(i->dataB());
             song->putEvent(*i);
@@ -186,7 +186,7 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
             ++recordWrite;
             if (recordWrite == RECORD_FIFO_SIZE)
                   recordWrite = 0;
-            ++recordCount;
+            q_atomic_increment(&recordCount);
             }
       }
 #endif
@@ -202,7 +202,7 @@ void MidiInPort::afterProcess()
             ++recordRead;
             if (recordRead >= RECORD_FIFO_SIZE)
                   recordRead = 0;
-            --recordCount;
+            q_atomic_decrement(&recordCount);
             }
       }
 
@@ -220,7 +220,7 @@ void MidiInPort::beforeProcess()
 //    called from jack process context
 //---------------------------------------------------------
 
-void MidiInPort::getEvents(unsigned, unsigned, int ch, MPEventList* dst)
+void MidiInPort::getEvents(unsigned, unsigned, int ch, MidiEventList* dst)
       {
       int tmpRecordRead = recordRead;
       for (int i = 0; i < tmpRecordCount; ++i) {

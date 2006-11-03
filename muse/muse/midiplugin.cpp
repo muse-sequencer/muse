@@ -375,10 +375,10 @@ bool MidiPipeline::hasGui(int idx) const
 //   apply
 //---------------------------------------------------------
 
-void MidiPipeline::apply(unsigned from, unsigned to, MPEventList* il, MPEventList* ool)
+void MidiPipeline::apply(unsigned from, unsigned to, MidiEventList* il, MidiEventList* ool)
       {
-      MPEventList oList;
-      MPEventList* ol = &oList;
+      MidiEventList oList;
+      MidiEventList* ol = &oList;
 
       bool swap = true;
       for (iMidiPluginI i = begin(); i != end(); ++i) {
@@ -395,16 +395,16 @@ void MidiPipeline::apply(unsigned from, unsigned to, MPEventList* il, MPEventLis
                   }
             swap = !swap;
             }
-      MPEventList* l = swap ? il : ol;
-      for (iMPEvent i = l->begin(); i != l->end(); ++i)
-            ool->add(*i);
+      MidiEventList* l = swap ? il : ol;
+      for (iMidiEvent i = l->begin(); i != l->end(); ++i)
+            ool->insert(*i);
       }
 
 //---------------------------------------------------------
 //   apply
 //---------------------------------------------------------
 
-void MidiPluginI::apply(unsigned from, unsigned to, MPEventList* il, MPEventList* ol)
+void MidiPluginI::apply(unsigned from, unsigned to, MidiEventList* il, MidiEventList* ol)
       {
       mempi->process(from, to, il, ol);
       }

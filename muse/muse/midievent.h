@@ -23,12 +23,11 @@
 
 #include <set>
 #include "evdata.h"
-#include <ext/mt_allocator.h>
+// #include <ext/mt_allocator.h>
 
 #include "midi.h"
 
 class Event;
-class EvData;
 
 //---------------------------------------------------------
 //   MidiEvent
@@ -84,20 +83,19 @@ class MidiEvent {
       };
 
 //---------------------------------------------------------
-//   MPEventList
+//   MidiEventList
 //---------------------------------------------------------
 
 // typedef std::multiset<MidiEvent, std::less<MidiEvent>,
 //   __gnu_cxx::__mt_alloc<MidiEvent> > MPEL;
 
-typedef std::multiset<MidiEvent, std::less<MidiEvent> > MPEL;
-
-struct MPEventList : public MPEL {
-      void add(const MidiEvent& ev) { MPEL::insert(ev); }
+class MidiEventList : public std::multiset<MidiEvent, std::less<MidiEvent> > 
+      {
+   public:
       };
 
-typedef MPEventList::iterator iMPEvent;
-typedef MPEventList::const_iterator ciMPEvent;
+typedef MidiEventList::iterator iMidiEvent;
+typedef MidiEventList::const_iterator ciMidiEvent;
 
 #endif
 

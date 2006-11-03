@@ -186,7 +186,7 @@ void MidiOut::seek(unsigned tickPos, unsigned framePos)
       //    stop all notes
       //---------------------------------------------------
 
-      for (iMPEvent i = _schedEvents.begin(); i != _schedEvents.end(); ++i) {
+      for (iMidiEvent i = _schedEvents.begin(); i != _schedEvents.end(); ++i) {
             MidiEvent ev = *i;
             if (ev.isNoteOff()) {
                   ev.setTime(framePos);
@@ -226,7 +226,7 @@ void MidiOut::stop()
       //    stop all notes
       //---------------------------------------------------
 
-      for (iMPEvent i = _schedEvents.begin(); i != _schedEvents.end(); ++i) {
+      for (iMidiEvent i = _schedEvents.begin(); i != _schedEvents.end(); ++i) {
             MidiEvent ev = *i;
             if (ev.isNoteOff()) {
                   ev.setTime(frame);
@@ -322,10 +322,10 @@ void MidiOut::reset()
 //    _playEvents queue which is processed by the MidiSeq thread.
 //-------------------------------------------------------------------
 
-void MidiOut::processMidi(MPEventList& el, unsigned fromTick, unsigned toTick, unsigned /*fromFrame*/, unsigned /*toFrame*/)
+void MidiOut::processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick, unsigned /*fromFrame*/, unsigned /*toFrame*/)
       {
       while (!eventFifo.isEmpty())
-            el.add(eventFifo.get());
+            el.insert(eventFifo.get());
 
       // collect port controller
       if (fromTick != toTick) {     // if rolling
@@ -339,7 +339,7 @@ void MidiOut::processMidi(MPEventList& el, unsigned fromTick, unsigned toTick, u
                         Event ev(Controller);
                         ev.setA(c->id());
                         ev.setB(ic.value().i);
-                        el.add(MidiEvent(frame, -1, ev));
+                        el.insert(MidiEvent(frame, -1, ev));
                         }
                   }
             }
@@ -360,7 +360,7 @@ void MidiOut::processMidi(MPEventList& el, unsigned fromTick, unsigned toTick, u
                               Event ev(Controller);
                               ev.setA(c->id());
                               ev.setB(is.value().i);
-                              el.add(MidiEvent(frame, ch, ev));
+                              el.insert(MidiEvent(frame, ch, ev));
                               }
                         }
                   }
@@ -371,10 +371,10 @@ void MidiOut::processMidi(MPEventList& el, unsigned fromTick, unsigned toTick, u
                   MidiTrackBase* track = (MidiTrackBase*)i->track;
                   if (track->isMute())
                         continue;
-                  MPEventList ell;
+                  MidiEventList ell;
                   track->getEvents(fromTick, toTick, 0, &ell);
                   int velo = 0;
-                  for (iMPEvent i = ell.begin(); i != ell.end(); ++i) {
+                  for (iMidiEvent i = ell.begin(); i != ell.end(); ++i) {
                         MidiEvent ev(*i);
                         ev.setChannel(ch);
                         el.insert(ev);

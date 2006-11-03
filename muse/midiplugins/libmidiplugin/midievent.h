@@ -70,35 +70,18 @@ class MidiEvent {
       };
 
 //---------------------------------------------------------
-//   MPEventList
+//   MidiEventList
 //---------------------------------------------------------
 
 // typedef std::multiset<MidiEvent, std::less<MidiEvent>,
 //   __gnu_cxx::__mt_alloc<MidiEvent> > MPEL;
 
-typedef std::multiset<MidiEvent, std::less<MidiEvent> > MPEL;
-
-struct MPEventList : public MPEL {
-      void add(const MidiEvent& ev) { MPEL::insert(ev); }
+struct MidiEventList : public std::multiset<MidiEvent, std::less<MidiEvent> >
+      {
       };
 
-typedef MPEventList::iterator iMPEvent;
-typedef MPEventList::const_iterator ciMPEvent;
-
-//---------------------------------------------------------
-//   MREventList
-//---------------------------------------------------------
-
-// typedef std::list<MidiEvent, __gnu_cxx::__mt_alloc<MidiEvent> > MREL;
-
-typedef std::list<MidiEvent> MREL;
-
-struct MREventList : public MREL {
-      void add(const MidiEvent& ev) { MREL::push_back(ev); }
-      };
-
-typedef MREventList::iterator iMREvent;
-typedef MREventList::const_iterator ciMREvent;
+typedef MidiEventList::iterator iMidiEvent;
+typedef MidiEventList::const_iterator ciMidiEvent;
 
 #endif
 

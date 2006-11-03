@@ -312,14 +312,13 @@ void WaveTrack::collectInputData()
 	{
       bufferEmpty = false;
       if (recordFlag() && (audio->isRecording() || !audio->isPlaying())) {
-#if 0 // TODO bounce track
       	if (song->bounceTrack == this && audio->isPlaying()) {
       		OutputList* ol = song->outputs();
-            	if (!ol->empty())
-      			ol->front()->multiplyCopy(channels(), buffer, 0);
+            	if (!ol->empty()) {
+//TODO                        AudioOutput* out = ol->front();
+                        }
             	}
             else
-#endif
       		AudioTrack::collectInputData();
             return;
             }
@@ -329,7 +328,6 @@ void WaveTrack::collectInputData()
             return;
             }
 
-//	unsigned framePos = audio->pos().frame();
       if (audio->freewheel()) {
       	// when freewheeling, read data direct from file:
             // TODO: fetchData(framePos, segmentSize, buffer);
@@ -389,7 +387,6 @@ void WaveTrack::process()
 
 void WaveTrack::clone(WaveTrack* t)
       {
-printf("clone WaveTrack\n");
       QString name;
       for (int i = 1; ; ++i) {
             name.sprintf("%s-%d", t->name().toLatin1().data(), i);

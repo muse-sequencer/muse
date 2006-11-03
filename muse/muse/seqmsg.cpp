@@ -344,7 +344,7 @@ void Audio::msgRemoveTracks()
             }
       for (iTrack t = tl.begin(); t != tl.end(); ++t) {
             Track* track = *t;
-      	int idx = song->tracks()->index(track);
+      	int idx = song->tracks()->indexOf(track);
       	song->undoOp(UndoOp::DeleteTrack, idx, track);
       	song->removeTrack1(track);
       	msgRemoveTrack(track);

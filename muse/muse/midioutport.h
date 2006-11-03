@@ -31,8 +31,6 @@
 class MidiOutPort : public MidiTrackBase, public MidiOut {
       Q_OBJECT
 
-      MPEventList _playEvents;   // event queue for MidiSeq
-
       void routeEvent(const MidiEvent&);
       void queueAlsaEvent(const MidiEvent& event);
       void queueJackEvent(const MidiEvent& event);
@@ -44,8 +42,6 @@ class MidiOutPort : public MidiTrackBase, public MidiOut {
       MidiOutPort();
       ~MidiOutPort();
       virtual TrackType type() const { return MIDI_OUT; }
-
-      MidiChannel* channel(int n)         { return _channel[n]; }
 
       virtual void setName(const QString& s);
       virtual void write(Xml&) const;
@@ -59,11 +55,12 @@ class MidiOutPort : public MidiTrackBase, public MidiOut {
       bool guiVisible() const;
       bool hasGui() const;
 
-      MPEventList* playEvents()          { return &_playEvents;   }
-
-      void playAlsaEvent(const MidiEvent& event) const;
       void processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
       };
+
+typedef QList<MidiOutPort*> MidiOutPortList;
+typedef MidiOutPortList::iterator iMidiOutPort;
+typedef MidiOutPortList::const_iterator ciMidiOutPort;
 
 #endif
 

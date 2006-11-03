@@ -52,9 +52,10 @@ QString nameSysex(unsigned int len, const unsigned char* buf);
 QString midiMetaName(int);
 
 class EventList;
-class MPEventList;
 class MidiTrack;
-extern void buildMidiEventList(EventList* mel, const MPEventList* el, MidiTrack* track, int division, bool);
+class MidiEventList;
+
+extern void buildMidiEventList(EventList* mel, const MidiEventList* el, MidiTrack* track, int division, bool);
 
 #endif
 

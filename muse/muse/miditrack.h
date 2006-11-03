@@ -84,14 +84,14 @@ class MidiTrack : public MidiTrackBase {
       virtual bool canRecord() const      { return true; }
       void playMidiEvent(MidiEvent*);
 
-      virtual void getEvents(unsigned from, unsigned to, int channel, MPEventList* dst);
+      virtual void getEvents(unsigned from, unsigned to, int channel, MidiEventList* dst);
       bool useDrumMap() const;
       DrumMap* drumMap() const;
       };
 
-typedef tracklist<MidiTrack*>::iterator iMidiTrack;
-typedef tracklist<MidiTrack*>::const_iterator ciMidiTrack;
-typedef tracklist<MidiTrack*> MidiTrackList;
+typedef QList<MidiTrack*> MidiTrackList;
+typedef MidiTrackList::iterator iMidiTrack;
+typedef MidiTrackList::const_iterator ciMidiTrack;
 
 Q_DECLARE_METATYPE(class MidiTrack*);
 

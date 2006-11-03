@@ -809,10 +809,10 @@ void VstSynthIF::write(Xml& xml) const
 //   getData
 //---------------------------------------------------------
 
-void VstSynthIF::getData(MPEventList* el, unsigned pos, int ports, unsigned n, float** buffer)
+void VstSynthIF::getData(MidiEventList* el, unsigned pos, int ports, unsigned n, float** buffer)
       {
       int endPos = pos + n;
-      iMPEvent i = el->begin();
+      iMidiEvent i = el->begin();
       for (; i != el->end(); ++i) {
             if (i->time() >= endPos)
                   break;

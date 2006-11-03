@@ -22,6 +22,7 @@
 #define __MIDIINPORT_H__
 
 #include "track.h"
+#include "midievent.h"
 
 static const int RECORD_FIFO_SIZE = 512;
 
@@ -51,10 +52,14 @@ class MidiInPort : public MidiTrackBase {
 #ifndef __APPLE__      
       void eventReceived(snd_seq_event_t*);
 #endif
-      virtual void getEvents(unsigned from, unsigned to, int channel, MPEventList* dst);
+      virtual void getEvents(unsigned from, unsigned to, int channel, MidiEventList* dst);
       void beforeProcess();
       void afterProcess();
       };
+
+typedef QList<MidiInPort*> MidiInPortList;
+typedef MidiInPortList::iterator iMidiInPort;
+typedef MidiInPortList::const_iterator ciMidiInPort;
 
 #endif
 

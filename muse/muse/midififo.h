@@ -22,6 +22,7 @@
 #define __MIDIFIFO_H__
 
 #include "midievent.h"
+#include "driver/port.h"
 
 #define MIDI_FIFO_SIZE    512
 
@@ -36,12 +37,53 @@ class MidiFifo {
       int rIndex;
 
    public:
-      MidiFifo();
+      MidiFifo()  { clear(); }
       bool put(const MidiEvent& event);   // returns true on fifo overflow
       MidiEvent get();
       bool isEmpty() const { return size == 0; }
       void clear()         { size = 0, wIndex = 0, rIndex = 0; }
       };
+
+//---------------------------------------------------------
+//   MidiOutEvent
+//---------------------------------------------------------
+
+struct MidiOutEvent {
+      Port port;
+      MidiEvent event;
+
+      MidiOutEvent() {}
+      MidiOutEvent(const Port& p, const MidiEvent& e)
+         : port(p), event(e) {}
+      bool operator<(const MidiOutEvent& e) const {
+            if (port == e.port)
+                  return event < e.event;
+            return event < e.event;
+            }
+      };
+
+typedef std::multiset<MidiOutEvent, std::less<MidiOutEvent> > MidiOutEventList;
+typedef MidiOutEventList::iterator iMidiOutEvent;
+typedef MidiOutEventList::const_iterator ciMidiOutEvent;
+
+//---------------------------------------------------------
+//   MidiOutFifo
+//---------------------------------------------------------
+
+class MidiOutFifo {
+      MidiOutEvent fifo[MIDI_FIFO_SIZE];
+      volatile int size;
+      int wIndex;
+      int rIndex;
+
+   public:
+      MidiOutFifo()  { clear(); }
+      bool put(const MidiOutEvent& event);   // returns true on fifo overflow
+      MidiOutEvent get();
+      bool isEmpty() const { return size == 0; }
+      void clear()         { size = 0, wIndex = 0, rIndex = 0; }
+      };
+
 
 #endif
 

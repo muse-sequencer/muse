@@ -70,5 +70,9 @@ class MidiChannel : public MidiTrackBase {
       virtual void emitControllerChanged(int id);
       };
 
+typedef QList<MidiChannel*> MidiChannelList;
+typedef MidiChannelList::iterator iMidiChannel;
+typedef MidiChannelList::const_iterator ciMidiChannel;
+
 #endif
 

@@ -101,7 +101,7 @@ class VstSynthIF : public SynthIF
       virtual bool hasGui() const;
       virtual void getGeometry(int*, int*, int*, int*) const {}
       virtual void setGeometry(int, int, int, int) {}
-      virtual void getData(MPEventList*, unsigned pos, int ports, unsigned n, float** buffer) ;
+      virtual void getData(MidiEventList*, unsigned pos, int ports, unsigned n, float** buffer) ;
       virtual bool putEvent(const MidiEvent& ev);
       virtual MidiEvent receiveEvent();
       virtual int eventsPending() const { return 0; }

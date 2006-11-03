@@ -34,7 +34,7 @@ class MidiPluginGui;
 class MidiPluginI;
 class MidiTrackBase;
 class Ctrl;
-class MPEventList;
+class MidiEventList;
 class MidiTrackBase;
 
 typedef const MEMPI* (*MEMPI_Function)();
@@ -102,7 +102,7 @@ class MidiPluginI {
       MidiPlugin* plugin() const { return _plugin; }
       bool on() const            { return _on; }
       void setOn(bool val)       { _on = val; }
-      void apply(unsigned, unsigned, MPEventList*, MPEventList*);
+      void apply(unsigned, unsigned, MidiEventList*, MidiEventList*);
 
       QString name() const              { return QString(mempi->name()); }
       QString lib() const               { return _plugin->lib(); }
@@ -134,7 +134,7 @@ class MidiPipeline : public QList<MidiPluginI*> {
       void showGui(int, bool);
       bool guiVisible(int) const;
       bool hasGui(int) const;
-      void apply(unsigned, unsigned, MPEventList*, MPEventList*);
+      void apply(unsigned, unsigned, MidiEventList*, MidiEventList*);
       void move(int idx, bool up);
       };
 

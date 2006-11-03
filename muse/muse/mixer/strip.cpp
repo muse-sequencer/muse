@@ -31,10 +31,7 @@ void Strip::updateLabel()
       QPalette p = label->palette();
       p.setColor(label->backgroundRole(), track->ccolor());
       label->setPalette(p);
-
-      // qt4.1.0 specific
       label->setAutoFillBackground(true);
-
       label->setFont(config.fonts[4]);
       label->setText(track->name());
       label->setToolTip(track->name());
@@ -55,11 +52,11 @@ Strip::Strip(Mixer* m, Track* t, bool align)
       setLineWidth(2);
 
       track = t;
-      setFixedWidth(STRIP_WIDTH);
       layout = new QVBoxLayout;
       layout->setMargin(0);
       layout->setSpacing(0);
       setLayout(layout);
+//      setFixedWidth(STRIP_WIDTH);
 
       //---------------------------------------------
       //    label

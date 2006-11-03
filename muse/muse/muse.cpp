@@ -3085,6 +3085,7 @@ int main(int argc, char* argv[])
             //
             for (;;) {
                   ProjectDialog projectDialog;
+                  projectDialog.setProjectName(name);
                   int rv = projectDialog.exec();
                   if (rv == 1) {
                         path = projectDialog.projectPath();
@@ -3092,12 +3093,10 @@ int main(int argc, char* argv[])
                               break;
                         }
                   // the user did not select/create a project
-                  QString s;
-                  s = "before MusE starts, you must select a project\n"
-                      "or create a new one";
                   rv = QMessageBox::question(0, 
-                     "MusE: create select project",
-                     s,
+                     "MusE: create/select project",
+                     "before MusE starts, you must select a project\n"
+                      "or create a new one",
                      "Go Back",
                      "Abort",
                      QString(),

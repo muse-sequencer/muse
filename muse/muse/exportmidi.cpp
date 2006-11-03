@@ -40,37 +40,37 @@
 //   addController
 //---------------------------------------------------------
 
-static void addController(MPEventList* l, int tick, int /*port*/, int channel, int a, int b)
+static void addController(MidiEventList* l, int tick, int /*port*/, int channel, int a, int b)
       {
       if (a < 0x1000) {          // 7 Bit Controller
-            l->add(MidiEvent(tick, channel, ME_CONTROLLER, a, b));
+            l->insert(MidiEvent(tick, channel, ME_CONTROLLER, a, b));
             }
       else if (a < 0x20000) {     // 14 Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             int dataH = (b >> 7) & 0x7f;
             int dataL = b & 0x7f;
-            l->add(MidiEvent(tick, channel, ME_CONTROLLER, ctrlH, dataH));
-            l->add(MidiEvent(tick+1, channel, ME_CONTROLLER, ctrlL, dataL));
+            l->insert(MidiEvent(tick, channel, ME_CONTROLLER, ctrlH, dataH));
+            l->insert(MidiEvent(tick+1, channel, ME_CONTROLLER, ctrlL, dataL));
             }
       else if (a < 0x30000) {     // RPN 7-Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
-            l->add(MidiEvent(tick, channel, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-            l->add(MidiEvent(tick+1, channel, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-            l->add(MidiEvent(tick+2, channel, ME_CONTROLLER, CTRL_HDATA, b));
+            l->insert(MidiEvent(tick, channel, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+            l->insert(MidiEvent(tick+1, channel, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+            l->insert(MidiEvent(tick+2, channel, ME_CONTROLLER, CTRL_HDATA, b));
             }
       else if (a < 0x40000) {     // NRPN 7-Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
-            l->add(MidiEvent(tick, channel, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-            l->add(MidiEvent(tick+1, channel, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-            l->add(MidiEvent(tick+2, channel, ME_CONTROLLER, CTRL_HDATA, b));
+            l->insert(MidiEvent(tick, channel, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+            l->insert(MidiEvent(tick+1, channel, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+            l->insert(MidiEvent(tick+2, channel, ME_CONTROLLER, CTRL_HDATA, b));
             }
       else if (a == CTRL_PITCH) {
             int a = b + 8192;
             int b = a >> 7;
-            l->add(MidiEvent(tick, channel, ME_PITCHBEND, a & 0x7f, b & 0x7f));
+            l->insert(MidiEvent(tick, channel, ME_PITCHBEND, a & 0x7f, b & 0x7f));
             }
       else if (a == CTRL_PROGRAM) {
             int hb = (b >> 16) & 0xff;
@@ -78,34 +78,34 @@ static void addController(MPEventList* l, int tick, int /*port*/, int channel, i
             int pr = b & 0x7f;
             int tickoffset = 0;
             if (hb != 0xff) {
-                  l->add(MidiEvent(tick, channel, ME_CONTROLLER, CTRL_HBANK, hb));
+                  l->insert(MidiEvent(tick, channel, ME_CONTROLLER, CTRL_HBANK, hb));
                   ++tickoffset;
                   }
             if (lb != 0xff) {
-                  l->add(MidiEvent(tick+tickoffset, channel, ME_CONTROLLER, CTRL_LBANK, lb));
+                  l->insert(MidiEvent(tick+tickoffset, channel, ME_CONTROLLER, CTRL_LBANK, lb));
                   ++tickoffset;
                   }
-            l->add(MidiEvent(tick+tickoffset, channel, ME_PROGRAM, pr, 0));
+            l->insert(MidiEvent(tick+tickoffset, channel, ME_PROGRAM, pr, 0));
             }
       else if (a < 0x60000) {     // RPN14 Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             int dataH = (b >> 7) & 0x7f;
             int dataL = b & 0x7f;
-            l->add(MidiEvent(tick,   channel, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-            l->add(MidiEvent(tick+1, channel, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-            l->add(MidiEvent(tick+2, channel, ME_CONTROLLER, CTRL_HDATA, dataH));
-            l->add(MidiEvent(tick+3, channel, ME_CONTROLLER, CTRL_LDATA, dataL));
+            l->insert(MidiEvent(tick,   channel, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+            l->insert(MidiEvent(tick+1, channel, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+            l->insert(MidiEvent(tick+2, channel, ME_CONTROLLER, CTRL_HDATA, dataH));
+            l->insert(MidiEvent(tick+3, channel, ME_CONTROLLER, CTRL_LDATA, dataL));
             }
       else if (a < 0x70000) {     // NRPN14 Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             int dataH = (b >> 7) & 0x7f;
             int dataL = b & 0x7f;
-            l->add(MidiEvent(tick,   channel, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-            l->add(MidiEvent(tick+1, channel, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-            l->add(MidiEvent(tick+2, channel, ME_CONTROLLER, CTRL_HDATA, dataH));
-            l->add(MidiEvent(tick+3, channel, ME_CONTROLLER, CTRL_LDATA, dataL));
+            l->insert(MidiEvent(tick,   channel, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+            l->insert(MidiEvent(tick+1, channel, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+            l->insert(MidiEvent(tick+2, channel, ME_CONTROLLER, CTRL_HDATA, dataH));
+            l->insert(MidiEvent(tick+3, channel, ME_CONTROLLER, CTRL_LDATA, dataL));
             }
       }
 
@@ -146,7 +146,7 @@ void MusE::exportMidi()
             MidiFileTrack* mft = new MidiFileTrack;
             mtl->push_back(mft);
 
-            MPEventList* l = &(mft->events);
+            MidiEventList* l = &(mft->events);
             int port       = 0; // track->channel()->port();
             int channel    = 0;
       	if (track->channel())
@@ -176,7 +176,7 @@ void MusE::exportMidi()
                   int len = strlen(name);
                   MidiEvent ev(0, ME_META, (unsigned char*)name, len+1);
                   ev.setA(0x3);    // Meta Sequence/Track Name
-                  l->add(ev);
+                  l->insert(ev);
                   }
 
             //-----------------------------------
@@ -188,7 +188,7 @@ void MusE::exportMidi()
                   int len = strlen(comment);
                   MidiEvent ev(0, ME_META, (unsigned char*)comment, len+1);
                   ev.setA(0xf);    // Meta Text
-                  l->add(ev);
+                  l->insert(ev);
                   }
             PartList* parts = track->parts();
             for (iPart p = parts->begin(); p != parts->end(); ++p) {
@@ -233,8 +233,8 @@ void MusE::exportMidi()
                                           }
                                     if (len <= 0)
                                           len = 1;
-                                    l->add(MidiEvent(tick, channel, ME_NOTEON, pitch, velo));
-                                    l->add(MidiEvent(tick+len, channel, ME_NOTEON, pitch, 0));
+                                    l->insert(MidiEvent(tick, channel, ME_NOTEON, pitch, velo));
+                                    l->insert(MidiEvent(tick+len, channel, ME_NOTEON, pitch, 0));
                                     }
                                     break;
 
@@ -243,22 +243,22 @@ void MusE::exportMidi()
                                     break;
 
                               case Sysex:
-                                    l->add(MidiEvent(tick, ME_SYSEX, ev.eventData()));
+                                    l->insert(MidiEvent(tick, ME_SYSEX, ev.eventData()));
                                     break;
 
                               case PAfter:
-                                    l->add(MidiEvent(tick, channel, ME_AFTERTOUCH, ev.dataA(), ev.dataB()));
+                                    l->insert(MidiEvent(tick, channel, ME_AFTERTOUCH, ev.dataA(), ev.dataB()));
                                     break;
 
                               case CAfter:
-                                    l->add(MidiEvent(tick, channel, ME_POLYAFTER, ev.dataA(), ev.dataB()));
+                                    l->insert(MidiEvent(tick, channel, ME_POLYAFTER, ev.dataA(), ev.dataB()));
                                     break;
 
                               case Meta:
                                     {
                                     MidiEvent mpev(tick, ME_META, ev.eventData());
                                     mpev.setA(ev.dataA());
-                                    l->add(mpev);
+                                    l->insert(mpev);
                                     }
                                     break;
                               case Wave:
@@ -269,7 +269,7 @@ void MusE::exportMidi()
             }
 
 	MidiFileTrack* mft = mtl->front();
-	MPEventList* l     = &(mft->events);
+	MidiEventList* l     = &(mft->events);
 
       //---------------------------------------------------
       //    Write Track Marker
@@ -280,7 +280,7 @@ void MusE::exportMidi()
             int len = strlen(name);
             MidiEvent ev(m->first, ME_META, (unsigned char*)name, len);
             ev.setA(0x6);
-            l->add(ev);
+            l->insert(ev);
             }
 
       //---------------------------------------------------
@@ -291,7 +291,7 @@ void MusE::exportMidi()
             int len = strlen(copyright);
             MidiEvent ev(0, ME_META, (unsigned char*)copyright, len);
             ev.setA(0x2);
-            l->add(ev);
+            l->insert(ev);
             }
 
       //---------------------------------------------------
@@ -307,7 +307,7 @@ void MusE::exportMidi()
             data[0] = (tempo >> 16) & 0xff;
             MidiEvent ev(event->tick, ME_META, data, 3);
             ev.setA(0x51);
-            l->add(ev);
+            l->insert(ev);
             }
 
       //---------------------------------------------------
@@ -332,7 +332,7 @@ void MusE::exportMidi()
                   }
             MidiEvent ev(event->tick, ME_META, data, 2);
             ev.setA(0x58);
-            l->add(ev);
+            l->insert(ev);
             }
 
       mf.setDivision(config.midiDivision);

@@ -74,9 +74,9 @@ class WaveTrack : public AudioTrack {
       };
 
 
-typedef tracklist<WaveTrack*>::iterator iWaveTrack;
-typedef tracklist<WaveTrack*>::const_iterator ciWaveTrack;
-typedef tracklist<WaveTrack*> WaveTrackList;
+typedef QList<WaveTrack*> WaveTrackList;
+typedef WaveTrackList::iterator iWaveTrack;
+typedef WaveTrackList::const_iterator ciWaveTrack;
 
 #endif
 

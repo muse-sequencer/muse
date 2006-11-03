@@ -41,12 +41,13 @@ class AudioInput : public AudioTrack {
       virtual void write(Xml&) const;
       virtual void setName(const QString& s);
       virtual void setChannels(int n);
-      virtual bool hasAuxSend() const { return true; }
+      virtual bool hasAuxSend() const  { return true; }
+      virtual bool muteDefault() const { return true; }
       };
 
-typedef tracklist<AudioInput*>::iterator iAudioInput;
-typedef tracklist<AudioInput*>::const_iterator ciAudioInput;
-typedef tracklist<AudioInput*> InputList;
+typedef QList<AudioInput*> InputList;
+typedef InputList::iterator iAudioInput;
+typedef InputList::const_iterator ciAudioInput;
 
 #endif
 
