@@ -75,10 +75,10 @@ void Trigg::setGeometry(int x, int y, int w, int h)
 //   process
 //---------------------------------------------------------
 
-void Trigg::process(unsigned , unsigned , MPEventList* il, MPEventList* ol)
+void Trigg::process(unsigned , unsigned , MidiEventList* il, MidiEventList* ol)
       {
 
-      for (iMPEvent i = il->begin(); i != il->end(); ++i) {
+      for (iMidiEvent i = il->begin(); i != il->end(); ++i) {
             MidiEvent temp=*i;
             if (temp.isNote() || temp.isNoteOff())
                     {

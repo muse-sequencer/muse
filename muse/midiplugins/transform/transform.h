@@ -109,7 +109,7 @@ class Transform : public Mempi {
             } data;
 
       TransformDialog* gui;
-      virtual void process(unsigned, unsigned, MPEventList*, MPEventList*);
+      virtual void process(unsigned, unsigned, MidiEventList*, MidiEventList*);
 
       Transform(const char* name, const MempiHost*);
       virtual bool init();

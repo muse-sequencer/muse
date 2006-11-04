@@ -81,7 +81,7 @@ void Metronom::setGeometry(int x, int y, int w, int h)
 //   process
 //---------------------------------------------------------
 
-void Metronom::process(unsigned from, unsigned to, MPEventList* /*il*/, MPEventList* ol)
+void Metronom::process(unsigned from, unsigned to, MidiEventList* /*il*/, MidiEventList* ol)
       {
       if (from == to) {
             nextTick = 0;

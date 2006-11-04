@@ -25,7 +25,7 @@ class Trigg : public Mempi {
 
       TriggGui* gui;
 
-      virtual void process(unsigned, unsigned, MPEventList*, MPEventList*);
+      virtual void process(unsigned, unsigned, MidiEventList*, MidiEventList*);
 
    public:
       Trigg(const char* name, const MempiHost*);

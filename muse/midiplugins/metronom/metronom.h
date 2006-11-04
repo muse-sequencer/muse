@@ -32,7 +32,7 @@ class Metronom : public Mempi {
       unsigned int nextTick;
       unsigned int lastTo;
 
-      virtual void process(unsigned, unsigned, MPEventList*, MPEventList*);
+      virtual void process(unsigned, unsigned, MidiEventList*, MidiEventList*);
 
    public:
       Metronom(const char* name, const MempiHost*);

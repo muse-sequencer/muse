@@ -25,7 +25,7 @@ class Filter : public Mempi {
       FilterGui* gui;
 
       bool filterEvent(const MidiEvent& event);
-      virtual void process(unsigned, unsigned, MPEventList*, MPEventList*);
+      virtual void process(unsigned, unsigned, MidiEventList*, MidiEventList*);
 
    public:
       Filter(const char* name, const MempiHost*);

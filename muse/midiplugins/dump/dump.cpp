@@ -15,9 +15,9 @@
 //   process
 //---------------------------------------------------------
 
-void Dump::process(unsigned, unsigned, MPEventList* il, MPEventList* ol)
+void Dump::process(unsigned, unsigned, MidiEventList* il, MidiEventList* ol)
       {
-      for (iMPEvent i = il->begin(); i != il->end(); ++i) {
+      for (iMidiEvent i = il->begin(); i != il->end(); ++i) {
             printf("Event %6d ch:%2d type:%2d 0x%02x 0x%02x\n", i->time(), i->channel(), 
                i->type(), i->dataA(), i->dataB());
             ol->insert(*i);

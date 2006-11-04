@@ -134,9 +134,9 @@ static bool filterValOp(ValOp op, int val, int val1, int val2)
 //            2 - event changed
 //---------------------------------------------------------
 
-void Transform::process(unsigned, unsigned, MPEventList* il, MPEventList* ol)
+void Transform::process(unsigned, unsigned, MidiEventList* il, MidiEventList* ol)
       {
-      for (iMPEvent i = il->begin(); i != il->end(); ++i) {
+      for (iMidiEvent i = il->begin(); i != il->end(); ++i) {
             MidiEvent event(*i);
             if (filterEvent(event) == 1)
                   continue;

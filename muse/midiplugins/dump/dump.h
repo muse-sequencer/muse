@@ -18,7 +18,7 @@
 //---------------------------------------------------------
 
 class Dump : public Mempi {
-      virtual void process(unsigned, unsigned, MPEventList*, MPEventList*);
+      virtual void process(unsigned, unsigned, MidiEventList*, MidiEventList*);
 
    public:
       Dump(const char* name, const MempiHost* h) :Mempi(name, h) {}

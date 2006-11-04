@@ -75,9 +75,9 @@ void Filter::setGeometry(int x, int y, int w, int h)
 //   process
 //---------------------------------------------------------
 
-void Filter::process(unsigned, unsigned, MPEventList* il, MPEventList* ol)
+void Filter::process(unsigned, unsigned, MidiEventList* il, MidiEventList* ol)
       {
-      for (iMPEvent i = il->begin(); i != il->end(); ++i) {
+      for (iMidiEvent i = il->begin(); i != il->end(); ++i) {
             if (!filterEvent(*i))
                   ol->insert(*i);
             }
