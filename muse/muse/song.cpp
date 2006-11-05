@@ -168,8 +168,9 @@ bool Song::addEvent(Event& event, Part* part)
             val.i = event.dataB();
             if (mc && !mc->addControllerVal(cntrl, tick, val)) {
                   mc->addMidiController(mc->port()->instrument(), cntrl);
-                  if (!mc->addControllerVal(cntrl, tick, val))
+                  if (!mc->addControllerVal(cntrl, tick, val)) {
                         return false;
+                        }
                   }
             }
       part->events()->add(event);
@@ -1265,6 +1266,7 @@ void Song::seqSignal(int fd)
             }
       }
 
+#if 0
 //---------------------------------------------------------
 //   recordEvent
 //---------------------------------------------------------
@@ -1308,6 +1310,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
       event.setTick(tick);
       audio->msgAddEvent(event, part);
       }
+#endif
 
 //---------------------------------------------------------
 //   stopRolling

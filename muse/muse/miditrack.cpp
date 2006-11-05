@@ -271,7 +271,7 @@ void MidiTrack::recordBeat()
                   }
             else if (me.type() == ME_CONTROLLER) {
                   Event event(Controller);
-                  event.setTick(time);
+                  event.setTick(time + ptick);
                   switch(me.dataA()) {
                         case CTRL_HBANK:
                               hbank = me.dataB();
@@ -283,7 +283,6 @@ void MidiTrack::recordBeat()
 
                         case CTRL_HDATA:
                               datah = me.dataB();
-                              event.setType(Controller);
                               event.setA(dataType | (rpnh << 8) | rpnl);
                               event.setB(datah);
                               audio->msgAddEvent(event, recordPart, false);
@@ -320,7 +319,6 @@ void MidiTrack::recordBeat()
                               break;
 
                         default:
-                              event.setType(Controller);
                               event.setA(me.dataA());
                               event.setB(me.dataB());
                               audio->msgAddEvent(event, recordPart, false);
@@ -331,7 +329,7 @@ void MidiTrack::recordBeat()
                   }
             else if (me.type() == ME_PROGRAM) {
                   Event event(Controller);
-                  event.setTick(time);
+                  event.setTick(time + ptick);
                   event.setA(CTRL_PROGRAM);
                   event.setB((hbank << 16) | (lbank << 8) | me.dataA());
                   audio->msgAddEvent(event, recordPart, false);
@@ -340,7 +338,7 @@ void MidiTrack::recordBeat()
                   }
             else if (me.type() == ME_PITCHBEND) {
                   Event event(Controller);
-                  event.setTick(time);
+                  event.setTick(time + ptick);
                   event.setA(CTRL_PITCH);
                   event.setB(me.dataA());
                   audio->msgAddEvent(event, recordPart, false);
@@ -349,7 +347,7 @@ void MidiTrack::recordBeat()
                   }
             else if (me.type() == ME_SYSEX) {
                   Event event(Sysex);
-                  event.setTick(time);
+                  event.setTick(time + ptick);
                   event.setData(me.data(), me.len());
                   audio->msgAddEvent(event, recordPart, false);
                   ++recordedEvents;
@@ -357,7 +355,7 @@ void MidiTrack::recordBeat()
                   }
             else if (me.type() == ME_AFTERTOUCH) {
                   Event event(CAfter);
-                  event.setTick(time);
+                  event.setTick(time + ptick);
                   event.setA(me.dataA());
                   audio->msgAddEvent(event, recordPart, false);
                   ++recordedEvents;

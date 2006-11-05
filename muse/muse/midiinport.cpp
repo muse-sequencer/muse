@@ -220,7 +220,7 @@ void MidiInPort::beforeProcess()
 //    called from jack process context
 //---------------------------------------------------------
 
-void MidiInPort::getEvents(unsigned, unsigned, int ch, MidiEventList* dst)
+void MidiInPort::getEvents(unsigned, unsigned, int /*ch*/, MidiEventList* dst)
       {
       int tmpRecordRead = recordRead;
       for (int i = 0; i < tmpRecordCount; ++i) {

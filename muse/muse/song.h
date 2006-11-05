@@ -326,7 +326,7 @@ class Song : public QObject {
       void insertTrack1(Track*, int idx);
       void insertTrack2(Track*);
       void readRoute(QDomNode);
-      void recordEvent(MidiTrack*, Event&);
+//      void recordEvent(MidiTrack*, Event&);
       std::vector<QString>* synthesizer() const;
 
       void deselectTracks();

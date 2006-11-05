@@ -181,7 +181,10 @@ void MidiOutPort::queueAlsaEvent(const MidiEvent& ev)
             int chn    = ev.channel();
             unsigned t = ev.time();
 
-            if (a == CTRL_PROGRAM) {
+            if (a == CTRL_PITCH) {
+                  AO(MidiEvent(t, chn, ME_PITCHBEND, b, 0));
+                  }
+            else if (a == CTRL_PROGRAM) {
                   // don't output program changes for GM drum channel
 //                  if (!(song->mtype() == MT_GM && chn == 9)) {
                         int hb = (b >> 16) & 0xff;
@@ -273,7 +276,10 @@ void MidiOutPort::queueJackEvent(const MidiEvent& ev)
             int chn    = ev.channel();
             unsigned t = ev.time();
 
-            if (a == CTRL_PROGRAM) {
+            if (a == CTRL_PITCH) {
+                  JO(MidiEvent(t, chn, ME_PITCHBEND, b, 0));
+                  }
+            else if (a == CTRL_PROGRAM) {
                   // don't output program changes for GM drum channel
 //                  if (!(song->mtype() == MT_GM && chn == 9)) {
                         int hb = (b >> 16) & 0xff;
