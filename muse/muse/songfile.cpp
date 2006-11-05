@@ -55,10 +55,17 @@ Part* MusE::readPart(QDomNode node)
       int partIdx;
       sscanf(s.toLatin1().data(), "%d:%d", &trackIdx, &partIdx);
       TrackList* tl = song->tracks();
-      Track* track = 0;
-      if (trackIdx < tl->size()) {
-            track = tl->at(trackIdx);
+      Track* track = song->tracks()->value(trackIdx);
+      if (track) {
             part = track->parts()->find(partIdx);
+            if (part == 0) {
+                  printf("MusE::readPart(): part %d(%d)  not found in track <%s>\n",
+                     partIdx, track->parts()->size(), track->name().toLatin1().data());
+                  }
+            }
+      else {
+            printf("MusE::readPart(): trackIdx >= tl->size %d > %d\n",
+               trackIdx , tl->size());
             }
       return part;
       }
@@ -78,6 +85,8 @@ void MusE::readToplevels(QDomNode node)
                   Part* part = readPart(node);
                   if (part)
                         pl->add(part);
+                  else
+                        printf("part not found\n");
                   }
             else if (tag == "PianoRoll") {
                   PianoRoll* pianoroll = new PianoRoll(pl, true);

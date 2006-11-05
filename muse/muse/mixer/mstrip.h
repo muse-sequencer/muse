@@ -42,6 +42,7 @@ class MidiStrip : public Strip {
       void recordToggled(bool);
       void iRoutePressed();
       void oRoutePressed();
+      void monitorToggled(bool);
 
    protected slots:
       virtual void heartBeat();

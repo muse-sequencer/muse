@@ -168,7 +168,8 @@ void EventCanvas::songChanged(int flags)
             part  = nevent->part;
             }
       emit selectionChanged(x, event, part);
-      setPart(*curPart, curPart->end());
+      if (curPart)
+            setPart(*curPart, curPart->end());
       widget()->update();
       }
 

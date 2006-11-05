@@ -88,7 +88,7 @@ Route::Route(Track* tr, int ch, RouteType t)
 
 bool addRoute(Route src, Route dst)
       {
-// printf("addRoute %s.%d:<%s> %s.%d:<%s>\n",
+//printf("addRoute %s.%d:<%s> %s.%d:<%s>\n",
 //         src.tname(), src.channel, src.name().toLatin1().data(),
 //         dst.tname(), dst.channel, dst.name().toLatin1().data());
 
@@ -299,8 +299,6 @@ void Song::readRoute(QDomNode n)
       if (s.type == Route::AUDIOPORT)
             s.channel = d.channel;
       if (d.type == Route::AUDIOPORT)
-            d.channel = s.channel;
-      if (s.type == Route::TRACK && s.track->type() == Track::MIDI_IN)
             d.channel = s.channel;
       s.disconnected = true;
       d.disconnected = true;

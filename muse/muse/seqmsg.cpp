@@ -76,6 +76,19 @@ bool Audio::sendMessage(AudioMsg* m, bool doUndo)
       }
 
 //---------------------------------------------------------
+//   msgRoute
+//---------------------------------------------------------
+
+void Audio::msgRoute(bool add, Route src, Route dst)
+      {
+      if (add)
+            msgAddRoute(src, dst);
+      else
+            msgRemoveRoute(src, dst);      
+      song->update(SC_ROUTE);
+      }
+
+//---------------------------------------------------------
 //   msgRemoveRoute
 //---------------------------------------------------------
 

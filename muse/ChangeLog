@@ -1,3 +1,6 @@
+5.11 (ws)
+      - simplified midi input routing
+      - added "Monitor" button to midi track mixer strip
 31.10 (ws)
       - MESS:
         - remove useless QWidget parameter in instantiate()

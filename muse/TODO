@@ -2,12 +2,9 @@
 (29.10.2006)
 ----------------------------------------------------------------------------
 
-      - change default: show MidiChannel in mixer, dont show MidiTrack
-      - Add "monitor" button to midi channel strip in mixer.
-      - change default: do not default to "automation read" when
-        creating new strips
-        
 BUGS
+      - make sure all track names are unique
+
 	? updating the gui during midi recording is too slow;
         a new, faster implementation is needed
 
@@ -16,7 +13,7 @@ BUGS
 
       - Do not allow switch track recording on/off during recording
 
-      - audio prefetching is not stable
+      ? audio prefetching is not stable
 
       - looping does not work sample accurate due to jack transport
         limitations; looping should be implemented internally to work

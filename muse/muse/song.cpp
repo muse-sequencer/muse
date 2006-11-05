@@ -1651,6 +1651,8 @@ void Song::insertTrack0(Track* track, int idx)
 
 void Song::insertTrack1(Track* track, int idx)
       {
+      if (idx == -1)
+            idx = _tracks.size();
       _tracks.insert(idx, track);
       if (track->type() == Track::AUDIO_SOFTSYNTH) {
             SynthI* s = (SynthI*)track;
@@ -2104,6 +2106,16 @@ void Song::setMute(Track* track, bool val)
       {
       track->setMute(val);
       emit muteChanged(track, track->mute());
+      }
+
+//---------------------------------------------------------
+//   setMonitor
+//---------------------------------------------------------
+
+void Song::setMonitor(Track* track, bool val)
+      {
+      track->setMonitor(val);
+//      emit monitorChanged(track, track->mute());
       }
 
 //---------------------------------------------------------

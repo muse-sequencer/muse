@@ -383,6 +383,7 @@ class Song : public QObject {
       bool solo() const           { return soloFlag; }
       void setRecordFlag(Track*, bool);
       void setMute(Track*,bool);
+      void setMonitor(Track*,bool);
       void setSolo(Track*,bool);
       void setOff(Track*,bool);
 

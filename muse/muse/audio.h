@@ -230,6 +230,7 @@ class Audio {
       void msgPanic();
       void sendMsg(AudioMsg*);
       bool sendMessage(AudioMsg* m, bool doUndo);
+      void msgRoute(bool add, Route, Route);
       void msgRemoveRoute(Route, Route);
       void msgRemoveRoute1(Route, Route);
       void msgAddRoute(Route, Route);

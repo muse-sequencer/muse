@@ -738,11 +738,7 @@ void AudioStrip::iRoutePressed()
             else if (track->type() == Track::AUDIO_SOFTSYNTH)
                   dstRoute.type = Route::SYNTIPORT;
 
-            if (n->isChecked())
-                  audio->msgAddRoute(srcRoute, dstRoute);
-            else
-                  audio->msgRemoveRoute(srcRoute, dstRoute);
-            song->update(SC_ROUTE);
+            audio->msgRoute(n->isChecked(), srcRoute, dstRoute);
             }
       iR->setDown(false);     // pup.exec() catches mouse release event
       }
@@ -798,15 +794,9 @@ void AudioStrip::oRoutePressed()
             Route srcRoute(t);
             Route dstRoute = n->data().value<Route>();
             
-//            if (track->type() == Track::AUDIO_SOFTSYNTH)
-//                  srcRoute.type = Route::SYNTIPORT;
             if (track->type() == Track::AUDIO_OUTPUT)
                   srcRoute.channel = dstRoute.channel;
-            if (n->isChecked())
-                  audio->msgAddRoute(srcRoute, dstRoute);
-            else
-                  audio->msgRemoveRoute(srcRoute, dstRoute);
-            song->update(SC_ROUTE);
+            audio->msgRoute(n->isChecked(), srcRoute, dstRoute);
             }
       oR->setDown(false);     // pup.exec() catches mouse release event
       }
