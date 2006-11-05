@@ -132,8 +132,8 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
             int chn = event.channel();
             if (chn == 255) {
                   // port controller
-                  if (hwCtrlState(a) == event.dataB()) {
-//                        printf(" controller change optimized away 1\n");
+                  if (hwCtrlState(a) == b) {
+// printf(" controller change optimized away 1\n");
                         return;
                         }
                   setHwCtrlState(a, b);
@@ -143,8 +143,8 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
                   //
                   //  optimize controller settings
                   //
-                  if (mc->hwCtrlState(a) == event.dataB()) {
-//                        printf(" controller change optimized away 2\n");
+                  if (mc->hwCtrlState(a) == b) {
+// printf(" controller %02x change optimized away: value %02x\n", a, b);
                         return;
                         }
                   mc->setHwCtrlState(a, b);
@@ -185,17 +185,14 @@ void MidiOutPort::queueAlsaEvent(const MidiEvent& ev)
                   AO(MidiEvent(t, chn, ME_PITCHBEND, b, 0));
                   }
             else if (a == CTRL_PROGRAM) {
-                  // don't output program changes for GM drum channel
-//                  if (!(song->mtype() == MT_GM && chn == 9)) {
-                        int hb = (b >> 16) & 0xff;
-                        int lb = (b >> 8) & 0xff;
-                        int pr = b & 0x7f;
-                        if (hb != 0xff)
-                              AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HBANK, hb));
-                        if (lb != 0xff)
-                              AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LBANK, lb));
-                        AO(MidiEvent(t+2, chn, ME_PROGRAM, pr, 0));
-//                      }
+                  int hb = (b >> 16) & 0xff;
+                  int lb = (b >> 8) & 0xff;
+                  int pr = b & 0x7f;
+                  if (hb != 0xff)
+                        AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HBANK, hb));
+                  if (lb != 0xff)
+                        AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LBANK, lb));
+                  AO(MidiEvent(t+2, chn, ME_PROGRAM, pr, 0));
                   }
             else if (a == CTRL_MASTER_VOLUME) {
                   unsigned char sysex[] = {

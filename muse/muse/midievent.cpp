@@ -79,11 +79,11 @@ MidiEvent::MidiEvent(unsigned tick, int channel, const Event& e)
 void MidiEvent::dump() const
       {
       printf("chan:%d ", _channel+1);
-      if (_type == 0x90) {   // NoteOn
+      if (_type == ME_NOTEON) {   // NoteOn
             QString s = pitch2string(_a);
             printf("NoteOn %3s(0x%02x) %3d\n", s.toLatin1().data(), _a, _b);
            }
-      else if (_type == 0xf0) {
+      else if (_type == ME_SYSEX) {
             printf("SysEx  len %d ", len());
             int n = len() < 7 ? len() : 7;
             unsigned char* p = data();
@@ -91,12 +91,14 @@ void MidiEvent::dump() const
                   printf("%02x ", *p++);
             printf("\n");
             }
-      else if (_type == 0xb0)
+      else if (_type == ME_CONTROLLER)
             printf("Ctrl   %d(0x%02x) %d(0x%02x)\n", _a, _a, _b, _b);
-      else if (_type == 0xc0)
+      else if (_type == ME_PROGRAM)
             printf("Prog   %d(0x%02x)\n", _a, _a);
-      else if (_type == 0xd0)
+      else if (_type == ME_AFTERTOUCH)
             printf("Aftertouch %d\n", _a);
+      else if (_type == ME_PITCHBEND)
+            printf("PitchBend %d\n", _a);
       else
             printf("type:0x%02x a=%d(0x%02x) b=%d(0x%02x)\n", _type, _a, _a, _b, _b);
       }
