@@ -34,6 +34,9 @@ static const int HANDLE1 = 6;
 static const int HANDLE2 = 3;
 static const int veloWidth = 3;
 
+Ctrl veloList(CTRL_VELOCITY, "velocity", Ctrl::DISCRETE |Ctrl::INT, 0.0, 127.0);    // dummy
+Ctrl sveloList(CTRL_SVELOCITY, "single velocity", Ctrl::DISCRETE |Ctrl::INT, 0.0, 127.0);    // dummy
+
 //---------------------------------------------------------
 //   CtrlEditor
 //---------------------------------------------------------
@@ -208,23 +211,30 @@ void CtrlEditor::mousePress(const QPoint& pos, int button, Qt::KeyboardModifiers
       {
       Tool tool = tc()->tool();
       if (button & Qt::RightButton) {
-            QMenu* pop = new QMenu(tc());
+            QMenu pop(tc());
             QAction* a;
             for (int i = 0; i < TOOLS; ++i) {
-                  if ((arrangerTools & (1 << i)) == 0)
-                        continue;
-                  a = pop->addAction(**toolList[i].icon, tc()->tr(toolList[i].tip));
                   int id = 1 << i;
+                  if ((arrangerTools & id) == 0)
+                        continue;
+                  a = pop.addAction(**toolList[i].icon, tc()->tr(toolList[i].tip));
                   a->setData(id);
                   a->setCheckable(true);
                   if (id == (int)tool)
                         a->setChecked(true);
                   }
-            a = pop->exec(tc()->mapToGlobal(pos));
+            a = pop.addSeparator();
+            a = pop.addAction("List Editor");
+            a->setData(1 << (TOOLS+1));
+
+            a = pop.exec(tc()->mapToGlobal(pos));
             if (a) {
                   int n = a->data().toInt();
-                  // tc()->setTool(n);
-                  muse->setTool(n);
+                  if (n == (1 << (TOOLS+1))) {
+                        printf("TODO: start list editor\n");
+                        }
+                  else
+                        muse->setTool(n);
                   }
             return;
             }

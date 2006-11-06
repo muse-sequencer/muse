@@ -32,8 +32,6 @@
 #include "midictrl.h"
 #include "widgets/utils.h"
 
-static Ctrl veloList(CTRL_VELOCITY, "velocity", Ctrl::DISCRETE, 0.0, 127.0);    // dummy
-
 //---------------------------------------------------------
 //   TLSLayout
 //---------------------------------------------------------

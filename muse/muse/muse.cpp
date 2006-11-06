@@ -2856,12 +2856,12 @@ int main(int argc, char* argv[])
       initMidiInstruments();
       MuseApplication app(argc, argv);
 
-      config.fonts[0] = QFont(QString("arial"), 10, QFont::Normal);
-      config.fonts[1] = QFont(QString("arial"),  8, QFont::Normal);
-      config.fonts[2] = QFont(QString("arial"), 10, QFont::Normal);
-      config.fonts[3] = QFont(QString("arial"),  8, QFont::Bold);
-      config.fonts[4] = QFont(QString("arial"),  8,  QFont::Bold);    // simple buttons, timescale numbers
-      config.fonts[5] = QFont(QString("Lucidatypewriter"), 14,  QFont::Bold);
+      config.fonts[0] = QFont(QString("helvetica"), 10, QFont::Normal);
+      config.fonts[1] = QFont(QString("helvetica"),  6, QFont::Normal);
+      config.fonts[2] = QFont(QString("helvetica"), 10, QFont::Normal);
+      config.fonts[3] = QFont(QString("helvetica"),  8, QFont::Bold);
+      config.fonts[4] = QFont(QString("helvetica"),  8,  QFont::Bold);    // simple buttons, timescale numbers
+      config.fonts[5] = QFont(QString("Courier"), 14,  QFont::Bold);
 
       initShortCuts();
       gmDrumMap.initGm();    // init default drum map

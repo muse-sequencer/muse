@@ -645,7 +645,6 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
 
       if (x < (MAP_OFFSET - wpos.x()))
             x = MAP_OFFSET - wpos.x();
-//      AL::Pos pos1 = pix2pos(x - flagIconS->width());
       AL::Pos pos1 = pix2pos(x);
       AL::Pos pos2 = pix2pos(x+w);
 
@@ -713,7 +712,7 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
                         if (xp < 0)
                               continue;
                         QString s;
-                        QRect r(xp+2, y, 1000, h);
+                        QRect r(xp+2, y + 1, 1000, h);
                         int y3;
                         int num;
                         if (beat == 0) {
@@ -725,7 +724,7 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
                               num = beat + 1;
                               y3  = y + 8;
                               p.setFont(config.fonts[1]);
-                              r.setY(y+3);
+                              r.moveTop(r.top() + 1);
                               }
                         s.setNum(num);
                         p.setPen(Qt::black);
@@ -774,7 +773,8 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
             p.drawLine(rButton.x(), y, rButton.width(), y);
             }
       p.setRenderHint(QPainter::TextAntialiasing, true);
-      p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+      p.setRenderHint(QPainter::Antialiasing, true);
+//      p.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
       QRect par = r & rPanelA;
       if (!(par.isEmpty() || rPanelA.isEmpty())) {

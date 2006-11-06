@@ -558,6 +558,11 @@ void PartCanvas::contextMenu(const QPoint& pos)
 
 void PartCanvas::mousePress(QMouseEvent* me)
       {
+      if (state == S_SUBTRACK) {
+            ((TLSWidget*)(at->tw))->mouseRelease();
+            state = S_NORMAL;
+            }
+
       QPoint pos(me->pos().x(), me->pos().y() - rulerHeight);
       startDrag = pos;
       int hit   = searchPart(startDrag);
@@ -566,7 +571,9 @@ void PartCanvas::mousePress(QMouseEvent* me)
             TLSWidget* w = (TLSWidget*)(at->tw);
             int y = wpos.y() + pos.y() - w->y();
             w->mousePress(QPoint(pos.x(), y), button, me->modifiers());
-            state = S_SUBTRACK;
+            // propagate drag events to subtrack if left button pressed:
+            if (me->button() == Qt::LeftButton)
+                  state = S_SUBTRACK;
             return;
             }
 

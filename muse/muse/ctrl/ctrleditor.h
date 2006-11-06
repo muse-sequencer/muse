@@ -51,6 +51,8 @@ class CtrlEditor {
       virtual Track* track()   const = 0;
       virtual Track* ctrlTrack()   const = 0;
 
+      bool searchHandle(unsigned* time) const;
+
       int ctrlY(int x, const CVal&) const;
 
    protected:
@@ -66,5 +68,7 @@ class CtrlEditor {
       void mouseMove(const QPoint& pos);
       };
 
+extern Ctrl veloList;
+extern Ctrl sveloList;
 #endif
 

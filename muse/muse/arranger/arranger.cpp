@@ -300,19 +300,21 @@ Arranger::Arranger(QMainWindow* parent)
       infoDock = new QDockWidget(tr("TrackInfo"));
       infoDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
       infoDock->setMinimumWidth(infoWidth);
-      infoDock->layout()->setMargin(0);
+      infoDock->layout()->setMargin(1);
       infoDock->layout()->setSpacing(0);
       infoDockAction = infoDock->toggleViewAction();
 
       mixerDock = new QDockWidget(tr("Mix"));
       mixerDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-      mixerDock->setFixedWidth(STRIP_WIDTH);
-      mixerDock->layout()->setMargin(0);
+//      mixerDock->setMaximumWidth(STRIP_WIDTH);
+      mixerDock->layout()->setMargin(1);
       mixerDock->layout()->setSpacing(0);
       mixerDockAction = mixerDock->toggleViewAction();
 
+      parent->setDockNestingEnabled(true);
+
       parent->addDockWidget(Qt::LeftDockWidgetArea, infoDock, Qt::Horizontal);
-      parent->addDockWidget(Qt::LeftDockWidgetArea, mixerDock, Qt::Horizontal);
+      parent->splitDockWidget(infoDock, mixerDock, Qt::Horizontal);
 
       infoView = new QScrollArea;
       infoDock->setWidget(infoView);
@@ -325,6 +327,7 @@ Arranger::Arranger(QMainWindow* parent)
 
       trackInfoVisible  = false;
       mixerStripVisible = false;
+
       infoDock->setVisible(false);
       mixerDock->setVisible(false);
 
@@ -847,6 +850,8 @@ void Arranger::toggleTrackInfo(bool val)
             w->init(_curTrack);
             trackInfo->setCurrentWidget(w);
             }
+      infoDock->layout()->invalidate();
+      infoDock->layout()->update();
       }
 
 //---------------------------------------------------------
@@ -882,6 +887,7 @@ void Arranger::toggleMixerStrip(bool val)
                               strip = new AudioStrip(0, (AudioTrack*)_curTrack, false);
                               break;
                         }
+                  strip->setFixedWidth(STRIP_WIDTH);
                   mixerDock->setWidget(strip);
                   }
             }
