@@ -36,8 +36,10 @@ MidiTrack::MidiTrack()
    : MidiTrackBase()
       {
       init();
-      _events = new EventList;
-      recordPart = 0;
+      _events     = new EventList;
+      recordPart  = 0;
+      _drumMap    = 0;
+      _useDrumMap = false;
       }
 
 MidiTrack::~MidiTrack()
@@ -139,7 +141,11 @@ void MidiTrack::read(QDomNode node)
 void MidiTrack::playMidiEvent(MidiEvent* ev)
       {
       foreach (const Route& r, _outRoutes) {
-            ((MidiOutPort*)r.dst.track)->playMidiEvent(ev);
+            Track* track = r.dst.track;
+            if (track->type() == MIDI_OUT)
+                  ((MidiOutPort*)track)->playMidiEvent(ev);
+            else if (track->type() == AUDIO_SOFTSYNTH)
+                  ((SynthI*)track)->playMidiEvent(ev);
             }
       }
 
@@ -480,7 +486,7 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
                   Part* part = p->second;
                   if (part->mute())
                         continue;
-                  DrumMap* dm = ((MidiTrack*)part->track())->drumMap();
+                  DrumMap* dm     = drumMap();
                   unsigned offset = _delay + part->tick();
 
                   if (offset > to)
@@ -653,7 +659,12 @@ MidiInstrument* MidiTrack::instrument() const
       {
       if (_outRoutes.isEmpty())
             return genericMidiInstrument;
-      return ((MidiOutPort*)_outRoutes[0].dst.track)->instrument();
+      Track* track = _outRoutes[0].dst.track;
+      if (track->type() == MIDI_OUT)
+            return ((MidiOutPort*)track)->instrument();
+      else if (track->type() == AUDIO_SOFTSYNTH)
+            return ((SynthI*)track)->instrument();
+      return 0;
       }
 
 //---------------------------------------------------------

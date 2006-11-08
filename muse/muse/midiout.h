@@ -46,6 +46,7 @@ class MidiOut
 
       MidiFifo eventFifo;
 
+      MidiOut();
       void processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick, 
          unsigned fromFrame, unsigned toFrame);
       MidiInstrument* instrument()          { return _instrument; }

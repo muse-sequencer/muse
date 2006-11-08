@@ -194,15 +194,11 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
 
       QHBoxLayout* rBox = new QHBoxLayout(0);
 
-      if (track->type() == Track::AUDIO_SOFTSYNTH) {
-            rBox->addStretch(100);
-            }
-      else {
-            iR = newInRouteButton();
-            rBox->addWidget(iR);
-            connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
-            connect(iR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
-            }
+      iR = newInRouteButton();
+      rBox->addWidget(iR);
+      connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
+      connect(iR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
+      
       oR = newOutRouteButton();
       rBox->addWidget(oR);
       connect(oR->menu(), SIGNAL(aboutToShow()), SLOT(oRouteShow()));
@@ -579,7 +575,9 @@ static void addSyntiPorts(AudioTrack* t, QMenu* lb, const RouteList& rl)
                   continue;
             QAction* it = lb->addAction(track->name());
             it->setCheckable(true);
-            Route route = Route(RouteNode(t), RouteNode(track));
+            RouteNode a(t);
+            RouteNode b(track);
+            Route route = Route(b, a);
             it->setData(QVariant::fromValue(route));
             it->setChecked(rl.indexOf(route) != -1);
             }
@@ -588,6 +586,9 @@ static void addSyntiPorts(AudioTrack* t, QMenu* lb, const RouteList& rl)
 //---------------------------------------------------------
 //   iRouteShow
 //---------------------------------------------------------
+
+extern void addMidiTracks(QMenu* menu, Track* track, int channel, bool input);
+extern void addMidiInPorts(QMenu* menu, Track* dtrack, int channel);
 
 void AudioStrip::iRouteShow()
       {
@@ -607,7 +608,7 @@ void AudioStrip::iRouteShow()
                         foreach (PortName ip, ol) {
                               QAction* id = pup->addAction(ip.name);
                               id->setCheckable(true);
-                              RouteNode src(ip.port, i, RouteNode::AUDIOPORT);
+                              RouteNode src(ip.port, -1, RouteNode::AUDIOPORT);
                               RouteNode dst(t, i, RouteNode::TRACK);
                               Route route = Route(src, dst);
                               id->setData(QVariant::fromValue(route));
@@ -631,6 +632,14 @@ void AudioStrip::iRouteShow()
                   addGroupPorts(t, pup, *irl);
                   addSyntiPorts(t, pup, *irl);
                   break;
+            case Track::AUDIO_SOFTSYNTH:
+                  pup->addSeparator()->setText(tr("MidiChannel"));
+                  for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
+                        QMenu* m = pup->addMenu(QString("Channel %1").arg(ch+1));
+                        addMidiTracks(m, track, ch, true);
+                        addMidiInPorts(m, track, ch);
+                        }
+                  break;                  
             }
       }
 
@@ -659,8 +668,8 @@ void AudioStrip::oRouteShow()
                         foreach (PortName ip, ol) {
                               QAction* action = pup->addAction(ip.name);
                               action->setCheckable(true);
-                              RouteNode src(t);
-                              RouteNode dst(ip.port, i, RouteNode::AUDIOPORT);
+                              RouteNode src(t, i, RouteNode::TRACK);
+                              RouteNode dst(ip.port, -1, RouteNode::AUDIOPORT);
                               Route r = Route(src, dst);
                               action->setData(QVariant::fromValue(r));
                               action->setChecked(orl->indexOf(r) != -1);

@@ -33,6 +33,7 @@ bool MidiFifo::put(const MidiEvent& event)
             q_atomic_increment(&size);
             return false;
             }
+printf("fifo overflow size %d\n", size);
       return true;
       }
 

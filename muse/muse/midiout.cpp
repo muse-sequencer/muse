@@ -30,6 +30,16 @@
 static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
 
 //---------------------------------------------------------
+//   MidiOut
+//---------------------------------------------------------
+
+MidiOut::MidiOut()
+      {
+      track = 0;
+      _instrument = 0;
+      }
+
+//---------------------------------------------------------
 //   sendGmOn
 //    send GM-On message to midi device and keep track
 //    of device state

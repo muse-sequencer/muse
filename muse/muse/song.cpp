@@ -165,7 +165,7 @@ bool Song::addEvent(Event& event, Part* part)
             CVal val;
             val.i = event.dataB();
             if (!track->addControllerVal(cntrl, tick, val)) {
-//TODOA                  track->addMidiController(track->port()->instrument(), cntrl);
+                  track->addMidiController(track->instrument(), cntrl);
                   if (!track->addControllerVal(cntrl, tick, val)) {
                         return false;
                         }

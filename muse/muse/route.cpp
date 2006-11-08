@@ -87,7 +87,7 @@ RouteNode::RouteNode(Track* tr, int ch, RouteNodeType t)
 
 bool addRoute(const Route& r)
       {
-//printf("addRoute %s.%d:<%s> %s.%d:<%s>\n",
+// printf("addRoute %s.%d:<%s> %s.%d:<%s>\n",
 //         r.src.tname(), r.src.channel, r.src.name().toLatin1().data(),
 //         r.dst.tname(), r.dst.channel, r.dst.name().toLatin1().data());
 
@@ -355,25 +355,12 @@ const char* RouteNode::tname() const
 
 void RouteNode::write(Xml& xml, const char* label) const
       {
-      switch (type) {
-            case AUDIOPORT:
-            case JACKMIDIPORT:
-            case MIDIPORT:
-            case AUXPLUGIN:
-                  xml.put("<%s type=\"%s\" name=\"%s\"/>", 
-                     label, tname(), name().toUtf8().data());
-                  break;
-            case TRACK:
-            case SYNTIPORT:
-                  if (channel != -1)
-                        xml.put("<%s type=\"%s\" channel=\"%d\" name=\"%s\"/>", 
-                              label, tname(), channel + 1, name().toUtf8().data());
-                  else
-                        xml.put("<%s type=\"%s\" name=\"%s\"/>", 
-                              label, tname(), name().toUtf8().data());
-
-                  break;
-            }
+      if (channel != -1)
+            xml.put("<%s type=\"%s\" channel=\"%d\" name=\"%s\"/>", 
+               label, tname(), channel + 1, name().toUtf8().data());
+      else
+            xml.put("<%s type=\"%s\" name=\"%s\"/>", 
+               label, tname(), name().toUtf8().data());
       }
 
 //---------------------------------------------------------

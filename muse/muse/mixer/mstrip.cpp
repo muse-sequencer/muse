@@ -42,7 +42,7 @@ enum { KNOB_PAN, KNOB_CHOR_SEND, KNOB_VAR_SEND, KNOB_REV_SEND };
 //    Note: midi tracks do not have channels
 //---------------------------------------------------------
 
-static void addMidiTracks(QMenu* menu, Track* track, int channel, bool input)
+void addMidiTracks(QMenu* menu, Track* track, int channel, bool input)
       {
       RouteList* rl = input ? track->inRoutes() : track->outRoutes();
       RouteNode a(track, channel, RouteNode::TRACK);
@@ -64,7 +64,7 @@ static void addMidiTracks(QMenu* menu, Track* track, int channel, bool input)
 //    can only be added to input route lists
 //---------------------------------------------------------
 
-static void addMidiInPorts(QMenu* menu, Track* dtrack, int channel)
+void addMidiInPorts(QMenu* menu, Track* dtrack, int channel)
       {
       RouteList* rl = dtrack->inRoutes();
       RouteNode dst(dtrack, channel, RouteNode::TRACK);

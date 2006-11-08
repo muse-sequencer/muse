@@ -540,7 +540,8 @@ void exitJackAudio()
 bool JackAudio::connect(Port src, Port dst)
       {
       if (src.isZero() || dst.isZero()) {
-            fprintf(stderr, "JackAudio::connect(1): unknown jack ports\n");
+            fprintf(stderr, "JackAudio::connect(1): unknown jack ports (%d-%d)\n",
+               src.isZero(), dst.isZero());
             return false;
             }
       const char* sn = jack_port_name(src.jackPort());
