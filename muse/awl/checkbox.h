@@ -38,7 +38,7 @@ class CheckBox : public QCheckBox {
             emit valueChanged(double(val), _id);
             }
    signals:
-      void valueChanged(float, int);
+      void valueChanged(double, int);
 
    public slots:
       void setValue(double val) { setDown(val > 0.5f); }
