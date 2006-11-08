@@ -295,7 +295,7 @@ void MidiInstrument::read(QDomNode node)
                         pg[0].patches.push_back(patch);
                   }
             else if (tag == "Category")
-                  ;     // TODO
+                  ;     // TODO "Category"
             else if (tag == "drummap") {
                   Patch* patch = new Patch;
                   patch->read(node, true);

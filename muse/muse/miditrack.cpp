@@ -35,29 +35,34 @@
 MidiTrack::MidiTrack()
    : MidiTrackBase()
       {
-      init();
-      _events     = new EventList;
-      recordPart  = 0;
-      _drumMap    = 0;
-      _useDrumMap = false;
-      }
-
-MidiTrack::~MidiTrack()
-      {
-      delete _events;
-      }
-
-//---------------------------------------------------------
-//   init
-//---------------------------------------------------------
-
-void MidiTrack::init()
-      {
       _transposition  = 0;
       _velocity       = 0;
       _delay          = 0;
       _len            = 100;          // percent
       _compression    = 100;          // percent
+      _events         = new EventList;
+
+      initMidiController();
+      recordPart      = 0;
+      _drumMap        = 0;
+      _useDrumMap     = false;
+
+      //
+      // create minimal set of managed controllers
+      // to make midi mixer operational
+      //
+      MidiInstrument* mi = genericMidiInstrument;
+      addMidiController(mi, CTRL_PROGRAM);
+      addMidiController(mi, CTRL_VOLUME);
+      addMidiController(mi, CTRL_PANPOT);
+      addMidiController(mi, CTRL_REVERB_SEND);
+      addMidiController(mi, CTRL_CHORUS_SEND);
+      addMidiController(mi, CTRL_VARIATION_SEND);
+      }
+
+MidiTrack::~MidiTrack()
+      {
+      delete _events;
       }
 
 //---------------------------------------------------------
@@ -686,6 +691,12 @@ MidiOut* MidiTrack::midiOut() const
       {
       if (_outRoutes.isEmpty())
             return 0;
-      return (MidiOut*)_outRoutes[0].dst.track;
+      Track* track = _outRoutes[0].dst.track;
+      if (track->type() == AUDIO_SOFTSYNTH) {
+            SynthI* s = (SynthI*) track;
+            return s;
+            }
+      MidiOutPort* op = (MidiOutPort*) track;
+      return op;
       }
 

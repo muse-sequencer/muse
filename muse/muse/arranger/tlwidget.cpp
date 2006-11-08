@@ -416,14 +416,12 @@ void TLWidget::configChanged()
                               outChannel = new QSpinBox(this);
                               outChannel->setFixedSize(45, trackRowHeight);
                               outChannel->setRange(1, 16);
-//TODOA                              MidiChannel* midiChannel = ((MidiTrack*)_track)->channel();
-//                              if (midiChannel)
-//                                 outChannel->setValue(midiChannel->channelNo()+1);
+                              outChannel->setValue(((MidiTrack*)_track)->channelNo() + 1);
                               outChannel->setToolTip(tr("Midi Output Channel"));
                               l->addWidget(outChannel);
                               wlist.push_back(outChannel);
                               connect(outChannel, SIGNAL(valueChanged(int)), SLOT(outChannelChanged(int)));
-//TD                              connect((MidiTrack*)_track, SIGNAL(outChannelChanged(int)), SLOT(setOutChannel(int)));
+                              connect((MidiTrack*)_track, SIGNAL(outChannelChanged(int)), SLOT(setOutChannel(int)));
                               }
                               break;
 

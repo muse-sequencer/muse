@@ -127,9 +127,6 @@ MidiTrackInfo::MidiTrackInfo()
       QWidget* midiTrackInfo = new QWidget;
       mt.setupUi(midiTrackInfo);
 
-//      QWidget* midiChannelInfo = new QWidget;
-//      mc.setupUi(midiChannelInfo);
-
       QWidget* midiPortInfo = new QWidget;
       mp.setupUi(midiPortInfo);
 
@@ -143,7 +140,6 @@ MidiTrackInfo::MidiTrackInfo()
 
       channel = new QComboBox;
       grid->addWidget(channel, 4, 0, 1, 2);
-//      grid->addWidget(midiChannelInfo, 5, 0, 1, 2);
 
       label = new QLabel;
       label->setText(tr("Midi Port"));
@@ -207,7 +203,7 @@ void MidiTrackInfo::init(Track* t)
       int n = midiTrack->channelNo();
       channel->setCurrentIndex(n < 0 ? 0 : n + 1);
 
-//      connect(midic, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));
+      connect(track, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));
 //TODO  connect(op, SIGNAL(instrumentChanged()), SLOT(instrumentChanged()));
 
       MidiInstrument* mi = midiTrack->instrument();
@@ -221,9 +217,9 @@ void MidiTrackInfo::init(Track* t)
       mp.instrument->setCurrentIndex(curIdx);
       mp.deviceId->setValue(midiTrack->deviceId());
 #if 0
-            autoChanged(midic, false);             // update enable
-            int val = midic->ctrlVal(CTRL_PROGRAM).i;
-            int channelno = midic->channelNo();
+            autoChanged(track, false);             // update enable
+            int val = track->ctrlVal(CTRL_PROGRAM).i;
+            int channelno = track->channelNo();
             mt.patch->setText(mi->getPatchName(channelno, val));
             }
       else {
@@ -364,22 +360,20 @@ void MidiTrackInfo::transpositionChanged(int val)
 
 void MidiTrackInfo::patchClicked()
       {
-#if 0 //TODOA
-      MidiChannel* midic = ((MidiTrack*)track)->channel();
-      if (!midic)
+      MidiOut* op = ((MidiTrack*)track)->midiOut();
+      if (op == 0)
             return;
-      
-      MidiOut* op = midic->port();
       MidiInstrument* mi = op->instrument();
+      if (mi == 0)
+            return;
       mi->populatePatchPopup(pop, 0);
 
       QAction* rv = pop->exec(mt.patch->mapToGlobal(QPoint(10,5)));
       if (rv != 0) {
             CVal cval;
             cval.i = rv->data().toInt();
-            song->setControllerVal(midic, CTRL_PROGRAM, cval);
+            song->setControllerVal(track, CTRL_PROGRAM, cval);
             }
-#endif
       }
 
 //---------------------------------------------------------
@@ -388,13 +382,10 @@ void MidiTrackInfo::patchClicked()
 
 void MidiTrackInfo::instrumentSelected(int n)
       {
-#if 0  //TODOA
-      MidiChannel* midic = ((MidiTrack*)track)->channel();
-      if (midic == 0)
+      MidiOut* op = ((MidiTrack*)track)->midiOut();
+      if (op == 0)
             return;
-      MidiOut* op = midic->port();
       op->setInstrument(midiInstruments[n]);
-#endif
       }
 
 //---------------------------------------------------------
@@ -437,15 +428,9 @@ void MidiTrackInfo::iKomprChanged(int val)
 //   deviceIdChanged
 //---------------------------------------------------------
 
-void MidiTrackInfo::deviceIdChanged(int /*val*/)
+void MidiTrackInfo::deviceIdChanged(int val)
       {
-#if 0 //TODOA
-      MidiChannel* midic = ((MidiTrack*)track)->channel();
-      if (midic == 0)
-            return;
-//      MidiOut* op = midic->port();
-//TODO      op->setDeviceId(val);
-#endif
+      ((MidiTrack*)track)->setDeviceId(val);
       }
 
 //---------------------------------------------------------

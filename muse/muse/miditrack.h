@@ -62,13 +62,13 @@ class MidiTrack : public MidiTrackBase {
    signals:
       void drumMapChanged() const;
       void useDrumMapChanged(bool);
+      void outChannelChanged(int);
 
    public:
       MidiTrack();
       virtual ~MidiTrack();
       virtual TrackType type() const { return MIDI; }
       void clone(MidiTrack*);
-      void init();
 
       int transposition() const      { return _transposition; }
       int velocity() const           { return _velocity;     }
