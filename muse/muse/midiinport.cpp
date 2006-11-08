@@ -220,11 +220,12 @@ void MidiInPort::beforeProcess()
 //    called from jack process context
 //---------------------------------------------------------
 
-void MidiInPort::getEvents(unsigned, unsigned, int /*ch*/, MidiEventList* dst)
+void MidiInPort::getEvents(unsigned, unsigned, int ch, MidiEventList* dst)
       {
       int tmpRecordRead = recordRead;
       for (int i = 0; i < tmpRecordCount; ++i) {
-            dst->insert(recordFifo[tmpRecordRead]);
+            if (ch == -1 || recordFifo[tmpRecordRead].channel() == ch)
+                  dst->insert(recordFifo[tmpRecordRead]);
             ++tmpRecordRead;
             if (tmpRecordRead >= RECORD_FIFO_SIZE)
                   tmpRecordRead = 0;

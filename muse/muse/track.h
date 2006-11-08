@@ -87,7 +87,6 @@ class Track : public QObject {
             MIDI,
             MIDI_OUT,
             MIDI_IN,
-            MIDI_CHANNEL,
             MIDI_SYNTI,
             TRACK_TYPES
             };
@@ -100,7 +99,6 @@ class Track : public QObject {
             M_MIDI            = 1 << MIDI,
             M_MIDI_OUT        = 1 << MIDI_OUT,
             M_MIDI_IN         = 1 << MIDI_IN,
-            M_MIDI_CHANNEL    = 1 << MIDI_CHANNEL,
             M_MIDI_SYNTI      = 1 << MIDI_SYNTI
             };
 
@@ -287,7 +285,6 @@ class Track : public QObject {
             return type() == MIDI
                || type() == MIDI_IN
                || type() == MIDI_OUT
-               || type() == MIDI_CHANNEL
                || type() == MIDI_SYNTI;
             }
       virtual bool canRecord() const { return false; }

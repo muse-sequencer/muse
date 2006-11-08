@@ -32,7 +32,6 @@ QT4_WRAP_CPP ( arranger_mocs
 
 QT4_WRAP_UI ( arranger_ui_headers 
       configtrack.ui
-      midichannelinfo.ui
       midiportinfo.ui
       miditrackinfo.ui
       )

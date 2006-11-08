@@ -203,12 +203,11 @@ void MidiSynti::read(QDomNode node)
 void MidiSynti::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
       {
       MidiEventList il;
-      RouteList* rl = inRoutes();
-      for (iRoute i = rl->begin(); i != rl->end(); ++i) {
-            MidiTrackBase* track = (MidiTrackBase*)i->track;
+      foreach(const Route& r, *inRoutes()) {
+            MidiTrackBase* track = (MidiTrackBase*)r.src.track;
             if (track->isMute())
                   continue;
-            track->getEvents(from, to, i->channel, &il);
+            track->getEvents(from, to, r.src.channel, &il);
             }
       MidiEventList ol;
       _synti->apply(from, to, &il, &ol);

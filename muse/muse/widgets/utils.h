@@ -45,6 +45,8 @@ extern SimpleButton* newSyncButton();
 extern SimpleButton* newPlusButton();
 extern SimpleButton* newMinusButton();
 extern SimpleButton* newStereoButton();
+QToolButton* newOutRouteButton();
+QToolButton* newInRouteButton();
 
 extern void fatalError(const char*);
 

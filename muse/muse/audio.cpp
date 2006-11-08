@@ -38,7 +38,6 @@
 #include "synth.h"
 #include "midioutport.h"
 #include "midiinport.h"
-#include "midichannel.h"
 #include "midictrl.h"
 #include "sync.h"
 
@@ -538,10 +537,10 @@ void Audio::processMsg()
 // printf("---msg %d\n", msg->id);
       switch(msg->id) {
             case AUDIO_ROUTEADD:
-                  addRoute(msg->sroute, msg->droute);
+                  addRoute(msg->route);
                   break;
             case AUDIO_ROUTEREMOVE:
-                  removeRoute(msg->sroute, msg->droute);
+                  removeRoute(msg->route);
                   break;
             case AUDIO_SET_CHANNELS:
                   msg->track->setChannels(msg->ival);

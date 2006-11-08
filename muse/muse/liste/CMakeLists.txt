@@ -19,23 +19,21 @@
 #=============================================================================
 
 QT4_WRAP_CPP ( liste_mocs 
-      listedit.h editevent.h 
-#      editnotedialog.h
+      listedit.h
+      ctrllistedit.h
       )
 
 QT4_WRAP_UI ( liste_ui_headers 
-      editnotedialog.ui 
       )
 
 add_library ( liste STATIC 
-      listedit.h editevent.h 
-#      editnotedialog.h
-#      editnotedialog.cpp
-      listedit.cpp editevent.cpp 
+      listedit.cpp listedit.h
+      ctrllistedit.cpp ctrllistedit.h
       ${liste_mocs}
       ${liste_ui_headers}
       )
 set_target_properties( liste
    PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
    )
+
 

@@ -1103,7 +1103,7 @@ void EventCanvas::noteOn(int pitch, int velocity, bool shift)
       {
       DrumMap* dm = track()->drumMap();
       if (!dm)
-	      pitch += track()->transposition;
+	      pitch += track()->transposition();
 
       // play note:
       if (editor->playEvents()) {
@@ -1142,7 +1142,7 @@ void EventCanvas::noteOff(int pitch)
             return;
       DrumMap* dm = track()->drumMap();
       if (!dm)
-	      pitch += track()->transposition;
+	      pitch += track()->transposition();
 
       // release key:
       MidiEvent e(0, 0, ME_NOTEON, pitch, 0);

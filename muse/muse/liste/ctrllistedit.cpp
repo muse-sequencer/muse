@@ -18,38 +18,14 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#ifndef __LISTEDIT_H__
-#define __LISTEDIT_H__
-
-namespace AL {
-      class Pos;
-      };
-
-class Track;
-class Ctrl;
-class CtrlListEditor;
+#include "ctrllistedit.h"
 
 //---------------------------------------------------------
-//   ListEdit
+//   CtrlListEditor
 //---------------------------------------------------------
 
-class ListEdit : public QWidget {
-      Q_OBJECT;
-
-      QStackedWidget* stack;
-      QTreeWidget* list;
-      CtrlListEditor* ctrlPanel;
-
-      void buildList();
-
-   private slots:
-      void itemChanged(QTreeWidgetItem*, QTreeWidgetItem*);
-      void itemExpanded(QTreeWidgetItem*);
-
-   public:
-      ListEdit(QWidget* parent = 0);
-      void selectItem(const AL::Pos&, Track*, Ctrl*);
-      };
-
-#endif
+CtrlListEditor::CtrlListEditor(QWidget* parent)
+   : QWidget(parent)
+      {
+      }
 

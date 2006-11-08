@@ -31,7 +31,6 @@
 #include "tlswidget.h"
 #include "part.h"
 #include "gui.h"
-#include "midichannel.h"
 
 #include <samplerate.h>
 
@@ -446,8 +445,7 @@ void PartCanvas::contextMenu(const QPoint& pos)
             pop->addSeparator();
       	if (track->type() == Track::MIDI) {
                   MidiTrack* track = (MidiTrack*)part->track();
-                  MidiChannel* mc = track->channel();
-                  if (mc && mc->useDrumMap()) {
+                  if (track->useDrumMap()) {
                   	a = pop->addAction(*edit_drummsIcon, tr("drums"));
                         a->setData(13);
                         }

@@ -26,6 +26,7 @@
 
 class Part;
 class EventList;
+class MidiOut;
 
 //---------------------------------------------------------
 //   MidiTrack
@@ -34,12 +35,12 @@ class EventList;
 class MidiTrack : public MidiTrackBase {
       Q_OBJECT
 
-      EventList* _events;     // tmp Events during midi import
+      EventList* _events;        // tmp Events during midi import
 
       // recording:
       MidiFifo recordFifo;       // for event transfer from RT-thread to gui thread
       std::list<Event> keyDown;  // keep track of "note on" events
-      Part* recordPart;      // part we are recording into
+      Part* recordPart;          // part we are recording into
       int recordedEvents;
       bool partCreated;
       int hbank, lbank;
@@ -47,27 +48,38 @@ class MidiTrack : public MidiTrackBase {
       int rpnh, rpnl;
       int dataType;
 
+      // channel data:
+      DrumMap* _drumMap;
+      bool _useDrumMap;
+
+      // play parameter
+      int _transposition;
+      int _velocity;
+      int _delay;
+      int _len;
+      int _compression;
+
    signals:
       void drumMapChanged() const;
+      void useDrumMapChanged(bool);
 
    public:
       MidiTrack();
       virtual ~MidiTrack();
       virtual TrackType type() const { return MIDI; }
-
       void clone(MidiTrack*);
-
       void init();
-      MidiChannel* channel() const;
 
-      void changeDrumMap() const;
-
-      // play parameter
-      int transposition;
-      int velocity;
-      int delay;
-      int len;
-      int compression;
+      int transposition() const      { return _transposition; }
+      int velocity() const           { return _velocity;     }
+      int delay() const              { return _delay;        }
+      int len() const                { return _len;          }
+      int compression() const        { return  _compression; }
+      void setTransposition(int val) { _transposition = val; }
+      void setVelocity(int val)      { _velocity      = val; }
+      void setDelay(int val)         { _delay         = val; }
+      void setLen(int val)           { _len           = val; }
+      void setCompression(int val)   { _compression   = val; }
 
       void startRecording();
       void recordBeat();
@@ -85,8 +97,15 @@ class MidiTrack : public MidiTrackBase {
       void playMidiEvent(MidiEvent*);
 
       virtual void getEvents(unsigned from, unsigned to, int channel, MidiEventList* dst);
-      bool useDrumMap() const;
-      DrumMap* drumMap() const;
+
+      bool useDrumMap() const             { return _useDrumMap;    }
+      DrumMap* drumMap() const            { return _drumMap; }
+      void setUseDrumMap(bool val);
+
+      int channelNo() const;
+      virtual void emitControllerChanged(int id);
+      MidiOut* midiOut() const;
+      MidiInstrument* instrument() const;
       };
 
 typedef QList<MidiTrack*> MidiTrackList;

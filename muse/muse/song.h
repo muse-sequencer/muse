@@ -24,7 +24,6 @@
 #include "undo.h"
 #include "midiinport.h"
 #include "midioutport.h"
-#include "midichannel.h"
 #include "miditrack.h"
 #include "midisynti.h"
 #include "wavetrack.h"
@@ -110,13 +109,11 @@ class Song : public QObject {
       MidiSyntiList _midiSyntis;
       MidiOutPortList _midiOutPorts;
       MidiInPortList _midiInPorts;
-      MidiChannelList _midiChannel;
       Track* _selectedTrack;
 
       UndoList* undoList;
       UndoList* redoList;
       Pos pos[3];
-//      Pos _vcpos;               // virtual CPOS (locate in progress)
       AL::MarkerList* _markerList;
       bool seekInProgress;	// user initiated a seek
 
@@ -165,6 +162,7 @@ class Song : public QObject {
       void setPos(int, const AL::Pos&);
       void setPos(int, const AL::Pos&, bool sig, bool isSeek = true,
          bool adjustScrollbar = false);
+      void routeChanged(QAction*);
 
    signals:
       void songChanged(int);
@@ -309,7 +307,6 @@ class Song : public QObject {
       MidiOutPortList* midiOutPorts() { return &_midiOutPorts; }
       MidiSyntiList* midiSyntis()     { return &_midiSyntis;   }
       MidiInPortList* midiInPorts()   { return &_midiInPorts;  }
-      MidiChannelList* midiChannel()  { return &_midiChannel;  }
 
       bool trackExists(Track*) const;
 

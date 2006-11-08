@@ -59,8 +59,8 @@ class AudioStrip : public Strip {
       void stereoToggled(bool);
       void preToggled(bool);
       void offToggled(bool);
-      void iRoutePressed();
-      void oRoutePressed();
+      void iRouteShow();
+      void oRouteShow();
       void volumeChanged(double);
       void volumePressed();
       void volumeReleased();

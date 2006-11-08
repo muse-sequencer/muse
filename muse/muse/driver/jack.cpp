@@ -311,6 +311,7 @@ struct RouteRoute {
 
 void JackAudio::graphChanged()
       {
+#if 0 //TODOA
       QList<RouteRoute> rr;
       QList<RouteRoute> ra;
 
@@ -461,6 +462,7 @@ void JackAudio::graphChanged()
             audio->msgRemoveRoute1(a.src, a.dst);
       foreach(RouteRoute a, ra)
             audio->msgAddRoute1(a.src, a.dst);
+#endif
       }
 
 //static int xrun_callback(void*)

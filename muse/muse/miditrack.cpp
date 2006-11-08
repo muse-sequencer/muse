@@ -27,7 +27,6 @@
 #include "part.h"
 #include "al/tempo.h"
 #include "midiedit/drummap.h"
-#include "midichannel.h"
 
 //---------------------------------------------------------
 //   MidiTrack
@@ -52,11 +51,11 @@ MidiTrack::~MidiTrack()
 
 void MidiTrack::init()
       {
-      transposition  = 0;
-      velocity       = 0;
-      delay          = 0;
-      len            = 100;          // percent
-      compression    = 100;          // percent
+      _transposition  = 0;
+      _velocity       = 0;
+      _delay          = 0;
+      _len            = 100;          // percent
+      _compression    = 100;          // percent
       }
 
 //---------------------------------------------------------
@@ -85,11 +84,12 @@ void MidiTrack::write(Xml& xml) const
       xml.tag("miditrack");
       MidiTrackBase::writeProperties(xml);
 
-      xml.intTag("transposition", transposition);
-      xml.intTag("velocity", velocity);
-      xml.intTag("delay", delay);
-      xml.intTag("len", len);
-      xml.intTag("compression", compression);
+      xml.intTag("transposition", _transposition);
+      xml.intTag("velocity", _velocity);
+      xml.intTag("delay", _delay);
+      xml.intTag("len", _len);
+      xml.intTag("compression", _compression);
+      xml.intTag("useDrumMap", _useDrumMap);
 
       const PartList* pl = cparts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
@@ -109,15 +109,15 @@ void MidiTrack::read(QDomNode node)
             QString s(e.text());
             int i = s.toInt();
             if (tag == "transposition")
-                  transposition = i;
+                  _transposition = i;
             else if (tag == "velocity")
-                  velocity = i;
+                  _velocity = i;
             else if (tag == "delay")
-                  delay = i;
+                  _delay = i;
             else if (tag == "len")
-                  len = i;
+                  _len = i;
             else if (tag == "compression")
-                  compression = i;
+                  _compression = i;
             else if (tag == "part") {
                   Part* p = newPart();
                   p->read(node);
@@ -125,20 +125,11 @@ void MidiTrack::read(QDomNode node)
                   }
             else if (tag == "locked")
                   _locked = i;
+            else if (tag == "useDrumMap")
+                  _useDrumMap = e.text().toInt();
             else if (MidiTrackBase::readProperties(node))
                   printf("MusE:MidiTrack: unknown tag %s\n", e.tagName().toLatin1().data());
             }
-      }
-
-//---------------------------------------------------------
-//   channel
-//---------------------------------------------------------
-
-MidiChannel* MidiTrack::channel() const
-      {
-      if (_outRoutes.empty())
-            return 0;
-      return (MidiChannel*)(_outRoutes.front().track);
       }
 
 //---------------------------------------------------------
@@ -147,9 +138,8 @@ MidiChannel* MidiTrack::channel() const
 
 void MidiTrack::playMidiEvent(MidiEvent* ev)
       {
-      const RouteList* rl = &_outRoutes;
-      for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-            ((MidiChannel*)r->track)->playMidiEvent(ev);
+      foreach (const Route& r, _outRoutes) {
+            ((MidiOutPort*)r.dst.track)->playMidiEvent(ev);
             }
       }
 
@@ -432,23 +422,23 @@ void MidiTrack::clone(MidiTrack* t)
                   break;
             }
       setName(name);
-      transposition = t->transposition;
-      velocity      = t->velocity;
-      delay         = t->delay;
-      len           = t->len;
-      compression   = t->compression;
-      _recordFlag   = t->_recordFlag;
-      _mute         = t->_mute;
-      _solo         = t->_solo;
-      _off          = t->_off;
-      _monitor      = t->_monitor;
-      _channels     = t->_channels;
-      _locked       = t->_locked;
-      _inRoutes     = t->_inRoutes;
-      _outRoutes    = t->_outRoutes;
-      _controller   = t->_controller;
-      _autoRead     = t->_autoRead;
-      _autoWrite    = t->_autoWrite;
+      _transposition = t->_transposition;
+      _velocity      = t->_velocity;
+      _delay         = t->_delay;
+      _len           = t->_len;
+      _compression   = t->_compression;
+      _recordFlag    = t->_recordFlag;
+      _mute          = t->_mute;
+      _solo          = t->_solo;
+      _off           = t->_off;
+      _monitor       = t->_monitor;
+      _channels      = t->_channels;
+      _locked        = t->_locked;
+      _inRoutes      = t->_inRoutes;
+      _outRoutes     = t->_outRoutes;
+      _controller    = t->_controller;
+      _autoRead      = t->_autoRead;
+      _autoWrite     = t->_autoWrite;
       }
 
 //---------------------------------------------------------
@@ -464,20 +454,7 @@ bool MidiTrack::isMute() const
       return _mute;
       }
 
-//---------------------------------------------------------
-//   drumMap
-//	return drum map for this track
-//	return zero if no drum map is used
-//---------------------------------------------------------
-
-DrumMap* MidiTrack::drumMap() const
-	{
-      MidiChannel* mc = channel();
-      if (mc && mc->useDrumMap())
-            return mc->drumMap();
-	return 0;
-      }
-
+#if 0
 //---------------------------------------------------------
 //   changeDrumMap
 //---------------------------------------------------------
@@ -486,6 +463,7 @@ void MidiTrack::changeDrumMap() const
 	{
       emit drumMapChanged();
       }
+#endif
 
 //---------------------------------------------------------
 //   getEvents
@@ -494,10 +472,6 @@ void MidiTrack::changeDrumMap() const
 
 void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
       {
-      if (from > to) {
-            printf("getEvents(): FATAL: cur > next %d > %d\n", from, to);
-            return;
-            }
 	//
       // collect events only when transport is rolling
       //
@@ -507,7 +481,7 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
                   if (part->mute())
                         continue;
                   DrumMap* dm = ((MidiTrack*)part->track())->drumMap();
-                  unsigned offset = delay + part->tick();
+                  unsigned offset = _delay + part->tick();
 
                   if (offset > to)
                         break;
@@ -532,19 +506,19 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
                               // maybe we should skip next lines if using a
                               // drummap
 
-                              int pitch = ev.pitch() + transposition + song->globalPitchShift();
+                              int pitch = ev.pitch() + _transposition + song->globalPitchShift();
                               if (pitch > 127)
                                     pitch = 127;
                               if (pitch < 0)
                                     pitch = 0;
                               int velo  = ev.velo();
-                              velo += velocity;
-                              velo = (velo * compression) / 100;
+                              velo += _velocity;
+                              velo = (velo * _compression) / 100;
                               if (velo > 127)
                                     velo = 127;
                               if (velo < 1)           // no off event
                                     velo = 1;
-                              int elen = (ev.lenTick() * len)/100;
+                              int elen = (ev.lenTick() * _len)/100;
                               if (elen <= 0)     // dont allow zero length
                                     elen = 1;
                               int veloOff = ev.veloOff();
@@ -567,13 +541,12 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
       // process input routing
       //
 
-      RouteList* rl = inRoutes();
-      for (iRoute i = rl->begin(); i != rl->end(); ++i) {
-            MidiTrackBase* track = (MidiTrackBase*)i->track;
+      foreach(const Route& r, *inRoutes()) {
+            MidiTrackBase* track = (MidiTrackBase*)r.src.track;
             if (track->isMute())
                   continue;
             MidiEventList el;
-            track->getEvents(from, to, i->channel, &el);
+            track->getEvents(from, to, r.src.channel, &el);
 
             for (iMidiEvent ie = el.begin(); ie != el.end(); ++ie) {
                   MidiEvent event(*ie);
@@ -587,15 +560,15 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
                   	addMidiMeter(event.dataB());
                   if (monitor()) {
                         if (event.type() == ME_NOTEON) {
-                              int pitch = event.dataA() + transposition + song->globalPitchShift();
+                              int pitch = event.dataA() + _transposition + song->globalPitchShift();
                               if (pitch > 127)
                                     pitch = 127;
                               if (pitch < 0)
                                     pitch = 0;
                               event.setA(pitch);
                               if (!event.isNoteOff()) {
-                                    int velo = event.dataB() + velocity;
-                                    velo = (velo * compression) / 100;
+                                    int velo = event.dataB() + _velocity;
+                                    velo = (velo * _compression) / 100;
                                     if (velo > 127)
                                           velo = 127;
                                     if (velo < 1)
@@ -609,5 +582,99 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
                         }
                   }
             }
+      //
+      // collect controller
+      //
+      for (iCtrl ic = controller()->begin(); ic != controller()->end(); ++ic) {
+            Ctrl* c = ic->second;
+            iCtrlVal is = c->lowerBound(from);
+            iCtrlVal ie = c->lowerBound(to);
+            for (iCtrlVal ic = is; ic != ie; ++ic) {
+                  unsigned frame = AL::tempomap.tick2frame(ic.key());
+                  Event ev(Controller);
+                  ev.setA(c->id());
+                  ev.setB(ic.value().i);
+                  dst->insert(MidiEvent(frame, -1, ev));
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   emitControllerChanged
+//---------------------------------------------------------
+
+void MidiTrack::emitControllerChanged(int id)
+      {
+      if (id == CTRL_PROGRAM && _useDrumMap) {
+            int val = ctrlVal(id).i;
+            MidiInstrument* mi = instrument();
+            DrumMap* dm = mi->getDrumMap(val);
+            if (dm == 0)
+                  dm = &gmDrumMap;
+            if (dm != _drumMap)
+                  _drumMap = dm;
+            emit drumMapChanged();
+            }
+      emit controllerChanged(id);
+      }
+
+//---------------------------------------------------------
+//   setUseDrumMap
+//---------------------------------------------------------
+
+void MidiTrack::setUseDrumMap(bool val)
+      {
+      if (_useDrumMap != val) {
+            _useDrumMap = val;
+            if (_useDrumMap) {
+                  MidiInstrument* mi = instrument();
+                  DrumMap* dm;
+                  if (mi) {
+                        int val = ctrlVal(CTRL_PROGRAM).i;
+                        dm = mi->getDrumMap(val);
+                        if (dm == 0)
+                              dm = &gmDrumMap;
+                        }
+                  _drumMap = dm;
+                  }
+            else
+                  _drumMap = &noDrumMap;
+            emit drumMapChanged();
+            emit useDrumMapChanged(_useDrumMap);
+            }
+      }
+
+
+//---------------------------------------------------------
+//   instrument
+//---------------------------------------------------------
+
+MidiInstrument* MidiTrack::instrument() const
+      {
+      if (_outRoutes.isEmpty())
+            return genericMidiInstrument;
+      return ((MidiOutPort*)_outRoutes[0].dst.track)->instrument();
+      }
+
+//---------------------------------------------------------
+//   channelNo
+//---------------------------------------------------------
+
+int MidiTrack::channelNo() const
+      {
+      if (_outRoutes.isEmpty())
+            return -1;
+      return _outRoutes[0].dst.channel;
+      }
+
+//---------------------------------------------------------
+//   midiOut
+//---------------------------------------------------------
+
+MidiOut* MidiTrack::midiOut() const
+      {
+      if (_outRoutes.isEmpty())
+            return 0;
+      return (MidiOut*)_outRoutes[0].dst.track;
       }
 

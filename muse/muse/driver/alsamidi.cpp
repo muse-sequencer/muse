@@ -334,6 +334,7 @@ void AlsaMidi::getOutputPollFd(struct pollfd** p, int* n)
 
 void AlsaMidi::addConnection(snd_seq_connect_t* ev)
       {
+#if 0 //TODOA
       Port rs(ev->sender.client, ev->sender.port);
       Port rd(ev->dest.client, ev->dest.port);
 
@@ -343,7 +344,7 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
             Port src = oport->alsaPort(0);
 
             if (src == rs) {
-                  Route r(rd, Route::MIDIPORT);
+                  RouteNode r(rd, Route::MIDIPORT);
                   if (oport->outRoutes()->indexOf(r) == -1) {
                         Port port(ev->dest.client, ev->dest.port);
                         oport->outRoutes()->push_back(Route(port, -1, Route::MIDIPORT));
@@ -366,6 +367,7 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
                   break;
                   }
             }
+#endif
       }
 
 //---------------------------------------------------------
@@ -375,6 +377,7 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
 
 void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
       {
+#if 0 //TODOA
       Port rs(ev->sender.client, ev->sender.port);
       Port rd(ev->dest.client, ev->dest.port);
 
@@ -411,6 +414,7 @@ void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
                   break;
                   }
             }
+#endif
       }
 
 //---------------------------------------------------------

@@ -39,7 +39,6 @@ class MidiOut
    public:
       Track* track;
       MidiInstrument* _instrument;
-      MidiChannel* _channel[MIDI_CHANNELS];
       MidiEventList _schedEvents;  // scheduled events by process()
 
       // fifo for midi events send from gui
@@ -49,7 +48,6 @@ class MidiOut
 
       void processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick, 
          unsigned fromFrame, unsigned toFrame);
-      MidiChannel* channel(int n)           { return _channel[n]; }
       MidiInstrument* instrument()          { return _instrument; }
       void setInstrument(MidiInstrument* i) { _instrument = i; }
 

@@ -21,7 +21,6 @@
 #include "configmidictrl.h"
 #include "miditrack.h"
 #include "midioutport.h"
-#include "midichannel.h"
 #include "midictrl.h"
 #include "midiout.h"
 #include "instruments/minstrument.h"
@@ -47,14 +46,10 @@ ConfigMidiCtrl::ConfigMidiCtrl(MidiTrack* t)
       // populate list of available controllers
       //---------------------------------------------------
 
-      MidiChannel* mc = 0;
-      if (track->type() == Track::MIDI)
-            mc = track->channel();
-      else if (track->type() == Track::MIDI_CHANNEL)
-            mc = (MidiChannel*)track;
-      if (mc) {
-            MidiOut* mp = mc->port();
-            portName->setText(mp->track->name());
+      if (track->type() == Track::MIDI) {
+#if 0
+            MidiTrack* mc = (MidiTrack*)track;
+            portName->setText(track->name());
             //
             // populate popup with all controllers available for
             // current instrument
@@ -69,7 +64,9 @@ ConfigMidiCtrl::ConfigMidiCtrl(MidiTrack* t)
                   if (i == cn->end())
                         availableController->addItem((*ci)->name());
                   }
+#endif
             }
+
       delete cn;
       buttonAdd->setEnabled(false);
       buttonRemove->setEnabled(false);
@@ -141,14 +138,10 @@ void ConfigMidiCtrl::done(int code)
             QDialog::done(code);
             return;
             }
-
-      MidiChannel* mc = 0;
+#if 0 //TODOA
       if (track->type() == Track::MIDI)
-            mc = track->channel();
-      else if (track->type() == Track::MIDI_CHANNEL)
-            mc = (MidiChannel*)track;
+            MidiTrack* mc = (MidiTrack*)track;
 
-      if (mc) {
             MidiOut* port           = mc->port();
             ControllerNameList* cn  = track->controllerNames();
             MidiInstrument* instr   = port->instrument();
@@ -192,6 +185,7 @@ void ConfigMidiCtrl::done(int code)
                   }
             delete cn;
             }
+#endif
       QDialog::done(code);
       }
 

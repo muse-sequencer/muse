@@ -41,7 +41,6 @@ class Mixer : public QMainWindow {
       QAction* showMidiTracksId;
       QAction* showMidiInPortId;
       QAction* showMidiOutPortId;
-      QAction* showMidiChannelId;
       QAction* showOutputTracksId;
       QAction* showWaveTracksId;
       QAction* showGroupTracksId;

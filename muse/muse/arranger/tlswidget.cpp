@@ -20,7 +20,6 @@
 
 #include "song.h"
 #include "track.h"
-#include "midichannel.h"
 #include "tlswidget.h"
 #include "tlwlayout.h"
 #include "icons.h"
@@ -243,14 +242,7 @@ bool TLSWidget::setCtrl(int ctrl)
       else {
             at->ctrl = ctrl;
             at->controller = _track->getController(ctrl);
-            if (at->controller == 0 && _track->type() == Track::MIDI) {
-                  MidiChannel* mc = ((MidiTrack*)_track)->channel();
-                  at->controller = mc->getController(ctrl);
-                  _ctrlTrack = mc;
-                  connect(_ctrlTrack, SIGNAL(controllerChanged(int)), SLOT(controllerListChanged(int)));
-                  }
-            else
-                  _ctrlTrack = _track;
+            _ctrlTrack = _track;
             ctrlList->setText(at->controller->name());
             emit controllerChanged(ctrl);
             }

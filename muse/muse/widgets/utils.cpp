@@ -360,6 +360,42 @@ SimpleButton* newStereoButton()
       }
 
 //---------------------------------------------------------
+//   newOutRouteButton
+//---------------------------------------------------------
+
+QToolButton* newOutRouteButton()
+      {
+      QToolButton* oR = new QToolButton;
+      oR->setFont(config.fonts[BFONT]);
+      oR->setFixedWidth((STRIP_WIDTH-4)/2);
+      oR->setText(oR->tr("oR"));
+      oR->setCheckable(false);
+      oR->setToolTip(oR->tr("output routing"));
+      oR->setMenu(new QMenu);
+      oR->setPopupMode(QToolButton::InstantPopup);
+      oR->menu()->setSeparatorsCollapsible(false);
+      return oR;
+      }
+
+//---------------------------------------------------------
+//   newInRouteButton
+//---------------------------------------------------------
+
+QToolButton* newInRouteButton()
+      {
+      QToolButton* iR = new QToolButton;
+      iR->setFont(config.fonts[BFONT]);
+      iR->setFixedWidth((STRIP_WIDTH-4)/2);
+      iR->setText(iR->tr("iR"));
+      iR->setCheckable(false);
+      iR->setToolTip(iR->tr("input routing"));
+      iR->setMenu(new QMenu);
+      iR->setPopupMode(QToolButton::InstantPopup);
+      iR->menu()->setSeparatorsCollapsible(false);
+      return iR;
+      }
+
+//---------------------------------------------------------
 //   fatalError
 //---------------------------------------------------------
 

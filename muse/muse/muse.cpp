@@ -66,7 +66,7 @@
 #include "templatedialog.h"
 #include "midiedit/miditracker.h"
 #include "projectpropsdialog.h"
-#include "midichannel.h"
+#include "liste/listedit.h"
 
 extern void initMidiInstruments();
 
@@ -469,6 +469,7 @@ MusE::MusE()
       markerView            = 0;
       exportMidiDialog      = 0;
       projectPropsDialog    = 0;
+      listEditor            = 0;
 
       startAction   = new QAction(QIcon(":/xpm/start.xpm"), "start", this);
       rewindAction  = new QAction(QIcon(":/xpm/frewind.xpm"), "rewind", this);
@@ -1234,18 +1235,6 @@ void MusE::loadProject1(const QString& path)
       clipboardChanged();           // enable/disable "Paste"
       song->setLen(song->len());    // emit song->lenChanged() signal
 
-      //
-      // add connected channels
-      //
-      MidiChannelList* mcl = song->midiChannel();
-      TrackList* tl       = song->tracks();
-      for (iMidiChannel i = mcl->begin(); i != mcl->end(); ++i) {
-            MidiChannel* mc = (MidiChannel*)*i;
-            if (mc->noInRoute() || song->trackExists(mc))
-                  continue;
-            tl->push_back(mc);
-            }
-
       selectionChanged();           // enable/disable "Copy" & "Paste"
       arranger->endLoadSong();
       song->updatePos();
@@ -1254,6 +1243,7 @@ void MusE::loadProject1(const QString& path)
       // send "cur" controller values to devices
       //
 
+      TrackList* tl = song->tracks();
       for (iTrack i = tl->begin(); i != tl->end(); ++i) {
             Track* track = *i;
 //            track->blockSignals(true);
@@ -1498,8 +1488,7 @@ void MusE::startEditor(Part* part)
             case Track::MIDI:
                   {
                   MidiTrack* t = (MidiTrack*)track;
-                  MidiChannel* mc = t->channel();
-                  if (mc && mc->useDrumMap())
+                  if (t->useDrumMap())
                         startDrumEditor(pl);
                   else
                         startPianoroll(pl);
@@ -1562,8 +1551,17 @@ void MusE::startListEditor()
 
 void MusE::startListEditor(PartList* /*pl*/)
       {
-//      ListEdit* listEditor = new ListEdit(0, pl);
-//      listEditor->show();
+      if (listEditor == 0)
+            listEditor = new ListEdit(this);
+      listEditor->show();
+      }
+
+void MusE::showListEditor(const Pos& pos, Track* track, Ctrl* ctrl)
+      {
+      if (listEditor == 0)
+            listEditor = new ListEdit(this);
+      listEditor->selectItem(pos, track, ctrl);
+      listEditor->show();
       }
 
 //---------------------------------------------------------

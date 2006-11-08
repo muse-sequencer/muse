@@ -87,7 +87,7 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
 
       p.save();
       p.setRenderHint(QPainter::Antialiasing, true);
-      bool aR = ctrlTrack()->autoRead();
+      bool aR = track()->autoRead();
       p.setPen(QPen(aR ? Qt::white : Qt::gray, 2));
 
       TType tt = track()->timeType();
@@ -230,8 +230,9 @@ void CtrlEditor::mousePress(const QPoint& pos, int button, Qt::KeyboardModifiers
             a = pop.exec(tc()->mapToGlobal(pos));
             if (a) {
                   int n = a->data().toInt();
-                  if (n == (1 << (TOOLS+1))) {
-                        printf("TODO: start list editor\n");
+                  if (n == (1 << (TOOLS+1))) { 
+                        Pos t(tc()->pix2pos(pos.x()));
+                        muse->showListEditor(t, track(), ctrl());
                         }
                   else
                         muse->setTool(n);
@@ -256,7 +257,7 @@ void CtrlEditor::mousePress(const QPoint& pos, int button, Qt::KeyboardModifiers
             else {
                   // add controller:
                   CVal val = ctrl()->pixel2val(dragy, wh);
-                  song->addControllerVal(ctrlTrack(), ctrl(), selected, val);
+                  song->addControllerVal(track(), ctrl(), selected, val);
                   tc()->widget()->update();
                   }
             }
@@ -284,7 +285,7 @@ void CtrlEditor::mousePress(const QPoint& pos, int button, Qt::KeyboardModifiers
                         lselected = tc()->pos2pix(selected);
                         if (tool == RubberTool || button == Qt::RightButton
                           || modifiers & Qt::ControlModifier) {
-                              song->removeControllerVal(ctrlTrack(), ctrl()->id(), i.key());
+                              song->removeControllerVal(track(), ctrl()->id(), i.key());
                               dragy = -1;
                               }
                         else {
@@ -373,7 +374,7 @@ void CtrlEditor::mouseRelease()
                   int wh   = cheight();
                   CVal val = ctrl()->pixel2val(dragy, wh);
                   // modify controller:
-                  song->addControllerVal(ctrlTrack(), ctrl(), selected, val);
+                  song->addControllerVal(track(), ctrl(), selected, val);
                   }
             dragy = -1;
             }
@@ -460,7 +461,7 @@ void CtrlEditor::mouseMove(const QPoint& pos)
                               else
                                     selected.setFrame(i.key());
                               lselected = tc()->pos2pix(selected);
-                              song->removeControllerVal(ctrlTrack(), ctrl()->id(), i.key());
+                              song->removeControllerVal(track(), ctrl()->id(), i.key());
                               dragy = -1;
                               break;
                               }

@@ -569,21 +569,20 @@ bool AudioTrack::copy(int srcChannels, float** srcBuffer)
 void AudioTrack::collectInputData()
       {
       bufferEmpty = false;
-      RouteList* rl = inRoutes();
       bool copyFlag = true;
-      for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+      foreach (const Route& r, _inRoutes) {
             float** ptr;
             int ch;
-            if (ir->type == Route::TRACK) {
-                  AudioTrack* track = (AudioTrack*)ir->track;
+            if (r.src.type == RouteNode::TRACK) {
+                  AudioTrack* track = (AudioTrack*)r.src.track;
                   if (track->off() || song->bounceTrack == track)
                         continue;
                   ptr = track->buffer;
                   ch  = track->channels();
                   }
-            else if (ir->type == Route::AUXPLUGIN) {
-                  ch  = ir->plugin->channel();
-                  ptr = ir->plugin->buffer();
+            else if (r.src.type == RouteNode::AUXPLUGIN) {
+                  ch  = r.src.plugin->channel();
+                  ptr = r.src.plugin->buffer();
                   }
             else
                   printf("AudioTrack::collectInputRoutes(): bad route type\n");

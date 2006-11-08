@@ -74,7 +74,6 @@ QT4_WRAP_CPP ( muse_moc_headers
       synth.h
       exportmidi.h
       importmidi.h
-      midichannel.h
       midiinport.h
       midioutport.h
       )
@@ -129,7 +128,6 @@ add_executable ( muse
       midififo.cpp
       midioutport.cpp
       midiinport.cpp
-      midichannel.cpp
       midiout.cpp
 
       projectpropsdialog.cpp

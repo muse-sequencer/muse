@@ -206,9 +206,9 @@ void PianoCanvas::moveItem(CItem* item, DragType dtype)
       int npitch  = y2pitch(item->my - wpos.y() + item->bbox.height()/2);
       if (event.pitch() != npitch && editor->playEvents()) {
             // release note:
-            MidiEvent ev1(0, 0, 0x90, event.pitch() + track()->transposition, 0);
+            MidiEvent ev1(0, 0, 0x90, event.pitch() + track()->transposition(), 0);
             track()->playMidiEvent(&ev1);
-            MidiEvent ev2(0, 0, 0x90, npitch + track()->transposition, event.velo());
+            MidiEvent ev2(0, 0, 0x90, npitch + track()->transposition(), event.velo());
             track()->playMidiEvent(&ev2);
             }
 
@@ -613,7 +613,7 @@ void PianoCanvas::itemPressed(const CItem* item)
       if (!editor->playEvents())
             return;
       Event event    = item->event;
-      playedPitch    = event.pitch() + track()->transposition;
+      playedPitch    = event.pitch() + track()->transposition();
       int velo       = event.velo();
 
       // play note:
@@ -649,9 +649,9 @@ void PianoCanvas::itemMoved(const CItem* item)
             MidiEvent ev1(0, 0, 0x90, playedPitch, 0);
             track()->playMidiEvent(&ev1);
             // play note:
-            MidiEvent e2(0, 0, 0x90, npitch + track()->transposition, event.velo());
+            MidiEvent e2(0, 0, 0x90, npitch + track()->transposition(), event.velo());
             track()->playMidiEvent(&e2);
-            playedPitch = npitch + track()->transposition;
+            playedPitch = npitch + track()->transposition();
             }
       }
 

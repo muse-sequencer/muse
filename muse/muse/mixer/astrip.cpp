@@ -198,23 +198,15 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
             rBox->addStretch(100);
             }
       else {
-            iR = new QToolButton(this);
-            iR->setFont(config.fonts[1]);
-            iR->setFixedWidth((STRIP_WIDTH-4)/2);
-            iR->setText(tr("iR"));
-            iR->setCheckable(false);
-            iR->setToolTip(tr("input routing"));
+            iR = newInRouteButton();
             rBox->addWidget(iR);
-            connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
+            connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
+            connect(iR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
             }
-      oR = new QToolButton(this);
-      oR->setFont(config.fonts[1]);
-      oR->setFixedWidth((STRIP_WIDTH-4)/2);
-      oR->setText(tr("oR"));
-      oR->setCheckable(false);
-      oR->setToolTip(tr("output routing"));
+      oR = newOutRouteButton();
       rBox->addWidget(oR);
-      connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
+      connect(oR->menu(), SIGNAL(aboutToShow()), SLOT(oRouteShow()));
+      connect(oR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
       layout->addLayout(rBox);
 
@@ -466,7 +458,7 @@ Awl::PanKnob* AudioStrip::addPanKnob(Awl::PanEntry** dlabel)
 //   addAuxPorts
 //---------------------------------------------------------
 
-static void addAuxPorts(AudioTrack* track, QMenu* lb, RouteList* r)
+static void addAuxPorts(AudioTrack* track, QMenu* lb, const RouteList& rl)
       {
       QList<AuxPluginIF*> pre  = track->preAux();
       QList<AuxPluginIF*> post = track->postAux();
@@ -474,26 +466,18 @@ static void addAuxPorts(AudioTrack* track, QMenu* lb, RouteList* r)
             QString s = p->pluginInstance()->name();
             QAction* a = lb->addAction(p->pluginInstance()->name());
             a->setCheckable(true);
-            Route route(p);
+//            Route route(RouteNode(p), RouteNode(track));
+            Route route = Route(RouteNode(p), RouteNode(track));
             a->setData(QVariant::fromValue(route));
-            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (*ir == route) {
-                        a->setChecked(true);
-                        break;
-                        }
-                  }
+            a->setChecked(rl.indexOf(route) != -1);
             }
       foreach(AuxPluginIF* p, post) {
             QAction* a = lb->addAction(p->pluginInstance()->name());
             a->setCheckable(true);
-            Route route(p);
+//            Route route(RouteNode(p), RouteNode(track));  // does not compile?!
+            Route route = Route(RouteNode(p), RouteNode(track));
             a->setData(QVariant::fromValue(route));
-            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (*ir == route) {
-                        a->setChecked(true);
-                        break;
-                        }
-                  }
+            a->setChecked(rl.indexOf(route) != -1);
             }            
       }
 
@@ -501,8 +485,10 @@ static void addAuxPorts(AudioTrack* track, QMenu* lb, RouteList* r)
 //   addInPorts
 //---------------------------------------------------------
 
-static void addInPorts(AudioTrack* t, QMenu* lb, RouteList* r, bool input)
+static void addInPorts(AudioTrack* t, QMenu* lb, const RouteList& rl, bool input)
       {
+      RouteNode a(t);
+
       InputList* al = song->inputs();
       for (iAudioInput i = al->begin(); i != al->end(); ++i) {
             AudioTrack* track = (AudioTrack*)*i;
@@ -510,17 +496,12 @@ static void addInPorts(AudioTrack* t, QMenu* lb, RouteList* r, bool input)
                   continue;
             QAction* it = lb->addAction(track->name());
             it->setCheckable(true);
-            Route route(track);
+            RouteNode b(track);
+            Route route = input ? Route(b, a) : Route(a, b);
             it->setData(QVariant::fromValue(route));
-            
-            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (*ir == route) {
-                        it->setChecked(true);
-                        break;
-                        }
-                  }
+            it->setChecked(rl.indexOf(route) != -1);
             if (input)
-                  addAuxPorts(track, lb, r);
+                  addAuxPorts(track, lb, rl);
             }
       }
 
@@ -528,7 +509,7 @@ static void addInPorts(AudioTrack* t, QMenu* lb, RouteList* r, bool input)
 //   addOutPorts
 //---------------------------------------------------------
 
-static void addOutPorts(AudioTrack* t, QMenu* lb, RouteList* r)
+static void addOutPorts(AudioTrack* t, QMenu* lb, const RouteList& rl)
       {
       OutputList* al = song->outputs();
       for (iAudioOutput i = al->begin(); i != al->end(); ++i) {
@@ -537,14 +518,9 @@ static void addOutPorts(AudioTrack* t, QMenu* lb, RouteList* r)
                   continue;
             QAction* it = lb->addAction(track->name());
             it->setCheckable(true);
-            Route route(track);
+            Route route = Route(RouteNode(t), RouteNode(track));
             it->setData(QVariant::fromValue(route));
-            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (*ir == route) {
-                        it->setChecked(true);
-                        break;
-                        }
-                  }
+            it->setChecked(rl.indexOf(route) != -1);
             }
       }
 
@@ -552,7 +528,7 @@ static void addOutPorts(AudioTrack* t, QMenu* lb, RouteList* r)
 //   addGroupPorts
 //---------------------------------------------------------
 
-static void addGroupPorts(AudioTrack* t, QMenu* lb, RouteList* r)
+static void addGroupPorts(AudioTrack* t, QMenu* lb, const RouteList& rl)
       {
       GroupList* al = song->groups();
       for (iAudioGroup i = al->begin(); i != al->end(); ++i) {
@@ -561,14 +537,9 @@ static void addGroupPorts(AudioTrack* t, QMenu* lb, RouteList* r)
                   continue;
             QAction* it = lb->addAction(track->name());
             it->setCheckable(true);
-            Route route(track);
+            Route route = Route(RouteNode(t), RouteNode(track));
             it->setData(QVariant::fromValue(route));
-            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (*ir == route) {
-                        it->setChecked(true);
-                        break;
-                        }
-                  }
+            it->setChecked(rl.indexOf(route) != -1);
             }
       }
 
@@ -576,8 +547,9 @@ static void addGroupPorts(AudioTrack* t, QMenu* lb, RouteList* r)
 //   addWavePorts
 //---------------------------------------------------------
 
-static void addWavePorts(AudioTrack* t, QMenu* lb, RouteList* r, bool input)
+static void addWavePorts(AudioTrack* t, QMenu* lb, const RouteList& rl, bool input)
       {
+      RouteNode a(t);
       WaveTrackList* al = song->waves();
       for (iWaveTrack i = al->begin(); i != al->end(); ++i) {
             AudioTrack* track = (AudioTrack*)*i;
@@ -585,73 +557,20 @@ static void addWavePorts(AudioTrack* t, QMenu* lb, RouteList* r, bool input)
                   continue;
             QAction* it = lb->addAction(track->name());
             it->setCheckable(true);
-            Route route(track);
+            RouteNode b(track);
+            Route route = input ? Route(b, a) : Route(a, b);
             it->setData(QVariant::fromValue(route));
-            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (*ir == route) {
-                        it->setChecked(true);
-                        break;
-                        }
-                  }
+            it->setChecked(rl.indexOf(route) != -1);
             if (input)
-                  addAuxPorts(track, lb, r);
+                  addAuxPorts(track, lb, rl);
             }
       }
-
-//---------------------------------------------------------
-//   addMidiOutPorts
-//---------------------------------------------------------
-#if 0
-static void addMidiOutPorts(Track* t, QMenu* lb, RouteList* r)
-      {
-      MidiOutPortList* al = song->midiOutPorts();
-      for (iMidiOutPort i = al->begin(); i != al->end(); ++i) {
-            Track* track = *i;
-            if (t == track)
-                  continue;
-            QAction* it = lb->addAction(track->name());
-            it->setCheckable(true);
-            Route route(track);
-            it->setData(QVariant::fromValue(route));
-            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (*ir == route) {
-                        it->setChecked(true);
-                        break;
-                        }
-                  }
-            }
-      }
-
-//---------------------------------------------------------
-//   addMidiInPorts
-//---------------------------------------------------------
-
-static void addMidiInPorts(Track* t, QMenu* lb, RouteList* r)
-      {
-      MidiInPortList* al = song->midiInPorts();
-      for (iMidiInPort i = al->begin(); i != al->end(); ++i) {
-            Track* track = *i;
-            if (t == track)
-                  continue;
-            QAction* it = lb->addAction(track->name());
-            it->setCheckable(true);
-            Route route(track);
-            it->setData(QVariant::fromValue(route));
-            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (*ir == route) {
-                        it->setChecked(true);
-                        break;
-                        }
-                  }
-            }
-      }
-#endif
 
 //---------------------------------------------------------
 //   addSyntiPorts
 //---------------------------------------------------------
 
-static void addSyntiPorts(AudioTrack* t, QMenu* lb, RouteList* r)
+static void addSyntiPorts(AudioTrack* t, QMenu* lb, const RouteList& rl)
       {
       SynthIList* al = song->syntis();
       for (iSynthI i = al->begin(); i != al->end(); ++i) {
@@ -660,27 +579,20 @@ static void addSyntiPorts(AudioTrack* t, QMenu* lb, RouteList* r)
                   continue;
             QAction* it = lb->addAction(track->name());
             it->setCheckable(true);
-            Route route(track, -1, Route::TRACK);
+            Route route = Route(RouteNode(t), RouteNode(track));
             it->setData(QVariant::fromValue(route));
-
-            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (*ir == route) {
-                        it->setChecked(true);
-                        break;
-                        }
-                  }
+            it->setChecked(rl.indexOf(route) != -1);
             }
       }
 
 //---------------------------------------------------------
-//   iRoutePressed
+//   iRouteShow
 //---------------------------------------------------------
 
-void AudioStrip::iRoutePressed()
+void AudioStrip::iRouteShow()
       {
-      QMenu pup(iR);
-      pup.setSeparatorsCollapsible(false);
-
+      QMenu* pup = iR->menu();
+      pup->clear();
       AudioTrack* t  = (AudioTrack*)track;
       RouteList* irl = t->inRoutes();
 
@@ -690,68 +602,46 @@ void AudioStrip::iRoutePressed()
             case Track::AUDIO_INPUT:
                   {
                   for (int i = 0; i < channel; ++i) {
-                        char buffer[128];
-                        snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().data(), i+1);
-                        pup.addSeparator()->setText(QString(buffer));
+                        pup->addSeparator()->setText(QString(tr("Channel %1")).arg(i+1));
                         QList<PortName> ol = audioDriver->outputPorts(false);
                         foreach (PortName ip, ol) {
-                              QAction* id = pup.addAction(ip.name);
+                              QAction* id = pup->addAction(ip.name);
                               id->setCheckable(true);
-                              Route src(ip.port, i, Route::AUDIOPORT);
-                              id->setData(QVariant::fromValue(src));
-                              for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
-                                    if (*ir == src) {
-                                          id->setChecked(true);
-                                          break;
-                                          }
-                                    }
+                              RouteNode src(ip.port, i, RouteNode::AUDIOPORT);
+                              RouteNode dst(t, i, RouteNode::TRACK);
+                              Route route = Route(src, dst);
+                              id->setData(QVariant::fromValue(route));
+                              id->setChecked(irl->indexOf(route) != -1);
                               }
                         }
                   }
                   break;
             case Track::AUDIO_OUTPUT:
-                  addWavePorts(t, &pup, irl, true);
-                  addInPorts(t, &pup, irl, true);
-                  addGroupPorts(t, &pup, irl);
-                  addSyntiPorts(t, &pup, irl);
+                  addWavePorts(t, pup, *irl, true);
+                  addInPorts(t, pup, *irl, true);
+                  addGroupPorts(t, pup, *irl);
+                  addSyntiPorts(t, pup, *irl);
                   break;
             case Track::WAVE:
-                  addInPorts(t, &pup, irl, true);
+                  addInPorts(t, pup, *irl, true);
                   break;
             case Track::AUDIO_GROUP:
-                  addWavePorts(t, &pup, irl, true);
-                  addInPorts(t, &pup, irl, true);
-                  addGroupPorts(t, &pup, irl);
-                  addSyntiPorts(t, &pup, irl);
+                  addWavePorts(t, pup, *irl, true);
+                  addInPorts(t, pup, *irl, true);
+                  addGroupPorts(t, pup, *irl);
+                  addSyntiPorts(t, pup, *irl);
                   break;
             }
-      if (pup.isEmpty())
-            return;
-      QAction* n = pup.exec(QCursor::pos());
-      if (n != 0) {
-            Route srcRoute = n->data().value<Route>();
-            Route dstRoute(t);
-            dstRoute.channel = srcRoute.channel;
-
-            if (track->type() == Track::AUDIO_INPUT)
-                  dstRoute.channel = srcRoute.channel;
-            else if (track->type() == Track::AUDIO_SOFTSYNTH)
-                  dstRoute.type = Route::SYNTIPORT;
-
-            audio->msgRoute(n->isChecked(), srcRoute, dstRoute);
-            }
-      iR->setDown(false);     // pup.exec() catches mouse release event
       }
 
 //---------------------------------------------------------
-//   oRoutePressed
+//   oRouteShow
 //---------------------------------------------------------
 
-void AudioStrip::oRoutePressed()
+void AudioStrip::oRouteShow()
       {
-      QMenu pup(oR);
-      pup.setSeparatorsCollapsible(false);
-
+      QMenu* pup = oR->menu();
+      pup->clear();
       AudioTrack* t = (AudioTrack*)track;
       RouteList* orl = t->outRoutes();
 
@@ -763,42 +653,30 @@ void AudioStrip::oRoutePressed()
                   for (int i = 0; i < channel; ++i) {
                         char buffer[128];
                         snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().data(), i+1);
-                        pup.addSeparator()->setText(QString(buffer));
+                        pup->addSeparator()->setText(QString(buffer));
 
                         QList<PortName> ol = audioDriver->inputPorts(false);
                         foreach (PortName ip, ol) {
-                              QAction* action = pup.addAction(ip.name);
+                              QAction* action = pup->addAction(ip.name);
                               action->setCheckable(true);
-                              Route dst(ip.port, i, Route::AUDIOPORT);
-                              action->setData(QVariant::fromValue(dst));
-                              int idx = orl->indexOf(dst);
-                              action->setChecked(idx != -1);
+                              RouteNode src(t);
+                              RouteNode dst(ip.port, i, RouteNode::AUDIOPORT);
+                              Route r = Route(src, dst);
+                              action->setData(QVariant::fromValue(r));
+                              action->setChecked(orl->indexOf(r) != -1);
                               }
                         }
                   }
                   break;
             case Track::AUDIO_INPUT:
-                  addWavePorts(t, &pup, orl, false);
+                  addWavePorts(t, pup, *orl, false);
             case Track::WAVE:
             case Track::AUDIO_GROUP:
             case Track::AUDIO_SOFTSYNTH:
-                  addOutPorts(t, &pup, orl);
-                  addGroupPorts(t, &pup, orl);
+                  addOutPorts(t, pup, *orl);
+                  addGroupPorts(t, pup, *orl);
                   break;
             }
-      if (pup.isEmpty())
-            return;
-      QAction* n = pup.exec(QCursor::pos());
-      if (n != 0) {
-            QString s(n->text());
-            Route srcRoute(t);
-            Route dstRoute = n->data().value<Route>();
-            
-            if (track->type() == Track::AUDIO_OUTPUT)
-                  srcRoute.channel = dstRoute.channel;
-            audio->msgRoute(n->isChecked(), srcRoute, dstRoute);
-            }
-      oR->setDown(false);     // pup.exec() catches mouse release event
       }
 
 //---------------------------------------------------------

@@ -34,7 +34,6 @@
 #include "al/marker.h"
 #include "part.h"
 #include "exportmidi.h"
-#include "midichannel.h"
 
 //---------------------------------------------------------
 //   addController
@@ -149,8 +148,7 @@ void MusE::exportMidi()
             MidiEventList* l = &(mft->events);
             int port       = 0; // track->channel()->port();
             int channel    = 0;
-      	if (track->channel())
-            	channel = track->channel()->channelNo();
+            channel        = track->channelNo();
 
             //-----------------------------------
             //   managed controller
@@ -213,23 +211,23 @@ void MusE::exportMidi()
                                     //   apply trackinfo values
                                     //---------------------------------------
 
-                                    if (track->transposition
-                                       || track->velocity
-                                       || track->compression != 100
-                                       || track->len != 100) {
-                                          pitch += track->transposition;
+                                    if (track->transposition()
+                                       || track->velocity()
+                                       || track->compression() != 100
+                                       || track->len() != 100) {
+                                          pitch += track->transposition();
                                           if (pitch > 127)
                                                 pitch = 127;
                                           if (pitch < 0)
                                                 pitch = 0;
 
-                                          velo += track->velocity;
-                                          velo = (velo * track->compression) / 100;
+                                          velo += track->velocity();
+                                          velo = (velo * track->compression()) / 100;
                                           if (velo > 127)
                                                 velo = 127;
                                           if (velo < 1)           // no off event
                                                 velo = 1;
-                                          len = (len *  track->len) / 100;
+                                          len = (len *  track->len()) / 100;
                                           }
                                     if (len <= 0)
                                           len = 1;

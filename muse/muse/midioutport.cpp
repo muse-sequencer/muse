@@ -28,7 +28,6 @@
 #include "driver/audiodev.h"
 #include "audio.h"
 #include "midioutport.h"
-#include "midichannel.h"
 #include "midiseq.h"
 #include "sync.h"
 #include "gconfig.h"
@@ -43,8 +42,8 @@ MidiOutPort::MidiOutPort()
       {
       track      = this;
       _instrument = genericMidiInstrument;
-      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
-            _channel[ch] = new MidiChannel(this, ch);
+//      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
+//            _channel[ch] = new MidiChannel(this, ch);
       setDeviceId(127);        // all
       addMidiController(_instrument, CTRL_MASTER_VOLUME);
       _channels = 1;
@@ -56,8 +55,8 @@ MidiOutPort::MidiOutPort()
 
 MidiOutPort::~MidiOutPort()
       {
-      for (int ch = 0; ch < MIDI_CHANNEL; ++ch)
-            delete _channel[ch];
+//      for (int ch = 0; ch < MIDI_CHANNEL; ++ch)
+//            delete _channel[ch];
       }
 
 //---------------------------------------------------------
@@ -71,8 +70,8 @@ void MidiOutPort::setName(const QString& s)
             midiDriver->setPortName(alsaPort(), s);
       if (!jackPort().isZero())
             audioDriver->setPortName(jackPort(), s);
-      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
-            _channel[ch]->setDefaultName();
+//      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
+//            _channel[ch]->setDefaultName();
       }
 
 //---------------------------------------------------------
@@ -85,10 +84,10 @@ void MidiOutPort::write(Xml& xml) const
       MidiTrackBase::writeProperties(xml);
       if (_instrument)
             xml.strTag("instrument", _instrument->iname());
-      for (int i = 0; i < MIDI_CHANNELS; ++i) {
-            if (!_channel[i]->noInRoute())
-                  _channel[i]->write(xml);
-            }
+//      for (int i = 0; i < MIDI_CHANNELS; ++i) {
+//            if (!_channel[i]->noInRoute())
+//                  _channel[i]->write(xml);
+//            }
       xml.intTag("sendSync", sendSync());
       xml.intTag("deviceId", deviceId());
       xml.etag("MidiOutPort");
@@ -103,11 +102,11 @@ void MidiOutPort::read(QDomNode node)
       for (; !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
             QString tag(e.tagName());
-            if (tag == "MidiChannel") {
-                  int idx = e.attribute("idx", "0").toInt();
-                  _channel[idx]->read(node.firstChild());
-                  }
-            else if (tag == "instrument") {
+//            if (tag == "MidiChannel") {
+//                  int idx = e.attribute("idx", "0").toInt();
+//                  _channel[idx]->read(node.firstChild());
+//                  }
+            if (tag == "instrument") {
                   QString iname = e.text();
                   _instrument = registerMidiInstrument(iname);
                   }
@@ -138,6 +137,7 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
                         }
                   setHwCtrlState(a, b);
                   }
+#if 0
             else {
                   MidiChannel* mc = channel(chn);
                   //
@@ -149,14 +149,15 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
                         }
                   mc->setHwCtrlState(a, b);
                   }
+#endif
             }
 
       for (iRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
-            switch (r->type) {
-                  case Route::MIDIPORT:
+            switch (r->dst.type) {
+                  case RouteNode::MIDIPORT:
                         queueAlsaEvent(event);
                         break;
-                  case Route::JACKMIDIPORT:
+                  case RouteNode::JACKMIDIPORT:
                         queueJackEvent(event);
                         break;
                   default:

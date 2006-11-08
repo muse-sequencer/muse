@@ -35,7 +35,6 @@
 #include "widgets/outportcombo.h"
 #include "audio.h"
 #include "midioutport.h"
-#include "midichannel.h"
 #include "instruments/minstrument.h"
 
 //---------------------------------------------------------
@@ -330,11 +329,10 @@ void TLWidget::configChanged()
                         case TR_DRUMMAP:
                               {
                               SimpleButton* dm = newDrumMapButton();
-                              MidiChannel* mt = (MidiChannel*)_track;
                               dm->setFixedSize(trackRowHeight, trackRowHeight);
-                              dm->setChecked(mt->useDrumMap());
+                              dm->setChecked(((MidiTrack*)_track)->useDrumMap());
                               connect(dm, SIGNAL(clicked(bool)), SLOT(drumMapToggled(bool)));
-                              connect(mt, SIGNAL(useDrumMapChanged(bool)), dm, SLOT(setChecked(bool)));
+                              connect(_track, SIGNAL(useDrumMapChanged(bool)), dm, SLOT(setChecked(bool)));
                               l->addWidget(dm);
                               wlist.push_back(dm);
                               }
@@ -418,9 +416,9 @@ void TLWidget::configChanged()
                               outChannel = new QSpinBox(this);
                               outChannel->setFixedSize(45, trackRowHeight);
                               outChannel->setRange(1, 16);
-                              MidiChannel* midiChannel = ((MidiTrack*)_track)->channel();
-                              if (midiChannel)
-                                 outChannel->setValue(midiChannel->channelNo()+1);
+//TODOA                              MidiChannel* midiChannel = ((MidiTrack*)_track)->channel();
+//                              if (midiChannel)
+//                                 outChannel->setValue(midiChannel->channelNo()+1);
                               outChannel->setToolTip(tr("Midi Output Channel"));
                               l->addWidget(outChannel);
                               wlist.push_back(outChannel);
@@ -473,7 +471,7 @@ void TLWidget::monitorToggled(bool val)
 
 void TLWidget::drumMapToggled(bool val)
       {
-      ((MidiChannel*)_track)->setUseDrumMap(val);
+      ((MidiTrack*)_track)->setUseDrumMap(val);
       }
 
 //---------------------------------------------------------
@@ -527,6 +525,7 @@ void TLWidget::setOutPort(int n)
 
 void TLWidget::outChannelChanged(int n)
       {
+#if 0 //TODOA
       n -= 1;
       MidiChannel* mc = ((MidiTrack*)_track)->channel();
       if (mc == 0)		// no route to port?
@@ -538,6 +537,7 @@ void TLWidget::outChannelChanged(int n)
       audio->msgRemoveRoute(Route(_track), Route(mc));
       audio->msgAddRoute(Route(_track), Route(mp->channel(n)));
       song->update(SC_ROUTE);
+#endif
       }
 
 //---------------------------------------------------------

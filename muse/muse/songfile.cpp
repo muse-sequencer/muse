@@ -40,7 +40,6 @@
 #include "marker/markerview.h"
 #include "midioutport.h"
 #include "midiinport.h"
-// #include "midichannel.h"
 
 //---------------------------------------------------------
 //   readPart
@@ -310,11 +309,8 @@ void Song::write(Xml& xml) const
       cloneList.clear();
 
       // write tracks
-      for (ciTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
-            // midi channels are saved as part of midi out ports
-            if ((*i)->type() != Track::MIDI_CHANNEL)
-                  (*i)->write(xml);
-            }
+      for (ciTrack i = _tracks.begin(); i != _tracks.end(); ++i)
+            (*i)->write(xml);
 
       // write routing
       for (ciTrack i = _tracks.begin(); i != _tracks.end(); ++i)

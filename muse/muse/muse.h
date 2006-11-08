@@ -53,6 +53,8 @@ class PreferencesDialog;
 class EditInstrument;
 class Mixer;
 class ExportMidiDialog;
+class ListEdit;
+class Ctrl;
 
 extern void configMidiController();
 
@@ -110,6 +112,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       QAction* aid1a;
 	Mixer* mixer2;
       QAction* aid1b;
+      ListEdit* listEditor;
 
       EditInstrument* editInstrument;
 
@@ -198,8 +201,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       void configShortCuts();
 
       void startMasterEditor();
-      void startListEditor();
-      void startListEditor(PartList*);
+
       void startDrumEditor();
       void startDrumEditor(PartList* pl);
       void startEditor(Part*);
@@ -212,6 +214,10 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       void startWaveEditor(PartList*);
       void writeGlobalConfiguration() const;
       void startEditInstrument();
+
+      void startListEditor();
+      void startListEditor(PartList*);
+
       void showProjectPropsDialog();
 
       void openRecentMenu();
@@ -302,6 +308,8 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       QAction* forwardAction;
       QAction* stopAction;
       QAction* playAction;
+
+      void showListEditor(const Pos&, Track*, Ctrl*);
       };
 
 extern MusE* muse;

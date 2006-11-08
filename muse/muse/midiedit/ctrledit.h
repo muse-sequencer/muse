@@ -35,7 +35,6 @@ class CtrlEdit : public QObject, public CtrlEditor {
       Q_OBJECT
 
     	Track* const _track;
-      Track* _ctrlTrack;
       Ctrl* _ctrl;
       TimeCanvas* _tc;
       int _height;
@@ -43,7 +42,6 @@ class CtrlEdit : public QObject, public CtrlEditor {
       virtual Ctrl* ctrl() const { return _ctrl; }
       virtual TimeCanvas* tc() const { return _tc; }
       virtual Track* track() const { return _track; }
-      virtual Track* ctrlTrack() const { return _ctrlTrack; }
 
    public:
       int ctrlId;

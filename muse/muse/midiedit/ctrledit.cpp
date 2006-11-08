@@ -27,7 +27,6 @@
 #include "widgets/tools.h"
 #include "miditrack.h"
 #include "midioutport.h"
-#include "midichannel.h"
 
 //---------------------------------------------------------
 //   CtrlEdit
@@ -36,7 +35,6 @@
 CtrlEdit::CtrlEdit(QWidget* parent, TimeCanvas* timeCanvas, Track* t)
    :  QObject(parent), _track(t)
       {
-      _ctrlTrack    = t;
       y             = 0;
       _height       = 0;
       setDrawCtrlName(true);
@@ -76,30 +74,20 @@ void CtrlEdit::setCtrl(int id)
       {
       _ctrl = 0;
 
-      if (_ctrlTrack->type() == Track::MIDI) {
-            MidiTrack* mt = (MidiTrack*)_ctrlTrack;
+      if (_track->type() == Track::MIDI) {
             if (id == CTRL_VELOCITY)
                   _ctrl = &veloList;
             else if (id == CTRL_SVELOCITY)
                   _ctrl = &sveloList;
             else
-                  _ctrl = _ctrlTrack->getController(id);
-            if (!_ctrl) {
-                  MidiChannel* mc = mt->channel();
-                  if (mc) {
-                        _ctrl = mc->getController(id);
-                        if (!_ctrl) {
-                              _ctrl = mc->port()->track->getController(id);
-                              }
-                        }
-                  }
+                  _ctrl = _track->getController(id);
             }
       else
-            _ctrl = _ctrlTrack->getController(id);
+            _ctrl = _track->getController(id);
       
       if (!_ctrl)
             printf("CtrlEdit::setCtrl(%d): not found for track <%s>\n", id,
-               _ctrlTrack->name().toLocal8Bit().data());
+               _track->name().toLocal8Bit().data());
       }
 
 //---------------------------------------------------------
@@ -115,7 +103,7 @@ void CtrlEdit::showControllerList()
       else
             id = CTRL_NO_CTRL;
       for (;;) {
-            CtrlDialog cd(_ctrlTrack, id);
+            CtrlDialog cd(_track, id);
             int rv = cd.exec();
             if (rv != 1)
                         return;
@@ -140,12 +128,10 @@ void CtrlEdit::changeController(int id)
       if (id == CTRL_VELOCITY) {
             ctrlId = id;
             _ctrl = &veloList;
-            _ctrlTrack = _track;
             }
       else if (id == CTRL_SVELOCITY) {
             ctrlId = id;
             _ctrl = &sveloList;
-            _ctrlTrack = _track;
             }
       else if (id == CTRL_OTHER) {   // "other"
             if (track()->type() == Track::MIDI) {
@@ -159,13 +145,6 @@ void CtrlEdit::changeController(int id)
       else {
             ctrlId = id;
             _ctrl   = track()->getController(ctrlId);
-            if (_ctrl == 0 && _track->type() == Track::MIDI) {
-                  MidiChannel* mc = ((MidiTrack*)_track)->channel();
-                  _ctrl = mc->getController(ctrlId);
-                  _ctrlTrack = mc;
-                  }
-            else
-                  _ctrlTrack = _track;
             }
       _tc->updateCanvasB();
       }

@@ -37,7 +37,6 @@
 #include "midictrl.h"
 #include "gconfig.h"
 #include "part.h"
-#include "midichannel.h"
 
 int Arranger::trackNameWidth = 80;
 
@@ -56,7 +55,7 @@ const TrElement trElements[] = {
         | Track::M_WAVE
         | Track::M_AUDIO_INPUT
         | Track::M_AUDIO_SOFTSYNTH),
-      TrElement(TR_DRUMMAP,  2, "use drum map", Track::M_MIDI_CHANNEL),
+      TrElement(TR_DRUMMAP,  2, "use drum map", Track::M_MIDI),
       TrElement(TR_MUTE,     3, "mute",             -1),
       TrElement(TR_SOLO,     3, "solo",             -1),
       TrElement(TR_MONITOR,  3, "monitor",
@@ -67,7 +66,7 @@ const TrElement trElements[] = {
             -1 & ~(Track::M_MIDI_IN | Track::M_MIDI)),
       TrElement(TR_OCHANNEL,   5, "output channel", Track::M_MIDI),
       TrElement(TR_INSTRUMENT, 6, "instrument",     Track::M_MIDI_OUT),
-      TrElement(TR_PATCH,      7, "patch",          Track::M_MIDI_CHANNEL),
+      TrElement(TR_PATCH,      7, "patch",          Track::M_MIDI),
       };
 
 const int nTrElements = sizeof(trElements)/sizeof(*trElements);
@@ -874,9 +873,6 @@ void Arranger::toggleMixerStrip(bool val)
                         case Track::MIDI_OUT:
                               strip = new MidiOutPortStrip(0, (MidiOutPort*)_curTrack, false);
                               break;
-                        case Track::MIDI_CHANNEL:
-                              strip = new MidiChannelStrip(0, (MidiChannel*)_curTrack, false);
-                              break;
                         case Track::MIDI_SYNTI:
                               strip = new MidiSyntiStrip(0, (MidiSynti*)_curTrack, false);
                               break;
@@ -1093,8 +1089,8 @@ void Arranger::setGar()
                   }
             }
       if (ar == false) {
-            MidiChannelList* cl = song->midiChannel();
-            for (iMidiChannel i = cl->begin(); i != cl->end(); ++i) {
+            MidiTrackList* cl = song->midis();
+            for (iMidiTrack i = cl->begin(); i != cl->end(); ++i) {
                   if ((*i)->autoRead()) {
                         ar = true;
                         break;
@@ -1117,8 +1113,8 @@ void Arranger::setGaw()
                   aw = true;
             }
       if (aw == false) {
-            MidiChannelList* cl = song->midiChannel();
-            for (iMidiChannel i = cl->begin(); i != cl->end(); ++i) {
+            MidiTrackList* cl = song->midis();
+            for (iMidiTrack i = cl->begin(); i != cl->end(); ++i) {
                   if ((*i)->autoWrite()) {
                         aw = true;
                         break;
@@ -1161,8 +1157,8 @@ void Arranger::offGar()
       TrackList*tl = song->tracks();
       for (iTrack i = tl->begin(); i != tl->end(); ++i)
             song->setAutoRead(*i, false);
-      MidiChannelList* cl = song->midiChannel();
-      for (iMidiChannel i = cl->begin(); i != cl->end(); ++i)
+      MidiTrackList* cl = song->midis();
+      for (iMidiTrack i = cl->begin(); i != cl->end(); ++i)
             song->setAutoRead(*i, false);
       gar->setChecked(false);
       }
@@ -1176,8 +1172,8 @@ void Arranger::offGaw()
       TrackList*tl = song->tracks();
       for (iTrack i = tl->begin(); i != tl->end(); ++i)
             song->setAutoWrite(*i, false);
-      MidiChannelList* cl = song->midiChannel();
-      for (iMidiChannel i = cl->begin(); i != cl->end(); ++i)
+      MidiTrackList* cl = song->midis();
+      for (iMidiTrack i = cl->begin(); i != cl->end(); ++i)
             song->setAutoWrite(*i, false);
       gaw->setChecked(false);
       }

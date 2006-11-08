@@ -39,7 +39,6 @@
 #include "mixer/mixer.h"
 #include "arranger/arranger.h"
 #include "midictrl.h"
-#include "midichannel.h"
 #include "midiinport.h"
 #include "midioutport.h"
 
@@ -243,14 +242,16 @@ void MusE::importMidi(const QString &file)
             //
             // add connected channels
             //
-            MidiChannelList* mcl = song->midiChannel();
             TrackList* tl       = song->tracks();
+#if 0
+            MidiChannelList* mcl = song->midiChannel();
             for (iMidiChannel i = mcl->begin(); i != mcl->end(); ++i) {
                   MidiChannel* mc = (MidiChannel*)*i;
                   if (mc->noInRoute() || song->trackExists(mc))
                         continue;
                   tl->push_back(mc);
                   }
+#endif
 
             selectionChanged();           // enable/disable "Copy" & "Paste"
             arranger->endLoadSong();
@@ -427,16 +428,15 @@ void MusE::addMidiFile(const QString name)
                         continue;
 
                   MidiTrack* track = new MidiTrack();
-                  MidiChannel* mc = outPort->channel(channel);
                   if ((*t)->isDrumTrack)
-                        mc->setUseDrumMap(true);
-                  track->outRoutes()->push_back(Route(outPort->channel(channel), -1, Route::TRACK));
-                  if (inPort && config.connectToAllMidiTracks) {
-                        for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
-                              Route src(inPort, ch, Route::TRACK);
-                              track->inRoutes()->push_back(src);
-                              }
-                        }
+                        track->setUseDrumMap(true);
+//TODOB                  track->outRoutes()->push_back(Route(outPort->channel(channel), -1, Route::TRACK));
+//                  if (inPort && config.connectToAllMidiTracks) {
+//                        for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
+//                              Route src(inPort, ch, Route::TRACK);
+//                              track->inRoutes()->push_back(src);
+//                              }
+//                        }
 
                   EventList* mel = track->events();
                   buildMidiEventList(mel, el, track, division, first);
@@ -447,14 +447,14 @@ void MusE::addMidiFile(const QString name)
                         if (event.type() == Controller) {
                               int ctrl = event.dataA();
                               MidiInstrument* instr = outPort->instrument();
-                              mc->addMidiController(instr, ctrl);
+                              track->addMidiController(instr, ctrl);
                               CVal val;
                               val.i = event.dataB();
-                              mc->addControllerVal(ctrl, event.tick(), val);
+                              track->addControllerVal(ctrl, event.tick(), val);
                               }
                         }
                   if (channel == 9) {
-                        mc->setUseDrumMap(true);
+                        track->setUseDrumMap(true);
                         //
                         // remap drum pitch with drumInmap
                         //
@@ -480,7 +480,7 @@ void MusE::addMidiFile(const QString name)
                   // (SYSEX or META)
                   //
                   MidiTrack* track = new MidiTrack();
-                  addRoute(Route(track, -1, Route::TRACK), Route(outPort->channel(0), -1, Route::TRACK));
+//                  addRoute(Route(track, -1, Route::TRACK), Route(track));
                   EventList* mel = track->events();
                   buildMidiEventList(mel, el, track, division, true);
                   processTrack(track);

@@ -69,7 +69,6 @@ class MidiTrackInfo : public TrackInfo {
       Q_OBJECT
 
       Ui::MidiTrackInfoBase mt;
-      Ui::MidiChannelInfoBase mc;
       Ui::MidiPortInfoBase mp;
       QComboBox* port;
       QComboBox* channel;
@@ -94,6 +93,31 @@ class MidiTrackInfo : public TrackInfo {
       MidiTrackInfo();
       virtual void init(Track*);
       };
+#if 0
+//---------------------------------------------------------
+//   MidiChannelInfo
+//---------------------------------------------------------
+
+class MidiChannelInfo : public TrackInfo {
+      Q_OBJECT
+
+      TLLineEdit* portName;
+      QComboBox* instrument;
+      QPushButton* patch;
+      QMenu* pop;
+
+   private slots:
+      void instrumentSelected(int);
+      void instrumentChanged();
+      void controllerChanged(int);
+      void patchClicked();
+
+   public:
+      MidiChannelInfo();
+      virtual void init(Track*);
+      };
+#endif
+
 
 //---------------------------------------------------------
 //   AudioOutputInfo
@@ -200,29 +224,6 @@ class MidiInPortInfo : public TrackInfo {
 
    public:
       MidiInPortInfo();
-      };
-
-//---------------------------------------------------------
-//   MidiChannelInfo
-//---------------------------------------------------------
-
-class MidiChannelInfo : public TrackInfo {
-      Q_OBJECT
-
-      TLLineEdit* portName;
-      QComboBox* instrument;
-      QPushButton* patch;
-      QMenu* pop;
-
-   private slots:
-      void instrumentSelected(int);
-      void instrumentChanged();
-      void controllerChanged(int);
-      void patchClicked();
-
-   public:
-      MidiChannelInfo();
-      virtual void init(Track*);
       };
 
 #endif

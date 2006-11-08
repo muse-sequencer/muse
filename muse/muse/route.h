@@ -31,23 +31,8 @@ using AL::Xml;
 
 #include "driver/driver.h"
 
-// Routing Types:
-//
-// Audio:
-//    Port - Track::Channel         Audio Input
-//    Track::Channel - Port         Audio Ouput
-//    Track - Track
-//    Aux   - Track                 Audio Aux Send
-// Midi:
-//    Port  - Track                 Midi Input
-//    Track - Port                  Midi Output
-//    Track - Track
-//
-// A software synthesizer is somewhat special as it has
-//    a midi input and an audio output
-
 //---------------------------------------------------------
-//   Route
+//   RouteNode
 //    this describes one endpoint of a route
 //       Track
 //       Track/Channel
@@ -56,8 +41,8 @@ using AL::Xml;
 //       SYNTI
 //---------------------------------------------------------
 
-struct Route {
-      enum RouteType { TRACK, AUDIOPORT, MIDIPORT, JACKMIDIPORT,
+struct RouteNode {
+      enum RouteNodeType { TRACK, AUDIOPORT, MIDIPORT, JACKMIDIPORT,
          SYNTIPORT, AUXPLUGIN};
 
       Port   port;
@@ -69,14 +54,14 @@ struct Route {
       bool disconnected;      // if true, do not remove route in graphChanged()
                               // or removeConnection()
 
-      RouteType type;
+      RouteNodeType type;
 
-      Route();
-      Route(Port, int, RouteType);
-      Route(Port, RouteType);
-      Route(Track*);
-      Route(Track*, int, RouteType t = TRACK);
-      Route(AuxPluginIF*);
+      RouteNode();
+      RouteNode(Port, int, RouteNodeType);
+      RouteNode(Port, RouteNodeType);
+      RouteNode(Track*);
+      RouteNode(Track*, int, RouteNodeType t = TRACK);
+      RouteNode(AuxPluginIF*);
 
       bool isPortType() const {
             return type==AUDIOPORT || type == MIDIPORT || type == JACKMIDIPORT;
@@ -90,10 +75,25 @@ struct Route {
       void read(QDomNode node);
       void write(Xml&, const char* name) const;
 
-      bool operator==(const Route& a) const;
+      bool operator==(const RouteNode& a) const;
       void dump() const;
       const char* tname() const;
-      static const char* tname(RouteType);
+      static const char* tname(RouteNodeType);
+      };
+
+//---------------------------------------------------------
+//    Route
+//---------------------------------------------------------
+
+struct Route {
+      RouteNode src;
+      RouteNode dst;
+
+      Route() {}
+      Route(const RouteNode& s, const RouteNode& d) : src(s), dst(d) {}
+      bool operator==(const Route& a) const { 
+            return (src==a.src) && (dst==a.dst);
+            }
       };
 
 Q_DECLARE_METATYPE(struct Route);
@@ -102,9 +102,8 @@ typedef QList<Route> RouteList;
 typedef RouteList::iterator iRoute;
 typedef RouteList::const_iterator ciRoute;
 
-extern bool addRoute(Route, Route);
-extern void removeRoute(Route, Route);
-extern bool checkRoute(const QString&, const QString&);
+extern bool addRoute(const Route&);
+extern void removeRoute(const Route&);
 
 #endif
 

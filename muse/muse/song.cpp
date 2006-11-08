@@ -41,7 +41,6 @@
 #include "midirc.h"
 #include "part.h"
 #include "conf.h"
-#include "midichannel.h"
 #include "midioutport.h"
 #include "midiinport.h"
 #include "instruments/minstrument.h"
@@ -163,12 +162,11 @@ bool Song::addEvent(Event& event, Part* part)
             MidiTrack* track = (MidiTrack*)part->track();
             int tick  = event.tick();
             int cntrl = event.dataA();
-            MidiChannel* mc = track->channel();
             CVal val;
             val.i = event.dataB();
-            if (mc && !mc->addControllerVal(cntrl, tick, val)) {
-                  mc->addMidiController(mc->port()->instrument(), cntrl);
-                  if (!mc->addControllerVal(cntrl, tick, val)) {
+            if (!track->addControllerVal(cntrl, tick, val)) {
+//TODOA                  track->addMidiController(track->port()->instrument(), cntrl);
+                  if (!track->addControllerVal(cntrl, tick, val)) {
                         return false;
                         }
                   }
@@ -194,14 +192,11 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
 
       if (newEvent.type() == Controller) {
             MidiTrack* track = (MidiTrack*)part->track();
-            MidiChannel* mc  = track->channel();
-            if (mc) {
-                  int tick  = newEvent.tick();
-                  int cntrl = newEvent.dataA();
-                  CVal val;
-                  val.i   = newEvent.dataB();
-                  mc->addControllerVal(cntrl, tick, val);
-                  }
+            int tick  = newEvent.tick();
+            int cntrl = newEvent.dataA();
+            CVal val;
+            val.i   = newEvent.dataB();
+            track->addControllerVal(cntrl, tick, val);
             }
       }
 
@@ -590,37 +585,6 @@ void Song::update(int flags)
       {
       if (flags == 0)
             return;
-      if (flags & SC_ROUTE) {
-            //
-            // remove unconnected channels
-            //
-// printf("update tracks %d channels: %d\n", _tracks.size(), _midiChannel.size());
-            bool again;
-            do {
-                  again = false;
-                  for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
-                        if ((*i)->type() != Track::MIDI_CHANNEL)
-                              continue;
-                        MidiChannel* mc = (MidiChannel*)*i;
-                        if (mc->noInRoute()) {
-                              emit trackRemoved(mc);
-                              _tracks.erase(i);
-                              again = true;
-                              break;
-                              }
-                        }
-                  } while(again);
-            //
-            // add new connected channels
-            //
-            for (iMidiChannel i = _midiChannel.begin(); i != _midiChannel.end(); ++i) {
-                  MidiChannel* mc = (MidiChannel*)*i;
-                  if (mc->noInRoute() || trackExists(mc))
-                        continue;
-                  _tracks.push_back(mc);
-                  emit trackAdded(mc, _tracks.size()-1);
-                  }
-            }
       emit songChanged(flags);
       if (flags & SC_TEMPO)
             emit tempoChanged();
@@ -1159,8 +1123,6 @@ void Song::clear(bool signal)
       qDeleteAll(_midiInPorts);
       _midiInPorts.clear();
 
-      _midiChannel.clear();
-
       AL::tempomap.clear();
       AL::sigmap.clear();
       undoList->clear();
@@ -1551,7 +1513,6 @@ void Song::insertTrack(Track* track, int idx)
             case Track::TRACK_TYPES:
             case Track::MIDI_OUT:
             case Track::MIDI_IN:
-            case Track::MIDI_CHANNEL:
             case Track::MIDI_SYNTI:
                   break;
             case Track::MIDI:
@@ -1560,6 +1521,7 @@ void Song::insertTrack(Track* track, int idx)
                   // if there is already a route, do not add another
                   // default routing
                   //
+#if 0
                   if (track->noOutRoute()) {
                         for (iMidiChannel i = _midiChannel.begin(); i != _midiChannel.end(); ++i) {
                               if ((*i)->noInRoute()) {
@@ -1568,10 +1530,12 @@ void Song::insertTrack(Track* track, int idx)
                                     }
                               }
                         }
+#endif
                   //
                   // connect to all midi inputs, if there is not already
                   // a route
                   //
+#if 0 //TODOA
                   if (!track->noInRoute()) {
                         MidiInPortList* mi = midiInPorts();
                         for (iMidiInPort i = mi->begin(); i != mi->end(); ++i) {
@@ -1579,20 +1543,22 @@ void Song::insertTrack(Track* track, int idx)
                                     track->inRoutes()->push_back(Route(*i, ch, Route::TRACK));
                               }
                         }
+#endif
                   break;
             case Track::AUDIO_SOFTSYNTH:
-                  if (mo)
-                        track->inRoutes()->push_back(Route(mo, -1, Route::TRACK));
+//TODOA                  if (mo)
+//                        track->inRoutes()->push_back(Route(mo, -1, Route::TRACK));
                   // fall through
 
             case Track::WAVE:
             case Track::AUDIO_GROUP:
-                  if (ao)
-                        track->outRoutes()->push_back(Route(ao));
+//TODOA                  if (ao)
+//                        track->outRoutes()->push_back(Route(ao));
                   break;
 
             case Track::AUDIO_INPUT:
                   {
+#if 0 //TODOA
                   // connect first input channel to first available jack output
                   // etc.
                   QList<PortName> op = audioDriver->outputPorts(false);
@@ -1605,10 +1571,12 @@ void Song::insertTrack(Track* track, int idx)
                         }
                   if (ao)
                         track->outRoutes()->push_back(Route(ao));
+#endif
                   }
                   break;
             case Track::AUDIO_OUTPUT:
                   {
+#if 0 //TODOA
                   QList<PortName> op = audioDriver->inputPorts(false);
                   QList<PortName>::iterator is = op.begin();
                   for (int ch = 0; ch < track->channels(); ++ch) {
@@ -1617,6 +1585,7 @@ void Song::insertTrack(Track* track, int idx)
                               ++is;
                               }
                         }
+#endif
                   }
                   break;
             }
@@ -1685,16 +1654,9 @@ void Song::insertTrack2(Track* track)
                   break;
             case Track::MIDI_OUT:
                   _midiOutPorts.push_back((MidiOutPort*)track);
-                  for (int i = 0; i < MIDI_CHANNELS; ++i) {
-                        MidiChannel* mc = ((MidiOutPort*)track)->channel(i);
-                        _midiChannel.push_back(mc);
-                        }
                   break;
             case Track::MIDI_IN:
                   _midiInPorts.push_back((MidiInPort*)track);
-                  break;
-            case Track::MIDI_CHANNEL:
-                  _midiChannel.push_back((MidiChannel*)track);
                   break;
             case Track::WAVE:
                   _waves.push_back((WaveTrack*)track);
@@ -1713,10 +1675,6 @@ void Song::insertTrack2(Track* track)
                   SynthI* s = (SynthI*)track;
                   midiInstruments.push_back(s->instrument());
                   _synthIs.push_back(s);
-                  for (int i = 0; i < MIDI_CHANNELS; ++i) {
-                        MidiChannel* mc = ((SynthI*)track)->channel(i);
-                        _midiChannel.push_back(mc);
-                        }
                   }
                   break;
             default:
@@ -1728,34 +1686,29 @@ void Song::insertTrack2(Track* track)
       //
       //  connect routes
       //
-      Route src(track);
       if (track->type() == Track::AUDIO_OUTPUT || track->type() == Track::MIDI_OUT) {
             foreach(Route r, *(track->inRoutes())) {
-                  if (r.type != Route::AUXPLUGIN) {
-                        src.channel = r.channel;
-                        r.track->outRoutes()->push_back(src);
+                  if (r.src.type != RouteNode::AUXPLUGIN) {
+                        r.src.track->outRoutes()->push_back(r);
                         }
                   }
             }
       else if (track->type() == Track::AUDIO_INPUT || track->type() == Track::MIDI_IN) {
             foreach(Route r, *(track->outRoutes())) {
-                  if (r.type != Route::AUXPLUGIN) {
-                        src.channel = r.channel;
-                        r.track->inRoutes()->push_back(src);
+                  if (r.dst.type != RouteNode::AUXPLUGIN) {
+                        r.dst.track->inRoutes()->push_back(r);
                         }
                   }
             }
       else {
             foreach(Route r, *(track->inRoutes())) {
-                  if (r.type != Route::AUXPLUGIN) {
-                        src.channel = r.channel;
-                        r.track->outRoutes()->push_back(src);
+                  if (r.src.type != RouteNode::AUXPLUGIN) {
+                        r.src.track->outRoutes()->push_back(r);
                         }
                   }
             foreach(Route r, *(track->outRoutes())) {
-                  if (r.type != Route::AUXPLUGIN) {
-                        src.channel = r.channel;
-                        r.track->inRoutes()->push_back(src);
+                  if (r.dst.type != RouteNode::AUXPLUGIN) {
+                        r.dst.track->inRoutes()->push_back(r);
                         }
                   }
             }
@@ -1769,31 +1722,6 @@ void Song::insertTrack2(Track* track)
 void Song::removeTrack(Track* track)
       {
       startUndo();
-
-      if (track->type() == Track::AUDIO_SOFTSYNTH) {
-            for (int i = 0; i < MIDI_CHANNELS; ++i) {
-                  MidiChannel* mc = ((SynthI*)track)->channel(i);
-                  if (!mc->noInRoute()) {
-                        int idx = _tracks.indexOf(mc);
-                        undoOp(UndoOp::DeleteTrack, idx, mc);
-                        removeTrack1(mc);
-                        audio->msgRemoveTrack(mc);
-                        removeTrack3(mc);
-                        }
-                  }
-            }
-      else if (track->type() == Track::MIDI_OUT) {
-            for (int i = 0; i < MIDI_CHANNELS; ++i) {
-                  MidiChannel* mc = ((MidiOutPort*)track)->channel(i);
-                  if (!mc->noInRoute()) {
-                        int idx = _tracks.indexOf(mc);
-                        undoOp(UndoOp::DeleteTrack, idx, mc);
-                        removeTrack1(mc);
-                        audio->msgRemoveTrack(mc);
-                        removeTrack3(mc);
-                        }
-                  }
-            }
       int idx = _tracks.indexOf(track);
       undoOp(UndoOp::DeleteTrack, idx, track);
       removeTrack1(track);
@@ -1834,9 +1762,6 @@ void Song::removeTrack2(Track* track)
             case Track::MIDI_IN:
                   _midiInPorts.removeAt(_midiInPorts.indexOf((MidiInPort*)track));
                   break;
-            case Track::MIDI_CHANNEL:
-                  _midiChannel.removeAt(_midiChannel.indexOf((MidiChannel*)track));
-                  break;
             case Track::WAVE:
                   _waves.removeAt(_waves.indexOf((WaveTrack*)track));
                   break;
@@ -1862,30 +1787,28 @@ void Song::removeTrack2(Track* track)
       //
       //  remove routes
       //
-      Route src(track, -1, Route::TRACK);
       foreach (const Route r, *(track->inRoutes())) {
-            if (r.type != Route::TRACK && r.type != Route::SYNTIPORT)
+            if (r.src.type != RouteNode::TRACK && r.src.type != RouteNode::SYNTIPORT)
                   continue;
-            src.channel = r.channel;
-            int idx = r.track->outRoutes()->indexOf(src);
+            int idx = r.src.track->outRoutes()->indexOf(r);
             if (idx != -1)
-                  r.track->outRoutes()->removeAt(idx);
+                  r.src.track->outRoutes()->removeAt(idx);
             else
                   printf("Song::removeTrack2(): input route not found\n");
             }
       foreach (const Route r, *(track->outRoutes())) {
-            if (r.type != Route::TRACK && r.type != Route::SYNTIPORT)
+            if (r.dst.type != RouteNode::TRACK && r.dst.type != RouteNode::SYNTIPORT)
                   continue;
-            src.channel = r.channel;
-            int idx = r.track->inRoutes()->indexOf(src);
+            int idx = r.dst.track->inRoutes()->indexOf(r);
             if (idx != -1)
-                  r.track->inRoutes()->removeAt(idx);
+                  r.dst.track->inRoutes()->removeAt(idx);
             else {
                   printf("Song::removeTrack2(): output route not found\n");
-                  src.dump();
+/*TODOA                  src.dump();
                   printf("  in route list:\n");
                   foreach (const Route rr, *(r.track->inRoutes()))
                         rr.dump();
+*/
                   }
             }
       }
@@ -2208,12 +2131,9 @@ void Song::addControllerVal(Track* t, Ctrl* c, const Pos& p, CVal val)
             unsigned ctime = t->timeType() == AL::FRAMES ? pos[0].frame() : pos[0].tick();
             CVal cval = c->value(ctime);
             if (c->curVal().i != cval.i) {
-                  if (t->isMidiTrack()) {
-                        if (t->type() == Track::MIDI_CHANNEL) {
-                              MidiChannel* mc = (MidiChannel*)t;
-                              MidiEvent ev(0, 0, ME_CONTROLLER, c->id(), cval.i);
-                              mc->playMidiEvent(&ev);
-                              }
+                  if (t->type() == Track::MIDI) {
+                        MidiEvent ev(0, 0, ME_CONTROLLER, c->id(), cval.i);
+                        ((MidiTrack*)t)->playMidiEvent(&ev);
                         }
                   c->setCurVal(cval);
                   }
@@ -2239,8 +2159,8 @@ void Song::setControllerVal(Track* t, int id, CVal val)
 void Song::setControllerVal(Track* t, Ctrl* c, CVal val)
       {
       if (t->isMidiTrack()) {
-            if (t->type() == Track::MIDI_CHANNEL) {
-                  MidiChannel* mc = (MidiChannel*)t;
+            if (t->type() == Track::MIDI) {
+                  MidiTrack* mc = (MidiTrack*)t;
                   MidiEvent ev(0, 0, ME_CONTROLLER, c->id(), val.i);
                   mc->playMidiEvent(&ev);
                   }
@@ -2485,4 +2405,14 @@ void Song::restartJack()
             }
       muse->seqRestart();
       }
+
+//---------------------------------------------------------
+//   routeChanged
+//---------------------------------------------------------
+
+void Song::routeChanged(QAction* a)
+      {
+      audio->msgRoute(a->isChecked(), a->data().value<Route>());
+      }
+
 

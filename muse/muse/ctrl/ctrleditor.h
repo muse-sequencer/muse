@@ -49,7 +49,6 @@ class CtrlEditor {
       virtual TimeCanvas* tc() const = 0;
       virtual int cheight()    const = 0;
       virtual Track* track()   const = 0;
-      virtual Track* ctrlTrack()   const = 0;
 
       bool searchHandle(unsigned* time) const;
 

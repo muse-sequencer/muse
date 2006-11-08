@@ -23,7 +23,6 @@
 #include "track.h"
 #include "al/tempo.h"
 #include "event.h"
-#include "midichannel.h"
 #include "sync.h"
 #include "audio.h"
 #include "gconfig.h"
@@ -199,6 +198,7 @@ void MidiOut::seek(unsigned tickPos, unsigned framePos)
       //    set all controller
       //---------------------------------------------------
 
+#if 0
       for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
             MidiChannel* mc = channel(ch);
             if (mc->mute() || mc->noInRoute() || !mc->autoRead())
@@ -212,6 +212,7 @@ void MidiOut::seek(unsigned tickPos, unsigned framePos)
                         }
                   }
             }
+#endif
       }
 
 //---------------------------------------------------------
@@ -239,6 +240,7 @@ void MidiOut::stop()
       //    reset sustain
       //---------------------------------------------------
 
+#if 0
       for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
             MidiChannel* mc = channel(ch);
             if (mc->noInRoute())
@@ -249,6 +251,7 @@ void MidiOut::stop()
                   track->routeEvent(ev);
                   }
             }
+#endif
       if (track->sendSync()) {
             if (genMMC) {
                   unsigned char mmcPos[] = {
@@ -315,14 +318,15 @@ void MidiOut::reset()
 //   process
 //    Collect all midi events for the current process cycle and put
 //    into _schedEvents queue. For note on events create the proper
-//    note off events. The note off events maybe played after the
+//    note off events. The note off events maybe played later after the
 //    current process cycle.
 //    From _schedEvents queue copy all events for the current cycle
 //    to all output routes. Events routed to ALSA go into the 
 //    _playEvents queue which is processed by the MidiSeq thread.
 //-------------------------------------------------------------------
 
-void MidiOut::processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick, unsigned /*fromFrame*/, unsigned /*toFrame*/)
+void MidiOut::processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick, 
+   unsigned, unsigned)
       {
       while (!eventFifo.isEmpty())
             el.insert(eventFifo.get());
@@ -343,46 +347,22 @@ void MidiOut::processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick,
                         }
                   }
             }
-      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)  {
-            MidiChannel* mc = channel(ch);
-
-            if (mc->mute() || mc->noInRoute())
+      foreach (const Route& r, *track->inRoutes()) {
+            MidiTrackBase* t = (MidiTrackBase*)r.src.track;
+            int dstChannel = r.dst.channel;
+            if (t->isMute())
                   continue;
-            // collect channel controller
-            if (fromTick != toTick) {
-                  CtrlList* cl = mc->controller();
-                  for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
-                        Ctrl* c = ic->second;
-                        iCtrlVal is = c->lowerBound(fromTick);
-                        iCtrlVal ie = c->lowerBound(toTick);
-                        for (; is != ie; ++is) {
-                              unsigned frame = AL::tempomap.tick2frame(is.key());
-                              Event ev(Controller);
-                              ev.setA(c->id());
-                              ev.setB(is.value().i);
-                              el.insert(MidiEvent(frame, ch, ev));
-                              }
-                        }
+            MidiEventList ell;
+            t->getEvents(fromTick, toTick, r.src.channel, &ell);
+            int velo = 0;
+            for (iMidiEvent i = ell.begin(); i != ell.end(); ++i) {
+                  MidiEvent ev(*i);
+                  ev.setChannel(dstChannel);
+                  el.insert(ev);
+                  if (ev.type() == ME_NOTEON)
+                        velo += ev.dataB();
                   }
-
-            // Collect midievents from all input tracks for outport
-            RouteList* rl = mc->inRoutes();
-            for (iRoute i = rl->begin(); i != rl->end(); ++i) {
-                  MidiTrackBase* track = (MidiTrackBase*)i->track;
-                  if (track->isMute())
-                        continue;
-                  MidiEventList ell;
-                  track->getEvents(fromTick, toTick, 0, &ell);
-                  int velo = 0;
-                  for (iMidiEvent i = ell.begin(); i != ell.end(); ++i) {
-                        MidiEvent ev(*i);
-                        ev.setChannel(ch);
-                        el.insert(ev);
-                        if (ev.type() == ME_NOTEON)
-                              velo += ev.dataB();
-                        }
-                  mc->addMidiMeter(velo);
-                  }
+            t->addMidiMeter(velo);
             }
       }
 

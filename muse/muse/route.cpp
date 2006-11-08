@@ -27,13 +27,12 @@
 #include "driver/mididev.h"
 #include "al/xml.h"
 #include "auxplugin.h"
-#include "midichannel.h"
 
 //---------------------------------------------------------
-//   Route
+//   RouteNode
 //---------------------------------------------------------
 
-Route::Route()
+RouteNode::RouteNode()
       {
       track   = 0;
       channel = -1;
@@ -41,7 +40,7 @@ Route::Route()
       disconnected = false;
       }
 
-Route::Route(Port p, int ch, RouteType t)
+RouteNode::RouteNode(Port p, int ch, RouteNodeType t)
       {
       port    = p;
       channel = ch;
@@ -49,7 +48,7 @@ Route::Route(Port p, int ch, RouteType t)
       disconnected = false;
       }
 
-Route::Route(Port p, RouteType t)
+RouteNode::RouteNode(Port p, RouteNodeType t)
       {
       port    = p;
       channel = -1;
@@ -57,7 +56,7 @@ Route::Route(Port p, RouteType t)
       disconnected = false;
       }
 
-Route::Route(Track* tr)
+RouteNode::RouteNode(Track* tr)
       {
       track   = tr;
       channel = -1;
@@ -65,7 +64,7 @@ Route::Route(Track* tr)
       disconnected = false;
       }
 
-Route::Route(AuxPluginIF* p)
+RouteNode::RouteNode(AuxPluginIF* p)
       {
       plugin  = p;
       channel = -1;
@@ -73,7 +72,7 @@ Route::Route(AuxPluginIF* p)
       disconnected = false;
       }
 
-Route::Route(Track* tr, int ch, RouteType t)
+RouteNode::RouteNode(Track* tr, int ch, RouteNodeType t)
       {
       track   = tr;
       channel = ch;
@@ -86,60 +85,57 @@ Route::Route(Track* tr, int ch, RouteType t)
 //    return false, if route invalid or cannot be found
 //---------------------------------------------------------
 
-bool addRoute(Route src, Route dst)
+bool addRoute(const Route& r)
       {
 //printf("addRoute %s.%d:<%s> %s.%d:<%s>\n",
-//         src.tname(), src.channel, src.name().toLatin1().data(),
-//         dst.tname(), dst.channel, dst.name().toLatin1().data());
+//         r.src.tname(), r.src.channel, r.src.name().toLatin1().data(),
+//         r.dst.tname(), r.dst.channel, r.dst.name().toLatin1().data());
 
-      if (src.type == Route::AUDIOPORT || src.type == Route::MIDIPORT 
-         || src.type == Route::JACKMIDIPORT) {
-            if (dst.type != Route::TRACK) {
+      if (r.src.type == RouteNode::AUDIOPORT || r.src.type == RouteNode::MIDIPORT 
+         || r.src.type == RouteNode::JACKMIDIPORT) {
+            if (r.dst.type != RouteNode::TRACK) {
                   fprintf(stderr, "addRoute: bad route 1\n");
                   return false;
                   }
-            if (dst.track->type() != Track::AUDIO_INPUT && dst.track->type() != Track::MIDI_IN) {
+            if (r.dst.track->type() != Track::AUDIO_INPUT && r.dst.track->type() != Track::MIDI_IN) {
                   fprintf(stderr, "addRoute: bad route 2\n");
                   return false;
                   }
-            src.channel = dst.channel;
-            RouteList* inRoutes = dst.track->inRoutes();
-            if (inRoutes->indexOf(src) != -1) {
+            RouteList* inRoutes = r.dst.track->inRoutes();
+            if (inRoutes->indexOf(r) != -1) {
                   printf("  route already there 1\n");
                   return true;
                   }
-            inRoutes->push_back(src);
+            inRoutes->push_back(r);
             }
-      else if (dst.type == Route::AUDIOPORT || dst.type == Route::MIDIPORT
-         || dst.type == Route::JACKMIDIPORT) {
-            if (src.type != Route::TRACK) {
+      else if (r.dst.type == RouteNode::AUDIOPORT || r.dst.type == RouteNode::MIDIPORT
+         || r.dst.type == RouteNode::JACKMIDIPORT) {
+            if (r.src.type != RouteNode::TRACK) {
                   fprintf(stderr, "addRoute: bad route 3\n");
                   return false;
                   }
-            if (src.track->type() != Track::AUDIO_OUTPUT && src.track->type() != Track::MIDI_OUT) {
-                  fprintf(stderr, "addRoute: bad route 4, tracktype %s\n", src.track->cname().toLatin1().data());
+            if (r.src.track->type() != Track::AUDIO_OUTPUT && r.src.track->type() != Track::MIDI_OUT) {
+                  fprintf(stderr, "addRoute: bad route 4, tracktype %s\n", r.src.track->cname().toLatin1().data());
                   return false;
                   }
-            RouteList* outRoutes = src.track->outRoutes();
-            dst.channel = src.channel;
-
-            if (outRoutes->indexOf(dst) != -1) {
+            RouteList* outRoutes = r.src.track->outRoutes();
+            if (outRoutes->indexOf(r) != -1) {
                   printf("  route already there 2\n");
                   return true;
                   }
-            outRoutes->push_back(dst);
+            outRoutes->push_back(r);
             }
-      else if (src.type == Route::AUXPLUGIN) {
-            RouteList* inRoutes = dst.track->inRoutes();
-            inRoutes->insert(inRoutes->begin(), src);
+      else if (r.src.type == RouteNode::AUXPLUGIN) {
+            RouteList* inRoutes = r.dst.track->inRoutes();
+            inRoutes->insert(inRoutes->begin(), r);
             }
       else {
-            if (src.track->outRoutes()->indexOf(dst) != -1) {
+            if (r.src.track->outRoutes()->indexOf(r) != -1) {
                   printf("  route already there 3\n");
                   return true;
                   }
-            src.track->outRoutes()->push_back(dst);
-            dst.track->inRoutes()->push_back(src);
+            r.src.track->outRoutes()->push_back(r);
+            r.dst.track->inRoutes()->push_back(r);
             }
       return true;
       }
@@ -148,76 +144,75 @@ bool addRoute(Route src, Route dst)
 //   removeRoute
 //---------------------------------------------------------
 
-void removeRoute(Route src, Route dst)
+void removeRoute(const Route& r)
       {
 //      printf("removeRoute %s.%d:<%s> %s.%d:<%s>\n",
-//         src.tname(), src.channel, src.name().toLatin1().data(),
-//         dst.tname(), dst.channel, dst.name().toLatin1().data());
-      if (src.type == Route::AUDIOPORT || src.type == Route::MIDIPORT
-         || src.type == Route::JACKMIDIPORT) {
-            if (dst.type != Route::TRACK && dst.type != Route::SYNTIPORT) {
+//         r.src.tname(), r.src.channel, r.src.name().toLatin1().data(),
+//         r.dst.tname(), r.dst.channel, r.dst.name().toLatin1().data());
+      if (r.src.type == RouteNode::AUDIOPORT || r.src.type == RouteNode::MIDIPORT
+         || r.src.type == RouteNode::JACKMIDIPORT) {
+            if (r.dst.type != RouteNode::TRACK && r.dst.type != RouteNode::SYNTIPORT) {
                   fprintf(stderr, "removeRoute: bad route 1\n");
                   goto error;
                   }
-            if (dst.track->type() != Track::AUDIO_INPUT
-               && dst.track->type() != Track::AUDIO_SOFTSYNTH
-               && dst.track->type() != Track::MIDI_IN) {
+            if (r.dst.track->type() != Track::AUDIO_INPUT
+               && r.dst.track->type() != Track::AUDIO_SOFTSYNTH
+               && r.dst.track->type() != Track::MIDI_IN) {
                   fprintf(stderr, "removeRoute: bad route 2\n");
                   goto error;
                   }
-            RouteList* inRoutes = dst.track->inRoutes();
+            RouteList* inRoutes = r.dst.track->inRoutes();
             iRoute i;
             for (i = inRoutes->begin(); i != inRoutes->end(); ++i) {
-                  if (*i == src) {
+                  if (*i == r) {
                         inRoutes->erase(i);
                         break;
                         }
                   }
             }
-      else if (dst.type == Route::AUDIOPORT || dst.type == Route::MIDIPORT
-         || dst.type == Route::JACKMIDIPORT) {
-//         | dst.type == Route::SYNTIPORT) {
-            if (src.type != Route::TRACK) {
+      else if (r.dst.type == RouteNode::AUDIOPORT || r.dst.type == RouteNode::MIDIPORT
+         || r.dst.type == RouteNode::JACKMIDIPORT) {
+            if (r.src.type != RouteNode::TRACK) {
                   fprintf(stderr, "removeRoute: bad route 3\n");
                   goto error;
                   }
-            if (src.track->type() != Track::AUDIO_OUTPUT && src.track->type() != Track::MIDI_OUT) {
+            if (r.src.track->type() != Track::AUDIO_OUTPUT && r.src.track->type() != Track::MIDI_OUT) {
                   fprintf(stderr, "removeRoute: bad route 4\n");
                   goto error;
                   }
-            RouteList* outRoutes = src.track->outRoutes();
+            RouteList* outRoutes = r.src.track->outRoutes();
             iRoute i;
             for (i = outRoutes->begin(); i != outRoutes->end(); ++i) {
-                  if (*i == dst) {
+                  if (*i == r) {
                         outRoutes->erase(i);
                         break;
                         }
                   }
             }
-      else if (src.type == Route::AUXPLUGIN) {
-            if (dst.type != Route::TRACK) {
+      else if (r.src.type == RouteNode::AUXPLUGIN) {
+            if (r.dst.type != RouteNode::TRACK) {
                   fprintf(stderr, "removeRoute: bad route 5\n");
                   goto error;
                   }
-            RouteList* inRoutes = dst.track->inRoutes();
+            RouteList* inRoutes = r.dst.track->inRoutes();
             for (iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) {
-                  if (*i == src) {
+                  if (*i == r) {
                         inRoutes->erase(i);
                         break;
                         }
                   }
             }
       else {
-            RouteList* outRoutes = src.track->outRoutes();
+            RouteList* outRoutes = r.src.track->outRoutes();
             for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) {
-                  if (*i == dst) {
+                  if (*i == r) {
                         outRoutes->erase(i);
                         break;
                         }
                   }
-            RouteList* inRoutes = dst.track->inRoutes();
+            RouteList* inRoutes = r.dst.track->inRoutes();
             for (iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) {
-                  if (*i == src) {
+                  if (*i == r) {
                         inRoutes->erase(i);
                         break;
                         }
@@ -226,8 +221,8 @@ void removeRoute(Route src, Route dst)
       return;
 error:
       printf("removeRoute %s.%d:<%s> %s.%d:<%s>\n",
-         src.tname(), src.channel, src.name().toLatin1().data(),
-         dst.tname(), dst.channel, dst.name().toLatin1().data());
+         r.src.tname(), r.src.channel, r.src.name().toLatin1().data(),
+         r.dst.tname(), r.dst.channel, r.dst.name().toLatin1().data());
       abort();
       }
 
@@ -246,7 +241,7 @@ static QString track2name(const Track* n)
 //    create string name representation for audio node
 //---------------------------------------------------------
 
-QString Route::name() const
+QString RouteNode::name() const
       {
       switch (type) {
             case TRACK:
@@ -273,7 +268,7 @@ QString Route::name() const
 
 void Song::readRoute(QDomNode n)
       {
-      Route s, d;
+      RouteNode s, d;
       for (QDomNode node = n.firstChild(); !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
             if (e.tagName() == "src")
@@ -295,23 +290,19 @@ void Song::readRoute(QDomNode n)
               d.tname(), d.channel, d.name().toLatin1().data());
             return;
             }
-      
-      if (s.type == Route::AUDIOPORT)
-            s.channel = d.channel;
-      if (d.type == Route::AUDIOPORT)
-            d.channel = s.channel;
       s.disconnected = true;
       d.disconnected = true;
-      addRoute(s, d);
+      Route r(s, d);
+      addRoute(r);
       }
 
 //---------------------------------------------------------
 //   dump
 //---------------------------------------------------------
 
-void Route::dump() const
+void RouteNode::dump() const
       {
-      printf("Route %p dump: <%s> channel %d, type %s\n",
+      printf("RouteNode %p dump: <%s> channel %d, type %s\n",
          track, name().toLatin1().data(), channel, tname());
       }
 
@@ -319,7 +310,7 @@ void Route::dump() const
 //   operator==
 //---------------------------------------------------------
 
-bool Route::operator==(const Route& a) const
+bool RouteNode::operator==(const RouteNode& a) const
       {
       if (type != a.type)
             return false;
@@ -342,7 +333,7 @@ bool Route::operator==(const Route& a) const
 //   tname
 //---------------------------------------------------------
 
-const char* Route::tname(RouteType t)
+const char* RouteNode::tname(RouteNodeType t)
       {
       static const char* names[] = {
             "TRACK", "AUDIOPORT", "MIDIPORT", "JACKMIDIPORT", 
@@ -353,7 +344,7 @@ const char* Route::tname(RouteType t)
       return names[t];
       }
 
-const char* Route::tname() const
+const char* RouteNode::tname() const
       {
       return tname(type);
       }
@@ -362,7 +353,7 @@ const char* Route::tname() const
 //   write
 //---------------------------------------------------------
 
-void Route::write(Xml& xml, const char* label) const
+void RouteNode::write(Xml& xml, const char* label) const
       {
       switch (type) {
             case AUDIOPORT:
@@ -389,7 +380,7 @@ void Route::write(Xml& xml, const char* label) const
 //   read
 //---------------------------------------------------------
 
-void Route::read(QDomNode node)
+void RouteNode::read(QDomNode node)
       {
       QDomElement e = node.toElement();
       channel       = e.attribute("channel","0").toInt() - 1;
@@ -397,7 +388,7 @@ void Route::read(QDomNode node)
       QString st    = e.attribute("type", "TRACK");
 
       if (st == "TRACK") {
-            type = Route::TRACK;
+            type = RouteNode::TRACK;
             track = 0;
             TrackList* tl = song->tracks();
             for (iTrack i = tl->begin(); i != tl->end(); ++i) {
@@ -407,39 +398,29 @@ void Route::read(QDomNode node)
                         break;
                         }
                   }
-            if (track == 0) {
-                  MidiChannelList* mc = song->midiChannel();
-                  for (iMidiChannel i = mc->begin(); i != mc->end(); ++i) {
-                        MidiChannel* t = *i;
-                        if (t->name() == s) {
-                              track = t;
-                              break;
-                              }
-                        }
-                  }
             if (track == 0)
                   printf("Route::read(): track <%s> not found\n", s.toLatin1().data());
             }
       else if (st == "AUDIOPORT") {
-            type = Route::AUDIOPORT;
+            type = RouteNode::AUDIOPORT;
             port = audioDriver->findPort(s);
             if (port.isZero())
                   printf("Route::read(): audioport <%s> not found\n", s.toLatin1().data());
             }
       else if (st == "JACKMIDIPORT") {
-            type = Route::JACKMIDIPORT;
+            type = RouteNode::JACKMIDIPORT;
             port = audioDriver->findPort(s);
             if (port.isZero())
                   printf("Route::read(): jack midiport <%s> not found\n", s.toLatin1().data());
             }
       else if (st == "MIDIPORT") {
-            type = Route::MIDIPORT;
+            type = RouteNode::MIDIPORT;
             port = midiDriver->findPort(s);
             if (port.isZero())
                   printf("Route::read(): midiport <%s> not found\n", s.toLatin1().data());
             }
       else if (st == "SYNTIPORT") {
-            type = Route::SYNTIPORT;
+            type = RouteNode::SYNTIPORT;
             SynthIList* tl = song->syntis();
             for (iSynthI i = tl->begin(); i != tl->end(); ++i) {
                   SynthI* t = *i;
@@ -450,7 +431,7 @@ void Route::read(QDomNode node)
                   }
             }
       else if (st == "AUX") {
-            type = Route::AUXPLUGIN;
+            type = RouteNode::AUXPLUGIN;
             plugin = 0;
             TrackList* tl = song->tracks();
             for (iTrack i = tl->begin(); i != tl->end(); ++i) {
@@ -481,7 +462,7 @@ void Route::read(QDomNode node)
             }
       else {
             printf("Route::read(): unknown type <%s>\n", st.toLatin1().data());
-            type = Route::TRACK;
+            type = RouteNode::TRACK;
             }
       }
 

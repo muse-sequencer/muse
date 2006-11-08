@@ -126,8 +126,8 @@ void readConfiguration(QDomNode node)
                   config.trackBg[Track::MIDI_OUT] = readColor(node);
             else if (tag == "midiInputBg")
                   config.trackBg[Track::MIDI_IN] = readColor(node);
-            else if (tag == "midiChannelBg")
-                  config.trackBg[Track::MIDI_CHANNEL] = readColor(node);
+//            else if (tag == "midiChannelBg")
+//                  config.trackBg[Track::MIDI_CHANNEL] = readColor(node);
             else if (tag == "midiSyntiBg")
                   config.trackBg[Track::MIDI_SYNTI] = readColor(node);
             else if (tag == "extendedMidi")
@@ -425,7 +425,6 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
             "midiTrackBg",
             "midiOutputBg",
             "midiInputBg",
-            "midiChannelBg",
             "midiSyntiBg"
             };
       for (int i = 0; i < Track::TRACK_TYPES; ++i)

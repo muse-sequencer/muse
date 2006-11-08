@@ -31,7 +31,6 @@
 #include "audio.h"
 #include "event.h"
 #include "midievent.h"
-#include "midichannel.h"
 #include "audio.h"
 #include "midiseq.h"
 #include "midictrl.h"
@@ -189,8 +188,8 @@ SynthI::SynthI()
       // setVolume(1.0);
       // setPan(0.0);
       _instrument = this;
-      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
-            _channel[ch] = new MidiChannel(this, ch);
+//      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
+//            _channel[ch] = new MidiChannel(this, ch);
       }
 
 //---------------------------------------------------------
@@ -201,8 +200,8 @@ SynthI::~SynthI()
       {
       deactivate2();
       deactivate3();
-      for (int ch = 0; ch < MIDI_CHANNEL; ++ch)
-            delete _channel[ch];
+//      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
+//            delete _channel[ch];
       }
 
 //---------------------------------------------------------
@@ -212,8 +211,8 @@ SynthI::~SynthI()
 void SynthI::setName(const QString& s)
       {
       Track::setName(s);
-      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
-            _channel[ch]->setDefaultName();
+//      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
+//            _channel[ch]->setDefaultName();
       }
 
 //---------------------------------------------------------
@@ -373,10 +372,10 @@ void SynthI::write(Xml& xml) const
       AudioTrack::writeProperties(xml);
       xml.strTag("class", synth()->name());
 
-      for (int i = 0; i < MIDI_CHANNELS; ++i) {
-            if (!_channel[i]->noInRoute())
-                  _channel[i]->write(xml);
-            }
+//      for (int i = 0; i < MIDI_CHANNELS; ++i) {
+//            if (!_channel[i]->noInRoute())
+//                  _channel[i]->write(xml);
+//            }
 
       //---------------------------------------------
       // if soft synth is attached to a midi port,
@@ -454,10 +453,10 @@ void SynthI::read(QDomNode node)
                   }
             else if (tag == "geometry")
                   r = AL::readGeometry(node);
-            else if (tag == "MidiChannel") {
-                  int idx = e.attribute("idx", "0").toInt();
-                  _channel[idx]->read(node.firstChild());
-                  }
+//            else if (tag == "MidiChannel") {
+//                  int idx = e.attribute("idx", "0").toInt();
+//                  _channel[idx]->read(node.firstChild());
+//                  }
             else if (AudioTrack::readProperties(node)) {
                   printf("MusE:SynthI: unknown tag %s\n", e.tagName().toLatin1().data());
                   }

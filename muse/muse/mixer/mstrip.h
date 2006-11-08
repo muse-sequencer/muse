@@ -32,38 +32,10 @@ class MidiSynti;
 class MidiStrip : public Strip {
       Q_OBJECT
 
-      Awl::MidiMeter* meter;
-      QToolButton* iR;
-      QToolButton* oR;
-
-   private slots:
-      void muteToggled(bool);
-      void soloToggled(bool);
-      void recordToggled(bool);
-      void iRoutePressed();
-      void oRoutePressed();
-      void monitorToggled(bool);
-
-   protected slots:
-      virtual void heartBeat();
-
-   public slots:
-      virtual void songChanged(int);
-
-   public:
-      MidiStrip(Mixer*, MidiTrack*, bool align);
-      };
-
-//---------------------------------------------------------
-//   MidiChannelStrip
-//---------------------------------------------------------
-
-class MidiChannelStrip : public Strip {
-      Q_OBJECT
-
       Awl::MidiMeterSlider* slider;
       Awl::MidiVolEntry* sl;
       QToolButton* iR;
+      QToolButton* oR;
 
       struct KNOB {
             Awl::Knob* knob;
@@ -89,7 +61,10 @@ class MidiChannelStrip : public Strip {
       void sliderReleased(int);
       void autoReadToggled(bool);
       void autoWriteToggled(bool);
-      void iRoutePressed();
+      void iRouteShow();
+      void oRouteShow();
+      void recordToggled(bool);
+      void monitorToggled(bool);
 
    protected slots:
       virtual void heartBeat();
@@ -98,7 +73,7 @@ class MidiChannelStrip : public Strip {
       virtual void songChanged(int);
 
    public:
-      MidiChannelStrip(Mixer*, MidiChannel*, bool align = true);
+      MidiStrip(Mixer*, MidiTrack*, bool align = true);
       };
 
 //---------------------------------------------------------
@@ -111,6 +86,7 @@ class MidiOutPortStrip : public Strip {
       Awl::MidiMeterSlider* slider;
       Awl::MidiVolEntry* sl;
       QToolButton* oR;
+      QToolButton* iR;
       SimpleButton* sync;
 
       bool volumeTouched;
@@ -125,7 +101,8 @@ class MidiOutPortStrip : public Strip {
       void sliderReleased(int);
       void autoReadToggled(bool);
       void autoWriteToggled(bool);
-      void oRoutePressed();
+      void iRouteShow();
+      void oRouteShow();
       void syncToggled(bool) const;
 
    protected slots:
@@ -162,8 +139,8 @@ class MidiSyntiStrip : public Strip {
       void sliderReleased(int);
       void autoReadToggled(bool);
       void autoWriteToggled(bool);
-      void oRoutePressed();
-      void iRoutePressed();
+      void iRouteShow();
+      void oRouteShow();
 
    protected slots:
       virtual void heartBeat();
@@ -189,8 +166,8 @@ class MidiInPortStrip : public Strip {
    private slots:
       void muteToggled(bool);
       void soloToggled(bool);
-      void iRoutePressed();
-      void oRoutePressed();
+      void iRouteShow();
+      void oRouteShow();
 
    protected slots:
       virtual void heartBeat();

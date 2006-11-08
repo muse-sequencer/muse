@@ -40,7 +40,6 @@
 #include "midiplugin.h"
 #include "midiinport.h"
 #include "midioutport.h"
-#include "midichannel.h"
 #include "instruments/minstrument.h"
 
 extern void dump(const unsigned char* p, int n);
@@ -210,10 +209,6 @@ void buildMidiEventList(EventList* del, const MidiEventList* el, MidiTrack* trac
       int dataType = 0;   // 0 : disabled, 0x20000 : rpn, 0x30000 : nrpn
 
       int channel = 0;
-      MidiChannel* mc = track->channel();
-      if (mc)
-            channel = mc->channelNo();
-
       EventList mel;
       int metaChannel = -1;
       for (iMidiEvent i = el->begin(); i != el->end(); ++i) {
@@ -238,8 +233,8 @@ void buildMidiEventList(EventList* del, const MidiEventList* el, MidiTrack* trac
                   case ME_NOTEON:
                         e.setType(Note);
 
-                        if (mc && mc->useDrumMap()) {
-                              int instr = mc->drumMap()->inmap(ev.dataA());
+                        if (track->useDrumMap()) {
+                              int instr = track->drumMap()->inmap(ev.dataA());
                               e.setPitch(instr);
                               }
                         else
@@ -250,8 +245,8 @@ void buildMidiEventList(EventList* del, const MidiEventList* el, MidiTrack* trac
                         break;
                   case ME_NOTEOFF:
                         e.setType(Note);
-                        if (mc && mc->useDrumMap()) {
-                              int instr = mc->drumMap()->inmap(ev.dataA());
+                        if (track->useDrumMap()) {
+                              int instr = track->drumMap()->inmap(ev.dataA());
                               e.setPitch(instr);
                               }
                         else
@@ -574,18 +569,12 @@ void buildMidiEventList(EventList* del, const MidiEventList* el, MidiTrack* trac
                   val.i = ev.dataB();
 
                   bool found = false;
-                  for (iRoute i = track->outRoutes()->begin(); i != track->outRoutes()->end(); ++i) {
-                        MidiChannel* ch = (MidiChannel*)(i->track);
-                        Ctrl* c = ch->getController(id);
-                        if (c) {
-                              found = true;
-                              c->add(tick, val);
-                              }
-                        }
-                  if (!found) {
+                  Ctrl* c = track->getController(id);
+                  if (c)
+                        c->add(tick, val);
+                  else
                         // if no managed controller, store as event
                         del->add(ev);
-                        }
                   }
             else
                   del->add(ev);
@@ -617,9 +606,9 @@ void Audio::initDevices()
                   mp->playMidiEvent(&ev);
                   }
             }
-      MidiChannelList* mcl = song->midiChannel();
-      for (iMidiChannel i = mcl->begin(); i != mcl->end(); ++i) {
-            MidiChannel* mc = *i;
+      MidiTrackList* mcl = song->midis();
+      for (iMidiTrack i = mcl->begin(); i != mcl->end(); ++i) {
+            MidiTrack* mc = *i;
             if (mc->noInRoute())
                   continue;
             if (mc->autoRead()) {

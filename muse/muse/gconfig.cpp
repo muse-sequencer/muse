@@ -62,7 +62,7 @@ GlobalConfigValues config = {
             QColor(Qt::gray),             // midi;
             QColor(Qt::gray),             // midiOut;
             QColor(Qt::gray),             // midiIn;
-            QColor(Qt::gray),             // midiChannel;
+//            QColor(Qt::gray),             // midiChannel;
             QColor(Qt::gray),             // midiSynti;
             },
 

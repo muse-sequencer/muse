@@ -119,7 +119,7 @@ extern const char* seqMsgList[];  // for debug
 struct AudioMsg : public ThreadMsg {   // this should be an union
       int serialNo;
       SndFile* downmix;
-      Route sroute, droute;
+      Route route;
       int ival;
       int iival;
       CVal cval1, cval2;
@@ -230,11 +230,11 @@ class Audio {
       void msgPanic();
       void sendMsg(AudioMsg*);
       bool sendMessage(AudioMsg* m, bool doUndo);
-      void msgRoute(bool add, Route, Route);
-      void msgRemoveRoute(Route, Route);
-      void msgRemoveRoute1(Route, Route);
-      void msgAddRoute(Route, Route);
-      void msgAddRoute1(Route, Route);
+      void msgRoute(bool add, Route);
+      void msgRemoveRoute(Route);
+      void msgRemoveRoute1(Route);
+      void msgAddRoute(Route);
+      void msgAddRoute1(Route);
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin, bool prefader);
       void msgAddMidiPlugin(MidiTrackBase*, int idx, MidiPluginI* plugin);
       void msgSetMute(AudioTrack*, bool val);

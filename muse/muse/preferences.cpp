@@ -162,7 +162,7 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       twi(id, "Midi Track",     0x500 + Track::MIDI);
       twi(id, "Midi Output",    0x500 + Track::MIDI_OUT);
       twi(id, "Midi Input",     0x500 + Track::MIDI_IN);
-      twi(id, "Midi Channel",   0x500 + Track::MIDI_CHANNEL);
+//      twi(id, "Midi Channel",   0x500 + Track::MIDI_CHANNEL);
       twi(id, "Midi Synti",     0x500 + Track::MIDI_SYNTI);
 
       id = twi(itemList, "BigTime", 0);

@@ -22,7 +22,6 @@
 #include "midictrl.h"
 #include "track.h"
 #include "miditrack.h"
-#include "midichannel.h"
 #include "audiotrack.h"
 #include "plugin.h"
 #include "pipeline.h"
@@ -151,6 +150,7 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
             //
             //    add midi channel controller
             //
+#if 0 //TODOA
             MidiChannel* mc = ((MidiTrack*)track)->channel();
             if (mc) {
                   ci = new QTreeWidgetItem(tw, CTRL_NO_CTRL);
@@ -170,6 +170,7 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                               }
                         }
                   }
+#endif
             }
       ci = new QTreeWidgetItem(tw, CTRL_OTHER);
       ci->setText(0, tr("other"));

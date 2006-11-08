@@ -15,7 +15,6 @@
 #include "routedialog.h"
 #include "synth.h"
 #include "midiinport.h"
-#include "midichannel.h"
 #include "midioutport.h"
 
 extern void populateAddTrack(QMenu* addTrack);
@@ -45,7 +44,6 @@ Mixer::Mixer(QWidget* parent, MixerConfig* c)
       showMidiTracksId  = menuView->addAction(tr("Show Midi Tracks"));
       showMidiOutPortId = menuView->addAction(tr("Show Midi Out Ports"));
       showMidiInPortId  = menuView->addAction(tr("Show Midi In Ports"));
-      showMidiChannelId = menuView->addAction(tr("Show Midi Channels"));
 
       menuView->addSeparator();
 
@@ -59,7 +57,6 @@ Mixer::Mixer(QWidget* parent, MixerConfig* c)
       showMidiTracksId->setCheckable(true);
       showMidiInPortId->setCheckable(true);
       showMidiOutPortId->setCheckable(true);
-      showMidiChannelId->setCheckable(true);
       showWaveTracksId->setCheckable(true);
       showOutputTracksId->setCheckable(true);
       showGroupTracksId->setCheckable(true);
@@ -116,9 +113,6 @@ void Mixer::addStrip(Track* t, int idx)
                   case Track::MIDI_OUT:
                         strip = new MidiOutPortStrip(this, (MidiOutPort*)t, true);
                         break;
-                  case Track::MIDI_CHANNEL:
-                        strip = new MidiChannelStrip(this, (MidiChannel*)t, true);
-                        break;
                   case Track::MIDI:
                         strip = new MidiStrip(this, (MidiTrack*)t, true);
                         break;
@@ -159,7 +153,6 @@ void Mixer::updateMixer(int action)
       showMidiTracksId->setChecked(cfg->showMidiTracks);
       showMidiInPortId->setChecked(cfg->showMidiInPorts);
       showMidiOutPortId->setChecked(cfg->showMidiOutPorts);
-      showMidiChannelId->setChecked(cfg->showMidiChannels);
       showWaveTracksId->setChecked(cfg->showWaveTracks);
       showOutputTracksId->setChecked(cfg->showOutputTracks);
       showGroupTracksId->setChecked(cfg->showGroupTracks);
@@ -179,10 +172,10 @@ void Mixer::updateMixer(int action)
                   stripList.erase(ssi);
                   }
             int idx = stripList.size();
-            setMaximumWidth(STRIP_WIDTH * idx);
+            setMaximumWidth(STRIP_WIDTH * idx + 4);
             central->setFixedWidth(STRIP_WIDTH * idx);
             if (idx < 4)
-                  setMinimumWidth(idx * STRIP_WIDTH);
+                  setMinimumWidth(idx * STRIP_WIDTH + 4);
             return;
             }
 
@@ -241,17 +234,6 @@ void Mixer::updateMixer(int action)
                   addStrip(*i, idx++);
             }
 
-      if (cfg->showMidiChannels) {
-            MidiChannelList* mpl = song->midiChannel();
-            for (iMidiChannel i = mpl->begin(); i != mpl->end(); ++i) {
-                  MidiChannel* mc = *i;
-                  //
-                  // show only if used
-                  //
-                  if (!mc->noInRoute())
-                        addStrip(mc, idx++);
-                  }
-            }
       if (cfg->showMidiOutPorts) {
             MidiOutPortList* mpl = song->midiOutPorts();
             for (iMidiOutPort i = mpl->begin(); i != mpl->end(); ++i)
@@ -277,10 +259,10 @@ void Mixer::updateMixer(int action)
             for (iAudioOutput i = otl->begin(); i != otl->end(); ++i)
                   addStrip(*i, idx++);
             }
-      setMaximumWidth(STRIP_WIDTH * idx);
+      setMaximumWidth(STRIP_WIDTH * idx + 4);
       central->setFixedWidth(STRIP_WIDTH * idx);
       if (idx < 4)
-            setMinimumWidth(idx * STRIP_WIDTH);
+            setMinimumWidth(idx * STRIP_WIDTH + 4);
       layout->update();
       }
 
@@ -375,8 +357,6 @@ void Mixer::showTracksChanged(QAction* id)
             cfg->showMidiInPorts = val;
       else if (id == showMidiOutPortId)
             cfg->showMidiOutPorts = val;
-      else if (id == showMidiChannelId)
-            cfg->showMidiChannels = val;
       updateMixer(UPDATE_ALL);
       }
 
@@ -396,7 +376,6 @@ void Mixer::write(Xml& xml, const char* name)
       xml.intTag("showSyntiTracks",  cfg->showSyntiTracks);
       xml.intTag("showMidiInPorts",  cfg->showMidiInPorts);
       xml.intTag("showMidiOutPorts", cfg->showMidiOutPorts);
-      xml.intTag("showMidiChannels", cfg->showMidiChannels);
       xml.etag("%s", name);
       }
 
