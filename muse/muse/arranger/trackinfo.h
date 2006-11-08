@@ -22,7 +22,6 @@
 #define __TRACKINFO_H__
 
 #include "ui_miditrackinfo.h"
-#include "ui_midichannelinfo.h"
 #include "ui_midiportinfo.h"
 
 class Track;
