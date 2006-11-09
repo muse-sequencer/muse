@@ -79,14 +79,14 @@ class TLWidget : public QWidget {
       void monitorToggled(bool);
       void drumMapToggled(bool);
       void selectionChanged();
-      void outChannelChanged(int);
-      void setOutChannel(int);
       void setOutPort(int);
       void autoReadToggled(bool val);
       void autoWriteToggled(bool val);
       void instrumentSelected(int);
       void instrumentChanged();
       void updateOffState();
+      void channelChanged(int);
+      void setChannel(int);
 
    public slots:
       void select();

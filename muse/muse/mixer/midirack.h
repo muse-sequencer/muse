@@ -1,10 +1,22 @@
-//=========================================================
+//=============================================================================
 //  MusE
 //  Linux Music Editor
-//  $Id: midirack.h,v 1.7 2005/12/28 13:13:26 wschweer Exp $
+//  $Id:$
 //
-//  (C) Copyright 2005 Werner Schweer (ws@seh.de)
-//=========================================================
+//  Copyright (C) 2002-2006 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
 
 #ifndef __MIDIRACK_H__
 #define __MIDIRACK_H__

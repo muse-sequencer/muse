@@ -246,11 +246,8 @@ void AudioStrip::songChanged(int val)
       AudioTrack* src = (AudioTrack*)track;
       if (val & SC_TRACK_MODIFIED)
             updateLabel();
-      if (val & SC_ROUTE) {
-            if (pre) {
-                  pre->setChecked(src->prefader());
-                  }
-            }
+      if ((val & SC_ROUTE) && pre)
+            pre->setChecked(src->prefader());
       if (val & SC_CHANNELS)
             updateChannels();
       }

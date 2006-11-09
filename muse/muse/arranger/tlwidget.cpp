@@ -420,8 +420,8 @@ void TLWidget::configChanged()
                               outChannel->setToolTip(tr("Midi Output Channel"));
                               l->addWidget(outChannel);
                               wlist.push_back(outChannel);
-                              connect(outChannel, SIGNAL(valueChanged(int)), SLOT(outChannelChanged(int)));
-                              connect((MidiTrack*)_track, SIGNAL(outChannelChanged(int)), SLOT(setOutChannel(int)));
+                              connect(outChannel, SIGNAL(valueChanged(int)), SLOT(setChannel(int)));
+                              connect((MidiTrack*)_track, SIGNAL(channelChanged(int)), SLOT(channelChanged(int)));
                               }
                               break;
 
@@ -515,36 +515,6 @@ void TLWidget::autoWriteToggled(bool val)
 void TLWidget::setOutPort(int n)
       {
       outPort->setCurrentIndex(n);
-      }
-
-//---------------------------------------------------------
-//   outChannelChanged
-//---------------------------------------------------------
-
-void TLWidget::outChannelChanged(int n)
-      {
-#if 0 //TODOA
-      n -= 1;
-      MidiChannel* mc = ((MidiTrack*)_track)->channel();
-      if (mc == 0)		// no route to port?
-            return;
-      MidiOut* mp = mc->port();
-      int id = mc->channelNo();
-      if (id == n)
-            return;
-      audio->msgRemoveRoute(Route(_track), Route(mc));
-      audio->msgAddRoute(Route(_track), Route(mp->channel(n)));
-      song->update(SC_ROUTE);
-#endif
-      }
-
-//---------------------------------------------------------
-//   setOutChannel
-//---------------------------------------------------------
-
-void TLWidget::setOutChannel(int)
-      {
-//TODO3      outChannel->setValue(n + 1);
       }
 
 //---------------------------------------------------------
@@ -643,3 +613,29 @@ void TLWidget::paintEvent(QPaintEvent* ev)
             p.fillRect(qr, color);
             }
       }
+
+//---------------------------------------------------------
+//   channelChanged
+//    SLOT: callend when channel routing of track has
+//          changed
+//    - channel starts counting at 0
+//---------------------------------------------------------
+
+void TLWidget::channelChanged(int channel)
+      {
+      if (outChannel->value() == channel + 1)
+            return;
+      outChannel->setValue(channel + 1);
+      }
+
+//---------------------------------------------------------
+//   setChannel
+//    - called when channel spinbox value changed
+//    - channel starts counting at 1
+//---------------------------------------------------------
+
+void TLWidget::setChannel(int channel)
+      {
+      ((MidiTrack*)_track)->setChannel(channel - 1);      
+      }
+

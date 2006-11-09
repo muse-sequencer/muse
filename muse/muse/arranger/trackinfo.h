@@ -85,7 +85,6 @@ class MidiTrackInfo : public TrackInfo {
       void autoChanged(Track*,bool);
       void controllerChanged(int);
       void portSelected(int);
-      void channelSelected(int);
       void deviceIdChanged(int);
 
    public:

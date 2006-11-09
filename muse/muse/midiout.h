@@ -28,7 +28,6 @@
 
 class Track;
 class MidiInstrument;
-class MidiChannel;
 
 //---------------------------------------------------------
 //    MidiOut
@@ -49,8 +48,6 @@ class MidiOut
       MidiOut();
       void processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick, 
          unsigned fromFrame, unsigned toFrame);
-      MidiInstrument* instrument()          { return _instrument; }
-      void setInstrument(MidiInstrument* i) { _instrument = i; }
 
       void seek(unsigned, unsigned);
       void stop();

@@ -304,18 +304,10 @@ static int graph_callback(void*)
 //    by graph_callback()
 //---------------------------------------------------------
 
-struct RouteRoute {
-      Route src;
-      Route dst;
-      };
-
 void JackAudio::graphChanged()
       {
-#if 0 //TODOA
-      QList<RouteRoute> rr;
-      QList<RouteRoute> ra;
+      RouteList rr, ra;
 
-// printf("graphChanged\n");
       InputList* il = song->inputs();
       for (iAudioInput ii = il->begin(); ii != il->end(); ++ii) {
             AudioInput* it = *ii;
@@ -332,10 +324,10 @@ void JackAudio::graphChanged()
                   // check for disconnects
                   //---------------------------------------
 
-                  foreach (Route r, *irl) {
-                        if (r.channel != channel)
+                  foreach (const Route& r, *irl) {
+                        if (r.dst.channel != channel)
                               continue;
-                        const char* name = jack_port_name(r.port.jackPort());
+                        const char* name = jack_port_name(r.src.port.jackPort());
                         bool found      = false;
                         for (const char** pn = ports; pn && *pn; ++pn) {
                               if (strcmp(*pn, name) == 0) {
@@ -343,12 +335,8 @@ void JackAudio::graphChanged()
                                     break;
                                     }
                               }
-                        if (!found) {
-                              RouteRoute a;
-                              a.src = Route(r.port, channel, Route::AUDIOPORT);
-                              a.dst = Route(it, channel);
-                              rr.append(a);
-                              }
+                        if (!found)
+                              rr.append(r);
                         }
 
                   //---------------------------------------
@@ -358,36 +346,33 @@ void JackAudio::graphChanged()
                   if (ports) {
                         for (const char** pn = ports; *pn; ++pn) {
                               bool found = false;
-                              foreach(Route r, *irl) {
-                                    if (r.channel != channel)
+                              foreach(const Route& r, *irl) {
+                                    if (r.dst.channel != channel)
                                           continue;
-                                    const char* name = jack_port_name(r.port.jackPort());
+                                    const char* name = jack_port_name(r.src.port.jackPort());
                                     if (strcmp(*pn, name) == 0) {
                                           found = true;
                                           break;
                                           }
                                     }
                               if (!found) {
-                                    RouteRoute a;
+                                    Route a;
                                     Port port(jack_port_by_name(_client, *pn));
-                                    a.src = Route(port, channel, Route::AUDIOPORT);
-                                    a.dst = Route(it, channel);
+                                    a.src = RouteNode(port, -1, RouteNode::AUDIOPORT);
+                                    a.dst = RouteNode(it, channel);
                                     ra.append(a);
                                     }
                               }
-
                         free(ports);
                         }
                   }
             }
 
 // printf("  input: remove %d add %d routes\n", rr.size(), ra.size());
-      foreach(RouteRoute a, rr) {
-            audio->msgRemoveRoute1(a.src, a.dst);
-            }
-      foreach(RouteRoute a, ra) {
-            audio->msgAddRoute1(a.src, a.dst);
-            }
+      foreach(Route r, rr)
+            audio->msgRemoveRoute1(r);
+      foreach(Route r, ra)
+            audio->msgAddRoute1(r);
       rr.clear();
       ra.clear();      
 
@@ -406,10 +391,10 @@ void JackAudio::graphChanged()
                   // check for disconnects
                   //---------------------------------------
 
-                  foreach(Route r, *rl) {
-                        if (r.channel != channel)
+                  foreach(const Route& r, *rl) {
+                        if (r.src.channel != channel)
                               continue;
-                        const char* name = jack_port_name(r.port.jackPort());
+                        const char* name = jack_port_name(r.dst.port.jackPort());
                         bool found = false;
                         const char** pn = ports;
                         while (pn && *pn) {
@@ -419,12 +404,8 @@ void JackAudio::graphChanged()
                                     }
                               ++pn;
                               }
-                        if (!found) {
-                              RouteRoute a;
-                              a.src = Route(it, channel);
-                              a.dst = Route(r.port, channel, Route::AUDIOPORT);
-                              rr.append(a);
-                              }
+                        if (!found)
+                              rr.append(r);
                         }
 
                   //---------------------------------------
@@ -435,20 +416,20 @@ void JackAudio::graphChanged()
                         const char** pn = ports;
                         while (*pn) {
                               bool found = false;
-                              for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
-                                    if (irl->channel != channel)
+                              foreach (const Route& r, *rl) {
+                                    if (r.src.channel != channel)
                                           continue;
-                                    const char* name = jack_port_name(irl->port.jackPort());
+                                    const char* name = jack_port_name(r.dst.port.jackPort());
                                     if (strcmp(*pn, name) == 0) {
                                           found = true;
                                           break;
                                           }
                                     }
                               if (!found) {
-                                    RouteRoute a;
-                                    a.src = Route(it, channel);
+                                    Route a;
                                     Port port(jack_port_by_name(_client, *pn));
-                                    a.dst = Route(port, channel, Route::AUDIOPORT);
+                                    a.src = RouteNode(it, channel, RouteNode::TRACK);
+                                    a.dst = RouteNode(port, -1, RouteNode::AUDIOPORT);
                                     ra.append(a);
                                     }
                               ++pn;
@@ -458,11 +439,10 @@ void JackAudio::graphChanged()
                   }
             }
 // printf("  output: remove %d add %d routes\n", rr.size(), ra.size());
-      foreach(RouteRoute a, rr)
-            audio->msgRemoveRoute1(a.src, a.dst);
-      foreach(RouteRoute a, ra)
-            audio->msgAddRoute1(a.src, a.dst);
-#endif
+      foreach(Route r, rr)
+            audio->msgRemoveRoute1(r);
+      foreach(Route r, ra)
+            audio->msgAddRoute1(r);
       }
 
 //static int xrun_callback(void*)

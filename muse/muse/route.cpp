@@ -37,7 +37,6 @@ RouteNode::RouteNode()
       track   = 0;
       channel = -1;
       type    = TRACK;
-      disconnected = false;
       }
 
 RouteNode::RouteNode(Port p, int ch, RouteNodeType t)
@@ -45,7 +44,6 @@ RouteNode::RouteNode(Port p, int ch, RouteNodeType t)
       port    = p;
       channel = ch;
       type    = t;
-      disconnected = false;
       }
 
 RouteNode::RouteNode(Port p, RouteNodeType t)
@@ -53,7 +51,6 @@ RouteNode::RouteNode(Port p, RouteNodeType t)
       port    = p;
       channel = -1;
       type    = t;
-      disconnected = false;
       }
 
 RouteNode::RouteNode(Track* tr)
@@ -61,7 +58,6 @@ RouteNode::RouteNode(Track* tr)
       track   = tr;
       channel = -1;
       type    = TRACK;
-      disconnected = false;
       }
 
 RouteNode::RouteNode(AuxPluginIF* p)
@@ -69,7 +65,6 @@ RouteNode::RouteNode(AuxPluginIF* p)
       plugin  = p;
       channel = -1;
       type    = AUXPLUGIN;
-      disconnected = false;
       }
 
 RouteNode::RouteNode(Track* tr, int ch, RouteNodeType t)
@@ -77,7 +72,6 @@ RouteNode::RouteNode(Track* tr, int ch, RouteNodeType t)
       track   = tr;
       channel = ch;
       type    = t;
-      disconnected = false;
       }
 
 //---------------------------------------------------------
@@ -290,9 +284,8 @@ void Song::readRoute(QDomNode n)
               d.tname(), d.channel, d.name().toLatin1().data());
             return;
             }
-      s.disconnected = true;
-      d.disconnected = true;
       Route r(s, d);
+      r.disconnected = true;
       addRoute(r);
       }
 

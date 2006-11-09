@@ -334,7 +334,6 @@ void AlsaMidi::getOutputPollFd(struct pollfd** p, int* n)
 
 void AlsaMidi::addConnection(snd_seq_connect_t* ev)
       {
-#if 0 //TODOA
       Port rs(ev->sender.client, ev->sender.port);
       Port rd(ev->dest.client, ev->dest.port);
 
@@ -344,11 +343,11 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
             Port src = oport->alsaPort(0);
 
             if (src == rs) {
-                  RouteNode r(rd, Route::MIDIPORT);
-                  if (oport->outRoutes()->indexOf(r) == -1) {
-                        Port port(ev->dest.client, ev->dest.port);
-                        oport->outRoutes()->push_back(Route(port, -1, Route::MIDIPORT));
-                        }
+                  RouteNode src(oport);
+                  RouteNode dst(rd, -1, RouteNode::MIDIPORT);
+                  Route r = Route(src, dst);
+                  if (oport->outRoutes()->indexOf(r) == -1)
+                        oport->outRoutes()->push_back(r);
                   break;
                   }
             }
@@ -359,15 +358,14 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
             Port dst = iport->alsaPort();
 
             if (dst == rd) {
-                  Route r(rs, Route::MIDIPORT);
-                  if (iport->inRoutes()->indexOf(r) == -1) {
-                        Port port(ev->sender.client, ev->sender.port);
-                        iport->inRoutes()->push_back(Route(port, -1, Route::MIDIPORT));
-                        }
+                  RouteNode src(rs, -1, RouteNode::MIDIPORT);
+                  RouteNode dst(iport);
+                  Route r = Route(src, dst);
+                  if (iport->inRoutes()->indexOf(r) == -1)
+                        iport->inRoutes()->push_back(r);
                   break;
                   }
             }
-#endif
       }
 
 //---------------------------------------------------------
@@ -377,7 +375,6 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
 
 void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
       {
-#if 0 //TODOA
       Port rs(ev->sender.client, ev->sender.port);
       Port rd(ev->dest.client, ev->dest.port);
 
@@ -389,7 +386,7 @@ void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
             if (dst == rd) {
                   RouteList* irl = iport->outRoutes();
                   for (iRoute r = irl->begin(); r != irl->end(); ++r) {
-                        if (!r->disconnected && (r->port == rs)) {
+                        if (!r->disconnected && (r->src.port == rs)) {
                               iport->inRoutes()->erase(r);
                               break;
                               }
@@ -406,7 +403,7 @@ void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
             if (src == rs) {
                   RouteList* orl = oport->outRoutes();
                   for (iRoute r = orl->begin(); r != orl->end(); ++r) {
-                        if (!r->disconnected && (r->port == rd)) {
+                        if (!r->disconnected && (r->dst.port == rd)) {
                               orl->erase(r);
                               break;
                               }
@@ -414,7 +411,6 @@ void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
                   break;
                   }
             }
-#endif
       }
 
 //---------------------------------------------------------

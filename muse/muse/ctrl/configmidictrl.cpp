@@ -138,13 +138,10 @@ void ConfigMidiCtrl::done(int code)
             QDialog::done(code);
             return;
             }
-#if 0 //TODOA
-      if (track->type() == Track::MIDI)
-            MidiTrack* mc = (MidiTrack*)track;
-
-            MidiOut* port           = mc->port();
+#if 1 //TODOA
+      if (track->type() == Track::MIDI) {
             ControllerNameList* cn  = track->controllerNames();
-            MidiInstrument* instr   = port->instrument();
+            MidiInstrument* instr   = track->instrument();
             MidiControllerList* mcl = instr->controller();
 
             //

@@ -42,8 +42,6 @@ MidiOutPort::MidiOutPort()
       {
       track      = this;
       _instrument = genericMidiInstrument;
-//      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
-//            _channel[ch] = new MidiChannel(this, ch);
       setDeviceId(127);        // all
       addMidiController(_instrument, CTRL_MASTER_VOLUME);
       _channels = 1;

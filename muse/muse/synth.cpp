@@ -187,9 +187,6 @@ SynthI::SynthI()
       _sif        = 0;
       // setVolume(1.0);
       // setPan(0.0);
-      _instrument = this;
-//      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
-//            _channel[ch] = new MidiChannel(this, ch);
       }
 
 //---------------------------------------------------------
@@ -200,8 +197,6 @@ SynthI::~SynthI()
       {
       deactivate2();
       deactivate3();
-//      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
-//            delete _channel[ch];
       }
 
 //---------------------------------------------------------
@@ -211,8 +206,6 @@ SynthI::~SynthI()
 void SynthI::setName(const QString& s)
       {
       Track::setName(s);
-//      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
-//            _channel[ch]->setDefaultName();
       }
 
 //---------------------------------------------------------

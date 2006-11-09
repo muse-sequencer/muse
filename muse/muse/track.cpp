@@ -977,29 +977,29 @@ void Track::activate2()
       foreach(Route r, _outRoutes) {
             if (r.dst.type == RouteNode::JACKMIDIPORT) {
                   audioDriver->connect(_jackPort[0], r.dst.port);
-                  r.dst.disconnected = false;
+                  r.disconnected = false;
                   }
             else if (r.dst.type == RouteNode::AUDIOPORT) {
                   audioDriver->connect(_jackPort[r.src.channel], r.dst.port);
-                  r.dst.disconnected = false;
+                  r.disconnected = false;
                   }
             else if (r.dst.type == RouteNode::MIDIPORT) {
                   midiDriver->connect(_alsaPort[0], r.dst.port);
-                  r.dst.disconnected = false;
+                  r.disconnected = false;
                   }
             }
       foreach(Route r, _inRoutes) {
             if (r.src.type == RouteNode::JACKMIDIPORT) {
                   audioDriver->connect(r.src.port, _jackPort[0]);
-                  r.src.disconnected = false;
+                  r.disconnected = false;
                   }
             else if (r.src.type == RouteNode::AUDIOPORT) {
                   audioDriver->connect(r.src.port, _jackPort[r.dst.channel]);
-                  r.src.disconnected = false;
+                  r.disconnected = false;
                   }
             else if (r.src.type == RouteNode::MIDIPORT) {
                   midiDriver->connect(r.src.port, _alsaPort[0]);
-                  r.src.disconnected = false;
+                  r.disconnected = false;
                   }
             }
       }
@@ -1014,29 +1014,29 @@ void Track::deactivate()
 // printf("deactivate<%s>\n", name().toLatin1().data());
       foreach(Route r, _outRoutes) {
             if (r.dst.type == RouteNode::JACKMIDIPORT) {
-                  r.dst.disconnected = true;
+                  r.disconnected = true;
                   audioDriver->disconnect(_jackPort[0], r.dst.port);
                   }
             else if (r.dst.type == RouteNode::AUDIOPORT) {
                   audioDriver->disconnect(_jackPort[r.src.channel], r.dst.port);
-                  r.dst.disconnected = true;
+                  r.disconnected = true;
                   }
             else if (r.dst.type == RouteNode::MIDIPORT) {
-                  r.dst.disconnected = true;
+                  r.disconnected = true;
                   midiDriver->disconnect(_alsaPort[0], r.dst.port);
                   }
             }
       foreach(Route r, _inRoutes) {
             if (r.src.type == RouteNode::JACKMIDIPORT) {
-                  r.src.disconnected = true;
+                  r.disconnected = true;
                   audioDriver->disconnect(r.src.port, _jackPort[0]);
                   }
             else if (r.src.type == RouteNode::AUDIOPORT) {
-                  r.src.disconnected = true;
+                  r.disconnected = true;
                   audioDriver->disconnect(r.src.port, _jackPort[r.dst.channel]);
                   }
             else if (r.src.type == RouteNode::MIDIPORT) {
-                  r.src.disconnected = true;
+                  r.disconnected = true;
                   midiDriver->disconnect(r.src.port, _alsaPort[0]);
                   }
             }

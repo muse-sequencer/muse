@@ -43,7 +43,6 @@ struct MixerConfig {
       bool showMidiInPorts;
       bool showMidiSyntiPorts;
       bool showMidiOutPorts;
-      bool showMidiChannels;
       bool showOutputTracks;
       bool showWaveTracks;
       bool showGroupTracks;

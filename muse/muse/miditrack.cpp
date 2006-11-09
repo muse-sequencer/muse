@@ -465,17 +465,6 @@ bool MidiTrack::isMute() const
       return _mute;
       }
 
-#if 0
-//---------------------------------------------------------
-//   changeDrumMap
-//---------------------------------------------------------
-
-void MidiTrack::changeDrumMap() const
-	{
-      emit drumMapChanged();
-      }
-#endif
-
 //---------------------------------------------------------
 //   getEvents
 //    from/to - midi ticks
@@ -655,21 +644,15 @@ void MidiTrack::setUseDrumMap(bool val)
             }
       }
 
-
 //---------------------------------------------------------
 //   instrument
 //---------------------------------------------------------
 
-MidiInstrument* MidiTrack::instrument() const
+MidiInstrument* MidiTrack::instrument()
       {
       if (_outRoutes.isEmpty())
             return genericMidiInstrument;
-      Track* track = _outRoutes[0].dst.track;
-      if (track->type() == MIDI_OUT)
-            return ((MidiOutPort*)track)->instrument();
-      else if (track->type() == AUDIO_SOFTSYNTH)
-            return ((SynthI*)track)->instrument();
-      return 0;
+      return _outRoutes[0].dst.track->instrument();
       }
 
 //---------------------------------------------------------
@@ -678,8 +661,8 @@ MidiInstrument* MidiTrack::instrument() const
 
 int MidiTrack::channelNo() const
       {
-      if (_outRoutes.isEmpty())
-            return -1;
+      if (_outRoutes.isEmpty())     // TODO: better: remember old channel setting
+            return 0;
       return _outRoutes[0].dst.channel;
       }
 
@@ -687,16 +670,26 @@ int MidiTrack::channelNo() const
 //   midiOut
 //---------------------------------------------------------
 
-MidiOut* MidiTrack::midiOut() const
+MidiOut* MidiTrack::midiOut()
       {
       if (_outRoutes.isEmpty())
             return 0;
-      Track* track = _outRoutes[0].dst.track;
-      if (track->type() == AUDIO_SOFTSYNTH) {
-            SynthI* s = (SynthI*) track;
-            return s;
-            }
-      MidiOutPort* op = (MidiOutPort*) track;
-      return op;
+      return _outRoutes[0].dst.track->midiOut();
       }
 
+//---------------------------------------------------------
+//   setChannel
+//---------------------------------------------------------
+
+void MidiTrack::setChannel(int n)
+      {
+      if (_outRoutes.isEmpty())
+            return;
+      Route r = _outRoutes[0];
+      if (r.dst.channel == n)
+            return;
+      audio->msgRemoveRoute(r);
+      r.dst.channel = n;
+      audio->msgAddRoute(r);
+	emit channelChanged(n);
+      }

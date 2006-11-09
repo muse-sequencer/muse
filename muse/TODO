@@ -2,6 +2,7 @@
 (29.10.2006)
 ----------------------------------------------------------------------------
 
+      - dont allow for overlapping parts
 BUGS
       - make sure all track names are unique
 

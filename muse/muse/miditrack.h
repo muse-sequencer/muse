@@ -62,7 +62,10 @@ class MidiTrack : public MidiTrackBase {
    signals:
       void drumMapChanged() const;
       void useDrumMapChanged(bool);
-      void outChannelChanged(int);
+      void channelChanged(int);
+
+   public slots:
+      void setChannel(int);
 
    public:
       MidiTrack();
@@ -104,8 +107,9 @@ class MidiTrack : public MidiTrackBase {
 
       int channelNo() const;
       virtual void emitControllerChanged(int id);
-      MidiOut* midiOut() const;
-      MidiInstrument* instrument() const;
+
+      virtual MidiOut* midiOut();
+      virtual MidiInstrument* instrument();
       };
 
 typedef QList<MidiTrack*> MidiTrackList;

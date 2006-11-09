@@ -51,9 +51,6 @@ struct RouteNode {
             AuxPluginIF* plugin;
             };
       int channel;            // route to/from JACK can specify a channel to connect to
-      bool disconnected;      // if true, do not remove route in graphChanged()
-                              // or removeConnection()
-
       RouteNodeType type;
 
       RouteNode();
@@ -88,8 +85,10 @@ struct RouteNode {
 struct Route {
       RouteNode src;
       RouteNode dst;
+      bool disconnected;      // if true, do not remove route in graphChanged()
+                              // or removeConnection()
 
-      Route() {}
+      Route() { disconnected = false; }
       Route(const RouteNode& s, const RouteNode& d) : src(s), dst(d) {}
       bool operator==(const Route& a) const { 
             return (src==a.src) && (dst==a.dst);

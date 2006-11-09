@@ -36,7 +36,6 @@ static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
 MidiOut::MidiOut()
       {
       track = 0;
-      _instrument = 0;
       }
 
 //---------------------------------------------------------

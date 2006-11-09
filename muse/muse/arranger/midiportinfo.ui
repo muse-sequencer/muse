@@ -1,7 +1,4 @@
 <ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>MidiPortInfoBase</class>
  <widget class="QWidget" name="MidiPortInfoBase" >
   <property name="geometry" >
@@ -25,7 +22,7 @@
   </property>
   <layout class="QGridLayout" >
    <property name="margin" >
-    <number>6</number>
+    <number>0</number>
    </property>
    <property name="spacing" >
     <number>0</number>
@@ -64,7 +61,6 @@
    </item>
   </layout>
  </widget>
- <pixmapfunction></pixmapfunction>
  <resources/>
  <connections/>
 </ui>

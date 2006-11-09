@@ -117,10 +117,7 @@ class MidiInstrument {
 //   MidiInstrumentList
 //---------------------------------------------------------
 
-class MidiInstrumentList : public std::vector<MidiInstrument*> {
-
-   public:
-      MidiInstrumentList() {}
+class MidiInstrumentList : public QList<MidiInstrument*> {
       };
 
 typedef MidiInstrumentList::iterator iMidiInstrument;

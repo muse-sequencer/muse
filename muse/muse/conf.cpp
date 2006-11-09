@@ -671,7 +671,6 @@ void MixerConfig::write(Xml& xml, const char* name)
       xml.intTag("showSyntiTracks",  showSyntiTracks);
       xml.intTag("showMidiInPorts",  showMidiInPorts);
       xml.intTag("showMidiOutPorts", showMidiOutPorts);
-      xml.intTag("showMidiChannels", showMidiChannels);
       xml.etag("%s", name);
       }
 
@@ -708,8 +707,6 @@ void MixerConfig::read(QDomNode node)
                   showMidiInPorts = i;
             else if (tag == "showMidiOutPorts")
                   showMidiOutPorts = i;
-            else if (tag == "showMidiChannels")
-                  showMidiChannels = i;
             else
                   printf("MusE:MixerConfig: unknown tag %s\n", e.tagName().toAscii().data());
             }

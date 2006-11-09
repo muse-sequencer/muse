@@ -146,32 +146,6 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                         }
                   }
             }
-      if (track->type() == Track::MIDI) {
-            //
-            //    add midi channel controller
-            //
-#if 0 //TODOA
-            MidiChannel* mc = ((MidiTrack*)track)->channel();
-            if (mc) {
-                  ci = new QTreeWidgetItem(tw, CTRL_NO_CTRL);
-                  ci->setText(0, tr("Midi Channel Controller"));
-
-                  ControllerNameList* cn = mc->controllerNames();
-                  for (iControllerName i = cn->begin(); i != cn->end(); ++i) {
-                        QTreeWidgetItem* cci = new QTreeWidgetItem(ci, i->id);
-                        cci->setText(0, i->name);
-                        Ctrl* ctrl = mc->getController(i->id);
-                        if (!ctrl->empty())
-                              cci->setText(1, "*");
-
-                        if (i->id == currentId) {
-                              tw->setCurrentItem(cci);
-                              tw->setItemSelected(cci, true);
-                              }
-                        }
-                  }
-#endif
-            }
       ci = new QTreeWidgetItem(tw, CTRL_OTHER);
       ci->setText(0, tr("other"));
       connect(tw, 

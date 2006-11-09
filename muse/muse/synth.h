@@ -179,6 +179,9 @@ class SynthI : public AudioTrack, public MidiOut, public MidiInstrument
       bool isActivated() const         { return synthesizer && _sif; }
       virtual bool hasAuxSend() const  { return _sif->hasAuxSend(); }
       void processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
+
+      virtual MidiOut* midiOut() { return this; }
+      virtual MidiInstrument* instrument() { return this; }
       };
 
 //---------------------------------------------------------

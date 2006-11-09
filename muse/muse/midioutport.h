@@ -31,6 +31,7 @@
 class MidiOutPort : public MidiTrackBase, public MidiOut {
       Q_OBJECT
 
+      MidiInstrument* _instrument;
       void routeEvent(const MidiEvent&);
       void queueAlsaEvent(const MidiEvent& event);
       void queueJackEvent(const MidiEvent& event);
@@ -49,7 +50,8 @@ class MidiOutPort : public MidiTrackBase, public MidiOut {
       virtual bool isMute() const         { return _mute; }
       virtual Part* newPart(Part*, bool)  { return 0; }
 
-      MidiInstrument* instrument() const  { return _instrument; }
+      virtual MidiInstrument* instrument()  { return _instrument; }
+      virtual MidiOut* midiOut() { return this; }
       void setInstrument(MidiInstrument* i);
 
       bool guiVisible() const;

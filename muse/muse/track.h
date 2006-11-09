@@ -46,7 +46,7 @@ class PartList;
 class Part;
 class MidiOutPort;
 class MidiInPort;
-class MidiChannel;
+class MidiOut;
 
 #ifndef __APPLE__
 // actually it should check for ALSA but I don't know how to do that
@@ -325,7 +325,11 @@ class Track : public QObject {
       void setDeviceId(int val) { _deviceId = val; }
 
       virtual bool muteDefault() const { return false; }
+      virtual MidiOut* midiOut() { return 0;     }
+      virtual MidiInstrument* instrument() { return 0; }
       };
+
+Q_DECLARE_METATYPE(class Track*);
 
 //---------------------------------------------------------
 //   MidiTrackBase

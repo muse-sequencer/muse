@@ -89,12 +89,12 @@ GlobalConfigValues config = {
       QRect(0, 0, 600, 400),        // GeometryDrumedit;
       {
          QRect(0, 0, 300, 500),        // Mixer1
-         false, true, true, true, true,
+         false, true, true, true, 
          true, true, true, true, true, true
          },
       {
          QRect(200, 200, 300, 500),    // Mixer2
-         false, true, true, true, true,
+         false, true, true, true,
          true, true, true, true, true, true
          },
       false,                        // TransportVisible
