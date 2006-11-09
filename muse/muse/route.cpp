@@ -145,7 +145,7 @@ void removeRoute(const Route& r)
 //         r.dst.tname(), r.dst.channel, r.dst.name().toLatin1().data());
       if (r.src.type == RouteNode::AUDIOPORT || r.src.type == RouteNode::MIDIPORT
          || r.src.type == RouteNode::JACKMIDIPORT) {
-            if (r.dst.type != RouteNode::TRACK && r.dst.type != RouteNode::SYNTIPORT) {
+            if (r.dst.type != RouteNode::TRACK) {
                   fprintf(stderr, "removeRoute: bad route 1\n");
                   goto error;
                   }
@@ -239,7 +239,6 @@ QString RouteNode::name() const
       {
       switch (type) {
             case TRACK:
-            case SYNTIPORT:
                   return track2name(track);
             case AUDIOPORT:
             case JACKMIDIPORT:
@@ -309,9 +308,8 @@ bool RouteNode::operator==(const RouteNode& a) const
             return false;
       switch(type) {
             case TRACK:
-            case SYNTIPORT:
-                  return channel == a.channel && track == a.track;
             case MIDIPORT:
+                  return (channel == a.channel) && (track == a.track);
             case JACKMIDIPORT:
                   return port == a.port;
             case AUDIOPORT:
@@ -329,8 +327,7 @@ bool RouteNode::operator==(const RouteNode& a) const
 const char* RouteNode::tname(RouteNodeType t)
       {
       static const char* names[] = {
-            "TRACK", "AUDIOPORT", "MIDIPORT", "JACKMIDIPORT", 
-            "SYNTIPORT", "AUX"
+            "TRACK", "AUDIOPORT", "MIDIPORT", "JACKMIDIPORT", "AUX"
             };
       if (t > (int)(sizeof(names)/sizeof(*names)))
             return "???";
@@ -398,17 +395,6 @@ void RouteNode::read(QDomNode node)
             port = midiDriver->findPort(s);
             if (port.isZero())
                   printf("Route::read(): midiport <%s> not found\n", s.toLatin1().data());
-            }
-      else if (st == "SYNTIPORT") {
-            type = RouteNode::SYNTIPORT;
-            SynthIList* tl = song->syntis();
-            for (iSynthI i = tl->begin(); i != tl->end(); ++i) {
-                  SynthI* t = *i;
-                  if (t->name() == s) {
-                        track = t;
-                        break;
-                        }
-                  }
             }
       else if (st == "AUX") {
             type = RouteNode::AUXPLUGIN;

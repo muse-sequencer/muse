@@ -340,9 +340,9 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
       MidiOutPortList* opl = song->midiOutPorts();
       for (iMidiOutPort i = opl->begin(); i != opl->end(); ++i) {
             MidiOutPort* oport = *i;
-            Port src = oport->alsaPort(0);
+            Port sPort = oport->alsaPort(0);
 
-            if (src == rs) {
+            if (sPort == rs) {
                   RouteNode src(oport);
                   RouteNode dst(rd, -1, RouteNode::MIDIPORT);
                   Route r = Route(src, dst);
@@ -355,14 +355,16 @@ void AlsaMidi::addConnection(snd_seq_connect_t* ev)
       MidiInPortList* ipl = song->midiInPorts();
       for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i) {
             MidiInPort* iport = *i;
-            Port dst = iport->alsaPort();
+            Port dPort = iport->alsaPort(0);
 
-            if (dst == rd) {
+            if (dPort == rd) {
                   RouteNode src(rs, -1, RouteNode::MIDIPORT);
                   RouteNode dst(iport);
                   Route r = Route(src, dst);
-                  if (iport->inRoutes()->indexOf(r) == -1)
+                  if (iport->inRoutes()->indexOf(r) == -1) {
+printf("add connection\n");                  
                         iport->inRoutes()->push_back(r);
+                        }
                   break;
                   }
             }

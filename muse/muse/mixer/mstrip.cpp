@@ -132,7 +132,7 @@ static void addMidiOutPorts(QMenu* menu, Track* strack, int channel)
 
 static void addSyntiPorts(QMenu* menu, Track* strack, int channel)
       {
-      RouteList* rl = strack->inRoutes();
+      RouteList* rl = strack->outRoutes();
       RouteNode src(strack, channel, RouteNode::TRACK);
 
       SynthIList* sl = song->syntis();
@@ -144,7 +144,7 @@ static void addSyntiPorts(QMenu* menu, Track* strack, int channel)
             for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                   QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
                   a->setCheckable(true);
-                  RouteNode dst(sy, channel, RouteNode::TRACK);
+                  RouteNode dst(sy, ch, RouteNode::TRACK);
                   Route r = Route(src, dst);
                   a->setData(QVariant::fromValue(r));
                   a->setChecked(rl->indexOf(r) != -1);

@@ -38,19 +38,19 @@ using AL::Xml;
 //       Track/Channel
 //       AuxPlugin
 //       Port
-//       SYNTI
 //---------------------------------------------------------
 
 struct RouteNode {
-      enum RouteNodeType { TRACK, AUDIOPORT, MIDIPORT, JACKMIDIPORT,
-         SYNTIPORT, AUXPLUGIN};
+      enum RouteNodeType { 
+            TRACK, AUDIOPORT, MIDIPORT, JACKMIDIPORT, AUXPLUGIN
+            };
 
       Port   port;
       union {
             Track* track;
             AuxPluginIF* plugin;
             };
-      int channel;            // route to/from JACK can specify a channel to connect to
+      int channel;
       RouteNodeType type;
 
       RouteNode();
@@ -65,7 +65,7 @@ struct RouteNode {
             }
       bool isValid() const {
             return (isPortType() && !port.isZero())
-               || ((type == TRACK || type == SYNTIPORT) && track)
+               || ((type == TRACK) && track)
                || ((type == AUXPLUGIN) && plugin);
             }
       QString name() const;

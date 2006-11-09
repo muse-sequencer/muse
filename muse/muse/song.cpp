@@ -1773,7 +1773,7 @@ void Song::removeTrack2(Track* track)
       //  remove routes
       //
       foreach (const Route r, *(track->inRoutes())) {
-            if (r.src.type != RouteNode::TRACK && r.src.type != RouteNode::SYNTIPORT)
+            if (r.src.type != RouteNode::TRACK)
                   continue;
             int idx = r.src.track->outRoutes()->indexOf(r);
             if (idx != -1)
@@ -1782,7 +1782,7 @@ void Song::removeTrack2(Track* track)
                   printf("Song::removeTrack2(): input route not found\n");
             }
       foreach (const Route r, *(track->outRoutes())) {
-            if (r.dst.type != RouteNode::TRACK && r.dst.type != RouteNode::SYNTIPORT)
+            if (r.dst.type != RouteNode::TRACK)
                   continue;
             int idx = r.dst.track->inRoutes()->indexOf(r);
             if (idx != -1)
