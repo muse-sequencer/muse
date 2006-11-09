@@ -773,7 +773,7 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
             p.drawLine(rButton.x(), y, rButton.width(), y);
             }
       p.setRenderHint(QPainter::TextAntialiasing, true);
-      p.setRenderHint(QPainter::Antialiasing, true);
+//      p.setRenderHint(QPainter::Antialiasing, true);
 //      p.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
       QRect par = r & rPanelA;

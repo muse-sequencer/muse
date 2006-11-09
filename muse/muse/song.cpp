@@ -1517,75 +1517,60 @@ void Song::insertTrack(Track* track, int idx)
                   break;
             case Track::MIDI:
                   //
-                  // connect output to first non used midi channel
-                  // if there is already a route, do not add another
-                  // default routing
-                  //
-#if 0
-                  if (track->noOutRoute()) {
-                        for (iMidiChannel i = _midiChannel.begin(); i != _midiChannel.end(); ++i) {
-                              if ((*i)->noInRoute()) {
-                                    track->outRoutes()->push_back(Route(*i, -1, Route::TRACK));
-                                    break;
-                                    }
-                              }
-                        }
-#endif
-                  //
                   // connect to all midi inputs, if there is not already
                   // a route
                   //
-#if 0 //TODOA
                   if (!track->noInRoute()) {
                         MidiInPortList* mi = midiInPorts();
                         for (iMidiInPort i = mi->begin(); i != mi->end(); ++i) {
-                              for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
-                                    track->inRoutes()->push_back(Route(*i, ch, Route::TRACK));
+                              for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
+                                    RouteNode src(*i, ch, RouteNode::TRACK);
+                                    RouteNode dst(track, -1, RouteNode::TRACK);
+                                    Route r = Route(src, dst);
+                                    track->inRoutes()->push_back(r);
+                                    }
                               }
                         }
-#endif
                   break;
             case Track::AUDIO_SOFTSYNTH:
-//TODOA                  if (mo)
-//                        track->inRoutes()->push_back(Route(mo, -1, Route::TRACK));
-                  // fall through
-
             case Track::WAVE:
             case Track::AUDIO_GROUP:
-//TODOA                  if (ao)
-//                        track->outRoutes()->push_back(Route(ao));
+                  if (ao)
+                        track->outRoutes()->push_back(Route(RouteNode(track), RouteNode(ao)));
                   break;
 
             case Track::AUDIO_INPUT:
                   {
-#if 0 //TODOA
                   // connect first input channel to first available jack output
                   // etc.
                   QList<PortName> op = audioDriver->outputPorts(false);
                   QList<PortName>::iterator is = op.begin();
                   for (int ch = 0; ch < track->channels(); ++ch) {
                         if (is != op.end()) {
-                              track->inRoutes()->push_back(Route(is->port, ch, Route::AUDIOPORT));
+                              RouteNode src(is->port, -1, RouteNode::AUDIOPORT);
+                              RouteNode dst(track, ch, RouteNode::TRACK);
+                              Route r = Route(src, dst);
+                              track->inRoutes()->push_back(r);
                               ++is;
                               }
                         }
-                  if (ao)
-                        track->outRoutes()->push_back(Route(ao));
-#endif
+//                  if (ao)
+//                        track->outRoutes()->push_back(Route(ao));
                   }
                   break;
             case Track::AUDIO_OUTPUT:
                   {
-#if 0 //TODOA
                   QList<PortName> op = audioDriver->inputPorts(false);
                   QList<PortName>::iterator is = op.begin();
                   for (int ch = 0; ch < track->channels(); ++ch) {
                         if (is != op.end()) {
-                              track->outRoutes()->push_back(Route(is->port, ch, Route::AUDIOPORT));
+                              RouteNode src(track, ch, RouteNode::TRACK);
+                              RouteNode dst(is->port, -1, RouteNode::AUDIOPORT);
+                              Route r = Route(src, dst);
+                              track->outRoutes()->push_back(r);
                               ++is;
                               }
                         }
-#endif
                   }
                   break;
             }
@@ -1804,11 +1789,6 @@ void Song::removeTrack2(Track* track)
                   r.dst.track->inRoutes()->removeAt(idx);
             else {
                   printf("Song::removeTrack2(): output route not found\n");
-/*TODOA                  src.dump();
-                  printf("  in route list:\n");
-                  foreach (const Route rr, *(r.track->inRoutes()))
-                        rr.dump();
-*/
                   }
             }
       }
