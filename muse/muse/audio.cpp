@@ -25,6 +25,7 @@
 #include "globals.h"
 #include "song.h"
 #include "driver/audiodev.h"
+#include "driver/mididev.h"
 #include "audioprefetch.h"
 #include "audiowriteback.h"
 #include "audio.h"
@@ -526,6 +527,7 @@ void Audio::process(unsigned frames, int jackState)
             _pos       += frames;
             _curTickPos = _nextTickPos;
             }
+      midiDriver->updateConnections();
       }
 
 //---------------------------------------------------------

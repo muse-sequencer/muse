@@ -27,6 +27,34 @@
 class MidiSeq;
 class MidiEvent;
 
+#define PORT_ROUTE_FIFO_SIZE  16
+
+//---------------------------------------------------------
+//   PortRoute
+//---------------------------------------------------------
+
+struct PortRoute {
+      Port src, dst;
+      };
+
+//---------------------------------------------------------
+//   PortRouteFifo
+//---------------------------------------------------------
+
+class PortRouteFifo {
+      PortRoute fifo[PORT_ROUTE_FIFO_SIZE];
+      volatile int size;
+      int wIndex;
+      int rIndex;
+
+   public:
+      PortRouteFifo()  { clear(); }
+      bool put(const PortRoute& event);   // returns true on fifo overflow
+      PortRoute get();
+      bool isEmpty() const { return size == 0; }
+      void clear()         { size = 0, wIndex = 0, rIndex = 0; }
+      };
+
 //---------------------------------------------------------
 //   AlsaMidi
 //---------------------------------------------------------
@@ -37,6 +65,9 @@ class AlsaMidi : public Driver {
       void removeConnection(snd_seq_connect_t* ev);
       void addConnection(snd_seq_connect_t* ev);
       bool putEvent(snd_seq_event_t* event);
+
+      PortRouteFifo addCon;
+      PortRouteFifo removeCon;
 
    public:
       AlsaMidi();
@@ -61,6 +92,7 @@ class AlsaMidi : public Driver {
 
       void read(MidiSeq*);      // process events
       void write();
+      void updateConnections();
       };
 
 extern AlsaMidi alsaMidi;

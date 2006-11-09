@@ -308,12 +308,11 @@ bool RouteNode::operator==(const RouteNode& a) const
             return false;
       switch(type) {
             case TRACK:
-            case MIDIPORT:
                   return (channel == a.channel) && (track == a.track);
+            case MIDIPORT:
             case JACKMIDIPORT:
-                  return port == a.port;
             case AUDIOPORT:
-                  return (channel == a.channel) && (port == a.port);
+                  return port == a.port;
             case AUXPLUGIN:
                   return plugin == a.plugin;
             }

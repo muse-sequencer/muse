@@ -34,6 +34,34 @@ AlsaMidi alsaMidi;
 AlsaMidi* midiDriver;
 
 //---------------------------------------------------------
+//   put
+//    return true on fifo overflow
+//---------------------------------------------------------
+
+bool PortRouteFifo::put(const PortRoute& event)
+      {
+      if (size < PORT_ROUTE_FIFO_SIZE) {
+            fifo[wIndex] = event;
+            wIndex = (wIndex + 1) % PORT_ROUTE_FIFO_SIZE;
+            q_atomic_increment(&size);
+            return false;
+            }
+      return true;
+      }
+
+//---------------------------------------------------------
+//   get
+//---------------------------------------------------------
+
+PortRoute PortRouteFifo::get()
+      {
+      PortRoute event(fifo[rIndex]);
+      rIndex = (rIndex + 1) % PORT_ROUTE_FIFO_SIZE;
+      q_atomic_decrement(&size);
+      return event;
+      }
+
+//---------------------------------------------------------
 //   AlsaMidi
 //---------------------------------------------------------
 
@@ -330,89 +358,35 @@ void AlsaMidi::getOutputPollFd(struct pollfd** p, int* n)
 //---------------------------------------------------------
 //   addConnection
 //    a new connection was added
+//    called in MidiSeq context, FIFO synchronizes with
+//    JACK callback
 //---------------------------------------------------------
 
 void AlsaMidi::addConnection(snd_seq_connect_t* ev)
       {
       Port rs(ev->sender.client, ev->sender.port);
       Port rd(ev->dest.client, ev->dest.port);
-
-      MidiOutPortList* opl = song->midiOutPorts();
-      for (iMidiOutPort i = opl->begin(); i != opl->end(); ++i) {
-            MidiOutPort* oport = *i;
-            Port sPort = oport->alsaPort(0);
-
-            if (sPort == rs) {
-                  RouteNode src(oport);
-                  RouteNode dst(rd, -1, RouteNode::MIDIPORT);
-                  Route r = Route(src, dst);
-                  if (oport->outRoutes()->indexOf(r) == -1)
-                        oport->outRoutes()->push_back(r);
-                  break;
-                  }
-            }
-
-      MidiInPortList* ipl = song->midiInPorts();
-      for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i) {
-            MidiInPort* iport = *i;
-            Port dPort = iport->alsaPort(0);
-
-            if (dPort == rd) {
-                  RouteNode src(rs, -1, RouteNode::MIDIPORT);
-                  RouteNode dst(iport);
-                  Route r = Route(src, dst);
-                  if (iport->inRoutes()->indexOf(r) == -1) {
-printf("add connection\n");                  
-                        iport->inRoutes()->push_back(r);
-                        }
-                  break;
-                  }
-            }
+      PortRoute pr;
+      pr.src = rs;
+      pr.dst = rd;
+      addCon.put(pr);
       }
 
 //---------------------------------------------------------
 //   removeConnection
 //    a connection was removed
+//    called in MidiSeq context, FIFO synchronizes with
+//    JACK callback
 //---------------------------------------------------------
 
 void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
       {
       Port rs(ev->sender.client, ev->sender.port);
       Port rd(ev->dest.client, ev->dest.port);
-
-      MidiInPortList* ipl = song->midiInPorts();
-      for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i) {
-            MidiInPort* iport = *i;
-            Port dst = iport->alsaPort();
-
-            if (dst == rd) {
-                  RouteList* irl = iport->outRoutes();
-                  for (iRoute r = irl->begin(); r != irl->end(); ++r) {
-                        if (!r->disconnected && (r->src.port == rs)) {
-                              iport->inRoutes()->erase(r);
-                              break;
-                              }
-                        }
-                  break;
-                  }
-            }
-
-      MidiOutPortList* opl = song->midiOutPorts();
-      for (iMidiOutPort i = opl->begin(); i != opl->end(); ++i) {
-            MidiOutPort* oport = *i;
-            Port src = oport->alsaPort();
-
-            if (src == rs) {
-                  RouteList* orl = oport->outRoutes();
-                  for (iRoute r = orl->begin(); r != orl->end(); ++r) {
-                        if (!r->disconnected && (r->dst.port == rd)) {
-                              orl->erase(r);
-                              break;
-                              }
-                        }
-                  break;
-                  }
-            }
+      PortRoute pr;
+      pr.src = rs;
+      pr.dst = rd;
+      removeCon.put(pr);
       }
 
 //---------------------------------------------------------
@@ -673,4 +647,79 @@ bool AlsaMidi::putEvent(snd_seq_event_t* event)
       return true;
       }
 
+//---------------------------------------------------------
+//   updateConnections
+//    this is called in JACK callback context
+//---------------------------------------------------------
+
+void AlsaMidi::updateConnections()
+      {
+      while (!addCon.isEmpty()) {
+            PortRoute pr = addCon.get();
+            MidiOutPortList* opl = song->midiOutPorts();
+            for (iMidiOutPort i = opl->begin(); i != opl->end(); ++i) {
+                  MidiOutPort* oport = *i;
+                  Port sPort = oport->alsaPort(0);
+
+                  if (sPort == pr.src) {
+                        RouteNode src(oport);
+                        RouteNode dst(pr.dst, -1, RouteNode::MIDIPORT);
+                        Route r = Route(src, dst);
+                        if (oport->outRoutes()->indexOf(r) == -1)
+                              oport->outRoutes()->push_back(r);
+                        break;
+                        }
+                  }
+
+            MidiInPortList* ipl = song->midiInPorts();
+            for (iMidiInPort i = ipl->begin(); i != ipl->end(); ++i) {
+                  MidiInPort* iport = *i;
+                  Port dPort = iport->alsaPort(0);
+
+                  if (dPort == pr.dst) {
+                        RouteNode src(pr.src, -1, RouteNode::MIDIPORT);
+                        RouteNode dst(iport);
+                        Route r = Route(src, dst);
+                        if (iport->inRoutes()->indexOf(r) == -1)
+                              iport->inRoutes()->push_back(r);
+                        break;
+                        }
+                  }
+            }
+      while (!removeCon.isEmpty()) {
+            PortRoute pr = removeCon.get();
+
+            foreach(MidiInPort* iport, *(song->midiInPorts())) {
+                  Port dst = iport->alsaPort();
+
+                  if (dst == pr.dst) {
+                        RouteList* irl = iport->inRoutes();
+                        for (iRoute r = irl->begin(); r != irl->end(); ++r) {
+/*TODO*/                              if (/*(!r->disconnected) &&*/ (r->src.port == pr.src)) {
+                                    iport->inRoutes()->erase(r);
+// printf("remove in connection\n");
+                                    break;
+                                    }
+                              }
+                        break;
+                        }
+                  }
+
+            foreach(MidiOutPort* oport, *(song->midiOutPorts())) {
+                  Port src = oport->alsaPort();
+
+                  if (src == pr.src) {
+                        RouteList* orl = oport->outRoutes();
+                        for (iRoute r = orl->begin(); r != orl->end(); ++r) {
+                              if (/*(!r->disconnected) &&*/ (r->dst.port == pr.dst)) {
+                                    orl->erase(r);
+// printf("remove out connection\n");
+                                    break;
+                                    }
+                              }
+                        break;
+                        }
+                  }
+            }
+      }
 

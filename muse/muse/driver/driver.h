@@ -57,6 +57,7 @@ class Driver {
       virtual bool connect(Port, Port) = 0;
       virtual bool disconnect(Port, Port) = 0;
       virtual void putEvent(Port, const MidiEvent&) = 0;
+      virtual void updateConnections() {}
       };
 
 #endif
