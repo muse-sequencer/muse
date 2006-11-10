@@ -1,4 +1,5 @@
 10.11 (ws)
+      - implemented splitlayer midi plugin
       - replaced meter in midi input strip by activity "leds" for all
         midi channels
 8.11 (ws)

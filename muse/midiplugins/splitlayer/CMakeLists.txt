@@ -18,10 +18,28 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-subdirs(libmidiplugin splitlayer filter metronom transform trigg dump )
+QT4_WRAP_CPP ( splitlayer_mocs splitlayergui.h )
+## QT4_WRAP_UI (  splitlayer_uis splitlayergui.ui )
 
-set ( CMAKE_CXX_FLAGS 
-      "${CMAKE_CXX_FLAGS} -DQT_NO_DEBUG -DQT_PLUGIN -DQT_SHARED -fPIC"
+add_library ( splitlayer SHARED 
+      splitlayer.cpp 
+      splitlayergui.cpp
+      splitlayergui.h
+      ${splitlayer_mocs}
       )
+target_link_libraries( splitlayer
+   midiplugin
+   ${QT_LIBRARIES}
+   )
 
-set ( CMAKE_LDD_FLAGS -module -avoid-version )
+# - tell cmake to name target splitlayer.so instead of 
+#   libsplitlayer.so
+# - use precompiled header files
+#
+set_target_properties ( splitlayer 
+   PROPERTIES PREFIX ""
+   COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
+   )
+
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/midiplugins/ splitlayer )
+
