@@ -351,6 +351,7 @@ class MidiTrackBase : public Track {
       void addPlugin(MidiPluginI* plugin, int idx);
       MidiPluginI* plugin(int idx) const;
 
+      virtual void processMidi(unsigned, unsigned, unsigned, unsigned) {}
       virtual void getEvents(unsigned /*from*/, unsigned /*to*/, int /*channel*/, MidiEventList* /*dst*/) {}
       };
 

@@ -59,6 +59,8 @@ class MidiTrack : public MidiTrackBase {
       int _len;
       int _compression;
 
+      MidiEventList schedEvents;  // scheduled events by process()
+
    signals:
       void drumMapChanged() const;
       void useDrumMapChanged(bool);
@@ -99,6 +101,7 @@ class MidiTrack : public MidiTrackBase {
       virtual bool canRecord() const      { return true; }
       void playMidiEvent(MidiEvent*);
 
+      virtual void processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
       virtual void getEvents(unsigned from, unsigned to, int channel, MidiEventList* dst);
 
       bool useDrumMap() const             { return _useDrumMap;    }

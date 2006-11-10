@@ -224,8 +224,8 @@ void MidiTrack::recordBeat()
             unsigned time = me.time();
             if (song->punchin() && time < song->lpos())
                   continue;
-            bool isOff = (me.type() == ME_NOTEON && me.dataB() == 0)
-		             || (me.type() == ME_NOTEOFF);
+            bool isOff = me.isNoteOff();
+
         	if (song->punchout() && (time >= song->rpos()) && !isOff)
 			continue;
 
@@ -466,12 +466,12 @@ bool MidiTrack::isMute() const
       }
 
 //---------------------------------------------------------
-//   getEvents
-//    from/to - midi ticks
+//   processMidi
 //---------------------------------------------------------
 
-void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
+void MidiTrack::processMidi(unsigned from, unsigned to, unsigned, unsigned)
       {
+      schedEvents.clear();
 	//
       // collect events only when transport is rolling
       //
@@ -524,14 +524,14 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
                               int veloOff = ev.veloOff();
 
                               unsigned eframe = AL::tempomap.tick2frame(tick+elen);
-                              dst->insert(MidiEvent(frame, 0, ME_NOTEON, pitch, velo));
-                              dst->insert(MidiEvent(eframe, 0, veloOff ? ME_NOTEOFF : ME_NOTEON, pitch, veloOff));
+                              schedEvents.insert(MidiEvent(frame, 0, ME_NOTEON, pitch, velo));
+                              schedEvents.insert(MidiEvent(eframe, 0, veloOff ? ME_NOTEOFF : ME_NOTEON, pitch, veloOff));
                               _meter[0] += velo/2;
                               if (_meter[0] > 127.0f)
                                     _meter[0] = 127.0f;
                               }
                         else {
-                              dst->insert(MidiEvent(frame, 0, ev));
+                              schedEvents.insert(MidiEvent(frame, 0, ev));
                               }
                         }
                   }
@@ -578,7 +578,7 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
                               }
                         unsigned time = 0; // eventTime + segmentSize*(segmentCount-1);
                         event.setTime(time);
-                        dst->insert(event);
+                        schedEvents.insert(event);
                         }
                   }
             }
@@ -594,8 +594,20 @@ void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
                   Event ev(Controller);
                   ev.setA(c->id());
                   ev.setB(ic.value().i);
-                  dst->insert(MidiEvent(frame, -1, ev));
+                  schedEvents.insert(MidiEvent(frame, -1, ev));
                   }
+            }
+      }
+
+//---------------------------------------------------------
+//   getEvents
+//    from/to - midi ticks
+//---------------------------------------------------------
+
+void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
+      {
+      for (iMidiEvent i = schedEvents.begin(); i != schedEvents.end(); ++i) {
+            dst->insert(*i);
             }
       }
 

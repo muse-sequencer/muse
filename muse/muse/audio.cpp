@@ -306,7 +306,6 @@ printf("JACK: shutdown callback\n");
 
 void Audio::process(unsigned frames, int jackState)
       {
-// printf("process %d\n", frames);
       extern int watchAudio;
       ++watchAudio;           // make a simple watchdog happy
 
@@ -441,15 +440,20 @@ void Audio::process(unsigned frames, int jackState)
       {
       MidiOutPortList* ol = song->midiOutPorts();
       MidiInPortList* mil = song->midiInPorts();
+      MidiTrackList*  mtl = song->midis();
 
       for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
             audioDriver->startMidiCycle((*i)->jackPort(0));
+
       for (iMidiInPort i = mil->begin(); i != mil->end(); ++i)
             (*i)->beforeProcess();
+      for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i)
+            (*i)->processMidi(_curTickPos, _nextTickPos, _pos.frame(), _pos.frame() + segmentSize);
       for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
             (*i)->processMidi(_curTickPos, _nextTickPos, _pos.frame(), _pos.frame() + segmentSize);
       for (iSynthI i = sl->begin(); i != sl->end(); ++i)
             (*i)->processMidi(_curTickPos, _nextTickPos, _pos.frame(), _pos.frame() + segmentSize);
+
       for (iMidiInPort i = mil->begin(); i != mil->end(); ++i)
             (*i)->afterProcess();
       }

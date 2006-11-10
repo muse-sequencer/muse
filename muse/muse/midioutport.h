@@ -57,7 +57,7 @@ class MidiOutPort : public MidiTrackBase, public MidiOut {
       bool guiVisible() const;
       bool hasGui() const;
 
-      void processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
+      virtual void processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
       };
 
 typedef QList<MidiOutPort*> MidiOutPortList;
