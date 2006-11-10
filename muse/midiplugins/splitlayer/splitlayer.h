@@ -38,8 +38,9 @@ class SplitLayer : public Mempi {
             int startPitch[MIDI_CHANNELS];
             int endPitch[MIDI_CHANNELS];
             int pitchOffset[MIDI_CHANNELS];
+            int veloOffset[MIDI_CHANNELS];
             } data;
-
+      int notes[128];   // bitmapped note-on/channel values
       bool learnMode;
       int learnChannel;
       bool learnStartPitch;

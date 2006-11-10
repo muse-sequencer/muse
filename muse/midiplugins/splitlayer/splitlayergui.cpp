@@ -36,9 +36,15 @@ SplitLayerGui::SplitLayerGui(SplitLayer* f, QWidget* parent)
       QSignalMapper* m1 = new QSignalMapper(this);
       QSignalMapper* m2 = new QSignalMapper(this);
       QSignalMapper* m3 = new QSignalMapper(this);
+      QSignalMapper* m4 = new QSignalMapper(this);
+      QSignalMapper* m5 = new QSignalMapper(this);
+      QSignalMapper* m6 = new QSignalMapper(this);
       connect(m1, SIGNAL(mapped(int)), SLOT(startPitchChanged(int)));
       connect(m2, SIGNAL(mapped(int)), SLOT(endPitchChanged(int)));
       connect(m3, SIGNAL(mapped(int)), SLOT(pitchOffsetChanged(int)));
+      connect(m4, SIGNAL(mapped(int)), SLOT(startVeloChanged(int)));
+      connect(m5, SIGNAL(mapped(int)), SLOT(endVeloChanged(int)));
+      connect(m6, SIGNAL(mapped(int)), SLOT(veloOffsetChanged(int)));
       for (int i = 0; i < MIDI_CHANNELS; ++i) {
             QLabel* l = new QLabel(QString("Ch %1").arg(i+1));
             grid->addWidget(l, i, 0);
@@ -61,7 +67,7 @@ SplitLayerGui::SplitLayerGui(SplitLayer* f, QWidget* parent)
             connect(rb1, SIGNAL(triggered(QAction*)), SLOT(learnStartPitch(QAction*)));
 
             p2[i] = new Awl::PitchEdit(0);
-            p1[i]->setToolTip(tr("end pitch for split"));
+            p2[i]->setToolTip(tr("end pitch for split"));
             connect(p2[i], SIGNAL(valueChanged(int)), m2, SLOT(map()));
             m2->setMapping(p2[i], i);
 
@@ -75,16 +81,37 @@ SplitLayerGui::SplitLayerGui(SplitLayer* f, QWidget* parent)
             connect(rb2, SIGNAL(triggered(QAction*)), SLOT(learnEndPitch(QAction*)));
 
             p3[i] = new Awl::PitchEdit(0);
-            p1[i]->setToolTip(tr("pitch offset for split"));
+            p3[i]->setToolTip(tr("pitch offset for split"));
             p3[i]->setDeltaMode(true);
             connect(p3[i], SIGNAL(valueChanged(int)), m3, SLOT(map()));
             m3->setMapping(p3[i], i);
 
+            p4[i] = new QSpinBox;
+            p4[i]->setRange(0, 127);
+            p4[i]->setToolTip(tr("start velocity for split"));
+            connect(p4[i], SIGNAL(valueChanged(int)), m4, SLOT(map()));
+            m4->setMapping(p4[i], i);
+
+            p5[i] = new QSpinBox;
+            p5[i]->setRange(0, 127);
+            p5[i]->setToolTip(tr("end velocity for split"));
+            connect(p5[i], SIGNAL(valueChanged(int)), m5, SLOT(map()));
+            m5->setMapping(p5[i], i);
+
+            p6[i] = new QSpinBox;
+            p6[i]->setRange(-127, 127);
+            p6[i]->setToolTip(tr("velocity offset for split"));
+            connect(p6[i], SIGNAL(valueChanged(int)), m6, SLOT(map()));
+            m6->setMapping(p6[i], i);
+
             grid->addWidget(p1[i], i, 1);
-            grid->addWidget(rb1, i, 2);
+            grid->addWidget(rb1,   i, 2);
             grid->addWidget(p2[i], i, 3);
-            grid->addWidget(rb2, i, 4);
+            grid->addWidget(rb2,   i, 4);
             grid->addWidget(p3[i], i, 5);
+            grid->addWidget(p4[i], i, 6);
+            grid->addWidget(p5[i], i, 7);
+            grid->addWidget(p6[i], i, 8);
             }
       int filedes[2];         // 0 - reading   1 - writing
       if (pipe(filedes) == -1) {
@@ -110,11 +137,14 @@ void SplitLayerGui::init()
             p1[i]->setValue(sl->data.startPitch[i]);
             p2[i]->setValue(sl->data.endPitch[i]);
             p3[i]->setValue(sl->data.pitchOffset[i]);
+            p4[i]->setValue(sl->data.startVelo[i]);
+            p5[i]->setValue(sl->data.endVelo[i]);
+            p6[i]->setValue(sl->data.veloOffset[i]);
             }
       }
 
 //---------------------------------------------------------
-//   learStartPitch
+//   learnStartPitch
 //---------------------------------------------------------
 
 void SplitLayerGui::learnStartPitch(QAction* a)
@@ -172,6 +202,33 @@ void SplitLayerGui::endPitchChanged(int n)
 void SplitLayerGui::pitchOffsetChanged(int n)
       {
       sl->data.pitchOffset[n] = p3[n]->value();
+      }
+
+//---------------------------------------------------------
+//   startVeloChanged
+//---------------------------------------------------------
+
+void SplitLayerGui::startVeloChanged(int n)
+      {
+      sl->data.startVelo[n] = p4[n]->value();
+      }
+
+//---------------------------------------------------------
+//   endVeloChanged
+//---------------------------------------------------------
+
+void SplitLayerGui::endVeloChanged(int n)
+      {
+      sl->data.endVelo[n] = p5[n]->value();
+      }
+
+//---------------------------------------------------------
+//   veloOffsetChanged
+//---------------------------------------------------------
+
+void SplitLayerGui::veloOffsetChanged(int n)
+      {
+      sl->data.veloOffset[n] = p6[n]->value();
       }
 
 //---------------------------------------------------------

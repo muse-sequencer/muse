@@ -54,13 +54,16 @@ bool SplitLayer::init()
       data.startPitch[0]  = 0;
       data.endPitch[0]    = 128;
       data.pitchOffset[0] = 0;
+      data.veloOffset[0]  = 0;
       for (int i = 1; i < MIDI_CHANNELS; ++i) {
             data.startVelo[i]   = 0;
             data.endVelo[i]     = 0;
             data.startPitch[i]  = 0;
             data.endPitch[i]    = 0;
             data.pitchOffset[i] = 0;
+            data.veloOffset[i]  = 0;
             }
+      memset(notes, 0, 128 * sizeof(int));
       learnMode = false;
       gui = new SplitLayerGui(this, 0);
       gui->hide();
@@ -100,9 +103,12 @@ void SplitLayer::setGeometry(int x, int y, int w, int h)
 void SplitLayer::process(unsigned, unsigned, MidiEventList* il, MidiEventList* ol)
       {
       for (iMidiEvent i = il->begin(); i != il->end(); ++i) {
-            if (i->type() != ME_NOTEON && i->type() != ME_NOTEOFF)
+            if (i->type() != ME_NOTEON && i->type() != ME_NOTEOFF) {
                   ol->insert(*i);
+                  continue;
+                  }
             int pitch = i->dataA();
+            int velo  = i->dataB();
             if (learnMode) {
                   if (learnStartPitch)
                         data.startPitch[learnChannel] = pitch;
@@ -110,19 +116,44 @@ void SplitLayer::process(unsigned, unsigned, MidiEventList* il, MidiEventList* o
                         data.endPitch[learnChannel] = pitch;
                   learnMode = false;
                   gui->sendResetLearnMode();
+                  return;
                   }
-            for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
-                  MidiEvent event(*i);
-                  if (pitch >= data.startPitch[ch] && pitch < data.endPitch[ch]) {
-                        event.setChannel(ch);
-                        pitch += data.pitchOffset[ch];
-                        if (pitch > 127)
-                              pitch = 127;
-                        else if (pitch < 0)
-                              pitch = 0;
-                        event.setA(pitch);
-                        ol->insert(event);
+            if (i->type() == ME_NOTEON && velo) {
+                  for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
+                        MidiEvent event(*i);
+                        if (pitch >= data.startPitch[ch] 
+                           && pitch < data.endPitch[ch]
+                           && velo >= data.startVelo[ch]
+                           && velo < data.endVelo[ch]) {
+                              event.setChannel(ch);
+                              int p = pitch;
+                              int v = velo;
+                              p += data.pitchOffset[ch];
+                              if (p > 127)
+                                    p = 127;
+                              else if (p < 0)
+                                    p = 0;
+                              v += data.veloOffset[ch];
+                              if (v > 127)
+                                    v = 127;
+                              else if (v < 0)
+                                    v = 0;
+                              event.setA(p);
+                              event.setB(v);
+                              ol->insert(event);
+                              notes[pitch] |= (1 << ch);
+                              }
                         }
+                  }
+            else {
+                  for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
+                        if (notes[pitch] & (1 << ch)) {
+                              MidiEvent event(*i);
+                              event.setChannel(ch);
+                              ol->insert(event);
+                              }
+                        }
+                  notes[pitch] = 0;
                   }
             }
       }

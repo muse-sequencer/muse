@@ -36,6 +36,10 @@ class SplitLayerGui : public QWidget {
       Awl::PitchEdit* p1[16];
       Awl::PitchEdit* p2[16];
       Awl::PitchEdit* p3[16];
+      QSpinBox* p4[16];
+      QSpinBox* p5[16];
+      QSpinBox* p6[16];
+
       QAction* a1[16];
       QAction* a2[16];
       int fd1, fd2;
@@ -47,6 +51,9 @@ class SplitLayerGui : public QWidget {
       void endPitchChanged(int);
       void pitchOffsetChanged(int);
       void resetLearnMode(int);
+      void startVeloChanged(int);
+      void endVeloChanged(int);
+      void veloOffsetChanged(int);
 
    public:
       SplitLayerGui(SplitLayer*, QWidget* parent=0);
