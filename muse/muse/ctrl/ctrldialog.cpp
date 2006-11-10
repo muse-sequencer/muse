@@ -112,40 +112,22 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                               }
                         }
                   }
-            //
-            //    add rest parameter
-            //
-            ControllerNameList* cn = track->controllerNames();
-            for (iControllerName i = cn->begin(); i != cn->end(); ++i) {
-                  if (i->id & 0xfffff000)
-                        continue;
-                  ci = new QTreeWidgetItem(tw, i->id);
-                  ci->setText(0, i->name);
-                  Ctrl* ctrl = track->getController(i->id);
-                  if (!ctrl->empty())
-                        ci->setText(1, "*");
-                  if (i->id == currentId) {
-                        tw->setCurrentItem(ci);
-                        tw->setItemSelected(ci, true);
-                        }
+            }
+
+      ControllerNameList* cn = track->controllerNames();
+      for (iControllerName i = cn->begin(); i != cn->end(); ++i) {
+            ci = new QTreeWidgetItem(tw, i->id);
+            ci->setText(0, i->name);
+            Ctrl* ctrl = track->getController(i->id);
+            if (!ctrl->empty())
+                  ci->setText(1, "*");
+
+            if (i->id == currentId) {
+                  tw->setCurrentItem(ci);
+                  tw->setItemSelected(ci, true);
                   }
             }
 
-      else {
-            ControllerNameList* cn = track->controllerNames();
-            for (iControllerName i = cn->begin(); i != cn->end(); ++i) {
-                  ci = new QTreeWidgetItem(tw, i->id);
-                  ci->setText(0, i->name);
-                  Ctrl* ctrl = track->getController(i->id);
-                  if (!ctrl->empty())
-                        ci->setText(1, "*");
-
-                  if (i->id == currentId) {
-                        tw->setCurrentItem(ci);
-                        tw->setItemSelected(ci, true);
-                        }
-                  }
-            }
       ci = new QTreeWidgetItem(tw, CTRL_OTHER);
       ci->setText(0, tr("other"));
       connect(tw, 
