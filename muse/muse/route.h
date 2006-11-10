@@ -88,8 +88,8 @@ struct Route {
       bool disconnected;      // if true, do not remove route in graphChanged()
                               // or removeConnection()
 
-      Route() { disconnected = false; }
-      Route(const RouteNode& s, const RouteNode& d) : src(s), dst(d) {}
+      Route() { disconnected = false;}
+      Route(const RouteNode& s, const RouteNode& d) : src(s), dst(d) { disconnected = false;}
       bool operator==(const Route& a) const { 
             return (src==a.src) && (dst==a.dst);
             }

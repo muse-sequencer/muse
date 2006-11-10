@@ -654,6 +654,9 @@ bool AlsaMidi::putEvent(snd_seq_event_t* event)
 
 void AlsaMidi::updateConnections()
       {
+      //
+      //  add connections
+      //
       while (!addCon.isEmpty()) {
             PortRoute pr = addCon.get();
             MidiOutPortList* opl = song->midiOutPorts();
@@ -686,18 +689,19 @@ void AlsaMidi::updateConnections()
                         }
                   }
             }
+      //
+      //  remove connections
+      //
       while (!removeCon.isEmpty()) {
             PortRoute pr = removeCon.get();
 
             foreach(MidiInPort* iport, *(song->midiInPorts())) {
                   Port dst = iport->alsaPort();
-
                   if (dst == pr.dst) {
                         RouteList* irl = iport->inRoutes();
                         for (iRoute r = irl->begin(); r != irl->end(); ++r) {
-/*TODO*/                              if (/*(!r->disconnected) &&*/ (r->src.port == pr.src)) {
+                              if (r->src.port == pr.src) {
                                     iport->inRoutes()->erase(r);
-// printf("remove in connection\n");
                                     break;
                                     }
                               }
@@ -707,13 +711,11 @@ void AlsaMidi::updateConnections()
 
             foreach(MidiOutPort* oport, *(song->midiOutPorts())) {
                   Port src = oport->alsaPort();
-
                   if (src == pr.src) {
                         RouteList* orl = oport->outRoutes();
                         for (iRoute r = orl->begin(); r != orl->end(); ++r) {
-                              if (/*(!r->disconnected) &&*/ (r->dst.port == pr.dst)) {
+                              if (r->dst.port == pr.dst) {
                                     orl->erase(r);
-// printf("remove out connection\n");
                                     break;
                                     }
                               }

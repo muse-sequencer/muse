@@ -37,6 +37,7 @@ class MidiInPort : public MidiTrackBase {
       int recordRead, recordWrite;
       volatile int recordCount;
       int tmpRecordCount;
+      int activity[MIDI_CHANNELS];
 
    public:
       MidiInPort();
@@ -55,6 +56,7 @@ class MidiInPort : public MidiTrackBase {
       virtual void getEvents(unsigned from, unsigned to, int channel, MidiEventList* dst);
       void beforeProcess();
       void afterProcess();
+      bool checkActivity(int channel);
       };
 
 typedef QList<MidiInPort*> MidiInPortList;

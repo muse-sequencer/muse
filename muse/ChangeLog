@@ -1,3 +1,6 @@
+10.11 (ws)
+      - replaced meter in midi input strip by activity "leds" for all
+        midi channels
 8.11 (ws)
       - removed the suboptimal "MidiChannel" concept. MidiChannels are
         now merged with MidiTracks.

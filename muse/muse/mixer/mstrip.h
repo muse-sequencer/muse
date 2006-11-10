@@ -171,9 +171,13 @@ class MidiSyntiStrip : public Strip {
 class MidiInPortStrip : public Strip {
       Q_OBJECT
 
-      Awl::MidiMeter* meter;
+      bool activity[MIDI_CHANNELS];
+      QPixmap* activityOn;
+      QPixmap* activityOff;
+      QLabel* channelActivity[MIDI_CHANNELS];
       QToolButton* iR;
       QToolButton* oR;
+      MidiInPort* inport() const { return (MidiInPort*)track; }
 
    private slots:
       void muteToggled(bool);

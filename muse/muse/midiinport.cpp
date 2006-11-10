@@ -26,6 +26,7 @@
 #include "driver/mididev.h"
 #include "driver/audiodev.h"
 #include "audio.h"
+#include "gconfig.h"
 
 #include "midiinport.h"
 
@@ -40,6 +41,8 @@ MidiInPort::MidiInPort()
       recordRead  = 0;
       recordWrite = 0;
       recordCount = 0;
+      for (int i = 0; i < MIDI_CHANNELS; ++i)
+            activity[i] = 0;
       }
 
 //---------------------------------------------------------
@@ -171,12 +174,14 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
       pipeline()->apply(audio->curTickPos(), audio->nextTickPos(), &il, &ol);
 
       //
-      // update midi meter
+      // update midi activity
       // notify gui of new events
       //
+      int hold = config.guiRefresh / 5 + 1;   // hold for >= 1/5 sec
+
       for (iMidiEvent i = ol.begin(); i != ol.end(); ++i) {
             if (i->type() == ME_NOTEON)
-                  addMidiMeter(i->dataB());
+                  activity[i->channel()] += hold;
             song->putEvent(*i);
             if (recordCount == RECORD_FIFO_SIZE) {
                   printf("MusE: eventReceived(): fifo overflow\n");
@@ -230,5 +235,16 @@ void MidiInPort::getEvents(unsigned, unsigned, int ch, MidiEventList* dst)
             if (tmpRecordRead >= RECORD_FIFO_SIZE)
                   tmpRecordRead = 0;
             }
+      }
+
+//---------------------------------------------------------
+//   checkActivity
+//---------------------------------------------------------
+
+bool MidiInPort::checkActivity(int channel)
+      {
+      if (activity[channel])
+            --activity[channel];
+      return activity[channel] != 0;      
       }
 

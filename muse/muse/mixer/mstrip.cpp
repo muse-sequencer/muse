@@ -842,26 +842,45 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
       rack->setFixedSize(STRIP_WIDTH, rack->sizeHint().height()+2);
       layout->addWidget(rack);
 
-      if (_align)
-      //      layout->addSpacing(STRIP_WIDTH/2);
-            layout->addSpacing(LABEL_HEIGHT);
-
       //---------------------------------------------------
-      //    slider, label, meter
+      //    input activity
       //---------------------------------------------------
 
-      meter = new Awl::MidiMeter(this);
-      meter->setFixedWidth(40);
-      layout->addWidget(meter, 100, Qt::AlignRight);
+      layout->addStretch(100);
 
-      //---------------------------------------------------
-      //    pan, balance
-      //---------------------------------------------------
+      QGridLayout* ag = new QGridLayout;
+      ag->setMargin(4);
+      ag->setSpacing(1);
+      QSvgRenderer sr;
+      QPainter painter;
 
-      if (_align) {
-            layout->addSpacing(STRIP_WIDTH/2 + STRIP_WIDTH/3);
-            layout->addSpacing(LABEL_HEIGHT);
+      sr.load(QString(":/xpm/activeon.svg"));
+      QSize aSize(sr.defaultSize());
+      activityOn = new QPixmap(aSize);
+      activityOn->fill(Qt::transparent);
+      painter.begin(activityOn);
+      sr.render(&painter);
+      painter.end();
+      
+      sr.load(QString(":/xpm/activeoff.svg"));
+      activityOff = new QPixmap(aSize);
+      activityOff->fill(Qt::transparent);
+      painter.begin(activityOff);
+      sr.render(&painter);
+      painter.end();
+
+      for (int ch = MIDI_CHANNELS-1; ch >= 0; --ch) {
+            QLabel* l = new QLabel(QString("%1").arg(ch+1));
+            QFont f = l->font();
+            f.setPixelSize(8);
+            l->setFont(f);
+            ag->addWidget(l, ch, 0, Qt::AlignCenter);
+            channelActivity[ch] = new QLabel;
+            ag->addWidget(channelActivity[ch], ch, 1, Qt::AlignCenter);
+            channelActivity[ch]->setPixmap(*activityOff);
+            activity[ch] = 0;
             }
+      layout->addLayout(ag, Qt::AlignHCenter);
 
       //---------------------------------------------------
       //    mute, solo
@@ -930,9 +949,13 @@ void MidiInPortStrip::songChanged(int val)
 
 void MidiInPortStrip::heartBeat()
       {
-      double a = track->meter(0); // fast_log10(track->meter(0)) * .2f;
-      meter->setMeterVal(a * 0.008);
-      track->setMeter(0, a * 0.8);  // hack
+      for (int i = 0; i < MIDI_CHANNELS; ++i) {
+            bool isActive = inport()->checkActivity(i);
+            if (activity[i] != isActive) {
+                  channelActivity[i]->setPixmap(isActive ? *activityOn : *activityOff);
+                  activity[i] = isActive;
+                  }
+            }
       }
 
 //---------------------------------------------------------
