@@ -368,9 +368,9 @@ QToolButton* newOutRouteButton()
       QToolButton* oR = new QToolButton;
       oR->setFont(config.fonts[BFONT]);
       oR->setFixedWidth((STRIP_WIDTH-4)/2);
-      oR->setText(oR->tr("oR"));
+      oR->setText(QT_TR_NOOP("oR"));
       oR->setCheckable(false);
-      oR->setToolTip(oR->tr("output routing"));
+      oR->setToolTip(QT_TR_NOOP("output routing"));
       oR->setMenu(new QMenu);
       oR->setPopupMode(QToolButton::InstantPopup);
       oR->menu()->setSeparatorsCollapsible(false);
@@ -386,9 +386,9 @@ QToolButton* newInRouteButton()
       QToolButton* iR = new QToolButton;
       iR->setFont(config.fonts[BFONT]);
       iR->setFixedWidth((STRIP_WIDTH-4)/2);
-      iR->setText(iR->tr("iR"));
+      iR->setText(QT_TR_NOOP("iR"));
       iR->setCheckable(false);
-      iR->setToolTip(iR->tr("input routing"));
+      iR->setToolTip(QT_TR_NOOP("input routing"));
       iR->setMenu(new QMenu);
       iR->setPopupMode(QToolButton::InstantPopup);
       iR->menu()->setSeparatorsCollapsible(false);

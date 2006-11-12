@@ -75,10 +75,10 @@
 %\define\stopdescription{\stoppacked}
 \define\stopdescription{}
 
-\define[1]\Fig{\hbox{\externalfigure[pics/#1]}}
+\define[1]\Fig{\blank\hbox{\externalfigure[#1]}\blank}
 
 \define[2]\Screen{
-      \placefigure[here][fig:#1]{#2}{\externalfigure[pics/#1][scale=1600]}
+      \placefigure[here][fig:#1]{#2}{\externalfigure[#1][scale=1600]}
       }
 \definedescription[Option][
       location=left,
@@ -165,10 +165,8 @@
 
    \completecontent
 
-\chapter{Einführung}
-   \section{Was ist \M?}
-      \M\ ist ein ein ''open source'' Programm, veröffentlicht unter der GNU General
-      Public License (GPL) (siehe Anhang).
+\chapter{\M\ Quickstart}
+\component midirecording.tex
 
 \component projekte.tex
 \component struktur.tex

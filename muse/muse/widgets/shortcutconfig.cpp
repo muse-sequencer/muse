@@ -103,7 +103,7 @@ void ShortcutConfig::shortcutSelChanged(QTreeWidgetItem* active)
       {
       defineButton->setEnabled(true);
       int index = active->data(0, 1).toInt();
-      if (shortcuts[index].key != 0)
+      if (!shortcuts[index].key.isEmpty())
             clearButton->setEnabled(true);
       else
             clearButton->setEnabled(false);

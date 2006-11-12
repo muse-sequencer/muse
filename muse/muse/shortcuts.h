@@ -48,27 +48,29 @@ using AL::Xml;
 
 //---------------------------------------------------------
 //   shortcut
+//!  Holds the basic values for a configurable shortcut
 //---------------------------------------------------------
-//! Holds the basic values for a configurable shortcut
-struct shortcut
+
+struct Shortcut
       {
-      int key; /*! Integer storing the keyboard shortcut.  */
-      QString descr; /*! Description of the shortcut, shown in editor. Mapped against ls[] in shortcuts.cpp */
-      const char* xml; /*! xml tag name for configuration file*/
-      int type; /*! Bitmask category value mapped against PROLL_SHRT, DEDIT_SHRT etc. One shortcut can be a member of many categories */
+      const char* xml;  /*! xml tag name for configuration file   */
+      QString descr;    /*! Description of the shortcut, shown in editor. Mapped against ls[] in shortcuts.cpp */
+      int type;         /*! Bitmask category value mapped against PROLL_SHRT, DEDIT_SHRT etc. One shortcut can be a member of many categories */
+      QKeySequence key; /*! shortcut key */
       };
 
 //! Describes a shortcut category
 struct shortcut_cg
       {
       int         id_flag; /*! The category (one of PROLL_SHRT, DEDIT_SHRT etc) */
-      const char* name; /*! Name (shown in editor) */
+      const char* name;    /*! Name (shown in editor) */
       };
 
 //------------------------------------------------------------------------------------------------
 //   KeyboardMovementIndicator
-//! Used by Arranger to keep track of which Part is currently active when navigating with keys
+//!  Used by Arranger to keep track of which Part is currently active when navigating with keys
 //------------------------------------------------------------------------------------------------
+
 class KeyboardMovementIndicator {
       //! Left position of the active part, in ticks
       unsigned lpos;
@@ -297,10 +299,8 @@ enum {
       SHRT_NUM_OF_ELEMENTS        // must be last
       };
 
-//#define SHRT_NUM_OF_ELEMENTS           SHRT_LE_INS_POLY_AFTERTOUCH + 1
-extern shortcut shortcuts[SHRT_NUM_OF_ELEMENTS]; //size of last entry
+extern Shortcut shortcuts[SHRT_NUM_OF_ELEMENTS]; //size of last entry
 extern KeyboardMovementIndicator shortcutsKbdMovement;
-extern void initShortCuts();
 extern void writeShortCuts(Xml& xml);
 extern void readShortCuts(QDomNode);
 #endif

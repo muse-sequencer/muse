@@ -26,5 +26,25 @@
 	<file>xpm/mono.svg</file>
 	<file>xpm/stereo.svg</file>
    </qresource>
+
+   <qresource lang="de">
+      <file alias="muse.qm">../share/locale/muse_de.qm</file>
+   </qresource>
+
+   <qresource lang="es">
+      <file alias="muse.qm">../share/locale/muse_es.qm</file>
+   </qresource>
+
+   <qresource lang="fr">
+      <file alias="muse.qm">../share/locale/muse_fr.qm</file>
+   </qresource>
+
+   <qresource lang="ru">
+      <file alias="muse.qm">../share/locale/muse_ru.qm</file>
+   </qresource>
+
+   <qresource lang="sv">
+      <file alias="muse.qm">../share/locale/muse_sv_SE.qm</file>
+   </qresource>
 </RCC>
 

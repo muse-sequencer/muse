@@ -25,94 +25,112 @@
         <source>Insert Key Aftertouch</source>
         <translation type="obsolete">Вставить Key Aftertouch</translation>
     </message>
+    <message>
+        <source>select Pointer Tool:
+with the pointer tool you can:
+  select parts
+  move parts
+  copy parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sets amount of quantization:
+0   - no quantization
+100 - full quantization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Click this button to enable recording</source>
+        <translation type="unfinished">Нажмите эту клавишу для начала записи</translation>
+    </message>
 </context>
 <context>
     <name>@default</name>
     <message>
         <source>Click this button to stop playback</source>
-        <translation>Нажмите эту кнопку для остановки воспроизведения</translation>
+        <translation type="unfinished">Нажмите эту кнопку для остановки воспроизведения</translation>
     </message>
     <message>
         <source>Click this button to start playback</source>
-        <translation>Нажмите эту кнопку для начала воспроизведения</translation>
+        <translation type="unfinished">Нажмите эту кнопку для начала воспроизведения</translation>
     </message>
     <message>
         <source>Click this button to rewind to start position</source>
-        <translation>Нажмите эту кнопку для перемещения к началу</translation>
+        <translation type="unfinished">Нажмите эту кнопку для перемещения к началу</translation>
     </message>
     <message>
         <source>Click this button to rewind</source>
-        <translation>Нажмите эту кнопку для перемотки назад</translation>
+        <translation type="unfinished">Нажмите эту кнопку для перемотки назад</translation>
     </message>
     <message>
         <source>Click this button to forward current play position</source>
-        <translation>Нажмите эту кнопку для перемещения вперёд</translation>
+        <translation type="unfinished">Нажмите эту кнопку для перемещения вперёд</translation>
     </message>
     <message>
         <source>Click this button to open a &lt;em&gt;new song&lt;/em&gt;.&lt;br&gt;You can also select the &lt;b&gt;Open command&lt;/b&gt; from the File menu.</source>
-        <translation>Нажмите эту кнопку для открытия &lt;em&gt;другой композиции&lt;/em&gt;.&lt;br&gt;Вы также можете выбрать пункт  &lt;b&gt;Открыть&lt;/b&gt; в меню &quot;Файл&quot;.</translation>
+        <translation type="obsolete">Нажмите эту кнопку для открытия &lt;em&gt;другой композиции&lt;/em&gt;.&lt;br&gt;Вы также можете выбрать пункт  &lt;b&gt;Открыть&lt;/b&gt; в меню &quot;Файл&quot;.</translation>
     </message>
     <message>
         <source>Click this button to save the song you are editing.  You will be prompted for a file name.
 You can also select the Save command from the File menu.</source>
-        <translation>Нажмите эту кнопку для сохранения редактируемой композиции. 
+        <translation type="obsolete">Нажмите эту кнопку для сохранения редактируемой композиции. 
 Вы также можете выбрать пункт  &lt;b&gt;Открыть&lt;/b&gt; в меню &quot;Файл&quot;.</translation>
     </message>
     <message>
         <source>Create New Song</source>
-        <translation>Создать новую композицию</translation>
+        <translation type="obsolete">Создать новую композицию</translation>
     </message>
     <message>
         <source>loop between left mark and right mark</source>
-        <translation>Цикл между левым и правым маркерами</translation>
+        <translation type="unfinished">Цикл между левым и правым маркерами</translation>
     </message>
     <message>
         <source>record starts at left mark</source>
-        <translation>Запись начинается от маркера слева</translation>
+        <translation type="unfinished">Запись начинается от маркера слева</translation>
     </message>
     <message>
         <source>record stops at right mark</source>
-        <translation>Запись останавливается по маркеру справа</translation>
+        <translation type="unfinished">Запись останавливается по маркеру справа</translation>
     </message>
     <message>
         <source>rewind to start position</source>
-        <translation>Перемотать к начальной позиции</translation>
+        <translation type="unfinished">Перемотать к начальной позиции</translation>
     </message>
     <message>
         <source>rewind current position</source>
-        <translation>Перемотать к текущей позиции</translation>
+        <translation type="unfinished">Перемотать к текущей позиции</translation>
     </message>
     <message>
         <source>move current position</source>
-        <translation>Переместить текущую позицию</translation>
+        <translation type="unfinished">Переместить текущую позицию</translation>
     </message>
     <message>
         <source>stop sequencer</source>
-        <translation>Остановить секвенсер</translation>
+        <translation type="unfinished">Остановить секвенсер</translation>
     </message>
     <message>
         <source>start sequencer play</source>
-        <translation>Начать воспроизведение из секвенсера</translation>
+        <translation type="unfinished">Начать воспроизведение из секвенсера</translation>
     </message>
     <message>
         <source>to record press record and then play</source>
-        <translation>Для начала записи нажмите &quot;Записать&quot;, а затем &quot;Воспроизвести&quot;</translation>
+        <translation type="unfinished">Для начала записи нажмите &quot;Записать&quot;, а затем &quot;Воспроизвести&quot;</translation>
     </message>
     <message>
         <source>send note off to all midi channels</source>
-        <translation>Послать note off на все MIDI-каналы</translation>
+        <translation type="unfinished">Послать note off на все MIDI-каналы</translation>
     </message>
     <message>
         <source>presets (*.pre *.pre.gz *.pre.bz2)</source>
-        <translation>Предустановки (*.pre *.pre.gz *.pre.bz2)</translation>
+        <translation type="unfinished">Предустановки (*.pre *.pre.gz *.pre.bz2)</translation>
     </message>
     <message>
         <source>All Files (*)</source>
-        <translation>Все файлы (*)</translation>
+        <translation type="unfinished">Все файлы (*)</translation>
     </message>
     <message>
         <source>Add Midi Track</source>
-        <translation>Добавить MIDI-дорожку</translation>
+        <translation type="unfinished">Добавить MIDI-дорожку</translation>
     </message>
     <message>
         <source>Add Drum Track</source>
@@ -120,42 +138,236 @@ You can also select the Save command from the File menu.</source>
     </message>
     <message>
         <source>Add Wave Track</source>
-        <translation>Добавить звуковую дорожку</translation>
+        <translation type="unfinished">Добавить звуковую дорожку</translation>
     </message>
     <message>
         <source>Add Audio Output</source>
-        <translation>Добавить звуковой выход</translation>
+        <translation type="unfinished">Добавить звуковой выход</translation>
     </message>
     <message>
         <source>Add Audio Group</source>
-        <translation>Добавить звуковую группу</translation>
+        <translation type="unfinished">Добавить звуковую группу</translation>
     </message>
     <message>
         <source>Add Audio Input</source>
-        <translation>Добавить звуковой вход</translation>
+        <translation type="unfinished">Добавить звуковой вход</translation>
     </message>
     <message>
         <source>Add Aux Send</source>
-        <translation>Добавить aux посыл</translation>
+        <translation type="obsolete">Добавить aux посыл</translation>
     </message>
     <message>
         <source>Click this button to enable recording</source>
-        <translation type="unfinished">Нажмите эту клавишу для начала записи</translation>
+        <translation type="obsolete">Нажмите эту клавишу для начала записи</translation>
     </message>
     <message>
-        <source>Midi Strips</source>
+        <source>select Pencil Tool:
+with the pencil tool you can:
+  create new parts
+  modify length of parts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add Midi Output Port</source>
+        <source>select Delete Tool:
+with the delete tool you can delete parts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add Midi Input Port</source>
+        <source>select Cut Tool:
+with the cut tool you can split a part</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Audio Strips</source>
+        <source>select Glue Tool:
+with the glue tool you can glue two parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>select Quantize Tool:
+insert display quantize event</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>select Drawing Tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>select Muting Tool:
+click on part to mute/unmute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>pointer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>pencil</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>eraser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>cutter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>glue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>draw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>mute parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation type="unfinished">Выкл</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>mute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>solo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>monitor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dr</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>use drum map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>off</source>
+        <translation type="unfinished">выкл</translation>
+    </message>
+    <message>
+        <source>aR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>automation read</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>aW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>automation write</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sync</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>send sync events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1/2 channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>oR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>output routing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>iR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>input routing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>don&apos;t quantize notes above this tick limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>quantize also note len as default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Click this button to select a new project
+You can also select the &lt;b&gt;Open command&lt;/b&gt; from the Project menu.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Click this button to save the project you are editing.
+You can also select the Save command from the Project menu.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bar</source>
+        <translation type="unfinished">Такт</translation>
+    </message>
+    <message>
+        <source>Midi</source>
+        <translation type="unfinished">MIDI</translation>
+    </message>
+    <message>
+        <source>Add Midi Output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Midi Input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio</source>
+        <translation type="unfinished">Звук</translation>
+    </message>
+    <message>
+        <source>MusE: create project directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: create template directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot find project &lt;%1&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: load Project</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -163,11 +375,7 @@ You can also select the Save command from the File menu.</source>
     <name>AboutBox</name>
     <message>
         <source>AboutBox</source>
-        <translation>О программе</translation>
-    </message>
-    <message>
-        <source>Keep On Rocking!</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">О программе</translation>
     </message>
     <message>
         <source>Version 0.7.0
@@ -177,7 +385,7 @@ See http://lmuse.sourceforge.net for new versions and
 more information.
 
 Published under the GNU Public License</source>
-        <translation>Версия 0.7.0
+        <translation type="obsolete">Версия 0.7.0
 
 (C) Copyright 1999-2004 Werner Schweer и другие.
 Новые версии и подробности смотрите на сайте 
@@ -190,225 +398,328 @@ http://lmuse.sourceforge.net
     <name>Appearance</name>
     <message>
         <source>MusE: load image</source>
-        <translation>MusE: загрузить изображение</translation>
+        <translation type="obsolete">MusE: загрузить изображение</translation>
     </message>
 </context>
 <context>
     <name>AppearanceDialogBase</name>
     <message>
         <source>MusE: Appearance settings</source>
-        <translation>MusE: Настройки облика</translation>
+        <translation type="obsolete">MusE: Настройки облика</translation>
     </message>
     <message>
         <source>Apply</source>
-        <translation>Применить</translation>
+        <translation type="obsolete">Применить</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation>ОК</translation>
+        <translation type="obsolete">ОК</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Отменить</translation>
+        <translation type="obsolete">Отменить</translation>
     </message>
     <message>
         <source>Arranger</source>
-        <translation>Компоновщик</translation>
+        <translation type="obsolete">Компоновщик</translation>
     </message>
     <message>
         <source>Parts</source>
-        <translation>Части</translation>
+        <translation type="obsolete">Части</translation>
     </message>
     <message>
         <source>show names</source>
-        <translation>показывать рамки</translation>
+        <translation type="obsolete">показывать рамки</translation>
     </message>
     <message>
         <source>show events</source>
-        <translation>показывать события</translation>
+        <translation type="obsolete">показывать события</translation>
     </message>
     <message>
         <source>show Cakewalk Style</source>
-        <translation>показывать в стиле Cakewalk</translation>
+        <translation type="obsolete">показывать в стиле Cakewalk</translation>
     </message>
     <message>
         <source>Events</source>
-        <translation>События</translation>
+        <translation type="obsolete">События</translation>
     </message>
     <message>
         <source>note on</source>
-        <translation>note on</translation>
+        <translation type="obsolete">note on</translation>
     </message>
     <message>
         <source>poly pressure</source>
-        <translation>полифоническое послекасание</translation>
+        <translation type="obsolete">полифоническое послекасание</translation>
     </message>
     <message>
         <source>controller</source>
-        <translation>контроллер</translation>
+        <translation type="obsolete">контроллер</translation>
     </message>
     <message>
         <source>aftertouch</source>
-        <translation>послекасание</translation>
+        <translation type="obsolete">послекасание</translation>
     </message>
     <message>
         <source>pitch bend</source>
-        <translation>смена высоты звука</translation>
+        <translation type="obsolete">смена высоты звука</translation>
     </message>
     <message>
         <source>program change</source>
-        <translation>смена программы</translation>
+        <translation type="obsolete">смена программы</translation>
     </message>
     <message>
         <source>special</source>
-        <translation>специальная</translation>
+        <translation type="obsolete">специальная</translation>
     </message>
     <message>
         <source>Background picture</source>
-        <translation>Фоновое изображение</translation>
+        <translation type="obsolete">Фоновое изображение</translation>
     </message>
     <message>
         <source>bg</source>
-        <translation>фон</translation>
+        <translation type="obsolete">фон</translation>
     </message>
     <message>
         <source>select...</source>
-        <translation>выбрать...</translation>
+        <translation type="obsolete">выбрать...</translation>
     </message>
     <message>
         <source>show snap grid</source>
-        <translation>показывать сетку привязки</translation>
+        <translation type="obsolete">показывать сетку привязки</translation>
     </message>
     <message>
         <source>Colors</source>
-        <translation>Цвета</translation>
-    </message>
-    <message>
-        <source>Items</source>
-        <translation></translation>
+        <translation type="obsolete">Цвета</translation>
     </message>
     <message>
         <source>Style/Fonts</source>
-        <translation>Стиль/Шрифты</translation>
+        <translation type="obsolete">Стиль/Шрифты</translation>
     </message>
     <message>
         <source>QT Theme</source>
-        <translation>Тема QT</translation>
+        <translation type="obsolete">Тема QT</translation>
     </message>
     <message>
         <source>Windows</source>
-        <translation>Окна</translation>
+        <translation type="obsolete">Окна</translation>
     </message>
     <message>
         <source>MusE</source>
-        <translation>MusE</translation>
+        <translation type="obsolete">MusE</translation>
     </message>
     <message>
         <source>Metal</source>
-        <translation>Металл</translation>
+        <translation type="obsolete">Металл</translation>
     </message>
     <message>
         <source>Norwegian Wood</source>
-        <translation>Норвежское дерево</translation>
+        <translation type="obsolete">Норвежское дерево</translation>
     </message>
     <message>
         <source>Platinum</source>
-        <translation>Платина</translation>
+        <translation type="obsolete">Платина</translation>
     </message>
     <message>
         <source>CDE</source>
-        <translation>CDE</translation>
+        <translation type="obsolete">CDE</translation>
     </message>
     <message>
         <source>Motif</source>
-        <translation>Motif</translation>
+        <translation type="obsolete">Motif</translation>
     </message>
     <message>
         <source>Motif Plus</source>
-        <translation>Motif Plus</translation>
+        <translation type="obsolete">Motif Plus</translation>
     </message>
     <message>
         <source>Fonts</source>
-        <translation>Шрифты</translation>
+        <translation type="obsolete">Шрифты</translation>
     </message>
     <message>
         <source>Family</source>
-        <translation>Семейство</translation>
+        <translation type="obsolete">Семейство</translation>
     </message>
     <message>
         <source>Size</source>
-        <translation>Размер</translation>
+        <translation type="obsolete">Размер</translation>
     </message>
     <message>
         <source>Font 1</source>
-        <translation>Шрифт 1</translation>
+        <translation type="obsolete">Шрифт 1</translation>
     </message>
     <message>
         <source>Font 2</source>
-        <translation>Шрифт 2</translation>
+        <translation type="obsolete">Шрифт 2</translation>
     </message>
     <message>
         <source>Font 3</source>
-        <translation>Шрифт 3</translation>
+        <translation type="obsolete">Шрифт 3</translation>
     </message>
     <message>
         <source>Font 0</source>
-        <translation>Шрифт 0</translation>
+        <translation type="obsolete">Шрифт 0</translation>
     </message>
     <message>
         <source>Bold</source>
-        <translation>Жирный</translation>
+        <translation type="obsolete">Жирный</translation>
     </message>
     <message>
         <source>Italic</source>
-        <translation>Курсив</translation>
+        <translation type="obsolete">Курсив</translation>
     </message>
     <message>
         <source>...</source>
-        <translation>...</translation>
+        <translation type="obsolete">...</translation>
     </message>
     <message>
         <source>Font 4</source>
-        <translation>Шрифт 4</translation>
+        <translation type="obsolete">Шрифт 4</translation>
     </message>
     <message>
         <source>Font 5</source>
-        <translation>Шрифт 5</translation>
+        <translation type="obsolete">Шрифт 5</translation>
     </message>
     <message>
         <source>Palette</source>
-        <translation>Палитра</translation>
+        <translation type="obsolete">Палитра</translation>
     </message>
     <message>
         <source>add to palette</source>
-        <translation>Добавить в палитру</translation>
+        <translation type="obsolete">Добавить в палитру</translation>
     </message>
     <message>
         <source>B</source>
-        <translation>B</translation>
+        <translation type="obsolete">B</translation>
     </message>
     <message>
         <source>S</source>
-        <translation>S</translation>
+        <translation type="obsolete">S</translation>
     </message>
     <message>
         <source>H</source>
-        <translation>H</translation>
+        <translation type="obsolete">H</translation>
     </message>
     <message>
         <source>V</source>
-        <translation>V</translation>
+        <translation type="obsolete">V</translation>
     </message>
     <message>
         <source>G</source>
-        <translation>G</translation>
+        <translation type="obsolete">G</translation>
     </message>
     <message>
         <source>R</source>
-        <translation>R</translation>
+        <translation type="obsolete">R</translation>
     </message>
-    <message encoding="UTF-8">
-        <source>Itemdsfkajlk jölk ljfölajföajföajf</source>
+</context>
+<context>
+    <name>Arranger</name>
+    <message>
+        <source>TrackInfo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mix</source>
+        <translation type="unfinished">Смешать</translation>
+    </message>
+    <message>
+        <source>Config Tracklist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>all mute off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>all solo off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>all autoRead off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>all autoWrite off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Track Info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Mixer Strip</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AudioStrip</name>
+    <message>
+        <source>Pre</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>pre fader - post fader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dB</source>
+        <translation type="unfinished">Дб</translation>
+    </message>
+    <message>
+        <source>record downmix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>panorama</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MidiChannel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation type="unfinished">Канал</translation>
+    </message>
+</context>
+<context>
+    <name>Awl::MidiVolEntry</name>
+    <message>
+        <source>off</source>
+        <translation type="unfinished">выкл</translation>
+    </message>
+    <message>
+        <source>db</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Awl::VolEntry</name>
+    <message>
+        <source>off</source>
+        <translation type="unfinished">выкл</translation>
+    </message>
+</context>
+<context>
+    <name>BigTime</name>
+    <message>
+        <source>MusE: Bigtime</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -416,1944 +727,1301 @@ http://lmuse.sourceforge.net
     <name>ClipListEditorBase</name>
     <message>
         <source>MusE: ClipList</source>
-        <translation>MusE: Список фрагментов</translation>
+        <translation type="obsolete">MusE: Список фрагментов</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Имя</translation>
-    </message>
-    <message>
-        <source>Refs</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Имя</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation>Начало</translation>
+        <translation type="obsolete">Начало</translation>
     </message>
     <message>
         <source>Len</source>
-        <translation>Длн</translation>
+        <translation type="obsolete">Длн</translation>
     </message>
     <message>
         <source>Data</source>
-        <translation>Данные</translation>
+        <translation type="obsolete">Данные</translation>
     </message>
     <message>
         <source>Clip Properties</source>
-        <translation>Свойства фрагмента</translation>
+        <translation type="obsolete">Свойства фрагмента</translation>
     </message>
     <message>
         <source>Pos:</source>
-        <translation>Поз.:</translation>
+        <translation type="obsolete">Поз.:</translation>
     </message>
     <message>
         <source>Len:</source>
-        <translation>Длн.:</translation>
+        <translation type="obsolete">Длн.:</translation>
     </message>
 </context>
 <context>
     <name>CommentBase</name>
     <message>
         <source>Form1</source>
-        <translation>Form1</translation>
+        <translation type="obsolete">Form1</translation>
     </message>
     <message>
         <source>Track Comment</source>
-        <translation>Комментарий к дорожке</translation>
+        <translation type="obsolete">Комментарий к дорожке</translation>
     </message>
     <message>
         <source>Track 1</source>
-        <translation>Дорожка 1</translation>
+        <translation type="obsolete">Дорожка 1</translation>
     </message>
 </context>
 <context>
     <name>ConfigMidiCtrlBase</name>
     <message>
         <source>MusE: Config Midi Controller</source>
-        <translation>MusE: Настройка MIDI-контроллера</translation>
+        <translation type="obsolete">MusE: Настройка MIDI-контроллера</translation>
     </message>
     <message>
         <source>Midi Port:</source>
-        <translation>MIDI-порт:</translation>
+        <translation type="obsolete">MIDI-порт:</translation>
     </message>
     <message>
         <source>Available Controller:</source>
-        <translation>Доступный контроллер:</translation>
+        <translation type="obsolete">Доступный контроллер:</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation>Добавить</translation>
+        <translation type="obsolete">Добавить</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Удалить</translation>
-    </message>
-    <message>
-        <source>Automated Controller:</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Удалить</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation>&amp;ОК</translation>
+        <translation type="obsolete">&amp;ОК</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation>О&amp;тменить</translation>
+        <translation type="obsolete">О&amp;тменить</translation>
     </message>
 </context>
 <context>
     <name>ConfigMidiFileBase</name>
     <message>
         <source>MusE: Config Midi File Export</source>
-        <translation>MusE: Настройка экспорта в MIDI</translation>
+        <translation type="obsolete">MusE: Настройка экспорта в MIDI</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation>&amp;ОК</translation>
+        <translation type="obsolete">&amp;ОК</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation>О&amp;тменить</translation>
+        <translation type="obsolete">О&amp;тменить</translation>
     </message>
     <message>
         <source>0 (single track)</source>
-        <translation>0 (одиночная дорожка)</translation>
+        <translation type="obsolete">0 (одиночная дорожка)</translation>
     </message>
     <message>
         <source>1 (multiple tracks)</source>
-        <translation>1 (больше одной дорожки)</translation>
+        <translation type="obsolete">1 (больше одной дорожки)</translation>
     </message>
     <message>
         <source>Format:</source>
-        <translation>Формат:</translation>
+        <translation type="obsolete">Формат:</translation>
     </message>
     <message>
         <source>96</source>
-        <translation>96</translation>
+        <translation type="obsolete">96</translation>
     </message>
     <message>
         <source>192</source>
-        <translation>192</translation>
+        <translation type="obsolete">192</translation>
     </message>
     <message>
         <source>384</source>
-        <translation>384</translation>
-    </message>
-    <message>
-        <source>Division:</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">384</translation>
     </message>
     <message>
         <source>Copyright:</source>
-        <translation>Авторские и смежные права:</translation>
+        <translation type="obsolete">Авторские и смежные права:</translation>
     </message>
     <message>
         <source>Enable extended smf format</source>
-        <translation>Разрешить расширенный формат SMF</translation>
+        <translation type="obsolete">Разрешить расширенный формат SMF</translation>
     </message>
 </context>
 <context>
     <name>ConfigTrackListBase</name>
     <message>
         <source>MusE: Config Track List</source>
-        <translation>MusE: Настройка списка дорожек</translation>
+        <translation type="obsolete">MusE: Настройка списка дорожек</translation>
     </message>
     <message>
         <source>Track Type:</source>
-        <translation>Тип дорожки:</translation>
+        <translation type="obsolete">Тип дорожки:</translation>
     </message>
     <message>
         <source>Audio Output</source>
-        <translation>Аудиовыход</translation>
+        <translation type="obsolete">Аудиовыход</translation>
     </message>
     <message>
         <source>Audio Group</source>
-        <translation>Аудиогруппа</translation>
+        <translation type="obsolete">Аудиогруппа</translation>
     </message>
     <message>
         <source>Audio Aux</source>
-        <translation>Audio Aux</translation>
+        <translation type="obsolete">Audio Aux</translation>
     </message>
     <message>
         <source>Wave Track</source>
-        <translation>Аудиодорожка</translation>
+        <translation type="obsolete">Аудиодорожка</translation>
     </message>
     <message>
         <source>Audio Input</source>
-        <translation>Аудиовход</translation>
+        <translation type="obsolete">Аудиовход</translation>
     </message>
     <message>
         <source>Soft Synthesizer</source>
-        <translation>Программный синтезатор</translation>
+        <translation type="obsolete">Программный синтезатор</translation>
     </message>
     <message>
         <source>Midi Track</source>
-        <translation>MIDI-дорожка</translation>
+        <translation type="obsolete">MIDI-дорожка</translation>
     </message>
     <message>
         <source>Drum Track</source>
-        <translation>Перкуссионная дорожка</translation>
+        <translation type="obsolete">Перкуссионная дорожка</translation>
     </message>
     <message>
         <source>Available Items:</source>
-        <translation>Доступные варианты:</translation>
+        <translation type="obsolete">Доступные варианты:</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation>Добавить</translation>
+        <translation type="obsolete">Добавить</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Удалить</translation>
+        <translation type="obsolete">Удалить</translation>
     </message>
     <message>
         <source>Up</source>
-        <translation>Вверх</translation>
+        <translation type="obsolete">Вверх</translation>
     </message>
     <message>
         <source>Down</source>
-        <translation>Вниз</translation>
+        <translation type="obsolete">Вниз</translation>
     </message>
     <message>
         <source>Configured Items</source>
-        <translation>Настроенные дорожки</translation>
+        <translation type="obsolete">Настроенные дорожки</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation>&amp;ОК</translation>
+        <translation type="obsolete">&amp;ОК</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation>О&amp;тменить</translation>
+        <translation type="obsolete">О&amp;тменить</translation>
+    </message>
+</context>
+<context>
+    <name>CtrlDialog</name>
+    <message>
+        <source>controller name</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Track Name Size:</source>
+        <source>flag if controller contains data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>other</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CtrlEdit</name>
+    <message>
+        <source>Sel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>select controller</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>remove controller view</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DeicsOnzeGui</name>
+    <message>
+        <source>Save configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Critical Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot open file %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parsing error for file %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load category dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load set dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save set dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No more category supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not add more categories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you really want to delete %1 ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Yes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;No</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No category selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must first select a category.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace or add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is supposed to be affected to the hbank number %2, but there is already one on this slot.
+ Do you want to replace it or to add it in the next free slot ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Replace</source>
+        <translation type="unfinished">&amp;Заменить</translation>
+    </message>
+    <message>
+        <source>&amp;Add</source>
+        <translation type="unfinished">&amp;Добавить</translation>
+    </message>
+    <message>
+        <source>Download error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is no more free category slot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save category dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No more subcategory supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not add more subcategories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No subcategory selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must first select a subcategory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load subcategory dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is supposed to be affected to the lbank number %2, but there is already one on this slot.
+ Do you want to replace it or to add it in the next free slot ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is no more free subcategory slot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save subcategory dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No more preset supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not add more presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No preset selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must first select a preset.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load preset dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is supposed to be affected to the prog number %2, but there is already one on this slot.
+ Do you want to replace it or to add it in the next free slot ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is no more free preset slot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save preset dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse set dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse image dialog</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DeicsOnzeGuiBase</name>
     <message>
-        <source>DeicsOnze</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Presets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LBA</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Subcategory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PRO</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Preset</source>
-        <translation type="unfinished">Предустановка</translation>
-    </message>
-    <message>
-        <source>Bank numerous</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NONE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Program numerous</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>INITVOICE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DeicsOnze v0.3 Copyright (c) 2004-2005 Nil Geisweiller under GPL licence</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>HBA</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Category</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Global</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Op4 Feedback</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Feedback level of the operator 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Master Volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Master volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Modulation Matrix</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Algorithm 1&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by &lt;i&gt;Op 2&lt;/i&gt; modulated by &lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 2&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by &lt;i&gt;Op 2&lt;/i&gt; modulated by both &lt;i&gt;Op 3&lt;/i&gt; and &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 3&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by both &lt;i&gt;Op 4&lt;/i&gt; and &lt;i&gt;Op 2&lt;/i&gt; modulated by &lt;i&gt;Op 3&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 4&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by both &lt;i&gt;Op 2&lt;/i&gt; and &lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 5&lt;/b&gt; : (&lt;i&gt;Op 1&lt;/i&gt; modulated by &lt;i&gt;Op 2&lt;/i&gt;) add to (&lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;) &lt;br&gt;
-&lt;b&gt;Algorithm 6&lt;/b&gt; : addition of the three &lt;i&gt;Op 1, 2, 3&lt;/i&gt; all modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 7&lt;/b&gt; : addition of the three &lt;i&gt;Op 1, 2, 3&lt;/i&gt; with &lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 8&lt;/b&gt; : addition of the four &lt;i&gt;Op 1, 2, 3, 4&lt;/i&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO Sync</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch modulation sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch Modulation Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO Delay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO delay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO speed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude modulation depth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch modulation depth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude modulation sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude Modulation Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AMS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO Waveform</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch Modulation Depth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PMD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO Speed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AMD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Speed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PMS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch Envelope</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PL3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PL2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PL1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PR1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PR2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PR3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Op &amp;1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OUT 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Output Volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Frequency 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Coarse 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Coarse Ratio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fine 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fine Ratio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Freq 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fixed Frequency</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>FIX</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toggle Fix Frequency</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sensitivity 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>KVS1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AME1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude Modulation Enable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Keyboard Velocity Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Key Velocity Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EBS1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EG Bias Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Eg Bias Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Detune, OSCWave, EGShift 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DET1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Detune</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Attack Rate of the operator 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>96dB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>48dB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>24dB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>12dB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EG Shift</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Wave form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Wave form 1 = &lt;i&gt;sin(&lt;b&gt;t&lt;/b&gt;)&lt;/i&gt;&lt;br&gt;
-Wave form 2 = &lt;i&gt;sin(&lt;b&gt;t&lt;/b&gt;)*abs(sin(&lt;b&gt;t&lt;/b&gt;))&lt;/i&gt;&lt;br&gt;
-Wave form 3 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(&lt;b&gt;t&lt;/b&gt;) else 0&lt;/i&gt;&lt;br&gt;
-Wave form 4 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(&lt;b&gt;t&lt;/b&gt;)*abs(sin(&lt;b&gt;t&lt;/b&gt;)) else 0&lt;/i&gt;&lt;br&gt;
-Wave form 5 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t&lt;/b&gt;) else 0&lt;/i&gt;&lt;br&gt;
-Wave form 6 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t&lt;/b&gt;)*abs(sin(2*&lt;b&gt;t&lt;/b&gt;)) else 0&lt;/i&gt;&lt;br&gt;
-Wave form 7 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then abs(sin(2*&lt;b&gt;t&lt;/b&gt;)) else 0&lt;/i&gt;&lt;br&gt;
-Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t&lt;/b&gt;)*sin(2*&lt;b&gt;t&lt;/b&gt;) else 0&lt;/i&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude Envelope 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RR1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1R1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1L1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D2R1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Release Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message encoding="UTF-8">
-        <source>2° Decay Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message encoding="UTF-8">
-        <source>1° Decay Level</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message encoding="UTF-8">
-        <source>1° Decay Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Attack Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AR1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Scaling 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LS1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RS1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Rate Scaling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Level Scaling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Op &amp;2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sensitivity 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EBS2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>KVS2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AME2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Detune, OSCWave, EGShift 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DET2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OUT 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Scaling 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LS2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RS2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Frequency 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Coarse 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fine 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Freq 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude Envelope 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1R2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1L2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D2R2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RR2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AR2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Op &amp;3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sensitivity 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EBS3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>KVS3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AME3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Detune, OSCWave, EGShift 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DET3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Frequency 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Coarse 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fine 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Freq 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OUT 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Scaling 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LS3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RS3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude Envelope 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1R3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1L3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D2R3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RR3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AR3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Op &amp;4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sensitivity 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EBS4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>KVS4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AME4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Detune, OSCWave, EGShift 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DET4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OUT 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Scaling 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LS4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RS4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Frequency 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Coarse 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fine 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Freq 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>amplitude Envelope 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AR4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1R4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1L4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D2R4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RR4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Fun</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Phony Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>POLY</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MONO</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Reverb</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Foot Control</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch Bend Range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Предустановка</translation>
     </message>
     <message>
         <source>Pitch</source>
-        <translation type="unfinished">Высота тона</translation>
-    </message>
-    <message>
-        <source>Modulation Wheel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Breath Control</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Envelope Bias</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch Bias</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Высота тона</translation>
     </message>
     <message>
         <source>After Touch</source>
-        <translation type="unfinished">Послекасание</translation>
-    </message>
-    <message>
-        <source>Potamento</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>FINGER</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>FULL</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Portamento Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PT</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Portamento Time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Foot Switch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sustain</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Portamento</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Послекасание</translation>
     </message>
     <message>
         <source>Transpose</source>
-        <translation type="unfinished">Транспонировать</translation>
-    </message>
-    <message>
-        <source>&amp;Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Configuration File</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Транспонировать</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished">Сохранить</translation>
-    </message>
-    <message>
-        <source>Load</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quality</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>High</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Middle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Low</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NbrV</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Number of Voices</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Сохранить</translation>
     </message>
     <message>
         <source>Colors</source>
-        <translation type="unfinished">Цвета</translation>
+        <translation type="obsolete">Цвета</translation>
     </message>
+</context>
+<context>
+    <name>DrumEdit</name>
     <message>
-        <source>Red</source>
+        <source>Delete Events</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Green</source>
+        <source>&amp;Functions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Blue</source>
+        <source>Set fixed length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Text</source>
+        <source>Modify Velocity...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Background</source>
+        <source>&amp;Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Edit Text</source>
+        <source>Select All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Edit Background</source>
+        <source>Select None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save Mode</source>
+        <source>Invert</source>
+        <translation type="unfinished">Инвертировать</translation>
+    </message>
+    <message>
+        <source>Inside Loop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save only the used presets into the project</source>
+        <source>Outside Loop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save the entire set into the project</source>
+        <source>Drum Tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save the configuration into the project</source>
-        <translation type="unfinished"></translation>
+        <source>Transport</source>
+        <translation type="unfinished">Транспорт</translation>
     </message>
 </context>
 <context>
     <name>EditCtrl7DialogBase</name>
     <message>
         <source>MusE: Enter Controller</source>
-        <translation>MusE: Ввести контроллер</translation>
+        <translation type="obsolete">MusE: Ввести контроллер</translation>
     </message>
     <message>
         <source>Controller:</source>
-        <translation>Контроллер:</translation>
+        <translation type="obsolete">Контроллер:</translation>
     </message>
     <message>
         <source>Time Position:</source>
-        <translation>Позиция во времени:</translation>
+        <translation type="obsolete">Позиция во времени:</translation>
     </message>
     <message>
         <source>Value:</source>
-        <translation>Значение:</translation>
+        <translation type="obsolete">Значение:</translation>
     </message>
     <message>
         <source>controller value</source>
-        <translation>значение контроллера</translation>
+        <translation type="obsolete">значение контроллера</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation>ОК</translation>
+        <translation type="obsolete">ОК</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Отменить</translation>
+        <translation type="obsolete">Отменить</translation>
     </message>
 </context>
 <context>
     <name>EditCtrlBase</name>
-    <message>
-        <source>MusE: Edit Controller Event</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Time Position</source>
         <translation type="obsolete">Позиция во времени</translation>
     </message>
     <message>
         <source>Available Controller:</source>
-        <translation type="unfinished">Доступный контроллер:</translation>
+        <translation type="obsolete">Доступный контроллер:</translation>
     </message>
     <message>
         <source>Create New Controller</source>
-        <translation>Создать новый контроллер</translation>
+        <translation type="obsolete">Создать новый контроллер</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation>Значение</translation>
+        <translation type="obsolete">Значение</translation>
     </message>
     <message>
         <source>Controller</source>
-        <translation>Контроллер</translation>
+        <translation type="obsolete">Контроллер</translation>
     </message>
     <message>
         <source>H-Bank</source>
-        <translation type="unfinished">H-банк</translation>
+        <translation type="obsolete">H-банк</translation>
     </message>
     <message>
         <source>L-Bank</source>
-        <translation type="unfinished">L-банк</translation>
+        <translation type="obsolete">L-банк</translation>
     </message>
     <message>
         <source>Program</source>
-        <translation>Программа</translation>
+        <translation type="obsolete">Программа</translation>
     </message>
     <message>
         <source>off</source>
-        <translation>выкл</translation>
+        <translation type="obsolete">выкл</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation>&amp;ОК</translation>
+        <translation type="obsolete">&amp;ОК</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">О&amp;тменить</translation>
+        <translation type="obsolete">О&amp;тменить</translation>
     </message>
     <message>
         <source>Midi Port:</source>
-        <translation type="unfinished">MIDI-порт:</translation>
-    </message>
-    <message>
-        <source>Midi Channel:</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">MIDI-порт:</translation>
     </message>
     <message>
         <source>Time Position:</source>
-        <translation type="unfinished">Позиция во времени:</translation>
-    </message>
-    <message>
-        <source>Patch Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Позиция во времени:</translation>
     </message>
 </context>
 <context>
     <name>EditInstrumentBase</name>
     <message>
         <source>MusE: Instrument Editor</source>
-        <translation>MusE:  Редактор инструментов</translation>
-    </message>
-    <message>
-        <source>Patches</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Patch Name:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>High Bank:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Low Bank:</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">MusE:  Редактор инструментов</translation>
     </message>
     <message>
         <source>Program:</source>
-        <translation>Программа:</translation>
-    </message>
-    <message>
-        <source>d.c.</source>
-        <comment>dont care</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>d.c.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Patch/Group</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Программа:</translation>
     </message>
     <message>
         <source>&amp;Delete</source>
-        <translation>У&amp;далить</translation>
+        <translation type="obsolete">У&amp;далить</translation>
     </message>
     <message>
         <source>Alt+D</source>
-        <translation>Alt+D</translation>
-    </message>
-    <message>
-        <source>&amp;New Patch</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Alt+D</translation>
     </message>
     <message>
         <source>Alt+N</source>
-        <translation>Alt+N</translation>
+        <translation type="obsolete">Alt+N</translation>
     </message>
     <message>
         <source>New Group</source>
-        <translation>Новая группа</translation>
+        <translation type="obsolete">Новая группа</translation>
     </message>
     <message>
         <source>Drum</source>
-        <translation>Ударные</translation>
+        <translation type="obsolete">Ударные</translation>
     </message>
     <message>
         <source>GM</source>
-        <translation>GM</translation>
+        <translation type="obsolete">GM</translation>
     </message>
     <message>
         <source>GS</source>
-        <translation>GS</translation>
+        <translation type="obsolete">GS</translation>
     </message>
     <message>
         <source>XG</source>
-        <translation>XG</translation>
+        <translation type="obsolete">XG</translation>
     </message>
     <message>
         <source>Controller</source>
-        <translation>Контроллер</translation>
+        <translation type="obsolete">Контроллер</translation>
     </message>
     <message>
         <source>Predefined Controller:</source>
-        <translation>Предопределённый контроллер:</translation>
-    </message>
-    <message>
-        <source>This is a list of commonly used midi controllers.
-Note that in MusE pitch and program changes are
-handled like normal controllers.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Предопределённый контроллер:</translation>
     </message>
     <message>
         <source>Properties</source>
-        <translation>Свойства</translation>
+        <translation type="obsolete">Свойства</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Имя</translation>
+        <translation type="obsolete">Имя</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation>Тип</translation>
+        <translation type="obsolete">Тип</translation>
     </message>
     <message>
         <source>Control7</source>
-        <translation>Control7</translation>
+        <translation type="obsolete">Control7</translation>
     </message>
     <message>
         <source>Control14</source>
-        <translation>Control14</translation>
+        <translation type="obsolete">Control14</translation>
     </message>
     <message>
         <source>RPN</source>
-        <translation>RPN</translation>
+        <translation type="obsolete">RPN</translation>
     </message>
     <message>
         <source>NRPN</source>
-        <translation>NRPN</translation>
+        <translation type="obsolete">NRPN</translation>
     </message>
     <message>
         <source>Pitch</source>
-        <translation type="unfinished">Высота тона</translation>
+        <translation type="obsolete">Высота тона</translation>
     </message>
     <message>
         <source>Program</source>
-        <translation>Программа</translation>
+        <translation type="obsolete">Программа</translation>
     </message>
     <message>
         <source>H-Ctrl</source>
-        <translation>H-Ctrl</translation>
-    </message>
-    <message>
-        <source>Midi Controller Number High Byte</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">H-Ctrl</translation>
     </message>
     <message>
         <source>L-Ctrl</source>
-        <translation type="unfinished">L-Ctrl</translation>
-    </message>
-    <message>
-        <source>Midi Controller Number Low Byte</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">L-Ctrl</translation>
     </message>
     <message>
         <source>Range</source>
-        <translation>Область</translation>
+        <translation type="obsolete">Область</translation>
     </message>
     <message>
         <source>Min</source>
-        <translation>Мин</translation>
+        <translation type="obsolete">Мин</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation>Макс</translation>
-    </message>
-    <message>
-        <source>Default</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Макс</translation>
     </message>
     <message>
         <source>Name                  </source>
-        <translation>Имя                 </translation>
+        <translation type="obsolete">Имя                 </translation>
     </message>
     <message>
         <source>Type       </source>
-        <translation>Тип       </translation>
+        <translation type="obsolete">Тип       </translation>
     </message>
     <message>
         <source>Min Val</source>
-        <translation>Мин знач</translation>
+        <translation type="obsolete">Мин знач</translation>
     </message>
     <message>
         <source>Max Val</source>
-        <translation>Макс знач</translation>
+        <translation type="obsolete">Макс знач</translation>
     </message>
     <message>
         <source>list of defined controllers</source>
-        <translation type="unfinished">список назначенных контроллеров</translation>
+        <translation type="obsolete">список назначенных контроллеров</translation>
     </message>
     <message>
         <source>This is the MusE list of defined controllers.</source>
-        <translation>Это список назначенных контроллеров для MusE.</translation>
+        <translation type="obsolete">Это список назначенных контроллеров для MusE.</translation>
     </message>
     <message>
         <source>SysEx</source>
-        <translation>SysEx</translation>
-    </message>
-    <message>
-        <source>Initialization</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Panic</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Hex Entry:</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">SysEx</translation>
     </message>
     <message>
         <source>&amp;File</source>
-        <translation>&amp;Файл</translation>
+        <translation type="obsolete">&amp;Файл</translation>
     </message>
     <message>
         <source>Tools</source>
-        <translation>Сервис</translation>
+        <translation type="obsolete">Сервис</translation>
     </message>
     <message>
         <source>New</source>
-        <translation>Новый</translation>
+        <translation type="obsolete">Новый</translation>
     </message>
     <message>
         <source>&amp;New</source>
-        <translation>&amp;Новый</translation>
+        <translation type="obsolete">&amp;Новый</translation>
     </message>
     <message>
         <source>Ctrl+N</source>
-        <translation>Ctrl+N</translation>
+        <translation type="obsolete">Ctrl+N</translation>
     </message>
     <message>
         <source>Open</source>
-        <translation>Открыть</translation>
+        <translation type="obsolete">Открыть</translation>
     </message>
     <message>
         <source>&amp;Open...</source>
-        <translation>&amp;Открыть...</translation>
+        <translation type="obsolete">&amp;Открыть...</translation>
     </message>
     <message>
         <source>Ctrl+O</source>
-        <translation>Ctrl+O</translation>
+        <translation type="obsolete">Ctrl+O</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Сохранить</translation>
+        <translation type="obsolete">Сохранить</translation>
     </message>
     <message>
         <source>&amp;Save</source>
-        <translation>&amp;Сохранить</translation>
+        <translation type="obsolete">&amp;Сохранить</translation>
     </message>
     <message>
         <source>Ctrl+S</source>
-        <translation>Ctrl+S</translation>
+        <translation type="obsolete">Ctrl+S</translation>
     </message>
     <message>
         <source>Save As</source>
-        <translation>Сохранить как</translation>
+        <translation type="obsolete">Сохранить как</translation>
     </message>
     <message>
         <source>Save &amp;As...</source>
-        <translation>Сохранить &amp;как...</translation>
+        <translation type="obsolete">Сохранить &amp;как...</translation>
     </message>
     <message>
         <source>Exit</source>
-        <translation>Выйти</translation>
+        <translation type="obsolete">Выйти</translation>
     </message>
     <message>
         <source>E&amp;xit</source>
-        <translation>В&amp;ыйти</translation>
+        <translation type="obsolete">В&amp;ыйти</translation>
     </message>
 </context>
 <context>
     <name>EditMetaDialogBase</name>
     <message>
         <source>MusE: Enter Meta Event</source>
-        <translation>MusE: Ввести метасобытие</translation>
+        <translation type="obsolete">MusE: Ввести метасобытие</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation>ОК</translation>
+        <translation type="obsolete">ОК</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Отменить</translation>
+        <translation type="obsolete">Отменить</translation>
     </message>
     <message>
         <source>TextLabel1</source>
-        <translation>ТекстоваяМетка1</translation>
+        <translation type="obsolete">ТекстоваяМетка1</translation>
     </message>
     <message>
         <source>Time Position:</source>
-        <translation>Позиция во времени:</translation>
+        <translation type="obsolete">Позиция во времени:</translation>
     </message>
     <message>
         <source>Meta Type:</source>
-        <translation>Метатип:</translation>
+        <translation type="obsolete">Метатип:</translation>
     </message>
     <message>
         <source>Enter Hex</source>
-        <translation>Введите Hex</translation>
+        <translation type="obsolete">Введите Hex</translation>
     </message>
 </context>
 <context>
     <name>EditNoteDialogBase</name>
     <message>
         <source>MusE: Enter Note</source>
-        <translation>MusE: Ввести ноту</translation>
+        <translation type="obsolete">MusE: Ввести ноту</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation>ОК</translation>
+        <translation type="obsolete">ОК</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Отменить</translation>
+        <translation type="obsolete">Отменить</translation>
     </message>
     <message>
         <source>Length:</source>
-        <translation>Продолжительность:</translation>
+        <translation type="obsolete">Продолжительность:</translation>
     </message>
     <message>
         <source>Time Position:</source>
-        <translation>Позиция во времени:</translation>
+        <translation type="obsolete">Позиция во времени:</translation>
     </message>
     <message>
         <source>Pitch:</source>
-        <translation>Высота тона:</translation>
+        <translation type="obsolete">Высота тона:</translation>
     </message>
     <message>
         <source>Velocity On:</source>
-        <translation>Скорость вкл.:</translation>
+        <translation type="obsolete">Скорость вкл.:</translation>
     </message>
     <message>
         <source>Velocity Off:</source>
-        <translation>Скорость выкл.:</translation>
+        <translation type="obsolete">Скорость выкл.:</translation>
     </message>
 </context>
 <context>
     <name>EditSysexDialogBase</name>
     <message>
         <source>MusE: Enter SysEx</source>
-        <translation>MusE: Ввести SysEx</translation>
+        <translation type="obsolete">MusE: Ввести SysEx</translation>
     </message>
     <message>
         <source>TimePosition:</source>
-        <translation>Время:</translation>
+        <translation type="obsolete">Время:</translation>
     </message>
     <message>
         <source>Comment:</source>
-        <translation>Комментарий:</translation>
+        <translation type="obsolete">Комментарий:</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation>ОК</translation>
+        <translation type="obsolete">ОК</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Отменить</translation>
-    </message>
-    <message>
-        <source>Known SysEx:</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Отменить</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished">Добавить</translation>
+        <translation type="obsolete">Добавить</translation>
+    </message>
+</context>
+<context>
+    <name>EditToolBar</name>
+    <message>
+        <source>Edit Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>EffectRack</name>
+    <message>
+        <source>effect rack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>move up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>move down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>bypass</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>show gui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>show native gui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New Plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New Aux Send</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace effect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you really want to replace the effect %1?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Yes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;No</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ExportMidiDialog</name>
+    <message>
+        <source>Save </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> as smf midi file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: export midi smf file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FLUIDGui</name>
+    <message>
+        <source>FLUID: open Soundfile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fluid: select Sound Font</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>FLUIDGuiBase</name>
     <message>
         <source>Form1</source>
-        <translation type="unfinished">Form1</translation>
-    </message>
-    <message>
-        <source>Soundfont</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Form1</translation>
     </message>
 </context>
 <context>
     <name>FLUIDSynthGuiBase</name>
     <message>
-        <source>FLUID Synth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Load</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Dump Info</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ID</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fontname</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Chnl</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Soundfont</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Drum Chnl</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Level</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Width</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Damping</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Room Size</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Reverb</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>CHANNEL SETUP</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sine</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Triangle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Type</source>
-        <translation type="unfinished">Тип</translation>
-    </message>
-    <message>
-        <source>Number</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Speed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Depth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Chorus</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Gain</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LOADED SOUNDFONTS</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Тип</translation>
     </message>
 </context>
 <context>
     <name>FileDialogButtons</name>
     <message>
         <source>Form1</source>
-        <translation>Form1</translation>
+        <translation type="obsolete">Form1</translation>
     </message>
     <message>
         <source>Global</source>
-        <translation>Глобально</translation>
+        <translation type="obsolete">Глобально</translation>
     </message>
     <message>
         <source>User</source>
-        <translation>Домашний
+        <translation type="obsolete">Домашний
 каталог</translation>
     </message>
     <message>
         <source>Project</source>
-        <translation>Проект</translation>
+        <translation type="obsolete">Проект</translation>
     </message>
     <message>
         <source>Load:</source>
-        <translation>Загрузить:</translation>
+        <translation type="obsolete">Загрузить:</translation>
     </message>
     <message>
         <source>Songdata +
 Cofiguration</source>
-        <translation>Композиции +
+        <translation type="obsolete">Композиции +
 настройки</translation>
     </message>
     <message>
         <source>only
 Songdata</source>
-        <translation>только
+        <translation type="obsolete">только
 композиции</translation>
+    </message>
+</context>
+<context>
+    <name>FluidSynthGui</name>
+    <message>
+        <source>Choose soundfont</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FontSel</name>
+    <message>
+        <source>Size:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GateTime</name>
+    <message>
+        <source>MusE: Modify Gate Time</source>
+        <translation type="unfinished">MusE: Изменить время звучания</translation>
     </message>
 </context>
 <context>
     <name>GateTimeBase</name>
     <message>
         <source>MusE: Modify Gate Time</source>
-        <translation>MusE: Изменить время звучания</translation>
+        <translation type="obsolete">MusE: Изменить время звучания</translation>
     </message>
     <message>
         <source>Range</source>
-        <translation>Область</translation>
+        <translation type="obsolete">Область</translation>
     </message>
     <message>
         <source>All Events</source>
-        <translation>Все события</translation>
+        <translation type="obsolete">Все события</translation>
     </message>
     <message>
         <source>Selected Events</source>
-        <translation>Выбранные события</translation>
+        <translation type="obsolete">Выбранные события</translation>
     </message>
     <message>
         <source>Looped Events</source>
-        <translation>События в цикле</translation>
+        <translation type="obsolete">События в цикле</translation>
     </message>
     <message>
         <source>Selected &amp; Looped</source>
-        <translation>Выбранные и в цикле</translation>
+        <translation type="obsolete">Выбранные и в цикле</translation>
     </message>
     <message>
         <source>Values</source>
-        <translation>Значения</translation>
+        <translation type="obsolete">Значения</translation>
     </message>
     <message>
         <source>Rate:</source>
-        <translation>Частота:</translation>
+        <translation type="obsolete">Частота:</translation>
     </message>
     <message>
         <source>Offset:</source>
-        <translation>Смещение:</translation>
+        <translation type="obsolete">Смещение:</translation>
     </message>
     <message>
         <source>%</source>
-        <translation>%</translation>
+        <translation type="obsolete">%</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation>ОК</translation>
+        <translation type="obsolete">ОК</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Отменить</translation>
+        <translation type="obsolete">Отменить</translation>
     </message>
 </context>
 <context>
     <name>GlobalSettingsDialogBase</name>
     <message>
         <source>MusE: Global Settings</source>
-        <translation>MusE: Общие настройки</translation>
+        <translation type="obsolete">MusE: Общие настройки</translation>
     </message>
     <message>
         <source>&amp;Apply</source>
-        <translation>&amp;Применить</translation>
+        <translation type="obsolete">&amp;Применить</translation>
     </message>
     <message>
         <source>&amp;Ok</source>
-        <translation>&amp;ОК</translation>
+        <translation type="obsolete">&amp;ОК</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation>О&amp;тменить</translation>
+        <translation type="obsolete">О&amp;тменить</translation>
     </message>
     <message>
         <source>Audio</source>
-        <translation>Звук</translation>
+        <translation type="obsolete">Звук</translation>
     </message>
     <message>
         <source>Mixer</source>
-        <translation>Микшер</translation>
+        <translation type="obsolete">Микшер</translation>
     </message>
     <message>
         <source>dB</source>
-        <translation>Дб</translation>
+        <translation type="obsolete">Дб</translation>
     </message>
     <message>
         <source>min. Meter Value</source>
-        <translation>мин. значение индикатора</translation>
+        <translation type="obsolete">мин. значение индикатора</translation>
     </message>
     <message>
         <source>min.Slider Val</source>
-        <translation>мин. значение ползунка</translation>
+        <translation type="obsolete">мин. значение ползунка</translation>
     </message>
     <message>
         <source>Midi</source>
-        <translation>MIDI</translation>
+        <translation type="obsolete">MIDI</translation>
     </message>
     <message>
         <source>Ticks</source>
-        <translation>Тактовые импульсы (тики)</translation>
+        <translation type="obsolete">Тактовые импульсы (тики)</translation>
     </message>
     <message>
         <source>1024</source>
-        <translation>1024</translation>
+        <translation type="obsolete">1024</translation>
     </message>
     <message>
         <source>2048</source>
-        <translation>2048</translation>
+        <translation type="obsolete">2048</translation>
     </message>
     <message>
         <source>4096</source>
-        <translation>4096</translation>
+        <translation type="obsolete">4096</translation>
     </message>
     <message>
         <source>8172</source>
-        <translation>8172</translation>
+        <translation type="obsolete">8172</translation>
     </message>
     <message>
         <source>Displayed Resolution
 (Ticks/Quarternote)</source>
-        <translation>Отображаемое разрешение
+        <translation type="obsolete">Отображаемое разрешение
 (Тиков/четвертей)</translation>
     </message>
     <message>
         <source>48</source>
-        <translation>48</translation>
+        <translation type="obsolete">48</translation>
     </message>
     <message>
         <source>96</source>
-        <translation>96</translation>
+        <translation type="obsolete">96</translation>
     </message>
     <message>
         <source>192</source>
-        <translation>192</translation>
+        <translation type="obsolete">192</translation>
     </message>
     <message>
         <source>384</source>
-        <translation>384</translation>
+        <translation type="obsolete">384</translation>
     </message>
     <message>
         <source>768</source>
-        <translation>768</translation>
+        <translation type="obsolete">768</translation>
     </message>
     <message>
         <source>1536</source>
-        <translation>1536</translation>
+        <translation type="obsolete">1536</translation>
     </message>
     <message>
         <source>3072</source>
-        <translation>3072</translation>
+        <translation type="obsolete">3072</translation>
     </message>
     <message>
         <source>6144</source>
-        <translation>6144</translation>
+        <translation type="obsolete">6144</translation>
     </message>
     <message>
         <source>12288</source>
-        <translation>12288</translation>
+        <translation type="obsolete">12288</translation>
     </message>
     <message>
         <source>RTC Resolution
 (Ticks/Sec)</source>
-        <translation>RTC-разрешение
+        <translation type="obsolete">RTC-разрешение
 (тиков/сек)</translation>
     </message>
     <message>
         <source>GUI</source>
-        <translation>GUI</translation>
+        <translation type="obsolete">GUI</translation>
     </message>
     <message>
         <source>Help Browser:</source>
-        <translation>В чём читать справку:</translation>
+        <translation type="obsolete">В чём читать справку:</translation>
     </message>
     <message>
         <source>GUI Refresh Rate</source>
-        <translation>Частота обновления GUI</translation>
+        <translation type="obsolete">Частота обновления GUI</translation>
     </message>
     <message>
         <source>/sec</source>
-        <translation>/сек</translation>
+        <translation type="obsolete">/сек</translation>
     </message>
     <message>
         <source>Application</source>
-        <translation>Приложение</translation>
-    </message>
-    <message>
-        <source>Start Muse</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>start with last song</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>start with song</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>start song:</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Приложение</translation>
     </message>
     <message>
         <source>Views</source>
-        <translation>Виды</translation>
-    </message>
-    <message>
-        <source>y-pos</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>show</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>x-pos</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Виды</translation>
     </message>
     <message>
         <source>height</source>
-        <translation>высота</translation>
+        <translation type="obsolete">высота</translation>
     </message>
     <message>
         <source>width</source>
-        <translation>ширина</translation>
+        <translation type="obsolete">ширина</translation>
     </message>
     <message>
         <source>Big Time</source>
-        <translation>Хронометр</translation>
+        <translation type="obsolete">Хронометр</translation>
     </message>
     <message>
         <source>Arranger</source>
-        <translation>Компоновщик</translation>
+        <translation type="obsolete">Компоновщик</translation>
     </message>
     <message>
         <source>Transport</source>
-        <translation>Транспорт</translation>
+        <translation type="obsolete">Транспорт</translation>
     </message>
+</context>
+<context>
+    <name>GreendotButton</name>
     <message>
-        <source>Cur</source>
+        <source>record</source>
+        <translation type="unfinished">записать</translation>
+    </message>
+</context>
+<context>
+    <name>ListEdit</name>
+    <message>
+        <source>MusE: List Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>set current values</source>
-        <translation type="unfinished"></translation>
+        <source>Parts</source>
+        <translation type="unfinished">Части</translation>
     </message>
     <message>
-        <source>start with template: default.med</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>show splash screen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>use JACK freewheel mode if possible</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mixer 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mixer 2</source>
-        <translation type="unfinished"></translation>
+        <source>Controller</source>
+        <translation type="unfinished">Контроллер</translation>
     </message>
 </context>
 <context>
     <name>MITTransposeBase</name>
     <message>
-        <source>MusE: Midi Input Plugin: Transpose</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>On</source>
-        <translation type="unfinished">Вкл</translation>
-    </message>
-    <message>
-        <source>TriggerKey</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transpose:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>+0</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Вкл</translation>
     </message>
 </context>
 <context>
@@ -2399,188 +2067,330 @@ Songdata</source>
     <name>MRConfigBase</name>
     <message>
         <source>MusE: Midi Input Plugin: Remote Control</source>
-        <translation>MusE: Входной MIDI-модуль: Дистан. управление</translation>
+        <translation type="obsolete">MusE: Входной MIDI-модуль: Дистан. управление</translation>
     </message>
     <message>
         <source>Activate</source>
-        <translation>Активировать</translation>
+        <translation type="obsolete">Активировать</translation>
     </message>
     <message>
         <source>On</source>
-        <translation>Вкл</translation>
+        <translation type="obsolete">Вкл</translation>
     </message>
     <message>
         <source>Actions</source>
-        <translation>Действия</translation>
+        <translation type="obsolete">Действия</translation>
     </message>
     <message>
         <source>Stop</source>
-        <translation>Остановить</translation>
+        <translation type="obsolete">Остановить</translation>
     </message>
     <message>
         <source>Record</source>
-        <translation>Записать</translation>
+        <translation type="obsolete">Записать</translation>
     </message>
     <message>
         <source>Goto Left Mark</source>
-        <translation>Перейти к левой метке</translation>
+        <translation type="obsolete">Перейти к левой метке</translation>
     </message>
     <message>
         <source>Play</source>
-        <translation>Воспроизвести</translation>
+        <translation type="obsolete">Воспроизвести</translation>
+    </message>
+</context>
+<context>
+    <name>MarkerView</name>
+    <message>
+        <source>MusE: Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>add marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>delete marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Правка</translation>
+    </message>
+    <message>
+        <source>marker-tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>edit tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bar:Beat:Tick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Min:Sc:Fr:Sf</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marker Properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MasterEdit</name>
+    <message>
+        <source>MusE: Mastertrack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>edit tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EnableTempomap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tempomap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable use of tempo map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Snap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>time at cursor position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>tempo at cursor position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CurPos </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>tempo at current position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>time signature at current position</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MidiChannelInfo</name>
+    <message>
+        <source>Instrument Patch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi Out Port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi Instrument</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>MidiController</name>
     <message>
         <source>Velocity</source>
-        <translation>Сила нажатия</translation>
+        <translation type="unfinished">Сила нажатия</translation>
     </message>
 </context>
 <context>
     <name>MidiControllerEditDialogBase</name>
     <message>
         <source>MusE: Define Midi Controller</source>
-        <translation>MusE: Назначить MIDI-контроллер</translation>
+        <translation type="obsolete">MusE: Назначить MIDI-контроллер</translation>
     </message>
     <message>
         <source>Name                  </source>
-        <translation>Имя                 </translation>
+        <translation type="obsolete">Имя                 </translation>
     </message>
     <message>
         <source>Type       </source>
-        <translation>Тип       </translation>
+        <translation type="obsolete">Тип       </translation>
     </message>
     <message>
         <source>H-Ctrl</source>
-        <translation>H-Ctrl</translation>
+        <translation type="obsolete">H-Ctrl</translation>
     </message>
     <message>
         <source>L-Ctrl</source>
-        <translation>L-Ctrl</translation>
+        <translation type="obsolete">L-Ctrl</translation>
     </message>
     <message>
         <source>Min Val</source>
-        <translation>Мин знач</translation>
+        <translation type="obsolete">Мин знач</translation>
     </message>
     <message>
         <source>Max Val</source>
-        <translation>Макс знач</translation>
+        <translation type="obsolete">Макс знач</translation>
     </message>
     <message>
         <source>list of defined controllers</source>
-        <translation>список назначенных контроллеров</translation>
+        <translation type="obsolete">список назначенных контроллеров</translation>
     </message>
     <message>
         <source>This is the MusE list of defined controllers.</source>
-        <translation>Это список назначенных в MusE контроллеров.</translation>
+        <translation type="obsolete">Это список назначенных в MusE контроллеров.</translation>
     </message>
     <message>
         <source>Properties</source>
-        <translation>Свойства</translation>
+        <translation type="obsolete">Свойства</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Имя</translation>
+        <translation type="obsolete">Имя</translation>
     </message>
     <message>
         <source>Max Value</source>
-        <translation>Макс значение</translation>
+        <translation type="obsolete">Макс значение</translation>
     </message>
     <message>
         <source>Min Value</source>
-        <translation>Мин значение</translation>
+        <translation type="obsolete">Мин значение</translation>
     </message>
     <message>
         <source>Control7</source>
-        <translation>Control7</translation>
+        <translation type="obsolete">Control7</translation>
     </message>
     <message>
         <source>Control14</source>
-        <translation>Control14</translation>
+        <translation type="obsolete">Control14</translation>
     </message>
     <message>
         <source>RPN</source>
-        <translation>RPN</translation>
+        <translation type="obsolete">RPN</translation>
     </message>
     <message>
         <source>NRPN</source>
-        <translation>NRPN</translation>
+        <translation type="obsolete">NRPN</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation>Тип</translation>
+        <translation type="obsolete">Тип</translation>
     </message>
     <message>
         <source>create new entry</source>
-        <translation>создать новую запись</translation>
+        <translation type="obsolete">создать новую запись</translation>
     </message>
     <message>
         <source>pressing the New button you create a new entry
 in the MusE list of defined controllers</source>
-        <translation>По нажатию кнопки &quot;Новая&quot; создаётся новая
+        <translation type="obsolete">По нажатию кнопки &quot;Новая&quot; создаётся новая
 запись в список назначенных в MusE контроллеров</translation>
     </message>
     <message>
         <source>&amp;Delete</source>
-        <translation>У&amp;далить</translation>
+        <translation type="obsolete">У&amp;далить</translation>
     </message>
     <message>
         <source>delete selected entry</source>
-        <translation>удалить выделенное событие</translation>
+        <translation type="obsolete">удалить выделенное событие</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation>&amp;OK</translation>
+        <translation type="obsolete">&amp;OK</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation>О&amp;тменить</translation>
+        <translation type="obsolete">О&amp;тменить</translation>
     </message>
     <message>
         <source>Channel</source>
-        <translation>Канал</translation>
+        <translation type="obsolete">Канал</translation>
     </message>
     <message>
         <source>Pitch</source>
-        <translation>Высота тона</translation>
+        <translation type="obsolete">Высота тона</translation>
     </message>
     <message>
         <source>Range</source>
-        <translation>Область</translation>
+        <translation type="obsolete">Область</translation>
     </message>
     <message>
         <source>&amp;Add</source>
-        <translation>&amp;Добавить</translation>
+        <translation type="obsolete">&amp;Добавить</translation>
     </message>
     <message>
         <source>Alt+A</source>
-        <translation>Alt+A</translation>
+        <translation type="obsolete">Alt+A</translation>
     </message>
     <message>
         <source>Predefined Controller:</source>
-        <translation>Предопределённый контроллер:</translation>
-    </message>
-    <message>
-        <source>Managed Controller for Port</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>This is a list of commonly used midi controllers.
-Note that in MusE pitch and program changes are
-handled like normal controllers.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Предопределённый контроллер:</translation>
     </message>
     <message>
         <source>Program</source>
-        <translation>Программа</translation>
+        <translation type="obsolete">Программа</translation>
+    </message>
+</context>
+<context>
+    <name>MidiEditor</name>
+    <message>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Правка</translation>
     </message>
     <message>
-        <source>Midi Controller Number High Byte</source>
+        <source>Cut</source>
+        <translation type="unfinished">Вырезать</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation type="unfinished">Скопировать</translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation type="unfinished">Вставить</translation>
+    </message>
+    <message>
+        <source>Play Events</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Midi Controller Number Low Byte</source>
+        <source>Step Record</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi Input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Follow Song</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2701,6 +2511,17 @@ handled like normal controllers.</source>
     <message>
         <source>&amp;Cancel</source>
         <translation type="obsolete">О&amp;тменить</translation>
+    </message>
+</context>
+<context>
+    <name>MidiInPortStrip</name>
+    <message>
+        <source>AlsaDevices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MidiChannel</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2907,566 +2728,171 @@ handled like normal controllers.</source>
     </message>
 </context>
 <context>
-    <name>MidiPortRouteBase</name>
+    <name>MidiOutPortStrip</name>
     <message>
-        <source>Input</source>
-        <translation>Вход</translation>
+        <source>MidiChannel</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>MusE: Midi Port Routing</source>
-        <translation>MusE:  Маршруты между MIDI-портами</translation>
-    </message>
-    <message>
-        <source>Port 2</source>
-        <translation>Порт 2</translation>
-    </message>
-    <message>
-        <source>Output</source>
-        <translation>Выход</translation>
+        <source>MidiDevices</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>MidiSyncConfigBase</name>
+    <name>MidiPluginDialog</name>
     <message>
-        <source>MusE: Midi Sync</source>
+        <source>MusE: select midi plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Sync Mode</source>
+        <source>File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Master</source>
-        <translation type="unfinished">Мастер</translation>
+        <source>Name</source>
+        <translation type="unfinished">Имя</translation>
     </message>
     <message>
-        <source>Slave</source>
+        <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Sync Source</source>
+        <source>Description</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>accept MTC</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>accept Midi Clock</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>accept MMC</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Id:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>device id</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sync Gen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi Time Code (MTC)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi Clock</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi Machine Control (MMC)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Apply</source>
-        <translation type="unfinished">Применить</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ОК</translation>
     </message>
     <message>
         <source>Cancel</source>
         <translation type="unfinished">Отменить</translation>
     </message>
+</context>
+<context>
+    <name>MidiPortRouteBase</name>
     <message>
-        <source>MTC</source>
+        <source>Input</source>
+        <translation type="obsolete">Вход</translation>
+    </message>
+    <message>
+        <source>MusE: Midi Port Routing</source>
+        <translation type="obsolete">MusE:  Маршруты между MIDI-портами</translation>
+    </message>
+    <message>
+        <source>Port 2</source>
+        <translation type="obsolete">Порт 2</translation>
+    </message>
+    <message>
+        <source>Output</source>
+        <translation type="obsolete">Выход</translation>
+    </message>
+</context>
+<context>
+    <name>MidiRack</name>
+    <message>
+        <source>midi effect rack</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Type:</source>
+        <source>move up</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>move down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>bypass</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>show gui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>new</source>
+        <translation type="unfinished">новый</translation>
+    </message>
+</context>
+<context>
+    <name>MidiStrip</name>
+    <message>
+        <source>VariationSend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Var</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ReverbSend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rev</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ChorusSend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pan/Balance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OutputPorts</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MidiSyncConfigBase</name>
+    <message>
+        <source>Master</source>
+        <translation type="obsolete">Мастер</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation type="obsolete">Применить</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="obsolete">Отменить</translation>
     </message>
     <message>
         <source>24</source>
-        <translation type="unfinished">24</translation>
+        <translation type="obsolete">24</translation>
     </message>
     <message>
         <source>25</source>
-        <translation type="unfinished">25</translation>
-    </message>
-    <message>
-        <source>30D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>30N</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">25</translation>
     </message>
     <message>
         <source>Offset:</source>
-        <translation type="unfinished">Смещение:</translation>
-    </message>
-    <message>
-        <source>hour</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>h</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>minute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>m</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>second</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>s</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>frame</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>f</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>subframe</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Смещение:</translation>
     </message>
 </context>
 <context>
-    <name>MidiTrackInfoBase</name>
+    <name>MidiSyntiStrip</name>
     <message>
-        <source>MusE: TrackInfo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Output Channel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>all midi events are send to this output channel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Track Info</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>%</source>
-        <translation type="unfinished">%</translation>
-    </message>
-    <message>
-        <source>Modify Note Length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Track Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Output Port</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OCh.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>off</source>
-        <translation type="unfinished">выкл</translation>
-    </message>
-    <message>
-        <source>Track Delay (ticks)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Compress Note Velocity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch Transpose</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transp.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Compr.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Velocity</source>
-        <translation type="unfinished">Сила нажатия</translation>
-    </message>
-    <message>
-        <source>Modify Note Velocity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Input Ports</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>IChan.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Input Channels</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Events from all configured channels are
-recorded to this track.
-You can specify more than one channel for
-recording:
-   1 2 3      record from channel 1 2 and 3
-   1-3         same
-   1-3 5<byte value="x9"/>     record from channel 1 2 3 and 5</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Channel Info</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>???</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select Instrument Patch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Bank Select LSB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Bank Select MSB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>H-Bank</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Instrument High Bank</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>L-Bank</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Instrument Low Bank</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Progr.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Instrument/Program/Patch</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MidiTransformDialogBase</name>
-    <message>
-        <source>MusE: Midi Transformator</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;New</source>
-        <translation type="unfinished">&amp;Новый</translation>
-    </message>
-    <message>
-        <source>&amp;Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Apply</source>
-        <translation type="unfinished">&amp;Применить</translation>
-    </message>
-    <message>
-        <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Cancel</source>
-        <translation type="unfinished">О&amp;тменить</translation>
-    </message>
-    <message>
-        <source>PresetList</source>
-        <translation type="unfinished">Список предустановок</translation>
-    </message>
-    <message>
-        <source>Processing</source>
-        <translation type="unfinished">Идёт обработка</translation>
-    </message>
-    <message>
-        <source>Event Type</source>
-        <translation type="unfinished">Тип события</translation>
-    </message>
-    <message>
-        <source>Keep</source>
-        <translation type="unfinished">Сохранить</translation>
-    </message>
-    <message>
-        <source>Fix</source>
-        <translation type="unfinished">Поправить</translation>
-    </message>
-    <message>
-        <source>Note</source>
-        <translation type="unfinished">Нота</translation>
-    </message>
-    <message>
-        <source>Poly Pressure</source>
-        <translation type="unfinished">Полифоническое послекасание</translation>
-    </message>
-    <message>
-        <source>Control Change</source>
-        <translation type="unfinished">Смена контроллера</translation>
-    </message>
-    <message>
-        <source>Aftertouch</source>
-        <translation type="unfinished">Послекасание</translation>
-    </message>
-    <message>
-        <source>Pitch Bend</source>
-        <translation type="unfinished">Смена высоты звука</translation>
-    </message>
-    <message>
-        <source>NRPN</source>
-        <translation type="unfinished">NRPN</translation>
-    </message>
-    <message>
-        <source>RPN</source>
-        <translation type="unfinished">RPN</translation>
-    </message>
-    <message>
-        <source>Plus</source>
-        <translation type="unfinished">Плюс</translation>
-    </message>
-    <message>
-        <source>Minus</source>
-        <translation type="unfinished">Минус</translation>
-    </message>
-    <message>
-        <source>Multiply</source>
-        <translation type="unfinished">Умножить</translation>
-    </message>
-    <message>
-        <source>Divide</source>
-        <translation type="unfinished">Разделить</translation>
-    </message>
-    <message>
-        <source>Value 2</source>
-        <translation type="unfinished">Значение 2</translation>
-    </message>
-    <message>
-        <source>Invert</source>
-        <translation type="unfinished">Инвертировать</translation>
-    </message>
-    <message>
-        <source>ScaleMap</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Flip</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Dyn</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Random</source>
-        <translation type="unfinished">Случайно</translation>
-    </message>
-    <message>
-        <source>Value 1</source>
-        <translation type="unfinished">Значение 1</translation>
-    </message>
-    <message>
-        <source>Length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Position</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Filter</source>
-        <translation type="unfinished">Фильтр</translation>
-    </message>
-    <message>
-        <source>All</source>
-        <translation type="unfinished">Все</translation>
-    </message>
-    <message>
-        <source>Equal</source>
-        <translation type="unfinished">Равно</translation>
-    </message>
-    <message>
-        <source>Unequal</source>
-        <translation type="unfinished">Не равно</translation>
-    </message>
-    <message>
-        <source>Sysex</source>
-        <translation type="unfinished">SysEx</translation>
-    </message>
-    <message>
-        <source>Meta</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Ignore</source>
-        <translation type="unfinished">Игнорировать</translation>
-    </message>
-    <message>
-        <source>Higher</source>
-        <translation type="unfinished">Выше</translation>
-    </message>
-    <message>
-        <source>Lower</source>
-        <translation type="unfinished">Ниже</translation>
-    </message>
-    <message>
-        <source>Inside</source>
-        <translation type="unfinished">Внутри</translation>
-    </message>
-    <message>
-        <source>Outside</source>
-        <translation type="unfinished">Снаружи</translation>
-    </message>
-    <message>
-        <source>Bar Range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Preset</source>
-        <translation type="unfinished">Предустановка</translation>
-    </message>
-    <message>
-        <source>Name:</source>
-        <translation type="unfinished">Имя:</translation>
-    </message>
-    <message>
-        <source>Comment:</source>
-        <translation type="unfinished">Комментарий:</translation>
-    </message>
-    <message>
-        <source>Range</source>
-        <translation type="unfinished">Область</translation>
-    </message>
-    <message>
-        <source>process all events</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>selected tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>inside loop</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Function</source>
-        <translation type="unfinished">Функция</translation>
-    </message>
-    <message>
-        <source>Select</source>
-        <translation type="unfinished">Выделить</translation>
-    </message>
-    <message>
-        <source>Quantize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transform</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Insert</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Copy</source>
-        <translation type="unfinished">Скопировать</translation>
-    </message>
-    <message>
-        <source>Extract</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize Value</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MidiTransformerDialog</name>
-    <message>
-        <source>New</source>
-        <translation>Новый</translation>
-    </message>
-</context>
-<context>
-    <name>MixdownFileDialogBase</name>
-    <message>
-        <source>MusE: Set Mixdown Wavefile</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Cancel</source>
-        <translation type="unfinished">О&amp;тменить</translation>
-    </message>
-    <message>
-        <source>File Path</source>
+        <source>OutputPorts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3474,146 +2900,44 @@ recording:
         <translation type="unfinished">Канал</translation>
     </message>
     <message>
-        <source>Stereo</source>
-        <translation type="unfinished">Стерео</translation>
-    </message>
-    <message>
-        <source>Mono</source>
-        <translation type="unfinished">Моно</translation>
-    </message>
-    <message>
-        <source>5.1</source>
-        <translation type="unfinished">5.1</translation>
-    </message>
-    <message>
-        <source>wav,16 Bit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>wav, 24 Bit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>wav, 32 Bit (float)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Format</source>
+        <source>Input Ports</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>MusE</name>
+    <name>MidiTrackInfo</name>
     <message>
-        <source>Import Wave File</source>
-        <translation>Импортировать WAV-файл</translation>
-    </message>
-    <message>
-        <source>UndoRedo</source>
+        <source>Channel %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>undo</source>
-        <translation>отменить</translation>
+        <source>Midi Port</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MidiTrackInfoBase</name>
+    <message>
+        <source>%</source>
+        <translation type="obsolete">%</translation>
     </message>
     <message>
-        <source>Und&amp;o</source>
-        <translation>&amp;Отменить</translation>
+        <source>off</source>
+        <translation type="obsolete">выкл</translation>
     </message>
     <message>
-        <source>redo</source>
-        <translation>повторить</translation>
+        <source>Velocity</source>
+        <translation type="obsolete">Сила нажатия</translation>
+    </message>
+</context>
+<context>
+    <name>MidiTrackerEditor</name>
+    <message>
+        <source>&amp;View</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Re&amp;do</source>
-        <translation>&amp;Повторить</translation>
-    </message>
-    <message>
-        <source>undo last change to song</source>
-        <translation>отменить последнее изменение композиции</translation>
-    </message>
-    <message>
-        <source>redo last undo</source>
-        <translation>повторить последнюю отмену</translation>
-    </message>
-    <message>
-        <source>Transport</source>
-        <translation>Пульт управления</translation>
-    </message>
-    <message>
-        <source>loop</source>
-        <translation>цикл</translation>
-    </message>
-    <message>
-        <source>Loop</source>
-        <translation>Цикл</translation>
-    </message>
-    <message>
-        <source>punchin</source>
-        <translation>Начало врезки</translation>
-    </message>
-    <message>
-        <source>Punchin</source>
-        <translation>Начало врезки</translation>
-    </message>
-    <message>
-        <source>punchout</source>
-        <translation>Конец врезки</translation>
-    </message>
-    <message>
-        <source>Punchout</source>
-        <translation>Конец врезки</translation>
-    </message>
-    <message>
-        <source>start</source>
-        <translation>к началу</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>К началу</translation>
-    </message>
-    <message>
-        <source>rewind</source>
-        <translation>перемотать назад</translation>
-    </message>
-    <message>
-        <source>Rewind</source>
-        <translation>Перемотать назад</translation>
-    </message>
-    <message>
-        <source>forward</source>
-        <translation>перемотать вперёд</translation>
-    </message>
-    <message>
-        <source>Forward</source>
-        <translation>Перемотать вперёд</translation>
-    </message>
-    <message>
-        <source>stop</source>
-        <translation>остановить</translation>
-    </message>
-    <message>
-        <source>Stop</source>
-        <translation>Остановить</translation>
-    </message>
-    <message>
-        <source>play</source>
-        <translation>воспроизвести</translation>
-    </message>
-    <message>
-        <source>Play</source>
-        <translation>Воспроизвести</translation>
-    </message>
-    <message>
-        <source>record</source>
-        <translation>записать</translation>
-    </message>
-    <message>
-        <source>Record</source>
-        <translation>Записать</translation>
-    </message>
-    <message>
-        <source>panic</source>
+        <source>MidiTracker Tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3621,244 +2945,618 @@ recording:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>new</source>
-        <translation>новый</translation>
+        <source>Transport</source>
+        <translation type="unfinished">Транспорт</translation>
     </message>
     <message>
-        <source>&amp;New</source>
-        <translation>&amp;Новый</translation>
-    </message>
-    <message>
-        <source>open</source>
-        <translation>открыть</translation>
-    </message>
-    <message>
-        <source>&amp;Open</source>
-        <translation>&amp;Открыть</translation>
-    </message>
-    <message>
-        <source>save</source>
-        <translation>сохранить</translation>
-    </message>
-    <message>
-        <source>&amp;Save</source>
-        <translation>&amp;Сохранить</translation>
-    </message>
-    <message>
-        <source>pianoroll</source>
-        <translation>pianoroll</translation>
-    </message>
-    <message>
-        <source>Pianoroll</source>
-        <translation>Pianoroll</translation>
-    </message>
-    <message>
-        <source>Marker</source>
-        <translation>Маркер</translation>
-    </message>
-    <message>
-        <source>File Buttons</source>
-        <translation type="unfinished">Файловые кнопки</translation>
-    </message>
-    <message>
-        <source>&amp;File</source>
-        <translation>&amp;Файл</translation>
-    </message>
-    <message>
-        <source>Open &amp;Recent</source>
-        <translation>Открыть из &amp;недавних</translation>
-    </message>
-    <message>
-        <source>Save &amp;As</source>
-        <translation>Сохранить &amp;как</translation>
-    </message>
-    <message>
-        <source>Import Midifile</source>
-        <translation>Импортировать MIDI-файл</translation>
-    </message>
-    <message>
-        <source>Export Midifile</source>
-        <translation>Экспортировать MIDI-файл</translation>
-    </message>
-    <message>
-        <source>&amp;Quit</source>
-        <translation>Вы&amp;йти</translation>
-    </message>
-    <message>
-        <source>&amp;Edit</source>
-        <translation>&amp;Правка</translation>
-    </message>
-    <message>
-        <source>C&amp;ut</source>
-        <translation>&amp;Вырезать</translation>
-    </message>
-    <message>
-        <source>&amp;Copy</source>
-        <translation>С&amp;копировать</translation>
-    </message>
-    <message>
-        <source>&amp;Paste</source>
-        <translation>&amp;Вставить</translation>
-    </message>
-    <message>
-        <source>Add Track</source>
-        <translation>Добавить дорожку</translation>
-    </message>
-    <message>
-        <source>Select &amp;All</source>
-        <translation>Выделить &amp;всё</translation>
-    </message>
-    <message>
-        <source>&amp;Deselect All</source>
-        <translation>&amp;Убрать выделение</translation>
-    </message>
-    <message>
-        <source>Invert &amp;Selection</source>
-        <translation>Обратить в&amp;ыделение</translation>
-    </message>
-    <message>
-        <source>&amp;Inside Loop</source>
-        <translation>&amp;Внутри цикла</translation>
-    </message>
-    <message>
-        <source>&amp;Outside Loop</source>
-        <translation>&amp;Снаружи цикла</translation>
-    </message>
-    <message>
-        <source>All &amp;Parts on Track</source>
-        <translation>Все &amp;части в дорожке</translation>
-    </message>
-    <message>
-        <source>Select</source>
-        <translation>Выделить</translation>
-    </message>
-    <message>
-        <source>Drums</source>
-        <translation>Ударные</translation>
-    </message>
-    <message>
-        <source>List</source>
-        <translation>Список</translation>
-    </message>
-    <message>
-        <source>Graphic</source>
-        <translation>Графика</translation>
-    </message>
-    <message>
-        <source>Mastertrack</source>
-        <translation>Мастер-дорожка</translation>
-    </message>
-    <message>
-        <source>Midi &amp;Transform</source>
-        <translation>&amp;Преобразовать MIDI-сообщения</translation>
-    </message>
-    <message>
-        <source>Modify Gate Time</source>
-        <translation>Изменить время звучания</translation>
-    </message>
-    <message>
-        <source>Modify Velocity</source>
-        <translation>Изменить скорость</translation>
-    </message>
-    <message>
-        <source>Crescendo</source>
-        <translation>Крещендо</translation>
-    </message>
-    <message>
-        <source>Transpose</source>
-        <translation>Транспонировать</translation>
-    </message>
-    <message>
-        <source>Thin Out</source>
-        <translation>Удалить дубли</translation>
-    </message>
-    <message>
-        <source>Erase Event</source>
-        <translation>Удалить событие</translation>
-    </message>
-    <message>
-        <source>Note Shift</source>
-        <translation>Сдвиг ноты</translation>
-    </message>
-    <message>
-        <source>Move Clock</source>
+        <source>row features</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Row per measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of visible rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MidiTransformDialogBase</name>
+    <message>
+        <source>&amp;New</source>
+        <translation type="obsolete">&amp;Новый</translation>
+    </message>
+    <message>
+        <source>&amp;Apply</source>
+        <translation type="obsolete">&amp;Применить</translation>
+    </message>
+    <message>
+        <source>&amp;Cancel</source>
+        <translation type="obsolete">О&amp;тменить</translation>
+    </message>
+    <message>
+        <source>PresetList</source>
+        <translation type="obsolete">Список предустановок</translation>
+    </message>
+    <message>
+        <source>Processing</source>
+        <translation type="obsolete">Идёт обработка</translation>
+    </message>
+    <message>
+        <source>Event Type</source>
+        <translation type="obsolete">Тип события</translation>
+    </message>
+    <message>
+        <source>Keep</source>
+        <translation type="obsolete">Сохранить</translation>
+    </message>
+    <message>
+        <source>Fix</source>
+        <translation type="obsolete">Поправить</translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation type="obsolete">Нота</translation>
+    </message>
+    <message>
+        <source>Poly Pressure</source>
+        <translation type="obsolete">Полифоническое послекасание</translation>
+    </message>
+    <message>
+        <source>Control Change</source>
+        <translation type="obsolete">Смена контроллера</translation>
+    </message>
+    <message>
+        <source>Aftertouch</source>
+        <translation type="obsolete">Послекасание</translation>
+    </message>
+    <message>
+        <source>Pitch Bend</source>
+        <translation type="obsolete">Смена высоты звука</translation>
+    </message>
+    <message>
+        <source>NRPN</source>
+        <translation type="obsolete">NRPN</translation>
+    </message>
+    <message>
+        <source>RPN</source>
+        <translation type="obsolete">RPN</translation>
+    </message>
+    <message>
+        <source>Plus</source>
+        <translation type="obsolete">Плюс</translation>
+    </message>
+    <message>
+        <source>Minus</source>
+        <translation type="obsolete">Минус</translation>
+    </message>
+    <message>
+        <source>Multiply</source>
+        <translation type="obsolete">Умножить</translation>
+    </message>
+    <message>
+        <source>Divide</source>
+        <translation type="obsolete">Разделить</translation>
+    </message>
+    <message>
+        <source>Value 2</source>
+        <translation type="obsolete">Значение 2</translation>
+    </message>
+    <message>
+        <source>Invert</source>
+        <translation type="obsolete">Инвертировать</translation>
+    </message>
+    <message>
+        <source>Random</source>
+        <translation type="obsolete">Случайно</translation>
+    </message>
+    <message>
+        <source>Value 1</source>
+        <translation type="obsolete">Значение 1</translation>
+    </message>
+    <message>
+        <source>Filter</source>
+        <translation type="obsolete">Фильтр</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation type="obsolete">Все</translation>
+    </message>
+    <message>
+        <source>Equal</source>
+        <translation type="obsolete">Равно</translation>
+    </message>
+    <message>
+        <source>Unequal</source>
+        <translation type="obsolete">Не равно</translation>
+    </message>
+    <message>
+        <source>Sysex</source>
+        <translation type="obsolete">SysEx</translation>
+    </message>
+    <message>
+        <source>Ignore</source>
+        <translation type="obsolete">Игнорировать</translation>
+    </message>
+    <message>
+        <source>Higher</source>
+        <translation type="obsolete">Выше</translation>
+    </message>
+    <message>
+        <source>Lower</source>
+        <translation type="obsolete">Ниже</translation>
+    </message>
+    <message>
+        <source>Inside</source>
+        <translation type="obsolete">Внутри</translation>
+    </message>
+    <message>
+        <source>Outside</source>
+        <translation type="obsolete">Снаружи</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <translation type="obsolete">Предустановка</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="obsolete">Имя:</translation>
+    </message>
+    <message>
+        <source>Comment:</source>
+        <translation type="obsolete">Комментарий:</translation>
+    </message>
+    <message>
+        <source>Range</source>
+        <translation type="obsolete">Область</translation>
+    </message>
+    <message>
+        <source>Function</source>
+        <translation type="obsolete">Функция</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation type="obsolete">Выделить</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation type="obsolete">Скопировать</translation>
+    </message>
+</context>
+<context>
+    <name>MidiTransformerDialog</name>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Новый</translation>
+    </message>
+</context>
+<context>
+    <name>MixdownFileDialog</name>
+    <message>
+        <source>MusE: set mixdown file name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wave Files (*.wav);;All Files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MixdownFileDialogBase</name>
+    <message>
+        <source>&amp;Cancel</source>
+        <translation type="obsolete">О&amp;тменить</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation type="obsolete">Канал</translation>
+    </message>
+    <message>
+        <source>Stereo</source>
+        <translation type="obsolete">Стерео</translation>
+    </message>
+    <message>
+        <source>Mono</source>
+        <translation type="obsolete">Моно</translation>
+    </message>
+    <message>
+        <source>5.1</source>
+        <translation type="obsolete">5.1</translation>
+    </message>
+</context>
+<context>
+    <name>Mixer</name>
+    <message>
+        <source>MusE: Mixer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Create</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Routing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Midi Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Midi Out Ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Midi In Ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Wave Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Output Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Group Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Input Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Synthesizer</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusE</name>
+    <message>
+        <source>Import Wave File</source>
+        <translation type="unfinished">Импортировать WAV-файл</translation>
+    </message>
+    <message>
+        <source>undo</source>
+        <translation type="obsolete">отменить</translation>
+    </message>
+    <message>
+        <source>Und&amp;o</source>
+        <translation type="unfinished">&amp;Отменить</translation>
+    </message>
+    <message>
+        <source>redo</source>
+        <translation type="obsolete">повторить</translation>
+    </message>
+    <message>
+        <source>Re&amp;do</source>
+        <translation type="unfinished">&amp;Повторить</translation>
+    </message>
+    <message>
+        <source>undo last change to song</source>
+        <translation type="unfinished">отменить последнее изменение композиции</translation>
+    </message>
+    <message>
+        <source>redo last undo</source>
+        <translation type="unfinished">повторить последнюю отмену</translation>
+    </message>
+    <message>
+        <source>Transport</source>
+        <translation type="unfinished">Пульт управления</translation>
+    </message>
+    <message>
+        <source>loop</source>
+        <translation type="obsolete">цикл</translation>
+    </message>
+    <message>
+        <source>Loop</source>
+        <translation type="unfinished">Цикл</translation>
+    </message>
+    <message>
+        <source>punchin</source>
+        <translation type="obsolete">Начало врезки</translation>
+    </message>
+    <message>
+        <source>Punchin</source>
+        <translation type="unfinished">Начало врезки</translation>
+    </message>
+    <message>
+        <source>punchout</source>
+        <translation type="obsolete">Конец врезки</translation>
+    </message>
+    <message>
+        <source>Punchout</source>
+        <translation type="unfinished">Конец врезки</translation>
+    </message>
+    <message>
+        <source>start</source>
+        <translation type="obsolete">к началу</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation type="obsolete">К началу</translation>
+    </message>
+    <message>
+        <source>rewind</source>
+        <translation type="obsolete">перемотать назад</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <translation type="obsolete">Перемотать назад</translation>
+    </message>
+    <message>
+        <source>forward</source>
+        <translation type="obsolete">перемотать вперёд</translation>
+    </message>
+    <message>
+        <source>Forward</source>
+        <translation type="obsolete">Перемотать вперёд</translation>
+    </message>
+    <message>
+        <source>stop</source>
+        <translation type="obsolete">остановить</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation type="obsolete">Остановить</translation>
+    </message>
+    <message>
+        <source>play</source>
+        <translation type="obsolete">воспроизвести</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <translation type="obsolete">Воспроизвести</translation>
+    </message>
+    <message>
+        <source>record</source>
+        <translation type="obsolete">записать</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation type="unfinished">Записать</translation>
+    </message>
+    <message>
+        <source>new</source>
+        <translation type="obsolete">новый</translation>
+    </message>
+    <message>
+        <source>&amp;New</source>
+        <translation type="obsolete">&amp;Новый</translation>
+    </message>
+    <message>
+        <source>open</source>
+        <translation type="obsolete">открыть</translation>
+    </message>
+    <message>
+        <source>&amp;Open</source>
+        <translation type="unfinished">&amp;Открыть</translation>
+    </message>
+    <message>
+        <source>save</source>
+        <translation type="obsolete">сохранить</translation>
+    </message>
+    <message>
+        <source>&amp;Save</source>
+        <translation type="unfinished">&amp;Сохранить</translation>
+    </message>
+    <message>
+        <source>pianoroll</source>
+        <translation type="obsolete">pianoroll</translation>
+    </message>
+    <message>
+        <source>Pianoroll</source>
+        <translation type="unfinished">Pianoroll</translation>
+    </message>
+    <message>
+        <source>Marker</source>
+        <translation type="unfinished">Маркер</translation>
+    </message>
+    <message>
+        <source>File Buttons</source>
+        <translation type="obsolete">Файловые кнопки</translation>
+    </message>
+    <message>
+        <source>&amp;File</source>
+        <translation type="obsolete">&amp;Файл</translation>
+    </message>
+    <message>
+        <source>Open &amp;Recent</source>
+        <translation type="unfinished">Открыть из &amp;недавних</translation>
+    </message>
+    <message>
+        <source>Save &amp;As</source>
+        <translation type="obsolete">Сохранить &amp;как</translation>
+    </message>
+    <message>
+        <source>Import Midifile</source>
+        <translation type="unfinished">Импортировать MIDI-файл</translation>
+    </message>
+    <message>
+        <source>Export Midifile</source>
+        <translation type="unfinished">Экспортировать MIDI-файл</translation>
+    </message>
+    <message>
+        <source>&amp;Quit</source>
+        <translation type="unfinished">Вы&amp;йти</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Правка</translation>
+    </message>
+    <message>
+        <source>C&amp;ut</source>
+        <translation type="unfinished">&amp;Вырезать</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation type="unfinished">С&amp;копировать</translation>
+    </message>
+    <message>
+        <source>&amp;Paste</source>
+        <translation type="unfinished">&amp;Вставить</translation>
+    </message>
+    <message>
+        <source>Add Track</source>
+        <translation type="unfinished">Добавить дорожку</translation>
+    </message>
+    <message>
+        <source>Select &amp;All</source>
+        <translation type="unfinished">Выделить &amp;всё</translation>
+    </message>
+    <message>
+        <source>&amp;Deselect All</source>
+        <translation type="unfinished">&amp;Убрать выделение</translation>
+    </message>
+    <message>
+        <source>Invert &amp;Selection</source>
+        <translation type="unfinished">Обратить в&amp;ыделение</translation>
+    </message>
+    <message>
+        <source>&amp;Inside Loop</source>
+        <translation type="unfinished">&amp;Внутри цикла</translation>
+    </message>
+    <message>
+        <source>&amp;Outside Loop</source>
+        <translation type="unfinished">&amp;Снаружи цикла</translation>
+    </message>
+    <message>
+        <source>All &amp;Parts on Track</source>
+        <translation type="unfinished">Все &amp;части в дорожке</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation type="unfinished">Выделить</translation>
+    </message>
+    <message>
+        <source>Drums</source>
+        <translation type="unfinished">Ударные</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation type="unfinished">Список</translation>
+    </message>
+    <message>
+        <source>Graphic</source>
+        <translation type="obsolete">Графика</translation>
+    </message>
+    <message>
+        <source>Mastertrack</source>
+        <translation type="unfinished">Мастер-дорожка</translation>
+    </message>
+    <message>
+        <source>Midi &amp;Transform</source>
+        <translation type="obsolete">&amp;Преобразовать MIDI-сообщения</translation>
+    </message>
+    <message>
+        <source>Modify Gate Time</source>
+        <translation type="unfinished">Изменить время звучания</translation>
+    </message>
+    <message>
+        <source>Modify Velocity</source>
+        <translation type="unfinished">Изменить скорость</translation>
+    </message>
+    <message>
+        <source>Crescendo</source>
+        <translation type="unfinished">Крещендо</translation>
+    </message>
+    <message>
+        <source>Transpose</source>
+        <translation type="unfinished">Транспонировать</translation>
+    </message>
+    <message>
+        <source>Thin Out</source>
+        <translation type="unfinished">Удалить дубли</translation>
+    </message>
+    <message>
+        <source>Erase Event</source>
+        <translation type="unfinished">Удалить событие</translation>
+    </message>
+    <message>
+        <source>Note Shift</source>
+        <translation type="unfinished">Сдвиг ноты</translation>
+    </message>
+    <message>
         <source>Copy Measure</source>
-        <translation>Скопировать деление</translation>
+        <translation type="unfinished">Скопировать деление</translation>
     </message>
     <message>
         <source>Erase Measure</source>
-        <translation>Стереть деление</translation>
+        <translation type="unfinished">Стереть деление</translation>
     </message>
     <message>
         <source>Delete Measure</source>
-        <translation>Удалить деление</translation>
+        <translation type="unfinished">Удалить деление</translation>
     </message>
     <message>
         <source>Create Measure</source>
-        <translation>Создать деление</translation>
+        <translation type="unfinished">Создать деление</translation>
     </message>
     <message>
         <source>Mix Track</source>
-        <translation>Свести дорожку</translation>
+        <translation type="unfinished">Свести дорожку</translation>
     </message>
     <message>
         <source>Midi</source>
-        <translation>MIDI</translation>
+        <translation type="unfinished">MIDI</translation>
     </message>
     <message>
         <source>&amp;Structure</source>
-        <translation>&amp;Структура</translation>
+        <translation type="unfinished">&amp;Структура</translation>
     </message>
     <message>
         <source>Global Cut</source>
-        <translation>Глобальное вырезание</translation>
+        <translation type="unfinished">Глобальное вырезание</translation>
     </message>
     <message>
         <source>Global Insert</source>
-        <translation>Глобальная вставка</translation>
+        <translation type="unfinished">Глобальная вставка</translation>
     </message>
     <message>
         <source>Global Split</source>
-        <translation>Глобальное разделение</translation>
+        <translation type="unfinished">Глобальное разделение</translation>
     </message>
     <message>
         <source>Copy Range</source>
-        <translation>Скопировать область</translation>
+        <translation type="unfinished">Скопировать область</translation>
     </message>
     <message>
         <source>Cut Events</source>
-        <translation>Вырезать события</translation>
+        <translation type="unfinished">Вырезать события</translation>
     </message>
     <message>
         <source>Transport Panel</source>
-        <translation>Панель пульта управления</translation>
+        <translation type="unfinished">Панель пульта управления</translation>
     </message>
     <message>
         <source>Bigtime window</source>
-        <translation>Окно хронометра</translation>
+        <translation type="unfinished">Окно хронометра</translation>
     </message>
     <message>
         <source>dont follow Song</source>
-        <translation>не следовать за композицией</translation>
+        <translation type="unfinished">не следовать за композицией</translation>
     </message>
     <message>
         <source>follow page</source>
-        <translation>следовать постранично</translation>
+        <translation type="unfinished">следовать постранично</translation>
     </message>
     <message>
         <source>follow continuous</source>
-        <translation>следовать плавно</translation>
+        <translation type="unfinished">следовать плавно</translation>
     </message>
     <message>
         <source>Global Settings</source>
-        <translation>Общие настройки</translation>
+        <translation type="obsolete">Общие настройки</translation>
     </message>
     <message>
         <source>follow song</source>
-        <translation>следовать за композицией</translation>
+        <translation type="unfinished">следовать за композицией</translation>
     </message>
     <message>
         <source>Metronome</source>
@@ -3866,11 +3564,11 @@ recording:
     </message>
     <message>
         <source>Midi Sync</source>
-        <translation>MIDI-синхронизация</translation>
+        <translation type="unfinished">MIDI-синхронизация</translation>
     </message>
     <message>
         <source>Appearance settings</source>
-        <translation>Настройки облика</translation>
+        <translation type="obsolete">Настройки облика</translation>
     </message>
     <message>
         <source>Midi Input Transform</source>
@@ -3882,7 +3580,7 @@ recording:
     </message>
     <message>
         <source>Midi Remote Control</source>
-        <translation>Дистанционное управление MIDI</translation>
+        <translation type="obsolete">Дистанционное управление MIDI</translation>
     </message>
     <message>
         <source>Random Rhythm Generator</source>
@@ -3890,7 +3588,7 @@ recording:
     </message>
     <message>
         <source>&amp;Midi</source>
-        <translation>&amp;MIDI</translation>
+        <translation type="unfinished">&amp;MIDI</translation>
     </message>
     <message>
         <source>Mixer</source>
@@ -3898,141 +3596,141 @@ recording:
     </message>
     <message>
         <source>Input Plugins</source>
-        <translation>Модули на входе</translation>
+        <translation type="obsolete">Модули на входе</translation>
     </message>
     <message>
         <source>Reset Instr.</source>
-        <translation>Перегрузить инструменты</translation>
+        <translation type="unfinished">Перегрузить инструменты</translation>
     </message>
     <message>
         <source>Init Instr.</source>
-        <translation>Запустить инструменты</translation>
+        <translation type="unfinished">Запустить инструменты</translation>
     </message>
     <message>
         <source>local off</source>
-        <translation>откл. локальное управление</translation>
+        <translation type="unfinished">откл. локальное управление</translation>
     </message>
     <message>
         <source>&amp;Audio</source>
-        <translation>&amp;Звук</translation>
+        <translation type="unfinished">&amp;Звук</translation>
     </message>
     <message>
         <source>Bounce to Track</source>
-        <translation>Свести в дорожку</translation>
+        <translation type="unfinished">Свести в дорожку</translation>
     </message>
     <message>
         <source>Bounce to File</source>
-        <translation>Свести в файл</translation>
+        <translation type="unfinished">Свести в файл</translation>
     </message>
     <message>
         <source>&amp;Help</source>
-        <translation>&amp;Помощь</translation>
+        <translation type="unfinished">&amp;Помощь</translation>
     </message>
     <message>
         <source>About&amp;Qt</source>
-        <translation>О &amp;Qt</translation>
+        <translation type="unfinished">О &amp;Qt</translation>
     </message>
     <message>
         <source>Unknown File Format</source>
-        <translation>Неизвестный формат файла</translation>
+        <translation type="obsolete">Неизвестный формат файла</translation>
     </message>
     <message>
         <source>MusE: load project</source>
-        <translation>MusE: Открыть проект</translation>
+        <translation type="obsolete">MusE: Открыть проект</translation>
     </message>
     <message>
         <source>MusE: Write File failed</source>
-        <translation>MusE: Попытка записать файл провалилась</translation>
+        <translation type="unfinished">MusE: Попытка записать файл провалилась</translation>
     </message>
     <message>
         <source>The current Project contains unsaved data
 Save Current Project?</source>
-        <translation>Текущий проект содержит не сохранённые данные.
+        <translation type="unfinished">Текущий проект содержит не сохранённые данные.
 Сохранить текущий проект?</translation>
     </message>
     <message>
         <source>&amp;Nosave</source>
-        <translation>&amp;Не сохранять</translation>
+        <translation type="unfinished">&amp;Не сохранять</translation>
     </message>
     <message>
         <source>&amp;Abort</source>
-        <translation>&amp;Прервать</translation>
+        <translation type="unfinished">&amp;Прервать</translation>
     </message>
     <message>
         <source>MusE: Save As</source>
-        <translation>MusE: Сохранить как</translation>
+        <translation type="obsolete">MusE: Сохранить как</translation>
     </message>
     <message>
         <source>MusE: Song: </source>
-        <translation>MusE: Песня:</translation>
+        <translation type="obsolete">MusE: Песня:</translation>
     </message>
     <message>
         <source>MusE: Import Midi</source>
-        <translation>MusE: Импортировать MIDI</translation>
+        <translation type="unfinished">MusE: Импортировать MIDI</translation>
     </message>
     <message>
         <source>MusE: Export Midi</source>
-        <translation>MusE: Экспортировать MIDI</translation>
+        <translation type="obsolete">MusE: Экспортировать MIDI</translation>
     </message>
     <message>
         <source>reading midifile
   </source>
-        <translation>читается MIDI-файл
+        <translation type="unfinished">читается MIDI-файл
   </translation>
     </message>
     <message>
         <source>Nothing to edit</source>
-        <translation>Нечего редактировать</translation>
+        <translation type="unfinished">Нечего редактировать</translation>
     </message>
     <message>
         <source>MusE: Copy Range</source>
-        <translation>MusE: Скопировать область</translation>
+        <translation type="unfinished">MusE: Скопировать область</translation>
     </message>
     <message>
         <source>not implemented</source>
-        <translation>не реализовано</translation>
+        <translation type="unfinished">не реализовано</translation>
     </message>
     <message>
         <source>MusE: Cut Events</source>
-        <translation>MusE: Вырезать события</translation>
+        <translation type="unfinished">MusE: Вырезать события</translation>
     </message>
     <message>
         <source>MusE: Bounce to Track</source>
-        <translation>MusE: Сведение в дорожку</translation>
+        <translation type="unfinished">MusE: Сведение в дорожку</translation>
     </message>
     <message>
         <source>more than one target track selected</source>
-        <translation>выбрано больше одной конечной дорожки</translation>
+        <translation type="unfinished">выбрано больше одной конечной дорожки</translation>
     </message>
     <message>
         <source>wrong target track type,
 select wave track as target</source>
-        <translation>это неправильный тип конечной дорожки,
+        <translation type="unfinished">это неправильный тип конечной дорожки,
 выберите звуковую дорожку</translation>
     </message>
     <message>
         <source>no target track selected</source>
-        <translation>конечная дорожка не выбрана</translation>
+        <translation type="unfinished">конечная дорожка не выбрана</translation>
     </message>
     <message>
         <source>The current Project contains unsaved data
 Load overwrites current Project:
 Save Current Project?</source>
-        <translation>Текущий проект содержит не сохранённые данные.
+        <translation type="obsolete">Текущий проект содержит не сохранённые данные.
 Загрузка нового проекта приведёт к перезаписи данных этого.
 Сохранить текущий проект?</translation>
     </message>
     <message>
         <source>&amp;Overwrite</source>
-        <translation>Пере&amp;записать</translation>
+        <translation type="obsolete">Пере&amp;записать</translation>
     </message>
     <message>
         <source>no help found at: </source>
-        <translation>справка не найдена в:</translation>
+        <translation type="obsolete">справка не найдена в:</translation>
     </message>
     <message>
         <source>MusE: Open Help</source>
-        <translation>MusE: Открыть справку</translation>
+        <translation type="unfinished">MusE: Открыть справку</translation>
     </message>
     <message>
         <source>Midi Ports / Soft Synth</source>
@@ -4040,7 +3738,7 @@ Save Current Project?</source>
     </message>
     <message>
         <source>Delete Selected Tracks</source>
-        <translation>Выбранные дорожки удалены</translation>
+        <translation type="unfinished">Выбранные дорожки удалены</translation>
     </message>
     <message>
         <source>View</source>
@@ -4048,11 +3746,11 @@ Save Current Project?</source>
     </message>
     <message>
         <source>Edit Instrument</source>
-        <translation>Изменить инструмент</translation>
+        <translation type="unfinished">Изменить инструмент</translation>
     </message>
     <message>
         <source>Restart Audio</source>
-        <translation type="obsolete">Перезапустить звуковой движок</translation>
+        <translation type="unfinished">Перезапустить звуковой движок</translation>
     </message>
     <message>
         <source>Take Snapshot</source>
@@ -4064,107 +3762,107 @@ Save Current Project?</source>
     </message>
     <message>
         <source>Configure shortcuts</source>
-        <translation>Настроить горячие клавиши</translation>
+        <translation type="unfinished">Настроить горячие клавиши</translation>
     </message>
     <message>
         <source>Midi File Export</source>
-        <translation>Экспорт в MIDI-файл</translation>
+        <translation type="unfinished">Экспорт в MIDI-файл</translation>
     </message>
     <message>
         <source>&amp;Manual</source>
-        <translation>&amp;Руководство</translation>
+        <translation type="unfinished">&amp;Руководство</translation>
     </message>
     <message>
         <source>&amp;MusE homepage</source>
-        <translation>Домашняя &amp;страница MusE</translation>
+        <translation type="unfinished">Домашняя &amp;страница MusE</translation>
     </message>
     <message>
         <source>&amp;Report Bug...</source>
-        <translation>Сообщить о&amp;б ошибке...</translation>
+        <translation type="unfinished">Сообщить о&amp;б ошибке...</translation>
     </message>
     <message>
         <source>&amp;About MusE</source>
-        <translation>&amp;О MusE</translation>
+        <translation type="unfinished">&amp;О MusE</translation>
     </message>
     <message>
         <source>What&apos;s &amp;This?</source>
-        <translation>&amp;Что это?</translation>
+        <translation type="unfinished">&amp;Что это?</translation>
     </message>
     <message>
         <source>Cannot read template</source>
-        <translation>Невозможно прочитать шаблон</translation>
+        <translation type="obsolete">Невозможно прочитать шаблон</translation>
     </message>
     <message>
         <source>File open error</source>
-        <translation>Ошибка при открытии файла</translation>
+        <translation type="obsolete">Ошибка при открытии файла</translation>
     </message>
     <message>
         <source>File read error</source>
-        <translation>Ошибка при чтении файла</translation>
+        <translation type="obsolete">Ошибка при чтении файла</translation>
     </message>
     <message>
         <source>MusE: load template</source>
-        <translation>MusE: Загрузка шаблона</translation>
+        <translation type="obsolete">MusE: Загрузка шаблона</translation>
     </message>
     <message>
         <source>MusE: Bounce</source>
-        <translation>MusE: Сведение</translation>
+        <translation type="unfinished">MusE: Сведение</translation>
     </message>
     <message>
         <source>set left/right marker for bounce range</source>
-        <translation>установите левый и правый маркеры для указания области сведения</translation>
+        <translation type="unfinished">установите левый и правый маркеры для указания области сведения</translation>
     </message>
     <message>
         <source>MusE: Bounce to File</source>
-        <translation>MusE: Сведение в файл</translation>
+        <translation type="unfinished">MusE: Сведение в файл</translation>
     </message>
     <message>
         <source>no output track found</source>
-        <translation>не найдено ни одной дорожки выхода</translation>
+        <translation type="unfinished">не найдено ни одной дорожки выхода</translation>
     </message>
     <message>
         <source>Add midi file to current project?
 </source>
-        <translation>Добавить MIDI-файл в текущий проект?
+        <translation type="obsolete">Добавить MIDI-файл в текущий проект?
 </translation>
     </message>
     <message>
         <source>&amp;Add to Project</source>
-        <translation>&amp;Добавить в проект</translation>
+        <translation type="obsolete">&amp;Добавить в проект</translation>
     </message>
     <message>
         <source>&amp;Replace</source>
-        <translation>&amp;Заменить</translation>
+        <translation type="obsolete">&amp;Заменить</translation>
     </message>
     <message>
         <source>
 failed: </source>
-        <translation>
+        <translation type="unfinished">
 не удалось:</translation>
     </message>
     <message>
         <source>Arranger</source>
-        <translation>Компоновщик</translation>
+        <translation type="unfinished">Компоновщик</translation>
     </message>
     <message>
         <source>Cursor</source>
-        <translation>Курсор</translation>
+        <translation type="unfinished">Курсор</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation>Выкл</translation>
+        <translation type="obsolete">Выкл</translation>
     </message>
     <message>
         <source>Bar</source>
-        <translation>Такт</translation>
+        <translation type="obsolete">Такт</translation>
     </message>
     <message>
         <source>Snap</source>
-        <translation>Привязка</translation>
+        <translation type="unfinished">Привязка</translation>
     </message>
     <message>
         <source>Len</source>
-        <translation>Длн</translation>
+        <translation type="unfinished">Длн</translation>
     </message>
     <message>
         <source>Type</source>
@@ -4192,31 +3890,68 @@ failed: </source>
     </message>
     <message>
         <source>Pitch</source>
-        <translation>Высота тона</translation>
+        <translation type="unfinished">Высота тона</translation>
     </message>
     <message>
         <source>midi pitch</source>
-        <translation>midi высота тона</translation>
-    </message>
-    <message>
-        <source>global midi pitch shift</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">midi высота тона</translation>
     </message>
     <message>
         <source>Tempo</source>
-        <translation>Темп</translation>
+        <translation type="unfinished">Темп</translation>
     </message>
     <message>
         <source>midi tempo</source>
-        <translation>MIDI-темп</translation>
-    </message>
-    <message>
-        <source>N</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">MIDI-темп</translation>
     </message>
     <message>
         <source>MusE: Create tmp file failed</source>
-        <translation>MusE: Попытка создать временный файл провалилась</translation>
+        <translation type="unfinished">MusE: Попытка создать временный файл провалилась</translation>
+    </message>
+    <message>
+        <source>MusE manual not found at: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>to import a audio file you have first to selecta wave track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to start audio!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Was not able to start audio, check if jack is running.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Panic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MidiTracker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project Buttons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Delete Parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project Properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move Clock</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;View</source>
@@ -4234,162 +3969,355 @@ failed: </source>
         <source>Setti&amp;ngs</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Preferences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>global midi pitch shift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>N</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: new project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot create project folder &lt;%1&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot open template file
+%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File &lt;%1&gt; read error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: import midi file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NoteInfo</name>
+    <message>
+        <source>Note Info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Len</source>
+        <translation type="unfinished">Длн</translation>
+    </message>
+    <message>
+        <source>Pitch</source>
+        <translation type="unfinished">Высота тона</translation>
+    </message>
+    <message>
+        <source>Velo On</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velo Off</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>OrganGuiBase</name>
     <message>
-        <source>MusE: Organ</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Drawbars</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>16&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>4&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>2 2/3&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>2&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>5 1/3&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>8&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Envelope Hi</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Release</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sustain</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Decay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Attack</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>cB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Envelope Lo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>O-1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Oscillator</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Brass</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Reed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Flute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Velocity</source>
-        <translation type="unfinished">Сила нажатия</translation>
+        <translation type="obsolete">Сила нажатия</translation>
+    </message>
+</context>
+<context>
+    <name>OutportCombo</name>
+    <message>
+        <source>Midi Output Port</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PartCanvas</name>
+    <message>
+        <source>C&amp;ut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>glue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>de-clone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AutoFill...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>drums</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>pianoroll</source>
+        <translation type="unfinished">pianoroll</translation>
+    </message>
+    <message>
+        <source>miditracker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>wave edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Get auto fill loop len</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Measures: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Change Part Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PartName:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>PatchBayBase</name>
     <message>
         <source>ALSA Patch Bay</source>
-        <translation>ALSA Patch Bay</translation>
+        <translation type="obsolete">ALSA Patch Bay</translation>
+    </message>
+</context>
+<context>
+    <name>PianoRoll</name>
+    <message>
+        <source>Delete Events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select &amp;All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Deselect All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invert &amp;Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Inside Loop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Outside Loop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>event color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>pitch colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>velocity colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Functions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Over Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note On Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note On/Off Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Iterative Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Config Quant...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Modify Gate Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Modify Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Crescendo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transpose</source>
+        <translation type="unfinished">Транспонировать</translation>
+    </message>
+    <message>
+        <source>Thin Out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Erase Event</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note Shift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move Clock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Erase Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pianoroll Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Panic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport</source>
+        <translation type="unfinished">Транспорт</translation>
     </message>
 </context>
 <context>
     <name>PluginDialog</name>
     <message>
         <source>MusE: select plugin</source>
-        <translation>MusE: выбрать модуль</translation>
+        <translation type="unfinished">MusE: выбрать модуль</translation>
     </message>
     <message>
         <source>Lib</source>
-        <translation>Библ.</translation>
+        <translation type="unfinished">Библ.</translation>
     </message>
     <message>
         <source>Label</source>
-        <translation>Метка</translation>
+        <translation type="unfinished">Метка</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Имя</translation>
+        <translation type="unfinished">Имя</translation>
     </message>
     <message>
         <source>AI</source>
-        <translation>AI</translation>
+        <translation type="unfinished">AI</translation>
     </message>
     <message>
         <source>AO</source>
-        <translation>AO</translation>
+        <translation type="unfinished">AO</translation>
     </message>
     <message>
         <source>CI</source>
-        <translation>CI</translation>
+        <translation type="unfinished">CI</translation>
     </message>
     <message>
         <source>CO</source>
-        <translation>CP</translation>
+        <translation type="unfinished">CP</translation>
     </message>
     <message>
         <source>IP</source>
-        <translation>IP</translation>
+        <translation type="unfinished">IP</translation>
     </message>
     <message>
         <source>id</source>
-        <translation>id</translation>
+        <translation type="unfinished">id</translation>
     </message>
     <message>
         <source>Maker</source>
-        <translation>Создатель</translation>
+        <translation type="unfinished">Создатель</translation>
     </message>
     <message>
         <source>Copyright</source>
-        <translation>Авторское право</translation>
+        <translation type="unfinished">Авторское право</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation>Ok</translation>
+        <translation type="unfinished">Ok</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Отменить</translation>
+        <translation type="unfinished">Отменить</translation>
     </message>
     <message>
         <source>Select which types of plugins should be visible in the list,&lt;br&gt;beware that &apos;all&apos; includes plugins that probably are not usable by MusE.</source>
@@ -4398,22 +4326,34 @@ failed: </source>
     </message>
     <message>
         <source>Stereo and Mono</source>
-        <translation>Стерео и моно</translation>
+        <translation type="obsolete">Стерео и моно</translation>
     </message>
     <message>
         <source>Stereo</source>
-        <translation>Стерео</translation>
+        <translation type="unfinished">Стерео</translation>
     </message>
     <message>
         <source>Mono</source>
-        <translation>Моно</translation>
+        <translation type="unfinished">Моно</translation>
     </message>
     <message>
         <source>All</source>
-        <translation>Все</translation>
+        <translation type="obsolete">Все</translation>
+    </message>
+    <message>
+        <source>Mono and Stereo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show All</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Select which types of plugins should be visible in the list.&lt;br&gt;Note that using mono plugins on stereo tracks is not a problem, two will be used in parallell.&lt;br&gt;Also beware that the &apos;all&apos; alternative includes plugins that probably not are usable by MusE.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search in &apos;Label&apos; and &apos;Name&apos;:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4421,27 +4361,45 @@ failed: </source>
     <name>PluginGui</name>
     <message>
         <source>File Buttons</source>
-        <translation>Файловые кнопки</translation>
+        <translation type="unfinished">Файловые кнопки</translation>
     </message>
     <message>
         <source>Load Preset</source>
-        <translation>Загрузить предустановку</translation>
+        <translation type="unfinished">Загрузить предустановку</translation>
     </message>
     <message>
         <source>Save Preset</source>
-        <translation>Сохранить предустановку</translation>
+        <translation type="unfinished">Сохранить предустановку</translation>
     </message>
     <message>
         <source>bypass plugin</source>
-        <translation>обойти модуль</translation>
+        <translation type="unfinished">обойти модуль</translation>
     </message>
     <message>
         <source>MusE: load preset</source>
-        <translation>MusE: загрузить предустановку</translation>
+        <translation type="unfinished">MusE: загрузить предустановку</translation>
     </message>
     <message>
         <source>MusE: save preset</source>
-        <translation>MusE: сохранить предустановку</translation>
+        <translation type="unfinished">MusE: сохранить предустановку</translation>
+    </message>
+</context>
+<context>
+    <name>PreferencesDialog</name>
+    <message>
+        <source>MusE: load image</source>
+        <translation type="unfinished">MusE: загрузить изображение</translation>
+    </message>
+</context>
+<context>
+    <name>ProjectDialog</name>
+    <message>
+        <source>MusE: create new folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>new folder:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4476,11 +4434,7 @@ failed: </source>
     </message>
 </context>
 <context>
-    <name>QPopupMenu</name>
-    <message>
-        <source>Add Soft Synth</source>
-        <translation type="obsolete">Добавить программный синтезатор</translation>
-    </message>
+    <name>QMenu</name>
     <message>
         <source>Add Midi Generator...</source>
         <translation type="unfinished"></translation>
@@ -4491,37 +4445,94 @@ failed: </source>
     </message>
 </context>
 <context>
+    <name>QPopupMenu</name>
+    <message>
+        <source>Add Soft Synth</source>
+        <translation type="obsolete">Добавить программный синтезатор</translation>
+    </message>
+</context>
+<context>
     <name>QWidget</name>
     <message>
         <source>new</source>
-        <translation>новый</translation>
+        <translation type="unfinished">новый</translation>
     </message>
     <message>
         <source>File
 </source>
-        <translation>Файл</translation>
+        <translation type="unfinished">Файл</translation>
     </message>
     <message>
         <source>
 exists</source>
-        <translation>(new line)
+        <translation type="unfinished">(new line)
 существует</translation>
     </message>
     <message>
         <source>MusE: write</source>
-        <translation>MusE: записать</translation>
+        <translation type="unfinished">MusE: записать</translation>
     </message>
     <message>
         <source>Overwrite</source>
-        <translation>Перезаписать</translation>
+        <translation type="unfinished">Перезаписать</translation>
     </message>
     <message>
         <source>Quit</source>
-        <translation>Выйти</translation>
+        <translation type="unfinished">Выйти</translation>
     </message>
     <message>
         <source>None</source>
-        <translation>Ничего</translation>
+        <translation type="obsolete">Ничего</translation>
+    </message>
+    <message>
+        <source>Open File
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>
+failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Open File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>generic midi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>copy 
+  %1
+to
+  %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>
+converting sample rate
+from %1 to %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>create peakfile for </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: export midi file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>RecordButton</name>
+    <message>
+        <source>record</source>
+        <translation type="unfinished">записать</translation>
     </message>
 </context>
 <context>
@@ -4803,121 +4814,111 @@ Random Rhythm Generator is not enabled yet!</source>
     <name>RouteDialogBase</name>
     <message>
         <source>MusE: Routing</source>
-        <translation>MusE: Маршруты</translation>
+        <translation type="obsolete">MusE: Маршруты</translation>
     </message>
     <message>
         <source>Add Route</source>
-        <translation>Добавить маршрут</translation>
+        <translation type="obsolete">Добавить маршрут</translation>
     </message>
     <message>
         <source>Source:</source>
-        <translation>Источник:</translation>
+        <translation type="obsolete">Источник:</translation>
     </message>
     <message>
         <source>Destination:</source>
-        <translation>Назначение:</translation>
+        <translation type="obsolete">Назначение:</translation>
     </message>
     <message>
         <source>Connect</source>
-        <translation>Соединить</translation>
+        <translation type="obsolete">Соединить</translation>
     </message>
     <message>
         <source>connect source to destination</source>
-        <translation>соединить источник с местом назначения</translation>
+        <translation type="obsolete">соединить источник с местом назначения</translation>
     </message>
     <message>
         <source>Current Routes</source>
-        <translation>Текущие маршруты</translation>
+        <translation type="obsolete">Текущие маршруты</translation>
     </message>
     <message>
         <source>Source</source>
-        <translation>Источник</translation>
+        <translation type="obsolete">Источник</translation>
     </message>
     <message>
         <source>Destination</source>
-        <translation>Назначение</translation>
+        <translation type="obsolete">Назначение</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Удалить</translation>
+        <translation type="obsolete">Удалить</translation>
     </message>
     <message>
         <source>remove selected route</source>
-        <translation>удалить текущий маршрут</translation>
+        <translation type="obsolete">удалить текущий маршрут</translation>
     </message>
 </context>
 <context>
     <name>SS_PluginChooserBase</name>
     <message>
-        <source>SimpleDrums - Ladspa Plugin Chooser</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Name</source>
-        <translation type="unfinished">Имя</translation>
+        <translation type="obsolete">Имя</translation>
     </message>
     <message>
         <source>Label</source>
-        <translation type="unfinished">Метка</translation>
-    </message>
-    <message>
-        <source>Inports</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Outports</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Creator</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Метка</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">О&amp;тменить</translation>
+        <translation type="obsolete">О&amp;тменить</translation>
     </message>
+</context>
+<context>
+    <name>SS_PluginFront</name>
     <message>
-        <source>Alt+C</source>
+        <source>Clear and unload effect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;OK</source>
+        <source>Load effect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Alt+O</source>
+        <source>Toggle display of effect parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Turn effect on/off</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>ShortcutCaptureDialogBase</name>
+    <name>ShortcutCaptureDialog</name>
     <message>
-        <source>Enter shortcut sequence</source>
-        <translation type="unfinished"></translation>
+        <source>Ok</source>
+        <translation type="unfinished">ОК</translation>
     </message>
     <message>
-        <source>Press keys to enter shortcut sequence!</source>
-        <translation type="unfinished"></translation>
+        <source>Cancel</source>
+        <translation type="unfinished">Отменить</translation>
     </message>
     <message>
-        <source>Old shortcut:</source>
+        <source>Shortcut conflicts with </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Undefined</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>New shortcut:</source>
-        <translation type="unfinished"></translation>
-    </message>
+</context>
+<context>
+    <name>ShortcutCaptureDialogBase</name>
     <message>
         <source>OK</source>
-        <translation type="unfinished">ОК</translation>
+        <translation type="obsolete">ОК</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Отменить</translation>
+        <translation type="obsolete">Отменить</translation>
     </message>
 </context>
 <context>
@@ -4933,6 +4934,30 @@ Random Rhythm Generator is not enabled yet!</source>
     <message>
         <source>Pianoroll</source>
         <translation type="unfinished">Pianoroll</translation>
+    </message>
+    <message>
+        <source>Insert Note</source>
+        <translation type="unfinished">Вставить ноту</translation>
+    </message>
+    <message>
+        <source>Insert SysEx</source>
+        <translation type="unfinished">Вставить SysEx</translation>
+    </message>
+    <message>
+        <source>Insert Ctrl</source>
+        <translation type="unfinished">Вставить контроллер</translation>
+    </message>
+    <message>
+        <source>Insert Meta</source>
+        <translation type="unfinished">Вставить Meta</translation>
+    </message>
+    <message>
+        <source>Insert Channel Aftertouch</source>
+        <translation type="unfinished">Вставить Channel Aftertouch</translation>
+    </message>
+    <message>
+        <source>Insert Key Aftertouch</source>
+        <translation type="unfinished">Вставить Key Aftertouch</translation>
     </message>
     <message>
         <source>Drumeditor</source>
@@ -5471,30 +5496,6 @@ Random Rhythm Generator is not enabled yet!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Insert Note</source>
-        <translation type="unfinished">Вставить ноту</translation>
-    </message>
-    <message>
-        <source>Insert SysEx</source>
-        <translation type="unfinished">Вставить SysEx</translation>
-    </message>
-    <message>
-        <source>Insert Ctrl</source>
-        <translation type="unfinished">Вставить контроллер</translation>
-    </message>
-    <message>
-        <source>Insert Meta</source>
-        <translation type="unfinished">Вставить Meta</translation>
-    </message>
-    <message>
-        <source>Insert Channel Aftertouch</source>
-        <translation type="unfinished">Вставить Channel Aftertouch</translation>
-    </message>
-    <message>
-        <source>Insert Key Aftertouch</source>
-        <translation type="unfinished">Вставить Key Aftertouch</translation>
-    </message>
-    <message>
         <source>Edit: Increase event position</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5522,50 +5523,135 @@ Random Rhythm Generator is not enabled yet!</source>
 <context>
     <name>ShortcutConfigBase</name>
     <message>
-        <source>Configure Keyboard Shortcuts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Shortcut Category</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Shortcut</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Clear</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Alt+C</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Define</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Alt+D</source>
-        <translation type="unfinished">Alt+D</translation>
+        <translation type="obsolete">Alt+D</translation>
     </message>
     <message>
         <source>&amp;Apply</source>
-        <translation type="unfinished">&amp;Применить</translation>
+        <translation type="obsolete">&amp;Применить</translation>
     </message>
     <message>
         <source>Alt+A</source>
-        <translation type="unfinished">Alt+A</translation>
+        <translation type="obsolete">Alt+A</translation>
     </message>
 </context>
 <context>
-    <name>SimpleDrumsGuiBase</name>
+    <name>SimpleSynthGui</name>
     <message>
-        <source>DrumSynth 0.1</source>
+        <source>Load sample dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Song</name>
+    <message>
+        <source>Jack shutdown!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Jack has detected a performance problem which has lead to
+MusE being disconnected.
+This could happen due to a number of reasons:
+- a performance issue with your particular setup.
+- a bug in MusE (or possibly in another connected software).
+- a random hiccup which might never occur again.
+- jack was voluntary stopped by you or someone else
+- jack crashed
+If there is a persisting problem you are much welcome to discuss it
+on the MusE mailinglist.
+(there is information about joining the mailinglist on the MusE
+ homepage which is available through the help menu)
+
+To proceed check the status of Jack and try to restart it and then .
+click on the Restart button.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SplitLayerGui</name>
+    <message>
+        <source>start pitch for split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>enable learn mode for start pitch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>end pitch for split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>enable learn mode for end pitch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>pitch offset for split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start velocity for split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>end velocity for split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>velocity offset for split</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TLSWidget</name>
+    <message>
+        <source>Remove Subtrack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ctrl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished">Сила нажатия</translation>
+    </message>
+    <message>
+        <source>Delete Controller</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TLWidget</name>
+    <message>
+        <source>Delete Track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy Track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Gui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Subtrack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi Output Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TemplateDialog</name>
+    <message>
+        <source>MusE presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User presets</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5573,246 +5659,397 @@ Random Rhythm Generator is not enabled yet!</source>
     <name>TempoSig</name>
     <message>
         <source>Tempo/Sig</source>
-        <translation>Темп/Знаки альтерации</translation>
+        <translation type="obsolete">Темп/Знаки альтерации</translation>
     </message>
 </context>
 <context>
-    <name>Transport</name>
+    <name>TimeCanvas</name>
     <message>
-        <source>Overdub</source>
-        <translation>Наложить</translation>
+        <source>Ctrl</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Replace</source>
-        <translation>Заменить</translation>
-    </message>
-    <message>
-        <source>Rec Mode</source>
-        <translation>Режим записи</translation>
-    </message>
-    <message>
-        <source>Normal</source>
-        <translation>Норм.</translation>
-    </message>
-    <message>
-        <source>Mix</source>
-        <translation>Смешать</translation>
-    </message>
-    <message>
-        <source>Cycle Rec</source>
-        <translation>Циклич. запись</translation>
-    </message>
-    <message>
-        <source>punchin</source>
-        <translation>нач. врезки</translation>
-    </message>
-    <message>
-        <source>loop</source>
-        <translation>цикл</translation>
-    </message>
-    <message>
-        <source>punchout</source>
-        <translation>кнц. врезки</translation>
-    </message>
-    <message>
-        <source>Punch In</source>
-        <translation>Начало врезки</translation>
-    </message>
-    <message>
-        <source>Loop</source>
-        <translation>Цикл</translation>
-    </message>
-    <message>
-        <source>Punch Out</source>
-        <translation>Конец врезки</translation>
-    </message>
-    <message>
-        <source>Left Mark</source>
-        <translation>Левый маркер</translation>
-    </message>
-    <message>
-        <source>Right Mark</source>
-        <translation>Правый маркер</translation>
-    </message>
-    <message>
-        <source>rewind to start</source>
-        <translation>перемотать к началу</translation>
-    </message>
-    <message>
-        <source>rewind</source>
-        <translation>перемотать назад</translation>
-    </message>
-    <message>
-        <source>forward</source>
-        <translation>перемотать вперёд</translation>
-    </message>
-    <message>
-        <source>stop</source>
-        <translation>остановить</translation>
-    </message>
-    <message>
-        <source>play</source>
-        <translation>воспроизвести</translation>
-    </message>
-    <message>
-        <source>record</source>
-        <translation>записать</translation>
-    </message>
-    <message>
-        <source>AC</source>
-        <translation>AC</translation>
-    </message>
-    <message>
-        <source>quantize during record</source>
-        <translation>квантовать при записи</translation>
-    </message>
-    <message>
-        <source>Click</source>
-        <translation>Метр.</translation>
-    </message>
-    <message>
-        <source>metronom click on/off</source>
-        <translation>Щелчки метронома</translation>
-    </message>
-    <message>
-        <source>Sync</source>
-        <translation>Синхр.</translation>
-    </message>
-    <message>
-        <source>external sync on/off</source>
-        <translation>Вкл/выкл внешнюю синхронизацию</translation>
-    </message>
-    <message>
-        <source>Master</source>
-        <translation>Мастер</translation>
-    </message>
-    <message>
-        <source>use master track</source>
-        <translation>использовать мастер-дорожку</translation>
+        <source>Add Controller View</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>TransposeDialogBase</name>
+    <name>Toolbar1</name>
     <message>
-        <source>MusE: Midi Transpose</source>
+        <source>Solo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Value</source>
-        <translation type="unfinished">Значение</translation>
-    </message>
-    <message>
-        <source>halftones</source>
+        <source>Cursor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Time</source>
+        <source>Snap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>all</source>
+        <source>Quantize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>between markers</source>
+        <source>To</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Parts</source>
-        <translation type="unfinished">Части</translation>
-    </message>
-    <message>
-        <source>all in selected tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="unfinished">ОК</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="unfinished">Отменить</translation>
-    </message>
-</context>
-<context>
-    <name>VelocityBase</name>
-    <message>
-        <source>MusE: Modify Velocity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Range</source>
-        <translation type="unfinished">Область</translation>
     </message>
     <message>
         <source>All Events</source>
         <translation type="unfinished">Все события</translation>
     </message>
     <message>
-        <source>Selected Events</source>
-        <translation type="unfinished">Выбранные события</translation>
-    </message>
-    <message>
-        <source>Looped Events</source>
-        <translation type="unfinished">События в цикле</translation>
-    </message>
-    <message>
-        <source>Selected &amp; Looped</source>
-        <translation type="unfinished">Выбранные и в цикле</translation>
-    </message>
-    <message>
-        <source>Values</source>
-        <translation type="unfinished">Значения</translation>
-    </message>
-    <message>
-        <source>Rate:</source>
-        <translation type="unfinished">Частота:</translation>
-    </message>
-    <message>
-        <source>Offset:</source>
-        <translation type="unfinished">Смещение:</translation>
-    </message>
-    <message>
-        <source>%</source>
-        <translation type="unfinished">%</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="unfinished">ОК</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="unfinished">Отменить</translation>
-    </message>
-</context>
-<context>
-    <name>WaveTrackInfoBase</name>
-    <message>
-        <source>MusE: TrackInfo</source>
+        <source>Looped Ev.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Track Info</source>
+        <source>Selected Ev.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Looped+Sel.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TrackComment</name>
+    <message>
+        <source>MusE: Track Comment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Track Comment:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TrackInfo</name>
+    <message>
+        <source>Track Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Track Name</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>Transport</name>
+    <message>
+        <source>Overdub</source>
+        <translation type="obsolete">Наложить</translation>
+    </message>
+    <message>
+        <source>Replace</source>
+        <translation type="obsolete">Заменить</translation>
+    </message>
+    <message>
+        <source>Rec Mode</source>
+        <translation type="obsolete">Режим записи</translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation type="obsolete">Норм.</translation>
+    </message>
+    <message>
+        <source>Mix</source>
+        <translation type="obsolete">Смешать</translation>
+    </message>
+    <message>
+        <source>Cycle Rec</source>
+        <translation type="obsolete">Циклич. запись</translation>
+    </message>
+    <message>
+        <source>punchin</source>
+        <translation type="obsolete">нач. врезки</translation>
+    </message>
+    <message>
+        <source>loop</source>
+        <translation type="obsolete">цикл</translation>
+    </message>
+    <message>
+        <source>punchout</source>
+        <translation type="obsolete">кнц. врезки</translation>
+    </message>
+    <message>
+        <source>Punch In</source>
+        <translation type="obsolete">Начало врезки</translation>
+    </message>
+    <message>
+        <source>Loop</source>
+        <translation type="obsolete">Цикл</translation>
+    </message>
+    <message>
+        <source>Punch Out</source>
+        <translation type="obsolete">Конец врезки</translation>
+    </message>
+    <message>
+        <source>Left Mark</source>
+        <translation type="obsolete">Левый маркер</translation>
+    </message>
+    <message>
+        <source>Right Mark</source>
+        <translation type="obsolete">Правый маркер</translation>
+    </message>
+    <message>
+        <source>rewind to start</source>
+        <translation type="obsolete">перемотать к началу</translation>
+    </message>
+    <message>
+        <source>rewind</source>
+        <translation type="obsolete">перемотать назад</translation>
+    </message>
+    <message>
+        <source>forward</source>
+        <translation type="obsolete">перемотать вперёд</translation>
+    </message>
+    <message>
+        <source>stop</source>
+        <translation type="obsolete">остановить</translation>
+    </message>
+    <message>
+        <source>play</source>
+        <translation type="obsolete">воспроизвести</translation>
+    </message>
+    <message>
+        <source>record</source>
+        <translation type="obsolete">записать</translation>
+    </message>
+    <message>
+        <source>AC</source>
+        <translation type="obsolete">AC</translation>
+    </message>
+    <message>
+        <source>quantize during record</source>
+        <translation type="obsolete">квантовать при записи</translation>
+    </message>
+    <message>
+        <source>Click</source>
+        <translation type="obsolete">Метр.</translation>
+    </message>
+    <message>
+        <source>metronom click on/off</source>
+        <translation type="obsolete">Щелчки метронома</translation>
+    </message>
+    <message>
+        <source>Sync</source>
+        <translation type="obsolete">Синхр.</translation>
+    </message>
+    <message>
+        <source>external sync on/off</source>
+        <translation type="obsolete">Вкл/выкл внешнюю синхронизацию</translation>
+    </message>
+    <message>
+        <source>Master</source>
+        <translation type="obsolete">Мастер</translation>
+    </message>
+    <message>
+        <source>use master track</source>
+        <translation type="obsolete">использовать мастер-дорожку</translation>
+    </message>
+</context>
+<context>
+    <name>TransposeDialogBase</name>
+    <message>
+        <source>Value</source>
+        <translation type="obsolete">Значение</translation>
+    </message>
+    <message>
+        <source>Parts</source>
+        <translation type="obsolete">Части</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="obsolete">ОК</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="obsolete">Отменить</translation>
+    </message>
+</context>
+<context>
+    <name>VAMGui</name>
+    <message>
+        <source>MusE: Load VAM Presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Save VAM Presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Velocity</name>
+    <message>
+        <source>MusE: Modify Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VelocityBase</name>
+    <message>
+        <source>Range</source>
+        <translation type="obsolete">Область</translation>
+    </message>
+    <message>
+        <source>All Events</source>
+        <translation type="obsolete">Все события</translation>
+    </message>
+    <message>
+        <source>Selected Events</source>
+        <translation type="obsolete">Выбранные события</translation>
+    </message>
+    <message>
+        <source>Looped Events</source>
+        <translation type="obsolete">События в цикле</translation>
+    </message>
+    <message>
+        <source>Selected &amp; Looped</source>
+        <translation type="obsolete">Выбранные и в цикле</translation>
+    </message>
+    <message>
+        <source>Values</source>
+        <translation type="obsolete">Значения</translation>
+    </message>
+    <message>
+        <source>Rate:</source>
+        <translation type="obsolete">Частота:</translation>
+    </message>
+    <message>
+        <source>Offset:</source>
+        <translation type="obsolete">Смещение:</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation type="obsolete">%</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="obsolete">ОК</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="obsolete">Отменить</translation>
+    </message>
+</context>
+<context>
+    <name>WaveEdit</name>
+    <message>
+        <source>&amp;File</source>
+        <translation type="unfinished">&amp;Файл</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Правка</translation>
+    </message>
+    <message>
+        <source>Func&amp;tions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Gain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>200%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>150%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>75%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>50%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>25%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit in E&amp;xternal Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mute Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normalize Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fade In Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fade Out Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reverse Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation type="unfinished">Выделить</translation>
+    </message>
+    <message>
+        <source>Select &amp;All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Deselect All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>waveedit-tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport</source>
+        <translation type="unfinished">Транспорт</translation>
+    </message>
+    <message>
+        <source>pianoroll-tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Solo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>WaveTrackInfoBase</name>
     <message>
         <source>off</source>
-        <translation type="unfinished">выкл</translation>
+        <translation type="obsolete">выкл</translation>
     </message>
+</context>
+<context>
+    <name>WaveView</name>
     <message>
-        <source>Track Delay (ticks)</source>
+        <source>MusE - file size changed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delay (Frames)</source>
+        <source>When editing in external editor - you should not change the filesize
+since it must fit the selected region.
+
+Missing data is muted</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

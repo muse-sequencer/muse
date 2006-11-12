@@ -365,10 +365,10 @@ void populateAddTrack(QMenu* m)
       a = m->addAction(QIcon(*addtrack_addmiditrackIcon), QT_TR_NOOP("Add Midi Track"));
       a->setData(Track::MIDI);
 
-      a = m->addAction(QIcon(*addtrack_addmiditrackIcon), QT_TR_NOOP("Add Midi Output Port"));
+      a = m->addAction(QIcon(*addtrack_addmiditrackIcon), QT_TR_NOOP("Add Midi Output"));
       a->setData(Track::MIDI_OUT);
 
-      a = m->addAction(QIcon(*addtrack_addmiditrackIcon), QT_TR_NOOP("Add Midi Input Port"));
+      a = m->addAction(QIcon(*addtrack_addmiditrackIcon), QT_TR_NOOP("Add Midi Input"));
       a->setData(Track::MIDI_IN);
 
       QMenu* ps = m->addMenu(QMenu::tr("Add Midi Generator..."));
@@ -2861,7 +2861,6 @@ int main(int argc, char* argv[])
       config.fonts[4] = QFont(QString("helvetica"),  8,  QFont::Bold);    // simple buttons, timescale numbers
       config.fonts[5] = QFont(QString("Courier"), 14,  QFont::Bold);
 
-      initShortCuts();
       gmDrumMap.initGm();    // init default drum map
       readConfiguration();
 
@@ -2954,19 +2953,19 @@ int main(int argc, char* argv[])
             }
 
       static QTranslator translator;
-      QString lo(QLocale::system().name());
-
-      if (lo != "C") {
-            QString loc("muse_");
-            loc += lo;
-            if (translator.load(loc, QString(".")) == false) {
-                  QString lp(museGlobalShare);
-                  lp += QString("/locale");
-                  if (translator.load(loc, lp) == false) {
-                        printf("no locale <%s> in <%s>\n", loc.toLatin1().data(), lp.toLatin1().data());
-                        }
+      QFile f(":/muse.qm");
+      if (f.exists()) {
+            if (debugMsg)
+                  printf("locale file found\n");
+            if (translator.load(":/muse.qm")) {
+                  if (debugMsg)
+                        printf("locale file loaded\n");
                   }
             qApp->installTranslator(&translator);
+            }
+      else {
+            if (debugMsg)
+                  printf("locale file not found\n");
             }
 
       if (loadPlugins) {
@@ -3005,7 +3004,7 @@ int main(int argc, char* argv[])
       QDir pd(QDir::homePath() + "/" + config.projectPath);
       if (!pd.exists()) {
             // ask user to create a new project directory
-            QString title(muse->tr("MusE: create project directory"));
+            QString title(QT_TR_NOOP("MusE: create project directory"));
 
             QString s;
             s = "The MusE project directory\n%1\ndoes not exists";
@@ -3034,7 +3033,7 @@ int main(int argc, char* argv[])
       pd.setPath(QDir::homePath() + "/" + config.templatePath);
       if (!pd.exists()) {
             // ask user to create a new template directory
-            QString title(muse->tr("MusE: create template directory"));
+            QString title(QT_TR_NOOP("MusE: create template directory"));
 
             QString s;
             s = "The MusE template directory\n%1\ndoes not exists";
@@ -3071,8 +3070,8 @@ int main(int argc, char* argv[])
       if (!path.isEmpty()) {
             QFile f(QDir::homePath() +"/"+config.projectPath+"/"+path+"/"+name+".med");
             if (!f.exists()) {
-                  QString s(song->tr("Cannot find project <%1>"));
-                  QString header(song->tr("MusE: load Project"));
+                  QString s(QT_TR_NOOP("Cannot find project <%1>"));
+                  QString header(QT_TR_NOOP("MusE: load Project"));
                   QMessageBox::critical(0, header, s.arg(f.fileName()));
                   path = "";
                   }

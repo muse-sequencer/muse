@@ -42,6 +42,7 @@ ShortcutCaptureDialog::~ShortcutCaptureDialog()
 
 void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
       {
+#if 0 //TODOB
       bool shift, alt, ctrl, conflict = false, realkey = false;
       QString msgString = "";
       int temp_key;
@@ -86,7 +87,7 @@ void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
             if (!realkey)
                   nshrtLabel->setText(tr("Undefined"));
 
-
+#endif
       }
 
 void ShortcutCaptureDialog::apply()

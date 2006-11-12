@@ -86,7 +86,7 @@ void addMidiInPorts(QMenu* menu, Track* dtrack, int channel)
             MidiInPort* track = *i;
             QMenu* m = menu->addMenu(track->name());
             m->setSeparatorsCollapsible(false);
-            m->addSeparator()->setText(m->tr("Channels"));
+            m->addSeparator()->setText(QT_TR_NOOP("Channels"));
             for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                   QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
                   a->setCheckable(true);
@@ -113,7 +113,7 @@ static void addMidiOutPorts(QMenu* menu, Track* strack, int channel)
             MidiOutPort* op = *i;
             QMenu* m = menu->addMenu(op->name());
             m->setSeparatorsCollapsible(false);
-            m->addSeparator()->setText(m->tr("Channels"));
+            m->addSeparator()->setText(QT_TR_NOOP("Channels"));
             for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                   QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
                   a->setCheckable(true);
@@ -140,7 +140,7 @@ static void addSyntiPorts(QMenu* menu, Track* strack, int channel)
             SynthI* sy = *i;
             QMenu* m = menu->addMenu(sy->name());
             m->setSeparatorsCollapsible(false);
-            m->addSeparator()->setText(m->tr("Channels"));
+            m->addSeparator()->setText(QT_TR_NOOP("Channels"));
             for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                   QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
                   a->setCheckable(true);

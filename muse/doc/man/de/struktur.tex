@@ -8,9 +8,11 @@
       \blank[big]
       \Input{Arranger:} im Arranger werden alle Spuren vertikal in einer
             Liste dargestellt
+
       \Input{Mixer:} der Mixer zeigt alle Spuren in einer horizontalen
-            Darstellung
-      \par\blank[big]
+            Darstellung\par
+
+      \blank[big]
 
       Tempo und Taktart sind interne Spuren, die nicht im Arranger oder
       Mixer gezeigt werden.
@@ -18,4 +20,24 @@
   \section{Parts}
 
       Midi- und Audiospuren können auf der Zeitachse in Parts unterteilt
-      werden.
+      werden. Parts enthalten Midi- Audio- oder Conrollerdaten.
+
+      Folgenden Operationen sind mit Parts möglich:
+
+      \blank[big]
+      \Input{verschieben} Parts können auf der Zeitachse und in andere
+            Spuren des gleichen Typs verschoben werden.
+      \Input{kopieren} klar!
+      \Input{klonen} erzeugt einen Part, der sich die Midi- Audio- oder
+            Controllerdaten mit dem Quellpart teilt. Wird ein Event in
+            einem Clone-Parts verändert, so verändern sich auch alle
+            Clones.
+
+      \Input{Stumm} Parts können stumm geschaltet werden. Stumme Parts
+            werden im Arranger grau dargestellt.
+
+      \par
+      \blank[big]
+
+
+

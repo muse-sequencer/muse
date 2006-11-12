@@ -3,13 +3,13 @@
     <name></name>
     <message>
         <source>Click this button to enable recording</source>
-        <translation type="obsolete">Pulsa este bot� para habilitar la grabaci�</translation>
+        <translation type="unfinished">Pulsa este bot� para habilitar la grabaci�</translation>
     </message>
     <message>
         <source>sets amount of quantization:
 0   - no quantization
 100 - full quantization</source>
-        <translation type="obsolete">selecciona la cantidad de cuantizaci�:
+        <translation type="unfinished">selecciona la cantidad de cuantizaci�:
 0   - sin cuantizar
 100 - cuantizaci� completa</translation>
     </message>
@@ -19,7 +19,7 @@ with the pointer tool you can:
   select parts
   move parts
   copy parts</source>
-        <translation type="obsolete">selecciona la Herramienta de Puntero:
+        <translation type="unfinished">selecciona la Herramienta de Puntero:
 con la herramienta de puntero puedes:
   seleccionar partes
   mover partes
@@ -54,17 +54,17 @@ con la herramienta de puntero puedes:
     <name>@default</name>
     <message>
         <source>Click this button to open a &lt;em&gt;new song&lt;/em&gt;.&lt;br&gt;You can also select the &lt;b&gt;Open command&lt;/b&gt; from the File menu.</source>
-        <translation type="unfinished">Pulsa este bot� para abrir una &lt;em&gt;nueva canci�&lt;/em&gt;Puedes usar tambi� el comando &lt;b&gt;Abrir&lt;/b&gt; del me de archivo</translation>
+        <translation type="obsolete">Pulsa este bot� para abrir una &lt;em&gt;nueva canci�&lt;/em&gt;Puedes usar tambi� el comando &lt;b&gt;Abrir&lt;/b&gt; del me de archivo</translation>
     </message>
     <message>
         <source>Click this button to save the song you are editing.  You will be prompted for a file name.
 You can also select the Save command from the File menu.</source>
-        <translation type="unfinished">Pulsa este bot� para guardar la canci� que est� editando. Se te preguntar�por un nombre de archivo.
+        <translation type="obsolete">Pulsa este bot� para guardar la canci� que est� editando. Se te preguntar�por un nombre de archivo.
 Puedes seleccionar tambi� el comando Guardar del men de Archivo</translation>
     </message>
     <message>
         <source>Create New Song</source>
-        <translation type="unfinished">Crea una nueva Canci�</translation>
+        <translation type="obsolete">Crea una nueva Canci�</translation>
     </message>
     <message>
         <source>Click this button to stop playback</source>
@@ -88,11 +88,11 @@ Puedes seleccionar tambi� el comando Guardar del men de Archivo</translation>
     </message>
     <message>
         <source>don&apos;t quantize notes above this tick limit</source>
-        <translation type="obsolete">no cuantices notas por encima de este l�ite de tick</translation>
+        <translation type="unfinished">no cuantices notas por encima de este l�ite de tick</translation>
     </message>
     <message>
         <source>quantize also note len as default</source>
-        <translation type="obsolete">cuantiza tambi� la longitud de la nota al valor por defecto</translation>
+        <translation type="unfinished">cuantiza tambi� la longitud de la nota al valor por defecto</translation>
     </message>
     <message>
         <source>loop between left mark and right mark</source>
@@ -139,7 +139,7 @@ Puedes seleccionar tambi� el comando Guardar del men de Archivo</translation>
 with the pencil tool you can:
   create new parts
   modify length of parts</source>
-        <translation type="obsolete">selecciona la Herramienta de L�iz:
+        <translation type="unfinished">selecciona la Herramienta de L�iz:
 con la herramienta de l�iz puedes:
   crear nuevas partes
   modificar la longitud de las partes</translation>
@@ -147,19 +147,19 @@ con la herramienta de l�iz puedes:
     <message>
         <source>select Delete Tool:
 with the delete tool you can delete parts</source>
-        <translation type="obsolete">selecciona la Herramienta de Borrado:
+        <translation type="unfinished">selecciona la Herramienta de Borrado:
 con la herramienta de borrado puedes borrar partes</translation>
     </message>
     <message>
         <source>select Cut Tool:
 with the cut tool you can split a part</source>
-        <translation type="obsolete">selecciona la Herramienta de Corte:
+        <translation type="unfinished">selecciona la Herramienta de Corte:
 con la herramienta de core puedes partir una parte</translation>
     </message>
     <message>
         <source>select Glue Tool:
 with the glue tool you can glue two parts</source>
-        <translation type="obsolete">selecciona la Herramienta de Pegado:
+        <translation type="unfinished">selecciona la Herramienta de Pegado:
 con la herramienta de pegado puedes unir dos partes</translation>
     </message>
     <message>
@@ -171,26 +171,26 @@ con la herramienta de pegado puedes unir dos partes</translation>
     <message>
         <source>select Quantize Tool:
 insert display quantize event</source>
-        <translation type="obsolete">selecciona la Herramianta de Cuantizaci�:
+        <translation type="unfinished">selecciona la Herramianta de Cuantizaci�:
 inserta un evento de cuantizaci� de visualizaci�</translation>
     </message>
     <message>
         <source>select Drawing Tool</source>
-        <translation type="obsolete">selecciona la Herramienta de Dibujo</translation>
+        <translation type="unfinished">selecciona la Herramienta de Dibujo</translation>
     </message>
     <message>
         <source>select Muting Tool:
 click on part to mute/unmute</source>
-        <translation type="obsolete">selecciona la Herramienta de Silenciar:
+        <translation type="unfinished">selecciona la Herramienta de Silenciar:
 haz click en una parte para silenciar/des-silenciar</translation>
     </message>
     <message>
         <source>pointer</source>
-        <translation type="obsolete">puntero</translation>
+        <translation type="unfinished">puntero</translation>
     </message>
     <message>
         <source>pencil</source>
-        <translation type="obsolete">l�iz</translation>
+        <translation type="unfinished">l�iz</translation>
     </message>
     <message>
         <source>rubber</source>
@@ -198,7 +198,7 @@ haz click en una parte para silenciar/des-silenciar</translation>
     </message>
     <message>
         <source>cutter</source>
-        <translation type="obsolete">cortador</translation>
+        <translation type="unfinished">cortador</translation>
     </message>
     <message>
         <source>score</source>
@@ -206,23 +206,23 @@ haz click en una parte para silenciar/des-silenciar</translation>
     </message>
     <message>
         <source>glue</source>
-        <translation type="obsolete">pegamento</translation>
+        <translation type="unfinished">pegamento</translation>
     </message>
     <message>
         <source>quantize</source>
-        <translation type="obsolete">cuantizador</translation>
+        <translation type="unfinished">cuantizador</translation>
     </message>
     <message>
         <source>draw</source>
-        <translation type="obsolete">dibujar</translation>
+        <translation type="unfinished">dibujar</translation>
     </message>
     <message>
         <source>mute parts</source>
-        <translation type="obsolete">silenciar partes</translation>
+        <translation type="unfinished">silenciar partes</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation type="obsolete">Apagar</translation>
+        <translation type="unfinished">Apagar</translation>
     </message>
     <message>
         <source>presets (*.pre *.pre.gz *.pre.bz2)</source>
@@ -241,6 +241,128 @@ haz click en una parte para silenciar/des-silenciar</translation>
         <translation type="unfinished">A�dir pista de audio</translation>
     </message>
     <message>
+        <source>Click this button to enable recording</source>
+        <translation type="obsolete">Pulsa este bot� para habilitar la grabaci�</translation>
+    </message>
+    <message>
+        <source>eraser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation type="unfinished">m</translation>
+    </message>
+    <message>
+        <source>mute</source>
+        <translation type="unfinished">silencio</translation>
+    </message>
+    <message>
+        <source>s</source>
+        <translation type="unfinished">s</translation>
+    </message>
+    <message>
+        <source>solo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>monitor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dr</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>use drum map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>off</source>
+        <translation type="unfinished">apagado</translation>
+    </message>
+    <message>
+        <source>aR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>automation read</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>aW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>automation write</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sync</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>send sync events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1/2 channel</source>
+        <translation type="unfinished">Canales 1/2</translation>
+    </message>
+    <message>
+        <source>oR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>output routing</source>
+        <translation type="unfinished">ruteado de entrada</translation>
+    </message>
+    <message>
+        <source>iR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>input routing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Click this button to select a new project
+You can also select the &lt;b&gt;Open command&lt;/b&gt; from the Project menu.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Click this button to save the project you are editing.
+You can also select the Save command from the Project menu.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi</source>
+        <translation type="unfinished">MIDI</translation>
+    </message>
+    <message>
+        <source>Add Midi Output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Midi Input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio</source>
+        <translation type="unfinished">Audio</translation>
+    </message>
+    <message>
         <source>Add Audio Output</source>
         <translation type="unfinished"></translation>
     </message>
@@ -253,48 +375,19 @@ haz click en una parte para silenciar/des-silenciar</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add Aux Send</source>
+        <source>MusE: create project directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Click this button to enable recording</source>
-        <translation type="unfinished">Pulsa este bot� para habilitar la grabaci�</translation>
-    </message>
-    <message>
-        <source>Midi Strips</source>
+        <source>MusE: create template directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add Midi Output Port</source>
+        <source>Cannot find project &lt;%1&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add Midi Input Port</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Audio Strips</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>AboutBox</name>
-    <message>
-        <source>AboutBox</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Keep On Rocking!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Version 0.7.0
-
-(C) Copyright 1999-2004 Werner Schweer and others.
-See http://lmuse.sourceforge.net for new versions and
-more information.
-
-Published under the GNU Public License</source>
+        <source>MusE: load Project</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -302,7 +395,7 @@ Published under the GNU Public License</source>
     <name>Appearance</name>
     <message>
         <source>MusE: load image</source>
-        <translation type="unfinished">MusE: carga imagen</translation>
+        <translation type="obsolete">MusE: carga imagen</translation>
     </message>
     <message>
         <source>handle of transport window</source>
@@ -329,27 +422,27 @@ Published under the GNU Public License</source>
     <name>AppearanceDialogBase</name>
     <message>
         <source>MusE: Appearance settings</source>
-        <translation type="unfinished">MusE: Configuraci� de apariencia</translation>
+        <translation type="obsolete">MusE: Configuraci� de apariencia</translation>
     </message>
     <message>
         <source>Apply</source>
-        <translation type="unfinished">Aplicar</translation>
+        <translation type="obsolete">Aplicar</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished">Aceptar</translation>
+        <translation type="obsolete">Aceptar</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Cancelar</translation>
+        <translation type="obsolete">Cancelar</translation>
     </message>
     <message>
         <source>Arranger</source>
-        <translation type="unfinished">Arreglador</translation>
+        <translation type="obsolete">Arreglador</translation>
     </message>
     <message>
         <source>Parts</source>
-        <translation type="unfinished">Partes</translation>
+        <translation type="obsolete">Partes</translation>
     </message>
     <message>
         <source>show frames</source>
@@ -357,71 +450,71 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>show names</source>
-        <translation type="unfinished">mostrar nombres</translation>
+        <translation type="obsolete">mostrar nombres</translation>
     </message>
     <message>
         <source>show events</source>
-        <translation type="unfinished">mostrar eventos</translation>
+        <translation type="obsolete">mostrar eventos</translation>
     </message>
     <message>
         <source>show Cakewalk Style</source>
-        <translation type="unfinished">mostrar al estilo de Cakewalk</translation>
+        <translation type="obsolete">mostrar al estilo de Cakewalk</translation>
     </message>
     <message>
         <source>Events</source>
-        <translation type="unfinished">Eventos</translation>
+        <translation type="obsolete">Eventos</translation>
     </message>
     <message>
         <source>note on</source>
-        <translation type="unfinished">nota on</translation>
+        <translation type="obsolete">nota on</translation>
     </message>
     <message>
         <source>poly pressure</source>
-        <translation type="unfinished">presi� polif�ica</translation>
+        <translation type="obsolete">presi� polif�ica</translation>
     </message>
     <message>
         <source>controller</source>
-        <translation type="unfinished">controlador</translation>
+        <translation type="obsolete">controlador</translation>
     </message>
     <message>
         <source>aftertouch</source>
-        <translation type="unfinished">aftertouch</translation>
+        <translation type="obsolete">aftertouch</translation>
     </message>
     <message>
         <source>pitch bend</source>
-        <translation type="unfinished">pitch bend</translation>
+        <translation type="obsolete">pitch bend</translation>
     </message>
     <message>
         <source>program change</source>
-        <translation type="unfinished">cambio de programa</translation>
+        <translation type="obsolete">cambio de programa</translation>
     </message>
     <message>
         <source>special</source>
-        <translation type="unfinished">especial</translation>
+        <translation type="obsolete">especial</translation>
     </message>
     <message>
         <source>Background picture</source>
-        <translation type="unfinished">Imagen de fondo</translation>
+        <translation type="obsolete">Imagen de fondo</translation>
     </message>
     <message>
         <source>bg</source>
-        <translation type="unfinished">fondo</translation>
+        <translation type="obsolete">fondo</translation>
     </message>
     <message>
         <source>select...</source>
-        <translation type="unfinished">selecciona...</translation>
+        <translation type="obsolete">selecciona...</translation>
     </message>
     <message>
         <source>show snap grid</source>
-        <translation type="unfinished">muestra la rejilla de captura</translation>
+        <translation type="obsolete">muestra la rejilla de captura</translation>
     </message>
     <message>
         <source>Colors</source>
-        <translation type="unfinished">Colores</translation>
+        <translation type="obsolete">Colores</translation>
     </message>
     <message>
         <source>Items</source>
-        <translation type="unfinished">Objetos</translation>
+        <translation type="obsolete">Objetos</translation>
     </message>
     <message>
         <source>selected</source>
@@ -441,127 +534,99 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>Style/Fonts</source>
-        <translation type="unfinished">Estilo/Tipografia</translation>
+        <translation type="obsolete">Estilo/Tipografia</translation>
     </message>
     <message>
         <source>QT Theme</source>
-        <translation type="unfinished">tema QT</translation>
+        <translation type="obsolete">tema QT</translation>
     </message>
     <message>
         <source>Windows</source>
-        <translation type="unfinished">Ventanas</translation>
+        <translation type="obsolete">Ventanas</translation>
     </message>
     <message>
         <source>MusE</source>
-        <translation type="unfinished">MusE</translation>
+        <translation type="obsolete">MusE</translation>
     </message>
     <message>
         <source>Metal</source>
-        <translation type="unfinished">Metal</translation>
+        <translation type="obsolete">Metal</translation>
     </message>
     <message>
         <source>Norwegian Wood</source>
-        <translation type="unfinished">Madera Noruega</translation>
+        <translation type="obsolete">Madera Noruega</translation>
     </message>
     <message>
         <source>Platinum</source>
-        <translation type="unfinished">Platino</translation>
+        <translation type="obsolete">Platino</translation>
     </message>
     <message>
         <source>CDE</source>
-        <translation type="unfinished">CDE</translation>
+        <translation type="obsolete">CDE</translation>
     </message>
     <message>
         <source>Motif</source>
-        <translation type="unfinished">Motif</translation>
+        <translation type="obsolete">Motif</translation>
     </message>
     <message>
         <source>Motif Plus</source>
-        <translation type="unfinished">Motif Plus</translation>
+        <translation type="obsolete">Motif Plus</translation>
     </message>
     <message>
         <source>Fonts</source>
-        <translation type="unfinished">Tipografia</translation>
+        <translation type="obsolete">Tipografia</translation>
     </message>
     <message>
         <source>Family</source>
-        <translation type="unfinished">Familia</translation>
+        <translation type="obsolete">Familia</translation>
     </message>
     <message>
         <source>Size</source>
-        <translation type="unfinished">Tama�</translation>
+        <translation type="obsolete">Tama�</translation>
     </message>
     <message>
         <source>Font 1</source>
-        <translation type="unfinished">Tipografia 1</translation>
+        <translation type="obsolete">Tipografia 1</translation>
     </message>
     <message>
         <source>Font 2</source>
-        <translation type="unfinished">Tipografia 2</translation>
+        <translation type="obsolete">Tipografia 2</translation>
     </message>
     <message>
         <source>Font 3</source>
-        <translation type="unfinished">Tipografia 3</translation>
+        <translation type="obsolete">Tipografia 3</translation>
     </message>
     <message>
         <source>Font 0</source>
-        <translation type="unfinished">Tipografia 0</translation>
+        <translation type="obsolete">Tipografia 0</translation>
     </message>
     <message>
         <source>Bold</source>
-        <translation type="unfinished">Negrita</translation>
+        <translation type="obsolete">Negrita</translation>
     </message>
     <message>
         <source>Italic</source>
-        <translation type="unfinished">Cursiva</translation>
+        <translation type="obsolete">Cursiva</translation>
     </message>
     <message>
         <source>...</source>
-        <translation type="unfinished">...</translation>
+        <translation type="obsolete">...</translation>
     </message>
     <message>
         <source>Font 4</source>
-        <translation type="unfinished">Tipografia 4</translation>
+        <translation type="obsolete">Tipografia 4</translation>
     </message>
     <message>
         <source>Font 5</source>
-        <translation type="unfinished">Tipografia 5</translation>
-    </message>
-    <message>
-        <source>Palette</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>add to palette</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>B</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Tipografia 5</translation>
     </message>
     <message>
         <source>S</source>
-        <translation type="unfinished">S</translation>
-    </message>
-    <message>
-        <source>H</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>V</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>G</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">S</translation>
     </message>
     <message>
         <source>R</source>
-        <translation type="unfinished">R</translation>
-    </message>
-    <message encoding="UTF-8">
-        <source>Itemdsfkajlk jölk ljfölajföajföajf</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">R</translation>
     </message>
 </context>
 <context>
@@ -584,7 +649,7 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>TrackInfo</source>
-        <translation type="obsolete">Informaci� de pista</translation>
+        <translation type="unfinished">Informaci� de pista</translation>
     </message>
     <message>
         <source>Track</source>
@@ -697,6 +762,46 @@ Published under the GNU Public License</source>
     <message>
         <source>Group D</source>
         <translation type="obsolete">Grupo D</translation>
+    </message>
+    <message>
+        <source>Mix</source>
+        <translation type="unfinished">Mezcla</translation>
+    </message>
+    <message>
+        <source>Config Tracklist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>all mute off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>all solo off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>all autoRead off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>all autoWrite off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Track Info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation type="unfinished">m</translation>
+    </message>
+    <message>
+        <source>Show Mixer Strip</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -905,7 +1010,7 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>Pan</source>
-        <translation type="obsolete">Bal</translation>
+        <translation type="unfinished">Bal</translation>
     </message>
     <message>
         <source>S</source>
@@ -917,15 +1022,15 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>Pre</source>
-        <translation type="obsolete">Pre</translation>
+        <translation type="unfinished">Pre</translation>
     </message>
     <message>
         <source>pre fader - post fader</source>
-        <translation type="obsolete">pre fader - port fader</translation>
+        <translation type="unfinished">pre fader - port fader</translation>
     </message>
     <message>
         <source>dB</source>
-        <translation type="obsolete">dB</translation>
+        <translation type="unfinished">dB</translation>
     </message>
     <message>
         <source>record</source>
@@ -937,7 +1042,7 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>record downmix</source>
-        <translation type="obsolete">downmix de grabaci�</translation>
+        <translation type="unfinished">downmix de grabaci�</translation>
     </message>
     <message>
         <source>pre fader listening</source>
@@ -947,12 +1052,46 @@ Published under the GNU Public License</source>
         <source>output routing</source>
         <translation type="obsolete">ruteado de entrada</translation>
     </message>
+    <message>
+        <source>panorama</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MidiChannel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation type="unfinished">Canal</translation>
+    </message>
+</context>
+<context>
+    <name>Awl::MidiVolEntry</name>
+    <message>
+        <source>off</source>
+        <translation type="unfinished">apagado</translation>
+    </message>
+    <message>
+        <source>db</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Awl::VolEntry</name>
+    <message>
+        <source>off</source>
+        <translation type="unfinished">apagado</translation>
+    </message>
 </context>
 <context>
     <name>BigTime</name>
     <message>
         <source>MusE: Bigtime</source>
-        <translation type="obsolete">MusE: Big Time</translation>
+        <translation type="unfinished">MusE: Big Time</translation>
     </message>
 </context>
 <context>
@@ -966,219 +1105,129 @@ Published under the GNU Public License</source>
     <name>ClipListEditorBase</name>
     <message>
         <source>MusE: ClipList</source>
-        <translation type="unfinished">MusE: Lista de Clips</translation>
+        <translation type="obsolete">MusE: Lista de Clips</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished">Nombre</translation>
+        <translation type="obsolete">Nombre</translation>
     </message>
     <message>
         <source>Refs</source>
-        <translation type="unfinished">Referencias</translation>
+        <translation type="obsolete">Referencias</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="unfinished">Inicio</translation>
+        <translation type="obsolete">Inicio</translation>
     </message>
     <message>
         <source>Len</source>
-        <translation type="unfinished">Longitud</translation>
+        <translation type="obsolete">Longitud</translation>
     </message>
     <message>
         <source>Data</source>
-        <translation type="unfinished">Datos</translation>
+        <translation type="obsolete">Datos</translation>
     </message>
     <message>
         <source>Clip Properties</source>
-        <translation type="unfinished">Propiedades del Clip</translation>
+        <translation type="obsolete">Propiedades del Clip</translation>
     </message>
     <message>
         <source>Pos:</source>
-        <translation type="unfinished">Posici�:</translation>
+        <translation type="obsolete">Posici�:</translation>
     </message>
     <message>
         <source>Len:</source>
-        <translation type="unfinished">Longitud:</translation>
+        <translation type="obsolete">Longitud:</translation>
     </message>
 </context>
 <context>
     <name>CommentBase</name>
     <message>
         <source>Form1</source>
-        <translation type="unfinished">Form1</translation>
+        <translation type="obsolete">Form1</translation>
     </message>
     <message>
         <source>Track Comment</source>
-        <translation type="unfinished">Comentario de la pista</translation>
+        <translation type="obsolete">Comentario de la pista</translation>
     </message>
     <message>
         <source>Track 1</source>
-        <translation type="unfinished">Pista 1</translation>
+        <translation type="obsolete">Pista 1</translation>
     </message>
 </context>
 <context>
     <name>ConfigMidiCtrlBase</name>
     <message>
-        <source>MusE: Config Midi Controller</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi Port:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Available Controller:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Automated Controller:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Cancelar</translation>
+        <translation type="obsolete">&amp;Cancelar</translation>
     </message>
 </context>
 <context>
     <name>ConfigMidiFileBase</name>
     <message>
-        <source>MusE: Config Midi File Export</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Cancelar</translation>
-    </message>
-    <message>
-        <source>0 (single track)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>1 (multiple tracks)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Format:</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">&amp;Cancelar</translation>
     </message>
     <message>
         <source>96</source>
-        <translation type="unfinished">96</translation>
+        <translation type="obsolete">96</translation>
     </message>
     <message>
         <source>192</source>
-        <translation type="unfinished">192</translation>
+        <translation type="obsolete">192</translation>
     </message>
     <message>
         <source>384</source>
-        <translation type="unfinished">384</translation>
-    </message>
-    <message>
-        <source>Division:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Copyright:</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">384</translation>
     </message>
     <message>
         <source>Enable extended smf format</source>
-        <translation type="unfinished">Habilita el formato extendido de smf</translation>
+        <translation type="obsolete">Habilita el formato extendido de smf</translation>
     </message>
 </context>
 <context>
     <name>ConfigTrackListBase</name>
     <message>
-        <source>MusE: Config Track List</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Track Type:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Audio Output</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Audio Group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Audio Aux</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Wave Track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Audio Input</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Soft Synthesizer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi Track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Drum Track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Available Items:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Up</source>
-        <translation type="unfinished">Arriba</translation>
+        <translation type="obsolete">Arriba</translation>
     </message>
     <message>
         <source>Down</source>
-        <translation type="unfinished">Abajo</translation>
-    </message>
-    <message>
-        <source>Configured Items</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Track Name Size:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Abajo</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Cancelar</translation>
+        <translation type="obsolete">&amp;Cancelar</translation>
+    </message>
+</context>
+<context>
+    <name>CtrlDialog</name>
+    <message>
+        <source>controller name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>flag if controller contains data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>other</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CtrlEdit</name>
+    <message>
+        <source>Sel</source>
+        <translation type="unfinished">Sel</translation>
+    </message>
+    <message>
+        <source>select controller</source>
+        <translation type="unfinished">selecciona controlador</translation>
+    </message>
+    <message>
+        <source>remove controller view</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1213,840 +1262,280 @@ Published under the GNU Public License</source>
     </message>
 </context>
 <context>
+    <name>DeicsOnzeGui</name>
+    <message>
+        <source>Save configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Critical Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot open file %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parsing error for file %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load category dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load set dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save set dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No more category supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not add more categories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you really want to delete %1 ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Yes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;No</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No category selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must first select a category.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace or add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is supposed to be affected to the hbank number %2, but there is already one on this slot.
+ Do you want to replace it or to add it in the next free slot ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Replace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Download error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is no more free category slot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save category dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No more subcategory supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not add more subcategories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No subcategory selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must first select a subcategory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load subcategory dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is supposed to be affected to the lbank number %2, but there is already one on this slot.
+ Do you want to replace it or to add it in the next free slot ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is no more free subcategory slot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save subcategory dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No more preset supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not add more presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No preset selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must first select a preset.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load preset dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is supposed to be affected to the prog number %2, but there is already one on this slot.
+ Do you want to replace it or to add it in the next free slot ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is no more free preset slot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save preset dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse set dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse image dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DeicsOnzeGuiBase</name>
     <message>
-        <source>DeicsOnze</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Presets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LBA</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Subcategory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PRO</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Preset</source>
-        <translation type="unfinished">Preselecci�</translation>
-    </message>
-    <message>
-        <source>Bank numerous</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NONE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Program numerous</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>INITVOICE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DeicsOnze v0.3 Copyright (c) 2004-2005 Nil Geisweiller under GPL licence</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>HBA</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Category</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Global</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Op4 Feedback</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Feedback level of the operator 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Master Volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Master volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Modulation Matrix</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Algorithm 1&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by &lt;i&gt;Op 2&lt;/i&gt; modulated by &lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 2&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by &lt;i&gt;Op 2&lt;/i&gt; modulated by both &lt;i&gt;Op 3&lt;/i&gt; and &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 3&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by both &lt;i&gt;Op 4&lt;/i&gt; and &lt;i&gt;Op 2&lt;/i&gt; modulated by &lt;i&gt;Op 3&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 4&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by both &lt;i&gt;Op 2&lt;/i&gt; and &lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 5&lt;/b&gt; : (&lt;i&gt;Op 1&lt;/i&gt; modulated by &lt;i&gt;Op 2&lt;/i&gt;) add to (&lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;) &lt;br&gt;
-&lt;b&gt;Algorithm 6&lt;/b&gt; : addition of the three &lt;i&gt;Op 1, 2, 3&lt;/i&gt; all modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 7&lt;/b&gt; : addition of the three &lt;i&gt;Op 1, 2, 3&lt;/i&gt; with &lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
-&lt;b&gt;Algorithm 8&lt;/b&gt; : addition of the four &lt;i&gt;Op 1, 2, 3, 4&lt;/i&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Preselecci�</translation>
     </message>
     <message>
         <source>LFO</source>
-        <translation type="unfinished">LFO</translation>
-    </message>
-    <message>
-        <source>LFO Sync</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch modulation sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch Modulation Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO Delay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO delay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO speed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude modulation depth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch modulation depth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude modulation sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude Modulation Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AMS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO Waveform</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch Modulation Depth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PMD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LFO Speed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AMD</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">LFO</translation>
     </message>
     <message>
         <source>Speed</source>
-        <translation type="unfinished">Velocidad</translation>
-    </message>
-    <message>
-        <source>Delay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PMS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch Envelope</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PL3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PL2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PL1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PR1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PR2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PR3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Op &amp;1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OUT 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Output Volume</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Velocidad</translation>
     </message>
     <message>
         <source>Volume</source>
-        <translation type="unfinished">Volumen</translation>
-    </message>
-    <message>
-        <source>Frequency 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Coarse 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Coarse Ratio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fine 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fine Ratio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Freq 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fixed Frequency</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>FIX</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toggle Fix Frequency</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sensitivity 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>KVS1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AME1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude Modulation Enable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Keyboard Velocity Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Key Velocity Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EBS1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EG Bias Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Eg Bias Sensitivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Detune, OSCWave, EGShift 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DET1</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Volumen</translation>
     </message>
     <message>
         <source>Detune</source>
-        <translation type="unfinished">Desafinaci�</translation>
-    </message>
-    <message>
-        <source>Attack Rate of the operator 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>96dB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>48dB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>24dB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>12dB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EG Shift</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Wave form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Wave form 1 = &lt;i&gt;sin(&lt;b&gt;t&lt;/b&gt;)&lt;/i&gt;&lt;br&gt;
-Wave form 2 = &lt;i&gt;sin(&lt;b&gt;t&lt;/b&gt;)*abs(sin(&lt;b&gt;t&lt;/b&gt;))&lt;/i&gt;&lt;br&gt;
-Wave form 3 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(&lt;b&gt;t&lt;/b&gt;) else 0&lt;/i&gt;&lt;br&gt;
-Wave form 4 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(&lt;b&gt;t&lt;/b&gt;)*abs(sin(&lt;b&gt;t&lt;/b&gt;)) else 0&lt;/i&gt;&lt;br&gt;
-Wave form 5 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t&lt;/b&gt;) else 0&lt;/i&gt;&lt;br&gt;
-Wave form 6 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t&lt;/b&gt;)*abs(sin(2*&lt;b&gt;t&lt;/b&gt;)) else 0&lt;/i&gt;&lt;br&gt;
-Wave form 7 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then abs(sin(2*&lt;b&gt;t&lt;/b&gt;)) else 0&lt;/i&gt;&lt;br&gt;
-Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t&lt;/b&gt;)*sin(2*&lt;b&gt;t&lt;/b&gt;) else 0&lt;/i&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude Envelope 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RR1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1R1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1L1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D2R1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Release Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message encoding="UTF-8">
-        <source>2° Decay Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message encoding="UTF-8">
-        <source>1° Decay Level</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message encoding="UTF-8">
-        <source>1° Decay Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Attack Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AR1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Scaling 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LS1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RS1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Rate Scaling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Level Scaling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Op &amp;2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sensitivity 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EBS2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>KVS2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AME2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Detune, OSCWave, EGShift 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DET2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OUT 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Scaling 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LS2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RS2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Frequency 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Coarse 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fine 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Freq 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude Envelope 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1R2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1L2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D2R2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RR2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AR2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Op &amp;3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sensitivity 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EBS3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>KVS3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AME3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Detune, OSCWave, EGShift 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DET3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Frequency 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Coarse 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fine 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Freq 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OUT 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Scaling 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LS3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RS3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude Envelope 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1R3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1L3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D2R3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RR3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AR3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Op &amp;4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sensitivity 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>EBS4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>KVS4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AME4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Detune, OSCWave, EGShift 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DET4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OUT 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Scaling 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LS4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RS4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Frequency 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Coarse 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fine 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Freq 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>amplitude Envelope 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AR4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1R4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D1L4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>D2R4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RR4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Fun</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Phony Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>POLY</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MONO</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Desafinaci�</translation>
     </message>
     <message>
         <source>Reverb</source>
-        <translation type="unfinished">Reverberaci�</translation>
-    </message>
-    <message>
-        <source>Foot Control</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch Bend Range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amplitude</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Reverberaci�</translation>
     </message>
     <message>
         <source>Pitch</source>
-        <translation type="unfinished">Tono</translation>
-    </message>
-    <message>
-        <source>Modulation Wheel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Breath Control</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Envelope Bias</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pitch Bias</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Tono</translation>
     </message>
     <message>
         <source>After Touch</source>
-        <translation type="unfinished">After Touch</translation>
-    </message>
-    <message>
-        <source>Potamento</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>FINGER</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>FULL</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Portamento Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PT</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Portamento Time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Foot Switch</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">After Touch</translation>
     </message>
     <message>
         <source>Sustain</source>
-        <translation type="unfinished">Sostenido</translation>
-    </message>
-    <message>
-        <source>Portamento</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Sostenido</translation>
     </message>
     <message>
         <source>Transpose</source>
-        <translation type="unfinished">Transponer</translation>
-    </message>
-    <message>
-        <source>&amp;Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Configuration File</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Transponer</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished">Guardar</translation>
+        <translation type="obsolete">Guardar</translation>
     </message>
     <message>
         <source>Load</source>
-        <translation type="unfinished">Cargar</translation>
-    </message>
-    <message>
-        <source>Quality</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>High</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Middle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Low</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NbrV</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Number of Voices</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Colors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Red</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Green</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Cargar</translation>
     </message>
     <message>
         <source>Text</source>
-        <translation type="unfinished">Texto</translation>
-    </message>
-    <message>
-        <source>Background</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit Text</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit Background</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Save Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Save only the used presets into the project</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Save the entire set into the project</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Save the configuration into the project</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Texto</translation>
     </message>
 </context>
 <context>
@@ -2077,31 +1566,31 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
     </message>
     <message>
         <source>Delete Events</source>
-        <translation type="obsolete">Borrar Eventos</translation>
+        <translation type="unfinished">Borrar Eventos</translation>
     </message>
     <message>
         <source>Select All</source>
-        <translation type="obsolete">Seleccionar todo</translation>
+        <translation type="unfinished">Seleccionar todo</translation>
     </message>
     <message>
         <source>Select None</source>
-        <translation type="obsolete">Deseleccionar</translation>
+        <translation type="unfinished">Deseleccionar</translation>
     </message>
     <message>
         <source>Invert</source>
-        <translation type="obsolete">Invertir</translation>
+        <translation type="unfinished">Invertir</translation>
     </message>
     <message>
         <source>Inside Loop</source>
-        <translation type="obsolete">Bucle interior</translation>
+        <translation type="unfinished">Bucle interior</translation>
     </message>
     <message>
         <source>Outside Loop</source>
-        <translation type="obsolete">Bucle exterior</translation>
+        <translation type="unfinished">Bucle exterior</translation>
     </message>
     <message>
         <source>&amp;Select</source>
-        <translation type="obsolete">&amp;Seleccionar</translation>
+        <translation type="unfinished">&amp;Seleccionar</translation>
     </message>
     <message>
         <source>Step Record</source>
@@ -2191,6 +1680,26 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
         <source>MusE: Store Drum Map</source>
         <translation type="obsolete">MusE: Guardar mapa de percusi�</translation>
     </message>
+    <message>
+        <source>&amp;Functions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set fixed length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Modify Velocity...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drum Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>EditCAfterDialog</name>
@@ -2253,98 +1762,62 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
     <name>EditCtrl7DialogBase</name>
     <message>
         <source>MusE: Enter Controller</source>
-        <translation type="unfinished">MusE: Introduce controlador</translation>
+        <translation type="obsolete">MusE: Introduce controlador</translation>
     </message>
     <message>
         <source>Controller:</source>
-        <translation type="unfinished">Controlador:</translation>
+        <translation type="obsolete">Controlador:</translation>
     </message>
     <message>
         <source>Time Position:</source>
-        <translation type="unfinished">Posici� de tiempo:</translation>
+        <translation type="obsolete">Posici� de tiempo:</translation>
     </message>
     <message>
         <source>Value:</source>
-        <translation type="unfinished">Valor:</translation>
+        <translation type="obsolete">Valor:</translation>
     </message>
     <message>
         <source>controller value</source>
-        <translation type="unfinished">valor del controlador</translation>
+        <translation type="obsolete">valor del controlador</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished">Aceptar</translation>
+        <translation type="obsolete">Aceptar</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Cancelar</translation>
+        <translation type="obsolete">Cancelar</translation>
     </message>
 </context>
 <context>
     <name>EditCtrlBase</name>
     <message>
-        <source>MusE: Edit Controller Event</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Time Position</source>
         <translation type="obsolete">Posici� de tiempo</translation>
     </message>
     <message>
-        <source>Available Controller:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Create New Controller</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Value</source>
-        <translation type="unfinished">Valor</translation>
+        <translation type="obsolete">Valor</translation>
     </message>
     <message>
         <source>Controller</source>
-        <translation type="unfinished">Controlador</translation>
+        <translation type="obsolete">Controlador</translation>
     </message>
     <message>
         <source>H-Bank</source>
-        <translation type="unfinished">Banco-H</translation>
+        <translation type="obsolete">Banco-H</translation>
     </message>
     <message>
         <source>L-Bank</source>
-        <translation type="unfinished">Banco-L</translation>
-    </message>
-    <message>
-        <source>Program</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Banco-L</translation>
     </message>
     <message>
         <source>off</source>
-        <translation type="unfinished">apagado</translation>
-    </message>
-    <message>
-        <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">apagado</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Cancelar</translation>
-    </message>
-    <message>
-        <source>Midi Port:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi Channel:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Time Position:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Patch Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">&amp;Cancelar</translation>
     </message>
 </context>
 <context>
@@ -2361,259 +1834,108 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
 <context>
     <name>EditInstrumentBase</name>
     <message>
-        <source>MusE: Instrument Editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Patches</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Patch Name:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>High Bank:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Low Bank:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Program:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>d.c.</source>
-        <comment>dont care</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>d.c.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Patch/Group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;Borrar</translation>
-    </message>
-    <message>
-        <source>Alt+D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;New Patch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Alt+N</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>New Group</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">&amp;Borrar</translation>
     </message>
     <message>
         <source>Drum</source>
-        <translation type="unfinished">Percusi�</translation>
+        <translation type="obsolete">Percusi�</translation>
     </message>
     <message>
         <source>GM</source>
-        <translation type="unfinished">GM</translation>
+        <translation type="obsolete">GM</translation>
     </message>
     <message>
         <source>GS</source>
-        <translation type="unfinished">GS</translation>
+        <translation type="obsolete">GS</translation>
     </message>
     <message>
         <source>XG</source>
-        <translation type="unfinished">XG</translation>
+        <translation type="obsolete">XG</translation>
     </message>
     <message>
         <source>Controller</source>
-        <translation type="unfinished">Controlador</translation>
-    </message>
-    <message>
-        <source>Predefined Controller:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>This is a list of commonly used midi controllers.
-Note that in MusE pitch and program changes are
-handled like normal controllers.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Properties</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Controlador</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished">Nombre</translation>
+        <translation type="obsolete">Nombre</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished">Tipo</translation>
-    </message>
-    <message>
-        <source>Control7</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Control14</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Tipo</translation>
     </message>
     <message>
         <source>RPN</source>
-        <translation type="unfinished">RPN</translation>
+        <translation type="obsolete">RPN</translation>
     </message>
     <message>
         <source>NRPN</source>
-        <translation type="unfinished">NRPN</translation>
+        <translation type="obsolete">NRPN</translation>
     </message>
     <message>
         <source>Pitch</source>
-        <translation type="unfinished">Tono</translation>
-    </message>
-    <message>
-        <source>Program</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>H-Ctrl</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi Controller Number High Byte</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>L-Ctrl</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi Controller Number Low Byte</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Tono</translation>
     </message>
     <message>
         <source>Range</source>
-        <translation type="unfinished">Rango</translation>
-    </message>
-    <message>
-        <source>Min</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Max</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Name                  </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Type       </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Min Val</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Max Val</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Rango</translation>
     </message>
     <message>
         <source>list of defined controllers</source>
-        <translation type="unfinished">Lista de controladores definidos</translation>
+        <translation type="obsolete">Lista de controladores definidos</translation>
     </message>
     <message>
         <source>This is the MusE list of defined controllers.</source>
-        <translation type="unfinished">Esta es la lista de controladores definidos en MusE.</translation>
+        <translation type="obsolete">Esta es la lista de controladores definidos en MusE.</translation>
     </message>
     <message>
         <source>SysEx</source>
-        <translation type="unfinished">Sistema Exclusivo</translation>
-    </message>
-    <message>
-        <source>Initialization</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Panic</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Hex Entry:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Sistema Exclusivo</translation>
     </message>
     <message>
         <source>Tools</source>
-        <translation type="unfinished">Herramientas</translation>
+        <translation type="obsolete">Herramientas</translation>
     </message>
     <message>
         <source>New</source>
-        <translation type="unfinished">Nueva</translation>
+        <translation type="obsolete">Nueva</translation>
     </message>
     <message>
         <source>&amp;New</source>
-        <translation type="unfinished">&amp;Nuevo</translation>
-    </message>
-    <message>
-        <source>Ctrl+N</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">&amp;Nuevo</translation>
     </message>
     <message>
         <source>Open</source>
-        <translation type="unfinished">Abrir</translation>
+        <translation type="obsolete">Abrir</translation>
     </message>
     <message>
         <source>&amp;Open...</source>
-        <translation type="unfinished">&amp;Abrir...</translation>
-    </message>
-    <message>
-        <source>Ctrl+O</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">&amp;Abrir...</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished">Guardar</translation>
+        <translation type="obsolete">Guardar</translation>
     </message>
     <message>
         <source>&amp;Save</source>
-        <translation type="unfinished">&amp;Guardar</translation>
-    </message>
-    <message>
-        <source>Ctrl+S</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">&amp;Guardar</translation>
     </message>
     <message>
         <source>Save As</source>
-        <translation type="unfinished">Guardar como</translation>
+        <translation type="obsolete">Guardar como</translation>
     </message>
     <message>
         <source>Save &amp;As...</source>
-        <translation type="unfinished">Guardar &amp;Como...</translation>
+        <translation type="obsolete">Guardar &amp;Como...</translation>
     </message>
     <message>
         <source>Exit</source>
-        <translation type="unfinished">Salir</translation>
+        <translation type="obsolete">Salir</translation>
     </message>
     <message>
         <source>E&amp;xit</source>
-        <translation type="unfinished">&amp;Salir</translation>
+        <translation type="obsolete">&amp;Salir</translation>
     </message>
 </context>
 <context>
@@ -2639,66 +1961,66 @@ handled like normal controllers.</source>
     <name>EditMetaDialogBase</name>
     <message>
         <source>MusE: Enter Meta Event</source>
-        <translation type="unfinished">MusE: Introduzca evento Meta</translation>
+        <translation type="obsolete">MusE: Introduzca evento Meta</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished">Aceptar</translation>
+        <translation type="obsolete">Aceptar</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Cancelar</translation>
+        <translation type="obsolete">Cancelar</translation>
     </message>
     <message>
         <source>TextLabel1</source>
-        <translation type="unfinished">EtiquetaTexto1</translation>
+        <translation type="obsolete">EtiquetaTexto1</translation>
     </message>
     <message>
         <source>Time Position:</source>
-        <translation type="unfinished">Posici� de tiempo</translation>
+        <translation type="obsolete">Posici� de tiempo</translation>
     </message>
     <message>
         <source>Meta Type:</source>
-        <translation type="unfinished">Tipo de Meta:</translation>
+        <translation type="obsolete">Tipo de Meta:</translation>
     </message>
     <message>
         <source>Enter Hex</source>
-        <translation type="unfinished">Escribe Hexadecimal</translation>
+        <translation type="obsolete">Escribe Hexadecimal</translation>
     </message>
 </context>
 <context>
     <name>EditNoteDialogBase</name>
     <message>
         <source>MusE: Enter Note</source>
-        <translation type="unfinished">MusE: Escribe Nota</translation>
+        <translation type="obsolete">MusE: Escribe Nota</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished">Aceptar</translation>
+        <translation type="obsolete">Aceptar</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Cancelar</translation>
+        <translation type="obsolete">Cancelar</translation>
     </message>
     <message>
         <source>Length:</source>
-        <translation type="unfinished">Longitud:</translation>
+        <translation type="obsolete">Longitud:</translation>
     </message>
     <message>
         <source>Time Position:</source>
-        <translation type="unfinished">Posici� de tiempo</translation>
+        <translation type="obsolete">Posici� de tiempo</translation>
     </message>
     <message>
         <source>Pitch:</source>
-        <translation type="unfinished">Tono:</translation>
+        <translation type="obsolete">Tono:</translation>
     </message>
     <message>
         <source>Velocity On:</source>
-        <translation type="unfinished">Velocidad On:</translation>
+        <translation type="obsolete">Velocidad On:</translation>
     </message>
     <message>
         <source>Velocity Off:</source>
-        <translation type="unfinished">Velocidad Off:</translation>
+        <translation type="obsolete">Velocidad Off:</translation>
     </message>
 </context>
 <context>
@@ -2739,65 +2061,57 @@ handled like normal controllers.</source>
     <name>EditSysexDialogBase</name>
     <message>
         <source>MusE: Enter SysEx</source>
-        <translation type="unfinished">MusE: Introduce el sistema exclusivo</translation>
+        <translation type="obsolete">MusE: Introduce el sistema exclusivo</translation>
     </message>
     <message>
         <source>TimePosition:</source>
-        <translation type="unfinished">Posici� de tiempo:</translation>
+        <translation type="obsolete">Posici� de tiempo:</translation>
     </message>
     <message>
         <source>Comment:</source>
-        <translation type="unfinished">Comentario:</translation>
+        <translation type="obsolete">Comentario:</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished">Aceptar</translation>
+        <translation type="obsolete">Aceptar</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Cancelar</translation>
-    </message>
-    <message>
-        <source>Known SysEx:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Cancelar</translation>
     </message>
 </context>
 <context>
     <name>EditToolBar</name>
     <message>
         <source>Edit Tools</source>
-        <translation type="obsolete">Editar herramientas</translation>
+        <translation type="unfinished">Editar herramientas</translation>
     </message>
 </context>
 <context>
     <name>EffectRack</name>
     <message>
         <source>effect rack</source>
-        <translation type="obsolete">rack de efectos</translation>
+        <translation type="unfinished">rack de efectos</translation>
     </message>
     <message>
         <source>move up</source>
-        <translation type="obsolete">subir</translation>
+        <translation type="unfinished">subir</translation>
     </message>
     <message>
         <source>move down</source>
-        <translation type="obsolete">bajar</translation>
+        <translation type="unfinished">bajar</translation>
     </message>
     <message>
         <source>remove</source>
-        <translation type="obsolete">quitar</translation>
+        <translation type="unfinished">quitar</translation>
     </message>
     <message>
         <source>bypass</source>
-        <translation type="obsolete">saltar</translation>
+        <translation type="unfinished">saltar</translation>
     </message>
     <message>
         <source>show gui</source>
-        <translation type="obsolete">mostrar gui</translation>
+        <translation type="unfinished">mostrar gui</translation>
     </message>
     <message>
         <source>new</source>
@@ -2807,151 +2121,162 @@ handled like normal controllers.</source>
         <source>change</source>
         <translation type="obsolete">cambiar</translation>
     </message>
+    <message>
+        <source>show native gui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New Plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New Aux Send</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace effect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you really want to replace the effect %1?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Yes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;No</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ExportMidiDialog</name>
+    <message>
+        <source>Save </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> as smf midi file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: export midi smf file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FLUIDGui</name>
+    <message>
+        <source>FLUID: open Soundfile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fluid: select Sound Font</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>FLUIDGuiBase</name>
     <message>
         <source>Form1</source>
-        <translation type="unfinished">Formulario1</translation>
+        <translation type="obsolete">Formulario1</translation>
     </message>
     <message>
         <source>Soundfont</source>
-        <translation type="unfinished">Fuente de sonido</translation>
+        <translation type="obsolete">Fuente de sonido</translation>
     </message>
     <message>
         <source>Load</source>
-        <translation type="unfinished">Cargar</translation>
+        <translation type="obsolete">Cargar</translation>
     </message>
 </context>
 <context>
     <name>FLUIDSynthGuiBase</name>
     <message>
-        <source>FLUID Synth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Load</source>
-        <translation type="unfinished">Cargar</translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Dump Info</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ID</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fontname</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Chnl</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Cargar</translation>
     </message>
     <message>
         <source>Soundfont</source>
-        <translation type="unfinished">Fuente de sonido</translation>
-    </message>
-    <message>
-        <source>Drum Chnl</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Fuente de sonido</translation>
     </message>
     <message>
         <source>Level</source>
-        <translation type="unfinished">Nivel</translation>
+        <translation type="obsolete">Nivel</translation>
     </message>
     <message>
         <source>Width</source>
-        <translation type="unfinished">Anchura</translation>
+        <translation type="obsolete">Anchura</translation>
     </message>
     <message>
         <source>Damping</source>
-        <translation type="unfinished">Amortiguamiento</translation>
+        <translation type="obsolete">Amortiguamiento</translation>
     </message>
     <message>
         <source>Room Size</source>
-        <translation type="unfinished">Tama� estancia</translation>
+        <translation type="obsolete">Tama� estancia</translation>
     </message>
     <message>
         <source>Reverb</source>
-        <translation type="unfinished">Reverberaci�</translation>
-    </message>
-    <message>
-        <source>CHANNEL SETUP</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Reverberaci�</translation>
     </message>
     <message>
         <source>Sine</source>
-        <translation type="unfinished">Seno</translation>
+        <translation type="obsolete">Seno</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation type="unfinished">Tri�gulo</translation>
+        <translation type="obsolete">Tri�gulo</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished">Tipo</translation>
+        <translation type="obsolete">Tipo</translation>
     </message>
     <message>
         <source>Number</source>
-        <translation type="unfinished">Nmero</translation>
+        <translation type="obsolete">Nmero</translation>
     </message>
     <message>
         <source>Speed</source>
-        <translation type="unfinished">Velocidad</translation>
+        <translation type="obsolete">Velocidad</translation>
     </message>
     <message>
         <source>Depth</source>
-        <translation type="unfinished">Profundidad</translation>
+        <translation type="obsolete">Profundidad</translation>
     </message>
     <message>
         <source>Chorus</source>
-        <translation type="unfinished">Coro ;-)</translation>
+        <translation type="obsolete">Coro ;-)</translation>
     </message>
     <message>
         <source>Gain</source>
-        <translation type="unfinished">Ganancia</translation>
-    </message>
-    <message>
-        <source>LOADED SOUNDFONTS</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Ganancia</translation>
     </message>
 </context>
 <context>
     <name>FileDialogButtons</name>
     <message>
         <source>Form1</source>
-        <translation type="unfinished">Formulario1</translation>
+        <translation type="obsolete">Formulario1</translation>
     </message>
     <message>
         <source>Global</source>
-        <translation type="unfinished">Global</translation>
+        <translation type="obsolete">Global</translation>
     </message>
     <message>
         <source>User</source>
-        <translation type="unfinished">Usuario</translation>
+        <translation type="obsolete">Usuario</translation>
     </message>
     <message>
         <source>Project</source>
-        <translation type="unfinished">Proyecto</translation>
+        <translation type="obsolete">Proyecto</translation>
     </message>
+</context>
+<context>
+    <name>FluidSynthGui</name>
     <message>
-        <source>Load:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Songdata +
-Cofiguration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>only
-Songdata</source>
+        <source>Choose soundfont</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2959,269 +2284,203 @@ Songdata</source>
     <name>FontSel</name>
     <message>
         <source>Size:</source>
-        <translation type="obsolete">Tama�:</translation>
+        <translation type="unfinished">Tama�:</translation>
+    </message>
+</context>
+<context>
+    <name>GateTime</name>
+    <message>
+        <source>MusE: Modify Gate Time</source>
+        <translation type="unfinished">MusE: Modifica el timpo de puerta</translation>
     </message>
 </context>
 <context>
     <name>GateTimeBase</name>
     <message>
         <source>MusE: Modify Gate Time</source>
-        <translation type="unfinished">MusE: Modifica el timpo de puerta</translation>
+        <translation type="obsolete">MusE: Modifica el timpo de puerta</translation>
     </message>
     <message>
         <source>Range</source>
-        <translation type="unfinished">Rango</translation>
+        <translation type="obsolete">Rango</translation>
     </message>
     <message>
         <source>All Events</source>
-        <translation type="unfinished">Todos los eventos</translation>
+        <translation type="obsolete">Todos los eventos</translation>
     </message>
     <message>
         <source>Selected Events</source>
-        <translation type="unfinished">Eventos seleccionados</translation>
+        <translation type="obsolete">Eventos seleccionados</translation>
     </message>
     <message>
         <source>Looped Events</source>
-        <translation type="unfinished">Eventos en bucle</translation>
+        <translation type="obsolete">Eventos en bucle</translation>
     </message>
     <message>
         <source>Selected &amp; Looped</source>
-        <translation type="unfinished">Seleccionados y en bucle</translation>
+        <translation type="obsolete">Seleccionados y en bucle</translation>
     </message>
     <message>
         <source>Values</source>
-        <translation type="unfinished">Valores</translation>
+        <translation type="obsolete">Valores</translation>
     </message>
     <message>
         <source>Rate:</source>
-        <translation type="unfinished">Velocidad:</translation>
+        <translation type="obsolete">Velocidad:</translation>
     </message>
     <message>
         <source>Offset:</source>
-        <translation type="unfinished">Desplazamiento:</translation>
+        <translation type="obsolete">Desplazamiento:</translation>
     </message>
     <message>
         <source>%</source>
-        <translation type="unfinished">%</translation>
+        <translation type="obsolete">%</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished">Aceptar</translation>
+        <translation type="obsolete">Aceptar</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Cancelar</translation>
+        <translation type="obsolete">Cancelar</translation>
     </message>
 </context>
 <context>
     <name>GlobalSettingsDialogBase</name>
     <message>
         <source>MusE: Global Settings</source>
-        <translation type="unfinished">MusE: Valores globales</translation>
+        <translation type="obsolete">MusE: Valores globales</translation>
     </message>
     <message>
         <source>Audio</source>
-        <translation type="unfinished">Audio</translation>
+        <translation type="obsolete">Audio</translation>
     </message>
     <message>
         <source>Mixer</source>
-        <translation type="unfinished">Mezclador</translation>
+        <translation type="obsolete">Mezclador</translation>
     </message>
     <message>
         <source>dB</source>
-        <translation type="unfinished">dB</translation>
+        <translation type="obsolete">dB</translation>
     </message>
     <message>
         <source>min. Meter Value</source>
-        <translation type="unfinished">valor m�imo del vumeter</translation>
+        <translation type="obsolete">valor m�imo del vumeter</translation>
     </message>
     <message>
         <source>min.Slider Val</source>
-        <translation type="unfinished">valor m�imo del desplazador</translation>
+        <translation type="obsolete">valor m�imo del desplazador</translation>
     </message>
     <message>
         <source>Midi</source>
-        <translation type="unfinished">MIDI</translation>
+        <translation type="obsolete">MIDI</translation>
     </message>
     <message>
         <source>Ticks</source>
-        <translation type="unfinished">Ticks</translation>
+        <translation type="obsolete">Ticks</translation>
     </message>
     <message>
         <source>1024</source>
-        <translation type="unfinished">1024</translation>
+        <translation type="obsolete">1024</translation>
     </message>
     <message>
         <source>2048</source>
-        <translation type="unfinished">2048</translation>
+        <translation type="obsolete">2048</translation>
     </message>
     <message>
         <source>4096</source>
-        <translation type="unfinished">4096</translation>
+        <translation type="obsolete">4096</translation>
     </message>
     <message>
         <source>8172</source>
-        <translation type="unfinished">8172</translation>
+        <translation type="obsolete">8172</translation>
     </message>
     <message>
         <source>Displayed Resolution
 (Ticks/Quarternote)</source>
-        <translation type="unfinished">Resoluci� mostrada
+        <translation type="obsolete">Resoluci� mostrada
 (ticks/negra)</translation>
     </message>
     <message>
         <source>48</source>
-        <translation type="unfinished">48</translation>
+        <translation type="obsolete">48</translation>
     </message>
     <message>
         <source>96</source>
-        <translation type="unfinished">96</translation>
+        <translation type="obsolete">96</translation>
     </message>
     <message>
         <source>192</source>
-        <translation type="unfinished">192</translation>
+        <translation type="obsolete">192</translation>
     </message>
     <message>
         <source>384</source>
-        <translation type="unfinished">384</translation>
+        <translation type="obsolete">384</translation>
     </message>
     <message>
         <source>768</source>
-        <translation type="unfinished">768</translation>
+        <translation type="obsolete">768</translation>
     </message>
     <message>
         <source>1536</source>
-        <translation type="unfinished">1536</translation>
+        <translation type="obsolete">1536</translation>
     </message>
     <message>
         <source>3072</source>
-        <translation type="unfinished">3072</translation>
+        <translation type="obsolete">3072</translation>
     </message>
     <message>
         <source>6144</source>
-        <translation type="unfinished">6144</translation>
+        <translation type="obsolete">6144</translation>
     </message>
     <message>
         <source>12288</source>
-        <translation type="unfinished">12288</translation>
+        <translation type="obsolete">12288</translation>
     </message>
     <message>
         <source>RTC Resolution
 (Ticks/Sec)</source>
-        <translation type="unfinished">Resoluci� del reloj
+        <translation type="obsolete">Resoluci� del reloj
 (Ticks/segundo)</translation>
     </message>
     <message>
         <source>GUI</source>
-        <translation type="unfinished">GUI</translation>
+        <translation type="obsolete">GUI</translation>
     </message>
     <message>
         <source>/sec</source>
-        <translation type="unfinished">/seg</translation>
+        <translation type="obsolete">/seg</translation>
     </message>
     <message>
         <source>GUI Refresh Rate</source>
-        <translation type="unfinished">Velocidad de refresco del GUI</translation>
+        <translation type="obsolete">Velocidad de refresco del GUI</translation>
     </message>
     <message>
         <source>&amp;Apply</source>
-        <translation type="unfinished">&amp;Aplicar</translation>
+        <translation type="obsolete">&amp;Aplicar</translation>
     </message>
     <message>
         <source>&amp;Ok</source>
-        <translation type="unfinished">Ac&amp;eptar</translation>
+        <translation type="obsolete">Ac&amp;eptar</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Cancelar</translation>
+        <translation type="obsolete">&amp;Cancelar</translation>
     </message>
     <message>
         <source>Help Browser:</source>
-        <translation type="unfinished">Navegador de ayuda:</translation>
-    </message>
-    <message>
-        <source>Application</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Start Muse</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>start with last song</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>start with song</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>start song:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Views</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>y-pos</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>show</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>x-pos</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>height</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>width</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Big Time</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Navegador de ayuda:</translation>
     </message>
     <message>
         <source>Arranger</source>
-        <translation type="unfinished">Arreglador</translation>
+        <translation type="obsolete">Arreglador</translation>
     </message>
+</context>
+<context>
+    <name>GreendotButton</name>
     <message>
-        <source>Transport</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>set current values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>start with template: default.med</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>show splash screen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>use JACK freewheel mode if possible</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mixer 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mixer 2</source>
-        <translation type="unfinished"></translation>
+        <source>record</source>
+        <translation type="unfinished">grabar</translation>
     </message>
 </context>
 <context>
@@ -3483,28 +2742,40 @@ Songdata</source>
         <source>Comment</source>
         <translation type="obsolete">Comentario</translation>
     </message>
+    <message>
+        <source>MusE: List Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parts</source>
+        <translation type="unfinished">Partes</translation>
+    </message>
+    <message>
+        <source>Controller</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MITTransposeBase</name>
     <message>
         <source>MusE: Midi Input Plugin: Transpose</source>
-        <translation type="unfinished">MusE: Plugin de entrada MIDI : Transposici�</translation>
+        <translation type="obsolete">MusE: Plugin de entrada MIDI : Transposici�</translation>
     </message>
     <message>
         <source>On</source>
-        <translation type="unfinished">Encendido</translation>
+        <translation type="obsolete">Encendido</translation>
     </message>
     <message>
         <source>TriggerKey</source>
-        <translation type="unfinished">Tecla de salto</translation>
+        <translation type="obsolete">Tecla de salto</translation>
     </message>
     <message>
         <source>Transpose:</source>
-        <translation type="unfinished">Trasponer:</translation>
+        <translation type="obsolete">Trasponer:</translation>
     </message>
     <message>
         <source>+0</source>
-        <translation type="unfinished">+0</translation>
+        <translation type="obsolete">+0</translation>
     </message>
 </context>
 <context>
@@ -3554,35 +2825,35 @@ Songdata</source>
     <name>MRConfigBase</name>
     <message>
         <source>MusE: Midi Input Plugin: Remote Control</source>
-        <translation type="unfinished">MusE: Pluginde entrada MIDI : Control remoto</translation>
+        <translation type="obsolete">MusE: Pluginde entrada MIDI : Control remoto</translation>
     </message>
     <message>
         <source>Activate</source>
-        <translation type="unfinished">Activar</translation>
+        <translation type="obsolete">Activar</translation>
     </message>
     <message>
         <source>On</source>
-        <translation type="unfinished">Encendido</translation>
+        <translation type="obsolete">Encendido</translation>
     </message>
     <message>
         <source>Actions</source>
-        <translation type="unfinished">Acciones</translation>
+        <translation type="obsolete">Acciones</translation>
     </message>
     <message>
         <source>Stop</source>
-        <translation type="unfinished">Parar</translation>
+        <translation type="obsolete">Parar</translation>
     </message>
     <message>
         <source>Record</source>
-        <translation type="unfinished">Grabar</translation>
+        <translation type="obsolete">Grabar</translation>
     </message>
     <message>
         <source>Goto Left Mark</source>
-        <translation type="unfinished">Ir ala marca izquierda</translation>
+        <translation type="obsolete">Ir ala marca izquierda</translation>
     </message>
     <message>
         <source>Play</source>
-        <translation type="unfinished">Reproducir</translation>
+        <translation type="obsolete">Reproducir</translation>
     </message>
 </context>
 <context>
@@ -3596,7 +2867,7 @@ Songdata</source>
     <name>MarkerView</name>
     <message>
         <source>Bar:Beat:Tick</source>
-        <translation type="obsolete">Barra:Golpe:Tick</translation>
+        <translation type="unfinished">Barra:Golpe:Tick</translation>
     </message>
     <message>
         <source>Hr:Mn:Sc:Fr:Sf</source>
@@ -3604,35 +2875,35 @@ Songdata</source>
     </message>
     <message>
         <source>Lock</source>
-        <translation type="obsolete">Bloquear</translation>
+        <translation type="unfinished">Bloquear</translation>
     </message>
     <message>
         <source>Text</source>
-        <translation type="obsolete">Texto</translation>
+        <translation type="unfinished">Texto</translation>
     </message>
     <message>
         <source>Marker Properties</source>
-        <translation type="obsolete">Propiedades del marcador</translation>
+        <translation type="unfinished">Propiedades del marcador</translation>
     </message>
     <message>
         <source>MusE: Marker</source>
-        <translation type="obsolete">MusE: Marcador</translation>
+        <translation type="unfinished">MusE: Marcador</translation>
     </message>
     <message>
         <source>add marker</source>
-        <translation type="obsolete">a�dir marcador</translation>
+        <translation type="unfinished">a�dir marcador</translation>
     </message>
     <message>
         <source>Add Marker</source>
-        <translation type="obsolete">A�dir marcador</translation>
+        <translation type="unfinished">A�dir marcador</translation>
     </message>
     <message>
         <source>delete marker</source>
-        <translation type="obsolete">borrar marcador</translation>
+        <translation type="unfinished">borrar marcador</translation>
     </message>
     <message>
         <source>Delete Marker</source>
-        <translation type="obsolete">Borrar Marcador</translation>
+        <translation type="unfinished">Borrar Marcador</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -3640,38 +2911,50 @@ Songdata</source>
     </message>
     <message>
         <source>&amp;Edit</source>
-        <translation type="obsolete">&amp;Editar</translation>
+        <translation type="unfinished">&amp;Editar</translation>
+    </message>
+    <message>
+        <source>marker-tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>edit tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Min:Sc:Fr:Sf</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>MasterEdit</name>
     <message>
         <source>Cursor</source>
-        <translation type="obsolete">Cursor</translation>
+        <translation type="unfinished">Cursor</translation>
     </message>
     <message>
         <source>Snap</source>
-        <translation type="obsolete">Snap</translation>
+        <translation type="unfinished">Snap</translation>
     </message>
     <message>
         <source>time at cursor position</source>
-        <translation type="obsolete">tiempo en la posici� del cursor</translation>
+        <translation type="unfinished">tiempo en la posici� del cursor</translation>
     </message>
     <message>
         <source>tempo at cursor position</source>
-        <translation type="obsolete">tempo en la posici� del cursor</translation>
+        <translation type="unfinished">tempo en la posici� del cursor</translation>
     </message>
     <message>
         <source>CurPos </source>
-        <translation type="obsolete">Posici� del cursor </translation>
+        <translation type="unfinished">Posici� del cursor </translation>
     </message>
     <message>
         <source>tempo at current position</source>
-        <translation type="obsolete">tempo en la posici� actual</translation>
+        <translation type="unfinished">tempo en la posici� actual</translation>
     </message>
     <message>
         <source>time signature at current position</source>
-        <translation type="obsolete">comp� en la posici� actual</translation>
+        <translation type="unfinished">comp� en la posici� actual</translation>
     </message>
     <message>
         <source>Master</source>
@@ -3679,11 +2962,11 @@ Songdata</source>
     </message>
     <message>
         <source>MusE: Mastertrack</source>
-        <translation type="obsolete">Muse: Pista Maestra</translation>
+        <translation type="unfinished">Muse: Pista Maestra</translation>
     </message>
     <message>
         <source>edit tools</source>
-        <translation type="obsolete">editar herramientas</translation>
+        <translation type="unfinished">editar herramientas</translation>
     </message>
     <message>
         <source>EnableMaster</source>
@@ -3695,11 +2978,23 @@ Songdata</source>
     </message>
     <message>
         <source>Info</source>
-        <translation type="obsolete">Info</translation>
+        <translation type="unfinished">Info</translation>
     </message>
     <message>
         <source>Off</source>
         <translation type="obsolete">Apagado</translation>
+    </message>
+    <message>
+        <source>EnableTempomap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tempomap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable use of tempo map</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3790,6 +3085,21 @@ Songdata</source>
     </message>
 </context>
 <context>
+    <name>MidiChannelInfo</name>
+    <message>
+        <source>Instrument Patch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi Out Port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi Instrument</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MidiController</name>
     <message>
         <source>Velocity</source>
@@ -3811,7 +3121,7 @@ Songdata</source>
     <name>MidiControllerEditDialogBase</name>
     <message>
         <source>MusE: Define Midi Controller</source>
-        <translation type="unfinished">MusE: Define controlador MIDI</translation>
+        <translation type="obsolete">MusE: Define controlador MIDI</translation>
     </message>
     <message>
         <source>replace controller set</source>
@@ -3827,67 +3137,67 @@ Songdata</source>
     </message>
     <message>
         <source>Name                  </source>
-        <translation type="unfinished">Nombre                  </translation>
+        <translation type="obsolete">Nombre                  </translation>
     </message>
     <message>
         <source>Type       </source>
-        <translation type="unfinished">Tipo                 </translation>
+        <translation type="obsolete">Tipo                 </translation>
     </message>
     <message>
         <source>H-Ctrl</source>
-        <translation type="unfinished">Control-H</translation>
+        <translation type="obsolete">Control-H</translation>
     </message>
     <message>
         <source>L-Ctrl</source>
-        <translation type="unfinished">Control-L</translation>
+        <translation type="obsolete">Control-L</translation>
     </message>
     <message>
         <source>Min Val</source>
-        <translation type="unfinished">Valor m�imo</translation>
+        <translation type="obsolete">Valor m�imo</translation>
     </message>
     <message>
         <source>Max Val</source>
-        <translation type="unfinished">Valor m�imo</translation>
+        <translation type="obsolete">Valor m�imo</translation>
     </message>
     <message>
         <source>list of defined controllers</source>
-        <translation type="unfinished">lista de controladores definidos</translation>
+        <translation type="obsolete">lista de controladores definidos</translation>
     </message>
     <message>
         <source>This is the MusE list of defined controllers.</source>
-        <translation type="unfinished">Esta es la lista de controladores definidos por MusE.</translation>
+        <translation type="obsolete">Esta es la lista de controladores definidos por MusE.</translation>
     </message>
     <message>
         <source>Properties</source>
-        <translation type="unfinished">Propiedades</translation>
+        <translation type="obsolete">Propiedades</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished">Nombre</translation>
+        <translation type="obsolete">Nombre</translation>
     </message>
     <message>
         <source>Max Value</source>
-        <translation type="unfinished">Valor m�imo</translation>
+        <translation type="obsolete">Valor m�imo</translation>
     </message>
     <message>
         <source>Min Value</source>
-        <translation type="unfinished">Valor m�imo</translation>
+        <translation type="obsolete">Valor m�imo</translation>
     </message>
     <message>
         <source>Control7</source>
-        <translation type="unfinished">Control7 :-?</translation>
+        <translation type="obsolete">Control7 :-?</translation>
     </message>
     <message>
         <source>Control14</source>
-        <translation type="unfinished">Control14</translation>
+        <translation type="obsolete">Control14</translation>
     </message>
     <message>
         <source>RPN</source>
-        <translation type="unfinished">RPN</translation>
+        <translation type="obsolete">RPN</translation>
     </message>
     <message>
         <source>NRPN</source>
-        <translation type="unfinished">NRPN</translation>
+        <translation type="obsolete">NRPN</translation>
     </message>
     <message>
         <source>XG-SysEx</source>
@@ -3899,7 +3209,7 @@ Songdata</source>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished">Tipo</translation>
+        <translation type="obsolete">Tipo</translation>
     </message>
     <message>
         <source>&amp;New</source>
@@ -3907,75 +3217,76 @@ Songdata</source>
     </message>
     <message>
         <source>create new entry</source>
-        <translation type="unfinished">crear entrada nueva</translation>
+        <translation type="obsolete">crear entrada nueva</translation>
     </message>
     <message>
         <source>pressing the New button you create a new entry
 in the MusE list of defined controllers</source>
-        <translation type="unfinished">pulsando el bot� se crear�una nueva
+        <translation type="obsolete">pulsando el bot� se crear�una nueva
 clase de controladores en la lista de MusE.</translation>
     </message>
     <message>
         <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;Borrar</translation>
+        <translation type="obsolete">&amp;Borrar</translation>
     </message>
     <message>
         <source>delete selected entry</source>
-        <translation type="unfinished">borra la clase seleccionada</translation>
+        <translation type="obsolete">borra la clase seleccionada</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation type="unfinished">&amp;Aceptar</translation>
+        <translation type="obsolete">&amp;Aceptar</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Cancelar</translation>
-    </message>
-    <message>
-        <source>&amp;Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Alt+A</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Predefined Controller:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Managed Controller for Port</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">&amp;Cancelar</translation>
     </message>
     <message>
         <source>Channel</source>
-        <translation type="unfinished">Canal</translation>
-    </message>
-    <message>
-        <source>This is a list of commonly used midi controllers.
-Note that in MusE pitch and program changes are
-handled like normal controllers.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Canal</translation>
     </message>
     <message>
         <source>Pitch</source>
-        <translation type="unfinished">Tono</translation>
-    </message>
-    <message>
-        <source>Program</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi Controller Number High Byte</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi Controller Number Low Byte</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Tono</translation>
     </message>
     <message>
         <source>Range</source>
-        <translation type="unfinished">Rango</translation>
+        <translation type="obsolete">Rango</translation>
+    </message>
+</context>
+<context>
+    <name>MidiEditor</name>
+    <message>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Editar</translation>
+    </message>
+    <message>
+        <source>Cut</source>
+        <translation type="unfinished">Cortar</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation type="unfinished">Copiar</translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation type="unfinished">Pegar</translation>
+    </message>
+    <message>
+        <source>Play Events</source>
+        <translation type="unfinished">Reproducir eventos</translation>
+    </message>
+    <message>
+        <source>Step Record</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi Input</source>
+        <translation type="unfinished">Entrada MIDI</translation>
+    </message>
+    <message>
+        <source>Follow Song</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4118,6 +3429,17 @@ handled like normal controllers.</source>
     <message>
         <source>&amp;Cancel</source>
         <translation type="obsolete">&amp;Cancelar</translation>
+    </message>
+</context>
+<context>
+    <name>MidiInPortStrip</name>
+    <message>
+        <source>AlsaDevices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MidiChannel</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4343,22 +3665,83 @@ handled like normal controllers.</source>
     </message>
 </context>
 <context>
+    <name>MidiOutPortStrip</name>
+    <message>
+        <source>MidiChannel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MidiDevices</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MidiPluginDialog</name>
+    <message>
+        <source>MusE: select midi plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation type="unfinished">Archivo</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ok</source>
+        <translation type="unfinished">Aceptar</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancelar</translation>
+    </message>
+</context>
+<context>
     <name>MidiPortRouteBase</name>
     <message>
-        <source>MusE: Midi Port Routing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Port 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Output</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Input</source>
-        <translation type="unfinished">Entrada</translation>
+        <translation type="obsolete">Entrada</translation>
+    </message>
+</context>
+<context>
+    <name>MidiRack</name>
+    <message>
+        <source>midi effect rack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>move up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>move down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>bypass</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>show gui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>new</source>
+        <translation type="unfinished">nuevo</translation>
     </message>
 </context>
 <context>
@@ -4460,15 +3843,15 @@ handled like normal controllers.</source>
     <name>MidiStrip</name>
     <message>
         <source>Var</source>
-        <translation type="obsolete">Var</translation>
+        <translation type="unfinished">Var</translation>
     </message>
     <message>
         <source>Rev</source>
-        <translation type="obsolete">Rev</translation>
+        <translation type="unfinished">Rev</translation>
     </message>
     <message>
         <source>Cho</source>
-        <translation type="obsolete">Cho</translation>
+        <translation type="unfinished">Cho</translation>
     </message>
     <message>
         <source>off</source>
@@ -4480,7 +3863,7 @@ handled like normal controllers.</source>
     </message>
     <message>
         <source>Pan</source>
-        <translation type="obsolete">Bal</translation>
+        <translation type="unfinished">Bal</translation>
     </message>
     <message>
         <source>record</source>
@@ -4494,84 +3877,108 @@ handled like normal controllers.</source>
         <source>pre fader listening</source>
         <translation type="obsolete">monitorizar pre fader</translation>
     </message>
+    <message>
+        <source>VariationSend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ReverbSend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ChorusSend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pan/Balance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tracks</source>
+        <translation type="unfinished">Pistas</translation>
+    </message>
+    <message>
+        <source>OutputPorts</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MidiSyncConfigBase</name>
     <message>
         <source>MusE: Midi Sync</source>
-        <translation type="unfinished">MusE: Sincronizaci� MIDI</translation>
+        <translation type="obsolete">MusE: Sincronizaci� MIDI</translation>
     </message>
     <message>
         <source>Apply</source>
-        <translation type="unfinished">Aplicar</translation>
+        <translation type="obsolete">Aplicar</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished">Aceptar</translation>
+        <translation type="obsolete">Aceptar</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Cancelar</translation>
+        <translation type="obsolete">Cancelar</translation>
     </message>
     <message>
         <source>hour</source>
-        <translation type="unfinished">hora</translation>
+        <translation type="obsolete">hora</translation>
     </message>
     <message>
         <source>h</source>
-        <translation type="unfinished">h</translation>
+        <translation type="obsolete">h</translation>
     </message>
     <message>
         <source>minute</source>
-        <translation type="unfinished">minuto</translation>
+        <translation type="obsolete">minuto</translation>
     </message>
     <message>
         <source>m</source>
-        <translation type="unfinished">m</translation>
+        <translation type="obsolete">m</translation>
     </message>
     <message>
         <source>second</source>
-        <translation type="unfinished">segundo</translation>
+        <translation type="obsolete">segundo</translation>
     </message>
     <message>
         <source>s</source>
-        <translation type="unfinished">s</translation>
+        <translation type="obsolete">s</translation>
     </message>
     <message>
         <source>frame</source>
-        <translation type="unfinished">frame</translation>
+        <translation type="obsolete">frame</translation>
     </message>
     <message>
         <source>f</source>
-        <translation type="unfinished">f</translation>
+        <translation type="obsolete">f</translation>
     </message>
     <message>
         <source>subframe</source>
-        <translation type="unfinished">sub-frame</translation>
+        <translation type="obsolete">sub-frame</translation>
     </message>
     <message>
         <source>24</source>
-        <translation type="unfinished">24</translation>
+        <translation type="obsolete">24</translation>
     </message>
     <message>
         <source>25</source>
-        <translation type="unfinished">25</translation>
+        <translation type="obsolete">25</translation>
     </message>
     <message>
         <source>30D</source>
-        <translation type="unfinished">30D</translation>
+        <translation type="obsolete">30D</translation>
     </message>
     <message>
         <source>30N</source>
-        <translation type="unfinished">30N</translation>
+        <translation type="obsolete">30N</translation>
     </message>
     <message>
         <source>Id:</source>
-        <translation type="unfinished">Id:</translation>
+        <translation type="obsolete">Id:</translation>
     </message>
     <message>
         <source>device id</source>
-        <translation type="unfinished">id de dispositivo</translation>
+        <translation type="obsolete">id de dispositivo</translation>
     </message>
     <message>
         <source>Port:</source>
@@ -4583,47 +3990,47 @@ handled like normal controllers.</source>
     </message>
     <message>
         <source>Sync Source</source>
-        <translation type="unfinished">Fuente de Sincronizaci�</translation>
+        <translation type="obsolete">Fuente de Sincronizaci�</translation>
     </message>
     <message>
         <source>accept MTC</source>
-        <translation type="unfinished">aceptar MTC</translation>
+        <translation type="obsolete">aceptar MTC</translation>
     </message>
     <message>
         <source>accept Midi Clock</source>
-        <translation type="unfinished">aceptar MIDI clock</translation>
+        <translation type="obsolete">aceptar MIDI clock</translation>
     </message>
     <message>
         <source>accept MMC</source>
-        <translation type="unfinished">aceptar MMC</translation>
+        <translation type="obsolete">aceptar MMC</translation>
     </message>
     <message>
         <source>Sync Gen</source>
-        <translation type="unfinished">Generar Sync</translation>
+        <translation type="obsolete">Generar Sync</translation>
     </message>
     <message>
         <source>Midi Time Code (MTC)</source>
-        <translation type="unfinished">C�igo de Tiempo Midi (MTC)</translation>
+        <translation type="obsolete">C�igo de Tiempo Midi (MTC)</translation>
     </message>
     <message>
         <source>Midi Clock</source>
-        <translation type="unfinished">Reloj Midi</translation>
+        <translation type="obsolete">Reloj Midi</translation>
     </message>
     <message>
         <source>Midi Machine Control (MMC)</source>
-        <translation type="unfinished">Control de m�uina MIDI (MMC)</translation>
+        <translation type="obsolete">Control de m�uina MIDI (MMC)</translation>
     </message>
     <message>
         <source>Sync Mode</source>
-        <translation type="unfinished">Modo de sincronizaci�</translation>
+        <translation type="obsolete">Modo de sincronizaci�</translation>
     </message>
     <message>
         <source>Master</source>
-        <translation type="unfinished">Maestro</translation>
+        <translation type="obsolete">Maestro</translation>
     </message>
     <message>
         <source>Slave</source>
-        <translation type="unfinished">Esclavo</translation>
+        <translation type="obsolete">Esclavo</translation>
     </message>
     <message>
         <source>all</source>
@@ -4631,22 +4038,48 @@ handled like normal controllers.</source>
     </message>
     <message>
         <source>MTC</source>
-        <translation type="unfinished">MTC</translation>
+        <translation type="obsolete">MTC</translation>
     </message>
     <message>
         <source>Type:</source>
-        <translation type="unfinished">Tipo:</translation>
+        <translation type="obsolete">Tipo:</translation>
     </message>
     <message>
         <source>Offset:</source>
-        <translation type="unfinished">Desplazamiento:</translation>
+        <translation type="obsolete">Desplazamiento:</translation>
+    </message>
+</context>
+<context>
+    <name>MidiSyntiStrip</name>
+    <message>
+        <source>OutputPorts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation type="unfinished">Canal</translation>
+    </message>
+    <message>
+        <source>Input Ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MidiTrackInfo</name>
+    <message>
+        <source>Channel %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi Port</source>
+        <translation type="unfinished">Puerto MIDI</translation>
     </message>
 </context>
 <context>
     <name>MidiTrackInfoBase</name>
     <message>
         <source>MusE: TrackInfo</source>
-        <translation type="unfinished">MusE: Informaci� de pista</translation>
+        <translation type="obsolete">MusE: Informaci� de pista</translation>
     </message>
     <message>
         <source>output channel</source>
@@ -4654,19 +4087,19 @@ handled like normal controllers.</source>
     </message>
     <message>
         <source>all midi events are send to this output channel</source>
-        <translation type="unfinished">todos los eventos MIDI se envian a �te canal de salida</translation>
+        <translation type="obsolete">todos los eventos MIDI se envian a �te canal de salida</translation>
     </message>
     <message>
         <source>Track Info</source>
-        <translation type="unfinished">Informaci� de Pista</translation>
+        <translation type="obsolete">Informaci� de Pista</translation>
     </message>
     <message>
         <source>%</source>
-        <translation type="unfinished">%</translation>
+        <translation type="obsolete">%</translation>
     </message>
     <message>
         <source>Track Name</source>
-        <translation type="unfinished">Nombre de Pista</translation>
+        <translation type="obsolete">Nombre de Pista</translation>
     </message>
     <message>
         <source>output port</source>
@@ -4674,7 +4107,7 @@ handled like normal controllers.</source>
     </message>
     <message>
         <source>off</source>
-        <translation type="unfinished">apagado</translation>
+        <translation type="obsolete">apagado</translation>
     </message>
     <message>
         <source>change stereo position</source>
@@ -4682,7 +4115,7 @@ handled like normal controllers.</source>
     </message>
     <message>
         <source>OCh.</source>
-        <translation type="unfinished">OCh.</translation>
+        <translation type="obsolete">OCh.</translation>
     </message>
     <message>
         <source>MidiThru</source>
@@ -4690,7 +4123,7 @@ handled like normal controllers.</source>
     </message>
     <message>
         <source>???</source>
-        <translation type="unfinished">???</translation>
+        <translation type="obsolete">???</translation>
     </message>
     <message>
         <source>select instrument patch</source>
@@ -4698,7 +4131,7 @@ handled like normal controllers.</source>
     </message>
     <message>
         <source>Transp.</source>
-        <translation type="unfinished">Transposici�</translation>
+        <translation type="obsolete">Transposici�</translation>
     </message>
     <message>
         <source>Volume</source>
@@ -4706,7 +4139,7 @@ handled like normal controllers.</source>
     </message>
     <message>
         <source>Channel Info</source>
-        <translation type="unfinished">Informaci� de Canal</translation>
+        <translation type="obsolete">Informaci� de Canal</translation>
     </message>
     <message>
         <source>Pan</source>
@@ -4714,31 +4147,31 @@ handled like normal controllers.</source>
     </message>
     <message>
         <source>Delay</source>
-        <translation type="unfinished">Delay</translation>
+        <translation type="obsolete">Delay</translation>
     </message>
     <message>
         <source>H-Bank</source>
-        <translation type="unfinished">Banco-H</translation>
+        <translation type="obsolete">Banco-H</translation>
     </message>
     <message>
         <source>Compr.</source>
-        <translation type="unfinished">Compr.</translation>
+        <translation type="obsolete">Compr.</translation>
     </message>
     <message>
         <source>L-Bank</source>
-        <translation type="unfinished">Banco-L</translation>
+        <translation type="obsolete">Banco-L</translation>
     </message>
     <message>
         <source>Progr.</source>
-        <translation type="unfinished">Progr.</translation>
+        <translation type="obsolete">Progr.</translation>
     </message>
     <message>
         <source>Velocity</source>
-        <translation type="unfinished">Velocidad</translation>
+        <translation type="obsolete">Velocidad</translation>
     </message>
     <message>
         <source>Length</source>
-        <translation type="unfinished">Longitud</translation>
+        <translation type="obsolete">Longitud</translation>
     </message>
     <message>
         <source>input ports</source>
@@ -4746,7 +4179,7 @@ handled like normal controllers.</source>
     </message>
     <message>
         <source>IChan.</source>
-        <translation type="unfinished">Canal de entrada</translation>
+        <translation type="obsolete">Canal de entrada</translation>
     </message>
     <message>
         <source>input channels</source>
@@ -4760,7 +4193,7 @@ recording:
    1 2 3      record from channel 1 2 and 3
    1-3         same
    1-3 5<byte value="x9"/>     record from channel 1 2 3 and 5</source>
-        <translation type="unfinished">Los eventos de todos los canales configurados
+        <translation type="obsolete">Los eventos de todos los canales configurados
 se graban en esta pista.
 Puedes especificar m� de un canal para grabar:
    1 2 3<byte value="x9"/>Graba desde los canales 1, 2 y 3
@@ -4772,63 +4205,38 @@ Puedes especificar m� de un canal para grabar:
         <translation type="obsolete">Grabar</translation>
     </message>
     <message>
-        <source>Output Channel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Modify Note Length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Output Port</source>
-        <translation type="unfinished">Puerto de salida</translation>
+        <translation type="obsolete">Puerto de salida</translation>
     </message>
+</context>
+<context>
+    <name>MidiTrackerEditor</name>
     <message>
-        <source>Track Delay (ticks)</source>
+        <source>&amp;View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Compress Note Velocity</source>
+        <source>MidiTracker Tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Pitch Transpose</source>
+        <source>Panic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Modify Note Velocity</source>
+        <source>Transport</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Input Ports</source>
+        <source>row features</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Input Channels</source>
+        <source>Row per measure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Select Instrument Patch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Bank Select LSB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Bank Select MSB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Instrument High Bank</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Instrument Low Bank</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Instrument/Program/Patch</source>
+        <source>Number of visible rows</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4836,239 +4244,235 @@ Puedes especificar m� de un canal para grabar:
     <name>MidiTransformDialogBase</name>
     <message>
         <source>MusE: Midi Transformator</source>
-        <translation type="unfinished">MusE: Transformador MIDI</translation>
+        <translation type="obsolete">MusE: Transformador MIDI</translation>
     </message>
     <message>
         <source>&amp;New</source>
-        <translation type="unfinished">&amp;Nueva</translation>
+        <translation type="obsolete">&amp;Nueva</translation>
     </message>
     <message>
         <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;Borrar</translation>
+        <translation type="obsolete">&amp;Borrar</translation>
     </message>
     <message>
         <source>&amp;Apply</source>
-        <translation type="unfinished">&amp;Aplicar</translation>
+        <translation type="obsolete">&amp;Aplicar</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation type="unfinished">Ac&amp;eptar</translation>
+        <translation type="obsolete">Ac&amp;eptar</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Cancelar</translation>
+        <translation type="obsolete">&amp;Cancelar</translation>
     </message>
     <message>
         <source>PresetList</source>
-        <translation type="unfinished">Lista de preselecciones</translation>
+        <translation type="obsolete">Lista de preselecciones</translation>
     </message>
     <message>
         <source>Processing</source>
-        <translation type="unfinished">Procesando</translation>
+        <translation type="obsolete">Procesando</translation>
     </message>
     <message>
         <source>Event Type</source>
-        <translation type="unfinished">Tipo de evento</translation>
+        <translation type="obsolete">Tipo de evento</translation>
     </message>
     <message>
         <source>Keep</source>
-        <translation type="unfinished">Mantener</translation>
+        <translation type="obsolete">Mantener</translation>
     </message>
     <message>
         <source>Fix</source>
-        <translation type="unfinished">Arreglar</translation>
+        <translation type="obsolete">Arreglar</translation>
     </message>
     <message>
         <source>Note</source>
-        <translation type="unfinished">Nota</translation>
+        <translation type="obsolete">Nota</translation>
     </message>
     <message>
         <source>Poly Pressure</source>
-        <translation type="unfinished">Presi� polif�ica</translation>
+        <translation type="obsolete">Presi� polif�ica</translation>
     </message>
     <message>
         <source>Control Change</source>
-        <translation type="unfinished">Cambio de control</translation>
+        <translation type="obsolete">Cambio de control</translation>
     </message>
     <message>
         <source>Aftertouch</source>
-        <translation type="unfinished">AfterTouch</translation>
+        <translation type="obsolete">AfterTouch</translation>
     </message>
     <message>
         <source>Pitch Bend</source>
-        <translation type="unfinished">Rueda de modulaci�</translation>
+        <translation type="obsolete">Rueda de modulaci�</translation>
     </message>
     <message>
         <source>NRPN</source>
-        <translation type="unfinished">NRPN</translation>
+        <translation type="obsolete">NRPN</translation>
     </message>
     <message>
         <source>RPN</source>
-        <translation type="unfinished">RPN</translation>
+        <translation type="obsolete">RPN</translation>
     </message>
     <message>
         <source>Plus</source>
-        <translation type="unfinished">M�</translation>
+        <translation type="obsolete">M�</translation>
     </message>
     <message>
         <source>Minus</source>
-        <translation type="unfinished">Menos</translation>
+        <translation type="obsolete">Menos</translation>
     </message>
     <message>
         <source>Multiply</source>
-        <translation type="unfinished">Multiplicar</translation>
+        <translation type="obsolete">Multiplicar</translation>
     </message>
     <message>
         <source>Divide</source>
-        <translation type="unfinished">Dividir</translation>
+        <translation type="obsolete">Dividir</translation>
     </message>
     <message>
         <source>Value 2</source>
-        <translation type="unfinished">Valor 2</translation>
+        <translation type="obsolete">Valor 2</translation>
     </message>
     <message>
         <source>Invert</source>
-        <translation type="unfinished">Invertir</translation>
+        <translation type="obsolete">Invertir</translation>
     </message>
     <message>
         <source>ScaleMap</source>
-        <translation type="unfinished">Escalado de mapa</translation>
+        <translation type="obsolete">Escalado de mapa</translation>
     </message>
     <message>
         <source>Flip</source>
-        <translation type="unfinished">Cambiar</translation>
+        <translation type="obsolete">Cambiar</translation>
     </message>
     <message>
         <source>Dyn</source>
-        <translation type="unfinished">Dyn</translation>
+        <translation type="obsolete">Dyn</translation>
     </message>
     <message>
         <source>Random</source>
-        <translation type="unfinished">Aleatorio</translation>
+        <translation type="obsolete">Aleatorio</translation>
     </message>
     <message>
         <source>Value 1</source>
-        <translation type="unfinished">Valor 1</translation>
+        <translation type="obsolete">Valor 1</translation>
     </message>
     <message>
         <source>Length</source>
-        <translation type="unfinished">Longitud</translation>
+        <translation type="obsolete">Longitud</translation>
     </message>
     <message>
         <source>Position</source>
-        <translation type="unfinished">Posici�</translation>
+        <translation type="obsolete">Posici�</translation>
     </message>
     <message>
         <source>Filter</source>
-        <translation type="unfinished">Filtro</translation>
+        <translation type="obsolete">Filtro</translation>
     </message>
     <message>
         <source>All</source>
-        <translation type="unfinished">Todo</translation>
+        <translation type="obsolete">Todo</translation>
     </message>
     <message>
         <source>Equal</source>
-        <translation type="unfinished">Igual</translation>
+        <translation type="obsolete">Igual</translation>
     </message>
     <message>
         <source>Unequal</source>
-        <translation type="unfinished">Diferente</translation>
+        <translation type="obsolete">Diferente</translation>
     </message>
     <message>
         <source>Ignore</source>
-        <translation type="unfinished">Ignora</translation>
+        <translation type="obsolete">Ignora</translation>
     </message>
     <message>
         <source>Higher</source>
-        <translation type="unfinished">Mayor</translation>
+        <translation type="obsolete">Mayor</translation>
     </message>
     <message>
         <source>Lower</source>
-        <translation type="unfinished">Menor</translation>
+        <translation type="obsolete">Menor</translation>
     </message>
     <message>
         <source>Inside</source>
-        <translation type="unfinished">Entre</translation>
+        <translation type="obsolete">Entre</translation>
     </message>
     <message>
         <source>Outside</source>
-        <translation type="unfinished">Fuera</translation>
+        <translation type="obsolete">Fuera</translation>
     </message>
     <message>
         <source>Bar Range</source>
-        <translation type="unfinished">Rango de compases</translation>
+        <translation type="obsolete">Rango de compases</translation>
     </message>
     <message>
         <source>Preset</source>
-        <translation type="unfinished">Preselecci�</translation>
+        <translation type="obsolete">Preselecci�</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation type="unfinished">Nombre:</translation>
+        <translation type="obsolete">Nombre:</translation>
     </message>
     <message>
         <source>Comment:</source>
-        <translation type="unfinished">Comentario:</translation>
+        <translation type="obsolete">Comentario:</translation>
     </message>
     <message>
         <source>Range</source>
-        <translation type="unfinished">Rango</translation>
+        <translation type="obsolete">Rango</translation>
     </message>
     <message>
         <source>process all events</source>
-        <translation type="unfinished">procesar todos los eventos</translation>
+        <translation type="obsolete">procesar todos los eventos</translation>
     </message>
     <message>
         <source>selected tracks</source>
-        <translation type="unfinished">seleccionar pistas</translation>
+        <translation type="obsolete">seleccionar pistas</translation>
     </message>
     <message>
         <source>inside loop</source>
-        <translation type="unfinished">dentro de bucle</translation>
+        <translation type="obsolete">dentro de bucle</translation>
     </message>
     <message>
         <source>Function</source>
-        <translation type="unfinished">Funci�</translation>
+        <translation type="obsolete">Funci�</translation>
     </message>
     <message>
         <source>Select</source>
-        <translation type="unfinished">Seleccionar</translation>
+        <translation type="obsolete">Seleccionar</translation>
     </message>
     <message>
         <source>Quantize</source>
-        <translation type="unfinished">Cuantizar</translation>
+        <translation type="obsolete">Cuantizar</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished">Borrar</translation>
+        <translation type="obsolete">Borrar</translation>
     </message>
     <message>
         <source>Transform</source>
-        <translation type="unfinished">Transformar</translation>
+        <translation type="obsolete">Transformar</translation>
     </message>
     <message>
         <source>Insert</source>
-        <translation type="unfinished">Insertar</translation>
+        <translation type="obsolete">Insertar</translation>
     </message>
     <message>
         <source>Copy</source>
-        <translation type="unfinished">Copiar</translation>
+        <translation type="obsolete">Copiar</translation>
     </message>
     <message>
         <source>Extract</source>
-        <translation type="unfinished">Extraer</translation>
+        <translation type="obsolete">Extraer</translation>
     </message>
     <message>
         <source>Quantize Value</source>
-        <translation type="unfinished">Cuantizar valor</translation>
+        <translation type="obsolete">Cuantizar valor</translation>
     </message>
     <message>
         <source>Sysex</source>
-        <translation type="unfinished">Sistema exclusivo</translation>
-    </message>
-    <message>
-        <source>Meta</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Sistema exclusivo</translation>
     </message>
 </context>
 <context>
@@ -5082,58 +4486,62 @@ Puedes especificar m� de un canal para grabar:
     <name>MixdownFileDialog</name>
     <message>
         <source>Wave Files (*.wav);;All Files (*)</source>
-        <translation type="obsolete">Archivos de onda (*.wav);;Todos los archivos(*)</translation>
+        <translation type="unfinished">Archivos de onda (*.wav);;Todos los archivos(*)</translation>
+    </message>
+    <message>
+        <source>MusE: set mixdown file name</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>MixdownFileDialogBase</name>
     <message>
         <source>MusE: Set Mixdown Wavefile</source>
-        <translation type="unfinished">MusE: Selecciona el archivo de Masterizaci�</translation>
+        <translation type="obsolete">MusE: Selecciona el archivo de Masterizaci�</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation type="unfinished">&amp;Aceptar</translation>
+        <translation type="obsolete">&amp;Aceptar</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Cancelar</translation>
+        <translation type="obsolete">&amp;Cancelar</translation>
     </message>
     <message>
         <source>File Path</source>
-        <translation type="unfinished">Directorio del archivo</translation>
+        <translation type="obsolete">Directorio del archivo</translation>
     </message>
     <message>
         <source>Channel</source>
-        <translation type="unfinished">Canal</translation>
+        <translation type="obsolete">Canal</translation>
     </message>
     <message>
         <source>Stereo</source>
-        <translation type="unfinished">Est�eo</translation>
+        <translation type="obsolete">Est�eo</translation>
     </message>
     <message>
         <source>Mono</source>
-        <translation type="unfinished">Mono</translation>
+        <translation type="obsolete">Mono</translation>
     </message>
     <message>
         <source>5.1</source>
-        <translation type="unfinished">5.1</translation>
+        <translation type="obsolete">5.1</translation>
     </message>
     <message>
         <source>wav,16 Bit</source>
-        <translation type="unfinished">wav, 16 bits</translation>
+        <translation type="obsolete">wav, 16 bits</translation>
     </message>
     <message>
         <source>wav, 24 Bit</source>
-        <translation type="unfinished">wav, 24 bits</translation>
+        <translation type="obsolete">wav, 24 bits</translation>
     </message>
     <message>
         <source>wav, 32 Bit (float)</source>
-        <translation type="unfinished">wav, 32 bits</translation>
+        <translation type="obsolete">wav, 32 bits</translation>
     </message>
     <message>
         <source>Format</source>
-        <translation type="unfinished">Formato</translation>
+        <translation type="obsolete">Formato</translation>
     </message>
 </context>
 <context>
@@ -5170,12 +4578,60 @@ Puedes especificar m� de un canal para grabar:
         <source>Port</source>
         <translation type="obsolete">Puerto</translation>
     </message>
+    <message>
+        <source>MusE: Mixer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Create</source>
+        <translation type="unfinished">&amp;Crear</translation>
+    </message>
+    <message>
+        <source>&amp;View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Routing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Midi Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Midi Out Ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Midi In Ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Wave Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Output Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Group Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Input Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Synthesizer</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusE</name>
     <message>
         <source>&amp;File</source>
-        <translation type="unfinished">&amp;Archivo</translation>
+        <translation type="obsolete">&amp;Archivo</translation>
     </message>
     <message>
         <source>Open &amp;Recent</source>
@@ -5183,7 +4639,7 @@ Puedes especificar m� de un canal para grabar:
     </message>
     <message>
         <source>Save &amp;As</source>
-        <translation type="unfinished">Guardar c&amp;omo</translation>
+        <translation type="obsolete">Guardar c&amp;omo</translation>
     </message>
     <message>
         <source>Config &amp;Printer</source>
@@ -5267,7 +4723,7 @@ Puedes especificar m� de un canal para grabar:
     </message>
     <message>
         <source>Graphic</source>
-        <translation type="unfinished">Gr�ico</translation>
+        <translation type="obsolete">Gr�ico</translation>
     </message>
     <message>
         <source>Mastertrack</source>
@@ -5275,7 +4731,7 @@ Puedes especificar m� de un canal para grabar:
     </message>
     <message>
         <source>Midi &amp;Transform</source>
-        <translation type="unfinished">&amp;Transformaci� MIDI</translation>
+        <translation type="obsolete">&amp;Transformaci� MIDI</translation>
     </message>
     <message>
         <source>Modify Gate Time</source>
@@ -5387,7 +4843,7 @@ Puedes especificar m� de un canal para grabar:
     </message>
     <message>
         <source>Global Settings</source>
-        <translation type="unfinished">Selecciones Globales</translation>
+        <translation type="obsolete">Selecciones Globales</translation>
     </message>
     <message>
         <source>follow song</source>
@@ -5407,7 +4863,7 @@ Puedes especificar m� de un canal para grabar:
     </message>
     <message>
         <source>Appearance settings</source>
-        <translation type="unfinished">Selecciones de apariencia</translation>
+        <translation type="obsolete">Selecciones de apariencia</translation>
     </message>
     <message>
         <source>Soft Synthesizer</source>
@@ -5435,7 +4891,7 @@ Puedes especificar m� de un canal para grabar:
     </message>
     <message>
         <source>Midi Remote Control</source>
-        <translation type="unfinished">Control remoto MIDI</translation>
+        <translation type="obsolete">Control remoto MIDI</translation>
     </message>
     <message>
         <source>Random Rhythm Generator</source>
@@ -5455,7 +4911,7 @@ Puedes especificar m� de un canal para grabar:
     </message>
     <message>
         <source>Input Plugins</source>
-        <translation type="unfinished">Plugins e entrada</translation>
+        <translation type="obsolete">Plugins e entrada</translation>
     </message>
     <message>
         <source>Reset Instr.</source>
@@ -5515,7 +4971,7 @@ Puedes especificar m� de un canal para grabar:
     </message>
     <message>
         <source>MusE: load project</source>
-        <translation type="unfinished">MusE: Carga proyecto</translation>
+        <translation type="obsolete">MusE: Carga proyecto</translation>
     </message>
     <message>
         <source>The current Project contains unsaved data
@@ -5537,7 +4993,7 @@ Guardamos el proyecto actual?</translation>
     </message>
     <message>
         <source>MusE: Save As</source>
-        <translation type="unfinished">MusE: Guardar como</translation>
+        <translation type="obsolete">MusE: Guardar como</translation>
     </message>
     <message>
         <source>MusE: Import Midi</source>
@@ -5545,7 +5001,7 @@ Guardamos el proyecto actual?</translation>
     </message>
     <message>
         <source>MusE: Export Midi</source>
-        <translation type="unfinished">MusE: Exportar MIDI</translation>
+        <translation type="obsolete">MusE: Exportar MIDI</translation>
     </message>
     <message>
         <source>Nothing to edit</source>
@@ -5555,17 +5011,17 @@ Guardamos el proyecto actual?</translation>
         <source>The current Project contains unsaved data
 Load overwrites current Project:
 Save Current Project?</source>
-        <translation type="unfinished">El proyecto actual contine datos no guardados
+        <translation type="obsolete">El proyecto actual contine datos no guardados
 Cargar sobreescribe el proyecto actual:
 Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>&amp;Overwrite</source>
-        <translation type="unfinished">S&amp;obre escribir</translation>
+        <translation type="obsolete">S&amp;obre escribir</translation>
     </message>
     <message>
         <source>no help found at: </source>
-        <translation type="unfinished">no se ha encontrado ayuda en: </translation>
+        <translation type="obsolete">no se ha encontrado ayuda en: </translation>
     </message>
     <message>
         <source>MusE: Open Help</source>
@@ -5577,11 +5033,11 @@ Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>UndoRedo</source>
-        <translation type="unfinished">Deshacer/Rehacer</translation>
+        <translation type="obsolete">Deshacer/Rehacer</translation>
     </message>
     <message>
         <source>undo</source>
-        <translation type="unfinished">deshacer</translation>
+        <translation type="obsolete">deshacer</translation>
     </message>
     <message>
         <source>Und&amp;o</source>
@@ -5589,7 +5045,7 @@ Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>redo</source>
-        <translation type="unfinished">rehacer</translation>
+        <translation type="obsolete">rehacer</translation>
     </message>
     <message>
         <source>Re&amp;do</source>
@@ -5609,7 +5065,7 @@ Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>loop</source>
-        <translation type="unfinished">bucle</translation>
+        <translation type="obsolete">bucle</translation>
     </message>
     <message>
         <source>Loop</source>
@@ -5617,7 +5073,7 @@ Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>punchin</source>
-        <translation type="unfinished">pinchar</translation>
+        <translation type="obsolete">pinchar</translation>
     </message>
     <message>
         <source>Punchin</source>
@@ -5625,7 +5081,7 @@ Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>punchout</source>
-        <translation type="unfinished">fin pinchado</translation>
+        <translation type="obsolete">fin pinchado</translation>
     </message>
     <message>
         <source>Punchout</source>
@@ -5633,47 +5089,47 @@ Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>start</source>
-        <translation type="unfinished">empezar</translation>
+        <translation type="obsolete">empezar</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="unfinished">Empezar</translation>
+        <translation type="obsolete">Empezar</translation>
     </message>
     <message>
         <source>rewind</source>
-        <translation type="unfinished">retroceder</translation>
+        <translation type="obsolete">retroceder</translation>
     </message>
     <message>
         <source>Rewind</source>
-        <translation type="unfinished">Retroceder</translation>
+        <translation type="obsolete">Retroceder</translation>
     </message>
     <message>
         <source>forward</source>
-        <translation type="unfinished">avanzar</translation>
+        <translation type="obsolete">avanzar</translation>
     </message>
     <message>
         <source>Forward</source>
-        <translation type="unfinished">Avanzar</translation>
+        <translation type="obsolete">Avanzar</translation>
     </message>
     <message>
         <source>stop</source>
-        <translation type="unfinished">parar</translation>
+        <translation type="obsolete">parar</translation>
     </message>
     <message>
         <source>Stop</source>
-        <translation type="unfinished">Parar</translation>
+        <translation type="obsolete">Parar</translation>
     </message>
     <message>
         <source>play</source>
-        <translation type="unfinished">reproducir</translation>
+        <translation type="obsolete">reproducir</translation>
     </message>
     <message>
         <source>Play</source>
-        <translation type="unfinished">Reproducir</translation>
+        <translation type="obsolete">Reproducir</translation>
     </message>
     <message>
         <source>record</source>
-        <translation type="unfinished">grabar</translation>
+        <translation type="obsolete">grabar</translation>
     </message>
     <message>
         <source>Record</source>
@@ -5681,7 +5137,7 @@ Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>panic</source>
-        <translation type="unfinished">p�ico</translation>
+        <translation type="obsolete">p�ico</translation>
     </message>
     <message>
         <source>Panic</source>
@@ -5689,15 +5145,15 @@ Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>new</source>
-        <translation type="unfinished">nuevo</translation>
+        <translation type="obsolete">nuevo</translation>
     </message>
     <message>
         <source>&amp;New</source>
-        <translation type="unfinished">&amp;Nuevo</translation>
+        <translation type="obsolete">&amp;Nuevo</translation>
     </message>
     <message>
         <source>open</source>
-        <translation type="unfinished">abrir</translation>
+        <translation type="obsolete">abrir</translation>
     </message>
     <message>
         <source>&amp;Open</source>
@@ -5705,11 +5161,11 @@ Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>save</source>
-        <translation type="unfinished">guardar</translation>
+        <translation type="obsolete">guardar</translation>
     </message>
     <message>
         <source>pianoroll</source>
-        <translation type="unfinished">pianola</translation>
+        <translation type="obsolete">pianola</translation>
     </message>
     <message>
         <source>Pianoroll</source>
@@ -5733,11 +5189,11 @@ Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>File Buttons</source>
-        <translation type="unfinished">Botones de Archivo</translation>
+        <translation type="obsolete">Botones de Archivo</translation>
     </message>
     <message>
         <source>Unknown File Format</source>
-        <translation type="unfinished">Formato de archivo desconocido</translation>
+        <translation type="obsolete">Formato de archivo desconocido</translation>
     </message>
     <message>
         <source>none</source>
@@ -5753,7 +5209,7 @@ Guardar el proyecto actual?</translation>
     </message>
     <message>
         <source>MusE: Song: </source>
-        <translation type="unfinished">MusE: Canci�: </translation>
+        <translation type="obsolete">MusE: Canci�: </translation>
     </message>
     <message>
         <source>reading midifile
@@ -5798,87 +5254,6 @@ selecciona una pista de audio como destino</translation>
         <translation type="unfinished">no hay pista de destino seleccionada</translation>
     </message>
     <message>
-        <source>Delete Selected Tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit Instrument</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Configure shortcuts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi File Export</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Manual</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;MusE homepage</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Report Bug...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;About MusE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>What&apos;s &amp;This?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cannot read template</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>File open error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>File read error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MusE: load template</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MusE: Bounce</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>set left/right marker for bounce range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MusE: Bounce to File</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>no output track found</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add midi file to current project?
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Add to Project</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Replace</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>
 failed: </source>
         <translation type="unfinished">
@@ -5893,20 +5268,8 @@ fall� </translation>
         <translation type="unfinished">Cursor</translation>
     </message>
     <message>
-        <source>Off</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Bar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Snap</source>
         <translation type="unfinished">Snap</translation>
-    </message>
-    <message>
-        <source>Len</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Pitch</source>
@@ -5933,7 +5296,44 @@ fall� </translation>
         <translation type="unfinished">N</translation>
     </message>
     <message>
-        <source>MusE: Create tmp file failed</source>
+        <source>MusE manual not found at: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>to import a audio file you have first to selecta wave track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to start audio!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Was not able to start audio, check if jack is running.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MidiTracker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project Buttons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Delete Parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Selected Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5949,7 +5349,92 @@ fall� </translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Edit Instrument</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Restart Audio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Setti&amp;ngs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Configure shortcuts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi File Export</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preferences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;MusE homepage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Report Bug...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;About MusE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>What&apos;s &amp;This?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Len</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: new project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot create project folder &lt;%1&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot open template file
+%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File &lt;%1&gt; read error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Create tmp file failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Bounce</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>set left/right marker for bounce range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Bounce to File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>no output track found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: import midi file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5957,34 +5442,34 @@ fall� </translation>
     <name>NoteInfo</name>
     <message>
         <source>Start</source>
-        <translation type="obsolete">Inicio</translation>
+        <translation type="unfinished">Inicio</translation>
     </message>
     <message>
         <source>Len</source>
-        <translation type="obsolete">Longitud</translation>
+        <translation type="unfinished">Longitud</translation>
     </message>
     <message>
         <source>Pitch</source>
-        <translation type="obsolete">Tono</translation>
+        <translation type="unfinished">Tono</translation>
     </message>
     <message>
         <source>Velo On</source>
-        <translation type="obsolete">Velocidad On</translation>
+        <translation type="unfinished">Velocidad On</translation>
     </message>
     <message>
         <source>Velo Off</source>
-        <translation type="obsolete">Velocidad Off</translation>
+        <translation type="unfinished">Velocidad Off</translation>
     </message>
     <message>
         <source>Note Info</source>
-        <translation type="obsolete">Informaci� de nota</translation>
+        <translation type="unfinished">Informaci� de nota</translation>
     </message>
 </context>
 <context>
     <name>OrganGuiBase</name>
     <message>
         <source>MusE: Organ</source>
-        <translation type="unfinished">MusE: �gano</translation>
+        <translation type="obsolete">MusE: �gano</translation>
     </message>
     <message>
         <source>Presets</source>
@@ -6004,55 +5489,55 @@ fall� </translation>
     </message>
     <message>
         <source>O-1</source>
-        <translation type="unfinished">0-1</translation>
+        <translation type="obsolete">0-1</translation>
     </message>
     <message>
         <source>Oscillator</source>
-        <translation type="unfinished">Oscilador</translation>
+        <translation type="obsolete">Oscilador</translation>
     </message>
     <message>
         <source>Brass</source>
-        <translation type="unfinished">Metales</translation>
+        <translation type="obsolete">Metales</translation>
     </message>
     <message>
         <source>Reed</source>
-        <translation type="unfinished">Reed</translation>
+        <translation type="obsolete">Reed</translation>
     </message>
     <message>
         <source>Flute</source>
-        <translation type="unfinished">Flauta</translation>
+        <translation type="obsolete">Flauta</translation>
     </message>
     <message>
         <source>Drawbars</source>
-        <translation type="unfinished">Drawbars</translation>
+        <translation type="obsolete">Drawbars</translation>
     </message>
     <message>
         <source>16&apos;</source>
-        <translation type="unfinished">16&apos;</translation>
+        <translation type="obsolete">16&apos;</translation>
     </message>
     <message>
         <source>4&apos;</source>
-        <translation type="unfinished">4&apos;</translation>
+        <translation type="obsolete">4&apos;</translation>
     </message>
     <message>
         <source>2 2/3&apos;</source>
-        <translation type="unfinished">2 2/3&apos;</translation>
+        <translation type="obsolete">2 2/3&apos;</translation>
     </message>
     <message>
         <source>2&apos;</source>
-        <translation type="unfinished">2&apos;</translation>
+        <translation type="obsolete">2&apos;</translation>
     </message>
     <message>
         <source>8&apos;</source>
-        <translation type="unfinished">8&apos;</translation>
+        <translation type="obsolete">8&apos;</translation>
     </message>
     <message>
         <source>5 1/3&apos;</source>
-        <translation type="unfinished">5 1/3&apos;</translation>
+        <translation type="obsolete">5 1/3&apos;</translation>
     </message>
     <message>
         <source>Envelope Lo</source>
-        <translation type="unfinished">Envolvente Lo</translation>
+        <translation type="obsolete">Envolvente Lo</translation>
     </message>
     <message>
         <source>Attack(ms)</source>
@@ -6072,35 +5557,34 @@ fall� </translation>
     </message>
     <message>
         <source>Envelope Hi</source>
-        <translation type="unfinished">Envolvente Hi</translation>
+        <translation type="obsolete">Envolvente Hi</translation>
     </message>
     <message>
         <source>Release</source>
-        <translation type="unfinished">Relajaci�</translation>
+        <translation type="obsolete">Relajaci�</translation>
     </message>
     <message>
         <source>Sustain</source>
-        <translation type="unfinished">Sostenido</translation>
+        <translation type="obsolete">Sostenido</translation>
     </message>
     <message>
         <source>Decay</source>
-        <translation type="unfinished">Decaimiento</translation>
+        <translation type="obsolete">Decaimiento</translation>
     </message>
     <message>
         <source>Attack</source>
-        <translation type="unfinished">Ataque</translation>
-    </message>
-    <message>
-        <source>ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>cB</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Ataque</translation>
     </message>
     <message>
         <source>Velocity</source>
-        <translation type="unfinished">Velocidad</translation>
+        <translation type="obsolete">Velocidad</translation>
+    </message>
+</context>
+<context>
+    <name>OutportCombo</name>
+    <message>
+        <source>Midi Output Port</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6210,31 +5694,31 @@ fall� </translation>
     <name>PartCanvas</name>
     <message>
         <source>C&amp;ut</source>
-        <translation type="obsolete">C&amp;ortar</translation>
+        <translation type="unfinished">C&amp;ortar</translation>
     </message>
     <message>
         <source>&amp;Copy</source>
-        <translation type="obsolete">&amp;Copiar</translation>
+        <translation type="unfinished">&amp;Copiar</translation>
     </message>
     <message>
         <source>rename</source>
-        <translation type="obsolete">renombrar</translation>
+        <translation type="unfinished">renombrar</translation>
     </message>
     <message>
         <source>delete</source>
-        <translation type="obsolete">borrar</translation>
+        <translation type="unfinished">borrar</translation>
     </message>
     <message>
         <source>split</source>
-        <translation type="obsolete">partir</translation>
+        <translation type="unfinished">partir</translation>
     </message>
     <message>
         <source>glue</source>
-        <translation type="obsolete">pegar</translation>
+        <translation type="unfinished">pegar</translation>
     </message>
     <message>
         <source>pianoroll</source>
-        <translation type="obsolete">pianola</translation>
+        <translation type="unfinished">pianola</translation>
     </message>
     <message>
         <source>score</source>
@@ -6242,11 +5726,11 @@ fall� </translation>
     </message>
     <message>
         <source>list</source>
-        <translation type="obsolete">lista</translation>
+        <translation type="unfinished">lista</translation>
     </message>
     <message>
         <source>drums</source>
-        <translation type="obsolete">percusi�</translation>
+        <translation type="unfinished">percusi�</translation>
     </message>
     <message>
         <source>Cannot copy/move/clone to different Track-Type</source>
@@ -6254,15 +5738,15 @@ fall� </translation>
     </message>
     <message>
         <source>color</source>
-        <translation type="obsolete">color</translation>
+        <translation type="unfinished">color</translation>
     </message>
     <message>
         <source>de-clone</source>
-        <translation type="obsolete">des-clonar</translation>
+        <translation type="unfinished">des-clonar</translation>
     </message>
     <message>
         <source>wave edit</source>
-        <translation type="obsolete">editar onda</translation>
+        <translation type="unfinished">editar onda</translation>
     </message>
     <message>
         <source>Cannot paste: multiple tracks selected</source>
@@ -6284,6 +5768,30 @@ fall� </translation>
         <source>Cannot paste: wrong data type</source>
         <translation type="obsolete">No puedo pegar: Tipo de datos equivocado</translation>
     </message>
+    <message>
+        <source>AutoFill...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>miditracker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Get auto fill loop len</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Measures: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Change Part Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PartName:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PatchBay</name>
@@ -6296,7 +5804,7 @@ fall� </translation>
     <name>PatchBayBase</name>
     <message>
         <source>ALSA Patch Bay</source>
-        <translation type="unfinished">Panel de ruteado de ALSA</translation>
+        <translation type="obsolete">Panel de ruteado de ALSA</translation>
     </message>
 </context>
 <context>
@@ -6319,7 +5827,7 @@ fall� </translation>
     </message>
     <message>
         <source>Delete Events</source>
-        <translation type="obsolete">Borrar eventos</translation>
+        <translation type="unfinished">Borrar eventos</translation>
     </message>
     <message>
         <source>Select All</source>
@@ -6343,51 +5851,51 @@ fall� </translation>
     </message>
     <message>
         <source>&amp;Select</source>
-        <translation type="obsolete">&amp;Seleccionar</translation>
+        <translation type="unfinished">&amp;Seleccionar</translation>
     </message>
     <message>
         <source>blue</source>
-        <translation type="obsolete">azul</translation>
+        <translation type="unfinished">azul</translation>
     </message>
     <message>
         <source>pitch colors</source>
-        <translation type="obsolete">colores de tono</translation>
+        <translation type="unfinished">colores de tono</translation>
     </message>
     <message>
         <source>velocity colors</source>
-        <translation type="obsolete">colores de velocidad</translation>
+        <translation type="unfinished">colores de velocidad</translation>
     </message>
     <message>
         <source>&amp;Config</source>
-        <translation type="obsolete">&amp;Configurar</translation>
+        <translation type="unfinished">&amp;Configurar</translation>
     </message>
     <message>
         <source>event color</source>
-        <translation type="obsolete">color de eventos</translation>
+        <translation type="unfinished">color de eventos</translation>
     </message>
     <message>
         <source>&amp;Functions</source>
-        <translation type="obsolete">&amp;Funciones</translation>
+        <translation type="unfinished">&amp;Funciones</translation>
     </message>
     <message>
         <source>Over Quantize</source>
-        <translation type="obsolete">Sobre cuantizar</translation>
+        <translation type="unfinished">Sobre cuantizar</translation>
     </message>
     <message>
         <source>Note On Quantize</source>
-        <translation type="obsolete">Cuantizar inicio de nota</translation>
+        <translation type="unfinished">Cuantizar inicio de nota</translation>
     </message>
     <message>
         <source>Note On/Off Quantize</source>
-        <translation type="obsolete">Cuantizar inicio y final de nota</translation>
+        <translation type="unfinished">Cuantizar inicio y final de nota</translation>
     </message>
     <message>
         <source>Iterative Quantize</source>
-        <translation type="obsolete">Cuantizaci� iterativa</translation>
+        <translation type="unfinished">Cuantizaci� iterativa</translation>
     </message>
     <message>
         <source>Pianoroll Tools</source>
-        <translation type="obsolete">Herramientas de pianola</translation>
+        <translation type="unfinished">Herramientas de pianola</translation>
     </message>
     <message>
         <source>Step Record</source>
@@ -6407,59 +5915,87 @@ fall� </translation>
     </message>
     <message>
         <source>Config Quant...</source>
-        <translation type="obsolete">Configura cuantizaci�...</translation>
+        <translation type="unfinished">Configura cuantizaci�...</translation>
     </message>
     <message>
         <source>Modify Gate Time</source>
-        <translation type="obsolete">Modifica el tiempo de puerta</translation>
+        <translation type="unfinished">Modifica el tiempo de puerta</translation>
     </message>
     <message>
         <source>Modify Velocity</source>
-        <translation type="obsolete">Modifica la velocidad</translation>
+        <translation type="unfinished">Modifica la velocidad</translation>
     </message>
     <message>
         <source>Crescendo</source>
-        <translation type="obsolete">Crescendo</translation>
+        <translation type="unfinished">Crescendo</translation>
     </message>
     <message>
         <source>Transpose</source>
-        <translation type="obsolete">Transponer</translation>
+        <translation type="unfinished">Transponer</translation>
     </message>
     <message>
         <source>Thin Out</source>
-        <translation type="obsolete">Adelgazar</translation>
+        <translation type="unfinished">Adelgazar</translation>
     </message>
     <message>
         <source>Erase Event</source>
-        <translation type="obsolete">Borrar evento</translation>
+        <translation type="unfinished">Borrar evento</translation>
     </message>
     <message>
         <source>Note Shift</source>
-        <translation type="obsolete">Desplazar nota</translation>
+        <translation type="unfinished">Desplazar nota</translation>
     </message>
     <message>
         <source>Move Clock</source>
-        <translation type="obsolete">Mover reloj</translation>
+        <translation type="unfinished">Mover reloj</translation>
     </message>
     <message>
         <source>Copy Measure</source>
-        <translation type="obsolete">Copiar comp�</translation>
+        <translation type="unfinished">Copiar comp�</translation>
     </message>
     <message>
         <source>Erase Measure</source>
-        <translation type="obsolete">Vaciar comp�</translation>
+        <translation type="unfinished">Vaciar comp�</translation>
     </message>
     <message>
         <source>Delete Measure</source>
-        <translation type="obsolete">Borrar comp�</translation>
+        <translation type="unfinished">Borrar comp�</translation>
     </message>
     <message>
         <source>Create Measure</source>
-        <translation type="obsolete">Crear comp�</translation>
+        <translation type="unfinished">Crear comp�</translation>
     </message>
     <message>
         <source>ctrl</source>
         <translation type="obsolete">control</translation>
+    </message>
+    <message>
+        <source>Select &amp;All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Deselect All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invert &amp;Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Inside Loop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Outside Loop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Panic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6521,10 +6057,6 @@ fall� </translation>
         <translation type="unfinished">Copyright</translation>
     </message>
     <message>
-        <source>Stereo and Mono</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Stereo</source>
         <translation type="unfinished">Est�eo</translation>
     </message>
@@ -6534,10 +6066,22 @@ fall� </translation>
     </message>
     <message>
         <source>All</source>
-        <translation type="unfinished">Todo</translation>
+        <translation type="obsolete">Todo</translation>
+    </message>
+    <message>
+        <source>Mono and Stereo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show All</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Select which types of plugins should be visible in the list.&lt;br&gt;Note that using mono plugins on stereo tracks is not a problem, two will be used in parallell.&lt;br&gt;Also beware that the &apos;all&apos; alternative includes plugins that probably not are usable by MusE.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search in &apos;Label&apos; and &apos;Name&apos;:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6569,6 +6113,13 @@ fall� </translation>
     </message>
 </context>
 <context>
+    <name>PreferencesDialog</name>
+    <message>
+        <source>MusE: load image</source>
+        <translation type="unfinished">MusE: carga imagen</translation>
+    </message>
+</context>
+<context>
     <name>PrinterConfig</name>
     <message>
         <source>MusE: Config Printer</source>
@@ -6593,6 +6144,17 @@ fall� </translation>
     <message>
         <source>Cancel</source>
         <translation type="obsolete">Cancelar</translation>
+    </message>
+</context>
+<context>
+    <name>ProjectDialog</name>
+    <message>
+        <source>MusE: create new folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>new folder:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6729,7 +6291,7 @@ actualmente sin uso</translation>
     </message>
 </context>
 <context>
-    <name>QPopupMenu</name>
+    <name>QMenu</name>
     <message>
         <source>Add Midi Generator...</source>
         <translation type="unfinished"></translation>
@@ -6759,7 +6321,7 @@ actualmente sin uso</translation>
     </message>
     <message>
         <source>generic midi</source>
-        <translation type="obsolete">midi gen�ico</translation>
+        <translation type="unfinished">midi gen�ico</translation>
     </message>
     <message>
         <source>new</source>
@@ -6767,7 +6329,7 @@ actualmente sin uso</translation>
     </message>
     <message>
         <source>create peakfile for </source>
-        <translation type="obsolete">crear archivo de picos para</translation>
+        <translation type="unfinished">crear archivo de picos para</translation>
     </message>
     <message>
         <source>MusE: get file name</source>
@@ -6830,21 +6392,21 @@ existe</translation>
     <message>
         <source>Open File
 </source>
-        <translation type="obsolete">Abrir archivo</translation>
+        <translation type="unfinished">Abrir archivo</translation>
     </message>
     <message>
         <source>
 failed: </source>
-        <translation type="obsolete">
+        <translation type="unfinished">
 fall� </translation>
     </message>
     <message>
         <source>MusE: Open File</source>
-        <translation type="obsolete">MusE: Abrir archivo</translation>
+        <translation type="unfinished">MusE: Abrir archivo</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished">Ninguno</translation>
+        <translation type="obsolete">Ninguno</translation>
     </message>
     <message>
         <source>Master</source>
@@ -6861,6 +6423,27 @@ fall� </translation>
     <message>
         <source>Unknown</source>
         <translation type="obsolete">Desconocido</translation>
+    </message>
+    <message>
+        <source>copy 
+  %1
+to
+  %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>
+converting sample rate
+from %1 to %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: export midi file:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6911,6 +6494,13 @@ fall� </translation>
     <message>
         <source>Cancel</source>
         <translation type="obsolete">Cancelar</translation>
+    </message>
+</context>
+<context>
+    <name>RecordButton</name>
+    <message>
+        <source>record</source>
+        <translation type="unfinished">grabar</translation>
     </message>
 </context>
 <context>
@@ -7266,92 +6856,32 @@ en la lista de controles definidos por MusE</translation>
     </message>
 </context>
 <context>
-    <name>RouteDialogBase</name>
-    <message>
-        <source>MusE: Routing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add Route</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Source:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Destination:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connect</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>connect source to destination</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Current Routes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Source</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Destination</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>remove selected route</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>SS_PluginChooserBase</name>
     <message>
-        <source>SimpleDrums - Ladspa Plugin Chooser</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Name</source>
-        <translation type="unfinished">Nombre</translation>
-    </message>
-    <message>
-        <source>Label</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Inports</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Outports</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Creator</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Nombre</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Cancelar</translation>
+        <translation type="obsolete">&amp;Cancelar</translation>
     </message>
+</context>
+<context>
+    <name>SS_PluginFront</name>
     <message>
-        <source>Alt+C</source>
+        <source>Clear and unload effect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;OK</source>
+        <source>Load effect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Alt+O</source>
+        <source>Toggle display of effect parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Turn effect on/off</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7525,9 +7055,9 @@ en la lista de controles definidos por MusE</translation>
     </message>
 </context>
 <context>
-    <name>ShortcutCaptureDialogBase</name>
+    <name>ShortcutCaptureDialog</name>
     <message>
-        <source>OK</source>
+        <source>Ok</source>
         <translation type="unfinished">Aceptar</translation>
     </message>
     <message>
@@ -7535,35 +7065,58 @@ en la lista de controles definidos por MusE</translation>
         <translation type="unfinished">Cancelar</translation>
     </message>
     <message>
-        <source>Enter shortcut sequence</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Press keys to enter shortcut sequence!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Old shortcut:</source>
+        <source>Shortcut conflicts with </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Undefined</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>ShortcutCaptureDialogBase</name>
     <message>
-        <source>New shortcut:</source>
-        <translation type="unfinished"></translation>
+        <source>OK</source>
+        <translation type="obsolete">Aceptar</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="obsolete">Cancelar</translation>
     </message>
 </context>
 <context>
     <name>ShortcutConfig</name>
     <message>
-        <source>Global</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Arranger</source>
         <translation type="unfinished">Arreglador</translation>
+    </message>
+    <message>
+        <source>Insert Note</source>
+        <translation type="unfinished">Insertar nota</translation>
+    </message>
+    <message>
+        <source>Insert SysEx</source>
+        <translation type="unfinished">Insertar sistema exclusivo</translation>
+    </message>
+    <message>
+        <source>Insert Ctrl</source>
+        <translation type="unfinished">Insertar controlador</translation>
+    </message>
+    <message>
+        <source>Insert Meta</source>
+        <translation type="unfinished">Insertar Meta</translation>
+    </message>
+    <message>
+        <source>Insert Channel Aftertouch</source>
+        <translation type="unfinished">Insertar AfterTouch de canal</translation>
+    </message>
+    <message>
+        <source>Insert Key Aftertouch</source>
+        <translation type="unfinished">Insertar AfterTouch de tecla</translation>
+    </message>
+    <message>
+        <source>Global</source>
+        <translation type="unfinished">Global</translation>
     </message>
     <message>
         <source>Pianoroll</source>
@@ -8106,30 +7659,6 @@ en la lista de controles definidos por MusE</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Insert Note</source>
-        <translation type="unfinished">Insertar nota</translation>
-    </message>
-    <message>
-        <source>Insert SysEx</source>
-        <translation type="unfinished">Insertar sistema exclusivo</translation>
-    </message>
-    <message>
-        <source>Insert Ctrl</source>
-        <translation type="unfinished">Insertar controlador</translation>
-    </message>
-    <message>
-        <source>Insert Meta</source>
-        <translation type="unfinished">Insertar Meta</translation>
-    </message>
-    <message>
-        <source>Insert Channel Aftertouch</source>
-        <translation type="unfinished">Insertar AfterTouch de canal</translation>
-    </message>
-    <message>
-        <source>Insert Key Aftertouch</source>
-        <translation type="unfinished">Insertar AfterTouch de tecla</translation>
-    </message>
-    <message>
         <source>Edit: Increase event position</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8158,43 +7687,7 @@ en la lista de controles definidos por MusE</translation>
     <name>ShortcutConfigBase</name>
     <message>
         <source>&amp;Apply</source>
-        <translation type="unfinished">&amp;Aplicar</translation>
-    </message>
-    <message>
-        <source>Configure Keyboard Shortcuts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Shortcut Category</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Shortcut</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Clear</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Alt+C</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Define</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Alt+D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Alt+A</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">&amp;Aplicar</translation>
     </message>
 </context>
 <context>
@@ -8205,9 +7698,69 @@ en la lista de controles definidos por MusE</translation>
     </message>
 </context>
 <context>
-    <name>SimpleDrumsGuiBase</name>
+    <name>SimpleSynthGui</name>
     <message>
-        <source>DrumSynth 0.1</source>
+        <source>Load sample dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Song</name>
+    <message>
+        <source>Jack shutdown!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Jack has detected a performance problem which has lead to
+MusE being disconnected.
+This could happen due to a number of reasons:
+- a performance issue with your particular setup.
+- a bug in MusE (or possibly in another connected software).
+- a random hiccup which might never occur again.
+- jack was voluntary stopped by you or someone else
+- jack crashed
+If there is a persisting problem you are much welcome to discuss it
+on the MusE mailinglist.
+(there is information about joining the mailinglist on the MusE
+ homepage which is available through the help menu)
+
+To proceed check the status of Jack and try to restart it and then .
+click on the Restart button.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SplitLayerGui</name>
+    <message>
+        <source>start pitch for split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>enable learn mode for start pitch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>end pitch for split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>enable learn mode for end pitch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>pitch offset for split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start velocity for split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>end velocity for split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>velocity offset for split</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8266,6 +7819,48 @@ en la lista de controles definidos por MusE</translation>
     </message>
 </context>
 <context>
+    <name>TLSWidget</name>
+    <message>
+        <source>Remove Subtrack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ctrl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished">Velocidad</translation>
+    </message>
+    <message>
+        <source>Delete Controller</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TLWidget</name>
+    <message>
+        <source>Delete Track</source>
+        <translation type="unfinished">Borrar pista</translation>
+    </message>
+    <message>
+        <source>Copy Track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Gui</source>
+        <translation type="unfinished">Mostrar GUI</translation>
+    </message>
+    <message>
+        <source>Add Subtrack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi Output Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TList</name>
     <message>
         <source>Midi</source>
@@ -8305,218 +7900,262 @@ en la lista de controles definidos por MusE</translation>
     </message>
 </context>
 <context>
+    <name>TemplateDialog</name>
+    <message>
+        <source>MusE presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TempoSig</name>
     <message>
         <source>Tempo/Sig</source>
-        <translation type="unfinished">tempo/firma</translation>
+        <translation type="obsolete">tempo/firma</translation>
+    </message>
+</context>
+<context>
+    <name>TimeCanvas</name>
+    <message>
+        <source>Ctrl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Controller View</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>Toolbar1</name>
     <message>
         <source>Solo</source>
-        <translation type="obsolete">Solo</translation>
+        <translation type="unfinished">Solo</translation>
     </message>
     <message>
         <source>Snap</source>
-        <translation type="obsolete">Snap</translation>
+        <translation type="unfinished">Snap</translation>
     </message>
     <message>
         <source>Quantize</source>
-        <translation type="obsolete">Cuantizar</translation>
+        <translation type="unfinished">Cuantizar</translation>
     </message>
     <message>
         <source>To</source>
-        <translation type="obsolete">A</translation>
+        <translation type="unfinished">A</translation>
     </message>
     <message>
         <source>All Events</source>
-        <translation type="obsolete">Todos los eventos</translation>
+        <translation type="unfinished">Todos los eventos</translation>
     </message>
     <message>
         <source>Looped Ev.</source>
-        <translation type="obsolete">Eventos del bucle</translation>
+        <translation type="unfinished">Eventos del bucle</translation>
     </message>
     <message>
         <source>Selected Ev.</source>
-        <translation type="obsolete">Eventos seleccionados</translation>
+        <translation type="unfinished">Eventos seleccionados</translation>
     </message>
     <message>
         <source>Looped+Sel.</source>
-        <translation type="obsolete">Bucle + Selecci�</translation>
+        <translation type="unfinished">Bucle + Selecci�</translation>
     </message>
     <message>
         <source>Cursor</source>
-        <translation type="obsolete">Cursor</translation>
+        <translation type="unfinished">Cursor</translation>
     </message>
 </context>
 <context>
     <name>TrackComment</name>
     <message>
         <source>MusE: Track Comment</source>
-        <translation type="obsolete">MusE: Comentario de la pista</translation>
+        <translation type="unfinished">MusE: Comentario de la pista</translation>
     </message>
     <message>
         <source>Track Comment:</source>
-        <translation type="obsolete">Comentario de la pista:</translation>
+        <translation type="unfinished">Comentario de la pista:</translation>
+    </message>
+</context>
+<context>
+    <name>TrackInfo</name>
+    <message>
+        <source>Track Type</source>
+        <translation type="unfinished">Tipo de pista</translation>
+    </message>
+    <message>
+        <source>Track Name</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>Transport</name>
     <message>
         <source>Punch In</source>
-        <translation type="unfinished">Pinchar</translation>
+        <translation type="obsolete">Pinchar</translation>
     </message>
     <message>
         <source>Loop</source>
-        <translation type="unfinished">Bucle</translation>
+        <translation type="obsolete">Bucle</translation>
     </message>
     <message>
         <source>Punch Out</source>
-        <translation type="unfinished">Fin pinchado</translation>
+        <translation type="obsolete">Fin pinchado</translation>
     </message>
     <message>
         <source>Left Mark</source>
-        <translation type="unfinished">Marca izquierda</translation>
+        <translation type="obsolete">Marca izquierda</translation>
     </message>
     <message>
         <source>Right Mark</source>
-        <translation type="unfinished">Marca derecha</translation>
+        <translation type="obsolete">Marca derecha</translation>
     </message>
     <message>
         <source>Overdub</source>
-        <translation type="unfinished">A�dir</translation>
+        <translation type="obsolete">A�dir</translation>
     </message>
     <message>
         <source>Replace</source>
-        <translation type="unfinished">Reemplazar</translation>
+        <translation type="obsolete">Reemplazar</translation>
     </message>
     <message>
         <source>Rec Mode</source>
-        <translation type="unfinished">Modo de grabaci�</translation>
+        <translation type="obsolete">Modo de grabaci�</translation>
     </message>
     <message>
         <source>Normal</source>
-        <translation type="unfinished">Normal</translation>
+        <translation type="obsolete">Normal</translation>
     </message>
     <message>
         <source>Mix</source>
-        <translation type="unfinished">Mezcla</translation>
+        <translation type="obsolete">Mezcla</translation>
     </message>
     <message>
         <source>Cycle Rec</source>
-        <translation type="unfinished">Ciclar Grabaci�</translation>
+        <translation type="obsolete">Ciclar Grabaci�</translation>
     </message>
     <message>
         <source>punchin</source>
-        <translation type="unfinished">pinchar</translation>
+        <translation type="obsolete">pinchar</translation>
     </message>
     <message>
         <source>loop</source>
-        <translation type="unfinished">bucle</translation>
+        <translation type="obsolete">bucle</translation>
     </message>
     <message>
         <source>punchout</source>
-        <translation type="unfinished">fin pinchado</translation>
+        <translation type="obsolete">fin pinchado</translation>
     </message>
     <message>
         <source>rewind to start</source>
-        <translation type="unfinished">retroceder al inicio</translation>
+        <translation type="obsolete">retroceder al inicio</translation>
     </message>
     <message>
         <source>rewind</source>
-        <translation type="unfinished">retroceder</translation>
+        <translation type="obsolete">retroceder</translation>
     </message>
     <message>
         <source>forward</source>
-        <translation type="unfinished">avanzar</translation>
+        <translation type="obsolete">avanzar</translation>
     </message>
     <message>
         <source>stop</source>
-        <translation type="unfinished">parar</translation>
+        <translation type="obsolete">parar</translation>
     </message>
     <message>
         <source>play</source>
-        <translation type="unfinished">reproducir</translation>
+        <translation type="obsolete">reproducir</translation>
     </message>
     <message>
         <source>record</source>
-        <translation type="unfinished">grabar</translation>
+        <translation type="obsolete">grabar</translation>
     </message>
     <message>
         <source>AC</source>
-        <translation type="unfinished">AC</translation>
+        <translation type="obsolete">AC</translation>
     </message>
     <message>
         <source>quantize during record</source>
-        <translation type="unfinished">cuantizar durante la grabaci�</translation>
+        <translation type="obsolete">cuantizar durante la grabaci�</translation>
     </message>
     <message>
         <source>Click</source>
-        <translation type="unfinished">Click</translation>
+        <translation type="obsolete">Click</translation>
     </message>
     <message>
         <source>metronom click on/off</source>
-        <translation type="unfinished">Click del metr�omo encendido/apagado</translation>
+        <translation type="obsolete">Click del metr�omo encendido/apagado</translation>
     </message>
     <message>
         <source>Sync</source>
-        <translation type="unfinished">Sinconizaci�</translation>
+        <translation type="obsolete">Sinconizaci�</translation>
     </message>
     <message>
         <source>external sync on/off</source>
-        <translation type="unfinished">Sincronizaci� externa encedida/apagada</translation>
+        <translation type="obsolete">Sincronizaci� externa encedida/apagada</translation>
     </message>
     <message>
         <source>Master</source>
-        <translation type="unfinished">Maestro</translation>
+        <translation type="obsolete">Maestro</translation>
     </message>
     <message>
         <source>use master track</source>
-        <translation type="unfinished">usar pista maestra</translation>
+        <translation type="obsolete">usar pista maestra</translation>
     </message>
 </context>
 <context>
     <name>TransposeDialogBase</name>
     <message>
         <source>MusE: Midi Transpose</source>
-        <translation type="unfinished">MusE: Transposici� MIDI</translation>
+        <translation type="obsolete">MusE: Transposici� MIDI</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation type="unfinished">Valor</translation>
+        <translation type="obsolete">Valor</translation>
     </message>
     <message>
         <source>halftones</source>
-        <translation type="unfinished">semitonos</translation>
+        <translation type="obsolete">semitonos</translation>
     </message>
     <message>
         <source>Time</source>
-        <translation type="unfinished">Tiempo</translation>
+        <translation type="obsolete">Tiempo</translation>
     </message>
     <message>
         <source>all</source>
-        <translation type="unfinished">todo</translation>
+        <translation type="obsolete">todo</translation>
     </message>
     <message>
         <source>between markers</source>
-        <translation type="unfinished">entre marcadores</translation>
+        <translation type="obsolete">entre marcadores</translation>
     </message>
     <message>
         <source>Parts</source>
-        <translation type="unfinished">Partes</translation>
+        <translation type="obsolete">Partes</translation>
     </message>
     <message>
         <source>all in selected tracks</source>
-        <translation type="unfinished">todo en las pistas seleccionadas</translation>
+        <translation type="obsolete">todo en las pistas seleccionadas</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished">Aceptar</translation>
+        <translation type="obsolete">Aceptar</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Cancelar</translation>
+        <translation type="obsolete">Cancelar</translation>
+    </message>
+</context>
+<context>
+    <name>VAMGui</name>
+    <message>
+        <source>MusE: Load VAM Presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Save VAM Presets</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -8665,54 +8304,61 @@ Jotsif Lindman Hörnlund
     </message>
 </context>
 <context>
-    <name>VelocityBase</name>
+    <name>Velocity</name>
     <message>
         <source>MusE: Modify Velocity</source>
         <translation type="unfinished">MusE: Modificar velocidad</translation>
     </message>
+</context>
+<context>
+    <name>VelocityBase</name>
+    <message>
+        <source>MusE: Modify Velocity</source>
+        <translation type="obsolete">MusE: Modificar velocidad</translation>
+    </message>
     <message>
         <source>Range</source>
-        <translation type="unfinished">Rango</translation>
+        <translation type="obsolete">Rango</translation>
     </message>
     <message>
         <source>All Events</source>
-        <translation type="unfinished">Todos los eventos</translation>
+        <translation type="obsolete">Todos los eventos</translation>
     </message>
     <message>
         <source>Selected Events</source>
-        <translation type="unfinished">Eventos seleccionados</translation>
+        <translation type="obsolete">Eventos seleccionados</translation>
     </message>
     <message>
         <source>Looped Events</source>
-        <translation type="unfinished">Eventos del bucle</translation>
+        <translation type="obsolete">Eventos del bucle</translation>
     </message>
     <message>
         <source>Selected &amp; Looped</source>
-        <translation type="unfinished">Seleccionados y bucle</translation>
+        <translation type="obsolete">Seleccionados y bucle</translation>
     </message>
     <message>
         <source>Values</source>
-        <translation type="unfinished">Valores</translation>
+        <translation type="obsolete">Valores</translation>
     </message>
     <message>
         <source>Rate:</source>
-        <translation type="unfinished">Velocidad:</translation>
+        <translation type="obsolete">Velocidad:</translation>
     </message>
     <message>
         <source>Offset:</source>
-        <translation type="unfinished">Desplazamiento:</translation>
+        <translation type="obsolete">Desplazamiento:</translation>
     </message>
     <message>
         <source>%</source>
-        <translation type="unfinished">%</translation>
+        <translation type="obsolete">%</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished">Aceptar</translation>
+        <translation type="obsolete">Aceptar</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Cancelar</translation>
+        <translation type="obsolete">Cancelar</translation>
     </message>
 </context>
 <context>
@@ -8734,34 +8380,118 @@ Jotsif Lindman Hörnlund
     </message>
     <message>
         <source>Solo</source>
-        <translation type="obsolete">Solo</translation>
+        <translation type="unfinished">Solo</translation>
     </message>
     <message>
         <source>Cursor</source>
-        <translation type="obsolete">Cursor</translation>
+        <translation type="unfinished">Cursor</translation>
     </message>
     <message>
         <source>&amp;File</source>
-        <translation type="obsolete">&amp;Archivo</translation>
+        <translation type="unfinished">&amp;Archivo</translation>
     </message>
     <message>
         <source>Functions</source>
         <translation type="obsolete">Funciones</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Editar</translation>
+    </message>
+    <message>
+        <source>Func&amp;tions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Gain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>200%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>150%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>75%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>50%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>25%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit in E&amp;xternal Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mute Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normalize Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fade In Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fade Out Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reverse Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation type="unfinished">Seleccionar</translation>
+    </message>
+    <message>
+        <source>Select &amp;All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Deselect All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>waveedit-tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>pianoroll-tools</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>WaveTrackInfoBase</name>
     <message>
         <source>MusE: TrackInfo</source>
-        <translation type="unfinished">MusE: Informaci� de pista</translation>
+        <translation type="obsolete">MusE: Informaci� de pista</translation>
     </message>
     <message>
         <source>Track Info</source>
-        <translation type="unfinished">Informaci� de pista</translation>
+        <translation type="obsolete">Informaci� de pista</translation>
     </message>
     <message>
         <source>Track Name</source>
-        <translation type="unfinished">Nombre de pista</translation>
+        <translation type="obsolete">Nombre de pista</translation>
     </message>
     <message>
         <source>Output Route:</source>
@@ -8785,18 +8515,20 @@ Jotsif Lindman Hörnlund
     </message>
     <message>
         <source>off</source>
-        <translation type="unfinished">apagado</translation>
+        <translation type="obsolete">apagado</translation>
     </message>
+</context>
+<context>
+    <name>WaveView</name>
     <message>
-        <source>Track Delay (ticks)</source>
+        <source>MusE - file size changed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delay (Frames)</source>
+        <source>When editing in external editor - you should not change the filesize
+since it must fit the selected region.
+
+Missing data is muted</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

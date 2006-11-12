@@ -1,3 +1,7 @@
+12.11 (ws)
+      - the internationalization files (*.qm) are now part of the
+        MusE image via the qt resource system. Installing them is not
+        necessary anymore.
 10.11 (ws)
       - implemented splitlayer midi plugin
       - replaced meter in midi input strip by activity "leds" for all
