@@ -123,7 +123,7 @@ DrumEdit::DrumEdit(PartList* pl, bool init)
       QToolBar* transport = addToolBar(tr("Transport"));
       muse->setupTransportToolbar(transport);
 
-      // dont´t show pitch value in toolbar
+      // dont´how pitch value in toolbar
       addToolBarBreak();
       toolbar = new Toolbar1(initRaster, initQuant, false);
       addToolBar(toolbar);
@@ -354,6 +354,10 @@ static int rasterTable[] = {
 
 void DrumEdit::keyPressEvent(QKeyEvent* event)
       {
+      event->ignore();
+      return;
+#if 0
+//TODOB
       DrumCanvas* dc = canvas();
       int index = 0;
       int n = sizeof(rasterTable);
@@ -393,13 +397,6 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             tools2->set(RubberTool);
             return;
             }
-
-            /*
-      else if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) {
-            pc->pianoCmd(CMD_INSERT);
-            return;
-            }
-            */
       else if (key == shortcuts[SHRT_SET_QUANT_1].key)
             val = rasterTable[8 + off];
       else if (key == shortcuts[SHRT_SET_QUANT_2].key)
@@ -416,17 +413,6 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             val = rasterTable[2 + off];
       else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
             val = rasterTable[index + ((off == 0) ? 9 : 0)];
-            /*
-      else if (key == shortcuts[SHRT_EVENT_COLOR].key) {
-            if (colorMode == 0)
-                  colorMode = 1;
-            else if (colorMode == 1)
-                  colorMode = 2;
-            else
-                  colorMode = 0;
-            setEventColorMode(colorMode);
-            return;
-            }*/
       else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
             val = rasterTable[index + ((off == 18) ? 9 : 18)];
 
@@ -448,6 +434,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
       setRaster(val);
       toolbar->setQuant(quant());
       toolbar->setRaster(raster());
+#endif
       }
 
 //---------------------------------------------------------
@@ -456,6 +443,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
 
 void DrumEdit::initShortcuts()
       {
+#if 0 //TODOB
       cutAction->setShortcut(shortcuts[SHRT_CUT].key);
       copyAction->setShortcut(shortcuts[SHRT_COPY].key);
       pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
@@ -468,6 +456,7 @@ void DrumEdit::initShortcuts()
       cmdActions[DrumCanvas::CMD_SELECT_INVERT]->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
       cmdActions[DrumCanvas::CMD_SELECT_ILOOP]->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
       cmdActions[DrumCanvas::CMD_SELECT_OLOOP]->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
+#endif
       }
 
 //---------------------------------------------------------

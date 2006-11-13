@@ -204,6 +204,7 @@ MidiTrack* EventCanvas::track() const
 
 void EventCanvas::keyPress(QKeyEvent* event)
       {
+#if 0 // TODOB
       int key = event->key();
       if (event->modifiers() & Qt::ShiftModifier)
             key += Qt::SHIFT;
@@ -302,6 +303,7 @@ void EventCanvas::keyPress(QKeyEvent* event)
             modifySelected(NoteInfo::VAL_TIME, 0 - editor->raster());
             }
       else
+#endif
             event->ignore();
       }
 

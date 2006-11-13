@@ -471,11 +471,16 @@ MusE::MusE()
       projectPropsDialog    = 0;
       listEditor            = 0;
 
-      startAction   = new QAction(QIcon(":/xpm/start.xpm"), "start", this);
-      rewindAction  = new QAction(QIcon(":/xpm/frewind.xpm"), "rewind", this);
+      startAction = getAction("play", this);
+      startAction->setIcon(QIcon(":/xpm/start.xpm"));
+      startAction->setText(tr("start"));
+      connect(startAction, SIGNAL(triggered()), song, SLOT(rewindStart()));
+
+      rewindAction  = new QAction(QIcon(":/xpm/frewind.xpm"),  "rewind",  this);
       forwardAction = new QAction(QIcon(":/xpm/fforward.xpm"), "forward", this);
-      stopAction    = new QAction(QIcon(":/xpm/stop.xpm"), "stop", this);
-      playAction    = new QAction(QIcon(":/xpm/play.xpm"), "play", this);
+      stopAction    = new QAction(QIcon(":/xpm/stop.xpm"),     "stop",    this);
+      playAction    = new QAction(QIcon(":/xpm/play.xpm"),     "play",    this);
+
       playAction->setCheckable(true);
       stopAction->setCheckable(true);
 
@@ -518,9 +523,6 @@ MusE::MusE()
       punchoutAction->setWhatsThis(tr(infoPunchoutButton));
       punchoutAction->setCheckable(true);
       connect(punchoutAction, SIGNAL(toggled(bool)), song, SLOT(setPunchout(bool)));
-
-      startAction->setWhatsThis(tr(infoStartButton));
-      connect(startAction, SIGNAL(triggered()), song, SLOT(rewindStart()));
 
       rewindAction->setWhatsThis(tr(infoRewindButton));
 
@@ -1690,6 +1692,7 @@ void MusE::selectProject(QAction* a)
 
 void MusE::kbAccel(int key)
       {
+#if 0 //TODOB
       if (key == shortcuts[SHRT_TOGGLE_METRO].key) {
             song->setClick(!song->click());
             }
@@ -1739,6 +1742,7 @@ void MusE::kbAccel(int key)
             if (debugMsg)
                   printf("unknown kbAccel 0x%x\n", key);
             }
+#endif
       }
 
 //---------------------------------------------------------
@@ -1759,7 +1763,8 @@ class MuseApplication : public QApplication {
             muse = m;
             }
 
-      bool notify(QObject* receiver, QEvent* event) {
+      bool notify(QObject* receiver, QEvent* event) 
+            {
             bool flag = QApplication::notify(receiver, event);
             if (event->type() == QEvent::KeyPress) {
                   QKeyEvent* ke = (QKeyEvent*)event;
@@ -2499,6 +2504,7 @@ void MusE::startEditInstrument()
 
 void MusE::updateConfiguration()
       {
+#if 0 //TODOB
       fileOpenAction->setShortcut(shortcuts[SHRT_OPEN].key);
       fileSaveAction->setShortcut(shortcuts[SHRT_SAVE].key);
 
@@ -2567,6 +2573,8 @@ void MusE::updateConfiguration()
 //      menu_ids[CMD_OPEN_HOMEPAGE]->setShortcut(shortcuts[SHRT_OPEN_HOMEPAGE].key);
 //      menu_ids[CMD_OPEN_BUG]->setShortcut(shortcuts[SHRT_OPEN_BUG].key);
       menu_ids[CMD_START_WHATSTHIS]->setShortcut(shortcuts[SHRT_START_WHATSTHIS].key);
+#endif
+
 #if 0 //TD
       menuEdit->setShortcut(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key, menu_ids[CMD_OPEN_MIDI_TRANSFORM]);
 
@@ -2853,6 +2861,7 @@ int main(int argc, char* argv[])
       initMidiController();
       initMidiInstruments();
       MuseApplication app(argc, argv);
+      initShortcuts();
 
       config.fonts[0] = QFont(QString("helvetica"), 10, QFont::Normal);
       config.fonts[1] = QFont(QString("helvetica"),  6, QFont::Normal);

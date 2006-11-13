@@ -1,7 +1,4 @@
 <ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>ShortcutCaptureDialogBase</class>
  <widget class="QDialog" name="ShortcutCaptureDialogBase" >
   <property name="geometry" >
@@ -25,6 +22,51 @@
    <property name="spacing" >
     <number>6</number>
    </property>
+   <item row="0" column="0" colspan="2" >
+    <widget class="QLabel" name="descrLabel" >
+     <property name="text" >
+      <string>Press up to 4 keys to enter shortcut sequence!</string>
+     </property>
+     <property name="alignment" >
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2" >
+    <widget class="QLabel" name="messageLabel" >
+     <property name="text" >
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" >
+    <widget class="QLabel" name="oshrtTextLabel" >
+     <property name="text" >
+      <string>Old shortcut:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" >
+    <widget class="QLineEdit" name="oshrtLabel" >
+     <property name="readOnly" >
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" >
+    <widget class="QLabel" name="nshrtTextLabel" >
+     <property name="text" >
+      <string>New shortcut:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1" >
+    <widget class="QLineEdit" name="nshrtLabel" >
+     <property name="readOnly" >
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item row="4" column="0" colspan="2" >
     <layout class="QHBoxLayout" >
      <property name="margin" >
@@ -33,6 +75,13 @@
      <property name="spacing" >
       <number>6</number>
      </property>
+     <item>
+      <widget class="QToolButton" name="clearButton" >
+       <property name="text" >
+        <string>Clear</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <spacer>
        <property name="orientation" >
@@ -71,55 +120,43 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="0" >
-    <widget class="QLabel" name="nshrtTextLabel" >
-     <property name="text" >
-      <string>New shortcut:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1" >
-    <widget class="QLineEdit" name="oshrtLabel" >
-     <property name="readOnly" >
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0" colspan="2" >
-    <widget class="QLabel" name="descrLabel" >
-     <property name="text" >
-      <string>Press keys to enter shortcut sequence!</string>
-     </property>
-     <property name="alignment" >
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" >
-    <widget class="QLabel" name="oshrtTextLabel" >
-     <property name="text" >
-      <string>Old shortcut:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1" >
-    <widget class="QLineEdit" name="nshrtLabel" >
-     <property name="readOnly" >
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="2" >
-    <widget class="QLabel" name="messageLabel" >
-     <property name="text" >
-      <string/>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11" />
  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>okButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ShortcutCaptureDialogBase</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>337</x>
+     <y>189</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>242</x>
+     <y>194</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ShortcutCaptureDialogBase</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>425</x>
+     <y>194</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>350</x>
+     <y>153</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

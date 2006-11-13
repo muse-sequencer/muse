@@ -16,11 +16,14 @@
 #include "shortcuts.h"
 
 #define SHRT_CATEGORY_COL 0
-enum
-      {
+enum {
       SHRT_DESCR_COL = 0,
       SHRT_SHRTCUT_COL
       };
+
+//---------------------------------------------------------
+//   ShortcutConfig
+//---------------------------------------------------------
 
 class ShortcutConfig : public QDialog, public Ui::ShortcutConfigBase {
       Q_OBJECT
@@ -30,20 +33,18 @@ class ShortcutConfig : public QDialog, public Ui::ShortcutConfigBase {
       void updateSCListView() { updateSCListView(current_category); }
       void closeEvent(QCloseEvent *e);
 
-      private slots:
+   private slots:
       void categorySelChanged(QTreeWidgetItem*);
       void shortcutSelChanged(QTreeWidgetItem*);
       void assignShortcut();
       void clearShortcut();
       void assignAll();
 
-
-      public:
+   public:
       ShortcutConfig(QWidget* parent = 0);
-      static QString Translate(const char*);
       bool _config_changed;
-      static const char* ls[];
       static const shortcut_cg shortcut_category[];
-};
+      };
 
 #endif
+

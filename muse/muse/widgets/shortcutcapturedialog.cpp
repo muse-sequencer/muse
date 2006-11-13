@@ -21,78 +21,77 @@
 #include "shortcutcapturedialog.h"
 #include "shortcuts.h"
 
-ShortcutCaptureDialog::ShortcutCaptureDialog(QWidget* parent, int index)
+//---------------------------------------------------------
+//   ShortcutCaptureDialog
+//---------------------------------------------------------
+
+ShortcutCaptureDialog::ShortcutCaptureDialog(Shortcut* _s, QWidget* parent)
    : QDialog(parent)
       {
       setupUi(this);
-      QKeySequence q = QKeySequence(shortcuts[index].key);
-      oshrtLabel->setText(q);
-      connect(okButton, SIGNAL( clicked() ), this, SLOT( apply() )  );
-      connect(cancelButton, SIGNAL(pressed()), this, SLOT(cancel()));
-      shortcutindex = index;
+      s = _s;
+
+      oshrtLabel->setText(s->key.toString(QKeySequence::NativeText));
+      connect(clearButton, SIGNAL(clicked()), SLOT(clearClicked()));
+      clearClicked();
       grabKeyboard();
-      okButton->setText(tr("Ok"));
-      cancelButton->setText(tr("Cancel"));
       }
+
+//---------------------------------------------------------
+//   ShortcutCaptureDialog
+//---------------------------------------------------------
 
 ShortcutCaptureDialog::~ShortcutCaptureDialog()
       {
       releaseKeyboard();
       }
 
+//---------------------------------------------------------
+//   keyPressEvent
+//---------------------------------------------------------
+
 void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
       {
-#if 0 //TODOB
-      bool shift, alt, ctrl, conflict = false, realkey = false;
-      QString msgString = "";
-      int temp_key;
-      shift = e->modifiers() & Qt::ShiftModifier;
-      ctrl  = e->modifiers() & Qt::ControlModifier;
-      alt   = e->modifiers() & Qt::AltModifier;
-
-      //printf("Key total: %d, alt: %d, ctrl: %d shift: %d\n",e->key(), alt, ctrl, shift);
-      temp_key = e->key();
-      if (shift)
-            temp_key += Qt::SHIFT;
-      if (ctrl)
-            temp_key += Qt::CTRL;
-      if (alt)
-            temp_key += Qt::ALT;
-      //printf("Final key assembled: %d\n",temp_key);
-
-      // Check if this is a "real" key that completes a valid shortcut:
+      if (key.count() >= 4)
+            return;
       int k = e->key();
-      if (k < 256 || k == Qt::Key_Enter || k == Qt::Key_Return || k >= Qt::Key_F1 && k <= Qt::Key_F12 || k == Qt::Key_Home || k == Qt::Key_PageUp
-          || k == Qt::Key_PageDown || k == Qt::Key_End || k == Qt::Key_Insert || k == Qt::Key_Delete) {
-            key = temp_key;
-            realkey = true;
-            QKeySequence q = QKeySequence(key);
-            QString keyString = q;
-            if (keyString != QString::null)
-                  nshrtLabel->setText(q);
+      if (k == 0 || k == Qt::Key_Shift || k == Qt::Key_Control || 
+         k == Qt::Key_Meta || k == Qt::Key_Alt || k == Qt::Key_AltGr
+         || k == Qt::Key_CapsLock || k == Qt::Key_NumLock 
+         || k == Qt::Key_ScrollLock)
+            return;
 
-            // Check against conflicting shortcuts
-            for (int i=0; i < SHRT_NUM_OF_ELEMENTS; i++) {
-                  if (i != shortcutindex) { //check all other than current shortcut
-                        if (shortcuts[i].key == key && (shortcuts[i].type & (shortcuts[shortcutindex].type | GLOBAL_SHRT | INVIS_SHRT))) {
-                              msgString = tr("Shortcut conflicts with ") + QString(shortcuts[i].descr);
-                              conflict = true;
-                              break;
-                              }
-                        }
+      k += e->modifiers();
+      switch(key.count()) {
+            case 0: key = QKeySequence(k); break;
+            case 1: key = QKeySequence(key[0], k); break;
+            case 2: key = QKeySequence(key[0], key[1], k); break;
+            case 3: key = QKeySequence(key[0], key[1], key[2], k); break;
+            }
+
+      // Check against conflicting shortcuts
+      bool conflict = false;
+      QString msgString;
+      foreach (Shortcut* ss, shortcuts) {
+            if ((s != ss) && (ss->key == key) 
+               && (ss->type & (s->type | GLOBAL_SHRT | INVIS_SHRT))) {
+                  msgString = tr("Shortcut conflicts with ") + ss->descr;
+                  conflict = true;
+                  break;
                   }
             }
-            messageLabel->setText(msgString);
-            okButton->setEnabled(conflict == false && realkey);
-            if (!realkey)
-                  nshrtLabel->setText(tr("Undefined"));
-
-#endif
+      messageLabel->setText(msgString);
+      okButton->setEnabled(conflict == false);
+      nshrtLabel->setText(key.toString(QKeySequence::NativeText));
       }
 
-void ShortcutCaptureDialog::apply()
+//---------------------------------------------------------
+//   clearClicked
+//---------------------------------------------------------
+
+void ShortcutCaptureDialog::clearClicked()
       {
-      //return the shortcut to configurator widget:
-      done(key);
+      nshrtLabel->setText(tr("Undefined"));
+      key = 0;
       }
 

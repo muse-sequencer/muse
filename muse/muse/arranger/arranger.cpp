@@ -1226,6 +1226,7 @@ void Arranger::moveTrack(Track* src, Track* dst)
 
 void Arranger::keyPressEvent(QKeyEvent* e)
       {
+#if 0 //TODOB
       int key = e->key();
       bool keypress_handled = false;
 
@@ -1313,6 +1314,8 @@ void Arranger::keyPressEvent(QKeyEvent* e)
       if (!keypress_handled) {
             e->ignore();
             }
+#endif
+      e->ignore();
       }
 
 

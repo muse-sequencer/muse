@@ -1,14 +1,11 @@
 <ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>ShortcutConfigBase</class>
  <widget class="QDialog" name="ShortcutConfigBase" >
   <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
+    <width>537</width>
     <height>403</height>
    </rect>
   </property>
@@ -59,11 +56,11 @@
         <property name="rootIsDecorated" >
          <bool>false</bool>
         </property>
-        <property name="columnCount" >
-         <number>1</number>
-        </property>
         <property name="sortingEnabled" >
          <bool>true</bool>
+        </property>
+        <property name="columnCount" >
+         <number>1</number>
         </property>
         <column>
          <property name="text" >
@@ -88,17 +85,26 @@
           <height>230</height>
          </size>
         </property>
+        <property name="alternatingRowColors" >
+         <bool>true</bool>
+        </property>
         <property name="indentation" >
          <number>0</number>
         </property>
         <property name="rootIsDecorated" >
          <bool>false</bool>
         </property>
-        <property name="columnCount" >
-         <number>2</number>
+        <property name="uniformRowHeights" >
+         <bool>true</bool>
         </property>
         <property name="sortingEnabled" >
          <bool>true</bool>
+        </property>
+        <property name="allColumnsShowFocus" >
+         <bool>true</bool>
+        </property>
+        <property name="columnCount" >
+         <number>2</number>
         </property>
         <column>
          <property name="text" >

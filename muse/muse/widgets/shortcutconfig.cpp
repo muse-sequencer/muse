@@ -22,6 +22,10 @@
 #include "shortcutcapturedialog.h"
 #include "shortcuts.h"
 
+//---------------------------------------------------------
+//   ShortcutConfig
+//---------------------------------------------------------
+
 ShortcutConfig::ShortcutConfig(QWidget* parent)
    : QDialog(parent)
       {
@@ -42,86 +46,103 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
       for (int i=0; i < SHRT_NUM_OF_CATEGORIES; i++) {
             QTreeWidgetItem* newItem = new QTreeWidgetItem;
             newItem->setText(SHRT_CATEGORY_COL, tr(shortcut_category[i].name));
-            newItem->setData(0, 1, i);
+            newItem->setData(0, Qt::UserRole, i);
             cgListView->addTopLevelItem(newItem);
             }
       updateSCListView();
       }
 
+//---------------------------------------------------------
+//   updateSCListView
+//---------------------------------------------------------
+
 void ShortcutConfig::updateSCListView(int category)
       {
       scListView->clear();
-      for (int i=0; i < SHRT_NUM_OF_ELEMENTS; i++) {
-            if (shortcuts[i].type & category) {
+      foreach (Shortcut* s, shortcuts) {
+            if (s && (s->type & category)) {
                   QTreeWidgetItem* newItem;
                   newItem = new QTreeWidgetItem;
-                  newItem->setText(SHRT_DESCR_COL, shortcuts[i].descr);
-                  QKeySequence key = QKeySequence(shortcuts[i].key);
-                  newItem->setText(SHRT_SHRTCUT_COL, key);
-                  newItem->setData(0, 1, i);
+                  newItem->setText(SHRT_DESCR_COL, s->descr);
+                  QKeySequence seq = s->key;
+                  newItem->setText(SHRT_SHRTCUT_COL, s->key.toString(QKeySequence::NativeText));
+                  newItem->setData(0, Qt::UserRole, s->xml);
                   scListView->addTopLevelItem(newItem);
                   }
             }
       }
 
+//---------------------------------------------------------
+//   assignShortcut
+//---------------------------------------------------------
+
 void ShortcutConfig::assignShortcut()
       {
       QTreeWidgetItem* active = scListView->currentItem();
-      int shortcutindex = active->data(0, 1).toInt();
-      ShortcutCaptureDialog* sc = new ShortcutCaptureDialog(this, shortcutindex);
-      int key = sc->exec();
-      delete(sc);
-      if (key != Rejected) {
-            shortcuts[shortcutindex].key = key;
-            QKeySequence keySequence = QKeySequence(key);
-            active->setText(SHRT_SHRTCUT_COL, keySequence);
+      Shortcut* s = shortcuts[active->data(0, Qt::UserRole).toString()];
+      ShortcutCaptureDialog sc(s, this);
+      if (sc.exec()) {
+            s->key = sc.getKey();
+            active->setText(SHRT_SHRTCUT_COL, s->key.toString(QKeySequence::NativeText));
             _config_changed = true;
             }
       clearButton->setEnabled(true);
-      defineButton->setDown(false);
       }
+
+//---------------------------------------------------------
+//   clearShortcut
+//---------------------------------------------------------
 
 void ShortcutConfig::clearShortcut()
       {
       QTreeWidgetItem* active = scListView->currentItem();
-      int shortcutindex = active->data(0, 1).toInt();
-      shortcuts[shortcutindex].key = 0; //Cleared
+      Shortcut* s = shortcuts[active->data(0, Qt::UserRole).toString()];
+      s->key = 0;
       active->setText(SHRT_SHRTCUT_COL, "");
-      clearButton->setDown(false);
       clearButton->setEnabled(false);
       _config_changed = true;
       }
 
+//---------------------------------------------------------
+//   categorySelChanged
+//---------------------------------------------------------
+
 void ShortcutConfig::categorySelChanged(QTreeWidgetItem* i)
       {
-      int idx = i->data(0, 1).toInt();
+      int idx = i->data(0, Qt::UserRole).toInt();
       current_category = shortcut_category[idx].id_flag;
       updateSCListView(current_category);
       }
 
+//---------------------------------------------------------
+//   shortcutSelChanged
+//---------------------------------------------------------
+
 void ShortcutConfig::shortcutSelChanged(QTreeWidgetItem* active)
       {
-      defineButton->setEnabled(true);
-      int index = active->data(0, 1).toInt();
-      if (!shortcuts[index].key.isEmpty())
-            clearButton->setEnabled(true);
-      else
+      defineButton->setEnabled(active != 0);
+      if (active == 0) {
             clearButton->setEnabled(false);
+            return;
+            }
+      Shortcut* s = shortcuts[active->data(0, Qt::UserRole).toString()];
+      clearButton->setEnabled(s && !s->key.isEmpty());
       }
+
+//---------------------------------------------------------
+//   closeEvent
+//---------------------------------------------------------
 
 void ShortcutConfig::closeEvent(QCloseEvent*)
       {
       done(_config_changed);
       }
 
+//---------------------------------------------------------
+//   assignAll
+//---------------------------------------------------------
+
 void ShortcutConfig::assignAll()
       {
-      applyButton->setDown(false);
       done(_config_changed);
-      }
-
-QString ShortcutConfig::Translate(const char* locstr)
-      {
-      //printf("In: %s - Trans1: %s\n", locstr, tr(locstr).toLatin1().data());
-      return tr(locstr);
       }

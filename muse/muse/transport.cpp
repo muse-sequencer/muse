@@ -103,7 +103,7 @@ Transport::Transport()
       //  AQ - Click - Sync
       //-----------------------------------------------------
 
-      clickButton->setShortcut(shortcuts[SHRT_TOGGLE_METRO].key);
+//TODOB      clickButton->setShortcut(shortcuts[SHRT_TOGGLE_METRO].key);
 
       connect(quantizeButton, SIGNAL(clicked(bool)), song, SLOT(setQuantize(bool)));
       connect(clickButton, SIGNAL(clicked(bool)), song, SLOT(setClick(bool)));

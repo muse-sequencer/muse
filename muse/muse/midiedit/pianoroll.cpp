@@ -252,6 +252,7 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
       //
       // install misc shortcuts
       //
+#if 0 //TODOB
       QShortcut* sc;
       sc = new QShortcut(shortcuts[SHRT_POS_INC].key, this);
       sc->setContext(Qt::WindowShortcut);
@@ -265,6 +266,8 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
       sc->setContext(Qt::WindowShortcut);
 
       connect(sc, SIGNAL(activated()), SLOT(close()));
+#endif
+
       connect(song, SIGNAL(songChanged(int)), canvas(), SLOT(songChanged(int)));
       connect(followSongAction, SIGNAL(toggled(bool)), canvas(), SLOT(setFollow(bool)));
       canvas()->selectFirst();
@@ -435,19 +438,20 @@ void PianoRoll::soloChanged(bool flag)
       song->setSolo(canvas()->track(), flag);
       }
 
-static int rasterTable[] = {
-      //-9----8-  7    6     5     4    3(1/4)     2   1
-      4,  8, 16, 32,  64, 128, 256,  512, 1024,  // triple
-      6, 12, 24, 48,  96, 192, 384,  768, 1536,
-      9, 18, 36, 72, 144, 288, 576, 1152, 2304   // dot
-      };
-
 //---------------------------------------------------------
 //   viewKeyPressEvent
 //---------------------------------------------------------
 
 void PianoRoll::keyPressEvent(QKeyEvent* event)
       {
+#if 0 //TODOB
+      static int rasterTable[] = {
+            //-9----8-  7    6     5     4    3(1/4)     2   1
+            4,  8, 16, 32,  64, 128, 256,  512, 1024,  // triple
+            6, 12, 24, 48,  96, 192, 384,  768, 1536,
+            9, 18, 36, 72, 144, 288, 576, 1152, 2304   // dot
+            };
+
       if (info->hasFocus()) {
             event->ignore();
             return;
@@ -544,6 +548,8 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
       setRaster(val);
       toolbar->setQuant(quant());
       toolbar->setRaster(raster());
+#endif
+      event->ignore();
       }
 
 //---------------------------------------------------------
@@ -583,6 +589,7 @@ void PianoRoll::setEventColorMode(int mode)
 
 void PianoRoll::initShortcuts()
       {
+#if 0 //TODOB
       cmdActions[PianoCanvas::CMD_SELECT_NONE]->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
       cmdActions[PianoCanvas::CMD_SELECT_NONE]->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
       cmdActions[PianoCanvas::CMD_SELECT_INVERT]->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
@@ -609,6 +616,7 @@ void PianoRoll::initShortcuts()
       cmdActions[PianoCanvas::CMD_CREATE_MEASURE]->setShortcut(shortcuts[SHRT_CREATE_MEASURE].key);
 
       menu_ids[CMD_CONFIG_QUANT]->setShortcut(shortcuts[SHRT_CONFIG_QUANT].key);
+#endif
       }
 
 //---------------------------------------------------------

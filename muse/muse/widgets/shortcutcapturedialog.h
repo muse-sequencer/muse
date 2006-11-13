@@ -29,20 +29,24 @@
 #include "filedialog.h"
 #include "ui_shortcutcapturedialog.h"
 
+//---------------------------------------------------------
+//   ShortcutCaptureDialog
+//---------------------------------------------------------
+
 class ShortcutCaptureDialog : public QDialog, public Ui::ShortcutCaptureDialogBase
       {
       Q_OBJECT
       private:
-      int  shortcutindex;
+      Shortcut* s;
       void keyPressEvent(QKeyEvent* e);
-      int  key;
+      QKeySequence key;
 
-      private slots:
-      void apply();
-      void cancel() { reject(); };
+    private slots:
+      void clearClicked();
 
-      public:
-      ShortcutCaptureDialog(QWidget* parent = 0, int index = 0);
+    public:
+      ShortcutCaptureDialog(Shortcut* s = 0, QWidget* parent = 0);
       ~ShortcutCaptureDialog();
+      QKeySequence getKey() const { return key; }
       };
 
