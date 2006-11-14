@@ -175,6 +175,7 @@ target_link_libraries(muse
       al 
       awl
       ${QT_LIBRARIES}
+      QtSvg
       ${ALSA_LIB}
       ${JACK_LIB}
       ${SNDFILE_LIB}
