@@ -21,16 +21,21 @@
 #ifndef __CTRLLISTEDIT_H__
 #define __CTRLLISTEDIT_H__
 
+#include "listedit.h"
+#include "ui_ctrllistedit.h"
 
 //---------------------------------------------------------
 //   CtrlListEditor
 //---------------------------------------------------------
 
-class CtrlListEditor : public QWidget {
+class CtrlListEditor : public ListWidget {
       Q_OBJECT
+
+      Ui::CtrlListEdit le;
 
    public:
       CtrlListEditor(QWidget* parent = 0);
+      virtual void setup(const ListType&);
       };
       
 

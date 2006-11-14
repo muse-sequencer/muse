@@ -1562,7 +1562,7 @@ void MusE::showListEditor(const Pos& pos, Track* track, Ctrl* ctrl)
       {
       if (listEditor == 0)
             listEditor = new ListEdit(this);
-      listEditor->selectItem(pos, track, ctrl);
+      listEditor->selectItem(pos, track, 0, ctrl);
       listEditor->show();
       }
 

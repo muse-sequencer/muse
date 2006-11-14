@@ -2230,11 +2230,20 @@ void Song::changeTrackName(Track* t, const QString& s)
 
 bool Song::trackExists(Track* t) const
       {
-      for (ciTrack it = _tracks.begin(); it != _tracks.end(); ++it) {
-            if (*it == t)
-                  return true;
+      return findTrack(t->name()) != 0;
+      }
+
+//---------------------------------------------------------
+//   findTrack
+//---------------------------------------------------------
+
+Track* Song::findTrack(const QString& name) const
+      {
+      for (int i = 0; i < _tracks.size(); ++i) {
+            if (_tracks[i]->name() == name)
+                  return _tracks[i];
             }
-      return false;
+      return 0;
       }
 
 //---------------------------------------------------------

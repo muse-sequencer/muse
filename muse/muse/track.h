@@ -227,7 +227,7 @@ class Track : public QObject {
       bool locked() const             { return _locked; }
       void setLocked(bool b)          { _locked = b; }
 
-      const QString name() const      { return _name; }
+      QString name() const            { return _name; }
       virtual void setName(const QString& s);
 
       virtual TrackType type() const = 0;

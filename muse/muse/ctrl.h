@@ -136,11 +136,10 @@ class CtrlRecList : public std::list<CtrlRecVal> {
       };
 
 typedef CtrlRecList::iterator iCtrlRec;
-typedef QMap<unsigned, CVal> CTRL;
 
+typedef QMap<unsigned, CVal> CTRL;
 typedef CTRL::iterator iCtrlVal;
 typedef CTRL::const_iterator ciCtrlVal;
-
 
 //---------------------------------------------------------
 //   Ctrl

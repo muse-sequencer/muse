@@ -25,21 +25,24 @@
 #include "part.h"
 #include "ctrl.h"
 
+bool ListType::operator==(const ListType& t) const
+      {
+      return id == t.id && track == t.track 
+         && part == t.part && ctrl->id() == t.ctrl->id();
+      }
+
 //---------------------------------------------------------
 //   ListEdit
 //---------------------------------------------------------
 
 ListEdit::ListEdit(QWidget*)
-   : QWidget(0)
+   : TopWin()
       {
       setWindowTitle(tr("MusE: List Edit"));
 
-      QHBoxLayout* hbox = new QHBoxLayout;
-      setLayout(hbox);
-
       QSplitter* split = new QSplitter;
       split->setOpaqueResize(true);
-      hbox->addWidget(split);
+      setCentralWidget(split);
 
       list = new QTreeWidget;
       list->setColumnCount(1);
@@ -82,35 +85,18 @@ void ListEdit::itemChanged(QTreeWidgetItem* i, QTreeWidgetItem*)
       {
       if (i == 0)
             return;
-      QWidget* ew = ctrlPanel;
-#if 0
-      Element* el = ((ElementItem*)i)->element();
-      setWindowTitle(QString("MuseScore: List Edit: ") + el->name());
-      ShowElementBase* ew = 0;
-      switch (el->type()) {
-            case PAGE:    ew = pagePanel;    break;
-            case SYSTEM:  ew = systemPanel;  break;
-            case MEASURE: ew = measurePanel; break;
-            case CHORD:   ew = chordPanel;   break;
-            case NOTE:    ew = notePanel;    break;
-            case REST:    ew = restPanel;    break;
-            case CLEF:    ew = clefPanel;    break;
-            case TIMESIG: ew = timesigPanel; break;
-            case KEYSIG:  ew = keysigPanel;  break;
-            case SEGMENT: ew = segmentView;  break;
-            case HAIRPIN: ew = hairpinView;  break;
-            case BAR_LINE: ew = barLineView; break;
-            case FINGERING:
-            case TEXT:
-                  ew = textView;
+      ListWidget* ew = ctrlPanel;
+      lt = i->data(0, Qt::UserRole).value<ListType>();
+      switch(lt.id) {
+            case LIST_TRACK:
                   break;
-            case ACCIDENTAL:
-            default:
-                  ew = elementView;
+            case LIST_PART:
+                  break;
+            case LIST_CTRL:
+                  ew = ctrlPanel;
                   break;
             }
-      ew->setElement(el);
-#endif
+      ew->setup(lt);
       stack->setCurrentWidget(ew);
       }
 
@@ -123,37 +109,86 @@ void ListEdit::buildList()
       list->clear();
       TrackList* tl = song->tracks();
       int idx = 0;
+      ListType lt;
+
       for (iTrack i = tl->begin(); i != tl->end(); ++i,++idx) {
             Track* t = *i;
+            lt.track = t;
             QTreeWidgetItem* item = new QTreeWidgetItem;
             item->setText(0, t->name());
+            lt.id = LIST_TRACK;
+            item->setData(0, Qt::UserRole, QVariant::fromValue(lt));
             list->insertTopLevelItem(idx, item);
             PartList* pl = t->parts();
             if (!pl->empty()) {
                   QTreeWidgetItem* pitem = new QTreeWidgetItem(item);
+                  pitem->setFlags(pitem->flags() & ~Qt::ItemIsSelectable);
                   pitem->setText(0, tr("Parts"));
-                  for (iPart i = pl->begin(); i != pl->end(); ++i) {
+                  for (iPart pi = pl->begin(); pi != pl->end(); ++pi) {
+                        lt.id = LIST_PART;
+                        lt.part = pi->second;
                         QTreeWidgetItem* ppitem = new QTreeWidgetItem(pitem);
-                        ppitem->setText(0, i->second->name());
+                        ppitem->setData(0, Qt::UserRole, QVariant::fromValue(lt));
+                        ppitem->setText(0, pi->second->name());
                         }
                   }
             CtrlList* cl = t->controller();
+            lt.part = 0;
             if (!cl->empty()) {
                   QTreeWidgetItem* citem = new QTreeWidgetItem(item);
                   citem->setText(0, tr("Controller"));
-                  for (iCtrl i = cl->begin(); i != cl->end(); ++i) {
+                  citem->setFlags(citem->flags() & ~Qt::ItemIsSelectable);
+                  for (iCtrl ci = cl->begin(); ci != cl->end(); ++ci) {
                         QTreeWidgetItem* ccitem = new QTreeWidgetItem(citem);
-                        ccitem->setText(0, i->second->name());
+                        ccitem->setText(0, ci->second->name());
+                        lt.id = LIST_CTRL;
+                        lt.ctrl = ci->second;
+                        ccitem->setData(0, Qt::UserRole, QVariant::fromValue(lt));
                         }
                   }
             }
       }
 
 //---------------------------------------------------------
+//   findItem
+//---------------------------------------------------------
+
+QTreeWidgetItem* ListEdit::findItem(const ListType& lt, QTreeWidgetItem* item)
+      {
+      if (item->flags() & Qt::ItemIsSelectable) {
+            if (lt == item->data(0, Qt::UserRole).value<ListType>())
+                  return item;
+            }
+      for (int n = 0; n < item->childCount(); ++n) {
+            QTreeWidgetItem* i = findItem(lt, item->child(n));
+            if (i)
+                  return i;
+            }
+      return 0;
+      }
+
+//---------------------------------------------------------
 //   selectItem
 //---------------------------------------------------------
 
-void ListEdit::selectItem(const AL::Pos&, Track* track, Ctrl*)
+void ListEdit::selectItem(const AL::Pos&, Track* track, Part* part, Ctrl* ctrl)
+      {
+      stack->setCurrentWidget(ctrlPanel);
+      if (ctrl)
+            lt.id = LIST_CTRL;
+      else if (part)
+            lt.id = LIST_PART;
+      else if (track)
+            lt.id = LIST_TRACK;
+      else
+            return;
+      lt.track = track;
+      lt.part  = part;
+      lt.ctrl  = ctrl;
+      selectItem(lt);
+      }
+
+void ListEdit::selectItem(const ListType& l)
       {
       stack->setCurrentWidget(ctrlPanel);
       buildList();
@@ -163,12 +198,64 @@ void ListEdit::selectItem(const AL::Pos&, Track* track, Ctrl*)
                   printf("MusE::ListEdit: Element not found\n");
                   break;
                   }
-            if (item->text(0) == track->name()) {
+            item = findItem(lt, item);
+            if (item) {
                   list->setItemExpanded(item, true);
                   list->setCurrentItem(item);
                   list->scrollToItem(item);
                   break;
                   }
             }
+      }
+
+//---------------------------------------------------------
+//   readStatus
+//---------------------------------------------------------
+
+void ListEdit::read(QDomNode node)
+      {
+      QString trackName;
+      Track* track = 0;
+      Part* part = 0;
+      Ctrl* ctrl = 0;
+
+      for (node = node.firstChild(); !node.isNull(); node = node.nextSibling()) {
+            QDomElement e = node.toElement();
+            QString tag(e.tagName());
+            if (tag == "Track") {
+                  track = song->findTrack(e.text());
+                  if (track == 0) {
+                        printf("MusE::ListEdit::read: track not found\n");
+                        }
+                  }
+            else if (tag == "Ctrl") {
+                  int ctrlId = e.text().toInt();
+                  ctrl = track->getController(ctrlId);
+                  if (ctrl == 0) {
+                        printf("MusE::ListEdit::read: controller not found: track %p\n", track);
+                        printf("MusE::ListEdit::read: controller %d not found\n", ctrlId);
+                        return;
+                        }
+                  }
+            else
+      		AL::readProperties(this, node);
+            }
+      selectItem(AL::Pos(), track, part, ctrl);
+      }
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void ListEdit::write(Xml& xml) const
+      {
+      xml.tag(metaObject()->className());
+      xml.writeProperties(this);
+
+      xml.strTag("Track", lt.track->name());
+      if (lt.ctrl) {
+            xml.intTag("Ctrl", lt.ctrl->id());
+            }
+      xml.etag(metaObject()->className());
       }
 

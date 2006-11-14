@@ -309,6 +309,7 @@ class Song : public QObject {
       MidiInPortList* midiInPorts()   { return &_midiInPorts;  }
 
       bool trackExists(Track*) const;
+      Track* findTrack(const QString& name) const;
 
       void removeTrack(Track* track);
       void removeTrack1(Track* track);

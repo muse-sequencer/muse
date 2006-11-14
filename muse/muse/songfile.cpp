@@ -40,6 +40,7 @@
 #include "marker/markerview.h"
 #include "midioutport.h"
 #include "midiinport.h"
+#include "liste/listedit.h"
 
 //---------------------------------------------------------
 //   readPart
@@ -101,11 +102,10 @@ void MusE::readToplevels(QDomNode node)
                   drumEditor->show();
                   pl = new PartList;
                   }
-            else if (tag == "ListEditor") {
-//                ListEdit* listEditor = new ListEdit(0, pl);
-//                listEditor->show();
-//                  listEditor->readStatus(node.firstChild());
-                  pl = new PartList;
+            else if (tag == "ListEdit") {
+                  listEditor = new ListEdit(0);
+                  listEditor->show();
+                  listEditor->read(node);
                   }
             else if (tag == "MasterEdit") {
                   MasterEdit* masterEditor = new MasterEdit();

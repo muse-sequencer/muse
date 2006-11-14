@@ -24,6 +24,7 @@ QT4_WRAP_CPP ( liste_mocs
       )
 
 QT4_WRAP_UI ( liste_ui_headers 
+      ctrllistedit.ui
       )
 
 add_library ( liste STATIC 

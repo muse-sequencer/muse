@@ -21,26 +21,63 @@
 #ifndef __LISTEDIT_H__
 #define __LISTEDIT_H__
 
+#include "cobject.h"
+
 namespace AL {
       class Pos;
       };
 
 class Track;
+class Part;
 class Ctrl;
 class CtrlListEditor;
+
+//---------------------------------------------------------
+//   ListType
+//---------------------------------------------------------
+
+enum { LIST_TRACK, LIST_PART, LIST_CTRL };
+
+struct ListType {
+      int id;
+      Track* track;
+      Part* part;
+      Ctrl* ctrl;
+      
+      bool operator==(const ListType& t) const;
+      };
+
+Q_DECLARE_METATYPE(struct ListType);
+
+//---------------------------------------------------------
+//   ListWidget
+//    interface class
+//---------------------------------------------------------
+
+class ListWidget : public QWidget {
+      Q_OBJECT;
+
+   public:
+      ListWidget(QWidget* = 0) {}
+      virtual void setup(const ListType&) = 0;
+      };
 
 //---------------------------------------------------------
 //   ListEdit
 //---------------------------------------------------------
 
-class ListEdit : public QWidget {
+class ListEdit : public TopWin {
       Q_OBJECT;
+
+      ListType lt;
 
       QStackedWidget* stack;
       QTreeWidget* list;
       CtrlListEditor* ctrlPanel;
 
       void buildList();
+      QTreeWidgetItem* findItem(const ListType& lt, QTreeWidgetItem* item);
+      void selectItem(const ListType& lt);
 
    private slots:
       void itemChanged(QTreeWidgetItem*, QTreeWidgetItem*);
@@ -48,7 +85,9 @@ class ListEdit : public QWidget {
 
    public:
       ListEdit(QWidget* parent = 0);
-      void selectItem(const AL::Pos&, Track*, Ctrl*);
+      void selectItem(const AL::Pos&, Track*, Part*, Ctrl*);
+      virtual void read(QDomNode);
+	virtual void write(Xml& xml) const;
       };
 
 #endif
