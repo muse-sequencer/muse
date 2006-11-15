@@ -19,11 +19,14 @@
 //=============================================================================
 
 #include "listedit.h"
-#include "al/pos.h"
 #include "ctrllistedit.h"
 #include "song.h"
 #include "part.h"
 #include "ctrl.h"
+
+//---------------------------------------------------------
+//   operator==
+//---------------------------------------------------------
 
 bool ListType::operator==(const ListType& t) const
       {
@@ -57,7 +60,7 @@ ListEdit::ListEdit(QWidget*)
       stack = new QStackedWidget;
       split->addWidget(stack);
       
-      ctrlPanel = new CtrlListEditor;
+      ctrlPanel = new CtrlListEditor(this);
       stack->addWidget(ctrlPanel);
 
       connect(list, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
@@ -89,9 +92,9 @@ void ListEdit::itemChanged(QTreeWidgetItem* i, QTreeWidgetItem*)
       lt = i->data(0, Qt::UserRole).value<ListType>();
       switch(lt.id) {
             case LIST_TRACK:
-                  break;
+                  return;
             case LIST_PART:
-                  break;
+                  return;
             case LIST_CTRL:
                   ew = ctrlPanel;
                   break;
@@ -171,8 +174,9 @@ QTreeWidgetItem* ListEdit::findItem(const ListType& lt, QTreeWidgetItem* item)
 //   selectItem
 //---------------------------------------------------------
 
-void ListEdit::selectItem(const AL::Pos&, Track* track, Part* part, Ctrl* ctrl)
+void ListEdit::selectItem(const AL::Pos& p, Track* track, Part* part, Ctrl* ctrl)
       {
+      _pos = p;
       stack->setCurrentWidget(ctrlPanel);
       if (ctrl)
             lt.id = LIST_CTRL;
@@ -190,6 +194,7 @@ void ListEdit::selectItem(const AL::Pos&, Track* track, Part* part, Ctrl* ctrl)
 
 void ListEdit::selectItem(const ListType& l)
       {
+      lt = l;
       stack->setCurrentWidget(ctrlPanel);
       buildList();
       for (int i = 0;; ++i) {
@@ -228,6 +233,8 @@ void ListEdit::read(QDomNode node)
                         printf("MusE::ListEdit::read: track not found\n");
                         }
                   }
+            else if (tag == "Pos")
+                  _pos.read(node);
             else if (tag == "Ctrl") {
                   int ctrlId = e.text().toInt();
                   ctrl = track->getController(ctrlId);
@@ -240,7 +247,7 @@ void ListEdit::read(QDomNode node)
             else
       		AL::readProperties(this, node);
             }
-      selectItem(AL::Pos(), track, part, ctrl);
+      selectItem(_pos, track, part, ctrl);
       }
 
 //---------------------------------------------------------
@@ -255,6 +262,7 @@ void ListEdit::write(Xml& xml) const
       xml.strTag("Track", lt.track->name());
       if (lt.ctrl) {
             xml.intTag("Ctrl", lt.ctrl->id());
+            _pos.write(xml, "Pos");
             }
       xml.etag(metaObject()->className());
       }

@@ -197,6 +197,7 @@ class Ctrl : public CTRL {
       bool touched() const           { return _touched; }
       void setRange(double min, double max);
       void setRange(int min, int max);
+      void setRange(CVal, CVal);
       CVal minVal() const            { return min; }
       CVal maxVal() const            { return max; }
       void read(QDomNode node, bool midi);

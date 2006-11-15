@@ -427,3 +427,13 @@ void Ctrl::setRange(int _min, int _max)
       max.i = _max;
       }
 
+//---------------------------------------------------------
+//   setRange
+//---------------------------------------------------------
+
+void Ctrl::setRange(CVal mi, CVal ma)
+      {
+      min = mi;
+      max = ma;      
+      }
+

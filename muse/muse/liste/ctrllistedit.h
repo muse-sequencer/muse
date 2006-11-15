@@ -21,8 +21,39 @@
 #ifndef __CTRLLISTEDIT_H__
 #define __CTRLLISTEDIT_H__
 
+#include "al/pos.h"
 #include "listedit.h"
 #include "ui_ctrllistedit.h"
+
+//---------------------------------------------------------
+//   MidiTimeDelegate
+//---------------------------------------------------------
+
+class MidiTimeDelegate : public QItemDelegate {
+
+      virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem&,
+         const QModelIndex& index) const;
+      virtual void setEditorData(QWidget* editor, const QModelIndex&) const;
+      virtual void setModelData(QWidget* editor, QAbstractItemModel*,
+         const QModelIndex&) const;
+      void paint(QPainter*, const QStyleOptionViewItem&, 
+         const QModelIndex&) const;
+
+   public:
+      MidiTimeDelegate(QObject* parent = 0);      
+      };
+
+//---------------------------------------------------------
+//   EscapeFilter
+//---------------------------------------------------------
+
+class EscapeFilter : public QObject {
+      Q_OBJECT
+   protected:
+      bool eventFilter(QObject*, QEvent*);
+   public:
+      EscapeFilter(QObject* parent = 0): QObject(parent) {}
+      };
 
 //---------------------------------------------------------
 //   CtrlListEditor
@@ -32,12 +63,32 @@ class CtrlListEditor : public ListWidget {
       Q_OBJECT
 
       Ui::CtrlListEdit le;
+      Track* track;
+      Ctrl* c;
+      bool updateListDisabled;
+      ListEdit* listEdit;
+      MidiTimeDelegate* midiTimeDelegate;
+
+      void updateList();
+
+   private slots:
+      void controllerChanged(int id);
+      void itemDoubleClicked(QTreeWidgetItem*,int);
+      void itemChanged(QTreeWidgetItem*,int);
+      void currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*);
+      void insertClicked();
+      void deleteClicked();
+      void nameEdited(const QString&);
+      void minValChanged(double);
+      void maxValChanged(double);
+      void defaultValChanged(double);
 
    public:
-      CtrlListEditor(QWidget* parent = 0);
+      CtrlListEditor(ListEdit*, QWidget* parent = 0);
       virtual void setup(const ListType&);
+      void sendEscape();
+      enum { TICK_COL, TIME_COL, VAL_COL };
       };
       
-
 #endif
 

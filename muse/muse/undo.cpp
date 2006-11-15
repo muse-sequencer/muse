@@ -345,17 +345,6 @@ void Song::undoOp(UndoOp::UndoType type, Part* oPart, Part* nPart)
       addUndo(i);
       }
 
-void Song::undoOp(UndoOp::UndoType type, int c, int ctrl, int ov, int nv)
-      {
-      UndoOp i;
-      i.type    = type;
-      i.channel = c;
-      i.ctrl    = ctrl;
-      i.oVal    = ov;
-      i.nVal    = nv;
-      addUndo(i);
-      }
-
 void Song::undoOp(UndoOp::UndoType type, SigEvent* oevent, SigEvent* nevent)
       {
       UndoOp i;

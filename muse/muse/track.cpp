@@ -397,6 +397,16 @@ void Track::removeController(int id)
       }
 
 //---------------------------------------------------------
+//   changeCtrlName
+//---------------------------------------------------------
+
+void Track::changeCtrlName(Ctrl* c, const QString& s)
+      {
+      c->setName(s);
+      emit clChanged();
+      }
+
+//---------------------------------------------------------
 //   addControllerVal
 //    return true if new controller value added
 //---------------------------------------------------------

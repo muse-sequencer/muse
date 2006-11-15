@@ -344,7 +344,6 @@ class Song : public QObject {
       void undoOp(UndoOp::UndoType, Part*);
       void undoOp(UndoOp::UndoType, Event& oevent, Event& nevent, Part*);
       void undoOp(UndoOp::UndoType, SigEvent* oevent, SigEvent* nevent);
-      void undoOp(UndoOp::UndoType, int channel, int ctrl, int oval, int nval);
       void undoOp(UndoOp::UndoType, Part* oPart, Part* nPart);
       void undoOp(UndoOp::UndoType, Track*, int, unsigned, CVal, CVal);
       void undoOp(UndoOp::UndoType, Track*, const QString&, const QString&);

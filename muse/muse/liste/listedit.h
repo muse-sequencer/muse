@@ -21,11 +21,8 @@
 #ifndef __LISTEDIT_H__
 #define __LISTEDIT_H__
 
+#include "al/pos.h"
 #include "cobject.h"
-
-namespace AL {
-      class Pos;
-      };
 
 class Track;
 class Part;
@@ -70,6 +67,7 @@ class ListEdit : public TopWin {
       Q_OBJECT;
 
       ListType lt;
+      AL::Pos _pos;
 
       QStackedWidget* stack;
       QTreeWidget* list;
@@ -88,6 +86,7 @@ class ListEdit : public TopWin {
       void selectItem(const AL::Pos&, Track*, Part*, Ctrl*);
       virtual void read(QDomNode);
 	virtual void write(Xml& xml) const;
+      AL::Pos& pos() { return _pos; }
       };
 
 #endif

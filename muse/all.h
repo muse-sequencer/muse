@@ -115,7 +115,7 @@
 #include <QtGui/QStyleFactory>
 #include <QtGui/QDockWidget>
 #include <QtGui/QDesktopServices>
+#include <QtGui/QItemDelegate>
 #include <QtSvg/QSvgRenderer>
-
 #endif
 

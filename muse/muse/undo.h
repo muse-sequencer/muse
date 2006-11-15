@@ -65,12 +65,6 @@ struct UndoOp {
                   SigEvent* oSignature;
                   };
             struct {
-                  int channel;
-                  int ctrl;
-                  int oVal;
-                  int nVal;
-                  };
-            struct {
                   int startframe; //!< Start frame of changed data
                   int endframe;   //!< End frame of changed data
                   const char* filename; //!< The file that is changed

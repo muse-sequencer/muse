@@ -210,6 +210,7 @@ class Track : public QObject {
       // signal interface:
       virtual void emitControllerChanged(int id) { emit controllerChanged(id); }
       void updateController();
+      void changeCtrlName(Ctrl* c, const QString& s);
 
       // automation
       void startAutoRecord(int);
