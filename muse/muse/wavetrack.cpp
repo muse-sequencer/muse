@@ -140,7 +140,7 @@ void WaveTrack::write(Xml& xml) const
       {
       xml.tag("wavetrack");
       AudioTrack::writeProperties(xml);
-      const PartList* pl = cparts();
+      const PartList* pl = parts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
             p->second->write(xml);
       xml.etag("wavetrack");
@@ -232,7 +232,7 @@ void WaveTrack::startRecording()
             recordPart->setPos(spos);
             recordPart->setLenTick(epos.tick() - spos.tick());
             recordPart->setName(name());
-            audio->msgAddPart(recordPart, false);
+            song->addPart(recordPart);
             partCreated = true;
             emit partsChanged();
             }

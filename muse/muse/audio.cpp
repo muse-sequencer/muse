@@ -588,27 +588,6 @@ void Audio::processMsg()
                   midiSeq->initRealtimeTimer();
                   break;
 
-            case SEQM_ADD_TRACK:
-                  song->insertTrack2(msg->track);
-                  midiSeq->updatePollFd();
-                  break;
-
-            case SEQM_REMOVE_TRACK:
-                  song->removeTrack2(msg->track);
-                  midiSeq->updatePollFd();
-                  break;
-            case SEQM_ADD_PART:
-                  song->cmdAddPart((Part*)msg->p1);
-                  break;
-            case SEQM_REMOVE_PART:
-                  song->cmdRemovePart((Part*)msg->p1);
-                  break;
-            case SEQM_CHANGE_PART:
-                  song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2);
-                  break;
-            case SEQM_MOVE_TRACK:
-                  song->moveTrack((Track*)(msg->p1), (Track*)(msg->p2));
-                  break;
             case AUDIO_ADDMIDIPLUGIN:
                   ((MidiTrackBase*)msg->track)->addPlugin(msg->mplugin, msg->ival);
                   break;

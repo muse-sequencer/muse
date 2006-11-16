@@ -75,11 +75,12 @@ class ListEdit : public TopWin {
 
       void buildList();
       QTreeWidgetItem* findItem(const ListType& lt, QTreeWidgetItem* item);
-      void selectItem(const ListType& lt);
+      void selectItem();
 
    private slots:
       void itemChanged(QTreeWidgetItem*, QTreeWidgetItem*);
       void itemExpanded(QTreeWidgetItem*);
+      void songChanged(int);
 
    public:
       ListEdit(QWidget* parent = 0);

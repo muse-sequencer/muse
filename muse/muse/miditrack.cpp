@@ -98,7 +98,7 @@ void MidiTrack::write(Xml& xml) const
       xml.intTag("compression", _compression);
       xml.intTag("useDrumMap", _useDrumMap);
 
-      const PartList* pl = cparts();
+      const PartList* pl = parts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
             p->second->write(xml);
       xml.etag("miditrack");
@@ -195,7 +195,7 @@ void MidiTrack::startRecording()
             recordPart->setTick(startTick);
             recordPart->setLenTick(endTick - startTick);
             recordPart->setName(name());
-            audio->msgAddPart(recordPart, false);
+            song->addPart(recordPart);
             partCreated = true;
             }
       }
@@ -604,7 +604,7 @@ void MidiTrack::processMidi(unsigned from, unsigned to, unsigned, unsigned)
 //    from/to - midi ticks
 //---------------------------------------------------------
 
-void MidiTrack::getEvents(unsigned from, unsigned to, int, MidiEventList* dst)
+void MidiTrack::getEvents(unsigned /*from*/, unsigned /*to*/, int, MidiEventList* dst)
       {
       for (iMidiEvent i = schedEvents.begin(); i != schedEvents.end(); ++i) {
             dst->insert(*i);

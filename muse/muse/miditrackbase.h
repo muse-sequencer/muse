@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //  $Id:$
 //
-//  Copyright (C) 2006 by Werner Schweer and others
+//  Copyright (C) 2002-2006 by Werner Schweer and others
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 2.
@@ -18,50 +18,36 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#ifndef __MIDIOUT_H__
-#define __MIDIOUT_H__
+#ifndef __MIDITRACKBASE_H__
+#define __MIDITRACKBASE_H__
 
-#include "midififo.h"
-
-class Track;
-class MidiInstrument;
+#include "track.h"
 
 //---------------------------------------------------------
-//    MidiOut
+//   MidiTrackBase
 //---------------------------------------------------------
 
-class MidiOut
-      {
+class MidiTrackBase : public Track {
+      Q_OBJECT
+
+      MidiPipeline* _pipeline;
+
    public:
-      Track* track;
-      MidiInstrument* _instrument;
-      MidiEventList _schedEvents;  // scheduled events by process()
+      MidiTrackBase();
+      virtual ~MidiTrackBase();
 
-      // fifo for midi events send from gui
-      // direct to midi port:
+      bool readProperties(QDomNode);
+      void writeProperties(Xml&) const;
 
-      MidiFifo eventFifo;
+      MidiPipeline* pipeline()      { return _pipeline;  }
+      void addPlugin(MidiPluginI* plugin, int idx);
+      MidiPluginI* plugin(int idx) const;
 
-      MidiOut();
-      void processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick, 
-         unsigned fromFrame, unsigned toFrame);
-
-      void seek(unsigned, unsigned);
-      void stop();
-      void start();
-      void reset();
-
-      void sendSysex(const unsigned char*, int);
-      void sendSongpos(int);
-      void sendGmOn();
-      void sendGsOn();
-      void sendXgOn();
-      void sendStart();
-      void sendStop();
-      void sendContinue();
-      void sendClock();
-      void playMidiEvent(MidiEvent* ev);
+      virtual void processMidi(unsigned, unsigned, unsigned, unsigned) {}
+      virtual void getEvents(unsigned /*from*/, unsigned /*to*/, int /*channel*/, MidiEventList* /*dst*/) {}
       };
 
 #endif
+
+
 

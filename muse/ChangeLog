@@ -1,3 +1,5 @@
+16.11 (ws)
+      - implemented controller editor part of new list editor
 12.11 (ws)
       - the internationalization files (*.qm) are now part of the
         MusE image via the qt resource system. Installing them is not

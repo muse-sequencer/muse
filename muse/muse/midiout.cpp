@@ -20,7 +20,8 @@
 
 #include "midiout.h"
 #include "midictrl.h"
-#include "track.h"
+#include "miditrackbase.h"
+#include "al/al.h"
 #include "al/tempo.h"
 #include "event.h"
 #include "sync.h"

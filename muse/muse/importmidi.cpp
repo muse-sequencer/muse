@@ -315,7 +315,7 @@ void MusE::addMidiFile(const QString name)
       int division           = mf.division();
 
       MidiOutPort* outPort = 0;
-      MidiInPort* inPort = 0;
+//      MidiInPort* inPort = 0;
 
       if (song->midiOutPorts()->empty()) {
             outPort = new MidiOutPort();

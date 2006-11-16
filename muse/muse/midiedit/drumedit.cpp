@@ -123,7 +123,7 @@ DrumEdit::DrumEdit(PartList* pl, bool init)
       QToolBar* transport = addToolBar(tr("Transport"));
       muse->setupTransportToolbar(transport);
 
-      // dont´how pitch value in toolbar
+      // dont´ow pitch value in toolbar
       addToolBarBreak();
       toolbar = new Toolbar1(initRaster, initQuant, false);
       addToolBar(toolbar);
@@ -341,12 +341,14 @@ void DrumEdit::configChanged()
       initShortcuts();
       }
 
+#if 0
 static int rasterTable[] = {
       //-9----8-  7    6     5     4    3(1/4)     2   1
       4,  8, 16, 32,  64, 128, 256,  512, 1024,  // triple
       6, 12, 24, 48,  96, 192, 384,  768, 1536,
       9, 18, 36, 72, 144, 288, 576, 1152, 2304   // dot
       };
+#endif
 
 //---------------------------------------------------------
 //   keyPressEvent

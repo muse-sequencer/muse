@@ -471,7 +471,7 @@ void PartCanvas::contextMenu(const QPoint& pos)
                               renamePart(part);
                               break;
                         case 1:
-                              audio->msgRemovePart(part, true);
+                              song->cmdRemovePart(part);
                               track->partListChanged();
                               break;
                         case 2:
@@ -610,7 +610,7 @@ void PartCanvas::mousePress(QMouseEvent* me)
                   break;
             case RubberTool:
             	if (part)
-                  	audio->msgRemovePart(part);
+                  	song->cmdRemovePart(part);
                   break;
             case GlueTool:
                   if (part)
@@ -811,7 +811,7 @@ void PartCanvas::mouseRelease(QMouseEvent* me)
                   Pos p2 = pix2pos(drag.x() + drag.width()).snaped(raster());
                   part->setPos(p1);
                   part->setLenTick(p2.tick() - p1.tick());
-                  song->addPart(part);
+                  song->cmdAddPart(part);
                   }
             else
                   widget()->update();

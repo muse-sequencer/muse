@@ -21,7 +21,7 @@
 #ifndef __MIDIOUTPORT_H__
 #define __MIDIOUTPORT_H__
 
-#include "track.h"
+#include "miditrackbase.h"
 #include "midiout.h"
 
 //---------------------------------------------------------

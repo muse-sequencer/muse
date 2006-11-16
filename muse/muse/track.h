@@ -233,8 +233,8 @@ class Track : public QObject {
 
       virtual TrackType type() const = 0;
 
-      PartList* parts()               { return _parts; }
-      const PartList* cparts() const  { return _parts; }
+      PartList* parts() const         { return _parts; }
+
       Part* findPart(unsigned tick);
 	void addPart(Part* p);
 
@@ -331,30 +331,6 @@ class Track : public QObject {
       };
 
 Q_DECLARE_METATYPE(class Track*);
-
-//---------------------------------------------------------
-//   MidiTrackBase
-//---------------------------------------------------------
-
-class MidiTrackBase : public Track {
-      Q_OBJECT
-
-      MidiPipeline* _pipeline;
-
-   public:
-      MidiTrackBase();
-      virtual ~MidiTrackBase();
-
-      bool readProperties(QDomNode);
-      void writeProperties(Xml&) const;
-
-      MidiPipeline* pipeline()      { return _pipeline;  }
-      void addPlugin(MidiPluginI* plugin, int idx);
-      MidiPluginI* plugin(int idx) const;
-
-      virtual void processMidi(unsigned, unsigned, unsigned, unsigned) {}
-      virtual void getEvents(unsigned /*from*/, unsigned /*to*/, int /*channel*/, MidiEventList* /*dst*/) {}
-      };
 
 typedef QList<Track*> TrackList;
 typedef TrackList::iterator iTrack;

@@ -21,6 +21,7 @@
 #include "track.h"
 #include "midiplugin.h"
 #include "song.h"
+#include "al/tempo.h"
 #include "al/xml.h"
 #include "icons.h"
 #include "muse.h"
@@ -682,121 +683,6 @@ void Track::writeRouting(Xml& xml) const
       }
 
 //---------------------------------------------------------
-//   MidiTrackBase
-//---------------------------------------------------------
-
-MidiTrackBase::MidiTrackBase()
-   : Track()
-      {
-      _pipeline = new MidiPipeline();
-      }
-
-//---------------------------------------------------------
-//   MidiTrackBase
-//---------------------------------------------------------
-
-MidiTrackBase::~MidiTrackBase()
-      {
-      foreach(MidiPluginI* plugin, *_pipeline)
-            delete plugin;
-      delete _pipeline;
-      }
-
-//---------------------------------------------------------
-//   MidiTrackBase::writeProperties
-//---------------------------------------------------------
-
-void MidiTrackBase::writeProperties(Xml& xml) const
-      {
-      Track::writeProperties(xml);
-      for (ciMidiPluginI ip = _pipeline->begin(); ip != _pipeline->end(); ++ip) {
-            if (*ip)
-                  (*ip)->writeConfiguration(xml);
-            }
-      }
-
-//---------------------------------------------------------
-//   MidiTrackBase::readProperties
-//---------------------------------------------------------
-
-bool MidiTrackBase::readProperties(QDomNode node)
-      {
-      QDomElement e = node.toElement();
-      QString tag(e.tagName());
-      if (tag == "midiPlugin") {
-            MidiPluginI* pi = new MidiPluginI(this);
-            if (pi->readConfiguration(node))
-                  delete pi;
-            else
-                  addPlugin(pi, -1);
-            }
-      else
-            return Track::readProperties(node);
-      return false;
-      }
-
-//---------------------------------------------------------
-//   plugin
-//---------------------------------------------------------
-
-MidiPluginI* MidiTrackBase::plugin(int idx) const
-      {
-      return _pipeline->value(idx);
-      }
-
-//---------------------------------------------------------
-//   addPlugin
-//    idx    = -1     append
-//    plugin = 0   remove slot
-//---------------------------------------------------------
-
-void MidiTrackBase::addPlugin(MidiPluginI* plugin, int idx)
-      {
-      if (plugin == 0) {
-#if 0
-            MidiPluginI* oldPlugin = (*_pipeline)[idx];
-            if (oldPlugin) {
-                  int controller = oldPlugin->plugin()->parameter();
-                  for (int i = 0; i < controller; ++i) {
-                        int id = (idx + 1) * 0x1000 + i;
-                        removeController(id);
-                        }
-                  }
-#endif
-            }
-      if (idx == -1)
-            idx = _pipeline->size();
-
-      if (plugin) {
-            _pipeline->insert(idx, plugin);
-#if 0
-            int ncontroller = plugin->plugin()->parameter();
-            for (int i = 0; i < ncontroller; ++i) {
-                  int id = (idx + 1) * 0x1000 + i;
-                  QString name(plugin->getParameterName(i));
-                  double min, max;
-                  plugin->range(i, &min, &max);
-                  Ctrl* cl = getController(id);
-                  if (cl == 0) {
-                        cl = new Ctrl(id, name);
-                        cl->setRange(min, max);
-                        double defaultValue = plugin->defaultValue(i);
-                        cl->setDefault(defaultValue);
-                        cl->setCurVal(defaultValue);
-                        addController(cl);
-                        }
-                  plugin->setParam(i, cl->schedVal().f);
-                  plugin->setControllerList(cl);
-                  }
-#endif
-            }
-      else {
-            _pipeline->removeAt(idx);
-            }
-      }
-
-
-//---------------------------------------------------------
 //   hwCtrlState
 //---------------------------------------------------------
 
@@ -1070,6 +956,94 @@ void Track::setSendSync(bool val)
       {
       _sendSync = val;
       emit sendSyncChanged(val);
+      }
+
+//---------------------------------------------------------
+//   splitPart
+//    split part "part" at "tick" position
+//    create two new parts p1 and p2
+//---------------------------------------------------------
+
+void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
+      {
+      int l1 = 0;       // len of first new part (ticks or samples)
+      int l2 = 0;       // len of second new part
+
+      int samplepos = AL::tempomap.tick2frame(tickpos);
+
+      switch (type()) {
+            case WAVE:
+                  l1 = samplepos - part->frame();
+                  l2 = part->lenFrame() - l1;
+                  break;
+            case MIDI:
+                  l1 = tickpos - part->tick();
+                  l2 = part->lenTick() - l1;
+                  break;
+            default:
+                  return;
+            }
+
+      if (l1 <= 0 || l2 <= 0)
+            return;
+
+      p1 = newPart(part);     // new left part
+      p2 = newPart(part);     // new right part
+
+      switch (type()) {
+            case WAVE:
+                  p1->setLenFrame(l1);
+                  p2->setFrame(samplepos);
+                  p2->setLenFrame(l2);
+                  break;
+            case MIDI:
+                  p1->setLenTick(l1);
+                  p2->setTick(tickpos);
+                  p2->setLenTick(l2);
+                  break;
+            default:
+                  break;
+            }
+
+      EventList* se  = part->events();
+      EventList* de1 = p1->events();
+      EventList* de2 = p2->events();
+
+      if (type() == WAVE) {
+            int ps   = part->frame();
+            int d1p1 = p1->frame();
+            int d2p1 = p1->endFrame();
+            int d1p2 = p2->frame();
+            int d2p2 = p2->endFrame();
+            for (iEvent ie = se->begin(); ie != se->end(); ++ie) {
+                  Event event = ie->second;
+                  int s1 = event.frame() + ps;
+                  int s2 = event.endFrame() + ps;
+
+                  if ((s2 > d1p1) && (s1 < d2p1)) {
+                        Event si = event.mid(d1p1 - ps, d2p1 - ps);
+                        de1->add(si);
+                        }
+                  if ((s2 > d1p2) && (s1 < d2p2)) {
+                        Event si = event.mid(d1p2 - ps, d2p2 - ps);
+                        si.setFrame(si.frame() - l1);       //??
+                        si.setFrame(0);                     //??
+                        de2->add(si);
+                        }
+                  }
+            }
+      else {
+            for (iEvent ie = se->begin(); ie != se->end(); ++ie) {
+                  Event event = ie->second.clone();
+                  int t = event.tick();
+                  if (t >= l1) {
+                        event.move(-l1);
+                        de2->add(event);
+                        }
+                  else
+                        de1->add(event);
+                  }
+            }
       }
 
 

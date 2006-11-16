@@ -235,8 +235,6 @@ class Song : public QObject {
       const Pos& lPos() const       { return pos[1]; }
       const Pos& rPos() const       { return pos[2]; }
       unsigned cpos() const         { return pos[0].tick(); }
-//      unsigned vcpos() const        { return _vcpos.tick(); }
-//      const Pos& vcPos() const      { return _vcpos; }
       unsigned lpos() const         { return pos[1].tick(); }
       unsigned rpos() const         { return pos[2].tick(); }
 
@@ -276,18 +274,22 @@ class Song : public QObject {
       //   part manipulations
       //-----------------------------------------
 
+      void cmdAddPart(Part* part);
+      void addPart(Part* part);
+
+      void cmdRemoveParts();
+      void cmdRemovePart(Part* part);
+      void removePart(Part* part);
+
+      void cmdChangePart(Part* oldPart, Part* newPart);
+      void changePart(Part*, Part*);
+
       void cmdSplitPart(Part* p, const Pos&);
       void cmdGluePart(Part* p);
 
-      void changePart(Part*, Part*);
-      void addPart(Part* part);
       PartList* getSelectedMidiParts() const;
       PartList* getSelectedWaveParts() const;
-      bool msgRemoveParts();
 
-      void cmdChangePart(Part* oldPart, Part* newPart);
-      void cmdRemovePart(Part* part);
-      void cmdAddPart(Part* part);
       void movePart(Part*, unsigned, Track*);
       void linkPart(Part*, unsigned, Track*);
       void copyPart(Part*, unsigned, Track*);
@@ -324,7 +326,6 @@ class Song : public QObject {
       void insertTrack1(Track*, int idx);
       void insertTrack2(Track*);
       void readRoute(QDomNode);
-//      void recordEvent(MidiTrack*, Event&);
       std::vector<QString>* synthesizer() const;
 
       void deselectTracks();

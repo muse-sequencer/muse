@@ -82,7 +82,7 @@ static const char* fileSaveText =
 static const char* infoLoopButton     = QT_TR_NOOP("loop between left mark and right mark");
 static const char* infoPunchinButton  = QT_TR_NOOP("record starts at left mark");
 static const char* infoPunchoutButton = QT_TR_NOOP("record stops at right mark");
-static const char* infoStartButton    = QT_TR_NOOP("rewind to start position");
+// static const char* infoStartButton    = QT_TR_NOOP("rewind to start position");
 static const char* infoRewindButton   = QT_TR_NOOP("rewind current position");
 static const char* infoForwardButton  = QT_TR_NOOP("move current position");
 static const char* infoStopButton     = QT_TR_NOOP("stop sequencer");
@@ -1690,7 +1690,7 @@ void MusE::selectProject(QAction* a)
 //   kbAccel
 //---------------------------------------------------------
 
-void MusE::kbAccel(int key)
+void MusE::kbAccel(int /*key*/)
       {
 #if 0 //TODOB
       if (key == shortcuts[SHRT_TOGGLE_METRO].key) {
@@ -1863,23 +1863,27 @@ void MusE::cmd(QAction* a)
 //TODO1                  arranger->cmd(Arranger::CMD_PASTE_PART);
                   break;
             case CMD_DELETE:
-                  song->startUndo();
-                  if (song->msgRemoveParts()) {
-                        song->endUndo(SC_PART_REMOVED);
-                        break;
+                  {
+                  TrackList* tl = song->tracks();
+                  bool partsMarked = false;
+                  for (iTrack it = tl->begin(); it != tl->end(); ++it) {
+      	            PartList* pl2 = (*it)->parts();
+                        for (iPart ip = pl2->begin(); ip != pl2->end(); ++ip) {
+            	            if (ip->second->selected()) {
+                  	            partsMarked = true;
+                                    break;
+                                    }
+                              }
                         }
-                  else {
-                  	// if there are no selected parts, delete
-                  	// selected tracks
-                  	//
+                  if (partsMarked)
+                        song->cmdRemoveParts();
+                  else
                         audio->msgRemoveTracks();
-                  	}
-                  song->endUndo(SC_TRACK_REMOVED);
+                  }
                   break;
+
             case CMD_DELETE_TRACK:
-                  song->startUndo();
                   audio->msgRemoveTracks();
-                  song->endUndo(SC_TRACK_REMOVED);
                   break;
 
             case CMD_SELECT_ALL:
@@ -2193,7 +2197,7 @@ void MusE::globalCut()
                   if (t + l <= lpos)
                         continue;
                   if ((t >= lpos) && ((t+l) <= rpos)) {
-                        audio->msgRemovePart(part, false);
+                        song->removePart(part);
                         }
                   else if ((t < lpos) && ((t+l) > lpos) && ((t+l) <= rpos)) {
                         // remove part tail
@@ -2337,7 +2341,7 @@ void MusE::globalSplit()
                         Part* p2;
                         track->splitPart(part, pos, p1, p2);
                         audio->msgChangePart(part, p1, false);
-                        audio->msgAddPart(p2, false);
+                        song->addPart(p2);
                         break;
                         }
                   }

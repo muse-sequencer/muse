@@ -923,19 +923,7 @@ void Song::processMsg(AudioMsg* msg)
             case SEQM_REDO:
                   doRedo2();
                   break;
-            case SEQM_MOVE_TRACK:
-                  if (msg->a > msg->b) {
-                        for (int i = msg->a; i > msg->b; --i) {
-                              swapTracks(i, i-1);
-                              }
-                        }
-                  else {
-                        for (int i = msg->a; i < msg->b; ++i) {
-                              swapTracks(i, i+1);
-                              }
-                        }
-                  updateFlags = SC_TRACK_MODIFIED;
-                  break;
+
             case SEQM_ADD_EVENT:
                   updateFlags = SC_EVENT_INSERTED;
                   if (addEvent(msg->ev1, (Part*)(msg->p2))) {
@@ -1004,63 +992,41 @@ void Song::processMsg(AudioMsg* msg)
                   msg->track->removeControllerVal(msg->a, msg->time);
                   break;
 
+            case SEQM_ADD_TRACK:
+                  insertTrack2(msg->track);
+                  break;
+
+            case SEQM_REMOVE_TRACK:
+                  removeTrack2(msg->track);
+                  break;
+
+            case SEQM_ADD_PART:
+                  {
+                  Part* part = (Part*)(msg->p1);
+                  part->track()->addPart(part);
+                  }
+                  break;
+
+            case SEQM_REMOVE_PART:
+                  {
+                  Part* part = (Part*)(msg->p1);
+                  Track* track = part->track();
+                  track->parts()->remove(part);
+                  }
+                  break;
+
+            case SEQM_CHANGE_PART:
+                  cmdChangePart((Part*)msg->p1, (Part*)msg->p2);
+                  break;
+
+            case SEQM_MOVE_TRACK:
+                  moveTrack((Track*)(msg->p1), (Track*)(msg->p2));
+                  break;
+
             default:
                   printf("unknown seq message %d\n", msg->id);
                   break;
             }
-      }
-
-//---------------------------------------------------------
-//   cmdAddPart
-//	realtime context
-//---------------------------------------------------------
-
-void Song::cmdAddPart(Part* part)
-      {
-      part->track()->addPart(part);
-      undoOp(UndoOp::AddPart, part);
-      updateFlags = SC_PART_INSERTED;
-      if (len() < part->endTick())
-            setLen(part->endTick());
-      }
-
-//---------------------------------------------------------
-//   cmdRemovePart
-//---------------------------------------------------------
-
-void Song::cmdRemovePart(Part* part)
-      {
-      Track* track = part->track();
-      track->parts()->remove(part);
-
-//TD      esettingsList->removeSettings(part->sn());
-      undoOp(UndoOp::DeletePart, part);
-      part->events()->incARef(-1);
-      updateFlags = SC_PART_MODIFIED;
-      }
-
-//---------------------------------------------------------
-//   changePart
-//---------------------------------------------------------
-
-void Song::changePart(Part* oldPart, Part* newPart)
-      {
-      Part part = *newPart;
-      *newPart  = *oldPart;
-      *oldPart  = part;
-      }
-
-//---------------------------------------------------------
-//   cmdChangePart
-//	realtime context
-//---------------------------------------------------------
-
-void Song::cmdChangePart(Part* oldPart, Part* newPart)
-      {
-      changePart(oldPart, newPart);
-      undoOp(UndoOp::ModifyPart, oldPart, newPart);
-      oldPart->events()->incARef(-1);
-      updateFlags = SC_PART_MODIFIED;
       }
 
 //---------------------------------------------------------
@@ -1227,52 +1193,6 @@ void Song::seqSignal(int fd)
                   }
             }
       }
-
-#if 0
-//---------------------------------------------------------
-//   recordEvent
-//---------------------------------------------------------
-
-void Song::recordEvent(MidiTrack* mt, Event& event)
-      {
-      //---------------------------------------------------
-      //    if tick points into a part,
-      //          record to that part
-      //    else
-      //          create new part
-      //---------------------------------------------------
-
-      unsigned tick  = event.tick();
-      PartList* pl   = mt->parts();
-      Part* part = 0;
-      iPart ip;
-      for (ip = pl->begin(); ip != pl->end(); ++ip) {
-            part = ip->second;
-            unsigned partStart = part->tick();
-            unsigned partEnd   = partStart + part->lenTick();
-            if (tick >= partStart && tick < partEnd)
-                  break;
-            }
-      updateFlags |= SC_EVENT_INSERTED;
-      if (ip == pl->end()) {
-            // create new part
-            part          = new Part(mt);
-            int startTick = roundDownBar(tick);
-            int endTick   = roundUpBar(tick);
-            part->setTick(startTick);
-            part->setLenTick(endTick - startTick);
-            part->setName(mt->name());
-            event.move(-startTick);
-            part->events()->add(event);
-            audio->msgAddPart(part);
-            return;
-            }
-      part = ip->second;
-      tick -= part->tick();
-      event.setTick(tick);
-      audio->msgAddEvent(event, part);
-      }
-#endif
 
 //---------------------------------------------------------
 //   stopRolling
@@ -1821,174 +1741,6 @@ std::vector<QString>* Song::synthesizer() const
             }
       return l;
       }
-
-//---------------------------------------------------------
-//   changePart
-//    extend/shrink part in front or at end
-//---------------------------------------------------------
-
-void Song::changePart(Part* oPart, unsigned pos, unsigned len)
-      {
-      startUndo();
-      //
-      // move events so they stay at same position in song
-      //
-      int delta    = oPart->tick() - pos;
-      EventList* d = new EventList();
-      EventList* s = oPart->events();
-      for (iEvent ie = s->begin(); ie != s->end(); ++ie) {
-            int tick = ie->first + delta;
-            if (tick >= 0 && tick < int(len)) {
-                  Event ev = ie->second.clone();
-                  ev.move(delta);
-                  d->add(ev, unsigned(tick));
-                  }
-            }
-      if (oPart->fillLen() > 0 && len < (unsigned)oPart->fillLen())
-            oPart->setFillLen(len);
-      if (oPart->lenTick() < len && oPart->fillLen() > 0) {
-            unsigned loop = oPart->fillLen();
-            unsigned fillLen = len - oPart->lenTick();
-            for (unsigned i = 0; i < fillLen / loop; ++i) {
-                  int start = oPart->lenTick() + loop * i;
-                  for (iEvent ie = s->begin(); ie != s->end(); ++ie) {
-                        if (ie->first >= loop)
-                              break;
-                  	Event ev = ie->second.clone();
-                        ev.move(start);
-                        d->add(ev, ie->first + start);
-                        }
-                  }
-            }
-      Part* nPart = new Part(*oPart, d);
-      nPart->setLenTick(len);
-      nPart->setTick(pos);
-      audio->msgChangePart(oPart, nPart, false);
-      endUndo(SC_PART_MODIFIED);
-      oPart->track()->partListChanged();
-      if (unsigned(_len) < oPart->endTick())  // update song len
-            setLen(oPart->endTick());
-      }
-
-//---------------------------------------------------------
-//   movePart
-//---------------------------------------------------------
-
-void Song::movePart(Part* oPart, unsigned pos, Track* track)
-      {
-      Track* oTrack = oPart->track();
-      Part* nPart   = new Part(*oPart);
-      nPart->setTrack(track);
-      nPart->setTick(pos);
-      startUndo();
-      if (oPart->track() != track) {
-	      audio->msgRemovePart(oPart, false);
-	      audio->msgAddPart(nPart, false);
-            }
-      else {
-	      audio->msgChangePart(oPart, nPart, false);
-            }
-      endUndo(0);
-      oTrack->partListChanged();
-      if (len() < nPart->endTick())
-            setLen(nPart->endTick());
-      }
-
-//---------------------------------------------------------
-//   linkPart
-//---------------------------------------------------------
-
-void Song::linkPart(Part* sPart, unsigned pos, Track* track)
-      {
-      Part* dPart = track->newPart(sPart, true);
-      dPart->setTick(pos);
-      audio->msgAddPart(dPart);
-      sPart->track()->partListChanged();
-      dPart->track()->partListChanged();
-      }
-
-//---------------------------------------------------------
-//   copyPart
-//---------------------------------------------------------
-
-void Song::copyPart(Part* sPart, unsigned pos, Track* track)
-      {
-      bool clone = sPart->events()->arefCount() > 1;
-      Part* dPart = track->newPart(sPart, clone);
-      dPart->setTick(pos);
-      if (!clone) {
-            //
-            // Copy Events
-            //
-            EventList* se = sPart->events();
-            EventList* de = dPart->events();
-            for (iEvent i = se->begin(); i != se->end(); ++i) {
-                  Event oldEvent = i->second;
-                  Event ev = oldEvent.clone();
-                  de->add(ev);
-                  }
-            }
-      audio->msgAddPart(dPart);
-      sPart->track()->partListChanged();
-      dPart->track()->partListChanged();
-      }
-
-//---------------------------------------------------------
-//   createLRPart
-//---------------------------------------------------------
-
-void Song::createLRPart(Track* track)
-      {
-      Part* part = track->newPart();
-      if (part) {
-            part->setTick(pos[1].tick());
-            part->setLenTick(pos[2].tick()-pos[1].tick());
-            part->setSelected(true);
-            addPart(part);
-            }
-      }
-
-//---------------------------------------------------------
-//   addPart
-//---------------------------------------------------------
-
-void Song::addPart(Part* part)
-      {
-      audio->msgAddPart(part);
-      // adjust song len:
-      unsigned epos = part->tick() + part->lenTick();
-
-      if (epos > len())
-            setLen(epos);
-      part->track()->partListChanged();
-      }
-
-//---------------------------------------------------------
-//   selectPart
-//---------------------------------------------------------
-
-void Song::selectPart(Part* part, bool add)
-      {
-      if (add) {
-            part->setSelected(!part->selected());
-            part->track()->partListChanged();
-            return;
-            }
-      for (iTrack it = _tracks.begin(); it != _tracks.end(); ++it) {
-            PartList* pl = (*it)->parts();
-            bool changed = false;
-            for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
-                  bool f = part == ip->second;
-                  if (ip->second->selected() != f) {
-                        ip->second->setSelected(f);
-                        changed = true;
-                        }
-                  }
-            if (changed)
-                  (*it)->partListChanged();
-            }
-      }
-
 
 //---------------------------------------------------------
 //   setRecordFlag

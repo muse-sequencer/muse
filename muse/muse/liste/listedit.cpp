@@ -67,8 +67,9 @@ ListEdit::ListEdit(QWidget*)
          SLOT(itemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
       connect(list, SIGNAL(itemExpanded(QTreeWidgetItem*)), SLOT(itemExpanded(QTreeWidgetItem*)));
       connect(list, SIGNAL(itemCollapsed(QTreeWidgetItem*)), SLOT(itemExpanded(QTreeWidgetItem*)));
+      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       list->resizeColumnToContents(0);
-      resize(900, 300);
+      resize(900, 400);
       }
 
 //---------------------------------------------------------
@@ -153,6 +154,19 @@ void ListEdit::buildList()
       }
 
 //---------------------------------------------------------
+//   songChanged
+//---------------------------------------------------------
+
+void ListEdit::songChanged(int flags)
+      {
+      if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_PART_INSERTED
+         | SC_PART_REMOVED)) {
+            buildList();
+            selectItem();
+            }      
+      }
+
+//---------------------------------------------------------
 //   findItem
 //---------------------------------------------------------
 
@@ -189,12 +203,11 @@ void ListEdit::selectItem(const AL::Pos& p, Track* track, Part* part, Ctrl* ctrl
       lt.track = track;
       lt.part  = part;
       lt.ctrl  = ctrl;
-      selectItem(lt);
+      selectItem();
       }
 
-void ListEdit::selectItem(const ListType& l)
+void ListEdit::selectItem()
       {
-      lt = l;
       stack->setCurrentWidget(ctrlPanel);
       buildList();
       for (int i = 0;; ++i) {

@@ -215,8 +215,8 @@ class Audio {
       void msgRemoveTrack(Track*);
       void msgRemoveTracks();
       void msgMoveTrack(Track*, Track*);
-      void msgAddPart(Part*, bool u = true);
-      void msgRemovePart(Part*, bool u = true);
+//      void msgAddPart(Part*, bool u = true);
+//      void msgRemovePart(Part*, bool u = true);
       void msgChangePart(Part* oldPart, Part* newPart, bool u = true);
       void msgAddEvent(const Event&, Part*, bool u = true);
       void msgDeleteEvent(const Event&, Part*, bool u = true);

@@ -30,6 +30,7 @@
 //---------------------------------------------------------
 
 class MidiTimeDelegate : public QItemDelegate {
+      Q_OBJECT
 
       virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem&,
          const QModelIndex& index) const;
@@ -73,6 +74,7 @@ class CtrlListEditor : public ListWidget {
 
    private slots:
       void controllerChanged(int id);
+      void itemActivated(QTreeWidgetItem*,int);
       void itemDoubleClicked(QTreeWidgetItem*,int);
       void itemChanged(QTreeWidgetItem*,int);
       void currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*);
@@ -87,6 +89,7 @@ class CtrlListEditor : public ListWidget {
       CtrlListEditor(ListEdit*, QWidget* parent = 0);
       virtual void setup(const ListType&);
       void sendEscape();
+      Ctrl* ctrl() const { return c; }
       enum { TICK_COL, TIME_COL, VAL_COL };
       };
       

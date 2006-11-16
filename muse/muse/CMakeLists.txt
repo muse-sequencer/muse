@@ -64,6 +64,7 @@ QT4_WRAP_CPP ( muse_moc_headers
 	cobject.h
       transpose.h
       track.h
+      miditrackbase.h
       midisynti.h
       miditrack.h
       wavetrack.h
@@ -138,12 +139,14 @@ add_executable ( muse
       midiplugin.cpp
       muse.cpp
       song.cpp
+      songpart.cpp
       transport.cpp
       conf.cpp
       editor.cpp
 	cobject.cpp
       transpose.cpp
       track.cpp
+      miditrackbase.cpp
       midisynti.cpp
       miditrack.cpp
       wavetrack.cpp

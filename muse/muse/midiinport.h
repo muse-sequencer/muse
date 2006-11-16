@@ -21,7 +21,7 @@
 #ifndef __MIDIINPORT_H__
 #define __MIDIINPORT_H__
 
-#include "track.h"
+#include "miditrackbase.h"
 #include "midievent.h"
 
 static const int RECORD_FIFO_SIZE = 512;

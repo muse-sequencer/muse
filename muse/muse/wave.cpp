@@ -910,7 +910,7 @@ bool MusE::importWaveToTrack(const QString& wave, Track* track, const Pos& pos)
       part->addEvent(event);
 
       part->setName(srcInfo.baseName());
-      audio->msgAddPart(part);
+      song->cmdAddPart(part);
       unsigned endTick = part->tick() + part->lenTick();
       if (song->len() < endTick)
             song->setLen(endTick);

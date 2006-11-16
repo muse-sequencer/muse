@@ -21,7 +21,7 @@
 #ifndef __MIDISYNTH_H__
 #define __MIDISYNTH_H__
 
-#include "track.h"
+#include "miditrackbase.h"
 
 //---------------------------------------------------------
 //   MidiSynti

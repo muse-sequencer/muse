@@ -174,6 +174,75 @@
 %%=======================================================================
 %%
 
+\chapter{Process Structure}
+
+\chapter{Song}
+   \section{Multithreading}
+
+   \section{Editing}
+      \subsection{Realtime Editing}
+         \M\ allows for realtime editing. That means that you can edit
+         a song while the sequencer is running.
+         Two threads want to access data in the main {\tt Song()} class:
+         the GUI thread and the realtime sequencer thread.
+
+         This are the rules how \M\ handles {\tt Song()} data accesses:
+
+         \startitemize[packed,broad]
+            \item the GUI thread can only read {\tt Song()} data
+            \item the GUI thread can request the sequencer thread to
+               modify Song data
+            \item the sequencer thread can modify {\tt Song()} data, but only
+               on request of the GUI thread
+         \stopitemize
+
+         Interprocess communication is done via message passing. 
+         Communication from the gui thread to the sequencer thread is
+         done in the following steps:
+
+         \startitemize[packed,broad]
+            \item the GUI sends a Message to the sequencer thread
+                  and waits for an answer
+            \item once the sequencer thread is running (the JACK
+              client {\tt process()} call) it processes the message and
+              sends back an answer to the GUI process.
+            \item the GUI process reads the answer and continues
+         \stopitemize
+            
+         This scheme stops the GUI process in a defined state while the
+         realtime process can safely manipulate the {\tt Song()} data.
+
+      \subsection{User Transaction}
+   
+         A user transaction is a sequence of actions manipulating the
+         main {\Song()} structure. Each action involves sending a
+         message to the realtime thread. This means that every action
+         stops the GUI thread for at most one JACK cycle.
+
+         If a transaction consists of lot of actions then this scheme
+         would be too slow. For such cases the sequencer thread is switched
+         to "idle" mode, which ensures it is not touching the {\tt Song()}
+         data anymore. Then safe manipulation of the data is possible.
+
+      \subsection{Naming Conventions}
+
+         There are several methods involved in an edit transaction;
+         example for adding a part:
+         
+         \startitemize[packed,broad]
+               \item {\tt cmdAddPart()}
+                     This implements a complete undoable user transaction
+                     and is called from the gui thread
+               \item {\tt addPart()}
+                     This method is also called from the gui thread. It
+                     implements part of a user transaction. It is not
+                     surrounded by {\tt startUndo() endUndo()}.
+               \item the realtime part (actually removing the {\tt Part} from the
+                     PartList) is done inline during processing of 
+                     messages in the sequencer thread.
+         \stopitemize
+         
+
 \chapter{File Formats}
       \section{Instrument Definition Files}
 

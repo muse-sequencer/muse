@@ -336,7 +336,7 @@ void Audio::msgRemoveTrack(Track* track)
       AudioMsg msg;
       msg.id = SEQM_REMOVE_TRACK;
       msg.track = track;
-      sendMessage(&msg, false);
+      sendMessage(&msg, true);
       }
 
 //---------------------------------------------------------
@@ -373,55 +373,6 @@ void Audio::msgMoveTrack(Track* src, Track* dst)
       msg.p1 = src;
       msg.p2 = dst;
       sendMessage(&msg, false);
-      }
-
-//---------------------------------------------------------
-//   msgAddPart
-//---------------------------------------------------------
-
-void Audio::msgAddPart(Part* part, bool doUndoFlag)
-      {
-      AudioMsg msg;
-      msg.id = SEQM_ADD_PART;
-      msg.p1 = part;
-      sendMessage(&msg, doUndoFlag);
-      }
-
-//---------------------------------------------------------
-//   msgRemovePart
-//---------------------------------------------------------
-
-void Audio::msgRemovePart(Part* part, bool doUndoFlag)
-      {
-      AudioMsg msg;
-      msg.id = SEQM_REMOVE_PART;
-      msg.p1 = part;
-      sendMessage(&msg, doUndoFlag);
-      part->track()->partListChanged();   // emit signal
-      }
-
-//---------------------------------------------------------
-//   msgRemoveParts
-//    remove selected parts; return true if any part was
-//    removed
-//---------------------------------------------------------
-
-bool Song::msgRemoveParts()
-      {
-      TrackList* tl = song->tracks();
-      PartList pl;
-
-      for (iTrack it = tl->begin(); it != tl->end(); ++it) {
-      	PartList* pl2 = (*it)->parts();
-            for (iPart ip = pl2->begin(); ip != pl2->end(); ++ip) {
-            	if (ip->second->selected())
-                  	pl.add(ip->second);
-                  }
-            }
-      for (iPart ip = pl.begin(); ip != pl.end(); ++ip)
-		audio->msgRemovePart(ip->second, false);
-
-      return !pl.empty();
       }
 
 //---------------------------------------------------------

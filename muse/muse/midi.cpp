@@ -568,7 +568,7 @@ void buildMidiEventList(EventList* del, const MidiEventList* el, MidiTrack* trac
                   CVal val;
                   val.i = ev.dataB();
 
-                  bool found = false;
+//                  bool found = false;
                   Ctrl* c = track->getController(id);
                   if (c)
                         c->add(tick, val);

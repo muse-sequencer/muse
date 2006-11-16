@@ -46,13 +46,17 @@ CtrlListEditor::CtrlListEditor(ListEdit* e, QWidget* parent)
       le.maxValue->setSingleStep(1.0);
       le.defaultValue->setSingleStep(1.0);
 
-      le.ctrlList->setColumnWidth(TICK_COL, 60);
-      le.ctrlList->setColumnWidth(TIME_COL, 120);
+      QFontMetrics fm(le.ctrlList->font());
+      int zW = fm.width("0");
+      le.ctrlList->setColumnWidth(TICK_COL, zW * 8);
+      le.ctrlList->setColumnWidth(TIME_COL, zW * 14);
       MidiTimeDelegate* midiTimeDelegate = new MidiTimeDelegate(this);
       le.ctrlList->setItemDelegate(midiTimeDelegate);
 
       track = 0;
       connect(le.ctrlList, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
+         SLOT(itemActivated(QTreeWidgetItem*,int)));
+      connect(le.ctrlList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),
          SLOT(itemDoubleClicked(QTreeWidgetItem*,int)));
       connect(le.ctrlList, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
          SLOT(itemChanged(QTreeWidgetItem*, int)));
@@ -136,8 +140,7 @@ void CtrlListEditor::updateList()
             QTreeWidgetItem* item = new QTreeWidgetItem;
             item->setData(TICK_COL, Qt::TextAlignmentRole, int(Qt::AlignRight | Qt::AlignVCenter));
             item->setData(TIME_COL, Qt::TextAlignmentRole, int(Qt::AlignRight | Qt::AlignVCenter));
-            item->setData(VAL_COL,  Qt::TextAlignmentRole, int(Qt::AlignRight | Qt::AlignVCenter));
-//            item->setItemDelegate(TIME_COL, midiTimeDelegate);
+            item->setData(VAL_COL,  Qt::TextAlignmentRole, int(Qt::AlignHCenter | Qt::AlignVCenter));
 
             item->setData(TICK_COL, Qt::DisplayRole, i.key());
             item->setData(TIME_COL, Qt::DisplayRole, i.key());
@@ -165,10 +168,10 @@ void CtrlListEditor::controllerChanged(int id)
       }
 
 //---------------------------------------------------------
-//   itemDoubleClicked
+//   itemActivated
 //---------------------------------------------------------
 
-void CtrlListEditor::itemDoubleClicked(QTreeWidgetItem* item, int column)
+void CtrlListEditor::itemActivated(QTreeWidgetItem* item, int column)
       {
       le.ctrlList->openPersistentEditor(item, column);
       }
@@ -179,11 +182,6 @@ void CtrlListEditor::itemDoubleClicked(QTreeWidgetItem* item, int column)
 
 void CtrlListEditor::itemChanged(QTreeWidgetItem* item, int column)
       {
-      if (column != VAL_COL) {
-            printf("time change not implemented\n");
-            return;
-            }
-      
       CVal val;
       if (c->type() & Ctrl::INT) {
             val.i = item->data(VAL_COL, Qt::DisplayRole).toInt();
@@ -217,7 +215,29 @@ void CtrlListEditor::itemChanged(QTreeWidgetItem* item, int column)
       le.ctrlList->closePersistentEditor(item, TIME_COL);
       le.ctrlList->closePersistentEditor(item, VAL_COL);
       updateListDisabled = true;
-      song->addControllerVal(track, c, listEdit->pos(), val);
+      switch(column) {
+            case TICK_COL:
+                  {
+                  int otick = item->data(TIME_COL, Qt::DisplayRole).toInt();
+                  int tick = item->data(TICK_COL, Qt::DisplayRole).toInt();
+                  item->setData(TIME_COL, Qt::DisplayRole, tick);
+                  song->removeControllerVal(track, c->id(), otick);
+                  song->addControllerVal(track, c, tick, val);
+                  }
+                  break;
+            case TIME_COL:
+                  {
+                  int otick = item->data(TICK_COL, Qt::DisplayRole).toInt();
+                  int tick = item->data(TIME_COL, Qt::DisplayRole).toInt();
+                  item->setData(TICK_COL, Qt::DisplayRole, tick);
+                  song->removeControllerVal(track, c->id(), otick);
+                  song->addControllerVal(track, c, tick, val);
+                  }
+                  break;
+            case VAL_COL:
+                  song->addControllerVal(track, c, listEdit->pos(), val);
+                  break;
+            }
       updateListDisabled = false;
       }
 
@@ -350,14 +370,31 @@ MidiTimeDelegate::MidiTimeDelegate(QObject* parent)
 //   createEditor
 //---------------------------------------------------------
 
-QWidget* MidiTimeDelegate::createEditor(QWidget* parent, 
+QWidget* MidiTimeDelegate::createEditor(QWidget* pw,
    const QStyleOptionViewItem& option, const QModelIndex& index) const
       {
-      if (index.column() != CtrlListEditor::TIME_COL)
-            return QItemDelegate::createEditor(parent, option, index);
-
-      Awl::PosEdit* pe = new Awl::PosEdit(parent);
-      return pe;
+      switch(index.column()) {
+            case CtrlListEditor::TICK_COL:
+                  break;
+            case CtrlListEditor::TIME_COL:
+                  return new Awl::PosEdit(pw);
+            case CtrlListEditor::VAL_COL:
+                  {
+                  CtrlListEditor* ce = static_cast<CtrlListEditor*>(parent());
+                  Ctrl* c = ce->ctrl();
+                  if (c->type() & Ctrl::INT) {
+                        QSpinBox* w = new QSpinBox(pw);
+                        w->setRange(c->minVal().i, c->maxVal().i);
+                        w->installEventFilter(const_cast<MidiTimeDelegate*>(this));
+                        return w;
+                        }
+                  QDoubleSpinBox* w = new QDoubleSpinBox(pw);
+                  w->setRange(c->minVal().f, c->maxVal().f);
+                  w->installEventFilter(const_cast<MidiTimeDelegate*>(this));
+                  return w;
+                  }
+            }
+      return QItemDelegate::createEditor(pw, option, index);
       }
 
 //---------------------------------------------------------
@@ -367,12 +404,31 @@ QWidget* MidiTimeDelegate::createEditor(QWidget* parent,
 void MidiTimeDelegate::setEditorData(QWidget* editor, 
    const QModelIndex& index) const
       {
-      if (index.column() != CtrlListEditor::TIME_COL) {
-            QItemDelegate::setEditorData(editor, index);
-            return;
+      switch(index.column()) {
+            case CtrlListEditor::TICK_COL:
+                  break;
+            case CtrlListEditor::TIME_COL:
+                  {
+                  Awl::PosEdit* pe = static_cast<Awl::PosEdit*>(editor);
+                  pe->setValue(AL::Pos(index.data().toInt()));
+                  }
+                  return;
+            case CtrlListEditor::VAL_COL:
+                  {
+                  CtrlListEditor* ce = static_cast<CtrlListEditor*>(parent());
+                  Ctrl* c = ce->ctrl();
+                  if (c->type() & Ctrl::INT) {
+                        QSpinBox* w = static_cast<QSpinBox*>(editor);
+                        w->setValue(index.data().toInt());
+                        }
+                  else {
+                        QDoubleSpinBox* w = static_cast<QDoubleSpinBox*>(editor);
+                        w->setValue(index.data().toDouble());
+                        }
+                  }
+                  return;
             }
-      Awl::PosEdit* pe = (Awl::PosEdit*)editor;
-      pe->setValue(AL::Pos(index.data().toInt()));
+      QItemDelegate::setEditorData(editor, index);
       }
 
 //---------------------------------------------------------
@@ -382,12 +438,31 @@ void MidiTimeDelegate::setEditorData(QWidget* editor,
 void MidiTimeDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
          const QModelIndex& index) const
       {
-      if (index.column() != CtrlListEditor::TIME_COL) {
-            QItemDelegate::setModelData(editor, model, index);
-            return;
+      switch(index.column()) {
+            case CtrlListEditor::TICK_COL:
+                  break;
+            case CtrlListEditor::TIME_COL:
+                  {
+                  Awl::PosEdit* pe = static_cast<Awl::PosEdit*>(editor);
+                  model->setData(index, pe->pos().tick(), Qt::DisplayRole);
+                  }
+                  return;
+            case CtrlListEditor::VAL_COL:
+                  {
+                  CtrlListEditor* ce = static_cast<CtrlListEditor*>(parent());
+                  Ctrl* c = ce->ctrl();
+                  if (c->type() & Ctrl::INT) {
+                        QSpinBox* w = static_cast<QSpinBox*>(editor);
+                        model->setData(index, w->value(), Qt::DisplayRole);
+                        }
+                  else {
+                        QDoubleSpinBox* w = static_cast<QDoubleSpinBox*>(editor);
+                        model->setData(index, w->value(), Qt::DisplayRole);
+                        }
+                  }
+                  break;
             }
-      Awl::PosEdit* pe = (Awl::PosEdit*)editor;
-      model->setData(index, pe->pos().tick(), Qt::DisplayRole);
+      QItemDelegate::setModelData(editor, model, index);
       }
 
 //---------------------------------------------------------
@@ -430,4 +505,14 @@ void MidiTimeDelegate::paint(QPainter* painter,
       drawFocus(painter, opt, text.isEmpty() ? QRect() : displayRect);
       painter->restore();
       }
+
+//---------------------------------------------------------
+//   itemDoubleClicked
+//---------------------------------------------------------
+
+void CtrlListEditor::itemDoubleClicked(QTreeWidgetItem* item, int column)
+      {
+      printf("double clicked\n");
+      }
+
 

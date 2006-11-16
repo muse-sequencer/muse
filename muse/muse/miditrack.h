@@ -21,7 +21,7 @@
 #ifndef __MIDITRACK_H__
 #define __MIDITRACK_H__
 
-#include "track.h"
+#include "miditrackbase.h"
 #include "midififo.h"
 
 class Part;
