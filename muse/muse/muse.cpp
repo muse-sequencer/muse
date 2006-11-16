@@ -2213,7 +2213,7 @@ void MusE::globalCut()
                               ++ie;
                               audio->msgDeleteEvent(i->second, nPart, false);
                               }
-                        audio->msgChangePart(part, nPart, false);
+                        song->changePart(part, nPart);
                         }
                   else if ((t < lpos) && ((t+l) > lpos) && ((t+l) > rpos)) {
                         //----------------------
@@ -2240,7 +2240,7 @@ void MusE::globalCut()
                               audio->msgChangeEvent(event, nEvent, nPart, false);
                               }
                         nPart->setLenTick(l - (rpos-lpos));
-                        audio->msgChangePart(part, nPart, false);
+                        song->changePart(part, nPart);
                         }
                   else if ((t >= lpos) && (t < rpos) && (t+l) > rpos) {
                         // TODO: remove part head
@@ -2249,7 +2249,7 @@ void MusE::globalCut()
                         Part* nPart = new Part(*part);
                         int nt = part->tick();
                         nPart->setTick(nt - (rpos -lpos));
-                        audio->msgChangePart(part, nPart, false);
+                        song->changePart(part, nPart);
                         }
                   }
             }
@@ -2304,12 +2304,12 @@ void MusE::globalInsert()
                               nEvent.setTick(nEvent.tick() + (rpos-lpos));
                               audio->msgChangeEvent(event, nEvent, nPart, false);
                               }
-                        audio->msgChangePart(part, nPart, false);
+                        song->changePart(part, nPart);
                         }
                   else if (t > lpos) {
                         Part* nPart = new Part(*part);
                         nPart->setTick(t + (rpos -lpos));
-                        audio->msgChangePart(part, nPart, false);
+                        song->changePart(part, nPart);
                         }
                   }
             }
@@ -2340,7 +2340,7 @@ void MusE::globalSplit()
                         Part* p1;
                         Part* p2;
                         track->splitPart(part, pos, p1, p2);
-                        audio->msgChangePart(part, p1, false);
+                        song->changePart(part, p1);
                         song->addPart(p2);
                         break;
                         }

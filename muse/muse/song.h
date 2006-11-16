@@ -157,8 +157,8 @@ class Song : public QObject {
       void seqSignal(int fd);
       Track* addTrack(QAction*);
       void setMeasureLen(int l);
-      void changePart(Part*, unsigned, unsigned);
-      void createLRPart(Track* track);
+      void cmdChangePart(Part*, unsigned, unsigned);
+      void cmdCreateLRPart(Track* track);
       void setPos(int, const AL::Pos&);
       void setPos(int, const AL::Pos&, bool sig, bool isSeek = true,
          bool adjustScrollbar = false);
@@ -290,9 +290,9 @@ class Song : public QObject {
       PartList* getSelectedMidiParts() const;
       PartList* getSelectedWaveParts() const;
 
-      void movePart(Part*, unsigned, Track*);
-      void linkPart(Part*, unsigned, Track*);
-      void copyPart(Part*, unsigned, Track*);
+      void cmdMovePart(Part*, unsigned, Track*);
+      void cmdLinkPart(Part*, unsigned, Track*);
+      void cmdCopyPart(Part*, unsigned, Track*);
       void selectPart(Part*, bool add=false);
 
       //-----------------------------------------

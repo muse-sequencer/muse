@@ -376,19 +376,6 @@ void Audio::msgMoveTrack(Track* src, Track* dst)
       }
 
 //---------------------------------------------------------
-//   msgChangePart
-//---------------------------------------------------------
-
-void Audio::msgChangePart(Part* oldPart, Part* newPart, bool doUndoFlag)
-      {
-      AudioMsg msg;
-      msg.id = SEQM_CHANGE_PART;
-      msg.p1 = oldPart;
-      msg.p2 = newPart;
-      sendMessage(&msg, doUndoFlag);
-      }
-
-//---------------------------------------------------------
 //   msgAddEvent
 //---------------------------------------------------------
 

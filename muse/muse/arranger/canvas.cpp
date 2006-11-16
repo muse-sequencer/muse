@@ -883,7 +883,7 @@ void PartCanvas::declonePart(Part* spart)
             Event ev = oldEvent.clone();
             de->add(ev);
             }
-      audio->msgChangePart(spart, dpart, true);
+      song->cmdChangePart(spart, dpart);
       track->partListChanged();
       }
 
@@ -916,7 +916,6 @@ void PartCanvas::renamePart(Part* part)
             Part* newPart = new Part(*part);
             newPart->setName(s);            
             song->cmdChangePart(part, newPart);
-            song->endUndo(SC_PART_MODIFIED);
             widget()->update();
             }
       }
@@ -1076,15 +1075,15 @@ void PartCanvas::drop(QDropEvent* event)
                   Qt::KeyboardModifiers keyState = event->keyboardModifiers();
 
                   if (keyState & Qt::ShiftModifier) {
-                        song->copyPart(srcPart, tick, track);
+                        song->cmdCopyPart(srcPart, tick, track);
                         event->setDropAction(Qt::CopyAction);
                         }
                   else if (keyState & Qt::ControlModifier) {
-                        song->linkPart(srcPart, tick, track);
+                        song->cmdLinkPart(srcPart, tick, track);
                         event->setDropAction(Qt::LinkAction);
                         }
                   else {
-                        song->movePart(srcPart, tick, track);
+                        song->cmdMovePart(srcPart, tick, track);
                         event->setDropAction(Qt::MoveAction);
                         }
                   }

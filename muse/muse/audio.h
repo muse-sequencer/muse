@@ -215,12 +215,11 @@ class Audio {
       void msgRemoveTrack(Track*);
       void msgRemoveTracks();
       void msgMoveTrack(Track*, Track*);
-//      void msgAddPart(Part*, bool u = true);
-//      void msgRemovePart(Part*, bool u = true);
-      void msgChangePart(Part* oldPart, Part* newPart, bool u = true);
+
       void msgAddEvent(const Event&, Part*, bool u = true);
       void msgDeleteEvent(const Event&, Part*, bool u = true);
       void msgChangeEvent(const Event&, const Event&, Part*, bool u = true);
+
       void msgAddTempo(int tick, int tempo, bool doUndoFlag = true);
       void msgSetTempo(int tick, int tempo, bool doUndoFlag = true);
       void msgSetGlobalTempo(int val);

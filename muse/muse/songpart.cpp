@@ -126,10 +126,9 @@ void Song::cmdRemoveParts()
 
 void Song::cmdChangePart(Part* oldPart, Part* newPart)
       {
+      startUndo();
       changePart(oldPart, newPart);
-      undoOp(UndoOp::ModifyPart, oldPart, newPart);
-      oldPart->events()->incARef(-1);
-      updateFlags = SC_PART_MODIFIED;
+      endUndo(0);
       }
 
 //---------------------------------------------------------
@@ -138,17 +137,24 @@ void Song::cmdChangePart(Part* oldPart, Part* newPart)
 
 void Song::changePart(Part* oldPart, Part* newPart)
       {
-      Part part = *newPart;
-      *newPart  = *oldPart;
-      *oldPart  = part;
+      AudioMsg msg;
+      msg.id = SEQM_CHANGE_PART;
+      msg.p1 = oldPart;
+      msg.p2 = newPart;
+      audio->sendMessage(&msg, false);
+      undoOp(UndoOp::ModifyPart, oldPart, newPart);
+      oldPart->events()->incARef(-1);
+      updateFlags = SC_PART_MODIFIED;
+      if (len() < newPart->endTick())
+            setLen(newPart->endTick());
       }
 
 //---------------------------------------------------------
-//   changePart
+//   cmdChangePart
 //    extend/shrink part in front or at end
 //---------------------------------------------------------
 
-void Song::changePart(Part* oPart, unsigned pos, unsigned len)
+void Song::cmdChangePart(Part* oPart, unsigned pos, unsigned len)
       {
       startUndo();
       //
@@ -184,18 +190,16 @@ void Song::changePart(Part* oPart, unsigned pos, unsigned len)
       Part* nPart = new Part(*oPart, d);
       nPart->setLenTick(len);
       nPart->setTick(pos);
-      audio->msgChangePart(oPart, nPart, false);
-      endUndo(SC_PART_MODIFIED);
+      changePart(oPart, nPart);
+      endUndo(0);
       oPart->track()->partListChanged();
-      if (unsigned(_len) < oPart->endTick())  // update song len
-            setLen(oPart->endTick());
       }
 
 //---------------------------------------------------------
-//   movePart
+//   cmdMovePart
 //---------------------------------------------------------
 
-void Song::movePart(Part* oPart, unsigned pos, Track* track)
+void Song::cmdMovePart(Part* oPart, unsigned pos, Track* track)
       {
       Track* oTrack = oPart->track();
       Part* nPart   = new Part(*oPart);
@@ -207,19 +211,17 @@ void Song::movePart(Part* oPart, unsigned pos, Track* track)
 	      addPart(nPart);
             }
       else {
-	      audio->msgChangePart(oPart, nPart, false);
+	      changePart(oPart, nPart);
             }
       endUndo(0);
       oTrack->partListChanged();
-      if (len() < nPart->endTick())
-            setLen(nPart->endTick());
       }
 
 //---------------------------------------------------------
-//   linkPart
+//   cmdLinkPart
 //---------------------------------------------------------
 
-void Song::linkPart(Part* sPart, unsigned pos, Track* track)
+void Song::cmdLinkPart(Part* sPart, unsigned pos, Track* track)
       {
       Part* dPart = track->newPart(sPart, true);
       dPart->setTick(pos);
@@ -229,10 +231,10 @@ void Song::linkPart(Part* sPart, unsigned pos, Track* track)
       }
 
 //---------------------------------------------------------
-//   copyPart
+//   cmdCopyPart
 //---------------------------------------------------------
 
-void Song::copyPart(Part* sPart, unsigned pos, Track* track)
+void Song::cmdCopyPart(Part* sPart, unsigned pos, Track* track)
       {
       bool clone = sPart->events()->arefCount() > 1;
       Part* dPart = track->newPart(sPart, clone);
@@ -255,10 +257,10 @@ void Song::copyPart(Part* sPart, unsigned pos, Track* track)
       }
 
 //---------------------------------------------------------
-//   createLRPart
+//   cmdCreateLRPart
 //---------------------------------------------------------
 
-void Song::createLRPart(Track* track)
+void Song::cmdCreateLRPart(Track* track)
       {
       Part* part = track->newPart();
       if (part) {
@@ -311,9 +313,9 @@ void Song::cmdSplitPart(Part* part, const Pos& pos)
       part->track()->splitPart(part, tick, p1, p2);
 
       startUndo();
-      audio->msgChangePart(part, p1, false);
+      changePart(part, p1);
       addPart(p2);
-      endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
+      endUndo(0);
       part->track()->partListChanged();
       }
 
@@ -358,8 +360,8 @@ void Song::cmdGluePart(Part* oPart)
             }
       startUndo();
       removePart(nextPart);
-      audio->msgChangePart(oPart, nPart, false);
-      endUndo(SC_PART_MODIFIED | SC_PART_REMOVED);
+      changePart(oPart, nPart);
+      endUndo(0);
       track->partListChanged();
       }
 

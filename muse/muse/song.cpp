@@ -1016,7 +1016,13 @@ void Song::processMsg(AudioMsg* msg)
                   break;
 
             case SEQM_CHANGE_PART:
-                  cmdChangePart((Part*)msg->p1, (Part*)msg->p2);
+                  {
+                  Part* newPart = (Part*)msg->p2;
+                  Part* oldPart = (Part*)msg->p1;
+                  Part part = *newPart;
+                  *newPart  = *oldPart;
+                  *oldPart  = part;
+                  }
                   break;
 
             case SEQM_MOVE_TRACK:

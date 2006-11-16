@@ -160,8 +160,14 @@ void Song::doUndo2()
                         i->oPart->events()->incARef(1);
                         break;
                   case UndoOp::ModifyPart:
-                        changePart(i->oPart, i->nPart);
+                        {
+                        Part* oldPart = i->oPart;
+                        Part* newPart = i->nPart;
+                        Part part = *newPart;
+                        *newPart  = *oldPart;
+                        *oldPart  = part;
                         updateFlags |= SC_PART_MODIFIED;
+                        }
                         break;
                   case UndoOp::AddEvent:
                         deleteEvent(i->nEvent, i->part);
@@ -250,8 +256,14 @@ void Song::doRedo2()
                         }
                         break;
                   case UndoOp::ModifyPart:
-                        changePart(i->nPart, i->oPart);
+                        {
+                        Part* oldPart = i->oPart;
+                        Part* newPart = i->nPart;
+                        Part part = *newPart;
+                        *newPart  = *oldPart;
+                        *oldPart  = part;
                         updateFlags |= SC_PART_MODIFIED;
+                        }
                         break;
                   case UndoOp::AddEvent:
                         addEvent(i->nEvent, i->part);
