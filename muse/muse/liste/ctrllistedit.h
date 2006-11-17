@@ -75,7 +75,6 @@ class CtrlListEditor : public ListWidget {
    private slots:
       void controllerChanged(int id);
       void itemActivated(QTreeWidgetItem*,int);
-      void itemDoubleClicked(QTreeWidgetItem*,int);
       void itemChanged(QTreeWidgetItem*,int);
       void currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*);
       void insertClicked();
@@ -90,6 +89,7 @@ class CtrlListEditor : public ListWidget {
       virtual void setup(const ListType&);
       void sendEscape();
       Ctrl* ctrl() const { return c; }
+      Track* getTrack() const { return track; }
       enum { TICK_COL, TIME_COL, VAL_COL };
       };
       

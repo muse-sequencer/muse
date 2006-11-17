@@ -455,11 +455,11 @@ Arranger::Arranger(QMainWindow* parent)
       connect(canvas, SIGNAL(contentsMoving(int,int)),  SLOT(setTLViewPos(int,int)));
       connect(canvas, SIGNAL(posChanged(int,const AL::Pos&)), SLOT(setPos(int,const AL::Pos&)));
 
-      connect(canvas, SIGNAL(createLRPart(Track*)),   song, SLOT(createLRPart(Track*)));
+      connect(canvas, SIGNAL(createLRPart(Track*)),   song, SLOT(cmdCreateLRPart(Track*)));
       connect(canvas, SIGNAL(doubleClickPart(Part*)), SIGNAL(editPart(Part*)));
       connect(canvas, SIGNAL(startEditor(Part*,int)), muse, SLOT(startEditor(Part*,int)));
       connect(canvas, SIGNAL(partChanged(Part*,unsigned,unsigned)),
-         song, SLOT(changePart(Part*,unsigned,unsigned)));
+         song, SLOT(cmdChangePart(Part*,unsigned,unsigned)));
       connect(canvas, SIGNAL(addMarker(const AL::Pos&)), SLOT(addMarker(const AL::Pos&)));
       connect(canvas, SIGNAL(removeMarker(const AL::Pos&)), SLOT(removeMarker(const AL::Pos&)));
 

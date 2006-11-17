@@ -362,12 +362,12 @@ class Song : public QObject {
       //   Controller
       //-----------------------------------------
 
-      void addControllerVal(Track*, Ctrl*, const Pos&, CVal);
-      void addControllerVal(Track*, int, const Pos&, CVal);
+      void cmdAddControllerVal(Track*, Ctrl*, const Pos&, CVal);
+      void cmdAddControllerVal(Track*, int, const Pos&, CVal);
       void setControllerVal(Track*, Ctrl*, CVal);
       void setControllerVal(Track*, int, CVal);
 
-      void removeControllerVal(Track*,int,unsigned);
+      void cmdRemoveControllerVal(Track*,int,unsigned);
       void setAutoRead(Track*,bool);
       void setAutoWrite(Track*,bool);
 

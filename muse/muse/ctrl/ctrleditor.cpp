@@ -92,8 +92,7 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
 
       TType tt = track()->timeType();
 
-      MidiController::ControllerType type = midiControllerType(ctrl()->id());
-      if (type == MidiController::Velo) {
+      if (ctrl()->id() == CTRL_VELOCITY) {
             p.setPen(QPen(Qt::blue, veloWidth));
             PartList* pl = track()->parts();
             for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
@@ -133,7 +132,8 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
                   }
             else {
                   int x1, y1, x2, y2;
-
+                  int hx = -1;
+                  int hy;
 
                   Pos pos1 = tc()->pix2pos(from);
                   ciCtrlVal i = ctrl()->lowerBound(pos1.time(tt));
@@ -154,7 +154,8 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
                               --i;
                               x1 = tc()->pos2pix(Pos(i.key(), tt));
                               y1 = ctrlY(x1, i.value());
-                              drawHandle(p, x1, y1, lselected);
+                              hx = x1;
+                              hy = y1;
                               ++i;
                               }
                         do {
@@ -168,14 +169,18 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
                                     p.drawLine(x1, y1, x2, y2);
                               if (x2 >= to)
                                     break;
-                              drawHandle(p, x2, y2, lselected);
+                              if (hx != -1)
+                                    drawHandle(p, hx, hy, lselected);
+                              hx = x2;
+                              hy = y2;
                               x1 = x2;
                               y1 = y2;
                               ++i;
                               } while (i != ctrl()->end());
-                        if (x2 < to) {
+                        if (x2 < to)
                               p.drawLine(x2, y1, to, y1);
-                              }
+                        if (hx != -1)
+                              drawHandle(p, hx, hy, lselected);
                         }
                   }
             if (!aR) {
@@ -257,7 +262,7 @@ void CtrlEditor::mousePress(const QPoint& pos, int button, Qt::KeyboardModifiers
             else {
                   // add controller:
                   CVal val = ctrl()->pixel2val(dragy, wh);
-                  song->addControllerVal(track(), ctrl(), selected, val);
+                  song->cmdAddControllerVal(track(), ctrl(), selected, val);
                   tc()->widget()->update();
                   }
             }
@@ -285,7 +290,7 @@ void CtrlEditor::mousePress(const QPoint& pos, int button, Qt::KeyboardModifiers
                         lselected = tc()->pos2pix(selected);
                         if (tool == RubberTool || button == Qt::RightButton
                           || modifiers & Qt::ControlModifier) {
-                              song->removeControllerVal(track(), ctrl()->id(), i.key());
+                              song->cmdRemoveControllerVal(track(), ctrl()->id(), i.key());
                               dragy = -1;
                               }
                         else {
@@ -374,7 +379,7 @@ void CtrlEditor::mouseRelease()
                   int wh   = cheight();
                   CVal val = ctrl()->pixel2val(dragy, wh);
                   // modify controller:
-                  song->addControllerVal(track(), ctrl(), selected, val);
+                  song->cmdAddControllerVal(track(), ctrl(), selected, val);
                   }
             dragy = -1;
             }
@@ -461,7 +466,7 @@ void CtrlEditor::mouseMove(const QPoint& pos)
                               else
                                     selected.setFrame(i.key());
                               lselected = tc()->pos2pix(selected);
-                              song->removeControllerVal(track(), ctrl()->id(), i.key());
+                              song->cmdRemoveControllerVal(track(), ctrl()->id(), i.key());
                               dragy = -1;
                               break;
                               }

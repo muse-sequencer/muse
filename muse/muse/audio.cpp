@@ -637,8 +637,6 @@ void Audio::startRolling()
             for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
                   if ((*i)->isMidiTrack())
                         continue;
-                  if ((*i)->type() == Track::WAVE)
-                        ((WaveTrack*)(*i))->resetMeter();
                   ((AudioTrack*)(*i))->recEvents()->clear();
                   }
             }

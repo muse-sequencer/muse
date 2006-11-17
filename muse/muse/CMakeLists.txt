@@ -140,6 +140,7 @@ add_executable ( muse
       muse.cpp
       song.cpp
       songpart.cpp
+      songtrack.cpp
       transport.cpp
       conf.cpp
       editor.cpp

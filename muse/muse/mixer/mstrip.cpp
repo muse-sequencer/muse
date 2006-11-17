@@ -346,7 +346,8 @@ void MidiStrip::heartBeat()
 
 void MidiStrip::controllerChanged(int id)
       {
-      double val = double(track->ctrlVal(id).i);
+      CVal cv = track->ctrlVal(id);
+      double val = double(cv.i);
 
       switch (id) {
             case CTRL_VOLUME:

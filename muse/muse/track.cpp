@@ -105,8 +105,8 @@ Track::Track()
       _channels      = 0;           // 1 - mono, 2 - stereo
       _selected      = false;
       _locked        = false;
-      _autoRead      = false;
-      _autoWrite     = false;
+      _autoRead      = autoReadDefault();
+      _autoWrite     = autoWriteDefault();
 
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             _meter[i]     = 0.0f;
@@ -245,9 +245,9 @@ void Track::writeProperties(Xml& xml) const
             xml.intTag("locked", _locked);
       if (_monitor)
             xml.intTag("monitor", _monitor);
-      if (!_autoRead)
+      if (_autoRead != autoReadDefault())
             xml.intTag("autoRead", _autoRead);
-      if (_autoWrite)
+      if (_autoWrite != autoWriteDefault())
             xml.intTag("autoWrite", _autoWrite);
       if (_selected)
             xml.intTag("selected", _selected);

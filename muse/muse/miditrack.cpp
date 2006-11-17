@@ -535,6 +535,24 @@ void MidiTrack::processMidi(unsigned from, unsigned to, unsigned, unsigned)
                               }
                         }
                   }
+            //
+            // collect controller
+            //
+            if (autoRead()) {
+                  for (iCtrl ic = controller()->begin(); ic != controller()->end(); ++ic) {
+                        Ctrl* c = ic->second;
+                        iCtrlVal is = c->lowerBound(from);
+                        iCtrlVal ie = c->lowerBound(to);
+                        for (iCtrlVal ic = is; ic != ie; ++ic) {
+                              unsigned frame = AL::tempomap.tick2frame(ic.key());
+                              Event ev(Controller);
+                              ev.setA(c->id());
+                              ev.setB(ic.value().i);
+                              schedEvents.insert(MidiEvent(frame, -1, ev));
+                              c->setCurVal(ic.value().i);
+                              }
+                        }
+                  }
             }
 
       //
@@ -580,21 +598,6 @@ void MidiTrack::processMidi(unsigned from, unsigned to, unsigned, unsigned)
                         event.setTime(time);
                         schedEvents.insert(event);
                         }
-                  }
-            }
-      //
-      // collect controller
-      //
-      for (iCtrl ic = controller()->begin(); ic != controller()->end(); ++ic) {
-            Ctrl* c = ic->second;
-            iCtrlVal is = c->lowerBound(from);
-            iCtrlVal ie = c->lowerBound(to);
-            for (iCtrlVal ic = is; ic != ie; ++ic) {
-                  unsigned frame = AL::tempomap.tick2frame(ic.key());
-                  Event ev(Controller);
-                  ev.setA(c->id());
-                  ev.setB(ic.value().i);
-                  schedEvents.insert(MidiEvent(frame, -1, ev));
                   }
             }
       }

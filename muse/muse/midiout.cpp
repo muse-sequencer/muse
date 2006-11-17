@@ -29,6 +29,7 @@
 #include "gconfig.h"
 
 static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
+static const unsigned char mmcStopMsg[]         = { 0x7f, 0x7f, 0x06, 0x01 };
 
 //---------------------------------------------------------
 //   MidiOut
@@ -208,21 +209,34 @@ void MidiOut::seek(unsigned tickPos, unsigned framePos)
       //    set all controller
       //---------------------------------------------------
 
-#if 0
-      for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
-            MidiChannel* mc = channel(ch);
-            if (mc->mute() || mc->noInRoute() || !mc->autoRead())
-                  continue;
-            CtrlList* cll = mc->controller();
-            for (iCtrl ivl = cll->begin(); ivl != cll->end(); ++ivl) {
-                  Ctrl* c   = ivl->second;
+      if (track->autoRead()) {
+            CtrlList* cl = track->controller();
+            for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
+                  Ctrl* c = ic->second;
                   int val = c->value(tickPos).i;
-                  if (val != CTRL_VAL_UNKNOWN && val != c->curVal().i) {
-                        track->routeEvent(MidiEvent(0, ch, ME_CONTROLLER, c->id(), val));
+                  if ((val != CTRL_VAL_UNKNOWN) && (c->curVal().i != val)) {
+                        MidiEvent ev(0, -1, ME_CONTROLLER, c->id(), val);
+                        track->routeEvent(ev);
+                        c->setCurVal(val);
                         }
                   }
             }
-#endif
+      foreach (const Route& r, *track->inRoutes()) {
+            MidiTrackBase* t = (MidiTrackBase*)r.src.track;
+            int dstChannel = r.dst.channel;
+            if (t->isMute() || !t->autoRead())
+                  continue;
+            CtrlList* cl = t->controller();
+            for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
+                  Ctrl* c = ic->second;
+                  int val = c->value(tickPos).i;
+                  if ((val != CTRL_VAL_UNKNOWN) && (c->curVal().i != val)) {
+                        MidiEvent ev(0, dstChannel, ME_CONTROLLER, c->id(), val);
+                        track->routeEvent(ev);
+                        c->setCurVal(val);
+                        }
+                  }
+            }
       }
 
 //---------------------------------------------------------
@@ -250,18 +264,24 @@ void MidiOut::stop()
       //    reset sustain
       //---------------------------------------------------
 
-#if 0
-      for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
-            MidiChannel* mc = channel(ch);
-            if (mc->noInRoute())
+      foreach (const Route& r, *track->inRoutes()) {
+            MidiTrackBase* t = (MidiTrackBase*)r.src.track;
+            int dstChannel = r.dst.channel;
+            if (t->isMute() || !t->autoRead())
                   continue;
-            if (mc->hwCtrlState(CTRL_SUSTAIN) != CTRL_VAL_UNKNOWN) {
-                  MidiEvent ev(0, 0, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-                  ev.setChannel(mc->channelNo());
-                  track->routeEvent(ev);
+            CtrlList* cl = t->controller();
+            for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
+                  Ctrl* c = ic->second;
+                  if (c->id() == CTRL_SUSTAIN) {
+                        if (c->curVal().i > 0) {
+                              MidiEvent ev(0, dstChannel, ME_CONTROLLER, c->id(), 0);
+                              track->routeEvent(ev);
+                              c->setCurVal(0);
+                              }
+                        }
                   }
             }
-#endif
+
       if (track->sendSync()) {
             if (genMMC) {
                   unsigned char mmcPos[] = {
@@ -274,7 +294,7 @@ void MidiOut::stop()
                   mmcPos[8] = mtc.s();
                   mmcPos[9] = mtc.f();
                   mmcPos[10] = mtc.sf();
-//TODO                  sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
+                  sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
                   sendSysex(mmcPos, sizeof(mmcPos));
                   }
             if (genMCSync) {         // Midi Clock
@@ -292,6 +312,8 @@ void MidiOut::stop()
 
 void MidiOut::start()
       {
+      // TODO: set sustain to old value?
+
       if (!(genMMC || genMCSync || track->sendSync()))
             return;
       if (genMMC)
@@ -342,7 +364,7 @@ void MidiOut::processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick,
             el.insert(eventFifo.get());
 
       // collect port controller
-      if (fromTick != toTick) {     // if rolling
+      if (track->autoRead() && (fromTick != toTick)) {  // if rolling
             CtrlList* cl = track->controller();
             for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
                   Ctrl* c = ic->second;
@@ -350,10 +372,9 @@ void MidiOut::processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick,
                   iCtrlVal ie = c->lowerBound(toTick);
                   for (iCtrlVal ic = is; ic != ie; ++ic) {
                         unsigned frame = AL::tempomap.tick2frame(ic.key());
-                        Event ev(Controller);
-                        ev.setA(c->id());
-                        ev.setB(ic.value().i);
-                        el.insert(MidiEvent(frame, -1, ev));
+                        MidiEvent ev(frame, -1, ME_CONTROLLER, c->id(), ic.value().i);
+                        el.insert(ev);
+                        c->setCurVal(ic.value().i);
                         }
                   }
             }

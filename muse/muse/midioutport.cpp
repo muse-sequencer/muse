@@ -123,33 +123,6 @@ void MidiOutPort::read(QDomNode node)
 
 void MidiOutPort::routeEvent(const MidiEvent& event)
       {
-      if (event.type() == ME_CONTROLLER) {
-            int a   = event.dataA();
-            int b   = event.dataB();
-            int chn = event.channel();
-            if (chn == 255) {
-                  // port controller
-                  if (hwCtrlState(a) == b) {
-// printf(" controller change optimized away 1\n");
-                        return;
-                        }
-                  setHwCtrlState(a, b);
-                  }
-#if 0
-            else {
-                  MidiChannel* mc = channel(chn);
-                  //
-                  //  optimize controller settings
-                  //
-                  if (mc->hwCtrlState(a) == b) {
-// printf(" controller %02x change optimized away: value %02x\n", a, b);
-                        return;
-                        }
-                  mc->setHwCtrlState(a, b);
-                  }
-#endif
-            }
-
       for (iRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
             switch (r->dst.type) {
                   case RouteNode::MIDIPORT:

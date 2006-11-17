@@ -3,6 +3,11 @@
 ----------------------------------------------------------------------------
 
       - dont allow for overlapping parts
+      - move shortcuts to Muse() class
+      - add shortcuts as QAction
+      - extend Shortcut with ShortcutContext
+      - extend shortcuts with Help Text, Icons etc.
+
 BUGS
       - make sure all track names are unique
 
@@ -14,16 +19,14 @@ BUGS
 
       - Do not allow switch track recording on/off during recording
 
-      ? audio prefetching is not stable
-
       - looping does not work sample accurate due to jack transport
         limitations; looping should be implemented internally to work
         around this
 
+	- make export midi work
+
 FEATURES
 	- wave editor is completely broken
-
-	- list editor is missing
 
 	- missing time signature ruler in master editor
 
@@ -43,22 +46,15 @@ FEATURES
         - actual thread state and priorities
         - actual used timer resource
 
-	- export midi
-
 	- Import MusE 0.7 song files
+      - use *.svg icons
+      - click free mute function
 
 
 CLEANUPS
 	- Cleanup the icon/pixmap handling using Qt resource file:
-      	- rename xpm directory to resources/images
             - remove all unreferenced files
             - transform *.xpm into *.pnm or *.jpg files and move into
               resource file
             - redirect all *xpm program references to resource file
             - remove icon.cpp icon.h
-
-Wishlist
-	- it should be possible to show controller events in the
-        tracklist for tracktypes which cannot contain
-        Parts to make better use of screen real estate.
-        GUI-wise a "Add Controller" button is needed.

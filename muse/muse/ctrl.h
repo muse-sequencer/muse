@@ -180,9 +180,9 @@ class Ctrl : public CTRL {
       void setDefault(int val)       { _default.i = val;  }
 
       const CVal& curVal() const     { return _curVal;  }
-      void setCurVal(CVal v)         { _curVal   = v; }
-      void setCurVal(float v)        { _curVal.f = v; }
-      void setCurVal(int v)          { _curVal.i = v; }
+      void setCurVal(CVal v)         { _curVal   = v; _changed = true; }
+      void setCurVal(float v)        { _curVal.f = v; _changed = true; }
+      void setCurVal(int v)          { _curVal.i = v; _changed = true; }
 
       int id() const                 { return _id;      }
       void setId(int i)              { _id = i;         }

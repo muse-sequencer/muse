@@ -326,6 +326,9 @@ class Track : public QObject {
       void setDeviceId(int val) { _deviceId = val; }
 
       virtual bool muteDefault() const { return false; }
+      virtual bool autoReadDefault() const { return false; }
+      virtual bool autoWriteDefault() const { return false; }
+
       virtual MidiOut* midiOut() { return 0;     }
       virtual MidiInstrument* instrument() { return 0; }
       };

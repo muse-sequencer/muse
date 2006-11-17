@@ -56,8 +56,6 @@ CtrlListEditor::CtrlListEditor(ListEdit* e, QWidget* parent)
       track = 0;
       connect(le.ctrlList, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
          SLOT(itemActivated(QTreeWidgetItem*,int)));
-      connect(le.ctrlList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),
-         SLOT(itemDoubleClicked(QTreeWidgetItem*,int)));
       connect(le.ctrlList, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
          SLOT(itemChanged(QTreeWidgetItem*, int)));
       connect(le.ctrlList, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
@@ -114,12 +112,25 @@ void CtrlListEditor::setup(const ListType& lt)
             le.defaultValue->setValue(c->getDefault().i);
             }
       else {
-            le.minValue->setDecimals(1);
-            le.minValue->setValue(c->minVal().f);
-            le.maxValue->setDecimals(1);
-            le.maxValue->setValue(c->maxVal().f);
-            le.defaultValue->setDecimals(1);
-            le.defaultValue->setValue(c->getDefault().f);
+            if (c->type() & Ctrl::LOG) {
+                  le.minValue->setDecimals(0);
+                  le.minValue->setValue(c->minVal().f * 20.0);
+                  le.minValue->setSuffix(tr("dB"));
+                  le.maxValue->setDecimals(0);
+                  le.maxValue->setValue(c->maxVal().f * 20.0);
+                  le.maxValue->setSuffix(tr("dB"));
+                  le.defaultValue->setDecimals(0);
+                  le.defaultValue->setValue(c->getDefault().f * 20.0);
+                  le.defaultValue->setSuffix(tr("dB"));
+                  }
+            else {
+                  le.minValue->setDecimals(1);
+                  le.minValue->setValue(c->minVal().f);
+                  le.maxValue->setDecimals(1);
+                  le.maxValue->setValue(c->maxVal().f);
+                  le.defaultValue->setDecimals(1);
+                  le.defaultValue->setValue(c->getDefault().f);
+                  }
             }
       updateList();
       }
@@ -221,8 +232,8 @@ void CtrlListEditor::itemChanged(QTreeWidgetItem* item, int column)
                   int otick = item->data(TIME_COL, Qt::DisplayRole).toInt();
                   int tick = item->data(TICK_COL, Qt::DisplayRole).toInt();
                   item->setData(TIME_COL, Qt::DisplayRole, tick);
-                  song->removeControllerVal(track, c->id(), otick);
-                  song->addControllerVal(track, c, tick, val);
+                  song->cmdRemoveControllerVal(track, c->id(), otick);
+                  song->cmdAddControllerVal(track, c, tick, val);
                   }
                   break;
             case TIME_COL:
@@ -230,12 +241,12 @@ void CtrlListEditor::itemChanged(QTreeWidgetItem* item, int column)
                   int otick = item->data(TICK_COL, Qt::DisplayRole).toInt();
                   int tick = item->data(TIME_COL, Qt::DisplayRole).toInt();
                   item->setData(TICK_COL, Qt::DisplayRole, tick);
-                  song->removeControllerVal(track, c->id(), otick);
-                  song->addControllerVal(track, c, tick, val);
+                  song->cmdRemoveControllerVal(track, c->id(), otick);
+                  song->cmdAddControllerVal(track, c, tick, val);
                   }
                   break;
             case VAL_COL:
-                  song->addControllerVal(track, c, listEdit->pos(), val);
+                  song->cmdAddControllerVal(track, c, listEdit->pos(), val);
                   break;
             }
       updateListDisabled = false;
@@ -266,8 +277,10 @@ void CtrlListEditor::currentItemChanged(QTreeWidgetItem* cur, QTreeWidgetItem* p
             le.ctrlList->closePersistentEditor(prev, TIME_COL);
             le.ctrlList->closePersistentEditor(prev, VAL_COL);
             }
-      if (cur)
-            listEdit->pos().setTick(cur->data(TICK_COL, Qt::DisplayRole).toInt());
+      if (cur) {
+            Pos pos(cur->data(TICK_COL, Qt::DisplayRole).toInt(), track->timeType());
+            listEdit->pos() = pos;
+            }
       le.deleteButton->setEnabled(cur);
       }
 
@@ -290,7 +303,7 @@ void CtrlListEditor::insertClicked()
             else
                   val.f = cur->data(VAL_COL, Qt::DisplayRole).toDouble();
             }            
-      song->addControllerVal(track, c, listEdit->pos(), val);
+      song->cmdAddControllerVal(track, c, listEdit->pos(), val);
       }
 
 //---------------------------------------------------------
@@ -303,7 +316,7 @@ void CtrlListEditor::deleteClicked()
       if (cur == 0)
             return;
       int tick = cur->data(TICK_COL, Qt::DisplayRole).toInt();
-      song->removeControllerVal(track, c->id(), tick);
+      song->cmdRemoveControllerVal(track, c->id(), tick);
       }
 
 //---------------------------------------------------------
@@ -324,8 +337,11 @@ void CtrlListEditor::minValChanged(double v)
       CVal val;
       if (c->type() & Ctrl::INT)
             val.i = int(v);
-      else
+      else {
+            if (c->type() & Ctrl::LOG)
+                  v /= 20.0;
             val.f = v;
+            }
       c->setRange(val, c->maxVal());
       }
 
@@ -338,8 +354,11 @@ void CtrlListEditor::maxValChanged(double v)
       CVal val;
       if (c->type() & Ctrl::INT)
             val.i = int(v);
-      else
+      else {
+            if (c->type() & Ctrl::LOG)
+                  v /= 20.0;
             val.f = v;
+            }
       c->setRange(c->minVal(), val);
       }
 
@@ -389,7 +408,9 @@ QWidget* MidiTimeDelegate::createEditor(QWidget* pw,
                         return w;
                         }
                   QDoubleSpinBox* w = new QDoubleSpinBox(pw);
-                  w->setRange(c->minVal().f, c->maxVal().f);
+                  if (c->type() & Ctrl::LOG)
+                        w->setSuffix(tr("dB"));
+//                  w->setRange(c->minVal().f, c->maxVal().f);
                   w->installEventFilter(const_cast<MidiTimeDelegate*>(this));
                   return w;
                   }
@@ -423,7 +444,11 @@ void MidiTimeDelegate::setEditorData(QWidget* editor,
                         }
                   else {
                         QDoubleSpinBox* w = static_cast<QDoubleSpinBox*>(editor);
-                        w->setValue(index.data().toDouble());
+                        double v = index.data().toDouble();
+printf("type %x\n", c->type());
+                        if (c->type() & Ctrl::LOG)
+                              v *= 20.0;
+                        w->setValue(v);
                         }
                   }
                   return;
@@ -457,7 +482,10 @@ void MidiTimeDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
                         }
                   else {
                         QDoubleSpinBox* w = static_cast<QDoubleSpinBox*>(editor);
-                        model->setData(index, w->value(), Qt::DisplayRole);
+                        double v = w->value();
+                        if (c->type() & Ctrl::LOG)
+                              v /= 20.0;
+                        model->setData(index, v, Qt::DisplayRole);
                         }
                   }
                   break;
@@ -472,15 +500,47 @@ void MidiTimeDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
 void MidiTimeDelegate::paint(QPainter* painter, 
    const QStyleOptionViewItem& option, const QModelIndex& index) const
       {
-      if (index.column() != CtrlListEditor::TIME_COL) {
-            QItemDelegate::paint(painter, option, index);
-            return;
-            }
-      AL::Pos pos(index.data().toInt());
-      int measure, beat, tick;
-      pos.mbt(&measure, &beat, &tick);
       QString text;
-      text.sprintf("%04d.%02d.%03u", measure+1, beat+1, tick);
+      CtrlListEditor* ce = static_cast<CtrlListEditor*>(parent());
+
+      switch(index.column()) {
+            case CtrlListEditor::TICK_COL:
+                  {
+                  Track* track = ce->getTrack();
+                  AL::Pos pos(index.data().toInt(), track->timeType());
+                  text = QString("%1").arg(pos.tick());
+                  }
+                  break;
+            case CtrlListEditor::TIME_COL:
+                  {
+                  Track* track = ce->getTrack();
+                  AL::Pos pos(index.data().toInt(), track->timeType());
+                  int measure, beat, tick;
+                  pos.mbt(&measure, &beat, &tick);
+                  text.sprintf("%04d.%02d.%03u", measure+1, beat+1, tick);
+                  }
+                  break;
+            case CtrlListEditor::VAL_COL:
+                  {
+                  Ctrl* c = ce->ctrl();
+                  if (c->type() & Ctrl::INT) {
+                        text = QString("%1").arg(index.data().toInt());
+                        }
+                  else {
+                        if (c->type() & Ctrl::LOG) {
+                              double f = index.data().toDouble();
+                              if (f <= -1000.0f)
+                                    text = tr("off");
+                              else
+                                    text = QString("%1 dB").arg(f * 20.0);
+                              }
+                        else {
+                              text = QString("%1").arg(index.data().toDouble());
+                              }
+                        }
+                  }
+                  break;
+            }
 
       QStyleOptionViewItemV2 opt = setOptions(index, option);
       const QStyleOptionViewItemV2 *v2 = qstyleoption_cast<const QStyleOptionViewItemV2 *>(&option);
@@ -504,15 +564,6 @@ void MidiTimeDelegate::paint(QPainter* painter,
       drawDisplay(painter, opt, displayRect, text);
       drawFocus(painter, opt, text.isEmpty() ? QRect() : displayRect);
       painter->restore();
-      }
-
-//---------------------------------------------------------
-//   itemDoubleClicked
-//---------------------------------------------------------
-
-void CtrlListEditor::itemDoubleClicked(QTreeWidgetItem* item, int column)
-      {
-      printf("double clicked\n");
       }
 
 
