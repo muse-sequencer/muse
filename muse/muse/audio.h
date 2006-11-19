@@ -185,6 +185,8 @@ class Audio {
 
       void collectEvents(MidiTrack*, unsigned startTick, unsigned endTick);
       void processMsg();
+      void initMidiDevices();
+      void resetMidiDevices();
 
    public:
       Audio();
@@ -262,7 +264,6 @@ class Audio {
 
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);
-      void initDevices();
 
       void sendMsgToGui(char c);
       bool bounce() const { return _bounce != 0; }

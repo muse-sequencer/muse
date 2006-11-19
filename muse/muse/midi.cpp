@@ -584,12 +584,10 @@ void buildMidiEventList(EventList* del, const MidiEventList* el, MidiTrack* trac
       }
 
 //---------------------------------------------------------
-//   initDevices
-//    - called on seek to position 0
-//    - called from midi pulldown menu
+//   initMidiDevices
 //---------------------------------------------------------
 
-void Audio::initDevices()
+void Audio::initMidiDevices()
       {
       //
       // test for explicit instrument initialization
@@ -606,13 +604,29 @@ void Audio::initDevices()
                   mp->playMidiEvent(&ev);
                   }
             }
+      }
+
+//---------------------------------------------------------
+//   resetMidiDevices
+//---------------------------------------------------------
+
+void Audio::resetMidiDevices()
+      {
       MidiTrackList* mcl = song->midis();
       for (iMidiTrack i = mcl->begin(); i != mcl->end(); ++i) {
             MidiTrack* mc = *i;
-            if (mc->noInRoute())
-                  continue;
-            if (mc->autoRead()) {
+            if (!mc->mute() && mc->autoRead()) {
                   CtrlList* cl = mc->controller();
+                  for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
+                        ic->second->setCurVal(CTRL_VAL_UNKNOWN);
+                        }
+                  }
+            }
+      MidiOutPortList* mpl = song->midiOutPorts();
+      for (iMidiOutPort i = mpl->begin(); i != mpl->end(); ++i) {
+            MidiOutPort* mp = *i;
+            if (!mp->mute() && mp->autoRead()) {
+                  CtrlList* cl = mp->controller();
                   for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
                         ic->second->setCurVal(CTRL_VAL_UNKNOWN);
                         }

@@ -46,10 +46,10 @@ void FilterGui::init()
       rf5->setChecked(midiType & MIDI_FILTER_AT);
       rf6->setChecked(midiType & MIDI_FILTER_PITCH);
       rf7->setChecked(midiType & MIDI_FILTER_SYSEX);
-      cb1->setCurrentIndex(filter->midiCtrl(0));
-      cb2->setCurrentIndex(filter->midiCtrl(1));
-      cb3->setCurrentIndex(filter->midiCtrl(2));
-      cb4->setCurrentIndex(filter->midiCtrl(3));
+      cb1->setCurrentIndex(filter->midiCtrl(0) + 1);
+      cb2->setCurrentIndex(filter->midiCtrl(1) + 1);
+      cb3->setCurrentIndex(filter->midiCtrl(2) + 1);
+      cb4->setCurrentIndex(filter->midiCtrl(3) + 1);
       }
 
 //---------------------------------------------------------

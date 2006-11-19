@@ -569,7 +569,10 @@ void Audio::processMsg()
                   break;
 
             case SEQM_INIT_DEVICES:
-                  initDevices();
+                  initMidiDevices();
+                  break;
+            case SEQM_RESET_DEVICES:
+                  resetMidiDevices();
                   break;
             case SEQM_ADD_TEMPO:
             case SEQM_REMOVE_TEMPO:

@@ -1314,9 +1314,9 @@ void Song::setControllerVal(Track* t, Ctrl* c, CVal val)
       {
       if (t->isMidiTrack()) {
             if (t->type() == Track::MIDI) {
-                  MidiTrack* mc = (MidiTrack*)t;
+                  MidiTrack* mt = (MidiTrack*)t;
                   MidiEvent ev(0, 0, ME_CONTROLLER, c->id(), val.i);
-                  mc->playMidiEvent(&ev);
+                  mt->playMidiEvent(&ev);
                   }
             else if (t->type() == Track::MIDI_OUT) {
                   MidiOutPort* mp = (MidiOutPort*)t;

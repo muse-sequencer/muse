@@ -69,7 +69,6 @@
      framecolor=blue]
      {\vbox{\hbox{\tt\space #1}\hbox{\tt\space #2}}}}
 
-
 %\define\startdescription{\startpacked}
 \define\startdescription{}
 %\define\stopdescription{\stoppacked}
@@ -128,6 +127,9 @@
 
 \definedescription[Opt][location=hanging,headstyle=bold,width=broad]
 
+\setuptyping[before=\blank\startbackground, after=\stopbackground\blank] % source code with background
+\setupwhitespace[medium]
+
 \component figurepath.tex
 
 %----------------------------------------------------------
@@ -166,14 +168,55 @@
    \completecontent
 
 \chapter{\M\ Quickstart}
-\component midirecording.tex
-
-\section{Audio Playback}
-\section{Audio Recording}
+   \component midirecording.tex
+   \section{Audio Playback}
+   \section{Audio Recording}
 
 \component projekte.tex
 \component struktur.tex
 \component miditracks.tex
+
+\chapter{Globale Editor Funktionen}
+   \section{Globaler Schnitt}
+      Die ''Globaler Schnitt''-Funktion enfernt auf allen Spuren den Bereich 
+      zwischen der linken und rechten Marke. Nachfolgende Events rücken 
+      dabei auf. Auch Markerposition und Tempoevents werden
+      verschoben. Lediglich stumm geschaltete Spuren werden nicht 
+      berücksichtigt.
+
+   \section{Global Einfügen}
+      Mit der ''Global Einfügen''-Funktion kann ein leerer Bereich eingefügt 
+      werden. Der Bereich wird an der Position des linken Markers 
+      eingefügt. Die Dauer des eingefügten Bereichs entspricht dem Abstand 
+      zwischen linker und rechter Marke. Marker und Tempoevents hinter der 
+      Einfügeposition werden entsprechend verschoben.
+      Stumm geschaltete Spuren werden nicht verändert.
+
+   \section{Global Splitten}
+      Die ''Global Splitten''-Funktion entspricht der Scheren-Funktion für 
+      einzelne Parts. Im Gegensatz zur Scheren-Funktion wird jedoch nicht 
+      ein Part, sondern alle Parts an der aktuellen Markerposition 
+      geschnitten. Dies gilt nicht für stummgeschaltete Spuren.
+
+   \section{Bereich Kopieren}                 
+      Mit der ''Global Kopieren''-Funktion können komplette Teile eines 
+      Songs an eine andere Stelle kopiert werden:
+
+      \startitemize[packed]
+      \item stellen Sie die linke Marke an den Anfang des zu kopierenden 
+            Bereichs
+      \item stellen Sie die rechte Marke an das Ende des zu kopierenden 
+            Bereichs
+      \item setzen Sie den Lokator an die Einfgestelle
+      \item wählen Sie ''Copy Range'' aus dem ''Struktur'' Menü.
+      \stopitemize
+
+      Wie bei allen anderen Strukturkommandos werden stummgeschaltete 
+      Spuren nicht berücksichtigt.
+
+\chapter{Automation}
+      \component automation.tex
+
 \component installation.tex
 
 \startappendices
@@ -181,3 +224,4 @@
    \completeindex
    \stopappendices
 \stoptext
+        

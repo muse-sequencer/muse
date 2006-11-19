@@ -84,6 +84,8 @@ void ShortcutConfig::assignShortcut()
       if (sc.exec()) {
             s->key = sc.getKey();
             active->setText(SHRT_SHRTCUT_COL, s->key.toString(QKeySequence::NativeText));
+            if (s->action)
+                  s->action->setShortcut(s->key);
             _config_changed = true;
             }
       clearButton->setEnabled(true);

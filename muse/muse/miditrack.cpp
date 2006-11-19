@@ -147,6 +147,7 @@ void MidiTrack::playMidiEvent(MidiEvent* ev)
       {
       foreach (const Route& r, _outRoutes) {
             Track* track = r.dst.track;
+            ev->setChannel(r.dst.channel);
             if (track->type() == MIDI_OUT)
                   ((MidiOutPort*)track)->playMidiEvent(ev);
             else if (track->type() == AUDIO_SOFTSYNTH)

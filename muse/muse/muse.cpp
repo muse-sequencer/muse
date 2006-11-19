@@ -72,13 +72,6 @@ extern void initMidiInstruments();
 
 static pthread_t watchdogThread;
 
-static const char* fileOpenText =
-      QT_TR_NOOP("Click this button to select a new project\n"
-      "You can also select the <b>Open command</b> from the Project menu.");
-static const char* fileSaveText =
-      QT_TR_NOOP("Click this button to save the project you are editing.\n"
-      "You can also select the Save command from the Project menu.");
-
 static const char* infoLoopButton     = QT_TR_NOOP("loop between left mark and right mark");
 static const char* infoPunchinButton  = QT_TR_NOOP("record starts at left mark");
 static const char* infoPunchoutButton = QT_TR_NOOP("record stops at right mark");
@@ -473,7 +466,7 @@ MusE::MusE()
 
       startAction = getAction("play", this);
       startAction->setIcon(QIcon(":/xpm/start.xpm"));
-      startAction->setText(tr("start"));
+      startAction->setText(tr("play"));
       connect(startAction, SIGNAL(triggered()), song, SLOT(rewindStart()));
 
       rewindAction  = new QAction(QIcon(":/xpm/frewind.xpm"),  "rewind",  this);
@@ -564,13 +557,14 @@ MusE::MusE()
 #endif
       //----Actions
 
-      fileOpenAction = new QAction(QIcon(*openIcon), tr("&Open"), this);
-      fileOpenAction->setToolTip(tr(fileOpenText));
-      fileOpenAction->setWhatsThis(tr(fileOpenText));
 
-      fileSaveAction = new QAction(QIcon(*saveIcon), tr("&Save"), this);
-      fileSaveAction->setToolTip(tr(fileSaveText));
-      fileSaveAction->setWhatsThis(tr(fileSaveText));
+      fileOpenAction = getAction("open_project", this);
+      fileOpenAction->setText(tr("Open Project"));
+      fileOpenAction->setIcon(QIcon(*openIcon));
+
+      fileSaveAction = getAction("save_project", this);
+      fileSaveAction->setText(tr("Save Project"));
+      fileSaveAction->setIcon(QIcon(*saveIcon));
 
       pianoAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
       connect(pianoAction, SIGNAL(triggered()), SLOT(startPianoroll()));

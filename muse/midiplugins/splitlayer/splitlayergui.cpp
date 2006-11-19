@@ -150,7 +150,7 @@ void SplitLayerGui::init()
 void SplitLayerGui::learnStartPitch(QAction* a)
       {
       sl->learnChannel = a->data().toInt();
-      sl->learnStartPitch = false;
+      sl->learnStartPitch = true;
       sl->learnMode = true;
       for (int i = 0; i < MIDI_CHANNELS; ++i) {
             if (a != a1[i])

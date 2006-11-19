@@ -808,7 +808,7 @@ klicka på en part för att Tysta/Avtysta</translation>
     </message>
     <message>
         <source>Transport: Start playback from current location</source>
-        <translation type="obsolete">Transport: Starta uppspelning från nuvarande position</translation>
+        <translation type="unfinished">Transport: Starta uppspelning från nuvarande position</translation>
     </message>
     <message>
         <source>pointer</source>
@@ -947,6 +947,478 @@ You can also select the Save command from the Project menu.</source>
     <message>
         <source>MusE: load Project</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Toggle metronome</source>
+        <translation type="unfinished">Transport: Metronom av/på</translation>
+    </message>
+    <message>
+        <source>Transport: Stop Playback</source>
+        <translation type="unfinished">Transport: Stoppa uppspelning</translation>
+    </message>
+    <message>
+        <source>Transport: Play, Stop, Rewind</source>
+        <translation type="unfinished">Transport: Spela, stoppa, spola tillbaka</translation>
+    </message>
+    <message>
+        <source>Transport: Goto left marker</source>
+        <translation type="unfinished">Transport: Gå till vänster markering</translation>
+    </message>
+    <message>
+        <source>Transport: Goto right marker</source>
+        <translation type="unfinished">Transport: Gå till höger markering</translation>
+    </message>
+    <message>
+        <source>Transport: Toggle Loop section</source>
+        <translation type="unfinished">Transport: Loopa sektion av/på</translation>
+    </message>
+    <message>
+        <source>Transport: Toggle Record</source>
+        <translation type="unfinished">Transport: Inspelning av/på</translation>
+    </message>
+    <message>
+        <source>Edit: Copy</source>
+        <translation type="unfinished">Redigera: Kopiera</translation>
+    </message>
+    <message>
+        <source>Edit: Undo</source>
+        <translation type="unfinished">Redigera: Ångra</translation>
+    </message>
+    <message>
+        <source>Edit: Redo</source>
+        <translation type="unfinished">Redigera: Gör om</translation>
+    </message>
+    <message>
+        <source>Edit: Cut</source>
+        <translation type="unfinished">Redigera: Klipp ut</translation>
+    </message>
+    <message>
+        <source>Edit: Paste,</source>
+        <translation type="unfinished">Redigera: Klistra in</translation>
+    </message>
+    <message>
+        <source>Edit: Delete</source>
+        <translation type="unfinished">Redigera: Ta bort</translation>
+    </message>
+    <message>
+        <source>Open</source>
+        <translation type="unfinished">Öppna</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished">Spara</translation>
+    </message>
+    <message>
+        <source>File: Open recent file</source>
+        <translation type="unfinished">Arkiv: Öppna föregående fil</translation>
+    </message>
+    <message>
+        <source>File: Import midi file</source>
+        <translation type="unfinished">Arkiv: Importera midifil</translation>
+    </message>
+    <message>
+        <source>File: Export midi file</source>
+        <translation type="unfinished">Arkiv: Exportera midifil</translation>
+    </message>
+    <message>
+        <source>File: Import audio file</source>
+        <translation type="unfinished">Arkiv: Importera ljudfil</translation>
+    </message>
+    <message>
+        <source>File: Quit MusE</source>
+        <translation type="unfinished">Arkiv: Avsluta</translation>
+    </message>
+    <message>
+        <source>Edit: Select parts on track</source>
+        <translation type="unfinished">Arkiv: Välj alla parter i spår</translation>
+    </message>
+    <message>
+        <source>Open pianoroll</source>
+        <translation type="unfinished">Öppna pianorulle</translation>
+    </message>
+    <message>
+        <source>Open drumeditor</source>
+        <translation type="unfinished">Öppna trumeditor</translation>
+    </message>
+    <message>
+        <source>Open listeditor</source>
+        <translation type="unfinished">Öppna listeditor</translation>
+    </message>
+    <message>
+        <source>Open graphical mastertrack editor</source>
+        <translation type="unfinished">Öppna masterspår-editor (grafisk)</translation>
+    </message>
+    <message>
+        <source>Open list mastertrack editor</source>
+        <translation type="unfinished">Öppna masterspår-editor (lista)</translation>
+    </message>
+    <message>
+        <source>Add midi track</source>
+        <translation type="unfinished">Lägg till midispår</translation>
+    </message>
+    <message>
+        <source>Add drum track</source>
+        <translation type="unfinished">Lägg till trumspår</translation>
+    </message>
+    <message>
+        <source>Add wave track</source>
+        <translation type="unfinished">Lägg till ljudspår</translation>
+    </message>
+    <message>
+        <source>Add audio output</source>
+        <translation type="unfinished">Lägg till ljudutgång</translation>
+    </message>
+    <message>
+        <source>Add audio group</source>
+        <translation type="unfinished">Lägg till ljudgrupp</translation>
+    </message>
+    <message>
+        <source>Add audio input</source>
+        <translation type="unfinished">Lägg till ljudingång</translation>
+    </message>
+    <message>
+        <source>Structure: Global cut</source>
+        <translation type="unfinished">Struktur: Globalt klipp</translation>
+    </message>
+    <message>
+        <source>Structure: Global insert</source>
+        <translation type="unfinished">Struktur: Global insättning</translation>
+    </message>
+    <message>
+        <source>Structure: Global split</source>
+        <translation type="unfinished">Struktur: Global delning</translation>
+    </message>
+    <message>
+        <source>Structure: Copy range</source>
+        <translation type="unfinished">Struktur: Kopiera område</translation>
+    </message>
+    <message>
+        <source>Structure: Cut events</source>
+        <translation type="unfinished">Struktur: Klipp ut händelse</translation>
+    </message>
+    <message>
+        <source>View: Open mixer window</source>
+        <translation type="unfinished">Vy: Öppna mixerfönster</translation>
+    </message>
+    <message>
+        <source>View: Toggle transport window</source>
+        <translation type="unfinished">Vy: Transportfönster av/på</translation>
+    </message>
+    <message>
+        <source>View: Toggle bigtime window</source>
+        <translation type="unfinished">Vy: Bigtimefönster av/på</translation>
+    </message>
+    <message>
+        <source>View: Open marker window</source>
+        <translation type="unfinished">Vy: Öppna markörfönster</translation>
+    </message>
+    <message>
+        <source>Settings: Follow song by page</source>
+        <translation type="unfinished">Inställningar: Följ sång efter sida</translation>
+    </message>
+    <message>
+        <source>Settings: Follow song off</source>
+        <translation type="unfinished">Inställningar: Följ sång av</translation>
+    </message>
+    <message>
+        <source>Settings: Follow song continuous</source>
+        <translation type="unfinished">Inställningar: Följ sång kontinuerligt</translation>
+    </message>
+    <message>
+        <source>Settings: Configure shortcuts</source>
+        <translation type="unfinished">Inställningar: Konfigurera tangentbordsgenvängar</translation>
+    </message>
+    <message>
+        <source>Settings: Configure metronome</source>
+        <translation type="unfinished">Inställningar: Konfigurera metronom</translation>
+    </message>
+    <message>
+        <source>Settings: Midi sync configuration</source>
+        <translation type="unfinished">Inställningar: Midi synk konfigurationg</translation>
+    </message>
+    <message>
+        <source>Settings: Midi file export configuration</source>
+        <translation type="unfinished">Inställningar: Midi fil export-konfiguration</translation>
+    </message>
+    <message>
+        <source>Settings: Midi ports / Soft Synth</source>
+        <translation type="unfinished">Inställningar: Midiportar / Mjukvarusynthar</translation>
+    </message>
+    <message>
+        <source>Settings: Audio subsystem configuration</source>
+        <translation type="unfinished">Inställningar: Konfiguration av ljud-undersystem</translation>
+    </message>
+    <message>
+        <source>Midi: Edit midi instruments</source>
+        <translation type="unfinished">Midi: Editera midi-instrument</translation>
+    </message>
+    <message>
+        <source>Midi: Midi remote control</source>
+        <translation type="unfinished">Midi: Midi fjärrkontroll</translation>
+    </message>
+    <message>
+        <source>Midi: Reset midi</source>
+        <translation type="unfinished">Midi: Resetta midi</translation>
+    </message>
+    <message>
+        <source>Midi: Init midi</source>
+        <translation type="unfinished">Midi: Initiera midi</translation>
+    </message>
+    <message>
+        <source>Midi: Midi local off</source>
+        <translation type="unfinished">Midi: Midi lokal av</translation>
+    </message>
+    <message>
+        <source>Audio: Bounce audio to track</source>
+        <translation type="unfinished">Audio: Bounce till spår</translation>
+    </message>
+    <message>
+        <source>Audio: Bounce audio to file</source>
+        <translation type="unfinished">Audio: Bounce till fil</translation>
+    </message>
+    <message>
+        <source>Audio: Restart audio</source>
+        <translation type="unfinished">Audio: Starta om audio</translation>
+    </message>
+    <message>
+        <source>Help: Open Manual</source>
+        <translation type="unfinished">Hjälp: Öppna manual</translation>
+    </message>
+    <message>
+        <source>Help: Toggle whatsthis mode</source>
+        <translation type="unfinished">Hjälp: What&apos;s this-läge av/på</translation>
+    </message>
+    <message>
+        <source>Edit: Edit selected part</source>
+        <translation type="unfinished">Redigera: Editera vald part</translation>
+    </message>
+    <message>
+        <source>Edit: Select nearest part on track above</source>
+        <translation type="unfinished">Redigera: Välj närmsta part på ovanstående spår</translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part on track above</source>
+        <translation type="unfinished">Redigera: Lägg till närmsta part på ovanstående spår till val</translation>
+    </message>
+    <message>
+        <source>Edit: Select nearest part on track below</source>
+        <translation type="unfinished">Redigera: Välj närmsta part på underliggande spår</translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part on track below</source>
+        <translation type="unfinished">Redigera: Lägg till närmsta part på underliggande spår till val</translation>
+    </message>
+    <message>
+        <source>Midi: Transpose</source>
+        <translation type="unfinished">Midi: Transponering</translation>
+    </message>
+    <message>
+        <source>Edit: Select all</source>
+        <translation type="unfinished">Redigera: Välj alla</translation>
+    </message>
+    <message>
+        <source>Edit: Select none</source>
+        <translation type="unfinished">Redigera: Välj ingen</translation>
+    </message>
+    <message>
+        <source>Edit: Invert selection</source>
+        <translation type="unfinished">Redigera: Invertera val</translation>
+    </message>
+    <message>
+        <source>Edit: Select events/parts inside locators</source>
+        <translation type="unfinished">Redigera: Välj händelser/parter inom sektion</translation>
+    </message>
+    <message>
+        <source>Edit: Select events/parts outside locators</source>
+        <translation type="unfinished">Redigera: Välj händelser/parter utanför sektion</translation>
+    </message>
+    <message>
+        <source>Edit: Select nearest part/event to the left</source>
+        <translation type="unfinished">Redigera: Välj närmsta part/händelse till vänster</translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part/event to the left to selection</source>
+        <translation type="unfinished">Redigera: Lägg till närmsta part/händelse till vänster till val</translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part/event to the right to selection</source>
+        <translation type="unfinished">Redigera: Lägg till närmsta part/händelse till höger till val</translation>
+    </message>
+    <message>
+        <source>Edit: Set locators to selection</source>
+        <translation type="unfinished">Redigera: Sätt loopsektion till valda parter/händelser</translation>
+    </message>
+    <message>
+        <source>Edit: Increase pitch</source>
+        <translation type="unfinished">Redigera: Höj pitch</translation>
+    </message>
+    <message>
+        <source>Edit: Decrease pitch</source>
+        <translation type="unfinished">Redigera: Sänk pitch</translation>
+    </message>
+    <message>
+        <source>Edit: Set fixed length on midi events</source>
+        <translation type="unfinished">Redigera: Sätt fix längd till valda midihändelser</translation>
+    </message>
+    <message>
+        <source>Quantize: Over Quantize</source>
+        <translation type="unfinished">Redigera: Överkvantisera</translation>
+    </message>
+    <message>
+        <source>Quantize: Note On Quantize</source>
+        <translation type="unfinished">Kvantisering: Not på-kvantisering</translation>
+    </message>
+    <message>
+        <source>Quantize: Note On/Off Quantize</source>
+        <translation type="unfinished">Kvantisering: Not på/av-kvantisering</translation>
+    </message>
+    <message>
+        <source>Quantize: Iterative Quantize</source>
+        <translation type="unfinished">Kvantisering: Iterativ kvantisering</translation>
+    </message>
+    <message>
+        <source>Quantize: Configure quant</source>
+        <translation type="unfinished">Kvantisering: Konfigurera kvantisering<byte value="x9"/></translation>
+    </message>
+    <message>
+        <source>Quantize: Modify Gate Time</source>
+        <translation type="unfinished">Kvantisering: Modifiera gate-tid</translation>
+    </message>
+    <message>
+        <source>Quantize: Modify Velocity</source>
+        <translation type="unfinished">Kvantisering: Modifiera velocity</translation>
+    </message>
+    <message>
+        <source>Edit: Crescendo</source>
+        <translation type="unfinished">Redigera: Crescendo</translation>
+    </message>
+    <message>
+        <source>Edit: Thin Out</source>
+        <translation type="unfinished">Redigera: Tunna ut</translation>
+    </message>
+    <message>
+        <source>Edit: Erase Event</source>
+        <translation type="unfinished">Redigera: Ta bort händelse</translation>
+    </message>
+    <message>
+        <source>Edit: Note Shift</source>
+        <translation type="unfinished">Redigera: Shifta Not</translation>
+    </message>
+    <message>
+        <source>Edit: Move Clock</source>
+        <translation type="unfinished">Redigera: Flytta Klocka</translation>
+    </message>
+    <message>
+        <source>Edit: Copy Measure</source>
+        <translation type="unfinished">Redigera: Kopiera Takt</translation>
+    </message>
+    <message>
+        <source>Edit: Erase Measure</source>
+        <translation type="unfinished">Redigera: Ta bort Takt</translation>
+    </message>
+    <message>
+        <source>Edit: Delete Measure</source>
+        <translation type="unfinished">Redigera: Ta bort Takt</translation>
+    </message>
+    <message>
+        <source>Edit: Create Measure</source>
+        <translation type="unfinished">Redigera: Lägg till Takt</translation>
+    </message>
+    <message>
+        <source>Edit: Change event color</source>
+        <translation type="unfinished">Redigera: Ändra färg på händelse</translation>
+    </message>
+    <message>
+        <source>Tool: Pointer</source>
+        <translation type="unfinished">Verktyg: Pekare</translation>
+    </message>
+    <message>
+        <source>Tool: Pencil</source>
+        <translation type="unfinished">Verktyg: Penna</translation>
+    </message>
+    <message>
+        <source>Tool: Eraser</source>
+        <translation type="unfinished">Verktyg: Radergummi</translation>
+    </message>
+    <message>
+        <source>Tool: Line Draw</source>
+        <translation type="unfinished">Verktyg: Rita linje</translation>
+    </message>
+    <message>
+        <source>Tool: Scissor</source>
+        <translation type="unfinished">Verktyg: Delare</translation>
+    </message>
+    <message>
+        <source>Tool: Glue</source>
+        <translation type="unfinished">Verktyg: Lim</translation>
+    </message>
+    <message>
+        <source>Tool: Mute</source>
+        <translation type="unfinished">Verktyg: Tysta</translation>
+    </message>
+    <message>
+        <source>Transport: Increase current position</source>
+        <translation type="unfinished">Transport: Öka nuvarande position</translation>
+    </message>
+    <message>
+        <source>Transport: Decrease current position</source>
+        <translation type="unfinished">Transport: Minska nuvarande position</translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/1 note</source>
+        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/1-not</translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/2 note</source>
+        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/2-not</translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/4 note</source>
+        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/4-not</translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/8 note</source>
+        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/8-not</translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/16 note</source>
+        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/16-not</translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/32 note</source>
+        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/32-not</translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/64 note</source>
+        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/64-not</translation>
+    </message>
+    <message>
+        <source>Quantize: Toggle triol quantization</source>
+        <translation type="unfinished">Kvantisering: Växla triol-kvantisering</translation>
+    </message>
+    <message>
+        <source>Quantize: Toggle punctuation quantization</source>
+        <translation type="unfinished">Kvantisering: Växla punktuerad kvantisering</translation>
+    </message>
+    <message>
+        <source>Quantize: Toggle punctuation quantization (2)</source>
+        <translation type="unfinished">Kvantisering: Växla punktuerad kvantisering (2)</translation>
+    </message>
+    <message>
+        <source>Insert Tempo</source>
+        <translation type="unfinished">Mata in Tempo</translation>
+    </message>
+    <message>
+        <source>Insert Signature</source>
+        <translation type="unfinished">Mata in tempo-signatur</translation>
+    </message>
+    <message>
+        <source>Change Event Position</source>
+        <translation type="unfinished">Ändra position för händelse</translation>
+    </message>
+    <message>
+        <source>Edit Event Value</source>
+        <translation type="unfinished">Redigera värde för händelse</translation>
     </message>
 </context>
 <context>
@@ -4480,7 +4952,7 @@ inspelning:
     </message>
     <message>
         <source>play</source>
-        <translation type="obsolete">spela</translation>
+        <translation type="unfinished">spela</translation>
     </message>
     <message>
         <source>Play</source>
@@ -4516,7 +4988,7 @@ inspelning:
     </message>
     <message>
         <source>&amp;Open</source>
-        <translation type="unfinished">&amp;Öppna</translation>
+        <translation type="obsolete">&amp;Öppna</translation>
     </message>
     <message>
         <source>save</source>
@@ -5240,6 +5712,14 @@ misslyckades:</translation>
     </message>
     <message>
         <source>MusE: import midi file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6768,11 +7248,11 @@ Slumprytms-generator fungerar inte än!</translation>
     <name>ShortcutCaptureDialog</name>
     <message>
         <source>Ok</source>
-        <translation type="unfinished">Ok</translation>
+        <translation type="obsolete">Ok</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Avbryt</translation>
+        <translation type="obsolete">Avbryt</translation>
     </message>
     <message>
         <source>Shortcut conflicts with </source>
@@ -6798,571 +7278,571 @@ Slumprytms-generator fungerar inte än!</translation>
     <name>ShortcutConfig</name>
     <message>
         <source>Transport: Start playback from current location</source>
-        <translation type="unfinished">Transport: Starta uppspelning från nuvarande position</translation>
+        <translation type="obsolete">Transport: Starta uppspelning från nuvarande position</translation>
     </message>
     <message>
         <source>Transport: Toggle metronome</source>
-        <translation type="unfinished">Transport: Metronom av/på</translation>
+        <translation type="obsolete">Transport: Metronom av/på</translation>
     </message>
     <message>
         <source>Transport: Stop Playback</source>
-        <translation type="unfinished">Transport: Stoppa uppspelning</translation>
+        <translation type="obsolete">Transport: Stoppa uppspelning</translation>
     </message>
     <message>
         <source>Transport: Play, Stop, Rewind</source>
-        <translation type="unfinished">Transport: Spela, stoppa, spola tillbaka</translation>
+        <translation type="obsolete">Transport: Spela, stoppa, spola tillbaka</translation>
     </message>
     <message>
         <source>Transport: Goto left marker</source>
-        <translation type="unfinished">Transport: Gå till vänster markering</translation>
+        <translation type="obsolete">Transport: Gå till vänster markering</translation>
     </message>
     <message>
         <source>Transport: Goto right marker</source>
-        <translation type="unfinished">Transport: Gå till höger markering</translation>
+        <translation type="obsolete">Transport: Gå till höger markering</translation>
     </message>
     <message>
         <source>Transport: Toggle Loop section</source>
-        <translation type="unfinished">Transport: Loopa sektion av/på</translation>
+        <translation type="obsolete">Transport: Loopa sektion av/på</translation>
     </message>
     <message>
         <source>Transport: Toggle Record</source>
-        <translation type="unfinished">Transport: Inspelning av/på</translation>
+        <translation type="obsolete">Transport: Inspelning av/på</translation>
     </message>
     <message>
         <source>Edit: Copy</source>
-        <translation type="unfinished">Redigera: Kopiera</translation>
+        <translation type="obsolete">Redigera: Kopiera</translation>
     </message>
     <message>
         <source>Edit: Undo</source>
-        <translation type="unfinished">Redigera: Ångra</translation>
+        <translation type="obsolete">Redigera: Ångra</translation>
     </message>
     <message>
         <source>Edit: Redo</source>
-        <translation type="unfinished">Redigera: Gör om</translation>
+        <translation type="obsolete">Redigera: Gör om</translation>
     </message>
     <message>
         <source>Edit: Cut</source>
-        <translation type="unfinished">Redigera: Klipp ut</translation>
+        <translation type="obsolete">Redigera: Klipp ut</translation>
     </message>
     <message>
         <source>Edit: Paste,</source>
-        <translation type="unfinished">Redigera: Klistra in</translation>
+        <translation type="obsolete">Redigera: Klistra in</translation>
     </message>
     <message>
         <source>Edit: Delete</source>
-        <translation type="unfinished">Redigera: Ta bort</translation>
+        <translation type="obsolete">Redigera: Ta bort</translation>
     </message>
     <message>
         <source>File: New project</source>
-        <translation type="unfinished">Arkiv: Nytt projekt</translation>
+        <translation type="obsolete">Arkiv: Nytt projekt</translation>
     </message>
     <message>
         <source>File: Open from disk</source>
-        <translation type="unfinished">Arkiv: Öppna</translation>
+        <translation type="obsolete">Arkiv: Öppna</translation>
     </message>
     <message>
         <source>File: Save project</source>
-        <translation type="unfinished">Arkiv: Spara</translation>
+        <translation type="obsolete">Arkiv: Spara</translation>
     </message>
     <message>
         <source>File: Open recent file</source>
-        <translation type="unfinished">Arkiv: Öppna föregående fil</translation>
+        <translation type="obsolete">Arkiv: Öppna föregående fil</translation>
     </message>
     <message>
         <source>File: Save as</source>
-        <translation type="unfinished">Arkiv: Spara som</translation>
+        <translation type="obsolete">Arkiv: Spara som</translation>
     </message>
     <message>
         <source>File: Load template</source>
-        <translation type="unfinished">Arkiv: Ladda mall</translation>
+        <translation type="obsolete">Arkiv: Ladda mall</translation>
     </message>
     <message>
         <source>File: Import midi file</source>
-        <translation type="unfinished">Arkiv: Importera midifil</translation>
+        <translation type="obsolete">Arkiv: Importera midifil</translation>
     </message>
     <message>
         <source>File: Export midi file</source>
-        <translation type="unfinished">Arkiv: Exportera midifil</translation>
+        <translation type="obsolete">Arkiv: Exportera midifil</translation>
     </message>
     <message>
         <source>File: Import audio file</source>
-        <translation type="unfinished">Arkiv: Importera ljudfil</translation>
+        <translation type="obsolete">Arkiv: Importera ljudfil</translation>
     </message>
     <message>
         <source>File: Quit MusE</source>
-        <translation type="unfinished">Arkiv: Avsluta</translation>
+        <translation type="obsolete">Arkiv: Avsluta</translation>
     </message>
     <message>
         <source>Edit: Select parts on track</source>
-        <translation type="unfinished">Arkiv: Välj alla parter i spår</translation>
+        <translation type="obsolete">Arkiv: Välj alla parter i spår</translation>
     </message>
     <message>
         <source>Open pianoroll</source>
-        <translation type="unfinished">Öppna pianorulle</translation>
+        <translation type="obsolete">Öppna pianorulle</translation>
     </message>
     <message>
         <source>Open drumeditor</source>
-        <translation type="unfinished">Öppna trumeditor</translation>
+        <translation type="obsolete">Öppna trumeditor</translation>
     </message>
     <message>
         <source>Open listeditor</source>
-        <translation type="unfinished">Öppna listeditor</translation>
+        <translation type="obsolete">Öppna listeditor</translation>
     </message>
     <message>
         <source>Open graphical mastertrack editor</source>
-        <translation type="unfinished">Öppna masterspår-editor (grafisk)</translation>
+        <translation type="obsolete">Öppna masterspår-editor (grafisk)</translation>
     </message>
     <message>
         <source>Open list mastertrack editor</source>
-        <translation type="unfinished">Öppna masterspår-editor (lista)</translation>
+        <translation type="obsolete">Öppna masterspår-editor (lista)</translation>
     </message>
     <message>
         <source>Open midi transformer</source>
-        <translation type="unfinished">Öppna miditransformer</translation>
+        <translation type="obsolete">Öppna miditransformer</translation>
     </message>
     <message>
         <source>Add midi track</source>
-        <translation type="unfinished">Lägg till midispår</translation>
+        <translation type="obsolete">Lägg till midispår</translation>
     </message>
     <message>
         <source>Add drum track</source>
-        <translation type="unfinished">Lägg till trumspår</translation>
+        <translation type="obsolete">Lägg till trumspår</translation>
     </message>
     <message>
         <source>Add wave track</source>
-        <translation type="unfinished">Lägg till ljudspår</translation>
+        <translation type="obsolete">Lägg till ljudspår</translation>
     </message>
     <message>
         <source>Add audio output</source>
-        <translation type="unfinished">Lägg till ljudutgång</translation>
+        <translation type="obsolete">Lägg till ljudutgång</translation>
     </message>
     <message>
         <source>Add audio group</source>
-        <translation type="unfinished">Lägg till ljudgrupp</translation>
+        <translation type="obsolete">Lägg till ljudgrupp</translation>
     </message>
     <message>
         <source>Add audio input</source>
-        <translation type="unfinished">Lägg till ljudingång</translation>
+        <translation type="obsolete">Lägg till ljudingång</translation>
     </message>
     <message>
         <source>Add audio aux</source>
-        <translation type="unfinished">Lägg till aux</translation>
+        <translation type="obsolete">Lägg till aux</translation>
     </message>
     <message>
         <source>Structure: Global cut</source>
-        <translation type="unfinished">Struktur: Globalt klipp</translation>
+        <translation type="obsolete">Struktur: Globalt klipp</translation>
     </message>
     <message>
         <source>Structure: Global insert</source>
-        <translation type="unfinished">Struktur: Global insättning</translation>
+        <translation type="obsolete">Struktur: Global insättning</translation>
     </message>
     <message>
         <source>Structure: Global split</source>
-        <translation type="unfinished">Struktur: Global delning</translation>
+        <translation type="obsolete">Struktur: Global delning</translation>
     </message>
     <message>
         <source>Structure: Copy range</source>
-        <translation type="unfinished">Struktur: Kopiera område</translation>
+        <translation type="obsolete">Struktur: Kopiera område</translation>
     </message>
     <message>
         <source>Structure: Cut events</source>
-        <translation type="unfinished">Struktur: Klipp ut händelse</translation>
+        <translation type="obsolete">Struktur: Klipp ut händelse</translation>
     </message>
     <message>
         <source>View: Open mixer window</source>
-        <translation type="unfinished">Vy: Öppna mixerfönster</translation>
+        <translation type="obsolete">Vy: Öppna mixerfönster</translation>
     </message>
     <message>
         <source>View: Toggle transport window</source>
-        <translation type="unfinished">Vy: Transportfönster av/på</translation>
+        <translation type="obsolete">Vy: Transportfönster av/på</translation>
     </message>
     <message>
         <source>View: Toggle bigtime window</source>
-        <translation type="unfinished">Vy: Bigtimefönster av/på</translation>
+        <translation type="obsolete">Vy: Bigtimefönster av/på</translation>
     </message>
     <message>
         <source>View: Open marker window</source>
-        <translation type="unfinished">Vy: Öppna markörfönster</translation>
+        <translation type="obsolete">Vy: Öppna markörfönster</translation>
     </message>
     <message>
         <source>Settings: Follow song by page</source>
-        <translation type="unfinished">Inställningar: Följ sång efter sida</translation>
+        <translation type="obsolete">Inställningar: Följ sång efter sida</translation>
     </message>
     <message>
         <source>Settings: Follow song off</source>
-        <translation type="unfinished">Inställningar: Följ sång av</translation>
+        <translation type="obsolete">Inställningar: Följ sång av</translation>
     </message>
     <message>
         <source>Settings: Follow song continuous</source>
-        <translation type="unfinished">Inställningar: Följ sång kontinuerligt</translation>
+        <translation type="obsolete">Inställningar: Följ sång kontinuerligt</translation>
     </message>
     <message>
         <source>Settings: Global configuration</source>
-        <translation type="unfinished">Inställningar: Globala inställningar</translation>
+        <translation type="obsolete">Inställningar: Globala inställningar</translation>
     </message>
     <message>
         <source>Settings: Configure shortcuts</source>
-        <translation type="unfinished">Inställningar: Konfigurera tangentbordsgenvängar</translation>
+        <translation type="obsolete">Inställningar: Konfigurera tangentbordsgenvängar</translation>
     </message>
     <message>
         <source>Settings: Configure metronome</source>
-        <translation type="unfinished">Inställningar: Konfigurera metronom</translation>
+        <translation type="obsolete">Inställningar: Konfigurera metronom</translation>
     </message>
     <message>
         <source>Settings: Midi sync configuration</source>
-        <translation type="unfinished">Inställningar: Midi synk konfigurationg</translation>
+        <translation type="obsolete">Inställningar: Midi synk konfigurationg</translation>
     </message>
     <message>
         <source>Settings: Midi file export configuration</source>
-        <translation type="unfinished">Inställningar: Midi fil export-konfiguration</translation>
+        <translation type="obsolete">Inställningar: Midi fil export-konfiguration</translation>
     </message>
     <message>
         <source>Settings: Appearance settings</source>
-        <translation type="unfinished">Inställningar: Utseendeinställningar</translation>
+        <translation type="obsolete">Inställningar: Utseendeinställningar</translation>
     </message>
     <message>
         <source>Settings: Midi ports / Soft Synth</source>
-        <translation type="unfinished">Inställningar: Midiportar / Mjukvarusynthar</translation>
+        <translation type="obsolete">Inställningar: Midiportar / Mjukvarusynthar</translation>
     </message>
     <message>
         <source>Settings: Audio subsystem configuration</source>
-        <translation type="unfinished">Inställningar: Konfiguration av ljud-undersystem</translation>
+        <translation type="obsolete">Inställningar: Konfiguration av ljud-undersystem</translation>
     </message>
     <message>
         <source>Midi: Edit midi instruments</source>
-        <translation type="unfinished">Midi: Editera midi-instrument</translation>
+        <translation type="obsolete">Midi: Editera midi-instrument</translation>
     </message>
     <message>
         <source>Midi: Open midi input transform</source>
-        <translation type="unfinished">Midi: Öppna midi inputtransformator</translation>
+        <translation type="obsolete">Midi: Öppna midi inputtransformator</translation>
     </message>
     <message>
         <source>Midi: Open midi input filter</source>
-        <translation type="unfinished">Midi: Öppna midi indatafilter</translation>
+        <translation type="obsolete">Midi: Öppna midi indatafilter</translation>
     </message>
     <message>
         <source>Midi: Midi input transpose</source>
-        <translation type="unfinished">Midi: Midi indata transponering</translation>
+        <translation type="obsolete">Midi: Midi indata transponering</translation>
     </message>
     <message>
         <source>Midi: Midi remote control</source>
-        <translation type="unfinished">Midi: Midi fjärrkontroll</translation>
+        <translation type="obsolete">Midi: Midi fjärrkontroll</translation>
     </message>
     <message>
         <source>Midi: Random rhythm generator</source>
-        <translation type="unfinished">Midi: Slumprymtmgenerator</translation>
+        <translation type="obsolete">Midi: Slumprymtmgenerator</translation>
     </message>
     <message>
         <source>Midi: Reset midi</source>
-        <translation type="unfinished">Midi: Resetta midi</translation>
+        <translation type="obsolete">Midi: Resetta midi</translation>
     </message>
     <message>
         <source>Midi: Init midi</source>
-        <translation type="unfinished">Midi: Initiera midi</translation>
+        <translation type="obsolete">Midi: Initiera midi</translation>
     </message>
     <message>
         <source>Midi: Midi local off</source>
-        <translation type="unfinished">Midi: Midi lokal av</translation>
+        <translation type="obsolete">Midi: Midi lokal av</translation>
     </message>
     <message>
         <source>Audio: Bounce audio to track</source>
-        <translation type="unfinished">Audio: Bounce till spår</translation>
+        <translation type="obsolete">Audio: Bounce till spår</translation>
     </message>
     <message>
         <source>Audio: Bounce audio to file</source>
-        <translation type="unfinished">Audio: Bounce till fil</translation>
+        <translation type="obsolete">Audio: Bounce till fil</translation>
     </message>
     <message>
         <source>Audio: Restart audio</source>
-        <translation type="unfinished">Audio: Starta om audio</translation>
+        <translation type="obsolete">Audio: Starta om audio</translation>
     </message>
     <message>
         <source>Automation: Mixer automation</source>
-        <translation type="unfinished">Audio: Mixerautomation</translation>
+        <translation type="obsolete">Audio: Mixerautomation</translation>
     </message>
     <message>
         <source>Automation: Take mixer snapshot</source>
-        <translation type="unfinished">Audio: Mixer ögonblicksbild</translation>
+        <translation type="obsolete">Audio: Mixer ögonblicksbild</translation>
     </message>
     <message>
         <source>Automation: Clear mixer automation</source>
-        <translation type="unfinished">Audio: Rensa mixerautomation</translation>
+        <translation type="obsolete">Audio: Rensa mixerautomation</translation>
     </message>
     <message>
         <source>Help: Open Manual</source>
-        <translation type="unfinished">Hjälp: Öppna manual</translation>
+        <translation type="obsolete">Hjälp: Öppna manual</translation>
     </message>
     <message>
         <source>Help: Toggle whatsthis mode</source>
-        <translation type="unfinished">Hjälp: What&apos;s this-läge av/på</translation>
+        <translation type="obsolete">Hjälp: What&apos;s this-läge av/på</translation>
     </message>
     <message>
         <source>Edit: Edit selected part</source>
-        <translation type="unfinished">Redigera: Editera vald part</translation>
+        <translation type="obsolete">Redigera: Editera vald part</translation>
     </message>
     <message>
         <source>Edit: Select nearest part on track above</source>
-        <translation type="unfinished">Redigera: Välj närmsta part på ovanstående spår</translation>
+        <translation type="obsolete">Redigera: Välj närmsta part på ovanstående spår</translation>
     </message>
     <message>
         <source>Edit: Add nearest part on track above</source>
-        <translation type="unfinished">Redigera: Lägg till närmsta part på ovanstående spår till val</translation>
+        <translation type="obsolete">Redigera: Lägg till närmsta part på ovanstående spår till val</translation>
     </message>
     <message>
         <source>Edit: Select nearest part on track below</source>
-        <translation type="unfinished">Redigera: Välj närmsta part på underliggande spår</translation>
+        <translation type="obsolete">Redigera: Välj närmsta part på underliggande spår</translation>
     </message>
     <message>
         <source>Edit: Add nearest part on track below</source>
-        <translation type="unfinished">Redigera: Lägg till närmsta part på underliggande spår till val</translation>
+        <translation type="obsolete">Redigera: Lägg till närmsta part på underliggande spår till val</translation>
     </message>
     <message>
         <source>Midi: Transpose</source>
-        <translation type="unfinished">Midi: Transponering</translation>
+        <translation type="obsolete">Midi: Transponering</translation>
     </message>
     <message>
         <source>Edit: Select all</source>
-        <translation type="unfinished">Redigera: Välj alla</translation>
+        <translation type="obsolete">Redigera: Välj alla</translation>
     </message>
     <message>
         <source>Edit: Select none</source>
-        <translation type="unfinished">Redigera: Välj ingen</translation>
+        <translation type="obsolete">Redigera: Välj ingen</translation>
     </message>
     <message>
         <source>Edit: Invert selection</source>
-        <translation type="unfinished">Redigera: Invertera val</translation>
+        <translation type="obsolete">Redigera: Invertera val</translation>
     </message>
     <message>
         <source>Edit: Select events/parts inside locators</source>
-        <translation type="unfinished">Redigera: Välj händelser/parter inom sektion</translation>
+        <translation type="obsolete">Redigera: Välj händelser/parter inom sektion</translation>
     </message>
     <message>
         <source>Edit: Select events/parts outside locators</source>
-        <translation type="unfinished">Redigera: Välj händelser/parter utanför sektion</translation>
+        <translation type="obsolete">Redigera: Välj händelser/parter utanför sektion</translation>
     </message>
     <message>
         <source>Edit: Select nearest part/event to the left</source>
-        <translation type="unfinished">Redigera: Välj närmsta part/händelse till vänster</translation>
+        <translation type="obsolete">Redigera: Välj närmsta part/händelse till vänster</translation>
     </message>
     <message>
         <source>Edit: Add nearest part/event to the left to selection</source>
-        <translation type="unfinished">Redigera: Lägg till närmsta part/händelse till vänster till val</translation>
+        <translation type="obsolete">Redigera: Lägg till närmsta part/händelse till vänster till val</translation>
     </message>
     <message>
         <source>Edit: Add nearest part/event to the right to selection</source>
-        <translation type="unfinished">Redigera: Lägg till närmsta part/händelse till höger till val</translation>
+        <translation type="obsolete">Redigera: Lägg till närmsta part/händelse till höger till val</translation>
     </message>
     <message>
         <source>Edit: Set locators to selection</source>
-        <translation type="unfinished">Redigera: Sätt loopsektion till valda parter/händelser</translation>
+        <translation type="obsolete">Redigera: Sätt loopsektion till valda parter/händelser</translation>
     </message>
     <message>
         <source>Edit: Increase pitch</source>
-        <translation type="unfinished">Redigera: Höj pitch</translation>
+        <translation type="obsolete">Redigera: Höj pitch</translation>
     </message>
     <message>
         <source>Edit: Decrease pitch</source>
-        <translation type="unfinished">Redigera: Sänk pitch</translation>
+        <translation type="obsolete">Redigera: Sänk pitch</translation>
     </message>
     <message>
         <source>Edit: Set fixed length on midi events</source>
-        <translation type="unfinished">Redigera: Sätt fix längd till valda midihändelser</translation>
+        <translation type="obsolete">Redigera: Sätt fix längd till valda midihändelser</translation>
     </message>
     <message>
         <source>Quantize: Over Quantize</source>
-        <translation type="unfinished">Redigera: Överkvantisera</translation>
+        <translation type="obsolete">Redigera: Överkvantisera</translation>
     </message>
     <message>
         <source>Quantize: Note On Quantize</source>
-        <translation type="unfinished">Kvantisering: Not på-kvantisering</translation>
+        <translation type="obsolete">Kvantisering: Not på-kvantisering</translation>
     </message>
     <message>
         <source>Quantize: Note On/Off Quantize</source>
-        <translation type="unfinished">Kvantisering: Not på/av-kvantisering</translation>
+        <translation type="obsolete">Kvantisering: Not på/av-kvantisering</translation>
     </message>
     <message>
         <source>Quantize: Iterative Quantize</source>
-        <translation type="unfinished">Kvantisering: Iterativ kvantisering</translation>
+        <translation type="obsolete">Kvantisering: Iterativ kvantisering</translation>
     </message>
     <message>
         <source>Quantize: Configure quant</source>
-        <translation type="unfinished">Kvantisering: Konfigurera kvantisering<byte value="x9"/></translation>
+        <translation type="obsolete">Kvantisering: Konfigurera kvantisering<byte value="x9"/></translation>
     </message>
     <message>
         <source>Quantize: Modify Gate Time</source>
-        <translation type="unfinished">Kvantisering: Modifiera gate-tid</translation>
+        <translation type="obsolete">Kvantisering: Modifiera gate-tid</translation>
     </message>
     <message>
         <source>Quantize: Modify Velocity</source>
-        <translation type="unfinished">Kvantisering: Modifiera velocity</translation>
+        <translation type="obsolete">Kvantisering: Modifiera velocity</translation>
     </message>
     <message>
         <source>Edit: Crescendo</source>
-        <translation type="unfinished">Redigera: Crescendo</translation>
+        <translation type="obsolete">Redigera: Crescendo</translation>
     </message>
     <message>
         <source>Edit: Thin Out</source>
-        <translation type="unfinished">Redigera: Tunna ut</translation>
+        <translation type="obsolete">Redigera: Tunna ut</translation>
     </message>
     <message>
         <source>Edit: Erase Event</source>
-        <translation type="unfinished">Redigera: Ta bort händelse</translation>
+        <translation type="obsolete">Redigera: Ta bort händelse</translation>
     </message>
     <message>
         <source>Edit: Note Shift</source>
-        <translation type="unfinished">Redigera: Shifta Not</translation>
+        <translation type="obsolete">Redigera: Shifta Not</translation>
     </message>
     <message>
         <source>Edit: Move Clock</source>
-        <translation type="unfinished">Redigera: Flytta Klocka</translation>
+        <translation type="obsolete">Redigera: Flytta Klocka</translation>
     </message>
     <message>
         <source>Edit: Copy Measure</source>
-        <translation type="unfinished">Redigera: Kopiera Takt</translation>
+        <translation type="obsolete">Redigera: Kopiera Takt</translation>
     </message>
     <message>
         <source>Edit: Erase Measure</source>
-        <translation type="unfinished">Redigera: Ta bort Takt</translation>
+        <translation type="obsolete">Redigera: Ta bort Takt</translation>
     </message>
     <message>
         <source>Edit: Delete Measure</source>
-        <translation type="unfinished">Redigera: Ta bort Takt</translation>
+        <translation type="obsolete">Redigera: Ta bort Takt</translation>
     </message>
     <message>
         <source>Edit: Create Measure</source>
-        <translation type="unfinished">Redigera: Lägg till Takt</translation>
+        <translation type="obsolete">Redigera: Lägg till Takt</translation>
     </message>
     <message>
         <source>Edit: Change event color</source>
-        <translation type="unfinished">Redigera: Ändra färg på händelse</translation>
+        <translation type="obsolete">Redigera: Ändra färg på händelse</translation>
     </message>
     <message>
         <source>Tool: Pointer</source>
-        <translation type="unfinished">Verktyg: Pekare</translation>
+        <translation type="obsolete">Verktyg: Pekare</translation>
     </message>
     <message>
         <source>Tool: Pencil</source>
-        <translation type="unfinished">Verktyg: Penna</translation>
+        <translation type="obsolete">Verktyg: Penna</translation>
     </message>
     <message>
         <source>Tool: Eraser</source>
-        <translation type="unfinished">Verktyg: Radergummi</translation>
+        <translation type="obsolete">Verktyg: Radergummi</translation>
     </message>
     <message>
         <source>Tool: Line Draw</source>
-        <translation type="unfinished">Verktyg: Rita linje</translation>
+        <translation type="obsolete">Verktyg: Rita linje</translation>
     </message>
     <message>
         <source>Tool: Scissor</source>
-        <translation type="unfinished">Verktyg: Delare</translation>
+        <translation type="obsolete">Verktyg: Delare</translation>
     </message>
     <message>
         <source>Tool: Glue</source>
-        <translation type="unfinished">Verktyg: Lim</translation>
+        <translation type="obsolete">Verktyg: Lim</translation>
     </message>
     <message>
         <source>Tool: Mute</source>
-        <translation type="unfinished">Verktyg: Tysta</translation>
+        <translation type="obsolete">Verktyg: Tysta</translation>
     </message>
     <message>
         <source>Transport: Increase current position</source>
-        <translation type="unfinished">Transport: Öka nuvarande position</translation>
+        <translation type="obsolete">Transport: Öka nuvarande position</translation>
     </message>
     <message>
         <source>Transport: Decrease current position</source>
-        <translation type="unfinished">Transport: Minska nuvarande position</translation>
+        <translation type="obsolete">Transport: Minska nuvarande position</translation>
     </message>
     <message>
         <source>Quantize: Set quantize to 1/1 note</source>
-        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/1-not</translation>
+        <translation type="obsolete">Kvantisering: Sätt kvantisering till 1/1-not</translation>
     </message>
     <message>
         <source>Quantize: Set quantize to 1/2 note</source>
-        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/2-not</translation>
+        <translation type="obsolete">Kvantisering: Sätt kvantisering till 1/2-not</translation>
     </message>
     <message>
         <source>Quantize: Set quantize to 1/4 note</source>
-        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/4-not</translation>
+        <translation type="obsolete">Kvantisering: Sätt kvantisering till 1/4-not</translation>
     </message>
     <message>
         <source>Quantize: Set quantize to 1/8 note</source>
-        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/8-not</translation>
+        <translation type="obsolete">Kvantisering: Sätt kvantisering till 1/8-not</translation>
     </message>
     <message>
         <source>Quantize: Set quantize to 1/16 note</source>
-        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/16-not</translation>
+        <translation type="obsolete">Kvantisering: Sätt kvantisering till 1/16-not</translation>
     </message>
     <message>
         <source>Quantize: Set quantize to 1/32 note</source>
-        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/32-not</translation>
+        <translation type="obsolete">Kvantisering: Sätt kvantisering till 1/32-not</translation>
     </message>
     <message>
         <source>Quantize: Set quantize to 1/64 note</source>
-        <translation type="unfinished">Kvantisering: Sätt kvantisering till 1/64-not</translation>
+        <translation type="obsolete">Kvantisering: Sätt kvantisering till 1/64-not</translation>
     </message>
     <message>
         <source>Quantize: Toggle triol quantization</source>
-        <translation type="unfinished">Kvantisering: Växla triol-kvantisering</translation>
+        <translation type="obsolete">Kvantisering: Växla triol-kvantisering</translation>
     </message>
     <message>
         <source>Quantize: Toggle punctuation quantization</source>
-        <translation type="unfinished">Kvantisering: Växla punktuerad kvantisering</translation>
+        <translation type="obsolete">Kvantisering: Växla punktuerad kvantisering</translation>
     </message>
     <message>
         <source>Quantize: Toggle punctuation quantization (2)</source>
-        <translation type="unfinished">Kvantisering: Växla punktuerad kvantisering (2)</translation>
+        <translation type="obsolete">Kvantisering: Växla punktuerad kvantisering (2)</translation>
     </message>
     <message>
         <source>Edit: Insert at location</source>
-        <translation type="unfinished">Redigera: Sätt in på nuvarande position</translation>
+        <translation type="obsolete">Redigera: Sätt in på nuvarande position</translation>
     </message>
     <message>
         <source>Insert Note</source>
-        <translation type="unfinished">Mata in Not</translation>
+        <translation type="obsolete">Mata in Not</translation>
     </message>
     <message>
         <source>Insert SysEx</source>
-        <translation type="unfinished">Mata in SysEx</translation>
+        <translation type="obsolete">Mata in SysEx</translation>
     </message>
     <message>
         <source>Insert Ctrl</source>
-        <translation type="unfinished">Mata in Ctrl</translation>
+        <translation type="obsolete">Mata in Ctrl</translation>
     </message>
     <message>
         <source>Insert Meta</source>
-        <translation type="unfinished">Mata in Meta</translation>
+        <translation type="obsolete">Mata in Meta</translation>
     </message>
     <message>
         <source>Insert Channel Aftertouch</source>
-        <translation type="unfinished">Mata in Aftertouch för kanal</translation>
+        <translation type="obsolete">Mata in Aftertouch för kanal</translation>
     </message>
     <message>
         <source>Insert Key Aftertouch</source>
-        <translation type="unfinished">Mata in Key Aftertouch</translation>
+        <translation type="obsolete">Mata in Key Aftertouch</translation>
     </message>
     <message>
         <source>Edit: Increase event position</source>
-        <translation type="unfinished">Redigera: Öka position för händelse</translation>
+        <translation type="obsolete">Redigera: Öka position för händelse</translation>
     </message>
     <message>
         <source>Edit: Decrease event position</source>
-        <translation type="unfinished">Redigera: Minska position för händelse</translation>
+        <translation type="obsolete">Redigera: Minska position för händelse</translation>
     </message>
     <message>
         <source>Insert Tempo</source>
-        <translation type="unfinished">Mata in Tempo</translation>
+        <translation type="obsolete">Mata in Tempo</translation>
     </message>
     <message>
         <source>Insert Signature</source>
-        <translation type="unfinished">Mata in tempo-signatur</translation>
+        <translation type="obsolete">Mata in tempo-signatur</translation>
     </message>
     <message>
         <source>Change Event Position</source>
-        <translation type="unfinished">Ändra position för händelse</translation>
+        <translation type="obsolete">Ändra position för händelse</translation>
     </message>
     <message>
         <source>Edit Event Value</source>
-        <translation type="unfinished">Redigera värde för händelse</translation>
+        <translation type="obsolete">Redigera värde för händelse</translation>
     </message>
     <message>
         <source>Arranger</source>
@@ -7390,6 +7870,10 @@ Slumprytms-generator fungerar inte än!</translation>
     </message>
     <message>
         <source>List editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wave editor</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

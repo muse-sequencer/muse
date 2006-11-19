@@ -122,9 +122,10 @@ void SplitLayer::process(unsigned, unsigned, MidiEventList* il, MidiEventList* o
                   for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                         MidiEvent event(*i);
                         if (pitch >= data.startPitch[ch] 
-                           && pitch < data.endPitch[ch]
+                           && pitch <= data.endPitch[ch]
                            && velo >= data.startVelo[ch]
-                           && velo < data.endVelo[ch]) {
+                           && velo <= data.endVelo[ch]) {
+                              notes[pitch] |= (1 << ch);
                               event.setChannel(ch);
                               int p = pitch;
                               int v = velo;
@@ -141,7 +142,6 @@ void SplitLayer::process(unsigned, unsigned, MidiEventList* il, MidiEventList* o
                               event.setA(p);
                               event.setB(v);
                               ol->insert(event);
-                              notes[pitch] |= (1 << ch);
                               }
                         }
                   }
@@ -150,6 +150,12 @@ void SplitLayer::process(unsigned, unsigned, MidiEventList* il, MidiEventList* o
                         if (notes[pitch] & (1 << ch)) {
                               MidiEvent event(*i);
                               event.setChannel(ch);
+                              int p = pitch + data.pitchOffset[ch];
+                              if (p < 0)
+                                    p = 0;
+                              else if (p > 127)
+                                    p = 127;
+                              event.setA(p);
                               ol->insert(event);
                               }
                         }

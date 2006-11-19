@@ -131,15 +131,19 @@ static Shortcut sc[] = {
             ),
       Shortcut(
             "open_project",
-            QT_TR_NOOP("File: Open from disk"),
+            QT_TR_NOOP("Open"),
             ARRANG_SHRT + DEDIT_SHRT, 
-            Qt::CTRL + Qt::Key_O
+            Qt::CTRL + Qt::Key_O,
+            QT_TR_NOOP("Click this button to select a new project\n"
+               "You can also select the <b>Open command</b> from the Project menu.")
             ),
       Shortcut(
             "save_project",
-            QT_TR_NOOP("File: Save project"),
+            QT_TR_NOOP("Save"),
             ARRANG_SHRT + DEDIT_SHRT, 
-            Qt::CTRL + Qt::Key_S
+            Qt::CTRL + Qt::Key_S,
+            QT_TR_NOOP("Click this button to save the project you are editing.\n"
+               "You can also select the Save command from the Project menu.")
             ),
       Shortcut(
             "open_recent",
@@ -775,19 +779,8 @@ KeyboardMovementIndicator shortcutsKbdMovement; //for keeping track of active pa
 
 void initShortcuts()
       {
-      for (unsigned i = 0; i < sizeof(sc)/sizeof(*sc); ++i) {
+      for (unsigned i = 0; i < sizeof(sc)/sizeof(*sc); ++i)
             shortcuts[sc[i].xml] = &sc[i];
-            }
-      }
-
-//---------------------------------------------------------
-//   getShrtByTag
-//---------------------------------------------------------
-
-QKeySequence getShrtByTag(const char* xml)
-      {
-      return shortcuts[xml]->key;      
-      return -1;
       }
 
 //---------------------------------------------------------
@@ -830,10 +823,10 @@ QAction* getAction(const char* id, QObject* parent)
       if (s == 0)
             return 0;
       if (s->action == 0 || s->action->parent() != parent) {
-            s->action = new QAction(parent);
+            s->action = new QAction(s->xml, parent);
             s->action->setShortcut(s->key);
             s->action->setToolTip(s->descr);      
-            s->action->setWhatsThis(s->descr);
+            s->action->setWhatsThis(s->help);
             }
       return s->action;
       }
