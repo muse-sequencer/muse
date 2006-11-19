@@ -109,10 +109,15 @@ SplitLayerGui::SplitLayerGui(SplitLayer* f, QWidget* parent)
             grid->addWidget(p2[i], i, 3);
             grid->addWidget(rb2,   i, 4);
             grid->addWidget(p3[i], i, 5);
-            grid->addWidget(p4[i], i, 6);
-            grid->addWidget(p5[i], i, 7);
-            grid->addWidget(p6[i], i, 8);
+            grid->addWidget(p4[i], i, 7);
+            grid->addWidget(p5[i], i, 8);
+            grid->addWidget(p6[i], i, 9);
             }
+      QFrame* fr = new QFrame;
+      fr->setFrameStyle(QFrame::VLine | QFrame::Raised);
+      fr->setLineWidth(4);
+      grid->addWidget(fr, 0, 6, MIDI_CHANNELS, 1);
+
       int filedes[2];         // 0 - reading   1 - writing
       if (pipe(filedes) == -1) {
             perror("SplitLayerGui:creating pipe");
