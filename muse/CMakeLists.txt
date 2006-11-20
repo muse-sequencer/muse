@@ -34,7 +34,7 @@ set(CMAKE_BUILD_TYPE debug)
 
 set(CMAKE_CXX_FLAGS         "-Wall -Wextra -Winvalid-pch -fno-exceptions")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
-set(CMAKE_CXX_FLAGS_DEBUG   "-g")
+set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG")
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)

@@ -125,10 +125,6 @@ void AudioInput::collectInputData()
             Port port = jackPort(ch);
             if (!port.isZero())
                   buffer[ch] = audioDriver->getBuffer(port, segmentSize);
-            else {
-                  printf("NO JACK PORT\n");
-                  abort();
-                  }
             }
       }
 

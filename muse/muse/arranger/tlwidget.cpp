@@ -114,22 +114,26 @@ void TLWidget::labelPlusClicked()
 
 void TLWidget::mousePressEvent(QMouseEvent* ev)
       {
+      enum { 
+            CMD_REMOVE_TRACK, CMD_COPY_TRACK, CMD_SHOW_AUDIO_GUI, 
+            CMD_SHOW_MIDI_GUI 
+            };
       int button = ev->button();
       if (button == Qt::RightButton) {
             QMenu* menu = new QMenu(this);
             QAction* a;
             a = menu->addAction(QIcon(*deleteIcon), tr("Delete Track"));
-            a->setData(0);
+            a->setData(CMD_REMOVE_TRACK);
             if (_track->type() == Track::MIDI || _track->type() == Track::WAVE) {
                   a = menu->addAction(tr("Copy Track"));
-                  a->setData(1);
+                  a->setData(CMD_COPY_TRACK);
                   }
             if (_track->type() == Track::AUDIO_SOFTSYNTH) {
                   SynthI* s = (SynthI*) _track;
                   if (s->hasGui()) {
                         menu->addSeparator();
                         a = menu->addAction(tr("Show Gui"));
-                        a->setData(2);
+                        a->setData(CMD_SHOW_AUDIO_GUI);
                         a->setCheckable(true);
                         a->setChecked(s->guiVisible());
                         }
@@ -139,7 +143,7 @@ void TLWidget::mousePressEvent(QMouseEvent* ev)
                   if (s->hasGui()) {
                         menu->addSeparator();
                         a = menu->addAction(tr("Show Gui"));
-                        a->setData(3);
+                        a->setData(CMD_SHOW_MIDI_GUI);
                         a->setCheckable(true);
                         a->setChecked(s->guiVisible());
                         }
@@ -152,10 +156,10 @@ void TLWidget::mousePressEvent(QMouseEvent* ev)
             switch (rv) {
                   default:
                         break;
-                  case 0:
+                  case CMD_REMOVE_TRACK:
                         song->removeTrack(_track);
                         break;
-                  case 1:
+                  case CMD_COPY_TRACK:
                         {
 				int idx = song->tracks()->indexOf(_track);
                         if (_track->type() == Track::MIDI) {
@@ -170,13 +174,13 @@ void TLWidget::mousePressEvent(QMouseEvent* ev)
                               }
                         }
                         break;
-                  case 2:
+                  case CMD_SHOW_AUDIO_GUI:
                         {
                         SynthI* s = (SynthI*) _track;
                         s->showGui(!s->guiVisible());
                         }
                         break;
-                  case 3:
+                  case CMD_SHOW_MIDI_GUI:
                         {
                         MidiSynti* s = (MidiSynti*) _track;
                         s->showGui(!s->guiVisible());

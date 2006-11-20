@@ -788,7 +788,7 @@ void MidiOutPortStrip::oRouteShow()
       {
       QMenu* pup = oR->menu();
       pup->clear();
-      pup->addSeparator()->setText(tr("MidiDevices"));
+      pup->addSeparator()->setText(tr("AlsaDevices"));
       RouteList* orl = track->outRoutes();
 
       //
@@ -807,6 +807,7 @@ void MidiOutPortStrip::oRouteShow()
       //
       // add JACK midi ports to list
       //
+      pup->addSeparator()->setText(tr("JackDevices"));
       ol = audioDriver->inputPorts(true);
       foreach (PortName ip, ol) {
             QAction* oa = pup->addAction(ip.name);
@@ -1001,6 +1002,7 @@ void MidiInPortStrip::iRouteShow()
       //
       // add JACK midi ports to list
       //
+      pup->addSeparator()->setText(tr("JackDevices"));
       ol = audioDriver->outputPorts(true);
       foreach (PortName ip, ol) {
             QAction* action = pup->addAction(ip.name);

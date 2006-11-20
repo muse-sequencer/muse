@@ -396,7 +396,7 @@ void AlsaMidi::removeConnection(snd_seq_connect_t* ev)
 //    thread.
 //---------------------------------------------------------
 
-void AlsaMidi::read(MidiSeq* seq)
+void AlsaMidi::read(MidiSeq* /*seq*/)
       {
       snd_seq_event_t* ev;
       for (int i = 0;; ++i) {
@@ -683,8 +683,8 @@ void AlsaMidi::updateConnections()
                         RouteNode src(pr.src, -1, RouteNode::MIDIPORT);
                         RouteNode dst(iport);
                         Route r = Route(src, dst);
-                        if (iport->inRoutes()->indexOf(r) == -1)
-                              iport->inRoutes()->push_back(r);
+                        if (!iport->inRouteExists(r))
+                              iport->addInRoute(r);
                         break;
                         }
                   }

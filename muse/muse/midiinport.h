@@ -57,6 +57,7 @@ class MidiInPort : public MidiTrackBase {
       void beforeProcess();
       void afterProcess();
       bool checkActivity(int channel);
+      void triggerActivity(int channel);
       };
 
 typedef QList<MidiInPort*> MidiInPortList;

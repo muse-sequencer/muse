@@ -297,12 +297,19 @@ class Track : public QObject {
       void updateMute()      { emit muteChanged(isMute()); }
       unsigned cpos() const;
 
-      // routing
+      //----------------------------------------------------------
+      //    routing
+      //----------------------------------------------------------
+
       RouteList* inRoutes()    { return &_inRoutes; }
       RouteList* outRoutes()   { return &_outRoutes; }
       bool noInRoute() const   { return _inRoutes.empty();  }
       bool noOutRoute() const  { return _outRoutes.empty(); }
+      void addInRoute(const Route& r);
+      void addOutRoute(const Route& r);
       void writeRouting(Xml&) const;
+      bool inRouteExists(const Route& r) const;
+      bool outRouteExists(const Route& r) const;
 
       Port alsaPort(int channel = 0) const    { return _alsaPort[channel]; }
       Port jackPort(int channel = 0) const    { return _jackPort[channel]; }

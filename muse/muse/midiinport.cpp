@@ -177,11 +177,9 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
       // update midi activity
       // notify gui of new events
       //
-      int hold = config.guiRefresh / 5 + 1;   // hold for >= 1/5 sec
 
       for (iMidiEvent i = ol.begin(); i != ol.end(); ++i) {
-            if (i->type() == ME_NOTEON)
-                  activity[i->channel()] += hold;
+            triggerActivity(i->channel());
             song->putEvent(*i);
             if (recordCount == RECORD_FIFO_SIZE) {
                   printf("MusE: eventReceived(): fifo overflow\n");
@@ -246,5 +244,14 @@ bool MidiInPort::checkActivity(int channel)
       if (activity[channel])
             --activity[channel];
       return activity[channel] != 0;      
+      }
+
+//---------------------------------------------------------
+//   triggerActivity
+//---------------------------------------------------------
+
+void MidiInPort::triggerActivity(int channel)
+      {
+      activity[channel] = config.guiRefresh / 5 + 1;   // hold for >= 1/5 sec
       }
 

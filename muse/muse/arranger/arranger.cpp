@@ -105,8 +105,6 @@ class TLayout : public QLayout {
       QSize sizeHint() const               { return ((QWidget*)parent())->size(); }
       QLayoutItem *itemAt(int index) const { return itemList.value(index); }
       QLayoutItem *takeAt(int idx) {
-            if (idx < 0 || idx >= itemList.size())
-                  printf("TLayout::takeAt: bad index %d\n", idx);
             return idx >= 0 && idx < itemList.size() ? itemList.takeAt(idx) : 0;
             }
       void clear() {
@@ -594,7 +592,8 @@ void Arranger::removeTrack(Track* t)
       t->subtracks.clear();
 
       if (t == _curTrack) {
-            setSelectedTrack(song->tracks()->front());
+            if (!song->tracks()->isEmpty())
+                  song->selectTrack(song->tracks()->front());
             }
       updateIndex();
       }

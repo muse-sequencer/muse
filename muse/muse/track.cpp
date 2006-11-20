@@ -1046,4 +1046,47 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
             }
       }
 
+//---------------------------------------------------------
+//   addInRoute
+//---------------------------------------------------------
+
+void Track::addInRoute(const Route& r)  
+      {
+      if (_inRoutes.indexOf(r) != -1) {
+            printf("Track::addInRoute: route already there\n");
+            return;
+            }
+      _inRoutes.push_back(r); 
+      }
+
+//---------------------------------------------------------
+//   addOutRoute
+//---------------------------------------------------------
+
+void Track::addOutRoute(const Route& r) 
+      { 
+      if (_outRoutes.indexOf(r) != -1) {
+            printf("Track::addOutRoute: route already there\n");
+            return;
+            }
+      _outRoutes.push_back(r); 
+      }
+
+//---------------------------------------------------------
+//   inRouteExists
+//---------------------------------------------------------
+
+bool Track::inRouteExists(const Route& r) const
+      {
+      return _inRoutes.indexOf(r) != -1;
+      }
+
+//---------------------------------------------------------
+//   outRouteExists
+//---------------------------------------------------------
+
+bool Track::outRouteExists(const Route& r) const
+      {
+      return _outRoutes.indexOf(r) != -1;
+      }
 
