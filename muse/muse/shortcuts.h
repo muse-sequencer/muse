@@ -54,7 +54,7 @@ using AL::Xml;
 struct Shortcut
       {
       const char* xml;   /*! xml tag name for configuration file          */
-      QString descr;     /*! Description of the shortcut, shown in editor */
+      const char* descr;     /*! Description of the shortcut, shown in editor */
       int type;          /*! Bitmask category value mapped against PROLL_SHRT, DEDIT_SHRT etc. One shortcut can be a member of many categories */
       QKeySequence key;  /*! shortcut key */
       QAction* action;
@@ -66,11 +66,11 @@ struct Shortcut
             key  = 0;
             action = 0;
             }
-      Shortcut(const char* x, const QString& d, int t, const QKeySequence& k, const QString& h) 
+      Shortcut(const char* x, const char* d, int t, const QKeySequence& k, const QString& h) 
        : xml(x), descr(d), type(t), key(k), help(h) { 
             action = 0; 
             }
-      Shortcut(const char* x, const QString& d, int t, const QKeySequence& k) 
+      Shortcut(const char* x, const char* d, int t, const QKeySequence& k) 
        : xml(x), descr(d), type(t), key(k) { 
             action = 0; 
             help   = descr;
@@ -116,11 +116,9 @@ class KeyboardMovementIndicator {
       bool isValid()       { return (lastSelectedPart && lastSelectedTrack); }
       };
 
-extern QMap<QString, Shortcut*> shortcuts;
-
 extern KeyboardMovementIndicator shortcutsKbdMovement;
 extern void writeShortCuts(Xml& xml);
 extern void readShortCuts(QDomNode);
 extern QAction* getAction(const char*, QObject* parent);
-extern void initShortcuts();
+extern QMap<QString, Shortcut*> shortcuts;
 #endif

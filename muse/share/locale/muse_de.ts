@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="1.1" language="de">
+<!DOCTYPE TS><TS>
 <context>
     <name></name>
     <message>
-        <location filename="" line="196798"/>
         <source>select Pointer Tool:
 with the pointer tool you can:
   select parts
@@ -12,14 +10,12 @@ with the pointer tool you can:
         <translation>Zeigerwerkzeug auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>sets amount of quantization:
 0   - no quantization
 100 - full quantization</source>
         <translation>Stärke der Quantisierung wählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Click this button to enable recording</source>
         <translation>Aufnahmebereitschaft einschalten</translation>
     </message>
@@ -27,7 +23,6 @@ with the pointer tool you can:
 <context>
     <name>@default</name>
     <message>
-        <location filename="" line="196798"/>
         <source>select Pencil Tool:
 with the pencil tool you can:
   create new parts
@@ -35,1017 +30,632 @@ with the pencil tool you can:
         <translation>Stiftwerkzeug auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>select Delete Tool:
 with the delete tool you can delete parts</source>
         <translation>Löschwerkzeug auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>select Cut Tool:
 with the cut tool you can split a part</source>
         <translation>Schere auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>select Glue Tool:
 with the glue tool you can glue two parts</source>
         <translation>Kleberwerkzeug auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>select Quantize Tool:
 insert display quantize event</source>
         <translation>Quantisierungstool auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>select Drawing Tool</source>
         <translation>Zeichenstift auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>select Muting Tool:
 click on part to mute/unmute</source>
         <translation>Stummschalttool auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>pointer</source>
         <translation>Zeiger</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>pencil</source>
         <translation>Stift</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>eraser</source>
         <translation>Radiergummi</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>cutter</source>
         <translation>Schere</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>glue</source>
         <translation>Kleber</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>quantize</source>
         <translation>Quantisierung</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>draw</source>
         <translation>zeichnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>mute parts</source>
         <translation>Parts stummschalten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Off</source>
         <translation>Aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>m</source>
         <translation>m</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>mute</source>
         <translation>stumm</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>s</source>
         <translation>s</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>solo</source>
         <translation>solo</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Mo</source>
         <translation>Mo</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>monitor</source>
         <translation>Monitor</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Dr</source>
         <translation>Dr</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>use drum map</source>
         <translation>Drummap benutzen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>off</source>
         <translation>aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>aR</source>
         <translation>aR</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>automation read</source>
         <translation>Automation lesen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>aW</source>
         <translation>aW</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>automation write</source>
         <translation>Automation schreiben</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>sync</source>
         <translation>Sync</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>send sync events</source>
         <translation>Sync Events senden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>1/2 channel</source>
         <translation>1/2 Channel</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>oR</source>
         <translation>oR</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>output routing</source>
         <translation>Output Routing</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>iR</source>
         <translation>iR</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>input routing</source>
         <translation>Input Routing</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>don&apos;t quantize notes above this tick limit</source>
         <translation>Noten über dieser Tick-Grenze nicht quantisieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>quantize also note len as default</source>
         <translation>Notenlänge auch quantisieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Channels</source>
         <translation>Channel</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>presets (*.pre *.pre.gz *.pre.bz2)</source>
         <translation>Voreinstellungen (*.pre *.pre.gz *.pre.bz2)</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>All Files (*)</source>
         <translation>Alle Dateien(*)</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Click this button to stop playback</source>
         <translation>Stop Wiedergabe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Click this button to start playback</source>
         <translation>Start Wiedergabe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Click this button to rewind to start position</source>
         <translation>Zum Anfang zurückspulen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Click this button to rewind</source>
         <translation>Zurückspulen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Click this button to forward current play position</source>
         <translation>Vorspulen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Click this button to select a new project
 You can also select the &lt;b&gt;Open command&lt;/b&gt; from the Project menu.</source>
-        <translation>Ein neues Projekt auswählen.</translation>
+        <translation type="obsolete">Ein neues Projekt auswählen.</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Click this button to save the project you are editing.
 You can also select the Save command from the Project menu.</source>
-        <translation>Projekt sichern.</translation>
+        <translation type="obsolete">Projekt sichern.</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>loop between left mark and right mark</source>
         <translation>Loop zwischen linker und rechter Marke</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>record starts at left mark</source>
         <translation>Aufnahme startet an der linken Marke</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>record stops at right mark</source>
         <translation>Aufnahme stoppt an der rechten Marke</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>rewind to start position</source>
-        <translation>Zum Anfang zurückspulen</translation>
+        <translation type="obsolete">Zum Anfang zurückspulen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>rewind current position</source>
         <translation>zurückspulen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>move current position</source>
         <translation>Aktuelle Position verschieben</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>stop sequencer</source>
         <translation>Stop Sequencer</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>start sequencer play</source>
-        <translation>Start Sequencer Wiedergabe</translation>
+        <translation type="obsolete">Start Sequencer Wiedergabe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>to record press record and then play</source>
         <translation>Um Aufzunehmen erst &quot;Aufnahme&quot; und dann &quot;Wiedergabe&quot; drücken</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>send note off to all midi channels</source>
         <translation>Sende &quot;Note Off&quot; an alle Midi Kanäle</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Bar</source>
         <translation>Takt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi</source>
         <translation>Midi</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Midi Track</source>
         <translation>Midi Spur hinzufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Midi Output</source>
         <translation>Midi Ausgang hinzufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Midi Input</source>
         <translation>Midi Eingang hinzufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Audio</source>
         <translation>Audio</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Wave Track</source>
         <translation>Audio Spur hinzufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Audio Output</source>
         <translation>Audio Ausgang hinzufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Audio Group</source>
         <translation>Audio Gruppe hinzufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Audio Input</source>
         <translation>Audio Eingang hinzufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: create project directory</source>
         <translation>MusE: Projektverzeichnis erzeugen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: create template directory</source>
         <translation>MusE: Templateverzeichnis erzeugen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cannot find project &lt;%1&gt;</source>
         <translation>Kann Projekt &lt;%1&gt; nicht finden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: load Project</source>
         <translation>MusE: Projekt laden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Start playback from current location</source>
-        <translation>Transport: Wiedergabe von aktueller Position starten</translation>
+        <translation type="obsolete">Transport: Wiedergabe von aktueller Position starten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Toggle metronome</source>
-        <translation>Transport: Metronom ein/aus</translation>
+        <translation type="obsolete">Transport: Metronom ein/aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Stop Playback</source>
-        <translation>Transport: Wiedergabe beenden</translation>
+        <translation type="obsolete">Transport: Wiedergabe beenden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Play, Stop, Rewind</source>
-        <translation>Transport: Wiedergeben, Beenden, Zurückspulen</translation>
+        <translation type="obsolete">Transport: Wiedergeben, Beenden, Zurückspulen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Goto left marker</source>
-        <translation>Transport: zum linken Marker positionieren</translation>
+        <translation type="obsolete">Transport: zum linken Marker positionieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Goto right marker</source>
-        <translation>Transport: zum rechten Marker positionieren</translation>
+        <translation type="obsolete">Transport: zum rechten Marker positionieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Toggle Loop section</source>
-        <translation>Transport: toogle Schleifenauswahl</translation>
+        <translation type="obsolete">Transport: toogle Schleifenauswahl</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Toggle Record</source>
-        <translation>Transport: Aufnahme ein/aus</translation>
+        <translation type="obsolete">Transport: Aufnahme ein/aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Copy</source>
-        <translation>Bearbeiten: Kopieren</translation>
+        <translation type="obsolete">Bearbeiten: Kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Undo</source>
-        <translation>Bearbeiten: Rückgängig</translation>
+        <translation type="obsolete">Bearbeiten: Rückgängig</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Redo</source>
-        <translation>Bearbeiten: Wiederherstellen</translation>
+        <translation type="obsolete">Bearbeiten: Wiederherstellen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Cut</source>
-        <translation>Bearbeiten: Ausschneiden</translation>
+        <translation type="obsolete">Bearbeiten: Ausschneiden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Paste,</source>
-        <translation>Bearbeiten: Einfügen,</translation>
+        <translation type="obsolete">Bearbeiten: Einfügen,</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Delete</source>
-        <translation>Bearbeiten: Löschen</translation>
+        <translation type="obsolete">Bearbeiten: Löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open</source>
-        <translation>Öffnen</translation>
+        <translation type="obsolete">Öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Save</source>
-        <translation>Sichern</translation>
+        <translation type="obsolete">Sichern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Open recent file</source>
-        <translation>Datei: letze Datei öffnen</translation>
+        <translation type="obsolete">Datei: letze Datei öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Import midi file</source>
-        <translation>Datei: Midifile importieren</translation>
+        <translation type="obsolete">Datei: Midifile importieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Export midi file</source>
-        <translation>Datei: Midifile exportieren</translation>
+        <translation type="obsolete">Datei: Midifile exportieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Import audio file</source>
-        <translation>Datei: Audiofile importieren</translation>
+        <translation type="obsolete">Datei: Audiofile importieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Quit MusE</source>
-        <translation>Datei: MusE beenden</translation>
+        <translation type="obsolete">Datei: MusE beenden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Select parts on track</source>
-        <translation>Bearbeiten: Parts der Spur auswählen</translation>
+        <translation type="obsolete">Bearbeiten: Parts der Spur auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open pianoroll</source>
-        <translation>Pianoroll öffnen</translation>
+        <translation type="obsolete">Pianoroll öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open drumeditor</source>
-        <translation>Drumeditor öffnen</translation>
+        <translation type="obsolete">Drumeditor öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open listeditor</source>
-        <translation>Listeditor öffnen</translation>
+        <translation type="obsolete">Listeditor öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open graphical mastertrack editor</source>
-        <translation>grafischen Mastertrack Editor öffnen</translation>
+        <translation type="obsolete">grafischen Mastertrack Editor öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open list mastertrack editor</source>
-        <translation>Mastertrack Listeneditor öffnen</translation>
+        <translation type="obsolete">Mastertrack Listeneditor öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add midi track</source>
-        <translation>Miditrack zufügen</translation>
+        <translation type="obsolete">Miditrack zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add drum track</source>
-        <translation>Drumtrack zufügen</translation>
+        <translation type="obsolete">Drumtrack zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add wave track</source>
-        <translation>Wavetrack zufügen</translation>
+        <translation type="obsolete">Wavetrack zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add audio output</source>
-        <translation>Audioausgang zufügen</translation>
+        <translation type="obsolete">Audioausgang zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add audio group</source>
-        <translation>Audiogruppe zufügen</translation>
+        <translation type="obsolete">Audiogruppe zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add audio input</source>
-        <translation>Audioinput zufügen</translation>
+        <translation type="obsolete">Audioinput zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Structure: Global cut</source>
-        <translation>Struktur: global ausschneiden</translation>
+        <translation type="obsolete">Struktur: global ausschneiden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Structure: Global insert</source>
-        <translation>Struktur: globales Einfügen</translation>
+        <translation type="obsolete">Struktur: globales Einfügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Structure: Global split</source>
-        <translation>Struktur: globales Splitten</translation>
+        <translation type="obsolete">Struktur: globales Splitten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Structure: Copy range</source>
-        <translation>Struktur: Bereich kopieren</translation>
+        <translation type="obsolete">Struktur: Bereich kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Structure: Cut events</source>
-        <translation>Struktur: Events ausschneiden</translation>
+        <translation type="obsolete">Struktur: Events ausschneiden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>View: Open mixer window</source>
-        <translation>Ansicht: Mixer öffnen</translation>
+        <translation type="obsolete">Ansicht: Mixer öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>View: Toggle transport window</source>
-        <translation>Ansicht: Transportfenster ein/aus</translation>
+        <translation type="obsolete">Ansicht: Transportfenster ein/aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>View: Toggle bigtime window</source>
-        <translation>Ansicht: Bigtimefenster ein/aus</translation>
+        <translation type="obsolete">Ansicht: Bigtimefenster ein/aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>View: Open marker window</source>
-        <translation>Ansicht: Markerfenster zeigen</translation>
+        <translation type="obsolete">Ansicht: Markerfenster zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Follow song by page</source>
-        <translation>Einstellungen: Song seitenweise folgen</translation>
+        <translation type="obsolete">Einstellungen: Song seitenweise folgen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Follow song off</source>
-        <translation>Einstellungen: Song nicht folgen</translation>
+        <translation type="obsolete">Einstellungen: Song nicht folgen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Follow song continuous</source>
-        <translation>Einstellungen: Song kontinuierlich folgen</translation>
+        <translation type="obsolete">Einstellungen: Song kontinuierlich folgen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Configure shortcuts</source>
-        <translation>Einstellungen: Abkürzungen konfigurieren</translation>
+        <translation type="obsolete">Einstellungen: Abkürzungen konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Configure metronome</source>
-        <translation>Einstellungen: Metronom konfigurieren</translation>
+        <translation type="obsolete">Einstellungen: Metronom konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Midi sync configuration</source>
-        <translation>Einstellungen: Midisynchronisation konfigurieren</translation>
+        <translation type="obsolete">Einstellungen: Midisynchronisation konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Midi file export configuration</source>
-        <translation>Einstellungen: Export Mididatei konfigurieren</translation>
+        <translation type="obsolete">Einstellungen: Export Mididatei konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Midi ports / Soft Synth</source>
-        <translation>Einstellungen: Midiports/Softsynthesizer</translation>
+        <translation type="obsolete">Einstellungen: Midiports/Softsynthesizer</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Audio subsystem configuration</source>
-        <translation>Einstellungen: Audio Subsystem konfigurieren</translation>
+        <translation type="obsolete">Einstellungen: Audio Subsystem konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Edit midi instruments</source>
-        <translation>Midi: Midi Instrumente bearbeiten</translation>
+        <translation type="obsolete">Midi: Midi Instrumente bearbeiten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Midi remote control</source>
-        <translation>Midi: Midi Fernsteuerung</translation>
+        <translation type="obsolete">Midi: Midi Fernsteuerung</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Reset midi</source>
-        <translation>Midi: Reset Midi</translation>
+        <translation type="obsolete">Midi: Reset Midi</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Init midi</source>
-        <translation>Midi: Init Midi</translation>
+        <translation type="obsolete">Midi: Init Midi</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Midi local off</source>
-        <translation>Midi: Midi lokal aus</translation>
+        <translation type="obsolete">Midi: Midi lokal aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Audio: Bounce audio to track</source>
-        <translation>Audio: Bounce Audio in Spur</translation>
+        <translation type="obsolete">Audio: Bounce Audio in Spur</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Audio: Bounce audio to file</source>
-        <translation>Audio: Bounce audio in Datei</translation>
+        <translation type="obsolete">Audio: Bounce audio in Datei</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Audio: Restart audio</source>
-        <translation>Audio: Restart Audio</translation>
+        <translation type="obsolete">Audio: Restart Audio</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Help: Open Manual</source>
-        <translation>Hilfe: Manual aufschlagen</translation>
+        <translation type="obsolete">Hilfe: Manual aufschlagen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Help: Toggle whatsthis mode</source>
-        <translation>Hilfe: WasIstDas ein/aus</translation>
+        <translation type="obsolete">Hilfe: WasIstDas ein/aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Edit selected part</source>
-        <translation>Bearbeiten: den selektierten Part bearbeiten</translation>
+        <translation type="obsolete">Bearbeiten: den selektierten Part bearbeiten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Select nearest part on track above</source>
-        <translation>Bearbeiten: den nächsten Part in der überliegenden Spur selektieren</translation>
+        <translation type="obsolete">Bearbeiten: den nächsten Part in der überliegenden Spur selektieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Add nearest part on track above</source>
-        <translation>Bearbeiten: nächsten Part zur drüberliegenden Spur addieren</translation>
+        <translation type="obsolete">Bearbeiten: nächsten Part zur drüberliegenden Spur addieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Select nearest part on track below</source>
-        <translation>Bearbeiten: nächsten Part auf unterer Spur selektieren</translation>
+        <translation type="obsolete">Bearbeiten: nächsten Part auf unterer Spur selektieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Add nearest part on track below</source>
-        <translation>Bearbeiten: nächsten Part auf untere Spur addieren</translation>
+        <translation type="obsolete">Bearbeiten: nächsten Part auf untere Spur addieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Transpose</source>
-        <translation>Midi: Transponieren</translation>
+        <translation type="obsolete">Midi: Transponieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Select all</source>
-        <translation>Bearbeiten: Alles selektieren</translation>
+        <translation type="obsolete">Bearbeiten: Alles selektieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Select none</source>
-        <translation>Bearbeiten: nichts selektieren</translation>
+        <translation type="obsolete">Bearbeiten: nichts selektieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Invert selection</source>
-        <translation>Bearbeiten: Selektion umkehren</translation>
+        <translation type="obsolete">Bearbeiten: Selektion umkehren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Select events/parts inside locators</source>
-        <translation>Bearbeiten: Part in Schleife selektieren</translation>
+        <translation type="obsolete">Bearbeiten: Part in Schleife selektieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Select events/parts outside locators</source>
-        <translation>Bearbeiten: Parts außerhalb Schleife selektieren</translation>
+        <translation type="obsolete">Bearbeiten: Parts außerhalb Schleife selektieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Select nearest part/event to the left</source>
-        <translation>Bearbeiten: nächsten Part/Event links selektieren</translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Add nearest part/event to the left to selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Add nearest part/event to the right to selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Set locators to selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Increase pitch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Decrease pitch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Set fixed length on midi events</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Over Quantize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Note On Quantize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Note On/Off Quantize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Iterative Quantize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Configure quant</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Modify Gate Time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Modify Velocity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Crescendo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Thin Out</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Erase Event</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Note Shift</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Move Clock</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Copy Measure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Erase Measure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Delete Measure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Create Measure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit: Change event color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Tool: Pointer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Tool: Pencil</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Tool: Eraser</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Tool: Line Draw</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Tool: Scissor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Tool: Glue</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Tool: Mute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Transport: Increase current position</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Transport: Decrease current position</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Set quantize to 1/1 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Set quantize to 1/2 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Set quantize to 1/4 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Set quantize to 1/8 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Set quantize to 1/16 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Set quantize to 1/32 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Set quantize to 1/64 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Toggle triol quantization</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Toggle punctuation quantization</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Quantize: Toggle punctuation quantization (2)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Insert Tempo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Insert Signature</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Change Event Position</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="" line="196798"/>
-        <source>Edit Event Value</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Bearbeiten: nächsten Part/Event links selektieren</translation>
     </message>
 </context>
 <context>
     <name>Arranger</name>
     <message>
-        <location filename="" line="196798"/>
         <source>TrackInfo</source>
         <translation>SpurInfo</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Mix</source>
         <translation>Mix</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Config Tracklist</source>
         <translation>Spurliste konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>all mute off</source>
         <translation>Stumm aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>all solo off</source>
         <translation>Solo aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>all autoRead off</source>
         <translation>Automation lesen aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>all autoWrite off</source>
         <translation>Automation schreiben aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>i</source>
         <translation>i</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show Track Info</source>
         <translation>Spurinfo zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>m</source>
         <translation>m</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show Mixer Strip</source>
         <translation>Mixerstrip zeigen</translation>
     </message>
@@ -1053,47 +663,38 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>AudioStrip</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Pre</source>
         <translation>Pre</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>pre fader - post fader</source>
         <translation>Prefader - Postfader</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>dB</source>
         <translation>dB</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>record downmix</source>
         <translation>Downmix aufnehmen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>panorama</source>
         <translation>Panorama</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Pan</source>
         <translation>Pan</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Channel %1</source>
         <translation>Kanal %1</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MidiChannel</source>
         <translation>Midikanal</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Channel</source>
         <translation>Kanal</translation>
     </message>
@@ -1101,12 +702,10 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>Awl::MidiVolEntry</name>
     <message>
-        <location filename="" line="196798"/>
         <source>off</source>
         <translation>aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>db</source>
         <translation>db</translation>
     </message>
@@ -1114,7 +713,6 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>Awl::VolEntry</name>
     <message>
-        <location filename="" line="196798"/>
         <source>off</source>
         <translation>aus</translation>
     </message>
@@ -1122,7 +720,6 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>BigTime</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Bigtime</source>
         <translation>MusE: Bigtime</translation>
     </message>
@@ -1130,17 +727,14 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>CtrlDialog</name>
     <message>
-        <location filename="" line="196798"/>
         <source>controller name</source>
         <translation>Kontrollername</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>flag if controller contains data</source>
         <translation>Flag: Controller enthält Daten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>other</source>
         <translation>andere</translation>
     </message>
@@ -1148,293 +742,243 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>CtrlEdit</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Sel</source>
         <translation>Sel</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>select controller</source>
         <translation>Kontroller auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>remove controller view</source>
         <translation>Kontrolleranzeige entfernen</translation>
     </message>
 </context>
 <context>
+    <name>CtrlListEditor</name>
+    <message>
+        <source>dB</source>
+        <translation type="unfinished">dB</translation>
+    </message>
+</context>
+<context>
     <name>DeicsOnzeGui</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Save configuration</source>
         <translation>Konfiguration sichern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Critical Error</source>
         <translation>Kritischer Fehler</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cannot open file %1</source>
         <translation>Kann Datei %1 nicht öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Parsing error for file %1</source>
         <translation>Parse Fehler in Datei %1</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Load category dialog</source>
         <translation>Kategoriedialog laden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Load set dialog</source>
         <translation>Setdialog laden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Save set dialog</source>
         <translation>Setdialog speichern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>New category</source>
         <translation>Neue Kategorie</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete category</source>
         <translation>Kategorie löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Load category</source>
         <translation>Kategorie laden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Save category</source>
         <translation>Kategorie speichern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Load set</source>
         <translation>Set Laden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Save set</source>
         <translation>Set Speichern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete set</source>
         <translation>Set löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>New subcategory</source>
         <translation>Neue Subkategorie</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete subcategory</source>
         <translation>Subkategorie löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Load subcategory</source>
         <translation>Subkategorie laden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Save subcategory</source>
         <translation>Subkategorie speichern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>New preset</source>
         <translation>Neuer Preset</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete preset</source>
         <translation>Preset löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Load preset</source>
         <translation>Preset laden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Save preset</source>
         <translation>Preset speichern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>No more category supported</source>
         <translation>Keine Kategorien mehr unterstützt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>You can not add more categories</source>
         <translation>Es können keine Kategorien mehr hinzugefügt werden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Do you really want to delete %1 ?</source>
         <translation>%1 wirklich löschen?</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Yes</source>
         <translation>&amp;Ja</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;No</source>
         <translation>&amp;Nein</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>No category selected</source>
         <translation>Keine Kategorie ausgewählt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>You must first select a category.</source>
         <translation>Es muss zunächst eine Kategorie gewählt werden.</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Replace or add</source>
         <translation>Ersetzen oder Zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>%1 is supposed to be affected to the hbank number %2, but there is already one on this slot.
  Do you want to replace it or to add it in the next free slot ?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Replace</source>
         <translation>&amp;Ersetzen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Add</source>
         <translation>&amp;Zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Download error</source>
         <translation>Fehler beim Download</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>There is no more free category slot.</source>
         <translation>Es gibt keinen freien Kategorieslot mehr.</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Save category dialog</source>
         <translation>Kategorie Sichern Dialog</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>No more subcategory supported</source>
         <translation>Keine weiteren Subkategorien mehr</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>You can not add more subcategories</source>
         <translation>Es können keine weiteren Subkategorien zugefügt werden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>No subcategory selected</source>
         <translation>Keine Subkategorie ausgewählt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>You must first select a subcategory.</source>
         <translation>Es muss zunächst eine Subkategorie ausgewählt werden.</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Load subcategory dialog</source>
         <translation>Subkategorie Laden Dialog</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>%1 is supposed to be affected to the lbank number %2, but there is already one on this slot.
  Do you want to replace it or to add it in the next free slot ?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>There is no more free subcategory slot.</source>
         <translation>Kein weiterer Subkaegorie Slot verfügbar.</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Save subcategory dialog</source>
         <translation>Subkategorie Sichern Dialog</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>No more preset supported</source>
         <translation>Keine weiteren Presets unterstützt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>You can not add more presets</source>
         <translation>Es könenn keine weiteren Presets zugefügt werden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>No preset selected</source>
         <translation>Kein Preset ausgewählt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>You must first select a preset.</source>
         <translation>Es muss zunächst ein Preset ausgewählt werden.</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Load preset dialog</source>
         <translation>Preset Laden Dialog</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>%1 is supposed to be affected to the prog number %2, but there is already one on this slot.
  Do you want to replace it or to add it in the next free slot ?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>There is no more free preset slot.</source>
         <translation>Es gibt keinen weiteren freien Preset Slot.</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Save preset dialog</source>
         <translation>Preset Sichern Dialog</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Browse set dialog</source>
         <translation>Browse Set Dialog</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Browse image dialog</source>
         <translation>Browse Image Dialog</translation>
     </message>
@@ -1442,62 +986,50 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>DrumEdit</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete Events</source>
         <translation>Events löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Functions</source>
         <translation>&amp;Funktionen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Set fixed length</source>
         <translation>Feste Länge setzen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Modify Velocity...</source>
         <translation>Anschlag verändern...</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Select</source>
         <translation>&amp;Auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Select All</source>
         <translation>Alles Auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Select None</source>
         <translation>Nichts auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Invert</source>
         <translation>Invertieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Inside Loop</source>
         <translation>Innerhalb Schleife</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Outside Loop</source>
         <translation>Ausserhalb Schleife</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Drum Tools</source>
         <translation>Drum Werkzeuge</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport</source>
         <translation>Transport</translation>
     </message>
@@ -1505,7 +1037,6 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>EditToolBar</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit Tools</source>
         <translation>Edit Werkzeuge</translation>
     </message>
@@ -1513,67 +1044,54 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>EffectRack</name>
     <message>
-        <location filename="" line="196798"/>
         <source>effect rack</source>
         <translation>Effekt Rack</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>move up</source>
         <translation>nach oben</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>move down</source>
         <translation>nach unten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>remove</source>
         <translation>entfernen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>bypass</source>
         <translation>überbrücken</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>show gui</source>
         <translation>GUI zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>show native gui</source>
         <translation>Native GUI zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>New Plugin</source>
         <translation>Neues Plugin</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>New Aux Send</source>
         <translation>Neu: Aux Send</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Replace effect</source>
         <translation>Effekt ersetzen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Do you really want to replace the effect %1?</source>
         <translation>Soll Effekt %1 wirklich ersetzt werden?</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Yes</source>
         <translation>&amp;Ja</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;No</source>
         <translation>&amp;Nein</translation>
     </message>
@@ -1581,17 +1099,14 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>ExportMidiDialog</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Save </source>
         <translation>Sichern </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source> as smf midi file</source>
         <translation> als smf Midi File</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: export midi smf file</source>
         <translation>MusE: in Midi smf Datei exportieren</translation>
     </message>
@@ -1599,12 +1114,10 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>FLUIDGui</name>
     <message>
-        <location filename="" line="196798"/>
         <source>FLUID: open Soundfile</source>
         <translation>FLUID: Sounddatei öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Fluid: select Sound Font</source>
         <translation>Fluid: Soundfont auswählen</translation>
     </message>
@@ -1612,7 +1125,6 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>FluidSynthGui</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Choose soundfont</source>
         <translation>Soundfont auswählen</translation>
     </message>
@@ -1620,7 +1132,6 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>FontSel</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Size:</source>
         <translation>Größe:</translation>
     </message>
@@ -1628,7 +1139,6 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>GateTime</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Modify Gate Time</source>
         <translation>MusE: Gatezeit verändern</translation>
     </message>
@@ -1636,7 +1146,6 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>GreendotButton</name>
     <message>
-        <location filename="" line="196798"/>
         <source>record</source>
         <translation>aufnehmen</translation>
     </message>
@@ -1644,17 +1153,14 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>ListEdit</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: List Edit</source>
         <translation>MusE: List Editor</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Parts</source>
         <translation>PArts</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Controller</source>
         <translation>Kontroller</translation>
     </message>
@@ -1662,67 +1168,54 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MarkerView</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Marker</source>
         <translation>MusE: Marker</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>add marker</source>
         <translation>Marker zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Marker</source>
         <translation>Marker zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>delete marker</source>
         <translation>Marker löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete Marker</source>
         <translation>MArker löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Edit</source>
         <translation>&amp;Editieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>marker-tools</source>
         <translation>MArkerwerkzeuge</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>edit tools</source>
         <translation>Edit Werkzeuge</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Bar:Beat:Tick</source>
         <translation>Bar:Beat:Tick</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Min:Sc:Fr:Sf</source>
         <translation>Min:Sc:Fr:Sf</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Lock</source>
         <translation>Lock</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Text</source>
         <translation>Text</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Marker Properties</source>
         <translation>Marker Eigenschaften</translation>
     </message>
@@ -1730,67 +1223,54 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MasterEdit</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Mastertrack</source>
         <translation>MusE: Mastertrack</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>edit tools</source>
         <translation>Edit Werkzeuge</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>EnableTempomap</source>
         <translation>Tempomap einschalten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Tempomap</source>
         <translation>Tempomap</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Enable use of tempo map</source>
         <translation>Tempomap benutzen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Info</source>
         <translation>Info</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cursor</source>
         <translation>Cursor</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Snap</source>
         <translation>Snap</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>time at cursor position</source>
         <translation>Zeit an der Cursorposition</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>tempo at cursor position</source>
         <translation>Tempo an der Cursorposition</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>CurPos </source>
         <translation>CurPos </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>tempo at current position</source>
         <translation>Tempo an der aktuellen Position</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>time signature at current position</source>
         <translation>Taktart an der aktuellen Position</translation>
     </message>
@@ -1798,17 +1278,14 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MidiChannelInfo</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Instrument Patch</source>
         <translation>Instrument Patch</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi Out Port</source>
         <translation>Midi Ausgang</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi Instrument</source>
         <translation>Midi Instrument</translation>
     </message>
@@ -1816,7 +1293,6 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MidiController</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Velocity</source>
         <translation>Anschlag</translation>
     </message>
@@ -1824,42 +1300,34 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MidiEditor</name>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Edit</source>
         <translation>&amp;Editieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cut</source>
         <translation>Schneiden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Copy</source>
         <translation>Kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Paste</source>
         <translation>Einfügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Play Events</source>
         <translation>Events spielen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Step Record</source>
         <translation>Schrittaufnahme</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi Input</source>
         <translation>Midi Eingang</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Follow Song</source>
         <translation>Song folgen</translation>
     </message>
@@ -1867,63 +1335,64 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MidiInPortStrip</name>
     <message>
-        <location filename="" line="196798"/>
         <source>AlsaDevices</source>
         <translation>AlsaDevices</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MidiChannel</source>
         <translation>Midikanäle</translation>
+    </message>
+    <message>
+        <source>JackDevices</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>MidiOutPortStrip</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MidiChannel</source>
         <translation>Midikanäle</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MidiDevices</source>
-        <translation>Midigeräte</translation>
+        <translation type="obsolete">Midigeräte</translation>
+    </message>
+    <message>
+        <source>AlsaDevices</source>
+        <translation type="unfinished">AlsaDevices</translation>
+    </message>
+    <message>
+        <source>JackDevices</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>MidiPluginDialog</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: select midi plugin</source>
         <translation>MusE: Midiplugin auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File</source>
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Description</source>
         <translation>Beschreibung</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
@@ -1931,37 +1400,30 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MidiRack</name>
     <message>
-        <location filename="" line="196798"/>
         <source>midi effect rack</source>
         <translation>Midi Effekt Rack</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>move up</source>
         <translation>nach oben</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>move down</source>
         <translation>nach unten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>remove</source>
         <translation>entfernen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>bypass</source>
         <translation>überbrücken</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>show gui</source>
         <translation>GUI zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>new</source>
         <translation>Neu</translation>
     </message>
@@ -1969,52 +1431,42 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MidiStrip</name>
     <message>
-        <location filename="" line="196798"/>
         <source>VariationSend</source>
         <translation>VariationSend</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Var</source>
         <translation>Var</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>ReverbSend</source>
         <translation>ReverbSend</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Rev</source>
         <translation>Rev</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>ChorusSend</source>
         <translation>ChorusSend</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cho</source>
         <translation>Cho</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Pan/Balance</source>
         <translation>Pan/Balance</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Pan</source>
         <translation>Pan</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Tracks</source>
         <translation>Spuren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>OutputPorts</source>
         <translation>Ausgänge</translation>
     </message>
@@ -2022,30 +1474,36 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MidiSyntiStrip</name>
     <message>
-        <location filename="" line="196798"/>
         <source>OutputPorts</source>
         <translation>Ausgänge</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Channel</source>
         <translation>Kanäle</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Input Ports</source>
         <translation>Eingänge</translation>
     </message>
 </context>
 <context>
+    <name>MidiTimeDelegate</name>
+    <message>
+        <source>dB</source>
+        <translation type="unfinished">dB</translation>
+    </message>
+    <message>
+        <source>off</source>
+        <translation type="unfinished">aus</translation>
+    </message>
+</context>
+<context>
     <name>MidiTrackInfo</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Channel %1</source>
         <translation>Kanal %1</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi Port</source>
         <translation>Midiport</translation>
     </message>
@@ -2053,37 +1511,30 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MidiTrackerEditor</name>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;View</source>
         <translation>&amp;Zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MidiTracker Tools</source>
         <translation>MidiTracker  Werkzeuge</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Panic</source>
         <translation>Panik</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport</source>
         <translation>Transport</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>row features</source>
         <translation>Zeilen Features</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Row per measure</source>
         <translation>Zeilen per Takt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Number of visible rows</source>
         <translation>Anzahl der sichtbaren Zeilen</translation>
     </message>
@@ -2091,7 +1542,6 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MidiTransformerDialog</name>
     <message>
-        <location filename="" line="196798"/>
         <source>New</source>
         <translation>Neu</translation>
     </message>
@@ -2099,12 +1549,10 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MixdownFileDialog</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: set mixdown file name</source>
         <translation>MusE: Midxown Dateiname wählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Wave Files (*.wav);;All Files (*)</source>
         <translation>Wave Dateien (*.wav);;Alle Dateien (*)</translation>
     </message>
@@ -2112,62 +1560,50 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>Mixer</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Mixer</source>
         <translation>MusE: Mixer</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Create</source>
         <translation>&amp;Erzeugen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;View</source>
         <translation>&amp;Zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Routing</source>
         <translation>Routing</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show Midi Tracks</source>
         <translation>Miditracks zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show Midi Out Ports</source>
         <translation>Midiausgänge zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show Midi In Ports</source>
         <translation>Midieingänge zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show Wave Tracks</source>
         <translation>Audiospuren zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show Output Tracks</source>
         <translation>Audioausgänge zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show Group Tracks</source>
         <translation>Audiogruppen zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show Input Tracks</source>
         <translation>Audioeingänge zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show Synthesizer</source>
         <translation>Synthesizer zeigen</translation>
     </message>
@@ -2175,544 +1611,436 @@ You can also select the Save command from the Project menu.</source>
 <context>
     <name>MusE</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE manual not found at: </source>
         <translation>MusE Handbuch nicht gefunden: </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Open Help</source>
         <translation>MusE: Hilfe öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>to import a audio file you have first to selecta wave track</source>
         <translation>Um eine Wavedatei zu importieren, muß zunächst eine Wave-Zielspur ausgewählt werden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Import Wave File</source>
         <translation>Wavedatei importieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Failed to start audio!</source>
         <translation>Audio Start scheitert!</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Was not able to start audio, check if jack is running.
 </source>
         <translation type="unfinished">Audio konnte nicht gestartet werden, läuft JACK?
 </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Und&amp;o</source>
         <translation>Und&amp;o</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>undo last change to song</source>
         <translation>letzte Änderung rückgängig machen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Re&amp;do</source>
         <translation>Re&amp;do</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>redo last undo</source>
         <translation>letztes Undo rückgängig machen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Loop</source>
         <translation>Schleife</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Punchin</source>
         <translation>Punchin</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Punchout</source>
         <translation>Punchout</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Record</source>
         <translation>Aufnehmen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Panic</source>
         <translation>Panik</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Open</source>
         <translation type="obsolete">&amp;Öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Save</source>
         <translation>&amp;Sichern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Pianoroll</source>
         <translation>Pianoroll</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MidiTracker</source>
         <translation>MidiTracker</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Project Buttons</source>
         <translation>Projekt Buttons</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport</source>
         <translation>Transport</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Project</source>
         <translation>&amp;Projekt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open &amp;Recent</source>
         <translation>letzte P&amp;rojekte öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Import Midifile</source>
         <translation>Midifile importieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Export Midifile</source>
         <translation>Midifile exportieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Quit</source>
         <translation>&amp;Quit</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Edit</source>
         <translation>&amp;Editieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>C&amp;ut</source>
         <translation type="unfinished">Schneiden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Copy</source>
         <translation type="unfinished">Kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Paste</source>
         <translation>Einfügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Delete Parts</source>
         <translation type="unfinished">Parts löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete Selected Tracks</source>
         <translation type="unfinished">Markierte Spuren löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Track</source>
         <translation type="unfinished">Spur zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Select</source>
         <translation type="unfinished">Auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Select &amp;All</source>
         <translation type="unfinished">Alles auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Deselect All</source>
         <translation type="unfinished">nichts auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Invert &amp;Selection</source>
         <translation type="unfinished">Auswahl umkehren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Inside Loop</source>
         <translation type="unfinished">Innerhalb Schleife</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Outside Loop</source>
         <translation type="unfinished">Ausserhalb Schleife</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>All &amp;Parts on Track</source>
         <translation type="unfinished">Alle Parts der Spur</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Drums</source>
         <translation>Drums</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>List</source>
         <translation>Liste</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Mastertrack</source>
         <translation>Masterspur</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Project Properties</source>
         <translation>Projekt Eigenschaften</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi</source>
         <translation>Midi</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Modify Gate Time</source>
         <translation>Gatezeit ändern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Modify Velocity</source>
         <translation>Anschlag verändern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Crescendo</source>
         <translation>Crescendo</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transpose</source>
         <translation>Transponieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Thin Out</source>
         <translation>Ausdünnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Erase Event</source>
         <translation>Event löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Note Shift</source>
         <translation>Note Shift</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Move Clock</source>
         <translation>Zeit verschieben</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Copy Measure</source>
         <translation>Takt kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Erase Measure</source>
         <translation>Takt löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete Measure</source>
         <translation>Takt löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Create Measure</source>
         <translation>Takt erzeugen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Mix Track</source>
         <translation>Spur mischen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;View</source>
         <translation>Anzeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport Panel</source>
         <translation>Transport Panel</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Bigtime window</source>
         <translation>Bigtime Window</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Mixer 1</source>
         <translation>Mixer 1</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Mixer 2</source>
         <translation>Mixer 2</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Marker</source>
         <translation>Marker</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Structure</source>
         <translation>&amp;Struktur</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Global Cut</source>
         <translation>Globaler Schnitt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Global Insert</source>
         <translation>Global Einfügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Global Split</source>
         <translation>Global Splitten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Copy Range</source>
         <translation>Bereich kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cut Events</source>
         <translation type="unfinished">Events Schneiden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Midi</source>
         <translation>&amp;Midi</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit Instrument</source>
         <translation type="unfinished">Instrument editieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Reset Instr.</source>
         <translation>Instrument zurücksetzen.</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Init Instr.</source>
         <translation>Instrument initialisieren.</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>local off</source>
         <translation>lokal aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Audio</source>
         <translation>&amp;Audio</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Bounce to Track</source>
         <translation>Bounce nach Spur</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Bounce to File</source>
         <translation>Bounce in Datei</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Restart Audio</source>
         <translation>Audio restarten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Setti&amp;ngs</source>
         <translation>Einstellu&amp;ngen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Configure shortcuts</source>
         <translation>Shortcuts Konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>follow song</source>
         <translation>Song folgen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>dont follow Song</source>
         <translation>Song nicht folgen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>follow page</source>
         <translation>Seitenweise folgen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>follow continuous</source>
         <translation>Kontinuierlich folgen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi Sync</source>
         <translation>Midi Sync</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi File Export</source>
         <translation>Mididatei exportieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Preferences</source>
         <translation>Voreinstellungen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Help</source>
         <translation>&amp;Hilfe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Manual</source>
         <translation>&amp;Manual</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;MusE homepage</source>
         <translation>&amp;MusE Homepage</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Report Bug...</source>
         <translation type="unfinished">Fehler melden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;About MusE</source>
         <translation type="unfinished">Über MusE</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>About&amp;Qt</source>
         <translation>Über &amp;Qt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>What&apos;s &amp;This?</source>
         <translation type="unfinished">Was ist das?</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Arranger</source>
         <translation>Arranger</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cursor</source>
         <translation>Cursor</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Snap</source>
         <translation>Snap</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Len</source>
         <translation>Länge</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Pitch</source>
         <translation>Tonhöhe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>midi pitch</source>
         <translation>Midi Tonhöhe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>global midi pitch shift</source>
         <translation>Globale Midi Tonhöhe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Tempo</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>midi tempo</source>
         <translation>Midi Tempo</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>N</source>
         <translation>N</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: new project</source>
         <translation>Muse: neues Projekt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cannot create project folder &lt;%1&gt;</source>
         <translation type="unfinished">Kann Projektverzeichnis &lt;%1&gt; nicht erzeugen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cannot open template file
 %1</source>
         <translation type="unfinished">Kann Template
@@ -2720,168 +2048,639 @@ You can also select the Save command from the Project menu.</source>
 nicht öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File &lt;%1&gt; read error</source>
         <translation>Datei &lt;%1&gt; Lesefehler</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Create tmp file failed</source>
         <translation>MusE: kann temporäre Datei nicht erzeugen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Write File failed</source>
         <translation>MusE: kann nicht in Datei schreiben</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>The current Project contains unsaved data
 Save Current Project?</source>
         <translation>Das aktuelle Projekt enthält ungesicherte Daten.
 Soll das Projekt gesichert werden?</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Nosave</source>
         <translation>&amp;Nicht Sichern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Abort</source>
         <translation>&amp;Abbrechen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Nothing to edit</source>
         <translation>Nichts zu bearbeiten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Copy Range</source>
         <translation>MusE: Bereich kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>not implemented</source>
         <translation>nicht implementiert</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Cut Events</source>
         <translation>MusE: Events ausschneiden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Bounce</source>
         <translation>MusE: Bounce</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>set left/right marker for bounce range</source>
         <translation>Linken/Rechten Marker für Bouncebereich setzen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Bounce to Track</source>
         <translation>Bounce nach Spur</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>more than one target track selected</source>
         <translation>mehr als eine Zielspur ausgewählt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>wrong target track type,
 select wave track as target</source>
         <translation>falscher Typ für Zielspur,
 eine Wavespur muß als Ziel selektiert werden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>no target track selected</source>
         <translation>keine Zielspur ausgewählt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Bounce to File</source>
         <translation>Bounce in Datei</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>no output track found</source>
         <translation>keine Ausgangsspur gefunden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Import Midi</source>
         <translation>MusE: Midi importieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: import midi file</source>
         <translation>MusE: Mididatei importieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>reading midifile
   </source>
         <translation>Mididatei lesen
   </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>
 failed: </source>
         <translation>
 fehlgeschlagen: </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open Project</source>
         <translation>Projekt öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Save Project</source>
         <translation>Projekt sichern</translation>
+    </message>
+    <message>
+        <source>Transport: Goto Start</source>
+        <translation>Transport: Zum Anfang</translation>
+    </message>
+    <message>
+        <source>rewind to start position</source>
+        <translation type="unfinished">Zum Anfang zurückspulen</translation>
+    </message>
+    <message>
+        <source>Transport: Start playback from current location</source>
+        <translation type="unfinished">Transport: Wiedergabe von aktueller Position starten</translation>
+    </message>
+    <message>
+        <source>start sequencer play</source>
+        <translation type="unfinished">Start Sequencer Wiedergabe</translation>
+    </message>
+    <message>
+        <source>Transport: Stop Playback</source>
+        <translation type="unfinished">Transport: Wiedergabe beenden</translation>
+    </message>
+    <message>
+        <source>Transport: Play, Stop, Rewind</source>
+        <translation type="unfinished">Transport: Wiedergeben, Beenden, Zurückspulen</translation>
+    </message>
+    <message>
+        <source>Transport: Goto left marker</source>
+        <translation type="unfinished">Transport: zum linken Marker positionieren</translation>
+    </message>
+    <message>
+        <source>Transport: Goto right marker</source>
+        <translation type="unfinished">Transport: zum rechten Marker positionieren</translation>
+    </message>
+    <message>
+        <source>Transport: Toggle metronome</source>
+        <translation type="unfinished">Transport: Metronom ein/aus</translation>
+    </message>
+    <message>
+        <source>Transport: Toggle Loop section</source>
+        <translation type="unfinished">Transport: toogle Schleifenauswahl</translation>
+    </message>
+    <message>
+        <source>Transport: Toggle Record</source>
+        <translation type="unfinished">Transport: Aufnahme ein/aus</translation>
+    </message>
+    <message>
+        <source>Edit: Copy</source>
+        <translation type="unfinished">Bearbeiten: Kopieren</translation>
+    </message>
+    <message>
+        <source>Edit: Undo</source>
+        <translation type="unfinished">Bearbeiten: Rückgängig</translation>
+    </message>
+    <message>
+        <source>Edit: Redo</source>
+        <translation type="unfinished">Bearbeiten: Wiederherstellen</translation>
+    </message>
+    <message>
+        <source>Edit: Cut</source>
+        <translation type="unfinished">Bearbeiten: Ausschneiden</translation>
+    </message>
+    <message>
+        <source>Edit: Paste,</source>
+        <translation type="unfinished">Bearbeiten: Einfügen,</translation>
+    </message>
+    <message>
+        <source>Edit: Delete</source>
+        <translation type="unfinished">Bearbeiten: Löschen</translation>
+    </message>
+    <message>
+        <source>Open</source>
+        <translation type="unfinished">Öffnen</translation>
+    </message>
+    <message>
+        <source>Click this button to select a new project
+You can also select the &lt;b&gt;Open command&lt;/b&gt; from the Project menu.</source>
+        <translation type="unfinished">Ein neues Projekt auswählen.</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished">Sichern</translation>
+    </message>
+    <message>
+        <source>Click this button to save the project you are editing.
+You can also select the Save command from the Project menu.</source>
+        <translation type="unfinished">Projekt sichern.</translation>
+    </message>
+    <message>
+        <source>File: Open recent file</source>
+        <translation type="unfinished">Datei: letze Datei öffnen</translation>
+    </message>
+    <message>
+        <source>File: Import midi file</source>
+        <translation type="unfinished">Datei: Midifile importieren</translation>
+    </message>
+    <message>
+        <source>File: Export midi file</source>
+        <translation type="unfinished">Datei: Midifile exportieren</translation>
+    </message>
+    <message>
+        <source>File: Import audio file</source>
+        <translation type="unfinished">Datei: Audiofile importieren</translation>
+    </message>
+    <message>
+        <source>File: Quit MusE</source>
+        <translation type="unfinished">Datei: MusE beenden</translation>
+    </message>
+    <message>
+        <source>Edit: Select parts on track</source>
+        <translation type="unfinished">Bearbeiten: Parts der Spur auswählen</translation>
+    </message>
+    <message>
+        <source>Open pianoroll</source>
+        <translation type="unfinished">Pianoroll öffnen</translation>
+    </message>
+    <message>
+        <source>Open drumeditor</source>
+        <translation type="unfinished">Drumeditor öffnen</translation>
+    </message>
+    <message>
+        <source>Open listeditor</source>
+        <translation type="unfinished">Listeditor öffnen</translation>
+    </message>
+    <message>
+        <source>Open graphical mastertrack editor</source>
+        <translation type="unfinished">grafischen Mastertrack Editor öffnen</translation>
+    </message>
+    <message>
+        <source>Open list mastertrack editor</source>
+        <translation type="unfinished">Mastertrack Listeneditor öffnen</translation>
+    </message>
+    <message>
+        <source>Add midi track</source>
+        <translation type="unfinished">Miditrack zufügen</translation>
+    </message>
+    <message>
+        <source>Add drum track</source>
+        <translation type="unfinished">Drumtrack zufügen</translation>
+    </message>
+    <message>
+        <source>Add wave track</source>
+        <translation type="unfinished">Wavetrack zufügen</translation>
+    </message>
+    <message>
+        <source>Add audio output</source>
+        <translation type="unfinished">Audioausgang zufügen</translation>
+    </message>
+    <message>
+        <source>Add audio group</source>
+        <translation type="unfinished">Audiogruppe zufügen</translation>
+    </message>
+    <message>
+        <source>Add audio input</source>
+        <translation type="unfinished">Audioinput zufügen</translation>
+    </message>
+    <message>
+        <source>Structure: Global cut</source>
+        <translation type="unfinished">Struktur: global ausschneiden</translation>
+    </message>
+    <message>
+        <source>Structure: Global insert</source>
+        <translation type="unfinished">Struktur: globales Einfügen</translation>
+    </message>
+    <message>
+        <source>Structure: Global split</source>
+        <translation type="unfinished">Struktur: globales Splitten</translation>
+    </message>
+    <message>
+        <source>Structure: Copy range</source>
+        <translation type="unfinished">Struktur: Bereich kopieren</translation>
+    </message>
+    <message>
+        <source>Structure: Cut events</source>
+        <translation type="unfinished">Struktur: Events ausschneiden</translation>
+    </message>
+    <message>
+        <source>View: Open mixer window</source>
+        <translation type="unfinished">Ansicht: Mixer öffnen</translation>
+    </message>
+    <message>
+        <source>View: Toggle transport window</source>
+        <translation type="unfinished">Ansicht: Transportfenster ein/aus</translation>
+    </message>
+    <message>
+        <source>View: Toggle bigtime window</source>
+        <translation type="unfinished">Ansicht: Bigtimefenster ein/aus</translation>
+    </message>
+    <message>
+        <source>View: Open marker window</source>
+        <translation type="unfinished">Ansicht: Markerfenster zeigen</translation>
+    </message>
+    <message>
+        <source>Settings: Follow song by page</source>
+        <translation type="unfinished">Einstellungen: Song seitenweise folgen</translation>
+    </message>
+    <message>
+        <source>Settings: Follow song off</source>
+        <translation type="unfinished">Einstellungen: Song nicht folgen</translation>
+    </message>
+    <message>
+        <source>Settings: Follow song continuous</source>
+        <translation type="unfinished">Einstellungen: Song kontinuierlich folgen</translation>
+    </message>
+    <message>
+        <source>Settings: Configure shortcuts</source>
+        <translation type="unfinished">Einstellungen: Abkürzungen konfigurieren</translation>
+    </message>
+    <message>
+        <source>Settings: Configure metronome</source>
+        <translation type="unfinished">Einstellungen: Metronom konfigurieren</translation>
+    </message>
+    <message>
+        <source>Settings: Midi sync configuration</source>
+        <translation type="unfinished">Einstellungen: Midisynchronisation konfigurieren</translation>
+    </message>
+    <message>
+        <source>Settings: Midi file export configuration</source>
+        <translation type="unfinished">Einstellungen: Export Mididatei konfigurieren</translation>
+    </message>
+    <message>
+        <source>Settings: Midi ports / Soft Synth</source>
+        <translation type="unfinished">Einstellungen: Midiports/Softsynthesizer</translation>
+    </message>
+    <message>
+        <source>Settings: Audio subsystem configuration</source>
+        <translation type="unfinished">Einstellungen: Audio Subsystem konfigurieren</translation>
+    </message>
+    <message>
+        <source>Midi: Edit midi instruments</source>
+        <translation type="unfinished">Midi: Midi Instrumente bearbeiten</translation>
+    </message>
+    <message>
+        <source>Midi: Midi remote control</source>
+        <translation type="unfinished">Midi: Midi Fernsteuerung</translation>
+    </message>
+    <message>
+        <source>Midi: Reset midi</source>
+        <translation type="unfinished">Midi: Reset Midi</translation>
+    </message>
+    <message>
+        <source>Midi: Init midi</source>
+        <translation type="unfinished">Midi: Init Midi</translation>
+    </message>
+    <message>
+        <source>Midi: Midi local off</source>
+        <translation type="unfinished">Midi: Midi lokal aus</translation>
+    </message>
+    <message>
+        <source>Audio: Bounce audio to track</source>
+        <translation type="unfinished">Audio: Bounce Audio in Spur</translation>
+    </message>
+    <message>
+        <source>Audio: Bounce audio to file</source>
+        <translation type="unfinished">Audio: Bounce audio in Datei</translation>
+    </message>
+    <message>
+        <source>Audio: Restart audio</source>
+        <translation type="unfinished">Audio: Restart Audio</translation>
+    </message>
+    <message>
+        <source>Help: Open Manual</source>
+        <translation type="unfinished">Hilfe: Manual aufschlagen</translation>
+    </message>
+    <message>
+        <source>Help: Toggle whatsthis mode</source>
+        <translation type="unfinished">Hilfe: WasIstDas ein/aus</translation>
+    </message>
+    <message>
+        <source>Edit: Edit selected part</source>
+        <translation type="unfinished">Bearbeiten: den selektierten Part bearbeiten</translation>
+    </message>
+    <message>
+        <source>Edit: Select nearest part on track above</source>
+        <translation type="unfinished">Bearbeiten: den nächsten Part in der überliegenden Spur selektieren</translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part on track above</source>
+        <translation type="unfinished">Bearbeiten: nächsten Part zur drüberliegenden Spur addieren</translation>
+    </message>
+    <message>
+        <source>Edit: Select nearest part on track below</source>
+        <translation type="unfinished">Bearbeiten: nächsten Part auf unterer Spur selektieren</translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part on track below</source>
+        <translation type="unfinished">Bearbeiten: nächsten Part auf untere Spur addieren</translation>
+    </message>
+    <message>
+        <source>Midi: Transpose</source>
+        <translation type="unfinished">Midi: Transponieren</translation>
+    </message>
+    <message>
+        <source>Edit: Select all</source>
+        <translation type="unfinished">Bearbeiten: Alles selektieren</translation>
+    </message>
+    <message>
+        <source>Edit: Select none</source>
+        <translation type="unfinished">Bearbeiten: nichts selektieren</translation>
+    </message>
+    <message>
+        <source>Edit: Invert selection</source>
+        <translation type="unfinished">Bearbeiten: Selektion umkehren</translation>
+    </message>
+    <message>
+        <source>Edit: Select events/parts inside locators</source>
+        <translation type="unfinished">Bearbeiten: Part in Schleife selektieren</translation>
+    </message>
+    <message>
+        <source>Edit: Select events/parts outside locators</source>
+        <translation type="unfinished">Bearbeiten: Parts außerhalb Schleife selektieren</translation>
+    </message>
+    <message>
+        <source>Edit: Select nearest part/event to the left</source>
+        <translation type="unfinished">Bearbeiten: nächsten Part/Event links selektieren</translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part/event to the left to selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part/event to the right to selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Set locators to selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Increase pitch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Decrease pitch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Set fixed length on midi events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Over Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Note On Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Note On/Off Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Iterative Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Configure quant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Modify Gate Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Modify Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Crescendo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Thin Out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Erase Event</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Note Shift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Move Clock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Copy Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Erase Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Delete Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Create Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Change event color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Pointer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Pencil</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Eraser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Line Draw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Scissor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Glue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Mute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Increase current position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Decrease current position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/1 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/2 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/4 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/8 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/16 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/32 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/64 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Toggle triol quantization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Toggle punctuation quantization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Toggle punctuation quantization (2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert Tempo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert Signature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Change Event Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit Event Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>goto start</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>NoteInfo</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Note Info</source>
         <translation>Noteninformation</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Len</source>
         <translation>Länge</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Pitch</source>
         <translation>Tonhöhe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Velo On</source>
         <translation>Anschlag</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Velo Off</source>
         <translation>Aus-Anschlag</translation>
     </message>
@@ -2889,7 +2688,6 @@ fehlgeschlagen: </translation>
 <context>
     <name>OutportCombo</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi Output Port</source>
         <translation>Midi Ausgang</translation>
     </message>
@@ -2897,92 +2695,74 @@ fehlgeschlagen: </translation>
 <context>
     <name>PartCanvas</name>
     <message>
-        <location filename="" line="196798"/>
         <source>C&amp;ut</source>
         <translation>Auss&amp;chneiden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Copy</source>
         <translation>&amp;Kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>rename</source>
         <translation>Umbenennen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>color</source>
         <translation>Farbe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>split</source>
         <translation>Splitten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>glue</source>
         <translation>Kleben</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>de-clone</source>
         <translation>un-Klonen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>AutoFill...</source>
         <translation>Auto-Füllen...</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>drums</source>
         <translation>Drums</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>pianoroll</source>
         <translation>Pianoroll</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>miditracker</source>
         <translation>Miditracker</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>list</source>
         <translation>Liste</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>wave edit</source>
         <translation>Wave bearbeiten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Get auto fill loop len</source>
         <translation>MusE: Länge für Auto-Füll-Schleife</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Measures: </source>
         <translation>Takte: </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Change Part Name</source>
         <translation>MusE: Partname ändern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>PartName:</source>
         <translation>PartName:</translation>
     </message>
@@ -2990,167 +2770,134 @@ fehlgeschlagen: </translation>
 <context>
     <name>PianoRoll</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete Events</source>
         <translation>Events löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Select</source>
         <translation>&amp;Selektieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Select &amp;All</source>
         <translation>a&amp;alles auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Deselect All</source>
         <translation type="unfinished">nichts auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Invert &amp;Selection</source>
         <translation>&amp;Selektion invertieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Inside Loop</source>
         <translation>&amp;innerhalb Schleife</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Outside Loop</source>
         <translation type="unfinished">ausserhalb Scheife</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Config</source>
         <translation>&amp;Konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>event color</source>
         <translation>Eventfarbe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>blue</source>
         <translation>blau</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>pitch colors</source>
         <translation>Tonhöhenfarbe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>velocity colors</source>
         <translation>Anschlagfarben</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Functions</source>
         <translation>&amp;Funktionen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Over Quantize</source>
         <translation>Over Quantisieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Note On Quantize</source>
         <translation>Note On Quantisieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Note On/Off Quantize</source>
         <translation>Note On/Off Quantisieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Iterative Quantize</source>
         <translation>Iteratives Quantisieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Config Quant...</source>
         <translation>Quantisieren konfigurieren...</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Modify Gate Time</source>
         <translation>Gate Time verändern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Modify Velocity</source>
         <translation>Anschlag verändern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Crescendo</source>
         <translation>Crescendo</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transpose</source>
         <translation>Transponieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Thin Out</source>
         <translation>Ausdünnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Erase Event</source>
         <translation>Event löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Note Shift</source>
         <translation>Note Shift</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Move Clock</source>
         <translation>Zeit verschieben</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Copy Measure</source>
         <translation>Takt kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Erase Measure</source>
         <translation>Takt löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete Measure</source>
         <translation>Takt löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Create Measure</source>
         <translation>Takt erzeugen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Pianoroll Tools</source>
         <translation>Pianoroll Werkzeuge</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Panic</source>
         <translation>Panik</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport</source>
         <translation>Transport</translation>
     </message>
@@ -3158,102 +2905,82 @@ fehlgeschlagen: </translation>
 <context>
     <name>PluginDialog</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: select plugin</source>
         <translation>MusE: Plugin auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Lib</source>
         <translation>Lib</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Label</source>
         <translation>Bezeichnung</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>AI</source>
         <translation>Al</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>AO</source>
         <translation>AO</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>CI</source>
         <translation>CI</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>CO</source>
         <translation>CO</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>IP</source>
         <translation>IP</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>id</source>
         <translation>id</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Maker</source>
         <translation>Erzeuger</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Copyright</source>
         <translation>Copyright</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Mono and Stereo</source>
         <translation>Mono und Stereo</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Stereo</source>
         <translation>Stereo</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Mono</source>
         <translation>Mono</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show All</source>
         <translation>Alle anzeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Select which types of plugins should be visible in the list.&lt;br&gt;Note that using mono plugins on stereo tracks is not a problem, two will be used in parallell.&lt;br&gt;Also beware that the &apos;all&apos; alternative includes plugins that probably not are usable by MusE.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Search in &apos;Label&apos; and &apos;Name&apos;:</source>
         <translation>in &quot;Label&quot; und &quot;Name&quot; suchen:</translation>
     </message>
@@ -3261,32 +2988,26 @@ fehlgeschlagen: </translation>
 <context>
     <name>PluginGui</name>
     <message>
-        <location filename="" line="196798"/>
         <source>File Buttons</source>
         <translation>Dateiknöpfe</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Load Preset</source>
         <translation>Preset laden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Save Preset</source>
         <translation>Preset sichern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>bypass plugin</source>
         <translation>Plugin überbrücken</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: load preset</source>
         <translation>MusE: Preset laden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: save preset</source>
         <translation>MusE: Preset sichern</translation>
     </message>
@@ -3294,7 +3015,6 @@ fehlgeschlagen: </translation>
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: load image</source>
         <translation>MusE: Image laden</translation>
     </message>
@@ -3302,12 +3022,10 @@ fehlgeschlagen: </translation>
 <context>
     <name>ProjectDialog</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: create new folder</source>
         <translation>MusE: neuen Ordner erzeugen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>new folder:</source>
         <translation>neuer Ordner:</translation>
     </message>
@@ -3315,12 +3033,10 @@ fehlgeschlagen: </translation>
 <context>
     <name>QMenu</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Midi Generator...</source>
         <translation>Midi Generator zufügen...</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Soft Synth...</source>
         <translation>Soft Synthesizer zufügen...</translation>
     </message>
@@ -3328,60 +3044,50 @@ fehlgeschlagen: </translation>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="" line="196798"/>
         <source>File
 </source>
         <translation>Datei
 </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>
 exists</source>
         <translation>
 existiert</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: write</source>
         <translation>MusE: schreiben</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Overwrite</source>
         <translation>Überschreiben</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Quit</source>
         <translation>Beenden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open File
 </source>
         <translation>Datei öffnen
 </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>
 failed: </source>
         <translation>
 fehlgeschlagen: </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Open File</source>
         <translation>MusE: Datei öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>generic midi</source>
         <translation>generisch Midi</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>copy 
   %1
 to
@@ -3389,7 +3095,6 @@ to
         <translation>%1 nach %2 kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>
 converting sample rate
 from %1 to %2</source>
@@ -3397,22 +3102,18 @@ from %1 to %2</source>
 Samplerate von %1 nach %2 konvertieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Abort</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>create peakfile for </source>
         <translation>Peakfile erzeugen </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>new</source>
         <translation>neu</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: export midi file:</source>
         <translation>MusE: Mididatei exportieren:</translation>
     </message>
@@ -3420,7 +3121,6 @@ Samplerate von %1 nach %2 konvertieren</translation>
 <context>
     <name>RecordButton</name>
     <message>
-        <location filename="" line="196798"/>
         <source>record</source>
         <translation>aufnehmen</translation>
     </message>
@@ -3428,22 +3128,18 @@ Samplerate von %1 nach %2 konvertieren</translation>
 <context>
     <name>SS_PluginFront</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Clear and unload effect</source>
         <translation>Effekt löschen und entladen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Load effect</source>
         <translation>Effekt laden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Toggle display of effect parameters</source>
         <translation>Anzeige der Effektparameter toggeln</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Turn effect on/off</source>
         <translation>Effekte Ein/Ausschalten</translation>
     </message>
@@ -3451,22 +3147,18 @@ Samplerate von %1 nach %2 konvertieren</translation>
 <context>
     <name>ShortcutCaptureDialog</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Ok</source>
         <translation type="obsolete">Ok</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cancel</source>
         <translation type="obsolete">Abbrechen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Shortcut conflicts with </source>
         <translation>Shortcut hat Konflikt mit </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Undefined</source>
         <translation>Undefiniert</translation>
     </message>
@@ -3474,423 +3166,340 @@ Samplerate von %1 nach %2 konvertieren</translation>
 <context>
     <name>ShortcutConfig</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Global</source>
         <translation>Global</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Arranger</source>
         <translation>Arranger</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Pianoroll</source>
         <translation>Pianoroll</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Drumeditor</source>
         <translation>Drumeditor</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>List editor</source>
         <translation>List Editor</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>List Mastertrack</source>
         <translation>List Mastertrack</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>All categories</source>
         <translation>Alle Kategorien</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Start playback from current location</source>
         <translation type="obsolete">Transport: Wiedergabe von aktueller Position starten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Toggle metronome</source>
         <translation type="obsolete">Transport: Metronom ein/aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Stop Playback</source>
         <translation type="obsolete">Transport: Wiedergabe beenden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Play, Stop, Rewind</source>
         <translation type="obsolete">Transport: Wiedergeben, Beenden, Zurückspulen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Goto left marker</source>
         <translation type="obsolete">Transport: zum linken Marker positionieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Goto right marker</source>
         <translation type="obsolete">Transport: zum rechten Marker positionieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Toggle Loop section</source>
         <translation type="obsolete">Transport: toogle Schleifenauswahl</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport: Toggle Record</source>
         <translation type="obsolete">Transport: Aufnahme ein/aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Copy</source>
         <translation type="obsolete">Bearbeiten: Kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Undo</source>
         <translation type="obsolete">Bearbeiten: Rückgängig</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Redo</source>
         <translation type="obsolete">Bearbeiten: Wiederherstellen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Cut</source>
         <translation type="obsolete">Bearbeiten: Ausschneiden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Paste,</source>
         <translation type="obsolete">Bearbeiten: Einfügen,</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Delete</source>
         <translation type="obsolete">Bearbeiten: Löschen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: New project</source>
         <translation type="obsolete">Datei: Neues Projekt</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Open from disk</source>
         <translation type="obsolete">Datei: von Platte öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Save project</source>
         <translation type="obsolete">Datei: Projekt sichern</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Open recent file</source>
         <translation type="obsolete">Datei: letze Datei öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Save as</source>
         <translation type="obsolete">Datei: Speichern als</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Load template</source>
         <translation type="obsolete">Datei: Vorlage laden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Import midi file</source>
         <translation type="obsolete">Datei: Midifile importieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Export midi file</source>
         <translation type="obsolete">Datei: Midifile exportieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Import audio file</source>
         <translation type="obsolete">Datei: Audiofile importieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>File: Quit MusE</source>
         <translation type="obsolete">Datei: MusE beenden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit: Select parts on track</source>
         <translation type="obsolete">Bearbeiten: Parts der Spur auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open pianoroll</source>
         <translation type="obsolete">Pianoroll öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open drumeditor</source>
         <translation type="obsolete">Drumeditor öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open listeditor</source>
         <translation type="obsolete">Listeditor öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open graphical mastertrack editor</source>
         <translation type="obsolete">grafischen Mastertrack Editor öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open list mastertrack editor</source>
         <translation type="obsolete">Mastertrack Listeneditor öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Open midi transformer</source>
         <translation type="obsolete">Miditransformer öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add midi track</source>
         <translation type="obsolete">Miditrack zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add drum track</source>
         <translation type="obsolete">Drumtrack zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add wave track</source>
         <translation type="obsolete">Wavetrack zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add audio output</source>
         <translation type="obsolete">Audioausgang zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add audio group</source>
         <translation type="obsolete">Audiogruppe zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add audio input</source>
         <translation type="obsolete">Audioinput zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add audio aux</source>
         <translation type="obsolete">Audioaux zufügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Structure: Global cut</source>
         <translation type="obsolete">Struktur: global ausschneiden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Structure: Global insert</source>
         <translation type="obsolete">Struktur: globales Einfügen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Structure: Global split</source>
         <translation type="obsolete">Struktur: globales Splitten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Structure: Copy range</source>
         <translation type="obsolete">Struktur: Bereich kopieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Structure: Cut events</source>
         <translation type="obsolete">Struktur: Events ausschneiden</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>View: Open mixer window</source>
         <translation type="obsolete">Ansicht: Mixer öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>View: Toggle transport window</source>
         <translation type="obsolete">Ansicht: Transportfenster ein/aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>View: Toggle bigtime window</source>
         <translation type="obsolete">Ansicht: Bigtimefenster ein/aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>View: Open marker window</source>
         <translation type="obsolete">Ansicht: Markerfenster zeigen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Follow song by page</source>
         <translation type="obsolete">Einstellungen: Song seitenweise folgen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Follow song off</source>
         <translation type="obsolete">Einstellungen: Song nicht folgen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Follow song continuous</source>
         <translation type="obsolete">Einstellungen: Song kontinuierlich folgen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Global configuration</source>
         <translation type="obsolete">Einstellungen: globale Einstellungen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Configure shortcuts</source>
         <translation type="obsolete">Einstellungen: Abkürzungen konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Configure metronome</source>
         <translation type="obsolete">Einstellungen: Metronom konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Midi sync configuration</source>
         <translation type="obsolete">Einstellungen: Midisynchronisation konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Midi file export configuration</source>
         <translation type="obsolete">Einstellungen: Export Mididatei konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Appearance settings</source>
         <translation type="obsolete">Einstellungen: Aussehen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Midi ports / Soft Synth</source>
         <translation type="obsolete">Einstellungen: Midiports/Softsynthesizer</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Settings: Audio subsystem configuration</source>
         <translation type="obsolete">Einstellungen: Audio Subsystem konfigurieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Edit midi instruments</source>
         <translation type="obsolete">Midi: Midi Instrumente bearbeiten</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Open midi input transform</source>
         <translation type="obsolete">Midi: Midi Eingangstransformator öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Open midi input filter</source>
         <translation type="obsolete">Midi: Midi Inputfilter öffnen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Midi input transpose</source>
         <translation type="obsolete">Midi: Midi input tranponieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Midi remote control</source>
         <translation type="obsolete">Midi: Midi Fernsteuerung</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Random rhythm generator</source>
         <translation type="obsolete">Midi: Random rhythm generator</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Reset midi</source>
         <translation type="obsolete">Midi: Reset Midi</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Init midi</source>
         <translation type="obsolete">Midi: Init Midi</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi: Midi local off</source>
         <translation type="obsolete">Midi: Midi lokal aus</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Audio: Bounce audio to track</source>
         <translation type="obsolete">Audio: Bounce Audio in Spur</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Audio: Bounce audio to file</source>
         <translation type="obsolete">Audio: Bounce audio in Datei</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Audio: Restart audio</source>
         <translation type="obsolete">Audio: Restart Audio</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Automation: Mixer automation</source>
         <translation type="obsolete">Automation: Mixer Automation</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Automation: Take mixer snapshot</source>
         <translation type="obsolete">Automation: </translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Wave editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Wave Editor</translation>
     </message>
 </context>
 <context>
     <name>SimpleSynthGui</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Load sample dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>Sample Laden Dialog</translation>
     </message>
 </context>
 <context>
     <name>Song</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Jack shutdown!</source>
-        <translation type="unfinished"></translation>
+        <translation>Jack Shutdown!</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Jack has detected a performance problem which has lead to
 MusE being disconnected.
 This could happen due to a number of reasons:
@@ -3906,48 +3515,49 @@ on the MusE mailinglist.
 
 To proceed check the status of Jack and try to restart it and then .
 click on the Restart button.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">JACK hat ein Performance-Problem erkannt und MusE abgeklemmt.
+Dies kann eine Reihe von Ursachen haben:
+  - ein Performance-Problem mit diesem Setup.
+  - ein Fehler in MusE oder einer anderen verbundenen Software
+  - ein zufaelliger Quirk, der nie wieder passiert.
+  - JACK wurde gestoppt
+  - JACK ist abgestuerzt
+
+Um weiterzumachen bitte JACK testen und neu starten, dann den Restart Knopf
+drcken.</translation>
     </message>
 </context>
 <context>
     <name>SplitLayerGui</name>
     <message>
-        <location filename="" line="196798"/>
         <source>start pitch for split</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Erster Ton fuer Split</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>enable learn mode for start pitch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>end pitch for split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>enable learn mode for end pitch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>pitch offset for split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>start velocity for split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>end velocity for split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>velocity offset for split</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3955,22 +3565,18 @@ click on the Restart button.</source>
 <context>
     <name>TLSWidget</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Remove Subtrack</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Ctrl</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Velocity</source>
         <translation type="unfinished">Anschlag</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete Controller</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3978,27 +3584,22 @@ click on the Restart button.</source>
 <context>
     <name>TLWidget</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Delete Track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Copy Track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Show Gui</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Subtrack</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Midi Output Channel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4006,12 +3607,10 @@ click on the Restart button.</source>
 <context>
     <name>TemplateDialog</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE presets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>User presets</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4019,12 +3618,10 @@ click on the Restart button.</source>
 <context>
     <name>TimeCanvas</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Ctrl</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Add Controller View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4032,47 +3629,38 @@ click on the Restart button.</source>
 <context>
     <name>Toolbar1</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Solo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cursor</source>
         <translation type="unfinished">Cursor</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Snap</source>
         <translation type="unfinished">Snap</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Quantize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>All Events</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Looped Ev.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Selected Ev.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Looped+Sel.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4080,12 +3668,10 @@ click on the Restart button.</source>
 <context>
     <name>TrackComment</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Track Comment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Track Comment:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4093,12 +3679,10 @@ click on the Restart button.</source>
 <context>
     <name>TrackInfo</name>
     <message>
-        <location filename="" line="196798"/>
         <source>Track Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Track Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4106,12 +3690,10 @@ click on the Restart button.</source>
 <context>
     <name>VAMGui</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Load VAM Presets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Save VAM Presets</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4119,7 +3701,6 @@ click on the Restart button.</source>
 <context>
     <name>Velocity</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE: Modify Velocity</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4127,122 +3708,98 @@ click on the Restart button.</source>
 <context>
     <name>WaveEdit</name>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Edit</source>
         <translation type="unfinished">&amp;Editieren</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Func&amp;tions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Gain</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>200%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>150%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>75%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>50%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>25%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Other</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Edit in E&amp;xternal Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Mute Selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Normalize Selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Fade In Selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Fade Out Selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Reverse Selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Select &amp;All</source>
         <translation type="unfinished">a&amp;alles auswählen</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>&amp;Deselect All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>waveedit-tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Transport</source>
         <translation type="unfinished">Transport</translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>pianoroll-tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Solo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>Cursor</source>
         <translation type="unfinished">Cursor</translation>
     </message>
@@ -4250,12 +3807,10 @@ click on the Restart button.</source>
 <context>
     <name>WaveView</name>
     <message>
-        <location filename="" line="196798"/>
         <source>MusE - file size changed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="" line="196798"/>
         <source>When editing in external editor - you should not change the filesize
 since it must fit the selected region.
 

@@ -24,6 +24,7 @@
 #include "shortcuts.h"
 #include "widgets/shortcutconfig.h"
 #include "al/xml.h"
+#include "muse.h"
 
 //---------------------------------------------------------
 //   shortcut_category
@@ -44,18 +45,20 @@ const shortcut_cg ShortcutConfig::shortcut_category[] = {
 
 QMap<QString, Shortcut*> shortcuts;
 
-static Shortcut sc[] = {
+Shortcut MusE::sc[] = {
+      Shortcut(
+            "start",
+            QT_TR_NOOP("Transport: Goto Start"),
+            GLOBAL_SHRT,
+            0,
+            QT_TR_NOOP("rewind to start position")
+            ),
       Shortcut(
             "play",
             QT_TR_NOOP("Transport: Start playback from current location"),
             GLOBAL_SHRT,
-            QKeySequence(Qt::Key_Enter)
-            ),
-      Shortcut(
-            "toggle_metro",
-            QT_TR_NOOP("Transport: Toggle metronome"),
-            GLOBAL_SHRT,
-            QKeySequence(Qt::Key_C)
+            QKeySequence(Qt::Key_Enter),
+            QT_TR_NOOP("start sequencer play")
             ),
       Shortcut(
             "stop",
@@ -80,6 +83,12 @@ static Shortcut sc[] = {
             QT_TR_NOOP("Transport: Goto right marker"),
             GLOBAL_SHRT, 
             Qt::Key_PageDown
+            ),
+      Shortcut(
+            "toggle_metro",
+            QT_TR_NOOP("Transport: Toggle metronome"),
+            GLOBAL_SHRT,
+            QKeySequence(Qt::Key_C)
             ),
       Shortcut(
             "toggle_loop",
@@ -769,19 +778,10 @@ static Shortcut sc[] = {
             LMEDIT_SHRT,  
             Qt::CTRL + Qt::Key_E
             ),
+      Shortcut(0, 0, 0, 0 ),
       };
 
 KeyboardMovementIndicator shortcutsKbdMovement; //for keeping track of active part selected by kbd
-
-//---------------------------------------------------------
-//   initShortcuts
-//---------------------------------------------------------
-
-void initShortcuts()
-      {
-      for (unsigned i = 0; i < sizeof(sc)/sizeof(*sc); ++i)
-            shortcuts[sc[i].xml] = &sc[i];
-      }
 
 //---------------------------------------------------------
 //   writeShortCuts

@@ -63,7 +63,7 @@ void ShortcutConfig::updateSCListView(int category)
             if (s && (s->type & category)) {
                   QTreeWidgetItem* newItem;
                   newItem = new QTreeWidgetItem;
-                  newItem->setText(SHRT_DESCR_COL, s->descr);
+                  newItem->setText(SHRT_DESCR_COL, tr(s->descr));
                   QKeySequence seq = s->key;
                   newItem->setText(SHRT_SHRTCUT_COL, s->key.toString(QKeySequence::NativeText));
                   newItem->setData(0, Qt::UserRole, s->xml);

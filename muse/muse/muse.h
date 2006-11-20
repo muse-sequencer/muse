@@ -21,6 +21,7 @@
 #ifndef __APP_H__
 #define __APP_H__
 
+#include "shortcuts.h"
 #include "cobject.h"
 #include "widgets/tools.h"
 
@@ -255,6 +256,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       void preferences();
       void aboutToShowAddTrack();
       void setRaster(int);
+      void playToggle();
 
    public slots:
       void bounceToFile();
@@ -310,6 +312,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       QAction* playAction;
 
       void showListEditor(const Pos&, Track*, Ctrl*);
+      static Shortcut sc[];
       };
 
 extern MusE* muse;

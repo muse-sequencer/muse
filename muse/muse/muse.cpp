@@ -75,11 +75,9 @@ static pthread_t watchdogThread;
 static const char* infoLoopButton     = QT_TR_NOOP("loop between left mark and right mark");
 static const char* infoPunchinButton  = QT_TR_NOOP("record starts at left mark");
 static const char* infoPunchoutButton = QT_TR_NOOP("record stops at right mark");
-// static const char* infoStartButton    = QT_TR_NOOP("rewind to start position");
 static const char* infoRewindButton   = QT_TR_NOOP("rewind current position");
 static const char* infoForwardButton  = QT_TR_NOOP("move current position");
 static const char* infoStopButton     = QT_TR_NOOP("stop sequencer");
-static const char* infoPlayButton     = QT_TR_NOOP("start sequencer play");
 static const char* infoRecordButton   = QT_TR_NOOP("to record press record and then play");
 static const char* infoPanicButton    = QT_TR_NOOP("send note off to all midi channels");
 
@@ -464,17 +462,32 @@ MusE::MusE()
       projectPropsDialog    = 0;
       listEditor            = 0;
 
-      startAction = getAction("play", this);
+      for (unsigned i = 0;; ++i) {
+            if (sc[i].xml == 0)
+                  break;
+            shortcuts[sc[i].xml] = &sc[i];
+            }
+
+      startAction = getAction("start", this);
       startAction->setIcon(QIcon(":/xpm/start.xpm"));
-      startAction->setText(tr("play"));
+      startAction->setText(tr("goto start"));
       connect(startAction, SIGNAL(triggered()), song, SLOT(rewindStart()));
 
+      playAction = getAction("play", this);
+      playAction->setIcon(QIcon(":/xpm/play.xpm"));
+      playAction->setText(tr("play"));
+      playAction->setCheckable(true);
+      connect(playAction, SIGNAL(triggered(bool)), song, SLOT(setPlay(bool)));
+
+      QAction* a = getAction("play_toggle", this);
+      a->setShortcutContext(Qt::ApplicationShortcut);
+      connect(a, SIGNAL(triggered()), SLOT(playToggle()));
+      addAction(a);
+      
       rewindAction  = new QAction(QIcon(":/xpm/frewind.xpm"),  "rewind",  this);
       forwardAction = new QAction(QIcon(":/xpm/fforward.xpm"), "forward", this);
       stopAction    = new QAction(QIcon(":/xpm/stop.xpm"),     "stop",    this);
-      playAction    = new QAction(QIcon(":/xpm/play.xpm"),     "play",    this);
 
-      playAction->setCheckable(true);
       stopAction->setCheckable(true);
 
       song->blockSignals(true);
@@ -524,8 +537,6 @@ MusE::MusE()
       stopAction->setWhatsThis(tr(infoStopButton));
       connect(stopAction, SIGNAL(triggered(bool)), song, SLOT(setStop(bool)));
 
-      playAction->setWhatsThis(tr(infoPlayButton));
-      connect(playAction, SIGNAL(triggered(bool)), song, SLOT(setPlay(bool)));
 
       recordAction = new QAction(*recordIcon, tr("Record"), this);
       recordAction->setWhatsThis(tr(infoRecordButton));
@@ -670,7 +681,6 @@ MusE::MusE()
       menuEditActions[CMD_DELETE]->setData(CMD_DELETE);
 
       menuEdit->addSeparator();
-      QAction* a;
       a = menuEdit->addAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"));
       a->setData(CMD_DELETE_TRACK);
 
@@ -1681,6 +1691,22 @@ void MusE::selectProject(QAction* a)
       }
 
 //---------------------------------------------------------
+//   playToggle
+//---------------------------------------------------------
+
+void MusE::playToggle()
+      {
+      if (audio->isPlaying())
+            song->setStop(true);
+      else if (song->cpos() != song->lpos())
+            song->setPos(0, song->lPos());
+      else {
+            Pos p(0, AL::TICKS);
+            song->setPos(0, p);
+            }
+      }
+
+//---------------------------------------------------------
 //   kbAccel
 //---------------------------------------------------------
 
@@ -1689,17 +1715,6 @@ void MusE::kbAccel(int /*key*/)
 #if 0 //TODOB
       if (key == shortcuts[SHRT_TOGGLE_METRO].key) {
             song->setClick(!song->click());
-            }
-      else if (key == shortcuts[SHRT_PLAY_TOGGLE].key) {
-            if (audio->isPlaying())
-                  //song->setStopPlay(false);
-                  song->setStop(true);
-            else if (song->cpos() != song->lpos())
-                  song->setPos(0, song->lPos());
-            else {
-                  Pos p(0, AL::TICKS);
-                  song->setPos(0, p);
-                  }
             }
       else if (key == shortcuts[SHRT_STOP].key) {
             song->setStop(true);
@@ -2859,7 +2874,6 @@ int main(int argc, char* argv[])
       initMidiController();
       initMidiInstruments();
       MuseApplication app(argc, argv);
-      initShortcuts();
 
       config.fonts[0] = QFont(QString("helvetica"), 10, QFont::Normal);
       config.fonts[1] = QFont(QString("helvetica"),  6, QFont::Normal);
@@ -2971,8 +2985,10 @@ int main(int argc, char* argv[])
             qApp->installTranslator(&translator);
             }
       else {
-            if (debugMsg)
-                  printf("locale file not found\n");
+            if (debugMsg) {
+                  printf("locale file not found for locale <%s>\n",
+                     QLocale::system().name().toLatin1().data());
+                  }
             }
 
       if (loadPlugins) {

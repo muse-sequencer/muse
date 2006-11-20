@@ -94,7 +94,7 @@ You can also select the Save command from the File menu.</source>
     </message>
     <message>
         <source>rewind to start position</source>
-        <translation type="unfinished">Перемотать к начальной позиции</translation>
+        <translation type="obsolete">Перемотать к начальной позиции</translation>
     </message>
     <message>
         <source>rewind current position</source>
@@ -110,7 +110,7 @@ You can also select the Save command from the File menu.</source>
     </message>
     <message>
         <source>start sequencer play</source>
-        <translation type="unfinished">Начать воспроизведение из секвенсера</translation>
+        <translation type="obsolete">Начать воспроизведение из секвенсера</translation>
     </message>
     <message>
         <source>to record press record and then play</source>
@@ -325,16 +325,6 @@ click on part to mute/unmute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Click this button to select a new project
-You can also select the &lt;b&gt;Open command&lt;/b&gt; from the Project menu.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Click this button to save the project you are editing.
-You can also select the Save command from the Project menu.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Bar</source>
         <translation type="unfinished">Такт</translation>
     </message>
@@ -371,480 +361,12 @@ You can also select the Save command from the Project menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Transport: Start playback from current location</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transport: Toggle metronome</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transport: Stop Playback</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transport: Play, Stop, Rewind</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transport: Goto left marker</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transport: Goto right marker</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transport: Toggle Loop section</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transport: Toggle Record</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Copy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Undo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Redo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Cut</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Paste,</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Open</source>
-        <translation type="unfinished">Открыть</translation>
+        <translation type="obsolete">Открыть</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished">Сохранить</translation>
-    </message>
-    <message>
-        <source>File: Open recent file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>File: Import midi file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>File: Export midi file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>File: Import audio file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>File: Quit MusE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Select parts on track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Open pianoroll</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Open drumeditor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Open listeditor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Open graphical mastertrack editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Open list mastertrack editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add midi track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add drum track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add wave track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add audio output</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add audio group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add audio input</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Structure: Global cut</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Structure: Global insert</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Structure: Global split</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Structure: Copy range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Structure: Cut events</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>View: Open mixer window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>View: Toggle transport window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>View: Toggle bigtime window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>View: Open marker window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings: Follow song by page</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings: Follow song off</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings: Follow song continuous</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings: Configure shortcuts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings: Configure metronome</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings: Midi sync configuration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings: Midi file export configuration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings: Midi ports / Soft Synth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings: Audio subsystem configuration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi: Edit midi instruments</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi: Midi remote control</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi: Reset midi</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi: Init midi</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi: Midi local off</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Audio: Bounce audio to track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Audio: Bounce audio to file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Audio: Restart audio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Help: Open Manual</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Help: Toggle whatsthis mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Edit selected part</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Select nearest part on track above</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Add nearest part on track above</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Select nearest part on track below</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Add nearest part on track below</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi: Transpose</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Select all</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Select none</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Invert selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Select events/parts inside locators</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Select events/parts outside locators</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Select nearest part/event to the left</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Add nearest part/event to the left to selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Add nearest part/event to the right to selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Set locators to selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Increase pitch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Decrease pitch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Set fixed length on midi events</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Over Quantize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Note On Quantize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Note On/Off Quantize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Iterative Quantize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Configure quant</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Modify Gate Time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Modify Velocity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Crescendo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Thin Out</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Erase Event</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Note Shift</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Move Clock</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Copy Measure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Erase Measure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Delete Measure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Create Measure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit: Change event color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Tool: Pointer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Tool: Pencil</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Tool: Eraser</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Tool: Line Draw</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Tool: Scissor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Tool: Glue</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Tool: Mute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transport: Increase current position</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transport: Decrease current position</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Set quantize to 1/1 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Set quantize to 1/2 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Set quantize to 1/4 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Set quantize to 1/8 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Set quantize to 1/16 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Set quantize to 1/32 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Set quantize to 1/64 note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Toggle triol quantization</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Toggle punctuation quantization</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quantize: Toggle punctuation quantization (2)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Insert Tempo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Insert Signature</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Change Event Position</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit Event Value</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Сохранить</translation>
     </message>
 </context>
 <context>
@@ -1430,6 +952,13 @@ http://lmuse.sourceforge.net
     <message>
         <source>remove controller view</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CtrlListEditor</name>
+    <message>
+        <source>dB</source>
+        <translation type="unfinished">Дб</translation>
     </message>
 </context>
 <context>
@@ -2999,6 +2528,10 @@ in the MusE list of defined controllers</source>
         <source>MidiChannel</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>JackDevices</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MidiInputTransformDialogBase</name>
@@ -3210,7 +2743,11 @@ in the MusE list of defined controllers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>MidiDevices</source>
+        <source>AlsaDevices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>JackDevices</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3378,6 +2915,17 @@ in the MusE list of defined controllers</source>
     <message>
         <source>Input Ports</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MidiTimeDelegate</name>
+    <message>
+        <source>dB</source>
+        <translation type="unfinished">Дб</translation>
+    </message>
+    <message>
+        <source>off</source>
+        <translation type="unfinished">выкл</translation>
     </message>
 </context>
 <context>
@@ -4484,6 +4032,508 @@ failed: </source>
     </message>
     <message>
         <source>Save Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Goto Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rewind to start position</source>
+        <translation type="unfinished">Перемотать к начальной позиции</translation>
+    </message>
+    <message>
+        <source>Transport: Start playback from current location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start sequencer play</source>
+        <translation type="unfinished">Начать воспроизведение из секвенсера</translation>
+    </message>
+    <message>
+        <source>Transport: Stop Playback</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Play, Stop, Rewind</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Goto left marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Goto right marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Toggle metronome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Toggle Loop section</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Toggle Record</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Undo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Redo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Paste,</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open</source>
+        <translation type="unfinished">Открыть</translation>
+    </message>
+    <message>
+        <source>Click this button to select a new project
+You can also select the &lt;b&gt;Open command&lt;/b&gt; from the Project menu.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished">Сохранить</translation>
+    </message>
+    <message>
+        <source>Click this button to save the project you are editing.
+You can also select the Save command from the Project menu.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File: Open recent file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File: Import midi file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File: Export midi file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File: Import audio file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File: Quit MusE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Select parts on track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open pianoroll</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open drumeditor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open listeditor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open graphical mastertrack editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open list mastertrack editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add midi track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add drum track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add wave track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add audio output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add audio group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add audio input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Structure: Global cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Structure: Global insert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Structure: Global split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Structure: Copy range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Structure: Cut events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Open mixer window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Toggle transport window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Toggle bigtime window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Open marker window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings: Follow song by page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings: Follow song off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings: Follow song continuous</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings: Configure shortcuts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings: Configure metronome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings: Midi sync configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings: Midi file export configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings: Midi ports / Soft Synth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings: Audio subsystem configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi: Edit midi instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi: Midi remote control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi: Reset midi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi: Init midi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi: Midi local off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio: Bounce audio to track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio: Bounce audio to file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio: Restart audio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Help: Open Manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Help: Toggle whatsthis mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Edit selected part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Select nearest part on track above</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part on track above</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Select nearest part on track below</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part on track below</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi: Transpose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Select all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Select none</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Invert selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Select events/parts inside locators</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Select events/parts outside locators</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Select nearest part/event to the left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part/event to the left to selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Add nearest part/event to the right to selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Set locators to selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Increase pitch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Decrease pitch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Set fixed length on midi events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Over Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Note On Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Note On/Off Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Iterative Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Configure quant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Modify Gate Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Modify Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Crescendo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Thin Out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Erase Event</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Note Shift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Move Clock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Copy Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Erase Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Delete Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Create Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Change event color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Pointer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Pencil</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Eraser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Line Draw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Scissor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Glue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tool: Mute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Increase current position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transport: Decrease current position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/1 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/2 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/4 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/8 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/16 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/32 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to 1/64 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Toggle triol quantization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Toggle punctuation quantization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Toggle punctuation quantization (2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert Tempo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert Signature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Change Event Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit Event Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>goto start</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

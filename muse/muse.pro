@@ -69,8 +69,8 @@ SOURCES = \
       synti/s1/s1.cpp \
       synti/vam/vam.cpp \
       synti/vam/vamgui.cpp \
-      synti/simpledrums/simpledrums.cpp \
-      synti/simpledrums/ssplugin.cpp \
+      synti/simpledrums/simpledrums.cpp    \
+      synti/simpledrums/ssplugin.cpp       \
       synti/simpledrums/simpledrumsgui.cpp \
       synti/simpledrums/ssplugingui.cpp    \
       synti/organ/organgui.cpp             \
@@ -203,6 +203,9 @@ SOURCES = \
       muse/editor.cpp                                       \
       muse/midififo.cpp                                      \
       muse/song.cpp                                           \
+      muse/songpart.cpp                                           \
+      muse/songtrack.cpp                                           \
+      muse/song.cpp                                           \
       muse/midictrl.cpp                                        \
       muse/esettings.cpp      \
       muse/cobject.cpp         \
@@ -213,7 +216,6 @@ SOURCES = \
       muse/event.cpp                \
       muse/midifile.cpp              \
       muse/fifo.cpp                   \
-      muse/load.cpp                    \
       muse/muse.cpp                     \
       muse/songfile.cpp                  \
       muse/pipeline.cpp                   \
