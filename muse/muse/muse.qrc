@@ -25,6 +25,11 @@
 	<file>xpm/off.svg</file>
 	<file>xpm/mono.svg</file>
 	<file>xpm/stereo.svg</file>
+      <file>xpm/loop.xpm</file>
+      <file>xpm/punchin.xpm</file>
+      <file>xpm/punchout.xpm</file>
+      <file>xpm/undo.xpm</file>
+      <file>xpm/redo.xpm</file>
    </qresource>
 
    <qresource lang="de">

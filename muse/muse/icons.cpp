@@ -52,9 +52,6 @@
 #include "xpm/delete.xpm"
 #include "xpm/play.xpm"
 
-#include "xpm/punchin1.xpm"
-#include "xpm/punchout1.xpm"
-#include "xpm/loop1.xpm"
 #include "xpm/stick.xpm"
 #include "xpm/wave.xpm"
 #include "xpm/cmark.xpm"
@@ -65,8 +62,6 @@
 #include "xpm/glue.xpm"
 #include "xpm/draw.xpm"
 #include "xpm/quant.xpm"
-#include "xpm/filesaveS.xpm"
-#include "xpm/fileopenS.xpm"
 #include "xpm/master.xpm"
 #include "xpm/filenewS.xpm"
 #include "xpm/home.xpm"
@@ -91,13 +86,9 @@
 #include "xpm/toc.xpm"
 #include "xpm/pianoS.xpm"
 
-#include "xpm/undo.xpm"
-#include "xpm/redo.xpm"
 #include "xpm/editcut.xpm"
 #include "xpm/editcopy.xpm"
 #include "xpm/editpaste.xpm"
-#include "xpm/undoS.xpm"
-#include "xpm/redoS.xpm"
 #include "xpm/editmute.xpm"
 #include "xpm/editmuteS.xpm"
 
@@ -105,11 +96,6 @@
 #include "xpm/buttondown.xpm"
 #include "xpm/configure.xpm"
 #include "xpm/panic.xpm"
-
-
-// next two lines will vanish soon
-//#include "xpm/solobutton.xpm"
-//#include "xpm/newmutebutton.xpm"
 
 #include "xpm/mastertrackS.xpm"
 #include "xpm/localoffS.xpm"
@@ -173,15 +159,9 @@ QPixmap* cliplistSIcon;
 QPixmap* mixerAudioSIcon;
 QPixmap* initSIcon;
 
-//QPixmap* newmuteIcon;
-//QPixmap* soloIcon;
-
 QPixmap* pointerIcon;
 QPixmap* pencilIcon;
 QPixmap* deleteIcon;
-QPixmap* punchin1Icon;
-QPixmap* punchout1Icon;
-QPixmap* loop1Icon;
 QPixmap* playIcon;
 
 QPixmap* stopIcon;
@@ -197,8 +177,6 @@ QPixmap* drawIcon;
 QPixmap* quantIcon;
 QPixmap* openIcon;
 QPixmap* saveIcon;
-QPixmap* openIconS;
-QPixmap* saveIconS;
 QPixmap* masterIcon;
 QPixmap* filenewIcon;
 QPixmap* filenewIconS;
@@ -222,11 +200,6 @@ QPixmap* flagIcon;
 QPixmap* flagIconS;
 QPixmap* lockIcon;
 QPixmap* tocIcon;
-
-QPixmap* undoIcon;
-QPixmap* redoIcon;
-QPixmap* undoIconS;
-QPixmap* redoIconS;
 
 QPixmap* speakerIcon;
 QPixmap* buttondownIcon;
@@ -312,9 +285,6 @@ void initIcons()
       pointerIcon  = new QPixmap(pointer_xpm);
       pencilIcon   = new QPixmap(pencil_xpm);
       deleteIcon   = new QPixmap(delete_xpm);
-      punchin1Icon = new QPixmap(punchin1_xpm);
-      punchout1Icon = new QPixmap(punchout1_xpm);
-      loop1Icon    = new QPixmap(loop1_xpm);
       playIcon     = new QPixmap(play_xpm);
 
       stickIcon    = new QPixmap(stick_xpm);
@@ -329,8 +299,6 @@ void initIcons()
       quantIcon    = new QPixmap(quant_xpm);
       saveIcon     = new QPixmap(":/xpm/filesave.png");
       openIcon     = new QPixmap(":/xpm/fileopen.png");
-      saveIconS     = new QPixmap(filesaveS_xpm);
-      openIconS     = new QPixmap(fileopenS_xpm);
       masterIcon   = new QPixmap(master_xpm);
       filenewIcon  = new QPixmap(":/xpm/filenew.png");
       filenewIconS  = new QPixmap(filenewS_xpm);
@@ -355,11 +323,6 @@ void initIcons()
       lockIcon    = new QPixmap(lock_xpm);
       tocIcon     = new QPixmap(toc_xpm);
 
-      undoIcon     = new QPixmap(undo_xpm);
-      redoIcon     = new QPixmap(redo_xpm);
-      undoIconS    = new QPixmap(undoS_xpm);
-      redoIconS    = new QPixmap(redoS_xpm);
-
       speakerIcon    = new QPixmap(speaker_xpm);
       buttondownIcon = new QPixmap(buttondown_xpm);
       configureIcon  = new QPixmap(configure_xpm);
@@ -372,10 +335,6 @@ void initIcons()
       editcopyIconSet      = new QIcon(QPixmap(editcopy_xpm));
       editpasteIconSet     = new QIcon(QPixmap(editpaste_xpm));
       editmuteIconSet      = new QIcon(QPixmap(editmute_xpm));
-
-      // 2 lines odd code
-//      newmuteIcon          = new QPixmap(newmutebutton_xpm);
-//      soloIcon             = new QPixmap(solobutton_xpm);
 
       mastertrackSIcon     = new QPixmap(mastertrackS_xpm);
       localoffSIcon        = new QPixmap(localoffS_xpm);

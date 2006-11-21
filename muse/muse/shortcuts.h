@@ -53,27 +53,35 @@ using AL::Xml;
 
 struct Shortcut
       {
-      const char* xml;   /*! xml tag name for configuration file          */
-      const char* descr;     /*! Description of the shortcut, shown in editor */
-      int type;          /*! Bitmask category value mapped against PROLL_SHRT, DEDIT_SHRT etc. One shortcut can be a member of many categories */
-      QKeySequence key;  /*! shortcut key */
-      QAction* action;
-      QString help;
+      const char* xml;        /*! xml tag name for configuration file          */
+      const char* descr;      /*! Description of the shortcut, shown in editor */
+      int type;               /*! Bitmask category value mapped against 
+                                  PROLL_SHRT, DEDIT_SHRT etc. One shortcut can 
+                                  be a member of many categories */
+      QKeySequence key;       /*! shortcut key */
+      const char* text;       /*! action help   */
+      const char* help;
+      const char* iconOn;
+      const char* iconOff;
+      QAction* action;        /*! cached action, can be updated if user changes
+                                  shortcut key sequence */
 
       Shortcut() {
-            xml  = 0;
-            type = 0;
-            key  = 0;
+            xml    = 0;
+            descr  = 0;
+            type   = 0;
+            key    = 0;
+            text   = 0;
+            help   = 0;
+            iconOn = 0;
+            iconOff = 0;
             action = 0;
             }
-      Shortcut(const char* x, const char* d, int t, const QKeySequence& k, const QString& h) 
-       : xml(x), descr(d), type(t), key(k), help(h) { 
+      Shortcut(const char* name, const char* d, int t, const QKeySequence& k, 
+         const char* txt=0, const char* h=0, const char* ic1=0, const char* ic2=0) 
+       : xml(name), descr(d), type(t), key(k), text(txt), help(h), iconOn(ic1),
+         iconOff(ic2) { 
             action = 0; 
-            }
-      Shortcut(const char* x, const char* d, int t, const QKeySequence& k) 
-       : xml(x), descr(d), type(t), key(k) { 
-            action = 0; 
-            help   = descr;
             }
       };
 

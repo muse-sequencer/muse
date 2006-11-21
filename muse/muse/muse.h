@@ -312,6 +312,19 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       QAction* playAction;
 
       void showListEditor(const Pos&, Track*, Ctrl*);
+      };
+
+//---------------------------------------------------------
+//   MuseApplication
+//---------------------------------------------------------
+
+class MuseApplication : public QApplication {
+      MusE* muse;
+
+   public:
+      MuseApplication(int& argc, char** argv);
+      void setMuse(MusE* m) { muse = m; }
+      bool notify(QObject* receiver, QEvent* event);
       static Shortcut sc[];
       };
 

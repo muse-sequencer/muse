@@ -24,9 +24,6 @@
 extern QPixmap* pointerIcon;
 extern QPixmap* pencilIcon;
 extern QPixmap* deleteIcon;
-extern QPixmap* punchin1Icon;
-extern QPixmap* punchout1Icon;
-extern QPixmap* loop1Icon;
 extern QPixmap* playIcon;
 extern QPixmap* stickIcon;
 extern QPixmap* waveIcon;
@@ -40,8 +37,6 @@ extern QPixmap* drawIcon;
 extern QPixmap* quantIcon;
 extern QPixmap* openIcon;
 extern QPixmap* saveIcon;
-extern QPixmap* openIconS;
-extern QPixmap* saveIconS;
 extern QPixmap* archiveIcon;
 extern QPixmap* findIcon;
 extern QPixmap* masterIcon;
@@ -67,11 +62,6 @@ extern QPixmap* flagIconS;
 extern QPixmap* lockIcon;
 extern QPixmap* tocIcon;
 
-extern QPixmap* undoIcon;
-extern QPixmap* redoIcon;
-extern QPixmap* undoIconS;
-extern QPixmap* redoIconS;
-
 extern QPixmap* speakerIcon;
 extern QPixmap* buttondownIcon;
 extern QPixmap* configureIcon;
@@ -86,14 +76,6 @@ extern QIcon* editcutIconSet;
 extern QIcon* editmuteIconSet;
 extern QIcon* editcopyIconSet;
 extern QIcon* editpasteIconSet;
-
-//extern QPixmap* newmuteIcon;
-//extern QPixmap* soloIcon;
-
-//extern QPixmap* muteIconOn;
-//extern QPixmap* muteIconOff;
-//extern QPixmap* soloIconOn;
-//extern QPixmap* soloIconOff;
 
 extern QPixmap* offIcon;
 

@@ -25,6 +25,7 @@
 #include "widgets/shortcutconfig.h"
 #include "al/xml.h"
 #include "muse.h"
+#include "gui.h"
 
 //---------------------------------------------------------
 //   shortcut_category
@@ -45,32 +46,48 @@ const shortcut_cg ShortcutConfig::shortcut_category[] = {
 
 QMap<QString, Shortcut*> shortcuts;
 
-Shortcut MusE::sc[] = {
+Shortcut MuseApplication::sc[] = {
       Shortcut(
             "start",
             QT_TR_NOOP("Transport: Goto Start"),
             GLOBAL_SHRT,
             0,
-            QT_TR_NOOP("rewind to start position")
+            QT_TR_NOOP("Goto Start"),
+            QT_TR_NOOP("rewind to start position"),
+            ":/xpm/start.xpm"
+            ),
+      Shortcut(
+            "toggle_loop",
+            QT_TR_NOOP("Transport: Toggle Loop section"),
+            GLOBAL_SHRT, 
+            0, // QKeySequence(Qt::Key_Slash),
+            QT_TR_NOOP("Loop"),
+            QT_TR_NOOP("loop between left mark and right mark"),
+            ":/xpm/loop.xpm"
             ),
       Shortcut(
             "play",
             QT_TR_NOOP("Transport: Start playback from current location"),
             GLOBAL_SHRT,
             QKeySequence(Qt::Key_Enter),
-            QT_TR_NOOP("start sequencer play")
-            ),
-      Shortcut(
-            "stop",
-            QT_TR_NOOP("Transport: Stop Playback"),
-            GLOBAL_SHRT, 
-            Qt::Key_Insert
+            QT_TR_NOOP("Play"),
+            QT_TR_NOOP("start sequencer play"),
+            ":/xpm/play.xpm"
             ),
       Shortcut(
             "play_toggle",
             QT_TR_NOOP("Transport: Play, Stop, Rewind"),
             GLOBAL_SHRT, 
             Qt::Key_Space
+            ),
+      Shortcut(
+            "stop",
+            QT_TR_NOOP("Transport: Stop Playback"),
+            GLOBAL_SHRT, 
+            Qt::Key_Insert,
+            QT_TR_NOOP("Stop"),
+            QT_TR_NOOP("stop sequencer"),
+            ":/xpm/stop.xpm"
             ),
       Shortcut(
             "goto_left",
@@ -91,17 +108,61 @@ Shortcut MusE::sc[] = {
             QKeySequence(Qt::Key_C)
             ),
       Shortcut(
-            "toggle_loop",
-            QT_TR_NOOP("Transport: Toggle Loop section"),
-            GLOBAL_SHRT, 
-            Qt::Key_Slash
-            ),
-      Shortcut(
             "toggle_rec",
             QT_TR_NOOP("Transport: Toggle Record"),
             GLOBAL_SHRT, 
-            Qt::Key_Asterisk
+            Qt::Key_Asterisk,
+            QT_TR_NOOP("Record"),
+            QT_TR_NOOP("to record press record and then play"),
+            ":/xpm/recordOn.svg",
+            ":/xpm/recordOff.svg"
             ),
+//------
+      Shortcut(
+            "punchin",
+            QT_TR_NOOP("Transport: Punch In"),
+            GLOBAL_SHRT, 
+            0,
+            QT_TR_NOOP("Punchin"),
+            QT_TR_NOOP("record starts at left mark"),
+            ":/xpm/punchin.xpm"
+            ),
+      Shortcut(
+            "punchout",
+            QT_TR_NOOP("Transport: Punch Out"),
+            GLOBAL_SHRT, 
+            0,
+            QT_TR_NOOP("Punchout"),
+            QT_TR_NOOP("record stops at right mark"),
+            ":/xpm/punchout.xpm"
+            ),
+      Shortcut(
+            "rewind",
+            QT_TR_NOOP("Transport: Rewind"),
+            GLOBAL_SHRT, 
+            0,
+            QT_TR_NOOP("rewind"),
+            QT_TR_NOOP("rewind current position"),
+            ":/xpm/frewind.xpm"
+            ),
+      Shortcut(
+            "forward",
+            QT_TR_NOOP("Transport: Forward"),
+            GLOBAL_SHRT, 
+            0,
+            QT_TR_NOOP("forward"),
+            QT_TR_NOOP("move current position"),
+            ":/xpm/fforward.xpm"
+            ),
+      Shortcut(
+            "panic",
+            QT_TR_NOOP("Panic"),
+            GLOBAL_SHRT, 
+            0,
+            QT_TR_NOOP("send note off to all midi channels")
+            ),
+
+
       Shortcut(
             "copy",
             QT_TR_NOOP("Edit: Copy"),
@@ -112,13 +173,19 @@ Shortcut MusE::sc[] = {
             "undo",
             QT_TR_NOOP("Edit: Undo"),
             INVIS_SHRT, 
-            Qt::CTRL + Qt::Key_Z
+            Qt::CTRL + Qt::Key_Z,
+            QT_TR_NOOP("undo"),
+            QT_TR_NOOP("undo last change to song"),
+            ":/xpm/undo.xpm"
             ),
       Shortcut(
             "redo",
             QT_TR_NOOP("Edit: Redo"),
             INVIS_SHRT, 
-            Qt::CTRL + Qt::Key_Y
+            Qt::CTRL + Qt::Key_Y,
+            QT_TR_NOOP("redo"),
+            QT_TR_NOOP("redo last undo"),
+            ":/xpm/redo.xpm"
             ),
       Shortcut(
             "cut",
@@ -143,16 +210,20 @@ Shortcut MusE::sc[] = {
             QT_TR_NOOP("Open"),
             ARRANG_SHRT + DEDIT_SHRT, 
             Qt::CTRL + Qt::Key_O,
+            QT_TR_NOOP("open project"),
             QT_TR_NOOP("Click this button to select a new project\n"
-               "You can also select the <b>Open command</b> from the Project menu.")
+               "You can also select the <b>Open command</b> from the Project menu."),
+            ":/xpm/fileopen.png"
             ),
       Shortcut(
             "save_project",
             QT_TR_NOOP("Save"),
             ARRANG_SHRT + DEDIT_SHRT, 
             Qt::CTRL + Qt::Key_S,
+            QT_TR_NOOP("save project"),
             QT_TR_NOOP("Click this button to save the project you are editing.\n"
-               "You can also select the Save command from the Project menu.")
+               "You can also select the Save command from the Project menu."),
+            ":/xpm/filesave.png"
             ),
       Shortcut(
             "open_recent",
@@ -820,14 +891,27 @@ void readShortCuts(QDomNode node)
 QAction* getAction(const char* id, QObject* parent)
       {
       Shortcut* s = shortcuts.value(id);
-      if (s == 0)
-            return 0;
       if (s->action == 0 || s->action->parent() != parent) {
             s->action = new QAction(s->xml, parent);
             s->action->setShortcut(s->key);
-            s->action->setToolTip(s->descr);      
-            s->action->setWhatsThis(s->help);
+            if (s->help) {
+                  s->action->setToolTip(s->help);
+                  s->action->setWhatsThis(s->help);
+                  }
+            else {
+                  s->action->setToolTip(s->descr);
+                  s->action->setWhatsThis(s->descr);
+                  }
+            if (s->iconOn) {
+                  QIcon icon;
+                  icon.addFile(s->iconOn,  ICON_SIZE, QIcon::Normal, QIcon::On);
+                  if (s->iconOff)
+                        icon.addFile(s->iconOff, ICON_SIZE, QIcon::Normal, QIcon::Off);
+                  s->action->setIcon(icon);
+                  }
             }
+      else
+            printf("action <%s> already initialized\n", s->xml);
       return s->action;
       }
 

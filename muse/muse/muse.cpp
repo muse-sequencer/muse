@@ -72,15 +72,6 @@ extern void initMidiInstruments();
 
 static pthread_t watchdogThread;
 
-static const char* infoLoopButton     = QT_TR_NOOP("loop between left mark and right mark");
-static const char* infoPunchinButton  = QT_TR_NOOP("record starts at left mark");
-static const char* infoPunchoutButton = QT_TR_NOOP("record stops at right mark");
-static const char* infoRewindButton   = QT_TR_NOOP("rewind current position");
-static const char* infoForwardButton  = QT_TR_NOOP("move current position");
-static const char* infoStopButton     = QT_TR_NOOP("stop sequencer");
-static const char* infoRecordButton   = QT_TR_NOOP("to record press record and then play");
-static const char* infoPanicButton    = QT_TR_NOOP("send note off to all midi channels");
-
 #define PROJECT_LIST_LEN  6
 static QString* projectList[PROJECT_LIST_LEN];
 
@@ -407,19 +398,8 @@ void MusE::setupTransportToolbar(QToolBar* tb) const
       tb->addAction(punchinAction);
       tb->addAction(punchoutAction);
       tb->addAction(startAction);
-
-      QToolButton* rewindTb = new QToolButton;
-      rewindTb->setDefaultAction(rewindAction);
-      rewindTb->setAutoRepeat(true);
-      tb->addWidget(rewindTb);
-      tb->connect(rewindTb, SIGNAL(clicked()), song, SLOT(rewind()));
-
-      QToolButton* forwardTb = new QToolButton;
-      forwardTb->setDefaultAction(forwardAction);
-      forwardTb->setAutoRepeat(true);
-      tb->addWidget(forwardTb);
-      tb->connect(forwardTb, SIGNAL(clicked()), song, SLOT(forward()));
-
+      tb->addAction(rewindAction);
+      tb->addAction(forwardAction);
       tb->addAction(stopAction);
       tb->addAction(playAction);
       tb->addAction(recordAction);
@@ -462,20 +442,33 @@ MusE::MusE()
       projectPropsDialog    = 0;
       listEditor            = 0;
 
-      for (unsigned i = 0;; ++i) {
-            if (sc[i].xml == 0)
-                  break;
-            shortcuts[sc[i].xml] = &sc[i];
-            }
+      //---------------------------------------------------
+      //    Transport
+      //---------------------------------------------------
+
+      loopAction = getAction("toggle_loop", this);
+      loopAction->setCheckable(true);
+      connect(loopAction, SIGNAL(triggered(bool)), song, SLOT(setLoop(bool)));
+
+      punchinAction = getAction("punchin", this);
+      punchinAction->setCheckable(true);
+      connect(punchinAction, SIGNAL(toggled(bool)), song, SLOT(setPunchin(bool)));
+
+      punchoutAction = getAction("punchout", this);
+      punchoutAction->setCheckable(true);
+      connect(punchoutAction, SIGNAL(toggled(bool)), song, SLOT(setPunchout(bool)));
+
+      recordAction = getAction("toggle_rec", this);
+      recordAction->setCheckable(true);
+      connect(recordAction, SIGNAL(triggered(bool)), song, SLOT(setRecord(bool)));
+
+      panicAction = new QAction(QIcon(*panicIcon), tr("Panic"), this);
+      connect(panicAction, SIGNAL(triggered()), song, SLOT(panic()));
 
       startAction = getAction("start", this);
-      startAction->setIcon(QIcon(":/xpm/start.xpm"));
-      startAction->setText(tr("goto start"));
       connect(startAction, SIGNAL(triggered()), song, SLOT(rewindStart()));
 
       playAction = getAction("play", this);
-      playAction->setIcon(QIcon(":/xpm/play.xpm"));
-      playAction->setText(tr("play"));
       playAction->setCheckable(true);
       connect(playAction, SIGNAL(triggered(bool)), song, SLOT(setPlay(bool)));
 
@@ -484,11 +477,17 @@ MusE::MusE()
       connect(a, SIGNAL(triggered()), SLOT(playToggle()));
       addAction(a);
       
-      rewindAction  = new QAction(QIcon(":/xpm/frewind.xpm"),  "rewind",  this);
-      forwardAction = new QAction(QIcon(":/xpm/fforward.xpm"), "forward", this);
-      stopAction    = new QAction(QIcon(":/xpm/stop.xpm"),     "stop",    this);
+      rewindAction  = getAction("rewind",  this);
+      rewindAction->setAutoRepeat(true);
+      connect(rewindAction, SIGNAL(triggered()), song, SLOT(rewind()));
 
+      forwardAction = getAction("forward", this);
+      forwardAction->setAutoRepeat(true);
+      connect(forwardAction, SIGNAL(triggered()), song, SLOT(forward()));
+
+      stopAction    = getAction("stop",    this);
       stopAction->setCheckable(true);
+      connect(stopAction, SIGNAL(triggered(bool)), song, SLOT(setStop(bool)));
 
       song->blockSignals(true);
       heartBeatTimer = new QTimer(this);
@@ -498,54 +497,15 @@ MusE::MusE()
       //    undo/redo
       //---------------------------------------------------
 
-      undoAction = new QAction(QIcon(*undoIcon), tr("Und&o"), this);
-      undoAction->setShortcut(Qt::CTRL + Qt::Key_Z);
-      undoAction->setWhatsThis(tr("undo last change to song"));
+      undoAction = getAction("undo", this);
       undoAction->setEnabled(false);
       undoAction->setData(-1);
       connect(undoAction, SIGNAL(triggered()), song, SLOT(undo()));
-      redoAction = new QAction(QIcon(*redoIcon), tr("Re&do"), this);
-      redoAction->setShortcut(Qt::CTRL + Qt::Key_Y);
-      redoAction->setWhatsThis(tr("redo last undo"));
+
+      redoAction = getAction("redo", this);
       redoAction->setEnabled(false);
       redoAction->setData(-1);
       connect(redoAction, SIGNAL(triggered()), song, SLOT(redo()));
-
-      //---------------------------------------------------
-      //    Transport
-      //---------------------------------------------------
-
-      loopAction = new QAction(QIcon(*loop1Icon), tr("Loop"), this);
-      loopAction->setWhatsThis(tr(infoLoopButton));
-      loopAction->setCheckable(true);
-      connect(loopAction, SIGNAL(toggled(bool)), song, SLOT(setLoop(bool)));
-
-      punchinAction = new QAction(QIcon(*punchin1Icon), tr("Punchin"), this);
-      punchinAction->setWhatsThis(tr(infoPunchinButton));
-      punchinAction->setCheckable(true);
-      connect(punchinAction, SIGNAL(toggled(bool)), song, SLOT(setPunchin(bool)));
-
-      punchoutAction = new QAction(QIcon(*punchout1Icon), tr("Punchout"), this);
-      punchoutAction->setWhatsThis(tr(infoPunchoutButton));
-      punchoutAction->setCheckable(true);
-      connect(punchoutAction, SIGNAL(toggled(bool)), song, SLOT(setPunchout(bool)));
-
-      rewindAction->setWhatsThis(tr(infoRewindButton));
-
-      forwardAction->setWhatsThis(tr(infoForwardButton));
-
-      stopAction->setWhatsThis(tr(infoStopButton));
-      connect(stopAction, SIGNAL(triggered(bool)), song, SLOT(setStop(bool)));
-
-
-      recordAction = new QAction(*recordIcon, tr("Record"), this);
-      recordAction->setWhatsThis(tr(infoRecordButton));
-      recordAction->setCheckable(true);
-      connect(recordAction, SIGNAL(triggered(bool)), song, SLOT(setRecord(bool)));
-
-      panicAction = new QAction(QIcon(*panicIcon), tr("Panic"), this);
-      panicAction->setWhatsThis(tr(infoPanicButton));
-      connect(panicAction, SIGNAL(triggered()), song, SLOT(panic()));
 
 #ifdef __APPLE__
       if (coreMidi.init()) {
@@ -570,12 +530,7 @@ MusE::MusE()
 
 
       fileOpenAction = getAction("open_project", this);
-      fileOpenAction->setText(tr("Open Project"));
-      fileOpenAction->setIcon(QIcon(*openIcon));
-
       fileSaveAction = getAction("save_project", this);
-      fileSaveAction->setText(tr("Save Project"));
-      fileSaveAction->setIcon(QIcon(*saveIcon));
 
       pianoAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
       connect(pianoAction, SIGNAL(triggered()), SLOT(startPianoroll()));
@@ -640,13 +595,13 @@ MusE::MusE()
       menu_file->addSeparator();
       menu_file->addAction(fileSaveAction);
       menu_file->addSeparator();
-      menu_ids[CMD_IMPORT_MIDI] = menu_file->addAction(*openIconS, tr("Import Midifile"));
+      menu_ids[CMD_IMPORT_MIDI] = menu_file->addAction(*openIcon, tr("Import Midifile"));
       connect(menu_ids[CMD_IMPORT_MIDI], SIGNAL(triggered()),  this, SLOT(importMidi()));
-      menu_ids[CMD_EXPORT_MIDI] = menu_file->addAction(*saveIconS, tr("Export Midifile"));
+      menu_ids[CMD_EXPORT_MIDI] = menu_file->addAction(*saveIcon, tr("Export Midifile"));
       connect(menu_ids[CMD_EXPORT_MIDI], SIGNAL(triggered()),  this, SLOT(exportMidi()));
       menu_file->addSeparator();
 
-      menu_ids[CMD_IMPORT_AUDIO] = menu_file->addAction(*openIconS, tr("Import Wave File"));
+      menu_ids[CMD_IMPORT_AUDIO] = menu_file->addAction(*openIcon, tr("Import Wave File"));
       connect(menu_ids[CMD_IMPORT_AUDIO], SIGNAL(triggered()), this, SLOT(importWave()));
       menu_ids[CMD_IMPORT_AUDIO]->setEnabled(!midiOnly);
 
@@ -1758,34 +1713,34 @@ void MusE::kbAccel(int /*key*/)
 //   MuseApplication
 //---------------------------------------------------------
 
-class MuseApplication : public QApplication {
-      MusE* muse;
-
-   public:
-      MuseApplication(int& argc, char** argv)
-         : QApplication(argc, argv)
-            {
-            muse = 0;
+MuseApplication::MuseApplication(int& argc, char** argv)
+   : QApplication(argc, argv)
+      {
+      muse = 0;
+      for (unsigned i = 0;; ++i) {
+            if (sc[i].xml == 0)
+                  break;
+            shortcuts[sc[i].xml] = &sc[i];
             }
+      }
 
-      void setMuse(MusE* m) {
-            muse = m;
-            }
+//---------------------------------------------------------
+//   notify
+//---------------------------------------------------------
 
-      bool notify(QObject* receiver, QEvent* event) 
-            {
-            bool flag = QApplication::notify(receiver, event);
-            if (event->type() == QEvent::KeyPress) {
-                  QKeyEvent* ke = (QKeyEvent*)event;
-                  bool accepted = ke->isAccepted();
-                  if (!accepted) {
-                        muse->kbAccel(ke->key());
-                        return true;
-                        }
+bool MuseApplication::notify(QObject* receiver, QEvent* event) 
+      {
+      bool flag = QApplication::notify(receiver, event);
+      if (event->type() == QEvent::KeyPress) {
+            QKeyEvent* ke = (QKeyEvent*)event;
+            bool accepted = ke->isAccepted();
+            if (!accepted) {
+                  muse->kbAccel(ke->key());
+                  return true;
                   }
-            return flag;
             }
-      };
+      return flag;
+      }
 
 //---------------------------------------------------------
 //   usage
