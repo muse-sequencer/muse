@@ -385,7 +385,7 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   colorFrame->setPalette(p);
 
   //update maaster volume
-  updateMasterVolume(INITMASTERVOL);
+  //updateMasterVolume(INITMASTERVOL);
   //update Quick edit
   updateQuickEdit();
 
@@ -3022,8 +3022,10 @@ void DeicsOnzeGui::updateNbrVoices(int val) {
   nbrVoicesSpinBox->blockSignals(false);  
 }
 void DeicsOnzeGui::updateMasterVolume(int val) {
+  double d = (double)val/(double)MAXMASTERVOLUME;
+  //printf("D = %d, %f\n", val, d);
   masterVolKnob->blockSignals(true);
-  masterVolKnob->setValue(((double)val)/((double)MAXMASTERVOLUME));
+  masterVolKnob->setValue(d);
   masterVolKnob->blockSignals(false);
 }
 //void DeicsOnzeGui::updateMidiInCh(int val) {

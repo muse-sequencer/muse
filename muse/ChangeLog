@@ -1,3 +1,8 @@
+21.11 (ng)
+      - add color gradient to meterslider
+      - update miditracker (not working yet)
+      - check mxml >= 2.0 for zynaddsubfx
+      - fix deicsonze FX plugin bug
 16.11 (ws)
       - implemented controller editor part of new list editor
 12.11 (ws)

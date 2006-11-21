@@ -122,6 +122,8 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _gui->setWindowTitle(QString("DeicsOnze"));
 
   //FX
+  _pluginIReverb = NULL;
+  _pluginIChorus = NULL;
   initPluginReverb(plugins.find("freeverb", "freeverb1"));
   initPluginChorus(plugins.find("doublechorus", "doublechorus1"));
 
@@ -146,7 +148,15 @@ DeicsOnze::DeicsOnze() : Mess(2) {
     _preset[c]=_initialPreset;
     setPreset(c);
   }
-
+  //update display gui
+  //update mastervol
+  unsigned char dataMasterVol[2];
+  dataMasterVol[0]=SYSEX_MASTERVOL;
+  dataMasterVol[1]=getMasterVol();
+  MidiEvent evSysexMasterVol(0, ME_SYSEX, 
+			     (const unsigned char*)dataMasterVol,
+			     2);  
+  _gui->writeEvent(evSysexMasterVol);
   //display load preset
   unsigned char dataUpdateGuiSet[1];
   dataUpdateGuiSet[0]=SYSEX_UPDATESETGUI;
@@ -203,12 +213,12 @@ void DeicsOnze::showGui(bool val)
 //---------------------------------------------------------
 
 void DeicsOnze::getGeometry(int* x, int* y, int* w, int* h) const {
-    QPoint pos(_gui->pos());
-    QSize size(_gui->size());
-    *x = pos.x();
-    *y = pos.y();
-    *w = size.width();
-    *h = size.height();
+  QPoint pos(_gui->pos());
+  QSize size(_gui->size());
+  *x = pos.x();
+  *y = pos.y();
+  *w = size.width();
+  *h = size.height();
 }
 
 void DeicsOnze::setSampleRate(int sr) {
@@ -2087,62 +2097,100 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   //save the set
   FILE* comptmpf=fopen(comptmp, "r");
   fseek(comptmpf, 0, SEEK_END);
-  *length=ftell(comptmpf) + NUMCONFIGLENGTH;
+  *length = NUM_CONFIGLENGTH
+    + sizeof(float)*_pluginIReverb->plugin()->parameter()
+    + sizeof(float)*_pluginIChorus->plugin()->parameter()
+    + ftell(comptmpf);
   fseek(comptmpf, 0, SEEK_SET);
   unsigned char* buffer = new unsigned char[*length];
   //save init data
   buffer[0]=SYSEX_INIT_DATA;
   buffer[1]=SYSEX_INIT_DATA_VERSION;
   //save global data
-  buffer[NUMMASTERVOL] = (unsigned char) getMasterVol();
+  buffer[NUM_MASTERVOL] = (unsigned char) getMasterVol();
   for(int c = 0; c < NBRCHANNELS; c++) {
-    buffer[NUMCHANNELENABLE + c] = (unsigned char) getChannelEnable(c);
-    buffer[NUMCHANNELVOL + c] = (unsigned char) getChannelVol(c);
-    buffer[NUMCHANNELPAN + c] = (unsigned char) getChannelPan(c);
+    buffer[NUM_CHANNEL_ENABLE + c] = (unsigned char) getChannelEnable(c);
+    buffer[NUM_CHANNEL_VOL + c] = (unsigned char) getChannelVol(c);
+    buffer[NUM_CHANNEL_PAN + c] = (unsigned char) getChannelPan(c);
     int b = getChannelBrightness(c);
-    buffer[NUMCHANNELBRIGHTNESS + 2*c] = (unsigned char) (b%256);
-    buffer[NUMCHANNELBRIGHTNESS + 2*c + 1] = (unsigned char) (b/256);
-    buffer[NUMCHANNELMODULATION + c] = (unsigned char) getChannelModulation(c);
-    buffer[NUMCHANNELDETUNE + c] =
+    buffer[NUM_CHANNEL_BRIGHTNESS + 2*c] = (unsigned char) (b%256);
+    buffer[NUM_CHANNEL_BRIGHTNESS + 2*c + 1] = (unsigned char) (b/256);
+    buffer[NUM_CHANNEL_MODULATION + c] =
+      (unsigned char) getChannelModulation(c);
+    buffer[NUM_CHANNEL_DETUNE + c] =
       (unsigned char) getChannelDetune(c) + MAXCHANNELDETUNE;
-    buffer[NUMCHANNELATTACK + c] = (unsigned char) getChannelAttack(c);
-    buffer[NUMCHANNELRELEASE + c] = (unsigned char) getChannelRelease(c);
-    buffer[NUMCURRENTPROG + c] = (unsigned char) _preset[c]->prog;
-    buffer[NUMCURRENTLBANK + c] =
+    buffer[NUM_CHANNEL_ATTACK + c] = (unsigned char) getChannelAttack(c);
+    buffer[NUM_CHANNEL_RELEASE + c] = (unsigned char) getChannelRelease(c);
+    buffer[NUM_CURRENTPROG + c] = (unsigned char) _preset[c]->prog;
+    buffer[NUM_CURRENTLBANK + c] =
       (unsigned char) _preset[c]->_subcategory->_lbank;
-    buffer[NUMCURRENTHBANK + c] =
+    buffer[NUM_CURRENTHBANK + c] =
       (unsigned char) _preset[c]->_subcategory->_category->_hbank;
-    buffer[NUMNBRVOICES + c] = (unsigned char) getNbrVoices(c);
+    buffer[NUM_NBRVOICES + c] = (unsigned char) getNbrVoices(c);
   }
-  buffer[NUMSAVEONLYUSED]=(unsigned char) _saveOnlyUsed;
-  buffer[NUMSAVECONFIG]=(unsigned char) _saveConfig;
+  buffer[NUM_SAVEONLYUSED]=(unsigned char) _saveOnlyUsed;
+  buffer[NUM_SAVECONFIG]=(unsigned char) _saveConfig;
   //save config data
   if(_saveConfig) {
-    buffer[NUMQUALITY]=(unsigned char)_global.quality;
-    buffer[NUMFONTSIZE]=(unsigned char)_global.fontSize;
-    buffer[NUMREDTEXT]=(unsigned char)_gui->tColor->red();
-    buffer[NUMGREENTEXT]=(unsigned char)_gui->tColor->green();
-    buffer[NUMBLUETEXT]=(unsigned char)_gui->tColor->blue();
-    buffer[NUMREDBACKGROUND]=(unsigned char)_gui->bColor->red();
-    buffer[NUMGREENBACKGROUND]=(unsigned char)_gui->bColor->green();
-    buffer[NUMBLUEBACKGROUND]=(unsigned char)_gui->bColor->blue();
-    buffer[NUMREDEDITTEXT]=(unsigned char)_gui->etColor->red();
-    buffer[NUMGREENEDITTEXT]=(unsigned char)_gui->etColor->green();
-    buffer[NUMBLUEEDITTEXT]=(unsigned char)_gui->etColor->blue();
-    buffer[NUMREDEDITBACKGROUND]=(unsigned char)_gui->ebColor->red();
-    buffer[NUMGREENEDITBACKGROUND]=(unsigned char)_gui->ebColor->green();
-    buffer[NUMBLUEEDITBACKGROUND]=(unsigned char)_gui->ebColor->blue();
-    buffer[NUMISINITSET]=(unsigned char)_isInitSet;
-    strncpy((char*)&buffer[NUMINITSETPATH],
+    buffer[NUM_QUALITY]=(unsigned char)_global.quality;
+    buffer[NUM_FONTSIZE]=(unsigned char)_global.fontSize;
+    buffer[NUM_RED_TEXT]=(unsigned char)_gui->tColor->red();
+    buffer[NUM_GREEN_TEXT]=(unsigned char)_gui->tColor->green();
+    buffer[NUM_BLUE_TEXT]=(unsigned char)_gui->tColor->blue();
+    buffer[NUM_RED_BACKGROUND]=(unsigned char)_gui->bColor->red();
+    buffer[NUM_GREEN_BACKGROUND]=(unsigned char)_gui->bColor->green();
+    buffer[NUM_BLUE_BACKGROUND]=(unsigned char)_gui->bColor->blue();
+    buffer[NUM_RED_EDITTEXT]=(unsigned char)_gui->etColor->red();
+    buffer[NUM_GREEN_EDITTEXT]=(unsigned char)_gui->etColor->green();
+    buffer[NUM_BLUE_EDITTEXT]=(unsigned char)_gui->etColor->blue();
+    buffer[NUM_RED_EDITBACKGROUND]=(unsigned char)_gui->ebColor->red();
+    buffer[NUM_GREEN_EDITBACKGROUND]=(unsigned char)_gui->ebColor->green();
+    buffer[NUM_BLUE_EDITBACKGROUND]=(unsigned char)_gui->ebColor->blue();
+    buffer[NUM_ISINITSET]=(unsigned char)_isInitSet;
+    strncpy((char*)&buffer[NUM_INITSETPATH],
 	    _initSetPath.toLatin1().data(), MAXSTRLENGTHINITSETPATH);
-    buffer[NUMISBACKGROUNDPIX]=(unsigned char)_isBackgroundPix;
-    strncpy((char*)&buffer[NUMBACKGROUNDPIXPATH],
+    buffer[NUM_ISBACKGROUNDPIX]=(unsigned char)_isBackgroundPix;
+    strncpy((char*)&buffer[NUM_BACKGROUNDPIXPATH],
 	    _backgroundPixPath.toLatin1().data(),
 	    MAXSTRLENGTHBACKGROUNDPIXPATH);
   }
+  //FX
+  buffer[NUM_IS_REVERB_ON]=(unsigned char)_global.isReverbActivated;
+  buffer[NUM_REVERB_RETURN]=(unsigned char)getReverbReturn();
+  buffer[NUM_REVERB_PARAM_NBR]=
+    (unsigned char)_pluginIReverb->plugin()->parameter();
+  strncpy((char*)&buffer[NUM_REVERB_LIB],
+	  _pluginIReverb->plugin()->lib().toLatin1().data(),
+	  MAXSTRLENGTHFXLIB);
+  strncpy((char*)&buffer[NUM_REVERB_LABEL],
+	  _pluginIReverb->plugin()->label().toLatin1().data(),
+	  MAXSTRLENGTHFXLABEL);
+  buffer[NUM_IS_CHORUS_ON]=(unsigned char)_global.isReverbActivated;
+  buffer[NUM_CHORUS_RETURN]=(unsigned char)getChorusReturn();
+  buffer[NUM_CHORUS_PARAM_NBR]=
+    (unsigned char)_pluginIChorus->plugin()->parameter();
+  strncpy((char*)&buffer[NUM_CHORUS_LIB],
+	  _pluginIChorus->plugin()->lib().toLatin1().data(),
+	  MAXSTRLENGTHFXLIB);
+  strncpy((char*)&buffer[NUM_CHORUS_LABEL],
+	  _pluginIChorus->plugin()->label().toLatin1().data(),
+	  MAXSTRLENGTHFXLABEL);
+  //save FX parameters
+  //reverb
+  for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
+    float val = (float)_pluginIReverb->param(i);
+    memcpy(&buffer[NUM_CONFIGLENGTH + i], &val, sizeof(float));
+  }
+  for(int i = 0; i < _pluginIChorus->plugin()->parameter(); i++) {
+    float val = (float)_pluginIChorus->param(i);
+    memcpy(&buffer[NUM_CONFIGLENGTH + _pluginIReverb->plugin()->parameter()
+		   + i], &val, sizeof(float));
+  }
   //save set data
-  for(int i=NUMCONFIGLENGTH;
-      i<*length; i++) buffer[i]=(unsigned char)getc(comptmpf);
+  for(int i = NUM_CONFIGLENGTH
+	+ sizeof(float)*_pluginIReverb->plugin()->parameter()
+	+ sizeof(float)*_pluginIChorus->plugin()->parameter();
+      i < *length; i++) buffer[i]=(unsigned char)getc(comptmpf);
   fclose(comptmpf);
   QString rmcmd="rm ";
   rmcmd+=comptmp;
@@ -2159,7 +2207,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
   if(data[1]==SYSEX_INIT_DATA_VERSION) {
     //load global parameters
     //master volume
-    setMasterVol(data[NUMMASTERVOL]);
+    setMasterVol(data[NUM_MASTERVOL]);
     unsigned char *dataMasterVol = new unsigned char[2];
     dataMasterVol[0]=SYSEX_MASTERVOL;
     dataMasterVol[1]=(unsigned char) getMasterVol();
@@ -2169,63 +2217,64 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     //channel configuration
     for(int c = 0; c < NBRCHANNELS; c++) {
       //isEnable
-      setChannelEnable(c, data[NUMCHANNELENABLE + c]);
+      setChannelEnable(c, data[NUM_CHANNEL_ENABLE + c]);
       MidiEvent 
 	evChEnable(0, c, ME_CONTROLLER,
-		   CTRL_CHANNELENABLE, data[NUMCHANNELENABLE + c]);
+		   CTRL_CHANNELENABLE, data[NUM_CHANNEL_ENABLE + c]);
       _gui->writeEvent(evChEnable);
       //nbrVoices
-      setNbrVoices(c, data[NUMNBRVOICES + c]);
+      setNbrVoices(c, data[NUM_NBRVOICES + c]);
       MidiEvent 
-	evNbrVoices(0,c,ME_CONTROLLER,CTRL_NBRVOICES, data[NUMNBRVOICES + c]);
+	evNbrVoices(0,c,ME_CONTROLLER,CTRL_NBRVOICES, data[NUM_NBRVOICES + c]);
       _gui->writeEvent(evNbrVoices);
       //channel volume
-      setChannelVol(c, data[NUMCHANNELVOL + c]);
+      setChannelVol(c, data[NUM_CHANNEL_VOL + c]);
       MidiEvent
 	evChVol(0, c, ME_CONTROLLER,
-		CTRL_CHANNELVOLUME, data[NUMCHANNELVOL + c]);
+		CTRL_CHANNELVOLUME, data[NUM_CHANNEL_VOL + c]);
       _gui->writeEvent(evChVol);
       //channel pan
-      setChannelPan(c, data[NUMCHANNELPAN + c]);
+      setChannelPan(c, data[NUM_CHANNEL_PAN + c]);
       MidiEvent
-	evChPan(0, c, ME_CONTROLLER, CTRL_CHANNELPAN, data[NUMCHANNELPAN + c]);
+	evChPan(0, c, ME_CONTROLLER, CTRL_CHANNELPAN,
+		data[NUM_CHANNEL_PAN + c]);
       _gui->writeEvent(evChPan);
       if(getChannelEnable(c)) applyChannelAmp(c);
       //channel detune
-      setChannelDetune(c, data[NUMCHANNELDETUNE + c]-MAXCHANNELDETUNE);
+      setChannelDetune(c, data[NUM_CHANNEL_DETUNE + c]-MAXCHANNELDETUNE);
       MidiEvent
 	evChDetune(0, c, ME_CONTROLLER, CTRL_CHANNELDETUNE,
-		   data[NUMCHANNELDETUNE + c]-MAXCHANNELDETUNE);
+		   data[NUM_CHANNEL_DETUNE + c]-MAXCHANNELDETUNE);
       _gui->writeEvent(evChDetune);
       //channel brightness
       setChannelBrightness(c,
-			   data[NUMCHANNELBRIGHTNESS + 2*c]
-			   + data[NUMCHANNELBRIGHTNESS + 2*c + 1] * 256);
+			   data[NUM_CHANNEL_BRIGHTNESS + 2*c]
+			   + data[NUM_CHANNEL_BRIGHTNESS + 2*c + 1] * 256);
       MidiEvent
 	evChBrightness(0, c, ME_CONTROLLER,
 		       CTRL_FINEBRIGHTNESS, getChannelBrightness(c));
       _gui->writeEvent(evChBrightness);
       //channel modulation
-      setChannelModulation(c, data[NUMCHANNELMODULATION + c]);
+      setChannelModulation(c, data[NUM_CHANNEL_MODULATION + c]);
       MidiEvent 
 	evChMod(0, c, ME_CONTROLLER,
-		CTRL_MODULATION, data[NUMCHANNELMODULATION + c]);
+		CTRL_MODULATION, data[NUM_CHANNEL_MODULATION + c]);
       _gui->writeEvent(evChMod);
       //channel attack
-      setChannelAttack(c, data[NUMCHANNELATTACK + c]);
+      setChannelAttack(c, data[NUM_CHANNEL_ATTACK + c]);
       MidiEvent 
 	evChAttack(0, c, ME_CONTROLLER,
-		   CTRL_ATTACK_TIME, data[NUMCHANNELATTACK + c]);
+		   CTRL_ATTACK_TIME, data[NUM_CHANNEL_ATTACK + c]);
       _gui->writeEvent(evChAttack);
       //channel release
-      setChannelRelease(c, data[NUMCHANNELRELEASE + c]);
+      setChannelRelease(c, data[NUM_CHANNEL_RELEASE + c]);
       MidiEvent 
 	evChRelease(0, c, ME_CONTROLLER,
-		CTRL_RELEASE_TIME, data[NUMCHANNELRELEASE + c]);
+		CTRL_RELEASE_TIME, data[NUM_CHANNEL_RELEASE + c]);
       _gui->writeEvent(evChRelease);      
     }
     //load configuration
-    _saveConfig = (bool)data[NUMSAVECONFIG];
+    _saveConfig = (bool)data[NUM_SAVECONFIG];
     unsigned char *dataSaveConfig = new unsigned char[2];
     dataSaveConfig[0]=SYSEX_SAVECONFIG;
     dataSaveConfig[1]=(unsigned char)_saveConfig;
@@ -2234,7 +2283,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     _gui->writeEvent(evSaveConfig);    
     if(_saveConfig) {
       //saveOnlyUsed
-      _saveOnlyUsed = (bool)data[NUMSAVEONLYUSED];
+      _saveOnlyUsed = (bool)data[NUM_SAVEONLYUSED];
       unsigned char *dataSaveOnlyUsed = new unsigned char[2];
       dataSaveOnlyUsed[0]=SYSEX_SAVEONLYUSED;
       dataSaveOnlyUsed[1]=(unsigned char)_saveOnlyUsed;
@@ -2245,54 +2294,86 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       unsigned char dataColorGui[COLORSYSEXLENGTH+1];
       dataColorGui[0]=SYSEX_COLORGUI;
       for (int i=0; i<COLORSYSEXLENGTH; i++)
-	dataColorGui[i+1]=data[NUMREDTEXT+i];
+	dataColorGui[i+1]=data[NUM_RED_TEXT+i];
       MidiEvent evSysexColor(0, ME_SYSEX, (const unsigned char*)dataColorGui,
 			     COLORSYSEXLENGTH+1);
       _gui->writeEvent(evSysexColor);
       //quality
       unsigned char dataQuality[2];
       dataQuality[0]=SYSEX_QUALITY;
-      dataQuality[1]=data[NUMQUALITY];
-      setQuality((Quality)data[NUMQUALITY]);
+      dataQuality[1]=data[NUM_QUALITY];
+      setQuality((Quality)data[NUM_QUALITY]);
       MidiEvent evQuality(0, ME_SYSEX, (const unsigned char*)dataQuality, 2);
       _gui->writeEvent(evQuality);
       //font size
       unsigned char dataFontSize[2];
       dataFontSize[0]=SYSEX_FONTSIZE;
-      dataFontSize[1]=data[NUMFONTSIZE];
+      dataFontSize[1]=data[NUM_FONTSIZE];
       MidiEvent evFontSize(0, ME_SYSEX, (const unsigned char*)dataFontSize, 2);
       _gui->writeEvent(evFontSize);
       //load init set
       unsigned char dataIsInitSet[2];
       dataIsInitSet[0]=SYSEX_ISINITSET;
-      dataIsInitSet[1]=data[NUMISINITSET];
+      dataIsInitSet[1]=data[NUM_ISINITSET];
       MidiEvent evIsInitSet(0, ME_SYSEX,
 			    (const unsigned char*)dataIsInitSet, 2);
       _gui->writeEvent(evIsInitSet);
       unsigned char dataInitSetPath[1+MAXSTRLENGTHINITSETPATH];
       dataInitSetPath[0]=SYSEX_INITSETPATH;
-      dataInitSetPath[1]=data[NUMINITSETPATH];
+      dataInitSetPath[1]=data[NUM_INITSETPATH];
       MidiEvent evInitSetPath(0,ME_SYSEX,(const unsigned char*)dataInitSetPath,
 			      1+MAXSTRLENGTHINITSETPATH);
       _gui->writeEvent(evInitSetPath);      
       //load background pix
       unsigned char dataIsBackgroundPix[2];
       dataIsBackgroundPix[0]=SYSEX_ISBACKGROUNDPIX;
-      dataIsBackgroundPix[1]=data[NUMISBACKGROUNDPIX];
+      dataIsBackgroundPix[1]=data[NUM_ISBACKGROUNDPIX];
       MidiEvent evIsBackgroundPix(0, ME_SYSEX,
 			    (const unsigned char*)dataIsBackgroundPix, 2);
       _gui->writeEvent(evIsBackgroundPix);
       unsigned char dataBackgroundPixPath[1+MAXSTRLENGTHBACKGROUNDPIXPATH];
       dataBackgroundPixPath[0]=SYSEX_BACKGROUNDPIXPATH;
       for(int a = 0; a < MAXSTRLENGTHBACKGROUNDPIXPATH; a++)
-	dataBackgroundPixPath[a+1] = data[a+NUMBACKGROUNDPIXPATH];
+	dataBackgroundPixPath[a+1] = data[a+NUM_BACKGROUNDPIXPATH];
       MidiEvent evBackgroundPixPath(0,ME_SYSEX,
 			      (const unsigned char*)dataBackgroundPixPath,
 			      1+MAXSTRLENGTHBACKGROUNDPIXPATH);
       _gui->writeEvent(evBackgroundPixPath);      
     }
     else _gui->saveConfigCheckBox->setChecked(false);
-    
+    //load FX
+    //reverb
+    _global.isReverbActivated = (bool)data[NUM_IS_REVERB_ON];
+    setReverbReturn((int)data[NUM_REVERB_RETURN]);
+    initPluginReverb(plugins.find((const char*)&data[NUM_REVERB_LIB], 
+				  (const char*)&data[NUM_REVERB_LABEL]));
+    for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
+      float val;
+      memcpy(&val, &data[NUM_CONFIGLENGTH + i], sizeof(float));
+      _pluginIReverb->setParam(i, (double)val);
+    }
+    char dataBuildRev;
+    dataBuildRev = SYSEX_BUILDGUIREVERB;
+    MidiEvent evSysexBuildRev(0,ME_SYSEX,
+			      (const unsigned char*)&dataBuildRev, 1);
+    _gui->writeEvent(evSysexBuildRev);
+    //chorus
+    _global.isChorusActivated = (bool)data[NUM_IS_CHORUS_ON];
+    setChorusReturn((int)data[NUM_CHORUS_RETURN]);
+    initPluginChorus(plugins.find((const char*)&data[NUM_CHORUS_LIB], 
+				  (const char*)&data[NUM_CHORUS_LABEL]));
+    for(int i = 0; i < _pluginIChorus->plugin()->parameter(); i++) {
+      float val;
+      memcpy(&val, &data[NUM_CONFIGLENGTH +
+			 _pluginIReverb->plugin()->parameter() + i],
+	     sizeof(float));
+      _pluginIChorus->setParam(i, (double)val);
+    }
+    char dataBuildCho;
+    dataBuildCho = SYSEX_BUILDGUICHORUS;
+    MidiEvent evSysexBuildCho(0,ME_SYSEX,
+			      (const unsigned char*)&dataBuildCho, 1);
+    _gui->writeEvent(evSysexBuildCho);
     //load set
     FILE* tmp;
     char* tmpname;
@@ -2302,15 +2383,20 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     //get the bz2 part
     tmpname=tempnam("/tmp", "DEIBZ2");
     tmp=fopen(tmpname, "w");
-    for(int i = NUMCONFIGLENGTH;i<length; i++) putc(data[i], tmp);
+    for(int i = 
+	  NUM_CONFIGLENGTH 
+	  + sizeof(float)*_pluginIReverb->plugin()->parameter()
+	  + sizeof(float)*_pluginIChorus->plugin()->parameter();
+	i<length; i++) putc(data[i], tmp);
     fclose(tmp);
-
+    
     //uncompress the set
     uncompname=tempnam("/tmp", "DEISET");
     cmd+=tmpname;
     cmd+=" -c > ";
     cmd+=uncompname;
     system(cmd.toAscii().data());
+
 
     //load the set
     // read the XML file and create DOM tree
@@ -2332,7 +2418,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
 	if (version == "1.0") {
 	  for(int c = 0; c < NBRCHANNELS; c++) _preset[c]=_initialPreset;
 	  //read the set
-	  if((bool)data[NUMSAVEONLYUSED]) {
+	  if((bool)data[NUM_SAVEONLYUSED]) {
 	    //printf("Mini\n");
 	    //updateSaveOnlyUsed(true);
 	  }
@@ -2356,16 +2442,16 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     int dL=2+strlen(uncompname);
     char dataSend[dL];
     dataSend[0]=SYSEX_LOADSET;
-    dataSend[1]=data[NUMSAVEONLYUSED];
+    dataSend[1]=data[NUM_SAVEONLYUSED];
     for(int i=2; i<dL; i++) dataSend[i]=uncompname[i-2];
     MidiEvent evSysex(0,ME_SYSEX,(const unsigned char*)dataSend, dL);
     _gui->writeEvent(evSysex);
 
     //select programs per channel
     for(int c = 0; c < NBRCHANNELS; c++) {
-      int hbank=(int)data[NUMCURRENTHBANK+c];
-      int lbank=(int)data[NUMCURRENTLBANK+c];
-      int prog=(int)data[NUMCURRENTPROG+c];
+      int hbank=(int)data[NUM_CURRENTHBANK+c];
+      int lbank=(int)data[NUM_CURRENTLBANK+c];
+      int prog=(int)data[NUM_CURRENTPROG+c];
       programSelect(c, hbank, lbank, prog);
       int val=prog+(lbank<<8)+(hbank<<16);
       MidiEvent evProgSel(0, c, ME_CONTROLLER, CTRL_PROGRAM, val);

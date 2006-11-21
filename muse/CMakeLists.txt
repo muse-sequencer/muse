@@ -137,6 +137,13 @@ if (ENABLE_ZYNADDSUBFX)
 #      else (NOT FLTK_FOUND)
 #	      message("fltk toolkit found")
 #      endif (NOT FLTK_FOUND)
+      PKGCONFIG (mxml 2.0 MXML_INCDIR MXML_LIBDIR MXML_LIB MXML_CPP )
+      if (NOT MXML_INCDIR)
+             message("mxml >= 2.0 not found, zynaddsubfx not build")
+             set(ENABLE_ZYNADDSUBFX OFF)
+      else (NOT MXML_INCDIR)
+             message("mxml detected.")
+      endif (NOT MXML_INCDIR)
 endif (ENABLE_ZYNADDSUBFX)
 
 

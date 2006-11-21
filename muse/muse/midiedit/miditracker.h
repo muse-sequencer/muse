@@ -10,8 +10,11 @@
 
 #include "midieditor.h"
 #include "trackpattern.h"
+#include "quantcombo.h"
+#include <vector>
 
-#define MAXTRACKS 256
+
+class QuantCombo;
 
 namespace AL {
       class Xml;
@@ -19,29 +22,32 @@ namespace AL {
 using AL::Xml;
 
 //---------------------------------------------------------
-//   SoundTrackerEditor
+//   MidiTrackerEditor
 //---------------------------------------------------------
 
 class MidiTrackerEditor : public MidiEditor {
   Q_OBJECT
  private:
-  int _rowPerMeasure;
+  int _quant;
+  QuantCombo* _quantCombo;
   int _numVisibleRows;
   QSpinBox* _nvrSpinBox;
-  QSpinBox* _rpmSpinBox;
 
   QMenu* menuView;
   bool _follow;
   void setFollow(bool);
+
+  std::vector<TrackPattern*> _trackPatterns;
+
  private slots:
   virtual void cmd(QAction*);
  public:
   MidiTrackerEditor(PartList*, bool);
   ~MidiTrackerEditor() {}
 
-  void setRowPerMeasure(int rpm);
-  int getRowPerMeasure();
-  void updateRowPerMeasure(); //update the gui
+  void setQuant(int rpm);
+  int getQuant();
+  void updateQuant(); //update the gui
 
   void setNumVisibleRows(int nvr);
   int getNumVisibleRows();

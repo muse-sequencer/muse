@@ -10,6 +10,9 @@
 
 #include <vector>
 #include "miditrack.h"
+#include "part.h"
+
+class PartList;
 
 //----------------------------------------------------------
 // EventPat
@@ -17,27 +20,32 @@
 //----------------------------------------------------------
 class EventPat {
  private:
+ protected:
   bool _isReadable; //true iff the time of the event is the exact row time
+  bool _isEmpty;
  public:
-  EventPat(bool);
-  EventPat(); //_isReadable is true at the initialization
+  EventPat(bool isEmpty, bool isReadable);
+  EventPat(); //_isEmpty=true and_isReadable=true at the initialization
   ~EventPat();
 
+  void setEmpty(bool);
+  bool getEmpty();
   void setReadable(bool);
   bool getReadable();
 };
 
 //----------------------------------------------------------
-// VoicePat
+// VoiceEventPat
 //----------------------------------------------------------
-class VoicePat : public EventPat {
+class VoiceEventPat : public EventPat {
   private:
   int _noteNum; //absolute note number including octave
   int _velocity; //if velocity is 0 note is off
  public:
-  VoicePat(int noteNum, int velocity); // _isReadable is initialized true
-  VoicePat(); // _isReadable is initialized false
-  ~VoicePat();
+  VoiceEventPat(int noteNum, int velocity); // _isReadable is initialized true
+  VoiceEventPat(bool isEmpty, bool isReadable);
+  VoiceEventPat(); //_isEmpty = true, _isReadable = true
+  ~VoiceEventPat();
 
   void setNoteNum(int n);
   int getNoteNum();
@@ -47,16 +55,16 @@ class VoicePat : public EventPat {
 };
 
 //----------------------------------------------------------
-// CtrlPat
+// CtrlEventPat
 //----------------------------------------------------------
-class CtrlPat : public EventPat {
+class CtrlEventPat : public EventPat {
  private:
   int _ctrlNum;
   int _value; //if velocity is 0 note is off
  public:
-  CtrlPat(int ctrlNum, int value); // _isReadable is initialized true
-  CtrlPat(); // _isReadable is initialized false
-  ~CtrlPat();
+  CtrlEventPat(int ctrlNum, int value); // _isReadable is initialized true
+  CtrlEventPat(); // _isReadable is initialized false
+  ~CtrlEventPat();
 
   void setCtrlNum(int n);
   int getCtrlNum();
@@ -66,18 +74,58 @@ class CtrlPat : public EventPat {
 };
 
 //----------------------------------------------------------
-// TrackRowPat
+// BasePat
 //----------------------------------------------------------
-class TrackRowPat {
- private:
-   std::vector<EventPat> _events; //one event for each voice/ctrl of a track
+class BasePat {
+ protected:
+  QString _name;
+  unsigned _firstTick;
+  unsigned _lastTick;
+  int _quant;
  public:
-  TrackRowPat();
-  ~TrackRowPat();
+  BasePat(QString name, unsigned firstTick, unsigned lastTick, int quant);
+  ~BasePat();
 
-  //TODO methods
+  QString getName();
+
+  bool isRow(unsigned tick); //return true iff tick coincides with one row
+  unsigned tick2row(unsigned tick);  
 };
 
+//----------------------------------------------------------
+// VoicePat
+//----------------------------------------------------------
+class VoicePat : public BasePat {
+ private:
+  std::vector<VoiceEventPat*> _eventsCol; //column of VoiceEventPat to display
+  EventList* _events; //actual list of events, only one at a time
+ public:
+  VoicePat(QString name, unsigned firstTick, unsigned lastTick, int quant);
+  ~VoicePat();
+  
+  std::vector<VoiceEventPat*> getEventsCol();
+
+  bool add(const Event* e, unsigned tick); //add the Event e into the EventList
+                                           //and update properly _eventsPat
+                                           //return true if success, that is
+                                           //there is an empty space of the
+                                           //event
+  bool isFreeSpace(const Event* e, unsigned tick); //return true iff there
+                                                   //is space to add the
+                                                   //event e without
+                                                   //overlapping other events
+};
+
+//----------------------------------------------------------
+// CtrlPat
+//----------------------------------------------------------
+class CtrlPat {
+ private:
+  std::vector<CtrlEventPat> _events; //column of CtrlEventPat
+ public:
+  CtrlPat(QString name);
+  ~CtrlPat();
+};
 
 //------------------------------------------------------
 // TrackPattern
@@ -88,12 +136,54 @@ class TrackPattern {
   QTreeWidget* _tree;
   PartList* _partList; //partList concerned by a track
   MidiTrack* _track;
-  TrackRowPat* _trackRow;
+  int _quant;
+  unsigned _firstTick;
+  std::vector<VoicePat*> _voiceColumns; //matrix of voice events
+  std::vector<CtrlPat*> _ctrlColumns; //matrix of ctrl events
  public:
-  TrackPattern();
+  TrackPattern(QMainWindow* parent, unsigned firstTick,
+	       int quant, PartList* pl, MidiTrack* t);
   ~TrackPattern();
 
-  //TODO methods
+  void add(const Event* e, unsigned tick); //add the Event e and
+                                           //build consequently
+                                           //the matrix,
+                                           //creating new voices when necessary
+  MidiTrack* getTrack() {return _track;}
+  void setQuant(int quant);
+};
+
+//------------------------------------------------------
+// TimingEvent
+//------------------------------------------------------
+class TimingEvent {
+ private:
+  int _bar;
+  int _beat;
+  unsigned _tick;
+  unsigned _row;
+
+ public:
+  TimingEvent(unsigned row);
+  ~TimingEvent();
+
+  void setBarBeatTick(unsigned tick);
+
+  QString barBeatTickStr();
+  QString rowStr();
+};
+
+class TimingPattern : public BasePat {
+ private:
+  QDockWidget* _dock;
+  QTreeWidget* _tree;
+  std::vector<TimingEvent*> _timingEvents;
+ public:
+  TimingPattern(QMainWindow* parent, QString name, unsigned firstTick,
+		unsigned lastTick, int quant);
+  ~TimingPattern();
+
+  void buildTimingMatrix();
 };
 
 #endif

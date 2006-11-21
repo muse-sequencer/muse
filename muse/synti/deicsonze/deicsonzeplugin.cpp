@@ -31,6 +31,7 @@
 #include "plugin.h"
 #include "plugingui.h"
 #include "ctrl.h"
+#include "fastlog.h"
 #include "muse/midi.h"
 #include "awl/floatentry.h"
 #include "awl/slider.h"
@@ -45,7 +46,7 @@ class PluginDialog;
 
 void DeicsOnze::initPluginReverb(Plugin* pluginReverb) {
   //init plugin
-  if(_pluginIReverb) delete(_pluginIChorus);
+  if(_pluginIReverb) delete(_pluginIReverb);
   _pluginIReverb = new PluginI(NULL);
 
   _pluginIReverb->initPluginInstance(pluginReverb, 2);
@@ -64,7 +65,6 @@ void DeicsOnze::initPluginReverb(Plugin* pluginReverb) {
 }
 
 void DeicsOnze::initPluginChorus(Plugin* pluginChorus) {
-
   if(_pluginIChorus) delete(_pluginIChorus);
   _pluginIChorus = new PluginI(NULL);
 
@@ -195,19 +195,25 @@ void DeicsOnzeGui::buildGuiReverb() {
   if(!_reverbCheckBoxVector.empty()) _reverbCheckBoxVector.clear();  
   //build sliders
   for(int i = 0; i < plugI->plugin()->parameter(); i++) {
+    double min, max, val;
+    plugI->range(i, &min, &max);
+    val = plugI->param(i);
     if(plugI->isBool(i))
-      addPluginCheckBox(i, plugI->getParameterName(i), plugI->param(i) > 0.0,
+      addPluginCheckBox(i, plugI->getParameterName(i), val > 0.0,
 			_reverbSuperWidget, grid, true);
     else if(plugI->isInt(i)) {
-      double min, max;
-      plugI->range(i, &min, &max);
       addPluginIntSlider(i, plugI->getParameterName(i), rint(min), rint(max),
-			 rint(plugI->param(i)), _reverbSuperWidget, grid,
+			 rint(val), _reverbSuperWidget, grid,
 			 true);
     }
     else {
-      double min, max;
-      plugI->range(i, &min, &max);
+      if(plugI->isLog(i)) {
+	if (min == 0.0) min = 0.001;
+	min = fast_log10(min)*20.0;
+	max = fast_log10(max)*20.0;
+	if (val == 0.0f) val = min;
+	else val = fast_log10(val) * 20.0;
+      }
       addPluginSlider(i, plugI->getParameterName(i), plugI->isLog(i),
 		      min, max, plugI->param(i), _reverbSuperWidget, grid,
 		      true);
@@ -242,22 +248,28 @@ void DeicsOnzeGui::buildGuiChorus() {
   if(!_chorusCheckBoxVector.empty()) _chorusCheckBoxVector.clear();  
   //build sliders
   for(int i = 0; i < plugI->plugin()->parameter(); i++) {
+    double min, max, val;
+    plugI->range(i, &min, &max);
+    val = plugI->param(i);
     if(plugI->isBool(i))
-      addPluginCheckBox(i, plugI->getParameterName(i), plugI->param(i) > 0.0,
+      addPluginCheckBox(i, plugI->getParameterName(i), val > 0.0,
 			_chorusSuperWidget, grid, false);
     else if(plugI->isInt(i)) {
-      double min, max;
-      plugI->range(i, &min, &max);
-      addPluginIntSlider(i, plugI->getParameterName(i),
-			 rint(min), rint(max), rint(plugI->param(i)),
-			 _chorusSuperWidget, grid, false);
+      addPluginIntSlider(i, plugI->getParameterName(i), rint(min), rint(max),
+			 rint(val), _chorusSuperWidget, grid,
+			 false);
     }
     else {
-      double min, max;
-      plugI->range(i, &min, &max);
+      if(plugI->isLog(i)) {
+	if (min == 0.0) min = 0.001;
+	min = fast_log10(min)*20.0;
+	max = fast_log10(max)*20.0;
+	if (val == 0.0f) val = min;
+	else val = fast_log10(val) * 20.0;
+      }
       addPluginSlider(i, plugI->getParameterName(i), plugI->isLog(i),
-		      min, max, plugI->param(i),
-		      _chorusSuperWidget, grid, false);
+		      min, max, plugI->param(i), _chorusSuperWidget, grid,
+		      false);
     }
   }
   //update colors of the new sliders (and the whole gui actually)
@@ -265,7 +277,11 @@ void DeicsOnzeGui::buildGuiChorus() {
   setEditBackgroundColor(reinterpret_cast<const QColor &>(*ebColor));
 }
 
+//setReverbCheckBox is used, by the way, to send the value
+//of the parameter because it sends a double and does not
+//change any thing
 void DeicsOnzeGui::setReverbCheckBox(double v, int i) {
+  printf("setReverbCheckBox(%f, %d)\n", v, i);
   float f = (float)v;
   unsigned char* message = new unsigned char[2+sizeof(float)];
   message[0]=SYSEX_REVERBPARAM;
@@ -274,9 +290,14 @@ void DeicsOnzeGui::setReverbCheckBox(double v, int i) {
     memcpy(&message[2], &f, sizeof(float));
     sendSysex(message, 2+sizeof(float));
   }
+  else printf("setReverbCheckBox Error : cannot send controller upper than 225\n");
 }
 
+//setChorusCheckBox is used, by the way, to send the value
+//of the parameter because it sends a double and does not
+//change any thing
 void DeicsOnzeGui::setChorusCheckBox(double v, int i) {
+  printf("setChorusCheckBox(%f, %d)\n", v, i);
   float f = (float)v;
   unsigned char* message = new unsigned char[2+sizeof(float)];
   message[0]=SYSEX_CHORUSPARAM;
@@ -285,22 +306,31 @@ void DeicsOnzeGui::setChorusCheckBox(double v, int i) {
     memcpy(&message[2], &f, sizeof(float));
     sendSysex(message, 2+sizeof(float));
   }
+  else printf("setChorusCheckBox Error : cannot send controller upper than 225\n");
 }
 
-
 void DeicsOnzeGui::setReverbFloatEntry(double v, int i) {
+  if(_deicsOnze->_pluginIReverb->isInt(i)) v = rint(v);
+  updateReverbFloatEntry(v, i);  
   updateReverbSlider(v, i);
   setReverbCheckBox(v, i); //because this send the SYSEX
 }
 void DeicsOnzeGui::setReverbSlider(double v, int i) {
+  if(_deicsOnze->_pluginIReverb->isInt(i)) v = rint(v);
   updateReverbFloatEntry(v, i);
+  updateReverbSlider(v, i);
   setReverbCheckBox(v, i); //because this send the SYSEX
 }
 void DeicsOnzeGui::setChorusFloatEntry(double v, int i) {
+  if(_deicsOnze->_pluginIChorus->isInt(i)) v = rint(v);
+  updateChorusFloatEntry(v, i);
   updateChorusSlider(v, i);
   setChorusCheckBox(v, i); //because this send the SYSEX
 }
 void DeicsOnzeGui::setChorusSlider(double v, int i) {
+  printf("setChorusSlider(%f, %i)\n", v, i);
+  if(_deicsOnze->_pluginIChorus->isInt(i)) v = rint(v);
+  updateChorusSlider(v, i);
   updateChorusFloatEntry(v, i);
   setChorusCheckBox(v, i); //because this send the SYSEX
 }
@@ -321,6 +351,7 @@ void DeicsOnzeGui::updateReverbFloatEntry(double v, int i) {
   }
 }
 void DeicsOnzeGui::updateChorusSlider(double v, int i) {
+  printf("updateChorusSlider(%f, %i)\n", v, i);
   if(i < (int)_reverbSliderVector.size() && _reverbSliderVector[i]) {
     _reverbSliderVector[i]->blockSignals(true);
     _reverbSliderVector[i]->setValue(v);
@@ -328,6 +359,7 @@ void DeicsOnzeGui::updateChorusSlider(double v, int i) {
   }
 }
 void DeicsOnzeGui::updateChorusFloatEntry(double v, int i) {
+  printf("updateChorusFloatEntry(%f, %i)\n", v, i);
   if(i < (int)_chorusFloatEntryVector.size() && _chorusFloatEntryVector[i]) {
     _chorusFloatEntryVector[i]->blockSignals(true);
     _chorusFloatEntryVector[i]->setValue(v);

@@ -5687,6 +5687,9 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
        <height>40</height>
       </size>
      </property>
+     <property name="value" >
+      <double>0.000000000000000</double>
+     </property>
      <property name="minValue" >
       <double>0.000000000000000</double>
      </property>
@@ -5700,7 +5703,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
       <double>0.200000000000000</double>
      </property>
      <property name="log" >
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
    </item>

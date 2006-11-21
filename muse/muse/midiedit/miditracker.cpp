@@ -11,17 +11,24 @@
 #include "muse.h"
 #include "part.h"
 
+#define MAX(x,y) (x>y?x:y)
+
+class TrackPattern;
+
 //---------------------------------------------------------
 //   MidiTrackerEditor
 //---------------------------------------------------------
 
 MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
   : MidiEditor(pl) {
-
-  //---------menuView---------------------------------
+  //--------
+  //menuView
+  //--------
   menuView = menuBar()->addMenu(tr("&View"));
-
-  //---------ToolBar----------------------------------
+  
+  //-------
+  //ToolBar
+  //-------
   tools = addToolBar(tr("MidiTracker Tools"));
   tools->addAction(undoAction);
   tools->addAction(redoAction);
@@ -53,20 +60,27 @@ MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
 
   //second bar
   addToolBarBreak();
-  //row per measure bar
+  //row per bar
   QToolBar* rowfeatures = addToolBar(tr("row features"));
 
-  QLabel* rpmLabel = new QLabel(tr("Row per measure"), rowfeatures);
-  rpmLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-  rpmLabel->setIndent(3);
-  rowfeatures->addWidget(rpmLabel);  
-  _rpmSpinBox = new QSpinBox(rowfeatures);
-  _rpmSpinBox->setRange(1, 256);
-  _rpmSpinBox->setFixedHeight(24);
-  rowfeatures->addWidget(_rpmSpinBox);
-  //init row per measure
-  setRowPerMeasure(16);
-  updateRowPerMeasure();
+  QLabel* quantLabel = new QLabel(tr("Quantize"));
+  quantLabel->setIndent(5);
+  rowfeatures->addWidget(quantLabel);
+  _quantCombo = new QuantCombo(rowfeatures);
+  rowfeatures->addWidget(_quantCombo);
+
+  //QLabel* rpmLabel = new QLabel(tr("Row per bar"), rowfeatures);
+  //rpmLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  //rpmLabel->setIndent(3);
+  //rowfeatures->addWidget(rpmLabel);  
+  //_rpmSpinBox = new QSpinBox(rowfeatures);
+  //_rpmSpinBox->setRange(1, 256);
+  //_rpmSpinBox->setFixedHeight(24);
+  //rowfeatures->addWidget(_rpmSpinBox);
+
+  //init row per bar
+  setQuant(96); //corresponds to 16 quant
+  updateQuant();
 
   //number of visible rows
   //rowfeatures->addSeparator();
@@ -82,43 +96,36 @@ MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
   setNumVisibleRows(20);
   updateNumVisibleRows();
   
+  //evaluate fisrtTick and lastTick
+  unsigned firstTick = _pl->begin()->second->tick();
+  unsigned lastTick = 0;
+  for(ciPart p = _pl->begin(); p != _pl->end(); ++p) {
+    Part* part = p->second;
+    lastTick = MAX(lastTick, part->endTick());
+  }
 
+  //-------------
   //timing matrix
-  QDockWidget* timingDock = new QDockWidget("Timing");
-  addDockWidget(Qt::AllDockWidgetAreas, timingDock);
-  timingDock->setAllowedAreas(Qt::LeftDockWidgetArea |
-			      Qt::RightDockWidgetArea);
-  timingDock->setFeatures(QDockWidget::DockWidgetClosable |
-			  QDockWidget::DockWidgetMovable);
-  
-  QTreeWidget* timingTree = new QTreeWidget(timingDock);
-  timingTree->setColumnCount(3);
-  timingTree->setHeaderLabels(QStringList("hr:min:sec:fr")+
-			      QStringList("bar:beat:tick")+
-			      QStringList("row"));
-  timingDock->setWidget(timingTree);
-  //addWidget(trackTest);
+  //-------------
+  TimingPattern* timingPattern =
+    new TimingPattern(this, "Timing", firstTick, lastTick, _quant);
 
+  //---------------
   //tracks matrices
-  QDockWidget* tracksDock[MAXTRACKS];
-  QTreeWidget* tracksTree[MAXTRACKS];
-  int i=0;
-  for (ciPart p = _pl->begin(); p != _pl->end(); ++p) {
-    //Part* part = p->second;
-    tracksDock[i] = new QDockWidget(/*part->track()->name()*/"trackName");
-    //tracksDock[i]->setAllowedAreas(Qt::LeftDockWidgetArea |
-    //			   Qt::RightDockWidgetArea);
-    tracksDock[i]->setFeatures(QDockWidget::DockWidgetClosable |
-			       QDockWidget::DockWidgetMovable);
-    addDockWidget(Qt::AllDockWidgetAreas, tracksDock[i]);
-    //tracksTree
-    tracksTree[i] = new QTreeWidget(tracksDock[i]);
-    tracksTree[i]->setColumnCount(3);
-    tracksTree[i]->setHeaderLabels(QStringList("Voice 1")+
-				   QStringList("Voice 2")+
-				   QStringList("FX 1"));
-				   tracksDock[i]->setWidget(tracksTree[i]);
-    i++;
+  //---------------
+  for(ciPart p = _pl->begin(); p != _pl->end(); ++p) {
+    Part* part = p->second;
+    Track* track = part->track();
+    if(track->isMidiTrack()) {
+      bool trackNotFound = true;
+      for(unsigned int i = 0; i < _trackPatterns.size(); i++)
+	if(_trackPatterns[i]->getTrack()==track) trackNotFound = false;
+      if(trackNotFound) {
+	TrackPattern* tp; 
+	tp = new TrackPattern(this, firstTick, _quant, pl, (MidiTrack*) track);
+	_trackPatterns.push_back(tp);
+      }
+    }
   }
 
   /*
@@ -154,30 +161,30 @@ MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
   canvas()->range(&s1, &e);
   e += AL::sigmap.ticksMeasure(e);  // show one more measure
   canvas()->setTimeRange(s1, e);*/
-
+  
 }
 
 //---------------------------------------------------------
-// setRowPerMeasure
+// setRowPerBar
 //---------------------------------------------------------
-void MidiTrackerEditor::setRowPerMeasure(int rpm) {
-  _rowPerMeasure = rpm;
+void MidiTrackerEditor::setQuant(int q) {
+  _quant = q;
 }
 
 //---------------------------------------------------------
-// getRowPerMeasure
+// getRowPerBar
 //---------------------------------------------------------
-int MidiTrackerEditor::getRowPerMeasure() {
-  return _rowPerMeasure;
+int MidiTrackerEditor::getQuant() {
+  return _quant;
 }
 
 //---------------------------------------------------------
-// updateRowPerMeasure
+// updateRowPerBar
 //---------------------------------------------------------
-void MidiTrackerEditor::updateRowPerMeasure() {
-  _rpmSpinBox->blockSignals(true);
-  _rpmSpinBox->setValue(_rowPerMeasure);
-  _rpmSpinBox->blockSignals(false);  
+void MidiTrackerEditor::updateQuant() {
+  _quantCombo->blockSignals(true);
+  _quantCombo->setQuant(_quant);
+  _quantCombo->blockSignals(false);  
 }
 
 //---------------------------------------------------------

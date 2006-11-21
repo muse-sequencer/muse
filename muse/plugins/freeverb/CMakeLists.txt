@@ -27,7 +27,7 @@ add_library ( freeverb SHARED
 #
 set_target_properties (freeverb
       PROPERTIES PREFIX ""
-      #COMPILE_FLAGS "-O3"
+      COMPILE_FLAGS "-O2"
       )
 
 install_targets ( /lib/${MusE_INSTALL_NAME}/plugins freeverb)

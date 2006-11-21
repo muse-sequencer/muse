@@ -32,7 +32,7 @@ MeterSlider::MeterSlider(QWidget* parent)
    : VolSlider(parent)
       {
       _channel    = 0;
-      yellowScale = -10;
+      yellowScale = -16; //-10;
       redScale    = 0;
       _meterWidth = _scaleWidth * 3;
       setChannel(1);
@@ -138,7 +138,41 @@ void MeterSlider::paint(const QRect& r)
                   h = 0;
             else if (h > mh)
                   h = mh;
-            if (h > h1) {
+
+	    QColor yellowRed;
+	    yellowRed.setHsv(QColor(Qt::yellow).hue()-8,
+			     QColor(Qt::yellow).saturation(),
+			     QColor(Qt::yellow).value());
+	    QColor yellRedRed;
+	    yellRedRed.setHsv(QColor(Qt::yellow).hue()-16,
+			      QColor(Qt::yellow).saturation(),
+			      QColor(Qt::yellow).value());
+	    QLinearGradient linearGrad(QPointF(0, 0), QPointF(0, mh));
+	    linearGrad.setColorAt(0, Qt::red);
+	    linearGrad.setColorAt(1-(double)(h1-5)/(double)mh, yellRedRed);
+	    linearGrad.setColorAt(1-(double)(h1-6)/(double)mh, yellowRed);
+	    linearGrad.setColorAt(1-(double)h2/(double)mh, Qt::yellow);
+	    linearGrad.setColorAt(1, Qt::green);
+
+	    QColor darkYellowRed;
+	    darkYellowRed.setHsv(QColor(Qt::darkYellow).hue()-8,
+				 QColor(Qt::darkYellow).saturation(),
+				 QColor(Qt::darkYellow).value());
+	    QColor darkYellRedRed;
+	    darkYellRedRed.setHsv(QColor(Qt::darkYellow).hue()-16,
+				  QColor(Qt::darkYellow).saturation(),
+				  QColor(Qt::darkYellow).value());
+	    QLinearGradient linearDarkGrad(QPointF(0, 0), QPointF(0, mh));
+	    linearDarkGrad.setColorAt(0, Qt::darkRed);
+	    linearDarkGrad.setColorAt(1-(double)(h1-5)/(double)mh, darkYellRedRed);
+	    linearDarkGrad.setColorAt(1-(double)(h1-6)/(double)mh, darkYellowRed);
+	    linearDarkGrad.setColorAt(1-(double)h2/(double)mh, Qt::darkYellow);
+	    linearDarkGrad.setColorAt(1, Qt::darkGreen);
+
+	    p.fillRect(x, y1, mw, mh, linearGrad);
+	    p.fillRect(x, y1, mw, mh-h, linearDarkGrad);
+
+            /*if (h > h1) {
                   p.fillRect(x, y3-h2, mw, h2,      QBrush(0x00ff00));  // green
                   p.fillRect(x, y3-h1, mw, h1 - h2, QBrush(0xffff00));  // yellow
                   p.fillRect(x, y3-h,  mw, h - h1,  QBrush(0xff0000));  // red
@@ -155,14 +189,17 @@ void MeterSlider::paint(const QRect& r)
                   p.fillRect(x, y3-h2, mw, h2-h,     QBrush(0x007000)); // dark green
                   p.fillRect(x, y3-h1,   mw,  h1-h2, QBrush(0x8e8e00)); // dark yellow
                   p.fillRect(x, y1,   mw,  mh - h1,  QBrush(0x8e0000)); // dark red
-                  }
+                  }*/
 
             //---------------------------------------------------
             //    draw peak line
             //---------------------------------------------------
 
             h = mh - (lrint(fast_log10(meterPeak[i]) * -20.0f * mh / range));
-            p.drawLine(x, y3-h, x+mw, y3-h);
+            if (h > mh)
+                  h = mh;
+	    if (h > 0)
+	      p.drawLine(x, y3-h, x+mw, y3-h);
 
             x += mw;
             }

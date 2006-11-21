@@ -12,3 +12,5 @@
 - Pan per voices
 - Load BUMP preset
 - calibrate portamento and pitch envelope to fit real DX11
+- record plugin parameters with song
+- fix bug plugin control change not working

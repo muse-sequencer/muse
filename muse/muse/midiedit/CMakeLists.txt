@@ -63,6 +63,7 @@ add_library ( midiedit STATIC
       pianoroll.cpp
       prcanvas.cpp
       miditracker.cpp
+      trackpattern.cpp
       )
 
 set_target_properties( midiedit
