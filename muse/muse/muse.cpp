@@ -2952,6 +2952,7 @@ int main(int argc, char* argv[])
             }
       if (loadVST)
             initVST();
+
       if (loadDSSI)
             initDSSI();
 

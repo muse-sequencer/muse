@@ -190,7 +190,15 @@ if ( ENABLE_DSSI )
             message("Error: dssi >= 0.9.0 not found, disabling feature")
             set ( ENABLE_DSSI OFF )
       else (NOT DSSI_INCDIR)
-	    message("DSSI detected.")
+            message("DSSI detected.")
+            PKGCONFIG (liblo 0.23 LIBLO_INCDIR LIBLO_LIBDIR LIBLO_LIB LIBLO_CPP )
+            if (NOT LIBLO_INCDIR)
+                  message("Error: liblo >= 0.23 not found, disabling DSSI")
+                  set ( ENABLE_DSSI OFF )
+            else (NOT LIBLO_INCDIR)
+                  message("liblo >= 0.23 detected.")
+                  set (DSSI_SUPPORT TRUE)
+            endif (NOT LIBLO_INCDIR)
       endif (NOT DSSI_INCDIR)
 endif ( ENABLE_DSSI )
 
@@ -305,6 +313,8 @@ include_directories(
    ${JACK_INCDIR}
    ${SNDFILE_INCDIR}
    ${SAMPLERATE_INCDIR}
+   ${LIBLO_INCDIR}
+   ${DSSI_INCDIR}
    )
 
 #

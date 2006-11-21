@@ -35,6 +35,7 @@
 #include "al/xml.h"
 #include "song.h"
 #include "midictrl.h"
+#include "ladspaplugin.h"
 
 static lo_server_thread serverThread;
 static char osc_path_tmp[1024];
@@ -116,7 +117,7 @@ int DssiSynthIF::oscUpdate(lo_arg **argv)
       */
 
       lo_send(uiTarget, uiOscConfigurePath, "ss",
-         DSSI_PROJECT_DIRECTORY_KEY, song->projectDirectory().toAscii().data());
+         DSSI_PROJECT_DIRECTORY_KEY, song->projectPath().toAscii().data());
 
 #if 0
       /* Send current bank/program  (-FIX- another race...) */
@@ -236,7 +237,7 @@ static void scanDSSILib(const QFileInfo& fi)
 static void scanDSSIDir(const QString& s)
       {
       if (debugMsg)
-            printf("scan dssi plugin dir <%s>\n", s.toAscii().data());
+            printf("scan DSSI plugin dir <%s>\n", s.toAscii().data());
 
 #ifdef __APPLE__
       QDir pluginDir(s, QString("*.dylib"), QDir::Unsorted, QDir::Files);
@@ -263,6 +264,7 @@ void initDSSI()
       if (dssiPath == 0)
             dssiPath = "/usr/lib/dssi:/usr/local/lib/dssi";
 
+printf("INIT DSSI <%s>\n", dssiPath);
       char* p = dssiPath;
       while (*p != '\0') {
             char* pe = p;
@@ -354,7 +356,7 @@ bool DssiSynthIF::init(DssiSynth* s)
             }
       if (dssi->configure) {
             char *rv = dssi->configure(handle, DSSI_PROJECT_DIRECTORY_KEY,
-               museProject.toAscii().data());
+               song->projectPath().toAscii().data());
             if (rv)
                   fprintf(stderr, "MusE: Warning: plugin doesn't like project directory: \"%s\"\n", rv);
             }
@@ -401,14 +403,18 @@ void DssiSynthIF::getData(MidiEventList* el, unsigned pos, int ch, unsigned samp
       const DSSI_Descriptor* dssi = synth->dssi;
       const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
 
-      unsigned long nevents = 0;
-      for (iMidiEvent ii = i; ii != el->end(); ++ii, ++nevents)
-            ;
+      unsigned long nevents = el->size();
+
+      while (!synti->putFifo.isEmpty()) {
+            MidiEvent event = synti->putFifo.get();
+            printf("Dssi: FIFO\n");
+            }
+
       snd_seq_event_t events[nevents];
       memset(events, 0, sizeof(events));
 
       nevents = 0;
-      int endPos = pos + samples;
+      unsigned endPos = pos + samples;
       iMidiEvent i = el->begin();
       for (; i != el->end(); ++i, ++nevents) {
             if (i->time() >= endPos)
@@ -455,7 +461,6 @@ void DssiSynthIF::getData(MidiEventList* el, unsigned pos, int ch, unsigned samp
                   }
             }
       el->erase(el->begin(), i);
-
       for (int k = 0; k < ch; ++k)
             descr->connect_port(handle, synth->oIdx[k], data[k]);
 
@@ -718,31 +723,18 @@ int DssiSynthIF::oscExiting(lo_arg**)
 //   oscMidi
 //---------------------------------------------------------
 
-int DssiSynthIF::oscMidi(lo_arg** /*argv*/)
+int DssiSynthIF::oscMidi(lo_arg** argv)
       {
-printf("received oscMidi\n");
-      MidiTrackList* tl = song->midis();
-      for (iMidiTrack i = tl->begin(); i != tl->end(); ++i) {
-#if 0 //TD
-            MidiTrack* t = *i;
-            MidiChannel* mc = t->channel();
-            MidiPort* port = &midiPorts[t->outPort()];
-            MidiDevice* dev = port->device();
-            if (dev == synti) {
-                  int a = argv[0]->m[1];
-                  int b = argv[0]->m[2];
-                  int c = argv[0]->m[3];
-                  if (a == ME_NOTEOFF) {
-                        a = ME_NOTEON;
-                        c = 0;
-                        }
-                  MidiEvent event(0, t->outPort(), t->outChannel(), a, b, c);
-                  // dev->recordEvent(event);
-                  audio->msgPlayMidiEvent(&event);
-                  break;
-                  }
-#endif
+      int a = argv[0]->m[1];
+      int b = argv[0]->m[2];
+      int c = argv[0]->m[3];
+      if (a == ME_NOTEOFF) {
+            a = ME_NOTEON;
+            c = 0;
             }
+      int channel = 0;
+      MidiEvent event(0, channel, a, b, c);
+      synti->playMidiEvent(&event);
       return 0;
       }
 

@@ -180,11 +180,10 @@ void Audio::msgAddMidiPlugin(MidiTrackBase* track, int idx, MidiPluginI* plugin)
       msg.track   = track;
       msg.ival    = idx;
       msg.mplugin = plugin;
-      MidiPluginI* oldPlugin = track->plugin(idx);
+      MidiPluginI* oldPlugin = plugin ? 0 : track->plugin(idx);
       sendMsg(&msg);
-      if (oldPlugin) {
+      if (oldPlugin)
             delete oldPlugin;
-            }
       }
 
 //---------------------------------------------------------

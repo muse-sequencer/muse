@@ -138,6 +138,7 @@ class SynthI : public AudioTrack, public MidiOut, public MidiInstrument
    public:
       friend class SynthIF;
       friend class MessSynthIF;
+      friend class DssiSynthIF;
 
       SynthI();
       virtual ~SynthI();

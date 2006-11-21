@@ -24,14 +24,10 @@
 #include "xpm/audio_bounce_to_file.xpm"
 #include "xpm/audio_bounce_to_track.xpm"
 #include "xpm/audio_restartaudio.xpm"
-#include "xpm/automation_clear_data.xpm"
-#include "xpm/automation_mixer.xpm"
-#include "xpm/automation_take_snapshot.xpm"
 #include "xpm/edit_midi.xpm"
 #include "xpm/midi_edit_instrument.xpm"
 #include "xpm/midi_init_instr.xpm"
-#include "xpm/midi_inputplugins.xpm"
-#include "xpm/midi_inputplugins_remote_control.xpm"
+// #include "xpm/midi_inputplugins.xpm"
 #include "xpm/midi_local_off.xpm"
 #include "xpm/midi_reset_instr.xpm"
 #include "xpm/settings_appearance_settings.xpm"
@@ -103,7 +99,7 @@
 #include "xpm/midi_plugS.xpm"
 #include "xpm/miditransposeS.xpm"
 #include "xpm/mixerS.xpm"
-#include "xpm/mustangS.xpm"
+// #include "xpm/mustangS.xpm"
 #include "xpm/resetS.xpm"
 #include "xpm/track_add.xpm"
 #include "xpm/track_delete.xpm"
@@ -149,7 +145,7 @@ QPixmap* miditransformSIcon;
 QPixmap* midi_plugSIcon;
 QPixmap* miditransposeSIcon;
 QPixmap* mixerSIcon;
-QPixmap* mustangSIcon;
+// QPixmap* mustangSIcon;
 QPixmap* resetSIcon;
 QPixmap* track_addIcon;
 QPixmap* track_deleteIcon;
@@ -247,14 +243,13 @@ QPixmap* select_outside_loopIcon;
 QPixmap* audio_bounce_to_fileIcon;
 QPixmap* audio_bounce_to_trackIcon;
 QPixmap* audio_restartaudioIcon;
-QPixmap* automation_clear_dataIcon;
-QPixmap* automation_mixerIcon;
-QPixmap* automation_take_snapshotIcon;
+// QPixmap* automation_clear_dataIcon;
+// QPixmap* automation_mixerIcon;
+// QPixmap* automation_take_snapshotIcon;
 QPixmap* edit_midiIcon;
 QPixmap* midi_edit_instrumentIcon;
 QPixmap* midi_init_instrIcon;
-QPixmap* midi_inputpluginsIcon;
-QPixmap* midi_inputplugins_remote_controlIcon;
+// QPixmap* midi_inputpluginsIcon;
 QPixmap* midi_local_offIcon;
 QPixmap* midi_reset_instrIcon;
 QPixmap* settings_appearance_settingsIcon;
@@ -342,7 +337,7 @@ void initIcons()
       midi_plugSIcon       = new QPixmap(midi_plugS_xpm);
       miditransposeSIcon   = new QPixmap(miditransposeS_xpm);
       mixerSIcon           = new QPixmap(mixerS_xpm);
-      mustangSIcon         = new QPixmap(mustangS_xpm);
+//       mustangSIcon         = new QPixmap(mustangS_xpm);
       resetSIcon           = new QPixmap(resetS_xpm);
       track_addIcon        = new QPixmap(track_add_xpm);
       track_deleteIcon     = new QPixmap(track_delete_xpm);
@@ -381,14 +376,10 @@ void initIcons()
       audio_bounce_to_fileIcon                      = new QPixmap(audio_bounce_to_file_xpm);
       audio_bounce_to_trackIcon                     = new QPixmap(audio_bounce_to_track_xpm);
       audio_restartaudioIcon                        = new QPixmap(audio_restartaudio_xpm);
-      automation_clear_dataIcon                     = new QPixmap(automation_clear_data_xpm);
-      automation_mixerIcon                          = new QPixmap(automation_mixer_xpm);
-      automation_take_snapshotIcon                  = new QPixmap(automation_take_snapshot_xpm);
       edit_midiIcon                                 = new QPixmap(edit_midi_xpm);
       midi_edit_instrumentIcon                      = new QPixmap(midi_edit_instrument_xpm);
       midi_init_instrIcon                           = new QPixmap(midi_init_instr_xpm);
-      midi_inputpluginsIcon                         = new QPixmap(midi_inputplugins_xpm);
-      midi_inputplugins_remote_controlIcon          = new QPixmap(midi_inputplugins_remote_control_xpm);
+//      midi_inputpluginsIcon                         = new QPixmap(midi_inputplugins_xpm);
       midi_local_offIcon                            = new QPixmap(midi_local_off_xpm);
       midi_reset_instrIcon                          = new QPixmap(midi_reset_instr_xpm);
       settings_appearance_settingsIcon              = new QPixmap(settings_appearance_settings_xpm);

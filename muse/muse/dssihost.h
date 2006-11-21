@@ -27,6 +27,7 @@
 
 struct _DSSI;
 class DssiPluginIF;
+class LadspaPort;
 
 //---------------------------------------------------------
 //   DssiSynth

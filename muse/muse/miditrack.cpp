@@ -222,6 +222,8 @@ void MidiTrack::recordBeat()
             }
       while (!recordFifo.isEmpty()) {
             MidiEvent me(recordFifo.get());
+printf("<%s> record\n", name().toLatin1().data());
+
             unsigned time = me.time();
             if (song->punchin() && time < song->lpos())
                   continue;

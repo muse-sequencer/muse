@@ -86,28 +86,16 @@ MidiPluginI* MidiTrackBase::plugin(int idx) const
 
 //---------------------------------------------------------
 //   addPlugin
+//    realtime context
 //    idx    = -1     append
 //    plugin = 0   remove slot
 //---------------------------------------------------------
 
 void MidiTrackBase::addPlugin(MidiPluginI* plugin, int idx)
       {
-      if (plugin == 0) {
-#if 0
-            MidiPluginI* oldPlugin = (*_pipeline)[idx];
-            if (oldPlugin) {
-                  int controller = oldPlugin->plugin()->parameter();
-                  for (int i = 0; i < controller; ++i) {
-                        int id = (idx + 1) * 0x1000 + i;
-                        removeController(id);
-                        }
-                  }
-#endif
-            }
-      if (idx == -1)
-            idx = _pipeline->size();
-
       if (plugin) {
+            if (idx == -1)
+                  idx = _pipeline->size();
             _pipeline->insert(idx, plugin);
 #if 0
             int ncontroller = plugin->plugin()->parameter();
@@ -131,7 +119,16 @@ void MidiTrackBase::addPlugin(MidiPluginI* plugin, int idx)
 #endif
             }
       else {
-            _pipeline->removeAt(idx);
+            MidiPluginI* oldPlugin = _pipeline->takeAt(idx);
+            if (oldPlugin) {
+#if 0
+                  int controller = oldPlugin->plugin()->parameter();
+                  for (int i = 0; i < controller; ++i) {
+                        int id = (idx + 1) * 0x1000 + i;
+                        removeController(id);
+                        }
+#endif
+                  }
             }
       }
 

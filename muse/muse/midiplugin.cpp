@@ -119,7 +119,7 @@ MidiPluginI* MidiPlugin::instantiate(MidiTrackBase* t)
             delete m;
             return 0;
             }
-      MidiPluginI* mp = new MidiPluginI(this,t, m);
+      MidiPluginI* mp = new MidiPluginI(this, t, m);
       return mp;
       }
 
@@ -172,6 +172,8 @@ MidiPluginI::MidiPluginI(MidiTrackBase* t)
 
 MidiPluginI::~MidiPluginI()
       {
+      if (mempi)
+            delete mempi;
       }
 
 //---------------------------------------------------------
