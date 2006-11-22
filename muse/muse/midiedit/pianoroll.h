@@ -66,12 +66,8 @@ class PianoRoll : public MidiEditor {
       bool deltaMode;
 
       QAction* colorModeAction[3];
-      QAction* cmdActions[PianoCanvas::CMD_END];
-
       QMenu* eventColor;
-
       QuantConfig* quantConfig;
-      void initShortcuts();
 
       QWidget* genToolbar(QWidget* parent);
       virtual void keyPressEvent(QKeyEvent*);

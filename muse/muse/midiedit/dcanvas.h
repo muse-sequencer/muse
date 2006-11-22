@@ -69,15 +69,8 @@ class DrumCanvas : public EventCanvas {
       void keyReleased(int, bool);
 
    public:
-      enum {
-         CMD_CUT, CMD_COPY, CMD_PASTE,
-         CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
-         CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_DEL,
-         CMD_FIXED_LEN, CMD_RIGHT, CMD_LEFT, CMD_MODIFY_VELOCITY,
-         CMD_COMMANDS
-         };
       DrumCanvas(MidiEditor*);
-      void cmd(int);
+      void cmd(QAction*);
       virtual void modifySelected(NoteInfo::ValType type, int delta);
       };
 #endif

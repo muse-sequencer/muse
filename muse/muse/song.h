@@ -152,6 +152,10 @@ class Song : public QObject {
       void setPunchin(bool f);
       void setPunchout(bool f);
       void setClick(bool val);
+      void toggleClick()            { setClick(!click()); }
+      void gotoLeftMarker()         { setPos(0, lPos()); }
+      void gotoRightMarker()        { setPos(0, rPos()); }
+
       void setQuantize(bool val);
       void panic();
       void seqSignal(int fd);

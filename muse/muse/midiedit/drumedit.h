@@ -53,9 +53,6 @@ class DrumEdit : public MidiEditor {
       int veloOffOffset;
       bool deltaMode;
 
-      QAction* cmdActions[DrumCanvas::CMD_COMMANDS];
-
-      void initShortcuts();
       virtual void closeEvent(QCloseEvent*);
       QWidget* genToolbar(QWidget* parent);
       virtual void keyPressEvent(QKeyEvent*);

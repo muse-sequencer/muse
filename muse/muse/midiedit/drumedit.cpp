@@ -51,47 +51,33 @@ DrumEdit::DrumEdit(PartList* pl, bool init)
       deltaMode   = false;
       drumMap    = &noDrumMap;
 
+#if 0 //TODOB
+      cutAction->setShortcut(shortcuts[SHRT_CUT].key);
+      copyAction->setShortcut(shortcuts[SHRT_COPY].key);
+      pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+#endif
+
       //---------Pulldown Menu----------------------------
       QMenuBar* mb = menuBar();
 
       menuEdit->addSeparator();
 
-      cmdActions[DrumCanvas::CMD_DEL] = menuEdit->addAction(tr("Delete Events"));
-      cmdActions[DrumCanvas::CMD_DEL]->setData(DrumCanvas::CMD_DEL);
-      cmdActions[DrumCanvas::CMD_DEL]->setIcon(*deleteIcon);
+      menuEdit->addAction(getAction("delete", this));
 
       // Functions
       menuFunctions = mb->addMenu(tr("&Functions"));
-      cmdActions[DrumCanvas::CMD_FIXED_LEN]  = menuFunctions->addAction(tr("Set fixed length"));
-      cmdActions[DrumCanvas::CMD_FIXED_LEN]->setData(DrumCanvas::CMD_FIXED_LEN);
-
-      cmdActions[DrumCanvas::CMD_MODIFY_VELOCITY] = menuFunctions->addAction(tr("Modify Velocity..."));
-      cmdActions[DrumCanvas::CMD_MODIFY_VELOCITY]->setData(DrumCanvas::CMD_MODIFY_VELOCITY);
+      menuFunctions->addAction(getAction("midi_fixed_len", this));
+      menuFunctions->addAction(getAction("midi_mod_velo", this));
 
       menuSelect = menuEdit->addMenu(tr("&Select"));
       menuSelect->setIcon(QIcon(*selectIcon));
 
-      cmdActions[DrumCanvas::CMD_SELECT_ALL] = menuSelect->addAction(tr("Select All"));
-      cmdActions[DrumCanvas::CMD_SELECT_ALL]->setIcon(QIcon(*select_allIcon));
-      cmdActions[DrumCanvas::CMD_SELECT_ALL]->setData(DrumCanvas::CMD_SELECT_ALL);
-
-      cmdActions[DrumCanvas::CMD_SELECT_NONE] = menuSelect->addAction(tr("Select None"));
-      cmdActions[DrumCanvas::CMD_SELECT_NONE]->setIcon(QIcon(*select_deselect_allIcon));
-      cmdActions[DrumCanvas::CMD_SELECT_NONE]->setData(DrumCanvas::CMD_SELECT_NONE);
-
-      cmdActions[DrumCanvas::CMD_SELECT_INVERT] = menuSelect->addAction(tr("Invert"));
-      cmdActions[DrumCanvas::CMD_SELECT_INVERT]->setIcon(QIcon(*select_invert_selectionIcon));
-      cmdActions[DrumCanvas::CMD_SELECT_INVERT]->setData(DrumCanvas::CMD_SELECT_INVERT);
-
+      menuSelect->addAction(getAction("sel_all", this));
+      menuSelect->addAction(getAction("sel_none", this));
+      menuSelect->addAction(getAction("sel_inv", this));
       menuSelect->addSeparator();
-
-      cmdActions[DrumCanvas::CMD_SELECT_ILOOP] = menuSelect->addAction(tr("Inside Loop"));
-      cmdActions[DrumCanvas::CMD_SELECT_ILOOP]->setIcon(QIcon(*select_inside_loopIcon));
-      cmdActions[DrumCanvas::CMD_SELECT_ILOOP]->setData(DrumCanvas::CMD_SELECT_ILOOP);
-
-      cmdActions[DrumCanvas::CMD_SELECT_OLOOP] = menuSelect->addAction(tr("Outside Loop"));
-      cmdActions[DrumCanvas::CMD_SELECT_OLOOP]->setIcon(QIcon(*select_outside_loopIcon));
-      cmdActions[DrumCanvas::CMD_SELECT_OLOOP]->setData(DrumCanvas::CMD_SELECT_OLOOP);
+      menuSelect->addAction(getAction("sel_ins_loc", this));
+      menuSelect->addAction(getAction("sel_out_loc", this));
 
       connect(menuSelect,    SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
       connect(menuFunctions, SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
@@ -123,7 +109,7 @@ DrumEdit::DrumEdit(PartList* pl, bool init)
       QToolBar* transport = addToolBar(tr("Transport"));
       muse->setupTransportToolbar(transport);
 
-      // dont´ow pitch value in toolbar
+      // dont´ch value in toolbar
       addToolBarBreak();
       toolbar = new Toolbar1(initRaster, initQuant, false);
       addToolBar(toolbar);
@@ -164,7 +150,6 @@ DrumEdit::DrumEdit(PartList* pl, bool init)
       clipboardChanged(); // enable/disable "Paste"
       selectionChanged(); // enable/disable "Copy" & "Paste"
 
-      initShortcuts();
       canvas()->selectFirst();
 
       //
@@ -329,7 +314,7 @@ void DrumEdit::noteinfoChanged(NoteInfo::ValType type, int val)
 
 void DrumEdit::cmd(QAction* a)
       {
-      canvas()->cmd(a->data().toInt());
+      canvas()->cmd(a);
       }
 
 //---------------------------------------------------------
@@ -338,7 +323,6 @@ void DrumEdit::cmd(QAction* a)
 
 void DrumEdit::configChanged()
       {
-      initShortcuts();
       }
 
 #if 0
@@ -436,28 +420,6 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
       setRaster(val);
       toolbar->setQuant(quant());
       toolbar->setRaster(raster());
-#endif
-      }
-
-//---------------------------------------------------------
-//   initShortcuts
-//---------------------------------------------------------
-
-void DrumEdit::initShortcuts()
-      {
-#if 0 //TODOB
-      cutAction->setShortcut(shortcuts[SHRT_CUT].key);
-      copyAction->setShortcut(shortcuts[SHRT_COPY].key);
-      pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
-
-      cmdActions[DrumCanvas::CMD_DEL]->setShortcut(shortcuts[SHRT_DELETE].key);
-      cmdActions[DrumCanvas::CMD_FIXED_LEN]->setShortcut(shortcuts[SHRT_FIXED_LEN].key);
-      cmdActions[DrumCanvas::CMD_MODIFY_VELOCITY]->setShortcut(shortcuts[SHRT_MODIFY_VELOCITY].key);
-      cmdActions[DrumCanvas::CMD_SELECT_ALL]->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
-      cmdActions[DrumCanvas::CMD_SELECT_NONE]->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
-      cmdActions[DrumCanvas::CMD_SELECT_INVERT]->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
-      cmdActions[DrumCanvas::CMD_SELECT_ILOOP]->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
-      cmdActions[DrumCanvas::CMD_SELECT_OLOOP]->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
 #endif
       }
 

@@ -264,7 +264,6 @@ void initDSSI()
       if (dssiPath == 0)
             dssiPath = "/usr/lib/dssi:/usr/local/lib/dssi";
 
-printf("INIT DSSI <%s>\n", dssiPath);
       char* p = dssiPath;
       while (*p != '\0') {
             char* pe = p;

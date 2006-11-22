@@ -30,6 +30,29 @@
       <file>xpm/punchout.xpm</file>
       <file>xpm/undo.xpm</file>
       <file>xpm/redo.xpm</file>
+      <file>xpm/panic.xpm</file>
+      <file>xpm/piano.xpm</file>
+      <file>xpm/view_transport_window.xpm</file>
+      <file>xpm/view_bigtime_window.xpm</file>
+      <file>xpm/view_cliplist.xpm</file>
+      <file>xpm/view_marker.xpm</file>
+      <file>xpm/view_mixer.xpm</file>
+
+      <file>xpm/pointer.xpm</file>
+      <file>xpm/pencil.xpm</file>
+      <file>xpm/delete.xpm</file>
+      <file>xpm/cut.xpm</file>
+      <file>xpm/glue.xpm</file>
+      <file>xpm/quant.xpm</file>
+      <file>xpm/draw.xpm</file>
+      <file>xpm/editmute.xpm</file>
+
+      <file>xpm/select_all.xpm</file>
+      <file>xpm/select_deselect_all.xpm</file>
+      <file>xpm/select_invert_selection.xpm</file>
+      <file>xpm/select_inside_loop.xpm</file>
+      <file>xpm/select_outside_loop.xpm</file>
+
    </qresource>
 
    <qresource lang="de">

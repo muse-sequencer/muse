@@ -398,8 +398,23 @@ void MusE::setupTransportToolbar(QToolBar* tb) const
       tb->addAction(punchinAction);
       tb->addAction(punchoutAction);
       tb->addAction(startAction);
-      tb->addAction(rewindAction);
-      tb->addAction(forwardAction);
+
+      // hack to implement auto repeat:
+      // the action auto repeat does only work for
+      // shortcuts but not for mouse press:
+
+      QToolButton* rewindTb = new QToolButton;
+      rewindTb->setDefaultAction(rewindAction);
+      rewindTb->setAutoRepeat(true);
+      tb->addWidget(rewindTb);
+      connect(rewindTb, SIGNAL(clicked()), song, SLOT(rewind()));
+
+      QToolButton* forwardTb = new QToolButton;
+      forwardTb->setDefaultAction(forwardAction);
+      forwardTb->setAutoRepeat(true);
+      tb->addWidget(forwardTb);
+      connect(forwardTb, SIGNAL(clicked()), song, SLOT(forward()));
+
       tb->addAction(stopAction);
       tb->addAction(playAction);
       tb->addAction(recordAction);
@@ -462,7 +477,7 @@ MusE::MusE()
       recordAction->setCheckable(true);
       connect(recordAction, SIGNAL(triggered(bool)), song, SLOT(setRecord(bool)));
 
-      panicAction = new QAction(QIcon(*panicIcon), tr("Panic"), this);
+      panicAction = getAction("panic", this);
       connect(panicAction, SIGNAL(triggered()), song, SLOT(panic()));
 
       startAction = getAction("start", this);
@@ -476,14 +491,24 @@ MusE::MusE()
       a->setShortcutContext(Qt::ApplicationShortcut);
       connect(a, SIGNAL(triggered()), SLOT(playToggle()));
       addAction(a);
+
+      a = getAction("toggle_metro", this);
+      connect(a, SIGNAL(triggered()), song, SLOT(toggleClick()));
+      addAction(a);
+      
+      a = getAction("goto_left", this);
+      connect(a, SIGNAL(triggered()), song, SLOT(gotoLeftMarker()));
+      addAction(a);
+      
+      a = getAction("goto_right", this);
+      connect(a, SIGNAL(triggered()), song, SLOT(gotoRightMarker()));
+      addAction(a);
       
       rewindAction  = getAction("rewind",  this);
       rewindAction->setAutoRepeat(true);
-      connect(rewindAction, SIGNAL(triggered()), song, SLOT(rewind()));
 
       forwardAction = getAction("forward", this);
       forwardAction->setAutoRepeat(true);
-      connect(forwardAction, SIGNAL(triggered()), song, SLOT(forward()));
 
       stopAction    = getAction("stop",    this);
       stopAction->setCheckable(true);
@@ -526,20 +551,18 @@ MusE::MusE()
           }
       midiDriver = &alsaMidi;
 #endif
-      //----Actions
-
 
       fileOpenAction = getAction("open_project", this);
-      fileSaveAction = getAction("save_project", this);
+      connect(fileOpenAction, SIGNAL(triggered()), SLOT(loadProject()));
 
-      pianoAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
+      fileSaveAction = getAction("save_project", this);
+      connect(fileSaveAction, SIGNAL(triggered()), SLOT(save()));
+
+      pianoAction = getAction("open_pianoroll", this);
       connect(pianoAction, SIGNAL(triggered()), SLOT(startPianoroll()));
 
-      trackerAction = new QAction(*pianoIconSet, tr("MidiTracker"), this);
+      trackerAction = getAction("open_miditracker", this);
       connect(trackerAction, SIGNAL(triggered()), SLOT(startMidiTrackerEditor()));
-
-      connect(fileOpenAction, SIGNAL(triggered()), SLOT(loadProject()));
-      connect(fileSaveAction, SIGNAL(triggered()), SLOT(save()));
 
       //--------------------------------------------------
       //    Toolbar
@@ -632,7 +655,8 @@ MusE::MusE()
       pasteAction->setData(CMD_PASTE);
       pasteAction->setShortcut(Qt::CTRL + Qt::Key_V);
 
-      menuEditActions[CMD_DELETE] = menuEdit->addAction(*deleteIcon, tr("&Delete Parts"));
+      menuEditActions[CMD_DELETE] = getAction("delete", this);
+      menuEdit->addAction(menuEditActions[CMD_DELETE]);
       menuEditActions[CMD_DELETE]->setData(CMD_DELETE);
 
       menuEdit->addSeparator();
@@ -646,17 +670,28 @@ MusE::MusE()
 
       menuEdit->addSeparator();
       select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
-      menuEditActions[CMD_SELECT_ALL] = select->addAction(QIcon(*select_allIcon), tr("Select &All"));
+      menuEditActions[CMD_SELECT_ALL] = getAction("sel_all", this);
+      select->addAction(menuEditActions[CMD_SELECT_ALL]);
       menuEditActions[CMD_SELECT_ALL]->setData(CMD_SELECT_ALL);
-      menuEditActions[CMD_SELECT_NONE] = select->addAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"));
+
+      menuEditActions[CMD_SELECT_NONE] = getAction("sel_none", this);
+      select->addAction(menuEditActions[CMD_SELECT_NONE]);
       menuEditActions[CMD_SELECT_NONE]->setData(CMD_SELECT_NONE);
-      menuEditActions[CMD_SELECT_INVERT] = select->addAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"));
+
+      menuEditActions[CMD_SELECT_INVERT] = getAction("sel_inv", this);
+      select->addAction(menuEditActions[CMD_SELECT_INVERT]);
       menuEditActions[CMD_SELECT_INVERT]->setData(CMD_SELECT_INVERT);
-      menuEditActions[CMD_SELECT_ILOOP] = select->addAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"));
+
+      menuEditActions[CMD_SELECT_ILOOP] = getAction("sel_ins_loc", this);
+      select->addAction(menuEditActions[CMD_SELECT_ILOOP]);
       menuEditActions[CMD_SELECT_ILOOP]->setData(CMD_SELECT_ILOOP);
-      menuEditActions[CMD_SELECT_OLOOP] = select->addAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"));
+
+      menuEditActions[CMD_SELECT_OLOOP] = getAction("sel_out_loc", this);
+      select->addAction(menuEditActions[CMD_SELECT_OLOOP]);
       menuEditActions[CMD_SELECT_OLOOP]->setData(CMD_SELECT_OLOOP);
-      menuEditActions[CMD_SELECT_PARTS] = select->addAction(QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"));
+
+      menuEditActions[CMD_SELECT_PARTS] = getAction("select_parts_on_track", this);
+      select->addAction(menuEditActions[CMD_SELECT_PARTS]);
       menuEditActions[CMD_SELECT_PARTS]->setData(CMD_SELECT_PARTS);
 
       menuEdit->addSeparator();
@@ -703,20 +738,29 @@ MusE::MusE()
 
       menuView = mb->addMenu(tr("&View"));
 
-      tr_id = menuView->addAction(QIcon(*view_transport_windowIcon), tr("Transport Panel"));
+      tr_id = getAction("toggle_transport", this);
       tr_id->setCheckable(true);
+      menuView->addAction(tr_id);
       connect(tr_id, SIGNAL(triggered(bool)), this, SLOT(showTransport(bool)));
-      bt_id = menuView->addAction(QIcon(*view_bigtime_windowIcon), tr("Bigtime window"));
+
+      bt_id = getAction("toggle_bigtime", this);
       bt_id->setCheckable(true);
+      menuView->addAction(bt_id);
       connect(bt_id, SIGNAL(triggered(bool)), this, SLOT(showBigtime(bool)));
-      aid1a = menuView->addAction(QIcon(*mixerSIcon), tr("Mixer 1"));
+
+      aid1a = getAction("toggle_mixer1", this);
       aid1a->setCheckable(true);
+      menuView->addAction(aid1a);
       connect(aid1a, SIGNAL(triggered(bool)), this, SLOT(showMixer1(bool)));
-      aid1b = menuView->addAction(QIcon(*mixerSIcon), tr("Mixer 2"));
+
+      aid1b = getAction("toggle_mixer2", this);
       aid1b->setCheckable(true);
+      menuView->addAction(aid1b);
       connect(aid1b, SIGNAL(triggered(bool)), this, SLOT(showMixer2(bool)));
-      mk_id = menuView->addAction(QIcon(*view_markerIcon), tr("Marker"));
+
+      mk_id = getAction("marker_window", this);
       mk_id->setCheckable(true);
+      menuView->addAction(mk_id);
       connect(mk_id , SIGNAL(triggered(bool)), this, SLOT(showMarker(bool)));
 
       //-------------------------------------------------------------
@@ -1662,54 +1706,6 @@ void MusE::playToggle()
       }
 
 //---------------------------------------------------------
-//   kbAccel
-//---------------------------------------------------------
-
-void MusE::kbAccel(int /*key*/)
-      {
-#if 0 //TODOB
-      if (key == shortcuts[SHRT_TOGGLE_METRO].key) {
-            song->setClick(!song->click());
-            }
-      else if (key == shortcuts[SHRT_STOP].key) {
-            song->setStop(true);
-            }
-      else if (key == shortcuts[SHRT_PLAY_SONG].key ) {
-            song->setPlay(true);
-            }
-      else if (key == shortcuts[SHRT_GOTO_LEFT].key) {
-            if (!song->record())
-                  song->setPos(0, song->lPos());
-            }
-      else if (key == shortcuts[SHRT_GOTO_RIGHT].key) {
-            if (!song->record())
-                  song->setPos(0, song->rPos());
-            }
-      else if (key == shortcuts[SHRT_TOGGLE_LOOP].key) {
-            song->setLoop(!song->loop());
-            }
-      else if (key == shortcuts[SHRT_START_REC].key) {
-            if (!audio->isPlaying()) {
-                  song->setRecord(!song->record());
-                  }
-            }
-      else if (key == shortcuts[SHRT_OPEN_TRANSPORT].key) {
-            showTransport(!tr_id->isChecked());
-            }
-      else if (key == shortcuts[SHRT_OPEN_BIGTIME].key) {
-            showBigtime(!bt_id->isChecked());
-            }
-      else if (key == shortcuts[SHRT_OPEN_MIXER].key) {
-            showMixer1(!aid1a->isChecked());
-            }
-      else {
-            if (debugMsg)
-                  printf("unknown kbAccel 0x%x\n", key);
-            }
-#endif
-      }
-
-//---------------------------------------------------------
 //   MuseApplication
 //---------------------------------------------------------
 
@@ -1722,24 +1718,6 @@ MuseApplication::MuseApplication(int& argc, char** argv)
                   break;
             shortcuts[sc[i].xml] = &sc[i];
             }
-      }
-
-//---------------------------------------------------------
-//   notify
-//---------------------------------------------------------
-
-bool MuseApplication::notify(QObject* receiver, QEvent* event) 
-      {
-      bool flag = QApplication::notify(receiver, event);
-      if (event->type() == QEvent::KeyPress) {
-            QKeyEvent* ke = (QKeyEvent*)event;
-            bool accepted = ke->isAccepted();
-            if (!accepted) {
-                  muse->kbAccel(ke->key());
-                  return true;
-                  }
-            }
-      return flag;
       }
 
 //---------------------------------------------------------

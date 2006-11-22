@@ -222,8 +222,8 @@ void CtrlEditor::mousePress(const QPoint& pos, int button, Qt::KeyboardModifiers
                   int id = 1 << i;
                   if ((arrangerTools & id) == 0)
                         continue;
-                  a = pop.addAction(**toolList[i].icon, toolList[i].tip);
-                  a->setData(id);
+                  a = getAction(toolList[i], &pop);
+                  pop.addAction(a);
                   a->setCheckable(true);
                   if (id == (int)tool)
                         a->setChecked(true);

@@ -64,33 +64,25 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
       tcanvas = new PianoCanvas(this);
       QMenuBar* mb = menuBar();
 
+      menu_ids[CMD_EVENT_COLOR]  = getAction("change_event_color", this);
+      menu_ids[CMD_CONFIG_QUANT] = getAction("config_quant", this);
+
       //---------Menu----------------------------------
       menuEdit->addSeparator();
 
-      QAction* a;
-      a = menuEdit->addAction(tr("Delete Events"));
-      a->setIcon(*deleteIcon);
-      a->setData(PianoCanvas::CMD_DEL);
-      a->setShortcut(Qt::Key_Delete);
+      QAction* a = getAction("delete", this);
+      menuEdit->addAction(a);
+//TD?      a->setData(PianoCanvas::CMD_DEL);
 
       menuEdit->addSeparator();
 
       menuSelect = menuEdit->addMenu(QIcon(*selectIcon),tr("&Select"));
 
-      cmdActions[PianoCanvas::CMD_SELECT_ALL] = menuSelect->addAction(QIcon(*select_allIcon), tr("Select &All"));
-      cmdActions[PianoCanvas::CMD_SELECT_ALL]->setData(PianoCanvas::CMD_SELECT_ALL);
-
-      cmdActions[PianoCanvas::CMD_SELECT_NONE] = menuSelect->addAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"));
-      cmdActions[PianoCanvas::CMD_SELECT_NONE]->setData(PianoCanvas::CMD_SELECT_NONE);
-
-      cmdActions[PianoCanvas::CMD_SELECT_INVERT] = menuSelect->addAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"));
-      cmdActions[PianoCanvas::CMD_SELECT_INVERT]->setData(PianoCanvas::CMD_SELECT_INVERT);
-
-      cmdActions[PianoCanvas::CMD_SELECT_ILOOP] = menuSelect->addAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"));
-      cmdActions[PianoCanvas::CMD_SELECT_ILOOP]->setData(PianoCanvas::CMD_SELECT_ILOOP);
-
-      cmdActions[PianoCanvas::CMD_SELECT_OLOOP] = menuSelect->addAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"));
-      cmdActions[PianoCanvas::CMD_SELECT_OLOOP]->setData(PianoCanvas::CMD_SELECT_OLOOP);
+      menuSelect->addAction(getAction("sel_all", this));
+      menuSelect->addAction(getAction("sel_none", this));
+      menuSelect->addAction(getAction("sel_inv", this));
+      menuSelect->addAction(getAction("sel_ins_loc", this));
+      menuSelect->addAction(getAction("sel_out_loc", this));
 
       menuConfig = mb->addMenu(tr("&Config"));
       eventColor = menuConfig->addMenu(tr("event color"));
@@ -108,14 +100,11 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
       connect(eventColor, SIGNAL(triggered(QAction*)), SLOT(setEventColorMode(QAction*)));
 
       menuFunctions = mb->addMenu(tr("&Functions"));
-      cmdActions[PianoCanvas::CMD_OVER_QUANTIZE] = menuFunctions->addAction(tr("Over Quantize"));
-      cmdActions[PianoCanvas::CMD_OVER_QUANTIZE]->setData(PianoCanvas::CMD_OVER_QUANTIZE);
-      cmdActions[PianoCanvas::CMD_ON_QUANTIZE] = menuFunctions->addAction(tr("Note On Quantize"));
-      cmdActions[PianoCanvas::CMD_ON_QUANTIZE]->setData(PianoCanvas::CMD_ON_QUANTIZE);
-      cmdActions[PianoCanvas::CMD_ONOFF_QUANTIZE] = menuFunctions->addAction(tr("Note On/Off Quantize"));
-      cmdActions[PianoCanvas::CMD_ONOFF_QUANTIZE]->setData(PianoCanvas::CMD_ONOFF_QUANTIZE);
-      cmdActions[PianoCanvas::CMD_ITERATIVE_QUANTIZE] = menuFunctions->addAction(tr("Iterative Quantize"));
-      cmdActions[PianoCanvas::CMD_ITERATIVE_QUANTIZE]->setData(PianoCanvas::CMD_ITERATIVE_QUANTIZE);
+
+      menuFunctions->addAction(getAction("midi_over_quant", this));
+      menuFunctions->addAction(getAction("midi_quant_noteon", this));
+      menuFunctions->addAction(getAction("midi_quant_noteoff", this));
+      menuFunctions->addAction(getAction("midi_quant_iterative", this));
 
       menuFunctions->addSeparator();
 
@@ -124,51 +113,21 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
 
       menuFunctions->addSeparator();
 
-      cmdActions[PianoCanvas::CMD_MODIFY_GATE_TIME] = menuFunctions->addAction(tr("Modify Gate Time"));
-      cmdActions[PianoCanvas::CMD_MODIFY_GATE_TIME]->setData(PianoCanvas::CMD_MODIFY_GATE_TIME);
+      menuFunctions->addAction(getAction("midi_mod_gate_time", this));
+      menuFunctions->addAction(getAction("midi_mod_velo", this));
 
-      cmdActions[PianoCanvas::CMD_MODIFY_VELOCITY] = menuFunctions->addAction(tr("Modify Velocity"));
-      cmdActions[PianoCanvas::CMD_MODIFY_VELOCITY]->setData(PianoCanvas::CMD_MODIFY_VELOCITY);
-
-      cmdActions[PianoCanvas::CMD_CRESCENDO] = menuFunctions->addAction(tr("Crescendo"));
-      cmdActions[PianoCanvas::CMD_CRESCENDO]->setData(PianoCanvas::CMD_CRESCENDO);
-      cmdActions[PianoCanvas::CMD_CRESCENDO]->setEnabled(false);
-
-      cmdActions[PianoCanvas::CMD_TRANSPOSE] = menuFunctions->addAction(tr("Transpose"));
-      cmdActions[PianoCanvas::CMD_TRANSPOSE]->setData(PianoCanvas::CMD_TRANSPOSE);
-      cmdActions[PianoCanvas::CMD_TRANSPOSE]->setEnabled(false);
-
-      cmdActions[PianoCanvas::CMD_THIN_OUT] = menuFunctions->addAction(tr("Thin Out"));
-      cmdActions[PianoCanvas::CMD_THIN_OUT]->setData(PianoCanvas::CMD_THIN_OUT);
-      cmdActions[PianoCanvas::CMD_THIN_OUT]->setEnabled(false);
-
-      cmdActions[PianoCanvas::CMD_ERASE_EVENT] = menuFunctions->addAction(tr("Erase Event"));
-      cmdActions[PianoCanvas::CMD_ERASE_EVENT]->setData(PianoCanvas::CMD_ERASE_EVENT);
-      cmdActions[PianoCanvas::CMD_ERASE_EVENT]->setEnabled(false);
-
-      cmdActions[PianoCanvas::CMD_NOTE_SHIFT] = menuFunctions->addAction(tr("Note Shift"));
-      cmdActions[PianoCanvas::CMD_NOTE_SHIFT]->setData(PianoCanvas::CMD_NOTE_SHIFT);
-      cmdActions[PianoCanvas::CMD_NOTE_SHIFT]->setEnabled(false);
-
-      cmdActions[PianoCanvas::CMD_MOVE_CLOCK] = menuFunctions->addAction(tr("Move Clock"));
-      cmdActions[PianoCanvas::CMD_MOVE_CLOCK]->setData(PianoCanvas::CMD_MOVE_CLOCK);
-      cmdActions[PianoCanvas::CMD_MOVE_CLOCK]->setEnabled(false);
-
-      cmdActions[PianoCanvas::CMD_COPY_MEASURE] = menuFunctions->addAction(tr("Copy Measure"));
-      cmdActions[PianoCanvas::CMD_COPY_MEASURE]->setData(PianoCanvas::CMD_COPY_MEASURE);
-      cmdActions[PianoCanvas::CMD_COPY_MEASURE]->setEnabled(false);
-
-      cmdActions[PianoCanvas::CMD_ERASE_MEASURE] = menuFunctions->addAction(tr("Erase Measure"));
-      cmdActions[PianoCanvas::CMD_ERASE_MEASURE]->setData(PianoCanvas::CMD_ERASE_MEASURE);
-      cmdActions[PianoCanvas::CMD_ERASE_MEASURE]->setEnabled(false);
-
-      cmdActions[PianoCanvas::CMD_DELETE_MEASURE] = menuFunctions->addAction(tr("Delete Measure"));
-      cmdActions[PianoCanvas::CMD_DELETE_MEASURE]->setData(PianoCanvas::CMD_DELETE_MEASURE);
-      cmdActions[PianoCanvas::CMD_DELETE_MEASURE]->setEnabled(false);
-
-      cmdActions[PianoCanvas::CMD_CREATE_MEASURE] = menuFunctions->addAction(tr("Create Measure"));
-      cmdActions[PianoCanvas::CMD_CREATE_MEASURE]->setData(PianoCanvas::CMD_CREATE_MEASURE);
-      cmdActions[PianoCanvas::CMD_CREATE_MEASURE]->setEnabled(false);
+#if 0 // TODO
+      menuFunctions->addAction(getAction("midi_crescendo", this));
+      menuFunctions->addAction(getAction("midi_transpose", this));
+      menuFunctions->addAction(getAction("midi_thin_out", this));
+      menuFunctions->addAction(getAction("midi_erase_event", this));
+      menuFunctions->addAction(getAction("midi_note_shift", this));
+      menuFunctions->addAction(getAction("midi_move_clock", this));
+      menuFunctions->addAction(getAction("midi_copy_measure", this));
+      menuFunctions->addAction(getAction("midi_erase_measure", this));
+      menuFunctions->addAction(getAction("midi_delete_measure", this));
+      menuFunctions->addAction(getAction("midi_create_measure", this));
+#endif
 
       connect(menuSelect,    SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
       connect(menuFunctions, SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
@@ -247,26 +206,25 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
 
       clipboardChanged(); 	// enable/disable "Paste"
       selectionChanged(); 	// enable/disable "Copy" & "Paste"
-      initShortcuts(); 		// initialize shortcuts
 
       //
       // install misc shortcuts
       //
-#if 0 //TODOB
-      QShortcut* sc;
-      sc = new QShortcut(shortcuts[SHRT_POS_INC].key, this);
-      sc->setContext(Qt::WindowShortcut);
-      connect(sc, SIGNAL(activated()), SLOT(cmdRight()));
+      
+      a = getAction("curpos_increase", this);
+      a->setShortcutContext(Qt::WindowShortcut);
+      addAction(a);
+      connect(a, SIGNAL(triggered()), SLOT(cmdRight()));
 
-      sc = new QShortcut(shortcuts[SHRT_POS_DEC].key, this);
-      sc->setContext(Qt::WindowShortcut);
-      connect(sc, SIGNAL(activated()), SLOT(cmdLeft()));
+      a = getAction("curpos_decrease", this);
+      a->setShortcutContext(Qt::WindowShortcut);
+      addAction(a);
+      connect(a, SIGNAL(triggered()), SLOT(cmdLeft()));
 
-      sc = new QShortcut(Qt::Key_Escape, this);
+      QShortcut* sc = new QShortcut(Qt::Key_Escape, this);
       sc->setContext(Qt::WindowShortcut);
 
       connect(sc, SIGNAL(activated()), SLOT(close()));
-#endif
 
       connect(song, SIGNAL(songChanged(int)), canvas(), SLOT(songChanged(int)));
       connect(followSongAction, SIGNAL(toggled(bool)), canvas(), SLOT(setFollow(bool)));
@@ -308,7 +266,6 @@ void PianoRoll::cmdRight()
 
 void PianoRoll::configChanged()
       {
-      initShortcuts();
       }
 
 //---------------------------------------------------------
@@ -318,8 +275,7 @@ void PianoRoll::configChanged()
 
 void PianoRoll::cmd(QAction* a)
       {
-      int cmd = a->data().toInt();
-      canvas()->cmd(cmd, _quantStrength, _quantLimit, _quantLen);
+      canvas()->cmd(a, _quantStrength, _quantLimit, _quantLen);
       }
 
 //---------------------------------------------------------
@@ -474,30 +430,7 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
       PianoCanvas* pc = canvas();
       int key = event->key();
 
-      if (event->modifiers() & Qt::ShiftModifier)
-            key += Qt::SHIFT;
-      if (event->modifiers() & Qt::AltModifier)
-            key += Qt::ALT;
-      if (event->modifiers() & Qt::ControlModifier)
-            key+= Qt::CTRL;
-
-      if (key == shortcuts[SHRT_TOOL_POINTER].key) {
-            tools2->set(PointerTool);
-            return;
-            }
-      else if (key == shortcuts[SHRT_TOOL_PENCIL].key) {
-            tools2->set(PencilTool);
-            return;
-            }
-      else if (key == shortcuts[SHRT_TOOL_RUBBER].key) {
-            tools2->set(RubberTool);
-            return;
-            }
-      else if (key == shortcuts[SHRT_TOOL_LINEDRAW].key) {
-            tools2->set(DrawTool);
-            return;
-            }
-      else if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) {
+      if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) {
             pc->pianoCmd(MCMD_INSERT);
             return;
             }
@@ -521,6 +454,7 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             val = rasterTable[2 + off];
       else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
             val = rasterTable[index + ((off == 0) ? 9 : 0)];
+
       else if (key == shortcuts[SHRT_EVENT_COLOR].key) {
             _colorMode = (_colorMode + 1) % 3;
             setEventColorMode(_colorMode);
@@ -529,7 +463,7 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
       else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
             val = rasterTable[index + ((off == 18) ? 9 : 18)];
 
-      else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key) {//CDW
+      else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key) {
             if ((off == 18) && (index > 2)) {
                   val = rasterTable[index + 9 - 1];
                   }
@@ -584,42 +518,6 @@ void PianoRoll::setEventColorMode(int mode)
       }
 
 //---------------------------------------------------------
-//   initShortcuts
-//---------------------------------------------------------
-
-void PianoRoll::initShortcuts()
-      {
-#if 0 //TODOB
-      cmdActions[PianoCanvas::CMD_SELECT_NONE]->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
-      cmdActions[PianoCanvas::CMD_SELECT_NONE]->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
-      cmdActions[PianoCanvas::CMD_SELECT_INVERT]->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
-      cmdActions[PianoCanvas::CMD_SELECT_ILOOP]->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
-      cmdActions[PianoCanvas::CMD_SELECT_OLOOP]->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
-
-      menu_ids[CMD_EVENT_COLOR]->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
-
-      cmdActions[PianoCanvas::CMD_OVER_QUANTIZE]->setShortcut(shortcuts[SHRT_OVER_QUANTIZE].key);
-      cmdActions[PianoCanvas::CMD_ON_QUANTIZE]->setShortcut(shortcuts[SHRT_ON_QUANTIZE].key);
-      cmdActions[PianoCanvas::CMD_ONOFF_QUANTIZE]->setShortcut(shortcuts[SHRT_ONOFF_QUANTIZE].key);
-      cmdActions[PianoCanvas::CMD_ITERATIVE_QUANTIZE]->setShortcut(shortcuts[SHRT_ITERATIVE_QUANTIZE].key);
-      cmdActions[PianoCanvas::CMD_MODIFY_GATE_TIME]->setShortcut(shortcuts[SHRT_MODIFY_GATE_TIME].key);
-      cmdActions[PianoCanvas::CMD_MODIFY_VELOCITY]->setShortcut(shortcuts[SHRT_MODIFY_VELOCITY].key);
-      cmdActions[PianoCanvas::CMD_CRESCENDO]->setShortcut(shortcuts[SHRT_CRESCENDO].key);
-      cmdActions[PianoCanvas::CMD_TRANSPOSE]->setShortcut(shortcuts[SHRT_TRANSPOSE].key);
-      cmdActions[PianoCanvas::CMD_THIN_OUT]->setShortcut(shortcuts[SHRT_THIN_OUT].key);
-      cmdActions[PianoCanvas::CMD_ERASE_EVENT]->setShortcut(shortcuts[SHRT_ERASE_EVENT].key);
-      cmdActions[PianoCanvas::CMD_NOTE_SHIFT]->setShortcut(shortcuts[SHRT_NOTE_SHIFT].key);
-      cmdActions[PianoCanvas::CMD_MOVE_CLOCK]->setShortcut(shortcuts[SHRT_MOVE_CLOCK].key);
-      cmdActions[PianoCanvas::CMD_COPY_MEASURE]->setShortcut(shortcuts[SHRT_COPY_MEASURE].key);
-      cmdActions[PianoCanvas::CMD_ERASE_MEASURE]->setShortcut(shortcuts[SHRT_ERASE_MEASURE].key);
-      cmdActions[PianoCanvas::CMD_DELETE_MEASURE]->setShortcut(shortcuts[SHRT_DELETE_MEASURE].key);
-      cmdActions[PianoCanvas::CMD_CREATE_MEASURE]->setShortcut(shortcuts[SHRT_CREATE_MEASURE].key);
-
-      menu_ids[CMD_CONFIG_QUANT]->setShortcut(shortcuts[SHRT_CONFIG_QUANT].key);
-#endif
-      }
-
-//---------------------------------------------------------
 //   readConfiguration
 //	read static init values
 //---------------------------------------------------------
@@ -661,4 +559,3 @@ void PianoRoll::writeConfiguration(Xml& xml)
             xml.intTag("quant", PianoRoll::initQuant);
       xml.etag("PianoRoll");
       }
-

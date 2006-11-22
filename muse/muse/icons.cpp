@@ -27,7 +27,6 @@
 #include "xpm/edit_midi.xpm"
 #include "xpm/midi_edit_instrument.xpm"
 #include "xpm/midi_init_instr.xpm"
-// #include "xpm/midi_inputplugins.xpm"
 #include "xpm/midi_local_off.xpm"
 #include "xpm/midi_reset_instr.xpm"
 #include "xpm/settings_appearance_settings.xpm"
@@ -37,15 +36,7 @@
 #include "xpm/settings_metronome.xpm"
 #include "xpm/settings_midifileexport.xpm"
 #include "xpm/settings_midisync.xpm"
-#include "xpm/view_bigtime_window.xpm"
-#include "xpm/view_cliplist.xpm"
-#include "xpm/view_marker.xpm"
-#include "xpm/view_mixer.xpm"
-#include "xpm/view_transport_window.xpm"
 
-#include "xpm/pointer.xpm"
-#include "xpm/pencil.xpm"
-#include "xpm/delete.xpm"
 #include "xpm/play.xpm"
 
 #include "xpm/stick.xpm"
@@ -53,11 +44,7 @@
 #include "xpm/cmark.xpm"
 #include "xpm/lmark.xpm"
 #include "xpm/rmark.xpm"
-#include "xpm/cut.xpm"
 #include "xpm/steprec.xpm"
-#include "xpm/glue.xpm"
-#include "xpm/draw.xpm"
-#include "xpm/quant.xpm"
 #include "xpm/master.xpm"
 #include "xpm/filenewS.xpm"
 #include "xpm/home.xpm"
@@ -80,18 +67,13 @@
 #include "xpm/flagS.xpm"
 #include "xpm/lock.xpm"
 #include "xpm/toc.xpm"
-#include "xpm/pianoS.xpm"
-
 #include "xpm/editcut.xpm"
 #include "xpm/editcopy.xpm"
 #include "xpm/editpaste.xpm"
-#include "xpm/editmute.xpm"
-#include "xpm/editmuteS.xpm"
 
 #include "xpm/speaker.xpm"
 #include "xpm/buttondown.xpm"
 #include "xpm/configure.xpm"
-#include "xpm/panic.xpm"
 
 #include "xpm/mastertrackS.xpm"
 #include "xpm/localoffS.xpm"
@@ -99,7 +81,6 @@
 #include "xpm/midi_plugS.xpm"
 #include "xpm/miditransposeS.xpm"
 #include "xpm/mixerS.xpm"
-// #include "xpm/mustangS.xpm"
 #include "xpm/resetS.xpm"
 #include "xpm/track_add.xpm"
 #include "xpm/track_delete.xpm"
@@ -118,8 +99,6 @@
 #include "xpm/edit_drumms.xpm"
 #include "xpm/edit_list.xpm"
 #include "xpm/edit_mastertrack.xpm"
-#include "xpm/edit_pianoroll.xpm"
-#include "xpm/edit_score.xpm"
 #include "xpm/edit_track_add.xpm"
 #include "xpm/edit_track_del.xpm"
 #include "xpm/mastertrack_graphic.xpm"
@@ -127,12 +106,12 @@
 #include "xpm/midi_transform.xpm"
 #include "xpm/midi_transpose.xpm"
 #include "xpm/select.xpm"
-#include "xpm/select_all.xpm"
+// #include "xpm/select_all.xpm"
 #include "xpm/select_all_parts_on_track.xpm"
-#include "xpm/select_deselect_all.xpm"
-#include "xpm/select_inside_loop.xpm"
-#include "xpm/select_invert_selection.xpm"
-#include "xpm/select_outside_loop.xpm"
+// #include "xpm/select_deselect_all.xpm"
+// #include "xpm/select_inside_loop.xpm"
+// #include "xpm/select_invert_selection.xpm"
+// #include "xpm/select_outside_loop.xpm"
 
 #include "xpm/muse_icon.xpm"
 #include "xpm/config.xpm"
@@ -145,7 +124,6 @@ QPixmap* miditransformSIcon;
 QPixmap* midi_plugSIcon;
 QPixmap* miditransposeSIcon;
 QPixmap* mixerSIcon;
-// QPixmap* mustangSIcon;
 QPixmap* resetSIcon;
 QPixmap* track_addIcon;
 QPixmap* track_deleteIcon;
@@ -155,9 +133,6 @@ QPixmap* cliplistSIcon;
 QPixmap* mixerAudioSIcon;
 QPixmap* initSIcon;
 
-QPixmap* pointerIcon;
-QPixmap* pencilIcon;
-QPixmap* deleteIcon;
 QPixmap* playIcon;
 
 QPixmap* stopIcon;
@@ -166,11 +141,7 @@ QPixmap* frewindIcon;
 QPixmap* stickIcon;
 QPixmap* waveIcon;
 QPixmap* markIcon[3];
-QPixmap* cutIcon;
 QPixmap* steprecIcon;
-QPixmap* glueIcon;
-QPixmap* drawIcon;
-QPixmap* quantIcon;
 QPixmap* openIcon;
 QPixmap* saveIcon;
 QPixmap* masterIcon;
@@ -201,14 +172,7 @@ QPixmap* speakerIcon;
 QPixmap* buttondownIcon;
 QPixmap* configureIcon;
 
-QPixmap* editmuteIcon;
-QPixmap* editmuteSIcon;
-QPixmap* panicIcon;
-
-QIcon* pianoIconSet;
-QIcon* scoreIconSet;
 QIcon* editcutIconSet;
-QIcon* editmuteIconSet;
 QIcon* editcopyIconSet;
 QIcon* editpasteIconSet;
 QIcon* recordIcon;
@@ -224,8 +188,6 @@ QPixmap* addtrack_wavetrackIcon;
 QPixmap* edit_drummsIcon;
 QPixmap* edit_listIcon;
 QPixmap* edit_mastertrackIcon;
-QPixmap* edit_pianorollIcon;
-QPixmap* edit_scoreIcon;
 QPixmap* edit_track_addIcon;
 QPixmap* edit_track_delIcon;
 QPixmap* mastertrack_graphicIcon;
@@ -233,23 +195,19 @@ QPixmap* mastertrack_listIcon;
 QPixmap* midi_transformIcon;
 QPixmap* midi_transposeIcon;
 QPixmap* selectIcon;
-QPixmap* select_allIcon;
+// QPixmap* select_allIcon;
 QPixmap* select_all_parts_on_trackIcon;
-QPixmap* select_deselect_allIcon;
-QPixmap* select_inside_loopIcon;
-QPixmap* select_invert_selectionIcon;
-QPixmap* select_outside_loopIcon;
+// QPixmap* select_deselect_allIcon;
+// QPixmap* select_inside_loopIcon;
+// QPixmap* select_invert_selectionIcon;
+// QPixmap* select_outside_loopIcon;
 
 QPixmap* audio_bounce_to_fileIcon;
 QPixmap* audio_bounce_to_trackIcon;
 QPixmap* audio_restartaudioIcon;
-// QPixmap* automation_clear_dataIcon;
-// QPixmap* automation_mixerIcon;
-// QPixmap* automation_take_snapshotIcon;
 QPixmap* edit_midiIcon;
 QPixmap* midi_edit_instrumentIcon;
 QPixmap* midi_init_instrIcon;
-// QPixmap* midi_inputpluginsIcon;
 QPixmap* midi_local_offIcon;
 QPixmap* midi_reset_instrIcon;
 QPixmap* settings_appearance_settingsIcon;
@@ -259,11 +217,6 @@ QPixmap* settings_globalsettingsIcon;
 QPixmap* settings_metronomeIcon;
 QPixmap* settings_midifileexportIcon;
 QPixmap* settings_midisyncIcon;
-QPixmap* view_bigtime_windowIcon;
-QPixmap* view_cliplistIcon;
-QPixmap* view_markerIcon;
-QPixmap* view_mixerIcon;
-QPixmap* view_transport_windowIcon;
 
 QPixmap* museIcon;
 QPixmap* museIcon64;
@@ -277,9 +230,6 @@ QPixmap* plusIcon;
 
 void initIcons()
       {
-      pointerIcon  = new QPixmap(pointer_xpm);
-      pencilIcon   = new QPixmap(pencil_xpm);
-      deleteIcon   = new QPixmap(delete_xpm);
       playIcon     = new QPixmap(play_xpm);
 
       stickIcon    = new QPixmap(stick_xpm);
@@ -287,11 +237,7 @@ void initIcons()
       markIcon[0]  = new QPixmap(cmark_xpm);
       markIcon[1]  = new QPixmap(lmark_xpm);
       markIcon[2]  = new QPixmap(rmark_xpm);
-      cutIcon      = new QPixmap(cut_xpm);
       steprecIcon  = new QPixmap(steprec_xpm);
-      glueIcon     = new QPixmap(glue_xpm);
-      drawIcon     = new QPixmap(draw_xpm);
-      quantIcon    = new QPixmap(quant_xpm);
       saveIcon     = new QPixmap(":/xpm/filesave.png");
       openIcon     = new QPixmap(":/xpm/fileopen.png");
       masterIcon   = new QPixmap(master_xpm);
@@ -300,7 +246,6 @@ void initIcons()
       homeIcon     = new QPixmap(home_xpm);
       backIcon     = new QPixmap(back_xpm);
       forwardIcon  = new QPixmap(forward_xpm);
-      muteIcon     = new QPixmap(editmuteS_xpm);
       upIcon       = new QPixmap(up_xpm);
       downIcon     = new QPixmap(down_xpm);
       boldIcon     = new QPixmap(bold_xpm);
@@ -322,14 +267,9 @@ void initIcons()
       buttondownIcon = new QPixmap(buttondown_xpm);
       configureIcon  = new QPixmap(configure_xpm);
 
-      editmuteIcon  = new QPixmap(editmute_xpm);
-      editmuteSIcon = new QPixmap(editmuteS_xpm);
-      panicIcon  = new QPixmap(panic_xpm);
-
       editcutIconSet       = new QIcon(QPixmap(editcut_xpm));
       editcopyIconSet      = new QIcon(QPixmap(editcopy_xpm));
       editpasteIconSet     = new QIcon(QPixmap(editpaste_xpm));
-      editmuteIconSet      = new QIcon(QPixmap(editmute_xpm));
 
       mastertrackSIcon     = new QPixmap(mastertrackS_xpm);
       localoffSIcon        = new QPixmap(localoffS_xpm);
@@ -337,7 +277,6 @@ void initIcons()
       midi_plugSIcon       = new QPixmap(midi_plugS_xpm);
       miditransposeSIcon   = new QPixmap(miditransposeS_xpm);
       mixerSIcon           = new QPixmap(mixerS_xpm);
-//       mustangSIcon         = new QPixmap(mustangS_xpm);
       resetSIcon           = new QPixmap(resetS_xpm);
       track_addIcon        = new QPixmap(track_add_xpm);
       track_deleteIcon     = new QPixmap(track_delete_xpm);
@@ -356,8 +295,6 @@ void initIcons()
       edit_drummsIcon               = new QPixmap(edit_drumms_xpm);
       edit_listIcon                 = new QPixmap(edit_list_xpm);
       edit_mastertrackIcon          = new QPixmap(edit_mastertrack_xpm);
-      edit_pianorollIcon            = new QPixmap(edit_pianoroll_xpm);
-      edit_scoreIcon                = new QPixmap(edit_score_xpm);
       edit_track_addIcon            = new QPixmap(edit_track_add_xpm);
       edit_track_delIcon            = new QPixmap(edit_track_del_xpm);
       mastertrack_graphicIcon       = new QPixmap(mastertrack_graphic_xpm);
@@ -365,44 +302,38 @@ void initIcons()
       midi_transformIcon            = new QPixmap(midi_transform_xpm);
       midi_transposeIcon            = new QPixmap(midi_transpose_xpm);
       selectIcon                    = new QPixmap(select_xpm);
-      select_allIcon                = new QPixmap(select_all_xpm);
+//      select_allIcon                = new QPixmap(select_all_xpm);
       select_all_parts_on_trackIcon = new QPixmap(select_all_parts_on_track_xpm);
-      select_deselect_allIcon       = new QPixmap(select_deselect_all);
-      select_inside_loopIcon        = new QPixmap(select_inside_loop_xpm);
-      select_invert_selectionIcon   = new QPixmap(select_invert_selection);
-      select_outside_loopIcon       = new QPixmap(select_outside_loop_xpm);
-      pianoIconSet                  = new QIcon(QPixmap(pianoS_xpm));
+//      select_deselect_allIcon       = new QPixmap(select_deselect_all);
+//      select_inside_loopIcon        = new QPixmap(select_inside_loop_xpm);
+//      select_invert_selectionIcon   = new QPixmap(select_invert_selection);
+//      select_outside_loopIcon       = new QPixmap(select_outside_loop_xpm);
 
-      audio_bounce_to_fileIcon                      = new QPixmap(audio_bounce_to_file_xpm);
-      audio_bounce_to_trackIcon                     = new QPixmap(audio_bounce_to_track_xpm);
-      audio_restartaudioIcon                        = new QPixmap(audio_restartaudio_xpm);
-      edit_midiIcon                                 = new QPixmap(edit_midi_xpm);
-      midi_edit_instrumentIcon                      = new QPixmap(midi_edit_instrument_xpm);
-      midi_init_instrIcon                           = new QPixmap(midi_init_instr_xpm);
-//      midi_inputpluginsIcon                         = new QPixmap(midi_inputplugins_xpm);
-      midi_local_offIcon                            = new QPixmap(midi_local_off_xpm);
-      midi_reset_instrIcon                          = new QPixmap(midi_reset_instr_xpm);
-      settings_appearance_settingsIcon              = new QPixmap(settings_appearance_settings_xpm);
-      settings_configureshortcutsIcon               = new QPixmap(settings_configureshortcuts_xpm);
-      settings_follow_songIcon                      = new QPixmap(settings_follow_song_xpm);
-      settings_globalsettingsIcon                   = new QPixmap(settings_globalsettings_xpm);
-      settings_metronomeIcon                        = new QPixmap(settings_metronome_xpm);
-      settings_midifileexportIcon                   = new QPixmap(settings_midifileexport_xpm);
-      settings_midisyncIcon                         = new QPixmap(settings_midisync_xpm);
-      view_bigtime_windowIcon                       = new QPixmap(view_bigtime_window_xpm);
-      view_cliplistIcon                             = new QPixmap(view_cliplist_xpm);
-      view_markerIcon                               = new QPixmap(view_marker_xpm);
-      view_mixerIcon                                = new QPixmap(view_mixer_xpm);
-      view_transport_windowIcon                     = new QPixmap(view_transport_window_xpm);
+      audio_bounce_to_fileIcon         = new QPixmap(audio_bounce_to_file_xpm);
+      audio_bounce_to_trackIcon        = new QPixmap(audio_bounce_to_track_xpm);
+      audio_restartaudioIcon           = new QPixmap(audio_restartaudio_xpm);
+      edit_midiIcon                    = new QPixmap(edit_midi_xpm);
+      midi_edit_instrumentIcon         = new QPixmap(midi_edit_instrument_xpm);
+      midi_init_instrIcon              = new QPixmap(midi_init_instr_xpm);
+      midi_local_offIcon               = new QPixmap(midi_local_off_xpm);
+      midi_reset_instrIcon             = new QPixmap(midi_reset_instr_xpm);
+      settings_appearance_settingsIcon = new QPixmap(settings_appearance_settings_xpm);
+      settings_configureshortcutsIcon  = new QPixmap(settings_configureshortcuts_xpm);
+      settings_follow_songIcon         = new QPixmap(settings_follow_song_xpm);
+      settings_globalsettingsIcon      = new QPixmap(settings_globalsettings_xpm);
+      settings_metronomeIcon           = new QPixmap(settings_metronome_xpm);
+      settings_midifileexportIcon      = new QPixmap(settings_midifileexport_xpm);
+      settings_midisyncIcon            = new QPixmap(settings_midisync_xpm);
 
-      museIcon = new QPixmap(muse_icon_xpm);
+      museIcon   = new QPixmap(muse_icon_xpm);
       configIcon = new QPixmap(config_xpm);
-      minusIcon = new QPixmap(minus_xpm);
-      plusIcon = new QPixmap(plus_xpm);
+      minusIcon  = new QPixmap(minus_xpm);
+      plusIcon   = new QPixmap(plus_xpm);
 
       recordIcon = new QIcon;
       recordIcon->addFile(":/xpm/recordOn.svg",  ICON_SIZE, QIcon::Normal, QIcon::On);
       recordIcon->addFile(":/xpm/recordOff.svg", ICON_SIZE, QIcon::Normal, QIcon::Off);
+
       onOffIcon = new QIcon;
       onOffIcon->addFile(":/xpm/on.svg",  ICON_SIZE, QIcon::Normal, QIcon::On);
       onOffIcon->addFile(":/xpm/off.svg", ICON_SIZE, QIcon::Normal, QIcon::Off);

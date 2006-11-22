@@ -382,95 +382,71 @@ void PianoCanvas::pianoCmd(int cmd)
 //    pulldown menu commands
 //---------------------------------------------------------
 
-void PianoCanvas::cmd(int cmd, int quantStrength, int quantLimit, bool quantLen)
+void PianoCanvas::cmd(QAction* a, int quantStrength, int quantLimit, bool quantLen)
       {
-      switch (cmd) {
-            case CMD_PASTE:
-                  paste();
-                  break;
-            case CMD_DEL:
-                  if (selectionSize()) {
-                        song->startUndo();
-                        for (iCItem i = items.begin(); i != items.end(); ++i) {
-                              if (!i->second->isSelected())
-                                    continue;
-                              Event ev = i->second->event;
-                              audio->msgDeleteEvent(ev, i->second->part, false);
-                              }
-                        song->endUndo(SC_EVENT_REMOVED);
-                        }
-                  return;
-            case CMD_OVER_QUANTIZE:     // over quantize
-                  quantize(100, 1, quantLen);
-                  break;
-            case CMD_ON_QUANTIZE:     // note on quantize
-                  quantize(50, 1, false);
-                  break;
-            case CMD_ONOFF_QUANTIZE:     // note on/off quantize
-                  quantize(50, 1, true);
-                  break;
-            case CMD_ITERATIVE_QUANTIZE:     // Iterative Quantize
-                  quantize(quantStrength, quantLimit, quantLen);
-                  break;
-            case CMD_SELECT_ALL:     // select all
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        if (!k->second->isSelected())
-                              selectItem(k->second, true);
-                        }
-                  break;
-            case CMD_SELECT_NONE:     // select none
-                 deselectAll();
-                  break;
-            case CMD_SELECT_INVERT:     // invert selection
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        selectItem(k->second, !k->second->isSelected());
-                        }
-                  break;
-            case CMD_SELECT_ILOOP:     // select inside loop
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        CItem* item   = k->second;
-                        Event event   = item->event;
-                        unsigned tick = event.tick();
-                        if (tick < song->lpos() || tick >= song->rpos())
-                              selectItem(k->second, false);
-                        else
-                              selectItem(k->second, true);
-                        }
-                  break;
-            case CMD_SELECT_OLOOP:     // select outside loop
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        CItem* item   = k->second;
-                        Event event   = item->event;
-                        unsigned tick = event.tick();
-                        if (tick < song->lpos() || tick >= song->rpos())
-                              selectItem(k->second, true);
-                        else
-                              selectItem(k->second, false);
-                        }
-                  break;
-            case CMD_MODIFY_GATE_TIME:
-                  cmdModifyGateTime->processEvents(&items);
-                  break;
+      QString cmd(a->data().toString());
 
-            case CMD_MODIFY_VELOCITY:
-                  cmdModifyVelocity->processEvents(&items);
-                  break;
-
-            case CMD_CRESCENDO:
-            case CMD_TRANSPOSE:
-            case CMD_THIN_OUT:
-            case CMD_ERASE_EVENT:
-            case CMD_NOTE_SHIFT:
-            case CMD_MOVE_CLOCK:
-            case CMD_COPY_MEASURE:
-            case CMD_ERASE_MEASURE:
-            case CMD_DELETE_MEASURE:
-            case CMD_CREATE_MEASURE:
-                  break;
-            default:
-//                  printf("unknown ecanvas cmd %d\n", cmd);
-                  break;
+      if (cmd == "paste")
+            paste();
+      else if (cmd == "delete") {
+            if (selectionSize()) {
+                  song->startUndo();
+                  for (iCItem i = items.begin(); i != items.end(); ++i) {
+                        if (!i->second->isSelected())
+                              continue;
+                        Event ev = i->second->event;
+                        audio->msgDeleteEvent(ev, i->second->part, false);
+                        }
+                  song->endUndo(SC_EVENT_REMOVED);
+                  }
+            return;
             }
+      if (cmd == "midi_over_quant")
+            quantize(100, 1, quantLen);
+      else if (cmd == "midi_quant_noteon")
+            quantize(50, 1, false);
+      else if (cmd == "midi_quant_noteoff")
+            quantize(50, 1, true);
+      else if (cmd == "midi_quant_iterative")
+            quantize(quantStrength, quantLimit, quantLen);
+      else if (cmd == "sel_all") {
+            for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  if (!k->second->isSelected())
+                        selectItem(k->second, true);
+                  }
+            }
+      else if (cmd == "sel_none")
+            deselectAll();
+      else if (cmd == "sel_inv") {
+            for (iCItem k = items.begin(); k != items.end(); ++k)
+                  selectItem(k->second, !k->second->isSelected());
+            }
+      else if (cmd == "sel_ins_loc") {
+            for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  CItem* item   = k->second;
+                  Event event   = item->event;
+                  unsigned tick = event.tick();
+                  if (tick < song->lpos() || tick >= song->rpos())
+                        selectItem(k->second, false);
+                  else
+                        selectItem(k->second, true);
+                  }
+            }
+      else if (cmd == "sel_out_loc") {
+            for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  CItem* item   = k->second;
+                  Event event   = item->event;
+                  unsigned tick = event.tick();
+                  if (tick < song->lpos() || tick >= song->rpos())
+                        selectItem(k->second, true);
+                  else
+                        selectItem(k->second, false);
+                  }
+            }
+      else if (cmd == "midi_mod_gate_time")
+            cmdModifyGateTime->processEvents(&items);
+      else if (cmd == "midi_mod_velo")
+            cmdModifyVelocity->processEvents(&items);
       updateSelection();
       widget()->update();
       }
@@ -759,7 +735,6 @@ CItem* PianoCanvas::searchItem(const QPoint& pt) const
 void PianoCanvas::selectLasso(bool toggle)
       {
       QRect r(
-//         lrint((lasso.x() - MAP_OFFSET + wpos.x()) / _xmag),
          lrint((lasso.x() + wpos.x()) / _xmag),
          lrint((lasso.y() + wpos.y()) / _ymag),
          lrint(lasso.width() / _xmag),

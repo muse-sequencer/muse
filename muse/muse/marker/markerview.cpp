@@ -29,6 +29,7 @@
 #include "al/sig.h"
 #include "al/tempo.h"
 #include "al/marker.h"
+#include "shortcuts.h"
 
 enum { COL_TICK = 0, COL_SMPTE, COL_LOCK, COL_NAME };
 
@@ -129,8 +130,7 @@ MarkerView::MarkerView()
       markerAdd->setToolTip(tr("Add Marker"));
       connect(markerAdd, SIGNAL(triggered()), SLOT(addMarker()));
 
-      QAction* markerDelete = new QAction(QIcon(*deleteIcon), tr("delete marker"), this);
-      markerDelete->setToolTip(tr("Delete Marker"));
+      QAction* markerDelete = getAction("delete", this);
       connect(markerDelete, SIGNAL(triggered()), SLOT(deleteMarker()));
 
       //---------Pulldown Menu----------------------------
@@ -310,10 +310,12 @@ void MarkerView::currentChanged(QTreeWidgetItem* i)
 
 void MarkerView::selectionChanged()
       {
+#if 0
       QList<QTreeWidgetItem*> sel = table->selectedItems();
       if (!sel.empty()) {
             MarkerItem* item = (MarkerItem*)(sel[0]);
             }
+#endif
       }
 
 //---------------------------------------------------------

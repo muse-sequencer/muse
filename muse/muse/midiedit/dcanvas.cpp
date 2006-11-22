@@ -266,68 +266,63 @@ bool DrumCanvas::deleteItem(CItem* item)
 //   cmd
 //---------------------------------------------------------
 
-void DrumCanvas::cmd(int cmd)
+void DrumCanvas::cmd(QAction* a)
       {
-      switch(cmd) {
-            case -1:
-                  return;
-            case CMD_PASTE:
-                  paste();
-                  break;
-            case CMD_SELECT_ALL:     // select all
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        if (!k->second->isSelected())
-                              selectItem(k->second, true);
-                        }
-                  break;
-            case CMD_SELECT_NONE:     // select none
-                  deselectAll();
-                  break;
-            case CMD_SELECT_INVERT:     // invert selection
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        selectItem(k->second, !k->second->isSelected());
-                        }
-                  break;
-            case CMD_SELECT_ILOOP:     // select inside loop
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        CItem* nevent = k->second;
-                        Part* part = nevent->part;
-                        Event event = nevent->event;
-                        unsigned tick  = event.tick() + part->tick();
-                        if (tick < song->lpos() || tick >= song->rpos())
-                              selectItem(k->second, false);
-                        else
-                              selectItem(k->second, true);
-                        }
-                  break;
-            case CMD_SELECT_OLOOP:     // select outside loop
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        CItem* nevent = k->second;
-                        Part* part    = nevent->part;
-                        Event event   = nevent->event;
-                        unsigned tick = event.tick() + part->tick();
-                        if (tick < song->lpos() || tick >= song->rpos())
-                              selectItem(k->second, true);
-                        else
-                              selectItem(k->second, false);
-                        }
-                  break;
-            case CMD_DEL:
-                  if (selectionSize()) {
-                        song->startUndo();
-                        for (iCItem i = items.begin(); i != items.end(); ++i) {
-                              if (!i->second->isSelected())
-                                    continue;
-                              Event ev = i->second->event;
-                              audio->msgDeleteEvent(ev, i->second->part, false);
-                              }
-                        song->endUndo(SC_EVENT_REMOVED);
-                        }
-                  return;
+      QString cmd(a->data().toString());
 
-            case CMD_FIXED_LEN: //Set notes to the length specified in the drummap
-                  if (!selectionSize())
-                        break;
+      if (cmd == "paste")
+            paste();
+      else if (cmd == "sel_all") {
+            for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  if (!k->second->isSelected())
+                        selectItem(k->second, true);
+                  }
+            }
+      else if (cmd == "sel_none")
+            deselectAll();
+      else if (cmd == "sel_inv") {
+            for (iCItem k = items.begin(); k != items.end(); ++k)
+                  selectItem(k->second, !k->second->isSelected());
+            }
+      else if (cmd == "sel_ins_loc") {
+            for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  CItem* nevent = k->second;
+                  Part* part = nevent->part;
+                  Event event = nevent->event;
+                  unsigned tick  = event.tick() + part->tick();
+                  if (tick < song->lpos() || tick >= song->rpos())
+                        selectItem(k->second, false);
+                  else
+                        selectItem(k->second, true);
+                  }
+            }
+      else if (cmd == "sel_out_loc") {
+            for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  CItem* nevent = k->second;
+                  Part* part    = nevent->part;
+                  Event event   = nevent->event;
+                  unsigned tick = event.tick() + part->tick();
+                  if (tick < song->lpos() || tick >= song->rpos())
+                        selectItem(k->second, true);
+                  else
+                        selectItem(k->second, false);
+                  }
+            }
+      else if (cmd == "delete") {
+            if (selectionSize()) {
+                  song->startUndo();
+                  for (iCItem i = items.begin(); i != items.end(); ++i) {
+                        if (!i->second->isSelected())
+                              continue;
+                        Event ev = i->second->event;
+                        audio->msgDeleteEvent(ev, i->second->part, false);
+                        }
+                  song->endUndo(SC_EVENT_REMOVED);
+                  }
+            return;
+            }
+      else if (cmd == "midi_fixed_len") {
+            if (selectionSize()) {
                   song->startUndo();
                   for (iCItem k = items.begin(); k != items.end(); ++k) {
                         if (k->second->isSelected()) {
@@ -339,28 +334,23 @@ void DrumCanvas::cmd(int cmd)
                               }
                         }
                   song->endUndo(SC_EVENT_MODIFIED);
-                  break;
-            case CMD_LEFT:
-                  {
-                  int frames = pos[0].tick() - editor->rasterStep(pos[0].tick());
-                  if (frames < 0)
-                        frames = 0;
-                  Pos p(frames, AL::TICKS);
-                  song->setPos(0, p, true, true, true);
                   }
-                  break;
-            case CMD_RIGHT:
-                  {
-                  Pos p(pos[0].tick() + editor->rasterStep(pos[0].tick()), AL::TICKS);
-                  song->setPos(0, p, true, true, true);
-                  }
-                  break;
-            case CMD_MODIFY_VELOCITY:
-                  {
-                  Velocity w(this);
-                  w.setRange(editor->applyTo());
-                  if (!w.exec())
-                        break;
+            }
+      else if (cmd == "goto_left") {
+            int frames = pos[0].tick() - editor->rasterStep(pos[0].tick());
+            if (frames < 0)
+                  frames = 0;
+            Pos p(frames, AL::TICKS);
+            song->setPos(0, p, true, true, true);
+            }
+      else if (cmd == "goto_right") {
+            Pos p(pos[0].tick() + editor->rasterStep(pos[0].tick()), AL::TICKS);
+            song->setPos(0, p, true, true, true);
+            }
+      else if (cmd == "mid_mod_velo") {
+            Velocity w(this);
+            w.setRange(editor->applyTo());
+            if (w.exec()) {
                   editor->setApplyTo(w.range());
                   int rate   = w.rateVal();
                   int offset = w.offsetVal();
@@ -399,7 +389,6 @@ void DrumCanvas::cmd(int cmd)
                         }
                   song->endUndo(SC_EVENT_MODIFIED);
                   }
-                  break;
             }
       widget()->update();
       }

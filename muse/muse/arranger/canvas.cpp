@@ -429,11 +429,14 @@ void PartCanvas::contextMenu(const QPoint& pos)
                   p.fillRect(0, 0, 20, 20, config.partColors[i]);
                   a->setIcon(QIcon(pm));
                   }
-            a = pop->addAction(*deleteIcon, tr("delete"));
+            a = getAction("delete", this);
+            pop->addAction(a);
             a->setData(1);
-            a = pop->addAction(*cutIcon, tr("split"));
+            a = getAction("cut", this);
+            pop->addAction(a);
             a->setData(2);
-            a = pop->addAction(*glueIcon, tr("glue"));
+            a = getAction("glue", this);
+            pop->addAction(a);
             a->setData(3);
             a = pop->addAction(tr("de-clone"));
             a->setData(15);
@@ -450,7 +453,7 @@ void PartCanvas::contextMenu(const QPoint& pos)
                         a->setData(13);
                         }
                   else {
-                        a = pop->addAction(*pianoIconSet, tr("pianoroll"));
+                        a = pop->addAction(QIcon(":/xpm/piano.xpm"), tr("pianoroll"));
                         a->setData(10);
                         }
 		  a = pop->addAction(*edit_listIcon, tr("miditracker"));
@@ -535,7 +538,8 @@ void PartCanvas::contextMenu(const QPoint& pos)
             for (int i = 0; i < TOOLS; ++i) {
                   if ((arrangerTools & (1 << i))==0)
                         continue;
-                  a = pop->addAction(**toolList[i].icon, tr(toolList[i].tip));
+                  a = getAction(toolList[i], this);
+                  pop->addAction(a);
                   int id = 1 << i;
                   a->setData(id);
                   a->setCheckable(true);

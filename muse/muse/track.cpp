@@ -19,20 +19,15 @@
 //=============================================================================
 
 #include "track.h"
-#include "midiplugin.h"
 #include "song.h"
 #include "al/tempo.h"
 #include "al/xml.h"
 #include "icons.h"
-#include "muse.h"
 #include "audio.h"
-#include "midi.h"
 #include "gconfig.h"
 #include "midictrl.h"
-#include "instruments/minstrument.h"
 #include "part.h"
 #include "gui.h"
-#include "midioutport.h"
 #include "driver/audiodev.h"
 #include "driver/mididev.h"
 
@@ -514,7 +509,7 @@ void Track::setSelected(bool f)
       if (f != _selected) {
             _selected = f;
             emit selectionChanged(_selected);
-            muse->selectionChanged();
+//            muse->selectionChanged();
             }
       }
 

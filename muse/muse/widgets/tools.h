@@ -28,13 +28,7 @@ class Action;
 const int arrangerTools = PointerTool | PencilTool | RubberTool | DrawTool
 	| CutTool | GlueTool | MuteTool;
 
-struct ToolB {
-      QPixmap** icon;
-      const char* tip;
-      const char* ltip;
-      };
 const int TOOLS = 8;
-extern ToolB toolList[TOOLS];
 
 //---------------------------------------------------------
 //   EditToolBar
@@ -57,6 +51,8 @@ class EditToolBar : public QToolBar {
       EditToolBar(QMainWindow*, int);
       int curTool();
       };
+
+extern const char* toolList[];
 
 #endif
 

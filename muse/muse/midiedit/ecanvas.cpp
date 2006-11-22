@@ -708,15 +708,16 @@ QMenu* EventCanvas::genCanvasPopup()
             return 0;
       QMenu* canvasPopup = new QMenu(this);
 
-      for (int i = 0; i < 9; ++i) {
+      for (int i = 0; i < TOOLS; ++i) {
             int data = 1 << i;
             if ((canvasTools & data) == 0)
                   continue;
-            QAction* a = canvasPopup->addAction(**toolList[i].icon, tr(toolList[i].tip));
+            QAction* a = getAction(toolList[i], this);
             a->setData(data);
             a->setCheckable(true);
             if (data == int(_tool))
                   a->setChecked(true);
+            canvasPopup->addAction(a);
             }
       return canvasPopup;
       }

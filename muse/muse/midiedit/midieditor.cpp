@@ -42,7 +42,7 @@ MidiEditor::MidiEditor(PartList* pl)
 
       QMenuBar* mb = menuBar();
 
-      //---------Menü-------------------------------
+      //---------Menu-------------------------------
       menuEdit = new QMenu(tr("&Edit"));
       mb->addMenu(menuEdit);
 

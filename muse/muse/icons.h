@@ -21,9 +21,6 @@
 #ifndef ICONS_H
 #define ICONS_H
 
-extern QPixmap* pointerIcon;
-extern QPixmap* pencilIcon;
-extern QPixmap* deleteIcon;
 extern QPixmap* playIcon;
 extern QPixmap* stickIcon;
 extern QPixmap* waveIcon;
@@ -66,14 +63,7 @@ extern QPixmap* speakerIcon;
 extern QPixmap* buttondownIcon;
 extern QPixmap* configureIcon;
 
-extern QPixmap* editmuteIcon;
-extern QPixmap* editmuteSIcon;
-extern QPixmap* panicIcon;
-
-extern QIcon* pianoIconSet;
-extern QIcon* scoreIconSet;
 extern QIcon* editcutIconSet;
-extern QIcon* editmuteIconSet;
 extern QIcon* editcopyIconSet;
 extern QIcon* editpasteIconSet;
 
@@ -103,8 +93,6 @@ extern QPixmap* addtrack_wavetrackIcon;
 extern QPixmap* edit_drummsIcon;
 extern QPixmap* edit_listIcon;
 extern QPixmap* edit_mastertrackIcon;
-extern QPixmap* edit_pianorollIcon;
-extern QPixmap* edit_scoreIcon;
 extern QPixmap* edit_track_addIcon;
 extern QPixmap* edit_track_delIcon;
 extern QPixmap* mastertrack_graphicIcon;
@@ -112,12 +100,12 @@ extern QPixmap* mastertrack_listIcon;
 extern QPixmap* midi_transformIcon;
 extern QPixmap* midi_transposeIcon;
 extern QPixmap* selectIcon;
-extern QPixmap* select_allIcon;
+// extern QPixmap* select_allIcon;
 extern QPixmap* select_all_parts_on_trackIcon;
-extern QPixmap* select_deselect_allIcon;
-extern QPixmap* select_inside_loopIcon;
-extern QPixmap* select_invert_selectionIcon;
-extern QPixmap* select_outside_loopIcon;
+// extern QPixmap* select_deselect_allIcon;
+// extern QPixmap* select_inside_loopIcon;
+// extern QPixmap* select_invert_selectionIcon;
+// extern QPixmap* select_outside_loopIcon;
 
 extern QPixmap* audio_bounce_to_fileIcon;
 extern QPixmap* audio_bounce_to_trackIcon;
@@ -134,11 +122,6 @@ extern QPixmap* settings_globalsettingsIcon;
 extern QPixmap* settings_metronomeIcon;
 extern QPixmap* settings_midifileexportIcon;
 extern QPixmap* settings_midisyncIcon;
-extern QPixmap* view_bigtime_windowIcon;
-extern QPixmap* view_cliplistIcon;
-extern QPixmap* view_markerIcon;
-extern QPixmap* view_mixerIcon;
-extern QPixmap* view_transport_windowIcon;
 
 extern QPixmap* museIcon;
 extern QPixmap* configIcon;

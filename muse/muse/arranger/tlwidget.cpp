@@ -121,8 +121,8 @@ void TLWidget::mousePressEvent(QMouseEvent* ev)
       int button = ev->button();
       if (button == Qt::RightButton) {
             QMenu* menu = new QMenu(this);
-            QAction* a;
-            a = menu->addAction(QIcon(*deleteIcon), tr("Delete Track"));
+            QAction* a = getAction("delete", this);
+            menu->addAction(a);
             a->setData(CMD_REMOVE_TRACK);
             if (_track->type() == Track::MIDI || _track->type() == Track::WAVE) {
                   a = menu->addAction(tr("Copy Track"));

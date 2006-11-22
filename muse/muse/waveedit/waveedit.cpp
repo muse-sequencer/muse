@@ -65,9 +65,9 @@ WaveEdit::WaveEdit(PartList* pl, bool init)
       a->setData(CMD_REVERSE);
 
       select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
-      a = select->addAction(QIcon(*select_allIcon), tr("Select &All"));
+      a = select->addAction(QIcon(":/xpm/select_all.xpm"), tr("Select &All"));
       a->setData(CMD_SELECT_ALL);
-      a = select->addAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"));
+      a = select->addAction(QIcon(":/xpm/select_deselect_all.xpm"), tr("&Deselect All"));
       a->setData(CMD_SELECT_NONE);
 
 

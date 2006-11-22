@@ -324,7 +324,6 @@ class MuseApplication : public QApplication {
    public:
       MuseApplication(int& argc, char** argv);
       void setMuse(MusE* m) { muse = m; }
-      bool notify(QObject* receiver, QEvent* event);
       static Shortcut sc[];
       };
 
