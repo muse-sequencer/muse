@@ -3,7 +3,6 @@
 ----------------------------------------------------------------------------
 
       - dont allow for overlapping parts
-      - move shortcuts to Muse() class
       - add shortcuts as QAction
       - extend Shortcut with ShortcutContext
       - extend shortcuts with Help Text, Icons etc.

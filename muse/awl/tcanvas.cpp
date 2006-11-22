@@ -1697,19 +1697,19 @@ void TimeCanvas::setCursor()
       {
       switch(_tool) {
             case PencilTool:
-                  widget()->setCursor(QCursor(*pencilIcon, 4, 15));
+                  widget()->setCursor(QCursor(QPixmap(":/xpm/pencil.xpm"), 4, 15));
                   break;
             case RubberTool:
-                  widget()->setCursor(QCursor(*deleteIcon, 4, 15));
+                  widget()->setCursor(QCursor(QPixmap(":/xpm/delete.xpm"), 4, 15));
                   break;
             case GlueTool:
-                  widget()->setCursor(QCursor(*glueIcon, 4, 15));
+                  widget()->setCursor(QCursor(QPixmap(":/xpm/glue.xpm"), 4, 15));
                   break;
             case CutTool:
-                  widget()->setCursor(QCursor(*cutIcon, 4, 15));
+                  widget()->setCursor(QCursor(QPixmap(":/xpm/cut.xpm"), 4, 15));
                   break;
             case MuteTool:
-                  widget()->setCursor(QCursor(*editmuteIcon, 4, 15));
+                  widget()->setCursor(QCursor(QPixmap(":/xpm/editmute.xmp"), 4, 15));
                   break;
             default:
                   widget()->setCursor(QCursor(Qt::ArrowCursor));
