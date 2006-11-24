@@ -25,7 +25,7 @@
 //   readEventList
 //---------------------------------------------------------
 
-void EventList::read(QDomNode node, bool midi)
+void EventListData::read(QDomNode node, bool midi)
       {
       for (; !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
@@ -38,7 +38,7 @@ void EventList::read(QDomNode node, bool midi)
                   add(e);
                   }
             else
-                  printf("EventList:read(): unknown tag %s\n", tag.toAscii().data());
+                  printf("EventListData:read(): unknown tag %s\n", tag.toAscii().data());
             }
       }
 
@@ -46,12 +46,12 @@ void EventList::read(QDomNode node, bool midi)
 //   add
 //---------------------------------------------------------
 
-iEvent EventList::add(Event& event, unsigned tick)
+iEvent EventListData::add(Event& event, unsigned tick)
       {
       return std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (tick, event));
       }
 
-iEvent EventList::add(Event& event)
+iEvent EventListData::add(Event& event)
       {
       return add(event, event.tick());
       }
@@ -60,7 +60,7 @@ iEvent EventList::add(Event& event)
 //   move
 //---------------------------------------------------------
 
-void EventList::move(Event& event, unsigned tick)
+void EventListData::move(Event& event, unsigned tick)
       {
       iEvent i = find(event);
       erase(i);
@@ -71,7 +71,7 @@ void EventList::move(Event& event, unsigned tick)
 //   find
 //---------------------------------------------------------
 
-iEvent EventList::find(const Event& event)
+iEvent EventListData::find(const Event& event)
       {
       EventRange range = equal_range(event.tick());
       for (iEvent i = range.first; i != range.second; ++i) {
@@ -85,7 +85,7 @@ iEvent EventList::find(const Event& event)
 //   dump
 //---------------------------------------------------------
 
-void EventList::dump() const
+void EventListData::dump() const
       {
       for (ciEvent i = begin(); i != end(); ++i)
             i->second.dump();

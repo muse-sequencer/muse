@@ -51,17 +51,10 @@ DrumEdit::DrumEdit(PartList* pl, bool init)
       deltaMode   = false;
       drumMap    = &noDrumMap;
 
-#if 0 //TODOB
-      cutAction->setShortcut(shortcuts[SHRT_CUT].key);
-      copyAction->setShortcut(shortcuts[SHRT_COPY].key);
-      pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
-#endif
-
       //---------Pulldown Menu----------------------------
       QMenuBar* mb = menuBar();
 
       menuEdit->addSeparator();
-
       menuEdit->addAction(getAction("delete", this));
 
       // Functions
@@ -109,7 +102,6 @@ DrumEdit::DrumEdit(PartList* pl, bool init)
       QToolBar* transport = addToolBar(tr("Transport"));
       muse->setupTransportToolbar(transport);
 
-      // dont´ch value in toolbar
       addToolBarBreak();
       toolbar = new Toolbar1(initRaster, initQuant, false);
       addToolBar(toolbar);
@@ -159,6 +151,23 @@ DrumEdit::DrumEdit(PartList* pl, bool init)
       sc = new QShortcut(Qt::Key_Escape, this);
       sc->setContext(Qt::WindowShortcut);
       connect(sc, SIGNAL(activated()), SLOT(close()));
+
+      QSignalMapper* cmdMap = new QSignalMapper(this);
+      static const char* actions[] = { 
+            "curpos_increase", "curpos_decrease",
+            "pointer", "pencil", "eraser",
+            "midi_quant_1", "midi_quant_2", "midi_quant_3", "midi_quant_4",
+            "midi_quant_5", "midi_quant_6", "midi_quant_7", 
+            "midi_quant_triol", "midi_quant_punct", "midi_quant_punct2"
+            };
+      for (unsigned i = 0; i < sizeof(actions)/sizeof(*actions); ++i) {
+            QAction* a = getAction(actions[i], this);
+            addAction(a);
+            cmdMap->setMapping(a, a);
+            connect(a, SIGNAL(triggered()), cmdMap, SLOT(map()));
+            }
+      connect(cmdMap, SIGNAL(mapped(QObject*)), SLOT(drumCmd(QObject*)));
+
 
       connect(song, SIGNAL(songChanged(int)), canvas(), SLOT(songChanged(int)));
       connect(followSongAction, SIGNAL(toggled(bool)), canvas(), SLOT(setFollow(bool)));
@@ -318,32 +327,21 @@ void DrumEdit::cmd(QAction* a)
       }
 
 //---------------------------------------------------------
-//   configChanged
-//---------------------------------------------------------
-
-void DrumEdit::configChanged()
-      {
-      }
-
-#if 0
-static int rasterTable[] = {
-      //-9----8-  7    6     5     4    3(1/4)     2   1
-      4,  8, 16, 32,  64, 128, 256,  512, 1024,  // triple
-      6, 12, 24, 48,  96, 192, 384,  768, 1536,
-      9, 18, 36, 72, 144, 288, 576, 1152, 2304   // dot
-      };
-#endif
-
-//---------------------------------------------------------
 //   keyPressEvent
 //---------------------------------------------------------
 
-void DrumEdit::keyPressEvent(QKeyEvent* event)
+void DrumEdit::drumCmd(QObject* object)
       {
-      event->ignore();
-      return;
-#if 0
-//TODOB
+      QAction* a = (QAction*)object;
+      QString cmd(a->data().toString());
+
+      static const int rasterTable[] = {
+            //-9----8-  7    6     5     4    3(1/4)     2   1
+            4,  8, 16, 32,  64, 128, 256,  512, 1024,  // triple
+            6, 12, 24, 48,  96, 192, 384,  768, 1536,
+            9, 18, 36, 72, 144, 288, 576, 1152, 2304   // dot
+            };
+
       DrumCanvas* dc = canvas();
       int index = 0;
       int n = sizeof(rasterTable);
@@ -353,56 +351,47 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
       int off = (index / 9) * 9;
       index   = index % 9;
       int val;
-      int key = event->key();
 
-      if (event->modifiers() & Qt::ShiftModifier)
-            key += Qt::SHIFT;
-      if (event->modifiers() & Qt::AltModifier)
-            key += Qt::ALT;
-      if (event->modifiers() & Qt::ControlModifier)
-            key+= Qt::CTRL;
-
-      if (key == shortcuts[SHRT_POS_INC].key) {
-            dc->cmd(DrumCanvas::CMD_RIGHT);
+      if (cmd == "curpos_increase") {
+            dc->cmd(a);
             return;
             }
-      else if (key == shortcuts[SHRT_POS_DEC].key) {
-            dc->cmd(DrumCanvas::CMD_LEFT);
+      else if (cmd == "curpos_decrease") {
+            dc->cmd(a);
             return;
             }
-
-      else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
+      else if (cmd == "pointer") {
             tools2->set(PointerTool);
             return;
             }
-      else if (key == shortcuts[SHRT_TOOL_PENCIL].key) {
+      else if (cmd == "pencil") {
             tools2->set(PencilTool);
             return;
             }
-      else if (key == shortcuts[SHRT_TOOL_RUBBER].key) {
+      else if (cmd == "eraser") {
             tools2->set(RubberTool);
             return;
             }
-      else if (key == shortcuts[SHRT_SET_QUANT_1].key)
+      else if (cmd == "midi_quant_1")
             val = rasterTable[8 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_2].key)
+      else if (cmd == "midi_quant_2")
             val = rasterTable[7 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_3].key)
+      else if (cmd == "midi_quant_3")
             val = rasterTable[6 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_4].key)
+      else if (cmd == "midi_quant_4")
             val = rasterTable[5 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_5].key)
+      else if (cmd == "midi_quant_5")
             val = rasterTable[4 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_6].key)
+      else if (cmd == "midi_quant_6")
             val = rasterTable[3 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_7].key)
+      else if (cmd == "midi_quant_7")
             val = rasterTable[2 + off];
-      else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
+      else if (cmd == "midi_quant_triol")
             val = rasterTable[index + ((off == 0) ? 9 : 0)];
-      else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
+      else if (cmd == "midi_quant_punct")
             val = rasterTable[index + ((off == 18) ? 9 : 18)];
 
-      else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key) {//CDW
+      else if (cmd == "midi_quant_punct2") {
             if ((off == 18) && (index > 2)) {
                   val = rasterTable[index + 9 - 1];
                   }
@@ -412,15 +401,14 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             else
                   return;
             }
-      else { //Default:
-            event->ignore();
+      else {
+            printf("DrumEdit::drumCmd: unknown cmd <%s>\n", cmd.toLatin1().data());
             return;
             }
       setQuant(val);
       setRaster(val);
       toolbar->setQuant(quant());
       toolbar->setRaster(raster());
-#endif
       }
 
 //---------------------------------------------------------

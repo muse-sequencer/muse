@@ -49,6 +49,7 @@ SET(MusE_VERSION_FULL  "1.0pre1")
 SET(MusE_INSTALL_NAME  "muse-1.0pre1")
 
 include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
+include ( ${PROJECT_SOURCE_DIR}/cmake/TargetDoc.cmake)
 
 option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface"  ON)
 option ( ENABLE_VST    "enable VST/win support"                 OFF)

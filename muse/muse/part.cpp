@@ -27,23 +27,23 @@
 #include "al/tempo.h"
 
 const char* partColorNames[] = {
-      "Default",
-      "Refrain",
-      "Bridge",
-      "Intro",
-      "Coda",
-      "Chorus",
-      "Solo",
-      "Brass",
-      "Percussion",
-      "Drums",
-      "Guitar",
-      "Bass",
-      "Flute",
-      "Strings",
-      "Keyboard",
-      "Piano",
-      "Saxophon",
+      QT_TR_NOOP("Default"),
+      QT_TR_NOOP("Refrain"),
+      QT_TR_NOOP("Bridge"),
+      QT_TR_NOOP("Intro"),
+      QT_TR_NOOP("Coda"),
+      QT_TR_NOOP("Chorus"),
+      QT_TR_NOOP("Solo"),
+      QT_TR_NOOP("Brass"),
+      QT_TR_NOOP("Percussion"),
+      QT_TR_NOOP("Drums"),
+      QT_TR_NOOP("Guitar"),
+      QT_TR_NOOP("Bass"),
+      QT_TR_NOOP("Flute"),
+      QT_TR_NOOP("Strings"),
+      QT_TR_NOOP("Keyboard"),
+      QT_TR_NOOP("Piano"),
+      QT_TR_NOOP("Saxophon"),
       };
 
 CloneList cloneList;
@@ -62,7 +62,6 @@ void Part::init()
       _mute       = false;
       _colorIndex = 0;
       _fillLen    = 0;
-      _events->incRef(1);
       _events->incARef(1);
       if (_track->type() == Track::WAVE)
             setType(AL::FRAMES);
@@ -92,7 +91,6 @@ Part::Part(const Part& p)
       _raster     = p._raster;
       _xmag       = p._xmag;
       _fillLen    = p._fillLen;
-      _events->incRef(1);
       }
 
 Part::Part(const Part& p, EventList* el)
@@ -108,7 +106,6 @@ Part::Part(const Part& p, EventList* el)
       _xmag       = p._xmag;
       _fillLen    = p._fillLen;
       _events     = el;
-      _events->incRef(1);
       _events->incARef(1);
       }
 
@@ -129,9 +126,6 @@ Part::Part(Track* t, EventList* el)
 
 Part::~Part()
       {
-      _events->incRef(-1);
-      if (_events->refCount() <= 0)
-            delete _events;
       }
 
 //---------------------------------------------------------
@@ -386,7 +380,6 @@ void Part::read(QDomNode node)
                         if (i->id == id) {
                               delete _events;
                               _events = (EventList*)(i->el);
-                              _events->incRef(1);
                               _events->incARef(1);
                               break;
                               }

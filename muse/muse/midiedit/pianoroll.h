@@ -70,7 +70,6 @@ class PianoRoll : public MidiEditor {
       QuantConfig* quantConfig;
 
       QWidget* genToolbar(QWidget* parent);
-      virtual void keyPressEvent(QKeyEvent*);
       void setEventColorMode(int);
       PianoCanvas* canvas() { return (PianoCanvas*)tcanvas; }
       const PianoCanvas* canvas() const { return (PianoCanvas*)tcanvas; }
@@ -83,9 +82,7 @@ class PianoRoll : public MidiEditor {
 
       virtual void cmd(QAction*);
       void setEventColorMode(QAction*);
-      void configChanged();
-      void cmdLeft();
-      void cmdRight();
+      void pianoCmd(QObject*);
 
    public:
       PianoRoll(PartList*, bool);

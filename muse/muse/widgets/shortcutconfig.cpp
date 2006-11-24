@@ -37,6 +37,7 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
       connect(defineButton, SIGNAL(pressed()), this, SLOT(assignShortcut()));
       connect(clearButton,  SIGNAL(pressed()), this, SLOT(clearShortcut()));
       connect(applyButton,  SIGNAL(pressed()), this, SLOT(assignAll()));
+      connect(scListView, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(assignShortcut()));
 
       current_category = ALL_SHRT;
 //TD   cgListView->setSorting(SHRT_CATEGORY_COL, -1);
@@ -84,8 +85,6 @@ void ShortcutConfig::assignShortcut()
       if (sc.exec()) {
             s->key = sc.getKey();
             active->setText(SHRT_SHRTCUT_COL, s->key.toString(QKeySequence::NativeText));
-            if (s->action)
-                  s->action->setShortcut(s->key);
             _config_changed = true;
             }
       clearButton->setEnabled(true);
@@ -146,5 +145,23 @@ void ShortcutConfig::closeEvent(QCloseEvent*)
 
 void ShortcutConfig::assignAll()
       {
+      foreach(QWidget* w, QApplication::allWidgets()) {
+            foreach(QAction* a, w->actions()) {
+                  QVariant v(a->data());
+                  if (v.type() == QVariant::String) {
+                        QString name = v.toString();
+                        foreach (Shortcut* s, shortcuts) {
+                              if (s->xml == name) {
+                                    if (a->shortcut() != s->key) {
+                                          printf("shortcut <%s> changed\n", s->xml);
+                                          a->setShortcuts(QList<QKeySequence>());
+                                          a->setShortcut(s->key);
+                                          }
+                                    }
+                              }
+                        }
+                  }
+            }
       done(_config_changed);
       }
+

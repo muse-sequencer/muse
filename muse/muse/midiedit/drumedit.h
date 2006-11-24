@@ -55,13 +55,12 @@ class DrumEdit : public MidiEditor {
 
       virtual void closeEvent(QCloseEvent*);
       QWidget* genToolbar(QWidget* parent);
-      virtual void keyPressEvent(QKeyEvent*);
       DrumCanvas* canvas() { return (DrumCanvas*)tcanvas; }
 
    private slots:
       void noteinfoChanged(NoteInfo::ValType type, int val);
       virtual void cmd(QAction*);
-      void configChanged();
+      void drumCmd(QObject* object);
 
    public slots:
       void setSelection(int, Event&, Part*);

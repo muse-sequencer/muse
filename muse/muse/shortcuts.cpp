@@ -117,7 +117,6 @@ Shortcut MuseApplication::sc[] = {
             ":/xpm/recordOn.svg",
             ":/xpm/recordOff.svg"
             ),
-//------
       Shortcut(
             "punchin",
             QT_TR_NOOP("Transport: Punch In"),
@@ -163,8 +162,6 @@ Shortcut MuseApplication::sc[] = {
             QT_TR_NOOP("send note off to all midi channels"),
             ":/xpm/panic.xpm"
             ),
-
-
       Shortcut(
             "copy",
             QT_TR_NOOP("Edit: Copy"),
@@ -942,6 +939,12 @@ Shortcut MuseApplication::sc[] = {
             Qt::Key_Comma
             ),
       Shortcut(
+            "midi_insert_at_loc",
+            QT_TR_NOOP("Insert"),
+            PROLL_SHRT,  
+            Qt::SHIFT + Qt::Key_Right
+            ),
+      Shortcut(
             "lm_ins_tempo",
             QT_TR_NOOP("Insert Tempo"),
             LMEDIT_SHRT,  
@@ -1011,7 +1014,7 @@ QAction* getAction(const char* id, QObject* parent)
             printf("interanl error: shortcut <%s> not found\n", id);
             return 0;
             }
-      if (s->action == 0 || s->action->parent() != parent) {
+      if (s->action == 0 || (s->action->parent() != parent)) {
             s->action = new QAction(s->xml, parent);
             s->action->setData(s->xml);
             s->action->setShortcut(s->key);

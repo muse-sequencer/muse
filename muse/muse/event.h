@@ -120,26 +120,51 @@ typedef std::pair <iEvent, iEvent> EventRange;
 //    tick sorted list of events
 //---------------------------------------------------------
 
-class EventList : public EL {
-      int ref;          // number of references to this EventList
+class EventListData : public EL, public QSharedData {
       int aref;         // number of active references (exclude undo list)
       void deselect();
 
    public:
-      EventList()           { ref = 0; aref = 0;  }
-      ~EventList()          {}
+      EventListData()           { aref = 0;  }
+      ~EventListData()          {}
 
-      void incRef(int n)    { ref += n;    }
-      int refCount() const  { return ref;  }
       void incARef(int n)   { aref += n;   }
       int arefCount() const { return aref; }
-
       iEvent find(const Event&);
       iEvent add(Event& event);
       iEvent add(Event& event, unsigned tick);
       void move(Event& event, unsigned tick);
       void dump() const;
       void read(QDomNode, bool midi);
+      };
+
+class EventList {
+      QSharedDataPointer<EventListData> d;
+
+   public:
+      EventList()                             { d = new EventListData(); }
+      void incARef(int n)                     { d->incARef(n);           }
+      int arefCount() const                   { return d->arefCount();   }
+      iEvent find(const Event& event)         { return d->find(event);   }
+      iEvent add(Event& event)                { return d->add(event);    }
+      iEvent add(Event& event, unsigned tick) { return d->add(event, tick); }
+      void move(Event& event, unsigned tick)  { d->move(event, tick);    }
+      void dump() const                       { d->dump();               }
+      void read(QDomNode n, bool midi)        { d->read(n, midi);        }
+      iEvent begin()                          { return d->begin(); }
+      iEvent end()                            { return d->end(); }
+      ciEvent begin() const                   { return d->begin(); }
+      ciEvent end() const                     { return d->end(); }
+      iEvent lower_bound(unsigned n)          { return d->lower_bound(n); }
+      ciEvent lower_bound(unsigned n) const   { return d->lower_bound(n); }
+      iEvent upper_bound(unsigned n)          { return d->upper_bound(n); }
+      ciEvent upper_bound(unsigned n) const   { return d->upper_bound(n); }
+      EventRange equal_range(unsigned n)      { return d->equal_range(n); }
+      void clear()                            { d->clear(); }
+      bool empty() const                      { return d->empty(); }
+      void erase(iEvent i)                    { d->erase(i); }
+      void erase(iEvent i, iEvent k)          { d->erase(i, k); }
+      unsigned size() const                   { return d->size(); }
       };
 
 #endif

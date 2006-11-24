@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>537</width>
+    <width>661</width>
     <height>403</height>
    </rect>
   </property>
@@ -17,108 +17,96 @@
   </property>
   <layout class="QVBoxLayout" >
    <property name="margin" >
-    <number>11</number>
+    <number>9</number>
    </property>
    <property name="spacing" >
     <number>6</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBox3" >
-     <property name="title" >
-      <string/>
+    <widget class="QSplitter" name="splitter" >
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
      </property>
-     <layout class="QHBoxLayout" >
-      <property name="margin" >
+     <widget class="QTreeWidget" name="cgListView" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>7</vsizetype>
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>105</width>
+        <height>200</height>
+       </size>
+      </property>
+      <property name="indentation" >
        <number>0</number>
       </property>
-      <property name="spacing" >
-       <number>3</number>
+      <property name="rootIsDecorated" >
+       <bool>false</bool>
       </property>
-      <item>
-       <widget class="QTreeWidget" name="cgListView" >
-        <property name="sizePolicy" >
-         <sizepolicy>
-          <hsizetype>5</hsizetype>
-          <vsizetype>7</vsizetype>
-          <horstretch>1</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize" >
-         <size>
-          <width>105</width>
-          <height>200</height>
-         </size>
-        </property>
-        <property name="indentation" >
-         <number>0</number>
-        </property>
-        <property name="rootIsDecorated" >
-         <bool>false</bool>
-        </property>
-        <property name="sortingEnabled" >
-         <bool>true</bool>
-        </property>
-        <property name="columnCount" >
-         <number>1</number>
-        </property>
-        <column>
-         <property name="text" >
-          <string>Category</string>
-         </property>
-        </column>
-       </widget>
-      </item>
-      <item>
-       <widget class="QTreeWidget" name="scListView" >
-        <property name="sizePolicy" >
-         <sizepolicy>
-          <hsizetype>7</hsizetype>
-          <vsizetype>7</vsizetype>
-          <horstretch>2</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize" >
-         <size>
-          <width>170</width>
-          <height>230</height>
-         </size>
-        </property>
-        <property name="alternatingRowColors" >
-         <bool>true</bool>
-        </property>
-        <property name="indentation" >
-         <number>0</number>
-        </property>
-        <property name="rootIsDecorated" >
-         <bool>false</bool>
-        </property>
-        <property name="uniformRowHeights" >
-         <bool>true</bool>
-        </property>
-        <property name="sortingEnabled" >
-         <bool>true</bool>
-        </property>
-        <property name="allColumnsShowFocus" >
-         <bool>true</bool>
-        </property>
-        <property name="columnCount" >
-         <number>2</number>
-        </property>
-        <column>
-         <property name="text" >
-          <string>Description</string>
-         </property>
-        </column>
-        <column>
-         <property name="text" >
-          <string>Shortcut</string>
-         </property>
-        </column>
-       </widget>
-      </item>
-     </layout>
+      <property name="sortingEnabled" >
+       <bool>true</bool>
+      </property>
+      <property name="columnCount" >
+       <number>1</number>
+      </property>
+      <column>
+       <property name="text" >
+        <string>Category</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QTreeWidget" name="scListView" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>7</hsizetype>
+        <vsizetype>7</vsizetype>
+        <horstretch>2</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>170</width>
+        <height>230</height>
+       </size>
+      </property>
+      <property name="alternatingRowColors" >
+       <bool>true</bool>
+      </property>
+      <property name="indentation" >
+       <number>0</number>
+      </property>
+      <property name="rootIsDecorated" >
+       <bool>false</bool>
+      </property>
+      <property name="uniformRowHeights" >
+       <bool>true</bool>
+      </property>
+      <property name="sortingEnabled" >
+       <bool>true</bool>
+      </property>
+      <property name="allColumnsShowFocus" >
+       <bool>true</bool>
+      </property>
+      <property name="columnCount" >
+       <number>2</number>
+      </property>
+      <column>
+       <property name="text" >
+        <string>Description</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Shortcut</string>
+       </property>
+      </column>
+     </widget>
     </widget>
    </item>
    <item>
@@ -129,22 +117,6 @@
      <property name="spacing" >
       <number>6</number>
      </property>
-     <item>
-      <spacer>
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType" >
-        <enum>QSizePolicy::Expanding</enum>
-       </property>
-       <property name="sizeHint" >
-        <size>
-         <width>150</width>
-         <height>21</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
      <item>
       <widget class="QPushButton" name="clearButton" >
        <property name="enabled" >
@@ -190,7 +162,7 @@
      <item>
       <widget class="QPushButton" name="applyButton" >
        <property name="text" >
-        <string>&amp;Apply</string>
+        <string>Ok</string>
        </property>
        <property name="shortcut" >
         <string>Alt+A</string>

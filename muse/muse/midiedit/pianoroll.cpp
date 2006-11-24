@@ -72,7 +72,6 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
 
       QAction* a = getAction("delete", this);
       menuEdit->addAction(a);
-//TD?      a->setData(PianoCanvas::CMD_DEL);
 
       menuEdit->addSeparator();
 
@@ -210,21 +209,25 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
       //
       // install misc shortcuts
       //
-      
-      a = getAction("curpos_increase", this);
-      a->setShortcutContext(Qt::WindowShortcut);
-      addAction(a);
-      connect(a, SIGNAL(triggered()), SLOT(cmdRight()));
-
-      a = getAction("curpos_decrease", this);
-      a->setShortcutContext(Qt::WindowShortcut);
-      addAction(a);
-      connect(a, SIGNAL(triggered()), SLOT(cmdLeft()));
-
       QShortcut* sc = new QShortcut(Qt::Key_Escape, this);
       sc->setContext(Qt::WindowShortcut);
-
       connect(sc, SIGNAL(activated()), SLOT(close()));
+
+      QSignalMapper* cmdMap = new QSignalMapper(this);
+      static const char* actions[] = { 
+            "curpos_increase", "curpos_decrease",
+            "midi_insert_at_loc", 
+            "midi_quant_1", "midi_quant_2", "midi_quant_3", "midi_quant_4",
+            "midi_quant_5", "midi_quant_6", "midi_quant_7",
+            "midi_quant_punct", "midi_quant_punct2", "midi_quant_triol",
+            };
+      for (unsigned i = 0; i < sizeof(actions)/sizeof(*actions); ++i) {
+            a = getAction(actions[i], this);
+            addAction(a);
+            cmdMap->setMapping(a, a);
+            connect(a, SIGNAL(triggered()), cmdMap, SLOT(map()));
+            }
+      connect(cmdMap, SIGNAL(mapped(QObject*)), SLOT(pianoCmd(QObject*)));
 
       connect(song, SIGNAL(songChanged(int)), canvas(), SLOT(songChanged(int)));
       connect(followSongAction, SIGNAL(toggled(bool)), canvas(), SLOT(setFollow(bool)));
@@ -240,32 +243,6 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
       else {
 	      resize(initWidth, initHeight);
             }
-      }
-
-//---------------------------------------------------------
-//   cmdLeft
-//---------------------------------------------------------
-
-void PianoRoll::cmdLeft()
-      {
-      canvas()->pianoCmd(MCMD_LEFT);
-      }
-
-//---------------------------------------------------------
-//   cmdRight
-//---------------------------------------------------------
-
-void PianoRoll::cmdRight()
-      {
-      canvas()->pianoCmd(MCMD_RIGHT);
-      }
-
-//---------------------------------------------------------
-//   configChanged
-//---------------------------------------------------------
-
-void PianoRoll::configChanged()
-      {
       }
 
 //---------------------------------------------------------
@@ -395,23 +372,20 @@ void PianoRoll::soloChanged(bool flag)
       }
 
 //---------------------------------------------------------
-//   viewKeyPressEvent
+//   pianoCmd
 //---------------------------------------------------------
 
-void PianoRoll::keyPressEvent(QKeyEvent* event)
+void PianoRoll::pianoCmd(QObject* object)
       {
-#if 0 //TODOB
+      QAction* a = (QAction*)object;
+      QString cmd(a->data().toString());
+
       static int rasterTable[] = {
             //-9----8-  7    6     5     4    3(1/4)     2   1
             4,  8, 16, 32,  64, 128, 256,  512, 1024,  // triple
             6, 12, 24, 48,  96, 192, 384,  768, 1536,
             9, 18, 36, 72, 144, 288, 576, 1152, 2304   // dot
             };
-
-      if (info->hasFocus()) {
-            event->ignore();
-            return;
-            }
 
       int index;
       int n = sizeof(rasterTable)/sizeof(*rasterTable);
@@ -428,42 +402,39 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
       int val = 0;
 
       PianoCanvas* pc = canvas();
-      int key = event->key();
 
-      if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) {
+      if (cmd == "curpos_increase")
+            canvas()->pianoCmd(MCMD_LEFT);
+      else if (cmd == "curpos_decrease")
+            canvas()->pianoCmd(MCMD_RIGHT);
+      else if (cmd == "midi_insert_at_loc") {
             pc->pianoCmd(MCMD_INSERT);
             return;
             }
-      else if (key == Qt::Key_Delete) {
-            pc->pianoCmd(MCMD_DELETE);
-            return;
-            }
-      else if (key == shortcuts[SHRT_SET_QUANT_1].key)
+      else if (cmd == "midi_quant_1")
             val = rasterTable[8 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_2].key)
+      else if (cmd == "midi_quant_2")
             val = rasterTable[7 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_3].key)
+      else if (cmd == "midi_quant_3")
             val = rasterTable[6 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_4].key)
+      else if (cmd == "midi_quant_4")
             val = rasterTable[5 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_5].key)
+      else if (cmd == "midi_quant_5")
             val = rasterTable[4 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_6].key)
+      else if (cmd == "midi_quant_6")
             val = rasterTable[3 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_7].key)
+      else if (cmd == "midi_quant_7")
             val = rasterTable[2 + off];
-      else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
+      else if (cmd == "midi_quant_triol")
             val = rasterTable[index + ((off == 0) ? 9 : 0)];
-
-      else if (key == shortcuts[SHRT_EVENT_COLOR].key) {
+      else if (cmd == "change_event_color") {
             _colorMode = (_colorMode + 1) % 3;
             setEventColorMode(_colorMode);
             return;
             }
-      else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
+      else if (cmd == "midi_quant_punct")
             val = rasterTable[index + ((off == 18) ? 9 : 18)];
-
-      else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key) {
+      else if (cmd == "midi_quant_punct2") {
             if ((off == 18) && (index > 2)) {
                   val = rasterTable[index + 9 - 1];
                   }
@@ -473,17 +444,12 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             else
                   return;
             }
-      else { //Default:
-            event->ignore();
-            return;
-            }
-
+      else
+            printf("unknown cmd <%s>\n", cmd.toLatin1().data());
       setQuant(val);
       setRaster(val);
       toolbar->setQuant(quant());
       toolbar->setRaster(raster());
-#endif
-      event->ignore();
       }
 
 //---------------------------------------------------------

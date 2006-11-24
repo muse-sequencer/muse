@@ -1,3 +1,6 @@
+24.11 (ws)
+      - added new make target: "doxy" to generate doxygen source 
+        documentation
 21.11 (ws)
       - fixed DSSI support
 21.11 (ng)
