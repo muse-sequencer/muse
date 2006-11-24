@@ -38,8 +38,6 @@
 #include "midiedit/pianoroll.h"
 #include "part.h"
 #include "marker/markerview.h"
-// #include "midioutport.h"
-// #include "midiinport.h"
 #include "liste/listedit.h"
 
 //---------------------------------------------------------
@@ -90,14 +88,14 @@ void MusE::readToplevels(QDomNode node)
                   }
             else if (tag == "PianoRoll") {
                   PianoRoll* pianoroll = new PianoRoll(pl, true);
-                  connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
+//                  connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
                   pianoroll->read(node);
                   pianoroll->show();
                   pl = new PartList;
                   }
             else if (tag == "DrumEdit") {
                   DrumEdit* drumEditor = new DrumEdit(pl, true);
-                  connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
+//                  connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
                   drumEditor->read(node);
                   drumEditor->show();
                   pl = new PartList;

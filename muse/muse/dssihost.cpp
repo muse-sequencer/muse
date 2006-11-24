@@ -312,8 +312,13 @@ void DssiSynthIF::showGui(bool v)
       {
       if (v == guiVisible())
             return;
+      for (int i = 0; i < 5; ++i) {
+            if (uiOscPath)
+                  break;
+            sleep(1);
+            }
       if (uiOscPath == 0) {
-            printf("no uiOscPath\n");
+            printf("DssiSynthIF::showGui(): no uiOscPath\n");
             return;
             }
       char uiOscGuiPath[strlen(uiOscPath)+6];
@@ -360,6 +365,23 @@ bool DssiSynthIF::init(DssiSynth* s)
                   fprintf(stderr, "MusE: Warning: plugin doesn't like project directory: \"%s\"\n", rv);
             }
       return true;
+      }
+
+//---------------------------------------------------------
+//   DssiSynthIF
+//---------------------------------------------------------
+
+DssiSynthIF::DssiSynthIF(SynthI* s) 
+   : SynthIF(s) 
+      {
+      _guiVisible = false;
+      uiTarget = 0;
+      uiOscShowPath = 0;
+      uiOscControlPath = 0;
+      uiOscConfigurePath = 0;
+      uiOscProgramPath = 0;
+      uiOscPath = 0;
+      guiPid = -1;
       }
 
 //---------------------------------------------------------
@@ -445,8 +467,7 @@ void DssiSynthIF::getData(MidiEventList* el, unsigned pos, int ch, unsigned samp
                                     dssi->select_program(handle, bank, prog);
                               break;
                               }
-//printf("ctrl %x %d = %d\n", a, a, b);
-//                        snd_seq_ev_set_controller(event, chn, a, b);
+                        snd_seq_ev_set_controller(event, chn, a, b);
                         break;
                   case ME_PITCHBEND:
                         snd_seq_ev_set_pitchbend(event, chn, a);
@@ -624,22 +645,9 @@ int DssiSynthIF::oscProgram(lo_arg** argv)
       {
       int bank    = argv[0]->i;
       int program = argv[1]->i;
-      CVal cval;
-      cval.i = (bank << 8) + program;
-
-printf("received oscProgram\n");
-#if 0 //TD
-      MidiTrackList* tl = song->midis();
-      for (iMidiTrack i = tl->begin(); i != tl->end(); ++i) {
-            MidiTrack* t = *i;
-            MidiPort* port = &midiPorts[t->outPort()];
-            MidiDevice* dev = port->device();
-            if (dev == synti) {
-                  song->setControllerVal(t, CTRL_PROGRAM, cval);
-                  break;
-                  }
-            }
-#endif
+      int ch      = 0;        // TODO: ??
+      MidiEvent event(0, ch, ME_CONTROLLER, CTRL_PROGRAM, (bank << 8) + program);
+      synti->playMidiEvent(&event);
       return 0;
       }
 

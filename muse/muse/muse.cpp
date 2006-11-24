@@ -1538,7 +1538,7 @@ void MusE::startPianoroll(PartList* pl)
       {
       PianoRoll* pianoroll = new PianoRoll(pl, false);
       pianoroll->show();
-      connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
+//      connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
       }
 
 //---------------------------------------------------------
@@ -1582,11 +1582,11 @@ void MusE::startMidiTrackerEditor()
       }
 
 void MusE::startMidiTrackerEditor(PartList* pl)
-{
-  MidiTrackerEditor* miditracker = new MidiTrackerEditor(pl, false);
-  miditracker->show();
-  connect(muse, SIGNAL(configChanged()), miditracker, SLOT(configChanged()));
-}
+      {
+      MidiTrackerEditor* miditracker = new MidiTrackerEditor(pl, false);
+      miditracker->show();
+      connect(muse, SIGNAL(configChanged()), miditracker, SLOT(configChanged()));
+      }
 
 //---------------------------------------------------------
 //   startMasterEditor
@@ -1625,7 +1625,7 @@ void MusE::startDrumEditor(PartList* pl)
       {
       DrumEdit* drumEditor = new DrumEdit(pl, false);
       drumEditor->show();
-      connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
+//      connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
       }
 
 //---------------------------------------------------------

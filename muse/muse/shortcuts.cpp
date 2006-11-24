@@ -998,7 +998,7 @@ void readShortCuts(QDomNode node)
             if (s)
                   s->key = QKeySequence::fromString(e.text(), QKeySequence::PortableText);
             else
-                  printf("MusE:readShortCuts: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:readShortCuts: unknown tag <%s>\n", e.tagName().toLatin1().data());
             }
       }
 

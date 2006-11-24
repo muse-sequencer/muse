@@ -86,16 +86,7 @@ class DssiSynthIF : public SynthIF
       int guiPid;
 
    public:
-      DssiSynthIF(SynthI* s) : SynthIF(s) {
-            _guiVisible = false;
-            uiTarget = 0;
-            uiOscShowPath = 0;
-            uiOscControlPath = 0;
-            uiOscConfigurePath = 0;
-            uiOscProgramPath = 0;
-            uiOscPath = 0;
-            guiPid = -1;
-            }
+      DssiSynthIF(SynthI* s);
       virtual ~DssiSynthIF();
 
       virtual bool guiVisible() const;
