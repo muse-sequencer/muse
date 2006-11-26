@@ -266,6 +266,7 @@ Arranger::Arranger(QMainWindow* parent)
       for (int i = 0; i < Track::TRACK_TYPES; ++i)
             trackInfos[i] = 0;
 
+      zeroTrackInfo = 0;
       _curTrack = 0;
       strip     = 0;
       info      = 0;
@@ -836,9 +837,16 @@ void Arranger::updateIndex()
 void Arranger::toggleTrackInfo(bool val)
       {
       trackInfoVisible = val;
-      if (_curTrack == 0)
-            return;
       if (trackInfoVisible) {
+            if (_curTrack == 0) {
+                  if (zeroTrackInfo == 0) {
+                        zeroTrackInfo = new QWidget(this);
+                        trackInfo->addWidget(zeroTrackInfo);
+                        }
+                  trackInfo->setCurrentWidget(zeroTrackInfo);
+                  
+                  return;
+                  }
             Track::TrackType t = _curTrack->type();
             TrackInfo* w = trackInfos[t];
             if (w == 0) {
@@ -848,8 +856,8 @@ void Arranger::toggleTrackInfo(bool val)
             w->init(_curTrack);
             trackInfo->setCurrentWidget(w);
             }
-      infoDock->layout()->invalidate();
-      infoDock->layout()->update();
+//      infoDock->layout()->invalidate();
+//      infoDock->layout()->update();
       }
 
 //---------------------------------------------------------

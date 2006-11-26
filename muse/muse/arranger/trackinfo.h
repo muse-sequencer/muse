@@ -49,7 +49,7 @@ class TrackInfo : public QWidget {
 
    protected:
       QGridLayout* grid;
-      Track* track;
+      QPointer<Track> track;
 
    private slots:
       void nameChanged(QString s);

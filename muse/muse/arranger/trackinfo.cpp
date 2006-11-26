@@ -179,22 +179,22 @@ MidiTrackInfo::MidiTrackInfo()
 
 void MidiTrackInfo::init(Track* t)
       {
-      MidiTrack* midiTrack = (MidiTrack*)t;
+      MidiTrack* midiTrack = (MidiTrack*)&*t;
       if (t != track) {
             if (track) {
-                  disconnect(channel, 0, (MidiTrack*)track, 0);
-                  disconnect((MidiTrack*)track, 0, channel, 0);
+                  disconnect(channel, 0, track, 0);
+                  disconnect(track, 0, channel, 0);
                   }
             connect(channel, SIGNAL(activated(int)), midiTrack, SLOT(setChannel(int)));
             connect(midiTrack,SIGNAL(channelChanged(int)), channel, SLOT(setCurrentIndex(int)));
             }
 
       TrackInfo::init(t);
-      mt.transposition->setValue(((MidiTrack*)track)->transposition());
-      mt.delay->setValue(((MidiTrack*)track)->delay());
-      mt.length->setValue(((MidiTrack*)track)->len());
-      mt.velocity->setValue(((MidiTrack*)track)->velocity());
-      mt.compression->setValue(((MidiTrack*)track)->compression());
+      mt.transposition->setValue(midiTrack->transposition());
+      mt.delay->setValue(midiTrack->delay());
+      mt.length->setValue(midiTrack->len());
+      mt.velocity->setValue(midiTrack->velocity());
+      mt.compression->setValue(midiTrack->compression());
 
       mp.instrument->clear();
       foreach(MidiInstrument* mi, midiInstruments)
@@ -273,7 +273,7 @@ void MidiTrackInfo::controllerChanged(int id)
       if (id == CTRL_PROGRAM) {
             MidiInstrument* mi = track->instrument();
             int val = track->ctrlVal(id).i;
-            mt.patch->setText(mi->getPatchName(((MidiTrack*)track)->channelNo(), val));
+            mt.patch->setText(mi->getPatchName(((MidiTrack*)&*track)->channelNo(), val));
             }
       }
 
@@ -307,7 +307,7 @@ void MidiTrackInfo::autoChanged(Track* t, bool)
 
 void MidiTrackInfo::transpositionChanged(int val)
       {
-      ((MidiTrack*)track)->setTransposition(val);
+      ((MidiTrack*)&*track)->setTransposition(val);
       }
 
 //---------------------------------------------------------
@@ -347,7 +347,7 @@ void MidiTrackInfo::instrumentSelected(int n)
 
 void MidiTrackInfo::velocityChanged(int val)
       {
-      ((MidiTrack*)track)->setVelocity(val);
+      ((MidiTrack*)&*track)->setVelocity(val);
       }
 
 //---------------------------------------------------------
@@ -356,7 +356,7 @@ void MidiTrackInfo::velocityChanged(int val)
 
 void MidiTrackInfo::delayChanged(int val)
       {
-      ((MidiTrack*)track)->setDelay(val);
+      ((MidiTrack*)&*track)->setDelay(val);
       }
 
 //---------------------------------------------------------
@@ -365,7 +365,7 @@ void MidiTrackInfo::delayChanged(int val)
 
 void MidiTrackInfo::lenChanged(int val)
       {
-      ((MidiTrack*)track)->setLen(val);
+      ((MidiTrack*)&*track)->setLen(val);
       }
 
 //---------------------------------------------------------
@@ -374,7 +374,7 @@ void MidiTrackInfo::lenChanged(int val)
 
 void MidiTrackInfo::iKomprChanged(int val)
       {
-      ((MidiTrack*)track)->setCompression(val);
+      ((MidiTrack*)&*track)->setCompression(val);
       }
 
 //---------------------------------------------------------
@@ -383,7 +383,7 @@ void MidiTrackInfo::iKomprChanged(int val)
 
 void MidiTrackInfo::deviceIdChanged(int val)
       {
-      ((MidiTrack*)track)->setDeviceId(val);
+      ((MidiTrack*)&*track)->setDeviceId(val);
       }
 
 //---------------------------------------------------------
@@ -481,7 +481,7 @@ void MidiOutPortInfo::init(Track* t)
       {
       TrackInfo::init(t);
 
-      MidiOutPort* op = (MidiOutPort*)track;
+      MidiOutPort* op = (MidiOutPort*)&*track;
       MidiInstrument* mi = op->instrument();
       int idx = 0;
       int curIdx = 0;
@@ -502,7 +502,7 @@ void MidiOutPortInfo::init(Track* t)
 
 void MidiOutPortInfo::deviceIdChanged(int val)
       {
-      ((MidiOutPort*)track)->setDeviceId(val);
+      ((MidiOutPort*)&*track)->setDeviceId(val);
       }
 
 //---------------------------------------------------------
@@ -511,7 +511,7 @@ void MidiOutPortInfo::deviceIdChanged(int val)
 
 void MidiOutPortInfo::instrumentChanged()
       {
-      MidiOutPort* op = (MidiOutPort*)track;
+      MidiOutPort* op = (MidiOutPort*)&*track;
       MidiInstrument* mi = op->instrument();
       int idx = 0;
       for (iMidiInstrument i = midiInstruments.begin(); i != midiInstruments.end(); ++i, ++idx) {
@@ -528,7 +528,7 @@ void MidiOutPortInfo::instrumentChanged()
 
 void MidiOutPortInfo::instrumentSelected(int n)
       {
-      MidiOutPort* op = (MidiOutPort*)track;
+      MidiOutPort* op = (MidiOutPort*)&*track;
       int idx = 0;
       for (iMidiInstrument i = midiInstruments.begin(); i != midiInstruments.end(); ++i, ++idx) {
             if (idx == n) {
@@ -548,131 +548,3 @@ MidiInPortInfo::MidiInPortInfo()
       grid->setRowStretch(grid->rowCount(), 100);
       }
 
-#if 0
-//---------------------------------------------------------
-//   MidiChannelInfo
-//---------------------------------------------------------
-
-MidiChannelInfo::MidiChannelInfo()
-   : TrackInfo()
-      {
-      patch = new QPushButton;
-      patch->setText("???");
-      patch->setToolTip(tr("Instrument Patch"));
-      grid->addWidget(patch,  2, 0, 1, 2);
-      pop = new QMenu(patch);
-      //
-      // Midi Out Port
-      //
-      QLabel* label = new QLabel(tr("Midi Out Port"));
-      label->setLineWidth(2);
-      label->setFrameStyle(QFrame::Panel | QFrame::Raised);
-      grid->addWidget(label,  3, 0, 1, 2);
-      portName = new TLLineEdit("??");
-      grid->addWidget(portName,  4, 0, 1, 2);
-
-      instrument = new QComboBox;
-      instrument->setFixedWidth(infoWidth);
-      instrument->setToolTip(tr("Midi Instrument"));
-      grid->addWidget(instrument,  5, 0, 1, 2);
-
-      connect(instrument, SIGNAL(activated(int)), SLOT(instrumentSelected(int)));
-      connect(patch,      SIGNAL(clicked()),      SLOT(patchClicked()));
-
-      grid->setRowStretch(grid->rowCount(), 100);
-      }
-
-//---------------------------------------------------------
-//   init
-//---------------------------------------------------------
-
-void MidiChannelInfo::init(Track* t)
-      {
-      TrackInfo::init(t);
-      MidiChannel* midic = (MidiChannel*)t;
-      MidiOut* op = midic->port();
-//TODO      connect(op, SIGNAL(instrumentChanged()), SLOT(instrumentChanged()));
-      connect(midic, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));
-      portName->setText(op->track->name());
-      MidiInstrument* mi = op->instrument();
-      int idx = 0;
-      int curIdx = 0;
-      instrument->clear();
-      for (iMidiInstrument i = midiInstruments.begin(); i != midiInstruments.end(); ++i, ++idx) {
-            instrument->addItem((*i)->iname());
-            if ((*i)->iname() == mi->iname())
-                  curIdx = idx;
-            }
-      instrument->setCurrentIndex(curIdx);
-      int val = midic->ctrlVal(CTRL_PROGRAM).i;
-      patch->setText(mi->getPatchName(midic->channelNo(), val));
-      //
-      // instrument type cannot be changed for software
-      // synthesizer
-      //
-      instrument->setEnabled(op->track->type() != Track::AUDIO_SOFTSYNTH);
-      }
-
-//---------------------------------------------------------
-//   instrumentSelected
-//---------------------------------------------------------
-
-void MidiChannelInfo::instrumentSelected(int n)
-      {
-      MidiChannel* midic = (MidiChannel*)track;
-      MidiOut* op = midic->port();
-      op->setInstrument(midiInstruments[n]);
-      }
-
-//---------------------------------------------------------
-//   instrumentChanged
-//---------------------------------------------------------
-
-void MidiChannelInfo::instrumentChanged()
-      {
-      MidiChannel* midic = (MidiChannel*)track;
-      MidiOut* op = midic->port();
-      MidiInstrument* mi = op->instrument();
-      int idx = 0;
-      for (iMidiInstrument i = midiInstruments.begin(); i != midiInstruments.end(); ++i, ++idx) {
-            if (*i == mi) {
-                  instrument->setCurrentIndex(idx);
-                  break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
-//   patchClicked
-//---------------------------------------------------------
-
-void MidiChannelInfo::patchClicked()
-      {
-      MidiChannel* midic = (MidiChannel*)track;
-      MidiOut* op = midic->port();
-      MidiInstrument* mi = op->instrument();
-      mi->populatePatchPopup(pop, 0);
-
-      QAction* rv = pop->exec(patch->mapToGlobal(QPoint(10,5)));
-      if (rv != 0) {
-            CVal cval;
-            cval.i = rv->data().toInt();
-            song->setControllerVal(track, CTRL_PROGRAM, cval);
-            }
-      }
-
-//---------------------------------------------------------
-//   controllerChanged
-//---------------------------------------------------------
-
-void MidiChannelInfo::controllerChanged(int id)
-      {
-      if (id == CTRL_PROGRAM) {
-            MidiChannel* midic = (MidiChannel*)track;
-            MidiOut* op = midic->port();
-            MidiInstrument* mi = op->instrument();
-            int val = midic->ctrlVal(id).i;
-            patch->setText(mi->getPatchName(midic->channelNo(), val));
-            }
-      }
-#endif

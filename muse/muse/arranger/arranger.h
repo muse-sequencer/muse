@@ -86,6 +86,7 @@ class Arranger : public QWidget {
       QAction* mixerDockAction;
 
       TrackInfo* trackInfos[Track::TRACK_TYPES];
+      QWidget* zeroTrackInfo;
       Tool tool;
       QWidget* trackList;
       PartCanvas* canvas;

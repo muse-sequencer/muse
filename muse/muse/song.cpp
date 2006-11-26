@@ -1021,31 +1021,33 @@ void Song::clear(bool signal)
       _selectedTrack = 0;
       _tracks.clear();
 
-      qDeleteAll(_midis);
+//      qDeleteAll(_midis);
+      for (iMidiTrack i = _midis.begin(); i != _midis.end(); ++i)
+            delete *i;
       _midis.clear();
 
-      qDeleteAll(_waves);
+//      qDeleteAll(_waves);
       _waves.clear();
 
-      qDeleteAll(_inputs);     // audio input ports
+//      qDeleteAll(_inputs);     // audio input ports
       _inputs.clear();
 
-      qDeleteAll(_outputs);    // audio output ports
+//      qDeleteAll(_outputs);    // audio output ports
       _outputs.clear();
 
-      qDeleteAll(_groups);     // mixer groups
+//      qDeleteAll(_groups);     // mixer groups
       _groups.clear();
 
-      qDeleteAll(_synthIs);
+//      qDeleteAll(_synthIs);
       _synthIs.clear();
 
-      qDeleteAll(_midiSyntis);
+//      qDeleteAll(_midiSyntis);
       _midiSyntis.clear();
 
-      qDeleteAll(_midiOutPorts);
+//      qDeleteAll(_midiOutPorts);
       _midiOutPorts.clear();
 
-      qDeleteAll(_midiInPorts);
+//      qDeleteAll(_midiInPorts);
       _midiInPorts.clear();
 
       AL::tempomap.clear();
@@ -1056,7 +1058,6 @@ void Song::clear(bool signal)
       pos[0].setTick(0);
       pos[1].setTick(0);
       pos[2].setTick(0);
-//      _vcpos.setTick(0);
 
       _masterFlag    = true;
       loopFlag       = false;
