@@ -156,6 +156,7 @@ void WaveTrack::read(QDomNode node)
             QDomElement e = node.toElement();
             if (e.tagName() == "part") {
                   Part* p = newPart();
+                  p->ref();
                   p->read(node);
                   parts()->add(p);
                   }
