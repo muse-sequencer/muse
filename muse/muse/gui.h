@@ -37,7 +37,7 @@ static const int defaultTrackHeight = minTrackHeight;
 static const int infoHeight     = 20;
 static const int infoWidth      = 140;
 static const int trackSeparator = 1;
-static const int yTrackOffset   = -4;
+static const int yTrackOffset   = -2; // -4;
 
 //  mixer:
 static const int STRIP_WIDTH  = 66+4;

@@ -1018,17 +1018,14 @@ void PartCanvas::dragMove(QDragMoveEvent* event)
       event->acceptProposedAction();
       state = S_DRAG4;
       ArrangerTrack* at = &(track->arrangerTrack);
-      int y = at->tw->y() - splitWidth/2;
-//      int h = at->tw->height();
 
       PartCanvas* cw = (PartCanvas*)event->source();
       QRect updateRect(drag);
 
 	Pos pos(pix2pos(p.x() - cw->dragOffset()).snaped(raster()));
-	int x = pos2pix(pos);
       drag.setRect(
-         x,
-         y,
+         pos2pix(pos),
+         at->tw->y(),
          rmapx(srcPart->lenTick()),
          at->tw->height() - 1 - partBorderWidth
          );

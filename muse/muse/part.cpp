@@ -360,9 +360,10 @@ void Part::ref()
 void Part::deref()
       {
       --(_events->cloneCount);
-      if (_events->cloneCount <= 0) {
+/*      if (_events->cloneCount <= 0) {
             delete _events;
             _events = 0;
             }
+*/
       }
 

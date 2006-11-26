@@ -117,7 +117,7 @@ void Song::removePart(Part* part)
       audio->sendMessage(&msg, false);
       undoOp(UndoOp::DeletePart, part);
       updateFlags |= SC_PART_REMOVED;
-      part->deref();
+//      part->deref();
       part->track()->partListChanged();
       }
 
