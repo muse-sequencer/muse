@@ -86,7 +86,7 @@ class EventBase : public AL::PosLen {
       virtual void setSpos(int)                     { }
       virtual SndFileR sndFile() const              { return 0;      }
       virtual void setSndFile(SndFileR&)            { }
-      virtual EventBase* clone() = 0;
+      virtual EventBase* clone() const = 0;
       virtual void read(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/) {}
       };
 

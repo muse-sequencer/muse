@@ -25,7 +25,7 @@
 //   readEventList
 //---------------------------------------------------------
 
-void EventListData::read(QDomNode node, bool midi)
+void EventList::read(QDomNode node, bool midi)
       {
       for (; !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
@@ -46,12 +46,12 @@ void EventListData::read(QDomNode node, bool midi)
 //   add
 //---------------------------------------------------------
 
-iEvent EventListData::add(Event& event, unsigned tick)
+iEvent EventList::add(Event& event, unsigned tick)
       {
       return std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (tick, event));
       }
 
-iEvent EventListData::add(Event& event)
+iEvent EventList::add(Event& event)
       {
       return add(event, event.tick());
       }
@@ -60,7 +60,7 @@ iEvent EventListData::add(Event& event)
 //   move
 //---------------------------------------------------------
 
-void EventListData::move(Event& event, unsigned tick)
+void EventList::move(Event& event, unsigned tick)
       {
       iEvent i = find(event);
       erase(i);
@@ -71,7 +71,7 @@ void EventListData::move(Event& event, unsigned tick)
 //   find
 //---------------------------------------------------------
 
-iEvent EventListData::find(const Event& event)
+iEvent EventList::find(const Event& event)
       {
       EventRange range = equal_range(event.tick());
       for (iEvent i = range.first; i != range.second; ++i) {
@@ -85,7 +85,7 @@ iEvent EventListData::find(const Event& event)
 //   dump
 //---------------------------------------------------------
 
-void EventListData::dump() const
+void EventList::dump() const
       {
       for (ciEvent i = begin(); i != end(); ++i)
             i->second.dump();

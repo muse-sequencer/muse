@@ -107,8 +107,8 @@ MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
   //-------------
   //timing matrix
   //-------------
-  TimingPattern* timingPattern =
-    new TimingPattern(this, "Timing", firstTick, lastTick, _quant);
+//  TimingPattern* timingPattern =
+//    new TimingPattern(this, "Timing", firstTick, lastTick, _quant);
 
   //---------------
   //tracks matrices

@@ -70,7 +70,7 @@ void EventBase::dump(int n) const
 //   clone
 //---------------------------------------------------------
 
-Event Event::clone()
+Event Event::clone() const
       {
       return Event(ev->clone());
       }

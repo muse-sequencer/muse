@@ -170,8 +170,10 @@ void WaveTrack::read(QDomNode node)
 
 Part* WaveTrack::newPart(Part*p, bool clone)
       {
-      Part* part = clone ? new Part(this, p->events()) : new Part(this);
+      Part* part = new Part(this);
       if (p) {
+            if (clone)
+                  part->clone(p->events());
             part->setName(p->name());
             part->setColorIndex(p->colorIndex());
 

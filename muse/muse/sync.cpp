@@ -43,13 +43,13 @@ bool acceptMC    = true;
 bool acceptMMC   = true;
 
 static MTC mtcCurTime;
-static int mtcState;    // 0-7 next expected quarter message
-static bool mtcValid;
-static int mtcLost;
-static bool mtcSync;    // receive complete mtc frame?
+// static int mtcState;    // 0-7 next expected quarter message
+// static bool mtcValid;
+// static int mtcLost;
+// static bool mtcSync;    // receive complete mtc frame?
 
-static bool mcStart = false;
-static int mcStartTick;
+//static bool mcStart = false;
+//static int mcStartTick;
 
 enum {
       MMC_STOP = 1,

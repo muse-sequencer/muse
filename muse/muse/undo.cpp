@@ -151,13 +151,13 @@ void Song::doUndo2()
                         Part* part = i->oPart;
                         part->track()->parts()->remove(part);
                         updateFlags |= SC_PART_REMOVED;
-                        i->oPart->events()->incARef(-1);
+                        part->deref();
                         }
                         break;
                   case UndoOp::DeletePart:
                         i->oPart->track()->addPart(i->oPart);
                         updateFlags |= SC_PART_INSERTED;
-                        i->oPart->events()->incARef(1);
+                        i->oPart->ref();
                         break;
                   case UndoOp::ModifyPart:
                         {
@@ -166,6 +166,8 @@ void Song::doUndo2()
                         Part part = *newPart;
                         *newPart  = *oldPart;
                         *oldPart  = part;
+//                        oldPart->deref();
+//                        newPart->ref();
                         updateFlags |= SC_PART_MODIFIED;
                         }
                         break;
@@ -245,14 +247,14 @@ void Song::doRedo2()
                   case UndoOp::AddPart:
                         i->oPart->track()->addPart(i->oPart);
                         updateFlags |= SC_PART_INSERTED;
-                        i->oPart->events()->incARef(1);
+                        i->oPart->ref();
                         break;
                   case UndoOp::DeletePart:
                         {
                         Part* part = i->oPart;
                         part->track()->parts()->remove(part);
                         updateFlags |= SC_PART_REMOVED;
-                        i->oPart->events()->incARef(-1);
+                        part->deref();
                         }
                         break;
                   case UndoOp::ModifyPart:
@@ -263,6 +265,8 @@ void Song::doRedo2()
                         *newPart  = *oldPart;
                         *oldPart  = part;
                         updateFlags |= SC_PART_MODIFIED;
+//                        oldPart->ref();
+//                        newPart->deref();
                         }
                         break;
                   case UndoOp::AddEvent:
@@ -410,6 +414,7 @@ void Song::addUndo(UndoOp& i)
       {
       if (!undoMode) {
             printf("internal error: undoOp without startUndo()\n");
+abort();
             return;
             }
       undoList->back().push_back(i);
@@ -470,8 +475,8 @@ void Song::doUndo3()
                               }
                         break;
                   case UndoOp::ModifyPart:
-                        if (i->oPart->track() != i->nPart->track())
-                              i->nPart->track()->partListChanged();
+                        undoPartModify(i->oPart, i->nPart, true);
+
                   case UndoOp::AddPart:
                   case UndoOp::DeletePart:
                         i->oPart->track()->partListChanged();
@@ -542,8 +547,8 @@ void Song::doRedo3()
                         removeTrack3(i->track);
                         break;
                   case UndoOp::ModifyPart:
-                        if (i->oPart->track() != i->nPart->track())
-                              i->nPart->track()->partListChanged();
+                        undoPartModify(i->oPart, i->nPart, false);
+
                   case UndoOp::AddPart:
                   case UndoOp::DeletePart:
                         i->oPart->track()->partListChanged();
@@ -560,5 +565,41 @@ void Song::doRedo3()
       undoList->push_back(u); // put item on undo list
       redoList->pop_back();
       dirty = true;
+      }
+
+//---------------------------------------------------------
+//   undoPartModify
+//---------------------------------------------------------
+
+void Song::undoPartModify(Part* oPart, Part* nPart, bool undo)
+      {
+      if (oPart->track() != nPart->track())
+            nPart->track()->partListChanged();
+      //
+      // look for cloned part
+      //
+      for (iMidiTrack i = _midis.begin(); i != _midis.end(); ++i) {
+            PartList* pl = (*i)->parts();
+            for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
+                  Part* p = ip->second;
+                  if (undo) {
+                        if (p == nPart)
+                              continue;
+                        if (p->events() == nPart->events()) {
+                              // this is a cloned Part
+                              p->ref();
+                              return;
+                              }
+                        }
+                  else {
+                        if (p == oPart)
+                              continue;
+                        if (p->events() == oPart->events()) {
+                              p->deref();
+                              return;
+                              }
+                        }
+                  }
+            }
       }
 

@@ -44,8 +44,6 @@ class Part;
 class Event;
 class MidiEvent;
 class Event;
-class EventList;
-class MidiInstrument;
 class MidiTrack;
 class MidiSeq;
 class MidiTrackBase;

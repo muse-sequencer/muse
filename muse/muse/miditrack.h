@@ -23,6 +23,7 @@
 
 #include "miditrackbase.h"
 #include "midififo.h"
+#include "event.h"
 
 class Part;
 class EventList;
@@ -35,7 +36,7 @@ class MidiOut;
 class MidiTrack : public MidiTrackBase {
       Q_OBJECT
 
-      EventList* _events;        // tmp Events during midi import
+      EventList _events;         // tmp Events during midi import
 
       // recording:
       MidiFifo recordFifo;       // for event transfer from RT-thread to gui thread
@@ -90,7 +91,7 @@ class MidiTrack : public MidiTrackBase {
       void recordBeat();
       void stopRecording();
 
-      EventList* events() const           { return _events;   }
+      EventList* events()             { return &_events;   }
 
       virtual void read(QDomNode);
       virtual void write(Xml&) const;

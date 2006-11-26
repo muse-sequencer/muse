@@ -131,6 +131,7 @@ class Song : public QObject {
       int _globalPitchShift;
       void readMarker(QDomNode);
       void restartJack();
+      void undoPartModify(Part* oPart, Part* nPart, bool undo);
 
    public slots:
       void beat();

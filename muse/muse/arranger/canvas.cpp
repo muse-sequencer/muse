@@ -193,7 +193,7 @@ void PartCanvas::paint(QPainter& p, QRect r)
                         break;
 
                   QRect pr(x1, y, len, h - partBorderWidth);
-                  bool clone = part->isCloned();
+                  bool clone = part->isClone();
 
                   QPen pen(Qt::black, partBorderWidth, clone ? Qt::DashLine : Qt::SolidLine);
                   QBrush brush(Qt::SolidPattern);
@@ -287,7 +287,7 @@ void PartCanvas::drawMidiPart(QPainter& p, Part* mp, int y, int th, int from, in
       EventList* events = mp->events();
       // iEvent ito(events->lower_bound(to));
 
-      iEvent ito(events->end());
+      iEvent ito = events->end();
 //      int pos = pos2pix(*mp);
 
       if (config.canvasShowPartType & 2) {      // show events
@@ -440,7 +440,7 @@ void PartCanvas::contextMenu(const QPoint& pos)
             a->setData(3);
             a = pop->addAction(tr("de-clone"));
             a->setData(15);
-            a->setEnabled(part->events()->arefCount() > 1);
+            a->setEnabled(part->isClone());
             if (track->type() == Track::MIDI) {
                   a = pop->addAction(tr("AutoFill..."));
                   a->setData(16);
@@ -875,20 +875,19 @@ void PartCanvas::setCursor()
 //   declonePart
 //---------------------------------------------------------
 
-void PartCanvas::declonePart(Part* spart)
+void PartCanvas::declonePart(Part* oPart)
       {
-      Track* track = spart->track();
-      Part* dpart  = track->newPart(spart, false);
+      Track* track = oPart->track();
+      Part* nPart  = track->newPart(oPart, false);
 
-      EventList* se = spart->events();
-      EventList* de = dpart->events();
+      EventList* se = oPart->events();
       for (iEvent i = se->begin(); i != se->end(); ++i) {
             Event oldEvent = i->second;
-            Event ev = oldEvent.clone();
-            de->add(ev);
+//            Event ev = oldEvent.clone();
+            nPart->addEvent(oldEvent);
             }
-      song->cmdChangePart(spart, dpart);
-      track->partListChanged();
+      oPart->deref();
+      song->cmdChangePart(oPart, nPart);
       }
 
 //---------------------------------------------------------

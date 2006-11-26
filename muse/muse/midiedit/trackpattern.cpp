@@ -237,7 +237,7 @@ bool VoicePat::isFreeSpace(const Event* e, unsigned tick) {
 //----------------------------------------------------------
 // CtrlPat
 //----------------------------------------------------------
-CtrlPat::CtrlPat(QString name) {
+CtrlPat::CtrlPat(QString /*name*/) {
 }
 CtrlPat::~CtrlPat() {}
 
@@ -339,7 +339,7 @@ void TrackPattern::add(const Event* e, unsigned tick) {
   }
 }
 
-void TrackPattern::setQuant(int quant) {
+void TrackPattern::setQuant(int /*quant*/) {
   //TODO
 }
 

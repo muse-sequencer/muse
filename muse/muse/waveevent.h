@@ -33,7 +33,7 @@ class WaveEventBase : public EventBase {
       int _spos;        // start sample position in WaveFile
       bool deleted;
 
-      virtual EventBase* clone() { return new WaveEventBase(*this); }
+      virtual EventBase* clone() const { return new WaveEventBase(*this); }
 
    public:
       WaveEventBase(EventType t);

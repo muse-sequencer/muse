@@ -80,22 +80,6 @@ void Song::cmdRemovePart(Part* part)
       startUndo();
       removePart(part);
       endUndo(0);
-      part->track()->partListChanged();
-      }
-
-//---------------------------------------------------------
-//   removePart
-//---------------------------------------------------------
-
-void Song::removePart(Part* part)
-      {
-      AudioMsg msg;
-      msg.id = SEQM_REMOVE_PART;
-      msg.p1 = part;
-      audio->sendMessage(&msg, false);
-      undoOp(UndoOp::DeletePart, part);
-      part->events()->incARef(-1);
-      updateFlags |= SC_PART_REMOVED;
       }
 
 //---------------------------------------------------------
@@ -115,8 +99,26 @@ void Song::cmdRemoveParts()
                   	pl.add(ip->second);
                   }
             }
+      startUndo();
       for (iPart ip = pl.begin(); ip != pl.end(); ++ip)
 		removePart(ip->second);
+      endUndo(0);
+      }
+
+//---------------------------------------------------------
+//   removePart
+//---------------------------------------------------------
+
+void Song::removePart(Part* part)
+      {
+      AudioMsg msg;
+      msg.id = SEQM_REMOVE_PART;
+      msg.p1 = part;
+      audio->sendMessage(&msg, false);
+      undoOp(UndoOp::DeletePart, part);
+      updateFlags |= SC_PART_REMOVED;
+      part->deref();
+      part->track()->partListChanged();
       }
 
 //---------------------------------------------------------
@@ -129,6 +131,7 @@ void Song::cmdChangePart(Part* oldPart, Part* newPart)
       startUndo();
       changePart(oldPart, newPart);
       endUndo(0);
+      newPart->track()->partListChanged();
       }
 
 //---------------------------------------------------------
@@ -143,7 +146,6 @@ void Song::changePart(Part* oldPart, Part* newPart)
       msg.p2 = newPart;
       audio->sendMessage(&msg, false);
       undoOp(UndoOp::ModifyPart, oldPart, newPart);
-      oldPart->events()->incARef(-1);
       updateFlags = SC_PART_MODIFIED;
       if (len() < newPart->endTick())
             setLen(newPart->endTick());
@@ -161,33 +163,32 @@ void Song::cmdChangePart(Part* oPart, unsigned pos, unsigned len)
       // move events so they stay at same position in song
       //
       int delta    = oPart->tick() - pos;
-      EventList* d = new EventList();
-      EventList* s = oPart->events();
-      for (iEvent ie = s->begin(); ie != s->end(); ++ie) {
+      Part* nPart = new Part(*oPart);
+      const EventList* s = oPart->events();
+      for (ciEvent ie = s->begin(); ie != s->end(); ++ie) {
             int tick = ie->first + delta;
             if (tick >= 0 && tick < int(len)) {
                   Event ev = ie->second.clone();
                   ev.move(delta);
-                  d->add(ev, unsigned(tick));
+                  nPart->addEvent(ev, unsigned(tick));
                   }
             }
       if (oPart->fillLen() > 0 && len < (unsigned)oPart->fillLen())
             oPart->setFillLen(len);
       if (oPart->lenTick() < len && oPart->fillLen() > 0) {
-            unsigned loop = oPart->fillLen();
+            unsigned loop   = oPart->fillLen();
             unsigned fillLen = len - oPart->lenTick();
             for (unsigned i = 0; i < fillLen / loop; ++i) {
                   int start = oPart->lenTick() + loop * i;
-                  for (iEvent ie = s->begin(); ie != s->end(); ++ie) {
+                  for (ciEvent ie = s->begin(); ie != s->end(); ++ie) {
                         if (ie->first >= loop)
                               break;
                   	Event ev = ie->second.clone();
                         ev.move(start);
-                        d->add(ev, ie->first + start);
+                        nPart->addEvent(ev, ie->first + start);
                         }
                   }
             }
-      Part* nPart = new Part(*oPart, d);
       nPart->setLenTick(len);
       nPart->setTick(pos);
       changePart(oPart, nPart);
@@ -236,7 +237,7 @@ void Song::cmdLinkPart(Part* sPart, unsigned pos, Track* track)
 
 void Song::cmdCopyPart(Part* sPart, unsigned pos, Track* track)
       {
-      bool clone = sPart->events()->arefCount() > 1;
+      bool clone = sPart->isClone();
       Part* dPart = track->newPart(sPart, clone);
       dPart->setTick(pos);
       if (!clone) {

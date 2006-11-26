@@ -40,7 +40,6 @@ MidiTrack::MidiTrack()
       _delay          = 0;
       _len            = 100;          // percent
       _compression    = 100;          // percent
-      _events         = new EventList;
 
       initMidiController();
       recordPart      = 0;
@@ -62,23 +61,28 @@ MidiTrack::MidiTrack()
 
 MidiTrack::~MidiTrack()
       {
-      delete _events;
       }
 
 //---------------------------------------------------------
 //   newPart
 //---------------------------------------------------------
 
-Part* MidiTrack::newPart(Part*p, bool clone)
+Part* MidiTrack::newPart(Part* p, bool clone)
       {
-      Part* part = clone ? new Part(this, p->events()) : new Part(this);
+      Part* part = new Part(this);
       if (p) {
+            if (clone)
+                  part->clone(p->events());
+            else
+                  part->ref();
             part->setName(p->name());
             part->setColorIndex(p->colorIndex());
 
             *(AL::PosLen*)part = *(AL::PosLen*)p;
             part->setMute(p->mute());
             }
+      else
+            part->ref();
       return part;
       }
 

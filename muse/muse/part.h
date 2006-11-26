@@ -33,10 +33,14 @@ namespace AL {
 
 using AL::Xml;
 
+//---------------------------------------------------------
+//   ClonePart
+//---------------------------------------------------------
+
 struct ClonePart {
-      const EventList* el;
+      EventList* el;
       int id;
-      ClonePart(const EventList* e, int i) : el(e), id(i) {}
+      ClonePart(EventList* e, int i) : el(e), id(i) {}
       };
 
 typedef std::list<ClonePart> CloneList;
@@ -74,18 +78,12 @@ class Part : public AL::PosLen {
       // auto fill:
       int _fillLen;	// = 0 if no auto fill
 
-      void init();
-
    protected:
       Track* _track;
       EventList* _events;
 
    public:
       Part(Track*);
-      Part(Track*, EventList*);
-      Part(const Part&, EventList*);
-      Part(const Part&);
-      ~Part();
 
       CtrlCanvasList* getCtrlCanvasList() { return &ctrlCanvasList; }
 
@@ -114,17 +112,21 @@ class Part : public AL::PosLen {
       void setXmag(double val)         { _xmag = val;    }
 
       EventList* events() const        { return _events; }
-      void setEventList(EventList* e)  { _events = e; }
+
+      void clone(EventList* e);
       iEvent addEvent(Event& p);
+      iEvent addEvent(Event& p, unsigned);
 
       int fillLen() const              { return _fillLen; }
       void setFillLen(int val)         { _fillLen = val;  }
 
       void read(QDomNode);
-      void write(Xml&) const;
+      void write(Xml&);
       void dump(int n = 0) const;
 
-      bool isCloned() const;
+      bool isClone() const;
+      void deref();
+      void ref();
       };
 
 //---------------------------------------------------------

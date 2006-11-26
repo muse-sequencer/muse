@@ -49,83 +49,32 @@ const char* partColorNames[] = {
 CloneList cloneList;
 
 //---------------------------------------------------------
-//   init
-//---------------------------------------------------------
-
-void Part::init()
-      {
-      _raster     = -1;		// invalid
-      _quant      = -1;
-      _xmag       = -1.0;
-
-      _selected   = false;
-      _mute       = false;
-      _colorIndex = 0;
-      _fillLen    = 0;
-      _events->incARef(1);
-      if (_track->type() == Track::WAVE)
-            setType(AL::FRAMES);
-      }
-
-//---------------------------------------------------------
 //   Part
 //---------------------------------------------------------
 
 Part::Part(Track* t)
       {
+      _selected   = false;
+      _mute       = false;
+      _colorIndex = 0;
+      _raster     = -1;		// invalid
+      _quant      = -1;
+      _xmag       = -1.0;
+      _fillLen    = 0;
       _track      = t;
-      _events     = new EventList;
-      init();
-      }
-
-Part::Part(const Part& p)
-   : PosLen(p)
-      {
-      _track      = p._track;
-      _selected   = p._selected;
-      _mute       = p._mute;
-      _colorIndex = p._colorIndex;
-      _name       = p._name;
-      _events     = p._events;
-      _quant      = p._quant;
-      _raster     = p._raster;
-      _xmag       = p._xmag;
-      _fillLen    = p._fillLen;
-      }
-
-Part::Part(const Part& p, EventList* el)
-   : PosLen(p)
-      {
-      _track      = p._track;
-      _selected   = p._selected;
-      _mute       = p._mute;
-      _colorIndex = p._colorIndex;
-      _name       = p._name;
-      _quant      = p._quant;
-      _raster     = p._raster;
-      _xmag       = p._xmag;
-      _fillLen    = p._fillLen;
-      _events     = el;
-      _events->incARef(1);
+      _events     = 0;
+      if (_track->type() == Track::WAVE)
+            setType(AL::FRAMES);
       }
 
 //---------------------------------------------------------
-//   Part
+//   clone
 //---------------------------------------------------------
 
-Part::Part(Track* t, EventList* el)
+void Part::clone(EventList* e)  
       {
-      _track      = t;
-      _events     = el;
-      init();
-      }
-
-//---------------------------------------------------------
-//   Part
-//---------------------------------------------------------
-
-Part::~Part()
-      {
+      _events = e;
+      ref();
       }
 
 //---------------------------------------------------------
@@ -135,6 +84,11 @@ Part::~Part()
 iEvent Part::addEvent(Event& p)
       {
       return _events->add(p);
+      }
+
+iEvent Part::addEvent(Event& p, unsigned t)
+      {
+      return _events->add(p, t);
       }
 
 //---------------------------------------------------------
@@ -234,28 +188,25 @@ void Part::dump(int n) const
 //   Part::write
 //---------------------------------------------------------
 
-void Part::write(Xml& xml) const
+void Part::write(Xml& xml)
       {
-      const EventList* el = events();
       int id              = -1;
       bool dumpEvents     = true;
 
-      if (isCloned()) {
+
+      if (isClone()) {
             // we have to dump the event list only on first
             // incarnation of clone
 
             for (iClone i = cloneList.begin(); i != cloneList.end(); ++i) {
-                  if (i->el == el) {
+                  if (i->el == _events) {
                         id = i->id;
                         dumpEvents = false;
                         break;
                         }
                   }
-            if (id == -1) {
-                  id = cloneList.size();
-                  ClonePart cp(el, id);
-                  cloneList.push_back(cp);
-                  }
+            if (id == -1)
+                  cloneList.push_back(ClonePart(_events, cloneList.size()));
             }
 
       if (id != -1)
@@ -283,7 +234,7 @@ void Part::write(Xml& xml) const
       if (_mute)
             xml.intTag("mute", _mute);
       if (dumpEvents) {
-            for (ciEvent e = el->begin(); e != el->end(); ++e)
+            for (ciEvent e = _events->begin(); e != _events->end(); ++e)
                   e->second.write(xml, *this);
             }
       xml.etag("part");
@@ -297,7 +248,6 @@ void Part::read(QDomNode node)
       {
       QDomElement e = node.toElement();
       int id = e.attribute("cloneId", "-1").toInt();
-      bool containsEvents = false;
 
 	ctrlCanvasList.clear();
       for (node = node.firstChild(); !node.isNull(); node = node.nextSibling()) {
@@ -330,7 +280,6 @@ void Part::read(QDomNode node)
             else if (tag == "fillLen")
                   _fillLen = i;
             else if (tag == "event") {
-                  containsEvents = true;
                   EventType type = Wave;
                   if (_track->isMidiTrack())
                         type = Note;
@@ -354,7 +303,7 @@ void Part::read(QDomNode node)
                                     mc->addControllerVal(e.dataA(), tick, v);
                                     }
                               else
-                                    _events->add(e);
+                                    _events.add(e);
                               }
                         else
 #endif
@@ -366,34 +315,54 @@ void Part::read(QDomNode node)
             }
 
       if (id != -1) {
-            // clone part
-            if (containsEvents) {
+            bool found = false;
+            for (iClone i = cloneList.begin(); i != cloneList.end(); ++i) {
+                  if (i->id == id) {
+                        if (_events->size())
+                              printf("MusE::internal error: clone part contains events\n");
+                        clone(i->el);
+                        found = true;
+                        break;
+                        }
+                  }
+            if (!found) {
                   // add to cloneList:
                   ClonePart cp(_events, id);
                   cloneList.push_back(cp);
-                  }
-            else {
-                  // replace event list with clone event
-                  // list
-                  for (iClone i = cloneList.begin();
-                     i != cloneList.end(); ++i) {
-                        if (i->id == id) {
-                              delete _events;
-                              _events = (EventList*)(i->el);
-                              _events->incARef(1);
-                              break;
-                              }
-                        }
                   }
             }
       }
 
 //---------------------------------------------------------
-//   isCloned
-//    return true if this part is cloned
+//   isClone
 //---------------------------------------------------------
 
-bool Part::isCloned() const
-      {
-      return _events->arefCount() > 1;
+bool Part::isClone() const
+      { 
+      return _events->cloneCount > 1; 
       }
+
+//---------------------------------------------------------
+//   ref
+//---------------------------------------------------------
+
+void Part::ref()
+      {
+      if (_events == 0)
+            _events = new EventList;
+      ++(_events->cloneCount);
+      }
+
+//---------------------------------------------------------
+//   deref
+//---------------------------------------------------------
+
+void Part::deref()
+      {
+      --(_events->cloneCount);
+      if (_events->cloneCount <= 0) {
+            delete _events;
+            _events = 0;
+            }
+      }
+
