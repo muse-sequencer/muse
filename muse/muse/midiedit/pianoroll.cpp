@@ -514,14 +514,14 @@ void PianoRoll::readConfiguration(QDomNode node)
 
 void PianoRoll::writeConfiguration(Xml& xml)
       {
-      xml.tag("PianoRoll");
+      xml.stag("PianoRoll");
       if (PianoRoll::initWidth != PianoRoll::INIT_WIDTH)
-            xml.intTag("width", PianoRoll::initWidth);
+            xml.tag("width", PianoRoll::initWidth);
       if (PianoRoll::initHeight != PianoRoll::INIT_HEIGHT)
-            xml.intTag("height", PianoRoll::initHeight);
+            xml.tag("height", PianoRoll::initHeight);
       if (PianoRoll::initRaster != PianoRoll::INIT_RASTER)
-            xml.intTag("raster", PianoRoll::initRaster);
+            xml.tag("raster", PianoRoll::initRaster);
       if (PianoRoll::initQuant != PianoRoll::INIT_QUANT)
-            xml.intTag("quant", PianoRoll::initQuant);
+            xml.tag("quant", PianoRoll::initQuant);
       xml.etag("PianoRoll");
       }

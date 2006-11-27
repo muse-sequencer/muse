@@ -78,16 +78,16 @@ void MidiOutPort::setName(const QString& s)
 
 void MidiOutPort::write(Xml& xml) const
       {
-      xml.tag("MidiOutPort");
+      xml.stag("MidiOutPort");
       MidiTrackBase::writeProperties(xml);
       if (_instrument)
-            xml.strTag("instrument", _instrument->iname());
+            xml.tag("instrument", _instrument->iname());
 //      for (int i = 0; i < MIDI_CHANNELS; ++i) {
 //            if (!_channel[i]->noInRoute())
 //                  _channel[i]->write(xml);
 //            }
-      xml.intTag("sendSync", sendSync());
-      xml.intTag("deviceId", deviceId());
+      xml.tag("sendSync", sendSync());
+      xml.tag("deviceId", deviceId());
       xml.etag("MidiOutPort");
       }
 

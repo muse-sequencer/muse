@@ -206,7 +206,7 @@ void MidiEditor::writePartList(Xml& xml) const
             Track* track = part->track();
             int trkIdx   = song->tracks()->indexOf(track);
             int partIdx  = track->parts()->index(part);
-            xml.tag("part");
+            xml.stag("part");
             xml.put("%d:%d", trkIdx, partIdx);
             xml.etag("part");
             }
@@ -425,7 +425,7 @@ void MidiEditor::read(QDomNode node)
 void MidiEditor::write(Xml& xml) const
       {
 	writePartList(xml);
-      xml.tag(metaObject()->className());
+      xml.stag(metaObject()->className());
       xml.writeProperties(this);
       const CtrlEditList* el = canvas()->getCtrlEditors();
       for (ciCtrlEdit i = el->begin(); i != el->end(); ++i) {

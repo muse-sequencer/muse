@@ -2047,29 +2047,29 @@ void DeicsOnze::loadConfiguration(QString fileName) {
 //---------------------------------------------------------
 void DeicsOnze::writeConfiguration(AL::Xml* xml) {
   QString str;
-  xml->tag("deicsOnzeConfiguation version=\"1.0\"");
+  xml->stag("deicsOnzeConfiguation version=\"1.0\"");
   //xml->intTag(NBRVOICESSTR, (int)_global.nbrVoices);
   //xml->strTag(CHANNELNUMSTR, (_global.channelNum==-1?ALLSTR:
   //                            str.setNum(_global.channelNum+1)));
-  xml->strTag(QUALITYSTR, (_global.quality==high?HIGHSTR:
+  xml->tag(QUALITYSTR, (_global.quality==high?HIGHSTR:
 			   (_global.quality==middle?MIDDLESTR:
 			    (_global.quality==low?LOWSTR:ULTRALOWSTR))));
-  xml->intTag(FONTSIZESTR, _global.fontSize);
-  xml->strTag(SAVECONFIGSTR, (_saveConfig?YESSTRDEI:NOSTRDEI));
-  xml->strTag(SAVEONLYUSEDSTR, (_saveOnlyUsed?YESSTRDEI:NOSTRDEI));  
-  xml->colorTag(TEXTCOLORSTR,
+  xml->tag(FONTSIZESTR, _global.fontSize);
+  xml->tag(SAVECONFIGSTR, (_saveConfig?YESSTRDEI:NOSTRDEI));
+  xml->tag(SAVEONLYUSEDSTR, (_saveOnlyUsed?YESSTRDEI:NOSTRDEI));  
+  xml->tag(TEXTCOLORSTR,
 		reinterpret_cast<const QColor &>(*_gui->tColor));
-  xml->colorTag(BACKGROUNDCOLORSTR,
+  xml->tag(BACKGROUNDCOLORSTR,
 		reinterpret_cast<const QColor &>(*_gui->bColor));
-  xml->colorTag(EDITTEXTCOLORSTR,
+  xml->tag(EDITTEXTCOLORSTR,
 		reinterpret_cast<const QColor &>(*_gui->etColor));
-  xml->colorTag(EDITBACKGROUNDCOLORSTR,
+  xml->tag(EDITBACKGROUNDCOLORSTR,
 		reinterpret_cast<const QColor &>(*_gui->ebColor));
-  xml->strTag(ISINITSETSTR, (_isInitSet?YESSTRDEI:NOSTRDEI));
+  xml->tag(ISINITSETSTR, (_isInitSet?YESSTRDEI:NOSTRDEI));
   //printf("initSetPath : %s\n", _initSetPath.toAscii().data());
-  xml->strTag(INITSETPATHSTR, _initSetPath.toAscii().data());
-  xml->strTag(ISBACKGROUNDPIXSTR, (_isBackgroundPix?YESSTRDEI:NOSTRDEI));
-  xml->strTag(BACKGROUNDPIXPATHSTR, _backgroundPixPath.toAscii().data());
+  xml->tag(INITSETPATHSTR, _initSetPath.toAscii().data());
+  xml->tag(ISBACKGROUNDPIXSTR, (_isBackgroundPix?YESSTRDEI:NOSTRDEI));
+  xml->tag(BACKGROUNDPIXPATHSTR, _backgroundPixPath.toAscii().data());
 
   xml->etag(DEICSONZECONFIGURATIONSTR);
 }

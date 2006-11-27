@@ -27,10 +27,26 @@ namespace AL {
 //   Xml
 //---------------------------------------------------------
 
+Xml::Xml()
+      {
+      level = 0;      
+      }
+
 Xml::Xml(QIODevice* device)
    : QTextStream(device)
       {
+      setCodec("utf8");
       level = 0;
+      }
+
+//---------------------------------------------------------
+//   putLevel
+//---------------------------------------------------------
+
+void Xml::putLevel()
+      {
+      for (int i = 0; i < level*2; ++i)
+            *this << ' ';
       }
 
 //---------------------------------------------------------
@@ -39,7 +55,7 @@ Xml::Xml(QIODevice* device)
 
 void Xml::header()
       {
-      *this << "<?xml version=\"1.0\"?>\n";
+      *this << "<?xml version=\"1.0\" encoding=\"utf8\"?>\n";
       }
 
 //---------------------------------------------------------
@@ -51,6 +67,7 @@ void Xml::put(const char* format, ...)
       va_list args;
       va_start(args, format);
       putLevel();
+      char buffer[BS];
       vsnprintf(buffer, BS, format, args);
       va_end(args);
     	*this << buffer;
@@ -65,6 +82,7 @@ void Xml::nput(const char* format, ...)
       {
       va_list args;
       va_start(args, format);
+      char buffer[BS];
       vsnprintf(buffer, BS, format, args);
     	*this << buffer;
       va_end(args);
@@ -81,15 +99,17 @@ void Xml::tdata(const QString& s)
       }
 
 //---------------------------------------------------------
-//   tag
+//   stag
+//    <mops attribute="value">
 //---------------------------------------------------------
 
-void Xml::tag(const char* format, ...)
+void Xml::stag(const char* format, ...)
       {
       va_list args;
       va_start(args, format);
       putLevel();
       *this << '<';
+      char buffer[BS];
       vsnprintf(buffer, BS, format, args);
     	*this << buffer;
       va_end(args);
@@ -97,99 +117,73 @@ void Xml::tag(const char* format, ...)
       ++level;
       }
 
+//---------------------------------------------------------
+//   etag
+//---------------------------------------------------------
+
+void Xml::etag(const char* s)
+      {
+      putLevel();
+      *this << "</" << s << '>' << endl;
+      --level;
+      }
+
+//---------------------------------------------------------
+//   tagE
+//    <mops attribute="value"/>
+//---------------------------------------------------------
+
 void Xml::tagE(const char* format, ...)
       {
       va_list args;
       va_start(args, format);
       putLevel();
       *this << '<';
+      char buffer[BS];
       vsnprintf(buffer, BS, format, args);
     	*this << buffer;
       va_end(args);
       *this << "/>" << endl;
       }
 
-//---------------------------------------------------------
-//   etag
-//---------------------------------------------------------
-
-void Xml::etag(const char* format, ...)
-      {
-      va_list args;
-      va_start(args, format);
-      putLevel();
-      *this << "</";
-      vsnprintf(buffer, BS, format, args);
-    	*this << buffer;
-      va_end(args);
-      *this << '>' << endl;
-      --level;
-      }
-
-void Xml::putLevel()
-      {
-      for (int i = 0; i < level*2; ++i)
-            *this << ' ';
-      }
-
-void Xml::intTag(const char* name, int val)
+void Xml::tag(const char* name, int val)
       {
       putLevel();
       *this << "<" << name << ">" << val << "</" << name << ">\n";
       }
 
-void Xml::floatTag(const char* name, float val)
+void Xml::tag(const char* name, unsigned val)
+      {
+      putLevel();
+      *this << "<" << name << ">" << val << "</" << name << ">\n";
+      }
+
+void Xml::tag(const char* name, float val)
       {
       putLevel();
       *this << QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
       }
 
-void Xml::doubleTag(const char* name, double val)
+void Xml::tag(const char* name, const double& val)
       {
       putLevel();
       QString s("<%1>%2</%3>\n");
       *this << s.arg(name).arg(val).arg(name);
       }
 
-void Xml::strTag(const char* name, const char* val)
+void Xml::tag(const char* name, const char* s)
       {
-      putLevel();
-      *this << "<" << name << ">";
-      if (val) {
-            while (*val) {
-                  switch(*val) {
-                        case '&':
-                              *this << "&amp;";
-                              break;
-                        case '<':
-                              *this << "&lt;";
-                              break;
-                        case '>':
-                              *this << "&gt;";
-                              break;
-                        case '"':
-                              *this << "&quot;";
-                              break;
-                        case '\'':
-                              *this << "&apos;";
-                              break;
-                        default:
-                              *this << *val;
-                              break;
-                        }
-                  ++val;
-                  }
-            }
-      *this << "</" << name << ">\n";
+      tag(name, QString(s));
       }
 
 //---------------------------------------------------------
 //   colorTag
 //---------------------------------------------------------
 
-void Xml::colorTag(const char* name, const QColor& color)
+void Xml::tag(const char* name, const QColor& color)
       {
       putLevel();
+      char buffer[BS];
       snprintf(buffer, BS, "<%s r=\"%d\" g=\"%d\" b=\"%d\" />\n",
 	    name, color.red(), color.green(), color.blue());
     	*this << buffer;
@@ -199,32 +193,51 @@ void Xml::colorTag(const char* name, const QColor& color)
 //   geometryTag
 //---------------------------------------------------------
 
-void Xml::geometryTag(const char* name, const QWidget* g)
+void Xml::tag(const char* name, const QWidget* g)
       {
-      qrectTag(name, QRect(g->pos(), g->size()));
+      tag(name, QRect(g->pos(), g->size()));
       }
 
 //---------------------------------------------------------
 //   qrectTag
 //---------------------------------------------------------
 
-void Xml::qrectTag(const char* name, const QRect& r)
+void Xml::tag(const char* name, const QRect& r)
       {
       putLevel();
    	*this << "<" << name;
+      char buffer[BS];
       snprintf(buffer, BS, " x=\"%d\" y=\"%d\" w=\"%d\" h=\"%d\" />\n",
          r.x(), r.y(), r.width(), r.height());
     	*this << buffer;
       }
 
 //---------------------------------------------------------
+//   xmlString
+//---------------------------------------------------------
+
+QString Xml::xmlString(const QString& ss)
+      {
+      QString s(ss);
+      s.replace('&', "&amp;");
+      s.replace('<', "&lt;");
+      s.replace('>', "&gt;");
+      s.replace('\'', "&apos;");
+      s.replace('"', "&quot;");
+      return s;
+      }
+
+//---------------------------------------------------------
 //   strTag
 //---------------------------------------------------------
 
-void Xml::strTag(const char* name, const QString& val)
+void Xml::tag(const char* name, const QString& val)
       {
-      strTag(name, val.toLatin1().data());
+      putLevel();
+      *this << "<" << name << ">";
+      *this << xmlString(val) << "</" << name << ">\n";
       }
+
 
 //---------------------------------------------------------
 //   readGeometry
@@ -263,22 +276,23 @@ void Xml::writeProperties(const QObject* o)
             switch(v.type()) {
             	case QVariant::Bool:
             	case QVariant::Int:
-                  	intTag(name, v.toInt());
+                  	tag(name, v.toInt());
                         break;
                   case QVariant::Double:
-                  	doubleTag(name, v.toDouble());
+                  	tag(name, v.toDouble());
                         break;
                   case QVariant::String:
-                        strTag(name, v.toString());
+                        tag(name, v.toString());
                         break;
                   case QVariant::Rect:
-             		qrectTag(name, v.toRect());
+             		tag(name, v.toRect());
                         break;
                   case QVariant::Point:
                         {
                     	QPoint p = v.toPoint();
       			putLevel();
    				*this << "<" << name;
+                        char buffer[BS];
       			snprintf(buffer, BS, " x=\"%d\" y=\"%d\" />\n",
          			   p.x(), p.y());
     				*this << buffer;

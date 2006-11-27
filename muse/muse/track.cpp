@@ -223,37 +223,37 @@ Part* Track::findPart(unsigned tick)
 
 void Track::writeProperties(Xml& xml) const
       {
-      xml.strTag("name", _name);
+      xml.tag("name", _name);
       if (!_comment.isEmpty())
-            xml.strTag("comment", _comment);
+            xml.tag("comment", _comment);
       if (_recordFlag)
-            xml.intTag("record", _recordFlag);
+            xml.tag("record", _recordFlag);
       if (mute() != muteDefault())
-            xml.intTag("mute", mute());
+            xml.tag("mute", mute());
       if (solo())
-            xml.intTag("solo", solo());
+            xml.tag("solo", solo());
       if (off())
-            xml.intTag("off", off());
+            xml.tag("off", off());
       if (_channels)
-            xml.intTag("channels", _channels);
+            xml.tag("channels", _channels);
       if (_locked)
-            xml.intTag("locked", _locked);
+            xml.tag("locked", _locked);
       if (_monitor)
-            xml.intTag("monitor", _monitor);
+            xml.tag("monitor", _monitor);
       if (_autoRead != autoReadDefault())
-            xml.intTag("autoRead", _autoRead);
+            xml.tag("autoRead", _autoRead);
       if (_autoWrite != autoWriteDefault())
-            xml.intTag("autoWrite", _autoWrite);
+            xml.tag("autoWrite", _autoWrite);
       if (_selected)
-            xml.intTag("selected", _selected);
+            xml.tag("selected", _selected);
       for (ciCtrl icl = controller()->begin(); icl != controller()->end(); ++icl)
             icl->second->write(xml);
       if (arrangerTrack.tw)
-            xml.intTag("height", arrangerTrack.tw->height());
+            xml.tag("height", arrangerTrack.tw->height());
       for (ciArrangerTrack i = subtracks.begin(); i != subtracks.end(); ++i) {
-            xml.tag("subtrack");
-            xml.intTag("height", (*i)->tw->height());
-            xml.intTag("ctrl", (*i)->ctrl);
+            xml.stag("subtrack");
+            xml.tag("height", (*i)->tw->height());
+            xml.tag("ctrl", (*i)->ctrl);
             xml.etag("subtrack");
             }
       }
@@ -663,14 +663,14 @@ void Track::writeRouting(Xml& xml) const
       {
       if (type() == AUDIO_INPUT || type() == MIDI_IN) {
             foreach(Route r, _inRoutes) {
-                  xml.tag("Route");
+                  xml.stag("Route");
                   r.src.write(xml, "src");
                   r.dst.write(xml, "dst");
                   xml.etag("Route");
                   }
             }
       foreach(Route r, _outRoutes) {
-            xml.tag("Route");
+            xml.stag("Route");
             r.src.write(xml, "src");
             r.dst.write(xml, "dst");
             xml.etag("Route");

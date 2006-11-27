@@ -138,7 +138,7 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, int widx)
 
 void WaveTrack::write(Xml& xml) const
       {
-      xml.tag("wavetrack");
+      xml.stag("wavetrack");
       AudioTrack::writeProperties(xml);
       const PartList* pl = parts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)

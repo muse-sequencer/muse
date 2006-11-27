@@ -1022,27 +1022,27 @@ void Arranger::readStatus(QDomNode node)
 
 void Arranger::writeStatus(Xml& xml)
       {
-      xml.tag("arranger");
+      xml.stag("arranger");
 
       for (int i = 0; i < Track::TRACK_TYPES; ++i) {
             TrGroupList* gl = &glist[i];
-            xml.tag("TrackConf type=\"%d\"", i);
+            xml.stag("TrackConf type=\"%d\"", i);
             for (iTrGroup ig = gl->begin(); ig != gl->end(); ++ig) {
                   TrElementList& el = *ig;
-                  xml.tag("group");
+                  xml.stag("group");
                   for (iTrElement ie = el.begin(); ie != el.end(); ++ie)
                         xml.tagE("element id=\"%d\"", (*ie)->id);
                   xml.etag("group");
                   }
             xml.etag("TrackConf");
             }
-      xml.intTag("info", trackInfoVisible);
-      xml.intTag("strip", mixerStripVisible);
-      xml.doubleTag("hmag", canvas->xmag());
-      xml.doubleTag("vmag", canvas->ymag());
-      xml.intTag("hpos", canvas->getWPos().x());
-      xml.intTag("vpos", canvas->getWPos().y());
-      xml.intTag("raster", muse->raster());
+      xml.tag("info", trackInfoVisible);
+      xml.tag("strip", mixerStripVisible);
+      xml.tag("hmag", canvas->xmag());
+      xml.tag("vmag", canvas->ymag());
+      xml.tag("hpos", canvas->getWPos().x());
+      xml.tag("vpos", canvas->getWPos().y());
+      xml.tag("raster", muse->raster());
       split->writeStatus("splitter", xml);
       xml.etag("arranger");
       }

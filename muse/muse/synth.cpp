@@ -361,9 +361,9 @@ void initMidiSynth()
 
 void SynthI::write(Xml& xml) const
       {
-      xml.tag("SynthI");
+      xml.stag("SynthI");
       AudioTrack::writeProperties(xml);
-      xml.strTag("class", synth()->name());
+      xml.tag("class", synth()->name());
 
 //      for (int i = 0; i < MIDI_CHANNELS; ++i) {
 //            if (!_channel[i]->noInRoute())
@@ -376,13 +376,13 @@ void SynthI::write(Xml& xml) const
       //---------------------------------------------
 
       if (hasGui()) {
-            xml.intTag("guiVisible", guiVisible());
+            xml.tag("guiVisible", guiVisible());
             int x, y, w, h;
             w = 0;
             h = 0;
             getGeometry(&x, &y, &w, &h);
             if (h || w)
-                  xml.qrectTag("geometry", QRect(x, y, w, h));
+                  xml.tag("geometry", QRect(x, y, w, h));
             }
       _sif->write(xml);
       xml.etag("SynthI");
@@ -399,8 +399,8 @@ void MessSynthIF::write(Xml& xml) const
       const unsigned char* p;
       _mess->getInitData(&len, &p);
       if (len) {
-            xml.tag("midistate");
-            xml.tag("event type=\"%d\" datalen=\"%d\"", Sysex, len);
+            xml.stag("midistate");
+            xml.stag("event type=\"%d\" datalen=\"%d\"", Sysex, len);
             int col = 0;
             xml.putLevel();
             for (int i = 0; i < len; ++i, ++col) {

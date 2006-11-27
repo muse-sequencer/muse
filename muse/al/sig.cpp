@@ -337,7 +337,7 @@ int SigList::rasterStep(unsigned t, int raster) const
 
 void SigList::write(Xml& xml) const
       {
-      xml.tag("siglist");
+      xml.stag("siglist");
       for (ciSigEvent i = begin(); i != end(); ++i)
             i->second->write(xml, i->first);
       xml.etag("siglist");
@@ -372,10 +372,10 @@ void SigList::read(QDomNode node)
 
 void SigEvent::write(Xml& xml, int at) const
       {
-      xml.tag("sig at=\"%d\"", at);
-      xml.intTag("tick", tick);
-      xml.intTag("nom", sig.z);
-      xml.intTag("denom", sig.n);
+      xml.stag("sig at=\"%d\"", at);
+      xml.tag("tick", tick);
+      xml.tag("nom", sig.z);
+      xml.tag("denom", sig.n);
       xml.etag("sig");
       }
 

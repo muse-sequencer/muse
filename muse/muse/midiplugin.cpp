@@ -417,18 +417,18 @@ void MidiPluginI::apply(unsigned from, unsigned to, MidiEventList* il, MidiEvent
 
 void MidiPluginI::writeConfiguration(Xml& xml)
       {
-      xml.tag("midiPlugin file=\"%s\" name=\"%s\"",
+      xml.stag("midiPlugin file=\"%s\" name=\"%s\"",
          _plugin->lib().toLatin1().data(), _plugin->name().toLatin1().data());
       if (_on == false)
-            xml.intTag("on", _on);
+            xml.tag("on", _on);
       if (mempi->hasGui()) {
-            xml.intTag("guiVisible", mempi->guiVisible());
+            xml.tag("guiVisible", mempi->guiVisible());
             int x, y, w, h;
             w = 0;
             h = 0;
             mempi->getGeometry(&x, &y, &w, &h);
             if (h || w)
-                  xml.qrectTag("geometry", QRect(x, y, w, h));
+                  xml.tag("geometry", QRect(x, y, w, h));
             }
 
       //---------------------------------------------
@@ -439,7 +439,7 @@ void MidiPluginI::writeConfiguration(Xml& xml)
       const unsigned char* p;
       mempi->getInitData(&len, &p);
       if (len) {
-            xml.tag("init len=\"%d\"", len);
+            xml.stag("init len=\"%d\"", len);
             int col = 0;
             xml.putLevel();
             for (int i = 0; i < len; ++i, ++col) {

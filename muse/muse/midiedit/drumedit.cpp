@@ -417,13 +417,13 @@ void DrumEdit::drumCmd(QObject* object)
 
 void DrumEdit::writeConfiguration(Xml& xml)
       {
-      xml.tag("DrumEdit");
+      xml.stag("DrumEdit");
       if (DrumEdit::initWidth != DrumEdit::INIT_WIDTH)
-            xml.intTag("width", DrumEdit::initWidth);
+            xml.tag("width", DrumEdit::initWidth);
       if (DrumEdit::initHeight != DrumEdit::INIT_HEIGHT)
-            xml.intTag("height", DrumEdit::initHeight);
+            xml.tag("height", DrumEdit::initHeight);
       if (DrumEdit::initRaster != DrumEdit::INIT_RASTER)
-            xml.intTag("raster", DrumEdit::initRaster);
+            xml.tag("raster", DrumEdit::initRaster);
       xml.etag("DrumEdit");
 	}
 

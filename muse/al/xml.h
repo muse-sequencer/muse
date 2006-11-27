@@ -23,35 +23,43 @@
 
 namespace AL {
 
-static const int BS = 2048;
-
 //---------------------------------------------------------
 //   Xml
 //---------------------------------------------------------
 
 class Xml : public QTextStream {
-    	char buffer[BS];
+      static const int BS = 2048;
       int level;
 
    public:
+      Xml();
       Xml(QIODevice*);
+
       void header();
       void putLevel();
+
       void put(const char* format, ...);
       void nput(const char* format, ...);
-      void tag(const char* format, ...);
-      void etag(const char* format, ...);
+
+      void stag(const char* format, ...);
+      void etag(const char* format);
+
       void tagE(const char* format, ...);
       void tdata(const QString&);
-      void intTag(const char* const name, int val);
-      void doubleTag(const char* const name, double val);
-      void floatTag(const char* const name, float val);
-      void strTag(const char* const name, const char* val);
-      void strTag(const char* const name, const QString& s);
-      void colorTag(const char* name, const QColor& color);
-      void geometryTag(const char* name, const QWidget* g);
-      void qrectTag(const char* name, const QRect& r);
+
+      void tag(const char* name, int);
+      void tag(const char* name, unsigned);
+      void tag(const char* name, const double& val);
+      void tag(const char* name, float val);
+      void tag(const char* name, const char* val);
+      void tag(const char* name, const QString& s);
+      void tag(const char* name, const QColor& color);
+      void tag(const char* name, const QWidget* g);
+      void tag(const char* name, const QRect& r);
+
       void writeProperties(const QObject*);
+
+      static QString xmlString(const QString&);
       };
 
 extern QRect readGeometry(QDomNode);

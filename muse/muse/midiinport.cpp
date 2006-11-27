@@ -72,7 +72,7 @@ void MidiInPort::setName(const QString& s)
 
 void MidiInPort::write(Xml& xml) const
       {
-      xml.tag("MidiInPort");
+      xml.stag("MidiInPort");
       MidiTrackBase::writeProperties(xml);
       xml.etag("MidiInPort");
       }

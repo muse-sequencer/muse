@@ -372,17 +372,17 @@ void Mixer::showTracksChanged(QAction* id)
 
 void Mixer::write(Xml& xml, const char* name)
       {
-      xml.tag("%s", name);
-      xml.qrectTag("geometry",       geometry());
-      xml.intTag("showMidiTracks",   cfg->showMidiTracks);
-      xml.intTag("showOutputTracks", cfg->showOutputTracks);
-      xml.intTag("showWaveTracks",   cfg->showWaveTracks);
-      xml.intTag("showGroupTracks",  cfg->showGroupTracks);
-      xml.intTag("showInputTracks",  cfg->showInputTracks);
-      xml.intTag("showSyntiTracks",  cfg->showSyntiTracks);
-      xml.intTag("showMidiInPorts",  cfg->showMidiInPorts);
-      xml.intTag("showMidiOutPorts", cfg->showMidiOutPorts);
-      xml.etag("%s", name);
+      xml.stag("%s", name);
+      xml.tag("geometry",       geometry());
+      xml.tag("showMidiTracks",   cfg->showMidiTracks);
+      xml.tag("showOutputTracks", cfg->showOutputTracks);
+      xml.tag("showWaveTracks",   cfg->showWaveTracks);
+      xml.tag("showGroupTracks",  cfg->showGroupTracks);
+      xml.tag("showInputTracks",  cfg->showInputTracks);
+      xml.tag("showSyntiTracks",  cfg->showSyntiTracks);
+      xml.tag("showMidiInPorts",  cfg->showMidiInPorts);
+      xml.tag("showMidiOutPorts", cfg->showMidiOutPorts);
+      xml.etag(name);
       }
 
 //---------------------------------------------------------

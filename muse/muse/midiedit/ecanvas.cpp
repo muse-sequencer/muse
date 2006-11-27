@@ -1415,7 +1415,7 @@ QMimeData* EventCanvas::getTextDrag()
       Xml xml(&buffer);
       xml.header();
 
-      xml.tag("eventlist");
+      xml.stag("eventlist");
       for (ciEvent e = el.begin(); e != el.end(); ++e)
             e->second.write(xml, -startTick);
       xml.etag("eventlist");

@@ -40,7 +40,7 @@ void AudioGroup::read(QDomNode node)
 
 void AudioGroup::write(Xml& xml) const
       {
-      xml.tag("AudioGroup");
+      xml.stag("AudioGroup");
       AudioTrack::writeProperties(xml);
       xml.etag("AudioGroup");
       }

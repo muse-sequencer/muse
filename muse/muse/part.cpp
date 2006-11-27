@@ -210,29 +210,29 @@ void Part::write(Xml& xml)
             }
 
       if (id != -1)
-            xml.tag("part cloneId=\"%d\"", id);
+            xml.stag("part cloneId=\"%d\"", id);
       else
-            xml.tag("part");
+            xml.stag("part");
       if (!_name.isEmpty())
-            xml.strTag("name", _name);
+            xml.tag("name", _name);
 
       PosLen::write(xml, "poslen");
       if (_selected)
-            xml.intTag("selected", _selected);
-      xml.intTag("color", _colorIndex);
+            xml.tag("selected", _selected);
+      xml.tag("color", _colorIndex);
       if (_raster != -1)
-      	xml.intTag("raster", _raster);
+      	xml.tag("raster", _raster);
       if (_quant != -1)
-      	xml.intTag("quant", _quant);
+      	xml.tag("quant", _quant);
       if (_xmag != -1.0)
-            xml.doubleTag("xmag", _xmag);
+            xml.tag("xmag", _xmag);
       for (ciCtrlCanvas i = ctrlCanvasList.begin(); i != ctrlCanvasList.end(); ++i)
             xml.tagE("CtrlCanvas h=\"%d\" id=\"%d\"",
                i->height, i->ctrlId);
       if (_fillLen)
-            xml.intTag("fillLen", _fillLen);
+            xml.tag("fillLen", _fillLen);
       if (_mute)
-            xml.intTag("mute", _mute);
+            xml.tag("mute", _mute);
       if (dumpEvents) {
             for (ciEvent e = _events->begin(); e != _events->end(); ++e)
                   e->second.write(xml, *this);
@@ -360,10 +360,5 @@ void Part::ref()
 void Part::deref()
       {
       --(_events->cloneCount);
-/*      if (_events->cloneCount <= 0) {
-            delete _events;
-            _events = 0;
-            }
-*/
       }
 

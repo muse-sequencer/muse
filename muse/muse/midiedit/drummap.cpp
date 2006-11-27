@@ -113,27 +113,27 @@ void DrumMap::init()
 
 void DrumMap::write(Xml& xml)
       {
-      xml.tag("drummap");
+      xml.stag("drummap");
       for (int i = 0; i < DRUM_MAPSIZE; ++i) {
             DrumMapEntry* dm = &map[i];
-            xml.tag("entry");
-            xml.strTag("name", dm->name);
+            xml.stag("entry");
+            xml.tag("name", dm->name);
             if (dm->quant != DEFAULT_QUANT)
-                  xml.intTag("quant", dm->quant);
+                  xml.tag("quant", dm->quant);
             if (dm->len != DEFAULT_LEN)
-                  xml.intTag("len", dm->len);
+                  xml.tag("len", dm->len);
             if (dm->channel != DEFAULT_CHANNEL)
-                  xml.intTag("channel", dm->channel);
+                  xml.tag("channel", dm->channel);
             if (dm->lv1 != DEFAULT_LV1)
-                  xml.intTag("lv1", dm->lv1);
+                  xml.tag("lv1", dm->lv1);
             if (dm->lv2 != DEFAULT_LV2)
-                  xml.intTag("lv2", dm->lv2);
+                  xml.tag("lv2", dm->lv2);
             if (dm->lv2 != DEFAULT_LV3)
-                  xml.intTag("lv3", dm->lv3);
+                  xml.tag("lv3", dm->lv3);
             if (dm->lv4 != DEFAULT_LV4)
-                  xml.intTag("lv4", dm->lv4);
-            xml.intTag("enote", dm->enote);
-            xml.intTag("anote", dm->anote);
+                  xml.tag("lv4", dm->lv4);
+            xml.tag("enote", dm->enote);
+            xml.tag("anote", dm->anote);
             xml.etag("entry");
             }
       xml.etag("drummap");

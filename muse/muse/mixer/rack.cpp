@@ -213,7 +213,7 @@ void EffectRack::startDrag(int idx)
             if ((*pipe)[idx] != NULL) {
                 PluginI *plug  = (*pipe)[idx];
                 xml.header();
-                xml.tag("muse version=\"1.0\"");
+                xml.stag("muse version=\"1.0\"");
                 // header info
                 plug->writeConfiguration1(xml, prefader); // wC1 does not append endtag
                 // parameters

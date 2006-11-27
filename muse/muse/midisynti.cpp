@@ -92,17 +92,17 @@ bool MidiSynti::initInstance(MidiPlugin* plugin)
 
 void MidiSynti::write(Xml& xml) const
       {
-      xml.tag("MidiSynti");
+      xml.stag("MidiSynti");
       MidiTrackBase::writeProperties(xml);
-      xml.strTag("class", _synti->plugin()->name());
+      xml.tag("class", _synti->plugin()->name());
       if (_synti->hasGui()) {
-            xml.intTag("guiVisible", _synti->guiVisible());
+            xml.tag("guiVisible", _synti->guiVisible());
             int x, y, w, h;
             w = 0;
             h = 0;
             _synti->getGeometry(&x, &y, &w, &h);
             if (h || w)
-                  xml.qrectTag("geometry", QRect(x, y, w, h));
+                  xml.tag("geometry", QRect(x, y, w, h));
             }
       //---------------------------------------------
       // dump current state of plugin
@@ -112,7 +112,7 @@ void MidiSynti::write(Xml& xml) const
       const unsigned char* p;
       _synti->getInitData(&len, &p);
       if (len) {
-            xml.tag("init len=\"%d\"", len);
+            xml.stag("init len=\"%d\"", len);
             int col = 0;
             xml.putLevel();
             for (int i = 0; i < len; ++i, ++col) {

@@ -221,7 +221,7 @@ void MasterEdit::read(QDomNode node)
 
 void MasterEdit::write(Xml& xml) const
       {
-      xml.tag(metaObject()->className());
+      xml.stag(metaObject()->className());
       xml.writeProperties(this);
       xml.etag(metaObject()->className());
       }

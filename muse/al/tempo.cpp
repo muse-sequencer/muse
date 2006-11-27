@@ -318,9 +318,9 @@ unsigned TempoList::frame2tick(unsigned frame, int* sn) const
 
 void TempoList::write(Xml& xml) const
       {
-      xml.tag("tempolist fix=\"%d\"", _tempo);
+      xml.stag("tempolist fix=\"%d\"", _tempo);
       if (_globalTempo != 100)
-            xml.intTag("globalTempo", _globalTempo);
+            xml.tag("globalTempo", _globalTempo);
       for (ciTEvent i = begin(); i != end(); ++i)
             i->second->write(xml, i->first);
       xml.etag("tempolist");
@@ -362,9 +362,9 @@ void TempoList::read(QDomNode node)
 
 void TEvent::write(Xml& xml, int at) const
       {
-      xml.tag("tempo at=\"%d\"", at);
-      xml.intTag("tick", tick);
-      xml.intTag("val", tempo);
+      xml.stag("tempo at=\"%d\"", at);
+      xml.tag("tick", tick);
+      xml.tag("val", tempo);
       xml.etag("tempo");
       }
 

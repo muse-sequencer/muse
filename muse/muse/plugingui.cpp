@@ -640,7 +640,7 @@ void PluginGui::save()
             return;
       Xml xml(f);
       xml.header();
-      xml.tag("muse version=\"1.0\"");
+      xml.stag("muse version=\"1.0\"");
       plugin->writeConfiguration(xml, true);
       xml.etag("muse");
       f->close();

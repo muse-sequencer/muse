@@ -25,7 +25,6 @@
 #include "al/xml.h"
 #include "al/pos.h"
 #include "evdata.h"
-#include "clonedata.h"
 
 using AL::Xml;
 using AL::Pos;

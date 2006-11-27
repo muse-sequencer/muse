@@ -8,7 +8,7 @@
 //	(Many) parts of this file was taken from Werner Schweer's GUI
 //	for his organ soft synth.
 //
-//  (C) Copyright 2002 Jotsif Lindman Hörnlund (jotsif@linux.nu)
+//  (C) Copyright 2002 Jotsif Lindman Hönlund (jotsif@linux.nu)
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -140,7 +140,7 @@ void Preset::readConfiguration(QDomNode /*node*/)
 
 void Preset::writeConfiguration(Xml& xml)
 {
-	xml.tag("preset name=\"%s\"", name.toLatin1().data());
+	xml.stag("preset name=\"%s\"", name.toLatin1().data());
 	for (int i = 0; i < NUM_CONTROLLER; ++i) {
 		xml.tagE("control idx=\"%d\" val=\"%d\"", i, ctrl[i]);
 	}

@@ -979,10 +979,10 @@ KeyboardMovementIndicator shortcutsKbdMovement; //for keeping track of active pa
 
 void writeShortCuts(Xml& xml)
       {
-      xml.tag("shortcuts");
+      xml.stag("shortcuts");
       foreach(Shortcut* s, shortcuts)
             if (s->xml && s->type != INVIS_SHRT) //Avoid nullptr & hardcoded shortcuts
-                  xml.strTag(s->xml, s->key.toString(QKeySequence::PortableText));
+                  xml.tag(s->xml, s->key.toString(QKeySequence::PortableText));
       xml.etag("shortcuts");
       }
 

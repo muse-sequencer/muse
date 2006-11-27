@@ -374,7 +374,7 @@ void MusE::writeGlobalConfiguration() const
             }
       Xml xml(&f);
       xml.header();
-      xml.tag("muse version=\"2.0\"");
+      xml.stag("muse version=\"2.0\"");
       writeGlobalConfiguration(xml);
       xml.etag("muse");
       f.close();
@@ -382,39 +382,39 @@ void MusE::writeGlobalConfiguration() const
 
 void MusE::writeGlobalConfiguration(Xml& xml) const
       {
-      xml.tag("configuration");
+      xml.stag("configuration");
 
-      xml.intTag("division", config.division);
-      xml.intTag("rtcTicks", config.rtcTicks);
-      xml.intTag("minMeter", config.minMeter);
-      xml.doubleTag("minSlider", config.minSlider);
-      xml.intTag("guiRefresh", config.guiRefresh);
-      xml.intTag("peakHoldTime", config.peakHoldTime);
-      xml.strTag("helpBrowser", config.helpBrowser);
-      xml.intTag("extendedMidi", config.extendedMidi);
-      xml.intTag("midiExportDivision", config.midiDivision);
-      xml.intTag("guiDivision", config.guiDivision);
-      xml.strTag("copyright", config.copyright);
-      xml.intTag("smfFormat", config.smfFormat);
-      xml.intTag("startMode", config.startMode);
+      xml.tag("division", config.division);
+      xml.tag("rtcTicks", config.rtcTicks);
+      xml.tag("minMeter", config.minMeter);
+      xml.tag("minSlider", config.minSlider);
+      xml.tag("guiRefresh", config.guiRefresh);
+      xml.tag("peakHoldTime", config.peakHoldTime);
+      xml.tag("helpBrowser", config.helpBrowser);
+      xml.tag("extendedMidi", config.extendedMidi);
+      xml.tag("midiExportDivision", config.midiDivision);
+      xml.tag("guiDivision", config.guiDivision);
+      xml.tag("copyright", config.copyright);
+      xml.tag("smfFormat", config.smfFormat);
+      xml.tag("startMode", config.startMode);
       if (!config.startProject.isEmpty())
-            xml.strTag("startProject", config.startProject);
-      xml.intTag("freewheelMode", config.useJackFreewheelMode);
+            xml.tag("startProject", config.startProject);
+      xml.tag("freewheelMode", config.useJackFreewheelMode);
 
-      xml.strTag("theme", config.style);
+      xml.tag("theme", config.style);
 
       for (int i = 0; i < 6; ++i) {
             char buffer[32];
             sprintf(buffer, "font%d", i);
-            xml.strTag(buffer, config.fonts[i].toString());
+            xml.tag(buffer, config.fonts[i].toString());
             }
       for (int i = 0; i < QColorDialog::customCount(); ++i) {
             char buffer[32];
             snprintf(buffer, 32, "palette%d", i);
-            xml.colorTag(buffer, QColorDialog::customColor(i));
+            xml.tag(buffer, QColorDialog::customColor(i));
             }
 
-      xml.colorTag("selectPartBg",  config.selectPartBg);
+      xml.tag("selectPartBg",  config.selectPartBg);
 
       static const char* colorNames[Track::TRACK_TYPES] = {
             "outputTrackBg",
@@ -428,64 +428,63 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
             "midiSyntiBg"
             };
       for (int i = 0; i < Track::TRACK_TYPES; ++i)
-            xml.colorTag(colorNames[i],  config.trackBg[i]);
+            xml.tag(colorNames[i],  config.trackBg[i]);
 
-      xml.intTag("mtctype", AL::mtcType);
+      xml.tag("mtctype", AL::mtcType);
 
-      xml.tag("mtcoffset");
+      xml.stag("mtcoffset");
       xml.put("%02d:%02d:%02d:%02d:%02d",
         mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
         mtcOffset.f(), mtcOffset.sf());
       xml.etag("mtcoffset");
 
-      xml.intTag("extSync", extSyncFlag);
-      xml.intTag("genMTCSync", genMTCSync);
-      xml.intTag("genMCSync", genMCSync);
-      xml.intTag("genMMC", genMMC);
-      xml.intTag("acceptMTC", acceptMTC);
-      xml.intTag("acceptMMC", acceptMMC);
-      xml.intTag("acceptMC", acceptMC);
+      xml.tag("extSync", extSyncFlag);
+      xml.tag("genMTCSync", genMTCSync);
+      xml.tag("genMCSync", genMCSync);
+      xml.tag("genMMC", genMMC);
+      xml.tag("acceptMTC", acceptMTC);
+      xml.tag("acceptMMC", acceptMMC);
+      xml.tag("acceptMC", acceptMC);
 
-      xml.qrectTag("geometryMain",      config.geometryMain);
-      xml.qrectTag("geometryTransport", config.geometryTransport);
-      xml.qrectTag("geometryBigTime",   config.geometryBigTime);
-      xml.qrectTag("geometryPianoroll", config.geometryPianoroll);
-      xml.qrectTag("geometryDrumedit",  config.geometryDrumedit);
+      xml.tag("geometryMain",      config.geometryMain);
+      xml.tag("geometryTransport", config.geometryTransport);
+      xml.tag("geometryBigTime",   config.geometryBigTime);
+      xml.tag("geometryPianoroll", config.geometryPianoroll);
+      xml.tag("geometryDrumedit",  config.geometryDrumedit);
 
-      xml.intTag("bigtimeVisible", config.bigTimeVisible);
-      xml.intTag("transportVisible", config.transportVisible);
+      xml.tag("bigtimeVisible", config.bigTimeVisible);
+      xml.tag("transportVisible", config.transportVisible);
 
-      xml.intTag("mixer1Visible", config.mixer1Visible);
-      xml.intTag("mixer2Visible", config.mixer2Visible);
+      xml.tag("mixer1Visible", config.mixer1Visible);
+      xml.tag("mixer2Visible", config.mixer2Visible);
 
       config.mixer1.write(xml, "mixer1");
       config.mixer2.write(xml, "mixer2");
 
-      xml.intTag("showSplashScreen", config.showSplashScreen);
-      xml.intTag("canvasShowPartType", config.canvasShowPartType);
-      xml.intTag("canvasShowPartEvent", config.canvasShowPartEvent);
-      xml.intTag("canvasShowGrid", config.canvasShowGrid);
-      xml.intTag("canvasUsePixmap", config.canvasUseBgPixmap);
-      xml.strTag("canvasBgPixmap", config.canvasBgPixmap);
+      xml.tag("showSplashScreen", config.showSplashScreen);
+      xml.tag("canvasShowPartType", config.canvasShowPartType);
+      xml.tag("canvasShowPartEvent", config.canvasShowPartEvent);
+      xml.tag("canvasShowGrid", config.canvasShowGrid);
+      xml.tag("canvasUsePixmap", config.canvasUseBgPixmap);
+      xml.tag("canvasBgPixmap", config.canvasBgPixmap);
 
-//      xml.colorTag("transportHandleColor",  config.transportHandleColor);
-      xml.colorTag("bigtimeForegroundcolor", config.bigTimeForegroundColor);
-      xml.colorTag("bigtimeBackgroundcolor", config.bigTimeBackgroundColor);
+      xml.tag("bigtimeForegroundcolor", config.bigTimeForegroundColor);
+      xml.tag("bigtimeBackgroundcolor", config.bigTimeBackgroundColor);
 
       writeShortCuts(xml);
       midiRCList.write(xml);
-      xml.intTag("followMode", TimeCanvas::followMode);
+      xml.tag("followMode", TimeCanvas::followMode);
 
-      xml.strTag("defaultMidiInputDevice", config.defaultMidiInputDevice);
-      xml.strTag("defaultMidiOutputDevice", config.defaultMidiOutputDevice);
-      xml.strTag("defaultMidiInstrument", config.defaultMidiInstrument);
-      xml.intTag("connectToAllMidiDevices", config.connectToAllMidiDevices);
-      xml.intTag("connectToAllMidiTracks", config.connectToAllMidiTracks);
-      xml.intTag("createDefaultMidiInput", config.createDefaultMidiInput);
-      xml.strTag("projectPath", config.projectPath);
-      xml.strTag("templatePath", config.templatePath);
-      xml.strTag("importMidiPath", config.importMidiPath);
-      xml.strTag("importWavePath", config.importWavePath);
+      xml.tag("defaultMidiInputDevice", config.defaultMidiInputDevice);
+      xml.tag("defaultMidiOutputDevice", config.defaultMidiOutputDevice);
+      xml.tag("defaultMidiInstrument", config.defaultMidiInstrument);
+      xml.tag("connectToAllMidiDevices", config.connectToAllMidiDevices);
+      xml.tag("connectToAllMidiTracks", config.connectToAllMidiTracks);
+      xml.tag("createDefaultMidiInput", config.createDefaultMidiInput);
+      xml.tag("projectPath", config.projectPath);
+      xml.tag("templatePath", config.templatePath);
+      xml.tag("importMidiPath", config.importMidiPath);
+      xml.tag("importWavePath", config.importWavePath);
 
       PianoRoll::writeConfiguration(xml);
       DrumEdit::writeConfiguration(xml);
@@ -499,39 +498,38 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
 
 void MusE::writeConfiguration(Xml& xml) const
       {
-      xml.tag("configuration");
+      xml.stag("configuration");
 
-      xml.intTag("mtctype", AL::mtcType);
-      xml.tag("mtcoffset");
+      xml.tag("mtctype", AL::mtcType);
+      xml.stag("mtcoffset");
       xml.put("%02d:%02d:%02d:%02d:%02d",
         mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
         mtcOffset.f(), mtcOffset.sf());
       xml.etag("mtcoffset");
-      xml.intTag("extSync", extSyncFlag);
-      xml.intTag("genMTCSync", genMTCSync);
-      xml.intTag("genMCSync", genMCSync);
-      xml.intTag("genMMC", genMMC);
-      xml.intTag("acceptMTC", acceptMTC);
-      xml.intTag("acceptMMC", acceptMMC);
-      xml.intTag("acceptMC", acceptMC);
+      xml.tag("extSync", extSyncFlag);
+      xml.tag("genMTCSync", genMTCSync);
+      xml.tag("genMCSync", genMCSync);
+      xml.tag("genMMC", genMMC);
+      xml.tag("acceptMTC", acceptMTC);
+      xml.tag("acceptMMC", acceptMMC);
+      xml.tag("acceptMC", acceptMC);
 
-      xml.intTag("bigtimeVisible",   bt_id->isChecked());
-      xml.intTag("transportVisible", tr_id->isChecked());
+      xml.tag("bigtimeVisible",   bt_id->isChecked());
+      xml.tag("transportVisible", tr_id->isChecked());
 
-      xml.geometryTag("geometryMain", this);
+      xml.tag("geometryMain", this);
       if (transport)
-            xml.geometryTag("geometryTransport", transport);
+            xml.tag("geometryTransport", transport);
       if (bigtime)
-            xml.geometryTag("geometryBigTime", bigtime);
+            xml.tag("geometryBigTime", bigtime);
 
-      xml.intTag("mixer1Visible",    aid1a->isChecked());
-      xml.intTag("mixer2Visible",    aid1b->isChecked());
+      xml.tag("mixer1Visible",    aid1a->isChecked());
+      xml.tag("mixer2Visible",    aid1b->isChecked());
       if (mixer1)
             mixer1->write(xml, "mixer1");
       if (mixer2)
             mixer2->write(xml, "mixer2");
 
-//TD      writeMidiTransforms(xml);
       xml.etag("configuration");
       }
 
@@ -658,20 +656,20 @@ void MidiFileConfig::cancelClicked()
 
 void MixerConfig::write(Xml& xml, const char* name)
       {
-      xml.tag("%s", name);
-      xml.qrectTag("geometry",       geometry);
-      xml.intTag("showMidiTracks",   showMidiTracks);
-      xml.intTag("showMidiSyntiPorts", showMidiSyntiPorts);
-      xml.intTag("showMidiTracks",   showMidiTracks);
-      xml.intTag("showOutputTracks", showOutputTracks);
-      xml.intTag("showWaveTracks",   showWaveTracks);
-      xml.intTag("showGroupTracks",  showGroupTracks);
-      xml.intTag("showInputTracks",  showInputTracks);
-      xml.intTag("showAuxTracks",    showAuxTracks);
-      xml.intTag("showSyntiTracks",  showSyntiTracks);
-      xml.intTag("showMidiInPorts",  showMidiInPorts);
-      xml.intTag("showMidiOutPorts", showMidiOutPorts);
-      xml.etag("%s", name);
+      xml.stag("%s", name);
+      xml.tag("geometry",       geometry);
+      xml.tag("showMidiTracks",   showMidiTracks);
+      xml.tag("showMidiSyntiPorts", showMidiSyntiPorts);
+      xml.tag("showMidiTracks",   showMidiTracks);
+      xml.tag("showOutputTracks", showOutputTracks);
+      xml.tag("showWaveTracks",   showWaveTracks);
+      xml.tag("showGroupTracks",  showGroupTracks);
+      xml.tag("showInputTracks",  showInputTracks);
+      xml.tag("showAuxTracks",    showAuxTracks);
+      xml.tag("showSyntiTracks",  showSyntiTracks);
+      xml.tag("showMidiInPorts",  showMidiInPorts);
+      xml.tag("showMidiOutPorts", showMidiOutPorts);
+      xml.etag(name);
       }
 
 //---------------------------------------------------------

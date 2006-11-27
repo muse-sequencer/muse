@@ -269,12 +269,12 @@ void ListEdit::read(QDomNode node)
 
 void ListEdit::write(Xml& xml) const
       {
-      xml.tag(metaObject()->className());
+      xml.stag(metaObject()->className());
       xml.writeProperties(this);
 
-      xml.strTag("Track", lt.track->name());
+      xml.tag("Track", lt.track->name());
       if (lt.ctrl) {
-            xml.intTag("Ctrl", lt.ctrl->id());
+            xml.tag("Ctrl", lt.ctrl->id());
             _pos.write(xml, "Pos");
             }
       xml.etag(metaObject()->className());

@@ -96,14 +96,14 @@ void WaveEventBase::write(Xml& xml, const Pos& offset) const
       {
       if (f.isNull())
             return;
-      xml.tag("event");
+      xml.stag("event");
       PosLen wpos(*this);
       wpos += offset;
 //      if (offset)
 //            wpos.setTick(wpos.tick() + offset);
       wpos.write(xml, "poslen");
-      xml.intTag("frame", _spos);  // offset in wave file
-      xml.strTag("file", f.finfo()->fileName());
+      xml.tag("frame", _spos);  // offset in wave file
+      xml.tag("file", f.finfo()->fileName());
       xml.etag("event");
       }
 

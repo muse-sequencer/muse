@@ -273,36 +273,36 @@ void Song::read(QDomNode node)
 
 void Song::write(Xml& xml) const
       {
-      xml.tag("song");
-      xml.strTag("comment", _comment);
-      xml.strTag("createDate", _createDate.toString(Qt::ISODate));
+      xml.stag("song");
+      xml.tag("comment", _comment);
+      xml.tag("createDate", _createDate.toString(Qt::ISODate));
       int n = AL::tempomap.tick2frame(_len);
-      xml.intTag("LenInSec", n / AL::sampleRate);
+      xml.tag("LenInSec", n / AL::sampleRate);
 
-      xml.intTag("cpos", cpos());
-      xml.intTag("rpos", rpos());
-      xml.intTag("lpos", lpos());
-      xml.intTag("master", _masterFlag);
+      xml.tag("cpos", cpos());
+      xml.tag("rpos", rpos());
+      xml.tag("lpos", lpos());
+      xml.tag("master", _masterFlag);
       if (loopFlag)
-            xml.intTag("loop", loopFlag);
+            xml.tag("loop", loopFlag);
       if (punchinFlag)
-            xml.intTag("punchin", punchinFlag);
+            xml.tag("punchin", punchinFlag);
       if (punchoutFlag)
-            xml.intTag("punchout", punchoutFlag);
+            xml.tag("punchout", punchoutFlag);
       if (soloFlag)
-            xml.intTag("solo", soloFlag);
+            xml.tag("solo", soloFlag);
       if (_recMode != REC_OVERDUP)
-            xml.intTag("recmode", _recMode);
+            xml.tag("recmode", _recMode);
       if (_cycleMode != CYCLE_NORMAL)
-            xml.intTag("cycle", _cycleMode);
+            xml.tag("cycle", _cycleMode);
       if (_click)
-            xml.intTag("click", _click);
+            xml.tag("click", _click);
       if (_quantize)
-            xml.intTag("quantize", _quantize);
-      xml.intTag("len", _len);
+            xml.tag("quantize", _quantize);
+      xml.tag("len", _len);
 
       if (_globalPitchShift)
-            xml.intTag("globalPitchShift", _globalPitchShift);
+            xml.tag("globalPitchShift", _globalPitchShift);
 
       cloneList.clear();
 
@@ -331,12 +331,12 @@ void MusE::write(Xml& xml) const
       {
       xml.header();
 
-      xml.tag("muse version=\"2.1\"");
+      xml.stag("muse version=\"2.1\"");
       writeConfiguration(xml);
 
       song->write(xml);
 
-      xml.tag("toplevels");
+      xml.stag("toplevels");
       foreach(QWidget* w, QApplication::topLevelWidgets()) {
             if (!w->isVisible())
                   continue;

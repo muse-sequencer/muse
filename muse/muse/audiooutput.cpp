@@ -70,7 +70,7 @@ AudioOutput::~AudioOutput()
 
 void AudioOutput::write(Xml& xml) const
       {
-      xml.tag("AudioOutput");
+      xml.stag("AudioOutput");
       AudioTrack::writeProperties(xml);
       xml.etag("AudioOutput");
       }

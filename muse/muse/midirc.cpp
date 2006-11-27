@@ -163,13 +163,13 @@ void MidiRCList::read(QDomNode node)
 
 void MidiRCList::write(Xml& xml)
       {
-      xml.tag("midiRC");
+      xml.stag("midiRC");
       for (iMidiRC i = begin(); i != end(); ++i) {
-            xml.tag("action id=\"%d\"", i->action);
+            xml.stag("action id=\"%d\"", i->action);
             if (i->event.type() == ME_NOTEON)
-                  xml.tag("noteOn pitch=\"%d\"", i->event.dataA());
+                  xml.stag("noteOn pitch=\"%d\"", i->event.dataA());
             else if (i->event.type() == ME_CONTROLLER)
-                  xml.tag("controller no=\"%d\" val=\"%d\"",
+                  xml.stag("controller no=\"%d\" val=\"%d\"",
                      i->event.dataA(), i->event.dataB());
             else
                   printf("remote event type %d not supported\n", i->event.type());

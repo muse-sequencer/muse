@@ -308,20 +308,20 @@ void PluginI::writeConfiguration(Xml& xml, bool prefader)
 
 void PluginI::writeConfiguration1(Xml& xml, bool prefader)
       {
-      xml.tag("plugin pre=\"%d\" file=\"%s\" label=\"%s\" channel=\"%d\"",
+      xml.stag("plugin pre=\"%d\" file=\"%s\" label=\"%s\" channel=\"%d\"",
          prefader, 
          _plugin->lib().toLatin1().data(), 
          _plugin->label().toLatin1().data(), 
          _channel);
 //         instances * _plugin->inports());
       if (_on == false)
-            xml.intTag("on", _on);
+            xml.tag("on", _on);
       if (guiVisible()) {
-            xml.intTag("gui", 1);
-            xml.geometryTag("geometry", _gui);
+            xml.tag("gui", 1);
+            xml.tag("geometry", _gui);
             }
       if (hasNativeGui() && nativeGuiVisible())
-            xml.intTag("nativeGui", 1);
+            xml.tag("nativeGui", 1);
       }
 
 //---------------------------------------------------------

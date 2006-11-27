@@ -100,7 +100,7 @@ void MidiEventBase::write(Xml& xml, const Pos& offset) const
             }
       if (edata.dataLen) {
             s += QString(" datalen=\"%1\"").arg(edata.dataLen);
-            xml.tag(s.toLatin1().data());
+            xml.stag(s.toLatin1().data());
             QString data;
 
             int col = 0;

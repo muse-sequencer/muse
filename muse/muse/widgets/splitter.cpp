@@ -76,11 +76,11 @@ Splitter::Splitter(Qt::Orientation o)
 void Splitter::writeStatus(const char* name, Xml& xml)
       {
       QList<int> sl = sizes();
-      xml.tag(name);
+      xml.stag(name);
       int n = sl.size();
       for (int i = 0; i < n; ++i) {
             int n = sl.at(i);
-            xml.intTag("size", n);
+            xml.tag("size", n);
             }
       xml.etag(name);
       }

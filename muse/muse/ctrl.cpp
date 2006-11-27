@@ -268,9 +268,9 @@ void Ctrl::write(Xml& xml)
             return;
             }
       if (_type & INT)
-            xml.tag(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
+            xml.stag(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
       else
-            xml.tag(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
+            xml.stag(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
 
       int i = 0;
       for (ciCtrlVal ic = begin(); ic != end(); ++ic) {

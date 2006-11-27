@@ -68,7 +68,7 @@ AudioInput::~AudioInput()
 
 void AudioInput::write(Xml& xml) const
       {
-      xml.tag("AudioInput");
+      xml.stag("AudioInput");
       AudioTrack::writeProperties(xml);
       xml.etag("AudioInput");
       }

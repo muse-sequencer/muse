@@ -92,15 +92,15 @@ Part* MidiTrack::newPart(Part* p, bool clone)
 
 void MidiTrack::write(Xml& xml) const
       {
-      xml.tag("miditrack");
+      xml.stag("miditrack");
       MidiTrackBase::writeProperties(xml);
 
-      xml.intTag("transposition", _transposition);
-      xml.intTag("velocity", _velocity);
-      xml.intTag("delay", _delay);
-      xml.intTag("len", _len);
-      xml.intTag("compression", _compression);
-      xml.intTag("useDrumMap", _useDrumMap);
+      xml.tag("transposition", _transposition);
+      xml.tag("velocity", _velocity);
+      xml.tag("delay", _delay);
+      xml.tag("len", _len);
+      xml.tag("compression", _compression);
+      xml.tag("useDrumMap", _useDrumMap);
 
       const PartList* pl = parts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
