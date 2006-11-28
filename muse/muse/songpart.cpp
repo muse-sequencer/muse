@@ -162,8 +162,10 @@ void Song::cmdChangePart(Part* oPart, unsigned pos, unsigned len)
       //
       // move events so they stay at same position in song
       //
-      int delta    = oPart->tick() - pos;
+      int delta   = oPart->tick() - pos;
       Part* nPart = new Part(*oPart);
+      nPart->clone(new EventList);
+
       const EventList* s = oPart->events();
       for (ciEvent ie = s->begin(); ie != s->end(); ++ie) {
             int tick = ie->first + delta;
