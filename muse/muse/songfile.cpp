@@ -26,7 +26,6 @@
 #include "midiedit/drummap.h"
 #include "al/marker.h"
 #include "midictrl.h"
-// #include "mixer/mixer.h"
 #include "conf.h"
 #include "midiseq.h"
 #include "al/tempo.h"

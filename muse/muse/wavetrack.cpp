@@ -157,7 +157,7 @@ void WaveTrack::read(QDomNode node)
             if (e.tagName() == "part") {
                   Part* p = newPart();
                   p->ref();
-                  p->read(node);
+                  p->read(node, false);
                   parts()->add(p);
                   }
             else if (AudioTrack::readProperties(node))

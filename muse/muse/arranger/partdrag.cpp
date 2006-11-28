@@ -19,8 +19,8 @@
 //=============================================================================
 
 #include "partdrag.h"
-
-class Part;
+#include "al/xml.h"
+#include "part.h"
 
 const char MidiPartDrag::type[] = "application/muse/part/midi";
 const char AudioPartDrag::type[] = "application/muse/part/audio";
@@ -36,9 +36,13 @@ const char WavUriDrag::type[] = "text/uri-list";
 MidiPartDrag::MidiPartDrag(Part* part, QWidget* src)
    : QDrag(src)
       {
-      QByteArray a((const char*)&part, sizeof(part));
+      QBuffer buffer;
+      buffer.open(QIODevice::WriteOnly);
+      AL::Xml xml(&buffer);
+      part->write(xml);
+      buffer.close();
       QMimeData* mimeData = new QMimeData;
-      mimeData->setData(type, a);
+      mimeData->setData(type, buffer.buffer());
       setMimeData(mimeData);
       }
 
@@ -57,11 +61,31 @@ bool MidiPartDrag::canDecode(const QMimeData* s)
 
 bool MidiPartDrag::decode(const QMimeData* s, Part*& p)
       {
-      QByteArray a = s->data(type);
-      char* cp = (char*)(&p);
-      for (unsigned i = 0; i < sizeof(p); ++i)
-            *cp++ = a[i];
-      return true;
+      p = 0;
+      QDomDocument doc;
+      int line, column;
+      QString err;
+      if (!doc.setContent(s->data(type), false, &err, &line, &column)) {
+            QString col, ln, error;
+            col.setNum(column);
+            ln.setNum(line);
+            error = err + "\n    at line: " + ln + " col: " + col;
+            printf("error parsing part: %s\n", error.toLatin1().data());
+            return false;
+            }
+      for (QDomNode node = doc.documentElement(); !node.isNull(); node = node.nextSibling()) {
+            QDomElement e = node.toElement();
+            if (e.isNull())
+                  continue;
+            if (e.tagName() == "part") {
+                  p = new Part(0);
+                  p->ref();
+                  p->read(node, true);
+                  }
+            else
+                  printf("MusE: %s not supported\n", e.tagName().toLatin1().data());
+            }
+      return (p != 0);
       }
 
 //---------------------------------------------------------
@@ -74,10 +98,14 @@ bool MidiPartDrag::decode(const QMimeData* s, Part*& p)
 AudioPartDrag::AudioPartDrag(Part* part, QWidget* src)
    : QDrag(src)
       {
-      QByteArray a((char*)&part, sizeof(part));
+      QBuffer buffer;
+      buffer.open(QIODevice::WriteOnly);
+      Xml xml(&buffer);
+      part->write(xml);
+      buffer.close();
 
       QMimeData* mimeData = new QMimeData;
-      mimeData->setData(type, a);
+      mimeData->setData(type, buffer.buffer());
       setMimeData(mimeData);
       }
 

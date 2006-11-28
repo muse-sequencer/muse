@@ -1,3 +1,5 @@
+28.11 (ws)
+      - application spanning drag&drop of parts
 24.11 (ws)
       - added new make target: "doxy" to generate doxygen source 
         documentation

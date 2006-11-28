@@ -120,7 +120,7 @@ class Part : public AL::PosLen {
       int fillLen() const              { return _fillLen; }
       void setFillLen(int val)         { _fillLen = val;  }
 
-      void read(QDomNode);
+      void read(QDomNode, bool isMidiPart);
       void write(Xml&);
       void dump(int n = 0) const;
 

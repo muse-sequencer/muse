@@ -63,7 +63,7 @@ Part::Part(Track* t)
       _fillLen    = 0;
       _track      = t;
       _events     = 0;
-      if (_track->type() == Track::WAVE)
+      if (_track && _track->type() == Track::WAVE)
             setType(AL::FRAMES);
       }
 
@@ -244,7 +244,7 @@ void Part::write(Xml& xml)
 //   Part::read
 //---------------------------------------------------------
 
-void Part::read(QDomNode node)
+void Part::read(QDomNode node, bool isMidiPart)
       {
       QDomElement e = node.toElement();
       int id = e.attribute("cloneId", "-1").toInt();
@@ -280,9 +280,7 @@ void Part::read(QDomNode node)
             else if (tag == "fillLen")
                   _fillLen = i;
             else if (tag == "event") {
-                  EventType type = Wave;
-                  if (_track->isMidiTrack())
-                        type = Note;
+                  EventType type = isMidiPart ? Note : Wave;
                   Event e(type);
                   e.read(node);
                   // tickpos is relative to start of part

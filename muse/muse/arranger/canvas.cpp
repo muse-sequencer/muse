@@ -760,14 +760,20 @@ void PartCanvas::mouseMove(QPoint pos)
             //
             // drag whole part
             //
+            srcPart = part;
             QDrag* d = 0;
             if (track->type() == Track::MIDI)
-                  d = new MidiPartDrag(part, this);
+                  d = new MidiPartDrag(srcPart, this);
             else if (track->type() == Track::WAVE)
-                  d = new AudioPartDrag(part, this);
+                  d = new AudioPartDrag(srcPart, this);
             if (d) {
+                  Qt::KeyboardModifiers kb = QApplication::keyboardModifiers();
+                  Qt::DropActions da = kb ? (Qt::MoveAction | Qt::CopyAction | Qt::LinkAction) : Qt::MoveAction;
+                  song->startUndo();
                   _dragOffset = startDrag.x() - rCanvasA.x() - ppos;
-                  /* Qt::DropAction da =*/ d->start(Qt::CopyAction | Qt::LinkAction | Qt::MoveAction);
+                  if (d->start(da) == Qt::MoveAction)
+                        song->removePart(srcPart);
+                  song->endUndo(0);
                   update = true;
                   }
             state = S_NORMAL;
@@ -951,7 +957,13 @@ void PartCanvas::dragEnter(QDragEnterEvent* event)
       if (MidiPartDrag::canDecode(md)
          || AudioPartDrag::canDecode(md)
          || WavUriDrag::canDecode(md)) {
-            event->acceptProposedAction();
+            Qt::KeyboardModifiers kb = event->keyboardModifiers();
+            if (kb == 0 && (Qt::MoveAction & event->possibleActions())) {
+                  event->setDropAction(Qt::MoveAction);
+                  event->accept();
+                  }
+            else
+                  event->acceptProposedAction();
             }
       else {
             QStringList formats = md->formats();
@@ -966,26 +978,6 @@ void PartCanvas::dragEnter(QDragEnterEvent* event)
 
 void PartCanvas::dragMove(QDragMoveEvent* event)
       {
-      Part* srcPart = 0;
-      QString filename;
-
-      const QMimeData* md = event->mimeData();
-      if (MidiPartDrag::canDecode(md)) {
-            MidiPartDrag::decode(md, srcPart);
-            }
-      else if (AudioPartDrag::canDecode(md)) {
-            AudioPartDrag::decode(md, srcPart);
-            }
-      else if (WavUriDrag::canDecode(md)) {
-            WavUriDrag::decode(md, &filename);
-            }
-      else {
-            state = S_NORMAL;
-            event->ignore();
-            return;
-            }
-      Track* srcTrack = srcPart ? srcPart->track() : 0;
-
       QPoint p(event->pos() - rCanvasA.topLeft());
       searchPart(p);
       if (!track) {
@@ -996,7 +988,22 @@ void PartCanvas::dragMove(QDragMoveEvent* event)
             event->ignore();
             return;
             }
-      if (srcTrack == 0) {    // drag uri
+
+      Part* srcPart = 0;
+      QString filename;
+
+      bool srcIsMidi;
+      const QMimeData* md = event->mimeData();
+      if (MidiPartDrag::canDecode(md)) {
+            MidiPartDrag::decode(md, srcPart);
+            srcIsMidi = true;
+            }
+      else if (AudioPartDrag::canDecode(md)) {
+            AudioPartDrag::decode(md, srcPart);
+            srcIsMidi = false;
+            }
+      else if (WavUriDrag::canDecode(md)) {
+            WavUriDrag::decode(md, &filename);
             if (state != S_NORMAL) {
                   state = S_NORMAL;
                   widget()->update();
@@ -1007,7 +1014,14 @@ void PartCanvas::dragMove(QDragMoveEvent* event)
                   event->ignore();
             return;
             }
-      if (track->type() != srcTrack->type()) {
+      else {
+            state = S_NORMAL;
+            event->ignore();
+            return;
+            }
+
+      bool dstIsMidi = track->type() == Track::MIDI;
+      if (dstIsMidi != srcIsMidi) {
             if (state != S_NORMAL) {
                   state = S_NORMAL;
                   widget()->update();
@@ -1015,20 +1029,31 @@ void PartCanvas::dragMove(QDragMoveEvent* event)
             event->ignore();
             return;
             }
-      event->acceptProposedAction();
+      Qt::KeyboardModifiers kb = event->keyboardModifiers();
+      if (kb == 0 && (Qt::MoveAction & event->possibleActions())) {
+            event->setDropAction(Qt::MoveAction);
+            event->accept();
+            }
+      else
+            event->acceptProposedAction();
       state = S_DRAG4;
       ArrangerTrack* at = &(track->arrangerTrack);
 
       PartCanvas* cw = (PartCanvas*)event->source();
       QRect updateRect(drag);
 
-	Pos pos(pix2pos(p.x() - cw->dragOffset()).snaped(raster()));
+      Pos pos;
+      if (cw)
+            pos = pix2pos(p.x() - cw->dragOffset()).snaped(raster());
+      else
+	      pos = pix2pos(p.x()).snaped(raster());
       drag.setRect(
          pos2pix(pos),
          at->tw->y(),
          rmapx(srcPart->lenTick()),
          at->tw->height() - 1 - partBorderWidth
          );
+      delete srcPart;
 	updateRect |= drag;
       updateRect.adjust(-1, -1 + rCanvasA.y(), 1, 1 + rCanvasA.y());
       widget()->update(updateRect);
@@ -1041,54 +1066,66 @@ void PartCanvas::dragMove(QDragMoveEvent* event)
 void PartCanvas::drop(QDropEvent* event)
       {
       state = S_NORMAL;
-      Part* srcPart = 0;
+      Part* dstPart = 0;
       QString filename;
 
-      const QMimeData* md = event->mimeData();
-      if (MidiPartDrag::canDecode(md)) {
-            MidiPartDrag::decode(md, srcPart);
-            }
-      else if (AudioPartDrag::canDecode(md)) {
-            AudioPartDrag::decode(md, srcPart);
-            }
-      else if (WavUriDrag::canDecode(md)) {
-            WavUriDrag::decode(md, &filename);
-            }
-      else
-            return;
-
       QPoint pos(event->pos() - rCanvasA.topLeft());
-      searchPart(pos);
-      Track* srcTrack = srcPart ? srcPart->track() : 0;
-      if (track == 0 || (srcTrack && (track->type() != srcTrack->type())))
-            return;
-
-      if (srcPart == 0) {
+      const QMimeData* md = event->mimeData();
+      if (WavUriDrag::canDecode(md)) {
+            WavUriDrag::decode(md, &filename);
             int tick = AL::sigmap.raster(mapxDev(pos.x()), raster());
             Pos pos(tick);
             muse->importWaveToTrack(filename, track, pos);
+            widget()->update();
+            return;
             }
-      else {
-            PartCanvas* cw = (PartCanvas*)event->source();
-            unsigned tick = AL::sigmap.raster(mapxDev(pos.x() - cw->dragOffset()), raster());
-            if (srcPart->tick() != tick || srcTrack != track) {
-                  Qt::KeyboardModifiers keyState = event->keyboardModifiers();
 
-                  if (keyState & Qt::ShiftModifier) {
-                        song->cmdCopyPart(srcPart, tick, track);
-                        event->setDropAction(Qt::CopyAction);
-                        }
-                  else if (keyState & Qt::ControlModifier) {
-                        song->cmdLinkPart(srcPart, tick, track);
-                        event->setDropAction(Qt::LinkAction);
-                        }
-                  else {
-                        song->cmdMovePart(srcPart, tick, track);
-                        event->setDropAction(Qt::MoveAction);
-                        }
-                  }
+      bool isMidi = false;
+      if (MidiPartDrag::canDecode(md)) {
+            MidiPartDrag::decode(md, dstPart);
+            isMidi = true;
             }
-      event->acceptProposedAction();
+      else if (AudioPartDrag::canDecode(md))
+            AudioPartDrag::decode(md, dstPart);
+
+      searchPart(pos);
+      if (!track || !dstPart || isMidi != track->isMidiTrack())
+            return;
+
+      dstPart->setTrack(track);
+      PartCanvas* cw = (PartCanvas*)event->source();
+
+      //
+      // cw == 0 means that we are dropping to 
+      // another application
+
+      unsigned tick;
+      if (cw)
+            tick = AL::sigmap.raster(mapxDev(pos.x() - cw->dragOffset()), raster());
+      else
+            tick = AL::sigmap.raster(mapxDev(pos.x()), raster());
+            
+      dstPart->setTick(tick);
+
+      Qt::DropAction da = event->proposedAction();
+      Qt::KeyboardModifiers kb = event->keyboardModifiers();
+      if (kb == 0 && (Qt::MoveAction & event->possibleActions()))
+            da = Qt::MoveAction;
+
+      if ((da == Qt::LinkAction) && (event->source() == this)) {
+            delete dstPart->events();
+            dstPart->clone(srcPart->events());
+            event->setDropAction(Qt::LinkAction);
+            }
+      else if (da == Qt::MoveAction)
+            event->setDropAction(Qt::MoveAction);
+      else 
+            event->setDropAction(Qt::CopyAction);
+      event->accept();
+      if (cw)
+            song->addPart(dstPart);
+      else
+            song->cmdAddPart(dstPart);
       widget()->update();
       }
 

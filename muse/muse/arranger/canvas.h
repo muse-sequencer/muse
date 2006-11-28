@@ -63,6 +63,8 @@ class PartCanvas : public TimeCanvas {
       Part* part;
       ArrangerTrack* at;
 
+      Part* srcPart;    // src part of a drag/drop operation
+
       bool _drawBackground;
       int selected;
       int lselected;    // in local coordinates
