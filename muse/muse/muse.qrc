@@ -37,7 +37,6 @@
       <file>xpm/view_cliplist.xpm</file>
       <file>xpm/view_marker.xpm</file>
       <file>xpm/view_mixer.xpm</file>
-
       <file>xpm/pointer.xpm</file>
       <file>xpm/pencil.xpm</file>
       <file>xpm/delete.xpm</file>
@@ -52,6 +51,9 @@
       <file>xpm/select_invert_selection.xpm</file>
       <file>xpm/select_inside_loop.xpm</file>
       <file>xpm/select_outside_loop.xpm</file>
+      <file>xpm/editcut.xpm</file>
+      <file>xpm/editcopy.xpm</file>
+      <file>xpm/editpaste.xpm</file>
 
    </qresource>
 

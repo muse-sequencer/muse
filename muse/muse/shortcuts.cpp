@@ -163,12 +163,6 @@ Shortcut MuseApplication::sc[] = {
             ":/xpm/panic.xpm"
             ),
       Shortcut(
-            "copy",
-            QT_TR_NOOP("Edit: Copy"),
-            INVIS_SHRT, 
-            Qt::CTRL + Qt::Key_C
-            ),
-      Shortcut(
             "undo",
             QT_TR_NOOP("Edit: Undo"),
             INVIS_SHRT, 
@@ -190,13 +184,28 @@ Shortcut MuseApplication::sc[] = {
             "cut",
             QT_TR_NOOP("Edit: Cut" ),
             INVIS_SHRT, 
-            Qt::CTRL + Qt::Key_X
+            Qt::CTRL + Qt::Key_X,
+            QT_TR_NOOP("Cut"),
+            QT_TR_NOOP("Cut"),
+            ":/xpm/editcut.xpm"
+            ),
+      Shortcut(
+            "copy",
+            QT_TR_NOOP("Edit: Copy"),
+            INVIS_SHRT, 
+            Qt::CTRL + Qt::Key_C,
+            QT_TR_NOOP("Copy"),
+            QT_TR_NOOP("Copy"),
+            ":/xpm/editcopy.xpm"
             ),
       Shortcut(
             "paste",
             QT_TR_NOOP("Edit: Paste,"),
             INVIS_SHRT, 
-            Qt::CTRL + Qt::Key_V
+            Qt::CTRL + Qt::Key_V,
+            QT_TR_NOOP("Paste"),
+            QT_TR_NOOP("Paste"),
+            ":/xpm/editpaste.xpm"
             ),
       Shortcut(
             "delete",

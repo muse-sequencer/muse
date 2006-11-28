@@ -3,9 +3,7 @@
 ----------------------------------------------------------------------------
 
       - dont allow for overlapping parts
-      - add shortcuts as QAction
-      - extend Shortcut with ShortcutContext
-      - extend shortcuts with Help Text, Icons etc.
+      - automatically create unique default part names
 
 BUGS
       - make sure all track names are unique

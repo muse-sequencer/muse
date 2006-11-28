@@ -178,6 +178,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
 
       virtual void focusInEvent(QFocusEvent*);
       void addMidiFile(const QString name);
+      void copyParts(bool);
 
    signals:
       void configChanged();
@@ -278,6 +279,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       void setTempo200();
       void setGlobalTempo(int val);
       void setTool(int);
+      void setTool(const QString&);
       void startEditor(Part*, int);
       bool save();
 

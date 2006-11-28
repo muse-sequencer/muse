@@ -524,12 +524,10 @@ MusE::MusE()
 
       undoAction = getAction("undo", this);
       undoAction->setEnabled(false);
-      undoAction->setData(-1);
       connect(undoAction, SIGNAL(triggered()), song, SLOT(undo()));
 
       redoAction = getAction("redo", this);
       redoAction->setEnabled(false);
-      redoAction->setData(-1);
       connect(redoAction, SIGNAL(triggered()), song, SLOT(redo()));
 
 #ifdef __APPLE__
@@ -643,25 +641,18 @@ MusE::MusE()
       menuEdit->addAction(redoAction);
       menuEdit->addSeparator();
 
-      cutAction = menuEdit->addAction(*editcutIconSet, tr("C&ut"));
-      cutAction->setData(CMD_CUT);
-      cutAction->setShortcut(Qt::CTRL + Qt::Key_X);
-
-      copyAction = menuEdit->addAction(*editcopyIconSet, tr("&Copy"));
-      copyAction->setData(CMD_COPY);
-      copyAction->setShortcut(Qt::CTRL + Qt::Key_C);
-
-      pasteAction = menuEdit->addAction(*editpasteIconSet, tr("&Paste"));
-      pasteAction->setData(CMD_PASTE);
-      pasteAction->setShortcut(Qt::CTRL + Qt::Key_V);
+      cutAction  = getAction("cut", this);
+      menuEdit->addAction(cutAction);
+      copyAction = getAction("copy", this);
+      menuEdit->addAction(copyAction);
+      pasteAction = getAction("paste", this);
+      menuEdit->addAction(pasteAction);
 
       menuEditActions[CMD_DELETE] = getAction("delete", this);
-      menuEdit->addAction(menuEditActions[CMD_DELETE]);
-      menuEditActions[CMD_DELETE]->setData(CMD_DELETE);
 
       menuEdit->addSeparator();
       a = menuEdit->addAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"));
-      a->setData(CMD_DELETE_TRACK);
+      a->setData("delete_track");
 
       addTrack = menuEdit->addMenu(*edit_track_addIcon, tr("Add Track"));
       // delay creation of menu (at this moment the list of software
@@ -672,11 +663,9 @@ MusE::MusE()
       select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
       menuEditActions[CMD_SELECT_ALL] = getAction("sel_all", this);
       select->addAction(menuEditActions[CMD_SELECT_ALL]);
-      menuEditActions[CMD_SELECT_ALL]->setData(CMD_SELECT_ALL);
 
       menuEditActions[CMD_SELECT_NONE] = getAction("sel_none", this);
       select->addAction(menuEditActions[CMD_SELECT_NONE]);
-      menuEditActions[CMD_SELECT_NONE]->setData(CMD_SELECT_NONE);
 
       menuEditActions[CMD_SELECT_INVERT] = getAction("sel_inv", this);
       select->addAction(menuEditActions[CMD_SELECT_INVERT]);
@@ -692,7 +681,6 @@ MusE::MusE()
 
       menuEditActions[CMD_SELECT_PARTS] = getAction("select_parts_on_track", this);
       select->addAction(menuEditActions[CMD_SELECT_PARTS]);
-      menuEditActions[CMD_SELECT_PARTS]->setData(CMD_SELECT_PARTS);
 
       menuEdit->addSeparator();
       menuEdit->addAction(pianoAction);
@@ -842,13 +830,13 @@ MusE::MusE()
       follow = menuSettings->addMenu(QIcon(*settings_follow_songIcon), tr("follow song"));
       //follow->menuAction()->setShortcut(Qt::Key_F);
       fid0 = follow->addAction(tr("dont follow Song"));
-      fid0->setData(CMD_FOLLOW_NO);
+      fid0->setData("follow_no");
       fid0->setCheckable(true);
       fid1 = follow->addAction(tr("follow page"));
-      fid1->setData(CMD_FOLLOW_JUMP);
+      fid1->setData("follow_jump");
       fid1->setCheckable(true);
       fid2 = follow->addAction(tr("follow continuous"));
-      fid2->setData(CMD_FOLLOW_CONTINUOUS);
+      fid2->setData("follow_continuous");
       fid2->setCheckable(true);
       fid0->setChecked(TimeCanvas::followMode == FOLLOW_NO);
       fid1->setChecked(TimeCanvas::followMode == FOLLOW_JUMP);
@@ -1783,110 +1771,202 @@ void MusE::setFollow(FollowMode fm)
       }
 
 //---------------------------------------------------------
+//   copyParts
+//    copy all selected Parts of type MIDI or WAVE to
+//    clipboard whatever first found
+//---------------------------------------------------------
+
+void MusE::copyParts(bool cutFlag)
+      {
+      QBuffer buffer;
+      buffer.open(QIODevice::WriteOnly);
+      AL::Xml xml(&buffer);
+
+      if (cutFlag)
+            song->startUndo();
+      int midiType = -1;
+      TrackList* tl = song->tracks();
+      for (iTrack i = tl->begin(); i != tl->end(); ++i) {
+            Track* track = *i;
+            if (midiType == 1 && !track->isMidiTrack())
+                  continue;
+            PartList* pl = track->parts();
+            for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
+                  Part* part = ip->second;
+                  if (part->selected()) {
+                        if (midiType == -1)
+                              midiType = track->isMidiTrack();
+                        part->write(xml);
+                        if (cutFlag)
+                              song->removePart(part);
+                        }
+                  }
+            }
+      buffer.close();
+      QMimeData* mimeData = new QMimeData;
+      const char* t = midiType ? "application/muse/part/midi" : "application/muse/part/audio";
+      mimeData->setData(t, buffer.buffer());
+      QApplication::clipboard()->setMimeData(mimeData);
+      if (cutFlag)
+            song->endUndo(0);
+      }
+
+//---------------------------------------------------------
 //   cmd
 //    some cmd's from pulldown menu
 //---------------------------------------------------------
 
 void MusE::cmd(QAction* a)
       {
-      int cmd = a->data().toInt();
+      QString cmd = a->data().toString();
       TrackList* tracks = song->tracks();
       int l = song->lpos();
       int r = song->rpos();
 
-      switch(cmd) {
-            case CMD_CUT:
-//TODO1                  arranger->cmd(Arranger::CMD_CUT_PART);
-                  break;
-            case CMD_COPY:
-//TODO1                  arranger->cmd(Arranger::CMD_COPY_PART);
-                  break;
-            case CMD_PASTE:
-//TODO1                  arranger->cmd(Arranger::CMD_PASTE_PART);
-                  break;
-            case CMD_DELETE:
-                  {
-                  TrackList* tl = song->tracks();
-                  bool partsMarked = false;
-                  for (iTrack it = tl->begin(); it != tl->end(); ++it) {
-      	            PartList* pl2 = (*it)->parts();
-                        for (iPart ip = pl2->begin(); ip != pl2->end(); ++ip) {
-            	            if (ip->second->selected()) {
-                  	            partsMarked = true;
-                                    break;
-                                    }
-                              }
-                        }
-                  if (partsMarked)
-                        song->cmdRemoveParts();
-                  else
-                        audio->msgRemoveTracks();
+      if (cmd == "cut")
+            copyParts(true);
+      else if (cmd == "copy")
+            copyParts(false);
+      else if (cmd == "paste") {
+            const QMimeData* s = QApplication::clipboard()->mimeData();
+            int isMidi = -1;
+            QByteArray data;
+            if (s->hasFormat("application/muse/part/midi")) {
+                  isMidi = 1;
+                  data = s->data("application/muse/part/midi");
                   }
-                  break;
+            else if (s->hasFormat("application/muse/part/audio")) {
+                  isMidi = 0;
+                  data = s->data("application/muse/part/audio");
+                  }
+            // exit if unknown format
+            if (isMidi == -1) {
+                  printf("paste: unknown format\n");
+                  return;
+                  }
 
-            case CMD_DELETE_TRACK:
-                  audio->msgRemoveTracks();
-                  break;
-
-            case CMD_SELECT_ALL:
-            case CMD_SELECT_NONE:
-            case CMD_SELECT_INVERT:
-            case CMD_SELECT_ILOOP:
-            case CMD_SELECT_OLOOP:
-                  for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
-                        PartList* parts = (*i)->parts();
-                        for (iPart p = parts->begin(); p != parts->end(); ++p) {
-                              bool f = false;
-                              int t1 = p->second->tick();
-                              int t2 = t1 + p->second->lenTick();
-                              bool inside =
-                                 ((t1 >= l) && (t1 < r))
-                                 ||  ((t2 > l) && (t2 < r))
-                                 ||  ((t1 <= l) && (t2 > r));
-                              switch(cmd) {
-                                    case CMD_SELECT_INVERT:
-                                          f = !p->second->selected();
-                                          break;
-                                    case CMD_SELECT_NONE:
-                                          f = false;
-                                          break;
-                                    case CMD_SELECT_ALL:
-                                          f = true;
-                                          break;
-                                    case CMD_SELECT_ILOOP:
-                                          f = inside;
-                                          break;
-                                    case CMD_SELECT_OLOOP:
-                                          f = !inside;
-                                          break;
-                                    }
-                              p->second->setSelected(f);
-                              }
-                        (*i)->partListChanged(); // repaints canvaswidget
+            // search target track
+            TrackList* tl = song->tracks();
+            Track* track = 0;
+            for (iTrack i = tl->begin(); i != tl->end(); ++i) {
+                  Track* t = *i;
+                  if ((isMidi == 1 && t->type() == Track::MIDI)
+                     || (isMidi == 0 && t->type() == Track::WAVE)) {
+                        track = t;
+                        break;
                         }
-                  song->update();
-                  break;
+                  }
+            if (track == 0) {
+                  printf("no destination track selected\n");
+                  return;
+                  }
 
-            case CMD_SELECT_PARTS:
-                  for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
-                        if (!(*i)->selected())
-                              continue;
-                        PartList* parts = (*i)->parts();
-                        for (iPart p = parts->begin(); p != parts->end(); ++p)
-                              p->second->setSelected(true);
+            QDomDocument doc;
+            int line, column;
+            QString err;
+            PartList pl;
+            if (!doc.setContent(data, false, &err, &line, &column)) {
+                  QString col, ln, error;
+                  col.setNum(column);
+                  ln.setNum(line);
+                  error = err + "\n    at line: " + ln + " col: " + col;
+                  printf("error parsing part: %s\n", error.toLatin1().data());
+                  return;
+                  }
+            int tick = -1;
+            for (QDomNode node = doc.documentElement(); !node.isNull(); node = node.nextSibling()) {
+                  QDomElement e = node.toElement();
+                  if (e.isNull())
+                        continue;
+                  if (e.tagName() == "part") {
+                        Part* p = new Part(0);
+                        p->ref();
+                        p->read(node, true);
+                        pl.add(p);
+                        if (tick == -1 || p->tick() < unsigned(tick))
+                              tick = int(p->tick());
                         }
-                  song->update();
-                  break;
-            case CMD_FOLLOW_NO:
-                  setFollow(FOLLOW_NO);
-                  break;
-            case CMD_FOLLOW_JUMP:
-                  setFollow(FOLLOW_JUMP);
-                  break;
-            case CMD_FOLLOW_CONTINUOUS:
-                  setFollow(FOLLOW_CONTINUOUS);
-                  break;
+                  else
+                        printf("MusE: %s not supported\n", e.tagName().toLatin1().data());
+                  }
+            
+            unsigned cpos = song->cpos();
+            song->startUndo();
+            for (iPart ip = pl.begin(); ip != pl.end(); ++ip) {
+                  Part* part = ip->second;
+                  part->setTick(part->tick() - tick + cpos);
+                  part->setTrack(track);
+                  song->addPart(part);
+                  cpos += part->lenTick();
+                  }
+            song->endUndo(0);
+            track->partListChanged();
             }
+
+      else if (cmd == "delete") {
+            TrackList* tl = song->tracks();
+            bool partsMarked = false;
+            for (iTrack it = tl->begin(); it != tl->end(); ++it) {
+      	      PartList* pl2 = (*it)->parts();
+                  for (iPart ip = pl2->begin(); ip != pl2->end(); ++ip) {
+            	      if (ip->second->selected()) {
+                  	      partsMarked = true;
+                              break;
+                              }
+                        }
+                  }
+            if (partsMarked)
+                  song->cmdRemoveParts();
+            else
+                  audio->msgRemoveTracks();
+            }
+      else if (cmd == "delete_track")
+            audio->msgRemoveTracks();
+      else if (cmd == "sel_all" || cmd == "sel_none" || cmd == "sel_inv"
+         || cmd == "sel_ins_loc" || cmd == "sel_out_loc") {
+            for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
+                  PartList* parts = (*i)->parts();
+                  for (iPart p = parts->begin(); p != parts->end(); ++p) {
+                        bool f = false;
+                        int t1 = p->second->tick();
+                        int t2 = t1 + p->second->lenTick();
+                        bool inside =
+                           ((t1 >= l) && (t1 < r))
+                           ||  ((t2 > l) && (t2 < r))
+                           ||  ((t1 <= l) && (t2 > r));
+                        if (cmd == "sel_inv")
+                              f = !p->second->selected();
+                        else if (cmd == "sel_none")
+                              f = false;
+                        else if (cmd == "sel_all")
+                              f = true;
+                        else if (cmd == "sel_ins_loc")
+                              f = inside;
+                        else if (cmd == "sel_out_loc")
+                              f = !inside;
+                        p->second->setSelected(f);
+                        }
+                  (*i)->partListChanged(); // repaints canvaswidget
+                  }
+            song->update();
+            }
+      else if (cmd == "select_parts_on_track") {
+            for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
+                  if (!(*i)->selected())
+                        continue;
+                  PartList* parts = (*i)->parts();
+                  for (iPart p = parts->begin(); p != parts->end(); ++p)
+                        p->second->setSelected(true);
+                  }
+            song->update();
+            }
+
+      else if (cmd == "follow_no")
+            setFollow(FOLLOW_NO);
+      else if (cmd == "follow_jump")
+            setFollow(FOLLOW_JUMP);
+      else if (cmd == "follow_continuous")
+            setFollow(FOLLOW_CONTINUOUS);
       }
 
 //---------------------------------------------------------
@@ -1895,22 +1975,13 @@ void MusE::cmd(QAction* a)
 
 void MusE::clipboardChanged()
       {
-#if 0 //TD
       QString subtype("partlist");
-      QMimeSource* ms = QApplication::clipboard()->data(QClipboard::Clipboard);
+      const QMimeData* ms = QApplication::clipboard()->mimeData();
       if (ms == 0)
             return;
-      bool flag = false;
-      for (int i = 0; ms->format(i); ++i) {
-// printf("Format <%s\n", ms->format(i));
-            if ((strncmp(ms->format(i), "text/midipartlist", 17) == 0)
-               || strncmp(ms->format(i), "text/wavepartlist", 17) == 0) {
-                  flag = true;
-                  break;
-                  }
-            }
+      bool flag = ms->hasFormat("application/muse/part/midi") 
+         || ms->hasFormat("application/muse/part/audio");
       pasteAction->setEnabled(flag);
-#endif
       }
 
 //---------------------------------------------------------
@@ -2727,6 +2798,20 @@ void MusE::setTool(int tool)
       {
       tools1->set(tool);
       arranger->setTool(tool);
+      }
+
+void MusE::setTool(const QString& s)
+      {
+      int id = 0;
+      for (int i = 0; i < TOOLS; ++i) {
+            if (toolList[i] == s) {
+                  id = i;
+                  break;
+                  }
+            }
+      id = 1 << id;
+      tools1->set(id);
+      arranger->setTool(id);
       }
 
 //---------------------------------------------------------

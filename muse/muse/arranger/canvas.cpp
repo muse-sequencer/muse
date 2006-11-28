@@ -405,25 +405,18 @@ void PartCanvas::contextMenu(const QPoint& pos)
       QMenu* pop = new QMenu(widget());
       QAction* a;
       if (part) {
-            a = pop->addAction(*editcutIconSet, tr("C&ut"));
-            a->setData(4);
-            a->setShortcut(Qt::CTRL + Qt::Key_X);
-
-            a = pop->addAction(*editcopyIconSet, tr("&Copy"));
-            a->setData(5);
-            a->setShortcut(Qt::CTRL + Qt::Key_C);
-
+            pop->addAction(getAction("cut", this));
+            pop->addAction(getAction("copy", this));
             pop->addSeparator();
+            a = pop->addAction(tr("Rename"));
+            a->setData("rename");
 
-            a = pop->addAction(tr("rename"));
-            a->setData(0);
-
-            QMenu* cp = pop->addMenu(tr("color"));
+            QMenu* cp = pop->addMenu(tr("Color"));
 
             // part color selection
             for (int i = 0; i < NUM_PARTCOLORS; ++i) {
                   a = cp->addAction(partColorNames[i]);
-                  a->setData(20 + i);
+                  a->setData(QString("color%1").arg(i));
                   QPixmap pm(20, 20);
                   QPainter p(&pm);
                   p.fillRect(0, 0, 20, 20, config.partColors[i]);
@@ -431,106 +424,85 @@ void PartCanvas::contextMenu(const QPoint& pos)
                   }
             a = getAction("delete", this);
             pop->addAction(a);
-            a->setData(1);
-            a = getAction("cut", this);
+            a->setData("delete");
+            a = getAction("scissor", this);
             pop->addAction(a);
-            a->setData(2);
             a = getAction("glue", this);
             pop->addAction(a);
-            a->setData(3);
-            a = pop->addAction(tr("de-clone"));
-            a->setData(15);
+            a = pop->addAction(tr("Declone"));
+            a->setData("declone");
             a->setEnabled(part->isClone());
             if (track->type() == Track::MIDI) {
                   a = pop->addAction(tr("AutoFill..."));
-                  a->setData(16);
+                  a->setData("autofill");
                   }
             pop->addSeparator();
       	if (track->type() == Track::MIDI) {
                   MidiTrack* track = (MidiTrack*)part->track();
                   if (track->useDrumMap()) {
                   	a = pop->addAction(*edit_drummsIcon, tr("drums"));
-                        a->setData(13);
+                        a->setData("editdrums");
                         }
                   else {
                         a = pop->addAction(QIcon(":/xpm/piano.xpm"), tr("pianoroll"));
-                        a->setData(10);
+                        a->setData("editpiano");
                         }
-		  a = pop->addAction(*edit_listIcon, tr("miditracker"));
-		  a->setData(11);
+		      a = pop->addAction(*edit_listIcon, tr("miditracker"));
+		      a->setData("miditracker");
                   a = pop->addAction(*edit_listIcon, tr("list"));
-                  a->setData(12);
+                  a->setData("listedit");
                   }
             else {
 			a = pop->addAction(*waveIcon, tr("wave edit"));
-                  a->setData(14);
+                  a->setData("waveedit");
                   }
 
             a = pop->exec(mapToGlobal(pos));
             if (a) {
-                  int n = a->data().toInt();
-                  switch (n) {
-                        case 0:
-                              renamePart(part);
-                              break;
-                        case 1:
-                              song->cmdRemovePart(part);
-                              track->partListChanged();
-                              break;
-                        case 2:
-                              splitPart(part, startDrag);
-                              break;
-                        case 3:
-                              song->cmdGluePart(part);
-                              break;
-                        case 4:
-                              cutPart(part);
-                              break;
-                        case 5:
-                              copyPart(part);
-                              break;
-                        case 10:    // pianoroll edit
-                              emit startEditor(part, 0);
-                              break;
-		            case 11:    //miditracker edit
-			            emit startEditor(part, 2);
-			            break;
-                        case 12:    // list edit
-                              emit startEditor(part, 1);
-                              break;
-                        case 13:    // drum edit
-                              emit startEditor(part, 3);
-                              break;
-                        case 14:
-                              emit startEditor(part, 4);
-                              break;
-                        case 15:
-                              declonePart(part);
-                              break;
-                        case 16:
-                        	// auto fill: ask for loop length
-                        	{
-                              bool ok;
-                              int ticksM = AL::sigmap.ticksMeasure(part->tick());
-                              int n = QInputDialog::getInteger(this,
-                        	   tr("MusE: Get auto fill loop len"),
-                        	   tr("Measures: "),
-                        	   part->fillLen() / ticksM,
-                        	   0, 16, 1, &ok);
-                        	if (ok) {
-                                    part->setFillLen(n * ticksM);
-                                    }
+                  QString cmd = a->data().toString();
+                  if (cmd == "rename")
+                        renamePart(part);
+                  else if (cmd == "delete")
+                        song->cmdRemovePart(part);
+                  else if (cmd == "scissor")
+                        splitPart(part, startDrag);
+                  else if (cmd == "glue")
+                        song->cmdGluePart(part);
+                  else if (cmd == "cut")
+                        cutPart(part);
+                  else if (cmd == "copy")
+                        copyPart(part);
+                  else if (cmd == "editpiano")
+                        emit startEditor(part, 0);
+                  else if (cmd == "miditracker")
+                        emit startEditor(part, 2);
+                  else if (cmd == "listedit")
+                        emit startEditor(part, 1);
+                  else if (cmd == "drumedit")
+                        emit startEditor(part, 3);
+                  else if (cmd == "waveedit")
+                        emit startEditor(part, 4);
+                  else if (cmd == "declone")
+                        declonePart(part);
+                  else if (cmd == "autofill") {
+                        bool ok;
+                        int ticksM = AL::sigmap.ticksMeasure(part->tick());
+                        int n = QInputDialog::getInteger(this,
+                              tr("MusE: Get auto fill loop len"),
+                        	tr("Measures: "),
+                        	part->fillLen() / ticksM,
+                        	0, 16, 1, &ok);
+                        if (ok) {
+                              part->setFillLen(n * ticksM);
                               }
-                        	break;
-                        case 20 ... NUM_PARTCOLORS+20:
-                              part->setColorIndex(n - 20);
-                              widget()->update();
-                              break;
-                        case -1:
-                              break;
-                        default:
-                              printf("unknown action %d\n", n);
-                              break;
+                        }
+                  else if (cmd.startsWith("color")) {
+                        int idx = cmd.mid(5).toInt();
+                        part->setColorIndex(idx);
+                        widget()->update();
+                        }
+                  else {
+                        printf("unknown action <%s>\n", cmd.toLatin1().data());
                         }
                   }
             }
@@ -540,17 +512,12 @@ void PartCanvas::contextMenu(const QPoint& pos)
                         continue;
                   a = getAction(toolList[i], this);
                   pop->addAction(a);
-                  int id = 1 << i;
-                  a->setData(id);
                   a->setCheckable(true);
-                  if (id == (int)_tool)
-                        a->setChecked(true);
+                  a->setChecked((1 <<i) == (int)_tool);
                   }
             a = pop->exec(mapToGlobal(pos));
-            if (a) {
-                  int n = a->data().toInt();
-                  muse->setTool(n);
-                  }
+            if (a)
+                  muse->setTool(a->data().toString());
             }
       }
 
@@ -933,18 +900,26 @@ void PartCanvas::renamePart(Part* part)
 //   cutPart
 //---------------------------------------------------------
 
-void PartCanvas::cutPart(Part*)
+void PartCanvas::cutPart(Part* part)
       {
-      printf("cut part: not impl.\n");
+      copyPart(part);
+      song->cmdRemovePart(part);
       }
 
 //---------------------------------------------------------
 //   copyPart
 //---------------------------------------------------------
 
-void PartCanvas::copyPart(Part*)
+void PartCanvas::copyPart(Part* part)
       {
-      printf("copy part: not impl.\n");
+      QBuffer buffer;
+      buffer.open(QIODevice::WriteOnly);
+      AL::Xml xml(&buffer);
+      part->write(xml);
+      buffer.close();
+      QMimeData* mimeData = new QMimeData;
+      mimeData->setData(MidiPartDrag::type, buffer.buffer());
+      QApplication::clipboard()->setMimeData(mimeData);
       }
 
 //---------------------------------------------------------

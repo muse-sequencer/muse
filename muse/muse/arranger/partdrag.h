@@ -28,10 +28,10 @@ class Part;
 //---------------------------------------------------------
 
 class MidiPartDrag : public QDrag {
-      static const char type[];
       Q_OBJECT
 
    public:
+      static const char type[];
       MidiPartDrag(Part*, QWidget* src);
       static bool canDecode(const QMimeData*);
       static bool decode(const QMimeData* s, Part*& p);
@@ -42,10 +42,10 @@ class MidiPartDrag : public QDrag {
 //---------------------------------------------------------
 
 class AudioPartDrag : public QDrag {
-      static const char type[];
       Q_OBJECT
 
    public:
+      static const char type[];
       AudioPartDrag(Part*, QWidget* src);
       static bool canDecode(const QMimeData*);
       static bool decode(const QMimeData* s, Part*& p);
@@ -56,16 +56,14 @@ class AudioPartDrag : public QDrag {
 //---------------------------------------------------------
 
 class WavUriDrag : public QDrag {
-      static const char type[];
       Q_OBJECT
 
    public:
+      static const char type[];
       WavUriDrag(const QString&, QWidget* src);
       static bool canDecode(const QMimeData*);
       static bool decode(const QMimeData* s, QString* p);
       };
-
-
 
 #endif
 

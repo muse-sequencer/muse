@@ -1383,4 +1383,3 @@ void Arranger::removeMarker(const AL::Pos& pos)
             }
       printf("marker not found\n");
       }
-
