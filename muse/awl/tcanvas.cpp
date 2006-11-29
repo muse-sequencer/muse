@@ -376,18 +376,43 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
                   QWheelEvent* e = (QWheelEvent*)event;
                   if (e->orientation() != Qt::Vertical)
             		return true;
-                  int step = qMin(QApplication::wheelScrollLines() * vbar->singleStep(), vbar->pageStep());
-      		if ((e->modifiers() & Qt::ControlModifier) || (e->modifiers() & Qt::ShiftModifier))
-            		step = vbar->pageStep();
-      		int offset = e->delta() * step / 120;
-      		if (vbar->invertedControls())
-            		offset = -offset;
-      		if (qAbs(offset) < 1)
-            		return true;
-      		vbar->setValue(vbar->value() + offset);
+      		if ((e->modifiers() & Qt::ControlModifier) || (e->modifiers() & Qt::ShiftModifier)) {
+                        //
+                        // xmag
+                        //
+                        int oldx = e->x();
+                        AL::Pos pos(pix2pos(oldx));
+                        int step = e->delta() / 120;
+                        if (step > 0) {
+                              for (int i = 0; i< step; ++i)
+                                    _xmag *= 1.1;
+                              }
+                        else {
+                              for (int i = 0; i < -step; ++i)
+                                    _xmag *= 0.9;
+                              }
+                        hmag->setValue(xmag2s(_xmag));
+                        updateScrollBars();
+                        updateRulerMag();
+                        magChanged();
+                        int newx = pos2pix(pos);
+                        wpos.setX(wpos.x() + (newx - oldx));
+                        _widget->update();
+                        }
+                  else {
+                        //
+                        //   scroll
+                        //
+                        int step = qMin(QApplication::wheelScrollLines() * vbar->singleStep(), vbar->pageStep());
+            		int offset = e->delta() * step / 120;
+            		if (vbar->invertedControls())
+                  		offset = -offset;
+            		if (qAbs(offset) < 1)
+                  		return true;
+      	      	vbar->setValue(vbar->value() + offset);
+                        }
                   }
             	return true;
-
 
             default:
 // printf("event %d missed\n", event->type());

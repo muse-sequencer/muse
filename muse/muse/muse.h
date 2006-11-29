@@ -66,30 +66,6 @@ extern void configMidiController();
 class MusE : public QMainWindow // , public Ui::MuseBase
       {
       Q_OBJECT
-      enum {
-            CMD_CUT, CMD_COPY, CMD_PASTE, CMD_DELETE,
-            CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
-            CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
-            CMD_FOLLOW_NO, CMD_FOLLOW_JUMP, CMD_FOLLOW_CONTINUOUS,
-            CMD_DELETE_TRACK
-            };
-
-      //File menu items:
-      enum { CMD_OPEN_RECENT=0, CMD_IMPORT_MIDI,
-            CMD_EXPORT_MIDI, CMD_IMPORT_AUDIO, CMD_QUIT, CMD_OPEN_DRUMS,
-            CMD_OPEN_LIST, CMD_OPEN_LIST_MASTER, 
-            CMD_OPEN_GRAPHIC_MASTER, CMD_OPEN_MIDI_TRANSFORM, CMD_TRANSPOSE,
-            CMD_GLOBAL_CUT, CMD_GLOBAL_INSERT, CMD_GLOBAL_SPLIT, CMD_COPY_RANGE,
-            CMD_CUT_EVENTS, CMD_CONFIG_SHORTCUTS, CMD_CONFIG_METRONOME, CMD_CONFIG_MIDISYNC,
-            CMD_MIDI_FILE_CONFIG, CMD_CONFIG_AUDIO_PORTS,
-            CMD_MIDI_EDIT_INSTRUMENTS, CMD_MIDI_RESET, CMD_MIDI_INIT, CMD_MIDI_LOCAL_OFF,
-            CMD_MIXER_SNAPSHOT, CMD_MIXER_AUTOMATION_CLEAR, CMD_OPEN_HELP, CMD_OPEN_HOMEPAGE,
-            CMD_OPEN_BUG, CMD_START_WHATSTHIS,
-            CMD_AUDIO_BOUNCE_TO_FILE, CMD_AUDIO_BOUNCE_TO_TRACK, CMD_AUDIO_RESTART,
-            CMD_OPEN_PROJECT_PROPS,
-            CMD_LAST };
-
-      QAction* menu_ids[CMD_LAST];
 
       QAction* fileSaveAction;
       QAction* fileOpenAction;
@@ -119,7 +95,6 @@ class MusE : public QMainWindow // , public Ui::MuseBase
 
       QMenu *menu_file, *menuView, *menuSettings, *menu_help;
       QMenu *menuEdit, *menuStructure;
-      QAction* menuEditActions[CMD_DELETE_TRACK + 1];
       QMenu* menu_audio;
       QMenu* menu_functions;
       QMenu* select, *master, *midiEdit, *addTrack;

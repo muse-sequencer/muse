@@ -70,9 +70,7 @@ extern const char* med_midi_file_pattern[];
 extern const char* image_file_pattern[];
 extern const char* ctrl_file_pattern[];
 
-#define CMD_RANGE_ALL         0
-#define CMD_RANGE_SELECTED    1
-#define CMD_RANGE_LOOP        2
+enum { CMD_RANGE_ALL, CMD_RANGE_SELECTED, CMD_RANGE_LOOP };
 
 extern QAction* undoAction;
 extern QAction* redoAction;

@@ -612,23 +612,23 @@ MusE::MusE()
       connect(openRecent, SIGNAL(aboutToShow()), this, SLOT(openRecentMenu()));
       connect(openRecent, SIGNAL(triggered(QAction*)), this, SLOT(selectProject(QAction*)));
 
-      menu_ids[CMD_OPEN_RECENT] = menu_file->addMenu(openRecent);
+      menu_file->addMenu(openRecent);
       menu_file->addSeparator();
       menu_file->addAction(fileSaveAction);
       menu_file->addSeparator();
-      menu_ids[CMD_IMPORT_MIDI] = menu_file->addAction(*openIcon, tr("Import Midifile"));
-      connect(menu_ids[CMD_IMPORT_MIDI], SIGNAL(triggered()),  this, SLOT(importMidi()));
-      menu_ids[CMD_EXPORT_MIDI] = menu_file->addAction(*saveIcon, tr("Export Midifile"));
-      connect(menu_ids[CMD_EXPORT_MIDI], SIGNAL(triggered()),  this, SLOT(exportMidi()));
+      a = menu_file->addAction(*openIcon, tr("Import Midifile"));
+      connect(a, SIGNAL(triggered()),  this, SLOT(importMidi()));
+      a = menu_file->addAction(*saveIcon, tr("Export Midifile"));
+      connect(a, SIGNAL(triggered()),  this, SLOT(exportMidi()));
       menu_file->addSeparator();
 
-      menu_ids[CMD_IMPORT_AUDIO] = menu_file->addAction(*openIcon, tr("Import Wave File"));
-      connect(menu_ids[CMD_IMPORT_AUDIO], SIGNAL(triggered()), this, SLOT(importWave()));
-      menu_ids[CMD_IMPORT_AUDIO]->setEnabled(!midiOnly);
+      a = menu_file->addAction(*openIcon, tr("Import Wave File"));
+      connect(a, SIGNAL(triggered()), this, SLOT(importWave()));
+      a->setEnabled(!midiOnly);
 
       menu_file->addSeparator();
-      menu_ids[CMD_QUIT] = menu_file->addAction(*onOffIcon, tr("&Quit"));
-      connect(menu_ids[CMD_QUIT], SIGNAL(triggered()), this, SLOT(quitDoc()));
+      a = menu_file->addAction(*onOffIcon, tr("&Quit"));
+      connect(a, SIGNAL(triggered()), this, SLOT(quitDoc()));
       menu_file->addSeparator();
 
       //-------------------------------------------------------------
@@ -648,7 +648,7 @@ MusE::MusE()
       pasteAction = getAction("paste", this);
       menuEdit->addAction(pasteAction);
 
-      menuEditActions[CMD_DELETE] = getAction("delete", this);
+//      menuEditActions[CMD_DELETE] = getAction("delete", this);
 
       menuEdit->addSeparator();
       a = menuEdit->addAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"));
@@ -661,46 +661,34 @@ MusE::MusE()
 
       menuEdit->addSeparator();
       select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
-      menuEditActions[CMD_SELECT_ALL] = getAction("sel_all", this);
-      select->addAction(menuEditActions[CMD_SELECT_ALL]);
-
-      menuEditActions[CMD_SELECT_NONE] = getAction("sel_none", this);
-      select->addAction(menuEditActions[CMD_SELECT_NONE]);
-
-      menuEditActions[CMD_SELECT_INVERT] = getAction("sel_inv", this);
-      select->addAction(menuEditActions[CMD_SELECT_INVERT]);
-      menuEditActions[CMD_SELECT_INVERT]->setData(CMD_SELECT_INVERT);
-
-      menuEditActions[CMD_SELECT_ILOOP] = getAction("sel_ins_loc", this);
-      select->addAction(menuEditActions[CMD_SELECT_ILOOP]);
-      menuEditActions[CMD_SELECT_ILOOP]->setData(CMD_SELECT_ILOOP);
-
-      menuEditActions[CMD_SELECT_OLOOP] = getAction("sel_out_loc", this);
-      select->addAction(menuEditActions[CMD_SELECT_OLOOP]);
-      menuEditActions[CMD_SELECT_OLOOP]->setData(CMD_SELECT_OLOOP);
-
-      menuEditActions[CMD_SELECT_PARTS] = getAction("select_parts_on_track", this);
-      select->addAction(menuEditActions[CMD_SELECT_PARTS]);
+      select->addAction(getAction("sel_all", this));
+      select->addAction(getAction("sel_none", this));
+      select->addAction(getAction("sel_inv", this));
+      select->addAction(getAction("sel_ins_loc", this));
+      select->addAction(getAction("sel_out_loc", this));
+      select->addAction(getAction("select_parts_on_track", this));
 
       menuEdit->addSeparator();
       menuEdit->addAction(pianoAction);
       menuEdit->addAction(trackerAction);
-      menu_ids[CMD_OPEN_DRUMS]          = menuEdit->addAction(QIcon(*edit_drummsIcon), tr("Drums"));
-      menu_ids[CMD_OPEN_LIST]           = menuEdit->addAction(QIcon(*edit_listIcon),   tr("List"));
-      menu_ids[CMD_OPEN_GRAPHIC_MASTER] = menuEdit->addAction(QIcon(*mastertrack_graphicIcon),tr("Mastertrack"));
-      menu_ids[CMD_OPEN_PROJECT_PROPS]  = menuEdit->addAction(*saveIcon, tr("Project Properties"));
 
-      connect(menu_ids[CMD_OPEN_DRUMS], SIGNAL(triggered()), SLOT(startDrumEditor()));
-      connect(menu_ids[CMD_OPEN_LIST],  SIGNAL(triggered()), SLOT(startListEditor()));
-      connect(menu_ids[CMD_OPEN_GRAPHIC_MASTER], SIGNAL(triggered()), SLOT(startMasterEditor()));
-      connect(menu_ids[CMD_OPEN_PROJECT_PROPS], SIGNAL(triggered()), SLOT(showProjectPropsDialog()));
+      a = menuEdit->addAction(QIcon(*edit_drummsIcon), tr("Drums"));
+      connect(a, SIGNAL(triggered()), SLOT(startDrumEditor()));
+
+      a = menuEdit->addAction(QIcon(*edit_listIcon), tr("List"));
+      connect(a,  SIGNAL(triggered()), SLOT(startListEditor()));
+
+      a = menuEdit->addAction(QIcon(*mastertrack_graphicIcon),tr("Mastertrack"));
+      connect(a, SIGNAL(triggered()), SLOT(startMasterEditor()));
+
+      a  = menuEdit->addAction(*saveIcon, tr("Project Properties"));
+      connect(a, SIGNAL(triggered()), SLOT(showProjectPropsDialog()));
 
       menuEdit->addSeparator();
       connect(menuEdit, SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
       connect(select,   SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
 
       midiEdit = menuEdit->addMenu(QIcon(*edit_midiIcon), tr("Midi"));
-//      menu_ids[CMD_OPEN_MIDI_TRANSFORM] = midiEdit->addAction(QIcon(*midi_transformIcon), tr("Midi &Transform"), this, SLOT(startMidiTransformer()), 0);
 
 #if 0  // TODO
       midiEdit->insertItem(tr("Modify Gate Time"), this, SLOT(modifyGateTime()));
@@ -717,8 +705,8 @@ MusE::MusE()
       midiEdit->insertItem(tr("Create Measure"),   this, SLOT(createMeasure()));
       midiEdit->insertItem(tr("Mix Track"),        this, SLOT(mixTrack()));
 #endif
-      menu_ids[CMD_TRANSPOSE] = midiEdit->addAction(QIcon(*midi_transposeIcon), tr("Transpose"));
-      connect(menu_ids[CMD_TRANSPOSE], SIGNAL(triggered()), this, SLOT(transpose()));
+      a = midiEdit->addAction(QIcon(*midi_transposeIcon), tr("Transpose"));
+      connect(a, SIGNAL(triggered()), this, SLOT(transpose()));
 
       //-------------------------------------------------------------
       //    View
@@ -757,25 +745,24 @@ MusE::MusE()
 
       menuStructure = mb->addMenu(tr("&Structure"));
 
-      menu_ids[CMD_GLOBAL_CUT] = menuStructure->addAction(tr("Global Cut"));
-      connect(menu_ids[CMD_GLOBAL_CUT], SIGNAL(triggered()), this, SLOT(globalCut()));
+      a = menuStructure->addAction(tr("Global Cut"));
+      connect(a, SIGNAL(triggered()), this, SLOT(globalCut()));
 
-      menu_ids[CMD_GLOBAL_INSERT] = menuStructure->addAction(tr("Global Insert"));
-      connect(menu_ids[CMD_GLOBAL_INSERT], SIGNAL(triggered()), this, SLOT(globalInsert()));
+      a = menuStructure->addAction(tr("Global Insert"));
+      connect(a, SIGNAL(triggered()), this, SLOT(globalInsert()));
 
-      menu_ids[CMD_GLOBAL_SPLIT] = menuStructure->addAction(tr("Global Split"));
-      connect(menu_ids[CMD_GLOBAL_SPLIT], SIGNAL(triggered()), this, SLOT(globalSplit()));
+      a = menuStructure->addAction(tr("Global Split"));
+      connect(a, SIGNAL(triggered()), this, SLOT(globalSplit()));
 
-      menu_ids[CMD_COPY_RANGE] = menuStructure->addAction(tr("Copy Range"));
-      connect(menu_ids[CMD_COPY_RANGE], SIGNAL(triggered()), this, SLOT(copyRange()));
+      a = menuStructure->addAction(tr("Copy Range"));
+      connect(a, SIGNAL(triggered()), this, SLOT(copyRange()));
+      a->setEnabled(false);
 
-      menu_ids[CMD_COPY_RANGE]->setEnabled(false);
       menuStructure->addSeparator();
 
-      menu_ids[CMD_CUT_EVENTS] = menuStructure->addAction(tr("Cut Events"));
-      connect(menu_ids[CMD_CUT_EVENTS], SIGNAL(triggered()), this, SLOT(cutEvents()));
-
-      menu_ids[CMD_CUT_EVENTS]->setEnabled(false);
+      a = menuStructure->addAction(tr("Cut Events"));
+      connect(a, SIGNAL(triggered()), this, SLOT(cutEvents()));
+      a->setEnabled(false);
 
       //-------------------------------------------------------------
       //    Midi
@@ -783,26 +770,16 @@ MusE::MusE()
 
       menu_functions = mb->addMenu(tr("&Midi"));
 
-      menu_ids[CMD_MIDI_EDIT_INSTRUMENTS] = menu_functions->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit Instrument"));
-      connect(menu_ids[CMD_MIDI_EDIT_INSTRUMENTS], SIGNAL(triggered()), this, SLOT(startEditInstrument()));
-      //TODO:
-      // menu_ids[CMD_MIDI_EDIT_INSTRUMENTS]->setEnabled(false);
-
-//      midiInputPlugins = menu_functions->addMenu(QIcon(*midi_inputpluginsIcon), tr("Input Plugins"));
-//      midiInputPlugins->menuAction()->setShortcut(Qt::Key_P);
-//      mpid0 = midiInputPlugins->addAction(QIcon(*midi_inputplugins_transposeIcon), tr("Transpose"));
-//      mpid0->setData(0);
-//      mpid3 = midiInputPlugins->addAction(QIcon(*midi_inputplugins_remote_controlIcon), tr("Midi Remote Control"));
-//      mpid3->setData(3);
-//TD      connect(midiInputPlugins, SIGNAL(triggered(QAction*)), SLOT(startMidiInputPlugin(QAction*)));
+      a = menu_functions->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit Instrument"));
+      connect(a, SIGNAL(triggered()), this, SLOT(startEditInstrument()));
 
       menu_functions->addSeparator();
-      menu_ids[CMD_MIDI_RESET] = menu_functions->addAction(QIcon(*midi_reset_instrIcon), tr("Reset Instr."));
-      connect(menu_ids[CMD_MIDI_RESET], SIGNAL(triggered()), this, SLOT(resetMidiDevices()));
-      menu_ids[CMD_MIDI_INIT] = menu_functions->addAction(QIcon(*midi_init_instrIcon), tr("Init Instr."));
-      connect(menu_ids[CMD_MIDI_INIT], SIGNAL(triggered()), this, SLOT(initMidiDevices()));
-      menu_ids[CMD_MIDI_LOCAL_OFF] = menu_functions->addAction(QIcon(*midi_local_offIcon), tr("local off"));
-      connect(menu_ids[CMD_MIDI_LOCAL_OFF], SIGNAL(triggered()), this, SLOT(localOff()));
+      a = menu_functions->addAction(QIcon(*midi_reset_instrIcon), tr("Reset Instr."));
+      connect(a, SIGNAL(triggered()), this, SLOT(resetMidiDevices()));
+      a = menu_functions->addAction(QIcon(*midi_init_instrIcon), tr("Init Instr."));
+      connect(a, SIGNAL(triggered()), this, SLOT(initMidiDevices()));
+      a = menu_functions->addAction(QIcon(*midi_local_offIcon), tr("local off"));
+      connect(a, SIGNAL(triggered()), this, SLOT(localOff()));
 
       //-------------------------------------------------------------
       //    Audio
@@ -810,22 +787,22 @@ MusE::MusE()
 
       menu_audio = mb->addMenu(tr("&Audio"));
 
-      menu_ids[CMD_AUDIO_BOUNCE_TO_TRACK] = menu_audio->addAction(QIcon(*audio_bounce_to_trackIcon), tr("Bounce to Track"));
-      connect(menu_ids[CMD_AUDIO_BOUNCE_TO_TRACK], SIGNAL(triggered()), this, SLOT(bounceToTrack()));
+      a = menu_audio->addAction(QIcon(*audio_bounce_to_trackIcon), tr("Bounce to Track"));
+      connect(a, SIGNAL(triggered()), this, SLOT(bounceToTrack()));
 
-      menu_ids[CMD_AUDIO_BOUNCE_TO_FILE] = menu_audio->addAction(QIcon(*audio_bounce_to_fileIcon), tr("Bounce to File"));
-      connect(menu_ids[CMD_AUDIO_BOUNCE_TO_FILE], SIGNAL(triggered()), this, SLOT(bounceToFile()));
+      a = menu_audio->addAction(QIcon(*audio_bounce_to_fileIcon), tr("Bounce to File"));
+      connect(a, SIGNAL(triggered()), this, SLOT(bounceToFile()));
       menu_audio->setEnabled(!midiOnly);
-      menu_ids[CMD_AUDIO_RESTART] = menu_audio->addAction(QIcon(*audio_restartaudioIcon), tr("Restart Audio"));
-      connect(menu_ids[CMD_AUDIO_RESTART], SIGNAL(triggered()),  this, SLOT(seqRestart()));
+      a = menu_audio->addAction(QIcon(*audio_restartaudioIcon), tr("Restart Audio"));
+      connect(a, SIGNAL(triggered()),  this, SLOT(seqRestart()));
 
       //-------------------------------------------------------------
       //    Settings
       //-------------------------------------------------------------
 
       menuSettings = mb->addMenu(tr("Setti&ngs"));
-      menu_ids[CMD_CONFIG_SHORTCUTS] = menuSettings->addAction(QIcon(*settings_configureshortcutsIcon), tr("Configure shortcuts"));
-      connect(menu_ids[CMD_CONFIG_SHORTCUTS], SIGNAL(triggered()), this, SLOT(configShortCuts()));
+      a = menuSettings->addAction(QIcon(*settings_configureshortcutsIcon), tr("Configure shortcuts"));
+      connect(a, SIGNAL(triggered()), this, SLOT(configShortCuts()));
 
       follow = menuSettings->addMenu(QIcon(*settings_follow_songIcon), tr("follow song"));
       //follow->menuAction()->setShortcut(Qt::Key_F);
@@ -844,10 +821,10 @@ MusE::MusE()
       connect(follow, SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
 
       menuSettings->addSeparator();
-      menu_ids[CMD_CONFIG_MIDISYNC] = menuSettings->addAction(QIcon(*settings_midisyncIcon), tr("Midi Sync"));
-      connect(menu_ids[CMD_CONFIG_MIDISYNC], SIGNAL(triggered()), this, SLOT(configMidiSync()));
-      menu_ids[CMD_MIDI_FILE_CONFIG] = menuSettings->addAction(QIcon(*settings_midifileexportIcon), tr("Midi File Export"));
-      connect(menu_ids[CMD_MIDI_FILE_CONFIG], SIGNAL(triggered()), this, SLOT(configMidiFile()));
+      a = menuSettings->addAction(QIcon(*settings_midisyncIcon), tr("Midi Sync"));
+      connect(a, SIGNAL(triggered()), this, SLOT(configMidiSync()));
+      a = menuSettings->addAction(QIcon(*settings_midifileexportIcon), tr("Midi File Export"));
+      connect(a, SIGNAL(triggered()), this, SLOT(configMidiFile()));
       menuSettings->addSeparator();
       QAction* action = menuSettings->addAction(QIcon(*settings_globalsettingsIcon), tr("Preferences"));
       connect(action, SIGNAL(triggered()), this, SLOT(preferences()));
@@ -859,13 +836,13 @@ MusE::MusE()
       mb->addSeparator();
       menu_help = mb->addMenu(tr("&Help"));
 
-      menu_ids[CMD_OPEN_HELP] = menu_help->addAction(tr("&Manual"));
-      connect(menu_ids[CMD_OPEN_HELP], SIGNAL(triggered()), this, SLOT(startHelpBrowser()));
-      menu_ids[CMD_OPEN_HOMEPAGE] = menu_help->addAction(tr("&MusE homepage"));
-      connect(menu_ids[CMD_OPEN_HOMEPAGE], SIGNAL(triggered()), this, SLOT(startHomepageBrowser()));
+      a = menu_help->addAction(tr("&Manual"));
+      connect(a, SIGNAL(triggered()), this, SLOT(startHelpBrowser()));
+      a = menu_help->addAction(tr("&MusE homepage"));
+      connect(a, SIGNAL(triggered()), this, SLOT(startHomepageBrowser()));
       menu_help->addSeparator();
-      menu_ids[CMD_OPEN_BUG] = menu_help->addAction(tr("&Report Bug..."));
-      connect(menu_ids[CMD_OPEN_BUG], SIGNAL(triggered()), this, SLOT(startBugBrowser()));
+      a = menu_help->addAction(tr("&Report Bug..."));
+      connect(a, SIGNAL(triggered()), this, SLOT(startBugBrowser()));
       menu_help->addSeparator();
       a = menu_help->addAction(tr("&About MusE"));
       a->setIcon(QIcon(*museIcon));
@@ -876,7 +853,6 @@ MusE::MusE()
       a = QWhatsThis::createAction(this);
       a->setText(tr("What's &This?"));
       menu_help->addAction(a);
-      menu_ids[CMD_START_WHATSTHIS] = a;
 
       //---------------------------------------------------
       //  ToolBar
@@ -2521,108 +2497,6 @@ void MusE::startEditInstrument()
 
 void MusE::updateConfiguration()
       {
-#if 0 //TODOB
-      fileOpenAction->setShortcut(shortcuts[SHRT_OPEN].key);
-      fileSaveAction->setShortcut(shortcuts[SHRT_SAVE].key);
-
-      menuEditActions[CMD_DELETE]->setShortcut(shortcuts[SHRT_DELETE].key);
-      menu_ids[CMD_OPEN_RECENT]->setShortcut(shortcuts[SHRT_OPEN_RECENT].key);
-      menu_ids[CMD_IMPORT_MIDI]->setShortcut(shortcuts[SHRT_IMPORT_MIDI].key);
-      menu_ids[CMD_EXPORT_MIDI]->setShortcut(shortcuts[SHRT_EXPORT_MIDI].key);
-      menu_ids[CMD_IMPORT_AUDIO]->setShortcut(shortcuts[SHRT_IMPORT_AUDIO].key);
-      menu_ids[CMD_QUIT]->setShortcut(shortcuts[SHRT_QUIT].key);
-      menu_ids[CMD_OPEN_DRUMS]->setShortcut(shortcuts[SHRT_OPEN_DRUMS].key);
-      menu_ids[CMD_OPEN_LIST]->setShortcut(shortcuts[SHRT_OPEN_LIST].key);
-      menu_ids[CMD_OPEN_GRAPHIC_MASTER]->setShortcut(shortcuts[SHRT_OPEN_GRAPHIC_MASTER].key);
-      menu_ids[CMD_TRANSPOSE]->setShortcut(shortcuts[SHRT_TRANSPOSE].key);
-
-      menuEditActions[CMD_SELECT_ALL]->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
-      menuEditActions[CMD_SELECT_NONE]->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
-      menuEditActions[CMD_SELECT_INVERT]->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
-      menuEditActions[CMD_SELECT_ILOOP]->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
-      menuEditActions[CMD_SELECT_OLOOP]->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
-      menuEditActions[CMD_SELECT_PARTS]->setShortcut(shortcuts[SHRT_SELECT_PRTSTRACK].key);
-
-      tr_id->setShortcut(shortcuts[SHRT_OPEN_TRANSPORT].key);
-      tr_id->setShortcutContext(Qt::ApplicationShortcut);
-      bt_id->setShortcut(shortcuts[SHRT_OPEN_BIGTIME].key);
-      bt_id->setShortcutContext(Qt::ApplicationShortcut);
-      mk_id->setShortcut(shortcuts[SHRT_OPEN_MARKER].key);
-      mk_id->setShortcutContext(Qt::ApplicationShortcut);
-
-      pianoAction->setShortcut(shortcuts[SHRT_OPEN_PIANO].key); //pianoroll
-      trackerAction->setShortcut(shortcuts[SHRT_OPEN_TRACKER].key); //midiTracker
-
-      menu_ids[CMD_GLOBAL_CUT]->setShortcut(shortcuts[SHRT_GLOBAL_CUT].key);
-      menu_ids[CMD_GLOBAL_INSERT]->setShortcut(shortcuts[SHRT_GLOBAL_INSERT].key);
-      menu_ids[CMD_GLOBAL_SPLIT]->setShortcut(shortcuts[SHRT_GLOBAL_SPLIT].key);
-      menu_ids[CMD_COPY_RANGE]->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
-      menu_ids[CMD_CUT_EVENTS]->setShortcut(shortcuts[SHRT_CUT_EVENTS].key);
-
-      menu_ids[CMD_MIDI_EDIT_INSTRUMENTS]->setShortcut(shortcuts[SHRT_MIDI_EDIT_INSTRUMENTS].key);
-      //aid1a
-      //aid1b // mixer 1
-      // aid2;
-      // aid3;
-      //mpid0 // midi plugin transpose
-      //mpid3 // midi remote control
-
-      menu_ids[CMD_MIDI_RESET]->setShortcut(shortcuts[SHRT_MIDI_RESET].key);
-      menu_ids[CMD_MIDI_INIT]->setShortcut(shortcuts[SHRT_MIDI_INIT].key);
-      menu_ids[CMD_MIDI_LOCAL_OFF]->setShortcut(shortcuts[SHRT_MIDI_LOCAL_OFF].key);
-
-      menu_ids[CMD_AUDIO_BOUNCE_TO_TRACK]->setShortcut(shortcuts[CMD_AUDIO_BOUNCE_TO_TRACK].key);
-      menu_ids[CMD_AUDIO_BOUNCE_TO_FILE]->setShortcut(shortcuts[CMD_AUDIO_BOUNCE_TO_FILE].key);
-
-//      menu_ids[CMD_GLOBAL_CONFIG]->setShortcut(shortcuts[SHRT_GLOBAL_CONFIG].key);
-      menu_ids[CMD_CONFIG_SHORTCUTS]->setShortcut(shortcuts[SHRT_CONFIG_SHORTCUTS].key);
-
-      // Follow options
-      fid0->setShortcut(shortcuts[SHRT_FOLLOW_NO].key);
-      fid1->setShortcut(shortcuts[SHRT_FOLLOW_JUMP].key);
-      fid2->setShortcut(shortcuts[SHRT_FOLLOW_CONTINUOUS].key);
-
-      menu_ids[CMD_CONFIG_MIDISYNC]->setShortcut(shortcuts[SHRT_CONFIG_MIDISYNC].key);
-      menu_ids[CMD_MIDI_FILE_CONFIG]->setShortcut(shortcuts[SHRT_MIDI_FILE_CONFIG].key);
-//      menu_ids[CMD_APPEARANCE_SETTINGS]->setShortcut(shortcuts[SHRT_APPEARANCE_SETTINGS].key);
-
-      menu_ids[CMD_OPEN_HELP]->setShortcut(shortcuts[SHRT_OPEN_HELP].key);
-//      menu_ids[CMD_OPEN_HOMEPAGE]->setShortcut(shortcuts[SHRT_OPEN_HOMEPAGE].key);
-//      menu_ids[CMD_OPEN_BUG]->setShortcut(shortcuts[SHRT_OPEN_BUG].key);
-      menu_ids[CMD_START_WHATSTHIS]->setShortcut(shortcuts[SHRT_START_WHATSTHIS].key);
-#endif
-
-#if 0 //TD
-      menuEdit->setShortcut(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key, menu_ids[CMD_OPEN_MIDI_TRANSFORM]);
-
-      master->setShortcut(shortcuts[SHRT_OPEN_LIST_MASTER].key, menu_ids[CMD_OPEN_LIST_MASTER]);
-
-      menuView->setShortcut(shortcuts[SHRT_OPEN_MIXER].key, aid1a);
-
-      menuSettings->setShortcut(shortcuts[SHRT_CONFIG_METRONOME].key, menu_ids[CMD_CONFIG_METRONOME]);
-      menuSettings->setShortcut(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key, menu_ids[CMD_CONFIG_AUDIO_PORTS]);
-
-      menu_audio->setShortcut(shortcuts[SHRT_AUDIO_RESTART].key, menu_ids[CMD_AUDIO_RESTART]);
-
-//      menuAutomation->setShortcut(shortcuts[SHRT_MIXER_SNAPSHOT].key, menu_ids[CMD_MIXER_SNAPSHOT]);
-//      menuAutomation->setShortcut(shortcuts[SHRT_MIXER_AUTOMATION_CLEAR].key, menu_ids[CMD_MIXER_AUTOMATION_CLEAR]);
-
-
-
-//      select->setShortcut(shortcuts[SHRT_DESEL_PARTS].key, CMD_SELECT_NONE);
-
-      midiInputPlugins->setShortcut(shortcuts[SHRT_MIDI_INPUT_TRANSPOSE].key, 0);
-      midiInputPlugins->setShortcut(shortcuts[SHRT_MIDI_INPUT_TRANSFORM].key, 1);
-      midiInputPlugins->setShortcut(shortcuts[SHRT_MIDI_INPUT_FILTER].key, 2);
-      midiInputPlugins->setShortcut(shortcuts[SHRT_MIDI_REMOTE_CONTROL].key, 3);
-      midiInputPlugins->setShortcut(shortcuts[SHRT_RANDOM_RHYTHM_GENERATOR].key, 4);
-
-      addTrack->setShortcut(shortcuts[SHRT_ADD_MIDI_TRACK].key, Track::MIDI);
-      addTrack->setShortcut(shortcuts[SHRT_ADD_WAVE_TRACK].key, Track::WAVE);
-      addTrack->setShortcut(shortcuts[SHRT_ADD_AUDIO_OUTPUT].key, Track::AUDIO_OUTPUT);
-      addTrack->setShortcut(shortcuts[SHRT_ADD_AUDIO_GROUP].key, Track::AUDIO_GROUP);
-      addTrack->setShortcut(shortcuts[SHRT_ADD_AUDIO_INPUT].key, Track::AUDIO_INPUT);
-#endif
       }
 
 //---------------------------------------------------------

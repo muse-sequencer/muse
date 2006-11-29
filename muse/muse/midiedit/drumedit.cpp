@@ -327,7 +327,7 @@ void DrumEdit::cmd(QAction* a)
       }
 
 //---------------------------------------------------------
-//   keyPressEvent
+//   drumCmd
 //---------------------------------------------------------
 
 void DrumEdit::drumCmd(QObject* object)

@@ -91,31 +91,6 @@ class MidiTrackInfo : public TrackInfo {
       MidiTrackInfo();
       virtual void init(Track*);
       };
-#if 0
-//---------------------------------------------------------
-//   MidiChannelInfo
-//---------------------------------------------------------
-
-class MidiChannelInfo : public TrackInfo {
-      Q_OBJECT
-
-      TLLineEdit* portName;
-      QComboBox* instrument;
-      QPushButton* patch;
-      QMenu* pop;
-
-   private slots:
-      void instrumentSelected(int);
-      void instrumentChanged();
-      void controllerChanged(int);
-      void patchClicked();
-
-   public:
-      MidiChannelInfo();
-      virtual void init(Track*);
-      };
-#endif
-
 
 //---------------------------------------------------------
 //   AudioOutputInfo

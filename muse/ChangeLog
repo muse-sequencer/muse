@@ -1,3 +1,6 @@
+29.11 (ws)
+      - shift+mouse wheel changes horizontal magnification while current
+        position stays at cursor position
 28.11 (ws)
       - application spanning drag&drop of parts
       - cut/copy/paste for parts
