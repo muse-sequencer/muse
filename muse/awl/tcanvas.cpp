@@ -199,15 +199,8 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
 
 // if (r == _widget->geometry())
 //	printf("full paint event\n");
-
-                QPixmap pm(_widget->width(), _widget->height());
-                QPainter p;
-                p.begin(&pm);
+                QPainter p(_widget);
                 canvasPaintEvent(r, p);
-                p.end();
-                p.begin(_widget);
-                p.drawPixmap(r.topLeft(), pm, r);
-                p.end();
                 }
                 return true;
 
@@ -798,12 +791,10 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
             p.drawLine(rButton.x(), y, rButton.width(), y);
             }
       p.setRenderHint(QPainter::TextAntialiasing, true);
-//      p.setRenderHint(QPainter::Antialiasing, true);
-//      p.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
       QRect par = r & rPanelA;
       if (!(par.isEmpty() || rPanelA.isEmpty())) {
-            p.setClipRect(par);
+//            p.setClipRect(par);
             if (type == TIME_CANVAS_DRUMEDIT) {
                   paintDrumList(p, par);
                   }
@@ -822,11 +813,11 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
       bool drawCanvasA = !(car.isEmpty() || rCanvasA.isEmpty());
       bool drawCanvasB = !(cbr.isEmpty() || rCanvasB.isEmpty());
 
-      p.setClipRect(r);
-
       //
       //  draw canvas background
       //
+
+      p.setClipRect(r);
       p.setBrushOrigin(QPoint(car.x() + wpos.x(), car.y() + wpos.y()));
       if (drawCanvasA) {
             if (canvasBackgroundPixmap.isNull()) {
@@ -836,14 +827,16 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
                         // (darker)
                         QColor c = canvasBackgroundColor.dark();
                         int x1 = pos2pix(partPos1) + rCanvasA.x();
-                        int x2 = pos2pix(partPos2) + rCanvasA.x();
                         if (rr.x() < x1) {
                               QRect r(rr.x(), rr.y(), x1-rr.x(), rr.height());
                               p.fillRect(r, c);
                               rr.adjust(x1-rr.x(), 0, 0, 0);
                               }
+                        int x2  = pos2pix(partPos2) + rCanvasA.x();
                         int xx2 = rr.x() + rr.width();
                         if (xx2 > x2) {
+                              if (x2 < rr.x())
+                                    x2 = rr.x();
                               QRect r(x2, rr.y(), xx2-x2, rr.height());
                               p.fillRect(r, c);
                               rr.adjust(0, 0, -(xx2-x2), 0);
@@ -860,6 +853,7 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
             	   car.topLeft() + QPoint(wpos));
                   }
             }
+
       if (drawCanvasB)
             p.fillRect(cbr, canvasBackgroundColor);
 
@@ -909,7 +903,6 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
             paintControllerCanvas(p, cbr.translated(-off));
             p.translate(-off);
             }
-
       //---------------------------------------------------
       // draw marker
       //---------------------------------------------------
@@ -1552,9 +1545,6 @@ int TimeCanvas::y2pitch(int y) const
 
 void TimeCanvas::paintPiano(QPainter& p, QRect r)
       {
-// printf("paint piano %d %d %d %d\n", r.x(), r.y(), r.width(), r.height());
-
-//      p.setClipRect(r);
       int   d    = int(_ymag)+1;
       qreal x    = qreal(r.x());
       qreal y    = (r.y()-rulerHeight-d) / _ymag;
