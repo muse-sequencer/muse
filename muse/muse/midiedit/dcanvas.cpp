@@ -411,6 +411,7 @@ void DrumCanvas::paste()
 
 void DrumCanvas::startDrag(CItem* /* item*/, bool /*copymode*/)
       {
+printf("DrumCanvas: startDrag\n");
 #if 0 //TD
       QMimeData* drag = getTextDrag();
       if (drag) {
@@ -429,6 +430,7 @@ void DrumCanvas::startDrag(CItem* /* item*/, bool /*copymode*/)
 
 void DrumCanvas::dragEnterEvent(QDragEnterEvent* /*event*/)
       {
+printf("DrumCanvas: dragEnterEvent\n");
 //TD      event->accept(Q3TextDrag::canDecode(event));
       }
 
@@ -438,7 +440,7 @@ void DrumCanvas::dragEnterEvent(QDragEnterEvent* /*event*/)
 
 void DrumCanvas::dragMoveEvent(QDragMoveEvent*)
       {
-//TD      printf("drag move %x\n", this);
+      printf("drag move %p\n", this);
       }
 
 //---------------------------------------------------------
@@ -447,7 +449,7 @@ void DrumCanvas::dragMoveEvent(QDragMoveEvent*)
 
 void DrumCanvas::dragLeaveEvent(QDragLeaveEvent*)
       {
-//TD      printf("drag leave\n");
+      printf("drag leave\n");
       }
 
 //---------------------------------------------------------
@@ -456,6 +458,7 @@ void DrumCanvas::dragLeaveEvent(QDragLeaveEvent*)
 
 void DrumCanvas::viewDropEvent(QDropEvent* /*event*/)
       {
+printf("DrumCanvas: viewDropEvent\n");
 #if 0 //TD
       QString text;
       if (event->source() == this) {

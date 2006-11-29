@@ -23,7 +23,7 @@ details.
       - CMake 2.4 
         http:/www.cmake.org/HTML/Download.html
 
-      - QT: Qt 4.1.0 or above
+      - QT: Qt 4.2.0 or above
         ftp://ftp.trolltech.com/qt/source
         MusE does _not_ compile with older versions
 

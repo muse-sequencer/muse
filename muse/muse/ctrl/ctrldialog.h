@@ -40,6 +40,5 @@ class CtrlDialog : public QDialog, public Ui_CtrlDialogBase {
       int curId() const;
       };
 
-
 #endif
 

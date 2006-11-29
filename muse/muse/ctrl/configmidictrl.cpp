@@ -47,14 +47,13 @@ ConfigMidiCtrl::ConfigMidiCtrl(MidiTrack* t)
       //---------------------------------------------------
 
       if (track->type() == Track::MIDI) {
-#if 0
             MidiTrack* mc = (MidiTrack*)track;
             portName->setText(track->name());
             //
             // populate popup with all controllers available for
             // current instrument
             //
-            MidiControllerList* mcl = mp->instrument()->controller();
+            MidiControllerList* mcl = mc->instrument()->controller();
             for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
                   iControllerName i;
                   for (i = cn->begin(); i != cn->end(); ++i) {
@@ -64,7 +63,6 @@ ConfigMidiCtrl::ConfigMidiCtrl(MidiTrack* t)
                   if (i == cn->end())
                         availableController->addItem((*ci)->name());
                   }
-#endif
             }
 
       delete cn;
@@ -138,7 +136,6 @@ void ConfigMidiCtrl::done(int code)
             QDialog::done(code);
             return;
             }
-#if 1 //TODOA
       if (track->type() == Track::MIDI) {
             ControllerNameList* cn  = track->controllerNames();
             MidiInstrument* instr   = track->instrument();
@@ -182,7 +179,6 @@ void ConfigMidiCtrl::done(int code)
                   }
             delete cn;
             }
-#endif
       QDialog::done(code);
       }
 

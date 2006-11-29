@@ -516,6 +516,7 @@ void PianoCanvas::paste()
 
 void PianoCanvas::startDrag(CItem* /*item*/, bool /*copymode*/)
       {
+printf("PianoCanvas: startDrag\n");
       QMimeData* drag = getTextDrag();
       if (drag) {
 		QApplication::clipboard()->setMimeData(drag);
@@ -534,6 +535,7 @@ void PianoCanvas::startDrag(CItem* /*item*/, bool /*copymode*/)
 
 void PianoCanvas::dragEnterEvent(QDragEnterEvent*)
       {
+printf("PianoCanvas: dragEnterEvent\n");
 //TD      event->accept(Q3TextDrag::canDecode(event));
       }
 
@@ -543,7 +545,7 @@ void PianoCanvas::dragEnterEvent(QDragEnterEvent*)
 
 void PianoCanvas::dragMoveEvent(QDragMoveEvent*)
       {
-//      printf("drag move %x\n", this);
+      printf("drag move %p\n", this);
       }
 
 //---------------------------------------------------------
@@ -552,7 +554,7 @@ void PianoCanvas::dragMoveEvent(QDragMoveEvent*)
 
 void PianoCanvas::dragLeaveEvent(QDragLeaveEvent*)
       {
-//      printf("drag leave\n");
+      printf("drag leave\n");
       }
 
 //---------------------------------------------------------
@@ -561,6 +563,7 @@ void PianoCanvas::dragLeaveEvent(QDragLeaveEvent*)
 
 void PianoCanvas::viewDropEvent(QDropEvent*)
       {
+printf("PianoCanvas: viewDropEvent\n");
 #if 0 //TD
       QString text;
       if (event->source() == this) {
