@@ -687,7 +687,7 @@ void PartCanvas::mouseMove(QPoint pos)
             }
       if (!track)
             return;
-    	int y = track->arrangerTrack.tw->y() - splitWidth/2;
+    	int y  = track->arrangerTrack.tw->y(); // - splitWidth/2;
 	int ph = track->arrangerTrack.tw->height() - 1 - partBorderWidth;
       if (state == S_DRAG1) {
             //

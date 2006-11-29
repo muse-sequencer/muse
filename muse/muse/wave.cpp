@@ -898,6 +898,7 @@ bool MusE::importWaveToTrack(const QString& wave, Track* track, const Pos& pos)
       track->setChannels(f->channels());
 
       Part* part = new Part((WaveTrack *)track);
+      part->ref();
       part->setType(AL::FRAMES);
       part->setTick(pos.tick());
       part->setLenFrame(samples);

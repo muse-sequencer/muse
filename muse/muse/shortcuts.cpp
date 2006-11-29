@@ -1045,8 +1045,8 @@ QAction* getAction(const char* id, QObject* parent)
                   s->action->setIcon(icon);
                   }
             }
-      else
-            printf("action <%s> already initialized\n", s->xml);
+//      else
+//            printf("action <%s> already initialized\n", s->xml);
       return s->action;
       }
 

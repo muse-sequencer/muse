@@ -25,6 +25,7 @@
 #include "ecanvas.h"
 #include "icons.h"
 #include "audio.h"
+#include "shortcuts.h"
 
 //---------------------------------------------------------
 //   MidiEditor
@@ -50,20 +51,12 @@ MidiEditor::MidiEditor(PartList* pl)
       menuEdit->addAction(redoAction);
 
       menuEdit->addSeparator();
-      cutAction = menuEdit->addAction(tr("Cut"));
-      cutAction->setIcon(*editcutIconSet);
-      cutAction->setData(MidiEditor::CMD_CUT);
-      cutAction->setShortcut(Qt::CTRL+Qt::Key_X);
-
-      copyAction = menuEdit->addAction(tr("Copy"));
-      copyAction->setIcon(*editcopyIconSet);
-      copyAction->setData(MidiEditor::CMD_COPY);
-      copyAction->setShortcut(Qt::CTRL+Qt::Key_C);
-
-      pasteAction = menuEdit->addAction(tr("Paste"));
-      pasteAction->setIcon(*editpasteIconSet);
-      pasteAction->setData(MidiEditor::CMD_PASTE);
-      pasteAction->setShortcut(Qt::CTRL+Qt::Key_V);
+      cutAction = getAction("cut", this);
+      menuEdit->addAction(cutAction);
+      copyAction = getAction("copy", this);
+      menuEdit->addAction(copyAction);
+      pasteAction = getAction("paste", this);
+      menuEdit->addAction(pasteAction);
 
       speaker = new QAction(this);
       speaker->setCheckable(true);
@@ -102,29 +95,24 @@ MidiEditor::MidiEditor(PartList* pl)
 
 void MidiEditor::midiCmd(QAction* a)
       {
-      switch (a->data().toInt()) {
-            case CMD_CUT:
-            	{
-                  copy();
-                  song->startUndo();
-      		CItemList* items = canvas()->getItems();
-                  for (iCItem i = items->begin(); i != items->end(); ++i) {
-                        if (!i->second->isSelected())
-                              continue;
-                        CItem* e    = i->second;
-                        Event event = e->event;
-                        audio->msgDeleteEvent(event, e->part, false);
-                        }
-                  song->endUndo(SC_EVENT_REMOVED);
+      QString s(a->data().toString());
+      if (s == "cut") {
+            copy();
+            song->startUndo();
+      	CItemList* items = canvas()->getItems();
+            for (iCItem i = items->begin(); i != items->end(); ++i) {
+                  if (!i->second->isSelected())
+                        continue;
+                  CItem* e    = i->second;
+                  Event event = e->event;
+                  audio->msgDeleteEvent(event, e->part, false);
                   }
-                  break;
-            case CMD_COPY:
-                  copy();
-                  break;
-            default:
-            	cmd(a);
-            	break;
+            song->endUndo(SC_EVENT_REMOVED);
             }
+      else if (s == "copy")
+            copy();
+      else
+            cmd(a);
       }
 
 //---------------------------------------------------------

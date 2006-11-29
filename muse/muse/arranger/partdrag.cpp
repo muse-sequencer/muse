@@ -124,11 +124,31 @@ bool AudioPartDrag::canDecode(const QMimeData* s)
 
 bool AudioPartDrag::decode(const QMimeData* s, Part*& p)
       {
-      QByteArray a = s->data(type);
-      char* cp = (char*)(&p);
-      for (unsigned i = 0; i < sizeof(p); ++i)
-            *cp++ = a[i];
-      return true;
+      p = 0;
+      QDomDocument doc;
+      int line, column;
+      QString err;
+      if (!doc.setContent(s->data(type), false, &err, &line, &column)) {
+            QString col, ln, error;
+            col.setNum(column);
+            ln.setNum(line);
+            error = err + "\n    at line: " + ln + " col: " + col;
+            printf("error parsing part: %s\n", error.toLatin1().data());
+            return false;
+            }
+      for (QDomNode node = doc.documentElement(); !node.isNull(); node = node.nextSibling()) {
+            QDomElement e = node.toElement();
+            if (e.isNull())
+                  continue;
+            if (e.tagName() == "part") {
+                  p = new Part(0);
+                  p->ref();
+                  p->read(node, false);
+                  }
+            else
+                  printf("MusE: %s not supported\n", e.tagName().toLatin1().data());
+            }
+      return (p != 0);
       }
 
 //---------------------------------------------------------

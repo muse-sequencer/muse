@@ -39,7 +39,7 @@
 //   addController
 //---------------------------------------------------------
 
-static void addController(MidiEventList* l, int tick, int /*port*/, int channel, int a, int b)
+static void addController(MidiEventList* l, int tick, int channel, int a, int b)
       {
       if (a < 0x1000) {          // 7 Bit Controller
             l->insert(MidiEvent(tick, channel, ME_CONTROLLER, a, b));
@@ -146,9 +146,20 @@ void MusE::exportMidi()
             mtl->push_back(mft);
 
             MidiEventList* l = &(mft->events);
-            int port       = 0; // track->channel()->port();
             int channel    = 0;
             channel        = track->channelNo();
+
+            //-----------------------------------
+            //   track name
+            //-----------------------------------
+
+            if (!track->name().isEmpty()) {
+                  const char* name = track->name().toAscii().data();
+                  int len = strlen(name);
+                  MidiEvent ev(0, ME_META, (unsigned char*)name, len+1);
+                  ev.setA(0x3);    // Meta Sequence/Track Name
+                  l->insert(ev);
+                  }
 
             //-----------------------------------
             //   managed controller
@@ -161,20 +172,8 @@ void MusE::exportMidi()
                   for (iCtrlVal iv = c->begin(); iv != c->end(); ++iv) {
                   	int tick = iv.key();
                         int val  = iv.value().i;
-                        addController(l, tick, port, channel, id, val);
+                        addController(l, tick, channel, id, val);
                         }
-                  }
-
-            //-----------------------------------
-            //   track name
-            //-----------------------------------
-
-            if (!track->name().isEmpty()) {
-                  const char* name = track->name().toAscii().data();
-                  int len = strlen(name);
-                  MidiEvent ev(0, ME_META, (unsigned char*)name, len+1);
-                  ev.setA(0x3);    // Meta Sequence/Track Name
-                  l->insert(ev);
                   }
 
             //-----------------------------------
@@ -237,7 +236,7 @@ void MusE::exportMidi()
                                     break;
 
                               case Controller:
-                                    addController(l, tick, port, channel, ev.dataA(), ev.dataB());
+                                    addController(l, tick, channel, ev.dataA(), ev.dataB());
                                     break;
 
                               case Sysex:

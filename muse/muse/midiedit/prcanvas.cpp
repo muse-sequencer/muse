@@ -203,7 +203,7 @@ void PianoCanvas::moveItem(CItem* item, DragType dtype)
       {
       Part* part  = item->part;
       Event event = item->event;
-      int npitch  = y2pitch(item->my - wpos.y() + item->bbox.height()/2);
+      int npitch  = y2pitch(item->my -wpos.y() + item->bbox.height()/2);
       if (event.pitch() != npitch && editor->playEvents()) {
             // release note:
             MidiEvent ev1(0, 0, 0x90, event.pitch() + track()->transposition(), 0);
@@ -618,7 +618,7 @@ void PianoCanvas::itemReleased()
 
 void PianoCanvas::itemMoved(const CItem* item)
       {
-      int npitch = y2pitch(item->my + wpos.y());
+      int npitch = y2pitch(item->my - wpos.y());
       if ((playedPitch != -1) && (playedPitch != npitch)) {
             Event event = item->event;
             // release note:

@@ -81,14 +81,7 @@ TimeCanvas::TimeCanvas(TimeCanvasType t)
       setLayout(grid);
 
       _widget = new QWidget;
-//      _widget->setAttribute(Qt::WA_OpaquePaintEvent);
 	_widget->setAttribute(Qt::WA_NoSystemBackground);
-
-      // there are some performance problems with qt4.1, so
-      // we roll our own double buffering:
-
-	_widget->setAttribute(Qt::WA_PaintOnScreen);
-
       _widget->setAttribute(Qt::WA_StaticContents);
       _widget->installEventFilter(this);
       _widget->setMouseTracking(true);
@@ -123,23 +116,26 @@ TimeCanvas::TimeCanvas(TimeCanvasType t)
       setTimeType1(AL::TICKS);
       yRange = 0;
 
-      if (type == TIME_CANVAS_PIANOROLL) {
-            _ymagMin = 0.5;
-            _ymagMax = 3.0;
-            vmag->setValue(lrint((_ymag-_ymagMin)*100.0/(_ymagMax-_ymagMin)));
-            initPianoroll();
-            }
-      else if (type == TIME_CANVAS_DRUMEDIT) {
-            _ymagMin = 1.0;
-            _ymagMax = 1.0;
-            yRange   = drumHeight * 128;
-            }
-      else if (type == TIME_CANVAS) {
-            _ymagMin = 1.0;
-            _ymagMax = 1.0;
+      switch(type) {
+            case TIME_CANVAS_PIANOROLL:
+                  _ymagMin = 0.5;
+                  _ymagMax = 3.0;
+                  vmag->setValue(lrint((_ymag-_ymagMin)*100.0/(_ymagMax-_ymagMin)));
+                  initPianoroll();
+                  break;
+            case TIME_CANVAS_DRUMEDIT:
+                  _ymagMin = 1.0;
+                  _ymagMax = 1.0;
+                  yRange   = drumHeight * 128;
+                  break;
+            default:
+                  _ymagMin = 1.0;
+                  _ymagMax = 1.0;
+                  break;
             }
       updateGeometry();
-      if (type == TIME_CANVAS_PIANOROLL || type == TIME_CANVAS_DRUMEDIT) {
+      if (type == TIME_CANVAS_PIANOROLL || type == TIME_CANVAS_DRUMEDIT
+         || type == TIME_CANVAS_WAVEEDIT) {
             addCtrlButton = new QPushButton(tr("Ctrl"), _widget);
             addCtrlButton->setGeometry(1, 1, rPanelA.width()-4, rulerHeight-4);
             addCtrlButton->setToolTip(tr("Add Controller View"));
@@ -159,7 +155,6 @@ TimeCanvas::TimeCanvas(TimeCanvasType t)
 
       _raster = 0;
       updateScrollBars();
-      //connect(hbar, SIGNAL(sliderMoved(int)), SLOT(moveX(int)));
       connect(hbar, SIGNAL(valueChanged(int)), SLOT(moveX(int)));
       connect(vbar, SIGNAL(valueChanged(int)), SLOT(moveY(int)));
       connect(hmag, SIGNAL(valueChanged(int)), SLOT(scaleX(int)));
@@ -194,15 +189,11 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
 
       switch(event->type()) {
             case QEvent::Paint:
-                {
-                QRect r(((QPaintEvent*)event)->rect());
-
-// if (r == _widget->geometry())
-//	printf("full paint event\n");
-                QPainter p(_widget);
-                canvasPaintEvent(r, p);
-                }
-                return true;
+                  {
+                  QPainter p(_widget);
+                  canvasPaintEvent(((QPaintEvent*)event)->rect(), p);
+                  }
+                  return true;
 
             case QEvent::Resize:
                   updateGeometry();
@@ -373,7 +364,7 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
                         //
                         // xmag
                         //
-                        int oldx = e->x();
+                        int oldx = e->x() - rCanvasA.x();
                         AL::Pos pos(pix2pos(oldx));
                         int step = e->delta() / 120;
                         if (step > 0) {
@@ -384,6 +375,10 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
                               for (int i = 0; i < -step; ++i)
                                     _xmag *= 0.9;
                               }
+                        if (_xmag < _xmagMin)
+                              _xmag = _xmagMin;
+                        else if (_xmag > _xmagMax)
+                              _xmag = _xmagMax;
                         hmag->setValue(xmag2s(_xmag));
                         updateScrollBars();
                         updateRulerMag();
@@ -719,7 +714,8 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
                   QRect r = QRect(x+2, y, 1000, h);
                   p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, s);
                   p.setPen(Qt::lightGray);
-                  p.drawLine(x, y1, x, y2);
+                  if (x > 0)
+                        p.drawLine(x, y1, x, y2);
                   }
             else {
                   AL::TimeSignature sig = stick.timesig();
@@ -749,7 +745,8 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
                         p.drawLine(xp, y3, xp, y+h);
                         p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, s);
                         p.setPen(beat == 0 ? Qt::lightGray : Qt::gray);
-                        p.drawLine(xp, y1, xp, y2);
+                        if (xp > 0)
+                              p.drawLine(xp, y1, xp, y2);
                         }
                   }
             if (bar == 0 && n >= 2)

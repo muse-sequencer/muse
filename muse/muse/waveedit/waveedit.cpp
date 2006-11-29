@@ -1,9 +1,23 @@
-//=========================================================
+//=============================================================================
 //  MusE
 //  Linux Music Editor
-//    $Id: waveedit.cpp,v 1.33 2006/02/10 16:40:59 wschweer Exp $
-//  (C) Copyright 2000 Werner Schweer (ws@seh.de)
-//=========================================================
+//  $Id:$
+//
+//  Copyright (C) 2000-2006 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
+
 
 #include "waveedit.h"
 #include "waveview.h"
@@ -38,38 +52,35 @@ WaveEdit::WaveEdit(PartList* pl, bool init)
 
       menuGain = menuFunctions->addMenu(tr("&Gain"));
       a = menuGain->addAction(tr("200%"));
-      a->setData(CMD_GAIN_200);
+      a->setData("gain200");
       a = menuGain->addAction(tr("150%"));
-      a->setData(CMD_GAIN_150);
+      a->setData("gain150");
       a = menuGain->addAction(tr("75%"));
-      a->setData(CMD_GAIN_75);
+      a->setData("gain75");
       a = menuGain->addAction(tr("50%"));
-      a->setData(CMD_GAIN_50);
+      a->setData("gain50");
       a = menuGain->addAction(tr("25%"));
-      a->setData(CMD_GAIN_25);
+      a->setData("gain25");
       a = menuGain->addAction(tr("Other"));
-      a->setData(CMD_GAIN_FREE);
+      a->setData("gain_free");
       a = menuFunctions->addSeparator();
 
       a = menuEdit->addAction(tr("Edit in E&xternal Editor"));
-      a->setData(CMD_EDIT_EXTERNAL);
+      a->setData("exit_external");
       a = menuFunctions->addAction(tr("Mute Selection"));
-      a->setData(CMD_MUTE);
+      a->setData("mute");
       a = menuFunctions->addAction(tr("Normalize Selection"));
-      a->setData(CMD_NORMALIZE);
+      a->setData("normalize");
       a = menuFunctions->addAction(tr("Fade In Selection"));
-      a->setData(CMD_FADE_IN);
+      a->setData("fade_in");
       a = menuFunctions->addAction(tr("Fade Out Selection"));
-      a->setData(CMD_FADE_OUT);
+      a->setData("fade_out");
       a = menuFunctions->addAction(tr("Reverse Selection"));
-      a->setData(CMD_REVERSE);
+      a->setData("reverse");
 
       select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
-      a = select->addAction(QIcon(":/xpm/select_all.xpm"), tr("Select &All"));
-      a->setData(CMD_SELECT_ALL);
-      a = select->addAction(QIcon(":/xpm/select_deselect_all.xpm"), tr("&Deselect All"));
-      a->setData(CMD_SELECT_NONE);
-
+      select->addAction(getAction("sel_all", this));
+      select->addAction(getAction("sel_none", this));
 
       connect(menuFunctions, SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
       connect(menuFile,      SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
@@ -183,7 +194,7 @@ WaveEdit::~WaveEdit()
 
 void WaveEdit::cmd(QAction* a)
       {
-      view->cmd(a->data().toInt());
+      view->cmd(a->data().toString());
       }
 
 //---------------------------------------------------------

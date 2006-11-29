@@ -76,7 +76,6 @@ class MidiEditor : public Editor  {
       QAction* stepRecAction;
       QAction* midiInAction;
       QAction* followSongAction;
-
       QAction* cutAction;
       QAction* copyAction;
       QAction* pasteAction;

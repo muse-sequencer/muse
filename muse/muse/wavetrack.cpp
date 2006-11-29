@@ -156,7 +156,6 @@ void WaveTrack::read(QDomNode node)
             QDomElement e = node.toElement();
             if (e.tagName() == "part") {
                   Part* p = newPart();
-                  p->ref();
                   p->read(node, false);
                   parts()->add(p);
                   }
@@ -175,12 +174,16 @@ Part* WaveTrack::newPart(Part*p, bool clone)
       if (p) {
             if (clone)
                   part->clone(p->events());
+            else
+                  part->ref();
             part->setName(p->name());
             part->setColorIndex(p->colorIndex());
 
             *(AL::PosLen*)part = *(AL::PosLen*)p;
             part->setMute(p->mute());
             }
+      else
+            part->ref();
       return part;
       }
 

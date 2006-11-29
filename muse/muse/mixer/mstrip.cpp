@@ -317,6 +317,11 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       connect(track, SIGNAL(autoWriteChanged(bool)), SLOT(autoChanged()));
       connect(track, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));
       autoChanged();
+      controllerChanged(CTRL_VOLUME);
+      controllerChanged(CTRL_PANPOT);
+      controllerChanged(CTRL_VARIATION_SEND);
+      controllerChanged(CTRL_REVERB_SEND);
+      controllerChanged(CTRL_CHORUS_SEND);
       }
 
 //---------------------------------------------------------
@@ -636,6 +641,7 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       connect(track, SIGNAL(autoReadChanged(bool)), SLOT(autoChanged()));
       connect(track, SIGNAL(autoWriteChanged(bool)), SLOT(autoChanged()));
       autoChanged();
+      controllerChanged(CTRL_MASTER_VOLUME);
       }
 
 //---------------------------------------------------------
