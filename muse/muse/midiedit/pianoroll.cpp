@@ -58,7 +58,6 @@ PianoRoll::PianoRoll(PartList* pl, bool init)
 	_quantLen      = initQuantLen;
 
       deltaMode   = false;
-      selPart     = 0;
       quantConfig = 0;
 
       tcanvas = new PianoCanvas(this);

@@ -89,6 +89,8 @@ class WaveView : public TimeCanvas {
 
       //void applyLadspa(unsigned channels, float** data, unsigned length); //!< Apply LADSPA plugin on selection
 
+      void drawWavePart(QPainter& p, Part* wp, int y0, int th, int from, int to);
+
    public slots:
       void songChanged(int type);
 

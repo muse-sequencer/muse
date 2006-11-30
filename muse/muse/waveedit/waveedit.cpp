@@ -18,7 +18,6 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-
 #include "waveedit.h"
 #include "waveview.h"
 #include "song.h"
@@ -41,7 +40,9 @@ int WaveEdit::initHeight = WaveEdit::INIT_HEIGHT;
 WaveEdit::WaveEdit(PartList* pl, bool init)
    : Editor()
       {
-      _parts = pl;
+      _parts  = pl;
+      selPart = 0;
+
       //---------Pulldown Menu----------------------------
       QMenuBar* mb = menuBar();
       QAction* a;
@@ -145,9 +146,8 @@ WaveEdit::WaveEdit(PartList* pl, bool init)
       p2 += AL::sigmap.ticksMeasure(p2.tick());  // show one more measure
       view->setTimeRange(p1, p2);
 
+//      view->selectFirst();
       configChanged();
-//      initSettings();
-
       if (init)
             ;  // initFromPart();
       else {
@@ -162,8 +162,6 @@ WaveEdit::WaveEdit(PartList* pl, bool init)
 void WaveEdit::configChanged()
       {
 //      view->setBg(config.waveEditBackgroundColor);
-//TD      select->setShortcut(shortcuts[SHRT_SELECT_ALL].key, CMD_SELECT_ALL);
-//      select->setShortcut(shortcuts[SHRT_SELECT_NONE].key, CMD_SELECT_NONE);
       }
 
 //---------------------------------------------------------
@@ -233,6 +231,26 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
       else {
             event->ignore();
             }
+      }
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void WaveEdit::write(Xml& xml) const
+      {
+      for (ciPart p = _parts->begin(); p != _parts->end(); ++p) {
+            Part* part   = p->second;
+            Track* track = part->track();
+            int trkIdx   = song->tracks()->indexOf(track);
+            int partIdx  = track->parts()->index(part);
+            xml.stag("part");
+            xml.put("%d:%d", trkIdx, partIdx);
+            xml.etag("part");
+            }
+      xml.stag(metaObject()->className());
+      xml.writeProperties(this);
+      xml.etag(metaObject()->className());
       }
 
 

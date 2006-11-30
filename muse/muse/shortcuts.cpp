@@ -300,6 +300,14 @@ Shortcut MuseApplication::sc[] = {
             Qt::CTRL + Qt::Key_D
             ),
       Shortcut(
+            "open_waveedit",
+            QT_TR_NOOP("Open wave editor"),
+            ARRANG_SHRT, 
+            0,
+            QT_TR_NOOP("Wave Editor"),
+            QT_TR_NOOP("Wave Editor")
+            ),
+      Shortcut(
             "open_listedit",
             QT_TR_NOOP("Open listeditor"),
             ARRANG_SHRT, 

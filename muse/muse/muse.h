@@ -70,6 +70,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       QAction* fileSaveAction;
       QAction* fileOpenAction;
       QAction* pianoAction;
+      QAction* waveAction;
       QAction* trackerAction;
       QAction* fileNewAction;
 

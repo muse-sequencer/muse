@@ -42,6 +42,8 @@ class WaveEdit : public Editor {
       Q_OBJECT
 
       PartList* _parts;
+      Part* selPart;
+
       WaveView* view;
       QToolBar* tools;
       QToolBar* tb1;
@@ -68,6 +70,7 @@ class WaveEdit : public Editor {
       WaveEdit(PartList*, bool);
       ~WaveEdit();
       PartList* parts() const { return _parts; }
+      void write(Xml& xml) const;
 
       enum { CMD_MUTE=0, CMD_NORMALIZE, CMD_FADE_IN, CMD_FADE_OUT, CMD_REVERSE,
              CMD_GAIN_FREE, CMD_GAIN_200, CMD_GAIN_150, CMD_GAIN_75, CMD_GAIN_50, CMD_GAIN_25,

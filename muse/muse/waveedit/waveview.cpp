@@ -31,6 +31,8 @@
 #include "gconfig.h"
 #include "part.h"
 
+static const int partLabelHeight = 13;
+
 //---------------------------------------------------------
 //   WaveView
 //---------------------------------------------------------
@@ -38,172 +40,147 @@
 WaveView::WaveView(WaveEdit* pr)
    : TimeCanvas(TIME_CANVAS_WAVEEDIT)
       {
+      setMarkerList(song->marker());
       selectionStart = 0;
       selectionStop  = 0;
       lastGainvalue  = 100;
       editor         = pr;
 
-      if (editor->parts()->empty()) {
-            curPart = 0;
-            }
-      else {
-            curPart   = editor->parts()->begin()->second;
-            }
+	curPart = editor->parts()->begin()->second;
+      setMouseTracking(true);
 
       songChanged(SC_TRACK_INSERTED);
-#if 0
-      int start = curPart->frame();
-      int end   = start + curPart->lenFrame();
-      setTimeRange(start, end);
-#endif
       }
 
 //---------------------------------------------------------
-//   paint
+//   drawWavePart
+//    y0 - start of track
+//    th - track height
+//    from - x pixel coordinate start drawing
+//    to   - x end drawing
+//
+//    redraw area is QRect(from, y0, to-from, th)
 //---------------------------------------------------------
 
-void WaveView::paint(QPainter&, QRect)
+void WaveView::drawWavePart(QPainter& p, Part* wp, int y0, int th, int from, int to)
       {
-//      printf("paint\n");
-      }
+      int h  = th/2;
+      int y  = y0 + 1 + h;
+      int cc = th % 2 ? 0 : 1;
 
-//---------------------------------------------------------
-//   draw
-//---------------------------------------------------------
+	const Pos pos(pix2pos(from));
+      EventList* el = wp->events();
+      for (iEvent e = el->begin(); e != el->end(); ++e) {
+            Event event = e->second;
+            SndFileR f  = event.sndFile();
+            if (f.isNull())
+                  continue;
+            unsigned channels = f.channels();
+            if (channels == 0) {
+                  printf("drawWavePart: channels==0! %s\n", f.finfo()->fileName().toLatin1().data());
+                  continue;
+                  }
 
-#if 0
-void WaveView::pdraw(QPainter& p, const QRect& rr)
-      {
-      int x1 = rr.x();
-      int x2 = rr.right() + 1;
-      if (x1 < 0)
-            x1 = 0;
-      if (x2 > width())
-            x2 = width();
-      int hh = height();
-      int h  = hh/2;
-      int y  = rr.y() + h;
+            int x1 = pos2pix(event.pos() + *wp);
+            int x2 = pos2pix(event.end() + *wp);
+            int w  = x2 - x1;
+            if (w == 0)
+                  continue;
 
-      for (iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
-            Part* wp = ip->second;
-            int channels = wp->track()->channels();
-            int px = wp->frame();
+            int samples = event.lenFrame();
+            int xScale  = (samples + w/2)/w;
+            int frame   = pos.frame() - wp->frame() 
+                           - event.pos().frame() + event.spos();
 
-            EventList* el = wp->events();
-            for (iEvent e = el->begin(); e != el->end(); ++e) {
-                  Event event  = e->second;
-                  if (event.empty())
-                        continue;
-                  SndFileR f = event.sndFile();
-                  if (f.isNull())
-                        continue;
-                  int xScale = xmag;
-                  if (xScale < 0)
-                        xScale = -xScale;
-
-                  int sx, ex;
-                  sx = event.frame() + px + xScale/2 - startSample;
-                  ex = sx + px + event.lenFrame();
-                  sx = sx / xScale - xpos;
-                  ex = ex / xScale - xpos;
-
-                  if (sx < x1)
-                        sx = x1;
-                  if (ex > x2)
-                        ex = x2;
-
-                  int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
-                  //printf("pos=%d xpos=%d sx=%d ex=%d xScale=%d event.spos=%d event.frame=%d px=%d\n",
-                  //      pos, xpos, sx, ex, xScale, event.spos(), event.frame(), px);
-                  h       = hh / (channels * 2);
-                  int cc  = hh % (channels * 2) ? 0 : 1;
-
-                  for (int i = sx; i < ex; i++) {
-                        y  = rr.y() + h;
-                        SampleV sa[f.channels()];
-                        f.read(sa, xScale, pos);
-                        pos += xScale;
-                        if (pos < event.spos())
-                              continue;
-
-                        unsigned peoffset = px + event.frame() - event.spos();
-                        int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
-                        int selectionStopPos  = selectionStop  - peoffset;
-
-
-
-                        for (int k = 0; k < channels; ++k) {
-                              int kk = k % f.channels();
-                              int peak = (sa[kk].peak * (h - 1)) / yScale;
-                              int rms  = (sa[kk].rms  * (h - 1)) / yScale;
-                              if (peak > h)
-                                    peak = h;
-                              if (rms > h)
-                                    rms = h;
-                              QColor peak_color = QColor(Qt::darkGray);
-                              QColor rms_color  = QColor(Qt::black);
-                              if (pos > selectionStartPos && pos < selectionStopPos) {
-                                    peak_color = QColor(Qt::lightGray);
-                                    rms_color  = QColor(Qt::white);
-                                    // Draw inverted
-                                    p.setPen(QColor(Qt::black));
-                                    p.drawLine(i, y - h + cc, i, y + h - cc );
-                                    }
-                              p.setPen(peak_color);
+            if (h < 20) {
+                  //
+                  //    combine multi channels into one waveform
+                  //
+                  for (int i = from; i < to; i++) {
+                        SampleV sa[channels];
+                        f.read(sa, xScale, frame);
+                        frame += xScale;
+                        int peak = 0;
+                        int rms  = 0;
+                        for (unsigned k = 0; k < channels; ++k) {
+                              if (sa[k].peak > peak)
+                                    peak = sa[k].peak;
+                              rms += sa[k].rms;
+                              }
+                        rms /= channels;
+                        peak = (peak * (th-2)) >> 9;
+                        rms  = (rms  * (th-2)) >> 9;
+                        p.setPen(QColor(Qt::darkGray));
+                        p.drawLine(i, y - peak - cc, i, y + peak);
+                        p.setPen(QColor(Qt::black));
+                        p.drawLine(i, y - rms - cc, i, y + rms);
+                        }
+                  }
+            else {
+                  //
+                  //  multi channel display
+                  //
+                  h = th / (channels * 2);
+                  int cc = th % (channels * 2) ? 0 : 1;
+                  for (int i = from; i < to; i++) {
+                        y  = y0 + 1 + h;
+                        SampleV sa[channels];
+                        f.read(sa, xScale, frame);
+                        frame += xScale;
+                        for (unsigned k = 0; k < channels; ++k) {
+                              // peak = (sa[k].peak * h) / 256;
+                              int peak = (sa[k].peak * (h - 1)) >> 8;
+                              int rms  = (sa[k].rms  * (h - 1)) >> 8;
+                              p.setPen(QColor(Qt::darkGray));
                               p.drawLine(i, y - peak - cc, i, y + peak);
-                              p.setPen(rms_color);
+                              p.setPen(QColor(Qt::black));
                               p.drawLine(i, y - rms - cc, i, y + rms);
                               y  += 2 * h;
                               }
                         }
                   }
             }
-      View::pdraw(p, rr);
       }
-#endif
 
 //---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
 
-#if 0
-void WaveView::draw(QPainter& p, const QRect& r)
+void WaveView::paint(QPainter& p, QRect r)
       {
-      unsigned x = r.x() < 0 ? 0 : r.x();
-      unsigned y = r.y() < 0 ? 0 : r.y();
-      int w = r.width();
-      int h = r.height();
+      QFont f = font();
+      f.setPointSize(8);
+      p.setFont(f);
 
-      unsigned x2 = x + w;
-      unsigned y2 = y + h;
+      int from = r.x();
+      int to   = from + r.width();
 
-      //
-      //    draw marker & centerline
-      //
-      p.setPen(Qt::red);
-      if (pos[0] >= x && pos[0] < x2) {
-            p.drawLine(pos[0], y, pos[0], y2);
-            }
-      p.setPen(Qt::blue);
-      if (pos[1] >= x && pos[1] < x2) {
-            p.drawLine(pos[1], y, pos[1], y2);
-            }
-      if (pos[2] >= x && pos[2] < x2)
-            p.drawLine(pos[2], y, pos[2], y2);
+      PartList* pl = editor->parts();
+      for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
+            Part* part = ip->second;
+            int x1  = pos2pix(*part);
+            int x2  = pos2pix(part->end());
+            int len = x2 - x1;
 
-      int n  = curPart->track()->channels();
-      int hn = h / n;
-      int hh = hn / 2;
-      for (int i = 0; i < n; ++i) {
-            int h2     = hn * i;
-            int center = hh + h2;
-            p.setPen(QColor(i & i ? Qt::red : Qt::blue));
-            p.drawLine(x, center, x2, center);
-            p.setPen(QColor(Qt::black));
-            p.drawLine(x, h2, x2, h2);
+            if (x2 <= from)
+                  continue;
+            if (x1 > to)
+                  break;
+
+            int h = rCanvasA.height();
+            int xx1 = x1;
+            if (xx1 < from)
+                  xx1 = from;
+            int xx2 = x2;
+            if (xx2 > to)
+                  xx2 = to;
+            drawWavePart(p, part, 0, h, xx1, xx2);
+            int yy = h - partLabelHeight;
+            p.drawText(x1 + 3, yy, len - 6,
+               partLabelHeight-1, Qt::AlignVCenter | Qt::AlignLeft,
+               part->name());
             }
       }
-#endif
 
 //---------------------------------------------------------
 //   getCaption
@@ -239,12 +216,6 @@ void WaveView::songChanged(int flags)
 //      if (flags & SC_CLIP_MODIFIED) {
 //            update(); // Boring, but the only thing possible to do
 //            }
-/*      if (flags & SC_TEMPO) {
-            setPos(0, song->cpos(), false);
-            setPos(1, song->lpos(), false);
-            setPos(2, song->rpos(), false);
-            }
-*/
       setPart(*curPart, curPart->end());
       widget()->update();
       }

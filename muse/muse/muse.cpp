@@ -559,6 +559,9 @@ MusE::MusE()
       pianoAction = getAction("open_pianoroll", this);
       connect(pianoAction, SIGNAL(triggered()), SLOT(startPianoroll()));
 
+      waveAction = getAction("open_waveedit", this);
+      connect(waveAction, SIGNAL(triggered()), SLOT(startWaveEditor()));
+
       trackerAction = getAction("open_miditracker", this);
       connect(trackerAction, SIGNAL(triggered()), SLOT(startMidiTrackerEditor()));
 
@@ -670,6 +673,7 @@ MusE::MusE()
 
       menuEdit->addSeparator();
       menuEdit->addAction(pianoAction);
+      menuEdit->addAction(waveAction);
       menuEdit->addAction(trackerAction);
 
       a = menuEdit->addAction(QIcon(*edit_drummsIcon), tr("Drums"));

@@ -818,7 +818,8 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
       p.setBrushOrigin(QPoint(car.x() + wpos.x(), car.y() + wpos.y()));
       if (drawCanvasA) {
             if (canvasBackgroundPixmap.isNull()) {
-            	if (type == TIME_CANVAS_DRUMEDIT || type == TIME_CANVAS_PIANOROLL) {
+            	if (type == TIME_CANVAS_DRUMEDIT || type == TIME_CANVAS_PIANOROLL
+                     || type == TIME_CANVAS_WAVEEDIT) {
                         QRect rr(car);
                         // paint inactive area different
                         // (darker)
