@@ -115,9 +115,9 @@ void MusE::readToplevels(QDomNode node)
                   }
             else if (tag == "WaveEdit") {
                   WaveEdit* waveEditor = new WaveEdit(pl, true);
+                  waveEditor->read(node);
                   waveEditor->show();
                   connect(muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
-                  waveEditor->read(node);
                   pl = new PartList;
                   }
             else
