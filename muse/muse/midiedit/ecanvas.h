@@ -25,7 +25,7 @@
 #include "awl/tcanvas.h"
 #include "widgets/noteinfo.h"
 #include "citem.h"
-#include "ctrledit.h"
+#include "ctrl/ctrledit.h"
 #include "widgets/tb1.h"
 
 class MidiTrack;

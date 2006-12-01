@@ -971,24 +971,6 @@ void EventCanvas::addController(int id, int h)
       }
 
 //---------------------------------------------------------
-//   paintVLine
-//---------------------------------------------------------
-
-void paintVLine(QPainter& p, int y1, int y2, int x)
-      {
-      static QColor color[splitWidth] = {
-            QColor(0x55, 0x55, 0x52),
-            QColor(0xff, 0xff, 0xff),
-            };
-      x -= 2;
-      for (int i = 0; i < 2; ++i) {
-            p.setPen(color[i]);
-            p.drawLine(x, y1, x, y2);
-            ++x;
-            }
-      }
-
-//---------------------------------------------------------
 //   paintControllerCanvas
 //    r(0, 0) is PanelB topLeft()
 //---------------------------------------------------------

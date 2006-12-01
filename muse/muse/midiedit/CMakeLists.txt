@@ -23,7 +23,6 @@ QT4_WRAP_CPP ( midiedit_mocs
       gatetime.h
       velocity.h
       quantconfig.h
-      ctrledit.h
       dcanvas.h
       drumedit.h
       ecanvas.h
@@ -54,7 +53,6 @@ add_library ( midiedit STATIC
       drummap.h
       midicmd.h
       citem.cpp
-      ctrledit.cpp
       dcanvas.cpp
       drumedit.cpp
       drummap.cpp
