@@ -94,7 +94,10 @@ WaveEdit::WaveEdit(PartList* pl, bool init)
       tools->addAction(undoAction);
       tools->addAction(redoAction);
 
-      connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
+      const int waveeditTools = PointerTool | PencilTool 
+         | RubberTool | DrawTool;
+      EditToolBar* tools2 = new EditToolBar(this, waveeditTools);
+      addToolBar(tools2);
 
       //--------------------------------------------------
       //    Transport Bar
@@ -130,6 +133,7 @@ WaveEdit::WaveEdit(PartList* pl, bool init)
       view->setRaster(0);
       view->setFollow(INIT_FOLLOW);
 
+      connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
       connect(song, SIGNAL(posChanged(int,const AL::Pos&,bool)), view, SLOT(setLocatorPos(int,const AL::Pos&,bool)));
       view->setLocatorPos(0, song->cpos(), true);
       view->setLocatorPos(1, song->lpos(), false);
@@ -145,6 +149,9 @@ WaveEdit::WaveEdit(PartList* pl, bool init)
       view->range(p1, p2);
       p2 += AL::sigmap.ticksMeasure(p2.tick());  // show one more measure
       view->setTimeRange(p1, p2);
+
+      connect(view, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
+      connect(tools2, SIGNAL(toolChanged(int)), view, SLOT(setTool(int)));
 
 //      view->selectFirst();
       configChanged();
@@ -234,6 +241,27 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
       }
 
 //---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+void WaveEdit::read(QDomNode node)
+      {
+      for (node = node.firstChild(); !node.isNull(); node = node.nextSibling()) {
+            QDomElement e = node.toElement();
+            QString tag(e.tagName());
+            if (tag == "CtrlEdit") {
+                  int id = e.attribute("id","0").toInt();
+                  int h = e.attribute("h","50").toInt();
+                  view->addController(id, h);
+                  }
+            else
+                  AL::readProperties(this, node);
+            }
+      view->layout1();
+      }
+
+
+//---------------------------------------------------------
 //   write
 //---------------------------------------------------------
 
@@ -250,6 +278,11 @@ void WaveEdit::write(Xml& xml) const
             }
       xml.stag(metaObject()->className());
       xml.writeProperties(this);
+      const CtrlEditList* el = view->getCtrlEditors();
+      for (ciCtrlEdit i = el->begin(); i != el->end(); ++i) {
+            xml.tagE("CtrlEdit h=\"%d\" id=\"%d\"",
+               (*i)->height(), (*i)->ctrl()->id());
+            }
       xml.etag(metaObject()->className());
       }
 

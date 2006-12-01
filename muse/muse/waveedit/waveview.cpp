@@ -30,6 +30,8 @@
 #include "audio.h"
 #include "gconfig.h"
 #include "part.h"
+#include "widgets/simplebutton.h"
+#include "utils.h"
 
 static const int partLabelHeight = 13;
 
@@ -41,6 +43,8 @@ WaveView::WaveView(WaveEdit* pr)
    : TimeCanvas(TIME_CANVAS_WAVEEDIT)
       {
       setMarkerList(song->marker());
+      curSplitter    = -1;
+      dragSplitter   = false;
       selectionStart = 0;
       selectionStop  = 0;
       lastGainvalue  = 100;
@@ -221,98 +225,184 @@ void WaveView::songChanged(int flags)
       }
 
 //---------------------------------------------------------
-//   viewMousePressEvent
+//   mousePress
 //---------------------------------------------------------
 
-void WaveView::viewMousePressEvent(QMouseEvent* /*event*/)
+void WaveView::mousePress(QMouseEvent* me)
       {
-#if 0
-      button = event->button();
-      unsigned x = event->x();
+      QPoint pos(me->pos());
 
-      switch (button) {
-            case Qt::LeftButton:
-                  if (mode == NORMAL) {
-                        // redraw and reset:
-                        if (selectionStart != selectionStop) {
-                              selectionStart = selectionStop = 0;
-                              update();
-                              }
-                        mode = DRAG;
-                        dragstartx = x;
-                        selectionStart = selectionStop = x;
-                        }
-                  break;
-
-            case Qt::MidButton:
-            case Qt::RightButton:
-            default:
-                  break;
+      if (rCanvasA.contains(pos)) {
+//            mousePressCanvasA(me);
+            return;
             }
-      viewMouseMoveEvent(event);
-#endif
+      if (curSplitter != -1) {
+            dragSplitter = true;
+            splitterY = pos.y();
+            return;
+            }
+
+      if (rCanvasB.contains(pos)) {
+            for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+                  CtrlEdit* c = *i;
+                  QRect r(rCanvasB.x(), rCanvasB.y() + c->y + splitWidth,
+                     rCanvasB.width(), c->cheight());
+                  if (r.contains(pos)) {
+                        c->mousePress(pos - r.topLeft(), me->button(), me->modifiers());
+                        break;
+                        }
+                  }
+            }
       }
 
 //---------------------------------------------------------
-//   viewMouseReleaseEvent
+//   mouseRelease
 //---------------------------------------------------------
 
-void WaveView::viewMouseReleaseEvent(QMouseEvent*)
+void WaveView::mouseRelease(QMouseEvent* me)
       {
-#if 0
-      button = Qt::NoButton;
-
-      if (mode == DRAG) {
-            mode = NORMAL;
-            //printf("selectionStart=%d selectionStop=%d\n", selectionStart, selectionStop);
+      if (dragSplitter) {
+            dragSplitter = false;
+            return;
             }
-#endif
+      QPoint pos(me->pos());
+      if (rCanvasA.contains(pos)) {
+            // mouseReleaseCanvasA(me);
+            return;
+            }
+      if (rCanvasB.contains(pos)) {
+            for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+                  CtrlEdit* c = *i;
+                  QRect r(rCanvasB.x(), rCanvasB.y() + c->y + splitWidth,
+                     rCanvasB.width(), c->cheight());
+                  if (r.contains(pos)) {
+                        c->mouseRelease();
+                        break;
+                        }
+                  }
+            }
       }
 
 //---------------------------------------------------------
-//   viewMouseMoveEvent
+//   mouseMove
 //---------------------------------------------------------
 
-void WaveView::viewMouseMoveEvent(QMouseEvent* /*event*/)
+void WaveView::mouseMove(QPoint pos)
       {
-#if 0
-      unsigned x = event->x();
-      emit timeChanged(x);
+      if (dragSplitter) {
+            int deltaY = pos.y() - splitterY;
 
-      int i;
-      switch (button) {
-            case Qt::LeftButton:
-                  i = 0;
-                  if (mode == DRAG) {
-                        if (x < dragstartx) {
-                              selectionStart = x;
-                              selectionStop = dragstartx;
-                              }
-                        else {
-                              selectionStart = dragstartx;
-                              selectionStop = x;
-                              }
+            iCtrlEdit i = ctrlEditList.begin();
+            int y = 0;
+            if (curSplitter > 0) {
+                  int k = 0;
+                  CtrlEdit* c = 0;
+                  for (; i != ctrlEditList.end(); ++i, ++k) {
+                        c = *i;
+                        y += c->height();
+                        if ((k+1) == curSplitter)
+                                    break;
                         }
-                  break;
-            case Qt::MidButton:
-                  i = 1;
-                  break;
-            case Qt::RightButton:
-                  i = 2;
-                  break;
-            default:
-                  return;
+                  if (i == ctrlEditList.end()) {
+                        printf("unexpected edit list end, curSplitter %d\n", curSplitter);
+                        return;
+                        }
+                  if (c->height() + deltaY < splitWidth)
+                        deltaY = splitWidth - c->height();
+                  ++i;
+                  int rest = 0;
+                  for (iCtrlEdit ii = i; ii != ctrlEditList.end(); ++ii)
+                        rest += (*ii)->cheight();
+                  if (rest < deltaY)
+                        deltaY = rest;
+                  c->setHeight(c->height() + deltaY);
+                  layoutPanelB(c);
+                  y += deltaY;
+                  }
+            //
+            //    layout rest, add deltaY vertical
+            //
+            int rest = 0;
+            for (iCtrlEdit ii = i; ii != ctrlEditList.end(); ++ii) {
+                  CtrlEdit* c = *ii;
+                  rest += c->cheight();
+                  }
+            if (rest < deltaY)
+                        deltaY = rest;
+            rest = deltaY;
+            for (; i != ctrlEditList.end(); ++i) {
+                  CtrlEdit* c = *i;
+                  int d = c->cheight();
+                  if (d > deltaY)
+                              d = deltaY;
+                  c->setHeight(c->height() - d);
+                  c->y = y;
+                  layoutPanelB(c);
+                  y += c->height();
+                  deltaY -= d;
+                  if (deltaY == 0)
+                              break;
+                  }
+            if (i != ctrlEditList.end())
+                  ++i;
+            for (; i != ctrlEditList.end(); ++i) {
+                  CtrlEdit* c = *i;
+                  c->y = y;
+                  y += c->height();
+                  }
+            if (curSplitter == 0)
+                        resizeController(ctrlHeight - rest);
+            else
+                        widget()->update(rPanelB | rCanvasB);
+            splitterY = pos.y();
+            updatePartControllerList();
+            return;
             }
-      Pos p(AL::tempomap.frame2tick(x), true);
-      song->setPos(i, p);
-#endif
+      if (rCanvasA.contains(pos)) {
+            // mouseMoveCanvasA(pos - rCanvasA.topLeft());
+            return;
+            }
+      if (button == 0) {
+            if (rPanelB.contains(pos) || rCanvasB.contains(pos)) {
+                  int y = pos.y() - rPanelB.y();
+                  int k = 0;
+                  for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i, ++k) {
+                        CtrlEdit* c = *i;
+                        if (y >= c->y && y < (c->y + splitWidth)) {
+                              curSplitter = k;
+                              setCursor();
+                              return;
+                              }
+                        int ypos = y - c->y - splitWidth;
+                        if (ypos >= 0)
+                              emit yChanged(c->pixel2val(ypos));
+                        }
+                  }
+            if (curSplitter != -1) {
+                  curSplitter = -1;
+                  setCursor();
+                  }
+            return;
+            }
+      if (rCanvasB.contains(pos)) {
+            for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+                  CtrlEdit* c = *i;
+                  QRect r(rCanvasB.x(), rCanvasB.y() + c->y + splitWidth,
+                     rCanvasB.width(), c->cheight());
+                  if (r.contains(pos)) {
+                        c->mouseMove(pos - r.topLeft());
+                        break;
+                        }
+                  }
+            }
+
       }
 
 //---------------------------------------------------------
 //   cmd
 //---------------------------------------------------------
 
-void WaveView::cmd(const QString& c)
+void WaveView::cmd(const QString&)
       {
 #if 0
       int modifyoperation = -1;
@@ -785,4 +875,251 @@ void WaveView::range(AL::Pos& s, AL::Pos& e) const
       s.setFrame(startFrame);
       e.setFrame(endFrame);
       }
+
+//---------------------------------------------------------
+//   layout
+//---------------------------------------------------------
+
+void WaveView::layout()
+      {
+      int n = ctrlEditList.size();
+      if (n == 0)
+            return;
+      if (ctrlHeight == 0) {
+            int wh = widget()->height();
+            resizeController(wh < 120 ? wh / 2 : 100);
+            }
+      // check, if layout is ok already; this happens after
+      // song load
+      int h = 0;
+      for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+            CtrlEdit* c = *i;
+            h += c->height();
+            }
+      if (h == ctrlHeight) {
+            for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i)
+                  layoutPanelB(*i);
+            return;
+            }
+      int y = 0;
+      int sch = ctrlHeight / n;
+      for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+            CtrlEdit* c = *i;
+            c->y = y;
+            c->setHeight(sch);
+            layoutPanelB(c);
+            y += sch;
+            }      
+      }
+
+//---------------------------------------------------------
+//   layout1
+//---------------------------------------------------------
+
+void WaveView::layout1()
+      {
+      int n = ctrlEditList.size();
+      if (n == 0)
+            return;
+      int y = 0;
+      for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+            CtrlEdit* c = *i;
+            c->y = y;
+            y += c->height();
+            }
+      resizeController(y);      
+      }
+
+//---------------------------------------------------------
+//   layoutPanelB
+//---------------------------------------------------------
+
+void WaveView::layoutPanelB(CtrlEdit* c)
+      {
+      int y = c->y;
+      int h = c->height();
+      int bx = rPanelB.x() + rPanelB.width() - 23;
+      int by = rPanelB.y() + y + h - 19;
+      c->minus->setGeometry(bx, by, 18, 18);
+      bx = rPanelB.x() + 1;
+      by = rPanelB.y() + y + 5;
+      c->sel->setGeometry(bx, by, rPanelB.width() - 5, 18);
+      }
+
+//---------------------------------------------------------
+//   addController
+//---------------------------------------------------------
+
+void WaveView::addController()
+      {
+      int n = ctrlEditList.size();
+      CtrlEdit* ce = new CtrlEdit(widget(), this, curPart->track());
+      ce->setHeight(50);
+      ctrlEditList.push_back(ce);
+
+      ce->minus->defaultAction()->setData(n);
+      connect(ce->minus, SIGNAL(triggered(QAction*)), SLOT(removeController(QAction*)));
+      ce->minus->show();
+      ce->sel->show();
+
+      layout();
+      widget()->update();
+      updatePartControllerList();
+      }
+
+void WaveView::addController(int id, int h)
+      {
+      ctrlHeight += h;
+      int n = ctrlEditList.size();
+      
+      CtrlEdit* ce = new CtrlEdit(widget(), this, curPart->track());
+      ce->setHeight(h);
+      ce->setCtrl(id);
+      ctrlEditList.push_back(ce);
+
+      ce->minus->defaultAction()->setData(n);
+      connect(ce->minus, SIGNAL(triggered(QAction*)), SLOT(removeController(QAction*)));
+      }
+
+//---------------------------------------------------------
+//   removeController
+//---------------------------------------------------------
+
+void WaveView::removeController(QAction* a)
+      {
+      int id = a->data().toInt();
+
+      int k = 0;
+      for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i, ++k) {
+            if (k == id) {
+                  CtrlEdit* c = *i;
+                  delete c;
+                  ctrlEditList.erase(i);
+                  break;
+                  }
+             }
+      k = 0;
+      for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i, ++k) {
+            CtrlEdit* c = *i;
+            c->minus->defaultAction()->setData(k);
+            }
+
+      if (ctrlEditList.empty())
+            resizeController(0);
+      else
+            layout();
+      widget()->update();
+      updatePartControllerList();
+      }
+
+//---------------------------------------------------------
+//   updatePartControllerList
+//---------------------------------------------------------
+
+void WaveView::updatePartControllerList()
+      {
+      if (curPart == 0)
+            return;
+      CtrlCanvasList* cl = curPart->getCtrlCanvasList();
+      cl->clear();
+      for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+            CtrlCanvas cc;
+            cc.ctrlId = (*i)->ctrlId;
+            cc.height = (*i)->height();
+            cl->push_back(cc);
+            }      
+      }
+
+//---------------------------------------------------------
+//   paintControllerCanvas
+//    r(0, 0) is PanelB topLeft()
+//---------------------------------------------------------
+
+void WaveView::paintControllerCanvas(QPainter& p, QRect r)
+      {
+      int x1 = r.x();
+      int x2 = x1 + r.width();
+
+      int xx2 = rCanvasB.width();
+      if (xx2 >= x2)
+                  x2 = xx2 - 2;
+      for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+            CtrlEdit* c = *i;
+            int         y = c->y;
+            paintHLine(p, x1, x2, y);
+            p.setPen(lineColor[0]);
+            p.drawLine(xx2-1, 1, xx2-1, splitWidth-2);
+
+            QRect  rc(0, y + splitWidth, rCanvasB.width(), c->cheight());
+            QPoint pt(rc.topLeft());
+            rc &= r;
+            if (!rc.isEmpty()) {
+                  p.translate(pt);
+                  c->paint(p, rc.translated(-pt));
+                  p.translate(-pt);
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   paintControllerPanel
+//    panelB
+//---------------------------------------------------------
+
+void WaveView::paintControllerPanel(QPainter& p, QRect r)
+      {
+      p.fillRect(r, QColor(0xe0, 0xe0, 0xe0));
+      int x1 = r.x();
+      int x2 = x1 + r.width();
+
+      paintVLine(p, r.y() + splitWidth, r.y() + r.height(),
+         rPanelB.x() + rPanelB.width());
+
+      if (x1 == 0)
+                  x1 = 1;
+      for (iCtrlEdit i = ctrlEditList.begin(); i != ctrlEditList.end(); ++i) {
+            CtrlEdit* c = *i;
+            paintHLine(p, x1, x2, c->y);
+            p.setPen(lineColor[0]);
+            p.drawLine(0, 1, 0, splitWidth-2);
+            }
+      }
+
+//---------------------------------------------------------
+//   setCursor
+//---------------------------------------------------------
+
+void WaveView::setCursor()
+      {
+      if (curSplitter != -1) {
+            widget()->setCursor(Qt::SplitVCursor);
+            return;
+            }
+      TimeCanvas::setCursor();
+      }
+
+//---------------------------------------------------------
+//   enterB
+//---------------------------------------------------------
+
+void WaveView::enterB()
+      {
+      if ((button == 0) && curSplitter != -1) {
+            curSplitter = -1;
+            setCursor();
+            }
+      }
+
+//---------------------------------------------------------
+//   leaveB
+//---------------------------------------------------------
+
+void WaveView::leaveB()
+      {
+      if ((button == 0) && (curSplitter != -1)) {
+            curSplitter = -1;
+            setCursor();
+            }
+      }
+
 

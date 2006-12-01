@@ -70,6 +70,7 @@ class WaveEdit : public Editor {
       WaveEdit(PartList*, bool);
       ~WaveEdit();
       PartList* parts() const { return _parts; }
+      void read(QDomNode node);
       void write(Xml& xml) const;
 
       enum { CMD_MUTE=0, CMD_NORMALIZE, CMD_FADE_IN, CMD_FADE_OUT, CMD_REVERSE,
