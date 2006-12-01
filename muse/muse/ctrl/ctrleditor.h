@@ -67,6 +67,7 @@ class CtrlEditor {
       void mouseMove(const QPoint& pos);
       };
 
+
 extern Ctrl veloList;
 extern Ctrl sveloList;
 #endif

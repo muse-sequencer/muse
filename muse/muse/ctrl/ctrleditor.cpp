@@ -482,3 +482,4 @@ void CtrlEditor::mouseMove(const QPoint& pos)
             }
       tc()->widget()->update();
       }
+
