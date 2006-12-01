@@ -42,6 +42,7 @@ enum FollowMode {
 
 static const int rulerHeight = 28;
 static const int pianoWidth  = 40;
+static const int waveWidth   = 40;
 static const int drumWidth   = 120;
 static const int drumHeight  = 18;
 static const int keyHeight   = 13;

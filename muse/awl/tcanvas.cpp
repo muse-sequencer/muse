@@ -420,7 +420,8 @@ void TimeCanvas::moveX(int x)
 
       int wh = _widget->height();
 
-      if (type == TIME_CANVAS_PIANOROLL || type == TIME_CANVAS_DRUMEDIT) {
+      if (type == TIME_CANVAS_PIANOROLL || type == TIME_CANVAS_DRUMEDIT
+         || TIME_CANVAS_WAVEEDIT) {
             _widget->scroll(dx, 0, QRect(rCanvasA.x(), 0, rCanvasA.width(), wh));
 
             //HACK:
@@ -797,6 +798,9 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
                   }
             else if (type == TIME_CANVAS_PIANOROLL) {
                   paintPiano(p, par);
+                  }
+            else if (type == TIME_CANVAS_WAVEEDIT) {
+                  p.fillRect(par, QColor(0xe0, 0xe0, 0xe0));
                   }
             }
 
@@ -1668,6 +1672,8 @@ void TimeCanvas::updateGeometry()
             x1 = pianoWidth;
       else if (type == TIME_CANVAS_DRUMEDIT)
             x1 = drumWidth;
+      else if (type == TIME_CANVAS_WAVEEDIT)
+            x1 = waveWidth;
       int y2 = wh - ctrlHeight;
 
       rPanelA.setRect(0, rulerHeight, x1, wh - rulerHeight - ctrlHeight);
