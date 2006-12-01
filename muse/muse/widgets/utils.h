@@ -52,6 +52,7 @@ extern void fatalError(const char*);
 
 extern QColor lineColor[splitWidth];
 extern void paintHLine(QPainter& p, int x1, int x2, int y);
+extern void paintVLine(QPainter& p, int y1, int y2, int x);
 
 #endif
 

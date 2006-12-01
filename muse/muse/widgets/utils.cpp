@@ -431,3 +431,21 @@ void paintHLine(QPainter& p, int x1, int x2, int y)
             }
       }
 
+//---------------------------------------------------------
+//   paintVLine
+//---------------------------------------------------------
+
+void paintVLine(QPainter& p, int y1, int y2, int x)
+      {
+      static QColor color[splitWidth] = {
+            QColor(0x55, 0x55, 0x52),
+            QColor(0xff, 0xff, 0xff),
+            };
+      x -= 2;
+      for (int i = 0; i < 2; ++i) {
+            p.setPen(color[i]);
+            p.drawLine(x, y1, x, y2);
+            ++x;
+            }
+      }
+
