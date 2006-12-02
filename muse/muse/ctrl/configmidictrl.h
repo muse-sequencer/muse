@@ -40,6 +40,7 @@ class ConfigMidiCtrl : public QDialog, public Ui::ConfigMidiCtrlBase {
       void availableSelected(QListWidgetItem*);
       void managedSelected(QListWidgetItem*);
       virtual void done(int);
+      void defineClicked();
 
    public:
       ConfigMidiCtrl(MidiTrack*);

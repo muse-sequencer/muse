@@ -20,20 +20,24 @@
 
 QT4_WRAP_CPP (ctrl_mocs       
       configmidictrl.h 
+      definemidictrl.h 
       ctrldialog.h
       ctrledit.h
       )
 QT4_WRAP_UI (ctrl_ui_headers 
       configmidictrl.ui 
+      definemidictrl.ui 
       ctrldialog.ui
       )
 
 add_library ( ctrl STATIC 
       configmidictrl.cpp 
+      definemidictrl.cpp 
       ctrldialog.cpp
       ctrldialog.h
       ctrleditor.cpp
       configmidictrl.h
+      definemidictrl.h
       ctrleditor.h
       ctrledit.cpp
       ${ctrl_mocs}

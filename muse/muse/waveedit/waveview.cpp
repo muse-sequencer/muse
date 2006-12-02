@@ -132,7 +132,6 @@ void WaveView::drawWavePart(QPainter& p, Part* wp, int y0, int th, int from, int
                         f.read(sa, xScale, frame);
                         frame += xScale;
                         for (unsigned k = 0; k < channels; ++k) {
-                              // peak = (sa[k].peak * h) / 256;
                               int peak = (sa[k].peak * (h - 1)) >> 8;
                               int rms  = (sa[k].rms  * (h - 1)) >> 8;
                               p.setPen(QColor(Qt::darkGray));

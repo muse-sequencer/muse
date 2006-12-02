@@ -1,14 +1,11 @@
 <ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>CtrlDialogBase</class>
  <widget class="QDialog" name="CtrlDialogBase" >
   <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>390</width>
     <height>300</height>
    </rect>
   </property>
@@ -54,6 +51,13 @@
       <number>6</number>
      </property>
      <item>
+      <widget class="QPushButton" name="otherButton" >
+       <property name="text" >
+        <string>Other</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer>
        <property name="orientation" >
         <enum>Qt::Horizontal</enum>
@@ -84,7 +88,6 @@
    </item>
   </layout>
  </widget>
- <pixmapfunction></pixmapfunction>
  <resources/>
  <connections>
   <connection>

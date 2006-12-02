@@ -32,8 +32,13 @@ class Track;
 class CtrlDialog : public QDialog, public Ui_CtrlDialogBase {
       Q_OBJECT
 
+      Track* t;
+      int currentId;
+      void updateController();
+
    private slots:
       void itemDoubleClicked(QTreeWidgetItem*, int);
+      void otherClicked();
 
    public:
       CtrlDialog(Track*, int, QWidget* parent = 0);

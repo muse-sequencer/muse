@@ -289,8 +289,10 @@ bool SndFile::openRead()
       sfUI = sf_open(p.toAscii().data(), SFM_READ, &sfinfo);
       sfinfo.format = 0;
       sfRT = sf_open(p.toAscii().data(), SFM_READ, &sfinfo);
-      if (sfUI == 0 || sfRT == 0)
+      if (sfUI == 0 || sfRT == 0) {
+            printf("SndFile::openRead(): failed\n");
             return true;
+            }
       writeFlag = false;
       openFlag  = true;
       QString cacheName = _finfo.absolutePath() + QString("/") + _finfo.baseName() + QString(".wca");
@@ -442,10 +444,9 @@ void SndFile::read(SampleV* s, int mag, unsigned pos)
             {
             int srcChannels = channels();
             int dstChannels = sfinfo.channels;
-            size_t n        = mag;
             float** dst     = fp;
-            float buffer[n * dstChannels];
-            size_t rn  = sf_readf_float(sfUI, buffer, n);
+            float buffer[mag * dstChannels];
+            size_t rn  = sf_readf_float(sfUI, buffer, mag);
             float* src = buffer;
 
             if (srcChannels == dstChannels) {
@@ -705,15 +706,15 @@ QString SndFile::strerror() const
       }
 
 //---------------------------------------------------------
-//   getSnd
+//   getWave
 //---------------------------------------------------------
 
 SndFile* SndFile::getWave(const QString& inName, bool writeFlag)
       {
       QString name = song->absoluteProjectPath() + "/" + inName;
 
-// printf("=====%s %s\n", inName.toLatin1().data(), name.toLatin1().data());
       SndFile* f = sndFiles.value(name);
+// printf("SndFile::getWave: %p writeFlag %d %s %s\n", f, writeFlag, inName.toLatin1().data(), name.toLatin1().data());
       if (f == 0) {
             if (!QFile::exists(name)) {
                   fprintf(stderr, "wave file <%s> not found\n",
@@ -723,9 +724,9 @@ SndFile* SndFile::getWave(const QString& inName, bool writeFlag)
             f = new SndFile(name);
             bool error;
             if (writeFlag)
-                  error = f->openRead();
-            else
                   error = f->openWrite();
+            else
+                  error = f->openRead();
             if (error) {
                   fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
                      name.toLatin1().data(),

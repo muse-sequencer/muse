@@ -19,6 +19,7 @@
 //=============================================================================
 
 #include "configmidictrl.h"
+#include "definemidictrl.h"
 #include "miditrack.h"
 #include "midioutport.h"
 #include "midictrl.h"
@@ -72,6 +73,7 @@ ConfigMidiCtrl::ConfigMidiCtrl(MidiTrack* t)
       connect(buttonRemove, SIGNAL(clicked()), SLOT(removeClicked()));
       connect(availableController, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), SLOT(availableSelected(QListWidgetItem*)));
       connect(managedController,   SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), SLOT(managedSelected(QListWidgetItem*)));
+      connect(defineButton, SIGNAL(clicked()), SLOT(defineClicked()));
       }
 
 //---------------------------------------------------------
@@ -180,5 +182,17 @@ void ConfigMidiCtrl::done(int code)
             delete cn;
             }
       QDialog::done(code);
+      }
+
+//---------------------------------------------------------
+//   defineClicked
+//---------------------------------------------------------
+
+void ConfigMidiCtrl::defineClicked()
+      {
+      printf("define clicked\n");
+      DefineMidiCtrl dc(track, this);
+      if (dc.exec())
+            QDialog::done(0);
       }
 

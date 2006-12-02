@@ -25,26 +25,43 @@
 #include "audiotrack.h"
 #include "plugin.h"
 #include "pipeline.h"
+#include "ctrl/configmidictrl.h"
 
 //---------------------------------------------------------
 //   CtrlDialog
 //---------------------------------------------------------
 
-CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
+CtrlDialog::CtrlDialog(Track* track, int ci, QWidget* parent)
   : QDialog(parent)
       {
+      t = track;
+      currentId = ci;
       setupUi(this);
       QTreeWidgetItem* header = tw->headerItem();
       header->setTextAlignment(0, Qt::AlignLeft);
       header->setTextAlignment(1, Qt::AlignHCenter);
 
-      /* COMMENT: setSizeHint does not work in qt4.1, Scheduled for  4.2.0 */
-      header->setSizeHint(1, QSize(30, 20));
+      tw->header()->setResizeMode(0, QHeaderView::Stretch);
       header->setToolTip(0, tr("controller name"));
       header->setToolTip(1, tr("flag if controller contains data"));
 
+      updateController();
+      otherButton->setEnabled(track->type() == Track::MIDI);
+      connect(tw, 
+         SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),
+         SLOT(itemDoubleClicked(QTreeWidgetItem*, int)));
+      connect(otherButton, SIGNAL(clicked()), SLOT(otherClicked()));
+      }
+
+//---------------------------------------------------------
+//   updateController
+//---------------------------------------------------------
+
+void CtrlDialog::updateController()
+      {
+      tw->clear();
       QTreeWidgetItem* ci;
-      if (track->type() == Track::MIDI) {
+      if (t->type() == Track::MIDI) {
             //
             //    add special controll for midi tracks
             //
@@ -54,7 +71,7 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                   tw->setCurrentItem(ci);
                   tw->setItemSelected(ci, true);
                   }
-            if (((MidiTrack*)(track))->drumMap()) {
+            if (((MidiTrack*)(t))->drumMap()) {
                   ci = new QTreeWidgetItem(tw, CTRL_SVELOCITY);
                   ci->setText(0, "Single Velocity");
 
@@ -64,7 +81,7 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                         }
                   }
             }
-      else if (!track->isMidiTrack()) {
+      else if (!t->isMidiTrack()) {
             //
             // aux send streams
             //
@@ -72,7 +89,7 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
             //
             // present plugin parameter
             //
-            Pipeline* pl = ((AudioTrack*)track)->prePipe();
+            Pipeline* pl = ((AudioTrack*)t)->prePipe();
             int idx = 0;
             foreach (PluginI* plugin, *pl) {
                   ci = new QTreeWidgetItem(tw, CTRL_NO_CTRL);
@@ -83,7 +100,7 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                         int id = (idx + 1) * 0x1000 + i;
                         QTreeWidgetItem* cci = new QTreeWidgetItem(ci, id);
                         cci->setText(0, name);
-                        Ctrl* ctrl = track->getController(id);
+                        Ctrl* ctrl = t->getController(id);
                         if (!ctrl->empty())
                               cci->setText(1, "*");
                         if (id == currentId) {
@@ -92,7 +109,7 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                               }
                         }
                   }
-            pl = ((AudioTrack*)track)->postPipe();
+            pl = ((AudioTrack*)t)->postPipe();
             idx = 0;
             foreach (PluginI* plugin, *pl) {
                   ci = new QTreeWidgetItem(tw, CTRL_NO_CTRL);
@@ -103,7 +120,7 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                         int id = (idx + 1) * 0x1000 + i;
                         QTreeWidgetItem* cci = new QTreeWidgetItem(ci, id);
                         cci->setText(0, name);
-                        Ctrl* ctrl = track->getController(id);
+                        Ctrl* ctrl = t->getController(id);
                         if (!ctrl->empty())
                               cci->setText(1, "*");
                         if (id == currentId) {
@@ -114,11 +131,11 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                   }
             }
 
-      ControllerNameList* cn = track->controllerNames();
+      ControllerNameList* cn = t->controllerNames();
       for (iControllerName i = cn->begin(); i != cn->end(); ++i) {
             ci = new QTreeWidgetItem(tw, i->id);
             ci->setText(0, i->name);
-            Ctrl* ctrl = track->getController(i->id);
+            Ctrl* ctrl = t->getController(i->id);
             if (!ctrl->empty())
                   ci->setText(1, "*");
 
@@ -127,12 +144,6 @@ CtrlDialog::CtrlDialog(Track* track, int currentId, QWidget* parent)
                   tw->setItemSelected(ci, true);
                   }
             }
-
-      ci = new QTreeWidgetItem(tw, CTRL_OTHER);
-      ci->setText(0, tr("other"));
-      connect(tw, 
-         SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),
-         SLOT(itemDoubleClicked(QTreeWidgetItem*, int)));
       }
 
 //---------------------------------------------------------
@@ -157,4 +168,23 @@ int CtrlDialog::curId() const
       return item->type();
       }
 
+//---------------------------------------------------------
+//   otherClicked
+//    Add another controller to the list of "managed"
+//    controllers.
+//---------------------------------------------------------
+
+void CtrlDialog::otherClicked()
+      {
+      QTreeWidgetItem* item = tw->currentItem();
+      if (item)
+            currentId = item->type();
+      //
+      // present the list of available controller for
+      // the selected midi instrument
+      //
+      ConfigMidiCtrl mce((MidiTrack*)t);
+      mce.exec();
+      updateController();
+      }
 

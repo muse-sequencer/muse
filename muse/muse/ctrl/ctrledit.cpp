@@ -109,20 +109,13 @@ void CtrlEdit::showControllerList()
             id = c->id();
       else
             id = CTRL_NO_CTRL;
-      for (;;) {
-            CtrlDialog cd(_track, id);
-            int rv = cd.exec();
-            if (rv != 1)
-                        return;
-            id = cd.curId();
-            if (id == CTRL_NO_CTRL)
-                  return;
-            if (id != CTRL_OTHER)
-                  break;
-            ConfigMidiCtrl* mce = new ConfigMidiCtrl((MidiTrack*)_track);
-            mce->exec();
-            delete mce;
-            }
+      CtrlDialog cd(_track, id);
+      int rv = cd.exec();
+      if (rv != 1)
+            return;
+      id = cd.curId();
+      if (id == CTRL_NO_CTRL)
+            return;
       changeController(id);
       }
 
