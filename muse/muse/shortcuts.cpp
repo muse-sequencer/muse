@@ -264,7 +264,11 @@ Shortcut MuseApplication::sc[] = {
             "quit",
             QT_TR_NOOP("File: Quit MusE"),
             ARRANG_SHRT, 
-            Qt::CTRL + Qt::Key_Q
+            Qt::CTRL + Qt::Key_Q,
+            QT_TR_NOOP("Quit MusE"),
+            QT_TR_NOOP("Quit MusE"),
+            ":/xpm/on.svg",
+            ":/xpm/off.svg"
             ),
       Shortcut(
             "select_parts_on_track",
@@ -297,7 +301,10 @@ Shortcut MuseApplication::sc[] = {
             "open_drumedit",
             QT_TR_NOOP("Open drumeditor"),
             ARRANG_SHRT, 
-            Qt::CTRL + Qt::Key_D
+            Qt::CTRL + Qt::Key_D,
+            QT_TR_NOOP("Drum Editor"),
+            QT_TR_NOOP("Start Drum Editor"),
+            ":/xpm/edit_drumms.xpm"
             ),
       Shortcut(
             "open_waveedit",
@@ -305,7 +312,8 @@ Shortcut MuseApplication::sc[] = {
             ARRANG_SHRT, 
             0,
             QT_TR_NOOP("Wave Editor"),
-            QT_TR_NOOP("Wave Editor")
+            QT_TR_NOOP("Wave Editor"),
+            ":/xpm/wave.xpm"
             ),
       Shortcut(
             "open_listedit",
@@ -314,16 +322,13 @@ Shortcut MuseApplication::sc[] = {
             Qt::CTRL + Qt::Key_L
             ),
       Shortcut(
-            "open_graph_master",
-            QT_TR_NOOP("Open graphical mastertrack editor"),
+            "open_master",
+            QT_TR_NOOP("Open mastertrack editor"),
             ARRANG_SHRT, 
-            Qt::CTRL + Qt::Key_M
-            ),
-      Shortcut(
-            "open_list_master",
-            QT_TR_NOOP("Open list mastertrack editor"),
-            ARRANG_SHRT, 
-            Qt::CTRL + Qt::SHIFT + Qt::Key_M
+            Qt::CTRL + Qt::Key_M,
+            QT_TR_NOOP("Mastertrack (Tempo) Editor"),
+            QT_TR_NOOP("Start Mastertrack (Tempo) Editor"),
+            ":/xpm/edit_mastertrack.xpm"
             ),
       Shortcut(
             "add_midi_track",
@@ -997,9 +1002,18 @@ KeyboardMovementIndicator shortcutsKbdMovement; //for keeping track of active pa
 void writeShortCuts(Xml& xml)
       {
       xml.stag("shortcuts");
-      foreach(Shortcut* s, shortcuts)
-            if (s->xml && s->type != INVIS_SHRT) //Avoid nullptr & hardcoded shortcuts
-                  xml.tag(s->xml, s->key.toString(QKeySequence::PortableText));
+      foreach(Shortcut* s, shortcuts) {
+            //
+            // save only if different from default
+            //
+            for (unsigned i = 0;; ++i) {
+                  if (MuseApplication::sc[i].xml == s->xml) {
+                        if (MuseApplication::sc[i].key != s->key)
+                              xml.tag(s->xml, s->key.toString(QKeySequence::PortableText));
+                        break;
+                        }
+                  }
+            }
       xml.etag("shortcuts");
       }
 

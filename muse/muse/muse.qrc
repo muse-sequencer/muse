@@ -54,6 +54,9 @@
       <file>xpm/editcut.xpm</file>
       <file>xpm/editcopy.xpm</file>
       <file>xpm/editpaste.xpm</file>
+      <file>xpm/edit_drumms.xpm</file>
+      <file>xpm/edit_mastertrack.xpm</file>
+      <file>xpm/wave.xpm</file>
 
    </qresource>
 

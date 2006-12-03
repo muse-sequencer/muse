@@ -304,7 +304,7 @@ Arranger::Arranger(QMainWindow* parent)
 
       mixerDock = new QDockWidget(tr("Mix"));
       mixerDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-//      mixerDock->setMaximumWidth(STRIP_WIDTH);
+mixerDock->setMaximumWidth(STRIP_WIDTH);
       mixerDock->layout()->setMargin(1);
       mixerDock->layout()->setSpacing(0);
       mixerDockAction = mixerDock->toggleViewAction();

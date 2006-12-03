@@ -128,6 +128,14 @@ TimeCanvas::TimeCanvas(TimeCanvasType t)
                   _ymagMax = 1.0;
                   yRange   = drumHeight * 128;
                   break;
+            case TIME_CANVAS_WAVEEDIT:
+                  _xmagMin = 0.001;
+                  _xmagMax = 100.0;
+                  _xmag    = 0.04;
+                  _ymagMin = 1.0;
+                  _ymagMax = 10.0;
+                  _ymag    = 1.0;
+                  break;
             default:
                   _ymagMin = 1.0;
                   _ymagMax = 1.0;
@@ -380,11 +388,11 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
                         else if (_xmag > _xmagMax)
                               _xmag = _xmagMax;
                         hmag->setValue(xmag2s(_xmag));
+                        int newx = pos2pix(pos);
                         updateScrollBars();
+                        hbar->setValue(wpos.x() + (newx - oldx));
                         updateRulerMag();
                         magChanged();
-                        int newx = pos2pix(pos);
-                        wpos.setX(wpos.x() + (newx - oldx));
                         _widget->update();
                         }
                   else {

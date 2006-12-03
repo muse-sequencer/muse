@@ -630,7 +630,8 @@ MusE::MusE()
       a->setEnabled(!midiOnly);
 
       menu_file->addSeparator();
-      a = menu_file->addAction(*onOffIcon, tr("&Quit"));
+      a = getAction("quit", this);
+      menu_file->addAction(a);
       connect(a, SIGNAL(triggered()), this, SLOT(quitDoc()));
       menu_file->addSeparator();
 
@@ -650,8 +651,6 @@ MusE::MusE()
       menuEdit->addAction(copyAction);
       pasteAction = getAction("paste", this);
       menuEdit->addAction(pasteAction);
-
-//      menuEditActions[CMD_DELETE] = getAction("delete", this);
 
       menuEdit->addSeparator();
       a = menuEdit->addAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"));
@@ -676,13 +675,12 @@ MusE::MusE()
       menuEdit->addAction(waveAction);
       menuEdit->addAction(trackerAction);
 
-      a = menuEdit->addAction(QIcon(*edit_drummsIcon), tr("Drums"));
+      a = getAction("open_drumedit", this);
+      menuEdit->addAction(a);
       connect(a, SIGNAL(triggered()), SLOT(startDrumEditor()));
 
-      a = menuEdit->addAction(QIcon(*edit_listIcon), tr("List"));
-      connect(a,  SIGNAL(triggered()), SLOT(startListEditor()));
-
-      a = menuEdit->addAction(QIcon(*mastertrack_graphicIcon),tr("Mastertrack"));
+      a = getAction("open_master", this);
+      menuEdit->addAction(a);
       connect(a, SIGNAL(triggered()), SLOT(startMasterEditor()));
 
       a  = menuEdit->addAction(*saveIcon, tr("Project Properties"));
