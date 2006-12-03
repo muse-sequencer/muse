@@ -326,7 +326,9 @@ class Song : public QObject {
 
       void swapTracks(int i1, int i2);
       void moveTrack(Track*, Track*);
+      void cmdInsertTrack(Track*, int idx);
       void insertTrack(Track*, int idx);
+      
       void insertTrack0(Track*, int idx);
       void insertTrack1(Track*, int idx);
       void insertTrack2(Track*);

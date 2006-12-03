@@ -191,8 +191,20 @@ Track* Song::addTrack(QAction* action)
                   return 0;
             }
       track->setDefaultName();
-      insertTrack(track, -1);
+      cmdInsertTrack(track, -1);
       return track;
+      }
+
+//---------------------------------------------------------
+//   cmdInsertTrack
+//---------------------------------------------------------
+
+void Song::cmdInsertTrack(Track* track, int idx)
+      {
+      startUndo();
+      insertTrack(track, idx);
+      endUndo(SC_TRACK_INSERTED | SC_ROUTE);
+      selectTrack(track);
       }
 
 //---------------------------------------------------------
@@ -322,17 +334,13 @@ void Song::insertTrack(Track* track, int idx)
             }
       insertTrack1(track, idx);
 
-      startUndo();
       undoOp(UndoOp::AddTrack, idx, track);
       AudioMsg msg;
       msg.id    = SEQM_ADD_TRACK;
       msg.track = track;
       msg.ival  = idx;
       audio->sendMsg(&msg);
-      endUndo(SC_TRACK_INSERTED | SC_ROUTE);
-
       emit trackAdded(track, idx);
-      selectTrack(track);
       }
 
 //---------------------------------------------------------

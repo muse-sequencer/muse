@@ -171,11 +171,12 @@ void MidiStrip::addKnob(int ctrl, int idx, const QString& tt, const QString& lab
             knob = new Awl::Knob(this);
             knob->setRange(0.0, 127.0);
             }
+      knob->setFixedSize(buttonSize.width(), entrySize.height() * 2);
       knob->setId(ctrl);
       dl->setId(ctrl);
+      dl->setFrame(true);
 
       controller[idx].knob = knob;
-      knob->setFixedSize(buttonSize.width(), entrySize.height() * 2);
       knob->setToolTip(tt);
       knob->setEnabled(enabled);
 
@@ -234,6 +235,7 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_VOLUME);
       sl->setFont(config.fonts[1]);
+      sl->setFixedHeight(entrySize.height());
 
       connect(slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(sliderPressed(int)));
@@ -541,9 +543,10 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       //---------------------------------------------------
 
       MidiRack* rack = new MidiRack(this, t);
-      rack->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-      rack->setFixedSize(STRIP_WIDTH, rack->sizeHint().height()+2);
+      rack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+      rack->setFixedHeight(rack->sizeHint().height()+2);
       layout->addWidget(rack);
+
 
       if (_align)
             layout->addSpacing(STRIP_WIDTH/2);
@@ -564,6 +567,7 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       sl->setId(CTRL_MASTER_VOLUME);
       sl->setMax(128 * 128 - 1);
       sl->setFont(config.fonts[1]);
+      sl->setFixedHeight(entrySize.height());
 
       controllerChanged(CTRL_MASTER_VOLUME);
 
@@ -846,8 +850,8 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
       //---------------------------------------------------
 
       MidiRack* rack = new MidiRack(this, t);
-      rack->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-      rack->setFixedSize(STRIP_WIDTH, rack->sizeHint().height()+2);
+      rack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+      rack->setFixedHeight(rack->sizeHint().height()+2);
       layout->addWidget(rack);
 
       //---------------------------------------------------
@@ -1063,7 +1067,8 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_MASTER_VOLUME);
       sl->setFont(config.fonts[1]);
-      sl->setFixedWidth(STRIP_WIDTH-2);
+//      sl->setFixedWidth(STRIP_WIDTH-2);
+      sl->setFixedHeight(entrySize.height());
 
       connect(slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(sliderPressed(int)));

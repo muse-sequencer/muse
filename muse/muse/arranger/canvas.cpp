@@ -928,23 +928,41 @@ void PartCanvas::copyPart(Part* part)
 
 void PartCanvas::dragEnter(QDragEnterEvent* event)
       {
+#if 0
+      QPoint p(event->pos() - rCanvasA.topLeft());
+      searchPart(p);
+      if (!track) {
+            event->ignore();
+            return;
+            }
+      int srcIsMidi = -1;
       const QMimeData* md = event->mimeData();
-      if (MidiPartDrag::canDecode(md)
-         || AudioPartDrag::canDecode(md)
-         || WavUriDrag::canDecode(md)) {
-            Qt::KeyboardModifiers kb = event->keyboardModifiers();
-            if (kb == 0 && (Qt::MoveAction & event->possibleActions())) {
-                  event->setDropAction(Qt::MoveAction);
-                  event->accept();
-                  }
-            else
-                  event->acceptProposedAction();
+
+      if (MidiPartDrag::canDecode(md))
+            srcIsMidi = 1;
+      else if (AudioPartDrag::canDecode(md))
+            srcIsMidi = 0;
+      else if (WavUriDrag::canDecode(md))
+            srcIsMidi = 0;
+
+      int dstIsMidi = -1;
+      if (track->type() == Track::MIDI)
+            dstIsMidi = 1;
+      else if (track->type() == Track::WAVE)
+            dstIsMidi = 0;
+
+      if ((srcIsMidi == -1) || (dstIsMidi != srcIsMidi)) {
+            event->ignore();
+            return;
             }
-      else {
-            QStringList formats = md->formats();
-            foreach(QString s, formats)
-                  printf("drag format <%s>\n", s.toLatin1().data());
+      Qt::KeyboardModifiers kb = event->keyboardModifiers();
+      if (kb == 0 && (Qt::MoveAction & event->possibleActions())) {
+            event->setDropAction(Qt::MoveAction);
+            event->accept();
             }
+      else
+#endif
+            event->acceptProposedAction();
       }
 
 //---------------------------------------------------------
@@ -956,14 +974,9 @@ void PartCanvas::dragMove(QDragMoveEvent* event)
       QPoint p(event->pos() - rCanvasA.topLeft());
       searchPart(p);
       if (!track) {
-            if (state != S_NORMAL) {
-                  state = S_NORMAL;
-                  widget()->update();
-                  }
-            event->ignore();
+            event->acceptProposedAction();
             return;
             }
-
       Part* srcPart = 0;
       QString filename;
 
@@ -995,8 +1008,12 @@ void PartCanvas::dragMove(QDragMoveEvent* event)
             return;
             }
 
-      bool dstIsMidi = track->type() == Track::MIDI;
-      if (dstIsMidi != srcIsMidi) {
+      int dstIsMidi = -1;
+      if (track->type() == Track::MIDI)
+            dstIsMidi = 1;
+      else if (track->type() == Track::WAVE)
+            dstIsMidi = 0;
+      if ((srcIsMidi == -1) || (dstIsMidi != srcIsMidi)) {
             if (state != S_NORMAL) {
                   state = S_NORMAL;
                   widget()->update();
@@ -1064,11 +1081,28 @@ void PartCanvas::drop(QDropEvent* event)
             AudioPartDrag::decode(md, dstPart);
 
       searchPart(pos);
-      if (!track || !dstPart || isMidi != track->isMidiTrack())
+      if (!dstPart)
+            return;
+      PartCanvas* cw = (PartCanvas*)event->source();
+      bool needEndUndo = false;
+      if (!track) {
+            if (isMidi)
+                  track = new MidiTrack();
+            else
+                  track = new WaveTrack();
+            track->setDefaultName();
+            if (cw)
+                  song->insertTrack(track, -1);
+            else {
+                  song->startUndo();
+                  song->insertTrack(track, -1);
+                  needEndUndo = true;
+                  }
+            }
+      else if (isMidi != track->isMidiTrack())
             return;
 
       dstPart->setTrack(track);
-      PartCanvas* cw = (PartCanvas*)event->source();
 
       //
       // cw == 0 means that we are dropping to 
@@ -1087,7 +1121,7 @@ void PartCanvas::drop(QDropEvent* event)
       if (kb == 0 && (Qt::MoveAction & event->possibleActions()))
             da = Qt::MoveAction;
 
-      if ((da == Qt::LinkAction) && (event->source() == this)) {
+      if ((da == Qt::LinkAction) && (cw == this)) {
             delete dstPart->events();
             dstPart->clone(srcPart->events());
             event->setDropAction(Qt::LinkAction);
@@ -1097,10 +1131,12 @@ void PartCanvas::drop(QDropEvent* event)
       else 
             event->setDropAction(Qt::CopyAction);
       event->accept();
-      if (cw)
+      if (cw || needEndUndo)
             song->addPart(dstPart);
       else
             song->cmdAddPart(dstPart);
+      if (needEndUndo)
+            song->endUndo(0);
       widget()->update();
       }
 

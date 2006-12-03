@@ -106,6 +106,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       sl->setSuffix(tr("dB"));
       sl->setFrame(true);
       sl->setValue(vol);
+      sl->setFixedHeight(entrySize.height());
 
       connect(slider, SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double)));
       connect(sl,     SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double)));

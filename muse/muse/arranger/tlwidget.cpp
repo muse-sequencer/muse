@@ -165,12 +165,12 @@ void TLWidget::mousePressEvent(QMouseEvent* ev)
                         if (_track->type() == Track::MIDI) {
 	                        MidiTrack* t = new MidiTrack();
                               t->clone((MidiTrack*)_track);
-                  	      song->insertTrack(t, idx);
+                 	            song->cmdInsertTrack(t, idx);
                               }
                         else {
 	                        WaveTrack* t = new WaveTrack();
       	                  t->clone((WaveTrack*)_track);
-                  	      song->insertTrack(t, idx);
+                  	      song->cmdInsertTrack(t, idx);
                               }
                         }
                         break;
