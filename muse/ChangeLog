@@ -1,3 +1,9 @@
+04.12 (ng)
+      - fix deicsonze FX plugin bugs
+      - add AbstractSlider::setMinLogValue(), AbstractSlider::setMaxLogValue()
+      - modify AbstractSlider::value() so that it returns min instead of 0
+      - and VolSlider::value() still returns 0 for min
+      - add reset Ctrl button in DeicsOnze
 29.11 (ws)
       - shift+mouse wheel changes horizontal magnification while current
         position stays at cursor position

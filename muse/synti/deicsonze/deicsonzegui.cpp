@@ -74,6 +74,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setMasterVolKnob(double)));
   //Panic
   connect(panicButton, SIGNAL(pressed()), this, SLOT(setPanic()));
+  //reset Ctrls
+  connect(resCtrlButton, SIGNAL(pressed()), this, SLOT(setResCtrl()));
   //FX
   connect(chorusActivCheckBox, SIGNAL(toggled(bool)),
 	  this, SLOT(setChorusActiv(bool)));
@@ -444,6 +446,24 @@ void DeicsOnzeGui::setPanic() {
 }
 
 //-----------------------------------------------------------
+// setResCtrl
+//-----------------------------------------------------------
+void DeicsOnzeGui::setResCtrl() {
+  //Detune
+  updateChannelDetune(0);
+  sendController(_currentChannel, CTRL_CHANNELDETUNE, 0);
+  //Brightness
+  updateBrightness(MIDFINEBRIGHTNESS);
+  sendController(_currentChannel, CTRL_FINEBRIGHTNESS, MIDFINEBRIGHTNESS);
+  //Attack
+  updateAttack(MIDATTACK);
+  sendController(_currentChannel, CTRL_ATTACK_TIME, MIDATTACK);
+  //Release
+  updateRelease(MIDRELEASE);
+  sendController(_currentChannel, CTRL_RELEASE_TIME, MIDRELEASE);
+}
+
+//-----------------------------------------------------------
 // setNbrVoices
 //-----------------------------------------------------------
 void DeicsOnzeGui::setNbrVoices(int nv) {
@@ -771,7 +791,9 @@ void DeicsOnzeGui::setTextColor(const QColor & c) {
   selectLadspaChorusGroupBox->setPalette(p);
   channelChorusGroupBox->setPalette(p);
   parametersChorusGroupBox->setPalette(p);
+  fontSizeGroupBox->setPalette(p);
 }
+
 void DeicsOnzeGui::setBackgroundColor(const QColor & c) {
   if(imageCheckBox->checkState()==Qt::Unchecked) {
     QPalette p = this->palette();

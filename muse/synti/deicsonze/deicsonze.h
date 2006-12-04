@@ -147,6 +147,8 @@
 #define SYSEX_BUILDGUICHORUS 85
 //REVERB PARAMETERS
 
+#define DEFAULTVOL 200
+
 enum {
   NUM_MASTERVOL = SAVEINITLENGTH,
   NUM_CHANNEL_ENABLE,
@@ -157,7 +159,9 @@ enum {
   NUM_CHANNEL_DETUNE = NUM_CHANNEL_MODULATION + NBRCHANNELS + 1,
   NUM_CHANNEL_ATTACK = NUM_CHANNEL_DETUNE + NBRCHANNELS + 1,
   NUM_CHANNEL_RELEASE = NUM_CHANNEL_ATTACK + NBRCHANNELS + 1,
-  NUM_CURRENTPROG = NUM_CHANNEL_RELEASE + NBRCHANNELS + 1,
+  NUM_CHANNEL_REVERB = NUM_CHANNEL_RELEASE + NBRCHANNELS + 1,
+  NUM_CHANNEL_CHORUS = NUM_CHANNEL_REVERB + NBRCHANNELS + 1,  
+  NUM_CURRENTPROG = NUM_CHANNEL_CHORUS + NBRCHANNELS + 1,
   NUM_CURRENTLBANK = NUM_CURRENTPROG + NBRCHANNELS + 1,
   NUM_CURRENTHBANK = NUM_CURRENTLBANK + NBRCHANNELS + 1,
   NUM_NBRVOICES  = NUM_CURRENTHBANK + NBRCHANNELS + 1,
@@ -358,6 +362,10 @@ struct Global {
   int fontSize;
   float lastLeftSample;
   float lastRightSample;
+  float lastInputLeftChorusSample;
+  float lastInputRightChorusSample;
+  float lastInputLeftReverbSample;
+  float lastInputRightReverbSample;
   Channel channel[NBRCHANNELS];
   bool isChorusActivated;
   float chorusReturn;
@@ -407,6 +415,11 @@ class DeicsOnze : public Mess {
   void initPluginReverb(Plugin*);
   void initPluginChorus(Plugin*);
   
+  void setReverbParam(int i, double val);
+  void setChorusParam(int i, double val);
+  double getReverbParam(int i);
+  double getChorusParam(int i);
+
   mutable MidiPatch _patch;
   int _numPatch; //what is this? TODO
   

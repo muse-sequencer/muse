@@ -55,6 +55,7 @@ void DeicsOnze::initPluginReverb(Plugin* pluginReverb) {
     Ctrl* c = new Ctrl();
     c->setCurVal((float)pluginReverb->defaultValue(i));
     _pluginIReverb->setControllerList(c);
+    //setReverbParam(i, pluginReverb->defaultValue(i));
   }
 
   //send build gui to the gui
@@ -74,13 +75,37 @@ void DeicsOnze::initPluginChorus(Plugin* pluginChorus) {
     Ctrl* c = new Ctrl();
     c->setCurVal((float)pluginChorus->defaultValue(i));
     _pluginIChorus->setControllerList(c);
-  }
+    //setChorusParam(i, pluginChorus->defaultValue(i));
+}
 
   //send build gui to the gui
   char data;
   data = SYSEX_BUILDGUICHORUS;
   MidiEvent evSysex(0,ME_SYSEX,(const unsigned char*)&data, 1);
   _gui->writeEvent(evSysex);
+}
+
+void DeicsOnze::setReverbParam(int index, double val) {
+  printf("SET REVERB PARAM index = %d, val = %f\n", index, val);
+  _pluginIReverb->controller(index)->setCurVal((float)val);
+  getReverbParam(index);
+}
+void DeicsOnze::setChorusParam(int index, double val) {
+  printf("SET CHORUS PARAM index = %d, val = %f\n", index, val);
+  _pluginIChorus->controller(index)->setCurVal((float)val);
+  getChorusParam(index);
+}
+
+double DeicsOnze::getReverbParam(int index) {
+  printf("GET REVERB PARAM index = %d, val = %f\n",
+	 index, _pluginIReverb->controller(index)->curVal().f);
+  return _pluginIReverb->controller(index)->curVal().f; 
+}
+
+double DeicsOnze::getChorusParam(int index) {
+  printf("GET CHORUS PARAM index = %d, val = %f\n",
+	 index, _pluginIChorus->controller(index)->curVal().f);
+  return _pluginIChorus->controller(index)->curVal().f; 
 }
 
 void DeicsOnzeGui::addPluginCheckBox(int index, QString text, bool toggled,
@@ -134,10 +159,10 @@ void DeicsOnzeGui::addPluginSlider(int index, QString text, bool isLog,
   Slider* s = new Slider(parent);
   s->setId(index);
   s->setLog(isLog);
+  s->setLogRange(min, max);
   s->setValue(val);
   s->setOrientation(Qt::Horizontal);
   //s->setFixedHeight(h);
-  s->setRange(min, max);
   s->setLineStep((min-max)/100.0);
   s->setPageStep((min-max)/10.0);
   grid->addWidget(s, index, 2);
@@ -168,6 +193,7 @@ void DeicsOnzeGui::addPluginSlider(int index, QString text, bool isLog,
 }
 
 void DeicsOnzeGui::buildGuiReverb() {
+  printf("BUILD\n");
   PluginI* plugI = _deicsOnze->_pluginIReverb;
   QString name = plugI->name();
   name.resize(name.size()-2);
@@ -181,10 +207,6 @@ void DeicsOnzeGui::buildGuiReverb() {
   if(_reverbSuperWidget) delete(_reverbSuperWidget);
   _reverbSuperWidget = new QWidget(parametersReverbGroupBox);
   superLayout->addWidget(_reverbSuperWidget);
-  //build scroll area
-  //QScrollArea* scrollArea = new QScrollArea;
-  //scrollArea->setBackgroundRole(QPalette::Dark);
-  //scrollArea->setWidget(_reverbSuperWidget);
   //build grid
   QGridLayout* grid = new QGridLayout(_reverbSuperWidget);
   _reverbSuperWidget->setLayout(grid);
@@ -197,26 +219,18 @@ void DeicsOnzeGui::buildGuiReverb() {
   for(int i = 0; i < plugI->plugin()->parameter(); i++) {
     double min, max, val;
     plugI->range(i, &min, &max);
-    val = plugI->param(i);
+    val = _deicsOnze->getReverbParam(i);
+    printf("BUILD REVERB %d, %f\n", i, val);
     if(plugI->isBool(i))
       addPluginCheckBox(i, plugI->getParameterName(i), val > 0.0,
 			_reverbSuperWidget, grid, true);
     else if(plugI->isInt(i)) {
       addPluginIntSlider(i, plugI->getParameterName(i), rint(min), rint(max),
-			 rint(val), _reverbSuperWidget, grid,
-			 true);
+			 rint(val), _reverbSuperWidget, grid, true);
     }
     else {
-      if(plugI->isLog(i)) {
-	if (min == 0.0) min = 0.001;
-	min = fast_log10(min)*20.0;
-	max = fast_log10(max)*20.0;
-	if (val == 0.0f) val = min;
-	else val = fast_log10(val) * 20.0;
-      }
       addPluginSlider(i, plugI->getParameterName(i), plugI->isLog(i),
-		      min, max, plugI->param(i), _reverbSuperWidget, grid,
-		      true);
+		      min, max, val, _reverbSuperWidget, grid, true);
     }
   }
   //update colors of the new sliders (and the whole gui actually)
@@ -250,26 +264,17 @@ void DeicsOnzeGui::buildGuiChorus() {
   for(int i = 0; i < plugI->plugin()->parameter(); i++) {
     double min, max, val;
     plugI->range(i, &min, &max);
-    val = plugI->param(i);
+    val = _deicsOnze->getChorusParam(i);
     if(plugI->isBool(i))
       addPluginCheckBox(i, plugI->getParameterName(i), val > 0.0,
 			_chorusSuperWidget, grid, false);
     else if(plugI->isInt(i)) {
       addPluginIntSlider(i, plugI->getParameterName(i), rint(min), rint(max),
-			 rint(val), _chorusSuperWidget, grid,
-			 false);
+			 rint(val), _chorusSuperWidget, grid, false);
     }
     else {
-      if(plugI->isLog(i)) {
-	if (min == 0.0) min = 0.001;
-	min = fast_log10(min)*20.0;
-	max = fast_log10(max)*20.0;
-	if (val == 0.0f) val = min;
-	else val = fast_log10(val) * 20.0;
-      }
       addPluginSlider(i, plugI->getParameterName(i), plugI->isLog(i),
-		      min, max, plugI->param(i), _chorusSuperWidget, grid,
-		      false);
+		      min, max, val, _chorusSuperWidget, grid, false);
     }
   }
   //update colors of the new sliders (and the whole gui actually)
@@ -353,9 +358,9 @@ void DeicsOnzeGui::updateReverbFloatEntry(double v, int i) {
 void DeicsOnzeGui::updateChorusSlider(double v, int i) {
   printf("updateChorusSlider(%f, %i)\n", v, i);
   if(i < (int)_reverbSliderVector.size() && _reverbSliderVector[i]) {
-    _reverbSliderVector[i]->blockSignals(true);
-    _reverbSliderVector[i]->setValue(v);
-    _reverbSliderVector[i]->blockSignals(false);
+    _chorusSliderVector[i]->blockSignals(true);
+    _chorusSliderVector[i]->setValue(v);
+    _chorusSliderVector[i]->blockSignals(false);
   }
 }
 void DeicsOnzeGui::updateChorusFloatEntry(double v, int i) {

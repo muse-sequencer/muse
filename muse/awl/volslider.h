@@ -42,8 +42,13 @@ class VolSlider : public Slider {
    protected:
       virtual void mouseDoubleClickEvent(QMouseEvent*);
 
+   public slots:
+      virtual void setValue(double v);
+
    public:
       VolSlider(QWidget* parent = 0);
+
+      virtual double value() const;
       };
 
 }

@@ -104,13 +104,19 @@ class AbstractSlider : public QWidget {
 
       virtual double value() const;
 
-      double minValue() const    { return _minValue; }
+      double minValue() const { return _minValue; }
       void setMinValue(double v) { _minValue = v; }
-      double maxValue() const    { return _maxValue; }
+      void setMinLogValue(double v);
+      double maxValue() const {return _maxValue; }
       void setMaxValue(double v) { _maxValue = v; }
+      void setMaxLogValue(double v);
       void setRange(double a, double b) {
             setMinValue(a);
             setMaxValue(b);
+            }
+      void setLogRange(double a, double b) {
+            setMinLogValue(a);
+            setMaxLogValue(b);
             }
       bool log() const           { return _log;      }
       void setLog(bool v)        { _log = v;         }

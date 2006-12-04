@@ -475,7 +475,7 @@ printf("build gui from ui <path><%s>\n", path.toLatin1().data());
                               l->setText(p);
                               grid->addWidget(l, i, 2);
                               }
-                        grid->addWidget(s,     i, 3);
+                        grid->addWidget(s, i, 3);
                         connect(s, SIGNAL(valueChanged(double,int)), SLOT(setController(double,int)));
                         connect(e, SIGNAL(valueChanged(double,int)), SLOT(setController(double,int)));
                         }

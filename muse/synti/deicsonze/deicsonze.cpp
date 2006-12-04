@@ -157,6 +157,12 @@ DeicsOnze::DeicsOnze() : Mess(2) {
 			     (const unsigned char*)dataMasterVol,
 			     2);  
   _gui->writeEvent(evSysexMasterVol);
+  //update font size
+  unsigned char *dataFontSize = new unsigned char[2];
+  dataFontSize[0]=SYSEX_FONTSIZE;
+  dataFontSize[1]=(unsigned char)_global.fontSize;
+  MidiEvent evFontSize(0, ME_SYSEX, (const unsigned char*)dataFontSize, 2);
+  _gui->writeEvent(evFontSize);
   //display load preset
   unsigned char dataUpdateGuiSet[1];
   dataUpdateGuiSet[0]=SYSEX_UPDATESETGUI;
@@ -503,7 +509,7 @@ void DeicsOnze::initChannels() {
 void DeicsOnze::initChannel(int c) {
   _global.channel[c].isEnable = false;
   _global.channel[c].sustain = false;
-  _global.channel[c].volume = 200;
+  _global.channel[c].volume = DEFAULTVOL;
   _global.channel[c].pan = 0;
   _global.channel[c].modulation = 0;
   _global.channel[c].detune = 0;
@@ -1427,7 +1433,8 @@ inline double pitch2freq(double p) {
 
 //---------------------------------------------------------
 // lfoUpdate
-//  update the coefficent which multiplies the current inct in order to
+//  update the coefficent which multiplies the current inct
+//  in order to
 //  get the right current frequency with respect to the lfo
 //  update the coefficent which multiplies the amplitude.
 //---------------------------------------------------------
@@ -1563,8 +1570,7 @@ inline void pitchEnvelopeUpdate(Voice* v, PitchEg* pe, double sr) {
   if(v->pitchEnvState != OFF_PE) {
     switch(v->pitchEnvState) {
     case PHASE1 :
-      //printf("PHASE1 %f\n", v->pitchEnvCoefInctInct);
-      if( //to change to phase2
+      if( //change to phase2
 	 (v->pitchEnvCoefInctInct == 1.0)
 	 || (v->pitchEnvCoefInctInct > 1.0 &&
 	     v->pitchEnvCoefInct > v->pitchEnvCoefInctPhase2)
@@ -1579,8 +1585,7 @@ inline void pitchEnvelopeUpdate(Voice* v, PitchEg* pe, double sr) {
       else v->pitchEnvCoefInct *= v->pitchEnvCoefInctInct;
       break;
     case PHASE2 :
-      //printf("PHASE2\n");
-      if( //to change to off (temporarely)
+      if( //change to off (temporarely)
 	 (v->pitchEnvCoefInctInct == 1.0)
 	 || (v->pitchEnvCoefInctInct > 1.0 &&
 	     v->pitchEnvCoefInct > v->pitchEnvCoefInctPhase3)
@@ -1594,7 +1599,7 @@ inline void pitchEnvelopeUpdate(Voice* v, PitchEg* pe, double sr) {
       else v->pitchEnvCoefInct *= v->pitchEnvCoefInctInct;
       break;
     case RELEASE_PE :
-      if( //to change to release2
+      if( //change to release2
 	 (v->pitchEnvCoefInctInct == 1.0)
 	 || (v->pitchEnvCoefInctInct > 1.0 &&
 	     v->pitchEnvCoefInct > v->pitchEnvCoefInctPhase1)
@@ -1723,67 +1728,55 @@ inline double coefAttack(unsigned char attack) {
 //  sr is the sample rate and st the sine_table
 //---------------------------------------------------------
 inline double env2AmpR(double sr, float* wt, Eg eg, OpVoice* p_opVoice) {
-  switch(p_opVoice->envState)
-    {
-    case ATTACK:
-      p_opVoice->envIndex+=p_opVoice->envInct;
-      if (p_opVoice->envIndex<(RESOLUTION/4))
-	{
-	  p_opVoice->envLevel=wt[(int)p_opVoice->envIndex];
-	}
-      else
-	{
-	  //printf("DECAY\n");
-	  p_opVoice->envState=DECAY;
-	  p_opVoice->envLevel=1.0;
-	  p_opVoice->coefVLevel=envD1R2coef(eg.d1r, sr);
-	}
-      return p_opVoice->envLevel;
-      break;
-    case DECAY:
-      if (p_opVoice->envLevel>((double)eg.d1l/(double)MAXD1L)+COEFERRDECSUS)
-	{
-	  p_opVoice->envLevel*=p_opVoice->coefVLevel;
-	}
-      else
-	{
-	  //printf("SUSTAIN\n");
-	  p_opVoice->envState=SUSTAIN;
-	  p_opVoice->envLevel=((double)eg.d1l/(double)MAXD1L);
-	  p_opVoice->coefVLevel=envD1R2coef(eg.d2r, sr);//probably the same
-	}
-      return p_opVoice->envLevel;
-      break;
-    case SUSTAIN:
-      if (p_opVoice->envLevel>COEFERRSUSREL)
-	{
-	  p_opVoice->envLevel*=p_opVoice->coefVLevel;
-	}
-      else
-	{
-	  //printf("OFF\n");
-	  p_opVoice->envState=OFF;
-	  p_opVoice->envLevel=0.0;
-	}
-      return p_opVoice->envLevel;
-      break;
-    case RELEASE:
-      if (p_opVoice->envLevel > COEFERRSUSREL)
-	{
-	  p_opVoice->envLevel*=p_opVoice->coefVLevel;
-	}
-      else
-	{
-	  p_opVoice->envState=OFF;
-	  p_opVoice->envLevel=0.0;
-	}
-      return p_opVoice->envLevel;
-      break;
-    case OFF: return 0.0;
-      break;
-    default: printf("Error case envelopeState");
-      break;
+  switch(p_opVoice->envState) {
+  case ATTACK:
+    p_opVoice->envIndex+=p_opVoice->envInct;
+    if (p_opVoice->envIndex<(RESOLUTION/4)) {
+      p_opVoice->envLevel=wt[(int)p_opVoice->envIndex];
     }
+    else {
+      p_opVoice->envState=DECAY;
+      p_opVoice->envLevel=1.0;
+      p_opVoice->coefVLevel=envD1R2coef(eg.d1r, sr);
+    }
+    return p_opVoice->envLevel;
+    break;
+  case DECAY:
+    if (p_opVoice->envLevel>((double)eg.d1l/(double)MAXD1L)+COEFERRDECSUS) {
+      p_opVoice->envLevel*=p_opVoice->coefVLevel;
+    }
+    else {
+      p_opVoice->envState=SUSTAIN;
+      p_opVoice->envLevel=((double)eg.d1l/(double)MAXD1L);
+      p_opVoice->coefVLevel=envD1R2coef(eg.d2r, sr);//probably the same
+    }
+    return p_opVoice->envLevel;
+    break;
+  case SUSTAIN:
+    if (p_opVoice->envLevel>COEFERRSUSREL) {
+      p_opVoice->envLevel*=p_opVoice->coefVLevel;
+    }
+    else {
+      p_opVoice->envState=OFF;
+      p_opVoice->envLevel=0.0;
+    }
+    return p_opVoice->envLevel;
+    break;
+  case RELEASE:
+    if (p_opVoice->envLevel > COEFERRSUSREL) {
+	  p_opVoice->envLevel*=p_opVoice->coefVLevel;
+    }
+    else {
+      p_opVoice->envState=OFF;
+      p_opVoice->envLevel=0.0;
+    }
+    return p_opVoice->envLevel;
+    break;
+  case OFF: return 0.0;
+    break;
+  default: printf("Error case envelopeState");
+    break;
+  }
   return p_opVoice->envLevel;
 }
 
@@ -2066,7 +2059,6 @@ void DeicsOnze::writeConfiguration(AL::Xml* xml) {
   xml->tag(EDITBACKGROUNDCOLORSTR,
 		reinterpret_cast<const QColor &>(*_gui->ebColor));
   xml->tag(ISINITSETSTR, (_isInitSet?YESSTRDEI:NOSTRDEI));
-  //printf("initSetPath : %s\n", _initSetPath.toAscii().data());
   xml->tag(INITSETPATHSTR, _initSetPath.toAscii().data());
   xml->tag(ISBACKGROUNDPIXSTR, (_isBackgroundPix?YESSTRDEI:NOSTRDEI));
   xml->tag(BACKGROUNDPIXPATHSTR, _backgroundPixPath.toAscii().data());
@@ -2121,6 +2113,8 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
       (unsigned char) getChannelDetune(c) + MAXCHANNELDETUNE;
     buffer[NUM_CHANNEL_ATTACK + c] = (unsigned char) getChannelAttack(c);
     buffer[NUM_CHANNEL_RELEASE + c] = (unsigned char) getChannelRelease(c);
+    buffer[NUM_CHANNEL_REVERB + c] = (unsigned char) getChannelReverb(c);
+    buffer[NUM_CHANNEL_CHORUS + c] = (unsigned char) getChannelChorus(c);    
     buffer[NUM_CURRENTPROG + c] = (unsigned char) _preset[c]->prog;
     buffer[NUM_CURRENTLBANK + c] =
       (unsigned char) _preset[c]->_subcategory->_lbank;
@@ -2165,7 +2159,7 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   strncpy((char*)&buffer[NUM_REVERB_LABEL],
 	  _pluginIReverb->plugin()->label().toLatin1().data(),
 	  MAXSTRLENGTHFXLABEL);
-  buffer[NUM_IS_CHORUS_ON]=(unsigned char)_global.isReverbActivated;
+  buffer[NUM_IS_CHORUS_ON]=(unsigned char)_global.isChorusActivated;
   buffer[NUM_CHORUS_RETURN]=(unsigned char)getChorusReturn();
   buffer[NUM_CHORUS_PARAM_NBR]=
     (unsigned char)_pluginIChorus->plugin()->parameter();
@@ -2177,14 +2171,18 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
 	  MAXSTRLENGTHFXLABEL);
   //save FX parameters
   //reverb
+  printf("SAVE REVERB\n");
   for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
-    float val = (float)_pluginIReverb->param(i);
-    memcpy(&buffer[NUM_CONFIGLENGTH + i], &val, sizeof(float));
+    float val = (float)getReverbParam(i);
+    memcpy(&buffer[NUM_CONFIGLENGTH + sizeof(float)*i], &val, sizeof(float));
   }
+  //chorus
+  printf("SAVE CHORUS\n");
   for(int i = 0; i < _pluginIChorus->plugin()->parameter(); i++) {
-    float val = (float)_pluginIChorus->param(i);
-    memcpy(&buffer[NUM_CONFIGLENGTH + _pluginIReverb->plugin()->parameter()
-		   + i], &val, sizeof(float));
+    float val = (float)getChorusParam(i);
+    memcpy(&buffer[NUM_CONFIGLENGTH
+		   + sizeof(float)*_pluginIReverb->plugin()->parameter()
+		   + sizeof(float)*i], &val, sizeof(float));
   }
   //save set data
   for(int i = NUM_CONFIGLENGTH
@@ -2196,8 +2194,6 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   rmcmd+=comptmp;
   system(rmcmd.toAscii().data());
   free(comptmp);
-  //printf("Taille en save : %d\n", *length);
-  //for(int i=0; i<*length; i++) printf("%x ", buffer[i]);
   *data=buffer;
 }
 //---------------------------------------------------------
@@ -2270,8 +2266,20 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       setChannelRelease(c, data[NUM_CHANNEL_RELEASE + c]);
       MidiEvent 
 	evChRelease(0, c, ME_CONTROLLER,
-		CTRL_RELEASE_TIME, data[NUM_CHANNEL_RELEASE + c]);
+		    CTRL_RELEASE_TIME, data[NUM_CHANNEL_RELEASE + c]);
       _gui->writeEvent(evChRelease);      
+      //channel reverb
+      setChannelReverb(c, data[NUM_CHANNEL_REVERB + c]);
+      MidiEvent 
+	evChReverb(0, c, ME_CONTROLLER,
+		   CTRL_REVERB_SEND, data[NUM_CHANNEL_REVERB + c]);
+      _gui->writeEvent(evChReverb);      
+      //channel chorus
+      setChannelChorus(c, data[NUM_CHANNEL_CHORUS + c]);
+      MidiEvent 
+	evChChorus(0, c, ME_CONTROLLER,
+		   CTRL_CHORUS_SEND, data[NUM_CHANNEL_CHORUS + c]);
+      _gui->writeEvent(evChChorus);      
     }
     //load configuration
     _saveConfig = (bool)data[NUM_SAVECONFIG];
@@ -2320,7 +2328,8 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       _gui->writeEvent(evIsInitSet);
       unsigned char dataInitSetPath[1+MAXSTRLENGTHINITSETPATH];
       dataInitSetPath[0]=SYSEX_INITSETPATH;
-      dataInitSetPath[1]=data[NUM_INITSETPATH];
+      for(int a = 0; a < MAXSTRLENGTHINITSETPATH; a++)
+	dataInitSetPath[a+1] = data[a+NUM_INITSETPATH];
       MidiEvent evInitSetPath(0,ME_SYSEX,(const unsigned char*)dataInitSetPath,
 			      1+MAXSTRLENGTHINITSETPATH);
       _gui->writeEvent(evInitSetPath);      
@@ -2344,13 +2353,24 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     //load FX
     //reverb
     _global.isReverbActivated = (bool)data[NUM_IS_REVERB_ON];
+    unsigned char *dataReverbAct = new unsigned char[2];
+    dataReverbAct[0]=SYSEX_REVERBACTIV;
+    dataReverbAct[1]=(unsigned char)_global.isReverbActivated;
+    MidiEvent evReverbAct(0,ME_SYSEX,(const unsigned char*)dataReverbAct, 2);
+    _gui->writeEvent(evReverbAct);    
     setReverbReturn((int)data[NUM_REVERB_RETURN]);
+    unsigned char *dataReverbRet = new unsigned char[2];
+    dataReverbRet[0]=SYSEX_REVERBRETURN;
+    dataReverbRet[1]=(unsigned char)getReverbReturn();
+    MidiEvent evReverbRet(0,ME_SYSEX,(const unsigned char*)dataReverbRet, 2);
+    _gui->writeEvent(evReverbRet);    
     initPluginReverb(plugins.find((const char*)&data[NUM_REVERB_LIB], 
 				  (const char*)&data[NUM_REVERB_LABEL]));
+    printf("LOAD REVERB\n");
     for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
       float val;
-      memcpy(&val, &data[NUM_CONFIGLENGTH + i], sizeof(float));
-      _pluginIReverb->setParam(i, (double)val);
+      memcpy(&val, &data[NUM_CONFIGLENGTH + sizeof(float)*i], sizeof(float));
+      setReverbParam(i, (double)val);
     }
     char dataBuildRev;
     dataBuildRev = SYSEX_BUILDGUIREVERB;
@@ -2359,15 +2379,26 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     _gui->writeEvent(evSysexBuildRev);
     //chorus
     _global.isChorusActivated = (bool)data[NUM_IS_CHORUS_ON];
+    unsigned char *dataChorusAct = new unsigned char[2];
+    dataChorusAct[0]=SYSEX_CHORUSACTIV;
+    dataChorusAct[1]=(unsigned char)_global.isChorusActivated;
+    MidiEvent evChorusAct(0,ME_SYSEX,(const unsigned char*)dataChorusAct, 2);
+    _gui->writeEvent(evChorusAct);    
     setChorusReturn((int)data[NUM_CHORUS_RETURN]);
+    unsigned char *dataChorusRet = new unsigned char[2];
+    dataChorusRet[0]=SYSEX_CHORUSRETURN;
+    dataChorusRet[1]=(unsigned char)getChorusReturn();
+    MidiEvent evChorusRet(0,ME_SYSEX,(const unsigned char*)dataChorusRet, 2);
+    _gui->writeEvent(evChorusRet);    
     initPluginChorus(plugins.find((const char*)&data[NUM_CHORUS_LIB], 
 				  (const char*)&data[NUM_CHORUS_LABEL]));
     for(int i = 0; i < _pluginIChorus->plugin()->parameter(); i++) {
       float val;
       memcpy(&val, &data[NUM_CONFIGLENGTH +
-			 _pluginIReverb->plugin()->parameter() + i],
+			 sizeof(float)*_pluginIReverb->plugin()->parameter()
+			 + sizeof(float)*i],
 	     sizeof(float));
-      _pluginIChorus->setParam(i, (double)val);
+      setChorusParam(i, (double)val);
     }
     char dataBuildCho;
     dataBuildCho = SYSEX_BUILDGUICHORUS;
@@ -2408,7 +2439,6 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     deicsonzeFile.close();
     QDomNode node = domTree.documentElement();
     
-    //printf("After XML\n");
     while (!node.isNull()) {
       QDomElement e = node.toElement();
       if (e.isNull())
@@ -2563,8 +2593,7 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
   case SYSEX_CHORUSPARAM:
     index = (int)data[1];
     memcpy(&f, &data[2], sizeof(float));
-    printf("Chorus, param %d, value %f\n", index, f);
-    _pluginIChorus->setParam(index, (double)f); 
+    setChorusParam(index, (double)f);
     if(!fromGui) {
       MidiEvent evSysex(0, ME_SYSEX, data, length);
       _gui->writeEvent(evSysex);
@@ -2580,9 +2609,7 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
   case SYSEX_REVERBPARAM:
     index = (int)data[1];
     memcpy(&f, &data[2], sizeof(float));
-    printf("Reverb, param %d, value %f\n", index, f);
-    _pluginIReverb->setParam(index, (double)f); 
-    printf("param value %f\n", _pluginIReverb->param(index));
+    setReverbParam(index, (double)f);
     if(!fromGui) {
       MidiEvent evSysex(0, ME_SYSEX, data, length);
       _gui->writeEvent(evSysex);
@@ -3545,10 +3572,10 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
     if(_global.qualityCounter == 0) {
       tempLeftOutput = 0.0;
       tempRightOutput = 0.0;
-      tempInputChorus[0][i] = 0.0;
-      tempInputChorus[1][i] = 0.0;
-      tempInputReverb[0][i] = 0.0;
-      tempInputReverb[1][i] = 0.0;
+      _global.lastInputLeftChorusSample = 0.0;
+      _global.lastInputRightChorusSample = 0.0;
+      _global.lastInputLeftReverbSample = 0.0;
+      _global.lastInputRightReverbSample = 0.0;
       //per channel
       for(int c = 0; c < NBRCHANNELS; c++) {
 	tempChannelOutput = 0.0;
@@ -3800,27 +3827,36 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
 	  tempChannelRightOutput=tempChannelOutput*_global.channel[c].ampRight;
 	  
 	  if(_global.isChorusActivated) {
-	    tempInputChorus[0][i] += tempChannelLeftOutput *
+	    _global.lastInputLeftChorusSample += tempChannelLeftOutput *
 	      _global.channel[c].chorusAmount;
-	    tempInputChorus[1][i] += tempChannelRightOutput *
+	    _global.lastInputRightChorusSample += tempChannelRightOutput *
 	      _global.channel[c].chorusAmount;
 	  }
 	  if(_global.isReverbActivated) {
-	    tempInputReverb[0][i] += tempChannelLeftOutput *
+	    _global.lastInputLeftReverbSample += tempChannelLeftOutput *
 	      _global.channel[c].reverbAmount;
-	    tempInputReverb[0][i] += tempChannelRightOutput *
+	    _global.lastInputRightReverbSample += tempChannelRightOutput *
 	      _global.channel[c].reverbAmount;
 	  }
 	  tempLeftOutput += tempChannelLeftOutput;
 	  tempRightOutput += tempChannelRightOutput;
 	}
       }
-      _global.lastLeftSample = tempLeftOutput;
-      _global.lastRightSample = tempRightOutput;
+      _global.lastLeftSample = tempLeftOutput * _global.masterVolume;
+      _global.lastRightSample = tempRightOutput * _global.masterVolume;
     }
-    leftOutput[i] += _global.lastLeftSample * _global.masterVolume;
-    rightOutput[i] += _global.lastRightSample * _global.masterVolume;
-
+    leftOutput[i] += _global.lastLeftSample;
+    rightOutput[i] += _global.lastRightSample;
+	  
+    if(_global.isChorusActivated) {
+      tempInputChorus[0][i] = _global.lastInputLeftChorusSample;
+      tempInputChorus[1][i] = _global.lastInputRightChorusSample;
+    }
+    if(_global.isReverbActivated) {
+      tempInputReverb[0][i] = _global.lastInputLeftReverbSample;
+      tempInputReverb[1][i] = _global.lastInputRightReverbSample;
+    }    
+    
     _global.qualityCounter++;
     _global.qualityCounter %= _global.qualityCounterTop;
   }

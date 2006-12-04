@@ -191,8 +191,47 @@ void AbstractSlider::valueChange()
 
 double AbstractSlider::value() const
       {
-      return _log ? (_value <= _minValue) ? 0.0f : pow(10.0, _value*0.05f)
-                  : _value;
+      return _log ? pow(10.0, _value*0.05f) : _value;
       }
+
+
+//---------------------------------------------------------
+//   minLogValue
+//---------------------------------------------------------
+
+//double AbstractSlider::minValue() const {
+//  return _log ? pow(10.0, _minValue*0.05f) : _minValue;
+//}
+
+//---------------------------------------------------------
+//   setMinLogValue
+//---------------------------------------------------------
+
+void AbstractSlider::setMinLogValue(double val) {
+  if (_log) {
+    if (val == 0.0f) _minValue = -100;
+    else _minValue = fast_log10(val) * 20.0f;
+  }
+  else _minValue = val;
 }
 
+//---------------------------------------------------------
+//   maxLogValue
+//---------------------------------------------------------
+
+//double AbstractSlider::maxValue() const {
+//  return _log ? pow(10.0, _maxValue*0.05f) : _maxValue;
+//}
+
+//---------------------------------------------------------
+//   setMaxLogValue
+//---------------------------------------------------------
+
+void AbstractSlider::setMaxLogValue(double val) {
+  if (_log) {
+    _maxValue = fast_log10(val) * 20.0f;
+  }
+  else _maxValue = val;
+}
+
+}

@@ -50,5 +50,36 @@ void VolSlider::mouseDoubleClickEvent(QMouseEvent* ev)
       valueChange();
       update();
       }
-}
 
+
+//---------------------------------------------------------
+//   setValue
+//---------------------------------------------------------
+
+void VolSlider::setValue(double val)
+      {
+      if (_log) {
+            if (val == 0.0f)
+                  _value = _minValue;
+            else {
+                  _value = fast_log10(val) * 20.0f;
+       		if (_value < _minValue)
+            		_value = _minValue;
+                 	}
+            }
+      else
+            _value = val;
+      update();
+      }
+
+//---------------------------------------------------------
+//   value
+//---------------------------------------------------------
+
+double VolSlider::value() const
+      {
+      return _log ? (_value <= _minValue) ? 0.0f : pow(10.0, _value*0.05f)
+                  : _value;
+      }
+
+}

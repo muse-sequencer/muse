@@ -137,6 +137,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setEnabledChannel(bool);
     void setChangeChannel(int);
     void setPanic();
+    void setResCtrl();
     void setNbrVoices(int);
     void setSaveOnlyUsed(bool);
     void setSaveOnlyUsedComp(bool);
