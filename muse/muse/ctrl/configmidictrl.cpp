@@ -50,6 +50,7 @@ ConfigMidiCtrl::ConfigMidiCtrl(MidiTrack* t)
       if (track->type() == Track::MIDI) {
             MidiTrack* mc = (MidiTrack*)track;
             portName->setText(track->name());
+            instrumentName->setText(mc->instrument()->iname());
             //
             // populate popup with all controllers available for
             // current instrument
@@ -69,6 +70,7 @@ ConfigMidiCtrl::ConfigMidiCtrl(MidiTrack* t)
       delete cn;
       buttonAdd->setEnabled(false);
       buttonRemove->setEnabled(false);
+
       connect(buttonAdd, SIGNAL(clicked()), SLOT(addClicked()));
       connect(buttonRemove, SIGNAL(clicked()), SLOT(removeClicked()));
       connect(availableController, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), SLOT(availableSelected(QListWidgetItem*)));
@@ -190,7 +192,6 @@ void ConfigMidiCtrl::done(int code)
 
 void ConfigMidiCtrl::defineClicked()
       {
-      printf("define clicked\n");
       DefineMidiCtrl dc(track, this);
       if (dc.exec())
             QDialog::done(0);

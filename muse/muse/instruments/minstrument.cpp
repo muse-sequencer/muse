@@ -80,6 +80,7 @@ static void loadIDF(QFileInfo* fi)
                         if (e.tagName() == "MidiInstrument") {
                               MidiInstrument* i = new MidiInstrument();
                               i->read(n);
+                              i->setFilePath(fi->filePath());
                               midiInstruments.push_back(i);
                               }
                         }
@@ -173,6 +174,8 @@ void MidiInstrument::init()
       //
       MidiController* prog = new MidiController("Program", CTRL_PROGRAM, 0, 0x7fffff, 0);
       _controller->push_back(prog);
+      _dirty = false;
+      _readonly = false;
       }
 
 MidiInstrument::MidiInstrument()

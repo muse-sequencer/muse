@@ -1527,4 +1527,3 @@ void Song::routeChanged(QAction* a)
       audio->msgRoute(a->isChecked(), a->data().value<Route>());
       }
 
-

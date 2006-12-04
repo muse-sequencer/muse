@@ -187,6 +187,7 @@ SynthI::SynthI()
       _sif        = 0;
       // setVolume(1.0);
       // setPan(0.0);
+      setReadonly(true);      // midi instrument cannot be edited
       }
 
 //---------------------------------------------------------

@@ -206,23 +206,23 @@ MidiController::MidiController(const QString& s, int n, int min, int max, int in
 
 MidiController::ControllerType midiControllerType(int num)
       {
-      if (num < 0x10000)
-            return MidiController::Controller7;
-      if (num < 0x20000)
-            return MidiController::Controller14;
-      if (num < 0x30000)
-            return MidiController::RPN;
-      if (num < 0x40000)
-            return MidiController::NRPN;
       if (num == CTRL_PITCH)
             return MidiController::Pitch;
       if (num == CTRL_PROGRAM)
             return MidiController::Program;
       if (num == CTRL_VELOCITY || num == CTRL_SVELOCITY)
             return MidiController::Velo;
-      if (num < 0x60000)
+      if (num < CTRL_14_OFFSET)
+            return MidiController::Controller7;
+      if (num < CTRL_RPN_OFFSET)
+            return MidiController::Controller14;
+      if (num < CTRL_NRPN_OFFSET)
+            return MidiController::RPN;
+      if (num < CTRL_RPN14_OFFSET)
+            return MidiController::NRPN;
+      if (num < CTRL_NRPN14_OFFSET)
             return MidiController::RPN14;
-      if (num < 0x70000)
+      if (num < CTRL_NONE_OFFSET)
             return MidiController::NRPN14;
       return MidiController::Controller7;
       }
@@ -319,5 +319,14 @@ void MidiController::read(QDomNode node)
                   break;
             }
       return;
+      }
+
+//---------------------------------------------------------
+//   type
+//---------------------------------------------------------
+
+MidiController::ControllerType MidiController::type() const         
+      { 
+      return midiControllerType(num()); 
       }
 

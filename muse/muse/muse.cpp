@@ -2974,6 +2974,34 @@ int main(int argc, char* argv[])
                   }
             }
 
+      // check for instruments directory:
+
+      pd.setPath(QDir::homePath() + "/MusE/instruments");
+      if (!pd.exists()) {
+            // ask user to create a new instruments directory
+            QString title(QT_TR_NOOP("MusE: create instruments directory"));
+
+            QString s;
+            s = "The MusE instruments directory\n%1\ndoes not exists";
+            s = s.arg(pd.path());
+
+            int rv = QMessageBox::question(0, 
+               title,
+               s,
+               "Create",
+               "Abort",
+               QString(),
+               0, 1);
+            if (rv == 0) {
+                  if (!pd.mkpath(pd.path())) {
+                        // TODO: tell user why this has happened
+                        QMessageBox::critical(0,
+                        title,
+                        "Creating instruments directory failed");
+                        }
+                  }
+            }
+
       QString path;     // project path relativ to config.projectPath
       if (argc >= 2)
             path = argv[optind];    // start with first name on command line

@@ -73,6 +73,8 @@ class MidiInstrument {
       std::vector<PatchGroup> pg;
       MidiControllerList* _controller;
       std::vector<SysEx> sysex;
+      bool _dirty;
+      bool _readonly;
 
       void init();
 
@@ -82,17 +84,24 @@ class MidiInstrument {
       EventList* _midiState;
       char* _initScript;
       QString _name;
+      QString _filePath;
 
    public:
       MidiInstrument();
       virtual ~MidiInstrument();
       MidiInstrument(const QString& txt);
-      const QString& iname() const           { return _name; }
-      void setIName(const QString& txt)      { _name = txt; }
+      const QString& iname() const           { return _name;       }
+      void setIName(const QString& txt)      { _name = txt;        }
+      QString filePath() const               { return _filePath;   }
+      void setFilePath(const QString& s)     { _filePath = s;      }
+      bool dirty() const                     { return _dirty;      }
+      void setDirty(bool v)                  { _dirty = v;         }
+      bool readonly() const                  { return _readonly;   }
+      void setReadonly(bool v)               { _readonly = v;      }
 
-      EventList* midiInit() const            { return _midiInit; }
-      EventList* midiReset() const           { return _midiReset; }
-      EventList* midiState() const           { return _midiState; }
+      EventList* midiInit() const            { return _midiInit;   }
+      EventList* midiReset() const           { return _midiReset;  }
+      EventList* midiState() const           { return _midiState;  }
       const char* initScript() const         { return _initScript; }
       MidiControllerList* controller() const { return _controller; }
 

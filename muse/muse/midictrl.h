@@ -125,12 +125,13 @@ class MidiController {
       void setNum(int v)                  { _num = v;       }
       void write(Xml& xml) const;
       void read(QDomNode);
-      int minVal() const                  { return _minVal; }
-      int maxVal() const                  { return _maxVal; }
+      int minVal() const                  { return _minVal;  }
+      int maxVal() const                  { return _maxVal;  }
       int initVal() const                 { return _initVal; }
-      void setInitVal(int val)            { _initVal = val; }
-      void setMinVal(int val)             { _minVal = val;  }
-      void setMaxVal(int val)             { _maxVal = val;  }
+      void setInitVal(int val)            { _initVal = val;  }
+      void setMinVal(int val)             { _minVal = val;   }
+      void setMaxVal(int val)             { _maxVal = val;   }
+      ControllerType type() const;
       };
 
 //---------------------------------------------------------
@@ -151,8 +152,8 @@ typedef MidiControllerList MidiControllerList;
 
 extern MidiControllerList defaultMidiController;
 extern void initMidiController();
-extern MidiController::ControllerType midiControllerType(int num);
 
+extern MidiController::ControllerType midiControllerType(int num);
 extern void configMidiController();
 extern const QString& int2ctrlType(int n);
 extern MidiController::ControllerType ctrlType2Int(const QString& s);

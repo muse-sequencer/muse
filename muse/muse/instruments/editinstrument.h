@@ -32,12 +32,13 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
 
    private slots:
       virtual void fileNew();
-      virtual void fileOpen();
       virtual void fileSave();
       virtual void fileSaveAs();
       virtual void fileExit();
       void instrumentChanged(QListWidgetItem*);
       void patchChanged(QTreeWidgetItem*);
+      void controllerChanged(QListWidgetItem* sel);
+      void instrumentNameChanged(const QString&);
 
    public:
       EditInstrument(QWidget* parent = 0);
