@@ -194,6 +194,7 @@ void MidiTrack::startRecording()
             // create new part for recording
             //
             recordPart    = new Part(this);
+            recordPart->ref();
             recordPart->setTrack(this);
             int startTick = song->roundDownBar(start.tick());
             int endTick   = song->roundUpBar(start.tick());
@@ -226,7 +227,6 @@ void MidiTrack::recordBeat()
             }
       while (!recordFifo.isEmpty()) {
             MidiEvent me(recordFifo.get());
-printf("<%s> record\n", name().toLatin1().data());
 
             unsigned time = me.time();
             if (song->punchin() && time < song->lpos())
