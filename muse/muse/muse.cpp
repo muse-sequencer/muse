@@ -488,7 +488,6 @@ MusE::MusE()
       connect(playAction, SIGNAL(triggered(bool)), song, SLOT(setPlay(bool)));
 
       QAction* a = getAction("play_toggle", this);
-      a->setShortcutContext(Qt::ApplicationShortcut);
       connect(a, SIGNAL(triggered()), SLOT(playToggle()));
       addAction(a);
 
@@ -618,6 +617,10 @@ MusE::MusE()
       menu_file->addMenu(openRecent);
       menu_file->addSeparator();
       menu_file->addAction(fileSaveAction);
+      a = getAction("save_as_template", this);
+      connect(a, SIGNAL(triggered()), SLOT(saveAsTemplate()));
+      menu_file->addAction(a);
+
       menu_file->addSeparator();
       a = menu_file->addAction(*openIcon, tr("Import Midifile"));
       connect(a, SIGNAL(triggered()),  this, SLOT(importMidi()));
@@ -1302,6 +1305,15 @@ bool MusE::save()
       song->dirty = false;
       SndFile::updateRecFiles();
       return true;
+      }
+
+//---------------------------------------------------------
+//   saveAsTemplate
+//---------------------------------------------------------
+
+void MusE::saveAsTemplate()
+      {
+      printf("Not implemented: save as template\n");
       }
 
 //---------------------------------------------------------

@@ -59,6 +59,7 @@ struct Shortcut
                                   PROLL_SHRT, DEDIT_SHRT etc. One shortcut can 
                                   be a member of many categories */
       QKeySequence key;       /*! shortcut key */
+      Qt::ShortcutContext context;
       const char* text;       /*! action help   */
       const char* help;
       const char* iconOn;
@@ -71,16 +72,18 @@ struct Shortcut
             descr  = 0;
             type   = 0;
             key    = 0;
+            context = Qt::WindowShortcut;
             text   = 0;
             help   = 0;
             iconOn = 0;
             iconOff = 0;
             action = 0;
             }
-      Shortcut(const char* name, const char* d, int t, const QKeySequence& k, 
+      Shortcut(const char* name, const char* d, int t, const QKeySequence& k,
+         Qt::ShortcutContext cont = Qt::WindowShortcut,
          const char* txt=0, const char* h=0, const char* ic1=0, const char* ic2=0) 
-       : xml(name), descr(d), type(t), key(k), text(txt), help(h), iconOn(ic1),
-         iconOff(ic2) { 
+       : xml(name), descr(d), type(t), key(k), context(cont), text(txt), help(h), 
+         iconOn(ic1), iconOff(ic2) { 
             action = 0; 
             }
       };

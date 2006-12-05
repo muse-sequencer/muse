@@ -242,9 +242,11 @@ bool TLSWidget::setCtrl(int ctrl)
       else {
             at->ctrl = ctrl;
             at->controller = _track->getController(ctrl);
-            _ctrlTrack = _track;
-            ctrlList->setText(at->controller->name());
-            emit controllerChanged(ctrl);
+            if (at->controller) {
+                  _ctrlTrack = _track;
+                  ctrlList->setText(at->controller->name());
+                  emit controllerChanged(ctrl);
+                  }
             }
       return true;
       }
