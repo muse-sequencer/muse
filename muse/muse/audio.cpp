@@ -309,6 +309,9 @@ void Audio::process(unsigned frames, int jackState)
       extern int watchAudio;
       ++watchAudio;           // make a simple watchdog happy
 
+      //
+      //  process messages from gui
+      //
       if (msg) {
             processMsg();
             msg    = 0;    // dont process again
@@ -344,15 +347,15 @@ void Audio::process(unsigned frames, int jackState)
                   startRolling();
             }
 
-      if (idle || state == START_PLAY) {
+      if (idle || (state == START_PLAY)) {
             // deliver silence
             OutputList* ol = song->outputs();
             for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
                   (*i)->silence(frames);
             return;
             }
-      unsigned framePos = _pos.frame();
 
+      unsigned framePos = _pos.frame();
       if (state == PLAY) {
             //
             // clear prefetch FIFO if left/right locators
@@ -436,6 +439,8 @@ void Audio::process(unsigned frames, int jackState)
       //  process midi
       //-----------------------------------------
 
+      unsigned startFrame = _pos.frame();
+      unsigned endFrame   = startFrame + segmentSize;
       SynthIList* sl      = song->syntis();
       {
       MidiOutPortList* ol = song->midiOutPorts();
@@ -448,11 +453,11 @@ void Audio::process(unsigned frames, int jackState)
       for (iMidiInPort i = mil->begin(); i != mil->end(); ++i)
             (*i)->beforeProcess();
       for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i)
-            (*i)->processMidi(_curTickPos, _nextTickPos, _pos.frame(), _pos.frame() + segmentSize);
+            (*i)->processMidi(_curTickPos, _nextTickPos, startFrame, endFrame);
       for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
-            (*i)->processMidi(_curTickPos, _nextTickPos, _pos.frame(), _pos.frame() + segmentSize);
+            (*i)->processMidi(_curTickPos, _nextTickPos, startFrame, endFrame);
       for (iSynthI i = sl->begin(); i != sl->end(); ++i)
-            (*i)->processMidi(_curTickPos, _nextTickPos, _pos.frame(), _pos.frame() + segmentSize);
+            (*i)->processMidi(_curTickPos, _nextTickPos, startFrame, endFrame);
 
       for (iMidiInPort i = mil->begin(); i != mil->end(); ++i)
             (*i)->afterProcess();
@@ -713,5 +718,16 @@ void Audio::stopRolling()
 void Audio::sendMsgToGui(char c)
       {
       write(sigFd, &c, 1);
+      }
+
+//---------------------------------------------------------
+//   timestamp
+//    on stop we return a free running frame counter
+//---------------------------------------------------------
+
+unsigned Audio::timestamp() const
+      {
+      return audio->isPlaying() ? audioDriver->framePos() 
+         : audioDriver->frameTime();
       }
 

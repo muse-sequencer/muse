@@ -529,14 +529,14 @@ void MessSynthIF::getData(MidiEventList* el, unsigned pos, int ports, unsigned n
       for (int port = 0; port < ports; ++port)
             memset(buffer[port], 0, n * sizeof(float));
 
-      // seems to be negative when sequencer not running, still 
-      // working when entering notes from editor though. weird :-) (ml)
-
       int curPos = pos;
       int endPos = pos + n;
 
-      while (!synti->putFifo.isEmpty())
-            putEvent(synti->putFifo.get());
+      while (!synti->putFifo.isEmpty()) {
+            if (putEvent(synti->putFifo.peek()))
+                  break;
+            synti->putFifo.remove();
+            }
 
       if (ports >= channels()) {
             iMidiEvent i = el->begin();
@@ -577,9 +577,11 @@ bool MessSynthIF::putEvent(const MidiEvent& ev)
       if (_mess) {
             rv = _mess->processEvent(ev);
             if (midiOutputTrace && !rv) {
-                  printf("<%s>", synti->name().toLatin1().data());
+                  printf("MidiOut<%s>", synti->name().toLatin1().data());
                   ev.dump();
                   }
+if (rv)
+      printf("SYNT BUSY\n");
             }
       return rv;
       }
@@ -591,7 +593,8 @@ bool MessSynthIF::putEvent(const MidiEvent& ev)
 void SynthI::collectInputData()
       {
       bufferEmpty = false;
-      unsigned pos = audio->pos().frame();
+      unsigned pos = audio->isPlaying() ? audio->pos().frame()
+         : audio->timestamp();
       _sif->getData(&_schedEvents, pos, channels(), segmentSize, buffer);
       }
 

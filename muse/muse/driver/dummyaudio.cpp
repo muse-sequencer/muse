@@ -57,6 +57,9 @@ class DummyAudio : public AudioDriver {
       virtual unsigned framePos() const {
             return lrint((curTime()-startTime) * AL::sampleRate);
             }
+      virtual unsigned frameTime() const {
+            return lrint(curTime() * AL::sampleRate);
+            }
 
       virtual float* getBuffer(Port /*port*/, unsigned long nframes)
             {

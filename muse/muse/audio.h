@@ -268,6 +268,7 @@ class Audio {
       MidiEvent* getMidiEvent();
       void popMidiEvent();
       int curReadIndex() const { return _curReadIndex; }
+      unsigned timestamp() const;
       };
 
 extern int processAudio(unsigned long, void*);

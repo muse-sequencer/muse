@@ -79,9 +79,13 @@ MidiEvent::MidiEvent(unsigned tick, int channel, const Event& e)
 void MidiEvent::dump() const
       {
       printf("chan:%d ", _channel+1);
-      if (_type == ME_NOTEON) {   // NoteOn
+      if (_type == ME_NOTEON) {
             QString s = pitch2string(_a);
-            printf("NoteOn %3s(0x%02x) %3d\n", s.toLatin1().data(), _a, _b);
+            printf("NoteOn  %3s(0x%02x) %3d\n", s.toLatin1().data(), _a, _b);
+           }
+      else if (_type == ME_NOTEOFF) {
+            QString s = pitch2string(_a);
+            printf("NoteOff %3s(0x%02x) %3d\n", s.toLatin1().data(), _a, _b);
            }
       else if (_type == ME_SYSEX) {
             printf("SysEx  len %d ", len());

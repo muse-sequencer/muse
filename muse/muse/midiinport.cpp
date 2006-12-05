@@ -102,7 +102,7 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
       {
       MidiEvent event;
       event.setB(0);
-      event.setTime(audioDriver->framePos());
+      event.setTime(audio->timestamp());
 
       switch(ev->type) {
             case SND_SEQ_EVENT_NOTEON:
@@ -211,6 +211,7 @@ void MidiInPort::afterProcess()
 
 //---------------------------------------------------------
 //   beforeProcess
+//    "freeze" fifo for this process cycle
 //---------------------------------------------------------
 
 void MidiInPort::beforeProcess()
@@ -221,6 +222,9 @@ void MidiInPort::beforeProcess()
 //---------------------------------------------------------
 //   getEvents
 //    called from jack process context
+//    This method can be called multiple times in a process
+//    cycle so we have to empty the fifo at 
+//    "afterProcess()".
 //---------------------------------------------------------
 
 void MidiInPort::getEvents(unsigned, unsigned, int ch, MidiEventList* dst)
