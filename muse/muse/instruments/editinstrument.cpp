@@ -22,6 +22,7 @@
 #include "minstrument.h"
 #include "ctrl.h"
 #include "midictrl.h"
+#include "al/xml.h"
 
 //---------------------------------------------------------
 //   EditInstrument
@@ -189,6 +190,24 @@ void EditInstrument::fileSaveAs()
          tr("MusE: Save Instrument Definition"),
          path,
          tr("Instrument Definition (*.idf)"));
+      if (s.isEmpty())
+            return;
+      QFile f(s);
+      if (!f.open(QIODevice::WriteOnly)) {
+            QString s("Creating file failed: ");
+            s += strerror(errno);
+            QMessageBox::critical(this,
+               tr("MusE: Create file failed"), s);
+            return;
+            }
+      Xml xml(&f);
+      instrument->write(xml);
+      f.close();
+      if (f.error()) {
+            QString s = QString("Write File\n") + f.fileName() + QString("\nfailed: ")
+               + f.errorString();
+            QMessageBox::critical(this, tr("MusE: Write File failed"), s);
+            }
       }
 
 //---------------------------------------------------------

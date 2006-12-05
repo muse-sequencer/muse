@@ -240,7 +240,7 @@ void MidiController::write(Xml& xml) const
       int l = _num & 0x7f;
 
       QString sl;
-      if (_num & 0xff == 0xff)
+      if ((_num & 0xff) == 0xff)
             sl = "Pitch";
       else
             sl.setNum(l);

@@ -117,6 +117,13 @@ void Xml::stag(const char* format, ...)
       ++level;
       }
 
+void Xml::stag(const QString& s)
+      {
+      putLevel();
+      *this << '<' << s << '>' << endl;
+      ++level;
+      }
+
 //---------------------------------------------------------
 //   etag
 //---------------------------------------------------------
@@ -144,6 +151,12 @@ void Xml::tagE(const char* format, ...)
     	*this << buffer;
       va_end(args);
       *this << "/>" << endl;
+      }
+
+void Xml::tagE(const QString& s)
+      {
+      putLevel();
+      *this << '<' << s << "/>" << endl;
       }
 
 void Xml::tag(const char* name, int val)

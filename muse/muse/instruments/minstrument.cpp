@@ -37,6 +37,7 @@ MidiInstrument* genericMidiInstrument;
 Patch::Patch()
       {
       drumMap = 0;
+      categorie = -1;
       }
 
 Patch::~Patch()
@@ -211,7 +212,7 @@ MidiInstrument::~MidiInstrument()
 //   readPatchGroup
 //---------------------------------------------------------
 
-void PatchGroup::read(QDomNode node)
+void PatchGroup::read(QDomNode node, MidiInstrument* instrument)
       {
       for (; !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
@@ -219,12 +220,12 @@ void PatchGroup::read(QDomNode node)
 
             if (tag == "Patch") {
                   Patch* patch = new Patch;
-                  patch->read(node, false);
+                  patch->read(node, false, instrument);
                   patches.push_back(patch);
                   }
             else if (tag == "drummap") {
                   Patch* patch = new Patch;
-                  patch->read(node, true);
+                  patch->read(node, true, instrument);
                   patches.push_back(patch);
                   }
             else if (!tag.isEmpty())
@@ -237,14 +238,16 @@ void PatchGroup::read(QDomNode node)
 //   read
 //---------------------------------------------------------
 
-void Patch::read(QDomNode node, bool dr)
+void Patch::read(QDomNode node, bool dr, MidiInstrument* instrument)
       {
       QDomElement e = node.toElement();
-      name  = e.attribute(QString("name"));
-      typ   = e.attribute(QString("mode"), "-1").toInt();
-      hbank = e.attribute(QString("hbank"), "-1").toInt();
-      lbank = e.attribute(QString("lbank"), "-1").toInt();
-      prog  = e.attribute(QString("prog"), "0").toInt();
+      name  = e.attribute("name");
+      typ   = e.attribute("mode", "-1").toInt();
+      hbank = e.attribute("hbank", "-1").toInt();
+      lbank = e.attribute("lbank", "-1").toInt();
+      prog  = e.attribute("prog", "0").toInt();
+      QString cat = e.attribute("cat");
+      categorie = instrument->categories().indexOf(cat);
       drumMap = 0;
       if (!dr)
             return;
@@ -263,6 +266,30 @@ void Patch::read(QDomNode node, bool dr)
                   }
             }
       drumMap->init();
+      }
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void Patch::write(Xml& xml)
+      {
+      if (drumMap == 0) {
+            QString s = QString("Patch name=\"%1\"").arg(name);
+            if (typ != -1)
+                  s += QString(" mode=\"%d\"").arg(typ);
+            s += QString(" hbank=\"%1\" lbank=\"%2\" prog=\"%3\"").arg(hbank).arg(lbank).arg(prog);
+            xml.tagE(s);
+            return;
+            }
+      QString s = QString("drummap name=\"%1\"").arg(name);
+      s += QString(" hbank=\"%1\" lbank=\"%2\" prog=\"%3\"").arg(hbank).arg(lbank).arg(prog);
+      xml.stag(s);
+      for (int i = 0; i < DRUM_MAPSIZE; ++i) {
+            DrumMapEntry* dm = drumMap->entry(i);
+            dm->write(xml);
+            }
+      xml.etag("drummap");
       }
 
 //---------------------------------------------------------
@@ -288,7 +315,7 @@ void MidiInstrument::read(QDomNode node)
             QString tag(e.tagName());
             if (tag == "Patch") {
                   Patch* patch = new Patch;
-                  patch->read(node, false);
+                  patch->read(node, false, this);
                   if (pg.empty()) {
                         PatchGroup p;
                         p.patches.push_back(patch);
@@ -297,11 +324,13 @@ void MidiInstrument::read(QDomNode node)
                   else
                         pg[0].patches.push_back(patch);
                   }
-            else if (tag == "Category")
-                  ;     // TODO "Category"
+            else if (tag == "Category") {
+                  QString name = e.attribute(QString("name"));
+                  _categories.append(name);
+                  }
             else if (tag == "drummap") {
                   Patch* patch = new Patch;
-                  patch->read(node, true);
+                  patch->read(node, true, this);
                   if (pg.empty()) {
                         PatchGroup p;
                         p.patches.push_back(patch);
@@ -313,7 +342,7 @@ void MidiInstrument::read(QDomNode node)
             else if (tag == "PatchGroup") {
                   PatchGroup p;
                   p.name = e.attribute("name");
-                  p.read(node.firstChild());
+                  p.read(node.firstChild(), this);
                   pg.push_back(p);
                   }
             else if (tag == "Controller") {
@@ -475,4 +504,28 @@ MidiController* MidiInstrument::midiController(int num) const
       return c;
       }
 
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void MidiInstrument::write(Xml& xml)
+      {
+      xml.header();
+      xml.stag("muse version=\"2.1\"");
+      xml.stag("MidiInstrument name=\"%s\"", iname().toUtf8().data());
+
+      foreach(const QString& s, _categories)
+            xml.tagE("Category name=\"%s\"", s.toUtf8().data());
+
+      std::vector<PatchGroup>* pg = groups();
+      for (std::vector<PatchGroup>::iterator g = pg->begin(); g != pg->end(); ++g) {
+            xml.stag("PatchGroup name=\"%s\"", g->name.toUtf8().data());
+            for (iPatch p = g->patches.begin(); p != g->patches.end(); ++p)
+                  (*p)->write(xml);
+            xml.etag("PatchGroup");
+            }
+      for (iMidiController ic = _controller->begin(); ic != _controller->end(); ++ic)
+            (*ic)->write(xml);
+      xml.etag("MidiInstrument");
+      }
 

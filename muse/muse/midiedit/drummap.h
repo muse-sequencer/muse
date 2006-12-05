@@ -42,6 +42,7 @@ struct DrumMapEntry {
       bool mute;
 
       void read(QDomNode node);
+      void write(Xml& xml);
       };
 
 //---------------------------------------------------------

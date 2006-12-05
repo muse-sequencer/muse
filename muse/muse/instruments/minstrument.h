@@ -23,12 +23,18 @@
 
 #include "globaldefs.h"
 
+namespace AL {
+      class Xml;
+      };
+using AL::Xml;
+
 class MidiOutPort;
 class EventList;
 class MidiControllerList;
 class MidiController;
 class MidiEvent;
 class DrumMap;
+class MidiInstrument;
 
 //---------------------------------------------------------
 //   Patch
@@ -38,8 +44,11 @@ struct Patch {
       signed char typ;                     // 1 - GM  2 - GS  4 - XG
       signed char hbank, lbank, prog;
       QString name;
+      int categorie;
       DrumMap* drumMap;
-      void read(QDomNode, bool);
+
+      void read(QDomNode, bool, MidiInstrument*);
+      void write(Xml& xml);
 
       Patch();
       ~Patch();
@@ -56,7 +65,7 @@ typedef PatchList::const_iterator ciPatch;
 struct PatchGroup {
       QString name;
       PatchList patches;
-      void read(QDomNode);
+      void read(QDomNode, MidiInstrument*);
       };
 
 struct SysEx {
@@ -79,6 +88,7 @@ class MidiInstrument {
       void init();
 
    protected:
+      QList<QString> _categories;
       EventList* _midiInit;
       EventList* _midiReset;
       EventList* _midiState;
@@ -116,10 +126,12 @@ class MidiInstrument {
 
       virtual void populatePatchPopup(QMenu*, int);
       void read(QDomNode);
+      void write(Xml& xml);
       std::vector<SysEx>* sysexList()     { return &sysex; }
       MidiController* midiController(int num) const;
 
-      std::vector<PatchGroup>* groups() { return &pg; }
+      std::vector<PatchGroup>* groups()       { return &pg; }
+      const QList<QString>& categories() const { return _categories; }
       };
 
 //---------------------------------------------------------

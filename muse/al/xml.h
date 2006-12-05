@@ -42,8 +42,10 @@ class Xml : public QTextStream {
       void nput(const char* format, ...);
 
       void stag(const char* format, ...);
-      void etag(const char* format);
+      void stag(const QString&);
+      void etag(const char*);
 
+      void tagE(const QString&);
       void tagE(const char* format, ...);
       void tdata(const QString&);
 

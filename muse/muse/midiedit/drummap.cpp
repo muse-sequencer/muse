@@ -116,27 +116,37 @@ void DrumMap::write(Xml& xml)
       xml.stag("drummap");
       for (int i = 0; i < DRUM_MAPSIZE; ++i) {
             DrumMapEntry* dm = &map[i];
-            xml.stag("entry");
-            xml.tag("name", dm->name);
-            if (dm->quant != DEFAULT_QUANT)
-                  xml.tag("quant", dm->quant);
-            if (dm->len != DEFAULT_LEN)
-                  xml.tag("len", dm->len);
-            if (dm->channel != DEFAULT_CHANNEL)
-                  xml.tag("channel", dm->channel);
-            if (dm->lv1 != DEFAULT_LV1)
-                  xml.tag("lv1", dm->lv1);
-            if (dm->lv2 != DEFAULT_LV2)
-                  xml.tag("lv2", dm->lv2);
-            if (dm->lv2 != DEFAULT_LV3)
-                  xml.tag("lv3", dm->lv3);
-            if (dm->lv4 != DEFAULT_LV4)
-                  xml.tag("lv4", dm->lv4);
-            xml.tag("enote", dm->enote);
-            xml.tag("anote", dm->anote);
-            xml.etag("entry");
+            dm->write(xml);
             }
       xml.etag("drummap");
+      }
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+void DrumMapEntry::write(Xml& xml)
+      {
+      xml.stag("entry");
+      xml.tag("name", name);
+      if (quant != DEFAULT_QUANT)
+            xml.tag("quant", quant);
+      if (len != DEFAULT_LEN)
+            xml.tag("len", len);
+      if (channel != DEFAULT_CHANNEL)
+            xml.tag("channel", channel);
+      if (lv1 != DEFAULT_LV1)
+            xml.tag("lv1", lv1);
+      if (lv2 != DEFAULT_LV2)
+            xml.tag("lv2", lv2);
+      if (lv3 != DEFAULT_LV3)
+            xml.tag("lv3", lv3);
+      if (lv4 != DEFAULT_LV4)
+            xml.tag("lv4", lv4);
+      xml.tag("enote", enote);
+      if (anote != enote)
+            xml.tag("anote", anote);
+      xml.etag("entry");
       }
 
 //---------------------------------------------------------
@@ -145,6 +155,7 @@ void DrumMap::write(Xml& xml)
 
 void DrumMapEntry::read(QDomNode n)
       {
+      anote = -1;
       for (QDomNode node = n.firstChild(); !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
             QString tag(e.tagName());
@@ -176,6 +187,8 @@ void DrumMapEntry::read(QDomNode n)
                   break;
                   }
             }
+      if (anote = -1)
+            anote = enote;
       }
 
 //---------------------------------------------------------
