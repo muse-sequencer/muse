@@ -2763,6 +2763,42 @@ void MusE::setGlobalTempo(int val)
 
 int main(int argc, char* argv[])
       {
+      char c;
+      QString opts("mvdDiosP:p");
+
+#ifdef VST_SUPPORT
+      opts += "V";
+#endif
+#ifdef DSSI_SUPPORT
+      opts += "I";
+#endif
+      while ((c = getopt(argc, argv, opts.toLatin1().data())) != EOF) {
+            switch (c) {
+                  case 'v': printVersion(argv[0]); return 0;
+                  case 'd':
+                        debugMode = true;
+                        realTimePriority = false;
+                        break;
+                  case 'm': midiOnly = true; break;
+                  case 'D': debugMsg = true; break;
+                  case 'i': midiInputTrace = true; break;
+                  case 'o': midiOutputTrace = true; break;
+                  case 's': debugSync = true; break;
+                  case 'p': loadPlugins = false; break;
+                  case 'V': loadVST = false; break;
+                  case 'I': loadDSSI = false; break;
+                  default:  usage(argv[0], "bad argument"); return -1;
+                  }
+            }
+      if (midiOnly) {
+            loadDSSI    = false;
+            loadPlugins = false;
+            loadVST     = false;
+            }
+
+
+
+
       museUser = QString(getenv("MUSEHOME"));
       if (museUser.isEmpty())
             museUser = QDir::homePath();
@@ -2808,39 +2844,6 @@ int main(int argc, char* argv[])
                   muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
                   stimer->start(6000);
                   }
-            }
-
-      char c;
-      QString opts("mvdDiosP:p");
-
-#ifdef VST_SUPPORT
-      opts += "V";
-#endif
-#ifdef DSSI_SUPPORT
-      opts += "I";
-#endif
-      while ((c = getopt(argc, argv, opts.toLatin1().data())) != EOF) {
-            switch (c) {
-                  case 'v': printVersion(argv[0]); return 0;
-                  case 'd':
-                        debugMode = true;
-                        realTimePriority = false;
-                        break;
-                  case 'm': midiOnly = true; break;
-                  case 'D': debugMsg = true; break;
-                  case 'i': midiInputTrace = true; break;
-                  case 'o': midiOutputTrace = true; break;
-                  case 's': debugSync = true; break;
-                  case 'p': loadPlugins = false; break;
-                  case 'V': loadVST = false; break;
-                  case 'I': loadDSSI = false; break;
-                  default:  usage(argv[0], "bad argument"); return -1;
-                  }
-            }
-      if (midiOnly) {
-            loadDSSI    = false;
-            loadPlugins = false;
-            loadVST     = false;
             }
 
       bool useJACK = !(debugMode || midiOnly);
@@ -2988,7 +2991,7 @@ int main(int argc, char* argv[])
 
       // check for instruments directory:
 
-      pd.setPath(QDir::homePath() + "/MusE/instruments");
+      pd.setPath(QDir::homePath() + "/" + config.instrumentPath);
       if (!pd.exists()) {
             // ask user to create a new instruments directory
             QString title(QT_TR_NOOP("MusE: create instruments directory"));

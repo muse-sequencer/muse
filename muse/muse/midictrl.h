@@ -141,14 +141,10 @@ class MidiController {
 //    - implicit during import of a midi file
 //---------------------------------------------------------
 
-class MidiControllerList : public std::list<MidiController*> {
-   public:
-      MidiControllerList() {}
-      };
+class MidiControllerList : public QList<MidiController*> {};
 
 typedef MidiControllerList::iterator iMidiController;
 typedef MidiControllerList::const_iterator ciMidiController;
-typedef MidiControllerList MidiControllerList;
 
 extern MidiControllerList defaultMidiController;
 extern void initMidiController();

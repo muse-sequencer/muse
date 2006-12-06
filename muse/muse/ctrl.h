@@ -165,6 +165,7 @@ class Ctrl : public CTRL {
       CVal min, max;
       bool _changed;
       bool _touched;
+      bool _moveWithPart;
 
    public:
       Ctrl();
@@ -200,6 +201,9 @@ class Ctrl : public CTRL {
       void setRange(CVal, CVal);
       CVal minVal() const            { return min; }
       CVal maxVal() const            { return max; }
+      bool moveWithPart() const      { return _moveWithPart; }
+      void setMoveWithPart(bool v)   { _moveWithPart = v; }
+
       void read(QDomNode node, bool midi);
       void write(Xml&);
       int val2pixelR(CVal, int maxpixel);

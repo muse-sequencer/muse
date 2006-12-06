@@ -36,6 +36,7 @@ Ctrl::Ctrl(int id, const QString& s, int t)
       _curVal.f   = 0.0f;
       _touched    = false;
       _changed    = false;
+      _moveWithPart = false;
       }
 
 Ctrl::Ctrl(int id, const QString& s, int t, float a, float b)
@@ -49,6 +50,7 @@ Ctrl::Ctrl(int id, const QString& s, int t, float a, float b)
       _curVal.f   = 0.0f;
       _touched    = false;
       _changed    = false;
+      _moveWithPart = false;
       }
 
 Ctrl::Ctrl()
@@ -60,6 +62,7 @@ Ctrl::Ctrl()
       _curVal.f   = 0.0f;
       _touched    = false;
       _changed    = false;
+      _moveWithPart = false;
       }
 
 Ctrl::Ctrl(const MidiController* mc)
@@ -72,6 +75,7 @@ Ctrl::Ctrl(const MidiController* mc)
       _name       = mc->name();
       _touched    = false;
       _changed    = false;
+      _moveWithPart = false;
       }
 
 //---------------------------------------------------------

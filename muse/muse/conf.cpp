@@ -483,6 +483,7 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
       xml.tag("createDefaultMidiInput", config.createDefaultMidiInput);
       xml.tag("projectPath", config.projectPath);
       xml.tag("templatePath", config.templatePath);
+      xml.tag("instrumentPath", config.instrumentPath);
       xml.tag("importMidiPath", config.importMidiPath);
       xml.tag("importWavePath", config.importWavePath);
 

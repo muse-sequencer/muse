@@ -31,6 +31,25 @@ MidiInstrumentList midiInstruments;
 MidiInstrument* genericMidiInstrument;
 
 //---------------------------------------------------------
+//   string2sysex
+//---------------------------------------------------------
+
+int string2sysex(const QString&, unsigned char** data)
+      {
+      *data = 0;
+      return 0;
+      }
+
+//---------------------------------------------------------
+//   sysex2string
+//---------------------------------------------------------
+
+QString sysex2string(int, unsigned char*)
+      {
+      return QString("");      
+      }
+
+//---------------------------------------------------------
 //   Patch
 //---------------------------------------------------------
 
@@ -57,6 +76,8 @@ static void loadIDF(QFileInfo* fi)
             printf("cannot open file %s\n", fi->fileName().toLatin1().data());
             return;
             }
+      if (debugMsg)
+            printf("   load instrument definition <%s>\n", fi->filePath().toLocal8Bit().data());
       QDomDocument doc;
       int line, column;
       QString err;
@@ -82,7 +103,19 @@ static void loadIDF(QFileInfo* fi)
                               MidiInstrument* i = new MidiInstrument();
                               i->read(n);
                               i->setFilePath(fi->filePath());
-                              midiInstruments.push_back(i);
+                              bool replaced = false;
+                              for (int idx = 0; idx < midiInstruments.size(); ++idx) {
+                                    if (midiInstruments[idx]->iname() == i->iname()) {
+                                          midiInstruments.replace(idx, i);
+                                          replaced = true;
+                                          if (debugMsg)
+                                                printf("Midi Instrument Definition <%s> overwritten\n", 
+                                                   i->iname().toLocal8Bit().data());
+                                          break;
+                                          }
+                                    }
+                              if (!replaced)
+                                    midiInstruments += i;
                               }
                         }
                   }
@@ -110,6 +143,19 @@ void initMidiInstruments()
          QDir::SortFlags(QDir::Name | QDir::IgnoreCase), QDir::Files);
       if (instrumentsDir.exists()) {
             QFileInfoList list = instrumentsDir.entryInfoList();
+            int n = list.size();
+            for (int i = 0; i < n; ++i) {
+                  QFileInfo fi = list.at(i);
+                  loadIDF(&fi);
+                  }
+            }
+      QString path2 = QDir::homePath() + "/" + config.instrumentPath;
+      if (debugMsg)
+            printf("load instrument definitions from <%s>\n", path2.toLatin1().data());
+      QDir instrumentsDir2(path2, QString("*.idf"),
+         QDir::SortFlags(QDir::Name | QDir::IgnoreCase), QDir::Files);
+      if (instrumentsDir2.exists()) {
+            QFileInfoList list = instrumentsDir2.entryInfoList();
             int n = list.size();
             for (int i = 0; i < n; ++i) {
                   QFileInfo fi = list.at(i);
@@ -353,19 +399,20 @@ void MidiInstrument::read(QDomNode node)
             else if (tag == "Init")
                   _midiInit->read(node.firstChild(), true);
             else if (tag == "SysEx") {
-                  SysEx se;
-                  se.name = e.attribute("name");
+                  SysEx* se = new SysEx;
+                  se->name = e.attribute("name");
                   for (QDomNode nnode = node.firstChild(); !nnode.isNull(); nnode = nnode.nextSibling()) {
                         e = nnode.toElement();
                         QString tag(e.tagName());
                         if (tag == "comment")
-                              se.comment = e.text();
-                        else if (tag == "data")
-                              se.data = e.text();
+                              se->comment = e.text();
+                        else if (tag == "data") {
+                              se->dataLen = string2sysex(e.text(), &(se->data));
+                              }
                         else
                               printf("MidiInstrument::read():SysEx: unknown tag %s\n", tag.toLatin1().data());
                         }
-                  sysex.push_back(se);
+                  _sysex.append(se);
                   }
             else if (!tag.isEmpty()) {
                   printf("MidiInstrument::read(): unknown tag %s\n", tag.toLatin1().data());

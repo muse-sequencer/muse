@@ -71,7 +71,8 @@ struct PatchGroup {
 struct SysEx {
       QString name;
       QString comment;
-      QString data;
+      int dataLen;
+      unsigned char* data;
       };
 
 //---------------------------------------------------------
@@ -81,7 +82,7 @@ struct SysEx {
 class MidiInstrument {
       std::vector<PatchGroup> pg;
       MidiControllerList* _controller;
-      std::vector<SysEx> sysex;
+      QList<SysEx*> _sysex;
       bool _dirty;
       bool _readonly;
 
@@ -127,11 +128,15 @@ class MidiInstrument {
       virtual void populatePatchPopup(QMenu*, int);
       void read(QDomNode);
       void write(Xml& xml);
-      std::vector<SysEx>* sysexList()     { return &sysex; }
+      const QList<SysEx*>& sysex() const    { return _sysex; }
+      void removeSysex(SysEx* sysex)        { _sysex.removeAll(sysex); }
+      void addSysex(SysEx* sysex)           { _sysex.append(sysex); }
+
       MidiController* midiController(int num) const;
 
-      std::vector<PatchGroup>* groups()       { return &pg; }
+      std::vector<PatchGroup>* groups()        { return &pg; }
       const QList<QString>& categories() const { return _categories; }
+      void addCategory(const QString& s)       { _categories.append(s); }
       };
 
 //---------------------------------------------------------
@@ -144,6 +149,7 @@ class MidiInstrumentList : public QList<MidiInstrument*> {
 typedef MidiInstrumentList::iterator iMidiInstrument;
 
 extern MidiInstrumentList midiInstruments;
+
 extern MidiInstrument* genericMidiInstrument;
 extern void initMidiInstruments();
 extern MidiInstrument* registerMidiInstrument(const QString&);

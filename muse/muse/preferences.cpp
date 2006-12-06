@@ -328,6 +328,7 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       showSplash->setChecked(config->showSplashScreen);
       projectPath->setText(config->projectPath);
       templatePath->setText(config->templatePath);
+      instrumentPath->setText(config->instrumentPath);
       midiImportPath->setText(config->importMidiPath);
       waveImportPath->setText(config->importWavePath);
 
@@ -590,6 +591,7 @@ void PreferencesDialog::apply()
 
       ::config.projectPath    = projectPath->text();
       ::config.templatePath   = templatePath->text();
+      ::config.instrumentPath = instrumentPath->text();
       ::config.importMidiPath = midiImportPath->text();
       ::config.importWavePath = waveImportPath->text();
 

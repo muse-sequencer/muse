@@ -23,6 +23,8 @@
 
 #include "ui_editinstrument.h"
 
+class MidiInstrument;
+
 //---------------------------------------------------------
 //   EditInstrument
 //---------------------------------------------------------
@@ -30,15 +32,27 @@
 class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
     Q_OBJECT
 
+      bool fileSave(MidiInstrument*, const QString& name);
+      void closeEvent(QCloseEvent*);
+      bool checkDirty(MidiInstrument*);
+
    private slots:
       virtual void fileNew();
       virtual void fileSave();
       virtual void fileSaveAs();
-      virtual void fileExit();
-      void instrumentChanged(QListWidgetItem*);
-      void patchChanged(QTreeWidgetItem*);
+      void instrumentChanged(QListWidgetItem*, QListWidgetItem*);
+      void patchChanged(QTreeWidgetItem*, QTreeWidgetItem*);
       void controllerChanged(QListWidgetItem* sel);
+      void sysexChanged(QListWidgetItem* sel);
       void instrumentNameChanged(const QString&);
+      void deletePatchClicked();
+      void newPatchClicked();
+      void newGroupClicked();
+      void newCategoryClicked();
+      void deleteControllerClicked();
+      void newControllerClicked();
+      void deleteSysexClicked();
+      void newSysexClicked();
 
    public:
       EditInstrument(QWidget* parent = 0);

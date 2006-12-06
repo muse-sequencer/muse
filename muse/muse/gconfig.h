@@ -123,6 +123,7 @@ struct GlobalConfigValues {
       bool createDefaultMidiInput;
       QString projectPath;
       QString templatePath;
+      QString instrumentPath;
       QString importMidiPath;
       QString importWavePath;
       };
