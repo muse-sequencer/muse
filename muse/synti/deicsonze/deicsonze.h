@@ -102,7 +102,7 @@
 #define SYSEX_MASTERVOL 4
 #define MASTERVOLSTR "MasterVolume"
 #define MAXMASTERVOLUME 255
-#define INITMASTERVOL 96
+#define INITMASTERVOL 192
 #define SYSEX_QUALITY 5
 #define QUALITYSTR "Quality"
 #define HIGHSTR "High"
@@ -141,6 +141,7 @@
 #define SYSEX_CHORUSRETURN 80
 #define SYSEX_REVERBRETURN 81
 #define MAXFXRETURN 255
+#define INITFXRETURN 192
 #define SYSEX_SELECTREVERB 82
 #define SYSEX_SELECTCHORUS 83
 #define SYSEX_BUILDGUIREVERB 84
@@ -206,6 +207,30 @@ class DeicsOnzePlugin;
 //  100->2.0, 90->1.0, 80->0.5 ...
 //---------------------------------------------------------
 inline double outLevel2Amp(int ol);
+
+//---------------------------------------------------------
+// level2amp, 
+//  255->0dB->1.0, 0->-27dB->0
+//---------------------------------------------------------
+inline double level2amp(int l);
+
+//---------------------------------------------------------
+// amp2level
+// 1.0->0dB->255, 0->-27dB->0
+//---------------------------------------------------------
+inline int amp2level(double amp);
+
+//---------------------------------------------------------
+// amp2lowlevel
+// 1.0->0dB->127, 0->-27dB->0
+//---------------------------------------------------------
+inline int amp2lowlevel(double amp);
+
+//---------------------------------------------------------
+// lowlevel2amp, 
+//  127->0dB->1.0, 0->-27dB->0
+//---------------------------------------------------------
+inline double lowlevel2amp(int l);
 
 //---------------------------------------------------------
 // envAR2s

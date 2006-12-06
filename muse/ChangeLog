@@ -1,3 +1,7 @@
+06.12 (ng) deicsonze
+      - fix pitchbend
+      - fix some logarithm volume issues
+      - fix sustain pedal
 04.12 (ng)
       - fix deicsonze FX plugin bugs
       - add AbstractSlider::setMinLogValue(), AbstractSlider::setMaxLogValue()

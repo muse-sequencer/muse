@@ -157,6 +157,17 @@ DeicsOnze::DeicsOnze() : Mess(2) {
 			     (const unsigned char*)dataMasterVol,
 			     2);  
   _gui->writeEvent(evSysexMasterVol);
+  //update return fx
+  unsigned char *dataReverbRet = new unsigned char[2];
+  dataReverbRet[0]=SYSEX_REVERBRETURN;
+  dataReverbRet[1]=(unsigned char)getReverbReturn();
+  MidiEvent evReverbRet(0,ME_SYSEX,(const unsigned char*)dataReverbRet, 2);
+  _gui->writeEvent(evReverbRet);    
+  unsigned char *dataChorusRet = new unsigned char[2];
+  dataChorusRet[0]=SYSEX_CHORUSRETURN;
+  dataChorusRet[1]=(unsigned char)getChorusReturn();
+  MidiEvent evChorusRet(0,ME_SYSEX,(const unsigned char*)dataChorusRet, 2);
+  _gui->writeEvent(evChorusRet);    
   //update font size
   unsigned char *dataFontSize = new unsigned char[2];
   dataFontSize[0]=SYSEX_FONTSIZE;
@@ -495,9 +506,9 @@ void DeicsOnze::initGlobal() {
   _global.quality = high;
   _global.fontSize = 9;
   _global.isChorusActivated = false;
-  _global.chorusReturn = 128.0/(float)MAXFXRETURN;
+  _global.chorusReturn = level2amp(INITFXRETURN);
   _global.isReverbActivated = false;
-  _global.reverbReturn = 128.0/(float)MAXFXRETURN;
+  _global.reverbReturn = level2amp(INITFXRETURN);
   initChannels();
 }
 
@@ -648,7 +659,7 @@ void DeicsOnze::setNbrVoices(int c, int nv) {
 // setMasterVol
 //----------------------------------------------------------------
 void DeicsOnze::setMasterVol(int mv) {
-    _global.masterVolume=(double)mv/(double)MAXMASTERVOLUME;
+  _global.masterVolume=level2amp(mv); //watch out that MAXMASTERVOLUME==255
 }
 //----------------------------------------------------------------
 // setChannelEnable
@@ -666,11 +677,11 @@ void DeicsOnze::setChannelVol(int c, int v) {
 
 void DeicsOnze::applyChannelAmp(int c) {
   _global.channel[c].ampLeft = 
-    ((double)_global.channel[c].volume/(double)MAXCHANNELVOLUME)
+    level2amp(_global.channel[c].volume)
     * ((double)(MAXCHANNELPAN - _global.channel[c].pan)
        /(double)(2*MAXCHANNELPAN));
   _global.channel[c].ampRight =
-    ((double)_global.channel[c].volume/(double)MAXCHANNELVOLUME)
+    level2amp(_global.channel[c].volume)
     * ((double)(MAXCHANNELPAN + _global.channel[c].pan)
        /(double)(2*MAXCHANNELPAN));
 }
@@ -715,27 +726,27 @@ void DeicsOnze::setChannelRelease(int c, int r) {
 // setChannelReverb
 //----------------------------------------------------------------
 void DeicsOnze::setChannelReverb(int c, int r) {
-  _global.channel[c].reverbAmount = (float)r/127.0;
+  _global.channel[c].reverbAmount = (float)lowlevel2amp(r);
 }
 //----------------------------------------------------------------
 // setChannelChorus
 //----------------------------------------------------------------
 void DeicsOnze::setChannelChorus(int c, int val) {
-  _global.channel[c].chorusAmount = (float)val/127.0;
+  _global.channel[c].chorusAmount = (float)lowlevel2amp(val);
 }
 
 //----------------------------------------------------------------
 // setChorusReturn
 //----------------------------------------------------------------
 void DeicsOnze::setChorusReturn(int val) {
-  _global.chorusReturn = 2.0*(float)val/(float)MAXFXRETURN;
+  _global.chorusReturn = 2.0*(float)level2amp(val); //beware MAXFXRETURN==255
 }
 
 //----------------------------------------------------------------
 // setReverbReturn
 //----------------------------------------------------------------
 void DeicsOnze::setReverbReturn(int val) {
-  _global.reverbReturn = 2.0*(float)val/(float)MAXFXRETURN;
+  _global.reverbReturn = 2.0*(float)level2amp(val); //beware MAXFXRETURN==255
 }
 
 //----------------------------------------------------------------
@@ -748,7 +759,7 @@ int DeicsOnze::getNbrVoices(int c) const {
 // getMasterVol
 //----------------------------------------------------------------
 int DeicsOnze::getMasterVol(void) const {
-    return((int)(_global.masterVolume*(double)MAXMASTERVOLUME));
+  return(amp2level(_global.masterVolume));
 }
 //----------------------------------------------------------------
 // getChannelEnable
@@ -805,25 +816,25 @@ int DeicsOnze::getChannelRelease(int c) const {
 // getChannelReverb
 //----------------------------------------------------------------
 int DeicsOnze::getChannelReverb(int c) const {
-  return((int)(_global.channel[c].reverbAmount*127.0));
+  return(amp2lowlevel(_global.channel[c].reverbAmount));
 }
 //----------------------------------------------------------------
 // getChannelChorus
 //----------------------------------------------------------------
 int DeicsOnze::getChannelChorus(int c) const {
-  return((int)(_global.channel[c].chorusAmount*127.0));
+  return(amp2lowlevel(_global.channel[c].chorusAmount));
 }
 //----------------------------------------------------------------
 // getChorusReturn
 //----------------------------------------------------------------
 int DeicsOnze::getChorusReturn() const {
-  return((int)(_global.chorusReturn*(float)MAXFXRETURN/2.0));
+  return(amp2level(_global.chorusReturn/2.0));
 }
 //----------------------------------------------------------------
-// getReturnReturn
+// getReverbReturn
 //----------------------------------------------------------------
 int DeicsOnze::getReverbReturn() const {
-  return((int)(_global.reverbReturn*(float)MAXFXRETURN/2.0));
+  return(amp2level(_global.chorusReturn/2.0));
 }
 
 //----------------------------------------------------------------
@@ -1635,6 +1646,62 @@ inline double outLevel2Amp(int ol) {
 }
 
 //---------------------------------------------------------
+// lowlevel2amp, 
+//  127->0dB->1.0, 0->-27dB->0
+//---------------------------------------------------------
+inline double lowlevel2amp(int l) {
+  double a, b, c, db;
+  if(l==0) return 0.0;
+  else {
+    a = 27.0/127.0;
+    b = -27.0;
+    db = a*l+b;
+    c = -log(2)/3;
+    return exp(-c*db);
+  }
+}
+
+//---------------------------------------------------------
+// level2amp, 
+//  255->0dB->1.0, 0->-27dB->0
+//---------------------------------------------------------
+inline double level2amp(int l) {
+  double a, b, c, db;
+  if(l==0) return 0.0;
+  else {
+    a = 27.0/255.0;
+    b = -27.0;
+    db = a*l+b;
+    c = -log(2.0)/3.0;
+    return exp(-c*db);
+  }
+}
+
+//---------------------------------------------------------
+// amp2level
+// 1.0->0dB->255, 0->-27dB->0
+//---------------------------------------------------------
+inline int amp2level(double amp){
+  double a, b, c;
+  a = 255.0/27.0;
+  b = 255.0;
+  c = log(2.0)/3.0;
+  return (int)(a*(log(amp)/c)+b);
+}
+
+//---------------------------------------------------------
+// amp2lowlevel
+// 1.0->0dB->127, 0->-27dB->0
+//---------------------------------------------------------
+inline int amp2lowlevel(double amp){
+  double a, b, c;
+  a = 127.0/27.0;
+  b = 127.0;
+  c = log(2.0)/3.0;
+  return (int)(a*(log(amp)/c)+b);
+}
+
+//---------------------------------------------------------
 // velo2RAmp, AmpR between 0.0 and 1.0
 //  return an amplitude ratio with respect to _preset->sensitivity.keyVelocity
 //---------------------------------------------------------
@@ -1801,7 +1868,7 @@ void DeicsOnze::programSelect(int c, int hbank, int lbank, int prog) {
 //   setModulation
 //---------------------------------------------------------
 void DeicsOnze::setModulation(int c, int val) {
-  _preset[c]->modulation = (unsigned char) val;
+  _global.channel[c].modulation = (unsigned char) val;
 }
 //---------------------------------------------------------
 //   setPitchBendCoef
@@ -2171,13 +2238,11 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
 	  MAXSTRLENGTHFXLABEL);
   //save FX parameters
   //reverb
-  printf("SAVE REVERB\n");
   for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
     float val = (float)getReverbParam(i);
     memcpy(&buffer[NUM_CONFIGLENGTH + sizeof(float)*i], &val, sizeof(float));
   }
   //chorus
-  printf("SAVE CHORUS\n");
   for(int i = 0; i < _pluginIChorus->plugin()->parameter(); i++) {
     float val = (float)getChorusParam(i);
     memcpy(&buffer[NUM_CONFIGLENGTH
@@ -2366,7 +2431,6 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     _gui->writeEvent(evReverbRet);    
     initPluginReverb(plugins.find((const char*)&data[NUM_REVERB_LIB], 
 				  (const char*)&data[NUM_REVERB_LABEL]));
-    printf("LOAD REVERB\n");
     for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
       float val;
       memcpy(&val, &data[NUM_CONFIGLENGTH + sizeof(float)*i], sizeof(float));
@@ -3145,11 +3209,13 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       }
     } break;
     case CTRL_MODULATION:
-      printf("TODO : CONTROLE MODULATION %d\n", val);
       setModulation(ch, val);
+      if(!fromGui) {
+	MidiEvent ev(0, ch, ME_CONTROLLER, CTRL_MODULATION, val);
+	_gui->writeEvent(ev);
+      }
       break;
     case CTRL_PITCH:
-      printf("CONTROLE PITCH %d\n", val);
       setPitchBendCoef(ch, val);
       break;
     case CTRL_PANPOT:
@@ -3321,7 +3387,7 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
   if(_global.channel[ch].isEnable) {    
     if(velo==0) {//Note off
       p2V=pitchOn2Voice(ch, pitch);
-      printf("Note Off : pitchOn2Voice = %d\n", p2V);
+      //printf("Note Off : pitchOn2Voice = %d\n", p2V);
       if(p2V<_global.channel[ch].nbrVoices) {
 	if(_global.channel[ch].sustain)
 	  _global.channel[ch].voices[p2V].isSustained = true;
@@ -3381,7 +3447,7 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
       {
 	nO2V=noteOff2Voice(ch);
 	newVoice=((nO2V==MAXNBRVOICES)?minVolu2Voice(ch):nO2V);
-	printf("Note On : ch = %d, v = %d, p = %d\n", ch, newVoice, pitch);
+	//printf("Note On : ch = %d, v = %d, p = %d\n", ch, newVoice, pitch);
 	
 	//----------
 	//portamento
@@ -3513,6 +3579,7 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	//some initializations
 	//--------------------
 	_global.channel[ch].voices[newVoice].keyOn = true;
+	_global.channel[ch].voices[newVoice].isSustained = false;
 	_global.channel[ch].voices[newVoice].isOn = true;
 	_global.channel[ch].voices[newVoice].pitch = pitch;
 	_global.channel[ch].isLastNote = true;

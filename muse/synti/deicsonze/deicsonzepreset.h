@@ -466,7 +466,7 @@ class Preset {
     Function function;
     //int globalDetune; //-31 to 31 //now to the channel
     std::string name;
-    unsigned char modulation; //0 to 127
+    //unsigned char modulation; //0 to 127
     int prog; //0 to 127
     //Methods
     void printPreset();

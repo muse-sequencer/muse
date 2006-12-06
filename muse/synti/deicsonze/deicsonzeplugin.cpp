@@ -86,25 +86,17 @@ void DeicsOnze::initPluginChorus(Plugin* pluginChorus) {
 }
 
 void DeicsOnze::setReverbParam(int index, double val) {
-  printf("SET REVERB PARAM index = %d, val = %f\n", index, val);
   _pluginIReverb->controller(index)->setCurVal((float)val);
-  getReverbParam(index);
 }
 void DeicsOnze::setChorusParam(int index, double val) {
-  printf("SET CHORUS PARAM index = %d, val = %f\n", index, val);
   _pluginIChorus->controller(index)->setCurVal((float)val);
-  getChorusParam(index);
 }
 
 double DeicsOnze::getReverbParam(int index) {
-  printf("GET REVERB PARAM index = %d, val = %f\n",
-	 index, _pluginIReverb->controller(index)->curVal().f);
   return _pluginIReverb->controller(index)->curVal().f; 
 }
 
 double DeicsOnze::getChorusParam(int index) {
-  printf("GET CHORUS PARAM index = %d, val = %f\n",
-	 index, _pluginIChorus->controller(index)->curVal().f);
   return _pluginIChorus->controller(index)->curVal().f; 
 }
 
@@ -193,7 +185,6 @@ void DeicsOnzeGui::addPluginSlider(int index, QString text, bool isLog,
 }
 
 void DeicsOnzeGui::buildGuiReverb() {
-  printf("BUILD\n");
   PluginI* plugI = _deicsOnze->_pluginIReverb;
   QString name = plugI->name();
   name.resize(name.size()-2);
@@ -220,8 +211,7 @@ void DeicsOnzeGui::buildGuiReverb() {
     double min, max, val;
     plugI->range(i, &min, &max);
     val = _deicsOnze->getReverbParam(i);
-    printf("BUILD REVERB %d, %f\n", i, val);
-    if(plugI->isBool(i))
+     if(plugI->isBool(i))
       addPluginCheckBox(i, plugI->getParameterName(i), val > 0.0,
 			_reverbSuperWidget, grid, true);
     else if(plugI->isInt(i)) {
@@ -286,7 +276,6 @@ void DeicsOnzeGui::buildGuiChorus() {
 //of the parameter because it sends a double and does not
 //change any thing
 void DeicsOnzeGui::setReverbCheckBox(double v, int i) {
-  printf("setReverbCheckBox(%f, %d)\n", v, i);
   float f = (float)v;
   unsigned char* message = new unsigned char[2+sizeof(float)];
   message[0]=SYSEX_REVERBPARAM;
@@ -302,8 +291,7 @@ void DeicsOnzeGui::setReverbCheckBox(double v, int i) {
 //of the parameter because it sends a double and does not
 //change any thing
 void DeicsOnzeGui::setChorusCheckBox(double v, int i) {
-  printf("setChorusCheckBox(%f, %d)\n", v, i);
-  float f = (float)v;
+ float f = (float)v;
   unsigned char* message = new unsigned char[2+sizeof(float)];
   message[0]=SYSEX_CHORUSPARAM;
   if(i<256) {
@@ -333,7 +321,6 @@ void DeicsOnzeGui::setChorusFloatEntry(double v, int i) {
   setChorusCheckBox(v, i); //because this send the SYSEX
 }
 void DeicsOnzeGui::setChorusSlider(double v, int i) {
-  printf("setChorusSlider(%f, %i)\n", v, i);
   if(_deicsOnze->_pluginIChorus->isInt(i)) v = rint(v);
   updateChorusSlider(v, i);
   updateChorusFloatEntry(v, i);
@@ -356,7 +343,6 @@ void DeicsOnzeGui::updateReverbFloatEntry(double v, int i) {
   }
 }
 void DeicsOnzeGui::updateChorusSlider(double v, int i) {
-  printf("updateChorusSlider(%f, %i)\n", v, i);
   if(i < (int)_reverbSliderVector.size() && _reverbSliderVector[i]) {
     _chorusSliderVector[i]->blockSignals(true);
     _chorusSliderVector[i]->setValue(v);
@@ -364,7 +350,6 @@ void DeicsOnzeGui::updateChorusSlider(double v, int i) {
   }
 }
 void DeicsOnzeGui::updateChorusFloatEntry(double v, int i) {
-  printf("updateChorusFloatEntry(%f, %i)\n", v, i);
   if(i < (int)_chorusFloatEntryVector.size() && _chorusFloatEntryVector[i]) {
     _chorusFloatEntryVector[i]->blockSignals(true);
     _chorusFloatEntryVector[i]->setValue(v);

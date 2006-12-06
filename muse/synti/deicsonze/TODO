@@ -1,7 +1,5 @@
-- Pitch Bend CTRL
-- Modulation CTRL
-- LFO Delay (bug)
-- Rate Scaling
+- Fix LFO Delay bug and modulation CTRL
+- Eg Rate Scaling
 - Foot Control, Modulation Wheel, Breath Control, After Touch
 - analogue reverb
 - Change presetName subcategoryName category with SysEx
@@ -12,3 +10,4 @@
 - Pan per voices
 - Load BUMP preset
 - calibrate portamento and pitch envelope to fit real DX11
+- make deicsonze loadable as standalone by mus

@@ -1405,6 +1405,7 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
       case CTRL_RELEASE_TIME: updateRelease(val); break;
       case CTRL_CHORUS_SEND: updateChannelChorus(val); break;
       case CTRL_REVERB_SEND: updateChannelReverb(val); break;
+      case CTRL_MODULATION: updateModulation(val); break;
       case CTRL_PROGRAM :	
 	int hbank = (val & 0xff0000) >> 16;
 	int lbank = (val & 0xff00) >> 8;
