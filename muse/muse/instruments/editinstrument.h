@@ -43,7 +43,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void instrumentChanged(QListWidgetItem*, QListWidgetItem*);
       void patchChanged(QTreeWidgetItem*, QTreeWidgetItem*);
       void controllerChanged(QListWidgetItem* sel);
-      void sysexChanged(QListWidgetItem* sel);
+      void sysexChanged(QListWidgetItem*, QListWidgetItem*);
       void instrumentNameChanged(const QString&);
       void deletePatchClicked();
       void newPatchClicked();

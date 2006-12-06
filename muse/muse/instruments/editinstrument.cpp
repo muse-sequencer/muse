@@ -49,7 +49,7 @@ EditInstrument::EditInstrument(QWidget* parent)
       connect(listController, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
          SLOT(controllerChanged(QListWidgetItem*)));
       connect(sysexList, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
-         SLOT(sysexChanged(QListWidgetItem*)));
+         SLOT(sysexChanged(QListWidgetItem*, QListWidgetItem*)));
       connect(instrumentName, SIGNAL(textChanged(const QString&)), SLOT(instrumentNameChanged(const QString&)));
       connect(fileSaveAsAction, SIGNAL(triggered()), SLOT(fileSaveAs()));
       connect(fileSaveAction, SIGNAL(triggered()), SLOT(fileSave()));
@@ -441,7 +441,7 @@ void EditInstrument::newSysexClicked()
 
       QString sysexName;
       for (int i = 1;; ++i) {
-            sysexName = QString("Sysex-%d").arg(i);
+            sysexName = QString("Sysex-%1").arg(i);
       
             bool found = false;
             foreach(const SysEx* s, instrument->sysex()) {
@@ -458,7 +458,7 @@ void EditInstrument::newSysexClicked()
       instrument->addSysex(nsysex);
 
       item = new QListWidgetItem(sysexName);
-      QVariant v = QVariant::fromValue((void*)item);
+      QVariant v = QVariant::fromValue((void*)nsysex);
       item->setData(Qt::UserRole, v);
       sysexList->addItem(item);
       sysexList->setCurrentItem(item);
@@ -525,7 +525,7 @@ void EditInstrument::instrumentChanged(QListWidgetItem* sel, QListWidgetItem* ol
             }
       if (!instrument->sysex().isEmpty()) {
             sysexList->setItemSelected(sysexList->item(0), true);
-            sysexChanged(sysexList->item(0));
+            sysexChanged(sysexList->item(0), 0);
             }
       if (!cl->empty()) {
             listController->setItemSelected(listController->item(0), true);
@@ -644,9 +644,39 @@ void EditInstrument::controllerChanged(QListWidgetItem* sel)
 //   sysexChanged
 //---------------------------------------------------------
 
-void EditInstrument::sysexChanged(QListWidgetItem*)
+void EditInstrument::sysexChanged(QListWidgetItem* sel, QListWidgetItem* old)
       {
-      printf("sysexChanged\n");
+      if (old) {
+            QListWidgetItem* item = instrumentList->currentItem();
+            if (item == 0)
+                  return;
+            MidiInstrument* instrument = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
+            SysEx* so = (SysEx*)old->data(Qt::UserRole).value<void*>();
+            if (sysexName->text() != so->name) {
+                  so->name = sysexName->text();
+                  instrument->setDirty(true);
+                  }
+            if (sysexComment->toPlainText() != so->comment) {
+                  so->comment = sysexComment->toPlainText();
+                  instrument->setDirty(true);
+                  }
+            // TODO: check hex values
+            }
+      if (sel == 0) {
+            sysexName->setText("");
+            sysexComment->setText("");
+            sysexData->setText("");
+            sysexName->setEnabled(false);
+            sysexComment->setEnabled(false);
+            sysexData->setEnabled(false);
+            return;
+            }
+      sysexName->setEnabled(true);
+      sysexComment->setEnabled(true);
+      sysexData->setEnabled(true);
+      SysEx* sx = (SysEx*)sel->data(Qt::UserRole).value<void*>();
+      sysexName->setText(sx->name);
+      sysexComment->setText(sx->comment);
       }
 
 //---------------------------------------------------------
