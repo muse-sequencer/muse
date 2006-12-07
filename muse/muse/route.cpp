@@ -345,11 +345,11 @@ const char* RouteNode::tname() const
 void RouteNode::write(Xml& xml, const char* label) const
       {
       if (channel != -1)
-            xml.put("<%s type=\"%s\" channel=\"%d\" name=\"%s\"/>", 
-               label, tname(), channel + 1, name().toUtf8().data());
+            xml.put(QString("<%1 type=\"%2\" channel=\"%3\" name=\"%4\"/>")
+               .arg(label).arg(tname()).arg(channel + 1).arg(name()));
       else
-            xml.put("<%s type=\"%s\" name=\"%s\"/>", 
-               label, tname(), name().toUtf8().data());
+            xml.put(QString("<%1 type=\"%2\" name=\"%3\"/>")
+               .arg(label).arg(tname()).arg(name()));
       }
 
 //---------------------------------------------------------

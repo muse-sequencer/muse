@@ -417,8 +417,8 @@ void MidiPluginI::apply(unsigned from, unsigned to, MidiEventList* il, MidiEvent
 
 void MidiPluginI::writeConfiguration(Xml& xml)
       {
-      xml.stag("midiPlugin file=\"%s\" name=\"%s\"",
-         _plugin->lib().toLatin1().data(), _plugin->name().toLatin1().data());
+      xml.stag(QString("midiPlugin file=\"%1\" name=\"%2\"")
+         .arg(_plugin->lib()).arg(_plugin->name()));
       if (_on == false)
             xml.tag("on", _on);
       if (mempi->hasGui()) {
@@ -439,19 +439,8 @@ void MidiPluginI::writeConfiguration(Xml& xml)
       const unsigned char* p;
       mempi->getInitData(&len, &p);
       if (len) {
-            xml.stag("init len=\"%d\"", len);
-            int col = 0;
-            xml.putLevel();
-            for (int i = 0; i < len; ++i, ++col) {
-                  if (col >= 16) {
-                        xml.put("");
-                        col = 0;
-                        xml.putLevel();
-                        }
-                  xml.nput("%02x ", p[i] & 0xff);
-                  }
-            if (col)
-                  xml.put("");
+            xml.stag(QString("init len=\"%1\"").arg(len));
+            xml.dump(len, p);
             xml.etag("init");
             }
       xml.etag("midiPlugin");

@@ -42,7 +42,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       virtual void fileSaveAs();
       void instrumentChanged(QListWidgetItem*, QListWidgetItem*);
       void patchChanged(QTreeWidgetItem*, QTreeWidgetItem*);
-      void controllerChanged(QListWidgetItem* sel);
+      void controllerChanged(QListWidgetItem*, QListWidgetItem*);
       void sysexChanged(QListWidgetItem*, QListWidgetItem*);
       void instrumentNameChanged(const QString&);
       void deletePatchClicked();
@@ -53,6 +53,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void newControllerClicked();
       void deleteSysexClicked();
       void newSysexClicked();
+      void ctrlTypeChanged(int);
 
    public:
       EditInstrument(QWidget* parent = 0);

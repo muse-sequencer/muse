@@ -165,12 +165,12 @@ void MidiRCList::write(Xml& xml)
       {
       xml.stag("midiRC");
       for (iMidiRC i = begin(); i != end(); ++i) {
-            xml.stag("action id=\"%d\"", i->action);
+            xml.stag(QString("action id=\"%1\"").arg(i->action));
             if (i->event.type() == ME_NOTEON)
-                  xml.stag("noteOn pitch=\"%d\"", i->event.dataA());
+                  xml.stag(QString("noteOn pitch=\"%1\"").arg(i->event.dataA()));
             else if (i->event.type() == ME_CONTROLLER)
-                  xml.stag("controller no=\"%d\" val=\"%d\"",
-                     i->event.dataA(), i->event.dataB());
+                  xml.stag(QString("controller no=\"%1\" val=\"%2\"")
+                     .arg(i->event.dataA()).arg(i->event.dataB()));
             else
                   printf("remote event type %d not supported\n", i->event.type());
             xml.etag("action");

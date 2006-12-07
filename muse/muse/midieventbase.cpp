@@ -100,21 +100,8 @@ void MidiEventBase::write(Xml& xml, const Pos& offset) const
             }
       if (edata.dataLen) {
             s += QString(" datalen=\"%1\"").arg(edata.dataLen);
-            xml.stag(s.toLatin1().data());
-            QString data;
-
-            int col = 0;
-            xml.putLevel();
-            for (int i = 0; i < edata.dataLen; ++i, ++col) {
-                  if (col >= 16) {
-                        xml.put("");
-                        col = 0;
-                        xml.putLevel();
-                        }
-                  xml.nput("%02x ", edata.data[i] & 0xff);
-                  }
-            if (col)
-                  xml.put("");
+            xml.stag(s);
+            xml.dump(edata.dataLen, edata.data);
             xml.etag("event");
             }
       else {
@@ -124,7 +111,7 @@ void MidiEventBase::write(Xml& xml, const Pos& offset) const
                   s += QString(" b=\"%1\"").arg(b);
             if (c)
                   s += QString(" c=\"%1\"").arg(c);
-            xml.tagE(s.toLatin1().data());
+            xml.tagE(s);
             }
       }
 

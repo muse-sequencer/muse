@@ -372,7 +372,7 @@ void Mixer::showTracksChanged(QAction* id)
 
 void Mixer::write(Xml& xml, const char* name)
       {
-      xml.stag("%s", name);
+      xml.stag(QString(name));
       xml.tag("geometry",       geometry());
       xml.tag("showMidiTracks",   cfg->showMidiTracks);
       xml.tag("showOutputTracks", cfg->showOutputTracks);

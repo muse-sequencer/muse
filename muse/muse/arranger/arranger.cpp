@@ -1026,12 +1026,12 @@ void Arranger::writeStatus(Xml& xml)
 
       for (int i = 0; i < Track::TRACK_TYPES; ++i) {
             TrGroupList* gl = &glist[i];
-            xml.stag("TrackConf type=\"%d\"", i);
+            xml.stag(QString("TrackConf type=\"%1\"").arg(i));
             for (iTrGroup ig = gl->begin(); ig != gl->end(); ++ig) {
                   TrElementList& el = *ig;
                   xml.stag("group");
                   for (iTrElement ie = el.begin(); ie != el.end(); ++ie)
-                        xml.tagE("element id=\"%d\"", (*ie)->id);
+                        xml.tagE(QString("element id=\"%1\"").arg((*ie)->id));
                   xml.etag("group");
                   }
             xml.etag("TrackConf");

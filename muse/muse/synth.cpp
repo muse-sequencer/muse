@@ -401,19 +401,9 @@ void MessSynthIF::write(Xml& xml) const
       _mess->getInitData(&len, &p);
       if (len) {
             xml.stag("midistate");
-            xml.stag("event type=\"%d\" datalen=\"%d\"", Sysex, len);
+            xml.stag(QString("event type=\"%1\" datalen=\"%2\"").arg(Sysex).arg(len));
             int col = 0;
-            xml.putLevel();
-            for (int i = 0; i < len; ++i, ++col) {
-                  if (col >= 16) {
-                        xml.put("");
-                        col = 0;
-                        xml.putLevel();
-                        }
-                  xml.nput("%02x ", p[i] & 0xff);
-                  }
-            if (col)
-                  xml.put("");
+            xml.dump(len, p);
             xml.etag("event");
             xml.etag("midistate");
             }
@@ -583,8 +573,6 @@ bool MessSynthIF::putEvent(const MidiEvent& ev)
                   printf("MidiOut<%s>", synti->name().toLatin1().data());
                   ev.dump();
                   }
-if (rv)
-      printf("SYNT BUSY\n");
             }
       return rv;
       }

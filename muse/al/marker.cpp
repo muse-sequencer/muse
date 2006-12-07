@@ -61,9 +61,9 @@ void MarkerList::write(Xml& xml) const
       for (ciMarker i = begin(); i != end(); ++i) {
             const Marker& m = i->second;
       	if (m.type() == TICKS)
-            	xml.tagE("marker tick=\"%d\" name=\"%s\"", m.tick(), m.name().toLatin1().data());
+            	xml.tagE(QString("marker tick=\"%1\" name=\"%2\"").arg(m.tick()).arg(m.name()));
       	else
-            	xml.tagE("marker sample=\"%d\" name=\"%s\"", m.frame(), m.name().toLatin1().data());
+            	xml.tagE(QString("marker sample=\"%1\" name=\"%2\"").arg(m.frame()).arg(m.name()));
             }
       }
 

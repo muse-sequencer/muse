@@ -308,11 +308,11 @@ void PluginI::writeConfiguration(Xml& xml, bool prefader)
 
 void PluginI::writeConfiguration1(Xml& xml, bool prefader)
       {
-      xml.stag("plugin pre=\"%d\" file=\"%s\" label=\"%s\" channel=\"%d\"",
-         prefader, 
-         _plugin->lib().toLatin1().data(), 
-         _plugin->label().toLatin1().data(), 
-         _channel);
+      xml.stag(QString("plugin pre=\"%1\" file=\"%2\" label=\"%3\" channel=\"%4\"")
+         .arg(prefader)
+         .arg(_plugin->lib())
+         .arg(_plugin->label())
+         .arg(_channel));
 //         instances * _plugin->inports());
       if (_on == false)
             xml.tag("on", _on);

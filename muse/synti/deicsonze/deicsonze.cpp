@@ -2111,12 +2111,12 @@ void DeicsOnze::writeConfiguration(AL::Xml* xml) {
   //xml->intTag(NBRVOICESSTR, (int)_global.nbrVoices);
   //xml->strTag(CHANNELNUMSTR, (_global.channelNum==-1?ALLSTR:
   //                            str.setNum(_global.channelNum+1)));
-  xml->tag(QUALITYSTR, (_global.quality==high?HIGHSTR:
+  xml->tag(QUALITYSTR, QString((_global.quality==high?HIGHSTR:
 			   (_global.quality==middle?MIDDLESTR:
-			    (_global.quality==low?LOWSTR:ULTRALOWSTR))));
+			    (_global.quality==low?LOWSTR:ULTRALOWSTR)))));
   xml->tag(FONTSIZESTR, _global.fontSize);
-  xml->tag(SAVECONFIGSTR, (_saveConfig?YESSTRDEI:NOSTRDEI));
-  xml->tag(SAVEONLYUSEDSTR, (_saveOnlyUsed?YESSTRDEI:NOSTRDEI));  
+  xml->tag(SAVECONFIGSTR, QString((_saveConfig?YESSTRDEI:NOSTRDEI)));
+  xml->tag(SAVEONLYUSEDSTR, QString((_saveOnlyUsed?YESSTRDEI:NOSTRDEI)));
   xml->tag(TEXTCOLORSTR,
 		reinterpret_cast<const QColor &>(*_gui->tColor));
   xml->tag(BACKGROUNDCOLORSTR,
@@ -2125,10 +2125,10 @@ void DeicsOnze::writeConfiguration(AL::Xml* xml) {
 		reinterpret_cast<const QColor &>(*_gui->etColor));
   xml->tag(EDITBACKGROUNDCOLORSTR,
 		reinterpret_cast<const QColor &>(*_gui->ebColor));
-  xml->tag(ISINITSETSTR, (_isInitSet?YESSTRDEI:NOSTRDEI));
-  xml->tag(INITSETPATHSTR, _initSetPath.toAscii().data());
-  xml->tag(ISBACKGROUNDPIXSTR, (_isBackgroundPix?YESSTRDEI:NOSTRDEI));
-  xml->tag(BACKGROUNDPIXPATHSTR, _backgroundPixPath.toAscii().data());
+  xml->tag(ISINITSETSTR, QString((_isInitSet?YESSTRDEI:NOSTRDEI)));
+  xml->tag(INITSETPATHSTR, QString(_initSetPath));
+  xml->tag(ISBACKGROUNDPIXSTR, QString((_isBackgroundPix?YESSTRDEI:NOSTRDEI)));
+  xml->tag(BACKGROUNDPIXPATHSTR, _backgroundPixPath);
 
   xml->etag(DEICSONZECONFIGURATIONSTR);
 }

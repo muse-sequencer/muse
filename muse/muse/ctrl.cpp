@@ -264,17 +264,19 @@ void Ctrl::write(Xml& xml)
       {
       QString s("controller id=\"%1\" name=\"%2\" cur=\"%3\" type=\"%4\" min=\"%5\" max=\"%6\" default=\"%7\"");
 
+      QString cn = Xml::xmlString(_name);
+
       if (empty()) {
             if (_type & INT)
-                  xml.tagE(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
+                  xml.tagE(s.arg(id()).arg(cn).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
             else
-                  xml.tagE(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
+                  xml.tagE(s.arg(id()).arg(cn).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
             return;
             }
       if (_type & INT)
-            xml.stag(s.arg(id()).arg(_name).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
+            xml.stag(s.arg(id()).arg(cn).arg(curVal().i).arg(_type).arg(min.i).arg(max.i).arg(_default.i).toAscii().data());
       else
-            xml.stag(s.arg(id()).arg(_name).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
+            xml.stag(s.arg(id()).arg(cn).arg(curVal().f).arg(_type).arg(min.f).arg(max.f).arg(_default.f).toAscii().data());
 
       int i = 0;
       for (ciCtrlVal ic = begin(); ic != end(); ++ic) {
@@ -285,23 +287,18 @@ void Ctrl::write(Xml& xml)
             if (_type & LOG)
                   val.f = (val.f <= -1000.0) ? 0.0f : pow(10.0f, val.f);
             if (_type & INT) {
-                  xml.nput("%d %d,", time, val.i);
+                  xml << time << ' ' << val.i << ',';
                   }
-            else {
-                  QString fval,ttime;
-                  fval.setNum(val.f);
-                  ttime.setNum(time);
-                  QString str=ttime + " "+ fval + ",";
-                  xml.nput(str.toAscii().data());
-                  }
+            else
+                  xml << time << ' ' << val.f << ',';
             ++i;
             if (i >= 4) {
-                  xml.nput("\n");
+                  xml << endl;
                   i = 0;
                   }
             }
       if (i)
-            xml.nput("\n");
+            xml << endl;
       xml.etag("controller");
       }
 

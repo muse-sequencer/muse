@@ -187,7 +187,7 @@ void DrumMapEntry::read(QDomNode n)
                   break;
                   }
             }
-      if (anote = -1)
+      if (anote == -1)
             anote = enote;
       }
 

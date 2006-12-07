@@ -25,6 +25,9 @@
 #include "al/xml.h"
 #include "gconfig.h"
 
+extern int string2sysex(const QString& s, unsigned char** data);
+extern QString sysex2string(int len, unsigned char* data);
+
 //---------------------------------------------------------
 //   EditInstrument
 //---------------------------------------------------------
@@ -47,7 +50,7 @@ EditInstrument::EditInstrument(QWidget* parent)
          SLOT(patchChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
       instrumentChanged(instrumentList->item(0), instrumentList->item(0));
       connect(listController, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
-         SLOT(controllerChanged(QListWidgetItem*)));
+         SLOT(controllerChanged(QListWidgetItem*, QListWidgetItem*)));
       connect(sysexList, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
          SLOT(sysexChanged(QListWidgetItem*, QListWidgetItem*)));
       connect(instrumentName, SIGNAL(textChanged(const QString&)), SLOT(instrumentNameChanged(const QString&)));
@@ -63,6 +66,8 @@ EditInstrument::EditInstrument(QWidget* parent)
       connect(newController, SIGNAL(clicked()), SLOT(newControllerClicked()));
       connect(deleteSysex, SIGNAL(clicked()), SLOT(deleteSysexClicked()));
       connect(newSysex, SIGNAL(clicked()), SLOT(newSysexClicked()));
+
+      connect(ctrlType,SIGNAL(activated(int)), SLOT(ctrlTypeChanged(int)));
       }
 
 //---------------------------------------------------------
@@ -519,17 +524,17 @@ void EditInstrument::instrumentChanged(QListWidgetItem* sel, QListWidgetItem* ol
 
       foreach(const SysEx* s, instrument->sysex()) {
             QListWidgetItem* item = new QListWidgetItem(s->name);
-            QVariant v = QVariant::fromValue((void*)item);
+            QVariant v = QVariant::fromValue((void*)s);
             item->setData(Qt::UserRole, v);
             sysexList->addItem(item);
             }
-      if (!instrument->sysex().isEmpty()) {
-            sysexList->setItemSelected(sysexList->item(0), true);
-            sysexChanged(sysexList->item(0), 0);
-            }
+
+      sysexList->setItemSelected(sysexList->item(0), true);
+      sysexChanged(sysexList->item(0), 0);
+
       if (!cl->empty()) {
             listController->setItemSelected(listController->item(0), true);
-            controllerChanged(listController->item(0));
+            controllerChanged(listController->item(0), 0);
             }
       }
 
@@ -548,18 +553,22 @@ void EditInstrument::patchChanged(QTreeWidgetItem* sel, QTreeWidgetItem* old)
             if (p->name != patchNameEdit->text()) {
                   p->name = patchNameEdit->text();
                   instrument->setDirty(true);
+printf("patch mod 1\n");
                   }
             if (p->hbank != spinBoxHBank->value()) {
                   p->hbank = spinBoxHBank->value();
                   instrument->setDirty(true);
+printf("patch mod 2\n");
                   }
             if (p->lbank != spinBoxLBank->value()) {
                   p->hbank = spinBoxHBank->value();
                   instrument->setDirty(true);
+printf("patch mod 3\n");
                   }
             if (p->prog != spinBoxProgram->value()) {
                   p->prog = spinBoxProgram->value();
                   instrument->setDirty(true);
+printf("patch mod 4\n");
                   }
             // there is no logical xor in c++
             bool a = p->typ & 1;
@@ -604,39 +613,52 @@ void EditInstrument::patchChanged(QTreeWidgetItem* sel, QTreeWidgetItem* old)
 //   controllerChanged
 //---------------------------------------------------------
 
-void EditInstrument::controllerChanged(QListWidgetItem* sel)
+void EditInstrument::controllerChanged(QListWidgetItem* sel, QListWidgetItem* old)
       {
+      if (old) {
+            QListWidgetItem* item = instrumentList->currentItem();
+            if (item == 0)
+                  return;
+            MidiInstrument* instrument = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
+            MidiController* oc = (MidiController*)old->data(Qt::UserRole).value<void*>();
+            int ctrlH = spinBoxHCtrlNo->value();
+            int ctrlL = spinBoxLCtrlNo->value();
+            MidiController::ControllerType type = (MidiController::ControllerType)ctrlType->currentIndex();
+            int num = MidiController::genNum(type, ctrlH, ctrlL);
+
+            if (num != oc->num()) {
+                  oc->setNum(num);
+                  instrument->setDirty(true);
+                  }
+            if (spinBoxMin->value() != oc->minVal()) {
+                  oc->setMinVal(spinBoxMin->value());
+                  instrument->setDirty(true);
+                  }
+            if (spinBoxMax->value() != oc->maxVal()) {
+                  oc->setMaxVal(spinBoxMax->value());
+                  instrument->setDirty(true);
+                  }
+            if (spinBoxDefault->value() != oc->initVal()) {
+                  oc->setInitVal(spinBoxDefault->value());
+                  instrument->setDirty(true);
+                  }
+            }
       if (sel == 0 || sel->data(Qt::UserRole).value<void*>() == 0) {
             // patchNameEdit->setText("");
             return;
             }
       MidiController* c = (MidiController*)sel->data(Qt::UserRole).value<void*>();
       entryName->setText(c->name());
-      MidiController::ControllerType type = c->type();
-      switch(type) {
-            case MidiController::Controller7:
-                  spinBoxHCtrlNo->setEnabled(false);
-                  break;
-            case MidiController::Controller14:
-            case MidiController::RPN:
-            case MidiController::NRPN:
-            case MidiController::RPN14:
-            case MidiController::NRPN14:
-                  spinBoxHCtrlNo->setEnabled(true);
-                  break;
-            case MidiController::Pitch:
-            case MidiController::Program:
-            case MidiController::Velo:
-                  break;
-            }
-
       int ctrlH = (c->num() >> 8) & 0x7f;
       int ctrlL = c->num() & 0x7f;
-      spinBoxType->setCurrentIndex(int(type));
+      int type = int(c->type());
+      ctrlType->setCurrentIndex(type);
+      ctrlTypeChanged(type);
       spinBoxHCtrlNo->setValue(ctrlH);
       spinBoxLCtrlNo->setValue(ctrlL);
       spinBoxMin->setValue(c->minVal());
       spinBoxMax->setValue(c->maxVal());
+      spinBoxDefault->setRange(c->minVal()-1, c->maxVal());
       spinBoxDefault->setValue(c->initVal());
       }
 
@@ -655,12 +677,20 @@ void EditInstrument::sysexChanged(QListWidgetItem* sel, QListWidgetItem* old)
             if (sysexName->text() != so->name) {
                   so->name = sysexName->text();
                   instrument->setDirty(true);
+printf("sysex mod 1\n");
                   }
             if (sysexComment->toPlainText() != so->comment) {
                   so->comment = sysexComment->toPlainText();
                   instrument->setDirty(true);
+printf("sysex mod 2\n");
                   }
-            // TODO: check hex values
+            unsigned char* data;
+            int len = string2sysex(sysexData->toPlainText(), &data);
+            if (so->dataLen != len || !memcmp(data, so->data, len)) {
+                  delete so->data;
+                  so->data = data;
+                  so->dataLen = len;
+                  }
             }
       if (sel == 0) {
             sysexName->setText("");
@@ -674,9 +704,11 @@ void EditInstrument::sysexChanged(QListWidgetItem* sel, QListWidgetItem* old)
       sysexName->setEnabled(true);
       sysexComment->setEnabled(true);
       sysexData->setEnabled(true);
+
       SysEx* sx = (SysEx*)sel->data(Qt::UserRole).value<void*>();
       sysexName->setText(sx->name);
       sysexComment->setText(sx->comment);
+      sysexData->setText(sysex2string(sx->dataLen, sx->data));
       }
 
 //---------------------------------------------------------
@@ -708,5 +740,35 @@ bool EditInstrument::checkDirty(MidiInstrument* i)
             return false;
             }
       return n == 2;
+      }
+
+//---------------------------------------------------------
+//   ctrlTypeChanged
+//---------------------------------------------------------
+
+void EditInstrument::ctrlTypeChanged(int idx)
+      {
+      MidiController::ControllerType t = (MidiController::ControllerType)idx;
+      switch (t) {
+            case MidiController::RPN:
+            case MidiController::NRPN:
+            case MidiController::Controller7:
+                  spinBoxHCtrlNo->setEnabled(false);
+                  spinBoxLCtrlNo->setEnabled(true);
+                  break;
+            case MidiController::Controller14:
+            case MidiController::RPN14:
+            case MidiController::NRPN14:
+                  spinBoxHCtrlNo->setEnabled(true);
+                  spinBoxLCtrlNo->setEnabled(true);
+                  break;
+            case MidiController::Pitch:
+            case MidiController::Program:
+                  spinBoxHCtrlNo->setEnabled(false);
+                  spinBoxLCtrlNo->setEnabled(false);
+                  break;
+            default:
+                  break;
+            }      
       }
 

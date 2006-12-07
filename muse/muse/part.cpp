@@ -210,7 +210,7 @@ void Part::write(Xml& xml)
             }
 
       if (id != -1)
-            xml.stag("part cloneId=\"%d\"", id);
+            xml.stag(QString("part cloneId=\"%1\"").arg(id));
       else
             xml.stag("part");
       if (!_name.isEmpty())
@@ -227,8 +227,7 @@ void Part::write(Xml& xml)
       if (_xmag != -1.0)
             xml.tag("xmag", _xmag);
       for (ciCtrlCanvas i = ctrlCanvasList.begin(); i != ctrlCanvasList.end(); ++i)
-            xml.tagE("CtrlCanvas h=\"%d\" id=\"%d\"",
-               i->height, i->ctrlId);
+            xml.tagE(QString("CtrlCanvas h=\"%1\" id=\"%2\"").arg(i->height).arg(i->ctrlId));
       if (_fillLen)
             xml.tag("fillLen", _fillLen);
       if (_mute)

@@ -372,7 +372,7 @@ void SigList::read(QDomNode node)
 
 void SigEvent::write(Xml& xml, int at) const
       {
-      xml.stag("sig at=\"%d\"", at);
+      xml.stag(QString("sig at=\"%1\"").arg(at));
       xml.tag("tick", tick);
       xml.tag("nom", sig.z);
       xml.tag("denom", sig.n);

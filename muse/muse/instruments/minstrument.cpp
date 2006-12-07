@@ -34,19 +34,57 @@ MidiInstrument* genericMidiInstrument;
 //   string2sysex
 //---------------------------------------------------------
 
-int string2sysex(const QString&, unsigned char** data)
+int string2sysex(const QString& s, unsigned char** data)
       {
-      *data = 0;
-      return 0;
+      const char* src = s.toLatin1().data();
+      char buffer[2048];
+      char* dst = buffer;
+
+      while (*src) {
+            while (*src == ' ' || *src == '\n')
+                  ++src;
+            char* ep;
+            long val = strtol(src, &ep, 16);
+            if (ep == src) {
+                  QMessageBox::information(0,
+                     QString("MusE"),
+                     QWidget::tr("Cannot convert sysex string"));
+                  return 0;
+                  }
+            src    = ep;
+            *dst++ = val;
+            if (dst - buffer >= 2048) {
+                  QMessageBox::information(0,
+                     QString("MusE"),
+                     QWidget::tr("Hex String too long (2048 bytes limit)"));
+                  return 0;
+                  }
+            }
+      int len = dst - buffer;
+      unsigned char* b = new unsigned char[len+1];
+      memcpy(b, buffer, len);
+      b[len] = 0;
+      *data = b;
+      return len;
       }
 
 //---------------------------------------------------------
 //   sysex2string
 //---------------------------------------------------------
 
-QString sysex2string(int, unsigned char*)
+QString sysex2string(int len, unsigned char* data)
       {
-      return QString("");      
+      QString d;
+      QString s;
+      for (int i = 0; i < len; ++i) {
+            if ((i > 0) && ((i % 8)==0)) {
+                  d += "\n";
+                  }
+            else if (i)
+                  d += " ";
+            d += s.sprintf("%02x", data[i]);
+            }
+      return d;
       }
 
 //---------------------------------------------------------
@@ -321,14 +359,14 @@ void Patch::read(QDomNode node, bool dr, MidiInstrument* instrument)
 void Patch::write(Xml& xml)
       {
       if (drumMap == 0) {
-            QString s = QString("Patch name=\"%1\"").arg(name);
+            QString s = QString("Patch name=\"%1\"").arg(Xml::xmlString(name));
             if (typ != -1)
                   s += QString(" mode=\"%d\"").arg(typ);
             s += QString(" hbank=\"%1\" lbank=\"%2\" prog=\"%3\"").arg(hbank).arg(lbank).arg(prog);
             xml.tagE(s);
             return;
             }
-      QString s = QString("drummap name=\"%1\"").arg(name);
+      QString s = QString("drummap name=\"%1\"").arg(Xml::xmlString(name));
       s += QString(" hbank=\"%1\" lbank=\"%2\" prog=\"%3\"").arg(hbank).arg(lbank).arg(prog);
       xml.stag(s);
       for (int i = 0; i < DRUM_MAPSIZE; ++i) {
@@ -559,14 +597,14 @@ void MidiInstrument::write(Xml& xml)
       {
       xml.header();
       xml.stag("muse version=\"2.1\"");
-      xml.stag("MidiInstrument name=\"%s\"", iname().toUtf8().data());
+      xml.stag(QString("MidiInstrument name=\"%1\"").arg(Xml::xmlString(iname())));
 
       foreach(const QString& s, _categories)
-            xml.tagE("Category name=\"%s\"", s.toUtf8().data());
+            xml.tagE(QString("Category name=\"%1\"").arg(Xml::xmlString(s)));
 
       std::vector<PatchGroup>* pg = groups();
       for (std::vector<PatchGroup>::iterator g = pg->begin(); g != pg->end(); ++g) {
-            xml.stag("PatchGroup name=\"%s\"", g->name.toUtf8().data());
+            xml.stag(QString("PatchGroup name=\"%1\"").arg(Xml::xmlString(g->name)));
             for (iPatch p = g->patches.begin(); p != g->patches.end(); ++p)
                   (*p)->write(xml);
             xml.etag("PatchGroup");

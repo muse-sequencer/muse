@@ -554,7 +554,7 @@ void Set::readSet(QDomNode setNode) {
 //---------------------------------------------------------
 void Set::writeSet(AL::Xml* xml, bool onlyUsed) {
     xml->stag("deicsOnzeSet version=\"1.0\"");
-    xml->tag("setName",_setName.c_str());
+    xml->tag("setName", QString(_setName.c_str()));
     for(std::vector<Category*>::iterator i=_categoryVector.begin();
 	i!=_categoryVector.end(); i++) (*i)->writeCategory(xml, onlyUsed);
     xml->etag("deicsOnzeSet");
@@ -590,7 +590,7 @@ void Category::readCategory(QDomNode catNode) {
 void Category::writeCategory(AL::Xml* xml, bool onlyUsed) {
     if((!onlyUsed || _isUsed)) {
 	xml->stag("deicsOnzeCategory version=\"1.0\"");
-	xml->tag("categoryName",_categoryName.c_str());
+	xml->tag("categoryName", QString(_categoryName.c_str()));
 	xml->tag("hbank", _hbank);
 	for(std::vector<Subcategory*>::iterator i=_subcategoryVector.begin();
 	    i!=_subcategoryVector.end(); i++)
@@ -629,7 +629,7 @@ void Subcategory::readSubcategory(QDomNode subNode) {
 void Subcategory::writeSubcategory(AL::Xml* xml, bool onlyUsed) {
     if((!onlyUsed || _isUsed)) {
 	xml->stag("deicsOnzeSubcategory version=\"1.0\"");
-	xml->tag("subcategoryName",_subcategoryName.c_str());
+	xml->tag("subcategoryName", QString(_subcategoryName.c_str()));
 	xml->tag("lbank", _lbank);
 	for(std::vector<Preset*>::iterator i=_presetVector.begin();
 	    i!=_presetVector.end(); i++) (*i)->writePreset(xml, onlyUsed);
@@ -911,14 +911,14 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	xml->stag("deicsOnzePreset version=\"1.0\"");
 	
 	//algorithm
-	xml->tag(ALGSTR, (algorithm==FIRST? "FIRST":
+	xml->tag(ALGSTR, QString((algorithm==FIRST? "FIRST":
 			     (algorithm==SECOND? "SECOND":
 			      (algorithm==THIRD? "THIRD":
 			       (algorithm==FOURTH? "FOURTH":
 				(algorithm==FIFTH? "FIFTH":
 				 (algorithm==SIXTH? "SIXTH":
 				  (algorithm==SEVENTH? "SEVENTH":
-				   "EIGHTH"))))))));
+				   "EIGHTH")))))))));
 	//feedback
 	xml->tag(FEEDBACKSTR, feedback);
 	//quick edit
@@ -929,14 +929,14 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	//xml->tag(RELEASESTR, release);
 	//lfo
 	xml->stag("lfo");
-	xml->tag(WAVESTR, (lfo.wave==SAWUP? "SAWUP":
+	xml->tag(WAVESTR, QString((lfo.wave==SAWUP? "SAWUP":
 			      (lfo.wave==SQUARE? "SQUARE":
-			       (lfo.wave==TRIANGL? "TRIANGL":"SHOLD"))));
+			       (lfo.wave==TRIANGL? "TRIANGL":"SHOLD")))));
 	xml->tag(SPEEDSTR, lfo.speed);
 	xml->tag(DELAYSTR, lfo.delay);
 	xml->tag(PMODDEPTHSTR, lfo.pModDepth);
 	xml->tag(AMODDEPTHSTR, lfo.aModDepth);
-	xml->tag(SYNCSTR, (lfo.sync==true? "on":"off"));
+	xml->tag(SYNCSTR, QString((lfo.sync==true? "on":"off")));
 	xml->etag("lfo");
 	//sensitivity
 	xml->stag("sensitivity");
@@ -944,7 +944,7 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	xml->tag(AMSSTR, sensitivity.amplitude);
 	for(int i=0; i<NBROP; i++) {
 	    sprintf(s, AMESTR "%d",i+1);
-	    xml->tag(s, (sensitivity.ampOn[i]==true? "on":"off"));
+	    xml->tag(s, QString((sensitivity.ampOn[i]==true? "on":"off")));
 	}
 	for(int i=0; i<NBROP; i++) {
 	    sprintf(s,EBSSTR "%d",i+1);
@@ -963,7 +963,7 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	}
 	for(int i=0; i<NBROP; i++) {
 	    sprintf(s, FIXSTR "%d",i+1);
-	    xml->tag(s, (frequency[i].isFix==true? "yes":"no"));
+	    xml->tag(s, QString((frequency[i].isFix==true? "yes":"no")));
 	}
 	for(int i=0; i<NBROP; i++) {
 	    sprintf(s, FIXRANGESTR "%d",i+1);
@@ -973,13 +973,13 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	//oscWave
 	for(int i=0; i<NBROP; i++) {
 	    sprintf(s, OSWSTR "%d",i+1);
-	    xml->tag(s, (oscWave[i]==W1?"W1":
+	    xml->tag(s, QString((oscWave[i]==W1?"W1":
 			    (oscWave[i]==W2?"W2":
 			     (oscWave[i]==W3?"W3":
 			      (oscWave[i]==W4?"W4":
 			       (oscWave[i]==W5?"W5":
 				(oscWave[i]==W6?"W6":
-				 (oscWave[i]==W7?"W7":"W8"))))))));
+				 (oscWave[i]==W7?"W7":"W8")))))))));
 	}
 	//detune
 	for(int i=0; i<NBROP; i++) {
@@ -1010,9 +1010,9 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	}
 	for(int i=0; i<NBROP; i++) {
 	    sprintf(s, SHFTSTR "%d",i+1);
-	    xml->tag(s, (eg[i].egShift==VOF?"VOF":
+	    xml->tag(s, QString((eg[i].egShift==VOF?"VOF":
 			    (eg[i].egShift==V48?"V48":
-			     (eg[i].egShift==V24?"V24":"V12"))));
+			     (eg[i].egShift==V24?"V24":"V12")))));
 	}
 	xml->etag("eg");
 	//pitchEg
@@ -1043,12 +1043,12 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	//function
 	xml->stag("function");
 	xml->tag(TRANSPOSESTR, function.transpose);
-	xml->tag(POLYMODESTR, (function.mode==POLY? "POLY":"MONO"));
+	xml->tag(POLYMODESTR, QString((function.mode==POLY? "POLY":"MONO")));
 	xml->tag(PBENDRANGESTR, function.pBendRange);
-	xml->tag(PORTAMODESTR, (function.portamento==FINGER?
-	       "FINGER":"FULL"));
+	xml->tag(PORTAMODESTR, QString((function.portamento==FINGER?
+	       "FINGER":"FULL")));
 	xml->tag(PORTATIMESTR, function.portamentoTime);
-	xml->tag(FSWSTR, (function.footSw==POR? "POR":"SUS"));
+	xml->tag(FSWSTR, QString((function.footSw==POR? "POR":"SUS")));
 	xml->tag(FCVOLUMESTR, function.fcVolume);
 	xml->tag(FCPITCHSTR, function.fcPitch);
 	xml->tag(FCAMPLITUDESTR, function.fcAmplitude);
@@ -1067,7 +1067,7 @@ void Preset::writePreset(AL::Xml* xml, bool onlyUsed) {
 	//globalDetune
 	//xml->tag("globalDetune", globalDetune);
 	//preset name
-	xml->tag("name", name.c_str());
+	xml->tag("name", QString(name.c_str()));
 	//bank prog
 	xml->tag("prog",prog);
 	

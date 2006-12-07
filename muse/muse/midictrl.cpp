@@ -245,8 +245,8 @@ void MidiController::write(Xml& xml) const
       else
             sl.setNum(l);
 
-      xml.tagE("Controller name=\"%s\" type=\"%s\" h=\"%d\" l=\"%s\" min=\"%d\" max\"%d\" init=\"%d\"",
-         _name.toLatin1().data(), type.toLatin1().data(), h, sl.toLatin1().data(), _minVal, _maxVal, _initVal);
+      xml.tagE(QString("Controller name=\"%1\" type=\"%2\" h=\"%3\" l=\"%4\" min=\"%5\" max\"%6\" init=\"%7\"")
+         .arg(Xml::xmlString(_name)).arg(type).arg(h).arg(sl).arg(_minVal).arg(_maxVal).arg(_initVal));
       }
 
 //---------------------------------------------------------
@@ -328,5 +328,35 @@ void MidiController::read(QDomNode node)
 MidiController::ControllerType MidiController::type() const         
       { 
       return midiControllerType(num()); 
+      }
+
+//---------------------------------------------------------
+//   genNum
+//---------------------------------------------------------
+
+
+int MidiController::genNum(MidiController::ControllerType t, int h, int l)
+      {
+      int val = (h << 8) + l;
+      switch(t) {
+            case Controller7:
+                  return l;
+            case Controller14:
+                  return val + CTRL_14_OFFSET;
+            case RPN:
+                  return l + CTRL_RPN_OFFSET;
+            case NRPN:
+                  return l + CTRL_NRPN_OFFSET;
+            case RPN14:
+                  return val + CTRL_RPN14_OFFSET;
+            case NRPN14:
+                  return val + CTRL_NRPN14_OFFSET;
+            case Pitch:
+                  return CTRL_PITCH;
+            case Program:
+                  return CTRL_PROGRAM;
+            default:
+                  return -1;
+            }      
       }
 

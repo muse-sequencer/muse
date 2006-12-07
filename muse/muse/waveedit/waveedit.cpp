@@ -273,15 +273,15 @@ void WaveEdit::write(Xml& xml) const
             int trkIdx   = song->tracks()->indexOf(track);
             int partIdx  = track->parts()->index(part);
             xml.stag("part");
-            xml.put("%d:%d", trkIdx, partIdx);
+            xml.put(QString("%1:%2").arg(trkIdx).arg(partIdx));
             xml.etag("part");
             }
       xml.stag(metaObject()->className());
       xml.writeProperties(this);
       const CtrlEditList* el = view->getCtrlEditors();
       for (ciCtrlEdit i = el->begin(); i != el->end(); ++i) {
-            xml.tagE("CtrlEdit h=\"%d\" id=\"%d\"",
-               (*i)->height(), (*i)->ctrl()->id());
+            xml.tagE(QString("CtrlEdit h=\"%1\" id=\"%2\"")
+               .arg((*i)->height()).arg((*i)->ctrl()->id()));
             }
       xml.etag(metaObject()->className());
       }

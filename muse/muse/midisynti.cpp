@@ -112,19 +112,8 @@ void MidiSynti::write(Xml& xml) const
       const unsigned char* p;
       _synti->getInitData(&len, &p);
       if (len) {
-            xml.stag("init len=\"%d\"", len);
-            int col = 0;
-            xml.putLevel();
-            for (int i = 0; i < len; ++i, ++col) {
-                  if (col >= 16) {
-                        xml.put("");
-                        col = 0;
-                        xml.putLevel();
-                        }
-                  xml.nput("%02x ", p[i] & 0xff);
-                  }
-            if (col)
-                  xml.put("");
+            xml.stag(QString("init len=\"%1\"").arg(len));
+            xml.dump(len, p);
             xml.etag("init");
             }
       xml.etag("MidiSynti");

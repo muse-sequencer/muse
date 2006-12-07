@@ -28,7 +28,6 @@ namespace AL {
 //---------------------------------------------------------
 
 class Xml : public QTextStream {
-      static const int BS = 2048;
       int level;
 
    public:
@@ -38,27 +37,23 @@ class Xml : public QTextStream {
       void header();
       void putLevel();
 
-      void put(const char* format, ...);
-      void nput(const char* format, ...);
+      void put(const QString&);
 
-      void stag(const char* format, ...);
       void stag(const QString&);
       void etag(const char*);
 
       void tagE(const QString&);
-      void tagE(const char* format, ...);
-      void tdata(const QString&);
 
       void tag(const char* name, int);
       void tag(const char* name, unsigned);
       void tag(const char* name, const double& val);
       void tag(const char* name, float val);
-      void tag(const char* name, const char* val);
       void tag(const char* name, const QString& s);
       void tag(const char* name, const QColor& color);
       void tag(const char* name, const QWidget* g);
       void tag(const char* name, const QRect& r);
 
+      void dump(int n, const unsigned char*);
       void writeProperties(const QObject*);
 
       static QString xmlString(const QString&);

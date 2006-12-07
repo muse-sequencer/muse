@@ -55,67 +55,23 @@ void Xml::putLevel()
 
 void Xml::header()
       {
-      *this << "<?xml version=\"1.0\" encoding=\"utf8\"?>\n";
+      *this << "<?xml version=\"1.0\" encoding=\"utf8\"?>" << endl;
       }
 
 //---------------------------------------------------------
 //   put
 //---------------------------------------------------------
 
-void Xml::put(const char* format, ...)
-      {
-      va_list args;
-      va_start(args, format);
-      putLevel();
-      char buffer[BS];
-      vsnprintf(buffer, BS, format, args);
-      va_end(args);
-    	*this << buffer;
-      *this << '\n';
-      }
-
-//---------------------------------------------------------
-//   nput
-//---------------------------------------------------------
-
-void Xml::nput(const char* format, ...)
-      {
-      va_list args;
-      va_start(args, format);
-      char buffer[BS];
-      vsnprintf(buffer, BS, format, args);
-    	*this << buffer;
-      va_end(args);
-      }
-
-//---------------------------------------------------------
-//   tdata
-//---------------------------------------------------------
-
-void Xml::tdata(const QString& s)
+void Xml::put(const QString& s)
       {
       putLevel();
-      *this << s << endl;
+    	*this << xmlString(s) << endl;
       }
 
 //---------------------------------------------------------
 //   stag
 //    <mops attribute="value">
 //---------------------------------------------------------
-
-void Xml::stag(const char* format, ...)
-      {
-      va_list args;
-      va_start(args, format);
-      putLevel();
-      *this << '<';
-      char buffer[BS];
-      vsnprintf(buffer, BS, format, args);
-    	*this << buffer;
-      va_end(args);
-      *this << '>' << endl;
-      ++level;
-      }
 
 void Xml::stag(const QString& s)
       {
@@ -140,19 +96,6 @@ void Xml::etag(const char* s)
 //    <mops attribute="value"/>
 //---------------------------------------------------------
 
-void Xml::tagE(const char* format, ...)
-      {
-      va_list args;
-      va_start(args, format);
-      putLevel();
-      *this << '<';
-      char buffer[BS];
-      vsnprintf(buffer, BS, format, args);
-    	*this << buffer;
-      va_end(args);
-      *this << "/>" << endl;
-      }
-
 void Xml::tagE(const QString& s)
       {
       putLevel();
@@ -162,67 +105,51 @@ void Xml::tagE(const QString& s)
 void Xml::tag(const char* name, int val)
       {
       putLevel();
-      *this << "<" << name << ">" << val << "</" << name << ">\n";
+      *this << '<' << name << '>' << val << "</" << name << '>' << endl;
       }
 
 void Xml::tag(const char* name, unsigned val)
       {
       putLevel();
-      *this << "<" << name << ">" << val << "</" << name << ">\n";
+      *this << '<' << name << '>' << val << "</" << name << '>' << endl;
       }
 
 void Xml::tag(const char* name, float val)
       {
       putLevel();
-      *this << QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      *this << '<' << name << '>' << val << "</" << name << '>' << endl;
       }
 
 void Xml::tag(const char* name, const double& val)
       {
       putLevel();
-      QString s("<%1>%2</%3>\n");
-      *this << s.arg(name).arg(val).arg(name);
+      *this << '<' << name << '>' << val << "</" << name << '>' << endl;
       }
 
-void Xml::tag(const char* name, const char* s)
+void Xml::tag(const char* name, const QString& val)
       {
-      tag(name, QString(s));
+      putLevel();
+      *this << "<" << name << ">" << xmlString(val) << "</" << name << '>' << endl;
       }
-
-//---------------------------------------------------------
-//   colorTag
-//---------------------------------------------------------
 
 void Xml::tag(const char* name, const QColor& color)
       {
       putLevel();
-      char buffer[BS];
-      snprintf(buffer, BS, "<%s r=\"%d\" g=\"%d\" b=\"%d\" />\n",
-	    name, color.red(), color.green(), color.blue());
-    	*this << buffer;
+    	*this << QString("<%1 r=\"%2\" g=\"%3\" b=\"%4\"/>")
+         .arg(name).arg(color.red()).arg(color.green()).arg(color.blue()) << endl;
       }
-
-//---------------------------------------------------------
-//   geometryTag
-//---------------------------------------------------------
 
 void Xml::tag(const char* name, const QWidget* g)
       {
       tag(name, QRect(g->pos(), g->size()));
       }
 
-//---------------------------------------------------------
-//   qrectTag
-//---------------------------------------------------------
-
 void Xml::tag(const char* name, const QRect& r)
       {
       putLevel();
    	*this << "<" << name;
-      char buffer[BS];
-      snprintf(buffer, BS, " x=\"%d\" y=\"%d\" w=\"%d\" h=\"%d\" />\n",
-         r.x(), r.y(), r.width(), r.height());
-    	*this << buffer;
+      *this << QString(" x=\"%1\" y=\"%2\" w=\"%3\" h=\"%4\"/>")
+         .arg(r.x()).arg(r.y()).arg(r.width()).arg(r.height()) << endl;
       }
 
 //---------------------------------------------------------
@@ -239,18 +166,6 @@ QString Xml::xmlString(const QString& ss)
       s.replace('"', "&quot;");
       return s;
       }
-
-//---------------------------------------------------------
-//   strTag
-//---------------------------------------------------------
-
-void Xml::tag(const char* name, const QString& val)
-      {
-      putLevel();
-      *this << "<" << name << ">";
-      *this << xmlString(val) << "</" << name << ">\n";
-      }
-
 
 //---------------------------------------------------------
 //   readGeometry
@@ -304,11 +219,8 @@ void Xml::writeProperties(const QObject* o)
                         {
                     	QPoint p = v.toPoint();
       			putLevel();
-   				*this << "<" << name;
-                        char buffer[BS];
-      			snprintf(buffer, BS, " x=\"%d\" y=\"%d\" />\n",
-         			   p.x(), p.y());
-    				*this << buffer;
+   				*this << "<" << name << QString(" x=\"%1\" y=\"%2\" />")
+         			   .arg(p.x()).arg(p.y()) << endl;
                         }
                         break;
 
@@ -367,5 +279,33 @@ void readProperties(QObject* o, QDomNode node)
       if (p.isWritable())
             p.write(o, v);
       }
+
+//---------------------------------------------------------
+//   dump
+//---------------------------------------------------------
+
+void Xml::dump(int len, const unsigned char* p)
+      {
+      putLevel();
+      int col = 0;
+      setFieldWidth(5);
+      setNumberFlags(numberFlags() | QTextStream::ShowBase);
+      setIntegerBase(16);
+      for (int i = 0; i < len; ++i, ++col) {
+            if (col >= 16) {
+                  setFieldWidth(0);
+                  *this << endl;
+                  col = 0;
+                  putLevel();
+                  setFieldWidth(5);
+                  }
+            *this << (p[i] & 0xff);
+            }
+      if (col)
+            *this << endl << dec;
+      setFieldWidth(0);
+      setIntegerBase(10);
+      }
+
 }
 

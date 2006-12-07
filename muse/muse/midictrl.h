@@ -132,6 +132,7 @@ class MidiController {
       void setMinVal(int val)             { _minVal = val;   }
       void setMaxVal(int val)             { _maxVal = val;   }
       ControllerType type() const;
+      static int genNum(ControllerType, int, int);
       };
 
 //---------------------------------------------------------

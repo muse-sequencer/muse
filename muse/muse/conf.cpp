@@ -433,9 +433,9 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
       xml.tag("mtctype", AL::mtcType);
 
       xml.stag("mtcoffset");
-      xml.put("%02d:%02d:%02d:%02d:%02d",
-        mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
-        mtcOffset.f(), mtcOffset.sf());
+      xml.put(QString("%1:%2:%3:%4:%5")
+        .arg(mtcOffset.h()).arg(mtcOffset.m()).arg(mtcOffset.s())
+        .arg(mtcOffset.f()).arg(mtcOffset.sf()));
       xml.etag("mtcoffset");
 
       xml.tag("extSync", extSyncFlag);
@@ -503,9 +503,9 @@ void MusE::writeConfiguration(Xml& xml) const
 
       xml.tag("mtctype", AL::mtcType);
       xml.stag("mtcoffset");
-      xml.put("%02d:%02d:%02d:%02d:%02d",
-        mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
-        mtcOffset.f(), mtcOffset.sf());
+      xml.put(QString("%1:%2:%3:%4:%5")
+        .arg(mtcOffset.h()).arg(mtcOffset.m()).arg(mtcOffset.s())
+        .arg(mtcOffset.f()).arg(mtcOffset.sf()));
       xml.etag("mtcoffset");
       xml.tag("extSync", extSyncFlag);
       xml.tag("genMTCSync", genMTCSync);
@@ -657,7 +657,7 @@ void MidiFileConfig::cancelClicked()
 
 void MixerConfig::write(Xml& xml, const char* name)
       {
-      xml.stag("%s", name);
+      xml.stag(QString(name));
       xml.tag("geometry",       geometry);
       xml.tag("showMidiTracks",   showMidiTracks);
       xml.tag("showMidiSyntiPorts", showMidiSyntiPorts);
