@@ -24,6 +24,9 @@
 #include "ui_editinstrument.h"
 
 class MidiInstrument;
+class SysEx;
+class MidiController;
+struct Patch;
 
 //---------------------------------------------------------
 //   EditInstrument
@@ -35,6 +38,10 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       bool fileSave(MidiInstrument*, const QString& name);
       void closeEvent(QCloseEvent*);
       bool checkDirty(MidiInstrument*);
+      void updateInstrument(MidiInstrument*);
+      void updateSysex(MidiInstrument*, SysEx*);
+      void updateController(MidiInstrument*, MidiController*);
+      void updatePatch(MidiInstrument* instrument, Patch* p);
 
    private slots:
       virtual void fileNew();

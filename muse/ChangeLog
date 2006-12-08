@@ -1,4 +1,6 @@
-08.12 (ng) deicsonze
+08.12 (ws)
+      - first version of midi instrument editor (*.idf files)
+      (ng) deicsonze
       - fix LFO and Ctrl modulation
 07.12 (ws)
       - xml lib cleanups

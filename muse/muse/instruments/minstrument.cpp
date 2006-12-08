@@ -432,6 +432,17 @@ void MidiInstrument::read(QDomNode node)
             else if (tag == "Controller") {
                   MidiController* mc = new MidiController();
                   mc->read(node);
+                  //
+                  // HACK: make predefined "Program" controller overloadable
+                  //
+                  if (mc->name() == "Program") {
+                        for (iMidiController i = _controller->begin(); i != _controller->end(); ++i) {
+                              if ((*i)->name() == mc->name()) {
+                                    _controller->erase(i);
+                                    break;
+                                    }
+                              }
+                        }
                   _controller->push_back(mc);
                   }
             else if (tag == "Init")
@@ -612,5 +623,6 @@ void MidiInstrument::write(Xml& xml)
       for (iMidiController ic = _controller->begin(); ic != _controller->end(); ++ic)
             (*ic)->write(xml);
       xml.etag("MidiInstrument");
+      xml.etag("muse");
       }
 

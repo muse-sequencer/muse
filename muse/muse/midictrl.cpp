@@ -193,10 +193,13 @@ MidiController::MidiController()
       _minVal  = 0;
       _maxVal  = 127;
       _initVal = 0;
+      _moveWithPart = true;
       }
 
-MidiController::MidiController(const QString& s, int n, int min, int max, int init)
-   : _name(s), _num(n), _minVal(min), _maxVal(max), _initVal(init)
+MidiController::MidiController(const QString& s, int n, int min, int max, int init,
+   bool mwp)
+   : _name(s), _num(n), _minVal(min), _maxVal(max), _initVal(init),
+     _moveWithPart(mwp)
       {
       }
 
@@ -245,8 +248,14 @@ void MidiController::write(Xml& xml) const
       else
             sl.setNum(l);
 
-      xml.tagE(QString("Controller name=\"%1\" type=\"%2\" h=\"%3\" l=\"%4\" min=\"%5\" max\"%6\" init=\"%7\"")
-         .arg(Xml::xmlString(_name)).arg(type).arg(h).arg(sl).arg(_minVal).arg(_maxVal).arg(_initVal));
+      QString s = QString("Controller name=\"%1\" type=\"%2\" h=\"%3\" l=\"%4\" min=\"%5\" max=\"%6\" init=\"%7\"")
+         .arg(Xml::xmlString(_name)).arg(type).arg(h).arg(sl).arg(_minVal).arg(_maxVal).arg(_initVal);
+      if (_comment.isEmpty())
+            xml.tagE(s);
+      else {
+            xml.putLevel();
+            xml << '<' << s << '>' << Xml::xmlString(_comment) << "</Controller>\n";
+            }
       }
 
 //---------------------------------------------------------
@@ -260,7 +269,8 @@ void MidiController::read(QDomNode node)
       int l    = 0;
 
       QDomElement e = node.toElement();
-      _name = e.attribute("name");
+      _name    = e.attribute("name");
+      _comment = e.text();
       t = ctrlType2Int(e.attribute("type"));
       int h = e.attribute("h","0").toInt(0,0);
       QString s = e.attribute("l");

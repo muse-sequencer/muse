@@ -72,7 +72,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget3" >
           <property name="currentIndex" >
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab" >
            <attribute name="title" >
@@ -466,7 +466,7 @@ handled like normal controllers.</string>
                     </widget>
                    </item>
                    <item row="0" column="2" >
-                    <widget class="QLineEdit" name="entryName" />
+                    <widget class="QLineEdit" name="ctrlName" />
                    </item>
                    <item row="1" column="0" colspan="2" >
                     <widget class="QLabel" name="label_2" >
@@ -476,7 +476,7 @@ handled like normal controllers.</string>
                     </widget>
                    </item>
                    <item row="1" column="2" >
-                    <widget class="QTextEdit" name="textEdit" />
+                    <widget class="QTextEdit" name="ctrlComment" />
                    </item>
                    <item row="2" column="0" >
                     <widget class="QLabel" name="TextLabel2_4" >
@@ -994,22 +994,5 @@ handled like normal controllers.</string>
  <resources>
   <include location="../muse.qrc" />
  </resources>
- <connections>
-  <connection>
-   <sender>toolBar</sender>
-   <signal>actionTriggered(QAction*)</signal>
-   <receiver>EditInstrumentBase</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel" >
-     <x>34</x>
-     <y>58</y>
-    </hint>
-    <hint type="destinationlabel" >
-     <x>161</x>
-     <y>546</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

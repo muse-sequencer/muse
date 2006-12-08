@@ -111,18 +111,23 @@ class MidiController {
             };
    private:
       QString _name;
+      QString _comment;
       int _num;               // Controller Number
       int _minVal;            // controller value range (used in gui)
       int _maxVal;
       int _initVal;
+      bool _moveWithPart;
 
    public:
       MidiController();
-      MidiController(const QString& n, int num, int min, int max, int init);
-      const QString& name() const         { return _name;   }
-      int num() const                     { return _num;    }
-      void setName(const QString& s)      { _name = s;      }
-      void setNum(int v)                  { _num = v;       }
+      MidiController(const QString& n, int num, int min, int max, int init,
+         bool mwp = true);
+      const QString& name() const         { return _name;    }
+      void setName(const QString& s)      { _name = s;       }
+      const QString& comment() const      { return _comment; }
+      void setComment(const QString& s)   { _comment = s;    }
+      int num() const                     { return _num;     }
+      void setNum(int v)                  { _num = v;        }
       void write(Xml& xml) const;
       void read(QDomNode);
       int minVal() const                  { return _minVal;  }
@@ -131,6 +136,8 @@ class MidiController {
       void setInitVal(int val)            { _initVal = val;  }
       void setMinVal(int val)             { _minVal = val;   }
       void setMaxVal(int val)             { _maxVal = val;   }
+      bool moveWithPart() const           { return _moveWithPart; }
+      void setMoveWithPart(bool v)        { _moveWithPart = v; }
       ControllerType type() const;
       static int genNum(ControllerType, int, int);
       };

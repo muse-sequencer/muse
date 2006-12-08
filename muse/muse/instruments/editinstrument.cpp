@@ -57,6 +57,7 @@ EditInstrument::EditInstrument(QWidget* parent)
       connect(fileSaveAsAction, SIGNAL(triggered()), SLOT(fileSaveAs()));
       connect(fileSaveAction, SIGNAL(triggered()), SLOT(fileSave()));
       connect(fileNewAction, SIGNAL(triggered()), SLOT(fileNew()));
+      connect(fileExitAction, SIGNAL(triggered()), SLOT(close()));
 
       connect(deletePatch, SIGNAL(clicked()), SLOT(deletePatchClicked()));
       connect(newPatch, SIGNAL(clicked()), SLOT(newPatchClicked()));
@@ -112,8 +113,9 @@ void EditInstrument::fileSave()
             fileSaveAs();
       else {
             QFile f(instrument->filePath());
-            if (!f.open(QIODevice::WriteOnly))
+            if (!f.open(QIODevice::WriteOnly)) {
                   fileSaveAs();
+                  }
             else {
                   f.close();
                   if (fileSave(instrument, instrument->filePath()))
@@ -137,6 +139,7 @@ bool EditInstrument::fileSave(MidiInstrument* instrument, const QString& name)
             return false;
             }
       Xml xml(&f);
+      updateInstrument(instrument);
       instrument->write(xml);
       f.close();
       if (f.error()) {
@@ -159,7 +162,12 @@ void EditInstrument::fileSaveAs()
             return;
       MidiInstrument* instrument = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
       QString path = QDir::homePath() + "/" + config.instrumentPath;
-      path += QString("/%1.idf").arg(instrument->iname());
+      if (instrument->filePath().isEmpty())
+            path += QString("/%1.idf").arg(instrument->iname());
+      else {
+            QFileInfo fi(instrument->filePath());
+            path += QString("/%1.idf").arg(fi.baseName());
+            }
       QString s = QFileDialog::getSaveFileName(this,
          tr("MusE: Save Instrument Definition"),
          path,
@@ -476,11 +484,6 @@ void EditInstrument::newSysexClicked()
 
 void EditInstrument::instrumentChanged(QListWidgetItem* sel, QListWidgetItem* old)
       {
-      patchView->clear();
-      listController->clear();
-      category->clear();
-      sysexList->clear();
-
       if (sel == 0)
             return;
       if (old) {
@@ -488,6 +491,11 @@ void EditInstrument::instrumentChanged(QListWidgetItem* sel, QListWidgetItem* ol
             checkDirty(oi);
             oi->setDirty(false);
             }
+
+      patchView->clear();
+      listController->clear();
+      category->clear();
+      sysexList->clear();
 
       // populate patch list
 
@@ -519,6 +527,8 @@ void EditInstrument::instrumentChanged(QListWidgetItem* sel, QListWidgetItem* ol
             item->setData(Qt::UserRole, v);
             listController->addItem(item);
             }
+      listController->setItemSelected(listController->item(0), true);
+      controllerChanged(listController->item(0), 0);
 
       category->addItems(instrument->categories());
 
@@ -539,6 +549,52 @@ void EditInstrument::instrumentChanged(QListWidgetItem* sel, QListWidgetItem* ol
       }
 
 //---------------------------------------------------------
+//   updatePatch
+//---------------------------------------------------------
+
+void EditInstrument::updatePatch(MidiInstrument* instrument, Patch* p)
+      {
+      if (p->name != patchNameEdit->text()) {
+            p->name = patchNameEdit->text();
+            instrument->setDirty(true);
+            }
+      if (p->hbank != spinBoxHBank->value()) {
+            p->hbank = spinBoxHBank->value();
+            instrument->setDirty(true);
+            }
+      if (p->lbank != spinBoxLBank->value()) {
+            p->hbank = spinBoxHBank->value();
+            instrument->setDirty(true);
+            }
+      if (p->prog != spinBoxProgram->value()) {
+            p->prog = spinBoxProgram->value();
+            instrument->setDirty(true);
+            }
+      // there is no logical xor in c++
+      bool a = p->typ & 1;
+      bool b = p->typ & 2;
+      bool c = p->typ & 4;
+      bool aa = checkBoxGM->isChecked();
+      bool bb = checkBoxGS->isChecked();
+      bool cc = checkBoxXG->isChecked();
+      if ((a ^ aa) || (b ^ bb) || (c ^ cc)) {
+            int value = 0;
+            if (checkBoxGM->isChecked())
+                  value |= 1;
+            if (checkBoxGS->isChecked())
+                  value |= 2;
+            if (checkBoxXG->isChecked())
+                  value |= 4;
+            p->typ = value;
+            instrument->setDirty(true);
+            }
+      if (p->categorie != category->currentIndex()) {
+            p->categorie = category->currentIndex();
+            instrument->setDirty(true);
+            }
+      }
+
+//---------------------------------------------------------
 //   patchChanged
 //---------------------------------------------------------
 
@@ -550,48 +606,7 @@ void EditInstrument::patchChanged(QTreeWidgetItem* sel, QTreeWidgetItem* old)
                   return;
             MidiInstrument* instrument = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
             Patch* p = (Patch*)old->data(0, Qt::UserRole).value<void*>();
-            if (p->name != patchNameEdit->text()) {
-                  p->name = patchNameEdit->text();
-                  instrument->setDirty(true);
-printf("patch mod 1\n");
-                  }
-            if (p->hbank != spinBoxHBank->value()) {
-                  p->hbank = spinBoxHBank->value();
-                  instrument->setDirty(true);
-printf("patch mod 2\n");
-                  }
-            if (p->lbank != spinBoxLBank->value()) {
-                  p->hbank = spinBoxHBank->value();
-                  instrument->setDirty(true);
-printf("patch mod 3\n");
-                  }
-            if (p->prog != spinBoxProgram->value()) {
-                  p->prog = spinBoxProgram->value();
-                  instrument->setDirty(true);
-printf("patch mod 4\n");
-                  }
-            // there is no logical xor in c++
-            bool a = p->typ & 1;
-            bool b = p->typ & 2;
-            bool c = p->typ & 4;
-            bool aa = checkBoxGM->isChecked();
-            bool bb = checkBoxGS->isChecked();
-            bool cc = checkBoxXG->isChecked();
-            if ((a ^ aa) || (b ^ bb) || (c ^ cc)) {
-                  int value = 0;
-                  if (checkBoxGM->isChecked())
-                        value |= 1;
-                  if (checkBoxGS->isChecked())
-                        value |= 2;
-                  if (checkBoxXG->isChecked())
-                        value |= 4;
-                  p->typ = value;
-                  instrument->setDirty(true);
-                  }
-            if (p->categorie != category->currentIndex()) {
-                  p->categorie = category->currentIndex();
-                  instrument->setDirty(true);
-                  }
+            updatePatch(instrument, p);
             }
       if (sel == 0 || sel->data(0, Qt::UserRole).value<void*>() == 0) {
             patchNameEdit->setText("");
@@ -610,6 +625,47 @@ printf("patch mod 4\n");
       }
 
 //---------------------------------------------------------
+//   updateController
+//---------------------------------------------------------
+
+void EditInstrument::updateController(MidiInstrument* instrument, MidiController* oc)
+      {
+      int ctrlH = spinBoxHCtrlNo->value();
+      int ctrlL = spinBoxLCtrlNo->value();
+      MidiController::ControllerType type = (MidiController::ControllerType)ctrlType->currentIndex();
+      int num = MidiController::genNum(type, ctrlH, ctrlL);
+
+      if (num != oc->num()) {
+            oc->setNum(num);
+            instrument->setDirty(true);
+            }
+      if (spinBoxMin->value() != oc->minVal()) {
+            oc->setMinVal(spinBoxMin->value());
+            instrument->setDirty(true);
+            }
+      if (spinBoxMax->value() != oc->maxVal()) {
+            oc->setMaxVal(spinBoxMax->value());
+            instrument->setDirty(true);
+            }
+      if (spinBoxDefault->value() != oc->initVal()) {
+            oc->setInitVal(spinBoxDefault->value());
+            instrument->setDirty(true);
+            }
+      if (moveWithPart->isChecked() ^ oc->moveWithPart()) {
+            oc->setMoveWithPart(moveWithPart->isChecked());
+            instrument->setDirty(true);
+            }
+      if (ctrlName->text() != oc->name()) {
+            oc->setName(ctrlName->text());
+            instrument->setDirty(true);
+            }
+      if (ctrlComment->toPlainText() != oc->comment()) {
+            oc->setComment(ctrlComment->toPlainText());
+            instrument->setDirty(true);
+            }
+      }
+
+//---------------------------------------------------------
 //   controllerChanged
 //---------------------------------------------------------
 
@@ -621,34 +677,16 @@ void EditInstrument::controllerChanged(QListWidgetItem* sel, QListWidgetItem* ol
                   return;
             MidiInstrument* instrument = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
             MidiController* oc = (MidiController*)old->data(Qt::UserRole).value<void*>();
-            int ctrlH = spinBoxHCtrlNo->value();
-            int ctrlL = spinBoxLCtrlNo->value();
-            MidiController::ControllerType type = (MidiController::ControllerType)ctrlType->currentIndex();
-            int num = MidiController::genNum(type, ctrlH, ctrlL);
-
-            if (num != oc->num()) {
-                  oc->setNum(num);
-                  instrument->setDirty(true);
-                  }
-            if (spinBoxMin->value() != oc->minVal()) {
-                  oc->setMinVal(spinBoxMin->value());
-                  instrument->setDirty(true);
-                  }
-            if (spinBoxMax->value() != oc->maxVal()) {
-                  oc->setMaxVal(spinBoxMax->value());
-                  instrument->setDirty(true);
-                  }
-            if (spinBoxDefault->value() != oc->initVal()) {
-                  oc->setInitVal(spinBoxDefault->value());
-                  instrument->setDirty(true);
-                  }
+            updateController(instrument, oc);
             }
       if (sel == 0 || sel->data(Qt::UserRole).value<void*>() == 0) {
-            // patchNameEdit->setText("");
+            ctrlName->setText("");
+            ctrlComment->setText("");
             return;
             }
       MidiController* c = (MidiController*)sel->data(Qt::UserRole).value<void*>();
-      entryName->setText(c->name());
+      ctrlName->setText(c->name());
+      ctrlComment->setText(c->comment());
       int ctrlH = (c->num() >> 8) & 0x7f;
       int ctrlL = c->num() & 0x7f;
       int type = int(c->type());
@@ -660,6 +698,30 @@ void EditInstrument::controllerChanged(QListWidgetItem* sel, QListWidgetItem* ol
       spinBoxMax->setValue(c->maxVal());
       spinBoxDefault->setRange(c->minVal()-1, c->maxVal());
       spinBoxDefault->setValue(c->initVal());
+      moveWithPart->setChecked(c->moveWithPart());
+      }
+
+//---------------------------------------------------------
+//   updateSysex
+//---------------------------------------------------------
+
+void EditInstrument::updateSysex(MidiInstrument* instrument, SysEx* so)
+      {
+      if (sysexName->text() != so->name) {
+            so->name = sysexName->text();
+            instrument->setDirty(true);
+            }
+      if (sysexComment->toPlainText() != so->comment) {
+            so->comment = sysexComment->toPlainText();
+            instrument->setDirty(true);
+            }
+      unsigned char* data;
+      int len = string2sysex(sysexData->toPlainText(), &data);
+      if (so->dataLen != len || !memcmp(data, so->data, len)) {
+            delete so->data;
+            so->data = data;
+            so->dataLen = len;
+            }
       }
 
 //---------------------------------------------------------
@@ -673,24 +735,8 @@ void EditInstrument::sysexChanged(QListWidgetItem* sel, QListWidgetItem* old)
             if (item == 0)
                   return;
             MidiInstrument* instrument = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
-            SysEx* so = (SysEx*)old->data(Qt::UserRole).value<void*>();
-            if (sysexName->text() != so->name) {
-                  so->name = sysexName->text();
-                  instrument->setDirty(true);
-printf("sysex mod 1\n");
-                  }
-            if (sysexComment->toPlainText() != so->comment) {
-                  so->comment = sysexComment->toPlainText();
-                  instrument->setDirty(true);
-printf("sysex mod 2\n");
-                  }
-            unsigned char* data;
-            int len = string2sysex(sysexData->toPlainText(), &data);
-            if (so->dataLen != len || !memcmp(data, so->data, len)) {
-                  delete so->data;
-                  so->data = data;
-                  so->dataLen = len;
-                  }
+            SysEx* so = (SysEx*)item->data(Qt::UserRole).value<void*>();
+            updateSysex(instrument, so);
             }
       if (sel == 0) {
             sysexName->setText("");
@@ -718,6 +764,7 @@ printf("sysex mod 2\n");
 
 bool EditInstrument::checkDirty(MidiInstrument* i)
       {
+      updateInstrument(i);
       if (!i->dirty())
             return false;
       int n = QMessageBox::warning(this, tr("MusE"),
@@ -770,5 +817,28 @@ void EditInstrument::ctrlTypeChanged(int idx)
             default:
                   break;
             }      
+      }
+
+//---------------------------------------------------------
+//   updateInstrument
+//---------------------------------------------------------
+
+void EditInstrument::updateInstrument(MidiInstrument* instrument)
+      {
+      QListWidgetItem* sysexItem = sysexList->currentItem();
+      if (sysexItem) {
+            SysEx* so = (SysEx*)sysexItem->data(Qt::UserRole).value<void*>();
+            updateSysex(instrument, so);
+            }
+      QListWidgetItem* ctrlItem = listController->currentItem();
+      if (ctrlItem) {
+            MidiController* ctrl = (MidiController*)ctrlItem->data(Qt::UserRole).value<void*>();
+            updateController(instrument, ctrl);
+            }
+      QTreeWidgetItem* patchItem = patchView->currentItem();
+      if (patchItem) {      
+            Patch* p = (Patch*)patchItem->data(0, Qt::UserRole).value<void*>();
+            updatePatch(instrument, p);
+            }
       }
 
