@@ -852,18 +852,48 @@ void DeicsOnze::setLfo(int c/*channel*/)
     _global.channel[c].lfoMaxIndex =
       (_global.channel[c].lfoFreq==0?0:(int)((1.0/_global.channel[c].lfoFreq)
 				  *(double)_global.deiSampleRate));
-    _global.channel[c].lfoPitch = 
-      (((double)_preset[c]->lfo.pModDepth/(double)MAXPMODDEPTH)
-       *(COEFPLFO(_preset[c]->sensitivity.pitch)));
+    double totalpDepth = 
+      ((double)_preset[c]->lfo.pModDepth +
+       (((double)_global.channel[c].modulation)/127.0)
+       * ((double)(MAXPMODDEPTH - _preset[c]->lfo.pModDepth))
+       )/(double)MAXPMODDEPTH;
+    _global.channel[c].lfoPitch =
+      totalpDepth * (COEFPLFO(_preset[c]->sensitivity.pitch));
     //Amplitude LFO
+    double totalaDepth = 
+      ((double)_preset[c]->lfo.aModDepth +
+       (((double)_global.channel[c].modulation)/127.0)
+       * ((double)(MAXAMODDEPTH - _preset[c]->lfo.aModDepth))
+       )/(double)MAXAMODDEPTH;
     _global.channel[c].lfoMaxAmp =
-      (((double)_preset[c]->lfo.aModDepth/(double)MAXAMODDEPTH)
-       *(COEFALFO(_preset[c]->sensitivity.amplitude)));
+      totalaDepth * (COEFALFO(_preset[c]->sensitivity.amplitude));
     //index is concidered on the frequency of the delay
     _global.channel[c].lfoDelayMaxIndex = 
       delay2Time(_preset[c]->lfo.delay)*_global.channel[c].lfoFreq;
     _global.channel[c].lfoDelayInct = 
       (double)(RESOLUTION/4)/_global.channel[c].lfoDelayMaxIndex;
+    
+    //update the actuall values controlling the modulation now
+    if(_global.channel[c].lfoDelayIndex<(double)(RESOLUTION/4)) {
+      double delayCoef =
+	(double)waveTable[0][(int)_global.channel[c].lfoDelayIndex];
+      _global.channel[c].lfoMaxCoefInct =
+	exp((log(2.0)/12.0)*_global.channel[c].lfoPitch*delayCoef);
+      _global.channel[c].lfoCoefInctInct =
+	exp((log(2.0)/12.0)*((2*_global.channel[c].lfoPitch*delayCoef)
+			     /_global.channel[c].lfoMaxIndex));
+      _global.channel[c].lfoDelayIndex += _global.channel[c].lfoDelayInct;
+      _global.channel[c].lfoMaxDAmp = delayCoef*_global.channel[c].lfoMaxAmp;
+    }
+    else
+      if(_global.channel[c].delayPassed) {
+	_global.channel[c].lfoMaxCoefInct = 
+	  exp((log(2.0)/12.0)*_global.channel[c].lfoPitch);
+	_global.channel[c].lfoCoefInctInct=
+	  exp((log(2.0)/12.0)*((2*_global.channel[c].lfoPitch)
+			       /_global.channel[c].lfoMaxIndex));
+	_global.channel[c].lfoMaxDAmp=_global.channel[c].lfoMaxAmp;
+      }
 }
 
 //-----------------------------------------------------------------
@@ -1452,93 +1482,79 @@ inline double pitch2freq(double p) {
 inline void lfoUpdate(Preset* p, Channel* p_c, float* wt) {
   double delayCoef;
 
-  if(p_c->lfoIndex==0)
-    {
-      if(p_c->lfoDelayIndex<(double)(RESOLUTION/4))
-	{
-	  delayCoef=(double)wt[(int)p_c->lfoDelayIndex];
-	  p_c->lfoMaxCoefInct=exp((log(2.0)/12.0)*p_c->lfoPitch*delayCoef);
-	  p_c->lfoCoefInctInct=
-	    exp((log(2.0)/12.0)*((2*p_c->lfoPitch*delayCoef)
-				 /p_c->lfoMaxIndex));
-	  p_c->lfoDelayIndex+=p_c->lfoDelayInct;
-	  p_c->lfoMaxDAmp=delayCoef*p_c->lfoMaxAmp;
-	}
-      else
-	if(!p_c->delayPassed)
-	  {
-	    p_c->lfoMaxCoefInct=exp((log(2.0)/12.0)*p_c->lfoPitch);
-	    p_c->lfoCoefInctInct=
-	      exp((log(2.0)/12.0)*((2*p_c->lfoPitch)/p_c->lfoMaxIndex));
-	    p_c->delayPassed=true;
-	    p_c->lfoMaxDAmp=p_c->lfoMaxDAmp;
-	  }
+  if(p_c->lfoIndex==0 || p_c->lfoIndex==p_c->lfoMaxIndex/2) {
+    if(p_c->lfoDelayIndex<(double)(RESOLUTION/4)) {
+      delayCoef=(double)wt[(int)p_c->lfoDelayIndex];
+      p_c->lfoMaxCoefInct=exp((log(2.0)/12.0)*p_c->lfoPitch*delayCoef);
+      p_c->lfoCoefInctInct=
+	exp((log(2.0)/12.0)*((2*p_c->lfoPitch*delayCoef)/p_c->lfoMaxIndex));
+      p_c->lfoDelayIndex+=p_c->lfoDelayInct;
+      p_c->lfoMaxDAmp=delayCoef*p_c->lfoMaxAmp;
     }
+    else
+      if(!p_c->delayPassed) {
+	p_c->lfoMaxCoefInct=exp((log(2.0)/12.0)*p_c->lfoPitch);
+	p_c->lfoCoefInctInct=
+	  exp((log(2.0)/12.0)*((2*p_c->lfoPitch)/p_c->lfoMaxIndex));
+	p_c->delayPassed=true;
+	p_c->lfoMaxDAmp=p_c->lfoMaxAmp;
+      }
+  }
 
-  switch(p->lfo.wave)
-    {
-    case SAWUP :
-      if(p_c->lfoIndex==0)
-	{
-	  p_c->lfoCoefInct=1.0/(p_c->lfoMaxCoefInct);
-	  p_c->lfoCoefAmp=p_c->lfoMaxDAmp/(double)p_c->lfoMaxIndex;
-	  p_c->lfoAmp=1.0;
-	}
-      else
-	{
-	  p_c->lfoCoefInct*=p_c->lfoCoefInctInct;
-	  p_c->lfoAmp-=p_c->lfoCoefAmp;
-	}
-      break;
-    case SQUARE :
-      if(p_c->lfoIndex==0)
-	{
-	  p_c->lfoCoefInct=p_c->lfoMaxCoefInct;
-	  p_c->lfoAmp=1.0;
-	}
-      if(p_c->lfoIndex==(p_c->lfoMaxIndex/2))
-	{
-	  p_c->lfoCoefInct=1.0/p_c->lfoMaxCoefInct;
-	  p_c->lfoAmp=1.0-p_c->lfoMaxDAmp;
-	}
-      break;
-    case TRIANGL :
-      if(p_c->lfoIndex==0)
-	{
-	  p_c->lfoCoefInct=1.0;
-	  p_c->lfoCoefAmp=p_c->lfoMaxDAmp
-	    /(double)(p_c->lfoMaxIndex/2);
-	  p_c->lfoAmp=1.0-p_c->lfoMaxDAmp/2.0;
-	}
-      else if(p_c->lfoIndex<(p_c->lfoMaxIndex/4))
-	{
-	  p_c->lfoCoefInct*=p_c->lfoCoefInctInct;
-	  p_c->lfoAmp-=p_c->lfoCoefAmp;
-	}
-      else if(p_c->lfoIndex<((3*p_c->lfoMaxIndex)/4))
-	{
-	  p_c->lfoCoefInct/=p_c->lfoCoefInctInct;
-	  p_c->lfoAmp+=p_c->lfoCoefAmp;
-	}
-      else if(p_c->lfoIndex<p_c->lfoMaxIndex)
-	{
-	  p_c->lfoCoefInct*=p_c->lfoCoefInctInct;
-	  p_c->lfoAmp-=p_c->lfoCoefAmp;
-	}
-      break;
-    case SHOLD :
-      if(p_c->lfoIndex==0||p_c->lfoIndex==(p_c->lfoMaxIndex/2))
-	{
-	  double r;//uniform random between -1.0 and 1.0
-	  r = (double)(2*rand()-RAND_MAX)/(double)RAND_MAX;
-	  p_c->lfoCoefInct=(r>=0.0?1.0+r*(p_c->lfoMaxCoefInct-1.0)
-			    :1.0/(1.0-r*(p_c->lfoMaxCoefInct-1.0)));
-	  p_c->lfoAmp=1.0-(r/2.0+0.5)*p_c->lfoMaxDAmp;
-	}
-      break;
-    default : printf("Error : lfo wave does not exist\n");
-      break;
+  switch(p->lfo.wave) {
+  case SAWUP :
+    if(p_c->lfoIndex==0) {
+      p_c->lfoCoefInct=1.0/(p_c->lfoMaxCoefInct);
+      p_c->lfoCoefAmp=p_c->lfoMaxDAmp/(double)p_c->lfoMaxIndex;
+      p_c->lfoAmp=1.0;
     }
+    else {
+      p_c->lfoCoefInct*=p_c->lfoCoefInctInct;
+      p_c->lfoAmp-=p_c->lfoCoefAmp;
+    }
+    break;
+  case SQUARE :
+    if(p_c->lfoIndex==0) {
+      p_c->lfoCoefInct=p_c->lfoMaxCoefInct;
+      p_c->lfoAmp=1.0;
+    }
+    if(p_c->lfoIndex==(p_c->lfoMaxIndex/2)) {
+      p_c->lfoCoefInct=1.0/p_c->lfoMaxCoefInct;
+      p_c->lfoAmp=1.0-p_c->lfoMaxDAmp;
+    }
+    break;
+  case TRIANGL :
+    if(p_c->lfoIndex==0) {
+      p_c->lfoCoefInct=1.0;
+      p_c->lfoCoefAmp=p_c->lfoMaxDAmp
+	/(double)(p_c->lfoMaxIndex/2);
+      p_c->lfoAmp=1.0-p_c->lfoMaxDAmp/2.0;
+    }
+    else if(p_c->lfoIndex<(p_c->lfoMaxIndex/4)) {
+      p_c->lfoCoefInct*=p_c->lfoCoefInctInct;
+      p_c->lfoAmp-=p_c->lfoCoefAmp;
+    }
+    else if(p_c->lfoIndex<((3*p_c->lfoMaxIndex)/4)) {
+      p_c->lfoCoefInct/=p_c->lfoCoefInctInct;
+      p_c->lfoAmp+=p_c->lfoCoefAmp;
+    }
+    else if(p_c->lfoIndex<p_c->lfoMaxIndex) {
+      p_c->lfoCoefInct*=p_c->lfoCoefInctInct;
+      p_c->lfoAmp-=p_c->lfoCoefAmp;
+    }
+    break;
+  case SHOLD :
+    if(p_c->lfoIndex==0||p_c->lfoIndex==(p_c->lfoMaxIndex/2)) {
+      double r;//uniform random between -1.0 and 1.0
+      r = (double)(2*rand()-RAND_MAX)/(double)RAND_MAX;
+      p_c->lfoCoefInct=(r>=0.0?1.0+r*(p_c->lfoMaxCoefInct-1.0)
+			:1.0/(1.0-r*(p_c->lfoMaxCoefInct-1.0)));
+      p_c->lfoAmp=1.0-(r/2.0+0.5)*p_c->lfoMaxDAmp;
+    }
+    break;
+  default : printf("Error : lfo wave does not exist\n");
+    break;
+  }
   p_c->lfoIndex=(p_c->lfoIndex<p_c->lfoMaxIndex?p_c->lfoIndex+1:0);
 }
 
@@ -1869,6 +1885,7 @@ void DeicsOnze::programSelect(int c, int hbank, int lbank, int prog) {
 //---------------------------------------------------------
 void DeicsOnze::setModulation(int c, int val) {
   _global.channel[c].modulation = (unsigned char) val;
+  setLfo(c);
 }
 //---------------------------------------------------------
 //   setPitchBendCoef

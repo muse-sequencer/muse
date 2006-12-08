@@ -5363,6 +5363,9 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
        </item>
        <item row="2" column="2" >
         <widget class="QGroupBox" name="reverbGroupBox" >
+         <property name="enabled" >
+          <bool>false</bool>
+         </property>
          <property name="title" >
           <string>Reverb</string>
          </property>
@@ -7000,7 +7003,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
       </size>
      </property>
      <property name="value" >
-      <double>-9.319760856591806</double>
+      <double>-8.748632009724199</double>
      </property>
      <property name="minValue" >
       <double>0.000000000000000</double>
@@ -7024,14 +7027,14 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
  <layoutdefault spacing="6" margin="11" />
  <customwidgets>
   <customwidget>
-   <class>Awl::VolKnob</class>
-   <extends>Awl::Knob</extends>
-   <header>awl/volknob.h</header>
-  </customwidget>
-  <customwidget>
    <class>Awl::Knob</class>
    <extends>QWidget</extends>
    <header>awl/knob.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Awl::VolKnob</class>
+   <extends>Awl::Knob</extends>
+   <header>awl/volknob.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
