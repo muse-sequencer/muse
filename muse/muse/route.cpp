@@ -345,10 +345,10 @@ const char* RouteNode::tname() const
 void RouteNode::write(Xml& xml, const char* label) const
       {
       if (channel != -1)
-            xml.put(QString("<%1 type=\"%2\" channel=\"%3\" name=\"%4\"/>")
+            xml.tagE(QString("%1 type=\"%2\" channel=\"%3\" name=\"%4\"")
                .arg(label).arg(tname()).arg(channel + 1).arg(name()));
       else
-            xml.put(QString("<%1 type=\"%2\" name=\"%3\"/>")
+            xml.tagE(QString("%1 type=\"%2\" name=\"%3\"")
                .arg(label).arg(tname()).arg(name()));
       }
 

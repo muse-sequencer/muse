@@ -348,8 +348,9 @@ void EventCanvas::mousePressCanvasA(QMouseEvent* me)
 
       curItem = searchItem(start);
       if (curItem && editor->playEvents()) {
-	      MidiEvent e(0, 0, ME_NOTEON, curItem->event.pitch(), curItem->event.velo());
-      	track()->playMidiEvent(&e);
+	      int pitch = curItem->event.pitch() + track()->transposition();
+	      MidiEvent e(0, 0, ME_NOTEON, pitch, curItem->event.velo());
+      	      track()->playMidiEvent(&e);
             }
 
       if (curItem && (button == Qt::MidButton)) {
@@ -453,7 +454,8 @@ void EventCanvas::mousePressCanvasA(QMouseEvent* me)
                               if (curItem) {
                                     items.add(curItem);
       					if (editor->playEvents()) {
-	      					MidiEvent e(0, 0, ME_NOTEON, curItem->event.pitch(), curItem->event.velo());
+					        int pitch = curItem->event.pitch() + track()->transposition();
+	      					MidiEvent e(0, 0, ME_NOTEON, pitch, curItem->event.velo());
       						track()->playMidiEvent(&e);
                                     	}
             				}
@@ -586,7 +588,8 @@ void EventCanvas::mouseMoveCanvasA(QPoint pos)
 void EventCanvas::mouseReleaseCanvasA(QMouseEvent* me)
       {
       if (curItem && editor->playEvents()) {
-	      MidiEvent e(0, 0, ME_NOTEON, curItem->event.pitch(), 0);
+	      int pitch = curItem->event.pitch() + track()->transposition();
+	      MidiEvent e(0, 0, ME_NOTEON, pitch, 0);
       	track()->playMidiEvent(&e);
             }
       // ignore event if (another) button is already active:
@@ -715,8 +718,7 @@ QMenu* EventCanvas::genCanvasPopup()
             QAction* a = getAction(toolList[i], this);
             a->setData(data);
             a->setCheckable(true);
-            if (data == int(_tool))
-                  a->setChecked(true);
+	    a->setChecked(data == int(_tool));
             canvasPopup->addAction(a);
             }
       return canvasPopup;
@@ -806,7 +808,7 @@ void EventCanvas::deleteItem(const QPoint& p)
 
 void EventCanvas::moveItems(const QPoint& pos, int dir)
       {
-      int dy = pos.y() - start.y();
+      int dpitch = y2pitch(pos.y()) - y2pitch(start.y());
 
       Pos sp(pix2pos(start.x()));
       Pos cp(pix2pos(pos.x()));
@@ -832,15 +834,15 @@ void EventCanvas::moveItems(const QPoint& pos, int dir)
             else
                   p = item->pos + dx;
             p.snap(raster());
-            int ny = pitch2y(y2pitch(pitch2y(item->event.pitch()) + dy));
 
             if (p < *curPart)
                   p = *curPart;
 
-            if (item->moving != p || (item->my - wpos.y()) != ny) {
+            if (item->moving != p || dpitch !=0) {
                   item->moving = p;
                   if (dir != 1)
-                        item->my = ny + wpos.y();
+		    item->my = pitch2y(item->event.pitch() + dpitch)
+		      + (int)(wpos.y() / _ymag);
                   itemMoved(item);
                   }
             }
@@ -1204,7 +1206,7 @@ void EventCanvas::mouseMove(QPoint pos)
                               if (curPitch != keyDown)
                                     noteOff(keyDown);
                               keyDown = curPitch;
-			      int velocity = pos.x()*127/40;
+			      int velocity = std::min(pos.x()*127/40, 127);
                               noteOn(keyDown, velocity, shift);
                               }
                         }

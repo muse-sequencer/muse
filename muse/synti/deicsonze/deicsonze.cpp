@@ -834,7 +834,7 @@ int DeicsOnze::getChorusReturn() const {
 // getReverbReturn
 //----------------------------------------------------------------
 int DeicsOnze::getReverbReturn() const {
-  return(amp2level(_global.chorusReturn/2.0));
+  return(amp2level(_global.reverbReturn/2.0));
 }
 
 //----------------------------------------------------------------

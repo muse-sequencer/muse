@@ -56,7 +56,7 @@ PianoCanvas::PianoCanvas(MidiEditor* pr)
 void PianoCanvas::addItem(Part* part, const Event& event)
       {
       CItem* item   = new CItem(event, part);
-      int y         = pitch2y(event.pitch()) + keyHeight/4 + wpos.y();
+      int y         = pitch2y(event.pitch()) + keyHeight/4 + (int)(wpos.y()/_ymag);
       item->pos     = event.pos() + *part;
       unsigned time = item->pos.time(timeType());
       item->bbox    = QRect(time, y, event.lenTick(), keyHeight/2);
@@ -203,13 +203,16 @@ void PianoCanvas::moveItem(CItem* item, DragType dtype)
       {
       Part* part  = item->part;
       Event event = item->event;
-      int npitch  = y2pitch(item->my -wpos.y() + item->bbox.height()/2);
-      if (event.pitch() != npitch && editor->playEvents()) {
+      int npitch  = y2pitch((int)((item->my - (int)(wpos.y()/_ymag) 
+				   + item->bbox.height())*_ymag));
+      if ((curItem==item) //remove this if want to have all selection playing
+	  && event.pitch() != npitch && editor->playEvents()) {
             // release note:
-            MidiEvent ev1(0, 0, 0x90, event.pitch() + track()->transposition(), 0);
+            MidiEvent ev1(0, 0, 0x90, playedPitch, 0);
             track()->playMidiEvent(&ev1);
-            MidiEvent ev2(0, 0, 0x90, npitch + track()->transposition(), event.velo());
-            track()->playMidiEvent(&ev2);
+	    //remove below because the note is never cut off
+            //MidiEvent ev2(0, 0, 0x90, npitch + track()->transposition(), event.velo());
+            //track()->playMidiEvent(&ev2);
             }
 
       Event newEvent = event.clone();
@@ -236,6 +239,7 @@ CItem* PianoCanvas::newItem(const QPoint& p, int)
             return 0;
 
       int pitch = y2pitch(p.y());
+
       Event e(Note);
       e.setPitch(pitch);
       e.setVelo(curVelo);
@@ -244,7 +248,7 @@ CItem* PianoCanvas::newItem(const QPoint& p, int)
       CItem* i = new CItem(e, curPart);
       int l    = timeType() == AL::TICKS ? e.lenTick() : e.lenFrame();
       int x    = pos.time(timeType());
-      int y    = pitch2y(pitch) + keyHeight/4 + wpos.y();
+      int y    = pitch2y(pitch) + keyHeight/4 + (int)(wpos.y() / _ymag);
       i->bbox  = QRect(x, y, l, keyHeight/2);
 
       return i;
@@ -593,11 +597,13 @@ void PianoCanvas::itemPressed(const CItem* item)
             return;
       Event event    = item->event;
       playedPitch    = event.pitch() + track()->transposition();
-      int velo       = event.velo();
+      //int velo       = event.velo();
 
       // play note:
-      MidiEvent e(0, 0, 0x90, playedPitch, velo);
-      track()->playMidiEvent(&e);
+      //I comment the following code because a note
+      //is already played in EventCanvas::mousePressCanvasA(QMouseEvent* me)
+      /*MidiEvent e(0, 0, 0x90, playedPitch, velo);
+      track()->playMidiEvent(&e);*/
       }
 
 //---------------------------------------------------------
@@ -621,16 +627,20 @@ void PianoCanvas::itemReleased()
 
 void PianoCanvas::itemMoved(const CItem* item)
       {
-      int npitch = y2pitch(item->my - wpos.y());
-      if ((playedPitch != -1) && (playedPitch != npitch)) {
+      int npitch  = y2pitch((int)((item->my - (int)(wpos.y()/_ymag) 
+				   + item->bbox.height())*_ymag));
+      npitch += track()->transposition();
+      if ((curItem==item) //remove this if want to have all selection playing
+	  && (playedPitch != -1) && (playedPitch != npitch)
+	  && editor->playEvents()) {
             Event event = item->event;
-            // release note:
-            MidiEvent ev1(0, 0, 0x90, playedPitch, 0);
-            track()->playMidiEvent(&ev1);
-            // play note:
-            MidiEvent e2(0, 0, 0x90, npitch + track()->transposition(), event.velo());
-            track()->playMidiEvent(&e2);
-            playedPitch = npitch + track()->transposition();
+	    // release note:
+	    MidiEvent ev1(0, 0, 0x90, playedPitch, 0);
+	    track()->playMidiEvent(&ev1);
+	    // play note:
+	    MidiEvent e2(0, 0, 0x90, npitch, event.velo());
+	    track()->playMidiEvent(&e2);
+	    playedPitch = npitch;
             }
       }
 

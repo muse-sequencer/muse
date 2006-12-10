@@ -1,3 +1,9 @@
+10.12 (ng)
+      - items in pianoroll play the right pitch (event.pitch + transpose)
+      - items in pianoroll are displayed correctly according to Y zoom
+      - selection in the pianoroll are dragged correctly
+      - fix RouteNode::write(Xml& xml, const char* label) xml.put --> xml.tagE
+      - fix eventCanvas::genCanvasPopup(), uncheck unselected action
 08.12 (ws)
       - first version of midi instrument editor (*.idf files)
       (ng) deicsonze
