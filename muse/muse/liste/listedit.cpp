@@ -20,6 +20,8 @@
 
 #include "listedit.h"
 #include "ctrllistedit.h"
+#include "partlistedit.h"
+#include "tracklistedit.h"
 #include "song.h"
 #include "part.h"
 #include "ctrl.h"
@@ -30,7 +32,7 @@
 
 bool ListType::operator==(const ListType& t) const
       {
-      return id == t.id && track == t.track 
+      return id == t.id && track == t.track
          && part == t.part && ctrl->id() == t.ctrl->id();
       }
 
@@ -59,9 +61,13 @@ ListEdit::ListEdit(QWidget*)
 
       stack = new QStackedWidget;
       split->addWidget(stack);
-      
+
       ctrlPanel = new CtrlListEditor(this);
       stack->addWidget(ctrlPanel);
+      partPanel = new PartListEditor(this);
+      stack->addWidget(partPanel);
+      trackPanel = new TrackListEditor(this);
+      stack->addWidget(trackPanel);
 
       connect(list, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
          SLOT(itemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
@@ -93,12 +99,16 @@ void ListEdit::itemChanged(QTreeWidgetItem* i, QTreeWidgetItem*)
       lt = i->data(0, Qt::UserRole).value<ListType>();
       switch(lt.id) {
             case LIST_TRACK:
-                  return;
+                  ew = trackPanel;
+                  break;
             case LIST_PART:
-                  return;
+                  ew = partPanel;
+                  break;
             case LIST_CTRL:
                   ew = ctrlPanel;
                   break;
+            default:
+                  return;
             }
       ew->setup(lt);
       stack->setCurrentWidget(ew);
@@ -116,36 +126,42 @@ void ListEdit::buildList()
       ListType lt;
 
       for (iTrack i = tl->begin(); i != tl->end(); ++i,++idx) {
-            Track* t = *i;
-            lt.track = t;
             QTreeWidgetItem* item = new QTreeWidgetItem;
+            Track* t = *i;
             item->setText(0, t->name());
-            lt.id = LIST_TRACK;
+            lt.id    = LIST_TRACK;
+            lt.track = t;
             item->setData(0, Qt::UserRole, QVariant::fromValue(lt));
             list->insertTopLevelItem(idx, item);
+
             PartList* pl = t->parts();
             if (!pl->empty()) {
                   QTreeWidgetItem* pitem = new QTreeWidgetItem(item);
                   pitem->setFlags(pitem->flags() & ~Qt::ItemIsSelectable);
                   pitem->setText(0, tr("Parts"));
+                  lt.id = LIST_NONE;
+                  pitem->setData(0, Qt::UserRole, QVariant::fromValue(lt));
                   for (iPart pi = pl->begin(); pi != pl->end(); ++pi) {
-                        lt.id = LIST_PART;
+                        lt.id   = LIST_PART;
                         lt.part = pi->second;
                         QTreeWidgetItem* ppitem = new QTreeWidgetItem(pitem);
                         ppitem->setData(0, Qt::UserRole, QVariant::fromValue(lt));
                         ppitem->setText(0, pi->second->name());
                         }
                   }
+
             CtrlList* cl = t->controller();
             lt.part = 0;
             if (!cl->empty()) {
                   QTreeWidgetItem* citem = new QTreeWidgetItem(item);
                   citem->setText(0, tr("Controller"));
                   citem->setFlags(citem->flags() & ~Qt::ItemIsSelectable);
+                  lt.id = LIST_NONE;
+                  citem->setData(0, Qt::UserRole, QVariant::fromValue(lt));
                   for (iCtrl ci = cl->begin(); ci != cl->end(); ++ci) {
                         QTreeWidgetItem* ccitem = new QTreeWidgetItem(citem);
                         ccitem->setText(0, ci->second->name());
-                        lt.id = LIST_CTRL;
+                        lt.id   = LIST_CTRL;
                         lt.ctrl = ci->second;
                         ccitem->setData(0, Qt::UserRole, QVariant::fromValue(lt));
                         }
@@ -163,7 +179,7 @@ void ListEdit::songChanged(int flags)
          | SC_PART_REMOVED)) {
             buildList();
             selectItem();
-            }      
+            }
       }
 
 //---------------------------------------------------------

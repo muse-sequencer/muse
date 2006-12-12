@@ -77,13 +77,10 @@ class JackAudio : public AudioDriver {
       void graphChanged();
       virtual void putEvent(Port, const MidiEvent&);
       virtual void startMidiCycle(Port);
-//      virtual unsigned int getCurFrame() { return pos.frame; }
 
-      virtual unsigned framePos() const { 
+      virtual unsigned framePos() const {
             return pos.frame + jack_frames_since_cycle_start(_client);
             }
-//      unsigned lastFrameTime()        { return jack_last_frame_time(_client); }
-//      unsigned framesSinceCyleStart() { return jack_frames_since_cycle_start(_client); }
       virtual unsigned frameTime() const      { return jack_frame_time(_client); }
       };
 

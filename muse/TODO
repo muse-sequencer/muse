@@ -23,8 +23,6 @@ BUGS
 	- make export midi work
 
 FEATURES
-	- wave editor is completely broken
-
 	- missing time signature ruler in master editor
 
       - If events recorded outside part ask after recording what to do:

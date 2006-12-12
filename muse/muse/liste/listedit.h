@@ -28,19 +28,21 @@ class Track;
 class Part;
 class Ctrl;
 class CtrlListEditor;
+class PartListEditor;
+class TrackListEditor;
 
 //---------------------------------------------------------
 //   ListType
 //---------------------------------------------------------
 
-enum { LIST_TRACK, LIST_PART, LIST_CTRL };
+enum { LIST_NONE, LIST_TRACK, LIST_PART, LIST_CTRL };
 
 struct ListType {
       int id;
       Track* track;
       Part* part;
       Ctrl* ctrl;
-      
+
       bool operator==(const ListType& t) const;
       };
 
@@ -72,6 +74,8 @@ class ListEdit : public TopWin {
       QStackedWidget* stack;
       QTreeWidget* list;
       CtrlListEditor* ctrlPanel;
+      PartListEditor* partPanel;
+      TrackListEditor* trackPanel;
 
       void buildList();
       QTreeWidgetItem* findItem(const ListType& lt, QTreeWidgetItem* item);

@@ -18,18 +18,24 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-QT4_WRAP_CPP ( liste_mocs 
+QT4_WRAP_CPP ( liste_mocs
       listedit.h
       ctrllistedit.h
+      tracklistedit.h
+      partlistedit.h
       )
 
-QT4_WRAP_UI ( liste_ui_headers 
+QT4_WRAP_UI ( liste_ui_headers
       ctrllistedit.ui
+      partlistedit.ui
+      tracklistedit.ui
       )
 
-add_library ( liste STATIC 
+add_library ( liste STATIC
       listedit.cpp listedit.h
       ctrllistedit.cpp ctrllistedit.h
+      partlistedit.cpp partlistedit.h
+      tracklistedit.cpp tracklistedit.h
       ${liste_mocs}
       ${liste_ui_headers}
       )
