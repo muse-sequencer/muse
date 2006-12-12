@@ -193,7 +193,10 @@ void ConfigMidiCtrl::done(int code)
 void ConfigMidiCtrl::defineClicked()
       {
       DefineMidiCtrl dc(track, this);
-      if (dc.exec())
+      if (dc.exec()) {
+            Ctrl* ctrl = new Ctrl(dc.midiController());
+            track->addController(ctrl);
             QDialog::done(0);
+            }
       }
 

@@ -1,3 +1,5 @@
+12.12 (ws)
+      - added possibility to define a new midicontroller
 10.12 (ng)
       - items in pianoroll play the right pitch (event.pitch + transpose)
       - items in pianoroll are displayed correctly according to Y zoom
@@ -27,7 +29,7 @@
       - application spanning drag&drop of parts
       - cut/copy/paste for parts
 24.11 (ws)
-      - added new make target: "doxy" to generate doxygen source 
+      - added new make target: "doxy" to generate doxygen source
         documentation
 21.11 (ws)
       - fixed DSSI support
@@ -59,12 +61,12 @@
           are no longer const;
         - Added getBankName() to interface to allow for simple structuring
           of patches.
-      - queue midi events which cannot be send to busy(locked) software 
+      - queue midi events which cannot be send to busy(locked) software
         synthesizer
       - zynaddsubfx: implement locking, showGui(), and getControllerInfo();
         cache patch names
 29.10 (ws)
-      - fixed crash after some time of midi recording: made midi 
+      - fixed crash after some time of midi recording: made midi
         input queue thread safe.
 27.10 (ws)
       - added a MESS port of the Zynaddsubfx software synthesizer
@@ -78,7 +80,7 @@
 18.10 (ws)
       - added routing for jack midi ports. Fixes for "mus".
 17.10 (ws)
-      - added new program "mus". Mus is a wrapper to operate MusE MESS 
+      - added new program "mus". Mus is a wrapper to operate MusE MESS
         synthesizer standalone with JACK audio/midi interface. The
         plan is to use them to test the upcoming jack midi implementation.
 15.10 (ng)
@@ -123,7 +125,7 @@
       - change german documentation encoding to utf8
       - dont assume system encoding is isoLatin1, first patches
         (ubuntu and others use utf8)
-4.9  
+4.9
       (ws)
       - remove html documentation and replace with *pdf version
       (ng)
@@ -151,7 +153,7 @@
 22.8 (rj)
       * playing with midi plugins, one new example plugin: trigg
 29.7 (ws)
-      * fixed drawing of waveform in wave track. Concurrent wave file 
+      * fixed drawing of waveform in wave track. Concurrent wave file
         accesses from gui and rt task produced distortions ("crackling").
 25.7  (ng) DeicsOnze
       * add panic button
@@ -190,9 +192,9 @@
       * drag/drop of projects in project dialog
       * added Roland  JV-1010 instrument definitions from f.fabre
 29.5 (ws)
-      * the list of available software synthesizer in 
+      * the list of available software synthesizer in
         edit->AddTrack->AddSoftSynth was always empty
-      * properly ignore close event in MusE::closeEvent() if the 
+      * properly ignore close event in MusE::closeEvent() if the
         user aborts operation
 25.5 (ws)
       * remove automation buttons from midi track in arranger
@@ -381,7 +383,7 @@
 3.1	(rj)
 	* fixed search box in plugin dialog
 2.1   (ws)
-	* fix recording of note off events when part does not start at zero	
+	* fix recording of note off events when part does not start at zero
 31.12 (ws)
 	* fixes for audio prefetch thread
 30.12 (ws)

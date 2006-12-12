@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>463</width>
-    <height>301</height>
+    <width>558</width>
+    <height>344</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -28,10 +28,10 @@
       <number>6</number>
      </property>
      <item row="0" column="2" >
-      <widget class="QLineEdit" name="lineEdit" />
+      <widget class="QLineEdit" name="controllerName" />
      </item>
      <item row="1" column="2" >
-      <widget class="QComboBox" name="comboBox" >
+      <widget class="QComboBox" name="controllerType" >
        <item>
         <property name="text" >
          <string>7-Bit</string>
@@ -104,19 +104,6 @@ p, li { white-space: pre-wrap; }
     </layout>
    </item>
    <item>
-    <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" >
-      <size>
-       <width>20</width>
-       <height>16</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <layout class="QHBoxLayout" >
      <property name="margin" >
       <number>0</number>
@@ -140,7 +127,7 @@ p, li { white-space: pre-wrap; }
         </widget>
        </item>
        <item row="1" column="1" >
-        <widget class="QSpinBox" name="spinBox_2" />
+        <widget class="QSpinBox" name="lsbId" />
        </item>
        <item row="1" column="0" >
         <widget class="QLabel" name="label_4" >
@@ -157,12 +144,19 @@ p, li { white-space: pre-wrap; }
         </widget>
        </item>
        <item row="0" column="1" >
-        <widget class="QSpinBox" name="spinBox" />
+        <widget class="QSpinBox" name="msbId" />
        </item>
        <item row="0" column="0" >
         <widget class="QLabel" name="label_3" >
          <property name="text" >
           <string>Id MSB</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2" >
+        <widget class="QCheckBox" name="moveWithPart" >
+         <property name="text" >
+          <string>Move with Part</string>
          </property>
         </widget>
        </item>
@@ -177,7 +171,7 @@ p, li { white-space: pre-wrap; }
         <number>6</number>
        </property>
        <item row="2" column="1" >
-        <widget class="QSpinBox" name="spinBox_5" />
+        <widget class="QSpinBox" name="initVal" />
        </item>
        <item row="2" column="2" >
         <widget class="QLabel" name="label_12" >
@@ -201,7 +195,7 @@ p, li { white-space: pre-wrap; }
         </widget>
        </item>
        <item row="1" column="1" >
-        <widget class="QSpinBox" name="spinBox_4" />
+        <widget class="QSpinBox" name="maxVal" />
        </item>
        <item row="0" column="0" >
         <widget class="QLabel" name="label_5" >
@@ -211,7 +205,7 @@ p, li { white-space: pre-wrap; }
         </widget>
        </item>
        <item row="0" column="1" >
-        <widget class="QSpinBox" name="spinBox_3" />
+        <widget class="QSpinBox" name="minVal" />
        </item>
        <item row="1" column="0" >
         <widget class="QLabel" name="label_6" >
@@ -232,20 +226,7 @@ p, li { white-space: pre-wrap; }
     </layout>
    </item>
    <item>
-    <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" >
-      <size>
-       <width>20</width>
-       <height>16</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox" >
+    <widget class="QDialogButtonBox" name="okButton" >
      <property name="orientation" >
       <enum>Qt::Horizontal</enum>
      </property>
@@ -254,12 +235,22 @@ p, li { white-space: pre-wrap; }
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QTextEdit" name="controllerComment" />
+   </item>
+   <item>
+    <widget class="QLabel" name="label_14" >
+     <property name="text" >
+      <string>Comment:</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>okButton</sender>
    <signal>accepted()</signal>
    <receiver>DefineMidiCtrlBase</receiver>
    <slot>accept()</slot>
@@ -275,7 +266,7 @@ p, li { white-space: pre-wrap; }
    </hints>
   </connection>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>okButton</sender>
    <signal>rejected()</signal>
    <receiver>DefineMidiCtrlBase</receiver>
    <slot>reject()</slot>

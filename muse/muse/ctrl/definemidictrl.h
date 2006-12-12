@@ -22,6 +22,7 @@
 #define __DEFINEMIDICTRL_H__
 
 #include "ui_definemidictrl.h"
+#include "midictrl.h"
 
 class MidiTrack;
 
@@ -33,12 +34,15 @@ class DefineMidiCtrl : public QDialog, public Ui::DefineMidiCtrlBase {
       Q_OBJECT
 
       MidiTrack* track;
+      MidiController ctrl;
 
    private slots:
       virtual void done(int);
+      void typeChanged(int);
 
    public:
       DefineMidiCtrl(MidiTrack* t, QWidget* parent = 0);
+      const MidiController* midiController() const { return &ctrl; }
       };
 
 #endif
