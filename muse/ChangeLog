@@ -1,5 +1,8 @@
 12.12 (ws)
       - added possibility to define a new midicontroller
+      (ng)
+      - add save project as... (not sure it's complete yet?)
+      - take off the last redundent presets in deicsonze
 10.12 (ng)
       - items in pianoroll play the right pitch (event.pitch + transpose)
       - items in pianoroll are displayed correctly according to Y zoom

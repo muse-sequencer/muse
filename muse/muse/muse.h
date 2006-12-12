@@ -68,6 +68,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       Q_OBJECT
 
       QAction* fileSaveAction;
+      QAction* fileSaveAsAction;
       QAction* fileOpenAction;
       QAction* pianoAction;
       QAction* waveAction;
@@ -259,6 +260,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       void setTool(const QString&);
       void startEditor(Part*, int);
       bool save();
+      bool saveAs();
 
    public:
       MusE();

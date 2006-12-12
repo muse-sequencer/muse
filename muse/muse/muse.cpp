@@ -555,6 +555,9 @@ MusE::MusE()
       fileSaveAction = getAction("save_project", this);
       connect(fileSaveAction, SIGNAL(triggered()), SLOT(save()));
 
+      fileSaveAsAction = getAction("save_project_as", this);
+      connect(fileSaveAsAction, SIGNAL(triggered()), SLOT(saveAs()));
+
       pianoAction = getAction("open_pianoroll", this);
       connect(pianoAction, SIGNAL(triggered()), SLOT(startPianoroll()));
 
@@ -617,6 +620,7 @@ MusE::MusE()
       menu_file->addMenu(openRecent);
       menu_file->addSeparator();
       menu_file->addAction(fileSaveAction);
+      menu_file->addAction(fileSaveAsAction);
       a = getAction("save_as_template", this);
       connect(a, SIGNAL(triggered()), SLOT(saveAsTemplate()));
       menu_file->addAction(a);
@@ -1306,6 +1310,38 @@ bool MusE::save()
       SndFile::updateRecFiles();
       return true;
       }
+
+//---------------------------------------------------------
+//   saveAs
+//---------------------------------------------------------
+
+bool MusE::saveAs()
+      {
+      printf("SAVEAS\n");
+      ProjectDialog projectDialog;
+      int rv = projectDialog.exec();
+      if (rv == 0)
+            return false;
+      QString path = projectDialog.projectPath();
+      if (path.isEmpty())
+            return false;
+      
+      QDir pd(QDir::homePath() + "/" + config.projectPath + "/" + path);
+      QString header = tr("MusE: new project");
+      if (!pd.exists()) {
+            if (!pd.mkdir(pd.path())) {
+                  QString s(tr("Cannot create project folder <%1>"));
+                  QMessageBox::critical(this, header, s.arg(pd.path()));
+                  return false;
+                  }
+            }
+      addProject(path);
+      song->setProjectPath(path);
+      QString name = song->projectName();
+      setWindowTitle(QString("MusE: Song: ") + name);
+      return save();
+      }
+
 
 //---------------------------------------------------------
 //   saveAsTemplate

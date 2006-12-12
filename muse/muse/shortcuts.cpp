@@ -256,6 +256,16 @@ Shortcut MuseApplication::sc[] = {
             ":/xpm/filesave.png"
             ),
       Shortcut(
+            "save_project_as",
+            QT_TR_NOOP("File: Save as"),
+            ARRANG_SHRT + DEDIT_SHRT, 
+            0,
+            Qt::WindowShortcut,
+            QT_TR_NOOP("save project as..."),
+            QT_TR_NOOP("Click this button to save a new copy of the project.\n"
+               ), ":/xpm/filesave.png"
+            ),
+      Shortcut(
             "save_as_template",
             QT_TR_NOOP("File: Save as Template"),
             ARRANG_SHRT, 
@@ -325,7 +335,7 @@ Shortcut MuseApplication::sc[] = {
             "open_miditracker",
             QT_TR_NOOP("Open MidiTracker"),
             ARRANG_SHRT, 
-            0,
+            Qt::CTRL + Qt::Key_K,
             Qt::WindowShortcut,
             QT_TR_NOOP("MidiTracker"),
             QT_TR_NOOP("Start Midi Tracker"),

@@ -36,7 +36,6 @@
 #include "awl/floatentry.h"
 #include "awl/slider.h"
 #include "awl/checkbox.h"
-#include <QScrollArea>
 
 using Awl::FloatEntry;
 using Awl::Slider;

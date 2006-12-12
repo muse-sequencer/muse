@@ -11,3 +11,5 @@
 - Load BUMP preset
 - calibrate portamento and pitch envelope to fit real DX11
 - make deicsonze loadable as standalone by mus
+- add filter
+- fix bug LFO adjute w.w.t. frequency and make delay better
