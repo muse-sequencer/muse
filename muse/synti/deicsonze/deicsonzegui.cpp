@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.5
+//    Version 0.5.5
 //
 //    deicsonzegui.cpp
 //
@@ -126,6 +126,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   //quality
   connect(qualityComboBox, SIGNAL(activated(const QString&)),
 	  this, SLOT(setQuality(const QString&)));
+  connect(filterCheckBox, SIGNAL(toggled(bool)),
+	  this, SLOT(setFilter(bool)));
   //change font size
   connect(fontSizeSpinBox, SIGNAL(valueChanged(int)), 
 	  this, SLOT(setFontSize(int)));
@@ -589,6 +591,15 @@ void DeicsOnzeGui::setQuality(const QString& q) {
 				   middle:(q=="Low"?low:ultralow)));
   sendSysex(message, 2);
 }
+//-----------------------------------------------------------
+// setFilter
+//-----------------------------------------------------------
+void DeicsOnzeGui::setFilter(bool f) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_FILTER;
+  message[1]=(unsigned char)f;
+  sendSysex(message, 2);
+}  
 //-----------------------------------------------------------
 // setFontSize
 //-----------------------------------------------------------
@@ -1464,6 +1475,9 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
       break;*/
     case SYSEX_QUALITY :
       updateQuality((int)data[1]);
+      break;
+    case SYSEX_FILTER :
+      updateFilter((bool)data[1]);
       break;
     case SYSEX_FONTSIZE :
       updateFontSize((int)data[1]);
@@ -3060,6 +3074,11 @@ void DeicsOnzeGui::updateQuality(int val) {
   qualityComboBox->blockSignals(true);
   qualityComboBox->setCurrentIndex(val);		
   qualityComboBox->blockSignals(false);
+}
+void DeicsOnzeGui::updateFilter(bool f) {
+  filterCheckBox->blockSignals(true);
+  filterCheckBox->setChecked(f);		
+  filterCheckBox->blockSignals(false);
 }
 void DeicsOnzeGui::updateFontSize(int val) {
   fontSizeSpinBox->blockSignals(true);

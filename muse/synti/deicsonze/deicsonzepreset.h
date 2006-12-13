@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.5
+//    Version 0.5.5
 //
 //    deicsonzepreset.h
 //
@@ -29,8 +29,6 @@
 
 #ifndef __DEICSONZEPRESET_H
 #define __DEICSONZEPRESET_H
-
-// #include <qdom.h>
 
 #include <string>
 #include "al/xml.h"

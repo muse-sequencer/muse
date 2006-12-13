@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.5
+//    Version 0.5.5
 //
 //
 //
@@ -127,6 +127,11 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   initPluginReverb(plugins.find("freeverb", "freeverb1"));
   initPluginChorus(plugins.find("doublechorus", "doublechorus1"));
 
+  //Filter
+  _dryFilter = new LowFilter();
+  _chorusFilter = new LowFilter();
+  _reverbFilter = new LowFilter();
+
   //Load configuration
   QString defaultConf = (QString(getenv("HOME")) + QString("/." DEICSONZESTR ".dco"));
   FILE* f;
@@ -240,6 +245,9 @@ void DeicsOnze::getGeometry(int* x, int* y, int* w, int* h) const {
 
 void DeicsOnze::setSampleRate(int sr) {
   Mess::setSampleRate(sr);
+  _dryFilter->setSamplerate(sr);
+  _chorusFilter->setSamplerate(sr);
+  _reverbFilter->setSamplerate(sr);
   setQuality(_global.quality);
 }
 
@@ -504,6 +512,7 @@ void DeicsOnze::initCtrls() {
 void DeicsOnze::initGlobal() {
   setMasterVol(INITMASTERVOL);
   _global.quality = high;
+  setFilter(false);
   _global.fontSize = 9;
   _global.isChorusActivated = false;
   _global.chorusReturn = level2amp(INITFXRETURN);
@@ -634,13 +643,12 @@ inline double note2Amp(double note, int ls)
 // delay2Time
 //  return the time in second corresponding to the LFO delay parameter
 //---------------------------------------------------------
-inline double delay2Time(int d)
-{
-    double t;
-    //fitting
-    t=0.07617*(double)d-0.002695*(double)(d*d)+4.214e-05*(double)(d*d*d);
-    //printf("delay2Time : %f\n", t);
-    return(t);
+inline double delay2Time(int d) {
+  double t;
+  //fitting
+  t=0.07617*(double)d-0.002695*(double)(d*d)+4.214e-05*(double)(d*d*d);
+  //printf("delay2Time : %f\n", t);
+  return(t);
 }
 
 //----------------------------------------------------------------
@@ -666,6 +674,7 @@ void DeicsOnze::setMasterVol(int mv) {
 //----------------------------------------------------------------
 void DeicsOnze::setChannelEnable(int c, bool e) {
   _global.channel[c].isEnable = e;
+  setLfo(c);
 }
 
 //----------------------------------------------------------------
@@ -760,6 +769,12 @@ int DeicsOnze::getNbrVoices(int c) const {
 //----------------------------------------------------------------
 int DeicsOnze::getMasterVol(void) const {
   return(amp2level(_global.masterVolume));
+}
+//----------------------------------------------------------------
+// getFilter
+//----------------------------------------------------------------
+bool DeicsOnze::getFilter(void) const {
+  return _global.filter;
 }
 //----------------------------------------------------------------
 // getChannelEnable
@@ -867,22 +882,21 @@ void DeicsOnze::setLfo(int c/*channel*/)
        )/(double)MAXAMODDEPTH;
     _global.channel[c].lfoMaxAmp =
       totalaDepth * (COEFALFO(_preset[c]->sensitivity.amplitude));
-    //index is concidered on the frequency of the delay
+    //index is concidered on the half of the frequency of the LFO
     _global.channel[c].lfoDelayMaxIndex = 
-      delay2Time(_preset[c]->lfo.delay)*_global.channel[c].lfoFreq;
+      delay2Time(_preset[c]->lfo.delay)*_global.channel[c].lfoFreq*2;
     _global.channel[c].lfoDelayInct = 
       (double)(RESOLUTION/4)/_global.channel[c].lfoDelayMaxIndex;
     
     //update the actuall values controlling the modulation now
     if(_global.channel[c].lfoDelayIndex<(double)(RESOLUTION/4)) {
       double delayCoef =
-	(double)waveTable[0][(int)_global.channel[c].lfoDelayIndex];
+	(double)waveTable[W2][(int)_global.channel[c].lfoDelayIndex];
       _global.channel[c].lfoMaxCoefInct =
 	exp((log(2.0)/12.0)*_global.channel[c].lfoPitch*delayCoef);
       _global.channel[c].lfoCoefInctInct =
 	exp((log(2.0)/12.0)*((2*_global.channel[c].lfoPitch*delayCoef)
 			     /_global.channel[c].lfoMaxIndex));
-      _global.channel[c].lfoDelayIndex += _global.channel[c].lfoDelayInct;
       _global.channel[c].lfoMaxDAmp = delayCoef*_global.channel[c].lfoMaxAmp;
     }
     else
@@ -993,15 +1007,24 @@ void DeicsOnze::setQuality(Quality q) {
   default : printf("Error switch setQuality : out of value\n");
     break;
   }
+  //calculate _global.deiSampleRate
   _global.deiSampleRate = (double)sampleRate()
     / (double)_global.qualityCounterTop;
   _global.qualityCounter = 0;
-  /* TODO
-    _chorus1->setSampleRate(_global.deiSampleRate);
-    _chorus2->setSampleRate(_global.deiSampleRate);
-  */
+  //update lfo to consider the new samplerate
+  for(int c = 0; c < 16; c++) if(_global.channel[c].isEnable) setLfo(c);
+  //update the cutoffs of the filters
+  _dryFilter->setCutoff(_global.deiSampleRate/4.0);
+  _reverbFilter->setCutoff(_global.deiSampleRate/4.0);
+  _chorusFilter->setCutoff(_global.deiSampleRate/4.0);
 }
 
+//-----------------------------------------------------------------
+// setFilter
+//-----------------------------------------------------------------
+void DeicsOnze::setFilter(bool f) {
+  _global.filter = f;
+}
 //-----------------------------------------------------------------
 // brightness2Amp
 //-----------------------------------------------------------------
@@ -1482,25 +1505,26 @@ inline double pitch2freq(double p) {
 inline void lfoUpdate(Preset* p, Channel* p_c, float* wt) {
   double delayCoef;
 
-  if(p_c->lfoIndex==0 || p_c->lfoIndex==p_c->lfoMaxIndex/2) {
-    if(p_c->lfoDelayIndex<(double)(RESOLUTION/4)) {
-      delayCoef=(double)wt[(int)p_c->lfoDelayIndex];
-      p_c->lfoMaxCoefInct=exp((log(2.0)/12.0)*p_c->lfoPitch*delayCoef);
-      p_c->lfoCoefInctInct=
-	exp((log(2.0)/12.0)*((2*p_c->lfoPitch*delayCoef)/p_c->lfoMaxIndex));
-      p_c->lfoDelayIndex+=p_c->lfoDelayInct;
-      p_c->lfoMaxDAmp=delayCoef*p_c->lfoMaxAmp;
-    }
-    else
-      if(!p_c->delayPassed) {
+  //Manage LFO delay
+  if(!p_c->delayPassed) {
+    if(p_c->lfoIndex==0 || p_c->lfoIndex==p_c->lfoMaxIndex/2) {
+      if(p_c->lfoDelayIndex<(double)(RESOLUTION/4)) {
+	delayCoef=(double)wt[(int)p_c->lfoDelayIndex];
+	p_c->lfoMaxCoefInct=exp((log(2.0)/12.0)*p_c->lfoPitch*delayCoef);
+	p_c->lfoCoefInctInct=
+	  exp((log(2.0)/12.0)*((2*p_c->lfoPitch*delayCoef)/p_c->lfoMaxIndex));
+	p_c->lfoDelayIndex+=p_c->lfoDelayInct;
+	p_c->lfoMaxDAmp=delayCoef*p_c->lfoMaxAmp;
+      }
+      else {
 	p_c->lfoMaxCoefInct=exp((log(2.0)/12.0)*p_c->lfoPitch);
 	p_c->lfoCoefInctInct=
 	  exp((log(2.0)/12.0)*((2*p_c->lfoPitch)/p_c->lfoMaxIndex));
 	p_c->delayPassed=true;
 	p_c->lfoMaxDAmp=p_c->lfoMaxAmp;
       }
+    }
   }
-
   switch(p->lfo.wave) {
   case SAWUP :
     if(p_c->lfoIndex==0) {
@@ -1970,6 +1994,15 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       MidiEvent evQuality(0, ME_SYSEX, (const unsigned char*)dataQuality, 2);
       _gui->writeEvent(evQuality);
     }
+    //filter
+    if(qdEl.tagName()==FILTERSTR) {
+      setFilter(qdEl.text()==YESSTRDEI?true:false);
+      unsigned char *dataFilter = new unsigned char[2];
+      dataFilter[0]=SYSEX_FILTER;
+      dataFilter[1]=(unsigned char)getFilter();
+      MidiEvent evFilter(0, ME_SYSEX, (const unsigned char*)dataFilter, 2);
+      _gui->writeEvent(evFilter);
+    }
     //font size
     if(qdEl.tagName()==FONTSIZESTR) {
       _global.fontSize = qdEl.text().toInt();
@@ -2131,6 +2164,7 @@ void DeicsOnze::writeConfiguration(AL::Xml* xml) {
   xml->tag(QUALITYSTR, QString((_global.quality==high?HIGHSTR:
 			   (_global.quality==middle?MIDDLESTR:
 			    (_global.quality==low?LOWSTR:ULTRALOWSTR)))));
+  xml->tag(FILTERSTR, QString(getFilter()==true?YESSTRDEI:NOSTRDEI));
   xml->tag(FONTSIZESTR, _global.fontSize);
   xml->tag(SAVECONFIGSTR, QString((_saveConfig?YESSTRDEI:NOSTRDEI)));
   xml->tag(SAVEONLYUSEDSTR, QString((_saveOnlyUsed?YESSTRDEI:NOSTRDEI)));
@@ -2211,6 +2245,7 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   //save config data
   if(_saveConfig) {
     buffer[NUM_QUALITY]=(unsigned char)_global.quality;
+    buffer[NUM_FILTER]=(unsigned char)getFilter();
     buffer[NUM_FONTSIZE]=(unsigned char)_global.fontSize;
     buffer[NUM_RED_TEXT]=(unsigned char)_gui->tColor->red();
     buffer[NUM_GREEN_TEXT]=(unsigned char)_gui->tColor->green();
@@ -2395,6 +2430,13 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       setQuality((Quality)data[NUM_QUALITY]);
       MidiEvent evQuality(0, ME_SYSEX, (const unsigned char*)dataQuality, 2);
       _gui->writeEvent(evQuality);
+      //filter
+      unsigned char dataFilter[2];
+      dataFilter[0]=SYSEX_FILTER;
+      dataFilter[1]=data[NUM_FILTER];
+      setFilter((bool)data[NUM_FILTER]);
+      MidiEvent evFilter(0, ME_SYSEX, (const unsigned char*)dataFilter, 2);
+      _gui->writeEvent(evFilter);
       //font size
       unsigned char dataFontSize[2];
       dataFontSize[0]=SYSEX_FONTSIZE;
@@ -2607,6 +2649,13 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     //break;
   case SYSEX_QUALITY:
     setQuality((Quality)data[1]);
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  case SYSEX_FILTER:
+    setFilter((bool)data[1]);
     if(!fromGui) {
       MidiEvent evSysex(0, ME_SYSEX, data, length);
       _gui->writeEvent(evSysex);
@@ -3482,7 +3531,8 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	else _global.channel[ch].voices[newVoice].hasAttractor = false;
 	
 	/*if(_preset->lfo.sync)*/ _global.channel[ch].lfoIndex=0;//TODO
-	_global.channel[ch].lfoDelayIndex=0.0;
+	_global.channel[ch].lfoDelayIndex = 
+	  (_preset[ch]->lfo.delay==0?(double)(RESOLUTION/4):0.0);
 	_global.channel[ch].delayPassed=false;
 	
 	//--------------
@@ -3944,8 +3994,14 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
     _global.qualityCounter++;
     _global.qualityCounter %= _global.qualityCounterTop;
   }
+  //apply Filter
+  if(_global.filter) _dryFilter->process(leftOutput, rightOutput, n);
   //Chorus
   if(_global.isChorusActivated) {
+    //apply Filter
+    if(_global.filter) _chorusFilter->process(tempOutputChorus[0],
+					      tempOutputChorus[1], n);
+    //apply Chorus
     _pluginIChorus->apply(n, 2, tempInputChorus, tempOutputChorus);
     for(int i = 0; i < n; i++) {
       leftOutput[i] += 
@@ -3956,6 +4012,10 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
   }
   //Reverb
   if(_global.isReverbActivated) {
+    //apply Filter
+    if(_global.filter) _reverbFilter->process(tempOutputReverb[0],
+					      tempOutputReverb[1], n);
+    //apply Chorus
     _pluginIReverb->apply(n, 2, tempInputReverb, tempOutputReverb);
     for(int i = 0; i < n; i++) {
       leftOutput[i] +=
@@ -3984,7 +4044,7 @@ extern "C" {
     static MESS descriptor = {
 	"DeicsOnze",
 	"DeicsOnze FM DX11/TX81Z emulator",
-	"0.5",      // version string
+	"0.5.5",      // version string
 	MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
 	instantiate
     };

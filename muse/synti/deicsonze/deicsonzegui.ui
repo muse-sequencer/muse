@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>741</width>
+    <width>740</width>
     <height>590</height>
    </rect>
   </property>
@@ -26,500 +26,231 @@
    <property name="spacing" >
     <number>6</number>
    </property>
-   <item row="1" column="3" >
-    <widget class="QPushButton" name="resCtrlButton" >
-     <property name="maximumSize" >
+   <item rowspan="3" row="0" column="4" >
+    <widget class="QGroupBox" name="channelCtrlGroupBox" >
+     <property name="minimumSize" >
       <size>
-       <width>1000</width>
-       <height>20</height>
+       <width>96</width>
+       <height>16</height>
       </size>
      </property>
-     <property name="palette" >
-      <palette>
-       <active>
-        <colorrole role="WindowText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Button" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Light" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>237</red>
-           <green>237</green>
-           <blue>237</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Midlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Dark" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Mid" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>166</red>
-           <green>166</green>
-           <blue>166</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Text" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="BrightText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="ButtonText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Base" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Window" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Shadow" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Highlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="HighlightedText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Link" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="LinkVisited" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="AlternateBase" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </active>
-       <inactive>
-        <colorrole role="WindowText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Button" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Light" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>237</red>
-           <green>237</green>
-           <blue>237</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Midlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Dark" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Mid" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>166</red>
-           <green>166</green>
-           <blue>166</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Text" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="BrightText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="ButtonText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Base" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Window" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Shadow" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Highlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="HighlightedText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Link" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="LinkVisited" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="AlternateBase" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </inactive>
-       <disabled>
-        <colorrole role="WindowText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Button" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Light" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>237</red>
-           <green>237</green>
-           <blue>237</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Midlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Dark" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Mid" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>166</red>
-           <green>166</green>
-           <blue>166</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Text" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="BrightText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="ButtonText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Base" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Window" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Shadow" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Highlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="HighlightedText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Link" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="LinkVisited" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="AlternateBase" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </disabled>
-      </palette>
+     <property name="title" >
+      <string>Channel Ctrl</string>
      </property>
-     <property name="font" >
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>10</pointsize>
-       <weight>75</weight>
-       <italic>false</italic>
-       <bold>true</bold>
-       <underline>false</underline>
-       <strikeout>false</strikeout>
-      </font>
-     </property>
-     <property name="toolTip" >
-      <string>Set Brightness, Detune, Attack and Release of the current channel to default</string>
-     </property>
-     <property name="text" >
-      <string>Res. Ctrl</string>
-     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="2" column="0" >
+       <widget class="Awl::VolKnob" name="channelPanKnob" >
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+        <property name="minValue" >
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maxValue" >
+         <double>1.000000000000000</double>
+        </property>
+        <property name="lineStep" >
+         <double>0.100000000000000</double>
+        </property>
+        <property name="pageStep" >
+         <double>0.200000000000000</double>
+        </property>
+        <property name="log" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="0" >
+       <widget class="QLabel" name="releaseLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Release</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0" >
+       <widget class="Awl::Knob" name="releaseKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0" >
+       <widget class="QLabel" name="attackTimeLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Attack</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0" >
+       <widget class="Awl::Knob" name="attackKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0" >
+       <widget class="QLabel" name="detuneLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Detune</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0" >
+       <widget class="Awl::Knob" name="detuneKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0" >
+       <widget class="QLabel" name="brightnessLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Brightness</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" >
+       <widget class="Awl::Knob" name="brightnessKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" >
+       <widget class="QLabel" name="modulationLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Modulation</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" >
+       <widget class="Awl::Knob" name="modulationKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" >
+       <widget class="QLabel" name="channelPanLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Pan</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="channelVolumeLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Volume</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="Awl::Knob" name="channelVolumeKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+        <property name="maxValue" >
+         <double>1.000000000000000</double>
+        </property>
+        <property name="lineStep" >
+         <double>0.100000000000000</double>
+        </property>
+        <property name="pageStep" >
+         <double>0.200000000000000</double>
+        </property>
+        <property name="scaleSize" >
+         <number>270</number>
+        </property>
+        <property name="markSize" >
+         <number>6</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item row="2" column="0" colspan="4" >
@@ -749,7 +480,7 @@
           <enum>QFrame::Plain</enum>
          </property>
          <property name="text" >
-          <string>DeicsOnze v0.5 Copyright (c) 2004-2006 Nil Geisweiller. Published under GPL licence.</string>
+          <string>DeicsOnze v0.5.5 Copyright (c) 2004-2006 Nil Geisweiller. Published under GPL licence.</string>
          </property>
         </widget>
        </item>
@@ -5756,10 +5487,10 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item row="1" column="0" colspan="3" >
-        <widget class="QGroupBox" name="pathGroupBox" >
+       <item row="2" column="1" >
+        <widget class="QGroupBox" name="fontSizeGroupBox" >
          <property name="title" >
-          <string>Set Path</string>
+          <string>Font Size</string>
          </property>
          <layout class="QGridLayout" >
           <property name="margin" >
@@ -5768,54 +5499,161 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
           <property name="spacing" >
            <number>6</number>
           </property>
-          <item row="1" column="0" >
-           <widget class="QCheckBox" name="imageCheckBox" >
+          <item row="0" column="0" >
+           <widget class="QSpinBox" name="fontSizeSpinBox" >
+            <property name="maximum" >
+             <number>32</number>
+            </property>
+            <property name="minimum" >
+             <number>1</number>
+            </property>
+            <property name="value" >
+             <number>9</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0" >
+        <widget class="QGroupBox" name="qualityGroupBox" >
+         <property name="title" >
+          <string>Quality</string>
+         </property>
+         <layout class="QHBoxLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QComboBox" name="qualityComboBox" >
+            <property name="enabled" >
+             <bool>true</bool>
+            </property>
+            <item>
+             <property name="text" >
+              <string>High</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Middle</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Low</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Ultra low</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="filterCheckBox" >
+            <property name="enabled" >
+             <bool>true</bool>
+            </property>
             <property name="text" >
-             <string>Image in the background :</string>
+             <string>Filter</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item rowspan="2" row="2" column="2" >
+        <widget class="QGroupBox" name="saveModeButtonGroup" >
+         <property name="title" >
+          <string>Save Mode (into the song)</string>
+         </property>
+         <layout class="QVBoxLayout" >
+          <property name="margin" >
+           <number>10</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QRadioButton" name="minSaveRadioButton" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="text" >
+             <string>Save only the used presets</string>
             </property>
             <property name="checked" >
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="1" column="1" >
-           <widget class="QLineEdit" name="imagePathLineEdit" >
-            <property name="maxLength" >
-             <number>128</number>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2" >
-           <widget class="QPushButton" name="imageBrowsePushButton" >
-            <property name="enabled" >
-             <bool>false</bool>
+          <item>
+           <widget class="QRadioButton" name="hugeSaveRadioButton" >
+            <property name="cursor" >
+             <cursor>13</cursor>
             </property>
             <property name="text" >
-             <string>Browse...</string>
+             <string>Save the entire set</string>
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="saveConfigCheckBox" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="text" >
+             <string>Save the configuration</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2" >
+        <widget class="QGroupBox" name="fileGroupBox" >
+         <property name="title" >
+          <string>Configuration File</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
           <item row="0" column="1" >
-           <widget class="QLineEdit" name="initSetPathLineEdit" >
-            <property name="maxLength" >
-             <number>128</number>
+           <widget class="QPushButton" name="saveConfPushButton" >
+            <property name="enabled" >
+             <bool>true</bool>
+            </property>
+            <property name="text" >
+             <string>Save...</string>
             </property>
            </widget>
           </item>
           <item row="0" column="2" >
-           <widget class="QPushButton" name="initSetBrowsePushButton" >
+           <widget class="QPushButton" name="loadConfPushButton" >
+            <property name="enabled" >
+             <bool>true</bool>
+            </property>
             <property name="text" >
-             <string>Browse...</string>
+             <string>Load...</string>
             </property>
            </widget>
           </item>
           <item row="0" column="0" >
-           <widget class="QCheckBox" name="initSetCheckBox" >
+           <widget class="QPushButton" name="saveDefaultPushButton" >
             <property name="text" >
-             <string>Load the set at the initialization :</string>
-            </property>
-            <property name="checked" >
-             <bool>true</bool>
+             <string>Save as default</string>
             </property>
            </widget>
           </item>
@@ -6011,10 +5849,10 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
          </layout>
         </widget>
        </item>
-       <item row="3" column="0" colspan="2" >
-        <widget class="QGroupBox" name="fileGroupBox" >
+       <item row="1" column="0" colspan="3" >
+        <widget class="QGroupBox" name="pathGroupBox" >
          <property name="title" >
-          <string>Configuration File</string>
+          <string>Set Path</string>
          </property>
          <layout class="QGridLayout" >
           <property name="margin" >
@@ -6023,151 +5861,54 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
           <property name="spacing" >
            <number>6</number>
           </property>
-          <item row="0" column="1" >
-           <widget class="QPushButton" name="saveConfPushButton" >
+          <item row="1" column="0" >
+           <widget class="QCheckBox" name="imageCheckBox" >
+            <property name="text" >
+             <string>Image in the background :</string>
+            </property>
+            <property name="checked" >
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" >
+           <widget class="QLineEdit" name="imagePathLineEdit" >
+            <property name="maxLength" >
+             <number>128</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2" >
+           <widget class="QPushButton" name="imageBrowsePushButton" >
             <property name="enabled" >
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="text" >
-             <string>Save...</string>
+             <string>Browse...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QLineEdit" name="initSetPathLineEdit" >
+            <property name="maxLength" >
+             <number>128</number>
             </property>
            </widget>
           </item>
           <item row="0" column="2" >
-           <widget class="QPushButton" name="loadConfPushButton" >
-            <property name="enabled" >
-             <bool>true</bool>
-            </property>
+           <widget class="QPushButton" name="initSetBrowsePushButton" >
             <property name="text" >
-             <string>Load...</string>
+             <string>Browse...</string>
             </property>
            </widget>
           </item>
           <item row="0" column="0" >
-           <widget class="QPushButton" name="saveDefaultPushButton" >
+           <widget class="QCheckBox" name="initSetCheckBox" >
             <property name="text" >
-             <string>Save as default</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item rowspan="2" row="2" column="2" >
-        <widget class="QGroupBox" name="saveModeButtonGroup" >
-         <property name="title" >
-          <string>Save Mode (into the song)</string>
-         </property>
-         <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>10</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QRadioButton" name="minSaveRadioButton" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="text" >
-             <string>Save only the used presets</string>
+             <string>Load the set at the initialization :</string>
             </property>
             <property name="checked" >
              <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="hugeSaveRadioButton" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="text" >
-             <string>Save the entire set</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="saveConfigCheckBox" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="text" >
-             <string>Save the configuration</string>
-            </property>
-            <property name="checked" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="0" >
-        <widget class="QGroupBox" name="qualityGroupBox" >
-         <property name="title" >
-          <string>Quality</string>
-         </property>
-         <layout class="QHBoxLayout" >
-          <property name="margin" >
-           <number>10</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QComboBox" name="qualityComboBox" >
-            <property name="enabled" >
-             <bool>true</bool>
-            </property>
-            <item>
-             <property name="text" >
-              <string>High</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Middle</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Low</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Ultra low</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="1" >
-        <widget class="QGroupBox" name="fontSizeGroupBox" >
-         <property name="title" >
-          <string>Font Size</string>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="0" column="0" >
-           <widget class="QSpinBox" name="fontSizeSpinBox" >
-            <property name="maximum" >
-             <number>32</number>
-            </property>
-            <property name="minimum" >
-             <number>1</number>
-            </property>
-            <property name="value" >
-             <number>9</number>
             </property>
            </widget>
           </item>
@@ -6176,6 +5917,127 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item rowspan="2" row="0" column="1" >
+    <widget class="Awl::VolKnob" name="masterVolKnob" >
+     <property name="minimumSize" >
+      <size>
+       <width>40</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="value" >
+      <double>-28.009242824902255</double>
+     </property>
+     <property name="minValue" >
+      <double>0.000000000000000</double>
+     </property>
+     <property name="maxValue" >
+      <double>1.000000000000000</double>
+     </property>
+     <property name="lineStep" >
+      <double>0.100000000000000</double>
+     </property>
+     <property name="pageStep" >
+      <double>0.200000000000000</double>
+     </property>
+     <property name="log" >
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item rowspan="2" row="0" column="0" >
+    <widget class="QLabel" name="masterVolumeLabel" >
+     <property name="frameShape" >
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="text" >
+      <string>Vol</string>
+     </property>
+     <property name="alignment" >
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item rowspan="2" row="0" column="2" >
+    <widget class="QGroupBox" name="generalBox" >
+     <property name="title" >
+      <string/>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="0" column="4" >
+       <widget class="QSpinBox" name="nbrVoicesSpinBox" >
+        <property name="enabled" >
+         <bool>true</bool>
+        </property>
+        <property name="toolTip" >
+         <string>Number of Voices</string>
+        </property>
+        <property name="maximum" >
+         <number>64</number>
+        </property>
+        <property name="minimum" >
+         <number>1</number>
+        </property>
+        <property name="value" >
+         <number>8</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3" >
+       <widget class="QLabel" name="numberVoicesLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Number of voices</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" >
+       <widget class="QCheckBox" name="ChannelCheckBox" >
+        <property name="text" >
+         <string>Enable</string>
+        </property>
+        <property name="checked" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QSpinBox" name="ChannelNumSpinBox" >
+        <property name="maximum" >
+         <number>16</number>
+        </property>
+        <property name="minimum" >
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="channelNumLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Channel</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item row="0" column="3" >
@@ -6674,351 +6536,499 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
      </property>
     </widget>
    </item>
-   <item rowspan="3" row="0" column="4" >
-    <widget class="QGroupBox" name="channelCtrlGroupBox" >
-     <property name="minimumSize" >
+   <item row="1" column="3" >
+    <widget class="QPushButton" name="resCtrlButton" >
+     <property name="maximumSize" >
       <size>
-       <width>96</width>
-       <height>16</height>
+       <width>1000</width>
+       <height>20</height>
       </size>
      </property>
-     <property name="title" >
-      <string>Channel Ctrl</string>
+     <property name="palette" >
+      <palette>
+       <active>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Button" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Light" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>237</red>
+           <green>237</green>
+           <blue>237</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Midlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Dark" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Mid" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>166</red>
+           <green>166</green>
+           <blue>166</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Text" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="BrightText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="ButtonText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Shadow" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Highlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="HighlightedText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Link" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="LinkVisited" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="AlternateBase" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </active>
+       <inactive>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Button" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Light" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>237</red>
+           <green>237</green>
+           <blue>237</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Midlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Dark" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Mid" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>166</red>
+           <green>166</green>
+           <blue>166</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Text" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="BrightText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="ButtonText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Shadow" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Highlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="HighlightedText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Link" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="LinkVisited" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="AlternateBase" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </inactive>
+       <disabled>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Button" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Light" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>237</red>
+           <green>237</green>
+           <blue>237</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Midlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Dark" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Mid" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>166</red>
+           <green>166</green>
+           <blue>166</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Text" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="BrightText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="ButtonText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Shadow" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Highlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="HighlightedText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Link" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="LinkVisited" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="AlternateBase" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </disabled>
+      </palette>
      </property>
-     <layout class="QGridLayout" >
-      <property name="margin" >
-       <number>9</number>
-      </property>
-      <property name="spacing" >
-       <number>6</number>
-      </property>
-      <item row="2" column="0" >
-       <widget class="Awl::VolKnob" name="channelPanKnob" >
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-        <property name="minValue" >
-         <double>0.000000000000000</double>
-        </property>
-        <property name="maxValue" >
-         <double>1.000000000000000</double>
-        </property>
-        <property name="lineStep" >
-         <double>0.100000000000000</double>
-        </property>
-        <property name="pageStep" >
-         <double>0.200000000000000</double>
-        </property>
-        <property name="log" >
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="0" >
-       <widget class="QLabel" name="releaseLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Release</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="12" column="0" >
-       <widget class="Awl::Knob" name="releaseKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="11" column="0" >
-       <widget class="QLabel" name="attackTimeLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Attack</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="0" >
-       <widget class="Awl::Knob" name="attackKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0" >
-       <widget class="QLabel" name="detuneLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Detune</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0" >
-       <widget class="Awl::Knob" name="detuneKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0" >
-       <widget class="QLabel" name="brightnessLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Brightness</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" >
-       <widget class="Awl::Knob" name="brightnessKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0" >
-       <widget class="QLabel" name="modulationLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Modulation</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" >
-       <widget class="Awl::Knob" name="modulationKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" >
-       <widget class="QLabel" name="channelPanLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Pan</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" >
-       <widget class="QLabel" name="channelVolumeLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Volume</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" >
-       <widget class="Awl::Knob" name="channelVolumeKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-        <property name="maxValue" >
-         <double>1.000000000000000</double>
-        </property>
-        <property name="lineStep" >
-         <double>0.100000000000000</double>
-        </property>
-        <property name="pageStep" >
-         <double>0.200000000000000</double>
-        </property>
-        <property name="scaleSize" >
-         <number>270</number>
-        </property>
-        <property name="markSize" >
-         <number>6</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item rowspan="2" row="0" column="2" >
-    <widget class="QGroupBox" name="generalBox" >
-     <property name="title" >
-      <string/>
+     <property name="font" >
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <italic>false</italic>
+       <bold>true</bold>
+       <underline>false</underline>
+       <strikeout>false</strikeout>
+      </font>
      </property>
-     <layout class="QGridLayout" >
-      <property name="margin" >
-       <number>9</number>
-      </property>
-      <property name="spacing" >
-       <number>6</number>
-      </property>
-      <item row="0" column="4" >
-       <widget class="QSpinBox" name="nbrVoicesSpinBox" >
-        <property name="enabled" >
-         <bool>true</bool>
-        </property>
-        <property name="toolTip" >
-         <string>Number of Voices</string>
-        </property>
-        <property name="maximum" >
-         <number>64</number>
-        </property>
-        <property name="minimum" >
-         <number>1</number>
-        </property>
-        <property name="value" >
-         <number>8</number>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3" >
-       <widget class="QLabel" name="numberVoicesLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Number of voices</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2" >
-       <widget class="QCheckBox" name="ChannelCheckBox" >
-        <property name="text" >
-         <string>Enable</string>
-        </property>
-        <property name="checked" >
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1" >
-       <widget class="QSpinBox" name="ChannelNumSpinBox" >
-        <property name="maximum" >
-         <number>16</number>
-        </property>
-        <property name="minimum" >
-         <number>1</number>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" >
-       <widget class="QLabel" name="channelNumLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Channel</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item rowspan="2" row="0" column="0" >
-    <widget class="QLabel" name="masterVolumeLabel" >
-     <property name="frameShape" >
-      <enum>QFrame::StyledPanel</enum>
+     <property name="toolTip" >
+      <string>Set Brightness, Detune, Attack and Release of the current channel to default</string>
      </property>
      <property name="text" >
-      <string>Vol</string>
-     </property>
-     <property name="alignment" >
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item rowspan="2" row="0" column="1" >
-    <widget class="Awl::VolKnob" name="masterVolKnob" >
-     <property name="minimumSize" >
-      <size>
-       <width>40</width>
-       <height>40</height>
-      </size>
-     </property>
-     <property name="value" >
-      <double>-8.748632009724199</double>
-     </property>
-     <property name="minValue" >
-      <double>0.000000000000000</double>
-     </property>
-     <property name="maxValue" >
-      <double>1.000000000000000</double>
-     </property>
-     <property name="lineStep" >
-      <double>0.100000000000000</double>
-     </property>
-     <property name="pageStep" >
-      <double>0.200000000000000</double>
-     </property>
-     <property name="log" >
-      <bool>false</bool>
+      <string>Res. Ctrl</string>
      </property>
     </widget>
    </item>
@@ -7027,14 +7037,14 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
  <layoutdefault spacing="6" margin="11" />
  <customwidgets>
   <customwidget>
-   <class>Awl::Knob</class>
-   <extends>QWidget</extends>
-   <header>awl/knob.h</header>
-  </customwidget>
-  <customwidget>
    <class>Awl::VolKnob</class>
    <extends>Awl::Knob</extends>
    <header>awl/volknob.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Awl::Knob</class>
+   <extends>QWidget</extends>
+   <header>awl/knob.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

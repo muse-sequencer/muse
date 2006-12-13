@@ -25,6 +25,7 @@ add_library ( deicsonze SHARED
       deicsonze.cpp
       deicsonzepreset.cpp
       deicsonzeplugin.cpp
+      deicsonzefilter.cpp
       deicsonzegui.cpp
       deicsonzegui.h
       ${deicsonze_mocs}

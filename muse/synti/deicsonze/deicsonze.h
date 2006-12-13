@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.5
+//    Version 0.5.5
 //
 //
 //
@@ -36,6 +36,7 @@
 #include "deicsonzepreset.h"
 #include "deicsonzegui.h"
 #include "deicsonzeplugin.h"
+#include "deicsonzefilter.h"
 #include "libsynti/mess.h"
 #include "plugin.h"
 
@@ -146,6 +147,8 @@
 #define SYSEX_SELECTCHORUS 83
 #define SYSEX_BUILDGUIREVERB 84
 #define SYSEX_BUILDGUICHORUS 85
+#define SYSEX_FILTER 90
+#define FILTERSTR "Filter"
 //REVERB PARAMETERS
 
 #define DEFAULTVOL 200
@@ -181,6 +184,7 @@ enum {
   NUM_GREEN_EDITBACKGROUND,
   NUM_BLUE_EDITBACKGROUND,
   NUM_QUALITY,
+  NUM_FILTER,
   NUM_FONTSIZE,
   NUM_ISINITSET,
   NUM_INITSETPATH,
@@ -384,6 +388,7 @@ struct Global {
   int qualityCounter; //counter to skip some sample depending on quality
   int qualityCounterTop; //number of sample - 1 to skip
   double deiSampleRate; //depending on quality deicsOnze sample rate varies
+  bool filter; //low passe filter used when the sampling is low
   int fontSize;
   float lastLeftSample;
   float lastRightSample;
@@ -445,6 +450,11 @@ class DeicsOnze : public Mess {
   double getReverbParam(int i);
   double getChorusParam(int i);
 
+  //Filter
+  LowFilter* _dryFilter;
+  LowFilter* _chorusFilter;
+  LowFilter* _reverbFilter;
+
   mutable MidiPatch _patch;
   int _numPatch; //what is this? TODO
   
@@ -473,6 +483,7 @@ class DeicsOnze : public Mess {
   void setEnvRelease(int c); //do the same for all voices all operators  
   void setPitchEnvRelease(int c, int v);
   void setQuality(Quality q);
+  void setFilter(bool f);
   double brightness2Amp(int c, int k); //get the brightness of the operator k
   void loadSutulaPresets();
   void loadSet(QString s);
@@ -499,6 +510,7 @@ class DeicsOnze : public Mess {
   bool getChannelEnable(int c) const;
   int getNbrVoices(int c) const;
   int getMasterVol(void) const;
+  bool getFilter(void) const;
   int getChannelVol(int c) const;
   int getChannelPan(int c) const;
   int getChannelDetune(int c) const;

@@ -1,3 +1,5 @@
+13.12 (ns) DeicsOnze 0.5.5
+      - added filter for low quality
 12.12 (ws)
       - added possibility to define a new midicontroller
       (ng)

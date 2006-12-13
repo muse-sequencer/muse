@@ -2,7 +2,7 @@
 //
 //    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
 //
-//    Version 0.5
+//    Version 0.5.5
 //
 //    deicsonzegui.h
 //
@@ -144,6 +144,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setSaveConfig(bool);
 //    void setMidiInCh(int); //to change
     void setQuality(const QString&);
+    void setFilter(bool);
     void setFontSize(int);
     void saveConfiguration();
     void saveDefaultConfiguration();
@@ -350,6 +351,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void updateNbrVoices(int val);
     //void updateMidiInCh(int val); //to change
     void updateQuality(int val);
+    void updateFilter(bool f);
     void updateFontSize(int fs);
     void applyFontSize(int fs);
     void updateSaveOnlyUsed(bool);
