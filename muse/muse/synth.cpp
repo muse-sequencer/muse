@@ -35,6 +35,7 @@
 #include "midiseq.h"
 #include "midictrl.h"
 #include "instruments/minstrument.h"
+#include "driver/audiodev.h"
 
 std::vector<Synth*> synthis;  // array of available synthis
 
@@ -402,7 +403,6 @@ void MessSynthIF::write(Xml& xml) const
       if (len) {
             xml.stag("midistate");
             xml.stag(QString("event type=\"%1\" datalen=\"%2\"").arg(Sysex).arg(len));
-            int col = 0;
             xml.dump(len, p);
             xml.etag("event");
             xml.etag("midistate");
@@ -537,7 +537,7 @@ void MessSynthIF::getData(MidiEventList* el, unsigned pos, int ports, unsigned n
                   int frame = i->time();
                   if (frame >= endPos)
                         break;
-                  if (frame > curPos) { 
+                  if (frame > curPos) {
                         // Several following notes during same segmentsize?
                         _mess->process(buffer, curPos-pos, frame - curPos);
                         curPos = frame; // don't process this piece again
@@ -553,7 +553,7 @@ void MessSynthIF::getData(MidiEventList* el, unsigned pos, int ports, unsigned n
             // this happens if the synth has stereo and we switch the
             // channel to mono
 
-            printf("MessSynthIF::getData - ports %d < channels %d\n", 
+            printf("MessSynthIF::getData - ports %d < channels %d\n",
                ports, channels());
             }
       }
@@ -584,9 +584,8 @@ bool MessSynthIF::putEvent(const MidiEvent& ev)
 void SynthI::collectInputData()
       {
       bufferEmpty = false;
-      unsigned pos = audio->isPlaying() ? audio->pos().frame()
-         : audio->timestamp();
-      _sif->getData(&_schedEvents, pos, channels(), segmentSize, buffer);
+      _sif->getData(&_schedEvents, audioDriver->frameTime(), channels(),
+         segmentSize, buffer);
       }
 
 //-------------------------------------------------------------------
@@ -597,10 +596,10 @@ void SynthI::collectInputData()
 //    current process cycle.
 //-------------------------------------------------------------------
 
-void SynthI::processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame)
+void SynthI::processMidi(SeqTime* t)
       {
       if (mute())
             return;
-      MidiOut::processMidi(_schedEvents, fromTick, toTick, fromFrame, toFrame);
+      MidiOut::processMidi(_schedEvents, t);
       }
 

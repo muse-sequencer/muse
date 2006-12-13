@@ -24,6 +24,7 @@
 #include "thread.h"
 #include "midievent.h"
 #include "route.h"
+#include "al/tempo.h"
 #include "al/pos.h"
 #include "event.h"
 #include "ctrl.h"
@@ -138,6 +139,39 @@ struct AudioMsg : public ThreadMsg {   // this should be an union
 
 class AudioOutput;
 
+
+//---------------------------------------------------------
+//   SeqTime
+//    timing information for sequencer cycle
+//---------------------------------------------------------
+
+extern unsigned int segmentSize;
+
+struct SeqTime {
+      unsigned lastFrameTime; // free running counter
+
+      // transport values for current cycle:
+      Pos pos;                // current play position
+      unsigned curTickPos;    // pos at start of frame during play/record
+      unsigned nextTickPos;   // pos at start of next frame during play/record
+
+      unsigned startFrame() const { return pos.frame(); }
+      unsigned endFrame() const   { return startFrame() + segmentSize; }
+
+      //---------------------------------------------------------
+      //   tick2frame
+      //    translate from tick to frameTime, this event has to
+      //    be scheduled
+      //---------------------------------------------------------
+
+      unsigned tick2frame(unsigned tick) {
+            return AL::tempomap.tick2frame(tick) - pos.frame() + lastFrameTime + segmentSize;
+            }
+      unsigned frame2tick(unsigned frame) {
+            return AL::tempomap.frame2tick(frame - lastFrameTime + pos.frame());
+            }
+      };
+
 //---------------------------------------------------------
 //   Audio
 //---------------------------------------------------------
@@ -156,17 +190,11 @@ class Audio {
       unsigned lmark;         // left loop position
       unsigned rmark;         // right loop position
 
-      Pos _pos;               // current play position
+      SeqTime _seqTime;
+      Pos startRecordPos;
+      Pos endRecordPos;
 
-      unsigned _curTickPos;   // pos at start of frame during play/record
-      unsigned _nextTickPos;  // pos at start of next frame during play/record
       int _curReadIndex;
-
-      //metronome values
-      unsigned midiClick;
-      int clickno;      // precount values
-      int clicksMeasure;
-      int ticksBeat;
 
       State state;
       bool updateController;
@@ -189,9 +217,6 @@ class Audio {
    public:
       Audio();
       virtual ~Audio() {}
-
-      Pos startRecordPos;
-      Pos endRecordPos;
 
       void process(unsigned frames, int jackState);
       bool sync(int state, unsigned frame);
@@ -253,12 +278,8 @@ class Audio {
       void msgRemoveController(Track*, int id, unsigned time);
       void msgSetRtc();
 
-      const Pos& pos() const      { return _pos; }
       const Pos& getStartRecordPos() const { return startRecordPos; }
       const Pos& getEndRecordPos() const { return endRecordPos; }
-
-      int curTickPos() const        { return _curTickPos;  }
-      int nextTickPos() const       { return _nextTickPos; }
 
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);
@@ -267,8 +288,9 @@ class Audio {
       bool bounce() const { return _bounce != 0; }
       MidiEvent* getMidiEvent();
       void popMidiEvent();
-      int curReadIndex() const { return _curReadIndex; }
-      unsigned timestamp() const;
+      int curReadIndex() const       { return _curReadIndex;  }
+
+      const SeqTime* seqTime() const { return &_seqTime;      }
       };
 
 extern int processAudio(unsigned long, void*);

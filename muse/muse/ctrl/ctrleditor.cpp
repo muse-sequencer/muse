@@ -212,8 +212,10 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
 //   mousePress
 //---------------------------------------------------------
 
-void CtrlEditor::mousePress(const QPoint& pos, int button, Qt::KeyboardModifiers modifiers)
+void CtrlEditor::mousePress(const QPoint& pos, QMouseEvent* me)
       {
+      int button = me->button();
+      Qt::KeyboardModifiers modifiers = me->modifiers();
       Tool tool = tc()->tool();
       if (button & Qt::RightButton) {
             QMenu pop(tc());
@@ -232,10 +234,10 @@ void CtrlEditor::mousePress(const QPoint& pos, int button, Qt::KeyboardModifiers
             a = pop.addAction("List Editor");
             a->setData(1 << (TOOLS+1));
 
-            a = pop.exec(tc()->mapToGlobal(pos));
+            a = pop.exec(me->globalPos());
             if (a) {
                   int n = a->data().toInt();
-                  if (n == (1 << (TOOLS+1))) { 
+                  if (n == (1 << (TOOLS+1))) {
                         Pos t(tc()->pix2pos(pos.x()));
                         muse->showListEditor(t, track(), ctrl());
                         }

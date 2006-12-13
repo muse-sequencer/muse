@@ -129,17 +129,6 @@ QAction* punchoutAction;
 QAction* recordAction;
 QAction* panicAction;
 
-int preMeasures = 2;
-bool precountEnableFlag = false;
-bool precountFromMastertrackFlag = false;
-int precountSigZ = 4;
-int precountSigN = 4;
-bool precountPrerecord = false;
-bool precountPreroll = false;
-bool midiClickFlag   = true;
-bool audioClickFlag  = true;
-double audioClickVolume = 0.1f;
-
 bool rcEnable = false;
 bool midiSeqRunning = false;
 

@@ -93,7 +93,7 @@ void WaveView::drawWavePart(QPainter& p, Part* wp, int y0, int th, int from, int
 
             int samples = event.lenFrame();
             int xScale  = (samples + w/2)/w;
-            int frame   = pos.frame() - wp->frame() 
+            int frame   = pos.frame() - wp->frame()
                            - event.pos().frame() + event.spos();
 
             if (h < 20) {
@@ -247,7 +247,7 @@ void WaveView::mousePress(QMouseEvent* me)
                   QRect r(rCanvasB.x(), rCanvasB.y() + c->y + splitWidth,
                      rCanvasB.width(), c->cheight());
                   if (r.contains(pos)) {
-                        c->mousePress(pos - r.topLeft(), me->button(), me->modifiers());
+                        c->mousePress(pos - r.topLeft(), me);
                         break;
                         }
                   }
@@ -908,7 +908,7 @@ void WaveView::layout()
             c->setHeight(sch);
             layoutPanelB(c);
             y += sch;
-            }      
+            }
       }
 
 //---------------------------------------------------------
@@ -926,7 +926,7 @@ void WaveView::layout1()
             c->y = y;
             y += c->height();
             }
-      resizeController(y);      
+      resizeController(y);
       }
 
 //---------------------------------------------------------
@@ -970,7 +970,7 @@ void WaveView::addController(int id, int h)
       {
       ctrlHeight += h;
       int n = ctrlEditList.size();
-      
+
       CtrlEdit* ce = new CtrlEdit(widget(), this, curPart->track());
       ce->setHeight(h);
       ce->setCtrl(id);
@@ -1026,7 +1026,7 @@ void WaveView::updatePartControllerList()
             cc.ctrlId = (*i)->ctrlId;
             cc.height = (*i)->height();
             cl->push_back(cc);
-            }      
+            }
       }
 
 //---------------------------------------------------------

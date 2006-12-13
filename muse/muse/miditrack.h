@@ -28,6 +28,7 @@
 class Part;
 class EventList;
 class MidiOut;
+class SeqTime;
 
 //---------------------------------------------------------
 //   MidiTrack
@@ -102,7 +103,7 @@ class MidiTrack : public MidiTrackBase {
       virtual bool canRecord() const      { return true; }
       void playMidiEvent(MidiEvent*);
 
-      virtual void processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
+      virtual void processMidi(SeqTime*);
       virtual void getEvents(unsigned from, unsigned to, int channel, MidiEventList* dst);
 
       bool useDrumMap() const             { return _useDrumMap;    }

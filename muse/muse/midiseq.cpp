@@ -193,6 +193,8 @@ bool MidiSeq::start(int prio)
 //---------------------------------------------------------
 //   midiTick
 //    schedule events in playEvents
+//    "now" is the free running audioDriver->frameTime()
+//    frame counter
 //---------------------------------------------------------
 
 void MidiSeq::midiTick(void* p, void*)
@@ -207,10 +209,9 @@ void MidiSeq::midiTick(void* p, void*)
             at->playEvents.insert(at->fifo.get());
 
       //
-      // schedule all events upto framePos-segmentSize
-      // (previous segment)
+      // schedule all events upto curFrame()
       //
-      unsigned curFrame = audioDriver->framePos() - segmentSize;
+      unsigned curFrame = audioDriver->frameTime();
       iMidiOutEvent i = at->playEvents.begin();
       for (; i != at->playEvents.end(); ++i) {
             if (i->event.time() > curFrame)

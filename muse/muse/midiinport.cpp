@@ -102,7 +102,16 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
       {
       MidiEvent event;
       event.setB(0);
-      event.setTime(audio->timestamp());
+      //
+      // move all events 2*segmentSize into the future to get
+      // jitterfree playback
+      //
+      //  cycle   n-1         n          n+1
+      //          -+----------+----------+----------+-
+      //               ^          ^          ^
+      //               catch      process    play
+      //
+      event.setTime(audioDriver->frameTime() + 2 * segmentSize);
 
       switch(ev->type) {
             case SND_SEQ_EVENT_NOTEON:
@@ -171,7 +180,7 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
 
       MidiEventList il, ol;
       il.insert(event);
-      pipeline()->apply(audio->curTickPos(), audio->nextTickPos(), &il, &ol);
+      pipeline()->apply(audio->seqTime()->curTickPos, audio->seqTime()->nextTickPos, &il, &ol);
 
       //
       // update midi activity
@@ -223,7 +232,7 @@ void MidiInPort::beforeProcess()
 //   getEvents
 //    called from jack process context
 //    This method can be called multiple times in a process
-//    cycle so we have to empty the fifo at 
+//    cycle so we have to empty the fifo at
 //    "afterProcess()".
 //---------------------------------------------------------
 
@@ -247,7 +256,7 @@ bool MidiInPort::checkActivity(int channel)
       {
       if (activity[channel])
             --activity[channel];
-      return activity[channel] != 0;      
+      return activity[channel] != 0;
       }
 
 //---------------------------------------------------------

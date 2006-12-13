@@ -376,28 +376,30 @@ void MidiSeq::processMidiClock()
 //    note off events. The note off events maybe played after the
 //    current process cycle.
 //    From _schedEvents queue copy all events for the current cycle
-//    to all output routes. Events routed to ALSA go into the 
+//    to all output routes. Events routed to ALSA go into the
 //    _playEvents queue which is processed by the MidiSeq thread.
 //-------------------------------------------------------------------
 
-void MidiOutPort::processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame)
+void MidiOutPort::processMidi(const SeqTime* t)
       {
       if (track->mute())
             return;
 
       MidiEventList el;
-      MidiOut::processMidi(el, fromTick, toTick, fromFrame, toFrame);
+      MidiOut::processMidi(el, t);
 
-      pipeline()->apply(fromTick, toTick, &el, &_schedEvents);
+      pipeline()->apply(t->curTickPos, t->nextTickPos, &el, &_schedEvents);
 
       //
       // route events to destination
       //
 
-      int portVelo = 0;
-      iMidiEvent i = _schedEvents.begin();
+      int portVelo      = 0;
+      unsigned endFrame = t->lastFrameTime + segmentSize;
+      iMidiEvent i      = _schedEvents.begin();
+
       for (; i != _schedEvents.end(); ++i) {
-            if (i->time() >= toFrame)
+            if (i->time() >= endFrame)
                   break;
             routeEvent(*i);
             if (i->type() == ME_NOTEON)

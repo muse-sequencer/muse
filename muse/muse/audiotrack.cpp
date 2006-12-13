@@ -326,7 +326,7 @@ void AudioTrack::readRecfile(QDomNode node)
 
 void AudioTrack::putFifo(int channels, unsigned long n, float** bp)
       {
-      if (fifo.put(channels, n, bp, audio->pos().frame())) {
+      if (fifo.put(channels, n, bp, audio->seqTime()->pos.frame())) {
             printf("AudioTrack(%s)::putFifo(): overrun\n", name().toAscii().data());
             }
       }

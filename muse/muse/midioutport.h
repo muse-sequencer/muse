@@ -24,6 +24,8 @@
 #include "miditrackbase.h"
 #include "midiout.h"
 
+struct SeqTime;
+
 //---------------------------------------------------------
 //   MidiOutPort
 //---------------------------------------------------------
@@ -57,7 +59,7 @@ class MidiOutPort : public MidiTrackBase, public MidiOut {
       bool guiVisible() const;
       bool hasGui() const;
 
-      virtual void processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
+      virtual void processMidi(const SeqTime*);
       };
 
 typedef QList<MidiOutPort*> MidiOutPortList;

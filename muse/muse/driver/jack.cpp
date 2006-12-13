@@ -117,14 +117,14 @@ int JackAudio::getTransportState()
       int jackState;
       transportState = jack_transport_query(_client, &pos);
       switch (jackAudio->transportState) {
-            case JackTransportStopped:  
+            case JackTransportStopped:
                   jackState = Audio::STOP;
                   break;
             case JackTransportLooping:
-            case JackTransportRolling:  
+            case JackTransportRolling:
                   jackState = Audio::PLAY;
                   break;
-            case JackTransportStarting: 
+            case JackTransportStarting:
                   jackState = Audio::START_PLAY;
                   break;
             default:
@@ -374,7 +374,7 @@ void JackAudio::graphChanged()
       foreach(Route r, ra)
             audio->msgAddRoute1(r);
       rr.clear();
-      ra.clear();      
+      ra.clear();
 
       OutputList* ol = song->outputs();
       for (iAudioOutput ii = ol->begin(); ii != ol->end(); ++ii) {
@@ -473,7 +473,7 @@ void JackAudio::registerClient()
 //---------------------------------------------------------
 //   registerInPort
 //---------------------------------------------------------
-                                    
+
 Port JackAudio::registerInPort(const QString& name, bool midi)
       {
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
@@ -806,21 +806,14 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             e.dump();
             }
       void* pb = jack_port_get_buffer(port.jackPort(), segmentSize);
-      unsigned ft;
-      if (transportState == JackTransportRolling) {
-            ft = e.time() - pos.frame;
-            if (pos.frame > e.time()) {
-printf("time < 0 -- %d\n", pos.frame - e.time());
+      int ft = e.time() - lastFrameTime();
+      if (ft < 0 || ft >= segmentSize) {
+            printf("JackAudio::putEvent: time out of range %d\n", ft);
+            if (ft < 0)
                   ft = 0;
-                  }
-            else if (ft >= segmentSize) {
+            if (ft > segmentSize)
                   ft = segmentSize - 1;
-printf("time >= segmentSize -- %d\n", segmentSize - ft);
-                  }
             }
-      else
-            ft = 0;
-
       switch(e.type()) {
             case ME_NOTEON:
             case ME_NOTEOFF:
@@ -838,7 +831,7 @@ printf("time >= segmentSize -- %d\n", segmentSize - ft);
                   p[2] = e.dataB();
                   }
                   break;
-            
+
             case ME_PROGRAM:
             case ME_AFTERTOUCH:
                   {

@@ -36,9 +36,9 @@ class AudioDriver : public Driver {
       virtual void start(int priority) = 0;
       virtual bool restart() { return false; }           // return true on error
       virtual void stop () = 0;
-//      virtual unsigned getCurFrame() = 0;
-      virtual unsigned framePos() const = 0;
+      virtual unsigned curFrame() const = 0;
       virtual unsigned frameTime() const = 0;
+      virtual unsigned lastFrameTime() const = 0;
       virtual float* getBuffer(Port, unsigned long nframes) = 0;
       virtual void registerClient() = 0;
       virtual Port registerOutPort(const QString& name, bool midi) = 0;

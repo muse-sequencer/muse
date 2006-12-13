@@ -54,12 +54,13 @@ class DummyAudio : public AudioDriver {
       virtual bool init()   { return true; }
       virtual void start(int);
       virtual void stop ();
-      virtual unsigned framePos() const {
-            return lrint((curTime()-startTime) * AL::sampleRate);
-            }
       virtual unsigned frameTime() const {
             return lrint(curTime() * AL::sampleRate);
             }
+      virtual unsigned lastFrameTime() const {
+            return lrint(startTime * AL::sampleRate);
+            }
+      virtual unsigned curFrame() const { return pos; }
 
       virtual float* getBuffer(Port /*port*/, unsigned long nframes)
             {
@@ -131,7 +132,6 @@ class DummyAudio : public AudioDriver {
             else
                   return QString(iPorts[port.alsaPort() - 30]);
             }
-      virtual unsigned getCurFrame() { return pos; }
       virtual int realtimePriority() const { return 40; }
       virtual void startTransport() {
             state = Audio::PLAY;
@@ -215,7 +215,7 @@ static void* dummyLoop(void*)
             if ((policy = sched_getscheduler (0)) < 0) {
       	        printf("cannot get current client scheduler for audio dummy thread: %s!\n", strerror(errno));
                 }
-      	    else 
+      	    else
                 {
             	if (policy != SCHED_FIFO)
 	                  printf("audio dummy thread _NOT_ running SCHED_FIFO\n");

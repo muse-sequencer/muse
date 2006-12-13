@@ -62,7 +62,7 @@ class CtrlEditor {
       virtual ~CtrlEditor() {}
       void paint(QPainter& p, const QRect& r);
       void setDrawCtrlName(bool val) { _drawCtrlName = val; }
-      void mousePress(const QPoint&, int, Qt::KeyboardModifiers);
+      void mousePress(const QPoint&, QMouseEvent*);
       void mouseRelease();
       void mouseMove(const QPoint& pos);
       };

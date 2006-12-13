@@ -25,6 +25,7 @@
 
 class Track;
 class MidiInstrument;
+class SeqTime;
 
 //---------------------------------------------------------
 //    MidiOut
@@ -43,8 +44,7 @@ class MidiOut
       MidiFifo eventFifo;
 
       MidiOut();
-      void processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick, 
-         unsigned fromFrame, unsigned toFrame);
+      void processMidi(MidiEventList&, const SeqTime*);
 
       void seek(unsigned, unsigned);
       void stop();

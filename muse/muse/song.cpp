@@ -124,7 +124,9 @@ bool Song::addEvent(Event& event, Part* part)
                         }
                   }
             }
-      part->events()->add(event);
+      else {
+            part->events()->add(event);
+            }
       return true;
       }
 
@@ -697,7 +699,7 @@ void Song::beat()
       {
       updateFlags = 0;
       if (audio->isPlaying()) {
-            int tick = audio->curTickPos();
+            int tick = audio->seqTime()->curTickPos;
             setPos(0, tick, true, false, true);
             }
       if (audio->isRecording()) {
@@ -1106,7 +1108,7 @@ void Song::seqSignal(int fd)
                         setRecord(true);
                         break;
                   case MSG_SEEK:
-	                  setPos(0, audio->curTickPos(), true, false, !seekInProgress);
+	                  setPos(0, audio->seqTime()->curTickPos, true, false, !seekInProgress);
                   	seekInProgress = false;
                         beat();           // update controller guis
                         break;
@@ -1166,7 +1168,7 @@ void Song::stopRolling()
       	for (iWaveTrack it = wl->begin(); it != wl->end(); ++it) {
             	WaveTrack* track = *it;
 	            if (track->recordFlag() || bounceTrack == track) {
-      	            track->stopRecording(audio->startRecordPos, audio->endRecordPos);
+      	            track->stopRecording(audio->getStartRecordPos(), audio->getEndRecordPos());
             	      }
 	            }
       	MidiTrackList* ml = midis();
@@ -1178,7 +1180,7 @@ void Song::stopRolling()
 	      for (iAudioOutput io = ol->begin(); io != ol->end(); ++io) {
       	      AudioOutput* ao = *io;
             	if (ao->recordFlag())
-	                  ao->stopRecording(audio->startRecordPos, audio->endRecordPos);
+	                  ao->stopRecording(audio->getStartRecordPos(), audio->getEndRecordPos());
       	      }
      	 	audio->msgIdle(false);
             updateFlags |= SC_PART_MODIFIED;
@@ -1503,7 +1505,7 @@ void Song::restartJack()
                  " homepage which is available through the help menu)\n"
                  "\n"
                  "To proceed check the status of Jack and try to restart it and then .\n"
-                 "click on the Restart button."), 
+                 "click on the Restart button."),
                "restart", "cancel", "save project"
                );
             if (btn == 0) {

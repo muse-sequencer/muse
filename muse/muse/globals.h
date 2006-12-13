@@ -81,17 +81,6 @@ extern QAction* punchoutAction;
 extern QAction* recordAction;
 extern QAction* panicAction;
 
-extern int preMeasures;
-extern bool precountEnableFlag;
-extern bool precountFromMastertrackFlag;
-extern int precountSigZ;
-extern int precountSigN;
-extern bool precountPrerecord;
-extern bool precountPreroll;
-extern bool midiClickFlag;
-extern bool audioClickFlag;
-extern double audioClickVolume;
-
 extern bool rcEnable;
 #endif
 

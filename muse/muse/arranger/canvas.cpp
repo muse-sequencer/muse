@@ -62,7 +62,7 @@ PartCanvas::PartCanvas()
 void PartCanvas::markerChanged(int val)
       {
       if (val == Song::MARKER_CUR)
-            updateRuler();      
+            updateRuler();
       }
 
 //---------------------------------------------------------
@@ -102,7 +102,7 @@ void PartCanvas::drawWavePart(QPainter& p, Part* wp, int y0, int th, int from, i
 
             int samples = event.lenFrame();
             int xScale  = (samples + w/2)/w;
-            int frame   = pos.frame() - wp->frame() 
+            int frame   = pos.frame() - wp->frame()
                            - event.pos().frame() + event.spos();
 
             if (h < 20) {
@@ -539,7 +539,7 @@ void PartCanvas::mousePress(QMouseEvent* me)
       if (hit == HIT_SUBTRACK) {
             TLSWidget* w = (TLSWidget*)(at->tw);
             int y = wpos.y() + pos.y() - w->y();
-            w->mousePress(QPoint(pos.x(), y), button, me->modifiers());
+            w->mousePress(QPoint(pos.x(), y), me);
             // propagate drag events to subtrack if left button pressed:
             if (me->button() == Qt::LeftButton)
                   state = S_SUBTRACK;
@@ -547,7 +547,7 @@ void PartCanvas::mousePress(QMouseEvent* me)
             }
 
       if (button & Qt::RightButton) {
-            contextMenu(pos);
+            contextMenu(me->pos());
             return;
             }
 
@@ -880,17 +880,17 @@ void PartCanvas::renamePart(Part* part)
       {
       bool ok;
 
-      QString s = QInputDialog::getText(this, 
+      QString s = QInputDialog::getText(this,
          tr("MusE: Change Part Name"),
          tr("PartName:"),
          QLineEdit::Normal,
-         part->name(), 
+         part->name(),
          &ok
          );
       if (ok && s != part->name()) {
             song->startUndo();
             Part* newPart = new Part(*part);
-            newPart->setName(s);            
+            newPart->setName(s);
             song->cmdChangePart(part, newPart);
             widget()->update();
             }
@@ -1105,7 +1105,7 @@ void PartCanvas::drop(QDropEvent* event)
       dstPart->setTrack(track);
 
       //
-      // cw == 0 means that we are dropping to 
+      // cw == 0 means that we are dropping to
       // another application
 
       unsigned tick;
@@ -1113,7 +1113,7 @@ void PartCanvas::drop(QDropEvent* event)
             tick = AL::sigmap.raster(mapxDev(pos.x() - cw->dragOffset()), raster());
       else
             tick = AL::sigmap.raster(mapxDev(pos.x()), raster());
-            
+
       dstPart->setTick(tick);
 
       Qt::DropAction da = event->proposedAction();
@@ -1128,7 +1128,7 @@ void PartCanvas::drop(QDropEvent* event)
             }
       else if (da == Qt::MoveAction)
             event->setDropAction(Qt::MoveAction);
-      else 
+      else
             event->setDropAction(Qt::CopyAction);
       event->accept();
       if (cw || needEndUndo)

@@ -119,7 +119,7 @@ class SynthIF {
 class SynthI : public AudioTrack, public MidiOut, public MidiInstrument
       {
       Q_OBJECT
-      
+
       SynthIF* _sif;
 
    protected:
@@ -179,7 +179,7 @@ class SynthI : public AudioTrack, public MidiOut, public MidiInstrument
       void deactivate3();
       bool isActivated() const         { return synthesizer && _sif; }
       virtual bool hasAuxSend() const  { return _sif->hasAuxSend(); }
-      virtual void processMidi(unsigned fromTick, unsigned toTick, unsigned fromFrame, unsigned toFrame);
+      virtual void processMidi(SeqTime*);
 
       virtual MidiOut* midiOut() { return this; }
       virtual MidiInstrument* instrument() { return this; }

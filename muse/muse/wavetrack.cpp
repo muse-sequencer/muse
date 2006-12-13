@@ -364,7 +364,7 @@ void WaveTrack::process()
       // record collected data for track
       //
 	if (recordFlag() && audio->isRecording() && recFile()) {
-		unsigned framePos = audio->pos().frame();
+		unsigned framePos = audio->seqTime()->pos.frame();
       	if (audio->freewheel()) {
                   // write data directly to file
                   _recFile->write(channels(), buffer, framePos);

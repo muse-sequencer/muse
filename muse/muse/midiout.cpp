@@ -245,8 +245,6 @@ void MidiOut::seek(unsigned tickPos, unsigned framePos)
 
 void MidiOut::stop()
       {
-      int frame = AL::tempomap.tick2frame(audio->curTickPos());
-
       //---------------------------------------------------
       //    stop all notes
       //---------------------------------------------------
@@ -254,7 +252,7 @@ void MidiOut::stop()
       for (iMidiEvent i = _schedEvents.begin(); i != _schedEvents.end(); ++i) {
             MidiEvent ev = *i;
             if (ev.isNoteOff()) {
-                  ev.setTime(frame);
+                  ev.setTime(0);
                   track->routeEvent(ev);
                   }
             }
@@ -288,7 +286,8 @@ void MidiOut::stop()
                         0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
                         0, 0, 0, 0, 0
                         };
-                  MTC mtc(double(frame) / double(AL::sampleRate));
+                  double frame = double(audio->seqTime()->pos.frame());
+                  MTC mtc(frame / double(AL::sampleRate));
                   mmcPos[6] = mtc.h() | (AL::mtcType << 5);
                   mmcPos[7] = mtc.m();
                   mmcPos[8] = mtc.s();
@@ -301,7 +300,7 @@ void MidiOut::stop()
                   // send STOP and
                   // "set song position pointer"
                   sendStop();
-                  sendSongpos(audio->curTickPos() * 4 / config.division);
+                  sendSongpos(audio->seqTime()->curTickPos * 4 / config.division);
                   }
             }
       }
@@ -319,7 +318,7 @@ void MidiOut::start()
       if (genMMC)
             sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
       if (genMCSync) {
-            if (audio->curTickPos())
+            if (audio->seqTime()->curTickPos)
                   sendContinue();
             else
                   sendStart();
@@ -353,23 +352,22 @@ void MidiOut::reset()
 //    note off events. The note off events maybe played later after the
 //    current process cycle.
 //    From _schedEvents queue copy all events for the current cycle
-//    to all output routes. Events routed to ALSA go into the 
+//    to all output routes. Events routed to ALSA go into the
 //    _playEvents queue which is processed by the MidiSeq thread.
 //-------------------------------------------------------------------
 
-void MidiOut::processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick, 
-   unsigned, unsigned)
+void MidiOut::processMidi(MidiEventList& el, const SeqTime* time)
       {
       while (!eventFifo.isEmpty())
             el.insert(eventFifo.get());
 
       // collect port controller
-      if (track->autoRead() && (fromTick != toTick)) {  // if rolling
+      if (track->autoRead() && (time->curTickPos != time->nextTickPos)) {  // if rolling
             CtrlList* cl = track->controller();
             for (iCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
                   Ctrl* c = ic->second;
-                  iCtrlVal is = c->lowerBound(fromTick);
-                  iCtrlVal ie = c->lowerBound(toTick);
+                  iCtrlVal is = c->lowerBound(time->curTickPos);
+                  iCtrlVal ie = c->lowerBound(time->nextTickPos);
                   for (iCtrlVal ic = is; ic != ie; ++ic) {
                         unsigned frame = AL::tempomap.tick2frame(ic.key());
                         MidiEvent ev(frame, -1, ME_CONTROLLER, c->id(), ic.value().i);
@@ -384,7 +382,7 @@ void MidiOut::processMidi(MidiEventList& el, unsigned fromTick, unsigned toTick,
             if (t->isMute())
                   continue;
             MidiEventList ell;
-            t->getEvents(fromTick, toTick, r.src.channel, &ell);
+            t->getEvents(time->curTickPos, time->nextTickPos, r.src.channel, &ell);
             int velo = 0;
             for (iMidiEvent i = ell.begin(); i != ell.end(); ++i) {
                   MidiEvent ev(*i);

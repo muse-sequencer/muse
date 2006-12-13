@@ -409,7 +409,7 @@ void MidiTrack::stopRecording()
       if (recordPart->lenTick() < (cpos-ptick)) {
             //
             // TODO: check for events outside part boundaries
-            //	
+            //
             int endTick = song->roundUpBar(cpos);
             recordPart->setLenTick(endTick - ptick);
             }
@@ -476,13 +476,13 @@ bool MidiTrack::isMute() const
 //   processMidi
 //---------------------------------------------------------
 
-void MidiTrack::processMidi(unsigned from, unsigned to, unsigned, unsigned)
+void MidiTrack::processMidi(SeqTime* t)
       {
       schedEvents.clear();
 	//
       // collect events only when transport is rolling
       //
-      if (from < to) {
+      if (t->curTickPos < t->nextTickPos) {
             for (iPart p = parts()->begin(); p != parts()->end(); ++p) {
                   Part* part = p->second;
                   if (part->mute())
@@ -490,20 +490,20 @@ void MidiTrack::processMidi(unsigned from, unsigned to, unsigned, unsigned)
                   DrumMap* dm     = drumMap();
                   unsigned offset = _delay + part->tick();
 
-                  if (offset > to)
+                  if (offset > t->nextTickPos)
                         break;
 
                   EventList* events = part->events();
 
-                  iEvent ie   = events->lower_bound((offset > from) ? 0 : from - offset);
-                  iEvent iend = events->lower_bound(to - offset);
+                  iEvent ie   = events->lower_bound((offset > t->curTickPos) ? 0 : t->curTickPos - offset);
+                  iEvent iend = events->lower_bound(t->nextTickPos - offset);
 
                   for (; ie != iend; ++ie) {
                         Event ev = ie->second;
                         if (ev.type() == Meta)        // ignore meta events
                               continue;
                         unsigned tick  = ev.tick() + offset;
-                        unsigned frame = AL::tempomap.tick2frame(tick);
+                        unsigned frame = t->tick2frame(tick);
                         if (ev.type() == Note) {
                          	if (dm) {
                                     if (dm->entry(dm->outmap(ev.pitch()))->mute)
@@ -530,7 +530,7 @@ void MidiTrack::processMidi(unsigned from, unsigned to, unsigned, unsigned)
                                     elen = 1;
                               int veloOff = ev.veloOff();
 
-                              unsigned eframe = AL::tempomap.tick2frame(tick+elen);
+                              unsigned eframe = t->tick2frame(tick+elen);
                               schedEvents.insert(MidiEvent(frame, 0, ME_NOTEON, pitch, velo));
                               schedEvents.insert(MidiEvent(eframe, 0, veloOff ? ME_NOTEOFF : ME_NOTEON, pitch, veloOff));
                               _meter[0] += velo/2;
@@ -548,10 +548,10 @@ void MidiTrack::processMidi(unsigned from, unsigned to, unsigned, unsigned)
             if (autoRead()) {
                   for (iCtrl ic = controller()->begin(); ic != controller()->end(); ++ic) {
                         Ctrl* c = ic->second;
-                        iCtrlVal is = c->lowerBound(from);
-                        iCtrlVal ie = c->lowerBound(to);
+                        iCtrlVal is = c->lowerBound(t->curTickPos);
+                        iCtrlVal ie = c->lowerBound(t->nextTickPos);
                         for (iCtrlVal ic = is; ic != ie; ++ic) {
-                              unsigned frame = AL::tempomap.tick2frame(ic.key());
+                              unsigned frame = t->tick2frame(ic.key());
                               Event ev(Controller);
                               ev.setA(c->id());
                               ev.setB(ic.value().i);
@@ -571,13 +571,13 @@ void MidiTrack::processMidi(unsigned from, unsigned to, unsigned, unsigned)
             if (track->isMute())
                   continue;
             MidiEventList el;
-            track->getEvents(from, to, r.src.channel, &el);
+            track->getEvents(t->curTickPos, t->nextTickPos, r.src.channel, &el);
 
             for (iMidiEvent ie = el.begin(); ie != el.end(); ++ie) {
                   MidiEvent event(*ie);
-                  int eventTime = event.time();
+                  unsigned eventTime = event.time();
                   if (recordFlag() && audio->isRecording()) {
-                        unsigned time = AL::tempomap.frame2tick(eventTime);
+                        unsigned time = t->frame2tick(eventTime);
                         event.setTime(time);  // set tick time
                         recordFifo.put(event);
                         }
@@ -601,8 +601,6 @@ void MidiTrack::processMidi(unsigned from, unsigned to, unsigned, unsigned)
                                     event.setB(velo);
                                     }
                               }
-                        unsigned time = 0; // eventTime + segmentSize*(segmentCount-1);
-                        event.setTime(time);
                         schedEvents.insert(event);
                         }
                   }

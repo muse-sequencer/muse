@@ -260,6 +260,8 @@ void readConfiguration(QDomNode node)
                   config.projectPath = s;
             else if (tag == "templatePath")
                   config.templatePath = s;
+            else if (tag == "instrumentPath")
+                  config.instrumentPath = s;
             else if (tag == "importMidiPath") {
                   config.importMidiPath = s;
                   lastMidiPath = museUser + "/" + s;

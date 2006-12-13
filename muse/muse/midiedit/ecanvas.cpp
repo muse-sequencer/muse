@@ -439,7 +439,7 @@ void EventCanvas::mousePressCanvasA(QMouseEvent* me)
                         if (curItem) {
                               drag = DRAG_RESIZE;
                               setCursor();
-                        	
+
       				Pos p1(curItem->bbox.x(), timeType());
       				Pos p2(pix2pos(start.x()));
                               int w = p2.time(timeType()) - p1.time(timeType());
@@ -1180,7 +1180,7 @@ void EventCanvas::mousePress(QMouseEvent* me)
                   QRect r(rCanvasB.x(), rCanvasB.y() + c->y + splitWidth,
                      rCanvasB.width(), c->cheight());
                   if (r.contains(pos)) {
-                        c->mousePress(pos - r.topLeft(), me->button(), me->modifiers());
+                        c->mousePress(pos - r.topLeft(), me);
                         break;
                         }
                   }

@@ -99,22 +99,7 @@ Audio::Audio()
       _bounce       = 0;
       loopPassed    = false;
 
-      _pos.setType(AL::FRAMES);
-      _pos.setFrame(~0);      // make sure first seek is not optimized away
-
-      _curTickPos   = 0;
-      _nextTickPos  = 0;
-
-      midiClick     = 0;
-      clickno       = 0;
-      clicksMeasure = 0;
-      ticksBeat     = 0;
-
-      state         = STOP;
-      lmark         = 0;      // left loop position
-      rmark         = 0;      // right loop position
-      msg           = 0;
-
+      _seqTime.pos.setType(AL::FRAMES);
       startRecordPos.setType(AL::TICKS);
       endRecordPos.setType(AL::TICKS);
 
@@ -152,16 +137,11 @@ bool Audio::start()
       {
       TrackList* tl = song->tracks();
 
-      _curTickPos   = 0;
-      _nextTickPos  = 0;
-
-      midiClick     = 0;
-      clickno       = 0;
-      clicksMeasure = 0;
-      ticksBeat     = 0;
+      _seqTime.curTickPos   = 0;
+      _seqTime.nextTickPos  = 0;
+      _seqTime.pos.setFrame(~0);      // make sure seek is not optimized away
 
       msg           = 0;
-      _pos.setFrame(~0);      // make sure seek is not optimized away
 
       //
       // init marker for synchronous loop processing
@@ -193,7 +173,6 @@ bool Audio::start()
                 //
                 InputList* itl = song->inputs();
                 for (iAudioInput i = itl->begin(); i != itl->end(); ++i) {
-//                      printf("reconnecting input %s\n", (*i)->name().toLatin1().data());
                       for (int x=0; x < (*i)->channels();x++) {
                           (*i)->setJackPort(Port(), x); // zero out the old connection
                           }
@@ -202,7 +181,6 @@ bool Audio::start()
 
                 OutputList* otl = song->outputs();
                 for (iAudioOutput i = otl->begin(); i != otl->end(); ++i) {
-//                      printf("reconnecting output %s\n", (*i)->name().toLatin1().data());
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(Port(), x);  // zero out the old connection
                       (*i)->activate1();
@@ -258,7 +236,6 @@ bool Audio::sync(int jackState, unsigned frame)
 
             if (state != START_PLAY) {
             	Pos p(frame, AL::FRAMES);
-//                  printf("  sync seek\n");
 	            seek(p);
       	      if (!_freewheel)
             	      done = audioPrefetch->seekDone();
@@ -266,14 +243,13 @@ bool Audio::sync(int jackState, unsigned frame)
               		state = START_PLAY;
               	}
             else {
-            	if (frame != _pos.frame()) {
+            	if (frame != _seqTime.pos.frame()) {
                   	// seek during seek
 		            seek(Pos(frame, AL::FRAMES));
                   	}
             	done = audioPrefetch->seekDone();
                   }
             }
-//      printf("  sync %s\n", done ? "done" : "busy");
       return done;
       }
 
@@ -300,12 +276,14 @@ printf("JACK: shutdown callback\n");
 
 //---------------------------------------------------------
 //   process
-//    process one audio buffer at position "_pos "
+//    process one audio buffer at position "_seqTime._pos "
 //    of size "frames"
 //---------------------------------------------------------
 
 void Audio::process(unsigned frames, int jackState)
       {
+      _seqTime.lastFrameTime = audioDriver->lastFrameTime();
+
       extern int watchAudio;
       ++watchAudio;           // make a simple watchdog happy
 
@@ -355,7 +333,6 @@ void Audio::process(unsigned frames, int jackState)
             return;
             }
 
-      unsigned framePos = _pos.frame();
       if (state == PLAY) {
             //
             // clear prefetch FIFO if left/right locators
@@ -369,21 +346,21 @@ void Audio::process(unsigned frames, int jackState)
                   // invalidate audio prefetch buffer
                   //
                   audioPrefetch->getFifo()->clear();
-                  audioPrefetch->msgSeek(framePos);
+                  audioPrefetch->msgSeek(_seqTime.startFrame());
                   lmark = llmark;
                   rmark = rrmark;
                   }
             }
 
       if (isPlaying()) {
-            if (_bounce == 1 && _pos >= song->rPos()) {
+            if (_bounce == 1 && _seqTime.pos >= song->rPos()) {
                   _bounce = 2;
                   sendMsgToGui(MSG_STOP_BOUNCE);
                   }
             //
             //  check for end of song
             //
-            if ((_curTickPos >= song->len())
+            if ((_seqTime.curTickPos >= song->len())
                && !(song->record() || _bounce || song->loop())) {
                   audioDriver->stopTransport();
                   return;
@@ -393,7 +370,7 @@ void Audio::process(unsigned frames, int jackState)
             //  check for loop end
             //
             if (state == PLAY && song->loop() && !_bounce && !extSyncFlag) {
-                  unsigned n = rmark - framePos - (3 * frames);
+                  unsigned n = rmark - _seqTime.startFrame() - (3 * frames);
                   if (n < frames) {
                         // loop end in current cycle
                         // adjust loop start so we get exact loop len
@@ -405,9 +382,9 @@ void Audio::process(unsigned frames, int jackState)
                         }
                   }
 
-            Pos ppp(_pos);
+            Pos ppp(_seqTime.pos);
             ppp += frames;
-            _nextTickPos = ppp.tick();
+            _seqTime.nextTickPos = ppp.tick();
             }
 
       //
@@ -426,7 +403,7 @@ void Audio::process(unsigned frames, int jackState)
                   CtrlList* cl = track->controller();
                   for (iCtrl i = cl->begin(); i != cl->end(); ++i) {
                         Ctrl* c = i->second;
-                        float val = c->value(framePos).f;
+                        float val = c->value(_seqTime.startFrame()).f;
                         if (val != c->curVal().f) {
                               c->setCurVal(val);
                               c->setChanged(true);
@@ -439,8 +416,6 @@ void Audio::process(unsigned frames, int jackState)
       //  process midi
       //-----------------------------------------
 
-      unsigned startFrame = _pos.frame();
-      unsigned endFrame   = startFrame + segmentSize;
       SynthIList* sl      = song->syntis();
       {
       MidiOutPortList* ol = song->midiOutPorts();
@@ -453,11 +428,11 @@ void Audio::process(unsigned frames, int jackState)
       for (iMidiInPort i = mil->begin(); i != mil->end(); ++i)
             (*i)->beforeProcess();
       for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i)
-            (*i)->processMidi(_curTickPos, _nextTickPos, startFrame, endFrame);
+            (*i)->processMidi(&_seqTime);
       for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
-            (*i)->processMidi(_curTickPos, _nextTickPos, startFrame, endFrame);
+            (*i)->processMidi(&_seqTime);
       for (iSynthI i = sl->begin(); i != sl->end(); ++i)
-            (*i)->processMidi(_curTickPos, _nextTickPos, startFrame, endFrame);
+            (*i)->processMidi(&_seqTime);
 
       for (iMidiInPort i = mil->begin(); i != mil->end(); ++i)
             (*i)->afterProcess();
@@ -480,26 +455,26 @@ void Audio::process(unsigned frames, int jackState)
       if (isPlaying() && !wl->empty()) {
    	      Fifo1* fifo = audioPrefetch->getFifo();
       	if (fifo->count() == 0) {
-            	printf("MusE::Audio: fifo underflow at 0x%x\n", _curTickPos);
+            	printf("MusE::Audio: fifo underflow at 0x%x\n", _seqTime.curTickPos);
                   audioPrefetch->msgTick();
                   }
             else {
                   bool msg = true;
                   do {
 	                  unsigned fifoPos = fifo->readPos();
-                  	if (fifoPos == framePos) {
+                  	if (fifoPos == _seqTime.startFrame()) {
                   		_curReadIndex = fifo->readIndex();
                               break;
                               }
                         else {
                               if (msg) {
 	                              printf("Muse::Audio: wrong prefetch data 0x%x, expected 0x%x\n",
-      	                     	   fifoPos, framePos);
+      	                     	   fifoPos, _seqTime.startFrame());
                               	msg = false;
                                     }
-                              if (fifoPos > framePos) {
+                              if (fifoPos > _seqTime.startFrame()) {
                                     // discard whole prefetch buffer
-                                    seek(_pos + frames);
+                                    seek(_seqTime.pos + frames);
                                     break;
                                     }
                               fifo->pop();      // discard buffer
@@ -513,7 +488,7 @@ void Audio::process(unsigned frames, int jackState)
             }
       for (iAudioGroup i = gl->begin(); i != gl->end(); ++i)
             (*i)->process();
-      
+
       OutputList* aol = song->outputs();
       for (iAudioOutput i = aol->begin(); i != aol->end(); ++i)
             (*i)->process();
@@ -533,8 +508,8 @@ void Audio::process(unsigned frames, int jackState)
                   }
             if (recording && (_bounce == 0 || _bounce == 1))
                   audioWriteback->trigger();
-            _pos       += frames;
-            _curTickPos = _nextTickPos;
+            _seqTime.pos       += frames;
+            _seqTime.curTickPos = _seqTime.nextTickPos;
             }
       midiDriver->updateConnections();
       }
@@ -585,7 +560,7 @@ void Audio::processMsg()
             case SEQM_SET_TEMPO:
                   song->processMsg(msg);
                   if (isPlaying())
-                        _pos.setTick(_curTickPos);
+                        _seqTime.pos.setTick(_seqTime.curTickPos);
                   break;
 
             case SEQM_IDLE:
@@ -613,21 +588,21 @@ void Audio::processMsg()
 
 void Audio::seek(const Pos& p)
       {
-      _pos.setFrame(p.frame());
-      _curTickPos      = _pos.tick();
-      _nextTickPos     = _curTickPos;
+      _seqTime.pos.setFrame(p.frame());
+      _seqTime.curTickPos      = _seqTime.pos.tick();
+      _seqTime.nextTickPos     = _seqTime.curTickPos;
       updateController = true;
 
       loopPassed = true;      // for record loop mode
       if (state != LOOP2 && !freewheel())
-            audioPrefetch->msgSeek(_pos.frame());
+            audioPrefetch->msgSeek(_seqTime.pos.frame());
 
       MidiOutPortList* ol = song->midiOutPorts();
       for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
-            (*i)->seek(_curTickPos, _pos.frame());
+            (*i)->seek(_seqTime.curTickPos, _seqTime.pos.frame());
       SynthIList* sl      = song->syntis();
       for (iSynthI i = sl->begin(); i != sl->end(); ++i)
-            (*i)->seek(_curTickPos, _pos.frame());
+            (*i)->seek(_seqTime.curTickPos, _seqTime.pos.frame());
       sendMsgToGui(MSG_SEEK);
       }
 
@@ -637,9 +612,9 @@ void Audio::seek(const Pos& p)
 
 void Audio::startRolling()
       {
-      startRecordPos = _pos;
+      startRecordPos = _seqTime.pos;
       if (song->record()) {
-            startRecordPos = _pos;
+            startRecordPos = _seqTime.pos;
             recording      = true;
             TrackList* tracks = song->tracks();
             for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
@@ -657,36 +632,6 @@ void Audio::startRolling()
       SynthIList* sl      = song->syntis();
       for (iSynthI i = sl->begin(); i != sl->end(); ++i)
             (*i)->start();
-      
-      if (precountEnableFlag
-         && song->click()
-         && !extSyncFlag
-         && song->record()) {
-#if 0
-            state = PRECOUNT;
-            int z, n;
-            if (precountFromMastertrackFlag)
-                  AL::sigmap.timesig(playTickPos, z, n);
-            else {
-                  z = precountSigZ;
-                  n = precountSigN;
-                  }
-            clickno       = z * preMeasures;
-            clicksMeasure = z;
-            ticksBeat     = (division * 4)/n;
-#endif
-            }
-      else {
-            //
-            // compute next midi metronome click position
-            //
-            int bar, beat;
-            unsigned tick;
-            AL::sigmap.tickValues(_curTickPos, &bar, &beat, &tick);
-            if (tick)
-                  beat += 1;
-            midiClick = AL::sigmap.bar2tick(bar, beat, 0);
-            }
       }
 
 //---------------------------------------------------------
@@ -705,10 +650,10 @@ void Audio::stopRolling()
             (*i)->stop();
 
 	recording    = false;
-      endRecordPos = _pos;
+      endRecordPos = _seqTime.pos;
       _bounce = 0;
       sendMsgToGui(MSG_STOP);
-      seek(_pos);
+      seek(_seqTime.pos);
       }
 
 //---------------------------------------------------------
@@ -718,16 +663,5 @@ void Audio::stopRolling()
 void Audio::sendMsgToGui(char c)
       {
       write(sigFd, &c, 1);
-      }
-
-//---------------------------------------------------------
-//   timestamp
-//    on stop we return a free running frame counter
-//---------------------------------------------------------
-
-unsigned Audio::timestamp() const
-      {
-      return audio->isPlaying() ? audioDriver->framePos() 
-         : audioDriver->frameTime();
       }
 
