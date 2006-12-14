@@ -422,16 +422,12 @@ void PartCanvas::contextMenu(const QPoint& pos)
                   p.fillRect(0, 0, 20, 20, config.partColors[i]);
                   a->setIcon(QIcon(pm));
                   }
-            a = getAction("delete", this);
-            pop->addAction(a);
-            a->setData("delete");
-            a = getAction("scissor", this);
-            pop->addAction(a);
-            a = getAction("glue", this);
-            pop->addAction(a);
-            a = pop->addAction(tr("Declone"));
-            a->setData("declone");
+            pop->addAction(getAction("delete", this));
+            pop->addAction(getAction("scissor", this));
+            pop->addAction(getAction("glue", this));
+            a = getAction("declone", this);
             a->setEnabled(part->isClone());
+            pop->addAction(a);
             if (track->type() == Track::MIDI) {
                   a = pop->addAction(tr("AutoFill..."));
                   a->setData("autofill");
@@ -449,8 +445,7 @@ void PartCanvas::contextMenu(const QPoint& pos)
                         }
 		      a = pop->addAction(*edit_listIcon, tr("miditracker"));
 		      a->setData("miditracker");
-                  a = pop->addAction(*edit_listIcon, tr("list"));
-                  a->setData("listedit");
+                  pop->addAction(getAction("listedit", this));
                   }
             else {
 			a = pop->addAction(*waveIcon, tr("wave edit"));

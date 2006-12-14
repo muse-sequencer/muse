@@ -48,6 +48,7 @@ class Event {
 
       bool empty() const;
       EventType type() const;
+      QString eventTypeName() const;
 
       void setType(EventType t);
       Event& operator=(const Event& e);

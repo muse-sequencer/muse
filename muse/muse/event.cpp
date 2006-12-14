@@ -75,7 +75,7 @@ Event Event::clone() const
       return Event(ev->clone());
       }
 
-Event::Event(EventType t) 
+Event::Event(EventType t)
 	{
 	if (t == Wave)
       	ev = new WaveEventBase(t);
@@ -84,36 +84,36 @@ Event::Event(EventType t)
 	++(ev->refCount);
       }
 
-Event::Event(const Event& e) 
+Event::Event(const Event& e)
 	{
 	ev = e.ev;
       if (ev)
       	++(ev->refCount);
 	}
 
-Event::Event(EventBase* eb) 
+Event::Event(EventBase* eb)
 	{
 	ev = eb;
       ++(ev->refCount);
       }
 
-Event::~Event() 
+Event::~Event()
 	{
 	if (ev && --(ev->refCount) == 0)
       	delete ev;
 	}
 
-bool Event::empty() const      
-	{ 
-      return ev == 0; 
+bool Event::empty() const
+	{
+      return ev == 0;
       }
 
 EventType Event::type() const
-	{ 
-      return ev ? ev->type() : Note;  
+	{
+      return ev ? ev->type() : Note;
       }
 
-void Event::setType(EventType t) 
+void Event::setType(EventType t)
 	{
 	if (ev && --(ev->refCount) == 0)
       	delete ev;
@@ -124,7 +124,7 @@ void Event::setType(EventType t)
 	++(ev->refCount);
       }
 
-Event& Event::operator=(const Event& e) 
+Event& Event::operator=(const Event& e)
 	{
 	if (ev == e.ev)
       	return *this;
@@ -195,4 +195,23 @@ Pos Event::end() const                  { return ev->end(); }
 unsigned Event::endTick() const         { return ev->end().tick(); }
 unsigned Event::endFrame() const        { return ev->end().frame(); }
 void Event::setPos(const Pos& p)        { ev->setPos(p); }
+QString Event::eventTypeName() const    { return ev->eventTypeName(); }
+
+
+//---------------------------------------------------------
+//   eventTypeName
+//---------------------------------------------------------
+
+QString EventBase::eventTypeName() const
+      {
+      switch(type()) {
+            case Note:       return QString("Note");
+            case Controller: return QString("Ctrl");
+            case Sysex:      return QString("Sysex");
+            case PAfter:     return QString("PAfter");
+            case CAfter:     return QString("CAfter");
+            case Meta:       return QString("Meta");
+            default:         return QString("??");
+            }
+      }
 

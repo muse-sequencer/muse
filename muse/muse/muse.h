@@ -292,7 +292,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       QAction* stopAction;
       QAction* playAction;
 
-      void showListEditor(const Pos&, Track*, Ctrl*);
+      void showListEditor(const Pos&, Track*, Part*, Ctrl*);
       };
 
 //---------------------------------------------------------

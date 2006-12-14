@@ -340,6 +340,8 @@ void EventCanvas::mousePressCanvasA(QMouseEvent* me)
       bool shift = keyState & Qt::ShiftModifier;
       bool ctrl  = keyState & Qt::ControlModifier;
       start      = p;
+      startPitch = y2pitch(start.y());
+      deltaPitch = 0;
 
       //---------------------------------------------------
       //    set curItem to item mouse is pointing
@@ -808,7 +810,7 @@ void EventCanvas::deleteItem(const QPoint& p)
 
 void EventCanvas::moveItems(const QPoint& pos, int dir)
       {
-      int dpitch = y2pitch(pos.y()) - y2pitch(start.y());
+      int dpitch = y2pitch(pos.y()) - startPitch;
 
       Pos sp(pix2pos(start.x()));
       Pos cp(pix2pos(pos.x()));
@@ -838,14 +840,16 @@ void EventCanvas::moveItems(const QPoint& pos, int dir)
             if (p < *curPart)
                   p = *curPart;
 
-            if (item->moving != p || dpitch !=0) {
+            if (item->moving != p || dpitch != deltaPitch) {
                   item->moving = p;
+// printf("move %d-%d\n", item->event.pitch(),item->event.pitch()+dpitch);
                   if (dir != 1)
-		    item->my = pitch2y(item->event.pitch() + dpitch)
-		      + (int)(wpos.y() / _ymag);
+		            item->my = pitch2y(item->event.pitch() + dpitch)
+		               + (int)(wpos.y() / _ymag);
                   itemMoved(item);
                   }
             }
+      deltaPitch = dpitch;
       widget()->update();
       }
 
@@ -1158,8 +1162,7 @@ void EventCanvas::mousePress(QMouseEvent* me)
                   noteOff(keyDown);
                   keyDown = -1;
                   }
-            int y = pos.y() - rCanvasA.y();
-	    keyDown = y2pitch(y);
+            keyDown = y2pitch(pos.y() - rCanvasA.y());
             int velocity = me->x()*127/40;
             if (keyDown != -1)
                   noteOn(keyDown, velocity, shift);
@@ -1203,11 +1206,12 @@ void EventCanvas::mouseMove(QPoint pos)
                   if (button != Qt::NoButton) {
                         if (keyDown != -1 && curPitch != -1) {
                               bool shift = keyState & Qt::ShiftModifier;
-                              if (curPitch != keyDown)
+                              if (curPitch != keyDown) {
                                     noteOff(keyDown);
-                              keyDown = curPitch;
-			      int velocity = std::min(pos.x()*127/40, 127);
-                              noteOn(keyDown, velocity, shift);
+                                    keyDown = curPitch;
+			                  int velocity = std::min(pos.x()*127/40, 127);
+                                    noteOn(keyDown, velocity, shift);
+                                    }
                               }
                         }
                   }

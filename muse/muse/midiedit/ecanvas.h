@@ -42,7 +42,9 @@ class CtrlEdit;
 class EventCanvas : public TimeCanvas {
       Q_OBJECT
 
-      int keyDown;
+      int startPitch;   // on start dragging events
+      int deltaPitch;
+      int keyDown;      // pressed key on piano keypad (or drum instrument list)
       int playedPitch;
 
       void noteOn(int pitch, int velocity, bool shift);

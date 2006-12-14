@@ -494,15 +494,15 @@ MusE::MusE()
       a = getAction("toggle_metro", this);
       connect(a, SIGNAL(triggered()), song, SLOT(toggleClick()));
       addAction(a);
-      
+
       a = getAction("goto_left", this);
       connect(a, SIGNAL(triggered()), song, SLOT(gotoLeftMarker()));
       addAction(a);
-      
+
       a = getAction("goto_right", this);
       connect(a, SIGNAL(triggered()), song, SLOT(gotoRightMarker()));
       addAction(a);
-      
+
       rewindAction  = getAction("rewind",  this);
       rewindAction->setAutoRepeat(true);
 
@@ -1119,10 +1119,10 @@ void MusE::loadProject1(const QString& path)
             mixer1->clear();
       if (mixer2)
             mixer2->clear();
-      
+
       QString name(file.fileName());
       QDir pd(QDir::homePath() + "/" + config.projectPath + "/" + path);
-      
+
       addProject(path);       // add to history
 
       bool newProject = false;
@@ -1325,7 +1325,7 @@ bool MusE::saveAs()
       QString path = projectDialog.projectPath();
       if (path.isEmpty())
             return false;
-      
+
       QDir pd(QDir::homePath() + "/" + config.projectPath + "/" + path);
       QString header = tr("MusE: new project");
       if (!pd.exists()) {
@@ -1568,18 +1568,22 @@ void MusE::startListEditor()
       startListEditor(0);
       }
 
-void MusE::startListEditor(PartList* /*pl*/)
+void MusE::startListEditor(PartList* pl)
       {
-      if (listEditor == 0)
-            listEditor = new ListEdit(this);
-      listEditor->show();
+      Part* part = 0;
+      if (pl && !pl->empty()) {
+            part = pl->begin()->second;
+            showListEditor(Pos(), part->track(), part, 0);
+            }
+      else
+            showListEditor(Pos(), 0, 0, 0);
       }
 
-void MusE::showListEditor(const Pos& pos, Track* track, Ctrl* ctrl)
+void MusE::showListEditor(const Pos& pos, Track* track, Part* part, Ctrl* ctrl)
       {
       if (listEditor == 0)
             listEditor = new ListEdit(this);
-      listEditor->selectItem(pos, track, 0, ctrl);
+      listEditor->selectItem(pos, track, part, ctrl);
       listEditor->show();
       }
 
@@ -1915,7 +1919,7 @@ void MusE::cmd(QAction* a)
                   else
                         printf("MusE: %s not supported\n", e.tagName().toLatin1().data());
                   }
-            
+
             unsigned cpos = song->cpos();
             song->startUndo();
             for (iPart ip = pl.begin(); ip != pl.end(); ++ip) {
@@ -2005,7 +2009,7 @@ void MusE::clipboardChanged()
       const QMimeData* ms = QApplication::clipboard()->mimeData();
       if (ms == 0)
             return;
-      bool flag = ms->hasFormat("application/muse/part/midi") 
+      bool flag = ms->hasFormat("application/muse/part/midi")
          || ms->hasFormat("application/muse/part/audio");
       pasteAction->setEnabled(flag);
       }
@@ -2979,7 +2983,7 @@ int main(int argc, char* argv[])
             s = "The MusE project directory\n%1\ndoes not exists";
             s = s.arg(pd.path());
 
-            int rv = QMessageBox::question(0, 
+            int rv = QMessageBox::question(0,
                title,
                s,
                "Create",
@@ -2991,7 +2995,7 @@ int main(int argc, char* argv[])
             if (!pd.mkpath(pd.path())) {
                   // TODO: tell user why this has happened
                   QMessageBox::critical(0,
-                  title, 
+                  title,
                   "Creating project directory failed");
                   exit(-1);
                   }
@@ -3008,7 +3012,7 @@ int main(int argc, char* argv[])
             s = "The MusE template directory\n%1\ndoes not exists";
             s = s.arg(pd.path());
 
-            int rv = QMessageBox::question(0, 
+            int rv = QMessageBox::question(0,
                title,
                s,
                "Create",
@@ -3036,7 +3040,7 @@ int main(int argc, char* argv[])
             s = "The MusE instruments directory\n%1\ndoes not exists";
             s = s.arg(pd.path());
 
-            int rv = QMessageBox::question(0, 
+            int rv = QMessageBox::question(0,
                title,
                s,
                "Create",
@@ -3087,7 +3091,7 @@ int main(int argc, char* argv[])
                               break;
                         }
                   // the user did not select/create a project
-                  rv = QMessageBox::question(0, 
+                  rv = QMessageBox::question(0,
                      "MusE: create/select project",
                      "before MusE starts, you must select a project\n"
                       "or create a new one",
@@ -3113,4 +3117,4 @@ int main(int argc, char* argv[])
             fprintf(stderr, "app end %d\n", n);
       return n;
       }
-      
+

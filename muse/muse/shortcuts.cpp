@@ -29,7 +29,7 @@
 
 //---------------------------------------------------------
 //   shortcut_category
-//    These need to be members of ShortcutConfig, otherwise 
+//    These need to be members of ShortcutConfig, otherwise
 //    tr() won't play:
 //---------------------------------------------------------
 
@@ -60,7 +60,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "toggle_loop",
             QT_TR_NOOP("Transport: Toggle Loop section"),
-            GLOBAL_SHRT, 
+            GLOBAL_SHRT,
             0, // QKeySequence(Qt::Key_Slash),
             Qt::WindowShortcut,
             QT_TR_NOOP("Loop"),
@@ -80,14 +80,14 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "play_toggle",
             QT_TR_NOOP("Transport: Play, Stop, Rewind"),
-            GLOBAL_SHRT, 
+            GLOBAL_SHRT,
             Qt::Key_Space,
             Qt::ApplicationShortcut
             ),
       Shortcut(
             "stop",
             QT_TR_NOOP("Transport: Stop Playback"),
-            GLOBAL_SHRT, 
+            GLOBAL_SHRT,
             Qt::Key_Insert,
             Qt::WindowShortcut,
             QT_TR_NOOP("Stop"),
@@ -97,13 +97,13 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "goto_left",
             QT_TR_NOOP("Transport: Goto left marker"),
-            GLOBAL_SHRT, 
-            Qt::Key_End  
+            GLOBAL_SHRT,
+            Qt::Key_End
             ),
       Shortcut(
             "goto_right",
             QT_TR_NOOP("Transport: Goto right marker"),
-            GLOBAL_SHRT, 
+            GLOBAL_SHRT,
             Qt::Key_PageDown
             ),
       Shortcut(
@@ -115,7 +115,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "toggle_rec",
             QT_TR_NOOP("Transport: Toggle Record"),
-            GLOBAL_SHRT, 
+            GLOBAL_SHRT,
             Qt::Key_Asterisk,
             Qt::WindowShortcut,
             QT_TR_NOOP("Record"),
@@ -126,7 +126,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "punchin",
             QT_TR_NOOP("Transport: Punch In"),
-            GLOBAL_SHRT, 
+            GLOBAL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Punchin"),
@@ -136,7 +136,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "punchout",
             QT_TR_NOOP("Transport: Punch Out"),
-            GLOBAL_SHRT, 
+            GLOBAL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Punchout"),
@@ -146,7 +146,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "rewind",
             QT_TR_NOOP("Transport: Rewind"),
-            GLOBAL_SHRT, 
+            GLOBAL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("rewind"),
@@ -156,7 +156,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "forward",
             QT_TR_NOOP("Transport: Forward"),
-            GLOBAL_SHRT, 
+            GLOBAL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("forward"),
@@ -166,7 +166,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "panic",
             QT_TR_NOOP("Panic"),
-            GLOBAL_SHRT, 
+            GLOBAL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Panic"),
@@ -176,7 +176,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "undo",
             QT_TR_NOOP("Edit: Undo"),
-            INVIS_SHRT, 
+            INVIS_SHRT,
             Qt::CTRL + Qt::Key_Z,
             Qt::WindowShortcut,
             QT_TR_NOOP("undo"),
@@ -186,7 +186,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "redo",
             QT_TR_NOOP("Edit: Redo"),
-            INVIS_SHRT, 
+            INVIS_SHRT,
             Qt::CTRL + Qt::Key_Y,
             Qt::WindowShortcut,
             QT_TR_NOOP("redo"),
@@ -196,7 +196,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "cut",
             QT_TR_NOOP("Edit: Cut" ),
-            INVIS_SHRT, 
+            INVIS_SHRT,
             Qt::CTRL + Qt::Key_X,
             Qt::WindowShortcut,
             QT_TR_NOOP("Cut"),
@@ -206,7 +206,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "copy",
             QT_TR_NOOP("Edit: Copy"),
-            INVIS_SHRT, 
+            INVIS_SHRT,
             Qt::CTRL + Qt::Key_C,
             Qt::WindowShortcut,
             QT_TR_NOOP("Copy"),
@@ -216,7 +216,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "paste",
             QT_TR_NOOP("Edit: Paste,"),
-            INVIS_SHRT, 
+            INVIS_SHRT,
             Qt::CTRL + Qt::Key_V,
             Qt::WindowShortcut,
             QT_TR_NOOP("Paste"),
@@ -226,7 +226,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "delete",
             QT_TR_NOOP("Edit: Delete" ),
-            INVIS_SHRT, 
+            INVIS_SHRT,
             Qt::Key_Delete,
             Qt::WindowShortcut,
             QT_TR_NOOP("Delete"),
@@ -236,7 +236,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "open_project",
             QT_TR_NOOP("Open"),
-            ARRANG_SHRT + DEDIT_SHRT, 
+            ARRANG_SHRT + DEDIT_SHRT,
             Qt::CTRL + Qt::Key_O,
             Qt::WindowShortcut,
             QT_TR_NOOP("open project"),
@@ -247,7 +247,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "save_project",
             QT_TR_NOOP("Save"),
-            ARRANG_SHRT + DEDIT_SHRT, 
+            ARRANG_SHRT + DEDIT_SHRT,
             Qt::CTRL + Qt::Key_S,
             Qt::WindowShortcut,
             QT_TR_NOOP("save project"),
@@ -258,7 +258,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "save_project_as",
             QT_TR_NOOP("File: Save as"),
-            ARRANG_SHRT + DEDIT_SHRT, 
+            ARRANG_SHRT + DEDIT_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("save project as..."),
@@ -268,7 +268,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "save_as_template",
             QT_TR_NOOP("File: Save as Template"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("save project as template"),
@@ -279,7 +279,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "open_recent",
             QT_TR_NOOP("File: Open recent file"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::CTRL + Qt::Key_1
             ),
       Shortcut(
@@ -291,19 +291,19 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "export_midi",
             QT_TR_NOOP("File: Export midi file"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
          ),
       Shortcut(
             "import_audio",
             QT_TR_NOOP("File: Import audio file"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "quit",
             QT_TR_NOOP("File: Quit MusE"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::CTRL + Qt::Key_Q,
             Qt::WindowShortcut,
             QT_TR_NOOP("Quit MusE"),
@@ -314,7 +314,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "select_parts_on_track",
             QT_TR_NOOP("Edit: Select parts on track"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::CTRL+ Qt::ALT + Qt::Key_P,
             Qt::WindowShortcut,
             QT_TR_NOOP("All &Parts on Track"),
@@ -324,7 +324,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "open_pianoroll",
             QT_TR_NOOP("Open Pianoroll"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::CTRL + Qt::Key_E,
             Qt::WindowShortcut,
             QT_TR_NOOP("Pianoroll"),
@@ -334,7 +334,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "open_miditracker",
             QT_TR_NOOP("Open MidiTracker"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::CTRL + Qt::Key_K,
             Qt::WindowShortcut,
             QT_TR_NOOP("MidiTracker"),
@@ -344,7 +344,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "open_drumedit",
             QT_TR_NOOP("Open drumeditor"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::CTRL + Qt::Key_D,
             Qt::WindowShortcut,
             QT_TR_NOOP("Drum Editor"),
@@ -354,7 +354,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "open_waveedit",
             QT_TR_NOOP("Open wave editor"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Wave Editor"),
@@ -362,15 +362,19 @@ Shortcut MuseApplication::sc[] = {
             ":/xpm/wave.xpm"
             ),
       Shortcut(
-            "open_listedit",
+            "listedit",
             QT_TR_NOOP("Open listeditor"),
-            ARRANG_SHRT, 
-            Qt::CTRL + Qt::Key_L
+            ARRANG_SHRT,
+            Qt::CTRL + Qt::Key_L,
+            Qt::WindowShortcut,
+            QT_TR_NOOP("Properties"),
+            QT_TR_NOOP("open Properties Editor"),
+            ":/xmp/edit_list.xpm"
             ),
       Shortcut(
             "open_master",
             QT_TR_NOOP("Open mastertrack editor"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::CTRL + Qt::Key_M,
             Qt::WindowShortcut,
             QT_TR_NOOP("Mastertrack (Tempo) Editor"),
@@ -380,73 +384,73 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "add_midi_track",
             QT_TR_NOOP("Add midi track"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::CTRL + Qt::Key_J
             ),
       Shortcut(
             "add_drum_track",
             QT_TR_NOOP("Add drum track"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "add_wave_track",
             QT_TR_NOOP("Add wave track"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "add_audio_output",
             QT_TR_NOOP("Add audio output"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "add_audio_group",
             QT_TR_NOOP("Add audio group"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "add_audio_input",
             QT_TR_NOOP("Add audio input"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "global_cut",
             QT_TR_NOOP("Structure: Global cut"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "global_insert",
             QT_TR_NOOP("Structure: Global insert"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "global_split",
             QT_TR_NOOP("Structure: Global split"),
-            ARRANG_SHRT,  
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "copy_range",
             QT_TR_NOOP("Structure: Copy range"),
-            ARRANG_SHRT,    
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "cut_events",
             QT_TR_NOOP("Structure: Cut events"),
-            ARRANG_SHRT,    
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "toggle_mixer1",
             QT_TR_NOOP("View: Open mixer 1 window"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::Key_F10,
             Qt::ApplicationShortcut,
             QT_TR_NOOP("Mixer1"),
@@ -456,7 +460,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "toggle_mixer2",
             QT_TR_NOOP("View: Open mixer 2 window"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0,
             Qt::ApplicationShortcut,
             QT_TR_NOOP("Mixer2"),
@@ -466,7 +470,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "toggle_transport",
             QT_TR_NOOP("View: Toggle transport window"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::Key_F11,
             Qt::ApplicationShortcut,
             QT_TR_NOOP("Transport"),
@@ -476,7 +480,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "toggle_bigtime",
             QT_TR_NOOP("View: Toggle bigtime window"),
-            ARRANG_SHRT,   
+            ARRANG_SHRT,
             Qt::Key_F12,
             Qt::ApplicationShortcut,
             QT_TR_NOOP("BigTime"),
@@ -496,151 +500,151 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "follow_jump",
             QT_TR_NOOP("Settings: Follow song by page"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "follow_no",
             QT_TR_NOOP("Settings: Follow song off"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "follow_continuous",
             QT_TR_NOOP("Settings: Follow song continuous"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "configure_shortcuts",
             QT_TR_NOOP("Settings: Configure shortcuts"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "configure_metronome",
             QT_TR_NOOP("Settings: Configure metronome"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "configure_midi_sync",
             QT_TR_NOOP("Settings: Midi sync configuration"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "configure_midi_file",
             QT_TR_NOOP("Settings: Midi file export configuration"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "configure_midi_ports",
             QT_TR_NOOP("Settings: Midi ports / Soft Synth"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "configure_audio_ports",
             QT_TR_NOOP("Settings: Audio subsystem configuration"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "midi_edit_instruments",
             QT_TR_NOOP("Midi: Edit midi instruments"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "midi_remote_control",
             QT_TR_NOOP("Midi: Midi remote control"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "midi_reset",
             QT_TR_NOOP("Midi: Reset midi"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "midi_init",
             QT_TR_NOOP("Midi: Init midi"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "midi_local_off",
             QT_TR_NOOP("Midi: Midi local off"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "audio_bounce_to_track",
             QT_TR_NOOP("Audio: Bounce audio to track"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "audio_bounce_to_file",
             QT_TR_NOOP("Audio: Bounce audio to file"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "audio_restart",
             QT_TR_NOOP("Audio: Restart audio"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0
             ),
       Shortcut(
             "open_help",
             QT_TR_NOOP("Help: Open Manual"),
-            ARRANG_SHRT,        
+            ARRANG_SHRT,
             Qt::Key_F1
             ),
       Shortcut(
             "toggle_whatsthis",
             QT_TR_NOOP("Help: Toggle whatsthis mode"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::SHIFT + Qt::Key_F1
             ),
       Shortcut(
             "edit_selected_part",
             QT_TR_NOOP("Edit: Edit selected part"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::Key_Return
             ),
       Shortcut(
             "sel_part_above",
             QT_TR_NOOP("Edit: Select nearest part on track above"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::Key_Up
             ),
       Shortcut(
             "sel_part_above_add",
             QT_TR_NOOP("Edit: Add nearest part on track above"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::SHIFT + Qt::Key_Up
             ),
       Shortcut(
             "sel_part_below",
             QT_TR_NOOP("Edit: Select nearest part on track below"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::Key_Down
             ),
       Shortcut(
             "sel_part_below_add",
             QT_TR_NOOP("Edit: Add nearest part on track below"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::SHIFT + Qt::Key_Down
             ),
       Shortcut(
             "midi_transpose",
             QT_TR_NOOP("Midi: Transpose"),
-            ARRANG_SHRT + PROLL_SHRT, 
+            ARRANG_SHRT + PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Transpose")
@@ -648,7 +652,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "sel_all",
             QT_TR_NOOP("Edit: Select all"),
-            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, 
+            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,
             Qt::CTRL + Qt::Key_A,
             Qt::WindowShortcut,
             QT_TR_NOOP("Select All"),
@@ -658,7 +662,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "sel_none",
             QT_TR_NOOP("Edit: Select none"),
-            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, 
+            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,
             Qt::CTRL + Qt::SHIFT + Qt::Key_A,
             Qt::WindowShortcut,
             QT_TR_NOOP("Deselect All"),
@@ -668,7 +672,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "sel_inv",
             QT_TR_NOOP("Edit: Invert selection"),
-            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,  
+            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,
             Qt::CTRL + Qt::Key_I,
             Qt::WindowShortcut,
             QT_TR_NOOP("Invert Selection"),
@@ -678,7 +682,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "sel_ins_loc",
             QT_TR_NOOP("Edit: Select events/parts inside locators"),
-            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,  
+            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Select Inside Loop"),
@@ -688,7 +692,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "sel_out_loc",
             QT_TR_NOOP("Edit: Select events/parts outside locators"),
-            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, 
+            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Select Outside Loop"),
@@ -698,13 +702,13 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "sel_left",
             QT_TR_NOOP("Edit: Select nearest part/event to the left"),
-            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, 
+            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,
             Qt::Key_Left
             ),
       Shortcut(
             "sel_left_add",
             QT_TR_NOOP("Edit: Add nearest part/event to the left to selection"),
-            PROLL_SHRT + DEDIT_SHRT, 
+            PROLL_SHRT + DEDIT_SHRT,
             Qt::Key_Left + Qt::SHIFT
             ),
       Shortcut(
@@ -722,25 +726,25 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "loc_to_sel",
             QT_TR_NOOP("Edit: Set locators to selection"),
-            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, 
+            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,
             Qt::ALT + Qt::Key_P
             ),
       Shortcut(
             "sel_inc_pitch",
             QT_TR_NOOP("Edit: Increase pitch"),
-            PROLL_SHRT + DEDIT_SHRT, 
+            PROLL_SHRT + DEDIT_SHRT,
             Qt::CTRL + Qt::Key_Up
             ),
       Shortcut(
             "sel_dec_pitch",
             QT_TR_NOOP("Edit: Decrease pitch"),
-            PROLL_SHRT + DEDIT_SHRT, 
+            PROLL_SHRT + DEDIT_SHRT,
             Qt::CTRL + Qt::Key_Down
             ),
       Shortcut(
             "midi_fixed_len",
             QT_TR_NOOP("Edit: Set fixed length on midi events"),
-            DEDIT_SHRT, 
+            DEDIT_SHRT,
             Qt::ALT + Qt::Key_L,
             Qt::WindowShortcut,
             QT_TR_NOOP("Set fixed length")
@@ -748,7 +752,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "midi_over_quant",
             QT_TR_NOOP("Quantize: Over Quantize"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Over Quantize")
@@ -756,7 +760,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "midi_quant_noteon",
             QT_TR_NOOP("Quantize: Note On Quantize"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Note On Quantize")
@@ -780,13 +784,13 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "config_quant",
             QT_TR_NOOP("Quantize: Configure quant"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::CTRL + Qt::ALT + Qt::Key_Q
             ),
       Shortcut(
             "midi_mod_gate_time",
             QT_TR_NOOP("Quantize: Modify Gate Time"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Modify Gate Time")
@@ -794,7 +798,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "midi_mod_velo",
             QT_TR_NOOP("Quantize: Modify Velocity"),
-            PROLL_SHRT,  
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Modify Velocity")
@@ -802,7 +806,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "midi_crescendo",
             QT_TR_NOOP("Edit: Crescendo"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Crescendo")
@@ -810,7 +814,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "midi_thin_out",
             QT_TR_NOOP("Edit: Thin Out"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Thin Out")
@@ -818,7 +822,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "midi_erase_event",
             QT_TR_NOOP("Edit: Erase Event"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Erase Event")
@@ -826,7 +830,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "midi_note_shift",
             QT_TR_NOOP("Edit: Note Shift"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Note Shift")
@@ -834,7 +838,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "midi_move_clock",
             QT_TR_NOOP("Edit: Move Clock"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Move Clock")
@@ -842,7 +846,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "midi_copy_measure",
             QT_TR_NOOP("Edit: Copy Measure"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Copy Measure")
@@ -858,7 +862,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "midi_delete_measure",
             QT_TR_NOOP("Edit: Delete Measure"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Delete Measure")
@@ -866,7 +870,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "midi_create_measure",
             QT_TR_NOOP("Edit: Create Measure"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Create Measure")
@@ -874,13 +878,13 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "change_event_color",
             QT_TR_NOOP("Edit: Change event color"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::Key_E
             ),
       Shortcut(
             "pointer",
             QT_TR_NOOP("Tool: Pointer"),
-            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, 
+            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,
             Qt::Key_A,
             Qt::WindowShortcut,
             QT_TR_NOOP("Pointer"),
@@ -894,7 +898,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "pencil",
             QT_TR_NOOP("Tool: Pencil"),
-            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, 
+            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,
             Qt::Key_D,
             Qt::WindowShortcut,
             QT_TR_NOOP("Pencil"),
@@ -907,7 +911,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "eraser",
             QT_TR_NOOP("Tool: Eraser"),
-            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, 
+            ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,
             Qt::Key_R,
             Qt::WindowShortcut,
             QT_TR_NOOP("Eraser"),
@@ -918,7 +922,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "scissor",
             QT_TR_NOOP("Tool: Scissor"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::Key_S,
             Qt::WindowShortcut,
             QT_TR_NOOP("Scissor"),
@@ -929,7 +933,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "glue",
             QT_TR_NOOP("Tool: Glue"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::Key_G,
             Qt::WindowShortcut,
             QT_TR_NOOP("Glue"),
@@ -938,9 +942,17 @@ Shortcut MuseApplication::sc[] = {
             ":/xpm/glue.xpm"
             ),
       Shortcut(
+            "declone",
+            QT_TR_NOOP("Declone"),
+            ARRANG_SHRT,
+            0,
+            Qt::WindowShortcut,
+            QT_TR_NOOP("Declone")
+            ),
+      Shortcut(
             "quantize",
             QT_TR_NOOP("Tool: Quantize"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             Qt::Key_G,
             Qt::WindowShortcut,
             QT_TR_NOOP("Quantize"),
@@ -951,7 +963,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "draw",
             QT_TR_NOOP("Tool: Line Draw"),
-            PROLL_SHRT + DEDIT_SHRT, 
+            PROLL_SHRT + DEDIT_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Draw"),
@@ -961,7 +973,7 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "mute_parts",
             QT_TR_NOOP("Tool: Mute Parts"),
-            ARRANG_SHRT, 
+            ARRANG_SHRT,
             0,
             Qt::WindowShortcut,
             QT_TR_NOOP("Mute"),
@@ -973,103 +985,103 @@ Shortcut MuseApplication::sc[] = {
       Shortcut(
             "curpos_increase",
             QT_TR_NOOP("Transport: Increase current position"),
-            GLOBAL_SHRT, 
+            GLOBAL_SHRT,
             Qt::Key_Plus
             ),
       Shortcut(
             "curpos_decrease",
             QT_TR_NOOP("Transport: Decrease current position"),
-            GLOBAL_SHRT,  
+            GLOBAL_SHRT,
             Qt::Key_Minus
             ),
       Shortcut(
             "midi_quant_1",
             QT_TR_NOOP("Quantize: Set quantize to 1/1 note"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::Key_1
             ),
       Shortcut(
             "midi_quant_2",
             QT_TR_NOOP("Quantize: Set quantize to 1/2 note"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::Key_2
             ),
       Shortcut(
             "midi_quant_3",
             QT_TR_NOOP("Quantize: Set quantize to 1/4 note"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::Key_3
             ),
       Shortcut(
             "midi_quant_4",
             QT_TR_NOOP("Quantize: Set quantize to 1/8 note"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::Key_4
             ),
       Shortcut(
             "midi_quant_5",
             QT_TR_NOOP("Quantize: Set quantize to 1/16 note"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::Key_5
             ),
       Shortcut(
             "midi_quant_6",
             QT_TR_NOOP("Quantize: Set quantize to 1/32 note"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::Key_6
             ),
       Shortcut(
             "midi_quant_7",
             QT_TR_NOOP("Quantize: Set quantize to 1/64 note"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::Key_7
             ),
       Shortcut(
             "midi_quant_triol",
             QT_TR_NOOP("Quantize: Toggle triol quantization"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::Key_T
             ),
       Shortcut(
             "midi_quant_punct",
             QT_TR_NOOP("Quantize: Toggle punctuation quantization"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::Key_Period
             ),
       Shortcut(
             "midi_quant_punct2",
             QT_TR_NOOP("Quantize: Toggle punctuation quantization (2)"),
-            PROLL_SHRT, 
+            PROLL_SHRT,
             Qt::Key_Comma
             ),
       Shortcut(
             "midi_insert_at_loc",
             QT_TR_NOOP("Insert"),
-            PROLL_SHRT,  
+            PROLL_SHRT,
             Qt::SHIFT + Qt::Key_Right
             ),
       Shortcut(
             "lm_ins_tempo",
             QT_TR_NOOP("Insert Tempo"),
-            LMEDIT_SHRT,  
+            LMEDIT_SHRT,
             Qt::CTRL + Qt::Key_T
             ),
       Shortcut(
             "lm_ins_sig",
             QT_TR_NOOP("Insert Signature"),
-            LMEDIT_SHRT,  
+            LMEDIT_SHRT,
             Qt::CTRL + Qt::Key_R
             ),
       Shortcut(
             "lm_edit_beat",
             QT_TR_NOOP("Change Event Position"),
-            LMEDIT_SHRT,  
+            LMEDIT_SHRT,
             Qt::CTRL + Qt::SHIFT + Qt::Key_E
             ),
       Shortcut(
             "lm_edit_val",
             QT_TR_NOOP("Edit Event Value"),
-            LMEDIT_SHRT,  
+            LMEDIT_SHRT,
             Qt::CTRL + Qt::Key_E
             ),
       Shortcut(0, 0, 0, 0 ),

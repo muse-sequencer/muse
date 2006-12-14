@@ -26,10 +26,10 @@
 #include "ui_ctrllistedit.h"
 
 //---------------------------------------------------------
-//   MidiTimeDelegate
+//   CtrlDelegate
 //---------------------------------------------------------
 
-class MidiTimeDelegate : public QItemDelegate {
+class CtrlDelegate : public QItemDelegate {
       Q_OBJECT
 
       virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem&,
@@ -37,11 +37,11 @@ class MidiTimeDelegate : public QItemDelegate {
       virtual void setEditorData(QWidget* editor, const QModelIndex&) const;
       virtual void setModelData(QWidget* editor, QAbstractItemModel*,
          const QModelIndex&) const;
-      void paint(QPainter*, const QStyleOptionViewItem&, 
+      void paint(QPainter*, const QStyleOptionViewItem&,
          const QModelIndex&) const;
 
    public:
-      MidiTimeDelegate(QObject* parent = 0);      
+      CtrlDelegate(QObject* parent = 0);
       };
 
 //---------------------------------------------------------
@@ -68,7 +68,6 @@ class CtrlListEditor : public ListWidget {
       Ctrl* c;
       bool updateListDisabled;
       ListEdit* listEdit;
-      MidiTimeDelegate* midiTimeDelegate;
 
       void updateList();
 
@@ -92,6 +91,6 @@ class CtrlListEditor : public ListWidget {
       Track* getTrack() const { return track; }
       enum { TICK_COL, TIME_COL, VAL_COL };
       };
-      
+
 #endif
 

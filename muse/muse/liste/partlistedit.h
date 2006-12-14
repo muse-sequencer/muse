@@ -26,6 +26,25 @@
 #include "ui_partlistedit.h"
 
 //---------------------------------------------------------
+//   EventDelegate
+//---------------------------------------------------------
+
+class EventDelegate : public QItemDelegate {
+      Q_OBJECT
+
+      virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem&,
+         const QModelIndex& index) const;
+      virtual void setEditorData(QWidget* editor, const QModelIndex&) const;
+      virtual void setModelData(QWidget* editor, QAbstractItemModel*,
+         const QModelIndex&) const;
+      void paint(QPainter*, const QStyleOptionViewItem&,
+         const QModelIndex&) const;
+
+   public:
+      EventDelegate(QObject* parent = 0);
+      };
+
+//---------------------------------------------------------
 //   PartListEditor
 //---------------------------------------------------------
 
@@ -43,7 +62,8 @@ class PartListEditor : public ListWidget {
    public:
       PartListEditor(ListEdit*, QWidget* parent = 0);
       virtual void setup(const ListType&);
-      enum { TICK_COL, TIME_COL };
+      Track* getTrack() const;
+      enum { TICK_COL, TIME_COL, TYPE_COL, A_COL, B_COL};
       };
 
 #endif

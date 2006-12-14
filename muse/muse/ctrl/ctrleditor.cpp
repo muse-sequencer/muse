@@ -239,7 +239,7 @@ void CtrlEditor::mousePress(const QPoint& pos, QMouseEvent* me)
                   int n = a->data().toInt();
                   if (n == (1 << (TOOLS+1))) {
                         Pos t(tc()->pix2pos(pos.x()));
-                        muse->showListEditor(t, track(), ctrl());
+                        muse->showListEditor(t, track(), 0, ctrl());
                         }
                   else
                         muse->setTool(n);

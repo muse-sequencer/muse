@@ -50,8 +50,8 @@ CtrlListEditor::CtrlListEditor(ListEdit* e, QWidget* parent)
       int zW = fm.width("0");
       le.ctrlList->setColumnWidth(TICK_COL, zW * 8);
       le.ctrlList->setColumnWidth(TIME_COL, zW * 14);
-      MidiTimeDelegate* midiTimeDelegate = new MidiTimeDelegate(this);
-      le.ctrlList->setItemDelegate(midiTimeDelegate);
+      CtrlDelegate* ctrlDelegate = new CtrlDelegate(this);
+      le.ctrlList->setItemDelegate(ctrlDelegate);
 
       track = 0;
       connect(le.ctrlList, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
@@ -80,10 +80,10 @@ bool EscapeFilter::eventFilter(QObject* obj, QEvent* event)
       if (event->type() == QEvent::KeyPress) {
             if (((QKeyEvent*)event)->key() == Qt::Key_Escape) {
                   ((CtrlListEditor*)parent())->sendEscape();
-                  return true;       
-                  }     
+                  return true;
+                  }
             }
-      return QObject::eventFilter(obj, event);      
+      return QObject::eventFilter(obj, event);
       }
 
 //---------------------------------------------------------
@@ -96,7 +96,7 @@ void CtrlListEditor::setup(const ListType& lt)
             disconnect(track, SIGNAL(controllerChanged(int)), this, SLOT(controllerChanged(int)));
       track = lt.track;
       connect(track, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));
-      
+
       c = lt.ctrl;
       le.controllerName->setText(c->name());
       le.discreteCheckBox->setChecked(c->type() & Ctrl::DISCRETE);
@@ -302,7 +302,7 @@ void CtrlListEditor::insertClicked()
                   val.i = cur->data(VAL_COL, Qt::DisplayRole).toInt();
             else
                   val.f = cur->data(VAL_COL, Qt::DisplayRole).toDouble();
-            }            
+            }
       song->cmdAddControllerVal(track, c, listEdit->pos(), val);
       }
 
@@ -377,19 +377,19 @@ void CtrlListEditor::defaultValChanged(double v)
       }
 
 //---------------------------------------------------------
-//   MidiTimeDelegate
+//   CtrlDelegate
 //---------------------------------------------------------
 
-MidiTimeDelegate::MidiTimeDelegate(QObject* parent)
+CtrlDelegate::CtrlDelegate(QObject* parent)
    : QItemDelegate(parent)
       {
       }
-      
+
 //---------------------------------------------------------
 //   createEditor
 //---------------------------------------------------------
 
-QWidget* MidiTimeDelegate::createEditor(QWidget* pw,
+QWidget* CtrlDelegate::createEditor(QWidget* pw,
    const QStyleOptionViewItem& option, const QModelIndex& index) const
       {
       switch(index.column()) {
@@ -404,14 +404,14 @@ QWidget* MidiTimeDelegate::createEditor(QWidget* pw,
                   if (c->type() & Ctrl::INT) {
                         QSpinBox* w = new QSpinBox(pw);
                         w->setRange(c->minVal().i, c->maxVal().i);
-                        w->installEventFilter(const_cast<MidiTimeDelegate*>(this));
+                        w->installEventFilter(const_cast<CtrlDelegate*>(this));
                         return w;
                         }
                   QDoubleSpinBox* w = new QDoubleSpinBox(pw);
                   if (c->type() & Ctrl::LOG)
                         w->setSuffix(tr("dB"));
 //                  w->setRange(c->minVal().f, c->maxVal().f);
-                  w->installEventFilter(const_cast<MidiTimeDelegate*>(this));
+                  w->installEventFilter(const_cast<CtrlDelegate*>(this));
                   return w;
                   }
             }
@@ -422,7 +422,7 @@ QWidget* MidiTimeDelegate::createEditor(QWidget* pw,
 //   setEditorData
 //---------------------------------------------------------
 
-void MidiTimeDelegate::setEditorData(QWidget* editor, 
+void CtrlDelegate::setEditorData(QWidget* editor,
    const QModelIndex& index) const
       {
       switch(index.column()) {
@@ -460,7 +460,7 @@ printf("type %x\n", c->type());
 //   setModelData
 //---------------------------------------------------------
 
-void MidiTimeDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
+void CtrlDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
          const QModelIndex& index) const
       {
       switch(index.column()) {
@@ -497,7 +497,7 @@ void MidiTimeDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
 //   paint
 //---------------------------------------------------------
 
-void MidiTimeDelegate::paint(QPainter* painter, 
+void CtrlDelegate::paint(QPainter* painter,
    const QStyleOptionViewItem& option, const QModelIndex& index) const
       {
       QString text;

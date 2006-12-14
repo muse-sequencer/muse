@@ -33,7 +33,7 @@
 bool ListType::operator==(const ListType& t) const
       {
       return id == t.id && track == t.track
-         && part == t.part && ctrl->id() == t.ctrl->id();
+         && part == t.part && (ctrl ? ctrl->id() == t.ctrl->id() : true);
       }
 
 //---------------------------------------------------------

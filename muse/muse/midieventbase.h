@@ -28,7 +28,8 @@
 //---------------------------------------------------------
 
 class MidiEventBase : public EventBase {
-      int a, b, c;                  // pitch, velo-on, velo-off
+      int a, b;                  // pitch, velo-on
+      int c;
       EvData edata;
 
       virtual EventBase* clone() const { return new MidiEventBase(*this); }

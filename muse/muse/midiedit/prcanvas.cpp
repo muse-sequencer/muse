@@ -203,7 +203,7 @@ void PianoCanvas::moveItem(CItem* item, DragType dtype)
       {
       Part* part  = item->part;
       Event event = item->event;
-      int npitch  = y2pitch((int)((item->my - (int)(wpos.y()/_ymag) 
+      int npitch  = y2pitch((int)((item->my - (int)(wpos.y()/_ymag)
 				   + item->bbox.height())*_ymag));
       if ((curItem==item) //remove this if want to have all selection playing
 	  && event.pitch() != npitch && editor->playEvents()) {
@@ -627,20 +627,20 @@ void PianoCanvas::itemReleased()
 
 void PianoCanvas::itemMoved(const CItem* item)
       {
-      int npitch  = y2pitch((int)((item->my - (int)(wpos.y()/_ymag) 
+      int npitch  = y2pitch((int)((item->my - (int)(wpos.y()/_ymag)
 				   + item->bbox.height())*_ymag));
       npitch += track()->transposition();
       if ((curItem==item) //remove this if want to have all selection playing
-	  && (playedPitch != -1) && (playedPitch != npitch)
-	  && editor->playEvents()) {
+	   && (playedPitch != -1) && (playedPitch != npitch)
+	   && editor->playEvents()) {
             Event event = item->event;
-	    // release note:
-	    MidiEvent ev1(0, 0, 0x90, playedPitch, 0);
-	    track()->playMidiEvent(&ev1);
-	    // play note:
-	    MidiEvent e2(0, 0, 0x90, npitch, event.velo());
-	    track()->playMidiEvent(&e2);
-	    playedPitch = npitch;
+	      // release note:
+	      MidiEvent ev1(0, 0, 0x90, playedPitch, 0);
+	      track()->playMidiEvent(&ev1);
+	      // play note:
+	      MidiEvent e2(0, 0, 0x90, npitch, event.velo());
+	      track()->playMidiEvent(&e2);
+	      playedPitch = npitch;
             }
       }
 

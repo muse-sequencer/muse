@@ -37,6 +37,7 @@ class EventBase : public AL::PosLen {
    public:
       EventBase(EventType t);
       EventBase(const EventBase& ev);
+      QString eventTypeName() const;
 
       virtual ~EventBase() {}
 

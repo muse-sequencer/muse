@@ -62,24 +62,18 @@ bool MidiEventBase::isNoteOff(const Event& e) const
       return (e.isNoteOff() && (e.pitch() == a));
       }
 
+//---------------------------------------------------------
+//   dump
+//---------------------------------------------------------
+
 void MidiEventBase::dump(int n) const
       {
       EventBase::dump(n);
-      char* p;
-
-      switch(type()) {
-            case Note:       p = "Note   "; break;
-            case Controller: p = "Ctrl   "; break;
-            case Sysex:      p = "Sysex  "; break;
-            case PAfter:     p = "PAfter "; break;
-            case CAfter:     p = "CAfter "; break;
-            case Meta:       p = "Meta   "; break;
-            default:         p = "??     "; break;
-            }
-      for (int i = 0; i < (n+2); ++i)
-            putchar(' ');
-      printf("<%s> a:0x%x(%d) b:0x%x(%d) c:0x%x(%d)\n",
-         p, a, a, b, b, c, c);
+      QString p = eventTypeName();
+      QString s;
+      s.sprintf("%s<%s> a:0x%x(%d) b:0x%x(%d)\n",
+         QString(n+2, ' ').toLocal8Bit().data(), p.toLocal8Bit().data(), a, a, b, b);
+      printf("%s\n", s.toLocal8Bit().data());
       }
 
 //---------------------------------------------------------
@@ -110,7 +104,7 @@ void MidiEventBase::write(Xml& xml, const Pos& offset) const
             if (b)
                   s += QString(" b=\"%1\"").arg(b);
             if (c)
-                  s += QString(" c=\"%1\"").arg(c);
+                  s += QString(" b=\"%1\"").arg(c);
             xml.tagE(s);
             }
       }
