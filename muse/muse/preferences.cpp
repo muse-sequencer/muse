@@ -269,7 +269,9 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
 
       guiRefreshSelect->setValue(config->guiRefresh);
       minSliderSelect->setValue(int(config->minSlider));
-      minMeterSelect->setValue(config->minMeter);
+      maxSliderSelect->setValue(int(config->maxSlider));
+      minMeterSelect->setValue(int(config->minMeter));
+      maxMeterSelect->setValue(int(config->maxMeter));
       peakHoldTime->setValue(config->peakHoldTime);
       helpBrowser->setText(config->helpBrowser);
       startProjectEntry->setText(config->startProject);
@@ -280,14 +282,14 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       startProjectGroup->addButton(startWithProject);
 
       switch(config->startMode) {
-            case START_ASK_FOR_PROJECT: 
-                  alwaysAsk->setChecked(true); 
+            case START_ASK_FOR_PROJECT:
+                  alwaysAsk->setChecked(true);
                   break;
-            case START_LAST_PROJECT: 
-                  startWithLastProject->setChecked(true); 
+            case START_LAST_PROJECT:
+                  startWithLastProject->setChecked(true);
                   break;
-            case START_START_PROJECT: 
-                  startWithProject->setChecked(true); 
+            case START_START_PROJECT:
+                  startWithProject->setChecked(true);
                   break;
             }
 
@@ -463,26 +465,26 @@ void PreferencesDialog::apply()
 	int showPartEvent = 0;
 	int showPartType = 0;
 
-	if (partShownames->isChecked())		
+	if (partShownames->isChecked())
             showPartType  |= 1;
-	if (partShowevents->isChecked())		
+	if (partShowevents->isChecked())
             showPartType  |= 2;
- 	if (partShowCakes->isChecked())		
+ 	if (partShowCakes->isChecked())
             showPartType  |= 4;
 
-	if (eventNoteon->isChecked())		
+	if (eventNoteon->isChecked())
             showPartEvent |= (1 << 0);
-	if (eventPolypressure->isChecked())	
+	if (eventPolypressure->isChecked())
             showPartEvent |= (1 << 1);
-	if (eventController->isChecked())	
+	if (eventController->isChecked())
             showPartEvent |= (1 << 2);
-	if (eventProgramchange->isChecked())	
+	if (eventProgramchange->isChecked())
             showPartEvent |= (1 << 3);
-	if (eventAftertouch->isChecked())	
+	if (eventAftertouch->isChecked())
             showPartEvent |= (1 << 4);
-	if (eventPitchbend->isChecked())		
+	if (eventPitchbend->isChecked())
             showPartEvent |= (1 << 5);
-	if (eventSpecial->isChecked())		
+	if (eventSpecial->isChecked())
             showPartEvent |= (1 << 6);
 
       config->canvasUseBgPixmap = usePixmap->isChecked();
@@ -542,7 +544,9 @@ void PreferencesDialog::apply()
 
       ::config.guiRefresh   = guiRefreshSelect->value();
       ::config.minSlider    = minSliderSelect->value();
+      ::config.maxSlider    = maxSliderSelect->value();
       ::config.minMeter     = minMeterSelect->value();
+      ::config.maxMeter     = maxMeterSelect->value();
       ::config.peakHoldTime = peakHoldTime->value();
       ::config.rtcTicks     = rtcResolutions[rtcticks];
       ::config.guiDivision  = divisions[div];

@@ -227,9 +227,13 @@ void readConfiguration(QDomNode node)
             else if (tag == "rtcTicks")
                   config.rtcTicks = i;
             else if (tag == "minMeter")
-                  config.minMeter = i;
+                  config.minMeter = s.toDouble();
+            else if (tag == "maxMeter")
+                  config.maxMeter = s.toDouble();
             else if (tag == "minSlider")
-                  config.minSlider = s.toFloat();
+                  config.minSlider = s.toDouble();
+            else if (tag == "maxSlider")
+                  config.maxSlider = s.toDouble();
             else if (tag == "guiRefresh")
                   config.guiRefresh = i;
             else if (tag == "peakHoldTime")
@@ -386,13 +390,15 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
       {
       xml.stag("configuration");
 
-      xml.tag("division", config.division);
-      xml.tag("rtcTicks", config.rtcTicks);
-      xml.tag("minMeter", config.minMeter);
-      xml.tag("minSlider", config.minSlider);
-      xml.tag("guiRefresh", config.guiRefresh);
+      xml.tag("division",     config.division);
+      xml.tag("rtcTicks",     config.rtcTicks);
+      xml.tag("minMeter",     config.minMeter);
+      xml.tag("maxMeter",     config.maxMeter);
+      xml.tag("minSlider",    config.minSlider);
+      xml.tag("maxSlider",    config.maxSlider);
+      xml.tag("guiRefresh",   config.guiRefresh);
       xml.tag("peakHoldTime", config.peakHoldTime);
-      xml.tag("helpBrowser", config.helpBrowser);
+      xml.tag("helpBrowser",  config.helpBrowser);
       xml.tag("extendedMidi", config.extendedMidi);
       xml.tag("midiExportDivision", config.midiDivision);
       xml.tag("guiDivision", config.guiDivision);

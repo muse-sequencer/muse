@@ -38,6 +38,8 @@ class CtrlEditor {
       int dragYoffset;
       int startY;
 
+      int th;     // effective track height, temp value
+
       int lselected;    // cached pixel position of current value
       AL::Pos selected; // current selected controller value
 

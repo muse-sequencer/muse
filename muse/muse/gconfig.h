@@ -73,8 +73,10 @@ struct GlobalConfigValues {
 
       int division;
       int rtcTicks;
-      int minMeter;
+      double minMeter;
+      double maxMeter;
       double minSlider;
+      double maxSlider;
       int guiRefresh;
       int peakHoldTime;		// peak meter hold time (ms)
       QString helpBrowser;

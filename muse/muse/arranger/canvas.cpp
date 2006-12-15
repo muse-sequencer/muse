@@ -257,9 +257,11 @@ void PartCanvas::paint(QPainter& p, QRect r)
                   // int h = tls->height();
                   p.setPen(QPen(Qt::lightGray, trackSeparator, Qt::SolidLine));
                   p.drawLine(from, y + yTrackOffset, to, y + yTrackOffset);
+                  y += yTrackOffset + trackSeparator;
                   QPoint off(0, y);
                   p.translate(off);
-                  tls->paint(p, r);
+                  // tls->paint(p, r);
+                  tls->paint(p, QRect(from, 0, to-from, tls->height() - (yTrackOffset + trackSeparator)));
                   p.translate(-off);
                   }
             }

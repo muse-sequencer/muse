@@ -53,7 +53,7 @@ AudioTrack::AudioTrack()
       Ctrl* c;
       c = new Ctrl(AC_VOLUME, "Volume");
       c->setType(Ctrl::INTERPOLATE | Ctrl::LOG);
-      c->setRange(pow(10.0f, config.minSlider*0.05f), 2.0f);
+      c->setRange(pow(10.0f, config.minSlider*0.05f), pow(10.0f, config.maxSlider*0.05f));
 
       addController(c);
       c = new Ctrl(AC_PAN, "Pan");
@@ -176,7 +176,7 @@ void AudioTrack::addAuxSend(int n)
             QString s("AuxSend-");
             s += QString("%1").arg(i+1);
             Ctrl* ctrl = new Ctrl(AC_AUX + i, s);
-            ctrl->setRange(pow(10.0f, config.minSlider*0.05f), 2.0f);
+            ctrl->setRange(pow(10.0f, config.minSlider*0.05f), pow(10.0f, config.maxSlider*0.05f));
             addController(ctrl);
 
             c = getController(AC_AUX_PAN + i);

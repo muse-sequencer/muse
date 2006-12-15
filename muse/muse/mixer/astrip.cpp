@@ -91,7 +91,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       //---------------------------------------------------
 
       slider = new Awl::MeterSlider(this);
-      slider->setRange(config.minSlider-0.1f, 10.0f);
+      slider->setRange(config.minSlider, config.maxSlider);
       slider->setFixedWidth(60);
       slider->setChannel(channel);
       Ctrl* ctrl = t->getController(AC_VOLUME);
@@ -199,7 +199,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       rBox->addWidget(iR);
       connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
       connect(iR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
-      
+
       oR = newOutRouteButton();
       rBox->addWidget(oR);
       connect(oR->menu(), SIGNAL(aboutToShow()), SLOT(oRouteShow()));
@@ -472,7 +472,7 @@ static void addAuxPorts(AudioTrack* track, QMenu* lb, const RouteList& rl)
             Route route = Route(RouteNode(p), RouteNode(track));
             a->setData(QVariant::fromValue(route));
             a->setChecked(rl.indexOf(route) != -1);
-            }            
+            }
       }
 
 //---------------------------------------------------------
@@ -637,7 +637,7 @@ void AudioStrip::iRouteShow()
                         addMidiTracks(m, track, ch, true);
                         addMidiInPorts(m, track, ch);
                         }
-                  break;                  
+                  break;
             }
       }
 

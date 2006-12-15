@@ -70,8 +70,10 @@ GlobalConfigValues config = {
 
       384,                          // division;
       1024,                         // rtcTicks
-      -60,                          // int minMeter;
-      -60.0,                        // double minSlider;
+      -60.0,                        // minMeter (dB)
+      10.0,                         // maxMeter (dB)
+      -60.0,                        // double minSlider (dB)
+      10.0,                         // double maxSlider (dB)
       20,                           // int guiRefresh;
       2000,					// peak hold time (ms)
       QString(""),                  // helpBrowser
@@ -89,7 +91,7 @@ GlobalConfigValues config = {
       QRect(0, 0, 600, 400),        // GeometryDrumedit;
       {
          QRect(0, 0, 300, 500),        // Mixer1
-         false, true, true, true, 
+         false, true, true, true,
          true, true, true, true, true, true
          },
       {

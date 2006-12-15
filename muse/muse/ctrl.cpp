@@ -163,7 +163,7 @@ bool Ctrl::add(unsigned frame, CVal val)
             if (val.f <= 0.0)
                   val.f = -1001.0f;
             else
-                  val.f = fast_log10(val.f);
+                  val.f = log10(val.f);
             }
       bool rv = find(frame) == end();
       insert(frame, val);
@@ -201,8 +201,6 @@ void Ctrl::read(QDomNode node, bool)
             _default.i = e.attribute("default","-1").toInt();
             }
       else {
-            minS  = "0.0f";
-            maxS  = "1.0f";
             if (_id == AC_PAN) {
                   minS = "-1.0f";
                   maxS = "+1.0f";
@@ -315,7 +313,15 @@ int Ctrl::val2pixelR(CVal val, int maxpixel)
       else {
             if ((_type & LOG) && (val.f <= -1000.0f))
                   return maxpixel;
-            return maxpixel - lrint(double(maxpixel) * (val.f - min.f) / (max.f-min.f));
+            int pixel = maxpixel - lrint(double(maxpixel) * (val.f - min.f) / (max.f-min.f));
+            if (pixel < 0) {
+                  printf("%d - lrint(double(%d) * (%f - %f)/(%f-%f)\n",
+                     maxpixel, maxpixel, val.f, min.f, max.f, min.f);
+                  printf("     %f/%f = %f\n",
+                     val.f-min.f, max.f-min.f, (val.f-min.f)/(max.f-min.f));
+                  }
+            return pixel;
+//            return maxpixel - lrint(double(maxpixel) * (val.f - min.f) / (max.f-min.f));
             }
       }
 
@@ -332,6 +338,9 @@ int Ctrl::val2pixelR(int val, int maxpixel)
 
 int Ctrl::cur2pixel(int maxpixel)
       {
+#if 0
+      return val2pixelR(_curVal, maxpixel);
+#else
       maxpixel -= 1;
 
       if (_type & INT)
@@ -344,6 +353,7 @@ int Ctrl::cur2pixel(int maxpixel)
                   f = fast_log10(f);
             }
       return maxpixel - lrint(double(maxpixel) * (f - min.f) / (max.f-min.f));
+#endif
       }
 
 //---------------------------------------------------------
@@ -413,8 +423,8 @@ CVal Ctrl::pixel2valR(int pixel, int maxpixel)
 void Ctrl::setRange(double _min, double _max)
       {
       if (_type & LOG) {
-            min.f = fast_log10(_min);
-            max.f = fast_log10(_max);
+            min.f = log10(_min);
+            max.f = log10(_max);
             }
       else {
             min.f = _min;
@@ -435,6 +445,6 @@ void Ctrl::setRange(int _min, int _max)
 void Ctrl::setRange(CVal mi, CVal ma)
       {
       min = mi;
-      max = ma;      
+      max = ma;
       }
 

@@ -61,7 +61,7 @@ inline static int genACnum(int plugin, int ctrl, bool prefader) {
 //    flag from controller id
 //---------------------------------------------------------
 
-inline static void getCtrlPlugin(int id, bool* prefader, int* pluginIndex, 
+inline static void getCtrlPlugin(int id, bool* prefader, int* pluginIndex,
    int* ctrlIndex) {
       *prefader    = (id & CTRL_PREFADER) ? true : false;
       *pluginIndex = ((id & CTRL_PLUGIN_MASK) / CTRL_PLUGIN_OFFSET) - 1;
@@ -144,6 +144,9 @@ typedef CTRL::const_iterator ciCtrlVal;
 //---------------------------------------------------------
 //   Ctrl
 //    this is a controller list
+//
+//    CtrlType == LOG
+//       values are internally represented as log10(value)
 //---------------------------------------------------------
 
 class Ctrl : public CTRL {

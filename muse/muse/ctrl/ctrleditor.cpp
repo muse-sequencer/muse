@@ -68,7 +68,7 @@ int CtrlEditor::ctrlY(int x, const CVal& val) const
       {
       if (dragy != -1 && lselected == x)
             return dragy;
-      return ctrl()->val2pixelR(val, cheight());
+      return ctrl()->val2pixelR(val, th) + HANDLE2;
       }
 
 //---------------------------------------------------------
@@ -83,16 +83,16 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
       if (from < 0)
             from = 0;
       int to = r.x() + r.width() + HANDLE1;
-      int th = cheight();
+      th = cheight() - HANDLE1 + splitWidth;
 
       p.save();
-      p.setRenderHint(QPainter::Antialiasing, true);
       bool aR = track()->autoRead();
       p.setPen(QPen(aR ? Qt::white : Qt::gray, 2));
 
       TType tt = track()->timeType();
 
       if (ctrl()->id() == CTRL_VELOCITY) {
+            p.setRenderHint(QPainter::Antialiasing, false);
             p.setPen(QPen(Qt::blue, veloWidth));
             PartList* pl = track()->parts();
             for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
@@ -107,26 +107,28 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
 
                   EventList* events = part->events();
                   for (iEvent e = events->begin(); e != events->end(); ++e) {
-                        if (e->second.type() != Note)
+                        const Event& ev = e->second;
+                        if (ev.type() != Note)
                               continue;
-                        int pos = tc()->pos2pix(e->second.pos() + *part);
+                        int pos = tc()->pos2pix(ev.pos() + *part);
                         if (pos <= from)
                               continue;
                         if (pos > to)
                               break;
                         int id = ctrl()->id();
                         if (id == CTRL_VELOCITY ||
-                          (CTRL_SVELOCITY && e->second.pitch() == singlePitch)) {
-                        	int y1 = ctrl()->val2pixelR(e->second.velo(), th);
-                        	p.drawLine(pos, th, pos, y1);
+                          (id == CTRL_SVELOCITY && ev.pitch() == singlePitch)) {
+                        	int y1 = ctrl()->val2pixelR(ev.velo(), th+3) + 1;
+                        	p.drawLine(pos, th+3, pos, y1);
                         	}
                         }
                   }
             }
       else {
+            p.setRenderHint(QPainter::Antialiasing, true);
             if (ctrl()->empty()) {
                   if (aR) {
-                        int y = ctrl()->cur2pixel(th);
+                        int y = ctrl()->cur2pixel(th) + HANDLE2;
                         p.drawLine(r.x(), y, r.x() + r.width(), y);
                         }
                   }
@@ -184,7 +186,7 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
                         }
                   }
             if (!aR) {
-                  int y = ctrl()->cur2pixel(th);
+                  int y = ctrl()->cur2pixel(th) + HANDLE2;
                   p.drawLine(r.x(), y, r.x() + r.width(), y);
                   }
             }
@@ -263,7 +265,7 @@ void CtrlEditor::mousePress(const QPoint& pos, QMouseEvent* me)
                   song->startUndo();
             else {
                   // add controller:
-                  CVal val = ctrl()->pixel2val(dragy, wh);
+                  CVal val = ctrl()->pixel2val(dragy-HANDLE2, wh - HANDLE1 + splitWidth);
                   song->cmdAddControllerVal(track(), ctrl(), selected, val);
                   tc()->widget()->update();
                   }
@@ -282,7 +284,7 @@ void CtrlEditor::mousePress(const QPoint& pos, QMouseEvent* me)
             ciCtrlVal s = ctrl()->upperBound(pos1.time(tt));
             ciCtrlVal e = ctrl()->upperBound(pos2.time(tt));
             for (ciCtrlVal i = s; i != e; ++i) {
-                  int yy = ctrl()->val2pixelR(i.value(), wh);
+                  int yy = ctrl()->val2pixelR(i.value(), wh - HANDLE1 + splitWidth) + HANDLE2;
                   startY = yy;
                   if ((yy >= (y-HANDLE2)) && (yy < (y + HANDLE2))) {
                         if (tt == AL::TICKS)
@@ -358,7 +360,7 @@ void CtrlEditor::mouseRelease()
       	                  if (id == CTRL_VELOCITY ||
 	                          (CTRL_SVELOCITY && e->second.pitch() == singlePitch)) {
                                 	int y = y1 + (y2 - y1) * (pos - from) / (to - from);
-            				int val = (ctrl()->pixel2val(y, cheight())).i;
+            				int val = (ctrl()->pixel2val(y+HANDLE2, cheight()-HANDLE1+splitWidth)).i;
                   			Event clone = e->second.clone();
                   			clone.setB(val);
                   			song->changeEvent(e->second, clone, part);
@@ -378,8 +380,8 @@ void CtrlEditor::mouseRelease()
             song->endUndo(SC_EVENT_MODIFIED);
       else {
             if (dragy != -1 && dragy != startY) {
-                  int wh   = cheight();
-                  CVal val = ctrl()->pixel2val(dragy, wh);
+                  int wh = cheight() - HANDLE1 + splitWidth;
+                  CVal val = ctrl()->pixel2val(dragy+HANDLE2, wh);
                   // modify controller:
                   song->cmdAddControllerVal(track(), ctrl(), selected, val);
                   }
@@ -407,8 +409,8 @@ void CtrlEditor::mouseMove(const QPoint& pos)
             AL::Pos p2(tc()->pix2pos(pos.x()));
             dragx = pos.x();
 
-            int wh  = cheight();
-            int val = (ctrl()->pixel2val(pos.y(), wh)).i;
+            int wh  = cheight() - HANDLE1 + splitWidth;
+            int val = (ctrl()->pixel2val(pos.y() - HANDLE2, wh)).i;
             unsigned tick1 = p1.tick();
             Part* part     = track()->parts()->findPart(tick1);
             if (part == 0)
@@ -475,11 +477,13 @@ void CtrlEditor::mouseMove(const QPoint& pos)
                         }
                   }
             if (dragy != -1) {
+                  int th = cheight() + splitWidth - HANDLE2 - 1;
                   dragy = pos.y() + dragYoffset;
-                  if (dragy < 0)
-                        dragy = 0;
-                  else if (dragy > cheight())
-                        dragy = cheight();
+                  if (dragy < HANDLE2)
+                        dragy = HANDLE2;
+                  else if (dragy > th) {
+                        dragy = th;
+                        }
                   }
             }
       tc()->widget()->update();

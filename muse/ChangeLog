@@ -1,3 +1,6 @@
+15.12 (ws)
+      - make slider.maxValue configurable
+      - pixel tuning for graphical controller editor
 13.12 (ws)
       - changed (again) midi/audio time synchronisation
       - fix: record midi controller only in controller list

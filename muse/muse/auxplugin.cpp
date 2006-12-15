@@ -42,7 +42,7 @@ void AuxPlugin::range(int idx, double* min, double* max) const
       switch(idx) {
             case 0:           // volume
                   *min = pow(10.0f, config.minSlider * 0.05f);
-                  *max = 2.0;
+                  *max = pow(10.0f, config.maxSlider * 0.05f);
                   break;
             case 1:           // pan
                   *min = -1.0;
