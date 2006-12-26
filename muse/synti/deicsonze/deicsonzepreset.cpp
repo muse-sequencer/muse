@@ -493,6 +493,21 @@ void Subcategory::unlink() {
 }
 
 //---------------------------------------------------------
+// findSubcategory
+//  take hbank and lbank and return the subcategory corresponding,
+//  NULL if doesn't exist
+//---------------------------------------------------------
+Subcategory* Set::findSubcategory(int hbank, int lbank) {
+  Category* c = findCategory(hbank);
+  Subcategory* s;
+  if(c) {
+    s = c->findSubcategory(lbank);
+    return s;
+  }
+  else return NULL;
+}
+
+//---------------------------------------------------------
 // findCategory
 //  takes hbank a category and return the first category,
 //  NULL if doesn't exist

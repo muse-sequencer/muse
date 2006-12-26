@@ -36,6 +36,9 @@
 #define NBROP 4 //do not change
 #define MAXCHARTAG 64
 
+#define PROG_NBR 128
+#define LBANK_NBR 128
+#define HBANK_NBR 128
 
 //---------------------------------------------------------
 // define strings of the parameter names for load save and ctrl interface
@@ -542,6 +545,7 @@ class Set {
     std::string _setName;
     std::vector<Category*> _categoryVector;
     Preset* findPreset(int hbank, int lbank, int prog);
+    Subcategory* findSubcategory(int hbank, int lbank);
     Category* findCategory(int hbank);
     void readSet(QDomNode setNode);
     void writeSet(AL::Xml* xml, bool onlyUsed);

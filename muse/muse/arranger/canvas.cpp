@@ -1116,7 +1116,7 @@ void PartCanvas::drop(QDropEvent* event)
       Qt::DropAction da = event->proposedAction();
       Qt::KeyboardModifiers kb = event->keyboardModifiers();
       if (kb == 0 && (Qt::MoveAction & event->possibleActions()))
-            da = Qt::MoveAction;
+	    da = Qt::MoveAction;
 
       if ((da == Qt::LinkAction) && (cw == this)) {
             delete dstPart->events();
@@ -1124,9 +1124,9 @@ void PartCanvas::drop(QDropEvent* event)
             event->setDropAction(Qt::LinkAction);
             }
       else if (da == Qt::MoveAction)
-            event->setDropAction(Qt::MoveAction);
+	    event->setDropAction(Qt::MoveAction);
       else
-            event->setDropAction(Qt::CopyAction);
+	    event->setDropAction(Qt::CopyAction);
       event->accept();
       if (cw || needEndUndo)
             song->addPart(dstPart);

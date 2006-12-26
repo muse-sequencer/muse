@@ -499,15 +499,30 @@ void MessSynthIF::populatePatchPopup(QMenu* menu, int ch)
             }
       else {
             const MidiPatch* mp = _mess->getPatchInfo(ch, 0);
+	    QMenu *hm = NULL, *lm = NULL;
             while (mp) {
-                  int id = ((mp->hbank & 0xff) << 16)
-                            + ((mp->lbank & 0xff) << 8) + mp->prog;
-                  QAction* a = menu->addAction(QString(mp->name));
-                  a->setData(id);
-                  mp = _mess->getPatchInfo(ch, mp);
-                  }
-            }
+	      switch(mp->typ) {
+	      case MP_TYPE_HBANK :
+		hm = menu->addMenu(QString(mp->name));
+		break;
+	      case MP_TYPE_LBANK :
+		if(hm) lm = hm->addMenu(QString(mp->name));
+		else lm = menu->addMenu(QString(mp->name));
+		break;
+	      default :
+		int id = ((mp->hbank & 0xff) << 16)
+		  + ((mp->lbank & 0xff) << 8) + mp->prog;
+		QAction* a;
+		if(lm) a = lm->addAction(QString(mp->name));
+		else a = menu->addAction(QString(mp->name));
+		a->setData(id);
+		break;
+	      }
+	      mp = _mess->getPatchInfo(ch, mp);
+	    }
+           }
       }
+
 
 //---------------------------------------------------------
 //   getData

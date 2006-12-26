@@ -26,8 +26,8 @@ if (NOT CMAKE_INSTALL_LIBDIR)
 	SET(CMAKE_INSTALL_LIBDIR "lib")
 endif (NOT CMAKE_INSTALL_LIBDIR)
 
-set(CMAKE_BUILD_TYPE debug)
-# set(CMAKE_BUILD_TYPE release)
+# set(CMAKE_BUILD_TYPE debug)
+set(CMAKE_BUILD_TYPE release)
 
 # for debugging the make system uncomment next line:
 # set(CMAKE_VERBOSE_MAKEFILE ON)

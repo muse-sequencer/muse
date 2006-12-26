@@ -456,13 +456,15 @@ class DeicsOnze : public Mess {
   LowFilter* _reverbFilter;
 
   mutable MidiPatch _patch;
-  int _numPatch; //what is this? TODO
-  
+  mutable int _numPatchProg; //used by getPatchInfo
+
   //preset tree 
   Set* _set;
   
   void setSampleRate(int sr);
-  Preset* findPreset(int hbank, int lbank, int prog);
+  Preset* findPreset(int hbank, int lbank, int prog) const;
+  Subcategory* findSubcategory(int hbank, int lbank) const;
+  Category* findCategory(int hbank) const;
   void initCtrls();
   void initGlobal();
   void initChannels();
@@ -536,6 +538,8 @@ class DeicsOnze : public Mess {
   
   virtual const char* getPatchName(int ch, int number, int) const;
   virtual const MidiPatch* getPatchInfo(int, const MidiPatch *) const;
+  virtual const char* getBankName(int) const;
+
   virtual int getControllerInfo(int arg1, const char** arg2, 
 				int* arg3, int* arg4, int* arg5);
   virtual void getInitData(int* length, const unsigned char** data);

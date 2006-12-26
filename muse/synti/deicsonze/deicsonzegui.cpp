@@ -2857,37 +2857,37 @@ void DeicsOnzeGui::setFreq1(int val) {
 void DeicsOnzeGui::setFix1(bool f)  {
     sendController(_currentChannel, CTRL_FIX, (f==false?0:1));}
 void DeicsOnzeGui::setCoarseRatio2(int val) {
-    sendController(_currentChannel, CTRL_RATIO+DECAPAR1, val*100+FineRatio1SpinBox->value());
+    sendController(_currentChannel, CTRL_RATIO+DECAPAR1, val*100+FineRatio2SpinBox->value());
 }
 void DeicsOnzeGui::setFineRatio2(int val) {
-    sendController(_currentChannel,CTRL_RATIO+DECAPAR1,val+CoarseRatio1SpinBox->value()*100);
+    sendController(_currentChannel,CTRL_RATIO+DECAPAR1,val+CoarseRatio2SpinBox->value()*100);
 }
 void DeicsOnzeGui::setFreq2(int val) {
-    sendController(_currentChannel,CTRL_FIXRANGE+DECAPAR1,val*100);}
+    sendController(_currentChannel,CTRL_FIXRANGE+DECAPAR2,val*100);}
 void DeicsOnzeGui::setFix2(bool f)  {
-    sendController(_currentChannel, CTRL_FIX+DECAPAR1, (f==false?0:1));}
+    sendController(_currentChannel, CTRL_FIX+DECAPAR2, (f==false?0:1));}
 void DeicsOnzeGui::setCoarseRatio3(int val) {
-    sendController(_currentChannel,CTRL_RATIO+2*DECAPAR1,val*100+FineRatio1SpinBox->value());
+    sendController(_currentChannel,CTRL_RATIO+2*DECAPAR1,val*100+FineRatio3SpinBox->value());
 }
 void DeicsOnzeGui::setFineRatio3(int val) {
     sendController(_currentChannel,CTRL_RATIO+2*DECAPAR1,
-		   val+CoarseRatio1SpinBox->value()*100);
+		   val+CoarseRatio3SpinBox->value()*100);
 }
 void DeicsOnzeGui::setFreq3(int val) {
-    sendController(_currentChannel,CTRL_FIXRANGE+2*DECAPAR1,val*100);}
+    sendController(_currentChannel,CTRL_FIXRANGE+2*DECAPAR2,val*100);}
 void DeicsOnzeGui::setFix3(bool f)  {
-    sendController(_currentChannel, CTRL_FIX+2*DECAPAR1, (f==false?0:1));}
+    sendController(_currentChannel, CTRL_FIX+2*DECAPAR2, (f==false?0:1));}
 void DeicsOnzeGui::setCoarseRatio4(int val) {
-    sendController(_currentChannel,CTRL_RATIO+3*DECAPAR1,val*100+FineRatio1SpinBox->value());
+    sendController(_currentChannel,CTRL_RATIO+3*DECAPAR1,val*100+FineRatio4SpinBox->value());
 }
 void DeicsOnzeGui::setFineRatio4(int val) {
     sendController(_currentChannel,CTRL_RATIO+3*DECAPAR1,
-		   val+CoarseRatio1SpinBox->value()*100);
+		   val+CoarseRatio4SpinBox->value()*100);
 }
 void DeicsOnzeGui::setFreq4(int val) {
-    sendController(_currentChannel,CTRL_FIXRANGE+3*DECAPAR1,val*100);}
+    sendController(_currentChannel,CTRL_FIXRANGE+3*DECAPAR2,val*100);}
 void DeicsOnzeGui::setFix4(bool f)  {
-    sendController(_currentChannel, CTRL_FIX+3*DECAPAR1, (f==false?0:1));}
+    sendController(_currentChannel, CTRL_FIX+3*DECAPAR2, (f==false?0:1));}
 
 //--------------------------------------------------------------
 // set Sensitivity

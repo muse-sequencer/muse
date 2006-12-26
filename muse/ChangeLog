@@ -1,3 +1,6 @@
+26.12 (ng)
+      - changed MessSynthIF::populatePatchPopup to make is work with banks
+      - added getPatchInfo of DeicsOnze
 15.12 (ws)
       - make slider.maxValue configurable
       - pixel tuning for graphical controller editor

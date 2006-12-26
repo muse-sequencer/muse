@@ -104,7 +104,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   initCtrls();
   initGlobal();
 
-  _numPatch = 0; //what is this? TODO
+  _numPatchProg = 0;
   _saveOnlyUsed = true;
   _saveConfig = true;
   _isInitSet = true; //false if an initial bank must be download
@@ -578,12 +578,17 @@ void DeicsOnze::initVoices(int c) {
 }
 
 //--------------------------------------------------------
-// findPreset
+// findPreset findSubcategory findCategory
 //--------------------------------------------------------
-Preset* DeicsOnze::findPreset(int hbank, int lbank, int prog) {
-    return _set->findPreset(hbank, lbank, prog);
+Preset* DeicsOnze::findPreset(int hbank, int lbank, int prog) const {
+  return _set->findPreset(hbank, lbank, prog);
 }
-
+Subcategory* DeicsOnze::findSubcategory(int hbank, int lbank) const {
+  return _set->findSubcategory(hbank, lbank);
+}
+Category* DeicsOnze::findCategory(int hbank) const {
+  return _set->findCategory(hbank);
+}
 //---------------------------------------------------------
 // isPitchEnv
 //  return true iff all levels are in the middle
@@ -2782,7 +2787,7 @@ bool DeicsOnze::setController(int channel, int id, int val) {
     return false;
 }
 bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
-  int k=0;
+  int deiPan, k=0;
   if(_global.channel[ch].isEnable || ctrl==CTRL_CHANNELENABLE) {
     if(ctrl>=CTRL_AR && ctrl<CTRL_ALG) {
       k=(ctrl-CTRLOFFSET)/DECAPAR1;
@@ -3286,11 +3291,11 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       break;
     case CTRL_PANPOT:
       _preset[ch]->setIsUsed(true);
-      setChannelPan(ch, (val+MAXCHANNELPAN)/2);
+      deiPan = val*2*MAXCHANNELPAN/127-MAXCHANNELPAN;
+      setChannelPan(ch, deiPan);
       applyChannelAmp(ch);
       if(!fromGui) {
-	MidiEvent ev(0,ch, ME_CONTROLLER, CTRL_CHANNELPAN,
-		     (val+MAXCHANNELPAN)/2);
+	MidiEvent ev(0, ch, ME_CONTROLLER, CTRL_CHANNELPAN, deiPan);
 	_gui->writeEvent(ev);
       }
       break;      
@@ -3299,7 +3304,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       setChannelPan(ch, val);
       applyChannelAmp(ch);
       if(!fromGui) {
-	MidiEvent ev(0,ch, ME_CONTROLLER, CTRL_CHANNELPAN, val);
+	MidiEvent ev(0, ch, ME_CONTROLLER, CTRL_CHANNELPAN, val);
 	_gui->writeEvent(ev);
       }
       break;      
@@ -3398,19 +3403,121 @@ const char* DeicsOnze::getPatchName(int ch, int val, int) const {
 }
 
 //---------------------------------------------------------
+//   getBankName
+//---------------------------------------------------------
+const char* DeicsOnze::getBankName(int /*val*/) const {
+  /*QString catstr, substr, retstr;
+  Category* c;
+  Subcategory* s;
+  int hbank = (val & 0xff00) >> 8;
+  int lbank = val & 0x7f;
+  if (hbank > 127)  // map "dont care" to 0
+    hbank = 0;
+  if (lbank > 127)
+    lbank = 0;
+  c = _set->findCategory(hbank);
+  if(c) {
+    catstr = QString(c->_categoryName.c_str());
+    s = c->findSubcategory(lbank);
+    if(s) {
+      substr = QString(s->_subcategoryName.c_str());
+      retstr = catstr + QString("->") + substr;
+      return retstr.toAscii().data();
+    }
+    else return NULL;
+    }
+    else*/
+  return NULL;
+}
+
+//---------------------------------------------------------
 //   getPatchInfo
 //---------------------------------------------------------
-
-const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* /*p*/) const {
-    /*if(_numPatch<NBRBANKPRESETS)
-    {
-	_patch.typ   = 0;
-	_patch.name  = bankA[_numPatch].name;
-	_patch.lbank = 1;
-	_patch.prog  = _numPatch;
+const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* p) const {
+  Preset* preset = NULL;
+  Subcategory* sub = NULL;
+  Category* cat = NULL;
+  if(p) {
+    _patch.hbank = p->hbank;
+    _patch.lbank = p->lbank;
+    _patch.prog = p->prog;
+    switch(p->typ) {
+    case MP_TYPE_HBANK :
+      sub = findSubcategory(_patch.hbank, _patch.lbank);
+      if(sub) {
+	_patch.name = sub->_subcategoryName.c_str();
+	_patch.typ = MP_TYPE_LBANK;
 	return &_patch;
-	}*/
-    return 0;
+      }
+      else {
+	if(_patch.lbank + 1 < LBANK_NBR) {
+	  _patch.lbank++;
+	  return getPatchInfo(0, &_patch);
+	}
+	else {
+	  _patch.prog = PROG_NBR - 1; //hack to go faster
+	  _patch.typ = 0;
+	  return getPatchInfo(0, &_patch);
+	}
+      }
+      break;
+    case MP_TYPE_LBANK :
+      preset = findPreset(_patch.hbank, _patch.lbank, _patch.prog);
+      _patch.typ = 0;
+      if(preset) {
+	_patch.name = preset->name.c_str();
+	return &_patch;
+      }
+      else return getPatchInfo(0, &_patch);
+      break;
+    default :
+      if(_patch.prog + 1 < PROG_NBR) {
+	_patch.prog++;
+	preset = findPreset(_patch.hbank, _patch.lbank, _patch.prog);
+	if(preset) {
+	  _patch.name = preset->name.c_str();
+	  return &_patch;
+	}
+	else return getPatchInfo(0, &_patch);
+      }
+      else {
+	_patch.prog = 0;
+	if(_patch.lbank + 1 < LBANK_NBR) {
+	  _patch.lbank++;
+	  _patch.typ = MP_TYPE_HBANK;
+	   return getPatchInfo(0, &_patch);
+	}
+	else {
+	  _patch.lbank = 0;
+	  if(_patch.hbank + 1 < HBANK_NBR) {
+	    _patch.hbank++;
+	    _patch.typ = MP_TYPE_HBANK;
+	    cat = findCategory(_patch.hbank);
+	    if(cat) {
+	      _patch.name = cat->_categoryName.c_str();
+	      return &_patch;
+	    }
+	    return getPatchInfo(0, &_patch);
+	  }
+	  else return NULL;
+	}	  
+      }
+    }
+  }
+  else {
+    _patch.typ = MP_TYPE_HBANK;
+    _patch.hbank = 0;
+    _patch.lbank = 0;
+    _patch.prog = 0;
+    cat = findCategory(_patch.hbank);
+    if(cat) {
+      _patch.name = cat->_categoryName.c_str();
+      return &_patch;
+    }
+    else {
+      return getPatchInfo(0, &_patch);
+    }
+  } 
 }
 
 //---------------------------------------------------------
@@ -3701,6 +3808,7 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
   float tempChannelRightOutput;
   float tempIncChannel; //for optimization
   float sampleOp[NBROP];
+  for(int i = 0; i < NBROP; i++) sampleOp[i] = 0.0;
   float ampOp[NBROP];
   for(int i = 0; i < n; i++) {
     if(_global.qualityCounter == 0) {

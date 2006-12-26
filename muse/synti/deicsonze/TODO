@@ -4,11 +4,10 @@
 - analogue reverb
 - Change presetName subcategoryName category with SysEx
 - Internal restructure, private vs public, add comment, etc
-- getPatchInfo...
 - Optimize the code
 - Remember the last directory
 - Pan per voices
 - Load BUMP preset
 - calibrate portamento and pitch envelope to fit real DX11
 - make deicsonze loadable as standalone by mus
-- add filter
+
