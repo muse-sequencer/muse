@@ -68,7 +68,6 @@ class Mess {
       virtual int getControllerInfo(int, const char**, int*, int*, int*) {return 0;}
       virtual const char* getPatchName(int, int, int) const { return "?"; }
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const { return 0; }
-      virtual const char* getBankName(int) const { return 0; }
 
       // synthesizer -> host communication
       void sendEvent(MidiEvent);  // called from synti

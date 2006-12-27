@@ -161,7 +161,7 @@ void PartCanvas::drawWavePart(QPainter& p, Part* wp, int y0, int th, int from, i
 
 void PartCanvas::paint(QPainter& p, QRect r)
       {
-// printf("canvas paint %d %d %d %d\n", r.x(), r.y(), r.width(), r.height());
+  //printf("canvas paint %d %d %d %d\n", r.x(), r.y(), r.width(), r.height());
       QFont f = font();
       f.setPointSize(8);
       p.setFont(f);
@@ -193,23 +193,31 @@ void PartCanvas::paint(QPainter& p, QRect r)
                         break;
 
                   QRect pr(x1, y, len, h - partBorderWidth);
-                  bool clone = part->isClone();
+		  bool clone = part->isClone();
 
                   QPen pen(Qt::black, partBorderWidth, clone ? Qt::DashLine : Qt::SolidLine);
-                  QBrush brush(Qt::SolidPattern);
-                  if (part->mute()) {
-                        pen.setColor(Qt::red);
-                        brush.setColor(Qt::gray);
-                        }
-                  else if (part->selected()) {
+		  QBrush brush(Qt::SolidPattern);
+		  QLinearGradient lg(0, pr.y() - wpos.y()-r.y(),
+				     0, pr.y()+ 2*pr.height() -wpos.y()-r.y());
+		  lg.setColorAt(0, part->selected()?Qt::gray
+				:config.partColors[part->colorIndex()]);
+		  lg.setColorAt(1, Qt::white);
+		  QBrush brushLG(lg);
+                  if (part->selected()) {
                         pen.setColor(config.partColors[part->colorIndex()]);
                         brush.setColor(config.selectPartBg);
+			p.setBrush(brushLG);
+                        }
+		  else if (part->mute()) {
+                        pen.setColor(Qt::red);
+                        brush.setColor(Qt::gray);
+			p.setBrush(brush);
                         }
                   else {
-                        brush.setColor(config.partColors[part->colorIndex()]);
+		    //brush.setColor(config.partColors[part->colorIndex()]);
+			p.setBrush(brushLG);
                         }
                   p.setPen(pen);
-                  p.setBrush(brush);
                   //
                   // we want to draw the rectangle without transformation
                   // to get equal border width horizontal and vertical

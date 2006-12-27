@@ -473,35 +473,10 @@ QString MessSynthIF::getPatchName(int channel, int prog)
 void MessSynthIF::populatePatchPopup(QMenu* menu, int ch)
       {
       menu->clear();
-      const char* bank = _mess->getBankName(0);
-      int idx = 0;
-      if (bank) {
-            while (bank) {
-                  // synthesizer has banks
-                  QMenu* a = menu->addMenu(QString(bank));
-
-                  MidiPatch patch;
-                  patch.typ   = 0;
-                  patch.hbank = idx << 8;
-                  patch.lbank = idx;
-                  patch.prog  = 0;
-                  const MidiPatch* mp = _mess->getPatchInfo(ch, &patch);
-                  while (mp) {
-                        int id = ((mp->hbank & 0xff) << 16)
-                           + ((mp->lbank & 0xff) << 8) + mp->prog;
-                        QAction* aa = a->addAction(QString(mp->name));
-                        aa->setData(id);
-                        mp = _mess->getPatchInfo(ch, mp);
-                        }
-                  ++idx;
-                  bank = _mess->getBankName(idx);
-                  }
-            }
-      else {
-            const MidiPatch* mp = _mess->getPatchInfo(ch, 0);
-	    QMenu *hm = NULL, *lm = NULL;
-            while (mp) {
-	      switch(mp->typ) {
+      const MidiPatch* mp = _mess->getPatchInfo(ch, 0);
+      QMenu *hm = NULL, *lm = NULL;
+      while (mp) {
+	   switch(mp->typ) {
 	      case MP_TYPE_HBANK :
 		hm = menu->addMenu(QString(mp->name));
 		break;
@@ -520,8 +495,8 @@ void MessSynthIF::populatePatchPopup(QMenu* menu, int ch)
 	      }
 	      mp = _mess->getPatchInfo(ch, mp);
 	    }
-           }
       }
+
 
 
 //---------------------------------------------------------

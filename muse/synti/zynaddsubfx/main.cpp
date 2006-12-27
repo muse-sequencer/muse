@@ -48,7 +48,6 @@ class Zynadd : public Mess, public Master
       virtual void getInitData(int*, const unsigned char**);
       virtual int getControllerInfo(int, const char**, int*, int*, int*);
       virtual const char* getPatchName(int, int, int) const;
-      virtual const char* getBankName(int) const;
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const;
       virtual bool hasGui() const { return true; }
       virtual bool guiVisible() const { return _guiVisible; }
@@ -187,17 +186,6 @@ bool Zynadd::loadBank(int n)
       }
 
 //---------------------------------------------------------
-//   getBankName
-//---------------------------------------------------------
-
-const char* Zynadd::getBankName(int n) const
-      {
-      n += 1;     // bank 0 is always empty ?!
-//    printf("Zyn: getBankName %d <%s>\n", n, bank.banks[n].name);
-      return bank.banks[n].name;
-      }
-
-//---------------------------------------------------------
 //   getControllerInfo
 //---------------------------------------------------------
 
@@ -260,7 +248,7 @@ int Zynadd::getControllerInfo(int i, const char** name, int* num, int* min, int*
 //---------------------------------------------------------
 
 const char* Zynadd::getPatchName(int, int val, int) const
-      {
+      {     
       int bankNo = (val >> 8) + 1;
       int program = val & 0x7f;
       return messPatch[bankNo][program];
@@ -270,23 +258,56 @@ const char* Zynadd::getPatchName(int, int val, int) const
 //   getPatchInfo
 //---------------------------------------------------------
 
-const MidiPatch* Zynadd::getPatchInfo(int, const MidiPatch* p) const
-      {
-      if (!p)
-            return 0;
-      int bn = ((p->hbank << 8) & 0xff) + ((p->lbank) & 0xff) + 1;
-      for (unsigned int i = p->prog + 1; i < 128; ++i) {
-            if (messPatch[bn][i]) {
-                  patch.name  = messPatch[bn][i];
-                  patch.typ   = 0xff;
-                  patch.prog  = i;
-                  patch.hbank = p->hbank;
-                  patch.lbank = p->lbank;
-                  return &patch;
-                  }
-            }
-      return 0;
+const MidiPatch* Zynadd::getPatchInfo(int, const MidiPatch* p) const {
+  if(p) {
+    patch.hbank = p->hbank;
+    patch.lbank = p->lbank;
+    patch.prog = p->prog;
+    int bn = ((patch.hbank << 7) + patch.lbank); //7 because lbank is signed
+    switch(p->typ) {
+    case MP_TYPE_LBANK :
+      patch.typ = 0;
+      patch.name  = messPatch[bn + 1][patch.prog];
+      if(patch.name) return &patch;
+      else return getPatchInfo(0, &patch);
+     break;
+    default :
+      if(patch.prog + 1 < 128) {
+	patch.prog++;
+	patch.name = messPatch[bn + 1][patch.prog];
+	if(patch.name) return &patch;
+	else return getPatchInfo(0, &patch);
       }
+      else {
+	patch.prog = 0;
+	if(bn + 1 < MAX_NUM_BANKS - 1) {
+	  bn++;
+	  patch.name = bank.banks[bn + 1].name;
+	  patch.hbank = bn / 128;
+	  patch.lbank = bn % 128;
+	  patch.typ = MP_TYPE_LBANK;
+	  if(patch.name) return &patch;
+	  else return getPatchInfo(0, &patch);
+	}
+	else return NULL;
+      }
+      break;
+    }
+  } 
+  else {
+    patch.typ = MP_TYPE_LBANK;
+    patch.hbank = 0;
+    patch.lbank = 0;
+    patch.prog = 0;
+    patch.name = bank.banks[(patch.hbank << 7) + patch.lbank + 1].name;
+    if(patch.name) return &patch;
+    else {
+      patch.typ = 0;
+      patch.prog = 127; //hack to go faster
+      return getPatchInfo(0, &patch);
+    }
+  }
+}
 
 //---------------------------------------------------------
 //    getInitData

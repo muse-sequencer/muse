@@ -1,3 +1,6 @@
+27.12 (ng)
+      - deleted getBankName and getPatchInfo of zynaddsubfx
+      - add gradient color for the tracks
 26.12 (ng)
       - changed MessSynthIF::populatePatchPopup to make is work with banks
       - added getPatchInfo of DeicsOnze

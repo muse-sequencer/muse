@@ -3403,34 +3403,6 @@ const char* DeicsOnze::getPatchName(int ch, int val, int) const {
 }
 
 //---------------------------------------------------------
-//   getBankName
-//---------------------------------------------------------
-const char* DeicsOnze::getBankName(int /*val*/) const {
-  /*QString catstr, substr, retstr;
-  Category* c;
-  Subcategory* s;
-  int hbank = (val & 0xff00) >> 8;
-  int lbank = val & 0x7f;
-  if (hbank > 127)  // map "dont care" to 0
-    hbank = 0;
-  if (lbank > 127)
-    lbank = 0;
-  c = _set->findCategory(hbank);
-  if(c) {
-    catstr = QString(c->_categoryName.c_str());
-    s = c->findSubcategory(lbank);
-    if(s) {
-      substr = QString(s->_subcategoryName.c_str());
-      retstr = catstr + QString("->") + substr;
-      return retstr.toAscii().data();
-    }
-    else return NULL;
-    }
-    else*/
-  return NULL;
-}
-
-//---------------------------------------------------------
 //   getPatchInfo
 //---------------------------------------------------------
 const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* p) const {
@@ -3515,6 +3487,7 @@ const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* p) const {
       return &_patch;
     }
     else {
+      _patch.hbank++;
       return getPatchInfo(0, &_patch);
     }
   } 

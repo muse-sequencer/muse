@@ -538,7 +538,6 @@ class DeicsOnze : public Mess {
   
   virtual const char* getPatchName(int ch, int number, int) const;
   virtual const MidiPatch* getPatchInfo(int, const MidiPatch *) const;
-  virtual const char* getBankName(int) const;
 
   virtual int getControllerInfo(int arg1, const char** arg2, 
 				int* arg3, int* arg4, int* arg5);
