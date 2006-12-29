@@ -38,6 +38,7 @@ class MidiTrackerEditor : public MidiEditor {
   void setFollow(bool);
 
   std::vector<TrackPattern*> _trackPatterns;
+  TimingPattern* _timingPattern;
 
  private slots:
   virtual void cmd(QAction*);
@@ -58,6 +59,8 @@ class MidiTrackerEditor : public MidiEditor {
   static const bool INIT_SREC    = false;
   static const bool INIT_MIDIIN  = false;
 
+ protected:
+  //void resizeEvent(QResizeEvent *event);
 };
 
 #endif

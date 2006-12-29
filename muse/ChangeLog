@@ -1,3 +1,6 @@
+29.12 (ng)
+      - fixed sync LFO Deicsonze
+      - update II miditracker (not working yet)
 27.12 (ng)
       - deleted getBankName and getPatchInfo of zynaddsubfx
       - add gradient color for the tracks

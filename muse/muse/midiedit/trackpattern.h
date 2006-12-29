@@ -83,6 +83,7 @@ class BasePat {
   unsigned _lastTick;
   int _quant;
  public:
+  BasePat();
   BasePat(QString name, unsigned firstTick, unsigned lastTick, int quant);
   ~BasePat();
 
@@ -106,7 +107,7 @@ class VoicePat : public BasePat {
   std::vector<VoiceEventPat*> getEventsCol();
 
   bool add(const Event* e, unsigned tick); //add the Event e into the EventList
-                                           //and update properly _eventsPat
+                                           //and update properly _events
                                            //return true if success, that is
                                            //there is an empty space of the
                                            //event
@@ -128,20 +129,39 @@ class CtrlPat {
 };
 
 //------------------------------------------------------
+// BaseTrackPat
+//------------------------------------------------------
+class BaseTrackPat : public QDockWidget {
+ protected:
+  QTreeWidget* _tree;
+  QMainWindow* _parent;
+  unsigned _currentRow;
+  unsigned _numRow; //contains the number of rows
+ public:
+  BaseTrackPat(QMainWindow* parent);
+  ~BaseTrackPat();
+
+  void setNumRow(unsigned);
+  unsigned getNumRow();
+  unsigned getRowMag(); //returns the number of rows to display according
+                        //to the size of the window
+  unsigned getCurTreeRow(); 
+  unsigned getLowRow();
+  unsigned getUpRow(); 
+};
+
+//------------------------------------------------------
 // TrackPattern
 //------------------------------------------------------
-class TrackPattern {
+class TrackPattern : public BaseTrackPat, public BasePat {
  private:
-  QDockWidget* _dock;
-  QTreeWidget* _tree;
   PartList* _partList; //partList concerned by a track
   MidiTrack* _track;
-  int _quant;
-  unsigned _firstTick;
   std::vector<VoicePat*> _voiceColumns; //matrix of voice events
   std::vector<CtrlPat*> _ctrlColumns; //matrix of ctrl events
  public:
-  TrackPattern(QMainWindow* parent, unsigned firstTick,
+  TrackPattern(QMainWindow* parent, QString name, 
+	       unsigned firstTick, unsigned lastTick,
 	       int quant, PartList* pl, MidiTrack* t);
   ~TrackPattern();
 
@@ -151,6 +171,12 @@ class TrackPattern {
                                            //creating new voices when necessary
   MidiTrack* getTrack() {return _track;}
   void setQuant(int quant);
+  void buildEventMatrix();
+  void fillTrackPat(); //fill the treeWidget with the right set of events
+                       //according to _currentRow and the size of the window
+
+ protected:
+  void resizeEvent(QResizeEvent *event);
 };
 
 //------------------------------------------------------
@@ -173,9 +199,8 @@ class TimingEvent {
   QString rowStr();
 };
 
-class TimingPattern : public BasePat {
+class TimingPattern : public BasePat, public BaseTrackPat {
  private:
-  QDockWidget* _dock;
   QTreeWidget* _tree;
   std::vector<TimingEvent*> _timingEvents;
  public:
@@ -184,6 +209,11 @@ class TimingPattern : public BasePat {
   ~TimingPattern();
 
   void buildTimingMatrix();
+  void fillTimingPat(); //fill the treeWidget with the right window of times
+                         //according to _currentRow and the size of the window
+
+ protected:
+  void resizeEvent(QResizeEvent *event);
 };
 
 #endif

@@ -13,6 +13,8 @@ class EventList;
 //#define FONT "Console"
 //#define FONT "Monospace"
 #define FONT "MiscFixed"
+#define FONT_HEIGHT 14
+#define OFFSET_Y 4
 
 //----------------------------------------------------------
 // EventPat
@@ -34,14 +36,22 @@ VoiceEventPat::VoiceEventPat(int n, int v):EventPat(false, true) {
   _noteNum = n;
   _velocity = v;
 }
+
 VoiceEventPat::VoiceEventPat(bool e, bool r):EventPat(e, r) {}
+
 VoiceEventPat::VoiceEventPat():EventPat(true, true) {}
+
 VoiceEventPat::~VoiceEventPat() {}
 
+
 void VoiceEventPat::setNoteNum(int n) { _noteNum = n; }
+
 int VoiceEventPat::getNoteNum() { return _noteNum; }
+
 void VoiceEventPat::setVelocity(int n) { _velocity = n; }
+
 int VoiceEventPat::getVelocity() { return _velocity; }
+
 QString VoiceEventPat::str() {
   if(_isEmpty) {
     return QString(EMPTYCHAR EMPTYCHAR EMPTYCHAR EMPTYCHAR)
@@ -114,13 +124,20 @@ CtrlEventPat::CtrlEventPat(int c, int v):EventPat(false, true) {
   _ctrlNum = c;
   _value = v;
 }
+
 CtrlEventPat::CtrlEventPat():EventPat(true, true) {}
+
 CtrlEventPat::~CtrlEventPat() {}
 
+
 void CtrlEventPat::setCtrlNum(int n) { _ctrlNum = n; }
+
 int CtrlEventPat::getCtrlNum() { return _ctrlNum; }
+
 void CtrlEventPat::setValue(int n) { _value = n; }
+
 int CtrlEventPat::getValue() { return _value; }
+
 QString CtrlEventPat::str() {
   //TODO
   if(_isReadable) {
@@ -140,6 +157,8 @@ QString CtrlEventPat::str() {
 //----------------------------------------------------------
 // BasePat
 //----------------------------------------------------------
+BasePat::BasePat() {
+}
 BasePat::BasePat(QString name, unsigned firstTick,
 		 unsigned lastTick, int quant) {
   _name = name;
@@ -170,9 +189,11 @@ VoicePat::VoicePat(QString name, unsigned firstTick, unsigned lastTick,
 		   int quant):BasePat(name, firstTick, lastTick, quant) {
   _events = new EventList();
 }
+
 VoicePat::~VoicePat() {
   delete(_events);
 }
+
 
 std::vector<VoiceEventPat*> VoicePat::getEventsCol() {
   return _eventsCol;
@@ -239,17 +260,63 @@ bool VoicePat::isFreeSpace(const Event* e, unsigned tick) {
 //----------------------------------------------------------
 CtrlPat::CtrlPat(QString /*name*/) {
 }
+
 CtrlPat::~CtrlPat() {}
 
-//------------------------------------------------------
+//----------------------------------------------------------
+// BaseTrackPat
+//----------------------------------------------------------
+BaseTrackPat::BaseTrackPat(QMainWindow* parent) {
+  _parent = parent;
+  _currentRow = 0;
+  _numRow = 0;
+}
+
+BaseTrackPat::~BaseTrackPat() {
+}
+
+void BaseTrackPat::setNumRow(unsigned nr) {
+  _numRow = nr;
+}
+
+unsigned BaseTrackPat::getNumRow() {
+  return _numRow;
+}
+
+unsigned BaseTrackPat::getRowMag() {
+  return (unsigned) height()/FONT_HEIGHT - OFFSET_Y;
+}
+
+unsigned BaseTrackPat::getCurTreeRow() {
+  unsigned rmd2 = getRowMag()/2;
+  if(_currentRow < rmd2) return _currentRow;
+  else if(_currentRow > getNumRow() - rmd2)
+    return _currentRow - getNumRow() + getRowMag();
+  else return rmd2;
+}
+
+unsigned BaseTrackPat::getLowRow() {
+  unsigned rmd2 = getRowMag()/2;
+  if(_currentRow < rmd2) return 0;
+  else if(_currentRow > getNumRow() - rmd2) 
+    return _tree->topLevelItemCount() - getRowMag();
+  else return _currentRow - rmd2;
+}
+
+unsigned BaseTrackPat::getUpRow() {
+  return getLowRow() + getRowMag();
+}
+
+//----------------------------------------------------------
 // TrackPattern
-//------------------------------------------------------
-TrackPattern::TrackPattern(QMainWindow* parent, unsigned firstTick,
-			   int quant, PartList* pl, MidiTrack* t) {
+//----------------------------------------------------------
+TrackPattern::TrackPattern(QMainWindow* parent, QString name,
+			   unsigned firstTick, unsigned lastTick,
+			   int quant, PartList* pl, MidiTrack* t) 
+  : BaseTrackPat(parent), BasePat(name, firstTick, lastTick, quant) {
+
   //set attributs
   _track = t;
-  _quant = quant;
-  _firstTick = firstTick;
 
   //build the list of parts belonging to track t
   _partList = new PartList;
@@ -260,31 +327,22 @@ TrackPattern::TrackPattern(QMainWindow* parent, unsigned firstTick,
   }
 
   //build the matrix of events
-  for(ciPart p = _partList->begin(); p != _partList->end(); p++) {
-    Part* part = p->second;
-    EventList* events = part->events();
-    for(ciEvent e = events->begin(); e != events->end(); e++) {
-      const Event* event = &e->second;
-      unsigned rescaledTick = part->tick() + event->tick() - _firstTick;
-      add(event, rescaledTick);
-    }
-  }
+  buildEventMatrix();
   
-  //build the dockWidget
-  _dock = new QDockWidget(_track->name());
-  _dock->setFeatures(QDockWidget::DockWidgetClosable |
-		     QDockWidget::DockWidgetMovable);
-  parent->addDockWidget(Qt::LeftDockWidgetArea, _dock, Qt::Horizontal);
+  //configure and add the dockWidget
+  setWindowTitle(_track->name());
+  setFeatures(QDockWidget::DockWidgetClosable |QDockWidget::DockWidgetMovable);
+  parent->addDockWidget(Qt::LeftDockWidgetArea, this, Qt::Horizontal);
 
   //build the treeWidget
-  _tree = new QTreeWidget(_dock);
+  _tree = new QTreeWidget(this);
   _tree->setColumnCount(_voiceColumns.size() + _ctrlColumns.size());
   QStringList headerLabels;
   for(unsigned i = 0; i < _voiceColumns.size(); i++) {
     headerLabels += QStringList(_voiceColumns[i]->getName());
   }
   for(unsigned i = 0; i < _ctrlColumns.size(); i++) {
-    //TODO
+    //TODO CTRL
     //headerLabels += QStringList(_ctrlColumns[i]->getName());
   }
   _tree->setHeaderLabels(headerLabels);
@@ -294,22 +352,12 @@ TrackPattern::TrackPattern(QMainWindow* parent, unsigned firstTick,
   QFont font =_tree->font();
   font.setFamily(FONT);
   _tree->setFont(font);
-  _dock->setWidget(_tree);
+  setWidget(_tree);
 
   //fill the treeWidget
-  for(unsigned i = 0; i < _voiceColumns.size(); i++) {
-    for(unsigned j = 0; j < _voiceColumns[i]->getEventsCol().size(); j++) {
-      QTreeWidgetItem* item = _tree->topLevelItem(j);
-      if(!item) item = new QTreeWidgetItem(_tree);
-      VoiceEventPat* vep = (_voiceColumns[i]->getEventsCol())[j];
-      if(vep) item->setText(i, vep->str());
-    }
-  }
-  for(unsigned i = 0; i < _ctrlColumns.size(); i++) {
-    //TODO CTRL
-  }
+  fillTrackPat();  
   
-  
+  //Resize the columns
   for(unsigned i = 0; i < _voiceColumns.size(); i++)
     _tree->resizeColumnToContents(i);
 
@@ -343,6 +391,43 @@ void TrackPattern::setQuant(int /*quant*/) {
   //TODO
 }
 
+void TrackPattern::buildEventMatrix() {
+  _numRow = tick2row(_lastTick) - tick2row(_firstTick);
+  for(ciPart p = _partList->begin(); p != _partList->end(); p++) {
+    Part* part = p->second;
+    EventList* events = part->events();
+    for(ciEvent e = events->begin(); e != events->end(); e++) {
+      const Event* event = &e->second;
+      unsigned rescaledTick = part->tick() + event->tick() - _firstTick;
+      add(event, rescaledTick);
+    }
+  }
+}
+
+void TrackPattern::fillTrackPat() {
+  getRowMag();
+  _tree->clear();
+  for(unsigned i = 0; i < _voiceColumns.size(); i++) {
+    for(unsigned j = getLowRow(); j < getUpRow(); j++) {
+      QTreeWidgetItem* item = _tree->topLevelItem(j);
+      if(!item) item = new QTreeWidgetItem(_tree);
+      VoiceEventPat* vep = (_voiceColumns[i]->getEventsCol())[j];
+      if(vep) item->setText(i, vep->str());
+    }
+  }
+  for(unsigned i = 0; i < _ctrlColumns.size(); i++) {
+    //TODO CTRL
+  }
+
+  //select the line corresponding to the current row
+  QTreeWidgetItem* item = _tree->topLevelItem(getCurTreeRow());
+  item->setSelected(true);
+}
+
+void TrackPattern::resizeEvent(QResizeEvent* /*event*/) {
+  fillTrackPat();
+}
+
 //---------------------------------------------------------------
 // TimingEvent
 //---------------------------------------------------------------
@@ -356,12 +441,12 @@ void TimingEvent::setBarBeatTick(unsigned tick) {
 
 QString TimingEvent::barBeatTickStr() {
   QString barS;
-  barS.setNum(_bar);
+  barS.setNum(_bar + 1);
   if(_bar<10) barS = QString("000") + barS;
   else if(_bar<100) barS = QString("00") + barS;
   else if(_bar<1000) barS = QString("0") + barS;
   QString beatS;
-  beatS.setNum(_beat);
+  beatS.setNum(_beat + 1);
   if(_beat<10) beatS = QString("0") + beatS;
   QString tickS;
   tickS.setNum(_tick);
@@ -383,19 +468,17 @@ QString TimingEvent::rowStr() {
 //---------------------------------------------------------------
 TimingPattern::TimingPattern(QMainWindow* parent, QString name,
 			     unsigned firstTick, unsigned lastTick, int quant)
-  : BasePat(name, firstTick, lastTick, quant) {
-  
+  : BasePat(name, firstTick, lastTick, quant), BaseTrackPat(parent) {
   //build the timing matrix
   buildTimingMatrix();
   
-  //build the dockWidget
-  _dock = new QDockWidget(_name);
-  _dock->setFeatures(QDockWidget::DockWidgetClosable |
-		     QDockWidget::DockWidgetMovable);
-  parent->addDockWidget(Qt::LeftDockWidgetArea, _dock, Qt::Horizontal);
+  //configure and add the dockWidget
+  setWindowTitle(name);
+  setFeatures(QDockWidget::DockWidgetClosable |QDockWidget::DockWidgetMovable);
+  parent->addDockWidget(Qt::LeftDockWidgetArea, this, Qt::Horizontal);
   
   //build the treeWidget
-  _tree = new QTreeWidget(_dock);
+  _tree = new QTreeWidget(this);
   _tree->setColumnCount(2);
   QStringList headerLabels;
   _tree->setHeaderLabels(QStringList("bar:bt:tick") + QStringList("row")); 
@@ -406,26 +489,43 @@ TimingPattern::TimingPattern(QMainWindow* parent, QString name,
   QFont font =_tree->font();
   font.setFamily(FONT);
   _tree->setFont(font);
-  _dock->setWidget(_tree);
+  setWidget(_tree);
 
   //fill the treeWidget
-  for(unsigned i = 0; i < _timingEvents.size(); i++) {
-    QTreeWidgetItem* item = new QTreeWidgetItem(_tree);
-    TimingEvent* te = _timingEvents[i];
-    item->setText(0, te->barBeatTickStr());
-    item->setText(1, te->rowStr());
-  }
-  
+  fillTimingPat();
   for(int i = 0; i < _tree->columnCount(); i++)
     _tree->resizeColumnToContents(i);
 }
 
+TimingPattern::~TimingPattern() {}
+
 void TimingPattern::buildTimingMatrix() {
+  _numRow = 0;
   for(unsigned tick = _firstTick; tick <= _lastTick; tick++) {
     if(isRow(tick)) {
-      TimingEvent* te = new TimingEvent(tick2row(tick));
+      TimingEvent* te = new TimingEvent(tick2row(tick) - tick2row(_firstTick));
       te->setBarBeatTick(tick);
       _timingEvents.push_back(te);
+      _numRow++;
     }
   }
+}
+
+void TimingPattern::fillTimingPat() {
+  _tree->clear();
+  for(unsigned i = 0; i < getRowMag(); i++) {
+    QTreeWidgetItem* item = new QTreeWidgetItem(_tree);
+    TimingEvent* te = _timingEvents[i + getLowRow()];
+    item->setText(0, te->barBeatTickStr());
+    item->setText(1, te->rowStr());
+  }
+
+  //select the line corresponding to the current row
+  QTreeWidgetItem* item = _tree->topLevelItem(getCurTreeRow());
+  item->setSelected(true);
+  
+}
+
+void TimingPattern::resizeEvent(QResizeEvent* /*event*/) {
+  fillTimingPat();
 }

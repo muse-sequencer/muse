@@ -3610,10 +3610,11 @@ bool DeicsOnze::playNote(int ch, int pitch, int velo) {
 	}
 	else _global.channel[ch].voices[newVoice].hasAttractor = false;
 	
-	/*if(_preset->lfo.sync)*/ _global.channel[ch].lfoIndex=0;//TODO
+	if(_preset[ch]->lfo.sync) _global.channel[ch].lfoIndex=0;
+
 	_global.channel[ch].lfoDelayIndex = 
 	  (_preset[ch]->lfo.delay==0?(double)(RESOLUTION/4):0.0);
-	_global.channel[ch].delayPassed=false;
+	_global.channel[ch].delayPassed = false;
 	
 	//--------------
 	//PITCH ENVELOPE

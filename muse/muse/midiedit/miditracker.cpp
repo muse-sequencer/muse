@@ -107,8 +107,8 @@ MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
   //-------------
   //timing matrix
   //-------------
-//  TimingPattern* timingPattern =
-//    new TimingPattern(this, "Timing", firstTick, lastTick, _quant);
+  _timingPattern =
+    new TimingPattern(this, "Timing", firstTick, lastTick, _quant);
 
   //---------------
   //tracks matrices
@@ -122,7 +122,8 @@ MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
 	if(_trackPatterns[i]->getTrack()==track) trackNotFound = false;
       if(trackNotFound) {
 	TrackPattern* tp; 
-	tp = new TrackPattern(this, firstTick, _quant, pl, (MidiTrack*) track);
+	tp = new TrackPattern(this, track->name(), firstTick, lastTick,
+			      _quant, pl, (MidiTrack*) track);
 	_trackPatterns.push_back(tp);
       }
     }
@@ -227,3 +228,8 @@ void MidiTrackerEditor::cmd(QAction* /*a*/) {
   //canvas()->cmd(cmd, _quantStrength, _quantLimit, _quantLen);
 }
 
+//void MidiTrackerEditor::resizeEvent(QResizeEvent *event) {
+//  for(int i = 0; i < _trackPatterns.size(); i++)
+//    _trackPatterns[i]->fillTrackPat();
+//  _timingPattern->fillTimmingPat(); 
+//}
