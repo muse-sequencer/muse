@@ -374,7 +374,7 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   connect(delayPanLFOFreqSlider, SIGNAL(valueChanged(int)), this,
 	  SLOT(setDelayPanLFOFreq(int)));
   connect(delayPanLFOFreqFloatentry, SIGNAL(valueChanged(double, int)), this,
-	  SLOT(setdelayPanLFOFreq(double)));
+	  SLOT(setDelayPanLFOFreq(double)));
   connect(delayPanLFODepthSlider, SIGNAL(valueChanged(int)), this,
 	  SLOT(setDelayPanLFODepth(int)));
   connect(delayPanLFODepthFloatentry, SIGNAL(valueChanged(double, int)), this,
