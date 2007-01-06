@@ -84,6 +84,46 @@ void DeicsOnze::initPluginChorus(Plugin* pluginChorus) {
   _gui->writeEvent(evSysex);
 }
 
+void DeicsOnze::initPluginDelay(Plugin* pluginDelay) {
+  if(_pluginIDelay) delete(_pluginIDelay);
+  _pluginIDelay = new PluginI(NULL);
+
+  _pluginIDelay->initPluginInstance(pluginDelay, 2);
+
+  for(int i = 0; i < pluginDelay->parameter(); i++) {
+    Ctrl* c = new Ctrl();
+    c->setCurVal((float)pluginDelay->defaultValue(i));
+    _pluginIDelay->setControllerList(c);
+    //setChorusParam(i, pluginDelay->defaultValue(i));
+  }
+  setDelayDryWet(255);
+  
+  char dataDelayTime[2];
+  dataDelayTime[0] = SYSEX_DELAYTIME;
+  dataDelayTime[1] = (unsigned char)getDelayTime();
+  MidiEvent evSysexDelayTime(0,ME_SYSEX,
+			     (const unsigned char*)dataDelayTime, 2);
+  _gui->writeEvent(evSysexDelayTime);
+  char dataDelayFeedback[2];
+  dataDelayFeedback[0] = SYSEX_DELAYFEEDBACK;
+  dataDelayFeedback[1] = (unsigned char)getDelayFeedback();
+  MidiEvent evSysexDelayFeedback(0,ME_SYSEX,
+				 (const unsigned char*)dataDelayFeedback, 2);
+  _gui->writeEvent(evSysexDelayFeedback);
+  char dataDelayLFOFreq[2];
+  dataDelayLFOFreq[0] = SYSEX_DELAYLFOFREQ;
+  dataDelayLFOFreq[1] = (unsigned char)getDelayLFOFreq();
+  MidiEvent evSysexDelayLFOFreq(0,ME_SYSEX,
+				(const unsigned char*)dataDelayLFOFreq, 2);
+  _gui->writeEvent(evSysexDelayLFOFreq);
+  char dataDelayLFODepth[2];
+  dataDelayLFODepth[0] = SYSEX_DELAYLFODEPTH;
+  dataDelayLFODepth[1] = (unsigned char)getDelayLFODepth();
+  MidiEvent evSysexDelayLFODepth(0,ME_SYSEX,
+				 (const unsigned char*)dataDelayLFODepth, 2);
+  _gui->writeEvent(evSysexDelayLFODepth); 
+}
+
 void DeicsOnze::setReverbParam(int index, double val) {
   _pluginIReverb->controller(index)->setCurVal((float)val);
 }
@@ -290,7 +330,7 @@ void DeicsOnzeGui::setReverbCheckBox(double v, int i) {
 //of the parameter because it sends a double and does not
 //change any thing
 void DeicsOnzeGui::setChorusCheckBox(double v, int i) {
- float f = (float)v;
+  float f = (float)v;
   unsigned char* message = new unsigned char[2+sizeof(float)];
   message[0]=SYSEX_CHORUSPARAM;
   if(i<256) {
@@ -354,4 +394,44 @@ void DeicsOnzeGui::updateChorusFloatEntry(double v, int i) {
     _chorusFloatEntryVector[i]->setValue(v);
     _chorusFloatEntryVector[i]->blockSignals(false);
   }
+}
+
+//-------------------------------------------------------------
+// set Delay
+//-------------------------------------------------------------
+void DeicsOnze::setDelayTime(int val) {
+  float res = MINDELAYTIME + (MAXDELAYTIME - MINDELAYTIME)*((float)val/255.0);
+  _pluginIDelay->controller(0)->setCurVal(res);
+}
+int DeicsOnze::getDelayTime() {
+  float dtf = _pluginIDelay->controller(0)->curVal().f;
+  return (int)(((dtf - MINDELAYTIME) / (MAXDELAYTIME - MINDELAYTIME))*255.0);
+}
+void DeicsOnze::setDelayFeedback(int val) {
+  float res = (float)(val - 128)/128.0;
+  _pluginIDelay->controller(1)->setCurVal(res);
+}
+int DeicsOnze::getDelayFeedback() {
+  float dtf = _pluginIDelay->controller(1)->curVal().f;
+  return (int)(dtf*128.0+128.0);
+}
+void DeicsOnze::setDelayLFOFreq(int val) {
+  float res = MINFREQ + (MAXFREQ - MINFREQ)*((float)val/255.0);
+  _pluginIDelay->controller(2)->setCurVal(res);
+}
+int DeicsOnze::getDelayLFOFreq() {
+  float dtf = _pluginIDelay->controller(2)->curVal().f;
+  return (int)(((dtf - MINFREQ) / (MAXFREQ - MINFREQ))*255.0);
+}
+void DeicsOnze::setDelayLFODepth(int val) {
+  float res = (float)val/255.0;
+  _pluginIDelay->controller(3)->setCurVal(res);  
+}
+int DeicsOnze::getDelayLFODepth() {
+  float dtd = _pluginIDelay->controller(3)->curVal().f;
+  return (int)(dtd*255.0);
+}
+void DeicsOnze::setDelayDryWet(int val) {
+  float res = (float)val/255.0;
+  _pluginIDelay->controller(4)->setCurVal(res);
 }

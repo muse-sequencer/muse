@@ -149,6 +149,13 @@
 #define SYSEX_BUILDGUICHORUS 85
 #define SYSEX_FILTER 90
 #define FILTERSTR "Filter"
+#define SYSEX_DELAYACTIV 91
+#define SYSEX_DELAYRETURN 92
+#define SYSEX_DELAYTIME 93
+#define SYSEX_DELAYFEEDBACK 94
+#define SYSEX_DELAYLFOFREQ 95
+#define SYSEX_DELAYLFODEPTH 96
+
 //REVERB PARAMETERS
 
 #define DEFAULTVOL 200
@@ -165,7 +172,8 @@ enum {
   NUM_CHANNEL_RELEASE = NUM_CHANNEL_ATTACK + NBRCHANNELS + 1,
   NUM_CHANNEL_REVERB = NUM_CHANNEL_RELEASE + NBRCHANNELS + 1,
   NUM_CHANNEL_CHORUS = NUM_CHANNEL_REVERB + NBRCHANNELS + 1,  
-  NUM_CURRENTPROG = NUM_CHANNEL_CHORUS + NBRCHANNELS + 1,
+  NUM_CHANNEL_DELAY = NUM_CHANNEL_CHORUS + NBRCHANNELS + 1,
+  NUM_CURRENTPROG = NUM_CHANNEL_DELAY + NBRCHANNELS + 1,
   NUM_CURRENTLBANK = NUM_CURRENTPROG + NBRCHANNELS + 1,
   NUM_CURRENTHBANK = NUM_CURRENTLBANK + NBRCHANNELS + 1,
   NUM_NBRVOICES  = NUM_CURRENTHBANK + NBRCHANNELS + 1,
@@ -200,7 +208,13 @@ enum {
   NUM_CHORUS_PARAM_NBR,
   NUM_CHORUS_LIB,
   NUM_CHORUS_LABEL = NUM_CHORUS_LIB + MAXSTRLENGTHFXLIB + 1,
-  NUM_CONFIGLENGTH = NUM_CHORUS_LABEL + MAXSTRLENGTHFXLABEL + 1
+  NUM_IS_DELAY_ON = NUM_CHORUS_LABEL + MAXSTRLENGTHFXLABEL + 1,
+  NUM_DELAY_RETURN,
+  NUM_DELAY_TIME,
+  NUM_DELAY_FEEDBACK,
+  NUM_DELAY_LFO_FREQ,
+  NUM_DELAY_LFO_DEPTH,
+  NUM_CONFIGLENGTH = NUM_DELAY_LFO_DEPTH + 1
 };
 
 class DeicsOnzeGui;
@@ -370,6 +384,7 @@ struct Channel {
   //FX
   float chorusAmount; //between 0.0 and 1.0
   float reverbAmount; //between 0.0 and 1.0
+  float delayAmount; //between 0.0 and 1.0
 };
 
 //---------------------------------------------------------
@@ -396,11 +411,15 @@ struct Global {
   float lastInputRightChorusSample;
   float lastInputLeftReverbSample;
   float lastInputRightReverbSample;
+  float lastInputLeftDelaySample;
+  float lastInputRightDelaySample;
   Channel channel[NBRCHANNELS];
   bool isChorusActivated;
   float chorusReturn;
   bool isReverbActivated;
   float reverbReturn;
+  bool isDelayActivated;
+  float delayReturn;
 };
 
 //---------------------------------------------------------
@@ -419,9 +438,11 @@ class DeicsOnze : public Mess {
 
  public:
   float** tempInputChorus;
-  float** tempInputReverb;
   float** tempOutputChorus;
+  float** tempInputReverb;
   float** tempOutputReverb;
+  float** tempInputDelay;
+  float** tempOutputDelay;
 
   float* getSinusWaveTable();
 
@@ -441,19 +462,31 @@ class DeicsOnze : public Mess {
   //FX
   PluginI* _pluginIReverb;
   PluginI* _pluginIChorus;
+  PluginI* _pluginIDelay;
 
   void initPluginReverb(Plugin*);
   void initPluginChorus(Plugin*);
+  void initPluginDelay(Plugin*);
   
   void setReverbParam(int i, double val);
-  void setChorusParam(int i, double val);
   double getReverbParam(int i);
+  void setChorusParam(int i, double val);
   double getChorusParam(int i);
+  void setDelayTime(int val); //0-255
+  void setDelayFeedback(int val); //0-255
+  void setDelayLFOFreq(int val); //0-255
+  void setDelayLFODepth(int val); //0-255
+  void setDelayDryWet(int val); //0-255
+  int getDelayTime();
+  int getDelayFeedback();
+  int getDelayLFOFreq();
+  int getDelayLFODepth();
 
   //Filter
   LowFilter* _dryFilter;
   LowFilter* _chorusFilter;
   LowFilter* _reverbFilter;
+  LowFilter* _delayFilter;
 
   mutable MidiPatch _patch;
   mutable int _numPatchProg; //used by getPatchInfo
@@ -507,8 +540,10 @@ class DeicsOnze : public Mess {
   void setChannelRelease(int c, int r);
   void setChannelReverb(int c, int r);
   void setChannelChorus(int c, int val);
+  void setChannelDelay(int c, int val);
   void setChorusReturn(int val);
   void setReverbReturn(int val);
+  void setDelayReturn(int val);
   bool getChannelEnable(int c) const;
   int getNbrVoices(int c) const;
   int getMasterVol(void) const;
@@ -522,8 +557,10 @@ class DeicsOnze : public Mess {
   int getChannelRelease(int c) const;
   int getChannelReverb(int c) const;
   int getChannelChorus(int c) const;
+  int getChannelDelay(int c) const;
   int getChorusReturn(void) const;
   int getReverbReturn(void) const;
+  int getDelayReturn(void) const;
   void setPitchBendCoef(int c, int val);
   void setModulation(int c, int val); //TODO check between setChannelModulation
   void setSustain(int c, int val);

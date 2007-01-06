@@ -31,6 +31,7 @@
 #define __DEICSONZEGUI_H
 
 #include "deicsonze.h"
+
 #include "deicsonzepreset.h"
 #include "ui_deicsonzegui.h"
 #include "libsynti/gui.h"
@@ -332,6 +333,18 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setWaveForm2(int);
     void setWaveForm3(int);
     void setWaveForm4(int);
+    //Delay
+    void setActivDelay(bool);
+    void setDelayReturn(int);
+    void setChannelDelay(int);
+    void setDelayTime(int);
+    void setDelayTime(double);
+    void setDelayFeedback(int);
+    void setDelayFeedback(double);
+    void setDelayPanLFOFreq(int);
+    void setDelayPanLFOFreq(double);
+    void setDelayPanLFODepth(int);
+    void setDelayPanLFODepth(double);
     //category subcategory preset
     void setSet(void); //display the set, that is the category list
     void setCategory(Category*);
@@ -365,6 +378,13 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void updateReverbReturn(int r);
     void updateLadspaReverbLineEdit(QString s);
     void updateLadspaChorusLineEdit(QString s);
+    void updateDelayActiv(bool a);
+    void updateChannelDelay(int r);
+    void updateDelayReturn(int r);
+    void updateDelayPanLFOFreq(int plf);
+    void updateDelayTime(int dt);
+    void updateDelayFeedback(int df);
+    void updateDelayPanLFODepth(int dpd);
     void addPluginCheckBox(int index, QString text, bool toggled,
 			   QWidget* parent, QGridLayout* grid, bool isReverb);
     void addPluginIntSlider(int index, QString text, double min, double max,
@@ -414,7 +434,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void updateAtAmplitude(int val);
     void updateAtPitchBias(int val);
     void updateAtEgBias(int val);
-    void updateReverbRate(int val);
+    //void updateReverbRate(int val);
     //update envelope
     void updateAR(int op, int val);
     void updateD1R(int op, int val);
@@ -452,7 +472,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void updateSHFT(int op, int val);
     void updateChannelDetune(int val);
     void updateChannelDetuneKnob(int val);
-    void updateChannelDetuneSlider(int val);
+    //void updateChannelDetuneSlider(int val);
     void updateChannelVolume(int val);
     void updateCategoryName(QString cn, bool enable);
     void updateSubcategoryName(QString sn, bool enable);

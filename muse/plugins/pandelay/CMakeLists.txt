@@ -18,5 +18,16 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-subdirs( freeverb doublechorus pandelay )
+add_library ( pandelay SHARED
+      pandelay.cpp ladspapandelay.cpp pandelaymodel.cpp
+      )
 
+# tell cmake to name the target pandelay.so instead of
+# libpandelay.so
+#
+set_target_properties (pandelay
+      PROPERTIES PREFIX ""
+      #COMPILE_FLAGS "-O3"
+      )
+
+install_targets ( /lib/${MusE_INSTALL_NAME}/plugins pandelay)

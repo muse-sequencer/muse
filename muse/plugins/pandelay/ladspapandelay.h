@@ -1,6 +1,6 @@
 //===========================================================================
 //
-//    doublechorusmodel
+//    ladspapandelay
 //
 //    Version 0.0.1
 //
@@ -27,44 +27,27 @@
 // 02111-1307, USA or point your web browser to http://www.gnu.org.
 //===========================================================================
 
-#ifndef __DOUBLECHORUSMODEL_H
-#define __DOUBLECHORUSMODEL_H
+#ifndef __LADSPAPANDELAY_H
+#define __LADSPAPANDELAY_H
 
-#include "simplechorusmodel.h"
+#include "pandelaymodel.h"
 #include "../../muse/ladspa.h"
 
-#define NBRPARAM 7
+#define NBRPARAM 5
 
-class SimpleChorusModel;
+class LADSPAPanDelay : public PanDelayModel {
+ private:
 
-class DoubleChorusModel {
-  SimpleChorusModel* _simpleChorus1;
-  SimpleChorusModel* _simpleChorus2;
-
-  float _dryWet; //0.0 : dry, 1.0 : wet
-  
  public:
+  LADSPAPanDelay(unsigned long samplerate);
+  ~LADSPAPanDelay();
+
   LADSPA_Data* port[NBRPARAM + 4];
   float param[NBRPARAM];
-  
-  DoubleChorusModel(unsigned long samplerate);
-  ~DoubleChorusModel();
+
+  void updateParameters();
   void processMix(long numsamples);
   void processReplace(long numsamples);
-  void setPan1(float value);
-  void setLFOFreq1(float value);
-  void setDepth1(float value);
-  void setPan2(float value);
-  void setLFOFreq2(float value);
-  void setDepth2(float value);
-  void setDryWet(float value);
-  float	getPan1();
-  float	getLFOFreq1();
-  float	getDepth1();
-  float	getPan2();
-  float	getLFOFreq2();
-  float	getDepth2();
-  float getDryWet();
 
   void activate();
 };

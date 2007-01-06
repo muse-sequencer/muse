@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>740</width>
-    <height>590</height>
+    <width>672</width>
+    <height>522</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -26,233 +26,6 @@
    <property name="spacing" >
     <number>6</number>
    </property>
-   <item rowspan="3" row="0" column="4" >
-    <widget class="QGroupBox" name="channelCtrlGroupBox" >
-     <property name="minimumSize" >
-      <size>
-       <width>96</width>
-       <height>16</height>
-      </size>
-     </property>
-     <property name="title" >
-      <string>Channel Ctrl</string>
-     </property>
-     <layout class="QGridLayout" >
-      <property name="margin" >
-       <number>9</number>
-      </property>
-      <property name="spacing" >
-       <number>6</number>
-      </property>
-      <item row="2" column="0" >
-       <widget class="Awl::VolKnob" name="channelPanKnob" >
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-        <property name="minValue" >
-         <double>0.000000000000000</double>
-        </property>
-        <property name="maxValue" >
-         <double>1.000000000000000</double>
-        </property>
-        <property name="lineStep" >
-         <double>0.100000000000000</double>
-        </property>
-        <property name="pageStep" >
-         <double>0.200000000000000</double>
-        </property>
-        <property name="log" >
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="0" >
-       <widget class="QLabel" name="releaseLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Release</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="12" column="0" >
-       <widget class="Awl::Knob" name="releaseKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="11" column="0" >
-       <widget class="QLabel" name="attackTimeLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Attack</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="0" >
-       <widget class="Awl::Knob" name="attackKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0" >
-       <widget class="QLabel" name="detuneLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Detune</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0" >
-       <widget class="Awl::Knob" name="detuneKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0" >
-       <widget class="QLabel" name="brightnessLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Brightness</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" >
-       <widget class="Awl::Knob" name="brightnessKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0" >
-       <widget class="QLabel" name="modulationLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Modulation</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" >
-       <widget class="Awl::Knob" name="modulationKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" >
-       <widget class="QLabel" name="channelPanLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Pan</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" >
-       <widget class="QLabel" name="channelVolumeLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Volume</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" >
-       <widget class="Awl::Knob" name="channelVolumeKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-        <property name="maxValue" >
-         <double>1.000000000000000</double>
-        </property>
-        <property name="lineStep" >
-         <double>0.100000000000000</double>
-        </property>
-        <property name="pageStep" >
-         <double>0.200000000000000</double>
-        </property>
-        <property name="scaleSize" >
-         <number>270</number>
-        </property>
-        <property name="markSize" >
-         <number>6</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="2" column="0" colspan="4" >
     <widget class="QTabWidget" name="deicsOnzeTabWidget" >
      <property name="sizePolicy" >
@@ -4185,7 +3958,298 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item row="0" column="0" colspan="3" >
+       <item row="2" column="0" colspan="2" >
+        <widget class="QGroupBox" name="delayTimeGroupBox" >
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Delay Time (ms) </string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="1" >
+           <widget class="Awl::FloatEntry" name="delayTimeFloatentry" >
+            <property name="maximumSize" >
+             <size>
+              <width>48</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="minValue" >
+             <double>0.010000000000000</double>
+            </property>
+            <property name="maxValue" >
+             <double>2.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QSlider" name="delayTimeSlider" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="whatsThis" >
+             <string>Channel Chorus</string>
+            </property>
+            <property name="maximum" >
+             <number>255</number>
+            </property>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="3" colspan="2" >
+        <widget class="QGroupBox" name="delayPanDepthGroupBox" >
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Delay Pan Depth</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="1" >
+           <widget class="Awl::FloatEntry" name="delayPanLFODepthFloatentry" >
+            <property name="maximumSize" >
+             <size>
+              <width>48</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QSlider" name="delayPanLFODepthSlider" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="whatsThis" >
+             <string>Channel Chorus</string>
+            </property>
+            <property name="maximum" >
+             <number>255</number>
+            </property>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="2" >
+        <widget class="QGroupBox" name="delayFeedbackGroupBox" >
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Delay Feedback</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="1" >
+           <widget class="Awl::FloatEntry" name="delayFeedbackFloatentry" >
+            <property name="maximumSize" >
+             <size>
+              <width>48</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="minValue" >
+             <double>-1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QSlider" name="delayFeedbackSlider" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="whatsThis" >
+             <string>Channel Chorus</string>
+            </property>
+            <property name="maximum" >
+             <number>255</number>
+            </property>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="3" colspan="2" >
+        <widget class="QGroupBox" name="delayPanLFOGroupBox" >
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Delay Pan LFO Freq</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" >
+           <widget class="QSlider" name="delayPanLFOFreqSlider" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="whatsThis" >
+             <string>Channel Chorus</string>
+            </property>
+            <property name="maximum" >
+             <number>255</number>
+            </property>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="Awl::FloatEntry" name="delayPanLFOFreqFloatentry" >
+            <property name="maximumSize" >
+             <size>
+              <width>48</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="minValue" >
+             <double>0.100000000000000</double>
+            </property>
+            <property name="maxValue" >
+             <double>10.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2" >
+        <widget class="QGroupBox" name="delayReturnGroupBox" >
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Delay On/Off, Return Level</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" >
+           <widget class="QCheckBox" name="delayActivCheckBox" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="text" >
+             <string>On</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QSlider" name="delayReturnSlider" >
+            <property name="maximum" >
+             <number>255</number>
+            </property>
+            <property name="value" >
+             <number>128</number>
+            </property>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="2" >
+        <widget class="QGroupBox" name="channelDelayGroupBox" >
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Delay Ch Send Level </string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="1" >
+           <widget class="QSpinBox" name="chDelaySpinBox" >
+            <property name="maximum" >
+             <number>127</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QSlider" name="chDelaySlider" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="whatsThis" >
+             <string>Channel Chorus</string>
+            </property>
+            <property name="maximum" >
+             <number>127</number>
+            </property>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="5" >
         <widget class="QTabWidget" name="controlTabWidget" >
          <property name="currentIndex" >
           <number>0</number>
@@ -4868,139 +4932,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
          </widget>
         </widget>
        </item>
-       <item row="1" column="0" colspan="3" >
-        <widget class="QGroupBox" name="detuneGroupBox" >
-         <property name="title" >
-          <string>Detune</string>
-         </property>
-         <layout class="QHBoxLayout" >
-          <property name="margin" >
-           <number>10</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QSlider" name="channelDetuneSlider" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="toolTip" >
-             <string>Detune</string>
-            </property>
-            <property name="minimum" >
-             <number>-63</number>
-            </property>
-            <property name="maximum" >
-             <number>63</number>
-            </property>
-            <property name="pageStep" >
-             <number>1</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="channelDetuneSpinBox" >
-            <property name="toolTip" >
-             <string>Detune</string>
-            </property>
-            <property name="maximum" >
-             <number>63</number>
-            </property>
-            <property name="minimum" >
-             <number>-61</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="0" >
-        <widget class="QGroupBox" name="footSWGroupBox" >
-         <property name="title" >
-          <string>Foot Switch</string>
-         </property>
-         <layout class="QHBoxLayout" >
-          <property name="margin" >
-           <number>10</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QComboBox" name="footSWComboBox" >
-            <property name="enabled" >
-             <bool>false</bool>
-            </property>
-            <item>
-             <property name="text" >
-              <string>Sustain</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Portamento</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="1" >
-        <widget class="QGroupBox" name="pitchBendRangeGroupBox" >
-         <property name="title" >
-          <string>Pitch Bend Range</string>
-         </property>
-         <layout class="QHBoxLayout" >
-          <property name="margin" >
-           <number>10</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QSlider" name="pitchBendRangeSlider" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="toolTip" >
-             <string>Pitch Bend Range</string>
-            </property>
-            <property name="minimum" >
-             <number>0</number>
-            </property>
-            <property name="maximum" >
-             <number>12</number>
-            </property>
-            <property name="pageStep" >
-             <number>1</number>
-            </property>
-            <property name="value" >
-             <number>0</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="pitchBendRangeSpinBox" >
-            <property name="toolTip" >
-             <string>Pitch Bend Range</string>
-            </property>
-            <property name="maximum" >
-             <number>12</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="3" column="1" colspan="2" >
+       <item row="3" column="1" colspan="3" >
         <widget class="QGroupBox" name="portamentoGroupBox" >
          <property name="title" >
           <string>Potamento</string>
@@ -5092,13 +5024,10 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
          </layout>
         </widget>
        </item>
-       <item row="2" column="2" >
-        <widget class="QGroupBox" name="reverbGroupBox" >
-         <property name="enabled" >
-          <bool>false</bool>
-         </property>
+       <item row="3" column="4" >
+        <widget class="QGroupBox" name="pitchBendRangeGroupBox" >
          <property name="title" >
-          <string>Reverb</string>
+          <string>Pitch Bend Range</string>
          </property>
          <layout class="QHBoxLayout" >
           <property name="margin" >
@@ -5108,21 +5037,24 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
            <number>6</number>
           </property>
           <item>
-           <widget class="QSlider" name="reverbSlider" >
+           <widget class="QSlider" name="pitchBendRangeSlider" >
             <property name="cursor" >
              <cursor>13</cursor>
             </property>
             <property name="toolTip" >
-             <string>Detune</string>
+             <string>Pitch Bend Range</string>
             </property>
             <property name="minimum" >
              <number>0</number>
             </property>
             <property name="maximum" >
-             <number>7</number>
+             <number>12</number>
             </property>
             <property name="pageStep" >
              <number>1</number>
+            </property>
+            <property name="value" >
+             <number>0</number>
             </property>
             <property name="orientation" >
              <enum>Qt::Horizontal</enum>
@@ -5130,15 +5062,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
            </widget>
           </item>
           <item>
-           <widget class="QSpinBox" name="reverbSpinBox" >
+           <widget class="QSpinBox" name="pitchBendRangeSpinBox" >
             <property name="toolTip" >
-             <string>Detune</string>
+             <string>Pitch Bend Range</string>
             </property>
             <property name="maximum" >
-             <number>7</number>
-            </property>
-            <property name="minimum" >
-             <number>0</number>
+             <number>12</number>
             </property>
            </widget>
           </item>
@@ -5919,6 +5848,233 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
      </widget>
     </widget>
    </item>
+   <item rowspan="3" row="0" column="4" >
+    <widget class="QGroupBox" name="channelCtrlGroupBox" >
+     <property name="minimumSize" >
+      <size>
+       <width>96</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="title" >
+      <string>Channel Ctrl</string>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="2" column="0" >
+       <widget class="Awl::VolKnob" name="channelPanKnob" >
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+        <property name="minValue" >
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maxValue" >
+         <double>1.000000000000000</double>
+        </property>
+        <property name="lineStep" >
+         <double>0.100000000000000</double>
+        </property>
+        <property name="pageStep" >
+         <double>0.200000000000000</double>
+        </property>
+        <property name="log" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="0" >
+       <widget class="QLabel" name="releaseLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Release</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0" >
+       <widget class="Awl::Knob" name="releaseKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0" >
+       <widget class="QLabel" name="attackTimeLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Attack</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0" >
+       <widget class="Awl::Knob" name="attackKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0" >
+       <widget class="QLabel" name="detuneLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Detune</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0" >
+       <widget class="Awl::Knob" name="detuneKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0" >
+       <widget class="QLabel" name="brightnessLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Brightness</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" >
+       <widget class="Awl::Knob" name="brightnessKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" >
+       <widget class="QLabel" name="modulationLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Modulation</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" >
+       <widget class="Awl::Knob" name="modulationKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" >
+       <widget class="QLabel" name="channelPanLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Pan</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="channelVolumeLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Volume</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="Awl::Knob" name="channelVolumeKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+        <property name="maxValue" >
+         <double>1.000000000000000</double>
+        </property>
+        <property name="lineStep" >
+         <double>0.100000000000000</double>
+        </property>
+        <property name="pageStep" >
+         <double>0.200000000000000</double>
+        </property>
+        <property name="scaleSize" >
+         <number>270</number>
+        </property>
+        <property name="markSize" >
+         <number>6</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item rowspan="2" row="0" column="1" >
     <widget class="Awl::VolKnob" name="masterVolKnob" >
      <property name="minimumSize" >
@@ -5928,7 +6084,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
       </size>
      </property>
      <property name="value" >
-      <double>-28.009242824902255</double>
+      <double>-31.287818861687722</double>
      </property>
      <property name="minValue" >
       <double>0.000000000000000</double>
@@ -7037,14 +7193,19 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
  <layoutdefault spacing="6" margin="11" />
  <customwidgets>
   <customwidget>
-   <class>Awl::VolKnob</class>
-   <extends>Awl::Knob</extends>
-   <header>awl/volknob.h</header>
-  </customwidget>
-  <customwidget>
    <class>Awl::Knob</class>
    <extends>QWidget</extends>
    <header>awl/knob.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Awl::FloatEntry</class>
+   <extends>QLineEdit</extends>
+   <header>awl/floatentry.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Awl::VolKnob</class>
+   <extends>Awl::Knob</extends>
+   <header>awl/volknob.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -7177,12 +7338,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>445</x>
-     <y>170</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>606</x>
-     <y>173</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7193,12 +7354,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>606</x>
-     <y>173</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>445</x>
-     <y>170</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7209,12 +7370,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>252</x>
-     <y>270</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>304</x>
-     <y>273</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7225,12 +7386,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>304</x>
-     <y>273</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>252</x>
-     <y>270</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7241,12 +7402,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>252</x>
-     <y>301</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>304</x>
-     <y>304</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7257,12 +7418,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>304</x>
-     <y>304</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>252</x>
-     <y>301</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7273,12 +7434,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>304</x>
-     <y>335</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>194</x>
-     <y>332</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7289,12 +7450,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>304</x>
-     <y>366</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>194</x>
-     <y>363</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7305,12 +7466,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>194</x>
-     <y>394</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>304</x>
-     <y>397</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7321,12 +7482,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>304</x>
-     <y>397</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>194</x>
-     <y>394</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7337,12 +7498,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>194</x>
-     <y>425</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>304</x>
-     <y>428</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7353,12 +7514,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>304</x>
-     <y>428</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>194</x>
-     <y>425</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -7369,12 +7530,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>194</x>
-     <y>332</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>304</x>
-     <y>335</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -8425,12 +8586,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>240</x>
-     <y>207</y>
+     <x>262</x>
+     <y>163</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>607</x>
-     <y>210</y>
+     <x>515</x>
+     <y>166</y>
     </hint>
    </hints>
   </connection>
@@ -8441,12 +8602,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>607</x>
-     <y>210</y>
+     <x>515</x>
+     <y>166</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>240</x>
-     <y>207</y>
+     <x>262</x>
+     <y>163</y>
     </hint>
    </hints>
   </connection>
@@ -8457,12 +8618,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>240</x>
-     <y>329</y>
+     <x>262</x>
+     <y>209</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>596</x>
-     <y>332</y>
+     <x>504</x>
+     <y>212</y>
     </hint>
    </hints>
   </connection>
@@ -8473,12 +8634,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>596</x>
-     <y>332</y>
+     <x>504</x>
+     <y>212</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>240</x>
-     <y>329</y>
+     <x>262</x>
+     <y>209</y>
     </hint>
    </hints>
   </connection>
@@ -8489,12 +8650,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>596</x>
-     <y>439</y>
+     <x>504</x>
+     <y>258</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>240</x>
-     <y>442</y>
+     <x>262</x>
+     <y>255</y>
     </hint>
    </hints>
   </connection>
@@ -8505,44 +8666,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>240</x>
-     <y>442</y>
+     <x>262</x>
+     <y>255</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>596</x>
-     <y>439</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>channelDetuneSpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>channelDetuneSlider</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
-    </hint>
-    <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>channelDetuneSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>channelDetuneSpinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
-    </hint>
-    <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>504</x>
+     <y>258</y>
     </hint>
    </hints>
   </connection>
@@ -8553,12 +8682,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>485</x>
+     <y>484</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>537</x>
+     <y>487</y>
     </hint>
    </hints>
   </connection>
@@ -8569,44 +8698,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>537</x>
+     <y>487</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>reverbSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>reverbSpinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
-    </hint>
-    <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>reverbSpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>reverbSlider</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
-    </hint>
-    <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>485</x>
+     <y>484</y>
     </hint>
    </hints>
   </connection>
@@ -8617,12 +8714,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>329</x>
+     <y>484</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>381</x>
+     <y>487</y>
     </hint>
    </hints>
   </connection>
@@ -8633,12 +8730,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>381</x>
+     <y>487</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>329</x>
+     <y>484</y>
     </hint>
    </hints>
   </connection>
@@ -8649,12 +8746,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8665,12 +8762,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8681,12 +8778,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8697,12 +8794,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8713,12 +8810,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8729,12 +8826,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8745,12 +8842,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8761,12 +8858,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8777,12 +8874,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8793,12 +8890,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8809,12 +8906,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8825,12 +8922,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8841,12 +8938,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8857,12 +8954,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8873,12 +8970,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8889,12 +8986,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8905,12 +9002,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8921,12 +9018,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8937,12 +9034,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8953,12 +9050,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8969,12 +9066,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -8985,12 +9082,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>121</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -9017,12 +9114,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>486</x>
+     <y>150</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>538</x>
+     <y>153</y>
     </hint>
    </hints>
   </connection>
@@ -9033,12 +9130,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>538</x>
+     <y>153</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>486</x>
+     <y>150</y>
     </hint>
    </hints>
   </connection>
@@ -9081,12 +9178,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>203</x>
-     <y>163</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>287</x>
-     <y>171</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -9097,12 +9194,44 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>270</x>
-     <y>156</y>
+     <x>110</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>169</x>
-     <y>157</y>
+     <x>110</x>
+     <y>115</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chDelaySlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>chDelaySpinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>302</x>
+     <y>339</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>344</x>
+     <y>343</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chDelaySpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>chDelaySlider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>346</x>
+     <y>329</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>278</x>
+     <y>329</y>
     </hint>
    </hints>
   </connection>

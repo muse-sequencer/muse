@@ -89,15 +89,21 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   tempInputChorus = (float**) malloc(sizeof(float*)*NBRFXINPUTS);
   for(int i = 0; i < NBRFXINPUTS; i++)
     tempInputChorus[i] = (float*) malloc(sizeof(float*)*MAXFXBUFFERSIZE);
-  tempInputReverb = (float**) malloc(sizeof(float*)*NBRFXINPUTS);
-  for(int i = 0; i < NBRFXINPUTS; i++)
-    tempInputReverb[i] = (float*) malloc(sizeof(float*)*MAXFXBUFFERSIZE);
   tempOutputChorus = (float**) malloc(sizeof(float*)*NBRFXOUTPUTS);
   for(int i = 0; i < NBRFXOUTPUTS; i++)
     tempOutputChorus[i] = (float*) malloc(sizeof(float*)*MAXFXBUFFERSIZE);
+  tempInputReverb = (float**) malloc(sizeof(float*)*NBRFXINPUTS);
+  for(int i = 0; i < NBRFXINPUTS; i++)
+    tempInputReverb[i] = (float*) malloc(sizeof(float*)*MAXFXBUFFERSIZE);
   tempOutputReverb = (float**) malloc(sizeof(float*)*NBRFXOUTPUTS);
   for(int i = 0; i < NBRFXOUTPUTS; i++)
     tempOutputReverb[i] = (float*) malloc(sizeof(float*)*MAXFXBUFFERSIZE);
+  tempInputDelay = (float**) malloc(sizeof(float*)*NBRFXINPUTS);
+  for(int i = 0; i < NBRFXINPUTS; i++)
+    tempInputDelay[i] = (float*) malloc(sizeof(float*)*MAXFXBUFFERSIZE);
+  tempOutputDelay = (float**) malloc(sizeof(float*)*NBRFXOUTPUTS);
+  for(int i = 0; i < NBRFXOUTPUTS; i++)
+    tempOutputDelay[i] = (float*) malloc(sizeof(float*)*MAXFXBUFFERSIZE);
 
   srand(time(0));   // initialize random number generator
 
@@ -123,14 +129,17 @@ DeicsOnze::DeicsOnze() : Mess(2) {
 
   //FX
   _pluginIReverb = NULL;
-  _pluginIChorus = NULL;
   initPluginReverb(plugins.find("freeverb", "freeverb1"));
+  _pluginIChorus = NULL;
   initPluginChorus(plugins.find("doublechorus", "doublechorus1"));
+  _pluginIDelay = NULL;
+  initPluginDelay(plugins.find("pandelay", "pandelay"));
 
   //Filter
   _dryFilter = new LowFilter();
   _chorusFilter = new LowFilter();
   _reverbFilter = new LowFilter();
+  _delayFilter = new LowFilter();
 
   //Load configuration
   QString defaultConf = (QString(getenv("HOME")) + QString("/." DEICSONZESTR ".dco"));
@@ -173,6 +182,13 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   dataChorusRet[1]=(unsigned char)getChorusReturn();
   MidiEvent evChorusRet(0,ME_SYSEX,(const unsigned char*)dataChorusRet, 2);
   _gui->writeEvent(evChorusRet);    
+  unsigned char *dataDelayRet = new unsigned char[2];
+  dataDelayRet[0]=SYSEX_DELAYRETURN;
+  dataDelayRet[1]=(unsigned char)getDelayReturn();
+  //printf("DELAY RET = %d, REVERB RET = %d\n",
+  //getDelayReturn(), getReverbReturn());
+  MidiEvent evDelayRet(0,ME_SYSEX,(const unsigned char*)dataDelayRet, 2);
+  _gui->writeEvent(evDelayRet);    
   //update font size
   unsigned char *dataFontSize = new unsigned char[2];
   dataFontSize[0]=SYSEX_FONTSIZE;
@@ -199,12 +215,16 @@ DeicsOnze::~DeicsOnze()
   //dealloc temp buffers chorus and reverb
   for(int i = 0; i < NBRFXINPUTS; i++) free(tempInputChorus[i]);
   free(tempInputChorus);
-  for(int i = 0; i < NBRFXINPUTS; i++) free(tempInputReverb[i]);
-  free(tempInputReverb);
   for(int i = 0; i < NBRFXOUTPUTS; i++) free(tempOutputChorus[i]);
   free(tempOutputChorus);
+  for(int i = 0; i < NBRFXINPUTS; i++) free(tempInputReverb[i]);
+  free(tempInputReverb);
   for(int i = 0; i < NBRFXOUTPUTS; i++) free(tempOutputReverb[i]);
   free(tempOutputReverb);
+  for(int i = 0; i < NBRFXINPUTS; i++) free(tempInputDelay[i]);
+  free(tempInputDelay);
+  for(int i = 0; i < NBRFXOUTPUTS; i++) free(tempOutputDelay[i]);
+  free(tempOutputDelay);
 }
 
 //---------------------------------------------------------
@@ -248,6 +268,7 @@ void DeicsOnze::setSampleRate(int sr) {
   _dryFilter->setSamplerate(sr);
   _chorusFilter->setSamplerate(sr);
   _reverbFilter->setSamplerate(sr);
+  _delayFilter->setSamplerate(sr);
   setQuality(_global.quality);
 }
 
@@ -518,6 +539,8 @@ void DeicsOnze::initGlobal() {
   _global.chorusReturn = level2amp(INITFXRETURN);
   _global.isReverbActivated = false;
   _global.reverbReturn = level2amp(INITFXRETURN);
+  _global.isDelayActivated = false;
+  _global.delayReturn = level2amp(INITFXRETURN);
   initChannels();
 }
 
@@ -542,6 +565,7 @@ void DeicsOnze::initChannel(int c) {
   _global.channel[c].isLastNote = false;
   _global.channel[c].chorusAmount = 0.0;
   _global.channel[c].reverbAmount = 0.0;
+  _global.channel[c].delayAmount = 0.0;
   applyChannelAmp(c);
   initVoices(c);
 }
@@ -748,6 +772,12 @@ void DeicsOnze::setChannelReverb(int c, int r) {
 void DeicsOnze::setChannelChorus(int c, int val) {
   _global.channel[c].chorusAmount = (float)lowlevel2amp(val);
 }
+//----------------------------------------------------------------
+// setChannelDelay
+//----------------------------------------------------------------
+void DeicsOnze::setChannelDelay(int c, int val) {
+  _global.channel[c].delayAmount = (float)lowlevel2amp(val);
+}
 
 //----------------------------------------------------------------
 // setChorusReturn
@@ -761,6 +791,13 @@ void DeicsOnze::setChorusReturn(int val) {
 //----------------------------------------------------------------
 void DeicsOnze::setReverbReturn(int val) {
   _global.reverbReturn = 2.0*(float)level2amp(val); //beware MAXFXRETURN==255
+}
+
+//----------------------------------------------------------------
+// setDelayReturn
+//----------------------------------------------------------------
+void DeicsOnze::setDelayReturn(int val) {
+  _global.delayReturn = 2.0*(float)level2amp(val); //beware MAXFXRETURN==255
 }
 
 //----------------------------------------------------------------
@@ -845,6 +882,12 @@ int DeicsOnze::getChannelChorus(int c) const {
   return(amp2lowlevel(_global.channel[c].chorusAmount));
 }
 //----------------------------------------------------------------
+// getChannelDelay
+//----------------------------------------------------------------
+int DeicsOnze::getChannelDelay(int c) const {
+  return(amp2lowlevel(_global.channel[c].delayAmount));
+}
+//----------------------------------------------------------------
 // getChorusReturn
 //----------------------------------------------------------------
 int DeicsOnze::getChorusReturn() const {
@@ -855,6 +898,12 @@ int DeicsOnze::getChorusReturn() const {
 //----------------------------------------------------------------
 int DeicsOnze::getReverbReturn() const {
   return(amp2level(_global.reverbReturn/2.0));
+}
+//----------------------------------------------------------------
+// getReverbReturn
+//----------------------------------------------------------------
+int DeicsOnze::getDelayReturn() const {
+  return(amp2level(_global.delayReturn/2.0));
 }
 
 //----------------------------------------------------------------
@@ -1022,6 +1071,7 @@ void DeicsOnze::setQuality(Quality q) {
   _dryFilter->setCutoff(_global.deiSampleRate/4.0);
   _reverbFilter->setCutoff(_global.deiSampleRate/4.0);
   _chorusFilter->setCutoff(_global.deiSampleRate/4.0);
+  _delayFilter->setCutoff(_global.deiSampleRate/4.0);
 }
 
 //-----------------------------------------------------------------
@@ -2238,6 +2288,7 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
     buffer[NUM_CHANNEL_RELEASE + c] = (unsigned char) getChannelRelease(c);
     buffer[NUM_CHANNEL_REVERB + c] = (unsigned char) getChannelReverb(c);
     buffer[NUM_CHANNEL_CHORUS + c] = (unsigned char) getChannelChorus(c);    
+    buffer[NUM_CHANNEL_DELAY + c] = (unsigned char) getChannelDelay(c);    
     buffer[NUM_CURRENTPROG + c] = (unsigned char) _preset[c]->prog;
     buffer[NUM_CURRENTLBANK + c] =
       (unsigned char) _preset[c]->_subcategory->_lbank;
@@ -2273,6 +2324,7 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
 	    MAXSTRLENGTHBACKGROUNDPIXPATH);
   }
   //FX
+  //reverb
   buffer[NUM_IS_REVERB_ON]=(unsigned char)_global.isReverbActivated;
   buffer[NUM_REVERB_RETURN]=(unsigned char)getReverbReturn();
   buffer[NUM_REVERB_PARAM_NBR]=
@@ -2283,6 +2335,7 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   strncpy((char*)&buffer[NUM_REVERB_LABEL],
 	  _pluginIReverb->plugin()->label().toLatin1().data(),
 	  MAXSTRLENGTHFXLABEL);
+  //chorus
   buffer[NUM_IS_CHORUS_ON]=(unsigned char)_global.isChorusActivated;
   buffer[NUM_CHORUS_RETURN]=(unsigned char)getChorusReturn();
   buffer[NUM_CHORUS_PARAM_NBR]=
@@ -2293,6 +2346,9 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   strncpy((char*)&buffer[NUM_CHORUS_LABEL],
 	  _pluginIChorus->plugin()->label().toLatin1().data(),
 	  MAXSTRLENGTHFXLABEL);
+  //delay
+  buffer[NUM_IS_DELAY_ON]=(unsigned char)_global.isDelayActivated;
+  buffer[NUM_DELAY_RETURN]=(unsigned char)getDelayReturn();
   //save FX parameters
   //reverb
   for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
@@ -2306,6 +2362,12 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
 		   + sizeof(float)*_pluginIReverb->plugin()->parameter()
 		   + sizeof(float)*i], &val, sizeof(float));
   }
+  //delay
+  buffer[NUM_DELAY_TIME] = (unsigned char)getDelayTime();
+  buffer[NUM_DELAY_FEEDBACK] = (unsigned char)getDelayFeedback();
+  buffer[NUM_DELAY_LFO_FREQ] = (unsigned char)getDelayLFOFreq();
+  buffer[NUM_DELAY_LFO_DEPTH] = (unsigned char)getDelayLFODepth();
+
   //save set data
   for(int i = NUM_CONFIGLENGTH
 	+ sizeof(float)*_pluginIReverb->plugin()->parameter()
@@ -2402,6 +2464,12 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
 	evChChorus(0, c, ME_CONTROLLER,
 		   CTRL_CHORUS_SEND, data[NUM_CHANNEL_CHORUS + c]);
       _gui->writeEvent(evChChorus);      
+      //channel delay
+      setChannelDelay(c, data[NUM_CHANNEL_DELAY + c]);
+      MidiEvent 
+	evChDelay(0, c, ME_CONTROLLER,
+		  CTRL_VARIATION_SEND, data[NUM_CHANNEL_DELAY + c]);
+      _gui->writeEvent(evChDelay);      
     }
     //load configuration
     _saveConfig = (bool)data[NUM_SAVECONFIG];
@@ -2533,6 +2601,49 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     MidiEvent evSysexBuildCho(0,ME_SYSEX,
 			      (const unsigned char*)&dataBuildCho, 1);
     _gui->writeEvent(evSysexBuildCho);
+    //delay
+    _global.isDelayActivated = (bool)data[NUM_IS_DELAY_ON];
+    unsigned char *dataDelayAct = new unsigned char[2];
+    dataDelayAct[0]=SYSEX_DELAYACTIV;
+    dataDelayAct[1]=(unsigned char)_global.isDelayActivated;
+    MidiEvent evDelayAct(0,ME_SYSEX,(const unsigned char*)dataDelayAct, 2);
+    _gui->writeEvent(evDelayAct);    
+    setDelayReturn((int)data[NUM_DELAY_RETURN]);
+    unsigned char *dataDelayRet = new unsigned char[2];
+    dataDelayRet[0]=SYSEX_DELAYRETURN;
+    dataDelayRet[1]=(unsigned char)getDelayReturn();
+    MidiEvent evDelayRet(0,ME_SYSEX,(const unsigned char*)dataDelayRet, 2);
+    _gui->writeEvent(evDelayRet);    
+    //initPluginDelay(plugins.find("pandelay", "pandelay"));
+    setDelayTime((int)data[NUM_DELAY_TIME]);
+    char dataDelayTime[2];
+    dataDelayTime[0] = SYSEX_DELAYTIME;
+    dataDelayTime[1] = (unsigned char)getDelayTime();
+    MidiEvent evSysexDelayTime(0,ME_SYSEX,
+			       (const unsigned char*)dataDelayTime, 2);
+    _gui->writeEvent(evSysexDelayTime);
+    setDelayFeedback((int)data[NUM_DELAY_FEEDBACK]);
+    char dataDelayFeedback[2];
+    dataDelayFeedback[0] = SYSEX_DELAYFEEDBACK;
+    dataDelayFeedback[1] = (unsigned char)getDelayFeedback();
+    MidiEvent evSysexDelayFeedback(0,ME_SYSEX,
+				   (const unsigned char*)dataDelayFeedback, 2);
+    _gui->writeEvent(evSysexDelayFeedback);
+    setDelayLFOFreq((int)data[NUM_DELAY_LFO_FREQ]);
+    char dataDelayLFOFreq[2];
+    dataDelayLFOFreq[0] = SYSEX_DELAYLFOFREQ;
+    dataDelayLFOFreq[1] = (unsigned char)getDelayLFOFreq();
+    MidiEvent evSysexDelayLFOFreq(0,ME_SYSEX,
+				  (const unsigned char*)dataDelayLFOFreq, 2);
+    _gui->writeEvent(evSysexDelayLFOFreq);
+    setDelayLFODepth((int)data[NUM_DELAY_LFO_DEPTH]);
+    char dataDelayLFODepth[2];
+    dataDelayLFODepth[0] = SYSEX_DELAYLFODEPTH;
+    dataDelayLFODepth[1] = (unsigned char)getDelayLFODepth();
+    MidiEvent evSysexDelayLFODepth(0,ME_SYSEX,
+				   (const unsigned char*)dataDelayLFODepth, 2);
+    _gui->writeEvent(evSysexDelayLFODepth);
+    
     //load set
     FILE* tmp;
     char* tmpname;
@@ -2750,6 +2861,13 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
       _gui->writeEvent(evSysex);
     }
     break;       
+  case SYSEX_DELAYACTIV:
+    _global.isDelayActivated = (bool)data[1];
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
   case SYSEX_CHORUSRETURN:
     setChorusReturn((int)data[1]);
     if(!fromGui) {
@@ -2759,6 +2877,13 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     break;
   case SYSEX_REVERBRETURN:
     setReverbReturn((int)data[1]);
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;
+  case SYSEX_DELAYRETURN:
+    setDelayReturn((int)data[1]);
     if(!fromGui) {
       MidiEvent evSysex(0, ME_SYSEX, data, length);
       _gui->writeEvent(evSysex);
@@ -2774,6 +2899,34 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     memcpy(&pluginChorus, &data[1], sizeof(Plugin*));
     initPluginChorus(pluginChorus);
     break;
+  case SYSEX_DELAYTIME:
+    setDelayTime((int)data[1]);
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;    
+  case SYSEX_DELAYFEEDBACK:
+    setDelayFeedback((int)data[1]);
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;    
+  case SYSEX_DELAYLFOFREQ:
+    setDelayLFOFreq((int)data[1]);
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;    
+  case SYSEX_DELAYLFODEPTH:
+    setDelayLFODepth((int)data[1]);
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;    
   default:
     break;
   }
@@ -3359,6 +3512,13 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
 	_gui->writeEvent(ev);
       }
       break;
+    case CTRL_VARIATION_SEND:
+      setChannelDelay(ch, val);
+      if(!fromGui) {
+	MidiEvent ev(0,ch, ME_CONTROLLER, CTRL_VARIATION_SEND, val);
+	_gui->writeEvent(ev);
+      }
+      break;
     case CTRL_SUSTAIN:
       setSustain(ch, val);
       break;
@@ -3792,6 +3952,8 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
       _global.lastInputRightChorusSample = 0.0;
       _global.lastInputLeftReverbSample = 0.0;
       _global.lastInputRightReverbSample = 0.0;
+      _global.lastInputLeftDelaySample = 0.0;
+      _global.lastInputRightDelaySample = 0.0;
       //per channel
       for(int c = 0; c < NBRCHANNELS; c++) {
 	tempChannelOutput = 0.0;
@@ -4054,6 +4216,12 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
 	    _global.lastInputRightReverbSample += tempChannelRightOutput *
 	      _global.channel[c].reverbAmount;
 	  }
+	  if(_global.isDelayActivated) {
+	    _global.lastInputLeftDelaySample += tempChannelLeftOutput *
+	      _global.channel[c].delayAmount;
+	    _global.lastInputRightDelaySample += tempChannelRightOutput *
+	      _global.channel[c].delayAmount;
+	  }
 	  tempLeftOutput += tempChannelLeftOutput;
 	  tempRightOutput += tempChannelRightOutput;
 	}
@@ -4071,6 +4239,10 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
     if(_global.isReverbActivated) {
       tempInputReverb[0][i] = _global.lastInputLeftReverbSample;
       tempInputReverb[1][i] = _global.lastInputRightReverbSample;
+    }    
+    if(_global.isDelayActivated) {
+      tempInputDelay[0][i] = _global.lastInputLeftDelaySample;
+      tempInputDelay[1][i] = _global.lastInputRightDelaySample;
     }    
     
     _global.qualityCounter++;
@@ -4097,13 +4269,27 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
     //apply Filter
     if(_global.filter) _reverbFilter->process(tempOutputReverb[0],
 					      tempOutputReverb[1], n);
-    //apply Chorus
+    //apply Reverb
     _pluginIReverb->apply(n, 2, tempInputReverb, tempOutputReverb);
     for(int i = 0; i < n; i++) {
       leftOutput[i] +=
 	tempOutputReverb[0][i] * _global.reverbReturn * _global.masterVolume;
       rightOutput[i] +=
 	tempOutputReverb[1][i] * _global.reverbReturn * _global.masterVolume;
+    }
+  }
+  //Delay
+  if(_global.isDelayActivated) {
+    //apply Filter
+    if(_global.filter) _delayFilter->process(tempOutputDelay[0],
+					     tempOutputDelay[1], n);
+    //apply Delay
+    _pluginIDelay->apply(n, 2, tempInputDelay, tempOutputDelay);
+    for(int i = 0; i < n; i++) {
+      leftOutput[i] +=
+	tempOutputDelay[0][i] * _global.delayReturn * _global.masterVolume;
+      rightOutput[i] +=
+	tempOutputDelay[1][i] * _global.delayReturn * _global.masterVolume;
     }
   }
 }

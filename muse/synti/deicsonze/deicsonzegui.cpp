@@ -32,6 +32,7 @@
 #include "config.h"
 #include "plugin.h"
 #include "plugingui.h"
+#include "plugins/pandelay/pandelaymodel.h"
 
 #include "deicsonzegui.h"
 
@@ -216,8 +217,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setLfoAmpSens(int)));
   connect(transposeSlider, SIGNAL(valueChanged(int)),
 	  this, SLOT(setTranspose(int)));
-  connect(channelDetuneSlider, SIGNAL(valueChanged(int)),
-	  this, SLOT(setChannelDetune(int)));
+  //connect(channelDetuneSlider, SIGNAL(valueChanged(int)),
+  //  this, SLOT(setChannelDetune(int)));
   connect(algorithmComboBox, SIGNAL(activated(int)),
 	  this, SLOT(setAlgorithm(int)));
   connect(pitchBendRangeSlider, SIGNAL(valueChanged(int)),
@@ -256,8 +257,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setAtPitchBias(int)));
   connect(atEgBiasSpinBox, SIGNAL(valueChanged(int)),
 	  this, SLOT(setAtEgBias(int)));
-  connect(reverbSpinBox, SIGNAL(valueChanged(int)),
-	  this, SLOT(setReverbRate(int)));
+  //connect(reverbSpinBox, SIGNAL(valueChanged(int)),
+  //  this, SLOT(setReverbRate(int)));
   connect(polyMonoComboBox, SIGNAL(activated(int)),
 	  this, SLOT(setPolyMode(int)));
   connect(PortFingerFullComboBox, SIGNAL(activated(int)),
@@ -355,6 +356,29 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  this, SLOT(setWaveForm3(int)));
   connect(WaveForm4ComboBox, SIGNAL(activated(int)),
 	  this, SLOT(setWaveForm4(int)));
+  //PanDelay
+  connect(delayActivCheckBox, SIGNAL(toggled(bool)), this, 
+	  SLOT(setActivDelay(bool)));
+  connect(delayReturnSlider, SIGNAL(valueChanged(int)), this,
+	  SLOT(setDelayReturn(int)));
+  connect(chDelaySlider, SIGNAL(valueChanged(int)), this,
+	  SLOT(setChannelDelay(int)));
+  connect(delayTimeSlider, SIGNAL(valueChanged(int)), this,
+	  SLOT(setDelayTime(int)));
+  connect(delayTimeFloatentry, SIGNAL(valueChanged(double, int)), this,
+	  SLOT(setDelayTime(double)));
+  connect(delayFeedbackSlider, SIGNAL(valueChanged(int)), this,
+	  SLOT(setDelayFeedback(int)));
+  connect(delayFeedbackFloatentry, SIGNAL(valueChanged(double, int)), this,
+	  SLOT(setDelayFeedback(double)));
+  connect(delayPanLFOFreqSlider, SIGNAL(valueChanged(int)), this,
+	  SLOT(setDelayPanLFOFreq(int)));
+  connect(delayPanLFOFreqFloatentry, SIGNAL(valueChanged(double, int)), this,
+	  SLOT(setdelayPanLFOFreq(double)));
+  connect(delayPanLFODepthSlider, SIGNAL(valueChanged(int)), this,
+	  SLOT(setDelayPanLFODepth(int)));
+  connect(delayPanLFODepthFloatentry, SIGNAL(valueChanged(double, int)), this,
+	  SLOT(setDelayPanLFODepth(double)));
   //category subcategory preset
   connect(categoryListView,
 	  SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
@@ -783,10 +807,10 @@ void DeicsOnzeGui::setTextColor(const QColor & c) {
   DetWaveEGS4GroupBox->setPalette(p);
   sensitivity4groupBox->setPalette(p);
   transposeGroupBox->setPalette(p);
-  detuneGroupBox->setPalette(p);
-  footSWGroupBox->setPalette(p);
+  //detuneGroupBox->setPalette(p);
+  //footSWGroupBox->setPalette(p);
   pitchBendRangeGroupBox->setPalette(p);
-  reverbGroupBox->setPalette(p);
+  //reverbGroupBox->setPalette(p);
   modeGroupBox->setPalette(p);
   portamentoGroupBox->setPalette(p);
   colorGroupBox->setPalette(p);
@@ -803,6 +827,12 @@ void DeicsOnzeGui::setTextColor(const QColor & c) {
   channelChorusGroupBox->setPalette(p);
   parametersChorusGroupBox->setPalette(p);
   fontSizeGroupBox->setPalette(p);
+  delayTimeGroupBox->setPalette(p);
+  delayFeedbackGroupBox->setPalette(p);
+  delayPanLFOGroupBox->setPalette(p);
+  delayPanDepthGroupBox->setPalette(p);
+  delayReturnGroupBox->setPalette(p);
+  channelDelayGroupBox->setPalette(p);
 }
 
 void DeicsOnzeGui::setBackgroundColor(const QColor & c) {
@@ -848,10 +878,10 @@ void DeicsOnzeGui::setEditTextColor(const QColor & c) {
   DetWaveEGS4GroupBox->setPalette(p);
   sensitivity4groupBox->setPalette(p);
   transposeGroupBox->setPalette(p);
-  detuneGroupBox->setPalette(p);
-  footSWGroupBox->setPalette(p);
+  //detuneGroupBox->setPalette(p);
+  //footSWGroupBox->setPalette(p);
   pitchBendRangeGroupBox->setPalette(p);
-  reverbGroupBox->setPalette(p);
+  //reverbGroupBox->setPalette(p);
   modeGroupBox->setPalette(p);
   portamentoGroupBox->setPalette(p);
   colorGroupBox->setPalette(p);
@@ -910,10 +940,10 @@ void DeicsOnzeGui::setEditBackgroundColor(const QColor & c) {
   DetWaveEGS4GroupBox->setPalette(p);
   sensitivity4groupBox->setPalette(p);
   transposeGroupBox->setPalette(p);
-  detuneGroupBox->setPalette(p);
-  footSWGroupBox->setPalette(p);
+  //detuneGroupBox->setPalette(p);
+  //footSWGroupBox->setPalette(p);
   pitchBendRangeGroupBox->setPalette(p);
-  reverbGroupBox->setPalette(p);
+  //reverbGroupBox->setPalette(p);
   modeGroupBox->setPalette(p);
   portamentoGroupBox->setPalette(p);
   colorGroupBox->setPalette(p);
@@ -1401,7 +1431,7 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
       case CTRL_FIXRANGE+3*DECAPAR2: updateFIXRANGE(3, val); break;
       case CTRL_OSW+3*DECAPAR2: updateOSW(3, val); break;
       case CTRL_SHFT+3*DECAPAR2: updateSHFT(3, val); break;
-      case CTRL_REVERBRATE: updateReverbRate(val); break;
+      case CTRL_REVERBRATE: /*updateReverbRate(val);*/ break;
       case CTRL_FCPITCH: updateFcPitch(val); break;
       case CTRL_FCAMPLITUDE: updateFcAmplitude(val); break;
       case CTRL_CHANNELENABLE:
@@ -1416,6 +1446,7 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
       case CTRL_RELEASE_TIME: updateRelease(val); break;
       case CTRL_CHORUS_SEND: updateChannelChorus(val); break;
       case CTRL_REVERB_SEND: updateChannelReverb(val); break;
+      case CTRL_VARIATION_SEND: updateChannelDelay(val); break;
       case CTRL_MODULATION: updateModulation(val); break;
       case CTRL_PROGRAM :	
 	int hbank = (val & 0xff0000) >> 16;
@@ -1473,6 +1504,24 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
     case SYSEX_CHORUS2DEPTH :
       updateDepthChorus2((int)data[1]);
       break;*/
+    case SYSEX_DELAYACTIV :
+      updateDelayActiv((bool)data[1]);
+      break;
+    case SYSEX_DELAYRETURN :
+      updateDelayReturn((int)data[1]);
+      break;
+    case SYSEX_DELAYTIME :
+      updateDelayTime((int) data[1]);
+      break;
+    case SYSEX_DELAYFEEDBACK :
+      updateDelayFeedback((int) data[1]);
+      break;
+    case SYSEX_DELAYLFOFREQ :
+      updateDelayPanLFOFreq((int) data[1]);
+      break;
+    case SYSEX_DELAYLFODEPTH :
+      updateDelayPanLFODepth((int) data[1]);
+      break;
     case SYSEX_QUALITY :
       updateQuality((int)data[1]);
       break;
@@ -2541,7 +2590,8 @@ void DeicsOnzeGui::setModulationKnob(double val) {
 		 (int)(val*(double)MAXMODULATION));
 }
 void DeicsOnzeGui::setDetuneKnob(double val) {
-  channelDetuneSlider->setValue((int)((2.0*val-1.0)*(double)MAXCHANNELDETUNE));
+  //channelDetuneSlider->setValue((int)((2.0*val-1.0)*(double)MAXCHANNELDETUNE));
+  setChannelDetune((int)((2.0*val-1.0)*(double)MAXCHANNELDETUNE));
 }
 void DeicsOnzeGui::setAttackKnob(double val) {
   sendController(_currentChannel, CTRL_ATTACK_TIME,
@@ -2935,6 +2985,86 @@ void DeicsOnzeGui::setWaveForm4(int w) {
     sendController(_currentChannel, CTRL_OSW+3*DECAPAR2, w);
 }
 //--------------------------------------------------------------
+// set delay
+//--------------------------------------------------------------
+void DeicsOnzeGui::setActivDelay(bool a) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_DELAYACTIV;
+  message[1]=(unsigned char)a;
+  sendSysex(message, 2);
+}
+void DeicsOnzeGui::setDelayReturn(int r) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_DELAYRETURN;
+  message[1]=(unsigned char)r;
+  sendSysex(message, 2);
+}
+void DeicsOnzeGui::setChannelDelay(int d) {
+  sendController(_currentChannel, CTRL_VARIATION_SEND, (unsigned char)d);
+}
+void DeicsOnzeGui::setDelayTime(int t) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_DELAYTIME;
+  message[1]=(unsigned char)t;
+  sendSysex(message, 2);
+  updateDelayTime(t);
+}
+void DeicsOnzeGui::setDelayTime(double t) {
+  int it = (int)(((t - MINDELAYTIME) / (MAXDELAYTIME - MINDELAYTIME))*255.0);
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_DELAYTIME;
+  message[1]=(unsigned char)it;
+  sendSysex(message, 2);
+  updateDelayTime(it);
+} 
+void DeicsOnzeGui::setDelayFeedback(int f) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_DELAYFEEDBACK;
+  message[1]=(unsigned char)f;
+  sendSysex(message, 2);
+  updateDelayFeedback(f);
+}
+void DeicsOnzeGui::setDelayFeedback(double f) {
+  int idf = (int)(f*128.0+128.0);
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_DELAYFEEDBACK;
+  message[1]=(unsigned char)idf;
+  sendSysex(message, 2);
+  updateDelayFeedback(idf);
+}
+void DeicsOnzeGui::setDelayPanLFOFreq(int pf) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_DELAYLFOFREQ;
+  message[1]=(unsigned char)pf;
+  sendSysex(message, 2);
+  updateDelayPanLFOFreq(pf);
+}
+void DeicsOnzeGui::setDelayPanLFOFreq(double pf) {
+  int ipf = (int)(((pf - MINFREQ) / (MAXFREQ - MINFREQ))*255.0);
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_DELAYLFOFREQ;
+  message[1]=(unsigned char)ipf;
+  sendSysex(message, 2);
+  updateDelayPanLFOFreq(ipf);
+}
+void DeicsOnzeGui::setDelayPanLFODepth(int pd) {
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_DELAYLFODEPTH;
+  message[1]=(unsigned char)pd;
+  sendSysex(message, 2);
+  updateDelayPanLFODepth(pd);
+}
+void DeicsOnzeGui::setDelayPanLFODepth(double pd) {
+  int ipd = (int)(pd*255.0);
+  unsigned char* message = new unsigned char[2];
+  message[0]=SYSEX_DELAYLFODEPTH;
+  message[1]=(unsigned char)ipd;
+  sendSysex(message, 2);
+  updateDelayPanLFODepth(ipd);
+}
+
+
+//--------------------------------------------------------------
 // setSet
 //  Display the set, that is the category list
 //--------------------------------------------------------------
@@ -3039,6 +3169,8 @@ void DeicsOnzeGui::setEnabledPreset(bool b) {
     Op3Tab->setEnabled(b);
     Op4Tab->setEnabled(b);
     FunctionsTab->setEnabled(b);
+    chorusTab->setEnabled(b);
+    reverbTab->setEnabled(b);
     
     _enabledPreset=b;
   }
@@ -3161,6 +3293,60 @@ void DeicsOnzeGui::updateLadspaChorusLineEdit(QString s) {
   selectLadspaChorusLineEdit->blockSignals(true);
   selectLadspaChorusLineEdit->setText(s);
   selectLadspaChorusLineEdit->blockSignals(false);
+}
+
+void DeicsOnzeGui::updateDelayActiv(bool a) {
+  delayActivCheckBox->blockSignals(true);
+  delayActivCheckBox->setChecked(a);		
+  delayActivCheckBox->blockSignals(false);
+}
+void DeicsOnzeGui::updateChannelDelay(int r) {
+  chDelaySlider->blockSignals(true);
+  chDelaySlider->setValue(r);
+  chDelaySlider->blockSignals(false);
+  chDelaySpinBox->blockSignals(true);
+  chDelaySpinBox->setValue(r);
+  chDelaySpinBox->blockSignals(false);
+}
+void DeicsOnzeGui::updateDelayReturn(int r) {
+  delayReturnSlider->blockSignals(true);
+  delayReturnSlider->setValue(r);
+  delayReturnSlider->blockSignals(false);
+}
+void DeicsOnzeGui::updateDelayPanLFOFreq(int plf) {
+  delayPanLFOFreqSlider->blockSignals(true);
+  delayPanLFOFreqSlider->setValue(plf);
+  delayPanLFOFreqSlider->blockSignals(false);
+  delayPanLFOFreqFloatentry->blockSignals(true);
+  delayPanLFOFreqFloatentry->setValue(MINFREQ + (MAXFREQ - MINFREQ)
+				      *((float)plf/255.0));
+  delayPanLFOFreqFloatentry->blockSignals(false);
+}
+void DeicsOnzeGui::updateDelayTime(int dt) {
+  delayTimeSlider->blockSignals(true);
+  delayTimeSlider->setValue(dt);
+  delayTimeSlider->blockSignals(false);
+  delayTimeFloatentry->blockSignals(true);
+  delayTimeFloatentry->setValue(MINDELAYTIME +
+				(MAXDELAYTIME - MINDELAYTIME)
+				*((float)dt/255.0));
+  delayTimeFloatentry->blockSignals(false);
+}
+void DeicsOnzeGui::updateDelayFeedback(int df) {
+  delayFeedbackSlider->blockSignals(true);
+  delayFeedbackSlider->setValue(df);
+  delayFeedbackSlider->blockSignals(false);
+  delayFeedbackFloatentry->blockSignals(true);
+  delayFeedbackFloatentry->setValue((float)(df - 128)/128.0);
+  delayFeedbackFloatentry->blockSignals(false);
+}
+void DeicsOnzeGui::updateDelayPanLFODepth(int dpd) {
+  delayPanLFODepthSlider->blockSignals(true);
+  delayPanLFODepthSlider->setValue(dpd);
+  delayPanLFODepthSlider->blockSignals(false);
+  delayPanLFODepthFloatentry->blockSignals(true);
+  delayPanLFODepthFloatentry->setValue((float)dpd/255.0);
+  delayPanLFODepthFloatentry->blockSignals(false);
 }
 
 void DeicsOnzeGui::applyFontSize(int fs) {
@@ -3317,14 +3503,14 @@ void DeicsOnzeGui::updateAtEgBias(int val) {
   atEgBiasSlider->setValue(val);
   atEgBiasSlider->blockSignals(false);
 }
-void DeicsOnzeGui::updateReverbRate(int val) {
-  reverbSpinBox->blockSignals(true);
-  reverbSpinBox->setValue(val);
-  reverbSpinBox->blockSignals(false);
-  reverbSlider->blockSignals(true);
-  reverbSlider->setValue(val);
-  reverbSlider->blockSignals(false);
-}
+//void DeicsOnzeGui::updateReverbRate(int val) {
+  //reverbSpinBox->blockSignals(true);
+  //reverbSpinBox->setValue(val);
+  //reverbSpinBox->blockSignals(false);
+  //reverbSlider->blockSignals(true);
+  //reverbSlider->setValue(val);
+  //reverbSlider->blockSignals(false);
+//}
 //Envelope
 void DeicsOnzeGui::updateAR(int op, int val) {
     Eg* _eg=&(_deicsOnze->_preset[_currentChannel]->eg[op]);
@@ -3910,7 +4096,7 @@ void DeicsOnzeGui::updateFIXRANGE(int op, int val) {
 	case 0:
 	    Freq1SpinBox->blockSignals(true);
 	    Freq1SpinBox->setValue(val/100);
-                         //val/100 because it is still a coarse display
+	    //val/100 because it is still a coarse display
 	    Freq1SpinBox->blockSignals(false);
 	    break;
 	case 1:
@@ -3983,21 +4169,21 @@ void DeicsOnzeGui::updateSHFT(int op, int val) {
 }
 void DeicsOnzeGui::updateChannelDetune(int val) {
   updateChannelDetuneKnob(val);
-  updateChannelDetuneSlider(val);
+  //updateChannelDetuneSlider(val);
 }
 void DeicsOnzeGui::updateChannelDetuneKnob(int val) {
   detuneKnob->blockSignals(true);
   detuneKnob->setValue((((double)val)/((double)MAXCHANNELDETUNE))/2.0+0.5);
   detuneKnob->blockSignals(false);
 }
-void DeicsOnzeGui::updateChannelDetuneSlider(int val) {
-  channelDetuneSlider->blockSignals(true);
-  channelDetuneSlider->setValue(val);
-  channelDetuneSlider->blockSignals(false);
-  channelDetuneSpinBox->blockSignals(true);
-  channelDetuneSpinBox->setValue(val);
-  channelDetuneSpinBox->blockSignals(false);
-}
+//void DeicsOnzeGui::updateChannelDetuneSlider(int val) {
+  //channelDetuneSlider->blockSignals(true);
+  //channelDetuneSlider->setValue(val);
+  //channelDetuneSlider->blockSignals(false);
+  //channelDetuneSpinBox->blockSignals(true);
+  //channelDetuneSpinBox->setValue(val);
+  //channelDetuneSpinBox->blockSignals(false);
+//}
 void DeicsOnzeGui::updateChannelVolume(int val) {
   channelVolumeKnob->blockSignals(true);
   channelVolumeKnob->setValue(((double)val)/(double)MAXCHANNELVOLUME);
@@ -4159,7 +4345,7 @@ void DeicsOnzeGui::updatePreset(Preset* p) {
     updateAtAmplitude(p->function.atAmplitude);
     updateAtPitchBias(p->function.atPitchBias);
     updateAtEgBias(p->function.atEgBias);
-    updateReverbRate(p->function.reverbRate);
+    //updateReverbRate(p->function.reverbRate);
     updatePOLYMODE((int)p->function.mode);
     updatePORTAMODE((int)p->function.portamento);
     updatePORTATIME((int)p->function.portamentoTime);
