@@ -4301,6 +4301,7 @@ void DeicsOnzeGui::updateQuickEdit() {
   updateRelease(_deicsOnze->getChannelRelease(_currentChannel));
   updateChannelReverb(_deicsOnze->getChannelReverb(_currentChannel));
   updateChannelChorus(_deicsOnze->getChannelChorus(_currentChannel));
+  updateChannelDelay(_deicsOnze->getChannelDelay(_currentChannel));
 }
 //--------------------------------------------------------------
 // updatePreset

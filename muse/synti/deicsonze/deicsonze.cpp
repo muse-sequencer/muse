@@ -2469,7 +2469,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       MidiEvent 
 	evChDelay(0, c, ME_CONTROLLER,
 		  CTRL_VARIATION_SEND, data[NUM_CHANNEL_DELAY + c]);
-      _gui->writeEvent(evChDelay);      
+      _gui->writeEvent(evChDelay);
     }
     //load configuration
     _saveConfig = (bool)data[NUM_SAVECONFIG];
@@ -2643,7 +2643,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     MidiEvent evSysexDelayLFODepth(0,ME_SYSEX,
 				   (const unsigned char*)dataDelayLFODepth, 2);
     _gui->writeEvent(evSysexDelayLFODepth);
-    
+
     //load set
     FILE* tmp;
     char* tmpname;
