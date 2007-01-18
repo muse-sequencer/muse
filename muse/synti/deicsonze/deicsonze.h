@@ -69,6 +69,8 @@
 #define MAXSTRLENGTHFXLIB 256
 #define MAXSTRLENGTHFXLABEL 256
 
+#define DB_MIN 25.0
+
 //coef determined by ear to sound like the YAMAHA DX11
 #define COEFFEEDBACK 0.3
 #define COEFPLFO(x) (x==0?0.0:(x==1?0.06:(x==2?0.12:(x==3?0.25:(x==4?0.5:(x==5?0.9:(x==6?3.9:7.9))))))) //return pitch amplitude with respect to sensitivity pitch

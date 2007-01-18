@@ -1742,14 +1742,14 @@ inline double outLevel2Amp(int ol) {
 
 //---------------------------------------------------------
 // lowlevel2amp, 
-//  127->0dB->1.0, 0->-27dB->0
+//  127->0dB->1.0, 0->-25dB->0
 //---------------------------------------------------------
 inline double lowlevel2amp(int l) {
   double a, b, c, db;
   if(l==0) return 0.0;
   else {
-    a = 27.0/127.0;
-    b = -27.0;
+    a = DB_MIN/127.0;
+    b = -DB_MIN;
     db = a*l+b;
     c = -log(2)/3;
     return exp(-c*db);
@@ -1758,14 +1758,14 @@ inline double lowlevel2amp(int l) {
 
 //---------------------------------------------------------
 // level2amp, 
-//  255->0dB->1.0, 0->-27dB->0
+//  255->0dB->1.0, 0->-25dB->0
 //---------------------------------------------------------
 inline double level2amp(int l) {
   double a, b, c, db;
   if(l==0) return 0.0;
   else {
-    a = 27.0/255.0;
-    b = -27.0;
+    a = DB_MIN/255.0;
+    b = -DB_MIN;
     db = a*l+b;
     c = -log(2.0)/3.0;
     return exp(-c*db);
@@ -1774,11 +1774,11 @@ inline double level2amp(int l) {
 
 //---------------------------------------------------------
 // amp2level
-// 1.0->0dB->255, 0->-27dB->0
+// 1.0->0dB->255, 0->-25dB->0
 //---------------------------------------------------------
 inline int amp2level(double amp){
   double a, b, c;
-  a = 255.0/27.0;
+  a = 255.0/DB_MIN;
   b = 255.0;
   c = log(2.0)/3.0;
   return (int)(a*(log(amp)/c)+b);
@@ -1786,11 +1786,11 @@ inline int amp2level(double amp){
 
 //---------------------------------------------------------
 // amp2lowlevel
-// 1.0->0dB->127, 0->-27dB->0
+// 1.0->0dB->127, 0->-25dB->0
 //---------------------------------------------------------
 inline int amp2lowlevel(double amp){
   double a, b, c;
-  a = 127.0/27.0;
+  a = 127.0/DB_MIN;
   b = 127.0;
   c = log(2.0)/3.0;
   return (int)(a*(log(amp)/c)+b);

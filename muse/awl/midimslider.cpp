@@ -107,7 +107,11 @@ void MidiMeterSlider::paint(const QRect& r)
             h = 0;
       else if (h > mh)
             h = mh;
+      //QColor qc;
+      //float v = 5.0/6.0 + 1.0/6.0 * meterval;
+      //qc.setHsvF(1.0/3.0, 1.0, (v<=1.0?v:1.0));
       p.fillRect(x, y3-h, mw, h,    QBrush(0x00ff00)); // green
+      //p.fillRect(x, y3-h, mw, h,    QBrush(qc)); // green get a bit darker
       p.fillRect(x, y1,   mw, mh-h, QBrush(0x007000)); // dark green
       x += mw;
 

@@ -49,7 +49,7 @@ static void loadPluginLib(QFileInfo* fi)
                         "Are you sure this is a LADSPA plugin file?\n",
                         fi->filePath().toAscii().data(),
                         txt);
-                  exit(1);
+                  return;//exit(1);
                   }
             }
       const LADSPA_Descriptor* descr;

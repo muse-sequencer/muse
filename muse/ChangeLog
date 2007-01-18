@@ -1,3 +1,5 @@
+19.01 (ng)
+      - fixed bug to prevent muse from halting when trying to load a non-ladpsa plugin (by Willy Foobar)
 06.01 (ng)
       - added panDelay plugin FX
       - added panDelay in DeicsOnze
