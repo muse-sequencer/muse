@@ -1,6 +1,7 @@
 23.01 (ng)
       - added insert sysex event update I
       - replaced bzip2 by Qt compression in deicsonze
+      - added sysex tramission for DSSI synth
 19.01 (ng)
       - fixed bug to prevent muse from halting when trying to load a non-ladpsa plugin (by Willy Foobar)
 06.01 (ng)
