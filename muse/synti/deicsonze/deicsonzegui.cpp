@@ -44,7 +44,7 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 {
   setupUi(this);
   _deicsOnze = deicsOnze;
-  lastDir= "";
+  lastDir = QDir::currentPath();
 
   _currentChannel = 0;
 

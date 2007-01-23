@@ -22,6 +22,7 @@
 #define __PARTLISTEDIT_H__
 
 #include "al/pos.h"
+#include "ieventdialog.h"
 #include "listedit.h"
 #include "ui_partlistedit.h"
 
@@ -58,6 +59,7 @@ class PartListEditor : public ListWidget {
       void updateList();
 
    private slots:
+      void insertClicked();
 
    public:
       PartListEditor(ListEdit*, QWidget* parent = 0);

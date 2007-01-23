@@ -2243,30 +2243,26 @@ void DeicsOnze::writeConfiguration(AL::Xml* xml) {
 // getInitData
 //---------------------------------------------------------
 void DeicsOnze::getInitData(int* length, const unsigned char** data) {
-  FILE* tmp;
-  char* comptmp;
-  QString cmd="bzip2 > ";
   
-  //compress the set
-  comptmp=tempnam("/tmp", "DeicsOnze");
-  cmd+=comptmp;
-  tmp=popen(cmd.toAscii().data(), "w");
-  QFile file;
-  file.open(tmp, QIODevice::WriteOnly);
+  //write the set in a temporary file and in a QByteArray
+  QTemporaryFile file;
+  file.open();
   AL::Xml* xml=new AL::Xml(&file);
   xml->header();
   _set->writeSet(xml, _saveOnlyUsed);
-  file.close();  //flush
-  pclose(tmp);
+  file.reset(); //seek the start of the file
+  QByteArray ba = file.readAll();
+  file.close();
+
+  //compress the QByteArray at default rate
+  QByteArray baComp = qCompress(ba);
 
   //save the set
-  FILE* comptmpf=fopen(comptmp, "r");
-  fseek(comptmpf, 0, SEEK_END);
   *length = NUM_CONFIGLENGTH
     + sizeof(float)*_pluginIReverb->plugin()->parameter()
     + sizeof(float)*_pluginIChorus->plugin()->parameter()
-    + ftell(comptmpf);
-  fseek(comptmpf, 0, SEEK_SET);
+    + baComp.size();
+
   unsigned char* buffer = new unsigned char[*length];
   //save init data
   buffer[0]=SYSEX_INIT_DATA;
@@ -2369,15 +2365,13 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   buffer[NUM_DELAY_LFO_DEPTH] = (unsigned char)getDelayLFODepth();
 
   //save set data
-  for(int i = NUM_CONFIGLENGTH
-	+ sizeof(float)*_pluginIReverb->plugin()->parameter()
-	+ sizeof(float)*_pluginIChorus->plugin()->parameter();
-      i < *length; i++) buffer[i]=(unsigned char)getc(comptmpf);
-  fclose(comptmpf);
-  QString rmcmd="rm ";
-  rmcmd+=comptmp;
-  system(rmcmd.toAscii().data());
-  free(comptmp);
+  int offset =
+    NUM_CONFIGLENGTH
+    + sizeof(float)*_pluginIReverb->plugin()->parameter()
+    + sizeof(float)*_pluginIChorus->plugin()->parameter();
+  for(int i = offset; i < *length; i++)
+    buffer[i]=(unsigned char)baComp.at(i - offset);
+
   *data=buffer;
 }
 //---------------------------------------------------------
@@ -2644,38 +2638,25 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
 				   (const unsigned char*)dataDelayLFODepth, 2);
     _gui->writeEvent(evSysexDelayLFODepth);
 
-    //load set
-    FILE* tmp;
-    char* tmpname;
-    char* uncompname;
-    QString cmd="bunzip2 ";
-
-    //get the bz2 part
-    tmpname=tempnam("/tmp", "DEIBZ2");
-    tmp=fopen(tmpname, "w");
-    for(int i = 
-	  NUM_CONFIGLENGTH 
-	  + sizeof(float)*_pluginIReverb->plugin()->parameter()
-	  + sizeof(float)*_pluginIChorus->plugin()->parameter();
-	i<length; i++) putc(data[i], tmp);
-    fclose(tmp);
+    //load the set compressed
+    int offset =
+      NUM_CONFIGLENGTH 
+      + sizeof(float)*_pluginIReverb->plugin()->parameter()
+      + sizeof(float)*_pluginIChorus->plugin()->parameter();
+    QByteArray baComp = QByteArray((const char*)&data[offset], length-offset);
     
     //uncompress the set
-    uncompname=tempnam("/tmp", "DEISET");
-    cmd+=tmpname;
-    cmd+=" -c > ";
-    cmd+=uncompname;
-    system(cmd.toAscii().data());
+    QByteArray baUncomp = qUncompress(baComp);
 
-
-    //load the set
+    //save the set in a temporary file and
     // read the XML file and create DOM tree
-    //QString filename = (const char*) (data+2);
-    QFile deicsonzeFile(uncompname);
-    deicsonzeFile.open(QIODevice::ReadOnly);
+    QTemporaryFile file;
+    file.open();
+    file.write(baUncomp);
     QDomDocument domTree;
-    domTree.setContent(&deicsonzeFile);
-    deicsonzeFile.close();
+    file.reset(); //seek the start of the file
+    domTree.setContent(&file);
+    file.close();
     QDomNode node = domTree.documentElement();
     
     while (!node.isNull()) {
@@ -2708,11 +2689,12 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     }
     //send sysex to the gui to load the set (actually not because it doesn't
     //work -the code is just zapped in the middle???-, so it is done above
-    int dL=2+strlen(uncompname);
+    //int dL=2+baUncomp.size();
+    int dL = 2;
     char dataSend[dL];
     dataSend[0]=SYSEX_LOADSET;
     dataSend[1]=data[NUM_SAVEONLYUSED];
-    for(int i=2; i<dL; i++) dataSend[i]=uncompname[i-2];
+    //for(int i=2; i<dL; i++) dataSend[i]=baUncop.at(i-2);
     MidiEvent evSysex(0,ME_SYSEX,(const unsigned char*)dataSend, dL);
     _gui->writeEvent(evSysex);
 
@@ -2727,11 +2709,6 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       _gui->writeEvent(evProgSel);
     }
 
-    //delete the temporary file bz2
-    QString rmfile;
-    rmfile="rm ";
-    rmfile+=tmpname;
-    //system(rmfile.toAscii().data());
   }
 }
 //---------------------------------------------------------

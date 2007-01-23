@@ -44,6 +44,7 @@ class PanDelayModel {
  private:
   int _samplerate;
 
+  //bool _beatFraction; //if true then the delay is calculated in beat fraction
   float _delayTime;
   float _feedback;
   float _panLFOFreq;

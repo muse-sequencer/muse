@@ -23,6 +23,7 @@ QT4_WRAP_CPP ( liste_mocs
       ctrllistedit.h
       tracklistedit.h
       partlistedit.h
+      ieventdialog.h
       )
 
 QT4_WRAP_UI ( liste_ui_headers
@@ -36,6 +37,7 @@ add_library ( liste STATIC
       ctrllistedit.cpp ctrllistedit.h
       partlistedit.cpp partlistedit.h
       tracklistedit.cpp tracklistedit.h
+      ieventdialog.cpp ieventdialog.h
       ${liste_mocs}
       ${liste_ui_headers}
       )

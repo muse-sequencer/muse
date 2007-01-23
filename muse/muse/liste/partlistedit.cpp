@@ -47,7 +47,9 @@ PartListEditor::PartListEditor(ListEdit* e, QWidget* parent)
       le.eventList->setItemDelegate(eventDelegate);
 
       part = 0;
-      }
+
+      connect(le.insertButton, SIGNAL(clicked()), SLOT(insertClicked()));
+     }
 
 //---------------------------------------------------------
 //   getTrack
@@ -91,6 +93,29 @@ void PartListEditor::updateList()
             item->setData(4, Qt::DisplayRole, e.dataB());
             le.eventList->insertTopLevelItem(idx, item);
             }
+      }
+
+//---------------------------------------------------------
+//   insertClicked
+//    insert one tick before current value
+//---------------------------------------------------------
+
+void PartListEditor::insertClicked()
+      {
+	AL::Pos time;
+
+	EventList* el;
+
+	InsertEventDialog dialog(time, this);
+	if(dialog.exec() == QDialog::Accepted) {
+	  el = dialog.elResult();
+	  if(el) {
+	    for(iEvent ie = el->begin(); ie != el->end(); ie++) {
+	      Event e = ie->second;
+	      song->addEvent(e, part);
+	    }
+	  }
+	}
       }
 
 //---------------------------------------------------------
