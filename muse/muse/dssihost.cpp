@@ -445,8 +445,13 @@ void DssiSynthIF::getData(MidiEventList* el, unsigned pos, int ch, unsigned samp
             int chn = e.channel();
             int a   = e.dataA();
             int b   = e.dataB();
-	    int len = e.len();
-	    unsigned char* d = e.data();
+	    //for sysex
+	    QByteArray ba = QByteArray((const char*)e.data(), e.len());
+	    //we must had 0xF0 at the beginning and 0xF7 at the end of e.data()
+	    ba.push_front(0xF0);
+	    ba.push_back(0xF7);
+	    int len = e.len() + 2;
+	    
 
             snd_seq_event_t* event = &events[nevents];
             event->queue = SND_SEQ_QUEUE_DIRECT;
@@ -478,7 +483,8 @@ void DssiSynthIF::getData(MidiEventList* el, unsigned pos, int ch, unsigned samp
                         snd_seq_ev_set_chanpress(event, chn, a);
                         break;
 	          case ME_SYSEX:
-		        snd_seq_ev_set_sysex(event, len, d);
+		        snd_seq_ev_set_sysex(event, len,
+					     (unsigned char*)ba.data());
 		        break;
                   default:
                         --nevents;
