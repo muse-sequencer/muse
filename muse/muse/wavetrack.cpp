@@ -232,6 +232,7 @@ void WaveTrack::startRecording()
             // create new part for recording
             //
             recordPart    = new Part(this);
+            recordPart->ref();
             recordPart->setType(AL::FRAMES);
             Pos spos(start.downSnaped(muse->raster()));
             Pos epos(start.upSnaped(muse->raster()));

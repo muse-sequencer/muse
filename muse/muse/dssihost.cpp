@@ -346,9 +346,10 @@ bool DssiSynthIF::init(DssiSynth* s)
       const DSSI_Descriptor* dssi = synth->dssi;
       const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
       handle = ld->instantiate(ld, AL::sampleRate);
+#if 0
       if (ld->activate)
             ld->activate(handle);
-
+#endif
       queryPrograms();
       int controlPorts = synth->_controller;
       controls = new LadspaPort[controlPorts];
@@ -358,6 +359,10 @@ bool DssiSynthIF::init(DssiSynth* s)
 		controls[k].val = ladspaDefaultValue(ld, i);
 		ld->connect_port(handle, i, &controls[k].val);
             }
+#if 1
+      if (ld->activate)
+            ld->activate(handle);
+#endif
       if (dssi->configure) {
             char *rv = dssi->configure(handle, DSSI_PROJECT_DIRECTORY_KEY,
                song->projectPath().toAscii().data());
@@ -371,8 +376,8 @@ bool DssiSynthIF::init(DssiSynth* s)
 //   DssiSynthIF
 //---------------------------------------------------------
 
-DssiSynthIF::DssiSynthIF(SynthI* s) 
-   : SynthIF(s) 
+DssiSynthIF::DssiSynthIF(SynthI* s)
+   : SynthIF(s)
       {
       _guiVisible = false;
       uiTarget = 0;
@@ -441,7 +446,7 @@ void DssiSynthIF::getData(MidiEventList* el, unsigned pos, int ch, unsigned samp
             if (i->time() >= endPos)
                   break;
             MidiEvent e = *i;
-            
+
             int chn = e.channel();
             int a   = e.dataA();
             int b   = e.dataB();
@@ -451,7 +456,7 @@ void DssiSynthIF::getData(MidiEventList* el, unsigned pos, int ch, unsigned samp
 	    ba.push_front(0xF0);
 	    ba.push_back(0xF7);
 	    int len = e.len() + 2;
-	    
+
 
             snd_seq_event_t* event = &events[nevents];
             event->queue = SND_SEQ_QUEUE_DIRECT;

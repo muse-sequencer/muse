@@ -71,7 +71,7 @@ Part::Part(Track* t)
 //   clone
 //---------------------------------------------------------
 
-void Part::clone(EventList* e)  
+void Part::clone(EventList* e)
       {
       _events = e;
       ref();
@@ -335,8 +335,8 @@ void Part::read(QDomNode node, bool isMidiPart)
 //---------------------------------------------------------
 
 bool Part::isClone() const
-      { 
-      return _events->cloneCount > 1; 
+      {
+      return _events->cloneCount > 1;
       }
 
 //---------------------------------------------------------

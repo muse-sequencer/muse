@@ -1,4 +1,7 @@
-27.01 (ng)
+27.01
+      (ws)
+      - changed DSSI initialization making whysynth work
+      (ng)
       - added operator== for EventBase, MidiEventBase and PosLen
       - modified Event::operator== to match on the content instead of the pointer
       - added insert note event and delete note and sysex event in List Editor
@@ -15,7 +18,7 @@
 ***********************
 * Happy new year 2007 *
 ***********************
-	
+
 29.12 (ng)
       - fixed sync LFO Deicsonze
       - update II miditracker (not working yet)

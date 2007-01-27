@@ -493,10 +493,12 @@ Port JackAudio::registerOutPort(const QString& name, bool midi)
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
       Port p(jack_port_register(_client, name.toLatin1().data(), type, JackPortIsOutput, 0));
 // printf("JACK: registerOutPort<%s>: <%s> %p\n", type, name.toLatin1().data(), p.jackPort());
+#if 0
       if (midi) {
             jack_nframes_t nframes = jack_get_buffer_size(_client);
             jack_midi_reset_new_port(jack_port_get_buffer(p.jackPort(), nframes), nframes);
             }
+#endif
       if (!p.jackPort())
             p.setZero();
       return p;

@@ -842,7 +842,6 @@ void EventCanvas::moveItems(const QPoint& pos, int dir)
 
             if (item->moving != p || dpitch != deltaPitch) {
                   item->moving = p;
-// printf("move %d-%d\n", item->event.pitch(),item->event.pitch()+dpitch);
                   if (dir != 1)
 		            item->my = pitch2y(item->event.pitch() + dpitch)
 		               + (int)(wpos.y() / _ymag);

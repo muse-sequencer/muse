@@ -54,9 +54,9 @@ static int processAudio(jack_nframes_t nFrames, void*)
             }
       while(mess->eventsPending())
             mess->processEvent(mess->receiveEvent());
-            
+
       void* midi = jack_port_get_buffer(inPort, nFrames);
-      int n = jack_midi_port_get_info(midi, nFrames)->event_count;
+      int n = jack_midi_get_event_count(midi, nFrames);
       unsigned offset = 0;
 
       for (int i = 0; i < n; ++i) {
@@ -112,7 +112,7 @@ static void usage(const char* programName)
              "    options:   -v   print version\n"
              "               -d   debug mode on\n",
             programName
-            );      
+            );
       }
 
 //---------------------------------------------------------
@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
       //
       QDir pluginDir(INSTPREFIX "/lib/" INSTALL_NAME "/synthi");
       if (!pluginDir.exists()) {
-            fprintf(stderr, "plugin directory <%s> not found\n", 
+            fprintf(stderr, "plugin directory <%s> not found\n",
                pluginDir.path().toLocal8Bit().data());
             return -2;
             }
@@ -154,8 +154,8 @@ int main(int argc, char* argv[])
       if (!pluginName.endsWith(".so", Qt::CaseInsensitive))
             pluginName += ".so";
       if (!pluginDir.exists(pluginName)) {
-            fprintf(stderr, "plugin <%s> in directory <%s> not found\n", 
-               pluginName.toLocal8Bit().data(), 
+            fprintf(stderr, "plugin <%s> in directory <%s> not found\n",
+               pluginName.toLocal8Bit().data(),
                pluginDir.path().toLocal8Bit().data());
             return -3;
             }
@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
             }
       const MESS* descr = msynth();
       if (descr == 0) {
-            fprintf(stderr, "%s: instantiate: no MESS descr found\n", 
+            fprintf(stderr, "%s: instantiate: no MESS descr found\n",
                argv[0]);
             return 6;
             }
@@ -246,10 +246,10 @@ int main(int argc, char* argv[])
       for (int i = 0; i < channels; ++i) {
             char portName[64];
             snprintf(portName, 64, "audioOut-%d", i);
-            outPorts[i] = jack_port_register(client, portName, 
+            outPorts[i] = jack_port_register(client, portName,
                JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
             }
-      inPort = jack_port_register(client, "midiIn", 
+      inPort = jack_port_register(client, "midiIn",
          JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
       if (mess->hasGui())
             mess->showGui(true);

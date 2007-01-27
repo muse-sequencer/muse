@@ -2005,7 +2005,7 @@ void MusE::cmd(QAction* a)
 
 void MusE::clipboardChanged()
       {
-      QString subtype("partlist");
+//      QString subtype("partlist");
       const QMimeData* ms = QApplication::clipboard()->mimeData();
       if (ms == 0)
             return;
@@ -2835,9 +2835,6 @@ int main(int argc, char* argv[])
             loadPlugins = false;
             loadVST     = false;
             }
-
-
-
 
       museUser = QString(getenv("MUSEHOME"));
       if (museUser.isEmpty())

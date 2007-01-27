@@ -28,9 +28,6 @@ const char WavUriDrag::type[] = "text/uri-list";
 
 //---------------------------------------------------------
 //   MidiPartDrag
-//    does only transfer reference to part, this does
-//    not allow for transfers between different apps
-//    TODO: transfer content (xml representation)
 //---------------------------------------------------------
 
 MidiPartDrag::MidiPartDrag(Part* part, QWidget* src)
