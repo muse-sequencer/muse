@@ -60,12 +60,13 @@ class PartListEditor : public ListWidget {
 
    private slots:
       void insertClicked();
+      void deleteClicked();
 
    public:
       PartListEditor(ListEdit*, QWidget* parent = 0);
       virtual void setup(const ListType&);
       Track* getTrack() const;
-      enum { TICK_COL, TIME_COL, TYPE_COL, A_COL, B_COL};
+      enum { TICK_COL, TIME_COL, TYPE_COL, A_COL, B_COL, C_COL, LEN_COL, DATA_COL};
       };
 
 #endif

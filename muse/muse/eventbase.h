@@ -89,6 +89,8 @@ class EventBase : public AL::PosLen {
       virtual void setSndFile(SndFileR&)            { }
       virtual EventBase* clone() const = 0;
       virtual void read(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/) {}
+
+      virtual bool operator==(const EventBase&) const { return false; }
       };
 
 #endif

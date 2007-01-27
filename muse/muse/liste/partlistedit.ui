@@ -105,6 +105,21 @@ p, li { white-space: pre-wrap; }
        <string>Val B</string>
       </property>
      </column>
+     <column>
+      <property name="text" >
+       <string>Val C</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Length</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Data</string>
+      </property>
+     </column>
     </widget>
    </item>
    <item>

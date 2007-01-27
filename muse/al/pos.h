@@ -121,6 +121,8 @@ class PosLen : public Pos {
       unsigned endTick() const    { return end().tick(); }
       unsigned endFrame() const   { return end().frame(); }
       void setPos(const Pos&);
+
+      bool operator==(const PosLen& s) const;
       };
 }
 

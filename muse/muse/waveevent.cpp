@@ -119,3 +119,19 @@ void WaveEventBase::read(unsigned offset, float** buffer, int channel, int n)
       f.read(channel, buffer, n);
       }
 
+//---------------------------------------------------------
+//   WaveEventBase::operator==
+//---------------------------------------------------------
+
+bool WaveEventBase::operator==(const EventBase& ev) const {
+
+  const WaveEventBase* pev = dynamic_cast<const WaveEventBase*>(&ev);
+
+  if(pev) return operator==(*pev);
+  else return false;
+}
+
+bool WaveEventBase::operator==(const WaveEventBase& /*ev*/) const {
+  //TODO
+  return false;
+}

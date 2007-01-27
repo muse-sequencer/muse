@@ -49,6 +49,7 @@ PartListEditor::PartListEditor(ListEdit* e, QWidget* parent)
       part = 0;
 
       connect(le.insertButton, SIGNAL(clicked()), SLOT(insertClicked()));
+      connect(le.deleteButton, SIGNAL(clicked()), SLOT(deleteClicked()));
      }
 
 //---------------------------------------------------------
@@ -85,12 +86,19 @@ void PartListEditor::updateList()
             QTreeWidgetItem* item = new QTreeWidgetItem;
             item->setData(TICK_COL, Qt::TextAlignmentRole, int(Qt::AlignRight | Qt::AlignVCenter));
             item->setData(TIME_COL, Qt::TextAlignmentRole, int(Qt::AlignRight | Qt::AlignVCenter));
-            item->setData(TICK_COL, Qt::DisplayRole, e.tick());
-            item->setData(TIME_COL, Qt::DisplayRole, e.tick());
-
-            item->setData(2, Qt::DisplayRole, e.eventTypeName());
-            item->setData(3, Qt::DisplayRole, e.dataA());
-            item->setData(4, Qt::DisplayRole, e.dataB());
+            item->setData(TICK_COL, Qt::DisplayRole, e.tick() + part->tick());
+            item->setData(TIME_COL, Qt::DisplayRole, e.tick() + part->tick());
+            item->setData(TYPE_COL, Qt::TextAlignmentRole, int(Qt::AlignRight | Qt::AlignVCenter));	    
+            item->setData(TYPE_COL, Qt::DisplayRole, e.eventTypeName());
+            item->setData(A_COL,  Qt::TextAlignmentRole, int(Qt::AlignHCenter | Qt::AlignVCenter));
+            item->setData(A_COL, Qt::DisplayRole, e.dataA());
+            item->setData(B_COL,  Qt::TextAlignmentRole, int(Qt::AlignHCenter | Qt::AlignVCenter));
+            item->setData(B_COL, Qt::DisplayRole, e.dataB());
+            item->setData(C_COL,  Qt::TextAlignmentRole, int(Qt::AlignHCenter | Qt::AlignVCenter));
+            item->setData(C_COL, Qt::DisplayRole, e.dataC());
+            item->setData(LEN_COL,  Qt::TextAlignmentRole, int(Qt::AlignHCenter | Qt::AlignVCenter));
+            item->setData(LEN_COL, Qt::DisplayRole, (e.type()==Sysex?e.dataLen():e.lenTick()));
+	    item->setText(DATA_COL, (e.type()==Sysex?InsertEventDialog::charArray2Str((const char*)e.data(), e.dataLen()):""));
             le.eventList->insertTopLevelItem(idx, item);
             }
       }
@@ -102,11 +110,16 @@ void PartListEditor::updateList()
 
 void PartListEditor::insertClicked()
       {
+	QTreeWidgetItem* cur = le.eventList->currentItem();
 	AL::Pos time;
-
+	if(cur) {
+	  int tick = cur->data(TIME_COL, Qt::DisplayRole).toInt();
+	  time.setTick(tick);
+	}
+	  
 	EventList* el;
 
-	InsertEventDialog dialog(time, this);
+	InsertEventDialog dialog(time, part, this);
 	if(dialog.exec() == QDialog::Accepted) {
 	  el = dialog.elResult();
 	  if(el) {
@@ -116,6 +129,40 @@ void PartListEditor::insertClicked()
 	    }
 	  }
 	}
+      }
+
+//---------------------------------------------------------
+//   deleteClicked
+//---------------------------------------------------------
+
+void PartListEditor::deleteClicked()
+      {
+      QTreeWidgetItem* cur = le.eventList->currentItem();
+      if (cur == 0)
+	return;
+      int tick = cur->data(TICK_COL, Qt::DisplayRole).toInt();
+      int evTick = (unsigned)IED_MAX(0, (int)tick - (int)part->tick());
+      QString type = cur->text(TYPE_COL);
+      if(type == "Note") {
+	Event ev(Note);
+	int pitch = cur->data(A_COL, Qt::DisplayRole).toInt();
+	int velo = cur->data(B_COL, Qt::DisplayRole).toInt();
+	int len = cur->data(LEN_COL, Qt::DisplayRole).toInt();
+	ev.setTick(evTick);
+	ev.setPitch(pitch);
+	ev.setVelo(velo);
+	ev.setLenTick(len);
+	song->deleteEvent(ev, part);
+      }
+      else if(type == "Sysex") {
+	Event ev(Sysex);
+	QString dataStr = cur->text(DATA_COL);
+	char* data = InsertEventDialog::Str2CharArray(dataStr);
+	int len = cur->data(LEN_COL, Qt::DisplayRole).toInt();
+	ev.setTick(evTick);
+	ev.setData((const unsigned char*)data, len);
+	song->deleteEvent(ev, part);
+        }
       }
 
 //---------------------------------------------------------
@@ -142,6 +189,9 @@ QWidget* EventDelegate::createEditor(QWidget* pw,
             case PartListEditor::TYPE_COL:
             case PartListEditor::A_COL:
             case PartListEditor::B_COL:
+            case PartListEditor::C_COL:
+            case PartListEditor::LEN_COL:
+            case PartListEditor::DATA_COL:
                   break;
             }
       return QItemDelegate::createEditor(pw, option, index);
@@ -166,6 +216,9 @@ void EventDelegate::setEditorData(QWidget* editor,
             case PartListEditor::TYPE_COL:
             case PartListEditor::A_COL:
             case PartListEditor::B_COL:
+            case PartListEditor::C_COL:
+            case PartListEditor::LEN_COL:
+            case PartListEditor::DATA_COL:
                   break;
             }
       QItemDelegate::setEditorData(editor, index);
@@ -190,6 +243,9 @@ void EventDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
             case PartListEditor::TYPE_COL:
             case PartListEditor::A_COL:
             case PartListEditor::B_COL:
+            case PartListEditor::C_COL:
+            case PartListEditor::LEN_COL:
+            case PartListEditor::DATA_COL:
                   break;
             }
       QItemDelegate::setModelData(editor, model, index);
@@ -225,6 +281,9 @@ void EventDelegate::paint(QPainter* painter,
             case PartListEditor::TYPE_COL:
             case PartListEditor::A_COL:
             case PartListEditor::B_COL:
+            case PartListEditor::C_COL:
+            case PartListEditor::LEN_COL:
+            case PartListEditor::DATA_COL:
                   QItemDelegate::paint(painter, option, index);
                   return;
             }

@@ -137,8 +137,9 @@ Event& Event::operator=(const Event& e)
       }
 
 bool Event::operator==(const Event& e) const {
-	return ev == e.ev;
+      return *ev == *e.ev;
       }
+
 
 int Event::getRefCount() const    { return ev->getRefCount(); }
 bool Event::selected() const      { return ev->_selected; }

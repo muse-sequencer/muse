@@ -52,6 +52,9 @@ class WaveEventBase : public EventBase {
       virtual SndFileR sndFile() const         { return f;      }
       virtual void setSndFile(SndFileR& sf)    { f = sf;        }
       virtual void read(unsigned offset, float** bpp, int channels, int nn);
+
+      virtual bool operator==(const EventBase&) const;
+      virtual bool operator==(const WaveEventBase&) const;
       };
 
 #endif

@@ -491,6 +491,17 @@ void PosLen::setPos(const Pos& pos)
       }
 
 //---------------------------------------------------------
+//   operator==
+//---------------------------------------------------------
+
+bool PosLen::operator==(const PosLen& pl) const {
+  if(type()==TICKS)
+    return (_lenTick==pl._lenTick && Pos::operator==((const Pos&)pl));
+  else
+    return (_lenFrame==pl._lenFrame && Pos::operator==((const Pos&)pl));      
+}
+
+//---------------------------------------------------------
 //   mbt
 //---------------------------------------------------------
 

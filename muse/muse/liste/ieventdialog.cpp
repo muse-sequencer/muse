@@ -22,13 +22,15 @@
 #include <QDialogButtonBox>
 #include "ieventdialog.h"
 
-InsertEventDialog::InsertEventDialog(const Pos& time,
+InsertEventDialog::InsertEventDialog(const Pos& time, Part* part,
 				     QWidget* parent, Qt::WindowFlags f)
   : QDialog(parent, f) {
   setWindowTitle("Insert Event Dialog");
 
   _selectedType = -1;
 
+
+  _part = part;
 
   _lastDir = QDir::currentPath();
 
@@ -42,10 +44,42 @@ InsertEventDialog::InsertEventDialog(const Pos& time,
     QGridLayout* tLayout = new QGridLayout(_typeWidget[i]);
     if(i == IED_Note) {
       _eventTypeComboBox->addItem(NoteSTR);
-      //TODO
-      QLabel* noteEventTODO =
-	new QLabel("TODO : Note event", _typeWidget[i]);
-      tLayout->addWidget(noteEventTODO, 0, 0, 1, 2);
+      //pitch
+      QLabel* pitchLabel = new QLabel("Pitch", _typeWidget[i]);
+      tLayout->addWidget(pitchLabel, 0, 0);
+      /*_noteLabel = new QLabel("C4", _typeWidget[i]);
+      _noteLabel->setFrameShape(QFrame::Panel);
+      _noteLabel->setFrameShadow(QFrame::Sunken);
+      tLayout->addWidget(_noteLabel, 0, 1);*/
+      _pitchSpinBox = new QSpinBox(_typeWidget[i]);
+      _pitchSpinBox->setMaximum(127);
+      _pitchSpinBox->setMinimum(0);
+      _pitchSpinBox->setValue(72); //C4
+      tLayout->addWidget(_pitchSpinBox, 0, 1);
+      //Velocity
+      QLabel* velocityLabel = new QLabel("Velocity", _typeWidget[i]);
+      tLayout->addWidget(velocityLabel, 1, 0);
+      _velocitySpinBox = new QSpinBox(_typeWidget[i]);
+      _velocitySpinBox->setMaximum(127);
+      _velocitySpinBox->setMinimum(0);
+      _velocitySpinBox->setValue(70);
+      tLayout->addWidget(_velocitySpinBox, 1, 1);
+      //Velocity Off
+      /*QLabel* veloOffLabel = new QLabel("Velocity Off", _typeWidget[i]);
+      tLayout->addWidget(veloOffLabel, 2, 0);
+      _veloOffSpinBox = new QSpinBox(_typeWidget[i]);
+      _veloOffSpinBox->setMaximum(127);
+      _veloOffSpinBox->setMinimum(0);
+      _veloOffSpinBox->setValue(0);
+      tLayout->addWidget(_veloOffSpinBox, 2, 1);*/
+      //Length
+      QLabel* lengthLabel = new QLabel("Length", _typeWidget[i]);
+      tLayout->addWidget(lengthLabel, 2, 0);
+      _lengthSpinBox = new QSpinBox(_typeWidget[i]);
+      _lengthSpinBox->setMaximum(32768);
+      _lengthSpinBox->setMinimum(1);
+      _lengthSpinBox->setValue(384);
+      tLayout->addWidget(_lengthSpinBox, 2, 1);
     }
     else if(i == IED_ProgramChange) {
       _eventTypeComboBox->addItem(ProgramChangeSTR);
@@ -149,10 +183,23 @@ InsertEventDialog::~InsertEventDialog() {
 }
 
 EventList* InsertEventDialog::elResult() {
+  unsigned evTick;
+  evTick = (unsigned)IED_MAX(0, (int)_timePosEdit->pos().tick()
+			     - (int)_part->tick());
+  Pos evPos(evTick);
+  EventList* res = new EventList;
+
   int curType = _eventTypeComboBox->currentIndex();
+
   if(curType == IED_Note) {
-    //TODO
-    return NULL;
+    Event evNote(Note);
+    evNote.setPos(evPos);
+    evNote.setPitch(_pitchSpinBox->value());
+    evNote.setVelo(_velocitySpinBox->value());
+    //evNote.setVeloOff(_veloOffSpinBox->value());
+    evNote.setLenTick(_lengthSpinBox->value());
+    res->add(evNote);
+    return res;
   }
   else if(curType == IED_ProgramChange) {
     //TODO
@@ -163,10 +210,9 @@ EventList* InsertEventDialog::elResult() {
     return NULL;
   }
   else if(curType == IED_Sysex) {
-    EventList* res = new EventList;
     for(unsigned i = 0; (int)i < _sysexCountSpinBox->value(); i++) {
       Event evSysex(Sysex);
-      evSysex.setPos(_timePosEdit->pos());
+      evSysex.setPos(evPos);
       evSysex.setData((const unsigned char*) _dataSysex[i].data(),
 		      _dataSysex[i].size());
       res->add(evSysex);
@@ -178,6 +224,9 @@ EventList* InsertEventDialog::elResult() {
 
 int InsertEventDialog::sysexLength() {
   return _dataSysex[_curSysexSpinBox->value()].size();
+}
+QString InsertEventDialog::charArray2Str(const char* s, int length) {
+  return ByteArray2Str(QByteArray(s, length));
 }
 QString InsertEventDialog::ByteArray2Str(const QByteArray& ba) {
   QString res = "F0 ";
@@ -198,6 +247,10 @@ QByteArray InsertEventDialog::Str2ByteArray(const QString& s) {
   }
   return ba;
 }
+char* InsertEventDialog::Str2CharArray(const QString& s) {
+  return Str2ByteArray(s).data();
+}
+
 void InsertEventDialog::setSysexTextEdit() {
   QString s = _dataSysexStr[_curSysexSpinBox->value()].toUpper();
   _sysexTextEdit->blockSignals(true);
@@ -358,5 +411,6 @@ void InsertEventDialog::updateType(int type) {
       else _typeWidget[i]->hide();
     }
     _selectedType = type;
+    resize(1, 1);
   }
 }

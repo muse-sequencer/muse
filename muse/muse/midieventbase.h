@@ -68,6 +68,9 @@ class MidiEventBase : public EventBase {
       virtual void read(QDomNode);
       virtual void write(Xml&, const Pos& offset) const;
       virtual EventBase* mid(unsigned, unsigned);
+
+      virtual bool operator==(const EventBase&) const;
+      virtual bool operator==(const MidiEventBase&) const;
       };
 
 #endif

@@ -32,6 +32,7 @@
 #include "midievent.h"
 #include "al/pos.h"
 #include "muse/event.h"
+#include "muse/part.h"
 
 class QDialog;
 using Awl::PosEdit;
@@ -42,6 +43,8 @@ using AL::Pos;
 #define ControlChangeSTR "Control change"
 #define SysexSTR "Sysex"
 
+#define IED_MAX(x, y) (x > y? x : y)
+
 class InsertEventDialog : public QDialog {
   Q_OBJECT
 
@@ -51,11 +54,21 @@ class InsertEventDialog : public QDialog {
 
   QString _lastDir;
 
+  Part* _part;
+
+
   //event type
   QComboBox* _eventTypeComboBox;
 
   //time
   PosEdit* _timePosEdit;
+
+  //Note
+  QSpinBox* _pitchSpinBox;
+  QSpinBox* _velocitySpinBox;
+  QSpinBox* _veloOffSpinBox;
+  QSpinBox* _lengthSpinBox;
+  //QLabel* _noteLabel;
 
   //Sysex
   QSpinBox* _sysexCountSpinBox;
@@ -77,16 +90,19 @@ class InsertEventDialog : public QDialog {
     IED_TypeCount };
 
   int sysexLength(); //return the length of the current sysex
-  QString ByteArray2Str(const QByteArray& ba); //add F0 and F7
-  QByteArray Str2ByteArray(const QString& s); //skip F0 and F7
   void setSysexTextEdit(); //set the display of sysexTextEdit
 
  public:
-  InsertEventDialog(const Pos& time,
+  InsertEventDialog(const Pos& time, Part* part,
 		    QWidget* parent = 0, Qt::WindowFlags f = 0);
   ~InsertEventDialog();
 
   EventList* elResult();
+
+  static QString charArray2Str(const char* s, int length);
+  static QString ByteArray2Str(const QByteArray& ba); //add F0 and F7
+  static QByteArray Str2ByteArray(const QString& s); //skip F0 and F7
+  static char* Str2CharArray(const QString& s);
 
  private slots:
   void updateSysexTextEdit();

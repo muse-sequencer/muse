@@ -21,6 +21,8 @@
 #ifndef __EVDATA_H__
 #define __EVDATA_H__
 
+#include <string.h>
+
 //---------------------------------------------------------
 //   EvData
 //    variable len event data (sysex, meta etc.)
@@ -57,6 +59,13 @@ class EvData {
             refCount = ed.refCount;
             (*refCount)++;
             return *this;
+            }
+
+      bool operator==(const EvData& ed) const {
+	    if(dataLen==ed.dataLen) {
+	      return memcmp(data, ed.data, sizeof(unsigned char) * dataLen)==0;
+	      }
+	    else return false;
             }
 
       ~EvData() {

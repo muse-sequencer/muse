@@ -1,3 +1,7 @@
+27.01 (ng)
+      - added operator== for EventBase, MidiEventBase and PosLen
+      - modified Event::operator== to match on the content instead of the pointer
+      - added insert note event and delete note and sysex event in List Editor
 23.01 (ng)
       - added insert sysex event update I
       - replaced bzip2 by Qt compression in deicsonze

@@ -142,3 +142,18 @@ void MidiEventBase::read(QDomNode node)
             }
       }
 
+//---------------------------------------------------------
+//   MidiEventBase::operator==
+//---------------------------------------------------------
+
+bool MidiEventBase::operator==(const EventBase& ev) const {
+  const MidiEventBase* pev = dynamic_cast<const MidiEventBase*>(&ev);
+
+  if(pev) return operator==(*pev);
+  else return false;
+}
+
+bool MidiEventBase::operator==(const MidiEventBase& ev) const {
+  return (ev.a==a && ev.b==b && ev.c==c && ev.edata==edata
+	  && PosLen::operator==((const PosLen&)ev));
+}
