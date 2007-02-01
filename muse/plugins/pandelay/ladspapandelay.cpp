@@ -51,28 +51,33 @@ void LADSPAPanDelay::activate() {
   *port[6] = param[2];
   *port[7] = param[3];
   *port[8] = param[4];
+  *port[9] = param[5];
 }
 
 void LADSPAPanDelay::updateParameters() {
   if (param[0] != *port[4]) {
     param[0] = *port[4];
-    setDelayTime(param[0]);
+    setBPM(param[0]);
   }
   if (param[1] != *port[5]) {
     param[1] = *port[5];
-    setFeedback(param[1]);
+    setBeatRatio(param[1]);
   }
   if (param[2] != *port[6]) {
     param[2] = *port[6];
-    setPanLFOFreq(param[2]);
+    setFeedback(param[2]);
   }
   if (param[3] != *port[7]) {
     param[3] = *port[7];
-    setPanLFODepth(param[3]);
+    setPanLFOFreq(param[3]);
   }
   if (param[4] != *port[8]) {
     param[4] = *port[8];
-    setDryWet(param[4]);
+    setPanLFODepth(param[4]);
+  }
+  if (param[5] != *port[9]) {
+    param[5] = *port[9];
+    setDryWet(param[5]);
   }
 }
 

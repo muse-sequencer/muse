@@ -1,3 +1,5 @@
+01.02 (ng)
+      - changed PanDelay, time delay is calculated with BPM and beat ratio
 27.01
       (ws)
       - changed DSSI initialization making whysynth work

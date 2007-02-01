@@ -10,4 +10,4 @@
 - Load BUMP preset
 - calibrate portamento and pitch envelope to fit real DX11
 - make deicsonze loadable as standalone by mus
-
+- It seems that there is still a bug on the note on, on some presets

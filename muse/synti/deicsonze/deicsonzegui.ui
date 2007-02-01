@@ -3958,60 +3958,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item row="2" column="0" colspan="2" >
-        <widget class="QGroupBox" name="delayTimeGroupBox" >
-         <property name="maximumSize" >
-          <size>
-           <width>16777215</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="title" >
-          <string>Delay Time (ms) </string>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="0" column="1" >
-           <widget class="Awl::FloatEntry" name="delayTimeFloatentry" >
-            <property name="maximumSize" >
-             <size>
-              <width>48</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="minValue" >
-             <double>0.010000000000000</double>
-            </property>
-            <property name="maxValue" >
-             <double>2.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" >
-           <widget class="QSlider" name="delayTimeSlider" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="whatsThis" >
-             <string>Channel Chorus</string>
-            </property>
-            <property name="maximum" >
-             <number>255</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="3" colspan="2" >
+       <item row="2" column="6" >
         <widget class="QGroupBox" name="delayPanDepthGroupBox" >
          <property name="maximumSize" >
           <size>
@@ -4040,75 +3987,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
            </widget>
           </item>
           <item row="0" column="0" >
-           <widget class="QSlider" name="delayPanLFODepthSlider" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="whatsThis" >
-             <string>Channel Chorus</string>
-            </property>
-            <property name="maximum" >
-             <number>255</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
+           <widget class="Awl::Knob" name="delayPanLFODepthKnob" />
           </item>
          </layout>
         </widget>
        </item>
-       <item row="2" column="2" >
-        <widget class="QGroupBox" name="delayFeedbackGroupBox" >
-         <property name="maximumSize" >
-          <size>
-           <width>16777215</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="title" >
-          <string>Delay Feedback</string>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="0" column="1" >
-           <widget class="Awl::FloatEntry" name="delayFeedbackFloatentry" >
-            <property name="maximumSize" >
-             <size>
-              <width>48</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="minValue" >
-             <double>-1.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" >
-           <widget class="QSlider" name="delayFeedbackSlider" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="whatsThis" >
-             <string>Channel Chorus</string>
-            </property>
-            <property name="maximum" >
-             <number>255</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="3" colspan="2" >
+       <item row="1" column="6" >
         <widget class="QGroupBox" name="delayPanLFOGroupBox" >
          <property name="maximumSize" >
           <size>
@@ -4127,18 +4011,18 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
            <number>6</number>
           </property>
           <item row="0" column="0" >
-           <widget class="QSlider" name="delayPanLFOFreqSlider" >
-            <property name="cursor" >
-             <cursor>13</cursor>
+           <widget class="Awl::Knob" name="delayPanLFOFreqKnob" >
+            <property name="value" >
+             <double>1.122018456226853</double>
             </property>
-            <property name="whatsThis" >
-             <string>Channel Chorus</string>
+            <property name="minValue" >
+             <double>0.100000000000000</double>
             </property>
-            <property name="maximum" >
-             <number>255</number>
+            <property name="maxValue" >
+             <double>10.000000000000000</double>
             </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
+            <property name="log" >
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -4161,51 +4045,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
          </layout>
         </widget>
        </item>
-       <item row="1" column="0" colspan="2" >
-        <widget class="QGroupBox" name="delayReturnGroupBox" >
-         <property name="maximumSize" >
-          <size>
-           <width>16777215</width>
-           <height>80</height>
-          </size>
-         </property>
-         <property name="title" >
-          <string>Delay On/Off, Return Level</string>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="0" column="0" >
-           <widget class="QCheckBox" name="delayActivCheckBox" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="text" >
-             <string>On</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1" >
-           <widget class="QSlider" name="delayReturnSlider" >
-            <property name="maximum" >
-             <number>255</number>
-            </property>
-            <property name="value" >
-             <number>128</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="2" >
+       <item row="1" column="3" colspan="3" >
         <widget class="QGroupBox" name="channelDelayGroupBox" >
          <property name="maximumSize" >
           <size>
@@ -4249,7 +4089,198 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
          </layout>
         </widget>
        </item>
-       <item row="0" column="0" colspan="5" >
+       <item row="2" column="4" colspan="2" >
+        <widget class="QGroupBox" name="delayFeedbackGroupBox" >
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Delay Feedback</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" >
+           <widget class="Awl::Knob" name="delayFeedbackKnob" >
+            <property name="value" >
+             <double>0.000000000000000</double>
+            </property>
+            <property name="minValue" >
+             <double>-1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="Awl::FloatEntry" name="delayFeedbackFloatentry" >
+            <property name="maximumSize" >
+             <size>
+              <width>48</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="minValue" >
+             <double>-1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="3" >
+        <widget class="QGroupBox" name="delayReturnGroupBox" >
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Delay On/Off, Return Level</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" >
+           <widget class="QCheckBox" name="delayActivCheckBox" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="text" >
+             <string>On</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QSlider" name="delayReturnSlider" >
+            <property name="maximum" >
+             <number>255</number>
+            </property>
+            <property name="value" >
+             <number>128</number>
+            </property>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="2" colspan="2" >
+        <widget class="QGroupBox" name="delayBeatRatioGroupBox" >
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Delay Beat Ratio</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" >
+           <widget class="Awl::Knob" name="delayBeatRatioKnob" >
+            <property name="value" >
+             <double>1.000000000000000</double>
+            </property>
+            <property name="minValue" >
+             <double>0.125000000000000</double>
+            </property>
+            <property name="maxValue" >
+             <double>2.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="Awl::FloatEntry" name="delayBeatRatioFloatentry" >
+            <property name="maximumSize" >
+             <size>
+              <width>48</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="minValue" >
+             <double>0.010000000000000</double>
+            </property>
+            <property name="maxValue" >
+             <double>2.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2" >
+        <widget class="QGroupBox" name="delayBPMGroupBox" >
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Delay BPM</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" >
+           <widget class="Awl::Knob" name="delayBPMKnob" >
+            <property name="value" >
+             <double>100.000000000000000</double>
+            </property>
+            <property name="minValue" >
+             <double>60.000000000000000</double>
+            </property>
+            <property name="maxValue" >
+             <double>255.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="Awl::FloatEntry" name="delayBPMFloatentry" >
+            <property name="maximumSize" >
+             <size>
+              <width>48</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="maxLength" >
+             <number>6</number>
+            </property>
+            <property name="minValue" >
+             <double>60.000000000000000</double>
+            </property>
+            <property name="maxValue" >
+             <double>255.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="7" >
         <widget class="QTabWidget" name="controlTabWidget" >
          <property name="currentIndex" >
           <number>0</number>
@@ -4932,7 +4963,92 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
          </widget>
         </widget>
        </item>
-       <item row="3" column="1" colspan="3" >
+       <item row="3" column="0" >
+        <widget class="QGroupBox" name="modeGroupBox" >
+         <property name="title" >
+          <string>Phony Mode</string>
+         </property>
+         <layout class="QHBoxLayout" >
+          <property name="margin" >
+           <number>10</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QComboBox" name="polyMonoComboBox" >
+            <property name="enabled" >
+             <bool>true</bool>
+            </property>
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <item>
+             <property name="text" >
+              <string>POLY</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>MONO</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="5" colspan="2" >
+        <widget class="QGroupBox" name="pitchBendRangeGroupBox" >
+         <property name="title" >
+          <string>Pitch Bend Range</string>
+         </property>
+         <layout class="QHBoxLayout" >
+          <property name="margin" >
+           <number>10</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QSlider" name="pitchBendRangeSlider" >
+            <property name="cursor" >
+             <cursor>13</cursor>
+            </property>
+            <property name="toolTip" >
+             <string>Pitch Bend Range</string>
+            </property>
+            <property name="minimum" >
+             <number>0</number>
+            </property>
+            <property name="maximum" >
+             <number>12</number>
+            </property>
+            <property name="pageStep" >
+             <number>1</number>
+            </property>
+            <property name="value" >
+             <number>0</number>
+            </property>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="pitchBendRangeSpinBox" >
+            <property name="toolTip" >
+             <string>Pitch Bend Range</string>
+            </property>
+            <property name="maximum" >
+             <number>12</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="1" colspan="4" >
         <widget class="QGroupBox" name="portamentoGroupBox" >
          <property name="title" >
           <string>Potamento</string>
@@ -5019,91 +5135,6 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
             <property name="maximum" >
              <number>99</number>
             </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="3" column="4" >
-        <widget class="QGroupBox" name="pitchBendRangeGroupBox" >
-         <property name="title" >
-          <string>Pitch Bend Range</string>
-         </property>
-         <layout class="QHBoxLayout" >
-          <property name="margin" >
-           <number>10</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QSlider" name="pitchBendRangeSlider" >
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <property name="toolTip" >
-             <string>Pitch Bend Range</string>
-            </property>
-            <property name="minimum" >
-             <number>0</number>
-            </property>
-            <property name="maximum" >
-             <number>12</number>
-            </property>
-            <property name="pageStep" >
-             <number>1</number>
-            </property>
-            <property name="value" >
-             <number>0</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="pitchBendRangeSpinBox" >
-            <property name="toolTip" >
-             <string>Pitch Bend Range</string>
-            </property>
-            <property name="maximum" >
-             <number>12</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="3" column="0" >
-        <widget class="QGroupBox" name="modeGroupBox" >
-         <property name="title" >
-          <string>Phony Mode</string>
-         </property>
-         <layout class="QHBoxLayout" >
-          <property name="margin" >
-           <number>10</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QComboBox" name="polyMonoComboBox" >
-            <property name="enabled" >
-             <bool>true</bool>
-            </property>
-            <property name="cursor" >
-             <cursor>13</cursor>
-            </property>
-            <item>
-             <property name="text" >
-              <string>POLY</string>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>MONO</string>
-             </property>
-            </item>
            </widget>
           </item>
          </layout>
@@ -5848,352 +5879,500 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
      </widget>
     </widget>
    </item>
-   <item rowspan="3" row="0" column="4" >
-    <widget class="QGroupBox" name="channelCtrlGroupBox" >
-     <property name="minimumSize" >
+   <item row="1" column="3" >
+    <widget class="QPushButton" name="resCtrlButton" >
+     <property name="maximumSize" >
       <size>
-       <width>96</width>
-       <height>16</height>
+       <width>1000</width>
+       <height>20</height>
       </size>
      </property>
-     <property name="title" >
-      <string>Channel Ctrl</string>
+     <property name="palette" >
+      <palette>
+       <active>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Button" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Light" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>237</red>
+           <green>237</green>
+           <blue>237</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Midlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Dark" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Mid" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>166</red>
+           <green>166</green>
+           <blue>166</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Text" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="BrightText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="ButtonText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Shadow" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Highlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="HighlightedText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Link" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="LinkVisited" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="AlternateBase" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </active>
+       <inactive>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Button" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Light" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>237</red>
+           <green>237</green>
+           <blue>237</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Midlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Dark" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Mid" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>166</red>
+           <green>166</green>
+           <blue>166</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Text" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="BrightText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="ButtonText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Shadow" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Highlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="HighlightedText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Link" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="LinkVisited" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="AlternateBase" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </inactive>
+       <disabled>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Button" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Light" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>237</red>
+           <green>237</green>
+           <blue>237</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Midlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Dark" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Mid" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>166</red>
+           <green>166</green>
+           <blue>166</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Text" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="BrightText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="ButtonText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Shadow" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Highlight" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>121</red>
+           <green>125</green>
+           <blue>121</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="HighlightedText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>207</red>
+           <green>207</green>
+           <blue>207</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Link" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>0</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="LinkVisited" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>0</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="AlternateBase" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>231</red>
+           <green>231</green>
+           <blue>231</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </disabled>
+      </palette>
      </property>
-     <layout class="QGridLayout" >
-      <property name="margin" >
-       <number>9</number>
-      </property>
-      <property name="spacing" >
-       <number>6</number>
-      </property>
-      <item row="2" column="0" >
-       <widget class="Awl::VolKnob" name="channelPanKnob" >
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-        <property name="minValue" >
-         <double>0.000000000000000</double>
-        </property>
-        <property name="maxValue" >
-         <double>1.000000000000000</double>
-        </property>
-        <property name="lineStep" >
-         <double>0.100000000000000</double>
-        </property>
-        <property name="pageStep" >
-         <double>0.200000000000000</double>
-        </property>
-        <property name="log" >
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="0" >
-       <widget class="QLabel" name="releaseLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Release</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="12" column="0" >
-       <widget class="Awl::Knob" name="releaseKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="11" column="0" >
-       <widget class="QLabel" name="attackTimeLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Attack</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="0" >
-       <widget class="Awl::Knob" name="attackKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0" >
-       <widget class="QLabel" name="detuneLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Detune</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0" >
-       <widget class="Awl::Knob" name="detuneKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0" >
-       <widget class="QLabel" name="brightnessLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Brightness</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" >
-       <widget class="Awl::Knob" name="brightnessKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0" >
-       <widget class="QLabel" name="modulationLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Modulation</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" >
-       <widget class="Awl::Knob" name="modulationKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" >
-       <widget class="QLabel" name="channelPanLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Pan</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" >
-       <widget class="QLabel" name="channelVolumeLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Volume</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" >
-       <widget class="Awl::Knob" name="channelVolumeKnob" >
-        <property name="minimumSize" >
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="cursor" >
-         <cursor>13</cursor>
-        </property>
-        <property name="maxValue" >
-         <double>1.000000000000000</double>
-        </property>
-        <property name="lineStep" >
-         <double>0.100000000000000</double>
-        </property>
-        <property name="pageStep" >
-         <double>0.200000000000000</double>
-        </property>
-        <property name="scaleSize" >
-         <number>270</number>
-        </property>
-        <property name="markSize" >
-         <number>6</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item rowspan="2" row="0" column="1" >
-    <widget class="Awl::VolKnob" name="masterVolKnob" >
-     <property name="minimumSize" >
-      <size>
-       <width>40</width>
-       <height>40</height>
-      </size>
+     <property name="font" >
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <italic>false</italic>
+       <bold>true</bold>
+       <underline>false</underline>
+       <strikeout>false</strikeout>
+      </font>
      </property>
-     <property name="value" >
-      <double>-31.287818861687722</double>
-     </property>
-     <property name="minValue" >
-      <double>0.000000000000000</double>
-     </property>
-     <property name="maxValue" >
-      <double>1.000000000000000</double>
-     </property>
-     <property name="lineStep" >
-      <double>0.100000000000000</double>
-     </property>
-     <property name="pageStep" >
-      <double>0.200000000000000</double>
-     </property>
-     <property name="log" >
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item rowspan="2" row="0" column="0" >
-    <widget class="QLabel" name="masterVolumeLabel" >
-     <property name="frameShape" >
-      <enum>QFrame::StyledPanel</enum>
+     <property name="toolTip" >
+      <string>Set Brightness, Detune, Attack and Release of the current channel to default</string>
      </property>
      <property name="text" >
-      <string>Vol</string>
+      <string>Res. Ctrl</string>
      </property>
-     <property name="alignment" >
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item rowspan="2" row="0" column="2" >
-    <widget class="QGroupBox" name="generalBox" >
-     <property name="title" >
-      <string/>
-     </property>
-     <layout class="QGridLayout" >
-      <property name="margin" >
-       <number>9</number>
-      </property>
-      <property name="spacing" >
-       <number>6</number>
-      </property>
-      <item row="0" column="4" >
-       <widget class="QSpinBox" name="nbrVoicesSpinBox" >
-        <property name="enabled" >
-         <bool>true</bool>
-        </property>
-        <property name="toolTip" >
-         <string>Number of Voices</string>
-        </property>
-        <property name="maximum" >
-         <number>64</number>
-        </property>
-        <property name="minimum" >
-         <number>1</number>
-        </property>
-        <property name="value" >
-         <number>8</number>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3" >
-       <widget class="QLabel" name="numberVoicesLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Number of voices</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2" >
-       <widget class="QCheckBox" name="ChannelCheckBox" >
-        <property name="text" >
-         <string>Enable</string>
-        </property>
-        <property name="checked" >
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1" >
-       <widget class="QSpinBox" name="ChannelNumSpinBox" >
-        <property name="maximum" >
-         <number>16</number>
-        </property>
-        <property name="minimum" >
-         <number>1</number>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" >
-       <widget class="QLabel" name="channelNumLabel" >
-        <property name="frameShape" >
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="text" >
-         <string>Channel</string>
-        </property>
-        <property name="alignment" >
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </widget>
    </item>
    <item row="0" column="3" >
@@ -6692,500 +6871,352 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
      </property>
     </widget>
    </item>
-   <item row="1" column="3" >
-    <widget class="QPushButton" name="resCtrlButton" >
-     <property name="maximumSize" >
-      <size>
-       <width>1000</width>
-       <height>20</height>
-      </size>
+   <item rowspan="2" row="0" column="2" >
+    <widget class="QGroupBox" name="generalBox" >
+     <property name="title" >
+      <string/>
      </property>
-     <property name="palette" >
-      <palette>
-       <active>
-        <colorrole role="WindowText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Button" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Light" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>237</red>
-           <green>237</green>
-           <blue>237</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Midlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Dark" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Mid" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>166</red>
-           <green>166</green>
-           <blue>166</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Text" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="BrightText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="ButtonText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Base" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Window" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Shadow" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Highlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="HighlightedText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Link" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="LinkVisited" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="AlternateBase" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </active>
-       <inactive>
-        <colorrole role="WindowText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Button" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Light" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>237</red>
-           <green>237</green>
-           <blue>237</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Midlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Dark" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Mid" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>166</red>
-           <green>166</green>
-           <blue>166</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Text" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="BrightText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="ButtonText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Base" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Window" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Shadow" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Highlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="HighlightedText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Link" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="LinkVisited" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="AlternateBase" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </inactive>
-       <disabled>
-        <colorrole role="WindowText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Button" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Light" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>237</red>
-           <green>237</green>
-           <blue>237</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Midlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Dark" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Mid" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>166</red>
-           <green>166</green>
-           <blue>166</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Text" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="BrightText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="ButtonText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Base" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Window" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Shadow" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>0</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Highlight" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>121</red>
-           <green>125</green>
-           <blue>121</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="HighlightedText" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>207</red>
-           <green>207</green>
-           <blue>207</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Link" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>0</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="LinkVisited" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>0</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="AlternateBase" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>231</red>
-           <green>231</green>
-           <blue>231</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </disabled>
-      </palette>
-     </property>
-     <property name="font" >
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>10</pointsize>
-       <weight>75</weight>
-       <italic>false</italic>
-       <bold>true</bold>
-       <underline>false</underline>
-       <strikeout>false</strikeout>
-      </font>
-     </property>
-     <property name="toolTip" >
-      <string>Set Brightness, Detune, Attack and Release of the current channel to default</string>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="0" column="4" >
+       <widget class="QSpinBox" name="nbrVoicesSpinBox" >
+        <property name="enabled" >
+         <bool>true</bool>
+        </property>
+        <property name="toolTip" >
+         <string>Number of Voices</string>
+        </property>
+        <property name="maximum" >
+         <number>64</number>
+        </property>
+        <property name="minimum" >
+         <number>1</number>
+        </property>
+        <property name="value" >
+         <number>8</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3" >
+       <widget class="QLabel" name="numberVoicesLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Number of voices</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" >
+       <widget class="QCheckBox" name="ChannelCheckBox" >
+        <property name="text" >
+         <string>Enable</string>
+        </property>
+        <property name="checked" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QSpinBox" name="ChannelNumSpinBox" >
+        <property name="maximum" >
+         <number>16</number>
+        </property>
+        <property name="minimum" >
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="channelNumLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Channel</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item rowspan="2" row="0" column="0" >
+    <widget class="QLabel" name="masterVolumeLabel" >
+     <property name="frameShape" >
+      <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="text" >
-      <string>Res. Ctrl</string>
+      <string>Vol</string>
      </property>
+     <property name="alignment" >
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item rowspan="2" row="0" column="1" >
+    <widget class="Awl::VolKnob" name="masterVolKnob" >
+     <property name="minimumSize" >
+      <size>
+       <width>40</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="value" >
+      <double>-1.240780029054432</double>
+     </property>
+     <property name="minValue" >
+      <double>0.000000000000000</double>
+     </property>
+     <property name="maxValue" >
+      <double>1.000000000000000</double>
+     </property>
+     <property name="lineStep" >
+      <double>0.100000000000000</double>
+     </property>
+     <property name="pageStep" >
+      <double>0.200000000000000</double>
+     </property>
+     <property name="log" >
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item rowspan="3" row="0" column="4" >
+    <widget class="QGroupBox" name="channelCtrlGroupBox" >
+     <property name="minimumSize" >
+      <size>
+       <width>96</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="title" >
+      <string>Channel Ctrl</string>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="2" column="0" >
+       <widget class="Awl::VolKnob" name="channelPanKnob" >
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+        <property name="minValue" >
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maxValue" >
+         <double>1.000000000000000</double>
+        </property>
+        <property name="lineStep" >
+         <double>0.100000000000000</double>
+        </property>
+        <property name="pageStep" >
+         <double>0.200000000000000</double>
+        </property>
+        <property name="log" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="0" >
+       <widget class="QLabel" name="releaseLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Release</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0" >
+       <widget class="Awl::Knob" name="releaseKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0" >
+       <widget class="QLabel" name="attackTimeLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Attack</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0" >
+       <widget class="Awl::Knob" name="attackKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0" >
+       <widget class="QLabel" name="detuneLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Detune</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0" >
+       <widget class="Awl::Knob" name="detuneKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0" >
+       <widget class="QLabel" name="brightnessLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Brightness</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" >
+       <widget class="Awl::Knob" name="brightnessKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" >
+       <widget class="QLabel" name="modulationLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Modulation</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" >
+       <widget class="Awl::Knob" name="modulationKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" >
+       <widget class="QLabel" name="channelPanLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Pan</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="channelVolumeLabel" >
+        <property name="frameShape" >
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="text" >
+         <string>Volume</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="Awl::Knob" name="channelVolumeKnob" >
+        <property name="minimumSize" >
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor" >
+         <cursor>13</cursor>
+        </property>
+        <property name="maxValue" >
+         <double>1.000000000000000</double>
+        </property>
+        <property name="lineStep" >
+         <double>0.100000000000000</double>
+        </property>
+        <property name="pageStep" >
+         <double>0.200000000000000</double>
+        </property>
+        <property name="scaleSize" >
+         <number>270</number>
+        </property>
+        <property name="markSize" >
+         <number>6</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>
@@ -7338,12 +7369,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7354,12 +7385,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7370,12 +7401,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7386,12 +7417,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7402,12 +7433,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7418,12 +7449,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7434,12 +7465,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7450,12 +7481,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7466,12 +7497,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7482,12 +7513,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7498,12 +7529,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7514,12 +7545,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -7530,12 +7561,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -8490,12 +8521,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -8506,12 +8537,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -8522,12 +8553,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -8538,12 +8569,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -8554,12 +8585,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -8570,12 +8601,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -8586,12 +8617,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>262</x>
-     <y>163</y>
+     <x>285</x>
+     <y>155</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>515</x>
-     <y>166</y>
+     <x>494</x>
+     <y>158</y>
     </hint>
    </hints>
   </connection>
@@ -8602,12 +8633,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>515</x>
-     <y>166</y>
+     <x>494</x>
+     <y>158</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>262</x>
-     <y>163</y>
+     <x>285</x>
+     <y>155</y>
     </hint>
    </hints>
   </connection>
@@ -8618,12 +8649,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>262</x>
-     <y>209</y>
+     <x>285</x>
+     <y>180</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>504</x>
-     <y>212</y>
+     <x>494</x>
+     <y>177</y>
     </hint>
    </hints>
   </connection>
@@ -8634,12 +8665,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>504</x>
-     <y>212</y>
+     <x>494</x>
+     <y>177</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>262</x>
-     <y>209</y>
+     <x>285</x>
+     <y>180</y>
     </hint>
    </hints>
   </connection>
@@ -8650,12 +8681,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>504</x>
-     <y>258</y>
+     <x>494</x>
+     <y>216</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>262</x>
-     <y>255</y>
+     <x>285</x>
+     <y>219</y>
     </hint>
    </hints>
   </connection>
@@ -8666,12 +8697,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>262</x>
-     <y>255</y>
+     <x>285</x>
+     <y>219</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>504</x>
-     <y>258</y>
+     <x>494</x>
+     <y>216</y>
     </hint>
    </hints>
   </connection>
@@ -8682,12 +8713,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>485</x>
-     <y>484</y>
+     <x>486</x>
+     <y>483</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>537</x>
-     <y>487</y>
+     <x>538</x>
+     <y>486</y>
     </hint>
    </hints>
   </connection>
@@ -8698,12 +8729,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>537</x>
-     <y>487</y>
+     <x>538</x>
+     <y>486</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>485</x>
-     <y>484</y>
+     <x>486</x>
+     <y>483</y>
     </hint>
    </hints>
   </connection>
@@ -8714,12 +8745,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>329</x>
-     <y>484</y>
+     <x>293</x>
+     <y>483</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>381</x>
-     <y>487</y>
+     <x>345</x>
+     <y>486</y>
     </hint>
    </hints>
   </connection>
@@ -8730,12 +8761,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>381</x>
-     <y>487</y>
+     <x>345</x>
+     <y>486</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>329</x>
-     <y>484</y>
+     <x>293</x>
+     <y>483</y>
     </hint>
    </hints>
   </connection>
@@ -8746,12 +8777,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>224</x>
+     <y>168</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>171</y>
     </hint>
    </hints>
   </connection>
@@ -8762,12 +8793,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>223</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>224</x>
+     <y>220</y>
     </hint>
    </hints>
   </connection>
@@ -8778,12 +8809,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>224</x>
+     <y>220</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>223</y>
     </hint>
    </hints>
   </connection>
@@ -8794,12 +8825,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>171</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>224</x>
+     <y>168</y>
     </hint>
    </hints>
   </connection>
@@ -8810,12 +8841,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>147</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>150</y>
     </hint>
    </hints>
   </connection>
@@ -8826,12 +8857,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>178</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>181</y>
     </hint>
    </hints>
   </connection>
@@ -8842,12 +8873,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>209</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>212</y>
     </hint>
    </hints>
   </connection>
@@ -8858,12 +8889,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>240</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>243</y>
     </hint>
    </hints>
   </connection>
@@ -8874,12 +8905,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>150</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>147</y>
     </hint>
    </hints>
   </connection>
@@ -8890,12 +8921,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>243</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>240</y>
     </hint>
    </hints>
   </connection>
@@ -8906,12 +8937,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>147</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>150</y>
     </hint>
    </hints>
   </connection>
@@ -8922,12 +8953,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>181</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>178</y>
     </hint>
    </hints>
   </connection>
@@ -8938,12 +8969,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>178</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>181</y>
     </hint>
    </hints>
   </connection>
@@ -8954,12 +8985,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>209</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>212</y>
     </hint>
    </hints>
   </connection>
@@ -8970,12 +9001,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>212</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>209</y>
     </hint>
    </hints>
   </connection>
@@ -8986,12 +9017,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>240</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>243</y>
     </hint>
    </hints>
   </connection>
@@ -9002,12 +9033,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>150</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>147</y>
     </hint>
    </hints>
   </connection>
@@ -9018,12 +9049,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>243</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>240</y>
     </hint>
    </hints>
   </connection>
@@ -9034,12 +9065,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>150</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>147</y>
     </hint>
    </hints>
   </connection>
@@ -9050,12 +9081,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>181</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>178</y>
     </hint>
    </hints>
   </connection>
@@ -9066,12 +9097,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>212</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>209</y>
     </hint>
    </hints>
   </connection>
@@ -9082,12 +9113,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>539</x>
+     <y>243</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>121</x>
-     <y>149</y>
+     <x>248</x>
+     <y>240</y>
     </hint>
    </hints>
   </connection>
@@ -9114,12 +9145,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>486</x>
-     <y>150</y>
+     <x>487</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>538</x>
-     <y>153</y>
+     <x>539</x>
+     <y>152</y>
     </hint>
    </hints>
   </connection>
@@ -9130,12 +9161,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>538</x>
-     <y>153</y>
+     <x>539</x>
+     <y>152</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>486</x>
-     <y>150</y>
+     <x>487</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -9146,12 +9177,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>487</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>539</x>
+     <y>152</y>
     </hint>
    </hints>
   </connection>
@@ -9162,12 +9193,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>539</x>
+     <y>152</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>487</x>
+     <y>149</y>
     </hint>
    </hints>
   </connection>
@@ -9178,12 +9209,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -9194,12 +9225,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>110</x>
-     <y>115</y>
+     <x>111</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -9210,12 +9241,12 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>302</x>
-     <y>339</y>
+     <x>351</x>
+     <y>319</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>344</x>
-     <y>343</y>
+     <x>403</x>
+     <y>322</y>
     </hint>
    </hints>
   </connection>
@@ -9226,12 +9257,172 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>346</x>
-     <y>329</y>
+     <x>403</x>
+     <y>322</y>
     </hint>
     <hint type="destinationlabel" >
-     <x>278</x>
-     <y>329</y>
+     <x>351</x>
+     <y>319</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>delayPanLFOFreqKnob</sender>
+   <signal>valueChanged(double,int)</signal>
+   <receiver>delayPanLFOFreqFloatentry</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>477</x>
+     <y>308</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>498</x>
+     <y>308</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>delayPanLFOFreqFloatentry</sender>
+   <signal>valueChanged(double,int)</signal>
+   <receiver>delayPanLFOFreqKnob</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>497</x>
+     <y>319</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>477</x>
+     <y>326</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>delayBPMKnob</sender>
+   <signal>valueChanged(double,int)</signal>
+   <receiver>delayBPMFloatentry</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>84</x>
+     <y>389</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>104</x>
+     <y>393</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>delayBPMFloatentry</sender>
+   <signal>valueChanged(double,int)</signal>
+   <receiver>delayBPMKnob</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>121</x>
+     <y>404</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>78</x>
+     <y>409</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>delayBeatRatioKnob</sender>
+   <signal>valueChanged(double,int)</signal>
+   <receiver>delayBeatRatioFloatentry</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>212</x>
+     <y>386</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>252</x>
+     <y>392</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>delayBeatRatioFloatentry</sender>
+   <signal>valueChanged(double,int)</signal>
+   <receiver>delayBeatRatioKnob</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>271</x>
+     <y>398</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>228</x>
+     <y>411</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>delayFeedbackKnob</sender>
+   <signal>valueChanged(double,int)</signal>
+   <receiver>delayFeedbackFloatentry</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>347</x>
+     <y>388</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>368</x>
+     <y>393</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>delayFeedbackFloatentry</sender>
+   <signal>valueChanged(double,int)</signal>
+   <receiver>delayFeedbackKnob</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>379</x>
+     <y>405</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>352</x>
+     <y>409</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>delayPanLFODepthKnob</sender>
+   <signal>valueChanged(double,int)</signal>
+   <receiver>delayPanLFODepthFloatentry</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>464</x>
+     <y>387</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>507</x>
+     <y>396</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>delayPanLFODepthFloatentry</sender>
+   <signal>valueChanged(double,int)</signal>
+   <receiver>delayPanLFODepthKnob</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>518</x>
+     <y>407</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>471</x>
+     <y>409</y>
     </hint>
    </hints>
   </connection>

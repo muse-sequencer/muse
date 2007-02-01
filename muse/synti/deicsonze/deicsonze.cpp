@@ -2359,10 +2359,17 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
 		   + sizeof(float)*i], &val, sizeof(float));
   }
   //delay
-  buffer[NUM_DELAY_TIME] = (unsigned char)getDelayTime();
-  buffer[NUM_DELAY_FEEDBACK] = (unsigned char)getDelayFeedback();
-  buffer[NUM_DELAY_LFO_FREQ] = (unsigned char)getDelayLFOFreq();
-  buffer[NUM_DELAY_LFO_DEPTH] = (unsigned char)getDelayLFODepth();
+  float delayfloat;
+  delayfloat = getDelayBPM();
+  memcpy(&buffer[NUM_DELAY_BPM], &delayfloat, 4);
+  delayfloat = getDelayBeatRatio();
+  memcpy(&buffer[NUM_DELAY_BEATRATIO], &delayfloat, sizeof(float));
+  delayfloat = getDelayFeedback();
+  memcpy(&buffer[NUM_DELAY_FEEDBACK], &delayfloat, sizeof(float));
+  delayfloat = getDelayLFOFreq();
+  memcpy(&buffer[NUM_DELAY_LFO_FREQ], &delayfloat, sizeof(float));
+  delayfloat = getDelayLFODepth();
+  memcpy(&buffer[NUM_DELAY_LFO_DEPTH], &delayfloat, sizeof(float));
 
   //save set data
   int offset =
@@ -2609,33 +2616,51 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     MidiEvent evDelayRet(0,ME_SYSEX,(const unsigned char*)dataDelayRet, 2);
     _gui->writeEvent(evDelayRet);    
     //initPluginDelay(plugins.find("pandelay", "pandelay"));
-    setDelayTime((int)data[NUM_DELAY_TIME]);
-    char dataDelayTime[2];
-    dataDelayTime[0] = SYSEX_DELAYTIME;
-    dataDelayTime[1] = (unsigned char)getDelayTime();
-    MidiEvent evSysexDelayTime(0,ME_SYSEX,
-			       (const unsigned char*)dataDelayTime, 2);
-    _gui->writeEvent(evSysexDelayTime);
-    setDelayFeedback((int)data[NUM_DELAY_FEEDBACK]);
-    char dataDelayFeedback[2];
+    float delayfloat;
+    memcpy(&delayfloat, &data[NUM_DELAY_BPM], sizeof(float));
+    setDelayBPM(delayfloat);
+    char dataDelayBPM[sizeof(float)+1];
+    dataDelayBPM[0] = SYSEX_DELAYBPM;
+    memcpy(&dataDelayBPM[1], &delayfloat, sizeof(float));
+    MidiEvent evSysexDelayBPM(0,ME_SYSEX,
+			      (const unsigned char*)dataDelayBPM,
+			      sizeof(float)+1);
+    _gui->writeEvent(evSysexDelayBPM);
+    memcpy(&delayfloat, &data[NUM_DELAY_BEATRATIO], sizeof(float));
+    setDelayBeatRatio(delayfloat);
+    char dataDelayBeatRatio[sizeof(float)+1];
+    dataDelayBeatRatio[0] = SYSEX_DELAYBEATRATIO;
+    memcpy(&dataDelayBeatRatio[1], &delayfloat, sizeof(float));
+    MidiEvent evSysexDelayBeatRatio(0,ME_SYSEX,
+				    (const unsigned char*)dataDelayBeatRatio,
+				    sizeof(float)+1);
+    _gui->writeEvent(evSysexDelayBeatRatio);
+    memcpy(&delayfloat, &data[NUM_DELAY_FEEDBACK], sizeof(float));
+    setDelayFeedback(delayfloat);
+    char dataDelayFeedback[sizeof(float)+1];
     dataDelayFeedback[0] = SYSEX_DELAYFEEDBACK;
-    dataDelayFeedback[1] = (unsigned char)getDelayFeedback();
+    memcpy(&dataDelayFeedback[1], &delayfloat, sizeof(float));
     MidiEvent evSysexDelayFeedback(0,ME_SYSEX,
-				   (const unsigned char*)dataDelayFeedback, 2);
+				   (const unsigned char*)dataDelayFeedback,
+				   sizeof(float)+1);
     _gui->writeEvent(evSysexDelayFeedback);
-    setDelayLFOFreq((int)data[NUM_DELAY_LFO_FREQ]);
-    char dataDelayLFOFreq[2];
+    memcpy(&delayfloat, &data[NUM_DELAY_LFO_FREQ], sizeof(float));
+    setDelayLFOFreq(delayfloat);
+    char dataDelayLFOFreq[sizeof(float)+1];
     dataDelayLFOFreq[0] = SYSEX_DELAYLFOFREQ;
-    dataDelayLFOFreq[1] = (unsigned char)getDelayLFOFreq();
+    memcpy(&dataDelayLFOFreq[1], &delayfloat, sizeof(float));
     MidiEvent evSysexDelayLFOFreq(0,ME_SYSEX,
-				  (const unsigned char*)dataDelayLFOFreq, 2);
+				  (const unsigned char*)dataDelayLFOFreq,
+				  sizeof(float)+1);
     _gui->writeEvent(evSysexDelayLFOFreq);
-    setDelayLFODepth((int)data[NUM_DELAY_LFO_DEPTH]);
-    char dataDelayLFODepth[2];
+    memcpy(&delayfloat, &data[NUM_DELAY_LFO_DEPTH], sizeof(float));
+    setDelayLFODepth(delayfloat);
+    char dataDelayLFODepth[sizeof(float)+1];
     dataDelayLFODepth[0] = SYSEX_DELAYLFODEPTH;
-    dataDelayLFODepth[1] = (unsigned char)getDelayLFODepth();
+    memcpy(&dataDelayLFODepth[1], &delayfloat, sizeof(float));
     MidiEvent evSysexDelayLFODepth(0,ME_SYSEX,
-				   (const unsigned char*)dataDelayLFODepth, 2);
+				   (const unsigned char*)dataDelayLFODepth,
+				   sizeof(float)+1);
     _gui->writeEvent(evSysexDelayLFODepth);
 
     //load the set compressed
@@ -2876,29 +2901,41 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     memcpy(&pluginChorus, &data[1], sizeof(Plugin*));
     initPluginChorus(pluginChorus);
     break;
-  case SYSEX_DELAYTIME:
-    setDelayTime((int)data[1]);
+  case SYSEX_DELAYBPM:
+    memcpy(&f, &data[1], sizeof(float));
+    setDelayBPM(f);
+    if(!fromGui) {
+      MidiEvent evSysex(0, ME_SYSEX, data, length);
+      _gui->writeEvent(evSysex);
+    }
+    break;    
+  case SYSEX_DELAYBEATRATIO:
+    memcpy(&f, &data[1], sizeof(float));
+    setDelayBeatRatio(f);
     if(!fromGui) {
       MidiEvent evSysex(0, ME_SYSEX, data, length);
       _gui->writeEvent(evSysex);
     }
     break;    
   case SYSEX_DELAYFEEDBACK:
-    setDelayFeedback((int)data[1]);
+    memcpy(&f, &data[1], sizeof(float));
+    setDelayFeedback(f);
     if(!fromGui) {
       MidiEvent evSysex(0, ME_SYSEX, data, length);
       _gui->writeEvent(evSysex);
     }
     break;    
   case SYSEX_DELAYLFOFREQ:
-    setDelayLFOFreq((int)data[1]);
+    memcpy(&f, &data[1], sizeof(float));
+    setDelayLFOFreq(f);
     if(!fromGui) {
       MidiEvent evSysex(0, ME_SYSEX, data, length);
       _gui->writeEvent(evSysex);
     }
     break;    
   case SYSEX_DELAYLFODEPTH:
-    setDelayLFODepth((int)data[1]);
+    memcpy(&f, &data[1], sizeof(float));
+    setDelayLFODepth(f);
     if(!fromGui) {
       MidiEvent evSysex(0, ME_SYSEX, data, length);
       _gui->writeEvent(evSysex);
@@ -3508,6 +3545,8 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
 	_gui->writeEvent(ev);
       }
       break;      
+    case CTRL_ALL_SOUNDS_OFF:
+      resetVoices();      
     default:
       break;
     }

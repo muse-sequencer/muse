@@ -337,13 +337,14 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setActivDelay(bool);
     void setDelayReturn(int);
     void setChannelDelay(int);
-    void setDelayTime(int);
-    void setDelayTime(double);
-    void setDelayFeedback(int);
+    //void setDelayTime(int);
+    void setDelayBPM(double);
+    void setDelayBeatRatio(double);
+    //void setDelayFeedback(int);
     void setDelayFeedback(double);
-    void setDelayPanLFOFreq(int);
+    //void setDelayPanLFOFreq(int);
     void setDelayPanLFOFreq(double);
-    void setDelayPanLFODepth(int);
+    //void setDelayPanLFODepth(int);
     void setDelayPanLFODepth(double);
     //category subcategory preset
     void setSet(void); //display the set, that is the category list
@@ -381,10 +382,11 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void updateDelayActiv(bool a);
     void updateChannelDelay(int r);
     void updateDelayReturn(int r);
-    void updateDelayPanLFOFreq(int plf);
-    void updateDelayTime(int dt);
-    void updateDelayFeedback(int df);
-    void updateDelayPanLFODepth(int dpd);
+    void updateDelayPanLFOFreq(float plf);
+    void updateDelayBPM(float dt);
+    void updateDelayBeatRatio(float dt);
+    void updateDelayFeedback(float df);
+    void updateDelayPanLFODepth(float dpd);
     void addPluginCheckBox(int index, QString text, bool toggled,
 			   QWidget* parent, QGridLayout* grid, bool isReverb);
     void addPluginIntSlider(int index, QString text, double min, double max,

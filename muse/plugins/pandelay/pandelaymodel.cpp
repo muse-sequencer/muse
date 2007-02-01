@@ -51,6 +51,18 @@ void PanDelayModel::setSamplerate(int sr) {
   setPanDelay();
 }
 
+void PanDelayModel::setBPM(float bpm) {
+  _BPM = bpm;
+  _delayTime = _beatRatio * 60.0 / _BPM;
+  setPanDelay();  
+}
+
+void PanDelayModel::setBeatRatio(float br) {
+  _beatRatio = br;
+  _delayTime = _beatRatio * 60.0 / _BPM;
+  setPanDelay();
+}
+
 void PanDelayModel::setDelayTime(float dt) {
   if(dt < MINDELAYTIME) _delayTime = MINDELAYTIME;
   else if(dt > MAXDELAYTIME) _delayTime = MAXDELAYTIME;

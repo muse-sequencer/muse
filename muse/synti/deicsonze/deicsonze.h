@@ -153,10 +153,11 @@
 #define FILTERSTR "Filter"
 #define SYSEX_DELAYACTIV 91
 #define SYSEX_DELAYRETURN 92
-#define SYSEX_DELAYTIME 93
-#define SYSEX_DELAYFEEDBACK 94
-#define SYSEX_DELAYLFOFREQ 95
-#define SYSEX_DELAYLFODEPTH 96
+#define SYSEX_DELAYBPM 93
+#define SYSEX_DELAYBEATRATIO 94
+#define SYSEX_DELAYFEEDBACK 95
+#define SYSEX_DELAYLFOFREQ 96
+#define SYSEX_DELAYLFODEPTH 97
 
 //REVERB PARAMETERS
 
@@ -212,11 +213,12 @@ enum {
   NUM_CHORUS_LABEL = NUM_CHORUS_LIB + MAXSTRLENGTHFXLIB + 1,
   NUM_IS_DELAY_ON = NUM_CHORUS_LABEL + MAXSTRLENGTHFXLABEL + 1,
   NUM_DELAY_RETURN,
-  NUM_DELAY_TIME,
-  NUM_DELAY_FEEDBACK,
-  NUM_DELAY_LFO_FREQ,
-  NUM_DELAY_LFO_DEPTH,
-  NUM_CONFIGLENGTH = NUM_DELAY_LFO_DEPTH + 1
+  NUM_DELAY_BPM,
+  NUM_DELAY_BEATRATIO = NUM_DELAY_BPM + sizeof(float),
+  NUM_DELAY_FEEDBACK = NUM_DELAY_BEATRATIO + sizeof(float),
+  NUM_DELAY_LFO_FREQ = NUM_DELAY_FEEDBACK + sizeof(float),
+  NUM_DELAY_LFO_DEPTH = NUM_DELAY_LFO_FREQ + sizeof(float),
+  NUM_CONFIGLENGTH = NUM_DELAY_LFO_DEPTH + sizeof(float)
 };
 
 class DeicsOnzeGui;
@@ -474,15 +476,17 @@ class DeicsOnze : public Mess {
   double getReverbParam(int i);
   void setChorusParam(int i, double val);
   double getChorusParam(int i);
-  void setDelayTime(int val); //0-255
-  void setDelayFeedback(int val); //0-255
-  void setDelayLFOFreq(int val); //0-255
-  void setDelayLFODepth(int val); //0-255
-  void setDelayDryWet(int val); //0-255
-  int getDelayTime();
-  int getDelayFeedback();
-  int getDelayLFOFreq();
-  int getDelayLFODepth();
+  void setDelayBPM(float val);
+  void setDelayBeatRatio(float val);
+  void setDelayFeedback(float val);
+  void setDelayLFOFreq(float val);
+  void setDelayLFODepth(float val);
+  void setDelayDryWet(float val);
+  float getDelayBPM();
+  float getDelayBeatRatio();
+  float getDelayFeedback();
+  float getDelayLFOFreq();
+  float getDelayLFODepth();
 
   //Filter
   LowFilter* _dryFilter;

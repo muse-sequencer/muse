@@ -363,21 +363,27 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
 	  SLOT(setDelayReturn(int)));
   connect(chDelaySlider, SIGNAL(valueChanged(int)), this,
 	  SLOT(setChannelDelay(int)));
-  connect(delayTimeSlider, SIGNAL(valueChanged(int)), this,
-	  SLOT(setDelayTime(int)));
-  connect(delayTimeFloatentry, SIGNAL(valueChanged(double, int)), this,
-	  SLOT(setDelayTime(double)));
-  connect(delayFeedbackSlider, SIGNAL(valueChanged(int)), this,
-	  SLOT(setDelayFeedback(int)));
+  connect(delayBPMFloatentry, SIGNAL(valueChanged(double, int)), this,
+	  SLOT(setDelayBPM(double)));
+  connect(delayBPMKnob, SIGNAL(valueChanged(double, int)), this,
+	  SLOT(setDelayBPM(double)));
+  connect(delayBeatRatioFloatentry, SIGNAL(valueChanged(double, int)), this,
+	  SLOT(setDelayBeatRatio(double)));
+  connect(delayBeatRatioKnob, SIGNAL(valueChanged(double, int)), this,
+	  SLOT(setDelayBeatRatio(double)));
   connect(delayFeedbackFloatentry, SIGNAL(valueChanged(double, int)), this,
 	  SLOT(setDelayFeedback(double)));
-  connect(delayPanLFOFreqSlider, SIGNAL(valueChanged(int)), this,
-	  SLOT(setDelayPanLFOFreq(int)));
+  connect(delayFeedbackKnob, SIGNAL(valueChanged(double, int)), this,
+	  SLOT(setDelayFeedback(double)));
   connect(delayPanLFOFreqFloatentry, SIGNAL(valueChanged(double, int)), this,
 	  SLOT(setDelayPanLFOFreq(double)));
-  connect(delayPanLFODepthSlider, SIGNAL(valueChanged(int)), this,
-	  SLOT(setDelayPanLFODepth(int)));
+  connect(delayPanLFOFreqKnob, SIGNAL(valueChanged(double, int)), this,
+	  SLOT(setDelayPanLFOFreq(double)));
+  delayPanLFOFreqKnob->setMinLogValue(0.1);
+  delayPanLFOFreqKnob->setMaxLogValue(10.0);
   connect(delayPanLFODepthFloatentry, SIGNAL(valueChanged(double, int)), this,
+	  SLOT(setDelayPanLFODepth(double)));
+  connect(delayPanLFODepthKnob, SIGNAL(valueChanged(double, int)), this,
 	  SLOT(setDelayPanLFODepth(double)));
   //category subcategory preset
   connect(categoryListView,
@@ -827,7 +833,8 @@ void DeicsOnzeGui::setTextColor(const QColor & c) {
   channelChorusGroupBox->setPalette(p);
   parametersChorusGroupBox->setPalette(p);
   fontSizeGroupBox->setPalette(p);
-  delayTimeGroupBox->setPalette(p);
+  delayBPMGroupBox->setPalette(p);
+  delayBeatRatioGroupBox->setPalette(p);
   delayFeedbackGroupBox->setPalette(p);
   delayPanLFOGroupBox->setPalette(p);
   delayPanDepthGroupBox->setPalette(p);
@@ -901,6 +908,12 @@ void DeicsOnzeGui::setEditTextColor(const QColor & c) {
     if(_chorusSliderVector[i]) _chorusSliderVector[i]->setScaleValueColor(c);
   for(int i=0; i < (int)_reverbSliderVector.size(); i++)
     if(_reverbSliderVector[i]) _reverbSliderVector[i]->setScaleValueColor(c);
+  delayBPMKnob->setScaleValueColor(c);
+  delayBeatRatioKnob->setScaleValueColor(c);
+  delayFeedbackKnob->setScaleValueColor(c);
+  delayPanLFOFreqKnob->setScaleValueColor(c);
+  delayPanLFODepthKnob->setScaleValueColor(c);
+
   //p.setColor(QPalette::WindowText, c);
   //presetNameLabel->setPalette(p);
 }
@@ -978,6 +991,11 @@ void DeicsOnzeGui::setEditBackgroundColor(const QColor & c) {
     if(_chorusSliderVector[i]) _chorusSliderVector[i]->setScaleColor(c);
   for(int i=0; i < (int)_reverbSliderVector.size(); i++)
     if(_reverbSliderVector[i]) _reverbSliderVector[i]->setScaleColor(c);
+  delayBPMKnob->setScaleColor(c);
+  delayBeatRatioKnob->setScaleColor(c);
+  delayFeedbackKnob->setScaleColor(c);
+  delayPanLFOFreqKnob->setScaleColor(c);
+  delayPanLFODepthKnob->setScaleColor(c);
 }
 
 //-----------------------------------------------------------
@@ -1473,6 +1491,7 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
     //printf("ME_SYSEX\n");
     unsigned char* data = ev.data();
     int cmd = *data;
+    float f;
     switch (cmd) {
     case SYSEX_CHORUSACTIV :
       updateChorusActiv((bool)data[1]);
@@ -1510,17 +1529,25 @@ void DeicsOnzeGui::processEvent(const MidiEvent& ev) {
     case SYSEX_DELAYRETURN :
       updateDelayReturn((int)data[1]);
       break;
-    case SYSEX_DELAYTIME :
-      updateDelayTime((int) data[1]);
+    case SYSEX_DELAYBPM :
+      memcpy(&f, &data[1], sizeof(float));
+      updateDelayBPM(f);
+      break;
+    case SYSEX_DELAYBEATRATIO :
+      memcpy(&f, &data[1], sizeof(float));
+      updateDelayBeatRatio(f);
       break;
     case SYSEX_DELAYFEEDBACK :
-      updateDelayFeedback((int) data[1]);
+      memcpy(&f, &data[1], sizeof(float));
+      updateDelayFeedback(f);
       break;
     case SYSEX_DELAYLFOFREQ :
-      updateDelayPanLFOFreq((int) data[1]);
+      memcpy(&f, &data[1], sizeof(float));
+      updateDelayPanLFOFreq(f);
       break;
     case SYSEX_DELAYLFODEPTH :
-      updateDelayPanLFODepth((int) data[1]);
+      memcpy(&f, &data[1], sizeof(float));
+      updateDelayPanLFODepth(f);
       break;
     case SYSEX_QUALITY :
       updateQuality((int)data[1]);
@@ -3002,65 +3029,78 @@ void DeicsOnzeGui::setDelayReturn(int r) {
 void DeicsOnzeGui::setChannelDelay(int d) {
   sendController(_currentChannel, CTRL_VARIATION_SEND, (unsigned char)d);
 }
-void DeicsOnzeGui::setDelayTime(int t) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_DELAYTIME;
-  message[1]=(unsigned char)t;
-  sendSysex(message, 2);
-  updateDelayTime(t);
-}
-void DeicsOnzeGui::setDelayTime(double t) {
-  int it = (int)(((t - MINDELAYTIME) / (MAXDELAYTIME - MINDELAYTIME))*255.0);
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_DELAYTIME;
-  message[1]=(unsigned char)it;
-  sendSysex(message, 2);
-  updateDelayTime(it);
-} 
-void DeicsOnzeGui::setDelayFeedback(int f) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_DELAYFEEDBACK;
+//void DeicsOnzeGui::setDelayTime(int t) {
+//  unsigned char* message = new unsigned char[2];
+//  message[0]=SYSEX_DELAYTIME;
+//  message[1]=(unsigned char)t;
+//  sendSysex(message, 2);
+//  updateDelayTime(t);
+//}
+void DeicsOnzeGui::setDelayBPM(double t) {
+  //int it = (int)(((t - MINDELAYTIME) / (MAXDELAYTIME - MINDELAYTIME))*255.0);
+  unsigned char* message = new unsigned char[sizeof(float)+1];
+  message[0]=SYSEX_DELAYBPM;
+  float f = (float)t;
+  memcpy(&message[1], &f, sizeof(float));
   message[1]=(unsigned char)f;
-  sendSysex(message, 2);
-  updateDelayFeedback(f);
-}
-void DeicsOnzeGui::setDelayFeedback(double f) {
-  int idf = (int)(f*128.0+128.0);
-  unsigned char* message = new unsigned char[2];
+  sendSysex(message, sizeof(float)+1);
+  //updateDelayTime(it);
+} 
+void DeicsOnzeGui::setDelayBeatRatio(double t) {
+  unsigned char* message = new unsigned char[sizeof(float)+1];
+  message[0]=SYSEX_DELAYBEATRATIO;
+  float f = (float)t;
+  memcpy(&message[1], &f, sizeof(float));
+  message[1]=(unsigned char)f;
+  sendSysex(message, sizeof(float)+1);
+} 
+//void DeicsOnzeGui::setDelayFeedback(int f) {
+//  unsigned char* message = new unsigned char[2];
+//  message[0]=SYSEX_DELAYFEEDBACK;
+//  message[1]=(unsigned char)f;
+//  sendSysex(message, 2);
+//  updateDelayFeedback(f);
+//}
+void DeicsOnzeGui::setDelayFeedback(double t) {
+  //int idf = (int)(f*128.0+128.0);
+  unsigned char* message = new unsigned char[sizeof(float)+1];
   message[0]=SYSEX_DELAYFEEDBACK;
-  message[1]=(unsigned char)idf;
-  sendSysex(message, 2);
-  updateDelayFeedback(idf);
+  float f = (float)t;
+  memcpy(&message[1], &f, sizeof(float));
+  sendSysex(message, sizeof(float)+1);
+  //updateDelayFeedback(idf);
 }
-void DeicsOnzeGui::setDelayPanLFOFreq(int pf) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_DELAYLFOFREQ;
-  message[1]=(unsigned char)pf;
-  sendSysex(message, 2);
-  updateDelayPanLFOFreq(pf);
-}
+//void DeicsOnzeGui::setDelayPanLFOFreq(int pf) {
+//  unsigned char* message = new unsigned char[2];
+//  message[0]=SYSEX_DELAYLFOFREQ;
+//  message[1]=(unsigned char)pf;
+//  sendSysex(message, 2);
+//  updateDelayPanLFOFreq(pf);
+//}
 void DeicsOnzeGui::setDelayPanLFOFreq(double pf) {
-  int ipf = (int)(((pf - MINFREQ) / (MAXFREQ - MINFREQ))*255.0);
-  unsigned char* message = new unsigned char[2];
+  //int ipf = (int)(((pf - MINFREQ) / (MAXFREQ - MINFREQ))*255.0);
+  unsigned char* message = new unsigned char[sizeof(float)+1];
   message[0]=SYSEX_DELAYLFOFREQ;
-  message[1]=(unsigned char)ipf;
-  sendSysex(message, 2);
-  updateDelayPanLFOFreq(ipf);
+  float f = (float)pf;
+  memcpy(&message[1], &f, sizeof(float));
+  sendSysex(message, sizeof(float)+1);
+  //updateDelayPanLFOFreq(ipf);
 }
-void DeicsOnzeGui::setDelayPanLFODepth(int pd) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_DELAYLFODEPTH;
-  message[1]=(unsigned char)pd;
-  sendSysex(message, 2);
-  updateDelayPanLFODepth(pd);
-}
+//void DeicsOnzeGui::setDelayPanLFODepth(int pd) {
+//  unsigned char* message = new unsigned char[2];
+//  message[0]=SYSEX_DELAYLFODEPTH;
+//  message[1]=(unsigned char)pd;
+//  sendSysex(message, 2);
+//  updateDelayPanLFODepth(pd);
+//}
 void DeicsOnzeGui::setDelayPanLFODepth(double pd) {
-  int ipd = (int)(pd*255.0);
-  unsigned char* message = new unsigned char[2];
+  //int ipd = (int)(pd*255.0);
+  unsigned char* message = new unsigned char[sizeof(float)+1];
   message[0]=SYSEX_DELAYLFODEPTH;
-  message[1]=(unsigned char)ipd;
-  sendSysex(message, 2);
-  updateDelayPanLFODepth(ipd);
+  float f = (float)pd;
+  memcpy(&message[1], &f, sizeof(float));
+  sendSysex(message, sizeof(float)+1);
+  //updateDelayPanLFODepth(ipd);
 }
 
 
@@ -3313,39 +3353,44 @@ void DeicsOnzeGui::updateDelayReturn(int r) {
   delayReturnSlider->setValue(r);
   delayReturnSlider->blockSignals(false);
 }
-void DeicsOnzeGui::updateDelayPanLFOFreq(int plf) {
-  delayPanLFOFreqSlider->blockSignals(true);
-  delayPanLFOFreqSlider->setValue(plf);
-  delayPanLFOFreqSlider->blockSignals(false);
+void DeicsOnzeGui::updateDelayPanLFOFreq(float plf) {
+  delayPanLFOFreqKnob->blockSignals(true);
+  delayPanLFOFreqKnob->setValue((double)plf);
+  delayPanLFOFreqKnob->blockSignals(false);
   delayPanLFOFreqFloatentry->blockSignals(true);
-  delayPanLFOFreqFloatentry->setValue(MINFREQ + (MAXFREQ - MINFREQ)
-				      *((float)plf/255.0));
+  delayPanLFOFreqFloatentry->setValue((double)plf);
   delayPanLFOFreqFloatentry->blockSignals(false);
 }
-void DeicsOnzeGui::updateDelayTime(int dt) {
-  delayTimeSlider->blockSignals(true);
-  delayTimeSlider->setValue(dt);
-  delayTimeSlider->blockSignals(false);
-  delayTimeFloatentry->blockSignals(true);
-  delayTimeFloatentry->setValue(MINDELAYTIME +
-				(MAXDELAYTIME - MINDELAYTIME)
-				*((float)dt/255.0));
-  delayTimeFloatentry->blockSignals(false);
+void DeicsOnzeGui::updateDelayBPM(float dt) {
+  delayBPMKnob->blockSignals(true);
+  delayBPMKnob->setValue((double)dt);
+  delayBPMKnob->blockSignals(false);
+  delayBPMFloatentry->blockSignals(true);
+  delayBPMFloatentry->setValue((double)dt);
+  delayBPMFloatentry->blockSignals(false);
 }
-void DeicsOnzeGui::updateDelayFeedback(int df) {
-  delayFeedbackSlider->blockSignals(true);
-  delayFeedbackSlider->setValue(df);
-  delayFeedbackSlider->blockSignals(false);
+void DeicsOnzeGui::updateDelayBeatRatio(float dt) {
+  delayBeatRatioKnob->blockSignals(true);
+  delayBeatRatioKnob->setValue((double)dt);
+  delayBeatRatioKnob->blockSignals(false);
+  delayBeatRatioFloatentry->blockSignals(true);
+  delayBeatRatioFloatentry->setValue((double)dt);
+  delayBeatRatioFloatentry->blockSignals(false);
+}
+void DeicsOnzeGui::updateDelayFeedback(float df) {
+  delayFeedbackKnob->blockSignals(true);
+  delayFeedbackKnob->setValue((double)df);
+  delayFeedbackKnob->blockSignals(false);
   delayFeedbackFloatentry->blockSignals(true);
-  delayFeedbackFloatentry->setValue((float)(df - 128)/128.0);
+  delayFeedbackFloatentry->setValue((double)df);
   delayFeedbackFloatentry->blockSignals(false);
 }
-void DeicsOnzeGui::updateDelayPanLFODepth(int dpd) {
-  delayPanLFODepthSlider->blockSignals(true);
-  delayPanLFODepthSlider->setValue(dpd);
-  delayPanLFODepthSlider->blockSignals(false);
+void DeicsOnzeGui::updateDelayPanLFODepth(float dpd) {
+  delayPanLFODepthKnob->blockSignals(true);
+  delayPanLFODepthKnob->setValue((double)dpd);
+  delayPanLFODepthKnob->blockSignals(false);
   delayPanLFODepthFloatentry->blockSignals(true);
-  delayPanLFODepthFloatentry->setValue((float)dpd/255.0);
+  delayPanLFODepthFloatentry->setValue((double)dpd);
   delayPanLFODepthFloatentry->blockSignals(false);
 }
 

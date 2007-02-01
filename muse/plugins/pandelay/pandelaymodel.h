@@ -35,6 +35,10 @@
 #define MAXBUFFERLENGTH 192000
 #define MINFREQ 0.1 //in Hz
 #define MAXFREQ 10.0 //in Hz
+#define MINBPM 60.0
+#define MAXBPM 255.0
+#define MINBEATRATIO 0.125
+#define MAXBEATRATIO 2.0
 #define MINDELAYTIME 0.01 //in second
 #define MAXDELAYTIME 2.0 //in second
 
@@ -45,7 +49,9 @@ class PanDelayModel {
   int _samplerate;
 
   //bool _beatFraction; //if true then the delay is calculated in beat fraction
-  float _delayTime;
+  float _BPM;
+  float _beatRatio;
+  float _delayTime; //delay is calculated according to BMP and ratioBMP
   float _feedback;
   float _panLFOFreq;
   float _panLFODepth;
@@ -67,6 +73,8 @@ class PanDelayModel {
   ~PanDelayModel();
   
   void setSamplerate(int sr);
+  void setBeatRatio(float br);
+  void setBPM(float bpm);
   void setDelayTime(float dt);
   void setFeedback(float dt);
   void setPanLFOFreq(float pf);
