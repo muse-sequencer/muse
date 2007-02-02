@@ -1,3 +1,5 @@
+02.02 (ng)
+      - updated partlistedit, direct editing of time & parameters on list edit
 01.02 (ng)
       - changed PanDelay, time delay is calculated with BPM and beat ratio
 27.01

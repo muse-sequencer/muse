@@ -55,10 +55,16 @@ class PartListEditor : public ListWidget {
       ListEdit* listEdit;
       Ui::PartListEdit le;
       Part* part;
+      Event* curEvent;
+      bool updateListDisabled;
 
       void updateList();
+      Event* item2Event(QTreeWidgetItem* item, int time_col = TICK_COL);
 
    private slots:
+      void itemActivated(QTreeWidgetItem* item, int column);
+      void itemChanged(QTreeWidgetItem* item, int column);
+      void currentItemChanged(QTreeWidgetItem* cur, QTreeWidgetItem* pre);
       void insertClicked();
       void deleteClicked();
 

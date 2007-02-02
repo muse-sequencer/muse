@@ -93,13 +93,13 @@ class InsertEventDialog : public QDialog {
   void setSysexTextEdit(); //set the display of sysexTextEdit
 
  public:
-  InsertEventDialog(const Pos& time, Part* part,
+  InsertEventDialog(const Pos& time, Part* part, Event* ev = NULL,
 		    QWidget* parent = 0, Qt::WindowFlags f = 0);
   ~InsertEventDialog();
 
   EventList* elResult();
 
-  static QString charArray2Str(const char* s, int length);
+  static QString charArray2Str(const char* s, int length); //add F0 and F7
   static QString ByteArray2Str(const QByteArray& ba); //add F0 and F7
   static QByteArray Str2ByteArray(const QString& s); //skip F0 and F7
   static char* Str2CharArray(const QString& s);

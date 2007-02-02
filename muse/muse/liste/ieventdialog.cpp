@@ -22,7 +22,7 @@
 #include <QDialogButtonBox>
 #include "ieventdialog.h"
 
-InsertEventDialog::InsertEventDialog(const Pos& time, Part* part,
+InsertEventDialog::InsertEventDialog(const Pos& time, Part* part, Event* ev,
 				     QWidget* parent, Qt::WindowFlags f)
   : QDialog(parent, f) {
   setWindowTitle("Insert Event Dialog");
@@ -54,7 +54,7 @@ InsertEventDialog::InsertEventDialog(const Pos& time, Part* part,
       _pitchSpinBox = new QSpinBox(_typeWidget[i]);
       _pitchSpinBox->setMaximum(127);
       _pitchSpinBox->setMinimum(0);
-      _pitchSpinBox->setValue(72); //C4
+      _pitchSpinBox->setValue(ev && ev->type()==Note?ev->pitch():72/*C4*/);
       tLayout->addWidget(_pitchSpinBox, 0, 1);
       //Velocity
       QLabel* velocityLabel = new QLabel("Velocity", _typeWidget[i]);
@@ -62,7 +62,7 @@ InsertEventDialog::InsertEventDialog(const Pos& time, Part* part,
       _velocitySpinBox = new QSpinBox(_typeWidget[i]);
       _velocitySpinBox->setMaximum(127);
       _velocitySpinBox->setMinimum(0);
-      _velocitySpinBox->setValue(70);
+      _velocitySpinBox->setValue(ev && ev->type()==Note?ev->velo():70);
       tLayout->addWidget(_velocitySpinBox, 1, 1);
       //Velocity Off
       /*QLabel* veloOffLabel = new QLabel("Velocity Off", _typeWidget[i]);
@@ -78,7 +78,7 @@ InsertEventDialog::InsertEventDialog(const Pos& time, Part* part,
       _lengthSpinBox = new QSpinBox(_typeWidget[i]);
       _lengthSpinBox->setMaximum(32768);
       _lengthSpinBox->setMinimum(1);
-      _lengthSpinBox->setValue(384);
+      _lengthSpinBox->setValue(ev && ev->type()==Note?ev->lenTick():384);
       tLayout->addWidget(_lengthSpinBox, 2, 1);
     }
     else if(i == IED_ProgramChange) {
@@ -126,15 +126,21 @@ InsertEventDialog::InsertEventDialog(const Pos& time, Part* part,
       //length
       QLabel* lengthLabel = new QLabel("Length", _typeWidget[i]);
       tLayout->addWidget(lengthLabel, 4, 0);
-      _lengthIntLabel = new QLabel("0", _typeWidget[i]);
+      _lengthIntLabel = new QLabel(ev && ev->type()==Sysex?
+				   QString::number(ev->dataLen()):"0",
+				   _typeWidget[i]);
       tLayout->addWidget(_lengthIntLabel, 4, 1);
       //text edit
       _sysexTextEdit = new QTextEdit(_typeWidget[i]);
       _sysexCursorPos = 0;
-      QByteArray ba;
-      _dataSysex.push_back(QByteArray(ba));
+      _dataSysex.push_back(ev && ev->type()==Sysex?
+			   QByteArray((const char*)ev->data(), ev->dataLen())
+			   :QByteArray());
       _lengthIntLabel->setText(QString::number(sysexLength()));
-      _dataSysexStr.push_back(QString("F0  F7"));
+      _dataSysexStr.push_back(ev && ev->type()==Sysex?
+			      charArray2Str((const char*)ev->data(), 
+					     ev->dataLen()):
+			      "F0  F7");
       tLayout->addWidget(_sysexTextEdit, 5, 0, 3, 2);
       setSysexTextEdit();
       QString HEX = "(?!F7)([A-F]|\\d){1,2}";
@@ -157,6 +163,12 @@ InsertEventDialog::InsertEventDialog(const Pos& time, Part* part,
     new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
 			 Qt::Horizontal, parent);
   _mainLayout->addWidget(OkCancelBox, 3, 0, 1, 2);
+
+  if(ev)
+    if(ev->type()==Note) _eventTypeComboBox->setCurrentIndex(IED_Note);
+    else if(ev->type()==Sysex) _eventTypeComboBox->setCurrentIndex(IED_Sysex);
+    else _eventTypeComboBox->setCurrentIndex(IED_Note);
+  else _eventTypeComboBox->setCurrentIndex(IED_Note);
 
   updateType(_eventTypeComboBox->currentIndex());
   
