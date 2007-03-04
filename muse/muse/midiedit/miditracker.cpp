@@ -109,6 +109,7 @@ MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
   //-------------
   _timingPattern =
     new TimingPattern(this, "Timing", firstTick, lastTick, _quant);
+  int nbrRow = _timingPattern->getAbsoluteNbrRow();
 
   //---------------
   //tracks matrices
@@ -123,10 +124,18 @@ MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
       if(trackNotFound) {
 	TrackPattern* tp; 
 	tp = new TrackPattern(this, track->name(), firstTick, lastTick,
-			      _quant, pl, (MidiTrack*) track);
+			      _quant, pl, (MidiTrack*) track, nbrRow);
 	_trackPatterns.push_back(tp);
       }
     }
+  }
+
+  //signals from TimingPattern and TrackPattern
+  connect(_timingPattern, SIGNAL(moveCurrentRow(unsigned)),
+	  this, SLOT(updateMoveCurrentRow(unsigned)));
+  for(unsigned i = 0; i < _trackPatterns.size(); i++) {
+    connect(_trackPatterns[i], SIGNAL(moveCurrentRow(unsigned)),
+	    this, SLOT(updateMoveCurrentRow(unsigned)));
   }
 
   /*
@@ -233,3 +242,7 @@ void MidiTrackerEditor::cmd(QAction* /*a*/) {
 //    _trackPatterns[i]->fillTrackPat();
 //  _timingPattern->fillTimmingPat(); 
 //}
+
+void MidiTrackerEditor::updateMoveCurrentRow(unsigned index) {
+  emit signalMoveCurrentRow(index);
+}

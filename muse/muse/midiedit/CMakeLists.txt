@@ -30,6 +30,7 @@ QT4_WRAP_CPP ( midiedit_mocs
       pianoroll.h
       prcanvas.h
       miditracker.h
+      trackpattern.h
       )
 
 QT4_WRAP_UI ( midiedit_ui_headers 

@@ -4,6 +4,8 @@
 
 class EventList;
 
+#define MAX(x,y) (x>y?x:y)
+
 #define EMPTYCHAR "-"
 #define NONREADCHAR "*"
 #define SPACECHAR "-"
@@ -11,10 +13,11 @@ class EventList;
 #define STOPCHAR "="
 #define SEPCHAR " "
 //#define FONT "Console"
-//#define FONT "Monospace"
-#define FONT "MiscFixed"
+#define FONT "Monospace"
+//#define FONT "MiscFixed"
 #define FONT_HEIGHT 14
-#define OFFSET_Y 4
+#define OFFSET_HEIGHT 3
+#define OFFSET_Y 3
 
 //----------------------------------------------------------
 // EventPat
@@ -266,45 +269,110 @@ CtrlPat::~CtrlPat() {}
 //----------------------------------------------------------
 // BaseTrackPat
 //----------------------------------------------------------
-BaseTrackPat::BaseTrackPat(QMainWindow* parent) {
+BaseTrackPat::BaseTrackPat(QMainWindow* parent, unsigned anr) {
   _parent = parent;
-  _currentRow = 0;
-  _numRow = 0;
+  _tree = new QTreeWidget(this);
+
+  _absoluteNbrRow = anr;
+
+  _update = false;
+
+  connect(_tree, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+	  SLOT(currentItemChanged(QTreeWidgetItem*)));
+  connect(_tree, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), 
+	  SLOT(currentItemChanged(QTreeWidgetItem*)));
+  connect(_parent, SIGNAL(signalMoveCurrentRow(unsigned)), this,
+	  SLOT(moveRowFromSignal(unsigned)));
+  //connect(_tree, SIGNAL(itemSelectionChanged()), this, SLOT(itemSelectionChanged()));
 }
 
 BaseTrackPat::~BaseTrackPat() {
 }
 
-void BaseTrackPat::setNumRow(unsigned nr) {
-  _numRow = nr;
+void BaseTrackPat::setRowMag() {
+  _rowMag = (unsigned) height()/_fontHeight - OFFSET_Y;
+  _lastRow = _firstRow + _rowMag - 1;
 }
-
-unsigned BaseTrackPat::getNumRow() {
-  return _numRow;
+void BaseTrackPat::setFirstRow(unsigned f) {
+  _firstRow = f;
+  _lastRow = f + _rowMag - 1;
+}
+void BaseTrackPat::setRelativeCurrentRow(unsigned r) {
+  _relativeCurrentRow = r;
+  _absoluteCurrentRow = r + _firstRow;
+}
+void BaseTrackPat::setAbsoluteCurrentRow(unsigned a) {
+  _absoluteCurrentRow = a;
+  _relativeCurrentRow = a - _firstRow;
 }
 
 unsigned BaseTrackPat::getRowMag() {
-  return (unsigned) height()/FONT_HEIGHT - OFFSET_Y;
+  return _rowMag;
+}
+unsigned BaseTrackPat::getFirstRow() {
+  return _firstRow;
+}
+unsigned BaseTrackPat::getLastRow() {
+  return _lastRow;
+}
+unsigned BaseTrackPat::getRelativeCurrentRow() {
+  return _relativeCurrentRow;
+}
+unsigned BaseTrackPat::getAbsoluteCurrentRow() {
+  return _absoluteCurrentRow;
 }
 
-unsigned BaseTrackPat::getCurTreeRow() {
-  unsigned rmd2 = getRowMag()/2;
-  if(_currentRow < rmd2) return _currentRow;
-  else if(_currentRow > getNumRow() - rmd2)
-    return _currentRow - getNumRow() + getRowMag();
-  else return rmd2;
+unsigned BaseTrackPat::getAbsoluteNbrRow() {
+  return _absoluteNbrRow;
 }
 
-unsigned BaseTrackPat::getLowRow() {
-  unsigned rmd2 = getRowMag()/2;
-  if(_currentRow < rmd2) return 0;
-  else if(_currentRow > getNumRow() - rmd2) 
-    return _tree->topLevelItemCount() - getRowMag();
-  else return _currentRow - rmd2;
+void BaseTrackPat::moveRelativeCurrentRow(unsigned newIndex) {
+  if(newIndex==0 && getFirstRow()>0) {
+    setFirstRow(getFirstRow() - 1);
+    setRelativeCurrentRow(newIndex + 1);
+    _update = true;
+  }
+  else if(newIndex==getRowMag()-1 && getLastRow()<_absoluteNbrRow-1) {
+    setFirstRow(getFirstRow() + 1);
+    setRelativeCurrentRow(newIndex - 1);
+    _update = true;
+  }
+  else setRelativeCurrentRow(newIndex);
 }
 
-unsigned BaseTrackPat::getUpRow() {
-  return getLowRow() + getRowMag();
+//void BaseTrackPat::itemSelectionChanged() {
+void BaseTrackPat::currentItemChanged(QTreeWidgetItem* nitem) {
+  int index;
+  if(nitem) {
+    index = _tree->indexOfTopLevelItem(nitem);
+
+    emit moveCurrentRow(index);
+  }
+}
+
+void BaseTrackPat::moveRowFromSignal(unsigned index) {
+  moveRelativeCurrentRow(index);
+  if(_update==true) {
+    fillPattern();
+    _update = false;
+  }
+  selectCurrentRow();
+}
+
+void BaseTrackPat::resizeEvent(QResizeEvent* /*event*/) {
+  setRowMag();
+  fillPattern();
+  selectCurrentRow();
+}
+
+void BaseTrackPat::selectCurrentRow() {
+  _tree->blockSignals(true);
+
+  QTreeWidgetItem* item = _tree->topLevelItem(getRelativeCurrentRow());
+  item->setSelected(true);
+  _tree->setCurrentItem(item);
+
+  _tree->blockSignals(false);
 }
 
 //----------------------------------------------------------
@@ -312,8 +380,8 @@ unsigned BaseTrackPat::getUpRow() {
 //----------------------------------------------------------
 TrackPattern::TrackPattern(QMainWindow* parent, QString name,
 			   unsigned firstTick, unsigned lastTick,
-			   int quant, PartList* pl, MidiTrack* t) 
-  : BaseTrackPat(parent), BasePat(name, firstTick, lastTick, quant) {
+			   int quant, PartList* pl, MidiTrack* t, unsigned anr) 
+  : BaseTrackPat(parent, anr), BasePat(name, firstTick, lastTick, quant) {
 
   //set attributs
   _track = t;
@@ -335,7 +403,6 @@ TrackPattern::TrackPattern(QMainWindow* parent, QString name,
   parent->addDockWidget(Qt::LeftDockWidgetArea, this, Qt::Horizontal);
 
   //build the treeWidget
-  _tree = new QTreeWidget(this);
   _tree->setColumnCount(_voiceColumns.size() + _ctrlColumns.size());
   QStringList headerLabels;
   for(unsigned i = 0; i < _voiceColumns.size(); i++) {
@@ -349,13 +416,22 @@ TrackPattern::TrackPattern(QMainWindow* parent, QString name,
   //set some display properties
   _tree->setRootIsDecorated(false);
   _tree->setUniformRowHeights(true);
+  _tree->setAlternatingRowColors(true);
   QFont font =_tree->font();
   font.setFamily(FONT);
   _tree->setFont(font);
+  font.setPixelSize(FONT_HEIGHT);
+  _fontHeight = font.pixelSize() + OFFSET_HEIGHT;
   setWidget(_tree);
 
+  //set the range of rows to display
+  setFirstRow(10); //TODO : choose accordingly to current position of muse song
+  setAbsoluteCurrentRow(10); //TODO : the same
+  setRowMag();
+
   //fill the treeWidget
-  fillTrackPat();  
+  fillPattern();
+  selectCurrentRow();
   
   //Resize the columns
   for(unsigned i = 0; i < _voiceColumns.size(); i++)
@@ -363,7 +439,8 @@ TrackPattern::TrackPattern(QMainWindow* parent, QString name,
 
 }
 
-TrackPattern::~TrackPattern(){}
+TrackPattern::~TrackPattern() {
+}
 
 void TrackPattern::add(const Event* e, unsigned tick) {
   if(e->isNote()) {
@@ -392,7 +469,6 @@ void TrackPattern::setQuant(int /*quant*/) {
 }
 
 void TrackPattern::buildEventMatrix() {
-  _numRow = tick2row(_lastTick) - tick2row(_firstTick);
   for(ciPart p = _partList->begin(); p != _partList->end(); p++) {
     Part* part = p->second;
     EventList* events = part->events();
@@ -404,12 +480,13 @@ void TrackPattern::buildEventMatrix() {
   }
 }
 
-void TrackPattern::fillTrackPat() {
-  getRowMag();
+void TrackPattern::fillPattern() {
+  _tree->blockSignals(true);
+
   _tree->clear();
   for(unsigned i = 0; i < _voiceColumns.size(); i++) {
-    for(unsigned j = getLowRow(); j < getUpRow(); j++) {
-      QTreeWidgetItem* item = _tree->topLevelItem(j);
+    for(unsigned j = getFirstRow(); j <= getLastRow(); j++) {
+      QTreeWidgetItem* item = _tree->topLevelItem(j - getFirstRow());
       if(!item) item = new QTreeWidgetItem(_tree);
       VoiceEventPat* vep = (_voiceColumns[i]->getEventsCol())[j];
       if(vep) item->setText(i, vep->str());
@@ -419,13 +496,7 @@ void TrackPattern::fillTrackPat() {
     //TODO CTRL
   }
 
-  //select the line corresponding to the current row
-  QTreeWidgetItem* item = _tree->topLevelItem(getCurTreeRow());
-  item->setSelected(true);
-}
-
-void TrackPattern::resizeEvent(QResizeEvent* /*event*/) {
-  fillTrackPat();
+  _tree->blockSignals(false);
 }
 
 //---------------------------------------------------------------
@@ -433,6 +504,8 @@ void TrackPattern::resizeEvent(QResizeEvent* /*event*/) {
 //---------------------------------------------------------------
 TimingEvent::TimingEvent(unsigned row) {
   _row = row;
+}
+TimingEvent::~TimingEvent() {
 }
 
 void TimingEvent::setBarBeatTick(unsigned tick) {
@@ -478,54 +551,58 @@ TimingPattern::TimingPattern(QMainWindow* parent, QString name,
   parent->addDockWidget(Qt::LeftDockWidgetArea, this, Qt::Horizontal);
   
   //build the treeWidget
-  _tree = new QTreeWidget(this);
-  _tree->setColumnCount(2);
   QStringList headerLabels;
   _tree->setHeaderLabels(QStringList("bar:bt:tick") + QStringList("row")); 
   _tree->setHeaderLabels(headerLabels);
   //set some display properties
   _tree->setRootIsDecorated(false);
   _tree->setUniformRowHeights(true);
+  _tree->setAlternatingRowColors(true);
   QFont font =_tree->font();
   font.setFamily(FONT);
   _tree->setFont(font);
+  font.setPixelSize(FONT_HEIGHT);
+  _fontHeight = font.pixelSize() + OFFSET_HEIGHT;
   setWidget(_tree);
 
+  //set the range of rows to display
+  setFirstRow(10); //TODO : choose accordingly to current position of muse song
+  setAbsoluteCurrentRow(10); //TODO : the same
+  setRowMag();  
+
   //fill the treeWidget
-  fillTimingPat();
+  fillPattern();
+  selectCurrentRow();
+
+  //resize the columns
   for(int i = 0; i < _tree->columnCount(); i++)
     _tree->resizeColumnToContents(i);
 }
 
-TimingPattern::~TimingPattern() {}
+TimingPattern::~TimingPattern() {
+}
 
 void TimingPattern::buildTimingMatrix() {
-  _numRow = 0;
   for(unsigned tick = _firstTick; tick <= _lastTick; tick++) {
     if(isRow(tick)) {
       TimingEvent* te = new TimingEvent(tick2row(tick) - tick2row(_firstTick));
       te->setBarBeatTick(tick);
       _timingEvents.push_back(te);
-      _numRow++;
     }
   }
+  _absoluteNbrRow = _timingEvents.size();
 }
 
-void TimingPattern::fillTimingPat() {
+void TimingPattern::fillPattern() {
+  _tree->blockSignals(true);
+
   _tree->clear();
-  for(unsigned i = 0; i < getRowMag(); i++) {
+  for(unsigned i = getFirstRow(); i <= getLastRow(); i++) {
     QTreeWidgetItem* item = new QTreeWidgetItem(_tree);
-    TimingEvent* te = _timingEvents[i + getLowRow()];
+    TimingEvent* te = _timingEvents[i];
     item->setText(0, te->barBeatTickStr());
     item->setText(1, te->rowStr());
   }
 
-  //select the line corresponding to the current row
-  QTreeWidgetItem* item = _tree->topLevelItem(getCurTreeRow());
-  item->setSelected(true);
-  
-}
-
-void TimingPattern::resizeEvent(QResizeEvent* /*event*/) {
-  fillTimingPat();
+  _tree->blockSignals(false);
 }

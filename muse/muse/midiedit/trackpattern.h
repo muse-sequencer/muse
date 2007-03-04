@@ -132,22 +132,67 @@ class CtrlPat {
 // BaseTrackPat
 //------------------------------------------------------
 class BaseTrackPat : public QDockWidget {
+  Q_OBJECT
+
  protected:
   QTreeWidget* _tree;
   QMainWindow* _parent;
-  unsigned _currentRow;
-  unsigned _numRow; //contains the number of rows
+
+  unsigned _rowMag; //contains the number of rows
+  unsigned _firstRow; //absolute index of the first row
+  unsigned _lastRow; //absolute index of the last row, included
+  unsigned _relativeCurrentRow; //index of the current according to the tree
+  unsigned _absoluteCurrentRow; //index of the current row according to the
+                                //event matrix
+  unsigned _absoluteNbrRow; //contains the number of rows of the matrix
+
+  int _fontHeight;
+
+  bool _update; //if true then the tree must updated
+
  public:
-  BaseTrackPat(QMainWindow* parent);
+  BaseTrackPat(QMainWindow* parent, unsigned anr = 0);
   ~BaseTrackPat();
 
-  void setNumRow(unsigned);
-  unsigned getNumRow();
-  unsigned getRowMag(); //returns the number of rows to display according
-                        //to the size of the window
-  unsigned getCurTreeRow(); 
-  unsigned getLowRow();
-  unsigned getUpRow(); 
+  void setRowMag(); //set _rowMag with the number of rows to display according
+                    //to the size of the window, adjust _lastRow accordingly,
+                    //assum that first row is set appropriately
+  void setFirstRow(unsigned f); //set _firstRow with f, that is the absolute index
+                                //of the first row, adjust _lastRow appropriately
+  void setRelativeCurrentRow(unsigned r); //set _relativeCurrentRow with r
+                                          //and _absoluteCurrentRow accordingly
+  void setAbsoluteCurrentRow(unsigned a); //set _absoluteCurrentRow with a
+                                          //and _relativeCurrentRow accordingly
+
+  unsigned getRowMag();
+  unsigned getFirstRow();
+  unsigned getLastRow();
+  unsigned getRelativeCurrentRow();
+  unsigned getAbsoluteCurrentRow();
+
+  unsigned getAbsoluteNbrRow();
+
+  void moveRelativeCurrentRow(unsigned newIndex); //update _firstRow, _lastrow
+                                                  //relativeCurrentRow,
+                                                  //absoluteCurrentRow, considering
+                                                  //that the new relative index is
+                                                  //newIndex
+
+  void resizeEvent(QResizeEvent* /*event*/);
+
+  virtual void fillPattern() {} //fill the treeWidget with the right window of times
+                                //according to _firstRow and _lastRow
+
+
+  void selectCurrentRow(); //block the signals and select the current row
+
+ signals:
+  void moveCurrentRow(unsigned i); //send the signal that the current row is moved
+                                   //at the relative index i
+ private slots:
+  void currentItemChanged(QTreeWidgetItem* nitem);
+  void moveRowFromSignal(unsigned index);
+
 };
 
 //------------------------------------------------------
@@ -162,7 +207,7 @@ class TrackPattern : public BaseTrackPat, public BasePat {
  public:
   TrackPattern(QMainWindow* parent, QString name, 
 	       unsigned firstTick, unsigned lastTick,
-	       int quant, PartList* pl, MidiTrack* t);
+	       int quant, PartList* pl, MidiTrack* t, unsigned anr = 0);
   ~TrackPattern();
 
   void add(const Event* e, unsigned tick); //add the Event e and
@@ -172,11 +217,8 @@ class TrackPattern : public BaseTrackPat, public BasePat {
   MidiTrack* getTrack() {return _track;}
   void setQuant(int quant);
   void buildEventMatrix();
-  void fillTrackPat(); //fill the treeWidget with the right set of events
-                       //according to _currentRow and the size of the window
 
- protected:
-  void resizeEvent(QResizeEvent *event);
+  virtual void fillPattern();
 };
 
 //------------------------------------------------------
@@ -201,7 +243,7 @@ class TimingEvent {
 
 class TimingPattern : public BasePat, public BaseTrackPat {
  private:
-  QTreeWidget* _tree;
+  //QTreeWidget* _tree;
   std::vector<TimingEvent*> _timingEvents;
  public:
   TimingPattern(QMainWindow* parent, QString name, unsigned firstTick,
@@ -209,11 +251,8 @@ class TimingPattern : public BasePat, public BaseTrackPat {
   ~TimingPattern();
 
   void buildTimingMatrix();
-  void fillTimingPat(); //fill the treeWidget with the right window of times
-                         //according to _currentRow and the size of the window
 
- protected:
-  void resizeEvent(QResizeEvent *event);
+  virtual void fillPattern();
 };
 
 #endif

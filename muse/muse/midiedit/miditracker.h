@@ -27,6 +27,7 @@ using AL::Xml;
 
 class MidiTrackerEditor : public MidiEditor {
   Q_OBJECT
+
  private:
   int _quant;
   QuantCombo* _quantCombo;
@@ -41,7 +42,9 @@ class MidiTrackerEditor : public MidiEditor {
   TimingPattern* _timingPattern;
 
  private slots:
+  void updateMoveCurrentRow(unsigned);
   virtual void cmd(QAction*);
+
  public:
   MidiTrackerEditor(PartList*, bool);
   ~MidiTrackerEditor() {}
@@ -61,6 +64,9 @@ class MidiTrackerEditor : public MidiEditor {
 
  protected:
   //void resizeEvent(QResizeEvent *event);
+
+ signals:
+  void signalMoveCurrentRow(unsigned);
 };
 
 #endif
