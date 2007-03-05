@@ -173,7 +173,8 @@ void Knob::paint(const QRect& r)
             }
    	else {
             xoffset = 0;
-      	yoffset = (h - w) / 2;
+      	// yoffset = (h - w) / 2;     // center
+      	yoffset = h - w;              // top align
             h = w;
             }
 

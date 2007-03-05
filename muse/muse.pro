@@ -3,7 +3,8 @@ TRANSLATIONS = \
       share/locale/muse_es.ts \
       share/locale/muse_fr.ts \
       share/locale/muse_ru.ts \
-      share/locale/muse_sv_SE.ts
+      share/locale/muse_sv_SE.ts \
+      share/locale/muse_it.ts
 
 SOURCES = \
       plugins/freeverb/freeverb.cpp \
@@ -236,4 +237,4 @@ SOURCES = \
       muse/midieventbase.cpp                             \
       muse/midioutport.cpp
 
-                                                    
+
