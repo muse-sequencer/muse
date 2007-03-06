@@ -37,7 +37,7 @@ class MidiMeter : public Slider
       double meterval;
       int _meterWidth;
 
-      virtual void paint(const QRect& r);
+      virtual void paintEvent(QPaintEvent*);
 
    protected:
       virtual void mouseDoubleClickEvent(QMouseEvent*);

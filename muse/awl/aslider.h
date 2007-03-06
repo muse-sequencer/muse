@@ -26,7 +26,7 @@ namespace Awl {
 //---------------------------------------------------------
 //    AbstractSlider
 //
-//!   The AwlAbstractSlider class provides an double value 
+//!   The AwlAbstractSlider class provides an double value
 //!   within a range
 //
 //!   The class is designed as a common super class for
@@ -52,8 +52,6 @@ class AbstractSlider : public QWidget {
       Q_PROPERTY(double pageStep READ pageStep WRITE setPageStep)
       Q_PROPERTY(bool  log      READ log      WRITE setLog)
 
-      virtual void paint(const QRect&) = 0;
-
    protected:
       int _id;
       double _value;
@@ -65,7 +63,6 @@ class AbstractSlider : public QWidget {
       QColor _scaleValueColor;
       bool _log;
 
-      virtual void paintEvent(QPaintEvent*);
       virtual void wheelEvent(QWheelEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       virtual void valueChange();

@@ -41,9 +41,11 @@ class MeterSlider : public VolSlider
       std::vector<double> meterPeak;
       int yellowScale, redScale;
       int _meterWidth;
+      QPixmap onPm, offPm;  // cached pixmap values
 
       virtual void mousePressEvent(QMouseEvent*);
-      virtual void paint(const QRect& r);
+      virtual void paintEvent(QPaintEvent*);
+      virtual void resizeEvent(QResizeEvent*);
 
    signals:
       void meterClicked();

@@ -48,7 +48,7 @@ class Slider : public AbstractSlider {
 
       virtual void mouseReleaseEvent(QMouseEvent*);
       virtual void mouseMoveEvent(QMouseEvent*);
-      virtual void paint(const QRect& r);
+      virtual void paintEvent(QPaintEvent*);
       void init();
       void updateKnob();
 

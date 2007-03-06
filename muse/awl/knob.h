@@ -47,7 +47,7 @@ class Q_DECL_EXPORT Knob : public AbstractSlider {
       int _border;
       QPainterPath* points;
 
-      virtual void paint(const QRect& r);
+      virtual void paintEvent(QPaintEvent*);
       virtual void mousePressEvent(QMouseEvent*);
       virtual void mouseReleaseEvent(QMouseEvent*);
       virtual void mouseMoveEvent(QMouseEvent*);
