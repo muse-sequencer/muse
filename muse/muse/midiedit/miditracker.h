@@ -31,8 +31,8 @@ class MidiTrackerEditor : public MidiEditor {
  private:
   int _quant;
   QuantCombo* _quantCombo;
-  int _numVisibleRows;
-  QSpinBox* _nvrSpinBox;
+  //int _numVisibleRows;
+  //QSpinBox* _nvrSpinBox;
 
   QMenu* menuView;
   bool _follow;
@@ -44,6 +44,9 @@ class MidiTrackerEditor : public MidiEditor {
  private slots:
   void updateMoveCurrentRow(unsigned);
   virtual void cmd(QAction*);
+
+ protected slots:
+  virtual void songChanged(int);
 
  public:
   MidiTrackerEditor(PartList*, bool);
@@ -67,6 +70,7 @@ class MidiTrackerEditor : public MidiEditor {
 
  signals:
   void signalMoveCurrentRow(unsigned);
+  void signalSongChanged(int);
 };
 
 #endif

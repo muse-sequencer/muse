@@ -180,6 +180,8 @@ class BaseTrackPat : public QDockWidget {
 
   void resizeEvent(QResizeEvent* /*event*/);
 
+  virtual void clearMatrix() {}
+  virtual void buildMatrix() {}
   virtual void fillPattern() {} //fill the treeWidget with the right window of times
                                 //according to _firstRow and _lastRow
 
@@ -192,7 +194,7 @@ class BaseTrackPat : public QDockWidget {
  private slots:
   void currentItemChanged(QTreeWidgetItem* nitem);
   void moveRowFromSignal(unsigned index);
-
+  void updatePattern(int songChangeType);
 };
 
 //------------------------------------------------------
@@ -216,8 +218,9 @@ class TrackPattern : public BaseTrackPat, public BasePat {
                                            //creating new voices when necessary
   MidiTrack* getTrack() {return _track;}
   void setQuant(int quant);
-  void buildEventMatrix();
 
+  virtual void clearMatrix();
+  virtual void buildMatrix();
   virtual void fillPattern();
 };
 
@@ -250,8 +253,8 @@ class TimingPattern : public BasePat, public BaseTrackPat {
 		unsigned lastTick, int quant);
   ~TimingPattern();
 
-  void buildTimingMatrix();
-
+  virtual void clearMatrix();
+  virtual void buildMatrix();
   virtual void fillPattern();
 };
 

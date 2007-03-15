@@ -283,7 +283,8 @@ BaseTrackPat::BaseTrackPat(QMainWindow* parent, unsigned anr) {
 	  SLOT(currentItemChanged(QTreeWidgetItem*)));
   connect(_parent, SIGNAL(signalMoveCurrentRow(unsigned)), this,
 	  SLOT(moveRowFromSignal(unsigned)));
-  //connect(_tree, SIGNAL(itemSelectionChanged()), this, SLOT(itemSelectionChanged()));
+  //connect signalSongChanged to update the pattern
+  connect(parent, SIGNAL(signalSongChanged(int)), this, SLOT(updatePattern(int)));
 }
 
 BaseTrackPat::~BaseTrackPat() {
@@ -366,13 +367,23 @@ void BaseTrackPat::resizeEvent(QResizeEvent* /*event*/) {
 }
 
 void BaseTrackPat::selectCurrentRow() {
-  _tree->blockSignals(true);
+  unsigned rcr = getRelativeCurrentRow();
+  if(rcr < getRowMag()) {
+    QTreeWidgetItem* item = _tree->topLevelItem(getRelativeCurrentRow());
+    if(item) {
+      _tree->blockSignals(true);
+      item->setSelected(true);
+      _tree->setCurrentItem(item);
+      _tree->blockSignals(false);
+    }
+  }
+}
 
-  QTreeWidgetItem* item = _tree->topLevelItem(getRelativeCurrentRow());
-  item->setSelected(true);
-  _tree->setCurrentItem(item);
-
-  _tree->blockSignals(false);
+void BaseTrackPat::updatePattern(int /*type*/) {
+  clearMatrix();
+  buildMatrix();
+  fillPattern();
+  selectCurrentRow();
 }
 
 //----------------------------------------------------------
@@ -395,8 +406,8 @@ TrackPattern::TrackPattern(QMainWindow* parent, QString name,
   }
 
   //build the matrix of events
-  buildEventMatrix();
-  
+  buildMatrix();
+
   //configure and add the dockWidget
   setWindowTitle(_track->name());
   setFeatures(QDockWidget::DockWidgetClosable |QDockWidget::DockWidgetMovable);
@@ -436,7 +447,6 @@ TrackPattern::TrackPattern(QMainWindow* parent, QString name,
   //Resize the columns
   for(unsigned i = 0; i < _voiceColumns.size(); i++)
     _tree->resizeColumnToContents(i);
-
 }
 
 TrackPattern::~TrackPattern() {
@@ -468,7 +478,12 @@ void TrackPattern::setQuant(int /*quant*/) {
   //TODO
 }
 
-void TrackPattern::buildEventMatrix() {
+void TrackPattern::clearMatrix() {
+  _voiceColumns.clear();
+  _ctrlColumns.clear();
+}
+
+void TrackPattern::buildMatrix() {
   for(ciPart p = _partList->begin(); p != _partList->end(); p++) {
     Part* part = p->second;
     EventList* events = part->events();
@@ -543,7 +558,7 @@ TimingPattern::TimingPattern(QMainWindow* parent, QString name,
 			     unsigned firstTick, unsigned lastTick, int quant)
   : BasePat(name, firstTick, lastTick, quant), BaseTrackPat(parent) {
   //build the timing matrix
-  buildTimingMatrix();
+  buildMatrix();
   
   //configure and add the dockWidget
   setWindowTitle(name);
@@ -582,7 +597,11 @@ TimingPattern::TimingPattern(QMainWindow* parent, QString name,
 TimingPattern::~TimingPattern() {
 }
 
-void TimingPattern::buildTimingMatrix() {
+void TimingPattern::clearMatrix() {
+  _timingEvents.clear();
+}
+
+void TimingPattern::buildMatrix() {
   for(unsigned tick = _firstTick; tick <= _lastTick; tick++) {
     if(isRow(tick)) {
       TimingEvent* te = new TimingEvent(tick2row(tick) - tick2row(_firstTick));

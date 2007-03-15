@@ -5,6 +5,7 @@
 //  (C) Copyright 2006 Nil Geisweiller (a_lin@user.sourceforge.net)
 //=================================================================
 
+#include "ecanvas.h"
 #include "miditracker.h"
 #include "trackpattern.h"
 #include "song.h"
@@ -14,6 +15,7 @@
 #define MAX(x,y) (x>y?x:y)
 
 class TrackPattern;
+//class EventCanvas;
 
 //---------------------------------------------------------
 //   MidiTrackerEditor
@@ -84,17 +86,17 @@ MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
 
   //number of visible rows
   //rowfeatures->addSeparator();
-  QLabel* nvrLabel = new QLabel(tr("Number of visible rows"), rowfeatures);
+  /*QLabel* nvrLabel = new QLabel(tr("Number of visible rows"), rowfeatures);
   nvrLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
   nvrLabel->setIndent(3);
   rowfeatures->addWidget(nvrLabel);
   _nvrSpinBox = new QSpinBox(rowfeatures);
   _nvrSpinBox->setRange(1, 256);
   _nvrSpinBox->setFixedHeight(24);
-  rowfeatures->addWidget(_nvrSpinBox);
+  rowfeatures->addWidget(_nvrSpinBox);*/
   //init number of visible row
-  setNumVisibleRows(20);
-  updateNumVisibleRows();
+  /*setNumVisibleRows(20);
+    updateNumVisibleRows();*/
   
   //evaluate fisrtTick and lastTick
   unsigned firstTick = _pl->begin()->second->tick();
@@ -175,21 +177,21 @@ MidiTrackerEditor::MidiTrackerEditor(PartList* pl, bool /*init*/)
 }
 
 //---------------------------------------------------------
-// setRowPerBar
+// setQuant
 //---------------------------------------------------------
 void MidiTrackerEditor::setQuant(int q) {
   _quant = q;
 }
 
 //---------------------------------------------------------
-// getRowPerBar
+// getQuant
 //---------------------------------------------------------
 int MidiTrackerEditor::getQuant() {
   return _quant;
 }
 
 //---------------------------------------------------------
-// updateRowPerBar
+// updateQuant
 //---------------------------------------------------------
 void MidiTrackerEditor::updateQuant() {
   _quantCombo->blockSignals(true);
@@ -198,33 +200,17 @@ void MidiTrackerEditor::updateQuant() {
 }
 
 //---------------------------------------------------------
-// setNumVisibleRows
-//---------------------------------------------------------
-void MidiTrackerEditor::setNumVisibleRows(int nvr) {
-  _numVisibleRows = nvr;
-}
-
-//---------------------------------------------------------
-// getNumVisibleRows
-//---------------------------------------------------------
-int MidiTrackerEditor::getNumVisibleRows() {
-  return _numVisibleRows;
-}
-
-//---------------------------------------------------------
-// updateNumVisibleRows
-//---------------------------------------------------------
-void MidiTrackerEditor::updateNumVisibleRows() {
-  _nvrSpinBox->blockSignals(true);
-  _nvrSpinBox->setValue(_numVisibleRows);
-  _nvrSpinBox->blockSignals(false);  
-}
-
-//---------------------------------------------------------
 // setFollow
 //---------------------------------------------------------
 void MidiTrackerEditor::setFollow(bool f) {
   _follow = f;
+}
+
+//---------------------------------------------------------
+// songChanged
+//---------------------------------------------------------
+void MidiTrackerEditor::songChanged(int i) {
+  emit signalSongChanged(i);
 }
 
 //---------------------------------------------------------

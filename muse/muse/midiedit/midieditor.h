@@ -96,7 +96,9 @@ class MidiEditor : public Editor  {
    protected slots:
       void clipboardChanged(); // enable/disable "Paste"
       void selectionChanged(); // enable/disable "Copy" & "Paste"
-      void songChanged(int);
+      virtual void songChanged(int); //add virtual to allow editors that do not use
+                                     //ecancav to use there own songChanged slot
+                                     //and avoid crashing, like MidiTrackerEditor
       void setPos(int, const AL::Pos&);
       virtual void cmd(QAction*) = 0;
 
