@@ -47,7 +47,7 @@ CtrlDialog::CtrlDialog(Track* track, int ci, QWidget* parent)
 
       updateController();
       otherButton->setEnabled(track->type() == Track::MIDI);
-      connect(tw, 
+      connect(tw,
          SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),
          SLOT(itemDoubleClicked(QTreeWidgetItem*, int)));
       connect(otherButton, SIGNAL(clicked()), SLOT(otherClicked()));
@@ -85,7 +85,7 @@ void CtrlDialog::updateController()
             //
             // aux send streams
             //
-            
+
             //
             // present plugin parameter
             //
@@ -101,12 +101,16 @@ void CtrlDialog::updateController()
                         QTreeWidgetItem* cci = new QTreeWidgetItem(ci, id);
                         cci->setText(0, name);
                         Ctrl* ctrl = t->getController(id);
-                        if (!ctrl->empty())
-                              cci->setText(1, "*");
-                        if (id == currentId) {
-                              tw->setCurrentItem(cci);
-                              tw->setItemSelected(cci, true);
+                        if (ctrl) {
+                              if (!ctrl->empty())
+                                    cci->setText(1, "*");
+                              if (id == currentId) {
+                                    tw->setCurrentItem(cci);
+                                    tw->setItemSelected(cci, true);
+                                    }
                               }
+                        else
+                              printf("updateController: controller %x not found\n");
                         }
                   }
             pl = ((AudioTrack*)t)->postPipe();
