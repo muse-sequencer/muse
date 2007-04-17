@@ -44,20 +44,25 @@ class DspSSE86 : public Dsp {
       virtual ~DspSSE86() {}
 
       virtual float peak(float* buf, unsigned n, float current) {
-            if ( ((intptr_t)buf % 16) != 0)
-                  fprintf(stderr, "peak(): buffer unaligned!\n");
+            if ( ((intptr_t)buf % 16) != 0) {
+                  fprintf(stderr, "peak(): buffer unaligned! (%p)\n", buf);
+                  return Dsp::peak(buf, n, current);
+                  }
             return x86_sse_compute_peak(buf, n, current);
             }
 
       virtual void applyGainToBuffer(float* buf, unsigned n, float gain) {
-            if ( ((intptr_t)buf % 16) != 0)
-                  fprintf(stderr, "applyGainToBuffer(): buffer unaligned!\n");
-            x86_sse_apply_gain_to_buffer(buf, n, gain);
+            if ( ((intptr_t)buf % 16) != 0) {
+                  fprintf(stderr, "applyGainToBuffer(): buffer unaligned! (%p)\n", buf);
+                  Dsp::applyGainToBuffer(buf, n, gain);
+                  }
+            else
+                  x86_sse_apply_gain_to_buffer(buf, n, gain);
             }
 
       virtual void mixWithGain(float* dst, float* src, unsigned n, float gain) {
             if ( ((intptr_t)dst & 15) != 0)
-                  fprintf(stderr, "mixWithGainain(): dst unaligned!\n");
+                  fprintf(stderr, "mixWithGainain(): dst unaligned! (%p)\n", dst);
             if (((intptr_t)dst & 15) != ((intptr_t)src & 15) ) {
                   fprintf(stderr, "mixWithGain(): dst & src don't have the same alignment!\n");
                   Dsp::mixWithGain(dst, src,n, gain);
@@ -67,7 +72,7 @@ class DspSSE86 : public Dsp {
             }
       virtual void mix(float* dst, float* src, unsigned n) {
             if ( ((intptr_t)dst & 15) != 0)
-                  fprintf(stderr, "mix_buffers_no_gain(): dst unaligned!\n");
+                  fprintf(stderr, "mix_buffers_no_gain(): dst unaligned! %p\n", dst);
             if ( ((intptr_t)dst & 15) != ((intptr_t)src & 15) ) {
                   fprintf(stderr, "mix_buffers_no_gain(): dst & src don't have the same alignment!\n");
                   Dsp::mix(dst, src, n);

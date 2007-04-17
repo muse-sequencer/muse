@@ -2805,8 +2805,6 @@ void MusE::setGlobalTempo(int val)
 
 int main(int argc, char* argv[])
       {
-      AL::initDsp();
-
       char c;
       QString opts("mvdDiosP:p");
 
@@ -2839,6 +2837,7 @@ int main(int argc, char* argv[])
             loadPlugins = false;
             loadVST     = false;
             }
+      AL::initDsp();
 
       museUser = QString(getenv("MUSEHOME"));
       if (museUser.isEmpty())

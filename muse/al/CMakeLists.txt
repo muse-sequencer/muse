@@ -3,11 +3,17 @@
 #
 #
 
-add_library(al STATIC
+set (al_src
    al.cpp marker.cpp pos.cpp sig.cpp tempo.cpp xml.cpp
    dsp.cpp
-   dspSSE.cpp
-   dspXMM.cpp
+   )
+
+if (USE_SSE)
+      set(al_src ${al_src} dspSSE.cpp dspXMM.cpp)
+endif (USE_SSE)
+
+add_library(al STATIC
+   ${al_src}
    )
 
 set_source_files_properties(
@@ -16,7 +22,6 @@ set_source_files_properties(
    dspXMM.cpp
    PROPERTIES COMPILE_FLAGS "-msse2 -fPIC -include ${PROJECT_SOURCE_DIR}/all.h"
    )
-
 
 set_source_files_properties( dspSSE.cpp
    PROPERTIES COMPILE_FLAGS "-x assembler"

@@ -62,7 +62,7 @@ AudioTrack::AudioTrack()
       addController(c);
 
       for (int i = 0; i < MAX_CHANNELS; ++i)
-            buffer[i] = new float[segmentSize];
+            posix_memalign((void**)&buffer[i], 16, sizeof(float) * segmentSize);
       }
 
 //---------------------------------------------------------
