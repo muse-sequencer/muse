@@ -26,6 +26,8 @@
 #include "arranger/arranger.h"
 #include "midiedit/pianoroll.h"
 #include "al/xml.h"
+#include "al/dsp.h"
+#include "al/tempo.h"
 #include "conf.h"
 #include "liste/listedit.h"
 #include "master/masteredit.h"
@@ -50,7 +52,6 @@
 #include "ticksynth.h"
 #include "song.h"
 #include "awl/poslabel.h"
-#include "al/tempo.h"
 #include "shortcuts.h"
 #ifdef __APPLE__
 #include "driver/coremidi.h"
@@ -67,6 +68,7 @@
 #include "midiedit/miditracker.h"
 #include "projectpropsdialog.h"
 #include "liste/listedit.h"
+#include "mixer/strip.h"
 
 extern void initMidiInstruments();
 
@@ -515,7 +517,7 @@ MusE::MusE()
 
       song->blockSignals(true);
       heartBeatTimer = new QTimer(this);
-      connect(heartBeatTimer, SIGNAL(timeout()), song, SLOT(beat()));
+      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(beat()));
 
       //---------------------------------------------------
       //    undo/redo
@@ -2803,6 +2805,8 @@ void MusE::setGlobalTempo(int val)
 
 int main(int argc, char* argv[])
       {
+      AL::initDsp();
+
       char c;
       QString opts("mvdDiosP:p");
 
@@ -3113,5 +3117,21 @@ int main(int argc, char* argv[])
       if (n)
             fprintf(stderr, "app end %d\n", n);
       return n;
+      }
+
+//---------------------------------------------------------
+//   beat
+//    heart beat
+//---------------------------------------------------------
+
+void MusE::beat()
+      {
+      song->beat();
+	if (mixer1 && mixer1->isVisible())
+            mixer1->heartBeat();
+      if (mixer2 && mixer2->isVisible())
+            mixer2->heartBeat();
+      if (arranger && arranger->getStrip() && arranger->getStrip()->isVisible())
+            arranger->getStrip()->heartBeat();
       }
 

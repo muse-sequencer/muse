@@ -196,4 +196,3 @@ void Pipeline::apply(int ports, unsigned long nframes, float** buffer1)
             }
       }
 
-

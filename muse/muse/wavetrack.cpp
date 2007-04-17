@@ -85,7 +85,6 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, int widx)
             if (part->mute())
                   continue;
             unsigned p_spos = part->frame();
-//            if (pos + samples < p_spos)
             if (pos + samples <= p_spos)
                   break;
             unsigned p_epos = p_spos + part->lenFrame();
@@ -97,7 +96,6 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, int widx)
                   Event& event    = ie->second;
 
                   unsigned e_spos = event.frame() + p_spos;
-                  // if (pos + samples < e_spos)
                   if (pos + samples <= e_spos)
                         break;
                   unsigned nn     = event.lenFrame();

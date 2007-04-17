@@ -30,7 +30,7 @@ class Knob;
 class RouteDialog;
 class Strip;
 
-typedef std::list<Strip*> StripList;
+typedef QList<Strip*> StripList;
 
 //---------------------------------------------------------
 //   Mixer
@@ -82,13 +82,13 @@ class Mixer : public QMainWindow {
       void toggleRouteDialog();
       void routingDialogClosed();
       void showTracksChanged(QAction*);
-      void heartBeat();
 
    public:
       Mixer(QWidget* parent, MixerConfig*);
       void clear();
       void write(Xml&, const char* name);
       void setUpdateMixer() { mustUpdateMixer = true; }
+      void heartBeat();
       };
 
 #endif

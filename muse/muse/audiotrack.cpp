@@ -19,6 +19,7 @@
 //=============================================================================
 
 #include "al/al.h"
+#include "al/dsp.h"
 #include "track.h"
 #include "event.h"
 #include "song.h"
@@ -440,16 +441,8 @@ void AudioTrack::process()
       _prePipe->apply(channels(), segmentSize, buffer);
 
       if (_prefader) {
-		for (int i = 0; i < channels(); ++i) {
-      		float* p = buffer[i];
-	            float meter = 0.0;
-      	      for (unsigned k = 0; k < segmentSize; ++k) {
-            		double f = fabs(*p++);
-	                  if (f > meter)
-      	            	meter = f;
-      	            }
-	         	setMeter(i, meter);
-      	      }
+		for (int i = 0; i < channels(); ++i)
+	            setMeter(i, AL::dsp->peak(buffer[i], segmentSize, 0.0));
             }
 
       //
@@ -461,25 +454,14 @@ void AudioTrack::process()
       vol[0]         = _volume * (1.0 - _pan);
 	vol[1]         = _volume * (1.0 + _pan);
 
-      for (int i = 0; i < channels(); ++i) {
-            float* p = buffer[i];
-            for (unsigned k = 0; k < segmentSize; ++k)
-                  *p++ *= vol[i];
-            }
+      for (int i = 0; i < channels(); ++i)
+            AL::dsp->applyGainToBuffer(buffer[i], segmentSize, vol[i]);
+
       _postPipe->apply(channels(), segmentSize, buffer);
 
     	if (!_prefader) {
-		for (int i = 0; i < channels(); ++i) {
-      		float* p = buffer[i];
-	            float meter = 0.0;
-      	      for (unsigned k = 0; k < segmentSize; ++k) {
-            		double f = fabs(*p);
-	                  if (f > meter)
-      	            	meter = f;
-				++p;
-      	            }
-	         	setMeter(i, meter);
-      	      }
+		for (int i = 0; i < channels(); ++i)
+	            setMeter(i, AL::dsp->peak(buffer[i], segmentSize, 0.0));
 	      }
       }
 
@@ -494,12 +476,8 @@ void AudioTrack::add(int srcChannels, float** srcBuffer)
       float** dstBuffer = buffer;
 
       if (srcChannels == dstChannels) {
-            for (int c = 0; c < dstChannels; ++c) {
-                  float* sp = srcBuffer[c];
-                  float* dp = dstBuffer[c];
-                  for (unsigned k = 0; k < segmentSize; ++k)
-                        dp[k] += sp[k];
-                  }
+            for (int c = 0; c < dstChannels; ++c)
+                  AL::dsp->mix(dstBuffer[c], srcBuffer[c], segmentSize);
             }
       //
       // mix mono to stereo
@@ -532,29 +510,24 @@ void AudioTrack::add(int srcChannels, float** srcBuffer)
 
 bool AudioTrack::copy(int srcChannels, float** srcBuffer)
 	{
-      int dstChannels   = channels();
-      float** dstBuffer = buffer;
+      int dstChannels = channels();
 
       if (srcChannels == dstChannels) {
-            for (int c = 0; c < dstChannels; ++c) {
-                  float* sp = srcBuffer[c];
-                  float* dp = dstBuffer[c];
-                  for (unsigned k = 0; k < segmentSize; ++k)
-                        *dp++ = *sp++;
-                  }
+            for (int c = 0; c < dstChannels; ++c)
+                  memcpy(buffer[c], srcBuffer[c], sizeof(float) * segmentSize);
             }
       else if (srcChannels == 1 && dstChannels == 2) {
             float* sp = srcBuffer[0];
             for (unsigned k = 0; k < segmentSize; ++k) {
                   float val = *sp++;
-                  *(dstBuffer[0] + k) = val;
-                  *(dstBuffer[1] + k) = val;
+                  *(buffer[0] + k) = val;
+                  *(buffer[1] + k) = val;
                   }
             }
       else if (srcChannels == 2 && dstChannels == 1) {
             float* sp1 = srcBuffer[0];
             float* sp2 = srcBuffer[1];
-            float* dp = dstBuffer[0];
+            float* dp  = buffer[0];
             for (unsigned k = 0; k < segmentSize; ++k)
                   dp[k] = sp1[k] + sp2[k];
             }

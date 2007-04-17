@@ -63,6 +63,7 @@ class Strip : public QFrame {
       Strip(Mixer* m, Track* t, bool align);
       ~Strip();
       Track* getTrack() const { return track; }
+      virtual void heartBeat() = 0;
       };
 
 #endif

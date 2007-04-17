@@ -79,7 +79,7 @@ extern void populateAddTrack(QMenu*);
 //   sizeHint
 //---------------------------------------------------------
 
-QSize InfoStack::sizeHint() const 
+QSize InfoStack::sizeHint() const
       {
       return QSize(infoWidth, height());
       }
@@ -298,15 +298,10 @@ Arranger::Arranger(QMainWindow* parent)
       infoDock = new QDockWidget(tr("TrackInfo"));
       infoDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
       infoDock->setMinimumWidth(infoWidth);
-      infoDock->layout()->setMargin(1);
-      infoDock->layout()->setSpacing(0);
       infoDockAction = infoDock->toggleViewAction();
 
       mixerDock = new QDockWidget(tr("Mix"));
       mixerDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-mixerDock->setMaximumWidth(STRIP_WIDTH);
-      mixerDock->layout()->setMargin(1);
-      mixerDock->layout()->setSpacing(0);
       mixerDockAction = mixerDock->toggleViewAction();
 
       parent->setDockNestingEnabled(true);
@@ -844,7 +839,7 @@ void Arranger::toggleTrackInfo(bool val)
                         trackInfo->addWidget(zeroTrackInfo);
                         }
                   trackInfo->setCurrentWidget(zeroTrackInfo);
-                  
+
                   return;
                   }
             Track::TrackType t = _curTrack->type();

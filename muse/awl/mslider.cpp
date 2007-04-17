@@ -32,6 +32,7 @@ MeterSlider::MeterSlider(QWidget* parent)
    : VolSlider(parent)
       {
       setAttribute(Qt::WA_NoSystemBackground, true);
+//      setAutoFillBackground(true);
       _channel    = 0;
       yellowScale = -16; //-10;
       redScale    = 0;
@@ -185,6 +186,7 @@ void MeterSlider::paintEvent(QPaintEvent* ev)
 
       int mh  = h - kh;
       p.setPen(QPen(Qt::white, 2));
+
       for (int i = 0; i < _channel; ++i) {
             int h = mh - (lrint(fast_log10(meterval[i]) * -20.0f * mh / range));
             if (h < 0)

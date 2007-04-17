@@ -134,7 +134,6 @@ class Song : public QObject {
       void undoPartModify(Part* oPart, Part* nPart, bool undo);
 
    public slots:
-      void beat();
 
       void undo();
       void redo();
@@ -200,6 +199,7 @@ class Song : public QObject {
       Song();
       ~Song();
 
+      void beat();
       void putEvent(const MidiEvent&);
       void endMsgCmd();
       void processMsg(AudioMsg* msg);
@@ -328,7 +328,7 @@ class Song : public QObject {
       void moveTrack(Track*, Track*);
       void cmdInsertTrack(Track*, int idx);
       void insertTrack(Track*, int idx);
-      
+
       void insertTrack0(Track*, int idx);
       void insertTrack1(Track*, int idx);
       void insertTrack2(Track*);

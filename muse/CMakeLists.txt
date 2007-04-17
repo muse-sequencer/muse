@@ -131,7 +131,7 @@ if (ENABLE_ZYNADDSUBFX)
 #      set (FLTK_LIBRARIES $FLTK_CONFIG_PATH)
 #      FLTK_INCLUDE_DIR
 #      FLTK_FOUND
-#      
+#
 #      if (NOT FLTK_FOUND)
 #            message(FATAL_ERROR "fltk toolkit not found, zynaddsubfx not build")
 #            set(ENABLE_ZYNADDSUBFX OFF)
@@ -204,6 +204,14 @@ if ( ENABLE_DSSI )
 endif ( ENABLE_DSSI )
 
 ##
+## TODO
+##
+## Optimizations
+##
+
+SET (USE_SSE true)
+
+##
 ## vst
 ##
 ## TODO
@@ -254,7 +262,7 @@ add_custom_target(all-pic-debug.h
 
 add_custom_target(all.h.pch
    ALL
-   ${CMAKE_CXX_COMPILER} 
+   ${CMAKE_CXX_COMPILER}
      -g -Wextra -fno-exceptions -Wall
      -I${QT_INCLUDE_DIR}
      -I${QT_QTCORE_INCLUDE_DIR}
@@ -267,9 +275,9 @@ add_custom_target(all.h.pch
 
 add_custom_target(all-pic.h.pch
    ALL
-   ${CMAKE_CXX_COMPILER} 
+   ${CMAKE_CXX_COMPILER}
      -fPIC
-     -Dawlplugin_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB 
+     -Dawlplugin_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB
      -DQT_PLUGIN -DQT_SHARED -DQT_NO_DEBUG
      -g -Wextra -fno-exceptions -Wall
      -I${QT_INCLUDE_DIR}
@@ -283,9 +291,9 @@ add_custom_target(all-pic.h.pch
 
 add_custom_target(all-pic-debug.h.pch
    ALL
-   ${CMAKE_CXX_COMPILER} 
+   ${CMAKE_CXX_COMPILER}
      -fPIC
-     -Dawlplugin_debug_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB 
+     -Dawlplugin_debug_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB
      -DQT_PLUGIN -DQT_SHARED -DQT_DEBUG
      -g -Wextra -fno-exceptions -Wall
      -I${QT_INCLUDE_DIR}
@@ -300,8 +308,8 @@ add_custom_target(all-pic-debug.h.pch
 subdirs(al awl grepmidi plugins midiplugins synti muse share doc)
 
 include_directories(
-   . 
-   ${PROJECT_SOURCE_DIR} 
+   .
+   ${PROJECT_SOURCE_DIR}
    ${PROJECT_SOURCE_DIR}/muse
    ${PROJECT_SOURCE_DIR}/muse/widgets
    ${PROJECT_BINARY_DIR}

@@ -163,6 +163,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       void startLoadSong();
 
    private slots:
+      void beat();
       void loadProject();
       void quitDoc();
       void about();

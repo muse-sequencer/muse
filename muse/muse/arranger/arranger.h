@@ -166,6 +166,7 @@ class Arranger : public QWidget {
       Track* curTrack() const { return _curTrack; }
       void endLoadSong();
       static int trackNameWidth;
+      Strip* getStrip() const { return strip;  }
 
    protected:
       virtual void keyPressEvent(QKeyEvent* e);

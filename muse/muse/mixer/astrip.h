@@ -90,11 +90,9 @@ class AudioStrip : public Strip {
       void autoWriteToggled(bool);
       void updateOffState();
 
-   protected slots:
-      virtual void heartBeat();
-
    public:
       AudioStrip(Mixer*, AudioTrack*, bool align);
+      virtual void heartBeat();
       };
 
 #endif

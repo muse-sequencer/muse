@@ -311,7 +311,6 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
 
       layout->addLayout(rBox);
 
-      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       connect(song,  SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(track, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));
       connect(track, SIGNAL(soloChanged(bool)), solo, SLOT(setChecked(bool)));
@@ -638,7 +637,6 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
 
       layout->addLayout(rBox);
 
-      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       connect(song,  SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(track, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));
       connect(track, SIGNAL(soloChanged(bool)), solo, SLOT(setChecked(bool)));
@@ -873,7 +871,7 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
       painter.begin(activityOn);
       sr.render(&painter);
       painter.end();
-      
+
       sr.load(QString(":/xpm/activeoff.svg"));
       activityOff = new QPixmap(aSize);
       activityOff->fill(Qt::transparent);
@@ -939,7 +937,6 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
       rBox->addWidget(oR);
       layout->addLayout(rBox);
 
-      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       connect(song,  SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(track, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));
       connect(track, SIGNAL(soloChanged(bool)), solo, SLOT(setChecked(bool)));
@@ -1129,7 +1126,6 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
 
       layout->addLayout(rBox);
 
-      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       connect(song,  SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(track, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));
       connect(track, SIGNAL(soloChanged(bool)), solo, SLOT(setChecked(bool)));
@@ -1288,7 +1284,7 @@ void MidiSyntiStrip::oRouteShow()
                   Route r(mc, -1, Route::TRACK);
                   action->setData(QVariant::fromValue(r));
                   action->setCheckable(true);
-            
+
                   for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
                         if (r == *ir) {
                               action->setChecked(true);

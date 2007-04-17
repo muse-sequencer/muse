@@ -15,12 +15,22 @@
 //    signal processing applications
 // (ws)
 
+#if 0
 #define undenormalise(sample)       \
       {                             \
       float anti_denormal = 1e-18;  \
       sample += anti_denormal;      \
       sample -= anti_denormal;      \
       }
+#endif
+
+// from beast-0.7.2  (Tim Janik/Stefan Westerfeld):
+
+#define undenormalise(sample)       \
+      do {                             \
+            volatile float __forced_float = 1e-29 + sample;  \
+            sample = __forced_float - 1e-29;      \
+      } while (0)
 
 #endif//_denormals_
 

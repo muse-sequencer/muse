@@ -1,5 +1,13 @@
+17.04 (ws)
+      - replace some heartBeat signal/slot connections with
+        direct calls for better performance
+16.04 (ws)
+      - added some sse routines to optimize mixing
 15.03 (ng)
       - update IV miditracker
+06.03 (ws)
+      - did some optimizations to meter display; mixer still uses
+        a lot of cpu cycles
 04.03 (ng)
       - update III miditracker
 02.02 (ng)

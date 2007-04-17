@@ -78,14 +78,12 @@ class MidiStrip : public Strip {
       void recordToggled(bool);
       void monitorToggled(bool);
 
-   protected slots:
-      virtual void heartBeat();
-
    public slots:
       virtual void songChanged(int);
 
    public:
       MidiStrip(Mixer*, MidiTrack*, bool align = true);
+      virtual void heartBeat();
       };
 
 //---------------------------------------------------------
@@ -117,14 +115,12 @@ class MidiOutPortStrip : public Strip {
       void oRouteShow();
       void syncToggled(bool) const;
 
-   protected slots:
-      virtual void heartBeat();
-
    public slots:
       virtual void songChanged(int);
 
    public:
       MidiOutPortStrip(Mixer*, MidiOutPort*, bool align = true);
+      virtual void heartBeat();
       };
 
 //---------------------------------------------------------
@@ -154,14 +150,12 @@ class MidiSyntiStrip : public Strip {
       void iRouteShow();
       void oRouteShow();
 
-   protected slots:
-      virtual void heartBeat();
-
    public slots:
       virtual void songChanged(int);
 
    public:
       MidiSyntiStrip(Mixer*, MidiSynti*, bool align = true);
+      virtual void heartBeat();
       };
 
 //---------------------------------------------------------
@@ -185,14 +179,12 @@ class MidiInPortStrip : public Strip {
       void iRouteShow();
       void oRouteShow();
 
-   protected slots:
-      virtual void heartBeat();
-
    public slots:
       virtual void songChanged(int);
 
    public:
       MidiInPortStrip(Mixer*, MidiInPort*, bool align = true);
+      virtual void heartBeat();
       };
 
 #endif

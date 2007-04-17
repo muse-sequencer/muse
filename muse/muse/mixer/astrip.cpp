@@ -210,7 +210,6 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       if (off) {
             updateOffState();   // init state
             }
-      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(track, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));
       connect(track, SIGNAL(autoReadChanged(bool)), SLOT(autoChanged()));

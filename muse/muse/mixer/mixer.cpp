@@ -89,7 +89,6 @@ Mixer::Mixer(QWidget* parent, MixerConfig* c)
 
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
-      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       song->update();  // calls update mixer
       }
 
@@ -107,7 +106,7 @@ void Mixer::addStrip(Track* t, int idx)
       if (si != stripList.end() && (*si)->getTrack() == t)
             return;
 
-      std::list<Strip*>::iterator nsi = si;
+      StripList::iterator nsi = si;
       ++nsi;
       if (si != stripList.end()
          && nsi != stripList.end()
@@ -395,5 +394,7 @@ void Mixer::heartBeat()
             updateMixer(STRIP_INSERTED | STRIP_REMOVED);
             mustUpdateMixer = false;
             }
+      foreach(Strip* s, stripList)
+            s->heartBeat();
       }
 
