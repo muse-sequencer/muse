@@ -63,7 +63,6 @@ void ConfigTrackList::init()
             trackType->addItem(Track::_clname[tt]);
             }
       trackTypeChanged(curType);
-      trackNameSize->setValue(Arranger::trackNameWidth);
       }
 
 //---------------------------------------------------------
@@ -78,7 +77,6 @@ void ConfigTrackList::done(int code)
                   saveTrackType();
             for (int tt = 0; tt < Track::TRACK_TYPES; ++tt)
                   glist[tt] = list[tt];
-            Arranger::trackNameWidth = trackNameSize->value();
             emit trackConfigChanged();
             }
       else {

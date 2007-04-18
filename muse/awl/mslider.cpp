@@ -38,6 +38,7 @@ MeterSlider::MeterSlider(QWidget* parent)
       redScale    = 0;
       _meterWidth = _scaleWidth * 3;
       setChannel(1);
+      setMinimumHeight(50);
       }
 
 //---------------------------------------------------------

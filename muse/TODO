@@ -53,3 +53,5 @@ CLEANUPS
               resource file
             - redirect all *xpm program references to resource file
             - remove icon.cpp icon.h
+
+

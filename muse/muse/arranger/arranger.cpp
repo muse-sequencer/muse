@@ -38,8 +38,6 @@
 #include "gconfig.h"
 #include "part.h"
 
-int Arranger::trackNameWidth = 80;
-
 //---------------------------------------------------------
 //   TrElement elements
 //    list of available track gui elements
@@ -994,9 +992,6 @@ void Arranger::readStatus(QDomNode node)
                   wpos.setX(i);
             else if (tag == "vpos")
                   wpos.setY(i);
-            else if (tag == "namesize") {
-                  Arranger::trackNameWidth = i;
-                  }
             else if (tag == "raster") {
                   muse->initRaster(i);
                   canvas->setRaster(i);

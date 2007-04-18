@@ -185,20 +185,6 @@
       <number>6</number>
      </property>
      <item>
-      <widget class="QLabel" name="textLabel1_2" >
-       <property name="text" >
-        <string>Track Name Size:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="trackNameSize" >
-       <property name="minimum" >
-        <number>40</number>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer>
        <property name="orientation" >
         <enum>Qt::Horizontal</enum>

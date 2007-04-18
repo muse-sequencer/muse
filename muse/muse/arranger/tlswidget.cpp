@@ -115,6 +115,9 @@ void TLSLayout::setGeometry(const QRect& rect)
 TLSWidget::TLSWidget(Track* t, ArrangerTrack* atrack, TimeCanvas* timeC)
       {
       setAttribute(Qt::WA_NoBackground);
+      setAttribute(Qt::WA_StaticContents);
+      setAutoFillBackground(true);
+
       setMouseTracking(true);
       _tc   = timeC;
       state = S_NORMAL;
@@ -224,11 +227,11 @@ bool TLSWidget::showControllerList()
 bool TLSWidget::setCtrl(int ctrl)
       {
       if (ctrl == CTRL_NO_CTRL || ctrl == CTRL_OTHER) {
-            // this controller subtrack is new, ask user for 
+            // this controller subtrack is new, ask user for
             // controller:
             return showControllerList();
             }
-      
+
       if (_ctrlTrack && _ctrlTrack != _track) {
             disconnect(_ctrlTrack, SIGNAL(controllerChanged(int)), this, SLOT(controllerListChanged(int)));
             }

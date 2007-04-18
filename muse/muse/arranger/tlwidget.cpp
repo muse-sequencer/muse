@@ -43,9 +43,9 @@
 
 TLWidget::TLWidget(Track* t, TrGroupList* tgl)
       {
-//      setAttribute(Qt::WA_OpaquePaintEvent);
-//      setAttribute(Qt::WA_NoSystemBackground);
-//      setAttribute(Qt::WA_StaticContents);
+      setAttribute(Qt::WA_OpaquePaintEvent);
+      setAutoFillBackground(true);
+
       setMouseTracking(true);
 
       state   = S_NORMAL;
@@ -114,9 +114,9 @@ void TLWidget::labelPlusClicked()
 
 void TLWidget::mousePressEvent(QMouseEvent* ev)
       {
-      enum { 
-            CMD_REMOVE_TRACK, CMD_COPY_TRACK, CMD_SHOW_AUDIO_GUI, 
-            CMD_SHOW_MIDI_GUI 
+      enum {
+            CMD_REMOVE_TRACK, CMD_COPY_TRACK, CMD_SHOW_AUDIO_GUI,
+            CMD_SHOW_MIDI_GUI
             };
       int button = ev->button();
       if (button == Qt::RightButton) {
@@ -261,7 +261,6 @@ void TLWidget::configChanged()
       label = new QLabel;
       l->addWidget(label);
       label->setIndent(3);
-      //label->setAlignment(Qt::AlignCener);
 
       label->setFont(config.fonts[1]);
       label->setText(_track->cname());
@@ -280,7 +279,6 @@ void TLWidget::configChanged()
                   switch(id) {
                         case TR_NAME:
                               nameEdit = new TLLineEdit(_track->name(), this);
-//                        	nameEdit->setBackgroundRole(QPalette::Window);
                               nameEdit->setFixedHeight(trackRowHeight);
                               connect(nameEdit, SIGNAL(contentChanged(QString)), SLOT(nameChanged(QString)));
                               connect(nameEdit, SIGNAL(mousePress()), SLOT(select()));
@@ -322,7 +320,6 @@ void TLWidget::configChanged()
                               off = newOffButton();
                               off->setFixedSize(trackRowHeight, trackRowHeight);
                               off->setChecked(_track->off());
-//      				off->setAutoFillBackground(true);
                               connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
                               connect(_track, SIGNAL(offChanged(bool)), this, SLOT(updateOffState()));
                               l->addWidget(off);
@@ -383,7 +380,6 @@ void TLWidget::configChanged()
                               record  = newRecordButton();
                               record->setFixedSize(trackRowHeight, trackRowHeight);
                               record->setChecked(_track->recordFlag());
-//      				record->setAutoFillBackground(true);
                               connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
                               connect(_track, SIGNAL(recordChanged(bool)), record, SLOT(setChecked(bool)));
                               l->addWidget(record);
@@ -609,11 +605,11 @@ void TLWidget::paintEvent(QPaintEvent* ev)
       pl.setColor(QPalette::Window, color);
       pl.setColor(QPalette::Base, color);
       nameEdit->setPalette(pl);
-      
+
       // The selected track will get a 4 pixel red bar to the left
       if ( _track->selected()) {
             QColor color(200,10,10);
-            QRect qr(0, 0, 4, r.height()-splitWidth); 
+            QRect qr(0, 0, 4, r.height()-splitWidth);
             p.fillRect(qr, color);
             }
       }
@@ -640,6 +636,6 @@ void TLWidget::channelChanged(int channel)
 
 void TLWidget::setChannel(int channel)
       {
-      ((MidiTrack*)_track)->setChannel(channel - 1);      
+      ((MidiTrack*)_track)->setChannel(channel - 1);
       }
 

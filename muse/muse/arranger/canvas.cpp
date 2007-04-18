@@ -193,29 +193,29 @@ void PartCanvas::paint(QPainter& p, QRect r)
                         break;
 
                   QRect pr(x1, y, len, h - partBorderWidth);
-		  bool clone = part->isClone();
+                  bool clone = part->isClone();
 
-                  QPen pen(Qt::black, partBorderWidth, clone ? Qt::DashLine : Qt::SolidLine);
-		  QBrush brush(Qt::SolidPattern);
-		  QLinearGradient lg(0, pr.y() - wpos.y()-r.y(),
-				     0, pr.y()+ 2*pr.height() -wpos.y()-r.y());
-		  lg.setColorAt(0, part->selected()?Qt::gray
-				:config.partColors[part->colorIndex()]);
-		  lg.setColorAt(1, Qt::white);
-		  QBrush brushLG(lg);
+                  QPen pen(QColor(100, 100, 100), partBorderWidth, clone ? Qt::DashLine : Qt::SolidLine);
+		      QBrush brush(Qt::SolidPattern);
+		      QLinearGradient lg(0, pr.y() - wpos.y()-r.y(),
+			   0, pr.y()+ 2*pr.height() -wpos.y()-r.y());
+		      lg.setColorAt(0, part->selected()?Qt::gray
+			   :config.partColors[part->colorIndex()]);
+		      lg.setColorAt(1, Qt::white);
+		      QBrush brushLG(lg);
                   if (part->selected()) {
                         pen.setColor(config.partColors[part->colorIndex()]);
                         brush.setColor(config.selectPartBg);
-			p.setBrush(brushLG);
+			      p.setBrush(brushLG);
                         }
-		  else if (part->mute()) {
+		      else if (part->mute()) {
                         pen.setColor(Qt::red);
                         brush.setColor(Qt::gray);
-			p.setBrush(brush);
+			      p.setBrush(brush);
                         }
                   else {
-		    //brush.setColor(config.partColors[part->colorIndex()]);
-			p.setBrush(brushLG);
+		            //brush.setColor(config.partColors[part->colorIndex()]);
+			      p.setBrush(brushLG);
                         }
                   p.setPen(pen);
                   //

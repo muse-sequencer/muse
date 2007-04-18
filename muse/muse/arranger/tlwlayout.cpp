@@ -57,7 +57,6 @@ QLayoutItem *TLWidgetLayout::takeAt(int index)
 
 void TLWidgetLayout::setGeometry(const QRect &rect)
       {
-// printf("TLWidgetLayout::setGeometry\n");
       int n = itemList.size();
       if (n < 2)
             return;
@@ -76,8 +75,19 @@ void TLWidgetLayout::setGeometry(const QRect &rect)
       item = itemList.at(1);
       item->setGeometry(QRect(x1 - 18, y2 - 19, 18, 18));
 
+      itemList.at(2)->setGeometry(QRect(x1, y, x2-x1, dh));
+      if (n <= 3)
+            return;
+
+      y += dh;
+      if ((y + itemList.at(3)->sizeHint().height()) > y2) {
+            for (int i = 3; i < n; ++i)
+                  itemList.at(i)->setGeometry(QRect(-1000, -1000, 0, 0));
+            return;
+            }
       int x = x1;
-      for (int i = 2; i < n; ++i) {
+
+      for (int i = 3; i < n; ++i) {
             QLayoutItem *item = itemList.at(i);
             QSize size(item->sizeHint());
 

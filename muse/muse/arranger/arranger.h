@@ -165,7 +165,6 @@ class Arranger : public QWidget {
       void writeStatus(Xml&);
       Track* curTrack() const { return _curTrack; }
       void endLoadSong();
-      static int trackNameWidth;
       Strip* getStrip() const { return strip;  }
 
    protected:
