@@ -56,6 +56,8 @@ enum DragType {
 TimeCanvas::TimeCanvas(TimeCanvasType t)
    : QFrame()
       {
+      setAttribute(Qt::WA_NoSystemBackground, true);
+
       _yFit      = false;
       _tool      = PointerTool;
       type       = t;
@@ -800,7 +802,6 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
 
       QRect par = r & rPanelA;
       if (!(par.isEmpty() || rPanelA.isEmpty())) {
-//            p.setClipRect(par);
             if (type == TIME_CANVAS_DRUMEDIT) {
                   paintDrumList(p, par);
                   }
@@ -835,7 +836,7 @@ void TimeCanvas::canvasPaintEvent(const QRect& r, QPainter& p)
                         QRect rr(car);
                         // paint inactive area different
                         // (darker)
-                        QColor c = canvasBackgroundColor.dark();
+                        QColor c = canvasBackgroundColor.darker(150);
                         int x1 = pos2pix(partPos1) + rCanvasA.x();
                         if (rr.x() < x1) {
                               QRect r(rr.x(), rr.y(), x1-rr.x(), rr.height());

@@ -62,7 +62,7 @@ AudioTrack::AudioTrack()
       addController(c);
 
       for (int i = 0; i < MAX_CHANNELS; ++i)
-            posix_memalign((void**)&buffer[i], 16, sizeof(float) * segmentSize);
+            posix_memalign((void**)(buffer + i), 16, sizeof(float) * segmentSize);
       }
 
 //---------------------------------------------------------
@@ -557,8 +557,10 @@ void AudioTrack::collectInputData()
                   ch  = r.src.plugin->channel();
                   ptr = r.src.plugin->buffer();
                   }
-            else
+            else {
                   printf("AudioTrack::collectInputRoutes(): bad route type\n");
+                  return;
+                  }
             if (copyFlag) {
                   copy(ch, ptr);
                   copyFlag = false;

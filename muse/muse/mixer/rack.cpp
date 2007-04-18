@@ -28,6 +28,7 @@
 #include "plugingui.h"
 #include "widgets/filedialog.h"
 #include "muse.h"
+#include "gui.h"
 
 static const int PipelineDepth = 4;
 
@@ -66,7 +67,7 @@ QSize EffectRack::sizeHint() const
       {
 	QFontMetrics fm(font());
 	int h = fm.lineSpacing() * PipelineDepth + 1;
-	return QSize(100, h);
+	return QSize(STRIP_WIDTH, h);
       }
 
 //---------------------------------------------------------

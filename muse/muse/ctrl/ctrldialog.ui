@@ -28,7 +28,7 @@
       <bool>true</bool>
      </property>
      <property name="columnCount" >
-      <number>2</number>
+      <number>3</number>
      </property>
      <column>
       <property name="text" >

@@ -1,3 +1,5 @@
+18.04 (ws)
+      - fix ctrl dialog for plugin provided controller
 17.04 (ws)
       - replace some heartBeat signal/slot connections with
         direct calls for better performance

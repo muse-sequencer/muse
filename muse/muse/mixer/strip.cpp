@@ -68,7 +68,6 @@ Strip::Strip(Mixer* m, Track* t, bool align)
       layout->setMargin(0);
       layout->setSpacing(0);
       setLayout(layout);
-//      setFixedWidth(STRIP_WIDTH);
 
       //---------------------------------------------
       //    label

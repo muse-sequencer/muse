@@ -135,7 +135,7 @@ void CtrlEditor::paint(QPainter& p, const QRect& r)
             else {
                   int x1, y1, x2, y2;
                   int hx = -1;
-                  int hy;
+                  int hy = 0;
 
                   Pos pos1 = tc()->pix2pos(from);
                   ciCtrlVal i = ctrl()->lowerBound(pos1.time(tt));
@@ -380,8 +380,8 @@ void CtrlEditor::mouseRelease()
             song->endUndo(SC_EVENT_MODIFIED);
       else {
             if (dragy != -1 && dragy != startY) {
-                  int wh = cheight() - HANDLE1 + splitWidth;
-                  CVal val = ctrl()->pixel2val(dragy+HANDLE2, wh);
+                  int wh = cheight() + splitWidth - HANDLE1;
+                  CVal val = ctrl()->pixel2val(dragy - HANDLE2, wh);
                   // modify controller:
                   song->cmdAddControllerVal(track(), ctrl(), selected, val);
                   }

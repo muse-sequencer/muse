@@ -44,7 +44,4 @@ class allpass
       };
 
 
-// Big to inline - but crucial for speed
-
-
 #endif//_allpass

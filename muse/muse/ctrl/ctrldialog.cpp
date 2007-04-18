@@ -82,9 +82,6 @@ void CtrlDialog::updateController()
                   }
             }
       else if (!t->isMidiTrack()) {
-            //
-            // aux send streams
-            //
 
             //
             // present plugin parameter
@@ -97,7 +94,7 @@ void CtrlDialog::updateController()
                   int ncontroller = plugin->plugin()->parameter();
                   for (int i = 0; i < ncontroller; ++i) {
                         QString name(plugin->getParameterName(i));
-                        int id = (idx + 1) * 0x1000 + i;
+                        int id = genACnum(idx, i, true);
                         QTreeWidgetItem* cci = new QTreeWidgetItem(ci, id);
                         cci->setText(0, name);
                         Ctrl* ctrl = t->getController(id);
@@ -110,7 +107,7 @@ void CtrlDialog::updateController()
                                     }
                               }
                         else
-                              printf("updateController: controller %x not found\n");
+                              printf("updateController: controller %x not found\n", id);
                         }
                   }
             pl = ((AudioTrack*)t)->postPipe();
@@ -121,7 +118,7 @@ void CtrlDialog::updateController()
                   int ncontroller = plugin->plugin()->parameter();
                   for (int i = 0; i < ncontroller; ++i) {
                         QString name(plugin->getParameterName(i));
-                        int id = (idx + 1) * 0x1000 + i;
+                        int id = genACnum(idx, i, false);
                         QTreeWidgetItem* cci = new QTreeWidgetItem(ci, id);
                         cci->setText(0, name);
                         Ctrl* ctrl = t->getController(id);

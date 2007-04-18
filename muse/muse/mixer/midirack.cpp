@@ -26,6 +26,7 @@
 #include "midiplugin.h"
 #include "audio.h"
 #include "muse.h"
+#include "gui.h"
 
 //---------------------------------------------------------
 //   MidiRack
@@ -59,7 +60,7 @@ QSize MidiRack::sizeHint() const
       {
 	QFontMetrics fm(font());
 	int h = fm.lineSpacing() * MidiPipelineDepth + 1;
-	return QSize(100, h);
+	return QSize(STRIP_WIDTH, h);
       }
 
 //---------------------------------------------------------

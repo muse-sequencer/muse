@@ -297,26 +297,26 @@ Arranger::Arranger(QMainWindow* parent)
 
       infoDock = new QDockWidget(tr("TrackInfo"));
       infoDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-      infoDock->setMinimumWidth(infoWidth);
       infoDockAction = infoDock->toggleViewAction();
 
-      mixerDock = new QDockWidget(tr("Mix"));
+      mixerDock = new QDockWidget(tr(""));
       mixerDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
       mixerDockAction = mixerDock->toggleViewAction();
 
       parent->setDockNestingEnabled(true);
 
       parent->addDockWidget(Qt::LeftDockWidgetArea, infoDock, Qt::Horizontal);
-      parent->splitDockWidget(infoDock, mixerDock, Qt::Horizontal);
+      parent->addDockWidget(Qt::LeftDockWidgetArea, mixerDock, Qt::Horizontal);
 
       infoView = new QScrollArea;
+      infoView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+
       infoDock->setWidget(infoView);
       infoView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
       trackInfo = new InfoStack();
       infoView->setWidget(trackInfo);
       infoView->setWidgetResizable(true);
-      trackInfo->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
 
       trackInfoVisible  = false;
       mixerStripVisible = false;
@@ -886,6 +886,8 @@ void Arranger::toggleMixerStrip(bool val)
                               break;
                         }
                   strip->setFixedWidth(STRIP_WIDTH);
+//                  strip->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+//                  strip->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
                   mixerDock->setWidget(strip);
                   }
             }

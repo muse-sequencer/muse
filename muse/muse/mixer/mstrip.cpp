@@ -171,7 +171,7 @@ void MidiStrip::addKnob(int ctrl, int idx, const QString& tt, const QString& lab
             knob = new Awl::Knob(this);
             knob->setRange(0.0, 127.0);
             }
-      knob->setFixedSize(buttonSize.width(), entrySize.height() * 2);
+//      knob->setFixedSize(buttonSize.width(), entrySize.height() * 2);
       knob->setId(ctrl);
       dl->setId(ctrl);
       dl->setFrame(true);
@@ -542,7 +542,7 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       //---------------------------------------------------
 
       MidiRack* rack = new MidiRack(this, t);
-      rack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+//      rack->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       rack->setFixedHeight(rack->sizeHint().height()+2);
       layout->addWidget(rack);
 
@@ -848,7 +848,7 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
       //---------------------------------------------------
 
       MidiRack* rack = new MidiRack(this, t);
-      rack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+//      rack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       rack->setFixedHeight(rack->sizeHint().height()+2);
       layout->addWidget(rack);
 

@@ -58,9 +58,6 @@ public:
       };
 
 
-// Big to inline - but crucial for speed
-
-
 #endif //_comb_
 
 //ends

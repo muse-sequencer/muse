@@ -64,6 +64,7 @@ class Strip : public QFrame {
       ~Strip();
       Track* getTrack() const { return track; }
       virtual void heartBeat() = 0;
+      virtual QSize sizeHint() const { return QSize(STRIP_WIDTH, 80); }
       };
 
 #endif
