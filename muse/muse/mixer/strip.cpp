@@ -64,10 +64,10 @@ Strip::Strip(Mixer* m, Track* t, bool align)
       setLineWidth(2);
 
       track = t;
-      layout = new QVBoxLayout;
-      layout->setMargin(0);
-      layout->setSpacing(0);
-      setLayout(layout);
+      grid = new QGridLayout;
+      grid->setMargin(0);
+      grid->setSpacing(0);
+      setLayout(grid);
 
       //---------------------------------------------
       //    label
@@ -80,7 +80,7 @@ Strip::Strip(Mixer* m, Track* t, bool align)
       label->setLineWidth(2);
       label->setFrameStyle(QFrame::Sunken | QFrame::StyledPanel);
       updateLabel();
-      layout->addWidget(label);
+      grid->addWidget(label, 0, 0, 1, 2);
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
       connect(track, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));
       }
@@ -106,18 +106,18 @@ void Strip::configChanged()
 //   addAutomationButtons
 //---------------------------------------------------------
 
-void Strip::addAutomationButtons()
+void Strip::addAutomationButtons(int row)
       {
       QHBoxLayout* aBox = new QHBoxLayout;
-      SimpleButton* ar = newAutoReadButton();
-      ar->setFixedSize(buttonSize);
+      SimpleButton* ar  = newAutoReadButton();
+      ar->setFixedHeight(BUTTON_HEIGHT);
       ar->setChecked(track->autoRead());
       aBox->addWidget(ar);
       SimpleButton* aw = newAutoWriteButton();
-      aw->setFixedSize(buttonSize);
+      aw->setFixedHeight(BUTTON_HEIGHT);
       aw->setChecked(track->autoWrite());
       aBox->addWidget(aw);
-      layout->addLayout(aBox);
+      grid->addLayout(aBox, row, 0, 1, 2);
       connect(ar, SIGNAL(clicked(bool)), SLOT(autoReadToggled(bool)));
       connect(aw, SIGNAL(clicked(bool)), SLOT(autoWriteToggled(bool)));
       connect(track, SIGNAL(autoReadChanged(bool)), ar, SLOT(setChecked(bool)));

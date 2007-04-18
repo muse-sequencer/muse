@@ -225,6 +225,7 @@ SimpleButton* newMuteButton()
       mute->setFont(config.fonts[BFONT]);
       mute->setCheckable(true);
       mute->setToolTip(QT_TR_NOOP("mute"));
+      mute->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
       return mute;
       }
 
@@ -239,6 +240,7 @@ SimpleButton* newSoloButton()
       solo->setFont(config.fonts[BFONT]);
       solo->setCheckable(true);
       solo->setToolTip(QT_TR_NOOP("solo"));
+      solo->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
       return solo;
       }
 
@@ -252,6 +254,7 @@ SimpleButton* newMonitorButton()
       monitor->setFont(config.fonts[BFONT]);
       monitor->setCheckable(true);
       monitor->setToolTip(QT_TR_NOOP("monitor"));
+      monitor->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
       return monitor;
       }
 
@@ -286,7 +289,9 @@ SimpleButton* newOffButton()
 
 SimpleButton* newRecordButton()
       {
-      return new RecordButton();
+      SimpleButton* record = new RecordButton();
+      record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+      return record;
       }
 
 //---------------------------------------------------------
@@ -367,13 +372,14 @@ QToolButton* newOutRouteButton()
       {
       QToolButton* oR = new QToolButton;
       oR->setFont(config.fonts[BFONT]);
-      oR->setFixedWidth((STRIP_WIDTH-4)/2);
+      oR->setFixedHeight(BUTTON_HEIGHT);
       oR->setText(QT_TR_NOOP("oR"));
       oR->setCheckable(false);
       oR->setToolTip(QT_TR_NOOP("output routing"));
       oR->setMenu(new QMenu);
       oR->setPopupMode(QToolButton::InstantPopup);
       oR->menu()->setSeparatorsCollapsible(false);
+      oR->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       return oR;
       }
 
@@ -385,13 +391,14 @@ QToolButton* newInRouteButton()
       {
       QToolButton* iR = new QToolButton;
       iR->setFont(config.fonts[BFONT]);
-      iR->setFixedWidth((STRIP_WIDTH-4)/2);
+      iR->setFixedHeight(BUTTON_HEIGHT);
       iR->setText(QT_TR_NOOP("iR"));
       iR->setCheckable(false);
       iR->setToolTip(QT_TR_NOOP("input routing"));
       iR->setMenu(new QMenu);
       iR->setPopupMode(QToolButton::InstantPopup);
       iR->menu()->setSeparatorsCollapsible(false);
+      iR->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       return iR;
       }
 

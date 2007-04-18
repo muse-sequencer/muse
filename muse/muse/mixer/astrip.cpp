@@ -59,13 +59,12 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       rack1 = new EffectRack(this, t, true);
       rack1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       rack1->setFixedHeight(rack1->sizeHint().height() + 2);
-      layout->addWidget(rack1);
+      grid->addWidget(rack1, 1, 0, 1, 2);
 
       //---------------------------------------------------
       //    mono/stereo  pre/post
       //---------------------------------------------------
 
-      QHBoxLayout* ppBox = new QHBoxLayout;
       stereo  = newStereoButton();
       stereo->setChecked(channel == 2);
       stereo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -82,9 +81,8 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       pre->setFixedHeight(LABEL_HEIGHT);
       connect(pre, SIGNAL(clicked(bool)), SLOT(preToggled(bool)));
 
-      ppBox->addWidget(stereo);
-      ppBox->addWidget(pre);
-      layout->addLayout(ppBox);
+      grid->addWidget(stereo, 2, 0);
+      grid->addWidget(pre, 2, 1);
 
       //---------------------------------------------------
       //    slider, label
@@ -99,7 +97,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       if (ctrl)
             vol = ctrl->curVal().f;
       slider->setValue(vol);
-      layout->addWidget(slider, 100, Qt::AlignRight);
+      grid->addWidget(slider, 3, 0, 1, 2); // 100, Qt::AlignRight);
 
       sl = new Awl::VolEntry(this);
       sl->setFont(config.fonts[1]);
@@ -114,13 +112,13 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(volumePressed()));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(volumeReleased()));
       connect(slider, SIGNAL(meterClicked()), SLOT(resetPeaks()));
-      layout->addWidget(sl);
+      grid->addWidget(sl, 4, 0, 1, 2);
 
       //---------------------------------------------------
       //    pan, balance
       //---------------------------------------------------
 
-      pan = addPanKnob(&panl);
+      pan = addPanKnob(&panl, 5);
       double panv = t->getController(AC_PAN)->curVal().f;
       pan->setValue(panv);
       panl->setValue(panv);
@@ -132,7 +130,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       rack2 = new EffectRack(this, t, false);
       rack2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       rack2->setFixedHeight(rack1->sizeHint().height() + 2);
-      layout->addWidget(rack2);
+      grid->addWidget(rack2, 7, 0, 1, 2);
 
       //---------------------------------------------------
       //    mute, solo, record
@@ -140,72 +138,62 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
 
       Track::TrackType type = t->type();
 
-      QHBoxLayout* smBox1 = new QHBoxLayout(0);
-      QHBoxLayout* smBox2 = new QHBoxLayout(0);
-
       mute  = newMuteButton();
       mute->setChecked(t->mute());
-      mute->setFixedSize(buttonSize);
+      mute->setFixedHeight(BUTTON_HEIGHT);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
       connect(t, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));
-      smBox2->addWidget(mute);
 
       solo  = newSoloButton();
       solo->setDisabled(true);
-      solo->setFixedSize(buttonSize);
-      smBox2->addWidget(solo);
+      solo->setFixedHeight(BUTTON_HEIGHT);
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
       connect(t, SIGNAL(soloChanged(bool)), solo, SLOT(setChecked(bool)));
 
       off  = newOffButton();
-      off->setFixedSize(buttonSize);
+      off->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+      off->setFixedHeight(BUTTON_HEIGHT);
       off->setChecked(t->off());
       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
       connect(t, SIGNAL(offChanged(bool)), this, SLOT(updateOffState()));
 
-      smBox1->addWidget(off);
-
       if (track->canRecord()) {
             record = newRecordButton();
-            record->setFixedSize(buttonSize);
+            record->setFixedHeight(BUTTON_HEIGHT);
             if (type == Track::AUDIO_OUTPUT)
                   record->setToolTip(tr("record downmix"));
             record->setChecked(t->recordFlag());
             connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
             connect(t, SIGNAL(recordChanged(bool)), record, SLOT(setChecked(bool)));
-            smBox1->addWidget(record);
             }
-      else {
+      else
             record = 0;
-            smBox1->addStretch(100);
-            }
 
-      layout->addLayout(smBox1);
-      layout->addLayout(smBox2);
+      grid->addWidget(off, 8, 0);
+      if (record)
+            grid->addWidget(record, 8, 1);
+      grid->addWidget(mute, 9, 0);
+      grid->addWidget(solo, 9, 1);
 
       //---------------------------------------------------
       //    automation read write
       //---------------------------------------------------
 
-      addAutomationButtons();
+      addAutomationButtons(10);
 
       //---------------------------------------------------
       //    routing
       //---------------------------------------------------
 
-      QHBoxLayout* rBox = new QHBoxLayout(0);
-
       iR = newInRouteButton();
-      rBox->addWidget(iR);
+      grid->addWidget(iR, 12, 0);
       connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
       connect(iR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
       oR = newOutRouteButton();
-      rBox->addWidget(oR);
+      grid->addWidget(oR, 12, 1);
       connect(oR->menu(), SIGNAL(aboutToShow()), SLOT(oRouteShow()));
       connect(oR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
-
-      layout->addLayout(rBox);
 
       if (off) {
             updateOffState();   // init state
@@ -409,11 +397,11 @@ void AudioStrip::updateChannels()
 //   addPanKnob
 //---------------------------------------------------------
 
-Awl::PanKnob* AudioStrip::addPanKnob(Awl::PanEntry** dlabel)
+Awl::PanKnob* AudioStrip::addPanKnob(Awl::PanEntry** dlabel, int row)
       {
       Awl::PanKnob* knob = new Awl::PanKnob(this);
       knob->setToolTip(tr("panorama"));
-      knob->setFixedSize(buttonSize.width(), entrySize.height() * 2);
+      knob->setFixedHeight(entrySize.height() * 2);
 
       Awl::PanEntry* pl  = new Awl::PanEntry(this);
       pl->setPrecision(2);
@@ -432,13 +420,9 @@ Awl::PanKnob* AudioStrip::addPanKnob(Awl::PanEntry** dlabel)
       plb->setFixedSize(entrySize);
       plb->setAlignment(Qt::AlignCenter);
 
-      QGridLayout* pangrid = new QGridLayout;
-      pangrid->setMargin(0);
-      pangrid->setSpacing(0);
-      pangrid->addWidget(plb, 0, 0);
-      pangrid->addWidget(pl, 1, 0);
-      pangrid->addWidget(knob, 0, 1, 2, 1);
-      layout->addLayout(pangrid);
+      grid->addWidget(plb,  row, 0);
+      grid->addWidget(pl,   row+1, 0);
+      grid->addWidget(knob, row, 1, 2, 1);
 
       connect(knob, SIGNAL(valueChanged(double,int)), SLOT(panChanged(double)));
       connect(pl,   SIGNAL(valueChanged(double,int)), SLOT(panChanged(double)));

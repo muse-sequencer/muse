@@ -61,7 +61,7 @@ class MidiStrip : public Strip {
       bool variSendTouched;
       bool chorusSendTouched;
 
-      void addKnob(int ctrl, int idx, const QString&, const QString&, const char*, bool);
+      void addKnob(int ctrl, int idx, const QString&, const QString&, const char*, bool, int row);
 
    private slots:
       virtual void controllerChanged(int id);

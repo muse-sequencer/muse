@@ -29,8 +29,8 @@ class Meter;
 class SimpleButton;
 class Mixer;
 
-static const QSize buttonSize(STRIP_WIDTH/2-2, STRIP_WIDTH/3);
-static const QSize entrySize(STRIP_WIDTH/2-2, 17);
+// static const QSize buttonSize(STRIP_WIDTH/2-2, BUTTON_HEIGHT);
+static const QSize entrySize(STRIP_WIDTH/2-2, ENTRY_HEIGHT);
 
 //---------------------------------------------------------
 //   Strip
@@ -43,7 +43,7 @@ class Strip : public QFrame {
       Mixer* mixer;
       Track* track;
       QLabel* label;
-      QVBoxLayout* layout;
+      QGridLayout* grid;
 
       SimpleButton* solo;
       SimpleButton* mute;
@@ -51,7 +51,7 @@ class Strip : public QFrame {
       bool _align;      // align elements for mixer app
 
       void recordToggled(bool);
-      void addAutomationButtons();
+      void addAutomationButtons(int row);
 
    public slots:
       void resetPeaks();

@@ -105,7 +105,8 @@ void TLSLayout::setGeometry(const QRect& rect)
 
       item = itemList.at(1);
       size = item->sizeHint();
-      item->setGeometry(QRect(x1, rect.y(), size.width(), trackRowHeight));
+      item->setGeometry(QRect(x1, rect.y(),
+         rect.width() - x1 - 2, trackRowHeight));
       }
 
 //---------------------------------------------------------

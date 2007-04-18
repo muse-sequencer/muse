@@ -58,7 +58,7 @@ class AudioStrip : public Strip {
       QToolButton* stereo;
       QToolButton* pre;
 
-      Awl::PanKnob* addPanKnob(Awl::PanEntry**);
+      Awl::PanKnob* addPanKnob(Awl::PanEntry**, int);
 
       QToolButton* iR;
       QToolButton* oR;

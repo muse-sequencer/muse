@@ -157,21 +157,20 @@ static void addSyntiPorts(QMenu* menu, Track* strack, int channel)
 //---------------------------------------------------------
 
 void MidiStrip::addKnob(int ctrl, int idx, const QString& tt, const QString& label,
-   const char* slot, bool enabled)
+   const char* slot, bool enabled, int row)
       {
       Awl::FloatEntry* dl;
       Awl::Knob* knob;
 
       if (idx == KNOB_PAN) {
-            dl = new Awl::MidiPanEntry(this);
+            dl   = new Awl::MidiPanEntry(this);
             knob = new Awl::MidiPanKnob(this);
             }
       else {
-            dl = new Awl::MidiVolEntry(this);
+            dl   = new Awl::MidiVolEntry(this);
             knob = new Awl::Knob(this);
             knob->setRange(0.0, 127.0);
             }
-//      knob->setFixedSize(buttonSize.width(), entrySize.height() * 2);
       knob->setId(ctrl);
       dl->setId(ctrl);
       dl->setFrame(true);
@@ -192,13 +191,9 @@ void MidiStrip::addKnob(int ctrl, int idx, const QString& tt, const QString& lab
       lb->setAlignment(Qt::AlignCenter);
       lb->setEnabled(enabled);
 
-      QGridLayout* grid = new QGridLayout;
-      grid->setMargin(0);
-      grid->setSpacing(0);
-      grid->addWidget(lb, 0, 0);
-      grid->addWidget(dl, 1, 0);
-      grid->addWidget(knob, 0, 1, 2, 1);
-      layout->addLayout(grid);
+      grid->addWidget(lb,   row,   0);
+      grid->addWidget(dl,   row+1, 0);
+      grid->addWidget(knob, row,   1, 2, 1);
 
       connect(knob, SIGNAL(valueChanged(double,int)), slot);
       connect(dl, SIGNAL(valueChanged(double,int)), slot);
@@ -219,9 +214,9 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       variSendTouched   = false;
       chorusSendTouched = false;
 
-      addKnob(CTRL_VARIATION_SEND, KNOB_VAR_SEND, tr("VariationSend"), tr("Var"), SLOT(ctrlChanged(double,int)), true);
-      addKnob(CTRL_REVERB_SEND, KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(ctrlChanged(double,int)), true);
-      addKnob(CTRL_CHORUS_SEND, KNOB_CHOR_SEND, tr("ChorusSend"), tr("Cho"), SLOT(ctrlChanged(double,int)), true);
+      addKnob(CTRL_VARIATION_SEND, KNOB_VAR_SEND, tr("VariationSend"), tr("Var"), SLOT(ctrlChanged(double,int)), true, 1);
+      addKnob(CTRL_REVERB_SEND, KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(ctrlChanged(double,int)), true, 3);
+      addKnob(CTRL_CHORUS_SEND, KNOB_CHOR_SEND, tr("ChorusSend"), tr("Cho"), SLOT(ctrlChanged(double,int)), true, 5);
 
       //---------------------------------------------------
       //    slider, label, meter
@@ -230,7 +225,7 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       slider = new Awl::MidiMeterSlider(this);
       slider->setId(CTRL_VOLUME);
       slider->setFixedWidth(40);
-      layout->addWidget(slider, 100, Qt::AlignRight);
+      grid->addWidget(slider, 7, 0, 1, 2, Qt::AlignRight);
 
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_VOLUME);
@@ -241,13 +236,13 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(sliderPressed(int)));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(sliderReleased(int)));
       connect(sl,     SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
-      layout->addWidget(sl);
+      grid->addWidget(sl, 8, 0, 1, 2);
 
       //---------------------------------------------------
       //    pan, balance
       //---------------------------------------------------
 
-      addKnob(CTRL_PANPOT, KNOB_PAN, tr("Pan/Balance"), tr("Pan"), SLOT(ctrlChanged(double,int)), true);
+      addKnob(CTRL_PANPOT, KNOB_PAN, tr("Pan/Balance"), tr("Pan"), SLOT(ctrlChanged(double,int)), true, 9);
 
       //---------------------------------------------------
       //    ---   record
@@ -255,61 +250,51 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       //---------------------------------------------------
 
       SimpleButton* monitor = newMonitorButton();
-      monitor->setFixedSize(buttonSize);
+      monitor->setFixedHeight(BUTTON_HEIGHT);
       monitor->setChecked(track->monitor());
       connect(monitor, SIGNAL(clicked(bool)), SLOT(monitorToggled(bool)));
       connect(t, SIGNAL(monitorChanged(bool)), monitor, SLOT(setChecked(bool)));
 
       SimpleButton* record = newRecordButton();
-      record->setFixedSize(buttonSize);
+      record->setFixedHeight(BUTTON_HEIGHT);
       record->setChecked(track->recordFlag());
       connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
       connect(t, SIGNAL(recordChanged(bool)), record, SLOT(setChecked(bool)));
 
       mute  = newMuteButton();
       mute->setChecked(track->isMute());
-      mute->setFixedSize(buttonSize);
+      mute->setFixedHeight(BUTTON_HEIGHT);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
       solo  = newSoloButton();
-      solo->setFixedSize(buttonSize);
+      solo->setFixedHeight(BUTTON_HEIGHT);
       solo->setChecked(track->solo());
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
 
-      QHBoxLayout* smBox1 = new QHBoxLayout(0);
-      QHBoxLayout* smBox2 = new QHBoxLayout(0);
-
-      smBox1->addWidget(monitor);
-      smBox1->addWidget(record);
-
-      smBox2->addWidget(mute);
-      smBox2->addWidget(solo);
-
-      layout->addLayout(smBox1);
-      layout->addLayout(smBox2);
+      grid->addWidget(monitor, 11, 0);
+      grid->addWidget(record, 11, 1);
+      grid->addWidget(mute, 12, 0);
+      grid->addWidget(solo, 12, 1);
 
       //---------------------------------------------------
       //    automation mode
       //---------------------------------------------------
 
-      addAutomationButtons();
+      addAutomationButtons(13);
 
       //---------------------------------------------------
       //    routing
       //---------------------------------------------------
 
-      QHBoxLayout* rBox = new QHBoxLayout(0);
       iR = newInRouteButton();
-      rBox->addWidget(iR);
+      grid->addWidget(iR, 14, 0);
       connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
       connect(iR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
       oR = newOutRouteButton();
-      rBox->addWidget(oR);
+      grid->addWidget(oR, 14, 1);
       connect(oR->menu(), SIGNAL(aboutToShow()), SLOT(oRouteShow()));
       connect(oR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
-
-      layout->addLayout(rBox);
 
       connect(song,  SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(track, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));
@@ -542,13 +527,12 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       //---------------------------------------------------
 
       MidiRack* rack = new MidiRack(this, t);
-//      rack->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       rack->setFixedHeight(rack->sizeHint().height()+2);
-      layout->addWidget(rack);
+      grid->addWidget(rack, 1, 0, 1, 2);
 
 
       if (_align)
-            layout->addSpacing(STRIP_WIDTH/2);
+            grid->setRowMinimumHeight(2, STRIP_WIDTH/2);
 
       volumeTouched = false;
 
@@ -560,7 +544,7 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       slider->setId(CTRL_MASTER_VOLUME);
       slider->setRange(0.0, 1024*16.0);
       slider->setFixedWidth(40);
-      layout->addWidget(slider, 100, Qt::AlignRight);
+      grid->addWidget(slider, 3, 0, 1, 2, Qt::AlignRight);
 
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_MASTER_VOLUME);
@@ -574,14 +558,14 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(sliderPressed(int)));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(sliderReleased(int)));
       connect(sl,     SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
-      layout->addWidget(sl);
+      grid->addWidget(sl, 4, 0, 1, 2);
 
       //---------------------------------------------------
       //    pan, balance
       //---------------------------------------------------
 
       if (_align)
-            layout->addSpacing(entrySize.height() * 2);
+            grid->setRowMinimumHeight(5, entrySize.height() * 2);
 
       //---------------------------------------------------
       //    sync
@@ -589,53 +573,45 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       //---------------------------------------------------
 
       sync = newSyncButton();
-      sync->setFixedHeight(buttonSize.height());
+      sync->setFixedHeight(BUTTON_HEIGHT);
       sync->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       sync->setChecked(((MidiOutPort*)track)->sendSync());
-      layout->addWidget(sync);
+      grid->addWidget(sync, 6, 0, 1, 2);
       connect(sync, SIGNAL(clicked(bool)), SLOT(syncToggled(bool)));
       connect(track, SIGNAL(sendSyncChanged(bool)), sync, SLOT(setChecked(bool)));
 
       mute  = newMuteButton();
       mute->setChecked(track->isMute());
-      mute->setFixedSize(buttonSize);
+      mute->setFixedHeight(BUTTON_HEIGHT);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
       solo  = newSoloButton();
-      solo->setFixedSize(buttonSize);
+      solo->setFixedHeight(BUTTON_HEIGHT);
       solo->setChecked(track->solo());
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
 
-      QHBoxLayout* smBox2 = new QHBoxLayout(0);
-
-      smBox2->addWidget(mute);
-      smBox2->addWidget(solo);
-
-      layout->addLayout(smBox2);
+      grid->addWidget(mute, 7, 0);
+      grid->addWidget(solo, 7, 1);
 
       //---------------------------------------------------
       //    automation mode
       //---------------------------------------------------
 
-      addAutomationButtons();
+      addAutomationButtons(8);
 
       //---------------------------------------------------
       //    output routing
       //---------------------------------------------------
 
-      QHBoxLayout* rBox = new QHBoxLayout(0);
-
       iR = newInRouteButton();
-      rBox->addWidget(iR);
+      grid->addWidget(iR, 9, 0);
       connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
       connect(iR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
       oR = newOutRouteButton();
-      rBox->addWidget(oR);
+      grid->addWidget(oR, 9, 1);
       connect(oR->menu(), SIGNAL(aboutToShow()), SLOT(oRouteShow()));
       connect(oR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
-
-      layout->addLayout(rBox);
 
       connect(song,  SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(track, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));
@@ -848,15 +824,14 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
       //---------------------------------------------------
 
       MidiRack* rack = new MidiRack(this, t);
-//      rack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       rack->setFixedHeight(rack->sizeHint().height()+2);
-      layout->addWidget(rack);
+      grid->addWidget(rack, 1, 0, 1, 2);
 
       //---------------------------------------------------
       //    input activity
       //---------------------------------------------------
 
-      layout->addStretch(100);
+      grid->setRowStretch(2, 100);
 
       QGridLayout* ag = new QGridLayout;
       ag->setMargin(4);
@@ -890,7 +865,10 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
             channelActivity[ch]->setPixmap(*activityOff);
             activity[ch] = 0;
             }
-      layout->addLayout(ag, Qt::AlignHCenter);
+      grid->addLayout(ag, 3, 0, 2, Qt::AlignHCenter);
+
+      if (_align)
+            grid->setRowMinimumHeight(4, BUTTON_HEIGHT);
 
       //---------------------------------------------------
       //    mute, solo
@@ -900,29 +878,23 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
 
       mute  = newMuteButton();
       mute->setChecked(track->isMute());
-      mute->setFixedSize(buttonSize);
+      mute->setFixedHeight(BUTTON_HEIGHT);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
       solo  = newSoloButton();
-      solo->setFixedSize(buttonSize);
+      solo->setFixedHeight(BUTTON_HEIGHT);
       solo->setChecked(track->solo());
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
 
-      QHBoxLayout* smBox1 = new QHBoxLayout(0);
-      QHBoxLayout* smBox2 = new QHBoxLayout(0);
-
-      smBox2->addWidget(mute);
-      smBox2->addWidget(solo);
-
-      layout->addLayout(smBox1);
-      layout->addLayout(smBox2);
+      grid->addWidget(mute, 5, 0);
+      grid->addWidget(solo, 5, 1);
 
       //---------------------------------------------------
       //    output routing
       //---------------------------------------------------
 
       if (_align)
-            layout->addSpacing(STRIP_WIDTH/3);        // automation row
+            grid->setRowMinimumHeight(6, BUTTON_HEIGHT);
 
       iR = newInRouteButton();
       connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
@@ -932,10 +904,8 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
       connect(oR->menu(), SIGNAL(aboutToShow()), SLOT(oRouteShow()));
       connect(oR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
-      QHBoxLayout* rBox = new QHBoxLayout(0);
-      rBox->addWidget(iR);
-      rBox->addWidget(oR);
-      layout->addLayout(rBox);
+      grid->addWidget(iR, 7, 0);
+      grid->addWidget(oR, 7, 1);
 
       connect(song,  SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(track, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));
@@ -1047,7 +1017,7 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
    : Strip(m, t, align)
       {
       if (_align)
-            layout->addSpacing(STRIP_WIDTH/2 * 3);
+            grid->setRowMinimumHeight(1, STRIP_WIDTH/2 * 3);
 
       volumeTouched = false;
 
@@ -1059,26 +1029,25 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
       slider->setId(CTRL_MASTER_VOLUME);
       slider->setRange(0.0, 1024*16.0);
       slider->setFixedWidth(40);
-      layout->addWidget(slider, 100, Qt::AlignRight);
+      grid->addWidget(slider, 2, 0, 1, 2, Qt::AlignRight);
 
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_MASTER_VOLUME);
       sl->setFont(config.fonts[1]);
-//      sl->setFixedWidth(STRIP_WIDTH-2);
       sl->setFixedHeight(entrySize.height());
 
       connect(slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(sliderPressed(int)));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(sliderReleased(int)));
       connect(sl,     SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
-      layout->addWidget(sl);
+      grid->addWidget(sl, 3, 0, 1, 2);
 
       //---------------------------------------------------
       //    pan, balance
       //---------------------------------------------------
 
       if (_align)
-            layout->addSpacing(STRIP_WIDTH);
+            grid->setRowMinimumHeight(4, STRIP_WIDTH);
 
       //---------------------------------------------------
       //    sync
@@ -1087,44 +1056,36 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
 
       mute  = newMuteButton();
       mute->setChecked(track->isMute());
-      mute->setFixedSize(buttonSize);
+      mute->setFixedHeight(BUTTON_HEIGHT);
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
       solo  = newSoloButton();
-      solo->setFixedSize(buttonSize);
+      solo->setFixedHeight(BUTTON_HEIGHT);
       solo->setChecked(track->solo());
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
 
-      QHBoxLayout* smBox2 = new QHBoxLayout(0);
-
-      smBox2->addWidget(mute);
-      smBox2->addWidget(solo);
-
-      layout->addLayout(smBox2);
+      grid->addWidget(mute, 5, 0);
+      grid->addWidget(solo, 5, 1);
 
       //---------------------------------------------------
       //    automation mode
       //---------------------------------------------------
 
-      addAutomationButtons();
+      addAutomationButtons(6);
 
       //---------------------------------------------------
       //    output routing
       //---------------------------------------------------
 
-      QHBoxLayout* rBox = new QHBoxLayout(0);
-
       iR = newInRouteButton();
-      rBox->addWidget(iR);
+      grid->addWidget(iR, 7, 0);
       connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
       connect(iR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
       oR = newOutRouteButton();
-      rBox->addWidget(oR);
+      grid->addWidget(oR, 7, 1);
       connect(oR->menu(), SIGNAL(aboutToShow()), SLOT(oRouteShow()));
       connect(oR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
-
-      layout->addLayout(rBox);
 
       connect(song,  SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(track, SIGNAL(muteChanged(bool)), mute, SLOT(setChecked(bool)));

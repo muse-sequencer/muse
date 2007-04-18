@@ -883,9 +883,10 @@ void Arranger::toggleMixerStrip(bool val)
                               strip = new AudioStrip(0, (AudioTrack*)_curTrack, false);
                               break;
                         }
-                  strip->setFixedWidth(STRIP_WIDTH);
-//                  strip->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-//                  strip->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+                  //
+                  // it looks like the dock widget has a minimum
+                  // width
+                  strip->setFixedWidth(STRIP_WIDTH + 10);
                   mixerDock->setWidget(strip);
                   }
             }

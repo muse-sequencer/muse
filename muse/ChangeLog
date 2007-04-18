@@ -1,4 +1,5 @@
 18.04 (ws)
+      - simplify mixer strip geometry manager
       - changed track list layout: track name now always uses one
         textline; remove configure option for track name size
       - fix ctrl dialog for plugin provided controller
