@@ -1436,10 +1436,9 @@ bool Song::read(QFile* qf)
                   int major=0, minor=0;
                   sscanf(sversion.toLatin1().data(), "%d.%d", &major, &minor);
                   int version = major << 8 + minor;
-printf("read version %x\n", version);
                   if (version >= 0x201)
                         read30(node.firstChild());
-                  if (version >= 0x200)
+                  else if (version >= 0x200)
                         read20(node);
                   else if (version == 0x100)
                         read10(node.firstChild());
