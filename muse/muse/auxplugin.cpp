@@ -108,9 +108,8 @@ double AuxPlugin::defaultValue(int idx) const
 AuxPluginIF::AuxPluginIF(PluginI* pi)
    : PluginIF(pi)
       {
-      _buffer = new float*[MAX_CHANNELS];
       for (int i = 0; i < MAX_CHANNELS; ++i)
-            _buffer[i] = new float[segmentSize];
+            posix_memalign((void**)(_buffer + i), 16, sizeof(float) * segmentSize);
       }
 
 //---------------------------------------------------------
@@ -121,9 +120,8 @@ AuxPluginIF::~AuxPluginIF()
       {
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             if (_buffer[i])
-            	delete[] _buffer[i];
+            	free(_buffer[i]);
             }
-      delete[] _buffer;
       }
 
 //---------------------------------------------------------

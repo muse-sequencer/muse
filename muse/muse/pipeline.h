@@ -21,6 +21,8 @@
 #ifndef __PIPELINE_H__
 #define __PIPELINE_H__
 
+#include "globaldefs.h"
+
 class PluginI;
 
 //---------------------------------------------------------
@@ -29,8 +31,15 @@ class PluginI;
 //---------------------------------------------------------
 
 class Pipeline : public QList<PluginI*> {
+      float* buffer[MAX_CHANNELS];
+
    public:
-      Pipeline() {}
+      Pipeline();
+      ~Pipeline();
+
+      Pipeline(const Pipeline&);
+      Pipeline& operator=(const Pipeline&);     // disable copies
+
       bool isOn(int idx) const;
       void setOn(int, bool);
       QString label(int idx) const;

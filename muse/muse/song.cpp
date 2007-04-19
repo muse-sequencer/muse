@@ -1436,8 +1436,11 @@ bool Song::read(QFile* qf)
                   int major=0, minor=0;
                   sscanf(sversion.toLatin1().data(), "%d.%d", &major, &minor);
                   int version = major << 8 + minor;
+printf("read version %x\n", version);
+                  if (version >= 0x201)
+                        read30(node.firstChild());
                   if (version >= 0x200)
-                        read20(node.firstChild());
+                        read20(node);
                   else if (version == 0x100)
                         read10(node.firstChild());
                   else
@@ -1460,10 +1463,10 @@ void Song::read10(QDomNode)
       }
 
 //---------------------------------------------------------
-//   read20
+//   read30
 //---------------------------------------------------------
 
-void Song::read20(QDomNode node)
+void Song::read30(QDomNode node)
       {
       for (; !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
@@ -1476,7 +1479,7 @@ void Song::read20(QDomNode node)
             else if (e.tagName() == "toplevels")
                   muse->readToplevels(node.firstChild());
             else
-                  printf("MusE:read20(): unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:read30(): unknown tag %s\n", e.tagName().toLatin1().data());
             }
       }
 

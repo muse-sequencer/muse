@@ -1,3 +1,7 @@
+19.04 (ws)
+      - framework for importing muse0.9 projectfiles
+      - align buffer in dummy audio driver so that the sse routines
+        do not choke; same for AuxPluginF, Pipeline, Fifo
 18.04 (ws)
       - simplify mixer strip geometry manager
       - changed track list layout: track name now always uses one

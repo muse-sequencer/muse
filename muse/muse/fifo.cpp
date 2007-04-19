@@ -87,8 +87,8 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
       int n         = segs * samples;
       if (b->maxSize < n) {
             if (b->buffer)
-                 delete[] b->buffer;
-            b->buffer  = new float[n];
+                 free(b->buffer);
+            posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
             b->maxSize = n;
             }
       b->size = samples;
@@ -166,8 +166,8 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
       int n = segs * samples;
       if (b->maxSize < n) {
             if (b->buffer)
-                 delete[] b->buffer;
-            b->buffer = new float[n];
+                 free(b->buffer);
+            posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
             b->maxSize = n;
             }
       for (int i = 0; i < segs; ++i)

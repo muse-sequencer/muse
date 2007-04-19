@@ -39,6 +39,8 @@
 #include "marker/markerview.h"
 #include "liste/listedit.h"
 
+using namespace AL;
+
 //---------------------------------------------------------
 //   readPart
 //---------------------------------------------------------
@@ -330,7 +332,7 @@ void MusE::write(Xml& xml) const
       {
       xml.header();
 
-      xml.stag("muse version=\"2.1\"");
+      xml.stag("muse version=\"3.0\"");
       writeConfiguration(xml);
 
       song->write(xml);
@@ -364,5 +366,94 @@ void MusE::write(Xml& xml) const
             }
       xml.etag("toplevels");
       xml.etag("muse");
+      }
+
+//---------------------------------------------------------
+//   read20
+//    read old file versions (muse < 1.0)
+//---------------------------------------------------------
+
+void Song::read20(QDomNode node)
+      {
+      printf("Warning: importing old muse file version\n");
+
+      for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
+            QDomElement e = n.toElement();
+            if (e.isNull())
+                  continue;
+            QString t(e.tagName());
+            if (t == "configuration")
+                  readConfiguration(node.firstChild());
+            else if (t == "song") {
+                  for (QDomNode n1 = n.firstChild(); !n1.isNull(); n1 = n1.nextSibling()) {
+                        QDomElement e = n1.toElement();
+                        if (e.isNull())
+                              continue;
+                        QString t(e.tagName());
+                        if (t == "automation")
+                              ;
+                        else if (t == "cpos")
+                              ;
+                        else if (t == "rpos")
+                              ;
+                        else if (t == "lpos")
+                              ;
+                        else if (t == "master")
+                              ;
+                        else if (t == "loop")
+                              ;
+                        else if (t == "punchin")
+                              ;
+                        else if (t == "punchout")
+                              ;
+                        else if (t == "record")
+                              ;
+                        else if (t == "solo")
+                              ;
+                        else if (t == "type")
+                              ;
+                        else if (t == "recmode")
+                              ;
+                        else if (t == "cycle")
+                              ;
+                        else if (t == "click")
+                              ;
+                        else if (t == "quantize")
+                              ;
+                        else if (t == "len")
+                              ;
+                        else if (t == "follow")
+                              ;
+                        else if (t == "drummap")
+                              ;
+                        else if (t == "siglist")
+                              ;
+                        else if (t == "tempolist")
+                              ;
+                        else if (t == "Route")
+                              ;
+                        else if (t == "AudioAux")
+                              ;
+                        else if (t == "AudioInput")
+                              ;
+                        else if (t == "AudioGroup")
+                              ;
+                        else if (t == "AudioOutput")
+                              ;
+                        else if (t == "wavetrack")
+                              ;
+                        else if (t == "drumtrack")
+                              ;
+                        else if (t == "miditrack")
+                              ;
+                        else
+                              domError(n1);
+                        }
+                  }
+            else if (t == "toplevels") {
+                  }
+            else
+                  domError(n);
+            }
       }
 

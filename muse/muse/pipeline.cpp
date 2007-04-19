@@ -23,6 +23,33 @@
 #include "plugingui.h"
 
 //---------------------------------------------------------
+//   Pipeline
+//---------------------------------------------------------
+
+Pipeline::Pipeline()
+      {
+      for (int i = 0; i < MAX_CHANNELS; ++i)
+            posix_memalign((void**)(buffer + i), 16, sizeof(float) * segmentSize);
+      }
+
+Pipeline::Pipeline(const Pipeline& p)
+  : QList<PluginI*>(p)
+      {
+      for (int i = 0; i < MAX_CHANNELS; ++i)
+            posix_memalign((void**)(buffer + i), 16, sizeof(float) * segmentSize);
+      }
+
+//---------------------------------------------------------
+//   Pipeline
+//---------------------------------------------------------
+
+Pipeline::~Pipeline()
+      {
+      for (int i = 0; i < MAX_CHANNELS; ++i)
+            ::free(buffer[i]);
+      }
+
+//---------------------------------------------------------
 //   setChannels
 //---------------------------------------------------------
 
@@ -166,33 +193,28 @@ void Pipeline::apply(int ports, unsigned long nframes, float** buffer1)
       // prepare a second set of buffers in case a plugin is not
       // capable of inPlace processing
 
-      float* buffer2[ports];
-      float data[nframes * ports];
-      for (int i = 0; i < ports; ++i)
-            buffer2[i] = data + i * nframes;
-
       bool swap = false;
 
       foreach (PluginI* p, *this) {
             if (p->on()) {
                   if (p->inPlaceCapable()) {
                         if (swap)
-                              p->apply(nframes, ports, buffer2, buffer2);
+                              p->apply(nframes, ports, buffer, buffer);
                         else
                               p->apply(nframes, ports, buffer1, buffer1);
                         }
                   else {
                         if (swap)
-                              p->apply(nframes, ports, buffer2, buffer1);
+                              p->apply(nframes, ports, buffer, buffer1);
                         else
-                              p->apply(nframes, ports, buffer1, buffer2);
+                              p->apply(nframes, ports, buffer1, buffer);
                         swap = !swap;
                         }
                   }
             }
       if (swap) {
             for (int i = 0; i < ports; ++i)
-                  memcpy(buffer1[i], buffer2[i], sizeof(float) * nframes);
+                  memcpy(buffer1[i], buffer[i], sizeof(float) * nframes);
             }
       }
 

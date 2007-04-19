@@ -25,6 +25,7 @@
 #include "widgets/bigtime.h"
 #include "arranger/arranger.h"
 #include "midiedit/pianoroll.h"
+#include "al/al.h"
 #include "al/xml.h"
 #include "al/dsp.h"
 #include "al/tempo.h"
@@ -2832,6 +2833,7 @@ int main(int argc, char* argv[])
                   default:  usage(argv[0], "bad argument"); return -1;
                   }
             }
+      AL::debugMsg = debugMsg;
       if (midiOnly) {
             loadDSSI    = false;
             loadPlugins = false;

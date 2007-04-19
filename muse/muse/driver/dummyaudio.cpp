@@ -33,8 +33,8 @@ static double startTime;
 //---------------------------------------------------------
 
 class DummyAudio : public AudioDriver {
+      float* buffer;
       pthread_t dummyThread;
-      float buffer[dummyFrames];
       std::vector<QString> oPorts;
       std::vector<QString> iPorts;
       int realTimePriority;
@@ -48,8 +48,11 @@ class DummyAudio : public AudioDriver {
             state = Audio::STOP;
             seekflag = false;
             startTime = curTime();
+            posix_memalign((void**)&buffer, 16, sizeof(float) * dummyFrames);
             }
-      virtual ~DummyAudio() {}
+      virtual ~DummyAudio() {
+            free(buffer);
+            }
 
       virtual bool init()   { return true; }
       virtual void start(int);

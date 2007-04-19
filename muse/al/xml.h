@@ -61,6 +61,8 @@ class Xml : public QTextStream {
 
 extern QRect readGeometry(QDomNode);
 extern void readProperties(QObject* o, QDomNode node);
+extern void domError(QDomNode node);
+extern void domNotImplemented(QDomNode node);
 }
 
 #endif

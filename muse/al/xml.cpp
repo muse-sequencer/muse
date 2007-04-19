@@ -19,7 +19,7 @@
 //=============================================================================
 
 #include "xml.h"
-
+#include "al.h"
 
 namespace AL {
 
@@ -29,7 +29,7 @@ namespace AL {
 
 Xml::Xml()
       {
-      level = 0;      
+      level = 0;
       }
 
 Xml::Xml(QIODevice* device)
@@ -246,7 +246,7 @@ void readProperties(QObject* o, QDomNode node)
       if (idx == -1) {
             printf("MusE:%s: unknown tag %s\n",
                meta->className(), tag.toLatin1().data());
-            return; 
+            return;
             }
       QMetaProperty p = meta->property(idx);
       QVariant v;
@@ -307,5 +307,56 @@ void Xml::dump(int len, const unsigned char* p)
       setIntegerBase(10);
       }
 
+//---------------------------------------------------------
+//   domError
+//---------------------------------------------------------
+
+void domError(QDomNode node)
+      {
+      QDomElement e = node.toElement();
+      QString tag(e.tagName());
+      QString s;
+      QDomNode dn(node);
+      while (!dn.parentNode().isNull()) {
+            dn = dn.parentNode();
+            const QDomElement e = dn.toElement();
+            const QString k(e.tagName());
+            if (!s.isEmpty())
+                  s += ":";
+            s += k;
+            }
+      fprintf(stderr, "%s: Unknown Node <%s>, type %d\n",
+         s.toLatin1().data(), tag.toLatin1().data(), node.nodeType());
+      if (node.isText()) {
+            fprintf(stderr, "  text node <%s>\n", node.toText().data().toLatin1().data());
+            }
+      }
+
+//---------------------------------------------------------
+//   domNotImplemented
+//---------------------------------------------------------
+
+void domNotImplemented(QDomNode node)
+      {
+      if (!AL::debugMsg)
+            return;
+      QDomElement e = node.toElement();
+      QString tag(e.tagName());
+      QString s;
+      QDomNode dn(node);
+      while (!dn.parentNode().isNull()) {
+            dn = dn.parentNode();
+            const QDomElement e = dn.toElement();
+            const QString k(e.tagName());
+            if (!s.isEmpty())
+                  s += ":";
+            s += k;
+            }
+      fprintf(stderr, "%s: Node not implemented: <%s>, type %d\n",
+         s.toLatin1().data(), tag.toLatin1().data(), node.nodeType());
+      if (node.isText()) {
+            fprintf(stderr, "  text node <%s>\n", node.toText().data().toLatin1().data());
+            }
+      }
 }
 

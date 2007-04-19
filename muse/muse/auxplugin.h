@@ -21,6 +21,7 @@
 #ifndef __AUXPLUGIN_H__
 #define __AUXPLUGIN_H__
 
+#include "globaldefs.h"
 #include "plugin.h"
 
 //---------------------------------------------------------
@@ -60,7 +61,7 @@ class AuxPlugin : public Plugin {
 class AuxPluginIF : public PluginIF {
       double volume;
       double pan;
-      float** _buffer;              // this buffer is filled by apply()
+      float* _buffer[MAX_CHANNELS]; // this buffer is filled by apply()
                                     // _volume and _pan is applied
 
    public:

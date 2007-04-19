@@ -42,7 +42,7 @@ AudioOutput::AudioOutput()
 
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             if (buffer[i]) {
-            	delete[] buffer[i];
+            	free(buffer[i]);
                   buffer[i] = 0;
                   }
             }

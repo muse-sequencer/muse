@@ -403,7 +403,8 @@ class Song : public QObject {
       QDateTime createDate() const      { return _createDate; }
 
       bool read(QFile* qf);
-      void read20(QDomNode node);
+      void read30(QDomNode node);         // muse >= 1.0
+      void read20(QDomNode node);         // muse < 1.0
       void read10(QDomNode);
       void updateCurrentMarker();
       };
