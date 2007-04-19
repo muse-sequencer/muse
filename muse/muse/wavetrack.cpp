@@ -23,6 +23,7 @@
 #include "audio.h"
 #include "wave.h"
 #include "al/xml.h"
+#include "al/dsp.h"
 #include "song.h"
 #include "globals.h"
 #include "part.h"
@@ -346,7 +347,7 @@ void WaveTrack::collectInputData()
             else {
 	            float** bpp = readBuffer[idx];
       	      for (int i = 0; i < channels(); ++i)
-            	      memcpy(buffer[i], bpp[i], sizeof(float) * segmentSize);
+            	      AL::dsp->cpy(buffer[i], bpp[i], sizeof(float));
                   }
             }
       }

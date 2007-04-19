@@ -93,15 +93,7 @@ void initDsp()
       unsigned long useSSE = 0;
 
 #ifdef __x86_64__
-      asm (
-         "pushq %%rbx\n"
-         "movq $1, %%rax\n"
-         "cpuid\n"
-         "movq %%rdx, %0\n"
-         "popq %%rbx\n"
-         : "=r" (useSSE)
-         :
-         : "%rax", "%rcx", "%rdx", "memory");
+      useSSE = 1 << 25;       // we know the platform has SSE
 #else
       asm (
          "mov $1, %%eax\n"

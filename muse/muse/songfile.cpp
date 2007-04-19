@@ -390,62 +390,93 @@ void Song::read20(QDomNode node)
                         if (e.isNull())
                               continue;
                         QString t(e.tagName());
+                        int i = e.text().toInt();
                         if (t == "automation")
                               ;
-                        else if (t == "cpos")
-                              ;
-                        else if (t == "rpos")
-                              ;
-                        else if (t == "lpos")
-                              ;
+                        else if (t == "cpos") {
+                              int pos = i;
+                              Pos p(pos, AL::TICKS);
+                              setPos(Song::CPOS, p, false, false, false);
+                              }
+                        else if (t == "rpos") {
+                              int pos = i;
+                              Pos p(pos, AL::TICKS);
+                              setPos(Song::RPOS, p, false, false, false);
+                              }
+                        else if (t == "lpos") {
+                              int pos = i;
+                              Pos p(pos, AL::TICKS);
+                              setPos(Song::LPOS, p, false, false, false);
+                              }
                         else if (t == "master")
-                              ;
+                              setMasterFlag(i);
                         else if (t == "loop")
-                              ;
+                              setLoop(i);
                         else if (t == "punchin")
-                              ;
+                              setPunchin(i);
                         else if (t == "punchout")
-                              ;
+                              setPunchout(i);
                         else if (t == "record")
                               ;
                         else if (t == "solo")
-                              ;
+                              soloFlag = i;
                         else if (t == "type")
                               ;
                         else if (t == "recmode")
-                              ;
+                              _recMode = i;
                         else if (t == "cycle")
-                              ;
+                              _cycleMode = i;
                         else if (t == "click")
-                              ;
+                              setClick(i);
                         else if (t == "quantize")
-                              ;
+                              _quantize = i;
                         else if (t == "len")
-                              ;
+                              _len = i;
                         else if (t == "follow")
                               ;
                         else if (t == "drummap")
                               ;
                         else if (t == "siglist")
-                              ;
+                              AL::sigmap.read(node.firstChild());
                         else if (t == "tempolist")
-                              ;
+                              AL::tempomap.read(node);
                         else if (t == "Route")
                               ;
-                        else if (t == "AudioAux")
-                              ;
-                        else if (t == "AudioInput")
-                              ;
-                        else if (t == "AudioGroup")
-                              ;
-                        else if (t == "AudioOutput")
-                              ;
-                        else if (t == "wavetrack")
-                              ;
-                        else if (t == "drumtrack")
-                              ;
-                        else if (t == "miditrack")
-                              ;
+                        else if (t == "AudioAux") {
+                              AudioGroup* track = new AudioGroup();
+                              track->read(node.firstChild());
+                              insertTrack0(track,-1);
+                              }
+                        else if (t == "AudioInput") {
+                              AudioInput* track = new AudioInput();
+                              track->read(node.firstChild());
+                              insertTrack0(track,-1);
+                              }
+                        else if (t == "AudioGroup") {
+                              AudioGroup* track = new AudioGroup();
+                              track->read(node.firstChild());
+                              insertTrack0(track,-1);
+                              }
+                        else if (t == "AudioOutput") {
+                              AudioOutput* track = new AudioOutput();
+                              track->read(node.firstChild());
+                              insertTrack0(track,-1);
+                              }
+                        else if (t == "wavetrack") {
+                              MidiTrack* track = new MidiTrack();
+                              track->read(node.firstChild());
+                              insertTrack0(track, -1);
+                              }
+                        else if (t == "drumtrack") {
+                              MidiTrack* track = new MidiTrack();
+                              track->read(node.firstChild());
+                              insertTrack0(track, -1);
+                              }
+                        else if (t == "miditrack") {
+                              MidiTrack* track = new MidiTrack();
+                              track->read(node.firstChild());
+                              insertTrack0(track, -1);
+                              }
                         else
                               domError(n1);
                         }

@@ -47,6 +47,9 @@ class Strip : public QFrame {
 
       SimpleButton* solo;
       SimpleButton* mute;
+      SimpleButton* ar;
+      SimpleButton* aw;
+
       void updateLabel();
       bool _align;      // align elements for mixer app
 

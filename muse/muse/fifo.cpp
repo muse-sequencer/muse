@@ -20,6 +20,7 @@
 
 #include "fifo.h"
 #include "globals.h"
+#include "al/dsp.h"
 
 //---------------------------------------------------------
 //   clear
@@ -95,7 +96,7 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
       b->segs = segs;
       b->pos  = pos;
       for (int i = 0; i < segs; ++i)
-            memcpy(b->buffer + i * samples, src[i], samples * sizeof(float));
+            AL::dsp->cpy(b->buffer + i * samples, src[i], samples);
       push();
       return false;
       }

@@ -57,6 +57,8 @@ void Strip::updateLabel()
 Strip::Strip(Mixer* m, Track* t, bool align)
    : QFrame()
       {
+      ar = 0;
+      aw = 0;
       setAttribute(Qt::WA_DeleteOnClose, true);
       mixer = m;
       _align = align;
@@ -108,16 +110,14 @@ void Strip::configChanged()
 
 void Strip::addAutomationButtons(int row)
       {
-      QHBoxLayout* aBox = new QHBoxLayout;
-      SimpleButton* ar  = newAutoReadButton();
+      ar  = newAutoReadButton();
       ar->setFixedHeight(BUTTON_HEIGHT);
       ar->setChecked(track->autoRead());
-      aBox->addWidget(ar);
-      SimpleButton* aw = newAutoWriteButton();
+      grid->addWidget(ar, row, 0);
+      aw = newAutoWriteButton();
       aw->setFixedHeight(BUTTON_HEIGHT);
       aw->setChecked(track->autoWrite());
-      aBox->addWidget(aw);
-      grid->addLayout(aBox, row, 0, 1, 2);
+      grid->addWidget(aw, row, 1);
       connect(ar, SIGNAL(clicked(bool)), SLOT(autoReadToggled(bool)));
       connect(aw, SIGNAL(clicked(bool)), SLOT(autoWriteToggled(bool)));
       connect(track, SIGNAL(autoReadChanged(bool)), ar, SLOT(setChecked(bool)));

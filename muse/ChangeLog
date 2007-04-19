@@ -1,4 +1,6 @@
 19.04 (ws)
+      - disable routing buttons in mixer strip when in off state
+      - fixed crash when removing track from mixer
       - framework for importing muse0.9 projectfiles
       - align buffer in dummy audio driver so that the sse routines
         do not choke; same for AuxPluginF, Pipeline, Fifo

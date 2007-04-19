@@ -275,9 +275,12 @@ void AudioStrip::updateOffState()
             iR->setEnabled(val);
       if (oR)
             oR->setEnabled(val);
-      if (off) {
+      if (off)
             off->setChecked(track->off());
-            }
+      if (ar)
+            ar->setEnabled(val);
+      if (aw)
+            aw->setEnabled(val);
       }
 
 //---------------------------------------------------------

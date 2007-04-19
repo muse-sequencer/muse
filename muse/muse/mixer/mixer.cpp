@@ -171,16 +171,13 @@ void Mixer::updateMixer(int action)
       showSyntiTracksId->setChecked(cfg->showSyntiTracks);
 
       if (action == STRIP_REMOVED) {
-            StripList::iterator si = stripList.begin();
-            for (; si != stripList.end();) {
-                  Track* track = (*si)->getTrack();
-                  StripList::iterator ssi = si;
-                  ++si;
+            foreach(Strip* strip, stripList) {
+                  Track* track = strip->getTrack();
                   if (song->trackExists(track))
                         continue;
-                  layout->removeWidget(*ssi);
-                  delete *ssi;
-                  stripList.erase(ssi);
+                  layout->removeWidget(strip);
+                  delete strip;
+                  stripList.removeAt(stripList.indexOf(strip));
                   }
             int idx = stripList.size();
             setMaximumWidth(STRIP_WIDTH * idx + 4);

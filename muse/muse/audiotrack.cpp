@@ -20,12 +20,12 @@
 
 #include "al/al.h"
 #include "al/dsp.h"
+#include "al/xml.h"
 #include "track.h"
 #include "event.h"
 #include "song.h"
 #include "audio.h"
 #include "wave.h"
-#include "al/xml.h"
 #include "auxplugin.h"
 #include "pipeline.h"
 #include "driver/audiodev.h"
@@ -514,7 +514,7 @@ bool AudioTrack::copy(int srcChannels, float** srcBuffer)
 
       if (srcChannels == dstChannels) {
             for (int c = 0; c < dstChannels; ++c)
-                  memcpy(buffer[c], srcBuffer[c], sizeof(float) * segmentSize);
+                  AL::dsp->cpy(buffer[c], srcBuffer[c], segmentSize);
             }
       else if (srcChannels == 1 && dstChannels == 2) {
             float* sp = srcBuffer[0];

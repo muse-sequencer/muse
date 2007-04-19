@@ -21,6 +21,7 @@
 #include "pipeline.h"
 #include "plugin.h"
 #include "plugingui.h"
+#include "al/dsp.h"
 
 //---------------------------------------------------------
 //   Pipeline
@@ -214,7 +215,7 @@ void Pipeline::apply(int ports, unsigned long nframes, float** buffer1)
             }
       if (swap) {
             for (int i = 0; i < ports; ++i)
-                  memcpy(buffer1[i], buffer[i], sizeof(float) * nframes);
+                  AL::dsp->cpy(buffer1[i], buffer[i], nframes);
             }
       }
 

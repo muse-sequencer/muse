@@ -6,38 +6,20 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="33"
-   height="20"
+   version="1.0"
+   width="16"
+   height="16"
    id="svg1307"
    sodipodi:version="0.32"
-   inkscape:version="0.43"
-   version="1.0"
+   inkscape:version="0.45"
+   sodipodi:docname="stereo.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
    sodipodi:docbase="/home/ws/projects/muse/muse/trunk/muse/muse/xpm"
-   sodipodi:docname="Stereo.svg">
-  <defs
-     id="defs1309" />
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="18.7"
-     inkscape:cx="16.5"
-     inkscape:cy="10"
-     inkscape:current-layer="layer1"
-     showgrid="true"
-     inkscape:grid-bbox="true"
-     inkscape:document-units="px"
-     inkscape:window-width="749"
-     inkscape:window-height="540"
-     inkscape:window-x="882"
-     inkscape:window-y="80" />
+   sodipodi:modified="true">
   <metadata
-     id="metadata1312">
+     id="metadata8">
     <rdf:RDF>
       <cc:Work
          rdf:about="">
@@ -47,32 +29,40 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
+  <sodipodi:namedview
+     inkscape:window-height="591"
+     inkscape:window-width="907"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     guidetolerance="10.0"
+     gridtolerance="10.0"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     width="16px"
+     height="16px"
+     inkscape:zoom="18.9"
+     inkscape:cx="16.5"
+     inkscape:cy="10"
+     inkscape:window-x="20"
+     inkscape:window-y="266"
+     inkscape:current-layer="svg1307" />
+  <defs
+     id="defs1309" />
   <g
      id="layer1"
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer">
+     transform="matrix(0.6319982,0,0,0.6402952,-2.3836027,1.951611)">
     <path
-       sodipodi:type="arc"
-       style="fill:#ff0000;fill-opacity:0;stroke:#3e3e3e;stroke-width:2.26799989;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="path1317"
-       sodipodi:cx="12.245989"
-       sodipodi:cy="10.374331"
-       sodipodi:rx="7.4331551"
-       sodipodi:ry="6.3547478"
-       d="M 16.797341,15.398537 A 7.4331551,6.3547478 0 1 1 16.546025,5.1908488"
+       d="M 16.797341,15.398537 C 13.77507,17.399581 9.4702685,17.114643 6.8442934,14.739737 C 4.2183184,12.364831 4.1274584,8.6743768 6.6342179,6.2071094 C 9.1409773,3.739842 13.427942,3.3002982 16.546025,5.1908488"
        transform="matrix(1,0,0,1.161391,9.876871e-2,-2.446221)"
-       sodipodi:start="0.91182462"
-       sodipodi:end="5.3292702"
-       sodipodi:open="true" />
-    <path
-       sodipodi:type="arc"
        style="fill:#ff0000;fill-opacity:0;stroke:#3e3e3e;stroke-width:2.26799989;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="path2192"
-       sodipodi:cx="12.245989"
-       sodipodi:cy="10.374331"
-       sodipodi:rx="7.4331551"
-       sodipodi:ry="6.3547478"
-       d="M 19.679144 10.374331 A 7.4331551 6.3547478 0 1 1  4.8128338,10.374331 A 7.4331551 6.3547478 0 1 1  19.679144 10.374331 z"
-       transform="matrix(1,0,0,1.161391,8.098769,-2.446221)" />
+       id="path1317" />
+    <path
+       d="M 19.679144,10.374331 C 19.679144,13.883961 16.351207,16.729079 12.245989,16.729079 C 8.1407707,16.729079 4.8128338,13.883961 4.8128338,10.374331 C 4.8128338,6.8647007 8.1407707,4.0195832 12.245989,4.0195832 C 16.351207,4.0195832 19.679144,6.8647007 19.679144,10.374331 z "
+       transform="matrix(1,0,0,1.161391,8.098769,-2.446221)"
+       style="fill:#ff0000;fill-opacity:0;stroke:#3e3e3e;stroke-width:2.26799989;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path2192" />
   </g>
 </svg>
