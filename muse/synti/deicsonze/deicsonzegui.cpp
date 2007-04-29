@@ -904,18 +904,28 @@ void DeicsOnzeGui::setEditTextColor(const QColor & c) {
   detuneKnob->setScaleValueColor(c);
   attackKnob->setScaleValueColor(c);
   releaseKnob->setScaleValueColor(c);
+  channelChorusGroupBox->setPalette(p);
+  selectLadspaChorusGroupBox->setPalette(p);
+  parametersChorusGroupBox->setPalette(p);
   for(int i=0; i < (int)_chorusSliderVector.size(); i++)
     if(_chorusSliderVector[i]) _chorusSliderVector[i]->setScaleValueColor(c);
+  channelReverbGroupBox->setPalette(p);
+  selectLadspaReverbGroupBox->setPalette(p);
+  parametersReverbGroupBox->setPalette(p);
   for(int i=0; i < (int)_reverbSliderVector.size(); i++)
     if(_reverbSliderVector[i]) _reverbSliderVector[i]->setScaleValueColor(c);
+  channelDelayGroupBox->setPalette(p);
   delayBPMKnob->setScaleValueColor(c);
+  delayBPMGroupBox->setPalette(p);
   delayBeatRatioKnob->setScaleValueColor(c);
+  delayBeatRatioGroupBox->setPalette(p);
   delayFeedbackKnob->setScaleValueColor(c);
+  delayFeedbackGroupBox->setPalette(p);
   delayPanLFOFreqKnob->setScaleValueColor(c);
+  delayPanLFOGroupBox->setPalette(p);
   delayPanLFODepthKnob->setScaleValueColor(c);
-
-  //p.setColor(QPalette::WindowText, c);
-  //presetNameLabel->setPalette(p);
+  delayPanDepthGroupBox->setPalette(p);
+  fontSizeGroupBox->setPalette(p);
 }
 void DeicsOnzeGui::setEditBackgroundColor(const QColor & c) {
   QPalette p = this->palette();
@@ -987,15 +997,28 @@ void DeicsOnzeGui::setEditBackgroundColor(const QColor & c) {
   detuneKnob->setScaleColor(c);
   attackKnob->setScaleColor(c);
   releaseKnob->setScaleColor(c);
+  channelChorusGroupBox->setPalette(p);
+  selectLadspaChorusGroupBox->setPalette(p);
+  parametersChorusGroupBox->setPalette(p);
   for(int i=0; i < (int)_chorusSliderVector.size(); i++)
     if(_chorusSliderVector[i]) _chorusSliderVector[i]->setScaleColor(c);
+  channelReverbGroupBox->setPalette(p);
+  selectLadspaReverbGroupBox->setPalette(p);
+  parametersReverbGroupBox->setPalette(p);
   for(int i=0; i < (int)_reverbSliderVector.size(); i++)
     if(_reverbSliderVector[i]) _reverbSliderVector[i]->setScaleColor(c);
+  channelDelayGroupBox->setPalette(p);
   delayBPMKnob->setScaleColor(c);
+  delayBPMGroupBox->setPalette(p);
   delayBeatRatioKnob->setScaleColor(c);
+  delayBeatRatioGroupBox->setPalette(p);
   delayFeedbackKnob->setScaleColor(c);
+  delayFeedbackGroupBox->setPalette(p);
   delayPanLFOFreqKnob->setScaleColor(c);
+  delayPanLFOGroupBox->setPalette(p);
   delayPanLFODepthKnob->setScaleColor(c);
+  delayPanDepthGroupBox->setPalette(p);
+  fontSizeGroupBox->setPalette(p);
 }
 
 //-----------------------------------------------------------
