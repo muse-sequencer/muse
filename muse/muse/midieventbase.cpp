@@ -137,7 +137,7 @@ void MidiEventBase::read(QDomNode node)
             	bool ok;
                   *d++ = l.at(i).toInt(&ok, numberBase);
                   if (!ok)
-                  	printf("error converting init val <%s>\n", l.at(i).toLatin1().data());
+                  	printf("error converting data val <%s>\n", l.at(i).toLatin1().data());
 			}
             }
       }

@@ -93,7 +93,7 @@ void ImportMidiDialog::selectProjectClicked()
 
 void ImportMidiDialog::setProjectName(const QString& name)
       {
-      projectName->setText(name);      
+      projectName->setText(name);
       }
 
 //---------------------------------------------------------
@@ -102,7 +102,7 @@ void ImportMidiDialog::setProjectName(const QString& name)
 
 void ImportMidiDialog::setTemplateName(const QString& name)
       {
-      templateName->setText(name);      
+      templateName->setText(name);
       }
 
 //---------------------------------------------------------
@@ -231,7 +231,7 @@ void MusE::importMidi(const QString &file)
             showTransport(config.transportVisible);
 
             song->blockSignals(false);
-            
+
             transport->setMasterFlag(song->masterFlag());
             punchinAction->setChecked(song->punchin());
             punchoutAction->setChecked(song->punchout());
@@ -575,6 +575,7 @@ void MusE::processTrack(MidiTrack* track)
             if (i1 == i2) {   // empty?
                   if (st != -1) {
                         Part* part = new Part(track);
+                        part->ref();
                         part->setType(AL::TICKS);
                         part->setTick(st);
                         part->setLenTick(x1-st);
@@ -600,6 +601,7 @@ void MusE::processTrack(MidiTrack* track)
             }
       if (st != -1) {
             Part* part = new Part(track);
+            part->ref();
             part->setType(AL::TICKS);
             part->setTick(st);
             part->setLenTick(x2-st);

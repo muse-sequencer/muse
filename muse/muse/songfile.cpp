@@ -444,37 +444,37 @@ void Song::read20(QDomNode node)
                               ;
                         else if (t == "AudioAux") {
                               AudioGroup* track = new AudioGroup();
-                              track->read(node.firstChild());
+                              track->read(n1.firstChild());
                               insertTrack0(track,-1);
                               }
                         else if (t == "AudioInput") {
                               AudioInput* track = new AudioInput();
-                              track->read(node.firstChild());
+                              track->read(n1.firstChild());
                               insertTrack0(track,-1);
                               }
                         else if (t == "AudioGroup") {
                               AudioGroup* track = new AudioGroup();
-                              track->read(node.firstChild());
+                              track->read(n1.firstChild());
                               insertTrack0(track,-1);
                               }
                         else if (t == "AudioOutput") {
                               AudioOutput* track = new AudioOutput();
-                              track->read(node.firstChild());
+                              track->read(n1.firstChild());
                               insertTrack0(track,-1);
                               }
                         else if (t == "wavetrack") {
                               MidiTrack* track = new MidiTrack();
-                              track->read(node.firstChild());
+                              track->read(n1.firstChild());
                               insertTrack0(track, -1);
                               }
                         else if (t == "drumtrack") {
                               MidiTrack* track = new MidiTrack();
-                              track->read(node.firstChild());
+                              track->read(n1.firstChild());
                               insertTrack0(track, -1);
                               }
                         else if (t == "miditrack") {
                               MidiTrack* track = new MidiTrack();
-                              track->read(node.firstChild());
+                              track->read(n1.firstChild());
                               insertTrack0(track, -1);
                               }
                         else
