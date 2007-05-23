@@ -55,7 +55,8 @@ class EventList;
 class MidiTrack;
 class MidiEventList;
 
-extern void buildMidiEventList(EventList* mel, const MidiEventList* el, MidiTrack* track, int division, bool);
+extern void buildMidiEventList(EventList* mel, const MidiEventList* el, MidiTrack* track,
+   int channel, int division, bool);
 
 #endif
 

@@ -23,7 +23,6 @@
 
 #include <set>
 #include "evdata.h"
-// #include <ext/mt_allocator.h>
 
 #include "midi.h"
 
@@ -89,7 +88,7 @@ class MidiEvent {
 // typedef std::multiset<MidiEvent, std::less<MidiEvent>,
 //   __gnu_cxx::__mt_alloc<MidiEvent> > MPEL;
 
-class MidiEventList : public std::multiset<MidiEvent, std::less<MidiEvent> > 
+class MidiEventList : public std::multiset<MidiEvent, std::less<MidiEvent> >
       {
    public:
       };

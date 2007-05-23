@@ -50,7 +50,8 @@ static int processAudio(jack_nframes_t nFrames, void*)
       int nch = mess->channels();
       for (int i = 0; i < nch; ++i) {
             outBuffer[i] = (float*)jack_port_get_buffer(outPorts[i], nFrames);
-            memset(outBuffer[i], 0, sizeof(float) * nFrames);
+            jack_midi_clear_buffer(outBuffer[i], nFrames);
+            // memset(outBuffer[i], 0, sizeof(float) * nFrames);
             }
       while(mess->eventsPending())
             mess->processEvent(mess->receiveEvent());

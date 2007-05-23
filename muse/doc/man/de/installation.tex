@@ -15,10 +15,12 @@
             echo snd-seq >> /etc/modules
       \stoptyping
 
+      (Nachtrag: im aktuellen Ubuntu 04.07 ("festy") wird das Sequencer
+      Modul standardmäßig geladen)
 
     \subsection{Realtime Clock}
 
-      Normalen Programmen ist der Zugriff auf die Echtzeituhr 
+      Normalen Programmen ist der Zugriff auf die Echtzeituhr
       (RTC = "realtime clock") von Linux
       verwehrt. \M\ benötigt jedoch eine genaue Uhr, um ein exaktes
       Miditiming erzeugen zu können.
@@ -35,7 +37,6 @@
       Auflösungen einstellen.
       Um dies zu Erlauben geben wir ein:
 
-      
       \starttyping
             sudo bash
             echo 1024 > /proc/sys/dev/rtc/max-user-freq
@@ -44,3 +45,19 @@
 
       Durch den Eintrag in der Datei {\tt /etc/sysctl.conf} erfolgt diese
       Einstellung nun auch nach jedem Systemstart.
+
+    \subsection{Realtime Rechte}
+
+      Um Prozesse mit Echtzeit Privilegien starten zu können ergänzen
+      wir die Datei {\tt /etc/security/limits.conf} um folgende Zeilen:
+
+      \starttyping
+      @audio - rtprio 99
+      @audio - memlock 200000
+      @audio - nice -10
+      \stoptyping
+
+    \subsection{Low Latency Kernel}
+      \subsubsection{Interrupt Thread Prioritäten}
+
+

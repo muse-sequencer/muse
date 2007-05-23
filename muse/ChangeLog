@@ -1,3 +1,5 @@
+23.5. (ws)
+      - midi import fixes
 19.04 (ws)
       - disable routing buttons in mixer strip when in off state
       - fixed crash when removing track from mixer

@@ -44,30 +44,30 @@
 
 extern void dump(const unsigned char* p, int n);
 
-unsigned const char gmOnMsg[] = { 
+unsigned const char gmOnMsg[] = {
       0x7e,       // Non-Real Time header
       0x7f,       // ID of target device (7f = all devices)
-      0x09, 
-      0x01 
+      0x09,
+      0x01
       };
-unsigned const char gsOnMsg[] = { 
+unsigned const char gsOnMsg[] = {
       0x41,       // roland id
       0x10,       // Id of target device (default = 10h for roland)
       0x42,       // model id (42h = gs devices)
       0x12,       // command id (12h = data set)
       0x40,       // address & value
       0x00,
-      0x7f, 
-      0x00,        
+      0x7f,
+      0x00,
       0x41        // checksum?
       };
-unsigned const char xgOnMsg[] = { 
+unsigned const char xgOnMsg[] = {
       0x43,       // yamaha id
       0x10,       // device number (0)
       0x4c,       // model id
       0x00,       // address (high, mid, low)
-      0x00, 
-      0x7e, 
+      0x00,
+      0x7e,
       0x00        // data
       };
 unsigned const int  gmOnMsgLen = sizeof(gmOnMsg);
@@ -196,7 +196,7 @@ QString nameSysex(unsigned int len, const unsigned char* buf)
 //      generally: how to handle incomplete messages?
 //---------------------------------------------------------
 
-void buildMidiEventList(EventList* del, const MidiEventList* el, MidiTrack* track,
+void buildMidiEventList(EventList* del, const MidiEventList* el, MidiTrack* track, int channel,
    int div, bool addSysexMeta)
       {
       QString tname;
@@ -208,7 +208,6 @@ void buildMidiEventList(EventList* del, const MidiEventList* el, MidiTrack* trac
       int datal    = 0;
       int dataType = 0;   // 0 : disabled, 0x20000 : rpn, 0x30000 : nrpn
 
-      int channel = 0;
       EventList mel;
       int metaChannel = -1;
       for (iMidiEvent i = el->begin(); i != el->end(); ++i) {

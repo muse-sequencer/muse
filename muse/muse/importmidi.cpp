@@ -165,7 +165,7 @@ void MusE::importMidi(const QString &file)
                   mixer1->clear();
             if (mixer2)
                   mixer2->clear();
-//===========================================================
+            //===========================================================
             //
             // close all toplevel windows
             //
@@ -276,8 +276,6 @@ void MusE::importMidi(const QString &file)
                   track->blockSignals(false);
                   }
             setWindowTitle(QString("MusE: Song: ") + path);
-//===========================================================
-
             seqStart();
             audio->msgSeek(song->cPos());
             }
@@ -290,7 +288,6 @@ void MusE::importMidi(const QString &file)
 
 //---------------------------------------------------------
 //   addMidiFile
-//    return true on error
 //---------------------------------------------------------
 
 void MusE::addMidiFile(const QString name)
@@ -315,7 +312,6 @@ void MusE::addMidiFile(const QString name)
       int division           = mf.division();
 
       MidiOutPort* outPort = 0;
-//      MidiInPort* inPort = 0;
 
       if (song->midiOutPorts()->empty()) {
             outPort = new MidiOutPort();
@@ -340,25 +336,6 @@ void MusE::addMidiFile(const QString name)
                         instr = *mi;
                         break;
                         }
-                  }
-
-            if (config.createDefaultMidiInput) {
-#if 0
-                  inPort = new MidiInPort();
-                  inPort->setDefaultName();
-                  song->insertTrack0(inPort, -1);
-                  if (config.connectToAllMidiDevices) {
-                        QList<PortName> ol = midiDriver->inputPorts();
-                        for (std::list<PortName>::iterator ip = ol->begin(); ip != ol->end(); ++ip) {
-                              Route src(ip->name, 0, Route::MIDIPORT);
-                              inPort->inRoutes()->push_back(src);
-                              }
-                        }
-                  else if (!config.defaultMidiInputDevice.isEmpty()) {
-                        Route src(config.defaultMidiInputDevice, 0, Route::MIDIPORT);
-                        inPort->inRoutes()->push_back(src);
-                        }
-#endif
                   }
 
             //
@@ -403,9 +380,10 @@ void MusE::addMidiFile(const QString name)
       //    - combine note on/off events
       //    - calculate tick value for internal resolution
       //
-      for (iMidiFileTrack t = etl->begin(); t != etl->end(); ++t) {
-            MidiEventList* el  = &((*t)->events);
-            if (el->empty())
+
+      foreach(const MidiFileTrack* t, *etl) {
+            const MidiEventList& el = t->events;
+            if (el.empty())
                   continue;
             //
             // if we split the track, SYSEX and META events go into
@@ -417,18 +395,16 @@ void MusE::addMidiFile(const QString name)
                   // check if there are any events for channel in track:
                   //
                   iMidiEvent i;
-                  for (i = el->begin(); i != el->end(); ++i) {
+                  for (i = el.begin(); i != el.end(); ++i) {
                         MidiEvent ev = *i;
-                        if (ev.type() != ME_SYSEX
-                           && ev.type() != ME_META
-                           && ev.channel() == channel)
+                        if (ev.type() != ME_SYSEX && ev.type() != ME_META && ev.channel() == channel)
                               break;
                         }
-                  if (i == el->end())
+                  if (i == el.end())
                         continue;
 
                   MidiTrack* track = new MidiTrack();
-                  if ((*t)->isDrumTrack)
+                  if (t->isDrumTrack)
                         track->setUseDrumMap(true);
 //TODOB                  track->outRoutes()->push_back(Route(outPort->channel(channel), -1, Route::TRACK));
 //                  if (inPort && config.connectToAllMidiTracks) {
@@ -439,7 +415,7 @@ void MusE::addMidiFile(const QString name)
 //                        }
 
                   EventList* mel = track->events();
-                  buildMidiEventList(mel, el, track, division, first);
+                  buildMidiEventList(mel, &el, track, channel, division, first);
                   first = false;
 
                   for (iEvent i = mel->begin(); i != mel->end(); ++i) {
@@ -453,22 +429,6 @@ void MusE::addMidiFile(const QString name)
                               track->addControllerVal(ctrl, event.tick(), val);
                               }
                         }
-                  if (channel == 9) {
-                        track->setUseDrumMap(true);
-                        //
-                        // remap drum pitch with drumInmap
-                        //
-#if 0 //TODO
-                        EventList* tevents = track->events();
-                        for (iEvent i = tevents->begin(); i != tevents->end(); ++i) {
-                              Event ev  = i->second;
-                              if (ev.isNote()) {
-                                    int pitch = drumInmap[ev.pitch()];
-                                    ev.setPitch(pitch);
-                                    }
-                              }
-#endif
-                        }
                   processTrack(track);
                   if (track->name().isEmpty())
                         track->setDefaultName();
@@ -480,9 +440,8 @@ void MusE::addMidiFile(const QString name)
                   // (SYSEX or META)
                   //
                   MidiTrack* track = new MidiTrack();
-//                  addRoute(Route(track, -1, Route::TRACK), Route(track));
                   EventList* mel = track->events();
-                  buildMidiEventList(mel, el, track, division, true);
+                  buildMidiEventList(mel, &el, track, 0, division, true);
                   processTrack(track);
                   if (track->name().isEmpty())
                         track->setDefaultName();
