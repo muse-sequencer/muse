@@ -1,3 +1,5 @@
+26.05 (ng)
+      - update CMakeLists.txt to check that Qt4 > 4.3.0 and jack > 0.103.0
 23.5. (ws)
       - midi import fixes
 19.04 (ws)

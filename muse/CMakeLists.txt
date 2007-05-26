@@ -72,7 +72,7 @@ endif (APPLE)
 ##  look for Qt4
 ##
 
-set(QT_MIN_VERSION "4.2.0")
+set(QT_MIN_VERSION "4.3.0")
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
 set(QT_USE_QTNSPLUGIN TRUE)
@@ -81,7 +81,7 @@ set(QT_USE_QTSVG TRUE)
 find_package(Qt4)
 
 if (NOT QT4_FOUND)
-      message(FATAL_ERROR "Fatal error: QT (version >= 4.2.0) required.\n"
+      message(FATAL_ERROR "Fatal error: QT (version >= 4.3.0) required.\n"
       "Cmake tries to detect QT4 by searching for 'qmake' in your PATH\n"
       "If you have QT4 installed, make sure qmake is found in your PATH."
       )
@@ -171,12 +171,12 @@ else (NOT SAMPLERATE_INCDIR)
 endif (NOT SAMPLERATE_INCDIR)
 
 ##
-## find jack >= 0.102.1
+## find jack >= 0.103.0
 ##
 
-PKGCONFIG (jack 0.102.1 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
+PKGCONFIG (jack 0.103.0 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
 if (NOT JACK_INCDIR)
-      message(FATAL_ERROR "Fatal error: JACK >= 0.102.1 required")
+      message(FATAL_ERROR "Fatal error: JACK >= 0.103.0 required")
 else (NOT JACK_INCDIR)
 	message("Jack detected")
 endif (NOT JACK_INCDIR)
