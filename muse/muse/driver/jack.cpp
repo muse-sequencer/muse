@@ -809,11 +809,11 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             }
       void* pb = jack_port_get_buffer(port.jackPort(), segmentSize);
       int ft = e.time() - lastFrameTime();
-      if (ft < 0 || ft >= segmentSize) {
+      if (ft < 0 || ft >= (int)segmentSize) {
             printf("JackAudio::putEvent: time out of range %d\n", ft);
             if (ft < 0)
                   ft = 0;
-            if (ft > segmentSize)
+            if (ft > (int)segmentSize)
                   ft = segmentSize - 1;
             }
       switch(e.type()) {
@@ -823,7 +823,7 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             case ME_CONTROLLER:
             case ME_PITCHBEND:
                   {
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 3, segmentSize);
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, 3);
                   if (p == 0) {
                         fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
                         return;
@@ -837,7 +837,7 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             case ME_PROGRAM:
             case ME_AFTERTOUCH:
                   {
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 2, segmentSize);
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, 2);
                   if (p == 0) {
                         fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
                         return;
@@ -850,7 +850,7 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
                   {
                   const unsigned char* data = e.data();
                   int len = e.len();
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, len+2, segmentSize);
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, len+2);
                   if (p == 0) {
                         fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
                         return;
@@ -877,6 +877,6 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
 void JackAudio::startMidiCycle(Port port)
       {
       void* port_buf = jack_port_get_buffer(port.jackPort(), segmentSize);
-      jack_midi_clear_buffer(port_buf, segmentSize);
+      jack_midi_clear_buffer(port_buf);
       }
 
