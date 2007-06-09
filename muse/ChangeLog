@@ -1,4 +1,5 @@
 9.6. (ws)
+      - added new Drawbar() widget to awl lib
       - install libawlplugin.so into qt designer plugin library
 29.5. (ws)
       - update to current JACK (changes in midi interface)
