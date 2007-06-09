@@ -1,3 +1,5 @@
+9.6. (ws)
+      - install libawlplugin.so into qt designer plugin library
 29.5. (ws)
       - update to current JACK (changes in midi interface)
 26.05 (ng)
