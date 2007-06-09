@@ -244,6 +244,20 @@ class MidiPanKnobPlugin : public QObject, public AwlPlugin {
       };
 
 //---------------------------------------------------------
+//   DrawbarPlugin
+//---------------------------------------------------------
+
+class DrawbarPlugin : public QObject, public AwlPlugin {
+      Q_OBJECT
+
+   public:
+     	DrawbarPlugin(QObject* parent = 0) : QObject(parent) {}
+      QString includeFile() const { return "awl/drawbar.h"; }
+      QString name() const { return "Awl::Drawbar"; }
+      QWidget* createWidget(QWidget* parent);
+      };
+
+//---------------------------------------------------------
 //   AwlPlugins
 //---------------------------------------------------------
 

@@ -35,6 +35,7 @@ namespace Awl {
 //---------------------------------------------------------
 
 class AbstractSlider : public QWidget {
+
       Q_OBJECT
       Q_PROPERTY(double value READ value WRITE setValue)
       Q_PROPERTY(bool center READ center WRITE setCenter)

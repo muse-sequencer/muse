@@ -108,7 +108,7 @@ void AbstractSlider::setScaleValueColor(const QColor& c)
 
 void AbstractSlider::wheelEvent(QWheelEvent* ev)
       {
-      int div = 50;
+      double div = 50.0;
       if (ev->modifiers() & Qt::ShiftModifier)
             div = 15;
       _value += (ev->delta() * lineStep()) / div;
@@ -117,6 +117,7 @@ void AbstractSlider::wheelEvent(QWheelEvent* ev)
       else if (_value > _maxValue)
             _value = _maxValue;
       valueChange();
+      update();
       }
 
 //---------------------------------------------------------
@@ -133,7 +134,7 @@ void AbstractSlider::keyPressEvent(QKeyEvent* ev)
             case Qt::Key_Up:
             case Qt::Key_Left:    _value += lineStep(); break;
             case Qt::Key_Down:
-            case Qt::Key_Right:   _value -= lineStep(); break;
+            case Qt::Key_Right:    _value -= lineStep(); break;
             case Qt::Key_PageDown: _value -= pageStep(); break;
             case Qt::Key_PageUp:   _value += pageStep(); break;
             default:
@@ -143,8 +144,10 @@ void AbstractSlider::keyPressEvent(QKeyEvent* ev)
             _value = _minValue;
       else if (_value > _maxValue)
             _value = _maxValue;
-      if (oval != _value)
+      if (oval != _value) {
             valueChange();
+            update();
+            }
       }
 
 //---------------------------------------------------------

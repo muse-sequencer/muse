@@ -39,6 +39,7 @@ class Slider : public AbstractSlider {
 
       Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
       Q_PROPERTY(QSize sliderSize READ sliderSize WRITE setSliderSize)
+
       Qt::Orientation orient;
       QSize _sliderSize;
 

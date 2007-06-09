@@ -31,6 +31,7 @@
 #include "floatentry.h"
 #include "panknob.h"
 #include "midipanknob.h"
+#include "drawbar.h"
 
 #include <QtCore/QtPlugin>
 #include <QtDesigner/QDesignerCustomWidgetInterface>
@@ -91,6 +92,10 @@ QWidget* MidiPanKnobPlugin::createWidget(QWidget* parent)
 	{
       return new Awl::MidiPanKnob(parent);
       }
+QWidget* DrawbarPlugin::createWidget(QWidget* parent)
+	{
+      return new Awl::Drawbar(parent);
+      }
 
 //---------------------------------------------------------
 //   customWidgets
@@ -113,7 +118,8 @@ QList<QDesignerCustomWidgetInterface*> AwlPlugins::customWidgets() const
       	   << new TempoLabelPlugin
       	   << new CheckBoxPlugin
       	   << new ComboBoxPlugin
-      	   << new FloatEntryPlugin;
+      	   << new FloatEntryPlugin
+      	   << new DrawbarPlugin;
       return plugins;
 	}
 

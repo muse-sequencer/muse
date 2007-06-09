@@ -171,13 +171,16 @@ void Slider::mouseMoveEvent(QMouseEvent* ev)
       {
       if (!dragMode)
             return;
-      int ppos;
-      if (orient == Qt::Vertical)
-            ppos = dragppos + (startDrag.y() - ev->y());
-      else
-            ppos = dragppos + (ev->x() - startDrag.x());
+      int delta = startDrag.y() - ev->y();
+
+      if (_invert)
+            delta = -delta;
+      if (orient == Qt::Horizontal)
+            delta = -delta;
+      int ppos = dragppos + delta;
       if (ppos < 0)
             ppos = 0;
+
       int pixel = (orient == Qt::Vertical) ? height() - _sliderSize.height() : width() - _sliderSize.width();
       if (ppos > pixel)
             ppos = pixel;
