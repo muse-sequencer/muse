@@ -35,7 +35,7 @@ set(mocs
       volentry panentry midivolentry midipanentry midipanknob
       mslider midimslider midimeter combobox checkbox posedit
       pitchedit poslabel pitchlabel tempolabel sigedit tcanvas
-      tempoedit
+      tempoedit drawbar
       )
 
 WRAP_H(mocH ${mocs})
@@ -43,8 +43,8 @@ WRAP_CPP(mocCPP ${mocs})
 
 QT4_WRAP_CPP (moc_headers ${mocH})
 
-set(awl_src 
-      awl.cpp utils.cpp  ${mocCPP} ${moc_headers} 
+set(awl_src
+      awl.cpp utils.cpp  ${mocCPP} ${moc_headers}
       )
 
 add_library ( awl STATIC ${awl_src} )
@@ -53,13 +53,13 @@ set_target_properties( awl
    )
 
 IF (APPLE)
-   message("Not yet able to build awlplugin under OS X.")	
+   message("Not yet able to build awlplugin under OS X.")
 ELSE (APPLE)
 
    #
    #  build libawlplugin.so
    #
-   QT4_WRAP_CPP (moc_awlplugin_headers 
+   QT4_WRAP_CPP (moc_awlplugin_headers
       awlplugin.h
       volknob.h knob.h aslider.h
       slider.h volslider.h mslider.h
@@ -68,6 +68,7 @@ ELSE (APPLE)
       combobox.h checkbox.h
       panknob.h midipanknob.h
       floatentry.h
+      drawbar.h
       )
 
    add_library ( awlplugin SHARED
@@ -79,22 +80,23 @@ ELSE (APPLE)
        combobox.cpp checkbox.cpp
        panknob.cpp midipanknob.cpp
        floatentry.cpp
+       drawbar.cpp
        ${moc_awlplugin_headers}
        )
 
    set_target_properties( awlplugin
-      PROPERTIES COMPILE_FLAGS 
+      PROPERTIES COMPILE_FLAGS
          "-D_GNU_SOURCE -D_REENTRANT -DHAVE_CONFIG_H -DQT_PLUGIN -DQT_SHARED -DQT_NO_DEBUG -include ${PROJECT_BINARY_DIR}/all-pic.h"
       )
    target_link_libraries( awlplugin
       al pthread asound
       )
 
-   install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/designer/ awlplugin )
+   install( TARGETS awlplugin DESTINATION ${QT_PLUGINS_DIR}/designer/ )
 
    add_executable( ltest ltest.cpp )
-   target_link_libraries ( ltest 
-      awlplugin 
+   target_link_libraries ( ltest
+      awlplugin
       ${QT_LIBRARIES}
       )
 
