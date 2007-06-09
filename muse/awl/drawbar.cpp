@@ -68,7 +68,8 @@ void Drawbar::paintEvent(QPaintEvent*)
       int kh   = w * 2;
       int kw   = w;
       int pixel = h - kh;
-      int ppos = pixel - int(pixel * _value / 8.0);
+//      int ppos = pixel - int(pixel * _value / 8.0);
+      int ppos = int(pixel * _value / 8.0);
 
       QPainter p(this);
 
