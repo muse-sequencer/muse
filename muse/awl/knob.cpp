@@ -274,7 +274,7 @@ void Knob::paintEvent(QPaintEvent* ev)
       //-----------------------------------------
 
       if (!_text.isEmpty()) {
-            p.drawText(ar, Qt::AlignBottom | Qt::AlignHCenter, _text);
+            p.drawText(rect(), Qt::AlignBottom | Qt::AlignHCenter, _text);
             }
       }
 }

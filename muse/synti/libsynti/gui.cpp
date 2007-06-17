@@ -65,9 +65,6 @@ void MessGui::readMessage()
 
 void MessGui::sendController(int ch, int idx, int val)
       {
-//      MidiEvent pe(0, ch, ME_CONTROLLER, idx, val);
-//      sendEvent(pe);
-
       sendEvent(MidiEvent(0, ch, ME_CONTROLLER, idx, val));
       }
 
@@ -77,9 +74,6 @@ void MessGui::sendController(int ch, int idx, int val)
 
 void MessGui::sendSysex(unsigned char* p, int n)
       {
-//      MidiEvent pe(0, 0, ME_SYSEX, p, n);
-//      sendEvent(pe);
-
       sendEvent(MidiEvent(0, ME_SYSEX, p, n));
       }
 

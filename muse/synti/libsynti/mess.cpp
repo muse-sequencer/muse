@@ -115,6 +115,7 @@ bool Mess::processEvent(const MidiEvent& ev)
             case ME_SYSEX:
 	            return sysex(ev.len(), ev.data());
             case ME_CONTROLLER:
+printf("process controller %d\n", ev.dataA());
                   return setController(ev.channel(), ev.dataA(), ev.dataB());
             }
       return false;

@@ -58,7 +58,7 @@ add_library ( zynaddsubfx SHARED
       DSP/FFTwrapper.C
       DSP/Filter.C
       DSP/FormantFilter.C
-      DSP/SVFilter.C 
+      DSP/SVFilter.C
       Effects/Alienwah.C
       Effects/Chorus.C
       Effects/Distorsion.C
@@ -101,7 +101,7 @@ add_library ( zynaddsubfx SHARED
       main.cpp
       )
 
-# - tell cmake to name target zynaddsubfx.so instead of 
+# - tell cmake to name target zynaddsubfx.so instead of
 #   libzynaddsubfx.so
 #
 
@@ -111,7 +111,7 @@ set_target_properties ( zynaddsubfx
    )
 
 target_link_libraries( zynaddsubfx
-      synti jack asound pthread fftw3 mxml
+      synti fftw3 mxml
       m z fltk
       )
 
