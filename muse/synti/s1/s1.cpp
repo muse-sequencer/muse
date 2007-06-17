@@ -93,9 +93,9 @@ void S1::note(int /*channel*/, int pitch, int velo)
             //
             // note on
             //
-            accu     = 0;
-            gate     = 1;
-            freq     = 8.176 * exp(float(pitch)*log(2.0)/12.0);
+            accu = 0;
+            gate = 1;
+            freq = 8.176 * exp(float(pitch)*log(2.0)/12.0);
             }
       }
 

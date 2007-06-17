@@ -19,9 +19,9 @@
 #=============================================================================
 
 include_directories(
-   . 
+   .
    ${CMAKE_CURRENT_BINARY}
-   ${PROJECT_SOURCE_DIR} 
+   ${PROJECT_SOURCE_DIR}
    ${PROJECT_SOURCE_DIR}/muse
    ${PROJECT_SOURCE_DIR}/muse/widgets
    ${PROJECT_SOURCE_DIR}/synti
@@ -32,7 +32,7 @@ set (SubDirs libsynti s1 organ deicsonze simpledrums vam mus)
 if (ENABLE_ZYNADDSUBFX)
       set (SubDirs ${SubDirs} zynaddsubfx)
 endif (ENABLE_ZYNADDSUBFX)
-      
+
 if (ENABLE_FLUID)
       set (SubDirs ${SubDirs} fluid fluidsynth )
 endif (ENABLE_FLUID)

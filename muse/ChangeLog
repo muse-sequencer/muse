@@ -1,3 +1,5 @@
+17.6. (ws)
+      - organ synthesizer plugin update
 9.6. (ws)
       - added new Drawbar() widget to awl lib
       - install libawlplugin.so into qt designer plugin library

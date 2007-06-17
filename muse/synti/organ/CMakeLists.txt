@@ -21,26 +21,26 @@
 QT4_WRAP_CPP ( organ_mocs organgui.h )
 QT4_WRAP_UI (  organ_uis organgui.ui )
 
-add_library ( organ SHARED 
-      organ.cpp 
+add_library ( organ SHARED
+      organ.cpp
       organgui.cpp
       organgui.h
       ${organ_mocs}
       ${organ_uis}
       )
 
-# - tell cmake to name target organ.so instead of 
+# - tell cmake to name target organ.so instead of
 #   liborgan.so
 # - use precompiled header files
 #
-set_target_properties ( organ 
+set_target_properties ( organ
    PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
+   COMPILE_FLAGS "-O6 -include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
 target_link_libraries(organ
-      widgets 
       synti
+      awl
       ${QT_LIBRARIES}
       )
 

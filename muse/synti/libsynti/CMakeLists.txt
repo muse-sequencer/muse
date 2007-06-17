@@ -18,7 +18,14 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-add_library(synti mess.cpp gui.cpp mono.cpp poly.cpp midievent.cpp)
+add_library(synti
+      mess.cpp
+      mess2.cpp
+      gui.cpp
+      mono.cpp
+      poly.cpp
+      midievent.cpp
+      )
 
 #
 # -fPIC is necessary for 64 bit systems

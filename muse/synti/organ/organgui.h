@@ -25,16 +25,22 @@ class QSignalMapper;
 class OrganGui : public QWidget, public Ui::OrganGuiBase, public MessGui {
       Q_OBJECT
 
+      bool ignoreControllerChange;
+
       QSignalMapper* map;
-      SynthGuiCtrl dctrl[NUM_GUI_CONTROLLER];
-      void setParam(int, int);
       virtual void processEvent(const MidiEvent&);
 
+   protected:
+      void setParam(int, int);
+      void setParamIdx(int ctrlIdx, int val);
+
    private slots:
-      void ctrlChanged(int idx);
+      void ctrlChanged(QWidget*);
       void readMessage(int);
 
    public:
+      friend class Organ;
+      friend class Mess2;
       OrganGui();
       };
 

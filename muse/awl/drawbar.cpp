@@ -37,7 +37,7 @@ Drawbar::Drawbar(QWidget* parent)
       setOrientation(Qt::Vertical);
       setInvertedAppearance(true);
       setRange(0.0, 8.0);
-      setLineStep(1.0);
+      setLineStep(0.3);
       }
 
 Drawbar::~Drawbar()

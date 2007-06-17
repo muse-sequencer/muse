@@ -6,19 +6,19 @@
 //    This is a simple GUI implemented with QT for
 //    organ software synthesizer.
 //
-//  (C) Copyright 2001-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2001-2007 Werner Schweer (ws@seh.de)
 //=========================================================
 
 #include "organgui.h"
 #include "muse/midi.h"
 #include "muse/midictrl.h"
+#include "awl/knob.h"
 
 //---------------------------------------------------------
 //   OrganGui
 //---------------------------------------------------------
 
 OrganGui::OrganGui()
-//   : QWidget(0, "organgui", Qt::WType_TopLevel),
    : QWidget(0),
      MessGui()
       {
@@ -26,78 +26,139 @@ OrganGui::OrganGui()
       QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
       connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
 
-      dctrl[0]  = SynthGuiCtrl(p1,  lcd1,  SynthGuiCtrl::SLIDER);
-      dctrl[1]  = SynthGuiCtrl(p2,  lcd2,  SynthGuiCtrl::SLIDER);
-      dctrl[2]  = SynthGuiCtrl(p3,  lcd3,  SynthGuiCtrl::SLIDER);
-      dctrl[3]  = SynthGuiCtrl(p4,  lcd4,  SynthGuiCtrl::SLIDER);
-      dctrl[4]  = SynthGuiCtrl(p5,  lcd5,  SynthGuiCtrl::SLIDER);
-      dctrl[5]  = SynthGuiCtrl(p6,  lcd6,  SynthGuiCtrl::SLIDER);
-      dctrl[6]  = SynthGuiCtrl(p7,  lcd7,  SynthGuiCtrl::SLIDER);
-      dctrl[7]  = SynthGuiCtrl(p8,  lcd8,  SynthGuiCtrl::SLIDER);
-      dctrl[8]  = SynthGuiCtrl(p9,  lcd9,  SynthGuiCtrl::SLIDER);
-      dctrl[9]  = SynthGuiCtrl(p10, lcd10, SynthGuiCtrl::SLIDER);
-      dctrl[10] = SynthGuiCtrl(p11, lcd11, SynthGuiCtrl::SLIDER);
-      dctrl[11] = SynthGuiCtrl(p12, lcd12, SynthGuiCtrl::SLIDER);
-      dctrl[12] = SynthGuiCtrl(p13, lcd13, SynthGuiCtrl::SLIDER);
-      dctrl[13] = SynthGuiCtrl(p14, lcd14, SynthGuiCtrl::SLIDER);
-      dctrl[14] = SynthGuiCtrl(sw1,    0,  SynthGuiCtrl::SWITCH);
-      dctrl[15] = SynthGuiCtrl(sw3,    0,  SynthGuiCtrl::SWITCH);
-      dctrl[16] = SynthGuiCtrl(sw2,    0,  SynthGuiCtrl::SWITCH);
-      dctrl[17] = SynthGuiCtrl(sw4,    0,  SynthGuiCtrl::SWITCH);
-
       map = new QSignalMapper(this);
-      for (int i = 0; i < NUM_GUI_CONTROLLER; ++i) {
-            map->setMapping(dctrl[i].editor, i);
-            if (dctrl[i].type == SynthGuiCtrl::SLIDER)
-                  connect((QSlider*)(dctrl[i].editor), SIGNAL(valueChanged(int)), map, SLOT(map()));
-            else if (dctrl[i].type == SynthGuiCtrl::SWITCH)
-                  connect((QCheckBox*)(dctrl[i].editor), SIGNAL(toggled(bool)), map, SLOT(map()));
+      QList<QWidget*> wl = findChildren<QWidget*>();
+      foreach(QWidget* w, wl) {
+            int idx = Mess2::controllerIdx(w->objectName().toAscii().data());
+            if (idx == -1)
+                  continue;
+            w->setProperty("ctrlIdx", idx);
+            map->setMapping(w, w);
+            const char* cname = w->metaObject()->className();
+            if (strcmp(cname, "QSlider") == 0) {
+                  QSlider* slider = (QSlider*)w;
+                  w->setProperty("ctrlType", 0);
+                  connect(slider, SIGNAL(valueChanged(int)), map, SLOT(map()));
+                  }
+            else if (strcmp(cname, "QCheckBox") == 0) {
+                  w->setProperty("ctrlType", 1);
+                  connect(w, SIGNAL(toggled(bool)), map, SLOT(map()));
+                  }
+            else if (strcmp(cname, "QGroupBox") == 0) {
+                  w->setProperty("ctrlType", 2);
+                  connect(w, SIGNAL(toggled(bool)), map, SLOT(map()));
+                  }
+            else if (strcmp(cname, "Awl::Knob") == 0) {
+                  w->setProperty("ctrlType", 3);
+                  connect(w, SIGNAL(valueChanged(double,int)), map, SLOT(map()));
+                  }
+            else if (strcmp(cname, "QPushButton") == 0) {
+                  w->setProperty("ctrlType", 4);
+                  connect(w, SIGNAL(toggled(bool)), map, SLOT(map()));
+                  }
+            else if (strcmp(cname, "Awl::Drawbar") == 0) {
+                  Awl::Drawbar* drawbar = (Awl::Drawbar*)w;
+                  w->setProperty("ctrlType", 5);
+                  connect(drawbar, SIGNAL(valueChanged(double,int)), map, SLOT(map()));
+                  }
+            else
+                  printf("Gui Element <%s> not supported\n", cname);
             }
-      connect(map, SIGNAL(mapped(int)), this, SLOT(ctrlChanged(int)));
+      ignoreControllerChange = false;
+      connect(map, SIGNAL(mapped(QWidget*)), this, SLOT(ctrlChanged(QWidget*)));
       }
 
 //---------------------------------------------------------
 //   ctrlChanged
 //---------------------------------------------------------
 
-void OrganGui::ctrlChanged(int idx)
+void OrganGui::ctrlChanged(QWidget* w)
       {
-      SynthGuiCtrl* ctrl = &dctrl[idx];
-      int val = 0;
-      if (ctrl->type == SynthGuiCtrl::SLIDER) {
-            QSlider* slider = (QSlider*)(ctrl->editor);
-            val = slider->value();
+      if (ignoreControllerChange)
+            return;
+      int ctrlIdx  = w->property("ctrlIdx").toInt();
+      int ctrlType = w->property("ctrlType").toInt();
+      int value    = 0;
+
+      switch(ctrlType) {
+            case 0:     // QSlider
+                  value = ((QSlider*)w)->value();
+                  break;
+            case 1:
+                  value = ((QCheckBox*)w)->isChecked();
+                  break;
+            case 2:
+                  value = ((QGroupBox*)w)->isChecked();
+                  break;
+            case 3:
+                  value = lrint(((Awl::Knob*)w)->value());
+                  break;
+            case 4:
+                  value = ((QPushButton*)w)->isChecked();
+                  break;
+            case 5:
+                  value = lrint(((Awl::Drawbar*)w)->value());
+                  break;
+            default:
+                  printf("OrganGui::ctrlChanged: illegal ctrlType %d\n", ctrlType);
+                  break;
             }
-      else if (ctrl->type == SynthGuiCtrl::SWITCH) {
-            val = ((QCheckBox*)(ctrl->editor))->isChecked();
-            }
-      sendController(0, idx + CTRL_RPN14_OFFSET, val);
+      int id = Mess2::controllerId(ctrlIdx);
+      sendController(0, id, value);      // to synth
       }
 
 //---------------------------------------------------------
 //   setParam
-//    set param in gui
 //---------------------------------------------------------
 
-void OrganGui::setParam(int param, int val)
+void OrganGui::setParam(int ctrlId, int val)
       {
-      param &= 0xfff;
-      if (param >= int(sizeof(dctrl)/sizeof(*dctrl))) {
-            fprintf(stderr, "OrganGui: set unknown Ctrl 0x%x to 0x%x\n", param, val);
+      int ctrlIdx = Mess2::controllerIdx(ctrlId);
+      if (ctrlIdx == -1)
             return;
+      setParamIdx(ctrlIdx, val);
+      }
+
+//---------------------------------------------------------
+//   setParamIdx
+//    set controller value in gui
+//---------------------------------------------------------
+
+void OrganGui::setParamIdx(int ctrlIdx, int val)
+      {
+      const char* name = Organ::controllerName(ctrlIdx);
+      if (name == 0)
+            return;
+      ignoreControllerChange = true;
+      QList<QWidget*> wl = findChildren<QWidget*>(name);
+
+      foreach(QWidget* w, wl) {
+            int ctrlType = w->property("ctrlType").toInt();
+            switch(ctrlType) {
+                  case 0:
+                        ((QSlider*)w)->setValue(val);
+                        break;
+                  case 1:
+                        ((QCheckBox*)w)->setChecked(val);
+                        break;
+                  case 2:
+                        ((QGroupBox*)w)->setChecked(val);
+                        break;
+                  case 3:
+                        ((Awl::Knob*)w)->setValue(double(val));
+                        break;
+                  case 4:
+                        ((QPushButton*)w)->setChecked(val);
+                        break;
+                  case 5:
+                        ((Awl::Drawbar*)w)->setValue(double(val));
+                        break;
+                  default:
+                        printf("OrganGui::setParamIdx: illegal ctrlType %d\n", ctrlType);
+                        break;
+                  }
             }
-      SynthGuiCtrl* ctrl = &dctrl[param];
-      ctrl->editor->blockSignals(true);
-      if (ctrl->type == SynthGuiCtrl::SLIDER) {
-            QSlider* slider = (QSlider*)(ctrl->editor);
-            slider->setValue(val);
-            if (ctrl->label)
-                  ((QSpinBox*)(ctrl->label))->setValue(val);
-            }
-      else if (ctrl->type == SynthGuiCtrl::SWITCH) {
-            ((QCheckBox*)(ctrl->editor))->setChecked(val);
-            }
-      ctrl->editor->blockSignals(false);
+      ignoreControllerChange = false;
       }
 
 //---------------------------------------------------------

@@ -50,6 +50,8 @@
 #include <QtCore/QTranslator>
 #include <QtCore/qatomic.h>
 #include <QtCore/QTemporaryFile>
+#include <QtCore/QQueue>
+#include <QtCore/QSettings>
 
 #include <QtDesigner/QDesignerCustomWidgetInterface>
 #include <QtDesigner/QDesignerFormEditorInterface>
