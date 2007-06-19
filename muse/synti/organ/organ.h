@@ -7,7 +7,7 @@
 //      Organ - Additive Organ Synthesizer Voice
 //      Copyright (c) 1999, 2000 David A. Bartold
 //
-//  (C) Copyright 2001-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2001-2007 Werner Schweer (ws@seh.de)
 //=========================================================
 
 #ifndef __ORGAN_H__
@@ -19,6 +19,7 @@
 static const int NO_VOICES = 128;    // max polyphony
 static const int NO_KEYS = 97 - 36;
 class OrganGui;
+class Reverb;
 
 static const int MAX_ATTENUATION = 960;
 static const int NO_BUSES        = 9;
@@ -28,9 +29,8 @@ static const int NO_ELEMENTS     = 194;
 enum {
       DRAWBAR0 = CTRL_RPN14_OFFSET, DRAWBAR1, DRAWBAR2,
          DRAWBAR3, DRAWBAR4, DRAWBAR5, DRAWBAR6, DRAWBAR7, DRAWBAR8,
-      ATTACK_LO, DECAY_LO, SUSTAIN_LO, RELEASE_LO,
-      ATTACK_HI, DECAY_HI, SUSTAIN_HI, RELEASE_HI,
-      BRASS, FLUTE, REED, VELO
+      REVERB_ROOM_SIZE, REVERB_MIX,
+      VIBRATO_ON, VIBRATO_FREQ, VIBRATO_DEPTH
       };
 
 //---------------------------------------------------------
@@ -38,7 +38,7 @@ enum {
 //---------------------------------------------------------
 
 struct Wheel {
-      unsigned freq256;
+      unsigned frameStep;
       unsigned accu;
 
       int refCount;
@@ -78,16 +78,21 @@ class Organ : public Mess2 {
 
       static float* waveTable;
       static double cb2amp_tab[MAX_ATTENUATION];
-      static unsigned freq256[128][NO_BUSES];
       static double cb2amp(int cb);
       static Elem routing[NO_KEYS][NO_ELEMENTS];
       static float* attackEnv;
       static float* releaseEnv;
       static int envSize;
-      static int resolution;
-      static int resolution256;
 
+      Reverb* reverb;
       double volume;
+
+      unsigned vibratoStep;
+      unsigned vibratoAccu;
+
+      bool vibratoOn;
+      double vibratoFreq;
+      double vibratoDepth;
 
       float drawBarGain[NO_BUSES];
       Wheel wheels[NO_WHEELS];

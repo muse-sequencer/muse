@@ -5,9 +5,11 @@
 //
 //  Parts of this file taken from:
 //      Organ - Additive Organ Synthesizer Voice
-//      Copyright (c) 1999, 2000 David A. Bartold
+//      Copyright (C) 1999, 2000 David A. Bartold
+//  Some information was gathered form the "beatrix" organ
+//      from Fredrik Kilander
 //
-//  (C) Copyright 2001-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2001-2007 Werner Schweer (ws@seh.de)
 //=========================================================
 
 #include "muse/midi.h"
@@ -15,16 +17,15 @@
 
 #include "organ.h"
 #include "organgui.h"
+#include "reverb.h"
 
-int Organ::resolution;
-int Organ::resolution256;
 float* Organ::attackEnv;
 float* Organ::releaseEnv;
-int Organ::envSize;
+int    Organ::envSize;
 float* Organ::waveTable;
-int Organ::useCount = 0;
+int    Organ::useCount;
 double Organ::cb2amp_tab[MAX_ATTENUATION];
-unsigned Organ::freq256[128][NO_BUSES];
+
 Elem Organ::routing[NO_KEYS][NO_ELEMENTS] = {
 #if 1
       { Elem(0,0,0.003210), Elem(0,1,0.000105), Elem(0,2,0.004516), Elem(0,3,0.000095), Elem(0,4,0.000080), Elem(0,5,0.000088), Elem(0,6,0.000116), Elem(0,7,0.000213),
@@ -1371,25 +1372,24 @@ double Organ::cb2amp(int cb)
       return cb2amp_tab[cb];
       }
 
-static const int SHIFT = 10;
-static const int RESO  = 1024;
+static const unsigned SHIFT      = 16;
+static const double   RESO       = 256.0 * 256.0 * 256.0 * 256.0;
+static const unsigned resolution = 256 * 256;   // 16 Bit
 
 //---------------------------------------------------------
 //   Organ
 //---------------------------------------------------------
 
 Organ::Organ(int sr)
-   : Mess2(1)
+   : Mess2(2)
       {
       setSampleRate(sr);
       gui = 0;
+      reverb = new Reverb();
 
       ++useCount;
       if (useCount > 1)
             return;
-
-      resolution    = sr / 1000;
-      resolution256 = resolution << SHIFT;
 
       // centibels to amplitude conversion
       for (int i = 0; i < MAX_ATTENUATION; i++)
@@ -1397,8 +1397,8 @@ Organ::Organ(int sr)
 
       // Initialize sine table.
       waveTable = new float[resolution];
-      for (int i = 0; i < resolution; i++)
-            waveTable[i] = sin (i * 2.0 * M_PI / double(resolution));
+      for (unsigned i = 0; i < resolution; i++)
+            waveTable[i] = sin (double(i) * 2.0 * M_PI / double(resolution));
 
       // Initialize envelope tables
 
@@ -1420,7 +1420,13 @@ Organ::Organ(int sr)
       addController("drawbar135", DRAWBAR6,   0, 8, 0);
       addController("drawbar113", DRAWBAR7,   0, 8, 0);
       addController("drawbar1",   DRAWBAR8,   0, 8, 0);
-      addController("volume",     CTRL_VOLUME, 0, 127, 100);
+      addController("reverbRoomSize", REVERB_ROOM_SIZE, 0, 127, 60);
+      addController("reverbMix",      REVERB_MIX,       0, 127, 100);
+      addController("vibratoOn",      VIBRATO_ON,       0, 1,   1);
+      addController("vibratoFreq",    VIBRATO_FREQ,     0, 127, 100);
+      addController("vibratoDepth",   VIBRATO_DEPTH,    0, 127, 50);
+
+      addController("volume",         CTRL_VOLUME, 0, 127, 100);
       }
 
 //---------------------------------------------------------
@@ -1431,6 +1437,8 @@ Organ::~Organ()
       {
       if (gui)
             delete gui;
+      delete reverb;
+
       --useCount;
       if (useCount == 0) {
             delete[] waveTable;
@@ -1461,18 +1469,22 @@ bool Organ::init(const char* name)
       static const int gearB[12] = { 104,82,73,36,67,11,32,40,37, 8,46,35 };
       static const int teeth[]   = { 2, 4, 8, 16, 32, 64, 128, 192 };
 
-      srand(22);
+      vibratoFreq  = 7.25;
+      vibratoDepth = 0.005;
+      vibratoStep  = lrint(vibratoFreq * RESO / double(sampleRate()));
+      vibratoAccu  = 0;
+
       for (int i = 0; i < NO_WHEELS; ++i) {
             int note     = i % 12;
             int octave   = i / 12;
             if (octave == 7)
                   note += 5;
             // in 60Hz organs, the motor turns at 1200 RPM (20 revolutions /sec)
-            double freq        = 20.0 * teeth[octave] * gearA[note] / gearB[note];
-            wheels[i].freq256  = lrint(freq * double(resolution256) / double(sampleRate()));
-            wheels[i].accu     = rand() % resolution256;
-            wheels[i].refCount = 0;
-            wheels[i].active   = false;
+            double freq         = 20.0 * teeth[octave] * gearA[note] / gearB[note];
+            wheels[i].frameStep = lrint(freq * RESO / double(sampleRate()));
+            wheels[i].accu      = 0;
+            wheels[i].refCount  = 0;
+            wheels[i].active    = false;
             for (int k = 0; k < NO_BUSES; ++k)
                   wheels[i].envCount[k] = 0;
             }
@@ -1503,12 +1515,27 @@ void Organ::process(float** ports, int offset, int sampleCount)
                   printf("Organ::process(): unknown event\n");
             }
 
-      float* buffer = *ports + offset;
+      float* buffer = ports[0] + offset;
       memset(buffer, 0, sizeof(float) * sampleCount);
+
+      float vibrato[sampleCount];
+      if (vibratoOn) {
+            //
+            // compute partial vibrato sinus
+            //
+            for (int i = 0; i < sampleCount; ++i) {
+                  vibratoAccu += vibratoStep;
+                  vibrato[i]  = waveTable[vibratoAccu >> SHIFT] * vibratoDepth;
+                  }
+            }
+
       foreach(Wheel* w, activeWheels) {
             for (int i = 0; i < sampleCount; ++i) {
 
-                  w->accu   = (w->accu + w->freq256) % resolution256;
+                  unsigned step = w->frameStep;
+                  if (vibratoOn)
+                        step += lrint(step * vibrato[i]);
+                  w->accu  += step;
                   float val = waveTable[w->accu >> SHIFT];
 
                   for (int k = 0; k < NO_BUSES; ++k) {
@@ -1533,6 +1560,7 @@ void Organ::process(float** ports, int offset, int sampleCount)
             }
       for (int i = 0; i < sampleCount; ++i)
             buffer[i] *= volume;
+//      reverb->process(buffer, ports[1], sampleCount);
       }
 
 //---------------------------------------------------------
@@ -1637,6 +1665,27 @@ void Organ::setController(int ctrlId, int data)
                   drawBarGain[db] = float(data) / 8.0;
                   }
                   break;
+            case REVERB_ROOM_SIZE:
+                  reverb->setRoomSize(float(data) / 127.0);
+                  break;
+
+            case REVERB_MIX:
+                  reverb->setMix(float(data) / 127.0);
+                  break;
+
+            case VIBRATO_ON:
+                  vibratoOn = data != 0;
+                  break;
+
+            case VIBRATO_FREQ:
+                  vibratoFreq = float(data) * 6.0 / 127.0 + 4;
+                  vibratoStep = lrint(vibratoFreq * RESO / double(sampleRate()));
+                  break;
+
+            case VIBRATO_DEPTH:
+                  vibratoDepth = float(data) / 127.0 * .01;
+                  break;
+
             case CTRL_VOLUME:
                   data &= 0x7f;
                   volume = data == 0 ? 0.0 : cb2amp(int(200 * log10((127.0 * 127)/(data*data))));

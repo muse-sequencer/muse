@@ -24,6 +24,8 @@ QT4_WRAP_UI (  organ_uis organgui.ui )
 add_library ( organ SHARED
       organ.cpp
       organgui.cpp
+      reverb.cpp
+      vibrato.cpp
       organgui.h
       ${organ_mocs}
       ${organ_uis}
