@@ -239,71 +239,61 @@ configure_file (
       ${PROJECT_BINARY_DIR}/config.h
       )
 
-add_custom_target(all.h
-   ALL
-   cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all.h
-   DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-   )
+add_custom_command(
+      OUTPUT ${PROJECT_BINARY_DIR}/all.h
+      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all.h
+      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
 
-add_custom_target(all-pic.h
-   ALL
-   cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h
-   DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-   )
+add_custom_command(
+      OUTPUT ${PROJECT_BINARY_DIR}/all.h.pch
+      COMMAND ${CMAKE_CXX_COMPILER}
+         -g -Wextra -fno-exceptions -Wall
+         -I${QT_INCLUDE_DIR}
+         -I${QT_QTCORE_INCLUDE_DIR}
+         -I${QT_QTGUI_INCLUDE_DIR}
+         -o all.h.pch all.h
+      DEPENDS ${PROJECT_BINARY_DIR}/all.h
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
 
-add_custom_target(all-pic-debug.h
-   ALL
-   cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic-debug.h
-   DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-   )
+add_custom_command(
+      OUTPUT ${PROJECT_BINARY_DIR}/all-pic.h.pch
+      COMMAND ${CMAKE_CXX_COMPILER}
+         -fPIC
+         -Dawlplugin_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB
+         -DQT_PLUGIN -DQT_SHARED -DQT_NO_DEBUG
+         -g -Wextra -fno-exceptions -Wall
+         -I${QT_INCLUDE_DIR}
+         -I${QT_QTCORE_INCLUDE_DIR}
+         -I${QT_QTGUI_INCLUDE_DIR}
+         -o all-pic.h.pch all.h
+      DEPENDS ${PROJECT_BINARY_DIR}/all.h
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
 
-add_custom_target(all.h.pch
-   ALL
-   ${CMAKE_CXX_COMPILER}
-     -g -Wextra -fno-exceptions -Wall
-     -I${QT_INCLUDE_DIR}
-     -I${QT_QTCORE_INCLUDE_DIR}
-     -I${QT_QTGUI_INCLUDE_DIR}
-     -o ${PROJECT_BINARY_DIR}/all.h.pch
-     ${PROJECT_SOURCE_DIR}/all.h
-   DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-   )
-
-add_custom_target(all-pic.h.pch
-   ALL
-   ${CMAKE_CXX_COMPILER}
-     -fPIC
-     -Dawlplugin_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB
-     -DQT_PLUGIN -DQT_SHARED -DQT_NO_DEBUG
-     -g -Wextra -fno-exceptions -Wall
-     -I${QT_INCLUDE_DIR}
-     -I${QT_QTCORE_INCLUDE_DIR}
-     -I${QT_QTGUI_INCLUDE_DIR}
-     -o ${PROJECT_BINARY_DIR}/all-pic.h.pch
-     ${PROJECT_SOURCE_DIR}/all.h
-   DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-   )
-
-add_custom_target(all-pic-debug.h.pch
-   ALL
-   ${CMAKE_CXX_COMPILER}
-     -fPIC
-     -Dawlplugin_debug_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB
-     -DQT_PLUGIN -DQT_SHARED -DQT_DEBUG
-     -g -Wextra -fno-exceptions -Wall
-     -I${QT_INCLUDE_DIR}
-     -I${QT_QTCORE_INCLUDE_DIR}
-     -I${QT_QTGUI_INCLUDE_DIR}
-     -o ${PROJECT_BINARY_DIR}/all-pic-debug.h.pch
-     ${PROJECT_SOURCE_DIR}/all.h
-   DEPENDS ${PROJECT_SOURCE_DIR}/all.h
-   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-   )
+add_custom_command(
+      OUTPUT ${PROJECT_BINARY_DIR}/all-pic-debug.h.pch
+      COMMAND ${CMAKE_CXX_COMPILER}
+         -fPIC
+          -Dawlplugin_debug_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB
+         -DQT_PLUGIN -DQT_SHARED -DQT_DEBUG
+         -g -Wextra -fno-exceptions -Wall
+         -I${QT_INCLUDE_DIR}
+         -I${QT_QTCORE_INCLUDE_DIR}
+         -I${QT_QTGUI_INCLUDE_DIR}
+         -o all-pic-debug.h.pch all.h
+      DEPENDS ${PROJECT_BINARY_DIR}/all.h
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
+set_source_files_properties(
+      ${PROJECT_BINARY_DIR}/all.h
+      ${PROJECT_BINARY_DIR}/all.h.pch
+      ${PROJECT_BINARY_DIR}/all-pic.h.pch
+      ${PROJECT_BINARY_DIR}/all-pic-debug.h.pch
+      PROPERTIES generated true
+      )
 
 subdirs(al awl grepmidi plugins midiplugins synti muse share doc)
 

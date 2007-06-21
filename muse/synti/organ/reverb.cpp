@@ -137,14 +137,12 @@ void Reverb::setMix(float value)
 
 void Reverb::process(float* l, float* r, int n)
       {
-      float wet  = (1.0f - wetLevel) * scalewet;
-      float dry  = wetLevel * scaledry;
-	float wet1 = wet * (width/2 + 0.5f);
-	float wet2 = wet * ((1-width)/2);
+      float wet  = wetLevel;
+      float dry  = 1.0 - wetLevel;
 
 	for (int i = 0; i < n; ++i) {
-		float outL  = 0;
-		float outR  = 0;
+		float outL  = 0.0;
+		float outR  = 0.0;
 		float input = l[i] * gain;
 
 		// Accumulate comb filters in parallel
@@ -158,8 +156,8 @@ void Reverb::process(float* l, float* r, int n)
 			outL = allpassL[k].process(outL);
 			outR = allpassR[k].process(outR);
 		      }
-		l[i] = outL * wet1 + outR * wet2 + l[i] * dry;
-		r[i] = outR * wet1 + outL * wet2 + l[i] * dry;
+		l[i] = outL * wet + l[i] * dry;
+		r[i] = outR * wet + r[i] * dry;
 	      }
       }
 

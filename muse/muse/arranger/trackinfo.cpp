@@ -76,6 +76,7 @@ TrackInfo::TrackInfo()
 
       name  = new TLLineEdit("");
       name->setToolTip(tr("Track Name"));
+      name->setMaximumHeight(24);
 
       grid = new QGridLayout;
       grid->setMargin(0);
@@ -86,7 +87,7 @@ TrackInfo::TrackInfo()
       grid->addWidget(name,  1, 0, 1, 2);
       connect(name, SIGNAL(contentChanged(QString)), SLOT(nameChanged(QString)));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      resize(QSize(infoWidth, height()));
+//      resize(QSize(infoWidth, height()));
       }
 
 //---------------------------------------------------------
@@ -139,6 +140,7 @@ MidiTrackInfo::MidiTrackInfo()
       grid->addWidget(midiTrackInfo, 2, 0, 1, 2);
 
       channel = new QComboBox;
+      channel->setMaximumHeight(24);
       for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
             channel->addItem(tr("Channel %1").arg(ch+1), ch);
       grid->addWidget(channel, 3, 0, 1, 2);
@@ -154,8 +156,10 @@ MidiTrackInfo::MidiTrackInfo()
       grid->addWidget(label, 4, 0, 1, 2);
 
       port = new QComboBox;
-      grid->addWidget(port, 5, 0, 1, 2);
+      port->setMaximumHeight(24);
+      grid->addWidget(port,         5, 0, 1, 2);
       grid->addWidget(midiPortInfo, 6, 0, 1, 2);
+      grid->setRowStretch(grid->rowCount(), 100);
 
       pop = new QMenu(mt.patch);
 
@@ -168,9 +172,8 @@ MidiTrackInfo::MidiTrackInfo()
       connect(port,             SIGNAL(activated(int)),    SLOT(portSelected(int)));
       connect(mp.instrument,    SIGNAL(activated(int)),    SLOT(instrumentSelected(int)));
       connect(mp.deviceId,      SIGNAL(valueChanged(int)), SLOT(deviceIdChanged(int)));
-      connect(song,          SIGNAL(autoReadChanged(Track*,bool)),  SLOT(autoChanged(Track*,bool)));
-      connect(song,          SIGNAL(autoWriteChanged(Track*,bool)), SLOT(autoChanged(Track*,bool)));
-      grid->setRowStretch(grid->rowCount(), 100);
+      connect(song,             SIGNAL(autoReadChanged(Track*,bool)),  SLOT(autoChanged(Track*,bool)));
+      connect(song,             SIGNAL(autoWriteChanged(Track*,bool)), SLOT(autoChanged(Track*,bool)));
       }
 
 //---------------------------------------------------------
@@ -215,7 +218,7 @@ void MidiTrackInfo::init(Track* t)
             int idx = port->findText(outputTrack->name());
             port->setCurrentIndex(idx == -1 ? 0 : idx);
             }
-      
+
       channel->setCurrentIndex(midiTrack->channelNo());
 
       connect(track, SIGNAL(controllerChanged(int)), SLOT(controllerChanged(int)));

@@ -22,13 +22,9 @@ const int	numcombs		= 8;
 const int	numallpasses	= 4;
 const float	muted			= 0;
 const float	fixedgain		= 0.015f;
-const float scalewet		= 3;
-const float scaledry		= 2;
 const float scaledamp		= 0.4f;
 const float scaleroom		= 0.28f;
 const float offsetroom		= 0.7f;
-const float initialwet		= 1/scalewet;
-const float initialdry		= 0.0;
 const float initialwidth	= 1.0;
 const int	stereospread	= 23;
 

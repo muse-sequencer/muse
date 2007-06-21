@@ -18,19 +18,21 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+include(${PROJECT_SOURCE_DIR}/pch.txt)
+
 include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}
       )
 
 subdirs (
-      ctrl 
-      midiedit 
-      widgets 
-      master 
-      driver 
-      instruments 
-      marker 
-      liste 
+      ctrl
+      midiedit
+      widgets
+      master
+      driver
+      instruments
+      marker
+      liste
       mixer
       arranger
       waveedit
@@ -85,47 +87,48 @@ add_executable ( muse
       ${muse_qrc_files}
       ${muse_moc_headers}
       ${muse_ui_headers}
+      ${PROJECT_BINARY_DIR}/all.h.pch
 
       ticksynth.cpp
-      vst.cpp 
-      dssihost.cpp 
-      synth.cpp 
+      vst.cpp
+      dssihost.cpp
+      synth.cpp
       plugin.cpp
       ladspaplugin.cpp
       auxplugin.cpp
       pipeline.cpp
-	mtc.cpp 
-      thread.cpp 
+	mtc.cpp
+      thread.cpp
       audio.cpp
-	audioprefetch.cpp 
-      audiowriteback.cpp 
-      globals.cpp 
+	audioprefetch.cpp
+      audiowriteback.cpp
+      globals.cpp
       sync.cpp
-	part.cpp 
-      undo.cpp 
-      songfile.cpp 
+	part.cpp
+      undo.cpp
+      songfile.cpp
       midi.cpp
-      importmidi.cpp 
+      importmidi.cpp
       importmidi.h
-      midifile.cpp 
-      icons.cpp 
-      event.cpp 
-      eventlist.cpp 
-      midieventbase.cpp 
-      waveevent.cpp 
+      midifile.cpp
+      icons.cpp
+      event.cpp
+      eventlist.cpp
+      midieventbase.cpp
+      waveevent.cpp
       midievent.cpp
-	wave.cpp 
+	wave.cpp
       seqmsg.cpp
 	help.cpp
-	midictrl.cpp 
+	midictrl.cpp
       fifo.cpp
-	midiseq.cpp 
-      helper.cpp 
-      route.cpp 
-      shortcuts.cpp 
+	midiseq.cpp
+      helper.cpp
+      route.cpp
+      shortcuts.cpp
       ctrl.cpp
-      gconfig.cpp 
-      midirc.cpp 
+      gconfig.cpp
+      midirc.cpp
       midififo.cpp
       midioutport.cpp
       midiinport.cpp
@@ -163,27 +166,27 @@ set_target_properties( muse
       )
 
 target_link_libraries(muse
-      ctrl 
-      midiedit 
-      master 
-      driver 
-      instruments 
-      marker 
-      liste
-      synti 
-      arranger 
-      mixer 
-      waveedit 
-      widgets 
       ctrl
-      al 
+      midiedit
+      master
+      driver
+      instruments
+      marker
+      liste
+      synti
+      arranger
+      mixer
+      waveedit
+      widgets
+      ctrl
+      al
       awl
       ${QT_LIBRARIES}
       QtSvg
       ${ALSA_LIB}
       ${JACK_LIB}
       ${SNDFILE_LIB}
-      ${SAMPLERATE_LIB} 
+      ${SAMPLERATE_LIB}
       ${LIBLO_LIB}
       )
 

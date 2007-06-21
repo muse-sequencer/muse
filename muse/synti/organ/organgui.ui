@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>424</width>
-    <height>335</height>
+    <width>555</width>
+    <height>334</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -81,6 +81,32 @@ background-color: gray;
       </widget>
      </item>
      <item>
+      <widget class="QGroupBox" name="percOn" >
+       <property name="title" >
+        <string>Percussion</string>
+       </property>
+       <property name="checkable" >
+        <bool>true</bool>
+       </property>
+       <layout class="QVBoxLayout" >
+        <item>
+         <widget class="QCheckBox" name="percSoft" >
+          <property name="text" >
+           <string>Soft</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="percSlow" >
+          <property name="text" >
+           <string>Slow</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <widget class="QGroupBox" name="groupBox" >
        <property name="title" >
         <string>Reverb</string>
@@ -94,6 +120,9 @@ background-color: gray;
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="scaleWidth" >
+           <number>5</number>
+          </property>
           <property name="scaleValueColor" >
            <color>
             <red>255</red>
@@ -103,6 +132,12 @@ background-color: gray;
           </property>
           <property name="maxValue" >
            <double>127.000000000000000</double>
+          </property>
+          <property name="lineStep" >
+           <double>8.000000000000000</double>
+          </property>
+          <property name="pageStep" >
+           <double>20.000000000000000</double>
           </property>
          </widget>
         </item>
@@ -146,6 +181,9 @@ background-color: gray;
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="scaleWidth" >
+           <number>5</number>
+          </property>
           <property name="scaleValueColor" >
            <color>
             <red>255</red>
@@ -155,6 +193,12 @@ background-color: gray;
           </property>
           <property name="maxValue" >
            <double>127.000000000000000</double>
+          </property>
+          <property name="lineStep" >
+           <double>8.000000000000000</double>
+          </property>
+          <property name="pageStep" >
+           <double>20.000000000000000</double>
           </property>
          </widget>
         </item>
@@ -178,6 +222,9 @@ background-color: gray;
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="scaleWidth" >
+           <number>5</number>
+          </property>
           <property name="scaleValueColor" >
            <color>
             <red>255</red>
@@ -187,6 +234,12 @@ background-color: gray;
           </property>
           <property name="maxValue" >
            <double>127.000000000000000</double>
+          </property>
+          <property name="lineStep" >
+           <double>8.000000000000000</double>
+          </property>
+          <property name="pageStep" >
+           <double>20.000000000000000</double>
           </property>
          </widget>
         </item>
@@ -198,6 +251,9 @@ background-color: gray;
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="scaleWidth" >
+           <number>5</number>
+          </property>
           <property name="scaleValueColor" >
            <color>
             <red>255</red>
@@ -207,6 +263,12 @@ background-color: gray;
           </property>
           <property name="maxValue" >
            <double>127.000000000000000</double>
+          </property>
+          <property name="lineStep" >
+           <double>8.000000000000000</double>
+          </property>
+          <property name="pageStep" >
+           <double>20.000000000000000</double>
           </property>
          </widget>
         </item>
@@ -264,7 +326,7 @@ background-color: gray;
         <item>
          <widget class="Awl::Drawbar" name="drawbar16" >
           <property name="value" >
-           <double>4.319999999999999</double>
+           <double>4.000000000000000</double>
           </property>
           <property name="sliderColor" >
            <color>
@@ -278,7 +340,7 @@ background-color: gray;
         <item>
          <widget class="Awl::Drawbar" name="drawbar513" >
           <property name="value" >
-           <double>5.039999999999999</double>
+           <double>5.000000000000000</double>
           </property>
           <property name="sliderColor" >
            <color>
@@ -347,7 +409,7 @@ background-color: gray;
         <item>
          <widget class="Awl::Drawbar" name="drawbar135" >
           <property name="value" >
-           <double>4.800000000000000</double>
+           <double>5.000000000000000</double>
           </property>
           <property name="sliderColor" >
            <color>
@@ -361,7 +423,7 @@ background-color: gray;
         <item>
          <widget class="Awl::Drawbar" name="drawbar113" >
           <property name="value" >
-           <double>2.160000000000000</double>
+           <double>2.000000000000000</double>
           </property>
           <property name="sliderColor" >
            <color>

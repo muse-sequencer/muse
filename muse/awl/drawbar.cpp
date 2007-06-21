@@ -37,7 +37,9 @@ Drawbar::Drawbar(QWidget* parent)
       setOrientation(Qt::Vertical);
       setInvertedAppearance(true);
       setRange(0.0, 8.0);
-      setLineStep(0.3);
+      setLineStep(1.0);
+      setPageStep(1.0);
+      setInteger(true);
       }
 
 Drawbar::~Drawbar()
@@ -65,11 +67,10 @@ void Drawbar::paintEvent(QPaintEvent*)
       int h   = height();
       int w   = width();
 
-      int kh   = w * 2;
-      int kw   = w;
+      int kh    = w * 2;            // knob height
+      int kw    = w;
       int pixel = h - kh;
-//      int ppos = pixel - int(pixel * _value / 8.0);
-      int ppos = int(pixel * _value / 8.0);
+      int ppos = int(pixel * value() / 8.0);
 
       QPainter p(this);
 
@@ -105,8 +106,8 @@ void Drawbar::paintEvent(QPaintEvent*)
 
       int ch = pixel / 8;
       QString num("%1");
-      for (int i = 1; i < 9; ++i) {
-            p.drawText(0, ch * (i-1) - (pixel - ppos), w, ch, Qt::AlignCenter, num.arg(9-i));
+      for (int i = 0; i < 8; ++i) {
+            p.drawText(0, i * pixel / 8 - (pixel - ppos), w, ch, Qt::AlignCenter, num.arg(8-i));
             }
       p.restore();
 

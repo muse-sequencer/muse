@@ -40,6 +40,7 @@ AbstractSlider::AbstractSlider(QWidget* parent)
       _invert     = false;
       _scaleWidth = 4;
       _log        = false;
+      _integer    = false;
       }
 
 //---------------------------------------------------------
@@ -108,10 +109,11 @@ void AbstractSlider::setScaleValueColor(const QColor& c)
 
 void AbstractSlider::wheelEvent(QWheelEvent* ev)
       {
-      double div = 50.0;
+      double div = 120.0;
       if (ev->modifiers() & Qt::ShiftModifier)
-            div = 15;
-      _value += (ev->delta() * lineStep()) / div;
+            _value += (ev->delta() * pageStep()) / div;
+      else
+            _value += (ev->delta() * lineStep()) / div;
       if (_value < _minValue)
             _value = _minValue;
       else if (_value > _maxValue)
@@ -144,7 +146,10 @@ void AbstractSlider::keyPressEvent(QKeyEvent* ev)
             _value = _minValue;
       else if (_value > _maxValue)
             _value = _maxValue;
+
       if (oval != _value) {
+            if (_integer && (rint(oval) == rint(_value)))
+                  return;
             valueChange();
             update();
             }
@@ -165,6 +170,8 @@ void AbstractSlider::setValue(double val)
             		_value = _minValue;
                  	}
             }
+      else if (_integer)
+            _value = rint(val);
       else
             _value = val;
       update();
@@ -185,9 +192,12 @@ void AbstractSlider::valueChange()
 
 double AbstractSlider::value() const
       {
-      return _log ? pow(10.0, _value*0.05f) : _value;
+      if (_log)
+            return pow(10.0, _value*0.05f);
+      if (_integer)
+            return rint(_value);
+      return _value;
       }
-
 
 //---------------------------------------------------------
 //   minLogValue

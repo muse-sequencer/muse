@@ -30,7 +30,8 @@ enum {
       DRAWBAR0 = CTRL_RPN14_OFFSET, DRAWBAR1, DRAWBAR2,
          DRAWBAR3, DRAWBAR4, DRAWBAR5, DRAWBAR6, DRAWBAR7, DRAWBAR8,
       REVERB_ROOM_SIZE, REVERB_MIX,
-      VIBRATO_ON, VIBRATO_FREQ, VIBRATO_DEPTH
+      VIBRATO_ON, VIBRATO_FREQ, VIBRATO_DEPTH,
+      PERC_ON, PERC_SOFT, PERC_SLOW,
       };
 
 //---------------------------------------------------------
@@ -52,21 +53,16 @@ struct Wheel {
       };
 
 //---------------------------------------------------------
-//   Voice
+//   Elem
 //---------------------------------------------------------
 
-struct Voice {
-      bool isOn;
-      int pitch;
-      };
-
 struct Elem {
-      short wheel;
-      short bus;
+      char wheel;
+      char bus;
       float level;
 
       Elem() { bus = -1; }
-      Elem(short w, short b, float l) : wheel(w), bus(b), level(l) {}
+      Elem(char w, char b, float l) : wheel(w), bus(b), level(l) {}
       };
 
 //---------------------------------------------------------
@@ -83,7 +79,9 @@ class Organ : public Mess2 {
       static float* attackEnv;
       static float* releaseEnv;
       static int envSize;
+      static float keyCompression[NO_VOICES];
 
+      OrganGui* gui;
       Reverb* reverb;
       double volume;
 
@@ -94,13 +92,24 @@ class Organ : public Mess2 {
       double vibratoFreq;
       double vibratoDepth;
 
+      // key compression
+      float keyCompressionDelta;
+      float keyCompressionValue;
+      int keyCompressionCount;
+
+      // percussion
+      int percussionBus;      // usually drawbar 3 or drawbar 4
+      bool percussionOn;
+      int percussionEnvelopeCount;
+
+
       float drawBarGain[NO_BUSES];
       Wheel wheels[NO_WHEELS];
-      Voice voices[NO_VOICES];
+      QList<char> pressedKeys;
       QList<Wheel*> activeWheels;
 
-      void noteoff(int channel, int pitch);
       void setController(int ctrl, int val);
+      void changeKeyCompression();
 
       virtual void process(float**, int, int);
       virtual bool playNote(int channel, int pitch, int velo);
@@ -112,8 +121,6 @@ class Organ : public Mess2 {
       virtual bool hasGui() const { return true; }
       virtual void getGeometry(int* x, int* y, int* w, int* h) const;
       virtual void setGeometry(int x, int y, int w, int h);
-
-      OrganGui* gui;
 
    public:
       friend class OrganGui;

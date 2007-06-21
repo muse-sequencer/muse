@@ -25,6 +25,7 @@ add_library ( organ SHARED
       organ.cpp
       organgui.cpp
       reverb.cpp
+      routing.cpp
       organgui.h
       ${organ_mocs}
       ${organ_uis}

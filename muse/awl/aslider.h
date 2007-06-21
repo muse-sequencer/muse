@@ -51,7 +51,8 @@ class AbstractSlider : public QWidget {
       Q_PROPERTY(double maxValue READ maxValue WRITE setMaxValue)
       Q_PROPERTY(double lineStep READ lineStep WRITE setLineStep)
       Q_PROPERTY(double pageStep READ pageStep WRITE setPageStep)
-      Q_PROPERTY(bool  log      READ log      WRITE setLog)
+      Q_PROPERTY(bool   log      READ log      WRITE setLog)
+      Q_PROPERTY(bool   integer  READ integer  WRITE setInteger)
 
    protected:
       int _id;
@@ -63,6 +64,7 @@ class AbstractSlider : public QWidget {
       QColor _scaleColor;
       QColor _scaleValueColor;
       bool _log;
+      bool _integer;
 
       virtual void wheelEvent(QWheelEvent*);
       virtual void keyPressEvent(QKeyEvent*);
@@ -118,6 +120,8 @@ class AbstractSlider : public QWidget {
             }
       bool log() const           { return _log;      }
       void setLog(bool v)        { _log = v;         }
+      bool integer() const       { return _integer;  }
+      void setInteger(bool v)    { _integer = v;     }
       double lineStep() const    { return _lineStep; }
       void setLineStep(double v) { _lineStep = v;    }
       double pageStep() const    { return _pageStep; }

@@ -10,9 +10,7 @@
    </rect>
   </property>
   <property name="sizePolicy" >
-   <sizepolicy>
-    <hsizetype>7</hsizetype>
-    <vsizetype>5</vsizetype>
+   <sizepolicy vsizetype="Preferred" hsizetype="Expanding" >
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -21,21 +19,37 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" >
-   <property name="margin" >
+   <property name="leftMargin" >
     <number>0</number>
    </property>
-   <property name="spacing" >
+   <property name="topMargin" >
+    <number>0</number>
+   </property>
+   <property name="rightMargin" >
+    <number>0</number>
+   </property>
+   <property name="bottomMargin" >
+    <number>0</number>
+   </property>
+   <property name="horizontalSpacing" >
+    <number>0</number>
+   </property>
+   <property name="verticalSpacing" >
     <number>0</number>
    </property>
    <item row="0" column="0" >
     <widget class="QLabel" name="label" >
      <property name="sizePolicy" >
-      <sizepolicy>
-       <hsizetype>5</hsizetype>
-       <vsizetype>0</vsizetype>
+      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
      </property>
      <property name="text" >
       <string>Transp.</string>
@@ -44,26 +58,42 @@
    </item>
    <item row="0" column="1" >
     <widget class="QSpinBox" name="transposition" >
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
+     </property>
      <property name="toolTip" >
       <string>Pitch Transpose</string>
      </property>
-     <property name="maximum" >
-      <number>127</number>
-     </property>
      <property name="minimum" >
       <number>-127</number>
+     </property>
+     <property name="maximum" >
+      <number>127</number>
      </property>
     </widget>
    </item>
    <item row="1" column="0" >
     <widget class="QLabel" name="label_2" >
      <property name="sizePolicy" >
-      <sizepolicy>
-       <hsizetype>5</hsizetype>
-       <vsizetype>0</vsizetype>
+      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
      </property>
      <property name="text" >
       <string>Delay</string>
@@ -72,26 +102,42 @@
    </item>
    <item row="1" column="1" >
     <widget class="QSpinBox" name="delay" >
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
+     </property>
      <property name="toolTip" >
       <string>Track Delay (ticks)</string>
      </property>
-     <property name="maximum" >
-      <number>1000</number>
-     </property>
      <property name="minimum" >
       <number>-1000</number>
+     </property>
+     <property name="maximum" >
+      <number>1000</number>
      </property>
     </widget>
    </item>
    <item row="2" column="0" >
     <widget class="QLabel" name="label_3" >
      <property name="sizePolicy" >
-      <sizepolicy>
-       <hsizetype>5</hsizetype>
-       <vsizetype>0</vsizetype>
+      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
      </property>
      <property name="text" >
       <string>Length</string>
@@ -100,29 +146,45 @@
    </item>
    <item row="2" column="1" >
     <widget class="QSpinBox" name="length" >
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
+     </property>
      <property name="toolTip" >
       <string>Modify Note Length</string>
      </property>
      <property name="suffix" >
       <string>%</string>
      </property>
-     <property name="maximum" >
-      <number>200</number>
-     </property>
      <property name="minimum" >
       <number>25</number>
+     </property>
+     <property name="maximum" >
+      <number>200</number>
      </property>
     </widget>
    </item>
    <item row="3" column="0" >
     <widget class="QLabel" name="label_4" >
      <property name="sizePolicy" >
-      <sizepolicy>
-       <hsizetype>5</hsizetype>
-       <vsizetype>0</vsizetype>
+      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
      </property>
      <property name="text" >
       <string>Velocity</string>
@@ -131,26 +193,42 @@
    </item>
    <item row="3" column="1" >
     <widget class="QSpinBox" name="velocity" >
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
+     </property>
      <property name="toolTip" >
       <string>Modify Note Velocity</string>
      </property>
-     <property name="maximum" >
-      <number>127</number>
-     </property>
      <property name="minimum" >
       <number>-127</number>
+     </property>
+     <property name="maximum" >
+      <number>127</number>
      </property>
     </widget>
    </item>
    <item row="4" column="0" >
     <widget class="QLabel" name="label_5" >
      <property name="sizePolicy" >
-      <sizepolicy>
-       <hsizetype>5</hsizetype>
-       <vsizetype>0</vsizetype>
+      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
      </property>
      <property name="text" >
       <string>Compr.</string>
@@ -159,29 +237,45 @@
    </item>
    <item row="4" column="1" >
     <widget class="QSpinBox" name="compression" >
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
+     </property>
      <property name="toolTip" >
       <string>Compress Note Velocity</string>
      </property>
      <property name="suffix" >
       <string>%</string>
      </property>
-     <property name="maximum" >
-      <number>200</number>
-     </property>
      <property name="minimum" >
       <number>25</number>
+     </property>
+     <property name="maximum" >
+      <number>200</number>
      </property>
     </widget>
    </item>
    <item row="5" column="0" colspan="2" >
     <widget class="QPushButton" name="patch" >
      <property name="sizePolicy" >
-      <sizepolicy>
-       <hsizetype>7</hsizetype>
-       <vsizetype>0</vsizetype>
+      <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
      </property>
      <property name="toolTip" >
       <string>Instrument Patch</string>

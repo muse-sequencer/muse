@@ -18,6 +18,8 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+include(${PROJECT_SOURCE_DIR}/pch.txt)
+
 MACRO(WRAP_CPP outfiles )
    FOREACH(it ${ARGN})
       SET(${outfiles} ${${outfiles}} ${it}.cpp)
@@ -47,7 +49,13 @@ set(awl_src
       awl.cpp utils.cpp  ${mocCPP} ${moc_headers}
       )
 
-add_library ( awl STATIC ${awl_src} )
+add_library (
+      awl
+      STATIC
+      ${awl_src}
+      ${PROJECT_BINARY_DIR}/all.h.pch
+      )
+
 set_target_properties( awl
    PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all.h"
    )
@@ -82,6 +90,7 @@ ELSE (APPLE)
        floatentry.cpp
        drawbar.cpp
        ${moc_awlplugin_headers}
+       ${PROJECT_BINARY_DIR}/all-pic.h.pch
        )
 
    set_target_properties( awlplugin

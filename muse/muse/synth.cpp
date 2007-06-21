@@ -518,8 +518,10 @@ void MessSynthIF::getData(MidiEventList* el, unsigned pos, int ports, unsigned n
             synti->putFifo.remove();
             }
 
+      // Echo events from Synti back
       while (_mess->eventsPending())
-            _mess->processEvent(_mess->receiveEvent());
+            // _mess->processEvent(_mess->receiveEvent());
+            _mess->receiveEvent();  // throw away event
 
       if (ports >= channels()) {
             iMidiEvent i = el->begin();

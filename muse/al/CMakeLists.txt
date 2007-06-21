@@ -3,6 +3,8 @@
 #
 #
 
+include(${PROJECT_SOURCE_DIR}/pch.txt)
+
 set (al_src
    al.cpp marker.cpp pos.cpp sig.cpp tempo.cpp xml.cpp
    dsp.cpp
@@ -14,6 +16,7 @@ endif (USE_SSE)
 
 add_library(al STATIC
    ${al_src}
+   ${PROJECT_BINARY_DIR}/all.h.pch
    )
 
 set_source_files_properties(

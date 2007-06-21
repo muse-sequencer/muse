@@ -122,8 +122,7 @@ int Mess2::getControllerInfo(int idx, const char** name, int* id, int* min, int*
       *min  = ctrl[idx]->min;
       *max  = ctrl[idx]->max;
       ++idx;
-      return (idx > ctrl.size()) ? 0 : idx;
-            return 0;
+      return (idx >= ctrl.size()) ? 0 : idx;
       }
 
 
