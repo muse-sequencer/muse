@@ -109,8 +109,7 @@ Organ::Organ(int sr)
       static const float v = -9.0;
       static const float m = 1.0 / (NO_VOICES - 12);
       for (int i = 11; i < NO_VOICES; i++) {
-            float a         = float(i - 11);
-            keyCompression[i] = dBToGain(u + ((v - u) * a * m));
+            keyCompression[i] = dBToGain(u + ((v - u) * float(i - 11) * m));
             }
 
       // Initialize controller table
@@ -124,6 +123,7 @@ Organ::Organ(int sr)
       addController("drawbar135",     DRAWBAR6,         0, 8,   0);
       addController("drawbar113",     DRAWBAR7,         0, 8,   0);
       addController("drawbar1",       DRAWBAR8,         0, 8,   0);
+      addController("reverbOn",       REVERB_ON,        0, 1,   0);
       addController("reverbRoomSize", REVERB_ROOM_SIZE, 0, 127, 60);
       addController("reverbMix",      REVERB_MIX,       0, 127, 100);
       addController("vibratoOn",      VIBRATO_ON,       0, 1,   1);
@@ -275,13 +275,16 @@ void Organ::process(float** ports, int offset, int sampleCount)
             }
       for (int i = 0; i < sampleCount; ++i) {
             buffer1[i] *= volume * keyCompressionValue;
+
             if (keyCompressionCount) {
                   keyCompressionValue += keyCompressionDelta;
                   --keyCompressionCount;
                   }
             }
-
-      reverb->process(buffer1, buffer2, sampleCount);
+      if (reverbOn)
+            reverb->process(buffer1, buffer2, sampleCount);
+      else
+            memcpy(buffer2, buffer1, sizeof(float) * sampleCount);
       }
 
 //---------------------------------------------------------
@@ -294,7 +297,7 @@ void Organ::changeKeyCompression()
       keyCompressionCount = int(sampleRate() * .005);      // 5 msec envelope
       if (keyCompressionCount < 2)
             keyCompressionCount = 2;
-      keyCompressionDelta = (keyCompressionValue - kc) / keyCompressionCount;
+      keyCompressionDelta = (kc - keyCompressionValue) / keyCompressionCount;
       }
 
 //---------------------------------------------------------
@@ -384,6 +387,10 @@ void Organ::setController(int ctrlId, int data)
 
             case REVERB_MIX:
                   reverb->setMix(float(data) / 127.0);
+                  break;
+
+            case REVERB_ON:
+                  reverbOn = data != 0;
                   break;
 
             case VIBRATO_ON:

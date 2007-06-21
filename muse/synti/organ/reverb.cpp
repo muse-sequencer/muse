@@ -157,7 +157,7 @@ void Reverb::process(float* l, float* r, int n)
 			outR = allpassR[k].process(outR);
 		      }
 		l[i] = outL * wet + l[i] * dry;
-		r[i] = outR * wet + r[i] * dry;
+		r[i] = outR * wet + l[i] * dry;
 	      }
       }
 

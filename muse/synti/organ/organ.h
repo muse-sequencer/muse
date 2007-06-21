@@ -29,7 +29,7 @@ static const int NO_ELEMENTS     = 194;
 enum {
       DRAWBAR0 = CTRL_RPN14_OFFSET, DRAWBAR1, DRAWBAR2,
          DRAWBAR3, DRAWBAR4, DRAWBAR5, DRAWBAR6, DRAWBAR7, DRAWBAR8,
-      REVERB_ROOM_SIZE, REVERB_MIX,
+      REVERB_ON, REVERB_ROOM_SIZE, REVERB_MIX,
       VIBRATO_ON, VIBRATO_FREQ, VIBRATO_DEPTH,
       PERC_ON, PERC_SOFT, PERC_SLOW,
       };
@@ -83,6 +83,7 @@ class Organ : public Mess2 {
 
       OrganGui* gui;
       Reverb* reverb;
+      bool reverbOn;
       double volume;
 
       unsigned vibratoStep;

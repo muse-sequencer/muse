@@ -107,9 +107,12 @@ background-color: gray;
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBox" >
+      <widget class="QGroupBox" name="reverbOn" >
        <property name="title" >
         <string>Reverb</string>
+       </property>
+       <property name="checkable" >
+        <bool>true</bool>
        </property>
        <layout class="QGridLayout" >
         <item row="0" column="0" >
