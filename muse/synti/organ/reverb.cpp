@@ -137,8 +137,8 @@ void Reverb::setMix(float value)
 
 void Reverb::process(float* l, float* r, int n)
       {
-      float wet  = wetLevel;
-      float dry  = 1.0 - wetLevel;
+      float wet = wetLevel;
+      float dry = 1.0 - wetLevel;
 
 	for (int i = 0; i < n; ++i) {
 		float outL  = 0.0;

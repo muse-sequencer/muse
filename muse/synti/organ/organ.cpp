@@ -226,7 +226,7 @@ void Organ::process(float** ports, int offset, int sampleCount)
             }
 
       float* buffer1 = ports[0] + offset;
-      float* buffer2 = ports[0] + offset;
+      float* buffer2 = ports[1] + offset;
       memset(buffer1, 0, sizeof(float) * sampleCount);
       memset(buffer2, 0, sizeof(float) * sampleCount);
 
