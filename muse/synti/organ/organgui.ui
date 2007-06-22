@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>555</width>
-    <height>341</height>
+    <width>611</width>
+    <height>342</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -88,18 +88,121 @@ background-color: gray;
        <property name="checkable" >
         <bool>true</bool>
        </property>
-       <layout class="QVBoxLayout" >
-        <item>
-         <widget class="QCheckBox" name="percSoft" >
-          <property name="text" >
-           <string>Soft</string>
+       <layout class="QGridLayout" >
+        <item row="0" column="0" >
+         <widget class="Awl::Knob" name="percGain" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="scaleWidth" >
+           <number>5</number>
+          </property>
+          <property name="scaleValueColor" >
+           <color>
+            <red>255</red>
+            <green>255</green>
+            <blue>0</blue>
+           </color>
+          </property>
+          <property name="maxValue" >
+           <double>127.000000000000000</double>
+          </property>
+          <property name="lineStep" >
+           <double>8.000000000000000</double>
+          </property>
+          <property name="pageStep" >
+           <double>20.000000000000000</double>
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QCheckBox" name="percSlow" >
+        <item row="0" column="1" >
+         <widget class="Awl::Knob" name="percDecay" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="scaleWidth" >
+           <number>5</number>
+          </property>
+          <property name="scaleValueColor" >
+           <color>
+            <red>255</red>
+            <green>255</green>
+            <blue>0</blue>
+           </color>
+          </property>
+          <property name="maxValue" >
+           <double>127.000000000000000</double>
+          </property>
+          <property name="lineStep" >
+           <double>8.000000000000000</double>
+          </property>
+          <property name="pageStep" >
+           <double>20.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2" >
+         <widget class="Awl::Knob" name="percHarmony" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="scaleWidth" >
+           <number>5</number>
+          </property>
+          <property name="scaleValueColor" >
+           <color>
+            <red>255</red>
+            <green>255</green>
+            <blue>0</blue>
+           </color>
+          </property>
+          <property name="maxValue" >
+           <double>8.000000000000000</double>
+          </property>
+          <property name="lineStep" >
+           <double>1.000000000000000</double>
+          </property>
+          <property name="pageStep" >
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" >
+         <widget class="QLabel" name="label_9" >
           <property name="text" >
-           <string>Slow</string>
+           <string>Gain</string>
+          </property>
+          <property name="alignment" >
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" >
+         <widget class="QLabel" name="label_10" >
+          <property name="text" >
+           <string>Decay</string>
+          </property>
+          <property name="alignment" >
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2" >
+         <widget class="QLabel" name="label_11" >
+          <property name="text" >
+           <string>Harmony</string>
+          </property>
+          <property name="alignment" >
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>

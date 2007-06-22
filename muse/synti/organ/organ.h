@@ -31,7 +31,7 @@ enum {
          DRAWBAR3, DRAWBAR4, DRAWBAR5, DRAWBAR6, DRAWBAR7, DRAWBAR8,
       REVERB_ON, REVERB_ROOM_SIZE, REVERB_MIX,
       VIBRATO_ON, VIBRATO_FREQ, VIBRATO_DEPTH,
-      PERC_ON, PERC_SOFT, PERC_SLOW, PERC_FIRST,
+      PERC_ON, PERC_GAIN, PERC_DECAY, PERC_HARMONY,
       ROTARY_ON, ROT1_FREQ, ROT1_DEPTH, ROT2_FREQ, ROT2_DEPTH
       };
 
@@ -102,9 +102,7 @@ class Organ : public Mess2 {
       // percussion
       int percussionBus;      // usually drawbar 3 or drawbar 4
       bool percussionOn;
-      bool percussionSlow;
-      bool percussionSoft;
-      int percussionEnvelopeCount;
+      double percDecay;
       double percussionEnvDecay;
       double percGain;
       double percGainInit;

@@ -131,9 +131,9 @@ Organ::Organ(int sr)
       addController("vibratoDepth",   VIBRATO_DEPTH,    0, 127, 50);
       addController("volume",         CTRL_VOLUME,      0, 127, 100);
       addController("percOn",         PERC_ON,          0, 1,   1);
-      addController("percSoft",       PERC_SOFT,        0, 1,   0);
-      addController("percSlow",       PERC_SLOW,        0, 1,   1);
-      addController("percFirst",      PERC_FIRST,       0, 1,   1);
+      addController("percGain",       PERC_GAIN,        0, 127, 60);
+      addController("percDecay",      PERC_DECAY,       0, 127, 60);
+      addController("percHarmony",    PERC_HARMONY,     0, 8,   4);
       addController("rotaryOn",       ROTARY_ON,        0, 1,   0);
       addController("rot1Freq",       ROT1_FREQ,        0, 127, 100);
       addController("rot1Depth",      ROT1_DEPTH,       0, 127, 50);
@@ -234,16 +234,8 @@ void Organ::process(float** ports, int offset, int sampleCount)
       float* buffer2 = ports[1] + offset;
       memset(buffer1, 0, sizeof(float) * sampleCount);
       memset(buffer2, 0, sizeof(float) * sampleCount);
-      float buffer3[sampleCount];
-      float buffer4[sampleCount];
-      memset(buffer3, 0, sizeof(float) * sampleCount);
-      memset(buffer4, 0, sizeof(float) * sampleCount);
 
       float vibrato[sampleCount];
-      float rot1L[sampleCount];
-      float rot1R[sampleCount];
-      float rot2L[sampleCount];
-      float rot2R[sampleCount];
 
       if (vibratoOn) {
             //
@@ -252,18 +244,6 @@ void Organ::process(float** ports, int offset, int sampleCount)
             for (int i = 0; i < sampleCount; ++i) {
                   vibratoAccu += vibratoStep;
                   vibrato[i]  = waveTable[vibratoAccu >> SHIFT] * vibratoDepth;
-                  }
-            }
-      if (rotaryOn) {
-            for (int i = 0; i < sampleCount; ++i) {
-                  rot1AccuL += rot1Step;
-                  rot1L[i]  = waveTable[rot1AccuL >> SHIFT] * rot1Depth;
-                  rot1AccuR += rot1Step;
-                  rot1R[i]  = waveTable[rot1AccuR >> SHIFT] * rot1Depth;
-                  rot2AccuL += rot2Step;
-                  rot2L[i]  = waveTable[rot2AccuL >> SHIFT] * rot2Depth;
-                  rot2AccuR += rot2Step;
-                  rot2R[i]  = waveTable[rot2AccuR >> SHIFT] * rot2Depth;
                   }
             }
 
@@ -275,19 +255,20 @@ void Organ::process(float** ports, int offset, int sampleCount)
                         step += unsigned(step * vibrato[i]);
 
                   w->accu  += step;
-                  unsigned off1 = unsigned(w->accu + (step * rot1L[i]));
-                  unsigned off2 = unsigned(w->accu + (step * rot1R[i]));
-                  float val1    = waveTable[off1 >> SHIFT];
-                  float val2    = waveTable[off2 >> SHIFT];
+
+                  int idx    = w->accu >> SHIFT;
+                  float val1 = waveTable[idx];
+                  idx = (idx + 1) & 0xffff;
+                  float val2 = waveTable[idx];
+                  float val  = val1 + (val2 - val1) * double(w->accu & 0xffff)/double(0x10000);
 
                   for (int k = 0; k < NO_BUSES; ++k) {
                         int* envCnt = &(w->envCount[k]);
-                        float v1, v2;
+                        float v;
                         if (*envCnt > 0) {
                               (*envCnt)--;
                               float gain = w->gain[k] - w->deltaGain[k] * w->env[k][*envCnt];
-                              v1         = val1 * gain;
-                              v2         = val2 * gain;
+                              v          = val * gain;
                               if ((*envCnt == 0) && (w->refCount == 0)) {
                                     int idx = activeWheels.indexOf(w);
                                     if (idx != -1) {
@@ -297,24 +278,18 @@ void Organ::process(float** ports, int offset, int sampleCount)
                                     }
                               }
                         else {
-                              v1 = val1 * w->gain[k];
-                              v2 = val2 * w->gain[k];
+                              v = val * w->gain[k];
                               }
-                        buffer1[i] += v1 * drawBarGain[k];
-                        buffer2[i] += v2 * drawBarGain[k];
-                        if (k == percussionBus) {
-                              buffer3[i] += v1;
-                              buffer4[i] += v2;
-                              }
+                        buffer1[i] += v * drawBarGain[k];
+                        if (k == percussionBus)
+                              buffer2[i] += v;
                         }
                   }
             }
       if (percussionOn) {
             for (int i = 0; i < sampleCount; ++i) {
                   buffer1[i] = buffer1[i] * volume * keyCompressionValue
-                              + buffer3[i] * percGain;
-                  buffer2[i] = buffer2[i] * volume * keyCompressionValue
-                              + buffer4[i] * percGain;
+                              + buffer2[i] * percGain;
                   percGain *= percussionEnvDecay;
                   if (keyCompressionCount) {
                         keyCompressionValue += keyCompressionDelta;
@@ -325,13 +300,13 @@ void Organ::process(float** ports, int offset, int sampleCount)
       else {
             for (int i = 0; i < sampleCount; ++i) {
                   buffer1[i] *= volume * keyCompressionValue;
-                  buffer2[i] *= volume * keyCompressionValue;
                   if (keyCompressionCount) {
                         keyCompressionValue += keyCompressionDelta;
                         --keyCompressionCount;
                         }
                   }
             }
+      memcpy(buffer2, buffer1, sizeof(float) * sampleCount);
       if (reverbOn)
             reverb->process(buffer1, buffer2, sampleCount);
       }
@@ -365,8 +340,11 @@ bool Organ::playNote(int /*channel*/, int pitch, int velo)
                   }
             pressedKeys.removeAt(idx);
             }
-      else
+      else {
+            if (pressedKeys.isEmpty())
+                  percGain = percGainInit;
             pressedKeys.append(pitch);
+            }
       changeKeyCompression();
 
       for (int k = 0; k < NO_ELEMENTS; ++k) {
@@ -411,8 +389,6 @@ bool Organ::playNote(int /*channel*/, int pitch, int velo)
                   }
             w->envCount[bus] = envSize;
             }
-      if (pressedKeys.isEmpty())
-            percGain = percGainInit;
       return false;
       }
 
@@ -422,9 +398,7 @@ bool Organ::playNote(int /*channel*/, int pitch, int velo)
 
 void Organ::percussionChanged()
       {
-      double decay       = percussionSlow ? 4.0    : 1.0;
-      percGainInit       = percussionSoft ? 0.5012 : 1.0;
-      percussionEnvDecay = exp(log(0.001/percGainInit) / (decay * double(sampleRate())));
+      percussionEnvDecay = exp(log(0.001/percGainInit) / (percDecay * double(sampleRate())));
       }
 
 //---------------------------------------------------------
@@ -472,18 +446,18 @@ void Organ::setController(int ctrlId, int data)
                   percussionOn = data != 0;
                   break;
 
-            case PERC_SOFT:
-                  percussionSoft = data != 0;
+            case PERC_GAIN:         //   0.01 - 0.4
+                  percGainInit = float(data) * .39 / 127.0 + 0.01;
                   percussionChanged();
                   break;
 
-            case PERC_SLOW:
-                  percussionSlow = data != 0;
+            case PERC_DECAY:        // 0.5 - 4.5 sec
+                  percDecay = float(data) * 4.0 / 127.0 + 0.5;
                   percussionChanged();
                   break;
 
-            case PERC_FIRST:
-                  percussionBus = data ? 3 : 4;
+            case PERC_HARMONY:
+                  percussionBus = data;
                   break;
 
             case ROTARY_ON:
@@ -496,7 +470,7 @@ void Organ::setController(int ctrlId, int data)
                   break;
 
             case ROT1_DEPTH:
-                  rot1Depth = float(data) / 127.0 * .01;
+                  rot1Depth = float(data) / 127.0 * 1.0;
                   break;
 
             case ROT2_FREQ:
@@ -505,7 +479,7 @@ void Organ::setController(int ctrlId, int data)
                   break;
 
             case ROT2_DEPTH:
-                  rot2Depth = float(data) / 127.0 * .01;
+                  rot2Depth = float(data) / 127.0 * 1.0;
                   break;
 
             case CTRL_VOLUME:
