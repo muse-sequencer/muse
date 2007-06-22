@@ -31,7 +31,8 @@ enum {
          DRAWBAR3, DRAWBAR4, DRAWBAR5, DRAWBAR6, DRAWBAR7, DRAWBAR8,
       REVERB_ON, REVERB_ROOM_SIZE, REVERB_MIX,
       VIBRATO_ON, VIBRATO_FREQ, VIBRATO_DEPTH,
-      PERC_ON, PERC_SOFT, PERC_SLOW,
+      PERC_ON, PERC_SOFT, PERC_SLOW, PERC_FIRST,
+      ROTARY_ON, ROT1_FREQ, ROT1_DEPTH, ROT2_FREQ, ROT2_DEPTH
       };
 
 //---------------------------------------------------------
@@ -101,8 +102,25 @@ class Organ : public Mess2 {
       // percussion
       int percussionBus;      // usually drawbar 3 or drawbar 4
       bool percussionOn;
+      bool percussionSlow;
+      bool percussionSoft;
       int percussionEnvelopeCount;
+      double percussionEnvDecay;
+      double percGain;
+      double percGainInit;
 
+      // rotary speaker emulation
+      bool rotaryOn;
+      double rot1Freq;        // horn: 0,67 - 6,7
+      double rot1Depth;
+      double rot2Freq;        // drum: 0,5  - 5,5
+      double rot2Depth;
+      unsigned rot1Step;
+      unsigned rot1AccuL;
+      unsigned rot1AccuR;
+      unsigned rot2Step;
+      unsigned rot2AccuL;
+      unsigned rot2AccuR;
 
       float drawBarGain[NO_BUSES];
       Wheel wheels[NO_WHEELS];
@@ -111,6 +129,7 @@ class Organ : public Mess2 {
 
       void setController(int ctrl, int val);
       void changeKeyCompression();
+      void percussionChanged();
 
       virtual void process(float**, int, int);
       virtual bool playNote(int channel, int pitch, int velo);

@@ -133,6 +133,12 @@ Organ::Organ(int sr)
       addController("percOn",         PERC_ON,          0, 1,   1);
       addController("percSoft",       PERC_SOFT,        0, 1,   0);
       addController("percSlow",       PERC_SLOW,        0, 1,   1);
+      addController("percFirst",      PERC_FIRST,       0, 1,   1);
+      addController("rotaryOn",       ROTARY_ON,        0, 1,   0);
+      addController("rot1Freq",       ROT1_FREQ,        0, 127, 100);
+      addController("rot1Depth",      ROT1_DEPTH,       0, 127, 50);
+      addController("rot2Freq",       ROT2_FREQ,        0, 127, 100);
+      addController("rot2Depth",      ROT2_DEPTH,       0, 127, 50);
       }
 
 //---------------------------------------------------------
@@ -178,10 +184,11 @@ bool Organ::init(const char* name)
       static const int gearB[12] = { 104,82,73,36,67,11,32,40,37, 8,46,35 };
       static const int teeth[]   = { 2, 4, 8, 16, 32, 64, 128, 192 };
 
-      vibratoFreq  = 7.25;
-      vibratoDepth = 0.005;
-      vibratoStep  = lrint(vibratoFreq * RESO / double(sampleRate()));
-      vibratoAccu  = 0;
+      vibratoAccu = 0;
+      rot1AccuL   = 0;
+      rot1AccuR   = 0x80000000;
+      rot2AccuL   = 0;
+      rot2AccuR   = 0x80000000;
 
       for (int i = 0; i < NO_WHEELS; ++i) {
             int note     = i % 12;
@@ -199,14 +206,12 @@ bool Organ::init(const char* name)
             }
       keyCompressionValue = 1.0;
       keyCompressionCount = 0;
-      percussionBus       = 5;      // 5 or 7
-      percussionOn        = true;
-      percussionEnvelopeCount = 0;
+      percGain            = 0.0;
       return false;
       }
 
 //---------------------------------------------------------
-//   write
+//   process
 //---------------------------------------------------------
 
 void Organ::process(float** ports, int offset, int sampleCount)
@@ -229,8 +234,17 @@ void Organ::process(float** ports, int offset, int sampleCount)
       float* buffer2 = ports[1] + offset;
       memset(buffer1, 0, sizeof(float) * sampleCount);
       memset(buffer2, 0, sizeof(float) * sampleCount);
+      float buffer3[sampleCount];
+      float buffer4[sampleCount];
+      memset(buffer3, 0, sizeof(float) * sampleCount);
+      memset(buffer4, 0, sizeof(float) * sampleCount);
 
       float vibrato[sampleCount];
+      float rot1L[sampleCount];
+      float rot1R[sampleCount];
+      float rot2L[sampleCount];
+      float rot2R[sampleCount];
+
       if (vibratoOn) {
             //
             // compute partial vibrato sinus
@@ -240,22 +254,40 @@ void Organ::process(float** ports, int offset, int sampleCount)
                   vibrato[i]  = waveTable[vibratoAccu >> SHIFT] * vibratoDepth;
                   }
             }
+      if (rotaryOn) {
+            for (int i = 0; i < sampleCount; ++i) {
+                  rot1AccuL += rot1Step;
+                  rot1L[i]  = waveTable[rot1AccuL >> SHIFT] * rot1Depth;
+                  rot1AccuR += rot1Step;
+                  rot1R[i]  = waveTable[rot1AccuR >> SHIFT] * rot1Depth;
+                  rot2AccuL += rot2Step;
+                  rot2L[i]  = waveTable[rot2AccuL >> SHIFT] * rot2Depth;
+                  rot2AccuR += rot2Step;
+                  rot2R[i]  = waveTable[rot2AccuR >> SHIFT] * rot2Depth;
+                  }
+            }
 
-      foreach(Wheel* w, activeWheels) {
+      foreach (Wheel* w, activeWheels) {
             for (int i = 0; i < sampleCount; ++i) {
 
                   unsigned step = w->frameStep;
                   if (vibratoOn)
-                        step += lrint(step * vibrato[i]);
+                        step += unsigned(step * vibrato[i]);
+
                   w->accu  += step;
-                  float val = waveTable[w->accu >> SHIFT];
+                  unsigned off1 = unsigned(w->accu + (step * rot1L[i]));
+                  unsigned off2 = unsigned(w->accu + (step * rot1R[i]));
+                  float val1    = waveTable[off1 >> SHIFT];
+                  float val2    = waveTable[off2 >> SHIFT];
 
                   for (int k = 0; k < NO_BUSES; ++k) {
                         int* envCnt = &(w->envCount[k]);
+                        float v1, v2;
                         if (*envCnt > 0) {
                               (*envCnt)--;
                               float gain = w->gain[k] - w->deltaGain[k] * w->env[k][*envCnt];
-                              buffer1[i] += val * gain * drawBarGain[k];
+                              v1         = val1 * gain;
+                              v2         = val2 * gain;
                               if ((*envCnt == 0) && (w->refCount == 0)) {
                                     int idx = activeWheels.indexOf(w);
                                     if (idx != -1) {
@@ -265,26 +297,43 @@ void Organ::process(float** ports, int offset, int sampleCount)
                                     }
                               }
                         else {
-                              buffer1[i] += val * w->gain[k] * drawBarGain[k];
+                              v1 = val1 * w->gain[k];
+                              v2 = val2 * w->gain[k];
                               }
-                        if (percussionOn && k == percussionBus && percussionEnvelopeCount) {
-                              // TODO
+                        buffer1[i] += v1 * drawBarGain[k];
+                        buffer2[i] += v2 * drawBarGain[k];
+                        if (k == percussionBus) {
+                              buffer3[i] += v1;
+                              buffer4[i] += v2;
                               }
                         }
                   }
             }
-      for (int i = 0; i < sampleCount; ++i) {
-            buffer1[i] *= volume * keyCompressionValue;
-
-            if (keyCompressionCount) {
-                  keyCompressionValue += keyCompressionDelta;
-                  --keyCompressionCount;
+      if (percussionOn) {
+            for (int i = 0; i < sampleCount; ++i) {
+                  buffer1[i] = buffer1[i] * volume * keyCompressionValue
+                              + buffer3[i] * percGain;
+                  buffer2[i] = buffer2[i] * volume * keyCompressionValue
+                              + buffer4[i] * percGain;
+                  percGain *= percussionEnvDecay;
+                  if (keyCompressionCount) {
+                        keyCompressionValue += keyCompressionDelta;
+                        --keyCompressionCount;
+                        }
+                  }
+            }
+      else {
+            for (int i = 0; i < sampleCount; ++i) {
+                  buffer1[i] *= volume * keyCompressionValue;
+                  buffer2[i] *= volume * keyCompressionValue;
+                  if (keyCompressionCount) {
+                        keyCompressionValue += keyCompressionDelta;
+                        --keyCompressionCount;
+                        }
                   }
             }
       if (reverbOn)
             reverb->process(buffer1, buffer2, sampleCount);
-      else
-            memcpy(buffer2, buffer1, sizeof(float) * sampleCount);
       }
 
 //---------------------------------------------------------
@@ -362,7 +411,20 @@ bool Organ::playNote(int /*channel*/, int pitch, int velo)
                   }
             w->envCount[bus] = envSize;
             }
+      if (pressedKeys.isEmpty())
+            percGain = percGainInit;
       return false;
+      }
+
+//---------------------------------------------------------
+//   percussionChanged
+//---------------------------------------------------------
+
+void Organ::percussionChanged()
+      {
+      double decay       = percussionSlow ? 4.0    : 1.0;
+      percGainInit       = percussionSoft ? 0.5012 : 1.0;
+      percussionEnvDecay = exp(log(0.001/percGainInit) / (decay * double(sampleRate())));
       }
 
 //---------------------------------------------------------
@@ -407,12 +469,43 @@ void Organ::setController(int ctrlId, int data)
                   break;
 
             case PERC_ON:
+                  percussionOn = data != 0;
                   break;
 
             case PERC_SOFT:
+                  percussionSoft = data != 0;
+                  percussionChanged();
                   break;
 
             case PERC_SLOW:
+                  percussionSlow = data != 0;
+                  percussionChanged();
+                  break;
+
+            case PERC_FIRST:
+                  percussionBus = data ? 3 : 4;
+                  break;
+
+            case ROTARY_ON:
+                  rotaryOn = data != 0;
+                  break;
+
+            case ROT1_FREQ:
+                  rot1Freq = float(data) * 6.0 / 127.0 + 0.67;
+                  rot1Step = lrint(rot1Freq * RESO / double(sampleRate()));
+                  break;
+
+            case ROT1_DEPTH:
+                  rot1Depth = float(data) / 127.0 * .01;
+                  break;
+
+            case ROT2_FREQ:
+                  rot1Freq = float(data) * 5.0 / 127.0 + 0.5;
+                  rot1Step = lrint(rot1Freq * RESO / double(sampleRate()));
+                  break;
+
+            case ROT2_DEPTH:
+                  rot2Depth = float(data) / 127.0 * .01;
                   break;
 
             case CTRL_VOLUME:

@@ -143,7 +143,7 @@ void Reverb::process(float* l, float* r, int n)
 	for (int i = 0; i < n; ++i) {
 		float outL  = 0.0;
 		float outR  = 0.0;
-		float input = l[i] * gain;
+		float input = (l[i] + r[i]) * gain;
 
 		// Accumulate comb filters in parallel
 		for (int k = 0; k < numcombs; k++) {
@@ -157,7 +157,7 @@ void Reverb::process(float* l, float* r, int n)
 			outR = allpassR[k].process(outR);
 		      }
 		l[i] = outL * wet + l[i] * dry;
-		r[i] = outR * wet + l[i] * dry;
+		r[i] = outR * wet + r[i] * dry;
 	      }
       }
 

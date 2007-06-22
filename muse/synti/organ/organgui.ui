@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>555</width>
-    <height>334</height>
+    <height>341</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -323,7 +323,7 @@ background-color: gray;
         </sizepolicy>
        </property>
        <property name="title" >
-        <string>Drawbars</string>
+        <string>UPPER MANUAL</string>
        </property>
        <layout class="QHBoxLayout" >
         <item>
@@ -393,6 +393,13 @@ background-color: gray;
           <property name="value" >
            <double>8.000000000000000</double>
           </property>
+          <property name="sliderColor" >
+           <color>
+            <red>128</red>
+            <green>102</green>
+            <blue>86</blue>
+           </color>
+          </property>
          </widget>
         </item>
         <item>
@@ -448,6 +455,198 @@ background-color: gray;
             <green>240</green>
             <blue>240</blue>
            </color>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="rotaryOn" >
+       <property name="title" >
+        <string>RotarySpeaker (test)</string>
+       </property>
+       <property name="checkable" >
+        <bool>true</bool>
+       </property>
+       <layout class="QGridLayout" >
+        <item row="0" column="0" >
+         <widget class="Awl::Knob" name="rot1Freq" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="scaleWidth" >
+           <number>5</number>
+          </property>
+          <property name="scaleValueColor" >
+           <color>
+            <red>255</red>
+            <green>255</green>
+            <blue>0</blue>
+           </color>
+          </property>
+          <property name="maxValue" >
+           <double>127.000000000000000</double>
+          </property>
+          <property name="lineStep" >
+           <double>8.000000000000000</double>
+          </property>
+          <property name="pageStep" >
+           <double>20.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" >
+         <widget class="Awl::Knob" name="rot1Depth" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="scaleWidth" >
+           <number>5</number>
+          </property>
+          <property name="scaleValueColor" >
+           <color>
+            <red>255</red>
+            <green>255</green>
+            <blue>0</blue>
+           </color>
+          </property>
+          <property name="maxValue" >
+           <double>127.000000000000000</double>
+          </property>
+          <property name="lineStep" >
+           <double>8.000000000000000</double>
+          </property>
+          <property name="pageStep" >
+           <double>20.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" >
+         <widget class="QLabel" name="label_5" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text" >
+           <string>f1</string>
+          </property>
+          <property name="alignment" >
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" >
+         <widget class="QLabel" name="label_6" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text" >
+           <string>depth1</string>
+          </property>
+          <property name="alignment" >
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" >
+         <widget class="Awl::Knob" name="rot2Freq" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="scaleWidth" >
+           <number>5</number>
+          </property>
+          <property name="scaleValueColor" >
+           <color>
+            <red>255</red>
+            <green>255</green>
+            <blue>0</blue>
+           </color>
+          </property>
+          <property name="maxValue" >
+           <double>127.000000000000000</double>
+          </property>
+          <property name="lineStep" >
+           <double>8.000000000000000</double>
+          </property>
+          <property name="pageStep" >
+           <double>20.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" >
+         <widget class="Awl::Knob" name="rot2Depth" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="scaleWidth" >
+           <number>5</number>
+          </property>
+          <property name="scaleValueColor" >
+           <color>
+            <red>255</red>
+            <green>255</green>
+            <blue>0</blue>
+           </color>
+          </property>
+          <property name="maxValue" >
+           <double>127.000000000000000</double>
+          </property>
+          <property name="lineStep" >
+           <double>8.000000000000000</double>
+          </property>
+          <property name="pageStep" >
+           <double>20.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" >
+         <widget class="QLabel" name="label_7" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text" >
+           <string>f2</string>
+          </property>
+          <property name="alignment" >
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1" >
+         <widget class="QLabel" name="label_8" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text" >
+           <string>depth2</string>
+          </property>
+          <property name="alignment" >
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
