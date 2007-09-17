@@ -47,11 +47,13 @@ enum { HIT_NOTHING, HIT_TRACK, HIT_PART, HIT_SUBTRACK };
 PartCanvas::PartCanvas()
    : TimeCanvas(TIME_CANVAS)
       {
+       setFocusPolicy(Qt::StrongFocus);
       state = S_NORMAL;
       _drawBackground = true;
       lselected  = -1;
       starty     = -1;
       setMarkerList(song->marker());
+      rubberBand=NULL;
       connect(song, SIGNAL(markerChanged(int)), SLOT(markerChanged(int)));
       }
 
@@ -443,22 +445,22 @@ void PartCanvas::contextMenu(const QPoint& pos)
                   a->setData("autofill");
                   }
             pop->addSeparator();
-      	if (track->type() == Track::MIDI) {
+            if (track->type() == Track::MIDI) {
                   MidiTrack* track = (MidiTrack*)part->track();
                   if (track->useDrumMap()) {
-                  	a = pop->addAction(*edit_drummsIcon, tr("drums"));
+                        a = pop->addAction(*edit_drummsIcon, tr("drums"));
                         a->setData("editdrums");
                         }
                   else {
                         a = pop->addAction(QIcon(":/xpm/piano.xpm"), tr("pianoroll"));
                         a->setData("editpiano");
                         }
-		      a = pop->addAction(*edit_listIcon, tr("miditracker"));
-		      a->setData("miditracker");
+                  a = pop->addAction(*edit_listIcon, tr("miditracker"));
+                  a->setData("miditracker");
                   pop->addAction(getAction("listedit", this));
                   }
             else {
-			a = pop->addAction(*waveIcon, tr("wave edit"));
+                  a = pop->addAction(*waveIcon, tr("wave edit"));
                   a->setData("waveedit");
                   }
 
@@ -550,6 +552,13 @@ void PartCanvas::mousePress(QMouseEvent* me)
                   state = S_SUBTRACK;
             return;
             }
+      else if ( hit == HIT_NOTHING ) { // nothing here we put up a rubberband
+            rubberBandStartPos = me->pos();
+            if (!rubberBand)
+                rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+            rubberBand->setGeometry(QRect(rubberBandStartPos, QSize()));
+            rubberBand->show();
+            }
 
       if (button & Qt::RightButton) {
             contextMenu(me->pos());
@@ -561,33 +570,33 @@ void PartCanvas::mousePress(QMouseEvent* me)
       int xpos = 0, y = 0, len = 0, h = 0;
 
       if (hit == HIT_PART) {
-  		h    = track->arrangerTrack.tw->height();
-      	len  = rmapx(part->lenTick());
-      	y    = track->arrangerTrack.tw->y() - splitWidth/2;
-		xpos = mapx(part->tick());
+            h    = track->arrangerTrack.tw->height();
+            len  = rmapx(part->lenTick());
+            y    = track->arrangerTrack.tw->y() - splitWidth/2;
+            xpos = mapx(part->tick());
 
-		r1 = QRect(xpos, y, handleWidth, h);
-	      r2 = QRect(xpos + len - handleWidth, y, handleWidth, h);
-		pos2 = QPoint(pos.x(), pos.y() + wpos.y());
+            r1 = QRect(xpos, y, handleWidth, h);
+            r2 = QRect(xpos + len - handleWidth, y, handleWidth, h);
+            pos2 = QPoint(pos.x(), pos.y() + wpos.y());
             }
 
       switch (_tool) {
             case PencilTool:
-			if (r1.contains(pos2))
-                  	state = S_START_DRAG1;
-             	else if (r2.contains(pos2))
-                  	state = S_START_DRAG2;
-            	else
-                  	state = S_START_DRAG5;
-                  ppos   = pos2pix(pix2pos(startDrag.x()).downSnaped(raster()));
-                  psize  = pos2pix(pix2pos(ppos+1).upSnaped(raster())) - ppos;
-                  startDragTime = QTime::currentTime();
-                  setCursor();
-                  break;
+                if (r1.contains(pos2))
+                    state = S_START_DRAG1;
+                else if (r2.contains(pos2))
+                    state = S_START_DRAG2;
+                else
+                    state = S_START_DRAG5;
+                ppos   = pos2pix(pix2pos(startDrag.x()).downSnaped(raster()));
+                psize  = pos2pix(pix2pos(ppos+1).upSnaped(raster())) - ppos;
+                startDragTime = QTime::currentTime();
+                setCursor();
+                break;
             case RubberTool:
-            	if (part)
-                  	song->cmdRemovePart(part);
-                  break;
+                if (part)
+                    song->cmdRemovePart(part);
+                break;
             case GlueTool:
                   if (part)
                         song->cmdGluePart(part);
@@ -635,6 +644,10 @@ void PartCanvas::mousePress(QMouseEvent* me)
 
 void PartCanvas::mouseMove(QPoint pos)
       {
+      
+     if(rubberBand)
+        rubberBand->setGeometry(QRect(rubberBandStartPos, pos).normalized());
+
       if (state == S_SUBTRACK) {
             TLSWidget* w = (TLSWidget*)(at->tw);
             int y = wpos.y() + pos.y() - w->y() - rulerHeight;
@@ -760,6 +773,10 @@ void PartCanvas::mouseMove(QPoint pos)
 
 void PartCanvas::mouseRelease(QMouseEvent* me)
       {
+      
+      if (rubberBand)
+        rubberBand->hide(); // TODO robert, nothing more happens for the moment/
+      
       if (state == S_SUBTRACK) {
             ((TLSWidget*)(at->tw))->mouseRelease();
             state = S_NORMAL;
@@ -829,6 +846,17 @@ void PartCanvas::mouseDoubleClick(QMouseEvent* me)
       else if (track && track->isMidiTrack())
            emit createLRPart(track);
       }
+
+
+//---------------------------------------------------------
+//   keyboardNavigate
+//---------------------------------------------------------
+
+void PartCanvas::keyboardNavigate(QKeyEvent *e)
+      {
+      printf("nothing here go away\n");
+      }
+
 
 //---------------------------------------------------------
 //   setCursor

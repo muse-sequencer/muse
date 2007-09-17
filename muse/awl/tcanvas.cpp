@@ -83,7 +83,7 @@ TimeCanvas::TimeCanvas(TimeCanvasType t)
       setLayout(grid);
 
       _widget = new QWidget;
-	_widget->setAttribute(Qt::WA_NoSystemBackground);
+      _widget->setAttribute(Qt::WA_NoSystemBackground);
       _widget->setAttribute(Qt::WA_StaticContents);
       _widget->installEventFilter(this);
       _widget->setMouseTracking(true);
@@ -411,13 +411,21 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
                         }
                   }
             	return true;
-
             default:
 // printf("event %d missed\n", event->type());
                   break;
             }
       return false;
       }
+
+
+
+void TimeCanvas::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Up   || e->key() == Qt::Key_Down || 
+        e->key() == Qt::Key_Left || e->key() == Qt::Key_Right)
+        keyboardNavigate(e);
+}
 
 //---------------------------------------------------------
 //   moveX

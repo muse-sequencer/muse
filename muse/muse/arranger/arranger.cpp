@@ -258,7 +258,7 @@ QMenu* newAddTrackMenu(QWidget* parent)
 Arranger::Arranger(QMainWindow* parent)
    : QWidget(parent)
       {
-      setFocusPolicy(Qt::StrongFocus);
+//       setFocusPolicy(Qt::StrongFocus);
       setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
       for (int i = 0; i < Track::TRACK_TYPES; ++i)
@@ -622,8 +622,8 @@ void Arranger::startDrag(int trackIdx)
 
 TrackListWidget::TrackListWidget(QWidget* parent)
    : QWidget(parent)
-	{
-	setAttribute(Qt::WA_NoSystemBackground);
+      {
+      setAttribute(Qt::WA_NoSystemBackground);
       setAttribute(Qt::WA_StaticContents);
       }
 
@@ -632,9 +632,9 @@ TrackListWidget::TrackListWidget(QWidget* parent)
 //---------------------------------------------------------
 
 void TrackListWidget::paintEvent(QPaintEvent* ev)
-	{
-	QPainter p(this);
-	p.eraseRect(ev->rect());
+      {
+      QPainter p(this);
+      p.eraseRect(ev->rect());
       }
 
 //---------------------------------------------------------
@@ -665,11 +665,11 @@ void TrackListWidget::wheelEvent(QWheelEvent* e)
 
 void Arranger::mouseWheel(QWheelEvent* e)
       {
-	if (e->orientation() != Qt::Vertical)
-      	return;
+      if (e->orientation() != Qt::Vertical)
+            return;
       QScrollBar* sb = canvas->verticalScrollBar();
-	int step = qMin(QApplication::wheelScrollLines() * sb->singleStep(), sb->pageStep());
-	if ((e->modifiers() & Qt::ControlModifier) || (e->modifiers() & Qt::ShiftModifier))
+      int step = qMin(QApplication::wheelScrollLines() * sb->singleStep(), sb->pageStep());
+      if ((e->modifiers() & Qt::ControlModifier) || (e->modifiers() & Qt::ShiftModifier))
             step = sb->pageStep();
       int offset = e->delta() * step / 120;
       if (sb->invertedControls())
@@ -1226,6 +1226,7 @@ void Arranger::moveTrack(Track* src, Track* dst)
 
 void Arranger::keyPressEvent(QKeyEvent* e)
       {
+      printf("Arranger::keyPressEvent\n");
 #if 0 //TODOB
       int key = e->key();
       bool keypress_handled = false;
@@ -1315,7 +1316,7 @@ void Arranger::keyPressEvent(QKeyEvent* e)
             e->ignore();
             }
 #endif
-      e->ignore();
+//       e->ignore();
       }
 
 
@@ -1327,25 +1328,26 @@ void Arranger::keyPressEvent(QKeyEvent* e)
  */
 void Arranger::kbdMovementUpdate(Track* t, Part* p)
       {
-      if (t && p ) {
-            // If other track selected:
-            if (t != shortcutsKbdMovement.track()) {
-                  TrackList* stl = song->tracks();
-                  for (iTrack i = stl->begin(); i != stl->end(); ++i) {
-                        if (*i == t) {
-                              // Set focus and select current track
-                              t->arrangerTrack.tw->setFocus();
-                              song->selectTrack(t);
-                              }
-                        }
-                  }
-            shortcutsKbdMovement.setTrack(t);
-            shortcutsKbdMovement.setPart(p);
-            shortcutsKbdMovement.setPos(p->tick(), p->tick() + p->lenTick());
-            }
-      else { // Deselected
-            shortcutsKbdMovement.reset();
-            }
+      printf("kbdMovementUpdate\n");
+//       if (t && p ) {
+//             // If other track selected:
+//             if (t != shortcutsKbdMovement.track()) {
+//                   TrackList* stl = song->tracks();
+//                   for (iTrack i = stl->begin(); i != stl->end(); ++i) {
+//                         if (*i == t) {
+//                               // Set focus and select current track
+//                               t->arrangerTrack.tw->setFocus();
+//                               song->selectTrack(t);
+//                               }
+//                         }
+//                   }
+//             shortcutsKbdMovement.setTrack(t);
+//             shortcutsKbdMovement.setPart(p);
+//             shortcutsKbdMovement.setPos(p->tick(), p->tick() + p->lenTick());
+//             }
+//       else { // Deselected
+//             shortcutsKbdMovement.reset();
+//             }
       }
 
 //---------------------------------------------------------

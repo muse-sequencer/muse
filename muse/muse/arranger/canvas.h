@@ -83,6 +83,9 @@ class PartCanvas : public TimeCanvas {
       virtual void drop(QDropEvent*);
       virtual void dragMove(QDragMoveEvent*);
       virtual void dragLeave(QDragLeaveEvent*);
+      
+      virtual void keyboardNavigate(QKeyEvent *e);
+
 
       int searchPart(const QPoint& p);
 
@@ -98,6 +101,9 @@ class PartCanvas : public TimeCanvas {
             p.fillRect(x-HANDLE2, y-HANDLE2, HANDLE1, HANDLE1, x == lselected ? Qt::red : Qt::yellow);
             }
       void contextMenu(const QPoint&);
+      
+      QRubberBand *rubberBand;
+      QPoint rubberBandStartPos;
 
    private slots:
       void markerChanged(int);

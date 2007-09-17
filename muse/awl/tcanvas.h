@@ -140,28 +140,33 @@ class TimeCanvas : public QFrame {
 
       bool eventFilter(QObject*, QEvent*);
 
-      virtual void paint(QPainter&, QRect) {}
-      virtual void mousePress(QMouseEvent*) {}
-      virtual void mouseMove(QPoint)  {}
-      virtual void mouseRelease(QMouseEvent*) {}
-      virtual void mouseDoubleClick(QMouseEvent*) {}
+      virtual void paint(QPainter&, QRect) { printf("paint method not overloaded\n"); }
+      virtual void mousePress(QMouseEvent*) {  printf("mousePress method not overloaded\n"); }
+      virtual void mouseMove(QPoint)  {  printf("mouseMove method not overloaded\n"); }
+      virtual void mouseRelease(QMouseEvent*) { printf("mouseRelease method not overloaded\n"); }
+      virtual void mouseDoubleClick(QMouseEvent*) { printf("mouseDoubleClick method not overloaded\n"); }
       virtual void paintDrumList(QPainter&, QRect) {}
-      virtual void layout() {}
-      virtual void enterB() {}
-      virtual void leaveB() {}
+      virtual void layout() { printf("layout method not overloaded\n"); }
+      virtual void enterB() { printf("enterB method not overloaded\n"); }
+      virtual void leaveB() { printf("leaveB method not overloaded\n"); }
+      
       virtual void setCursor();
-      virtual void timeTypeChanged() {}
-      virtual void magChanged() {}
+      
+      virtual void timeTypeChanged() { printf("timeTypeChanged method not overloaded\n");}
+      virtual void magChanged() { printf("magChanged method not overloaded\n");}
 
-      virtual void paintControllerCanvas(QPainter&, QRect) {}
-      virtual void paintControllerPanel(QPainter&, QRect) {}
+      virtual void paintControllerCanvas(QPainter&, QRect) { printf("paintControllerCanvas method not overloaded\n"); }
+      virtual void paintControllerPanel(QPainter&, QRect) { printf("paintControllerPanel method not overloaded\n"); }
 
-      virtual void dragEnter(QDragEnterEvent*) {}
-      virtual void drop(QDropEvent*) {}
-      virtual void dragMove(QDragMoveEvent*) {}
-      virtual void dragLeave(QDragLeaveEvent*) {}
+      virtual void dragEnter(QDragEnterEvent*) { printf("dragEnter method not overloaded\n"); }
+      virtual void drop(QDropEvent*) { printf("drop method not overloaded\n"); }
+      virtual void dragMove(QDragMoveEvent*) { printf("dragMove method not overloaded\n"); }
+      virtual void dragLeave(QDragLeaveEvent*) { printf("dragLeave method not overloaded\n"); }
 
-      virtual void addController() {}
+      virtual void addController() { printf("addController method not overloaded\n"); }
+      
+      virtual void keyPressEvent(QKeyEvent *e);
+      virtual void keyboardNavigate(QKeyEvent *) { printf("keyboardNavigate method not overloaded\n"); }
 
       // map logical coordinates to physical coordinates (pixel)
       int mapx(int x)  const;

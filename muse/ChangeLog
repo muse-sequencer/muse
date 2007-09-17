@@ -1,3 +1,8 @@
+17.9. (rj)
+      - changed to start/stop toggle without rewinding since this seems
+      like the popular choice (actually I have to agree)
+      - some keyboard navigation beginnings...nothing working yet
+      - added some debug messages
 17.6. (ws)
       - organ synthesizer plugin update
 9.6. (ws)

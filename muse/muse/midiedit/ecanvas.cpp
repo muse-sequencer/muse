@@ -303,8 +303,8 @@ void EventCanvas::keyPress(QKeyEvent* event)
             modifySelected(NoteInfo::VAL_TIME, 0 - editor->raster());
             }
       else
-#endif
             event->ignore();
+#endif
       }
 
 //---------------------------------------------------------

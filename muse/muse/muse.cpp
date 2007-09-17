@@ -177,10 +177,10 @@ bool MusE::seqStart()
             }
       audioState = AUDIO_START1;
       if (!audio->start()) {
-          	QMessageBox::critical( muse, tr("Failed to start audio!"),
+            QMessageBox::critical( muse, tr("Failed to start audio!"),
                tr("Was not able to start audio, check if jack is running.\n"));
-          return false;
-          }
+            return false;
+            }
       //
       // wait for jack callback
       //
@@ -190,14 +190,14 @@ bool MusE::seqStart()
             sleep(1);
             }
       if (audioState != AUDIO_START2) {
-          	QMessageBox::critical( muse, tr("Failed to start audio!"),
+            QMessageBox::critical( muse, tr("Failed to start audio!"),
                tr("Was not able to start audio, check if jack is running.\n"));
             }
       //
       // now its safe to ask the driver for realtime
       // priority
 
-	realTimePriority = audioDriver->realtimePriority();
+      realTimePriority = audioDriver->realtimePriority();
 
       //
       //  create midi thread with a higher priority than JACK
@@ -1002,7 +1002,7 @@ MusE::MusE()
 
       transport = new Transport;
       transport->hide();
-	connect(transport, SIGNAL(closed()), SLOT(transportClosed()));
+      connect(transport, SIGNAL(closed()), SLOT(transportClosed()));
 
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
@@ -1718,12 +1718,14 @@ void MusE::playToggle()
       {
       if (audio->isPlaying())
             song->setStop(true);
-      else if (song->cpos() != song->lpos())
-            song->setPos(0, song->lPos());
-      else {
-            Pos p(0, AL::TICKS);
-            song->setPos(0, p);
-            }
+      else
+            song->setPlay(true);
+//       else if (song->cpos() != song->lpos())
+//             song->setPos(0, song->lPos());
+//       else {
+//             Pos p(0, AL::TICKS);
+//             song->setPos(0, p);
+//             }
       }
 
 //---------------------------------------------------------

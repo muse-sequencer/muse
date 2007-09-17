@@ -79,7 +79,7 @@ Shortcut MuseApplication::sc[] = {
             ),
       Shortcut(
             "play_toggle",
-            QT_TR_NOOP("Transport: Play, Stop, Rewind"),
+            QT_TR_NOOP("Transport: Play, Stop"),
             GLOBAL_SHRT,
             Qt::Key_Space,
             Qt::ApplicationShortcut

@@ -179,6 +179,10 @@ void PianoCanvas::paint(QPainter& p, QRect cr)
             p.setPen(Qt::blue);
             p.setBrush(Qt::NoBrush);
             p.drawRect(lasso);
+            QColor fillColor(Qt::blue);
+            fillColor.setAlpha(40);
+            QBrush fillBrush(fillColor);
+            p.fillRect(lasso,fillBrush);
             }
       }
 

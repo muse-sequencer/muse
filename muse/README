@@ -37,7 +37,7 @@ details.
 
       - libsamplerate
 
-      - JACK
+      - JACK >= 0.103
 	  http://jackit.sourceforge.net/download/
 
       Optional:
@@ -46,6 +46,10 @@ details.
         http://savannah.nongnu.org/download/fluid
 
       - DSSI
+      
+      - ConTeXt (for building documentation, by default the build
+               script tries to build documentation, can be 
+               disabled by setting ENABLE_DOCUMENTATION to OFF)
 
   =============================
       Compiling:
