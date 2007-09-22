@@ -27,7 +27,7 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/synti
    )
 
-set (SubDirs libsynti s1 organ deicsonze simpledrums vam mus)
+set (SubDirs libsynti s1 organ deicsonze simpledrums vam mus two)
 
 if (ENABLE_ZYNADDSUBFX)
       set (SubDirs ${SubDirs} zynaddsubfx)

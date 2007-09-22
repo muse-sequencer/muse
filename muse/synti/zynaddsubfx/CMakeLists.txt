@@ -18,14 +18,12 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-SET(FLTK_FLUID_EXECUTABLE "/usr/bin/fluid")
-
 include_directories(
       BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/UI
       BEFORE ${CMAKE_CURRENT_BINARY_DIR}
       )
 
-FLTK_WRAP_UI ( fltk_ui
+FLTK_WRAP_UI ( FLTKUI
       UI/ADnoteUI.fl
       UI/BankUI.fl
       UI/ConfigUI.fl
@@ -46,14 +44,8 @@ FLTK_WRAP_UI ( fltk_ui
       UI/WidgetPDial.fl
       )
 
-# ${fltk_ui_FLTK_UI_SRCS}
-#      Output/JACKaudiooutput.C
-#      Input/MidiIn.C
-#      Input/ALSAMidiIn.C
-#      Input/NULLMidiIn.C
-
 add_library ( zynaddsubfx SHARED
-      ${fltk_ui_FLTK_UI_SRCS}
+      ${FLTKUI_FLTK_UI_SRCS}
       DSP/AnalogFilter.C
       DSP/FFTwrapper.C
       DSP/Filter.C

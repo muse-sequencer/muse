@@ -347,7 +347,7 @@ void WaveTrack::collectInputData()
             else {
 	            float** bpp = readBuffer[idx];
       	      for (int i = 0; i < channels(); ++i)
-            	      AL::dsp->cpy(buffer[i], bpp[i], sizeof(float));
+            	      AL::dsp->cpy(buffer[i], bpp[i], segmentSize);
                   }
             }
       }

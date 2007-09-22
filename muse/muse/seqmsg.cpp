@@ -78,6 +78,8 @@ bool Audio::sendMessage(AudioMsg* m, bool doUndo)
 //   msgRoute
 //---------------------------------------------------------
 
+extern bool mops;
+
 void Audio::msgRoute(bool add, Route r)
       {
       if (add)
@@ -147,6 +149,7 @@ void Audio::msgAddRoute(Route r)
             }
       else if (r.dst.type == RouteNode::AUDIOPORT) {
             AudioOutput* ao = (AudioOutput*)r.src.track;
+printf("msgAddRoute to AUDIPORT %p\n", ao);
             audioDriver->connect(ao->jackPort(r.src.channel), r.dst.port);
             }
       else if (r.dst.type == RouteNode::MIDIPORT) {

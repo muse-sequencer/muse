@@ -133,7 +133,7 @@ Organ::Organ(int sr)
       addController("percOn",         PERC_ON,          0, 1,   1);
       addController("percGain",       PERC_GAIN,        0, 127, 60);
       addController("percDecay",      PERC_DECAY,       0, 127, 60);
-      addController("percHarmony",    PERC_HARMONY,     0, 8,   4);
+      addController("percHarmony",    PERC_HARMONY,     0, 8,   3);
       addController("rotaryOn",       ROTARY_ON,        0, 1,   0);
       addController("rot1Freq",       ROT1_FREQ,        0, 127, 100);
       addController("rot1Depth",      ROT1_DEPTH,       0, 127, 50);

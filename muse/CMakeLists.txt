@@ -126,18 +126,16 @@ endif (APPLE)
 ## fltk + fluid
 
 if (ENABLE_ZYNADDSUBFX)
-      find_path( FLTK_FLUID_EXECUTABLE fluid )
-      find_path( FLTK_CONFIG_PATH fltk-config )
-#      set (FLTK_LIBRARIES $FLTK_CONFIG_PATH)
-#      FLTK_INCLUDE_DIR
-#      FLTK_FOUND
-#
-#      if (NOT FLTK_FOUND)
-#            message(FATAL_ERROR "fltk toolkit not found, zynaddsubfx not build")
-#            set(ENABLE_ZYNADDSUBFX OFF)
-#      else (NOT FLTK_FOUND)
-#	      message("fltk toolkit found")
-#      endif (NOT FLTK_FOUND)
+      set (FLTK_INCLUDE_DIR /usr/include)
+#      SET(FLTK_FLUID_EXECUTABLE "/usr/bin/fluid")
+      include (FindFLTK)
+      if (NOT FLTK_FOUND)
+            message("fltk toolkit not found, zynaddsubfx not build")
+            set(ENABLE_ZYNADDSUBFX OFF)
+      else (NOT FLTK_FOUND)
+            message("fltk toolkit found")
+      endif (NOT FLTK_FOUND)
+
       PKGCONFIG (mxml 2.0 MXML_INCDIR MXML_LIBDIR MXML_LIB MXML_CPP )
       if (NOT MXML_INCDIR)
              message("mxml >= 2.0 not found, zynaddsubfx not build")

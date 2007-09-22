@@ -51,6 +51,25 @@ static void jack_thread_init (void* /*data*/)
       if (loadVST)
             fst_adopt_thread();
 #endif
+      int policy;
+      if ( (policy = sched_getscheduler (0)) < 0) {
+            printf("cannot get current client scheduler for JACK thread: %s!\n", strerror(errno));
+            }
+      else {
+            if (policy != SCHED_FIFO)
+                  printf("JACK thread %d _NOT_ running SCHED_FIFO\n", getpid());
+            else if (debugMsg) {
+            	struct sched_param rt_param;
+            	memset(&rt_param, 0, sizeof(sched_param));
+            	int type;
+            	int rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
+            	if (rv == -1)
+                  	perror("get scheduler parameter");
+                  printf("JACK thread running SCHED_FIFO priority %d\n",
+                     rt_param.sched_priority);
+                  }
+            }
+
       }
 
 //---------------------------------------------------------
@@ -197,9 +216,10 @@ static void noJackError(const char* /* s */)
 //   JackAudio
 //---------------------------------------------------------
 
-JackAudio::JackAudio(jack_client_t* cl, char * name)
+JackAudio::JackAudio(jack_client_t* cl, char* name)
    : AudioDriver()
       {
+printf("JackAudio::JackAudio(%p,%s)\n", cl, name);
       strcpy(jackRegisteredName, name);
       _client = cl;
       }
@@ -213,11 +233,13 @@ JackAudio::~JackAudio()
       if (_client) {
             if (jack_client_close(_client)) {
                   fprintf(stderr, "jack_client_close() failed: %s\n",
-                    strerror(errno));
+                     strerror(errno));
                   }
             }
-            _client = 0;
+printf("JackAudio::~JackAudio\n");
+      _client = 0;
       }
+
 //---------------------------------------------------------
 //   getJackName()
 //---------------------------------------------------------
@@ -233,6 +255,7 @@ char* JackAudio::getJackName()
 
 bool JackAudio::restart()
       {
+printf("JackAudio::restart\n");
       _client = jack_client_new(jackRegisteredName);
       if (!_client)
             return true;
@@ -529,7 +552,8 @@ bool JackAudio::connect(Port src, Port dst)
       const char* sn = jack_port_name(src.jackPort());
       const char* dn = jack_port_name(dst.jackPort());
 
-// printf("jack connect <%s>%p - <%s>%p\n", sn, src, dn, dst);
+      if (debugMsg)
+            printf("jack connect <%s>%p - <%s>%p\n", sn, src.jackPort(), dn, dst.jackPort());
 
       if (sn == 0 || dn == 0) {
             fprintf(stderr, "JackAudio::connect(2): unknown jack ports\n");
@@ -563,7 +587,8 @@ bool JackAudio::disconnect(Port src, Port dst)
       const char* sn = jack_port_name(src.jackPort());
       const char* dn = jack_port_name(dst.jackPort());
 
-// printf("jack disconnect <%s>%p - <%s>%p\n", sn, src, dn, dst);
+      if (debugMsg)
+            printf("jack disconnect <%s>%p - <%s>%p\n", sn, src.jackPort(), dn, dst.jackPort());
 
       if (sn == 0 || dn == 0) {
             fprintf(stderr, "JackAudio::disconnect: unknown jack ports\n");
@@ -718,6 +743,10 @@ void JackAudio::seekTransport(unsigned frame)
 
 Port JackAudio::findPort(const QString& name)
       {
+      if (_client == 0) {
+            printf("JackAudio(%p)::findPort(%s): _client==0\n", this, qPrintable(name));
+            return Port();
+            }
       jack_port_t* port = jack_port_by_name(_client, name.toLatin1().data());
 // printf("Jack::findPort <%s>, %p\n", name.toLatin1().data(), port);
       return (port == 0) ? Port() : Port(port);
@@ -777,6 +806,7 @@ bool initJackAudio()
                   printf("jack cannot access shared memory\n");
             if (status & JackVersionError)
                   printf("jack server has wrong version\n");
+            printf("cannot create jack client\n");
             return true;
             }
 
@@ -787,7 +817,9 @@ bool initJackAudio()
       if (debugMsg)
             fprintf(stderr, "init Jack Audio: register device\n");
 
+printf("create jack, %p\n", client);
       jackAudio = new JackAudio(client, jack_get_client_name(client));
+printf("create jack, client=%p jack=%p\n", client, jackAudio);
       if (debugMsg)
             fprintf(stderr, "init Jack Audio: register client\n");
       jackAudio->registerClient();

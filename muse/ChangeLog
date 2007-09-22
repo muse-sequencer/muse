@@ -1,3 +1,5 @@
+22.9. (ws)
+      - fixed wavetrack playback
 17.9. (rj)
       - changed to start/stop toggle without rewinding since this seems
       like the popular choice (actually I have to agree)
