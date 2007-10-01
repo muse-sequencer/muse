@@ -127,7 +127,8 @@ endif (APPLE)
 
 if (ENABLE_ZYNADDSUBFX)
       set (FLTK_INCLUDE_DIR /usr/include)
-#      SET(FLTK_FLUID_EXECUTABLE "/usr/bin/fluid")
+      SET(FLTK_FLUID_EXECUTABLE "/usr/bin/fluid")
+
       include (FindFLTK)
       if (NOT FLTK_FOUND)
             message("fltk toolkit not found, zynaddsubfx not build")
