@@ -173,11 +173,18 @@ endif (NOT SAMPLERATE_INCDIR)
 ## find jack >= 0.103.0
 ##
 
-PKGCONFIG (jack 0.103.0 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
+PKGCONFIG (jack 0.107.0 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
 if (NOT JACK_INCDIR)
-      message(FATAL_ERROR "Fatal error: JACK >= 0.103.0 required")
+      PKGCONFIG (jack 0.103.0 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
+      if (NOT JACK_INCDIR)
+            message(FATAL_ERROR "Fatal error: JACK >= 0.103 required")
+      else (NOT JACK_INCDIR)
+	      message("Jack 0.103 detected")
+            set(JACK103 ON)
+      endif (NOT JACK_INCDIR)
 else (NOT JACK_INCDIR)
-	message("Jack detected")
+	message("Jack 0.107 detected")
+      set(JACK107 ON)
 endif (NOT JACK_INCDIR)
 
 ##

@@ -50,19 +50,35 @@ static int processAudio(jack_nframes_t nFrames, void*)
       int nch = mess->channels();
       for (int i = 0; i < nch; ++i) {
             outBuffer[i] = (float*)jack_port_get_buffer(outPorts[i], nFrames);
+#ifdef JACK107
             jack_midi_clear_buffer(outBuffer[i]);
+#endif
+#ifdef JACK103
+            jack_midi_clear_buffer(outBuffer[i], nFrames);
+#endif
             // memset(outBuffer[i], 0, sizeof(float) * nFrames);
             }
       while(mess->eventsPending())
             mess->processEvent(mess->receiveEvent());
 
       void* midi = jack_port_get_buffer(inPort, nFrames);
+#ifdef JACK107
       int n = jack_midi_get_event_count(midi);
+#endif
+#ifdef JACK103
+      int n = jack_midi_get_event_count(midi, nFrames);
+#endif
       unsigned offset = 0;
 
       for (int i = 0; i < n; ++i) {
             jack_midi_event_t event;
+
+#ifdef JACK107
             jack_midi_event_get(&event, midi, i);
+#endif
+#ifdef JACK103
+            jack_midi_event_get(&event, midi, i, nFrames);
+#endif
             mess->process(outBuffer, offset, event.time - offset);
             offset = event.time;
             MidiEvent e;

@@ -63,3 +63,17 @@ package:
 	mv build/muse-*.sh .
 
 
+# build muse/doc/man/de/man-de.pdf
+#   and muse/doc/man/en/man-en.pdf
+manual:
+	cd build; make manual
+
+# build muse/doc/dimple/dimpl.pdf
+program_doc:
+	cd build; make program_doc
+
+# build doxygen program documentation
+doxy:
+	cd build; make doxy
+
+

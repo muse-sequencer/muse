@@ -21,6 +21,8 @@
 #cmakedefine DSSI_SUPPORT
 #cmakedefine VST_SUPPORT
 #cmakedefine USE_SSE
+#cmakedefine JACK103
+#cmakedefine JACK107
 
 #define INSTALL_NAME     "${MusE_INSTALL_NAME}"
 #define INSTPREFIX       "${CMAKE_INSTALL_PREFIX}"

@@ -18,24 +18,23 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-add_custom_command ( 
+add_custom_command (
       OUTPUT man-en.pdf
-      DEPENDS 
+      DEPENDS
             ${CMAKE_CURRENT_SOURCE_DIR}/man-en.tex
             ${CMAKE_CURRENT_SOURCE_DIR}/projects.tex
-      COMMAND ${TEXEXEC_PATH}/texexec 
-      ARGS  --language=en --verbose --batch --pdf 
-         --path=${CMAKE_CURRENT_SOURCE_DIR} 
-         --result=man-en.pdf 
-         man-en.tex
+      COMMAND ${TEXEXEC_PATH}/texexec
+      ARGS  --language=en --verbose --batch --pdf
+         --result=man-en.pdf
+         ${CMAKE_CURRENT_SOURCE_DIR}/man-en.tex
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       )
 
-add_custom_target ( man-en ALL 
-      DEPENDS man-en.pdf 
+add_custom_target ( manual
+      DEPENDS man-en.pdf
       )
 
-install_files ( /share/${MusE_INSTALL_NAME}/doc/ .pdf 
+install_files ( /share/${MusE_INSTALL_NAME}/doc/ .pdf
    ${CMAKE_CURRENT_BINARY_DIR}/man-en.pdf )
 
 set (extraClean man-en.log man-en.tmp man-en.tuo man-en.tui

@@ -1,3 +1,9 @@
+9.10. (ws)
+      - extend cmake scripts to automatically distinguish between jackd 0.103.0
+        as distributed with (k)ubuntu and current jackd 0.107.0
+      - fixes for texexec
+      - do not automatically build documentation; new make targets "program_doc" and
+        "manual"
 22.9. (ws)
       - fixed wavetrack playback
 17.9. (rj)

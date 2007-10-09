@@ -18,6 +18,7 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
+#include "config.h"
 #include "al/al.h"
 #include "al/tempo.h"
 #include "audio.h"
@@ -855,7 +856,12 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             case ME_CONTROLLER:
             case ME_PITCHBEND:
                   {
+#ifdef JACK107
                   unsigned char* p = jack_midi_event_reserve(pb, ft, 3);
+#endif
+#ifdef JACK103
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, 3, segmentSize);
+#endif
                   if (p == 0) {
                         fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
                         return;
@@ -869,7 +875,12 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             case ME_PROGRAM:
             case ME_AFTERTOUCH:
                   {
+#ifdef JACK107
                   unsigned char* p = jack_midi_event_reserve(pb, ft, 2);
+#endif
+#ifdef JACK103
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, 2, segmentSize);
+#endif
                   if (p == 0) {
                         fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
                         return;
@@ -882,7 +893,12 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
                   {
                   const unsigned char* data = e.data();
                   int len = e.len();
+#ifdef JACK107
                   unsigned char* p = jack_midi_event_reserve(pb, ft, len+2);
+#endif
+#ifdef JACK103
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, len+2, segmentSize);
+#endif
                   if (p == 0) {
                         fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
                         return;
@@ -909,6 +925,11 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
 void JackAudio::startMidiCycle(Port port)
       {
       void* port_buf = jack_port_get_buffer(port.jackPort(), segmentSize);
+#ifdef JACK107
       jack_midi_clear_buffer(port_buf);
+#endif
+#ifdef JACK103
+      jack_midi_clear_buffer(port_buf, segmentSize);
+#endif
       }
 
