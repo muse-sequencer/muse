@@ -1,3 +1,10 @@
+20.10. (ng)
+      - I replaced double by float in Pos::msf method at file pos.cc
+	and that prevents the segfault that occurs when launching muse.
+	Although float precision should be fine that hack obviously hasn't
+	fixed the bug, just hide it!
+      - Initialize _timeType with AL::Tick in tcanvas.cc because it was used
+	uninitialized.
 9.10. (ws)
       - extend cmake scripts to automatically distinguish between jackd 0.103.0
         as distributed with (k)ubuntu and current jackd 0.107.0
