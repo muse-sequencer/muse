@@ -40,26 +40,29 @@ int string2sysex(const QString& s, unsigned char** data)
       char buffer[2048];
       char* dst = buffer;
 
-      while (*src) {
-            while (*src == ' ' || *src == '\n')
-                  ++src;
-            char* ep;
-            long val = strtol(src, &ep, 16);
-            if (ep == src) {
-                  QMessageBox::information(0,
-                     QString("MusE"),
-                     QWidget::tr("Cannot convert sysex string"));
-                  return 0;
-                  }
-            src    = ep;
-            *dst++ = val;
-            if (dst - buffer >= 2048) {
-                  QMessageBox::information(0,
-                     QString("MusE"),
-                     QWidget::tr("Hex String too long (2048 bytes limit)"));
-                  return 0;
-                  }
-            }
+      if(src) {
+	while (*src) {
+	  while (*src == ' ' || *src == '\n') {
+	    ++src;
+	  }
+	  char* ep;
+	  long val = strtol(src, &ep, 16);
+	  if (ep == src) {
+	    QMessageBox::information(0,
+				     QString("MusE"),
+				     QWidget::tr("Cannot convert sysex string"));
+	    return 0;
+	  }
+	  src    = ep;
+	  *dst++ = val;
+	  if (dst - buffer >= 2048) {
+	    QMessageBox::information(0,
+				     QString("MusE"),
+				     QWidget::tr("Hex String too long (2048 bytes limit)"));
+	    return 0;
+	  }
+	}
+      }
       int len = dst - buffer;
       unsigned char* b = new unsigned char[len+1];
       memcpy(b, buffer, len);

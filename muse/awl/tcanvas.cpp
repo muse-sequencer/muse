@@ -61,6 +61,7 @@ TimeCanvas::TimeCanvas(TimeCanvasType t)
       _yFit      = false;
       _tool      = PointerTool;
       type       = t;
+      _timeType  = AL::TICKS;
       marker     = 0;
       showCursor = false;
       ctrlHeight = 0;

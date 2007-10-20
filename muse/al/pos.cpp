@@ -253,8 +253,8 @@ unsigned Pos::tick() const
 
 unsigned Pos::frame() const
       {
-      if (_type == TICKS)
-            _frame = tempomap.tick2frame(_tick, _frame, &sn);
+	if (_type == TICKS)
+	  _frame = tempomap.tick2frame(_tick, _frame, &sn);
       return _frame;
       }
 
@@ -516,10 +516,14 @@ void Pos::mbt(int* bar, int* beat, int* tk) const
 
 void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
       {
-      double time = double(frame()) / double(AL::sampleRate);
+      //double has been replaced by float because it prevents (mysteriously)
+      //from a segfault that occurs at the launching of muse
+      /*double*/ float time = double(frame()) / double(AL::sampleRate);
       *min  = int(time) / 60;
       *sec  = int(time) % 60;
-      double rest = time - (*min * 60 + *sec);
+      //double has been replaced by float because it prevents (mysteriously)
+      //from a segfault that occurs at the launching of muse
+      /*double*/ float rest = time - (*min * 60 + *sec);
       switch(AL::mtcType) {
             case 0:     // 24 frames sec
                   rest *= 24;
