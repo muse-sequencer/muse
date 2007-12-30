@@ -128,21 +128,26 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _gui->setWindowTitle(QString("DeicsOnze"));
 
   //FX
+  Plugin* p;
+  p = plugins.find("freeverb", "freeverb1");
   _pluginIReverb = NULL;
-  initPluginReverb(plugins.find("freeverb", "freeverb1"));
+  if(p) initPluginReverb(p);
   _pluginIChorus = NULL;
-  initPluginChorus(plugins.find("doublechorus", "doublechorus1"));
+  p = plugins.find("doublechorus", "doublechorus1");
+  if(p) initPluginChorus(p);
   _pluginIDelay = NULL;
-  initPluginDelay(plugins.find("pandelay", "pandelay"));
+  p = plugins.find("pandelay", "pandelay");
+  if(p) initPluginDelay(p);
 
   //Filter
   _dryFilter = new LowFilter();
   _chorusFilter = new LowFilter();
   _reverbFilter = new LowFilter();
   _delayFilter = new LowFilter();
-
+  
   //Load configuration
-  QString defaultConf = (QString(getenv("HOME")) + QString("/." DEICSONZESTR ".dco"));
+  QString defaultConf = 
+    (QString(getenv("HOME")) + QString("/." DEICSONZESTR ".dco"));
   FILE* f;
   f = fopen(defaultConf.toAscii().data(), "r");
   if(f) {
@@ -155,7 +160,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   if(_isInitSet) loadSet(_initSetPath);
   
   //loadSutulaPresets();
-
+  
   _initialPreset = new 
     Preset(new Subcategory(new Category(NULL, "NONE", 0), "NONE", 0), 0);
   for(int c = 0; c < NBRCHANNELS; c++) {
@@ -2259,8 +2264,8 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
 
   //save the set
   *length = NUM_CONFIGLENGTH
-    + sizeof(float)*_pluginIReverb->plugin()->parameter()
-    + sizeof(float)*_pluginIChorus->plugin()->parameter()
+    + (_pluginIReverb?sizeof(float)*_pluginIReverb->plugin()->parameter():0)
+    + (_pluginIChorus?sizeof(float)*_pluginIChorus->plugin()->parameter():0)
     + baComp.size();
 
   unsigned char* buffer = new unsigned char[*length];
@@ -2324,38 +2329,42 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   buffer[NUM_IS_REVERB_ON]=(unsigned char)_global.isReverbActivated;
   buffer[NUM_REVERB_RETURN]=(unsigned char)getReverbReturn();
   buffer[NUM_REVERB_PARAM_NBR]=
-    (unsigned char)_pluginIReverb->plugin()->parameter();
+    (_pluginIReverb?(unsigned char)_pluginIReverb->plugin()->parameter() : 0);
   strncpy((char*)&buffer[NUM_REVERB_LIB],
-	  _pluginIReverb->plugin()->lib().toLatin1().data(),
+	  (_pluginIReverb?
+	   _pluginIReverb->plugin()->lib().toLatin1().data() : "\0"),
 	  MAXSTRLENGTHFXLIB);
   strncpy((char*)&buffer[NUM_REVERB_LABEL],
-	  _pluginIReverb->plugin()->label().toLatin1().data(),
+	  (_pluginIReverb?
+	   _pluginIReverb->plugin()->label().toLatin1().data() : "\0"),
 	  MAXSTRLENGTHFXLABEL);
   //chorus
   buffer[NUM_IS_CHORUS_ON]=(unsigned char)_global.isChorusActivated;
   buffer[NUM_CHORUS_RETURN]=(unsigned char)getChorusReturn();
   buffer[NUM_CHORUS_PARAM_NBR]=
-    (unsigned char)_pluginIChorus->plugin()->parameter();
+    (_pluginIChorus?(unsigned char)_pluginIChorus->plugin()->parameter() : 0);
   strncpy((char*)&buffer[NUM_CHORUS_LIB],
-	  _pluginIChorus->plugin()->lib().toLatin1().data(),
+	  (_pluginIChorus?
+	   _pluginIChorus->plugin()->lib().toLatin1().data() : "\0"),
 	  MAXSTRLENGTHFXLIB);
   strncpy((char*)&buffer[NUM_CHORUS_LABEL],
-	  _pluginIChorus->plugin()->label().toLatin1().data(),
+	  (_pluginIChorus?
+	   _pluginIChorus->plugin()->label().toLatin1().data() : "\0"),
 	  MAXSTRLENGTHFXLABEL);
   //delay
   buffer[NUM_IS_DELAY_ON]=(unsigned char)_global.isDelayActivated;
   buffer[NUM_DELAY_RETURN]=(unsigned char)getDelayReturn();
   //save FX parameters
   //reverb
-  for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
+  for(int i = 0; i < (int)buffer[NUM_REVERB_PARAM_NBR]; i++) {
     float val = (float)getReverbParam(i);
     memcpy(&buffer[NUM_CONFIGLENGTH + sizeof(float)*i], &val, sizeof(float));
   }
   //chorus
-  for(int i = 0; i < _pluginIChorus->plugin()->parameter(); i++) {
+  for(int i = 0; i < (int)buffer[NUM_CHORUS_PARAM_NBR]; i++) {
     float val = (float)getChorusParam(i);
     memcpy(&buffer[NUM_CONFIGLENGTH
-		   + sizeof(float)*_pluginIReverb->plugin()->parameter()
+		   + sizeof(float)*(int)buffer[NUM_REVERB_PARAM_NBR]
 		   + sizeof(float)*i], &val, sizeof(float));
   }
   //delay
@@ -2374,8 +2383,8 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   //save set data
   int offset =
     NUM_CONFIGLENGTH
-    + sizeof(float)*_pluginIReverb->plugin()->parameter()
-    + sizeof(float)*_pluginIChorus->plugin()->parameter();
+    + sizeof(float)*(int)buffer[NUM_REVERB_PARAM_NBR]
+    + sizeof(float)*(int)buffer[NUM_CHORUS_PARAM_NBR];
   for(int i = offset; i < *length; i++)
     buffer[i]=(unsigned char)baComp.at(i - offset);
 
@@ -2561,19 +2570,24 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     dataReverbRet[0]=SYSEX_REVERBRETURN;
     dataReverbRet[1]=(unsigned char)getReverbReturn();
     MidiEvent evReverbRet(0,ME_SYSEX,(const unsigned char*)dataReverbRet, 2);
-    _gui->writeEvent(evReverbRet);    
-    initPluginReverb(plugins.find((const char*)&data[NUM_REVERB_LIB], 
-				  (const char*)&data[NUM_REVERB_LABEL]));
-    for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
-      float val;
-      memcpy(&val, &data[NUM_CONFIGLENGTH + sizeof(float)*i], sizeof(float));
-      setReverbParam(i, (double)val);
+    _gui->writeEvent(evReverbRet);
+    Plugin* p;
+    p = plugins.find((const char*)&data[NUM_REVERB_LIB], 
+		     (const char*)&data[NUM_REVERB_LABEL]);
+    if(p) { 
+      initPluginReverb(p);
+      for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
+	float val;
+	memcpy(&val, &data[NUM_CONFIGLENGTH + sizeof(float)*i], sizeof(float));
+	setReverbParam(i, (double)val);
+      }
+      char dataBuildRev;
+      dataBuildRev = SYSEX_BUILDGUIREVERB;
+      MidiEvent evSysexBuildRev(0,ME_SYSEX,
+				(const unsigned char*)&dataBuildRev, 1);
+      _gui->writeEvent(evSysexBuildRev);
     }
-    char dataBuildRev;
-    dataBuildRev = SYSEX_BUILDGUIREVERB;
-    MidiEvent evSysexBuildRev(0,ME_SYSEX,
-			      (const unsigned char*)&dataBuildRev, 1);
-    _gui->writeEvent(evSysexBuildRev);
+    else _pluginIReverb = NULL;
     //chorus
     _global.isChorusActivated = (bool)data[NUM_IS_CHORUS_ON];
     unsigned char *dataChorusAct = new unsigned char[2];
@@ -2586,22 +2600,26 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     dataChorusRet[0]=SYSEX_CHORUSRETURN;
     dataChorusRet[1]=(unsigned char)getChorusReturn();
     MidiEvent evChorusRet(0,ME_SYSEX,(const unsigned char*)dataChorusRet, 2);
-    _gui->writeEvent(evChorusRet);    
-    initPluginChorus(plugins.find((const char*)&data[NUM_CHORUS_LIB], 
-				  (const char*)&data[NUM_CHORUS_LABEL]));
-    for(int i = 0; i < _pluginIChorus->plugin()->parameter(); i++) {
-      float val;
-      memcpy(&val, &data[NUM_CONFIGLENGTH +
-			 sizeof(float)*_pluginIReverb->plugin()->parameter()
-			 + sizeof(float)*i],
-	     sizeof(float));
-      setChorusParam(i, (double)val);
+    _gui->writeEvent(evChorusRet);
+    p = plugins.find((const char*)&data[NUM_CHORUS_LIB], 
+		     (const char*)&data[NUM_CHORUS_LABEL]);
+    if(p) {
+      initPluginChorus(p);
+      for(int i = 0; i < _pluginIChorus->plugin()->parameter(); i++) {
+	float val;
+	memcpy(&val, &data[NUM_CONFIGLENGTH
+			   + sizeof(float)*(int)data[NUM_REVERB_PARAM_NBR]
+			   + sizeof(float)*i],
+	       sizeof(float));
+	setChorusParam(i, (double)val);
+      }
+      char dataBuildCho;
+      dataBuildCho = SYSEX_BUILDGUICHORUS;
+      MidiEvent evSysexBuildCho(0,ME_SYSEX,
+				(const unsigned char*)&dataBuildCho, 1);
+      _gui->writeEvent(evSysexBuildCho);
     }
-    char dataBuildCho;
-    dataBuildCho = SYSEX_BUILDGUICHORUS;
-    MidiEvent evSysexBuildCho(0,ME_SYSEX,
-			      (const unsigned char*)&dataBuildCho, 1);
-    _gui->writeEvent(evSysexBuildCho);
+    else _pluginIChorus = NULL;
     //delay
     _global.isDelayActivated = (bool)data[NUM_IS_DELAY_ON];
     unsigned char *dataDelayAct = new unsigned char[2];
@@ -2666,8 +2684,8 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     //load the set compressed
     int offset =
       NUM_CONFIGLENGTH 
-      + sizeof(float)*_pluginIReverb->plugin()->parameter()
-      + sizeof(float)*_pluginIChorus->plugin()->parameter();
+      + sizeof(float)*(int)data[NUM_REVERB_PARAM_NBR]
+      + sizeof(float)*(int)data[NUM_CHORUS_PARAM_NBR];
     QByteArray baComp = QByteArray((const char*)&data[offset], length-offset);
     
     //uncompress the set
@@ -4267,7 +4285,7 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
   //apply Filter
   if(_global.filter) _dryFilter->process(leftOutput, rightOutput, n);
   //Chorus
-  if(_global.isChorusActivated) {
+  if(_pluginIChorus && _global.isChorusActivated) {
     //apply Filter
     if(_global.filter) _chorusFilter->process(tempOutputChorus[0],
 					      tempOutputChorus[1], n);
@@ -4281,7 +4299,7 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
     }
   }
   //Reverb
-  if(_global.isReverbActivated) {
+  if(_pluginIReverb && _global.isReverbActivated) {
     //apply Filter
     if(_global.filter) _reverbFilter->process(tempOutputReverb[0],
 					      tempOutputReverb[1], n);
@@ -4295,7 +4313,7 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
     }
   }
   //Delay
-  if(_global.isDelayActivated) {
+  if(_pluginIDelay && _global.isDelayActivated) {
     //apply Filter
     if(_global.filter) _delayFilter->process(tempOutputDelay[0],
 					     tempOutputDelay[1], n);

@@ -142,18 +142,28 @@ void DeicsOnze::initPluginDelay(Plugin* pluginDelay) {
 }
 
 void DeicsOnze::setReverbParam(int index, double val) {
-  _pluginIReverb->controller(index)->setCurVal((float)val);
+  if(_pluginIReverb) _pluginIReverb->controller(index)->setCurVal((float)val);
+  else printf("Warning : no DeicsOnze reverb loaded\n");
 }
 void DeicsOnze::setChorusParam(int index, double val) {
-  _pluginIChorus->controller(index)->setCurVal((float)val);
+  if(_pluginIChorus) _pluginIChorus->controller(index)->setCurVal((float)val);
+  else printf("Warning : no DeicsOnze chorus loaded\n");
 }
 
 double DeicsOnze::getReverbParam(int index) {
-  return _pluginIReverb->controller(index)->curVal().f; 
+  if(_pluginIReverb) return _pluginIReverb->controller(index)->curVal().f; 
+  else {
+    return 0.0;
+    printf("Warning : no DeicsOnze reverb loaded\n");  
+  }
 }
 
 double DeicsOnze::getChorusParam(int index) {
-  return _pluginIChorus->controller(index)->curVal().f; 
+  if(_pluginIChorus) return _pluginIChorus->controller(index)->curVal().f;
+  else {
+    return 0.0;
+    printf("Warning : no DeicsOnze chorus loaded\n");  
+  }    
 }
 
 void DeicsOnzeGui::addPluginCheckBox(int index, QString text, bool toggled,
@@ -359,28 +369,40 @@ void DeicsOnzeGui::setChorusCheckBox(double v, int i) {
 }
 
 void DeicsOnzeGui::setReverbFloatEntry(double v, int i) {
-  if(_deicsOnze->_pluginIReverb->isInt(i)) v = rint(v);
-  updateReverbFloatEntry(v, i);  
-  updateReverbSlider(v, i);
-  setReverbCheckBox(v, i); //because this send the SYSEX
+  if(_deicsOnze->_pluginIReverb) {
+    if(_deicsOnze->_pluginIReverb->isInt(i)) v = rint(v);
+    updateReverbFloatEntry(v, i);  
+    updateReverbSlider(v, i);
+    setReverbCheckBox(v, i); //because this send the SYSEX
+  }
+  else printf("Warning : no DeicsOnze reverb loaded\n");
 }
 void DeicsOnzeGui::setReverbSlider(double v, int i) {
-  if(_deicsOnze->_pluginIReverb->isInt(i)) v = rint(v);
-  updateReverbFloatEntry(v, i);
-  updateReverbSlider(v, i);
-  setReverbCheckBox(v, i); //because this send the SYSEX
+  if(_deicsOnze->_pluginIReverb) {
+    if(_deicsOnze->_pluginIReverb->isInt(i)) v = rint(v);
+    updateReverbFloatEntry(v, i);
+    updateReverbSlider(v, i);
+    setReverbCheckBox(v, i); //because this send the SYSEX
+  }
+  else printf("Warning : no DeicsOnze reverb loaded\n");
 }
 void DeicsOnzeGui::setChorusFloatEntry(double v, int i) {
-  if(_deicsOnze->_pluginIChorus->isInt(i)) v = rint(v);
-  updateChorusFloatEntry(v, i);
-  updateChorusSlider(v, i);
-  setChorusCheckBox(v, i); //because this send the SYSEX
+  if(_deicsOnze->_pluginIReverb) {
+    if(_deicsOnze->_pluginIChorus->isInt(i)) v = rint(v);
+    updateChorusFloatEntry(v, i);
+    updateChorusSlider(v, i);
+    setChorusCheckBox(v, i); //because this send the SYSEX
+  }
+  else printf("Warning : no DeicsOnze chorus loaded\n");
 }
 void DeicsOnzeGui::setChorusSlider(double v, int i) {
-  if(_deicsOnze->_pluginIChorus->isInt(i)) v = rint(v);
-  updateChorusSlider(v, i);
-  updateChorusFloatEntry(v, i);
-  setChorusCheckBox(v, i); //because this send the SYSEX
+  if(_deicsOnze->_pluginIReverb) {  
+    if(_deicsOnze->_pluginIChorus->isInt(i)) v = rint(v);
+    updateChorusSlider(v, i);
+    updateChorusFloatEntry(v, i);
+    setChorusCheckBox(v, i); //because this send the SYSEX
+  }
+  else printf("Warning : no DeicsOnze chorus loaded\n");
 }
 
 //updates
@@ -417,40 +439,61 @@ void DeicsOnzeGui::updateChorusFloatEntry(double v, int i) {
 // set Delay
 //-------------------------------------------------------------
 void DeicsOnze::setDelayBPM(float val) {
-  _pluginIDelay->controller(0)->setCurVal(val);
+  if(_pluginIDelay) _pluginIDelay->controller(0)->setCurVal(val);
+  else printf("Warning : no DeicsOnze delay loaded\n");
 }
 void DeicsOnze::setDelayBeatRatio(float val) {
-  _pluginIDelay->controller(1)->setCurVal(val);
+  if(_pluginIDelay) _pluginIDelay->controller(1)->setCurVal(val);
+  else printf("Warning : no DeicsOnze delay loaded\n");
 }
 float DeicsOnze::getDelayBPM() {
-  float dtf = _pluginIDelay->controller(0)->curVal().f;
-  return dtf;
+  if(_pluginIDelay) return _pluginIDelay->controller(0)->curVal().f;
+  else {
+    printf("Warning : no DeicsOnze delay loaded\n");
+    return 0.0;
+  }
 }
 float DeicsOnze::getDelayBeatRatio() {
-  float dtf = _pluginIDelay->controller(1)->curVal().f;
-  return dtf;
+  if(_pluginIDelay) return _pluginIDelay->controller(1)->curVal().f;
+  else {
+    printf("Warning : no DeicsOnze delay loaded\n");
+    return 0.0;
+  }
 }
 void DeicsOnze::setDelayFeedback(float val) {
-  _pluginIDelay->controller(2)->setCurVal(val);
+  if(_pluginIDelay) return _pluginIDelay->controller(2)->setCurVal(val);
+  else printf("Warning : no DeicsOnze delay loaded\n");
 }
 float DeicsOnze::getDelayFeedback() {
-  float dtf = _pluginIDelay->controller(2)->curVal().f;
-  return dtf;
+  if(_pluginIDelay) return _pluginIDelay->controller(2)->curVal().f;
+  else {
+    printf("Warning : no DeicsOnze delay loaded\n");
+    return 0.0;
+  }
 }
 void DeicsOnze::setDelayLFOFreq(float val) {
-  _pluginIDelay->controller(3)->setCurVal(val);
+  if(_pluginIDelay) _pluginIDelay->controller(3)->setCurVal(val);
+  else printf("Warning : no DeicsOnze delay loaded\n");
 }
 float DeicsOnze::getDelayLFOFreq() {
-  float dtf = _pluginIDelay->controller(3)->curVal().f;
-  return dtf;
+  if(_pluginIDelay) return _pluginIDelay->controller(3)->curVal().f;
+  else {
+    printf("Warning : no DeicsOnze delay loaded\n");
+    return 0.0;
+  }
 }
 void DeicsOnze::setDelayLFODepth(float val) {
-  _pluginIDelay->controller(4)->setCurVal(val);  
+  if(_pluginIDelay) _pluginIDelay->controller(4)->setCurVal(val);
+  else printf("Warning : no DeicsOnze delay loaded\n");
 }
 float DeicsOnze::getDelayLFODepth() {
-  float dtd = _pluginIDelay->controller(4)->curVal().f;
-  return dtd;
+  if(_pluginIDelay) return _pluginIDelay->controller(4)->curVal().f;
+  else {
+    printf("Warning : no DeicsOnze delay loaded\n");
+    return 0.0;
+  }
 }
 void DeicsOnze::setDelayDryWet(float val) {
-  _pluginIDelay->controller(5)->setCurVal(val);
+  if(_pluginIDelay) _pluginIDelay->controller(5)->setCurVal(val);
+  else printf("Warning : no DeicsOnze delay loaded\n");
 }
