@@ -1,3 +1,7 @@
+30.12. (rj)
+      - added drum filter mux plugin. Useful when driving a sampled drumkit
+        with multi sampled drums. Especially if they also have multiple keys
+	for variations of each drum.
 20.10. (ng)
       - I replaced double by float in Pos::msf method at file pos.cc
 	and that prevents the segfault that occurs when launching muse.
