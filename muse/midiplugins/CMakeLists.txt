@@ -18,7 +18,16 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-subdirs(libmidiplugin splitlayer filter metronom transform trigg dump )
+subdirs(
+        libmidiplugin
+        splitlayer
+        filter 
+	metronom
+	transform
+	trigg 
+	dump
+	drumglue
+ )
 
 set ( CMAKE_CXX_FLAGS 
       "${CMAKE_CXX_FLAGS} -DQT_NO_DEBUG -DQT_PLUGIN -DQT_SHARED -fPIC"
