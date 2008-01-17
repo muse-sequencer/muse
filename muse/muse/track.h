@@ -118,7 +118,7 @@ class Track : public QObject {
       bool _off;
       bool _monitor;
       int _channels;                // 1 - mono, 2 - stereo
-                                    // Note: midi out/in tracks have 
+                                    // Note: midi out/in tracks have
                                     // 1 channel
       CtrlRecList _recEvents;       // recorded automation events
       double _meter[MAX_CHANNELS];
@@ -171,7 +171,10 @@ class Track : public QObject {
       TType timeType() const            { return _tt; }
       void setTimeType(TType t)         { _tt = t; }
 
-      QString cname() const             { return QString(_cname[type()]); }
+      QString cname() const             {
+            int t = type();
+            return QString(_cname[t]);
+            }
       QString clname() const            { return QString(_clname[type()]); }
 
       //
@@ -314,11 +317,11 @@ class Track : public QObject {
       Port alsaPort(int channel = 0) const    { return _alsaPort[channel]; }
       Port jackPort(int channel = 0) const    { return _jackPort[channel]; }
 
-      void setAlsaPort(const Port& port, int channel = 0) { 
-            _alsaPort[channel] = port; 
+      void setAlsaPort(const Port& port, int channel = 0) {
+            _alsaPort[channel] = port;
             }
-      void setJackPort(const Port& port, int channel = 0) { 
-            _jackPort[channel] = port; 
+      void setJackPort(const Port& port, int channel = 0) {
+            _jackPort[channel] = port;
             }
 
       struct ArrangerTrack arrangerTrack;

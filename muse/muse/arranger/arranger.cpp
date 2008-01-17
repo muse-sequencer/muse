@@ -913,11 +913,13 @@ void Arranger::startLoadSong()
             ArrangerTrack* at = &(*i)->arrangerTrack;
             tl->removeWidget(at->tw);
             at->tw->close();
+            delete at->tw;
             at->tw = 0;
             for (iArrangerTrack it = (*i)->subtracks.begin(); it != (*i)->subtracks.end(); ++it) {
                   ArrangerTrack* at = *it;
                   tl->removeWidget(at->tw);
                   at->tw->close();
+                  delete at->tw;
                   }
             (*i)->subtracks.clear();
             }
