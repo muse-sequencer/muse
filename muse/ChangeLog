@@ -1,4 +1,6 @@
 17.1. (ws)
+      - added svn revision number to "About" box
+      - changed version number to 2.0.1, install to muse-2.0
       - routing pulldown menu in mixer will stay if SHIFT is pressed while clicking;
         this allows for fast selection of more than one routing targets
 30.12. (rj)

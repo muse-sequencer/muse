@@ -18,11 +18,24 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
+#include "config.h"
 #include "muse.h"
 #include "globals.h"
 #include "gconfig.h"
 #include "icons.h"
 #include "help.h"
+
+//---------------------------------------------------------
+//   AboutBoxDialog
+//---------------------------------------------------------
+
+AboutBoxDialog::AboutBoxDialog()
+      {
+      extern int revision;
+      setupUi(this);
+      versionLabel->setText("Version: " VERSION);
+      revisionLabel->setText(QString("Revision: %1").arg(revision));
+      }
 
 //---------------------------------------------------------
 //   startHelpBrowser

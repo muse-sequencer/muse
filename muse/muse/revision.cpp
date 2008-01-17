@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //  $Id:$
 //
-//  Copyright (C) 2002-2006 by Werner Schweer and others
+//  Copyright (C) 2008 by Werner Schweer and others
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 2.
@@ -18,19 +18,10 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-#ifndef __HELP_H__
-#define __HELP_H__
 
-#include "ui_aboutbox.h"
+int revision =
 
-//---------------------------------------------------------
-//   AboutBoxDialog
-//---------------------------------------------------------
+#include "revision.h"
 
-class AboutBoxDialog : public QDialog, Ui::AboutBox {
-   public:
-      AboutBoxDialog();
-      };
-
-#endif
+;
 

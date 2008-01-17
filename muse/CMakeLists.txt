@@ -3,7 +3,7 @@
 #  Linux Music Editor
 #  $Id:$
 #
-#  Copyright (C) 2002-2006 by Werner Schweer and others
+#  Copyright (C) 2002-2008 by Werner Schweer and others
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License version 2.
@@ -41,18 +41,18 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # The MusE version number.
-SET(MusE_VERSION_MAJOR 1)
+SET(MusE_VERSION_MAJOR 2)
 SET(MusE_VERSION_MINOR 0)
-SET(MusE_VERSION_PATCH "pre1")
-SET(MusE_VERSION       "1.0")
-SET(MusE_VERSION_FULL  "1.0pre1")
-SET(MusE_INSTALL_NAME  "muse-1.0pre1")
+SET(MusE_VERSION_PATCH 1)
+SET(MusE_VERSION       "2.0.1")
+SET(MusE_VERSION_FULL  "2.0.1")
+SET(MusE_INSTALL_NAME  "muse-2.0")
 
 include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
 include ( ${PROJECT_SOURCE_DIR}/cmake/TargetDoc.cmake)
 
 option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface"  ON)
-option ( ENABLE_VST    "enable VST/win support"                 OFF)
+option ( ENABLE_VST    "enable VST/win support"                  OFF)
 option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"     ON)
 option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin" OFF)
 
