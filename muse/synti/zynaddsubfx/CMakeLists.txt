@@ -23,29 +23,8 @@ include_directories(
       BEFORE ${CMAKE_CURRENT_BINARY_DIR}
       )
 
-FLTK_WRAP_UI ( FLTKUI
-      UI/ADnoteUI.fl
-      UI/BankUI.fl
-      UI/ConfigUI.fl
-      UI/EffUI.fl
-      UI/EnvelopeUI.fl
-      UI/FilterUI.fl
-      UI/LFOUI.fl
-      UI/MasterUI.fl
-      UI/MicrotonalUI.fl
-      UI/OscilGenUI.fl
-      UI/PADnoteUI.fl
-      UI/PartUI.fl
-      UI/PresetsUI.fl
-      UI/ResonanceUI.fl
-      UI/SUBnoteUI.fl
-      UI/SeqUI.fl
-      UI/VirKeyboard.fl
-      UI/WidgetPDial.fl
-      )
-
-add_library ( zynaddsubfx SHARED
-      ${FLTKUI_FLTK_UI_SRCS}
+add_library (
+      zynaddsubfx SHARED
       DSP/AnalogFilter.C
       DSP/FFTwrapper.C
       DSP/Filter.C
@@ -105,14 +84,13 @@ set_target_properties ( zynaddsubfx
 target_link_libraries( zynaddsubfx
       synti fftw3 mxml
       m z fltk
+      zyngui
       )
 
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ zynaddsubfx )
+INSTALL(
+      DIRECTORY banks
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${MusE_INSTALL_NAME}/presets/zynaddsubfx
+      )
 
-## needs cmake version > 2.4.3
-## INSTALL(
-##      DIRECTORY banks
-##      DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${MusE_INSTALL_NAME}/presets/zynaddsubfx
-##      )
-
+subdirs(UI)
 

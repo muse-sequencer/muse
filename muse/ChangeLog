@@ -1,3 +1,6 @@
+17.1. (ws)
+      - routing pulldown menu in mixer will stay if SHIFT is pressed while clicking;
+        this allows for fast selection of more than one routing targets
 30.12. (rj)
       - added drum filter mux plugin. Useful when driving a sampled drumkit
         with multi sampled drums. Especially if they also have multiple keys

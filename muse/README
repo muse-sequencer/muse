@@ -20,7 +20,7 @@ details.
       Requirements
   =============================
 
-      - CMake 2.4 
+      - CMake 2.4
         http:/www.cmake.org/HTML/Download.html
 
       - QT: Qt 4.2.0 or above
@@ -32,7 +32,7 @@ details.
 
       - gcc 4.x.x
 
-      - libsndfile >= 1.0.1 
+      - libsndfile >= 1.0.1
         http://www.zip.com.au/~erikd/libsndfile/
 
       - libsamplerate
@@ -46,9 +46,9 @@ details.
         http://savannah.nongnu.org/download/fluid
 
       - DSSI
-      
+
       - ConTeXt (for building documentation, by default the build
-               script tries to build documentation, can be 
+               script tries to build documentation, can be
                disabled by setting ENABLE_DOCUMENTATION to OFF)
 
   =============================
@@ -86,8 +86,8 @@ details.
             chmod 660 /dev/rtc
             chgrp audio /dev/rtc
 
-      - make sure MusE cat set the rtc clock:
-            echo 8192 > /proc/sys/dev/rtc/max-user-freq 
+      - make sure MusE can set the rtc clock:
+            echo 8192 > /proc/sys/dev/rtc/max-user-freq
             inspect with:
             cat /proc/sys/dev/rtc/max-user-freq
 
@@ -99,12 +99,12 @@ details.
             /sbin/modprobe snd-seq
         (same distros (ubuntu) do not load it by default :-( )
 
-      - start qjackctl 
+      - start qjackctl
             - start JACK with qjackctl
 
       - start MusE
 
-      (JACK and all its clients (qjackctl & MusE) must run with the 
+      (JACK and all its clients (qjackctl & MusE) must run with the
       same user id)
 
 

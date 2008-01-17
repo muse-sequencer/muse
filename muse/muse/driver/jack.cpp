@@ -818,9 +818,7 @@ bool initJackAudio()
       if (debugMsg)
             fprintf(stderr, "init Jack Audio: register device\n");
 
-printf("create jack, %p\n", client);
       jackAudio = new JackAudio(client, jack_get_client_name(client));
-printf("create jack, client=%p jack=%p\n", client, jackAudio);
       if (debugMsg)
             fprintf(stderr, "init Jack Audio: register client\n");
       jackAudio->registerClient();

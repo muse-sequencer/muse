@@ -54,16 +54,16 @@ include ( ${PROJECT_SOURCE_DIR}/cmake/TargetDoc.cmake)
 option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface"  ON)
 option ( ENABLE_VST    "enable VST/win support"                 OFF)
 option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"     ON)
-option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin" ON)
+option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin" OFF)
 
 ##
 ## Just print a notice if this is OS X
 ##
 if (APPLE)
-	message("OS X detected.")
+	message("OS X found.")
 else (APPLE)
 	if (UNIX)
-		message("Unix (probably linux) detected")
+		message("Unix (probably linux) found")
 	endif(UNIX)
 
 endif (APPLE)
@@ -114,7 +114,7 @@ PKGCONFIG (alsa 0.9.0 ALSA_INCDIR ALSA_LIBDIR ALSA_LIB ALSA_CPP )
 if (NOT ALSA_INCDIR)
       message(FATAL_ERROR "Fatal error: ALSA >= 1.0.0 required")
 else (NOT ALSA_INCDIR)
-	message("Alsa detected.")
+	message("Alsa found.")
 endif (NOT ALSA_INCDIR)
 endif (APPLE)
 
@@ -124,10 +124,16 @@ endif (APPLE)
 ## fftw3
 ## mxml
 ## fltk + fluid
+##
+## problems with FLTK:
+##    - fltk is not found on kubuntu/ubuntu
+##    - cmake version > 2.4 crashes
+##    - there is an annoying (and wrong) usage message from cmake concerning FLTK
+##
 
 if (ENABLE_ZYNADDSUBFX)
-      set (FLTK_INCLUDE_DIR /usr/include)
-      SET(FLTK_FLUID_EXECUTABLE "/usr/bin/fluid")
+##      set (FLTK_INCLUDE_DIR     "/usr/include")
+##      set(FLTK_FLUID_EXECUTABLE "/usr/fluid")
 
       include (FindFLTK)
       if (NOT FLTK_FOUND)
@@ -142,8 +148,18 @@ if (ENABLE_ZYNADDSUBFX)
              message("mxml >= 2.0 not found, zynaddsubfx not build")
              set(ENABLE_ZYNADDSUBFX OFF)
       else (NOT MXML_INCDIR)
-             message("mxml detected.")
+             message("mxml found.")
       endif (NOT MXML_INCDIR)
+      #
+      #  TODO: check for fftw3 library
+      #
+      PKGCONFIG (fftw3 3.1.2 FFTW_INCDIR FFTW_LIBDIR FFTW_LIB FFTW_CPP )
+      if (NOT FFTW_INCDIR)
+             message("fftw3 >= 3.1.2 not found, zynaddsubfx not build")
+             set(ENABLE_ZYNADDSUBFX OFF)
+      else (NOT FFTW_INCDIR)
+             message("fftw3 found.")
+      endif (NOT FFTW_INCDIR)
 endif (ENABLE_ZYNADDSUBFX)
 
 
@@ -155,7 +171,7 @@ PKGCONFIG (sndfile 1.0.0 SNDFILE_INCDIR SNDFILE_LIBDIR SNDFILE_LIB SNDFILE_CPP )
 if (NOT SNDFILE_INCDIR)
       message(FATAL_ERROR "Fatal error: libsndfile >= 1.0.0 required")
 else (NOT SNDFILE_INCDIR)
-	message("sndfile detected.")
+	message("sndfile found.")
 endif (NOT SNDFILE_INCDIR)
 
 ##
@@ -166,7 +182,7 @@ PKGCONFIG (samplerate 0.1.0 SAMPLERATE_INCDIR SAMPLERATE_LIBDIR SAMPLERATE_LIB S
 if (NOT SAMPLERATE_INCDIR)
       message(FATAL_ERROR "Fatal error: libsamplerate >= 0.1.0 required")
 else (NOT SAMPLERATE_INCDIR)
-	message("samplerate detected")
+	message("samplerate found")
 endif (NOT SAMPLERATE_INCDIR)
 
 ##
@@ -179,11 +195,11 @@ if (NOT JACK_INCDIR)
       if (NOT JACK_INCDIR)
             message(FATAL_ERROR "Fatal error: JACK >= 0.103 required")
       else (NOT JACK_INCDIR)
-	      message("Jack 0.103 detected")
+	      message("JACK 0.103 found")
             set(JACK103 ON)
       endif (NOT JACK_INCDIR)
 else (NOT JACK_INCDIR)
-	message("Jack 0.107 detected")
+	message("JACK 0.107 found")
       set(JACK107 ON)
 endif (NOT JACK_INCDIR)
 
@@ -197,13 +213,13 @@ if ( ENABLE_DSSI )
             message("Error: dssi >= 0.9.0 not found, disabling feature")
             set ( ENABLE_DSSI OFF )
       else (NOT DSSI_INCDIR)
-            message("DSSI detected.")
+            message("DSSI found.")
             PKGCONFIG (liblo 0.23 LIBLO_INCDIR LIBLO_LIBDIR LIBLO_LIB LIBLO_CPP )
             if (NOT LIBLO_INCDIR)
                   message("Error: liblo >= 0.23 not found, disabling DSSI")
                   set ( ENABLE_DSSI OFF )
             else (NOT LIBLO_INCDIR)
-                  message("liblo >= 0.23 detected.")
+                  message("liblo >= 0.23 found.")
                   set (DSSI_SUPPORT TRUE)
             endif (NOT LIBLO_INCDIR)
       endif (NOT DSSI_INCDIR)
@@ -233,7 +249,7 @@ if ( ENABLE_FLUID )
             message("Error: fluidsynth >= 0.9.0 not found, disabling feature")
             set ( ENABLE_FLUID OFF )
       else (NOT FLUID_INCDIR)
-	    message("Fluidsynth detected")
+	    message("Fluidsynth found")
       endif (NOT FLUID_INCDIR)
 endif ( ENABLE_FLUID )
 
@@ -301,8 +317,6 @@ set_source_files_properties(
       PROPERTIES generated true
       )
 
-subdirs(al awl grepmidi plugins midiplugins synti muse share doc)
-
 include_directories(
    .
    ${PROJECT_SOURCE_DIR}
@@ -349,4 +363,6 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   SET(CPACK_PACKAGE_EXECUTABLES "muse" "MusE" "grepmidi" "grepmidi")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+
+subdirs(al awl grepmidi plugins midiplugins muse share doc synti)
 

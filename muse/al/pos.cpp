@@ -498,7 +498,7 @@ bool PosLen::operator==(const PosLen& pl) const {
   if(type()==TICKS)
     return (_lenTick==pl._lenTick && Pos::operator==((const Pos&)pl));
   else
-    return (_lenFrame==pl._lenFrame && Pos::operator==((const Pos&)pl));      
+    return (_lenFrame==pl._lenFrame && Pos::operator==((const Pos&)pl));
 }
 
 //---------------------------------------------------------
@@ -516,6 +516,7 @@ void Pos::mbt(int* bar, int* beat, int* tk) const
 
 void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
       {
+#if 0
       //double has been replaced by float because it prevents (mysteriously)
       //from a segfault that occurs at the launching of muse
       /*double*/ float time = double(frame()) / double(AL::sampleRate);
@@ -540,6 +541,30 @@ void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
             }
       *fr = int(rest);
       *subFrame = int((rest- *fr)*100);
+#else
+      // for further testing:
+
+      double time = double(frame()) / double(AL::sampleRate);
+      *min        = int(time) / 60;
+      *sec        = int(time) % 60;
+      double rest = time - ((*min) * 60 + (*sec));
+      switch(AL::mtcType) {
+            case 0:     // 24 frames sec
+                  rest *= 24;
+                  break;
+            case 1:     // 25
+                  rest *= 25;
+                  break;
+            case 2:     // 30 drop frame
+                  rest *= 30;
+                  break;
+            case 3:     // 30 non drop frame
+                  rest *= 30;
+                  break;
+            }
+      *fr       = lrint(rest);
+      *subFrame = lrint((rest - (*fr)) * 100.0);
+#endif
       }
 
 //---------------------------------------------------------

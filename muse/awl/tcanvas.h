@@ -140,7 +140,7 @@ class TimeCanvas : public QFrame {
 
       bool eventFilter(QObject*, QEvent*);
 
-      virtual void paint(QPainter&, QRect) { printf("paint method not overloaded\n"); }
+      virtual void paint(QPainter&, QRect) = 0;
       virtual void mousePress(QMouseEvent*) {  printf("mousePress method not overloaded\n"); }
       virtual void mouseMove(QPoint)  {  printf("mouseMove method not overloaded\n"); }
       virtual void mouseRelease(QMouseEvent*) { printf("mouseRelease method not overloaded\n"); }
@@ -149,9 +149,9 @@ class TimeCanvas : public QFrame {
       virtual void layout() { printf("layout method not overloaded\n"); }
       virtual void enterB() { printf("enterB method not overloaded\n"); }
       virtual void leaveB() { printf("leaveB method not overloaded\n"); }
-      
+
       virtual void setCursor();
-      
+
       virtual void timeTypeChanged() { printf("timeTypeChanged method not overloaded\n");}
       virtual void magChanged() { printf("magChanged method not overloaded\n");}
 
@@ -164,7 +164,7 @@ class TimeCanvas : public QFrame {
       virtual void dragLeave(QDragLeaveEvent*) { printf("dragLeave method not overloaded\n"); }
 
       virtual void addController() { printf("addController method not overloaded\n"); }
-      
+
       virtual void keyPressEvent(QKeyEvent *e);
       virtual void keyboardNavigate(QKeyEvent *) { printf("keyboardNavigate method not overloaded\n"); }
 

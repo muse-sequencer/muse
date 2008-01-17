@@ -289,11 +289,13 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       iR = newInRouteButton();
       grid->addWidget(iR, 14, 0);
       connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
+      connect(iR->menu(), SIGNAL(aboutToHide()), SLOT(iRouteHide()));
       connect(iR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
       oR = newOutRouteButton();
       grid->addWidget(oR, 14, 1);
       connect(oR->menu(), SIGNAL(aboutToShow()), SLOT(oRouteShow()));
+      connect(oR->menu(), SIGNAL(aboutToHide()), SLOT(oRouteHide()));
       connect(oR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
       connect(song,  SIGNAL(songChanged(int)), SLOT(songChanged(int)));
@@ -308,6 +310,34 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       controllerChanged(CTRL_VARIATION_SEND);
       controllerChanged(CTRL_REVERB_SEND);
       controllerChanged(CTRL_CHORUS_SEND);
+      }
+
+//---------------------------------------------------------
+//   iRouteHide
+//---------------------------------------------------------
+
+void MidiStrip::iRouteHide()
+      {
+      // dont leave the menu if SHIFT is pressed; this allows
+      // for fast selecting of more than one input source
+      //
+      if (qApp->keyboardModifiers() & Qt::ShiftModifier) {
+            iR->menu()->show();
+            }
+      }
+
+//---------------------------------------------------------
+//   oRouteHide
+//---------------------------------------------------------
+
+void MidiStrip::oRouteHide()
+      {
+      // dont leave the menu if SHIFT is pressed; this allows
+      // for fast selecting of more than one input source
+      //
+      if (qApp->keyboardModifiers() & Qt::ShiftModifier) {
+            oR->menu()->show();
+            }
       }
 
 //---------------------------------------------------------

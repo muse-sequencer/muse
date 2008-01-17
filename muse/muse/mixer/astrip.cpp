@@ -188,11 +188,13 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       iR = newInRouteButton();
       grid->addWidget(iR, 12, 0);
       connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
+      connect(iR->menu(), SIGNAL(aboutToHide()), SLOT(iRouteHide()));
       connect(iR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
       oR = newOutRouteButton();
       grid->addWidget(oR, 12, 1);
       connect(oR->menu(), SIGNAL(aboutToShow()), SLOT(oRouteShow()));
+      connect(oR->menu(), SIGNAL(aboutToHide()), SLOT(oRouteHide()));
       connect(oR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
       if (off) {
@@ -624,6 +626,34 @@ void AudioStrip::iRouteShow()
                         addMidiInPorts(m, track, ch);
                         }
                   break;
+            }
+      }
+
+//---------------------------------------------------------
+//   iRouteHide
+//---------------------------------------------------------
+
+void AudioStrip::iRouteHide()
+      {
+      // dont leave the menu if SHIFT is pressed; this allows
+      // for fast selecting of more than one input source
+      //
+      if (qApp->keyboardModifiers() & Qt::ShiftModifier) {
+            iR->menu()->show();
+            }
+      }
+
+//---------------------------------------------------------
+//   oRouteHide
+//---------------------------------------------------------
+
+void AudioStrip::oRouteHide()
+      {
+      // dont leave the menu if SHIFT is pressed; this allows
+      // for fast selecting of more than one input source
+      //
+      if (qApp->keyboardModifiers() & Qt::ShiftModifier) {
+            oR->menu()->show();
             }
       }
 

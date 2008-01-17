@@ -72,7 +72,9 @@ class AudioStrip : public Strip {
       void preToggled(bool);
       void offToggled(bool);
       void iRouteShow();
+      void iRouteHide();
       void oRouteShow();
+      void oRouteHide();
       void volumeChanged(double);
       void volumePressed();
       void volumeReleased();
