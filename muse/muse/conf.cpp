@@ -62,21 +62,7 @@ void readConfiguration(QDomNode node)
             QString tag(e.tagName());
             QString s(e.text());
             int i = s.toInt();
-            if (tag == "theme")
-                  config.style = s;
-            else if (tag == "font0")
-                  config.fonts[0].fromString(s);
-            else if (tag == "font1")
-                  config.fonts[1].fromString(s);
-            else if (tag == "font2")
-                  config.fonts[2].fromString(s);
-            else if (tag == "font3")
-                  config.fonts[3].fromString(s);
-            else if (tag == "font4")
-                  config.fonts[4].fromString(s);
-            else if (tag == "font5")
-                  config.fonts[5].fromString(s);
-            else if (tag == "palette0")
+            if (tag == "palette0")
                   QColorDialog::setCustomColor(0, readColor(node).rgb());
             else if (tag == "palette1")
                   QColorDialog::setCustomColor(1, readColor(node).rgb());
@@ -126,8 +112,6 @@ void readConfiguration(QDomNode node)
                   config.trackBg[Track::MIDI_OUT] = readColor(node);
             else if (tag == "midiInputBg")
                   config.trackBg[Track::MIDI_IN] = readColor(node);
-//            else if (tag == "midiChannelBg")
-//                  config.trackBg[Track::MIDI_CHANNEL] = readColor(node);
             else if (tag == "midiSyntiBg")
                   config.trackBg[Track::MIDI_SYNTI] = readColor(node);
             else if (tag == "extendedMidi")
@@ -159,7 +143,7 @@ void readConfiguration(QDomNode node)
             else if (tag == "canvasUsePixmap")
                   config.canvasUseBgPixmap = i;
             else if (tag == "geometryMain")
-                  config.geometryMain = AL::readGeometry(node);
+                  ;     // obsolete
             else if (tag == "geometryTransport")
                   config.geometryTransport = AL::readGeometry(node);
             else if (tag == "geometryBigTime")
@@ -176,8 +160,6 @@ void readConfiguration(QDomNode node)
                   config.bigTimeForegroundColor = readColor(node);
             else if (tag == "bigtimeBackgroundcolor")
                   config.bigTimeBackgroundColor = readColor(node);
-//            else if (tag == "transportHandleColor")
-//                  config.transportHandleColor = readColor(node);
             else if (tag == "freewheelMode")
                   config.useJackFreewheelMode = i;
             else if (tag == "mtctype")
@@ -409,13 +391,6 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
             xml.tag("startProject", config.startProject);
       xml.tag("freewheelMode", config.useJackFreewheelMode);
 
-      xml.tag("theme", config.style);
-
-      for (int i = 0; i < 6; ++i) {
-            char buffer[32];
-            sprintf(buffer, "font%d", i);
-            xml.tag(buffer, config.fonts[i].toString());
-            }
       for (int i = 0; i < QColorDialog::customCount(); ++i) {
             char buffer[32];
             snprintf(buffer, 32, "palette%d", i);
@@ -454,7 +429,6 @@ void MusE::writeGlobalConfiguration(Xml& xml) const
       xml.tag("acceptMMC", acceptMMC);
       xml.tag("acceptMC", acceptMC);
 
-      xml.tag("geometryMain",      config.geometryMain);
       xml.tag("geometryTransport", config.geometryTransport);
       xml.tag("geometryBigTime",   config.geometryBigTime);
       xml.tag("geometryPianoroll", config.geometryPianoroll);
@@ -526,7 +500,6 @@ void MusE::writeConfiguration(Xml& xml) const
       xml.tag("bigtimeVisible",   bt_id->isChecked());
       xml.tag("transportVisible", tr_id->isChecked());
 
-      xml.tag("geometryMain", this);
       if (transport)
             xml.tag("geometryTransport", transport);
       if (bigtime)

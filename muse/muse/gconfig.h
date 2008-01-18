@@ -59,13 +59,13 @@ struct MixerConfig {
 //---------------------------------------------------------
 
 struct GlobalConfigValues {
+      QString styleSheetFile;
       QColor partColors[NUM_PARTCOLORS];
       QColor selectPartBg;
 	QColor transportHandleColor;
 	QColor bigTimeForegroundColor;
 	QColor bigTimeBackgroundColor;
       QColor waveEditBackgroundColor;
-      QFont fonts[6];
 
       QColor trackBg[Track::TRACK_TYPES];
 
@@ -90,7 +90,6 @@ struct GlobalConfigValues {
       QString startProject;   // path for start project
       int guiDivision;        // division for tick display
 
-      QRect geometryMain;
       QRect geometryTransport;
       QRect geometryBigTime;
       QRect geometryPianoroll;
@@ -111,8 +110,6 @@ struct GlobalConfigValues {
       int canvasShowPartType;       // 1 - names, 2 events
       int canvasShowPartEvent;      //
       bool canvasShowGrid;
-
-      QString style;
 
       bool useJackFreewheelMode;
       QString externalWavEditor;

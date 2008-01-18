@@ -40,11 +40,6 @@ void Strip::resetPeaks()
 
 void Strip::updateLabel()
       {
-      QPalette p = label->palette();
-      p.setColor(label->backgroundRole(), track->ccolor());
-      label->setPalette(p);
-      label->setAutoFillBackground(true);
-      label->setFont(config.fonts[4]);
       label->setText(track->name());
       label->setToolTip(track->name());
       }
@@ -76,6 +71,7 @@ Strip::Strip(Mixer* m, Track* t, bool align)
       //---------------------------------------------
 
       label = new QLabel;
+      label->setObjectName(track->cname());
       label->setFixedHeight(LABEL_HEIGHT);
       label->setTextFormat(Qt::PlainText);
       label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);

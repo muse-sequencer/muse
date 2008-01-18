@@ -222,9 +222,6 @@ void MusE::importMidi(const QString &file)
             if (mixer2 && config.mixer2Visible)
                   mixer2->setUpdateMixer();
 
-            resize(config.geometryMain.size());
-            move(config.geometryMain.topLeft());
-
             if (config.transportVisible)
                   transport->show();
             transport->move(config.geometryTransport.topLeft());

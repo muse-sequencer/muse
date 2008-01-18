@@ -1202,8 +1202,8 @@ void MusE::loadProject1(const QString& path)
             mixer1->setUpdateMixer();
       if (mixer2 && config.mixer2Visible)
             mixer2->setUpdateMixer();
-      resize(config.geometryMain.size());
-      move(config.geometryMain.topLeft());
+//      resize(config.geometryMain.size());
+//      move(config.geometryMain.topLeft());
       if (config.transportVisible)
             transport->show();
       transport->move(config.geometryTransport.topLeft());
@@ -1447,6 +1447,7 @@ void MusE::closeEvent(QCloseEvent* event)
             d.remove(filename);
             d.remove(f.baseName() + ".wca");
             }
+      writeSettings();
       qApp->quit();
       }
 
@@ -2178,16 +2179,6 @@ void MusE::preferences()
       }
 
 //---------------------------------------------------------
-//   loadTheme
-//---------------------------------------------------------
-
-void MusE::loadTheme(const QString& s)
-      {
-      if (style()->objectName() != s)
-            QApplication::setStyle(s);
-      }
-
-//---------------------------------------------------------
 //   configChanged
 //    - called whenever configuration has changed
 //    - when configuration has changed by user, call with
@@ -2198,8 +2189,6 @@ void MusE::changeConfig(bool writeFlag)
       {
       if (writeFlag)
             writeGlobalConfiguration();
-	loadTheme(config.style);
-      QApplication::setFont(config.fonts[0]);
       updateConfiguration();
       emit configChanged();
       }
@@ -2860,18 +2849,12 @@ int main(int argc, char* argv[])
       initMidiController();
       initMidiInstruments();
       MuseApplication app(argc, argv);
-
-      config.fonts[0] = QFont(QString("helvetica"), 10, QFont::Normal);
-      config.fonts[1] = QFont(QString("helvetica"),  6, QFont::Normal);
-      config.fonts[2] = QFont(QString("helvetica"), 10, QFont::Normal);
-      config.fonts[3] = QFont(QString("helvetica"),  8, QFont::Bold);
-      config.fonts[4] = QFont(QString("helvetica"),  8,  QFont::Bold);    // simple buttons, timescale numbers
-      config.fonts[5] = QFont(QString("Courier"), 14,  QFont::Bold);
+      QCoreApplication::setOrganizationName("MusE");
+      QCoreApplication::setOrganizationDomain("muse.org");
+      QCoreApplication::setApplicationName("MusE");
 
       gmDrumMap.initGm();    // init default drum map
       readConfiguration();
-
-      QApplication::setFont(config.fonts[0]);
 
       // this style is used for scrollbars in mixer plugin racks:
       smallStyle = new QWindowsStyle();
@@ -2889,6 +2872,16 @@ int main(int argc, char* argv[])
                   stimer->start(6000);
                   }
             }
+
+      QFile cf(config.styleSheetFile);
+      if (cf.open(QIODevice::ReadOnly)) {
+            QByteArray ss = cf.readAll();
+            QString sheet(QString::fromUtf8(ss.data()));
+            app.setStyleSheet(sheet);
+            cf.close();
+            }
+      else
+            printf("loading style sheet <%s> failed\n", qPrintable(config.styleSheetFile));
 
       bool useJACK = !(debugMode || midiOnly);
       if (useJACK) {
@@ -2970,6 +2963,7 @@ int main(int argc, char* argv[])
 
       song = new Song();
       muse = new MusE();
+      muse->readSettings();
       app.setMuse(muse);
 
       //---------------------------------------------------
@@ -3137,4 +3131,31 @@ void MusE::beat()
       if (arranger && arranger->getStrip() && arranger->getStrip()->isVisible())
             arranger->getStrip()->heartBeat();
       }
+
+//---------------------------------------------------------
+//   writeSettings
+//---------------------------------------------------------
+
+void MusE::writeSettings()
+      {
+      QSettings settings;
+      settings.beginGroup("MainWindow");
+      settings.setValue("size", size());
+      settings.setValue("pos", pos());
+      settings.endGroup();
+      }
+
+//---------------------------------------------------------
+//   readSettings
+//---------------------------------------------------------
+
+void MusE::readSettings()
+      {
+      QSettings settings;
+      settings.beginGroup("MainWindow");
+      resize(settings.value("size", QSize(950, 500)).toSize());
+      move(settings.value("pos", QPoint(10, 10)).toPoint());
+      settings.endGroup();
+      }
+
 

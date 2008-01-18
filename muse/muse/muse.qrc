@@ -1,6 +1,7 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
    <qresource>
+      <file>style.qss</file>
 	<file>xpm/muse_icon_64x64.png</file>
 	<file>xpm/splash.png</file>
 	<file>xpm/filenew.png</file>

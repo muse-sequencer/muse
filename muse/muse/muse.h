@@ -156,6 +156,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       virtual void focusInEvent(QFocusEvent*);
       void addMidiFile(const QString name);
       void copyParts(bool);
+      void writeSettings();
 
    signals:
       void configChanged();
@@ -242,7 +243,6 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       void bounceToFile();
       void closeEvent(QCloseEvent*e);
       void loadProject(const QString&);
-      void loadTheme(const QString&);
       bool seqStart();
       void showTransport(bool flag);
       void showBigtime(bool);
@@ -294,6 +294,7 @@ class MusE : public QMainWindow // , public Ui::MuseBase
       QAction* playAction;
 
       void showListEditor(const Pos&, Track*, Part*, Ctrl*);
+      void readSettings();
       };
 
 //---------------------------------------------------------

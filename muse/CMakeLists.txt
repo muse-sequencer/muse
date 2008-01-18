@@ -52,7 +52,7 @@ include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
 include ( ${PROJECT_SOURCE_DIR}/cmake/TargetDoc.cmake)
 
 option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface"  ON)
-option ( ENABLE_VST    "enable VST/win support"                  OFF)
+option ( ENABLE_VST    "enable VST/win support"                  ON)
 option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"     ON)
 option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin" OFF)
 

@@ -180,13 +180,12 @@ void MidiStrip::addKnob(int ctrl, int idx, const QString& tt, const QString& lab
       knob->setEnabled(enabled);
 
       controller[idx].dl = dl;
-      dl->setFont(config.fonts[1]);
       dl->setFixedSize(entrySize);
       dl->setEnabled(enabled);
 
       QLabel* lb = new QLabel(label, this);
+      lb->setObjectName("knobLabel");
       controller[idx].lb = lb;
-      lb->setFont(config.fonts[1]);
       lb->setFixedSize(entrySize);
       lb->setAlignment(Qt::AlignCenter);
       lb->setEnabled(enabled);
@@ -229,7 +228,7 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
 
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_VOLUME);
-      sl->setFont(config.fonts[1]);
+//      sl->setFont(config.fonts[1]);
       sl->setFixedHeight(entrySize.height());
 
       connect(slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
@@ -579,7 +578,7 @@ MidiOutPortStrip::MidiOutPortStrip(Mixer* m, MidiOutPort* t, bool align)
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_MASTER_VOLUME);
       sl->setMax(128 * 128 - 1);
-      sl->setFont(config.fonts[1]);
+//      sl->setFont(config.fonts[1]);
       sl->setFixedHeight(entrySize.height());
 
       controllerChanged(CTRL_MASTER_VOLUME);
@@ -886,9 +885,7 @@ MidiInPortStrip::MidiInPortStrip(Mixer* m, MidiInPort* t, bool align)
 
       for (int ch = MIDI_CHANNELS-1; ch >= 0; --ch) {
             QLabel* l = new QLabel(QString("%1").arg(ch+1));
-            QFont f = l->font();
-            f.setPixelSize(8);
-            l->setFont(f);
+            l->setObjectName("midiChannelLabel");
             ag->addWidget(l, ch, 0, Qt::AlignCenter);
             channelActivity[ch] = new QLabel;
             ag->addWidget(channelActivity[ch], ch, 1, Qt::AlignCenter);
@@ -1063,7 +1060,7 @@ MidiSyntiStrip::MidiSyntiStrip(Mixer* m, MidiSynti* t, bool align)
 
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_MASTER_VOLUME);
-      sl->setFont(config.fonts[1]);
+//      sl->setFont(config.fonts[1]);
       sl->setFixedHeight(entrySize.height());
 
       connect(slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));

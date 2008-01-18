@@ -42,7 +42,6 @@ class PreferencesDialog : public QDialog, public Ui::PreferencesDialogBase {
       QButtonGroup* colorGroup;
       QButtonGroup* startProjectGroup;
 
-      void updateFonts();
       void updateColor();
 
    private slots:

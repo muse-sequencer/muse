@@ -259,10 +259,10 @@ void TLWidget::configChanged()
       outPort    = 0;
 
       label = new QLabel;
+      label->setObjectName("trackLabel");
       l->addWidget(label);
       label->setIndent(3);
 
-      label->setFont(config.fonts[1]);
       label->setText(_track->cname());
       label->setFixedHeight(11);
 

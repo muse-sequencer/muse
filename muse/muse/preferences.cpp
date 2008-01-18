@@ -91,6 +91,8 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       connect(usePixmap, SIGNAL(toggled(bool)), SLOT(usePixmapToggled(bool)));
       connect(useColor, SIGNAL(toggled(bool)), SLOT(useColorToggled(bool)));
 
+
+      styleSheetPath->setText(config->styleSheetFile);
       currentBg = config->canvasBgPixmap;
       if (currentBg.isEmpty())
             currentBg = "<none>";
@@ -201,26 +203,6 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
 
       connect(addToPalette, SIGNAL(clicked()), SLOT(addToPaletteClicked()));
 
-      //---------------------------------------------------
-	//    STYLE
-      //---------------------------------------------------
-
-      themeComboBox->clear();
-
-      QString cs = muse->style()->objectName();
-      cs = cs.toLower();
-
-      themeComboBox->addItems(QStyleFactory::keys());
-      for (int i = 0; i < themeComboBox->count(); ++i) {
-            if (themeComboBox->itemText(i).toLower() == cs) {
-                  themeComboBox->setCurrentIndex(i);
-                  }
-            }
-
-      //---------------------------------------------------
-	//    Fonts
-      //---------------------------------------------------
-
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
       connect(okButton, SIGNAL(clicked()), SLOT(ok()));
       connect(cancelButton, SIGNAL(clicked()), SLOT(cancel()));
@@ -297,11 +279,6 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
       showBigtime->setChecked(config->bigTimeVisible);
       showMixer1->setChecked(config->mixer1Visible);
       showMixer2->setChecked(config->mixer2Visible);
-
-      arrangerX->setValue(config->geometryMain.x());
-      arrangerY->setValue(config->geometryMain.y());
-      arrangerW->setValue(config->geometryMain.width());
-      arrangerH->setValue(config->geometryMain.height());
 
       transportX->setValue(config->geometryTransport.x());
       transportY->setValue(config->geometryTransport.y());
@@ -391,7 +368,6 @@ static void setButtonColor(QAbstractButton* b, const QRgb c)
 void PreferencesDialog::resetValues()
       {
       *config = ::config;  // init with global config values
-      updateFonts();
 
       setButtonColor(palette0,  QColorDialog::customColor(0));
       setButtonColor(palette1,  QColorDialog::customColor(1));
@@ -420,48 +396,12 @@ PreferencesDialog::~PreferencesDialog()
       }
 
 //---------------------------------------------------------
-//   updateFonts
-//---------------------------------------------------------
-
-void PreferencesDialog::updateFonts()
-      {
-      fontSize0->setValue(config->fonts[0].pointSize());
-      fontName0->setCurrentFont(config->fonts[0]);
-      italic0->setChecked(config->fonts[0].italic());
-      bold0->setChecked(config->fonts[0].bold());
-
-      fontSize1->setValue(config->fonts[1].pointSize());
-      fontName1->setCurrentFont(config->fonts[1]);
-      italic1->setChecked(config->fonts[1].italic());
-      bold1->setChecked(config->fonts[1].bold());
-
-      fontSize2->setValue(config->fonts[2].pointSize());
-      fontName2->setCurrentFont(config->fonts[2]);
-      italic2->setChecked(config->fonts[2].italic());
-      bold2->setChecked(config->fonts[2].bold());
-
-      fontSize3->setValue(config->fonts[3].pointSize());
-      fontName3->setCurrentFont(config->fonts[3]);
-      italic3->setChecked(config->fonts[3].italic());
-      bold3->setChecked(config->fonts[3].bold());
-
-      fontSize4->setValue(config->fonts[4].pointSize());
-      fontName4->setCurrentFont(config->fonts[4]);
-      italic4->setChecked(config->fonts[4].italic());
-      bold4->setChecked(config->fonts[4].bold());
-
-      fontSize5->setValue(config->fonts[5].pointSize());
-      fontName5->setCurrentFont(config->fonts[5]);
-      italic5->setChecked(config->fonts[5].italic());
-      bold5->setChecked(config->fonts[5].bold());
-      }
-
-//---------------------------------------------------------
 //   apply
 //---------------------------------------------------------
 
 void PreferencesDialog::apply()
       {
+      ::config.styleSheetFile = styleSheetPath->text();
 	int showPartEvent = 0;
 	int showPartType = 0;
 
@@ -490,42 +430,6 @@ void PreferencesDialog::apply()
       config->canvasUseBgPixmap = usePixmap->isChecked();
       if (currentBg != "<none>")
             config->canvasBgPixmap = currentBg;
-
-      config->fonts[0] = fontName0->currentFont();
-      config->fonts[0].setPointSize(fontSize0->value());
-      config->fonts[0].setItalic(italic0->isChecked());
-      config->fonts[0].setBold(bold0->isChecked());
-
-	QApplication::setFont(config->fonts[0]);
-
-      config->fonts[1] = fontName1->currentFont();
-      config->fonts[1].setPointSize(fontSize1->value());
-      config->fonts[1].setItalic(italic1->isChecked());
-      config->fonts[1].setBold(bold1->isChecked());
-
-      config->fonts[2] = fontName2->currentFont();
-      config->fonts[2].setPointSize(fontSize2->value());
-      config->fonts[2].setItalic(italic2->isChecked());
-      config->fonts[2].setBold(bold2->isChecked());
-
-      config->fonts[3] = fontName3->currentFont();
-      config->fonts[3].setPointSize(fontSize3->value());
-      config->fonts[3].setItalic(italic3->isChecked());
-      config->fonts[3].setBold(bold3->isChecked());
-
-      config->fonts[4] = fontName4->currentFont();
-      config->fonts[4].setPointSize(fontSize4->value());
-      config->fonts[4].setItalic(italic4->isChecked());
-      config->fonts[4].setBold(bold4->isChecked());
-
-      config->fonts[5] = fontName5->currentFont();
-      config->fonts[5].setPointSize(fontSize5->value());
-      config->fonts[5].setItalic(italic5->isChecked());
-      config->fonts[5].setBold(bold5->isChecked());
-
-	config->style = themeComboBox->currentText();
-	// setting up a new theme might change the fontsize, so re-read
-      fontSize0->setValue(QApplication::font().pointSize());
 
       config->canvasShowGrid = arrGrid->isChecked();
 	// set colors...
@@ -564,11 +468,6 @@ void PreferencesDialog::apply()
       ::config.bigTimeVisible   = showBigtime->isChecked();
       ::config.mixer1Visible    = showMixer1->isChecked();
       ::config.mixer2Visible    = showMixer2->isChecked();
-
-      ::config.geometryMain.setX(arrangerX->value());
-      ::config.geometryMain.setY(arrangerY->value());
-      ::config.geometryMain.setWidth(arrangerW->value());
-      ::config.geometryMain.setHeight(arrangerH->value());
 
       ::config.geometryTransport.setX(transportX->value());
       ::config.geometryTransport.setY(transportY->value());
@@ -634,10 +533,6 @@ void PreferencesDialog::apply()
             w->resize(::config.geometryBigTime.size());
             w->move(::config.geometryBigTime.topLeft());
             }
-
-
-      muse->resize(::config.geometryMain.size());
-      muse->move(::config.geometryMain.topLeft());
 
       muse->setHeartBeat();        // set guiRefresh
       audio->msgSetRtc();          // set midi tick rate

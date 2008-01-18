@@ -40,7 +40,7 @@ MidiRack::MidiRack(QWidget* parent, MidiTrackBase* t)
       setAttribute(Qt::WA_DeleteOnClose, true);
       verticalScrollBar()->setStyle(smallStyle);
       track = t;
-      setFont(config.fonts[1]);
+//      setFont(config.fonts[1]);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 

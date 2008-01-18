@@ -423,7 +423,7 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
 
 void TimeCanvas::keyPressEvent(QKeyEvent *e)
 {
-    if (e->key() == Qt::Key_Up   || e->key() == Qt::Key_Down || 
+    if (e->key() == Qt::Key_Up   || e->key() == Qt::Key_Down ||
         e->key() == Qt::Key_Left || e->key() == Qt::Key_Right)
         keyboardNavigate(e);
 }
@@ -533,7 +533,7 @@ void TimeCanvas::paintClockRuler(QPainter& p, const QRect& r)
 
       int y = rulerHeight - 16;
       p.setPen(Qt::black);
-      p.setFont(config.fonts[4]);
+      p.setFont(_font3);
       QRect tr(r);
       tr.setHeight(12);
 
@@ -590,12 +590,12 @@ void TimeCanvas::paintClockRuler(QPainter& p, const QRect& r)
                   int yy;
                   QString s;
                   if (sr == 0) {
-                        p.setFont(config.fonts[3]);
+                        p.setFont(_font2);
                         s.sprintf("%d:00", min);
                         yy = y;
                         }
                   else {
-                        p.setFont(config.fonts[1]);
+                        p.setFont(_font1);
                         s.sprintf("%02d", sr);
                         yy = y + 7;
                         }
@@ -613,7 +613,7 @@ void TimeCanvas::paintClockRuler(QPainter& p, const QRect& r)
             int min2 = (sec2+59)/60;
             for (int min = min1; min < min2; ++min) {
                   QString s;
-                  p.setFont(config.fonts[3]);
+                  p.setFont(_font2);
                   s.sprintf("%d", min);
                   int xp = pos2pix(AL::Pos(min * AL::sampleRate * 60, AL::FRAMES));
                   p.setPen(Qt::black);
@@ -665,7 +665,7 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
       int w = r.width();
       int y = rulerHeight - 16;
 
-      p.setFont(config.fonts[4]);
+      p.setFont(_font3);
 
       int h  = 14;
       int y1 = r.y();
@@ -724,7 +724,7 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
       for (int bar = bar1; bar <= bar2;) {
       	AL::Pos stick(bar, 0, 0);
             if (metronomeRulerMag) {
-			p.setFont(config.fonts[3]);
+			p.setFont(_font2);
                   int x = pos2pix(stick);
                   QString s;
                   s.setNum(bar + 1);
@@ -752,12 +752,12 @@ void TimeCanvas::paintMetronomRuler(QPainter& p, const QRect& r)
                         if (beat == 0) {
                               num = bar + 1;
                               y3  = y + 2;
-                              p.setFont(config.fonts[3]);
+                              p.setFont(_font2);
                               }
                         else {
                               num = beat + 1;
                               y3  = y + 8;
-                              p.setFont(config.fonts[1]);
+                              p.setFont(_font1);
                               r.moveTop(r.top() + 1);
                               }
                         s.setNum(num);
@@ -999,7 +999,7 @@ void TimeCanvas::setLocatorPos(int idx, const AL::Pos& val, bool follow)
       {
       if (pos[idx] == val)
             return;
-      QFontMetrics fm(config.fonts[3]);
+      QFontMetrics fm(_font2);
       int fw  = fm.width("123") + 2;
       int w   = qMax(markIcon[idx]->width() + 2, fw);
       int h   = widget()->height();
@@ -1839,5 +1839,33 @@ void TimeCanvas::setPart(const AL::Pos& p1, const AL::Pos& p2)
       partPos1 = p1;
       partPos2 = p2;
       widget()->update();
+      }
+
+//---------------------------------------------------------
+//   setFont1
+//---------------------------------------------------------
+
+void TimeCanvas::setFont1(const QFont& f)
+      {
+      _font1 = f;
+      printf("TimeCanvas::setFont1\n");
+      }
+
+//---------------------------------------------------------
+//   setFont2
+//---------------------------------------------------------
+
+void TimeCanvas::setFont2(const QFont& f)
+      {
+      _font2 = f;
+      }
+
+//---------------------------------------------------------
+//   setFont3
+//---------------------------------------------------------
+
+void TimeCanvas::setFont3(const QFont& f)
+      {
+      _font3 = f;
       }
 

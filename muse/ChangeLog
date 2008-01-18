@@ -1,4 +1,10 @@
-17.1. (ws)
+18.1. (ws)
+      - Remove font & style configuration. Fonts and other things are configured in
+        QT style sheets. The application style sheet is configurable. Default is
+        the build-in file "style.qss".
+17.1.2008 (ws)
+      - use QSettings to save/restore main window geometry
+      - do not change geometry of main window when changing project
       - fix crash: loading another song, then Settings->Preferences
       - added svn revision number to "About" box
       - changed version number to 2.0.1, install to muse-2.0

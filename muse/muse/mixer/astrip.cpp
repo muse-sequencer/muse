@@ -72,7 +72,7 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       connect(stereo, SIGNAL(clicked(bool)), SLOT(stereoToggled(bool)));
 
       pre = new QToolButton;
-      pre->setFont(config.fonts[1]);
+      pre->setObjectName("preButton");
       pre->setCheckable(true);
       pre->setText(tr("Pre"));
       pre->setToolTip(tr("pre fader - post fader"));
@@ -100,7 +100,6 @@ AudioStrip::AudioStrip(Mixer* m, AudioTrack* t, bool align)
       grid->addWidget(slider, 3, 0, 1, 2); // 100, Qt::AlignRight);
 
       sl = new Awl::VolEntry(this);
-      sl->setFont(config.fonts[1]);
       sl->setSuffix(tr("dB"));
       sl->setFrame(true);
       sl->setValue(vol);
@@ -413,15 +412,14 @@ Awl::PanKnob* AudioStrip::addPanKnob(Awl::PanEntry** dlabel, int row)
 
       if (dlabel)
             *dlabel = pl;
-      pl->setFont(config.fonts[1]);
+//      pl->setFont(config.fonts[1]);
       pl->setFrame(true);
 
       pl->setFixedSize(entrySize);
 
       QLabel* plb = new QLabel;
+      plb->setObjectName("knobLabel");
       plb->setText(tr("Pan"));
-
-      plb->setFont(config.fonts[1]);
       plb->setFixedSize(entrySize);
       plb->setAlignment(Qt::AlignCenter);
 

@@ -66,6 +66,23 @@ static const int keyHeight   = 13;
 class TimeCanvas : public QFrame {
       Q_OBJECT
 
+      Q_PROPERTY(QFont font1 READ font1 WRITE setFont1)
+      Q_PROPERTY(QFont font2 READ font2 WRITE setFont2)
+      Q_PROPERTY(QFont font3 READ font3 WRITE setFont3)
+
+      // I could not find out how to set the size of a font property with
+      // style sheets. As a workaround here are special "size" properties
+      // which could be set with style sheet command
+      //    TimeCanvas       { qproperty-fontSize1: 6 }
+
+      Q_PROPERTY(int fontSize1 READ fontSize1 WRITE setFontSize1 STORED false)
+      Q_PROPERTY(int fontSize2 READ fontSize2 WRITE setFontSize2 STORED false)
+      Q_PROPERTY(int fontSize3 READ fontSize3 WRITE setFontSize3 STORED false)
+
+      QFont _font1;
+      QFont _font2;
+      QFont _font3;
+
       int yRange;
       bool _yFit;
       AL::Pos pos1;     // time scroll range
@@ -141,32 +158,32 @@ class TimeCanvas : public QFrame {
       bool eventFilter(QObject*, QEvent*);
 
       virtual void paint(QPainter&, QRect) = 0;
-      virtual void mousePress(QMouseEvent*) {  printf("mousePress method not overloaded\n"); }
-      virtual void mouseMove(QPoint)  {  printf("mouseMove method not overloaded\n"); }
-      virtual void mouseRelease(QMouseEvent*) { printf("mouseRelease method not overloaded\n"); }
-      virtual void mouseDoubleClick(QMouseEvent*) { printf("mouseDoubleClick method not overloaded\n"); }
+      virtual void mousePress(QMouseEvent*) {}
+      virtual void mouseMove(QPoint) {}
+      virtual void mouseRelease(QMouseEvent*) {}
+      virtual void mouseDoubleClick(QMouseEvent*) {}
       virtual void paintDrumList(QPainter&, QRect) {}
-      virtual void layout() { printf("layout method not overloaded\n"); }
-      virtual void enterB() { printf("enterB method not overloaded\n"); }
-      virtual void leaveB() { printf("leaveB method not overloaded\n"); }
+      virtual void layout() {}
+      virtual void enterB() {}
+      virtual void leaveB() {}
 
       virtual void setCursor();
 
-      virtual void timeTypeChanged() { printf("timeTypeChanged method not overloaded\n");}
-      virtual void magChanged() { printf("magChanged method not overloaded\n");}
+      virtual void timeTypeChanged() {}
+      virtual void magChanged() {}
 
-      virtual void paintControllerCanvas(QPainter&, QRect) { printf("paintControllerCanvas method not overloaded\n"); }
-      virtual void paintControllerPanel(QPainter&, QRect) { printf("paintControllerPanel method not overloaded\n"); }
+      virtual void paintControllerCanvas(QPainter&, QRect) {}
+      virtual void paintControllerPanel(QPainter&, QRect) {}
 
-      virtual void dragEnter(QDragEnterEvent*) { printf("dragEnter method not overloaded\n"); }
-      virtual void drop(QDropEvent*) { printf("drop method not overloaded\n"); }
-      virtual void dragMove(QDragMoveEvent*) { printf("dragMove method not overloaded\n"); }
-      virtual void dragLeave(QDragLeaveEvent*) { printf("dragLeave method not overloaded\n"); }
+      virtual void dragEnter(QDragEnterEvent*) {}
+      virtual void drop(QDropEvent*) {}
+      virtual void dragMove(QDragMoveEvent*) {}
+      virtual void dragLeave(QDragLeaveEvent*) {}
 
-      virtual void addController() { printf("addController method not overloaded\n"); }
+      virtual void addController() {}
 
       virtual void keyPressEvent(QKeyEvent *e);
-      virtual void keyboardNavigate(QKeyEvent *) { printf("keyboardNavigate method not overloaded\n"); }
+      virtual void keyboardNavigate(QKeyEvent *) {}
 
       // map logical coordinates to physical coordinates (pixel)
       int mapx(int x)  const;
@@ -252,6 +269,21 @@ class TimeCanvas : public QFrame {
 
       void updateCanvasB() { _widget->update(rCanvasB); }
       void updateRuler()   { _widget->update(rRuler);   }
+
+      QFont font1() const { return _font1; }
+      QFont font2() const { return _font2; }
+      QFont font3() const { return _font3; }
+
+      void setFont1(const QFont& f);
+      void setFont2(const QFont& f);
+      void setFont3(const QFont& f);
+
+      int fontSize1() const      { return _font1.pointSize(); }
+      int fontSize2() const      { return _font2.pointSize(); }
+      int fontSize3() const      { return _font3.pointSize(); }
+      void setFontSize1(int val) { _font1.setPointSize(val); }
+      void setFontSize2(int val) { _font2.setPointSize(val); }
+      void setFontSize3(int val) { _font3.setPointSize(val); }
 
       static FollowMode followMode;
       friend class CtrlEdit;

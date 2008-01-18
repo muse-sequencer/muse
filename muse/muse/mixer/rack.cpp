@@ -46,7 +46,7 @@ EffectRack::EffectRack(QWidget* parent, AudioTrack* t, bool flag)
       verticalScrollBar()->setStyle(smallStyle);
 
       track = t;
-      setFont(config.fonts[1]);
+//      setFont(config.fonts[1]);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 

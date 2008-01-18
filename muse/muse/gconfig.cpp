@@ -21,8 +21,9 @@
 #include "gconfig.h"
 
 GlobalConfigValues config = {
+      ":/style.qss",           // default style sheet
       {
-        QColor(255,  232,  140),   // part colors
+        QColor(255,  232,  140),    // part colors
         QColor(0xff, 0x00, 0x00),
         QColor(0x00, 0xff, 0x00),
         QColor(0x00, 0x00, 0xff),
@@ -46,14 +47,6 @@ GlobalConfigValues config = {
 	QColor(0, 0, 0),        // bigTimeBackgroundColor;
       QColor(200, 200, 200),  // waveEditBackgroundColor;
       {
-        QFont(),
-        QFont(),
-        QFont(),
-        QFont(),
-        QFont(),
-        QFont()
-        },
-      {
             QColor(Qt::white),            // outputTrackBg;
             QColor(Qt::yellow),           // groupTrackBg;
             QColor(Qt::green),            // waveTrackBg;
@@ -62,7 +55,6 @@ GlobalConfigValues config = {
             QColor(Qt::gray),             // midi;
             QColor(Qt::gray),             // midiOut;
             QColor(Qt::gray),             // midiIn;
-//            QColor(Qt::gray),             // midiChannel;
             QColor(Qt::gray),             // midiSynti;
             },
 
@@ -84,7 +76,6 @@ GlobalConfigValues config = {
       START_ASK_FOR_PROJECT,        // startMode
       QString(""),                  // start song path
       384,                          // gui division
-      QRect(0, 0, 800, 560),        // GeometryMain;
       QRect(0, 0, 200, 100),        // GeometryTransport;
       QRect(0, 0, 600, 200),        // GeometryBigTime;
       QRect(100, 100, 600, 400),    // GeometryPianoroll;
@@ -113,7 +104,6 @@ GlobalConfigValues config = {
       5,                            // canvasShowPartEvent
       false,                        // canvasShowGrid;
 
-      QString(""),                  // style
       false,                        // use JACK freewheel mode
       QString("sweep"),             // externalWavEditor shell command
 

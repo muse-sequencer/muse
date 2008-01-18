@@ -222,7 +222,6 @@ SimpleButton* newMuteButton()
       {
       // SimpleButton* mute  = new SimpleButton(parent, muteIconOff, muteIconOn);
       SimpleButton* mute = new SimpleButton(QT_TR_NOOP("m"));
-      mute->setFont(config.fonts[BFONT]);
       mute->setCheckable(true);
       mute->setToolTip(QT_TR_NOOP("mute"));
       mute->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
@@ -237,7 +236,6 @@ SimpleButton* newSoloButton()
       {
 //      SimpleButton* solo  = new SimpleButton(parent, soloIconOn, soloIconOff);
       SimpleButton* solo = new SimpleButton(QT_TR_NOOP("s"));
-      solo->setFont(config.fonts[BFONT]);
       solo->setCheckable(true);
       solo->setToolTip(QT_TR_NOOP("solo"));
       solo->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
@@ -251,7 +249,6 @@ SimpleButton* newSoloButton()
 SimpleButton* newMonitorButton()
       {
       SimpleButton* monitor = new SimpleButton(QT_TR_NOOP("Mo"));
-      monitor->setFont(config.fonts[BFONT]);
       monitor->setCheckable(true);
       monitor->setToolTip(QT_TR_NOOP("monitor"));
       monitor->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
@@ -265,7 +262,6 @@ SimpleButton* newMonitorButton()
 SimpleButton* newDrumMapButton()
       {
       SimpleButton* dm = new SimpleButton(QT_TR_NOOP("Dr"));
-      dm->setFont(config.fonts[BFONT]);
       dm->setCheckable(true);
       dm->setToolTip(QT_TR_NOOP("use drum map"));
       return dm;
@@ -301,7 +297,6 @@ SimpleButton* newRecordButton()
 SimpleButton* newAutoReadButton()
       {
       SimpleButton* ar = new SimpleButton(QT_TR_NOOP("aR"));
-      ar->setFont(config.fonts[BFONT]);
       ar->setCheckable(true);
       ar->setToolTip(QT_TR_NOOP("automation read"));
       return ar;
@@ -314,7 +309,6 @@ SimpleButton* newAutoReadButton()
 SimpleButton* newAutoWriteButton()
       {
       SimpleButton* aw = new SimpleButton(QT_TR_NOOP("aW"));
-      aw->setFont(config.fonts[BFONT]);
       aw->setCheckable(true);
       aw->setToolTip(QT_TR_NOOP("automation write"));
       return aw;
@@ -327,7 +321,6 @@ SimpleButton* newAutoWriteButton()
 SimpleButton* newSyncButton()
       {
       SimpleButton* sync = new SimpleButton(QT_TR_NOOP("sync"));
-      sync->setFont(config.fonts[BFONT]);
       sync->setCheckable(true);
       sync->setToolTip(QT_TR_NOOP("send sync events"));
       return sync;
@@ -371,7 +364,7 @@ SimpleButton* newStereoButton()
 QToolButton* newOutRouteButton()
       {
       QToolButton* oR = new QToolButton;
-      oR->setFont(config.fonts[BFONT]);
+      oR->setObjectName("routeButton");
       oR->setFixedHeight(BUTTON_HEIGHT);
       oR->setText(QT_TR_NOOP("oR"));
       oR->setCheckable(false);
@@ -390,7 +383,7 @@ QToolButton* newOutRouteButton()
 QToolButton* newInRouteButton()
       {
       QToolButton* iR = new QToolButton;
-      iR->setFont(config.fonts[BFONT]);
+      iR->setObjectName("routeButton");
       iR->setFixedHeight(BUTTON_HEIGHT);
       iR->setText(QT_TR_NOOP("iR"));
       iR->setCheckable(false);

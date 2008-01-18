@@ -364,7 +364,7 @@ void DrumCanvas::cmd(QAction* a)
                         unsigned tick = event.tick();
                         bool selected = devent->isSelected();
                         bool inLoop   = (tick >= song->lpos()) && (tick < song->rpos());
-	
+
                         int range = editor->applyTo();
                         if ((range == RANGE_ALL)
                            || (range == RANGE_SELECTED && selected)
@@ -604,7 +604,7 @@ void DrumCanvas::paintDrumList(QPainter& p, QRect r)
       {
       p.fillRect(r, QColor(0xe0, 0xe0, 0xe0));
       paintVLine(p, 0, rPanelB.y(), rPanelA.x() + rPanelA.width());
-      p.setFont(config.fonts[1]);
+//      p.setFont(config.fonts[1]);
 
       int yoff = wpos.y() - rPanelA.y();
       int i = (r.y() + yoff) / drumHeight;
