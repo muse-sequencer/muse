@@ -21,6 +21,7 @@
 #ifndef __MIDIINPORT_H__
 #define __MIDIINPORT_H__
 
+#include "midififo.h"
 #include "miditrackbase.h"
 #include "midievent.h"
 
@@ -33,9 +34,8 @@ static const int RECORD_FIFO_SIZE = 512;
 class MidiInPort : public MidiTrackBase {
       Q_OBJECT
 
-      MidiEvent recordFifo[RECORD_FIFO_SIZE];
-      int recordRead, recordWrite;
-      volatile int recordCount;
+      MidiFifo recordFifo;
+
       int tmpRecordCount;
       int activity[MIDI_CHANNELS];
 
@@ -50,7 +50,7 @@ class MidiInPort : public MidiTrackBase {
       virtual bool isMute() const         { return _mute; }
       virtual Part* newPart(Part*, bool)  { return 0; }
 
-#ifndef __APPLE__      
+#ifndef __APPLE__
       void eventReceived(snd_seq_event_t*);
 #endif
       virtual void getEvents(unsigned from, unsigned to, int channel, MidiEventList* dst);

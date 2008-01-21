@@ -342,12 +342,21 @@ void Song::undoOp(UndoOp::UndoType type, Part* part)
       addUndo(i);
       }
 
-void Song::undoOp(UndoOp::UndoType type, Event& oev, Event& nev, Part* part)
+void Song::undoOp(UndoOp::UndoType type, const Event& oev, const Event& nev, Part* part)
       {
       UndoOp i;
       i.type   = type;
       i.nEvent = nev;
       i.oEvent = oev;
+      i.part   = part;
+      addUndo(i);
+      }
+
+void Song::undoOp(UndoOp::UndoType type, const Event& nev, Part* part)
+      {
+      UndoOp i;
+      i.type   = type;
+      i.nEvent = nev;
       i.part   = part;
       addUndo(i);
       }

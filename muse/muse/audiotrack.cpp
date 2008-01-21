@@ -399,7 +399,7 @@ void AudioTrack::record()
 void AudioTrack::setChannels(int n)
       {
       if (n > MAX_CHANNELS) {
-            fprintf(stderr, "too many channels!\n");
+            fprintf(stderr, "AudioTrack::setChannels(%d): too many channels!\n", n);
             abort();
             }
       Track::setChannels(n);

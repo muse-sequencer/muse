@@ -52,9 +52,10 @@ MidiEvent MidiFifo::get()
 //   peek
 //---------------------------------------------------------
 
-MidiEvent MidiFifo::peek()
+const MidiEvent& MidiFifo::peek(int n)
       {
-      return fifo[rIndex];
+      int idx = (rIndex + n) % MIDI_FIFO_SIZE;
+      return fifo[idx];
       }
 
 //---------------------------------------------------------

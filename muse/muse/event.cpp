@@ -35,6 +35,7 @@ EventBase::EventBase(EventType t)
       Pos::setType(_type == Wave ? AL::FRAMES : AL::TICKS);
       refCount  = 0;
       _selected = false;
+      _recorded = false;
       }
 
 EventBase::EventBase(const EventBase& ev)
@@ -43,6 +44,7 @@ EventBase::EventBase(const EventBase& ev)
       refCount  = 0;
       _selected = ev._selected;
       _type     = ev._type;
+      _recorded = ev._recorded;
       }
 
 //---------------------------------------------------------
@@ -142,9 +144,11 @@ bool Event::operator==(const Event& e) const {
 
 
 int Event::getRefCount() const    { return ev->getRefCount(); }
-bool Event::selected() const      { return ev->_selected; }
-void Event::setSelected(bool val) { ev->_selected = val; }
-void Event::move(int offset)      { ev->move(offset); }
+bool Event::selected() const      { return ev->_selected;     }
+void Event::setSelected(bool val) { ev->_selected = val;      }
+bool Event::recorded() const      { return ev->_recorded;     }
+void Event::setRecorded(bool val) { ev->_recorded = val;      }
+void Event::move(int offset)      { ev->move(offset);         }
 
 void Event::read(QDomNode node)   { ev->read(node); }
 void Event::write(Xml& xml, const Pos& o) const { ev->write(xml, o); }

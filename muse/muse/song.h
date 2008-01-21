@@ -270,9 +270,9 @@ class Song : public QObject {
       //   event manipulations
       //-----------------------------------------
 
-      bool addEvent(Event&, Part*);
-      void changeEvent(Event&, Event&, Part*);
-      void deleteEvent(Event&, Part*);
+      bool addEvent(const Event&, Part*);
+      void changeEvent(const Event&, const Event&, Part*);
+      void deleteEvent(const Event&, Part*);
       void cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigned ex);
 
       //-----------------------------------------
@@ -350,7 +350,8 @@ class Song : public QObject {
       void undoOp(UndoOp::UndoType, int, Track*);
       void undoOp(UndoOp::UndoType, int, int, int = 0);
       void undoOp(UndoOp::UndoType, Part*);
-      void undoOp(UndoOp::UndoType, Event& oevent, Event& nevent, Part*);
+      void undoOp(UndoOp::UndoType, const Event& oevent, const Event& nevent, Part*);
+      void undoOp(UndoOp::UndoType type, const Event& nev, Part* part);
       void undoOp(UndoOp::UndoType, SigEvent* oevent, SigEvent* nevent);
       void undoOp(UndoOp::UndoType, Part* oPart, Part* nPart);
       void undoOp(UndoOp::UndoType, Track*, int, unsigned, CVal, CVal);

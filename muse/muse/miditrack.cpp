@@ -225,6 +225,7 @@ void MidiTrack::recordBeat()
                   return;
                   }
             }
+      QList<Event> el;
       while (!recordFifo.isEmpty()) {
             MidiEvent me(recordFifo.get());
 
@@ -266,10 +267,8 @@ void MidiTrack::recordBeat()
                   event.setLenTick(1);
                   event.setPitch(me.dataA());
                   event.setVelo(me.dataB());
-                  audio->msgAddEvent(event, recordPart, false);
-                  ++recordedEvents;
-                  updateFlags |= SC_EVENT_INSERTED;
                   keyDown.push_front(event);
+                  el.append(event);
                   }
             else if (me.type() == ME_POLYAFTER) {
                   Event event(PAfter);
@@ -293,9 +292,7 @@ void MidiTrack::recordBeat()
                               datah = me.dataB();
                               event.setA(dataType | (rpnh << 8) | rpnl);
                               event.setB(datah);
-                              audio->msgAddEvent(event, recordPart, false);
-                              ++recordedEvents;
-                              updateFlags |= SC_EVENT_INSERTED;
+                              el.append(event);
                               break;
 
                         case CTRL_LDATA:
@@ -329,9 +326,7 @@ void MidiTrack::recordBeat()
                         default:
                               event.setA(me.dataA());
                               event.setB(me.dataB());
-                              audio->msgAddEvent(event, recordPart, false);
-                              ++recordedEvents;
-                              updateFlags |= SC_EVENT_INSERTED;
+                              el.append(event);
                               break;
                         }
                   }
@@ -340,36 +335,36 @@ void MidiTrack::recordBeat()
                   event.setTick(time + ptick);
                   event.setA(CTRL_PROGRAM);
                   event.setB((hbank << 16) | (lbank << 8) | me.dataA());
-                  audio->msgAddEvent(event, recordPart, false);
-                  ++recordedEvents;
-                  updateFlags |= SC_EVENT_INSERTED;
+                  el.append(event);
                   }
             else if (me.type() == ME_PITCHBEND) {
                   Event event(Controller);
                   event.setTick(time + ptick);
                   event.setA(CTRL_PITCH);
                   event.setB(me.dataA());
-                  audio->msgAddEvent(event, recordPart, false);
-                  ++recordedEvents;
-                  updateFlags |= SC_EVENT_INSERTED;
+                  el.append(event);
                   }
             else if (me.type() == ME_SYSEX) {
                   Event event(Sysex);
                   event.setTick(time + ptick);
                   event.setData(me.data(), me.len());
-                  audio->msgAddEvent(event, recordPart, false);
-                  ++recordedEvents;
-                  updateFlags |= SC_EVENT_INSERTED;
+                  el.append(event);
                   }
             else if (me.type() == ME_AFTERTOUCH) {
                   Event event(CAfter);
                   event.setTick(time + ptick);
                   event.setA(me.dataA());
-                  audio->msgAddEvent(event, recordPart, false);
-                  ++recordedEvents;
-                  updateFlags |= SC_EVENT_INSERTED;
+                  el.append(event);
                   }
             }
+      if (!el.isEmpty()) {
+            for (int i = 0; i < el.size(); ++i)
+                  el[i].setRecorded(true);
+            audio->msgAddEvents(&el, recordPart);
+            recordedEvents += el.size();
+            updateFlags |= SC_EVENT_INSERTED;
+            }
+
       if (partCreated) {
             recordPart->setLenTick(cpos - ptick);
             updateFlags |= SC_PART_MODIFIED;
@@ -392,6 +387,9 @@ void MidiTrack::recordBeat()
 
 void MidiTrack::stopRecording()
       {
+      for (iEvent e = recordPart->events()->begin(); e != recordPart->events()->end(); ++e) {
+            e->second.setRecorded(false);
+            }
       if (recordedEvents == 0 && partCreated) {
             // TD: remove empty part?
             }
@@ -500,6 +498,8 @@ void MidiTrack::processMidi(SeqTime* t)
 
                   for (; ie != iend; ++ie) {
                         Event ev = ie->second;
+                        if (ev.recorded())
+                              continue;
                         if (ev.type() == Meta)        // ignore meta events
                               continue;
                         unsigned tick  = ev.tick() + offset;

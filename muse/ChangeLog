@@ -1,3 +1,7 @@
+21.1. (ws)
+      - fix: recorded midi events were echoed to midi output even if the "monitor"
+        switch was "off"
+      - speedups for midi recording; recorded events are shown in "realtime"
 18.1. (ws)
       - Remove font & style configuration. Fonts and other things are configured in
         QT style sheets. The application style sheet is configurable. Default is

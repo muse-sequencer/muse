@@ -454,7 +454,7 @@ void AlsaMidi::read(MidiSeq* /*seq*/)
                               break;
                               }
                         }
-                  	
+
                   case SND_SEQ_EVENT_KEYPRESS:
                   case SND_SEQ_EVENT_CHANPRESS:
                   case SND_SEQ_EVENT_NOTEON:

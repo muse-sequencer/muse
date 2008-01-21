@@ -801,7 +801,7 @@ void VstSynthIF::write(Xml& xml) const
       int params = _fst->numParameter();
       for (int i = 0; i < params; ++i) {
             float f = _fst->getParameter(i);
-            xml.floatTag("param", f);
+            xml.tag("param", f);
             }
       }
 
@@ -811,7 +811,7 @@ void VstSynthIF::write(Xml& xml) const
 
 void VstSynthIF::getData(MidiEventList* el, unsigned pos, int ports, unsigned n, float** buffer)
       {
-      int endPos = pos + n;
+      unsigned int endPos = pos + n;
       iMidiEvent i = el->begin();
       for (; i != el->end(); ++i) {
             if (i->time() >= endPos)
@@ -1043,7 +1043,7 @@ void VstPluginIF::apply(unsigned nframes, float** src, float** dst)
 //   setParam
 //---------------------------------------------------------
 
-void VstPluginIF::setParam(int i, float val)
+void VstPluginIF::setParam(int i, double val)
       {
       _fst->setParameter(i, val);
       }

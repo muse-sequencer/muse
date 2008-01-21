@@ -38,9 +38,6 @@ MidiInPort::MidiInPort()
    : MidiTrackBase()
       {
       _channels   = 1;
-      recordRead  = 0;
-      recordWrite = 0;
-      recordCount = 0;
       for (int i = 0; i < MIDI_CHANNELS; ++i)
             activity[i] = 0;
       }
@@ -190,15 +187,8 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
       for (iMidiEvent i = ol.begin(); i != ol.end(); ++i) {
             triggerActivity(i->channel());
             song->putEvent(*i);
-            if (recordCount == RECORD_FIFO_SIZE) {
+            if (recordFifo.put(*i))
                   printf("MusE: eventReceived(): fifo overflow\n");
-                  continue;
-                  }
-            recordFifo[recordWrite] = *i;
-            ++recordWrite;
-            if (recordWrite == RECORD_FIFO_SIZE)
-                  recordWrite = 0;
-            q_atomic_increment(&recordCount);
             }
       }
 #endif
@@ -210,12 +200,8 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
 
 void MidiInPort::afterProcess()
       {
-      while (tmpRecordCount--) {
-            ++recordRead;
-            if (recordRead >= RECORD_FIFO_SIZE)
-                  recordRead = 0;
-            q_atomic_decrement(&recordCount);
-            }
+      while (tmpRecordCount--)
+            recordFifo.remove();
       }
 
 //---------------------------------------------------------
@@ -225,7 +211,7 @@ void MidiInPort::afterProcess()
 
 void MidiInPort::beforeProcess()
       {
-      tmpRecordCount = recordCount;
+      tmpRecordCount = recordFifo.getSize();
       }
 
 //---------------------------------------------------------
@@ -238,13 +224,10 @@ void MidiInPort::beforeProcess()
 
 void MidiInPort::getEvents(unsigned, unsigned, int ch, MidiEventList* dst)
       {
-      int tmpRecordRead = recordRead;
       for (int i = 0; i < tmpRecordCount; ++i) {
-            if (ch == -1 || recordFifo[tmpRecordRead].channel() == ch)
-                  dst->insert(recordFifo[tmpRecordRead]);
-            ++tmpRecordRead;
-            if (tmpRecordRead >= RECORD_FIFO_SIZE)
-                  tmpRecordRead = 0;
+            const MidiEvent& ev = recordFifo.peek(i);
+            if (ch == -1 || (ev.channel() == ch))
+                  dst->insert(ev);
             }
       }
 

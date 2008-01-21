@@ -46,12 +46,12 @@ void EventList::read(QDomNode node, bool midi)
 //   add
 //---------------------------------------------------------
 
-iEvent EventList::add(Event& event, unsigned tick)
+iEvent EventList::add(const Event& event, unsigned tick)
       {
       return std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (tick, event));
       }
 
-iEvent EventList::add(Event& event)
+iEvent EventList::add(const Event& event)
       {
       return add(event, event.tick());
       }
@@ -60,7 +60,7 @@ iEvent EventList::add(Event& event)
 //   move
 //---------------------------------------------------------
 
-void EventList::move(Event& event, unsigned tick)
+void EventList::move(const Event& event, unsigned tick)
       {
       iEvent i = find(event);
       erase(i);

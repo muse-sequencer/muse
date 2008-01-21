@@ -391,6 +391,19 @@ void Audio::msgAddEvent(const Event& event, Part* part, bool doUndoFlag)
       }
 
 //---------------------------------------------------------
+//   msgAddEvents
+//---------------------------------------------------------
+
+void Audio::msgAddEvents(QList<Event>* el, Part* part)
+      {
+      AudioMsg msg;
+      msg.id = SEQM_ADD_EVENTS;
+      msg.el = el;
+      msg.p2 = part;
+      sendMessage(&msg, false);
+      }
+
+//---------------------------------------------------------
 //   msgDeleteEvent
 //---------------------------------------------------------
 

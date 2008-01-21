@@ -109,11 +109,11 @@ void Song::setSig(const AL::TimeSignature& sig)
 //    return true if event was added
 //---------------------------------------------------------
 
-bool Song::addEvent(Event& event, Part* part)
+bool Song::addEvent(const Event& event, Part* part)
       {
       if (event.type() == Controller) {
             MidiTrack* track = (MidiTrack*)part->track();
-            int tick  = event.tick();
+            int tick  = event.tick() + part->tick();
             int cntrl = event.dataA();
             CVal val;
             val.i = event.dataB();
@@ -134,7 +134,7 @@ bool Song::addEvent(Event& event, Part* part)
 //   changeEvent
 //---------------------------------------------------------
 
-void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
+void Song::changeEvent(const Event& oldEvent, const Event& newEvent, Part* part)
       {
       iEvent i = part->events()->find(oldEvent);
       if (i == part->events()->end()) {
@@ -147,7 +147,7 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
 
       if (newEvent.type() == Controller) {
             MidiTrack* track = (MidiTrack*)part->track();
-            int tick  = newEvent.tick();
+            int tick  = newEvent.tick() + part->tick();
             int cntrl = newEvent.dataA();
             CVal val;
             val.i   = newEvent.dataB();
@@ -159,13 +159,13 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
 //   deleteEvent
 //---------------------------------------------------------
 
-void Song::deleteEvent(Event& event, Part* part)
+void Song::deleteEvent(const Event& event, Part* part)
       {
 #if 0 //TODO3
       if (event.type() == Controller) {
             MidiTrack* track = (MidiTrack*)part->track();
             int ch    = track->outChannel();
-            int tick  = event.tick();
+            int tick  = event.tick() + part->tick();
             int cntrl = event.dataA();
             midiPorts[track->outPort()].deleteController(ch, tick, cntrl);
             }
@@ -882,12 +882,21 @@ void Song::processMsg(AudioMsg* msg)
             case SEQM_ADD_EVENT:
                   updateFlags = SC_EVENT_INSERTED;
                   if (addEvent(msg->ev1, (Part*)(msg->p2))) {
-                        Event ev;
-                        undoOp(UndoOp::AddEvent, ev, msg->ev1, (Part*)msg->p2);
+                        undoOp(UndoOp::AddEvent, msg->ev1, (Part*)msg->p2);
                         }
                   else
                         updateFlags = 0;
                   break;
+
+            case SEQM_ADD_EVENTS:
+                  updateFlags = SC_EVENT_INSERTED;
+                  for (int i = 0; i < msg->el->size(); ++i) {
+                        if (addEvent(msg->el->at(i), (Part*)(msg->p2))) {
+                              undoOp(UndoOp::AddEvent, msg->el->at(i), (Part*)msg->p2);
+                              }
+                        }
+                  break;
+
             case SEQM_REMOVE_EVENT:
                   {
                   Event event = msg->ev1;

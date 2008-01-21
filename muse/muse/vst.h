@@ -157,7 +157,7 @@ class VstPluginIF : public PluginIF {
       virtual void activate() {}
       virtual void deactivate() {}
       virtual void cleanup() {}
-      virtual void setParam(int i, float val);
+      virtual void setParam(int i, double val);
       virtual float param(int i) const;
       virtual const char* getParameterName(int k) const;
       virtual const char* getParameterLabel(int) const;

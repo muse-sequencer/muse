@@ -33,6 +33,7 @@ class EventBase : public AL::PosLen {
    protected:
       int refCount;
       bool _selected;
+      bool _recorded;
 
    public:
       EventBase(EventType t);
@@ -41,11 +42,13 @@ class EventBase : public AL::PosLen {
 
       virtual ~EventBase() {}
 
-      int getRefCount() const    { return refCount; }
-      EventType type() const     { return _type;  }
-      void setType(EventType t)  { _type = t;  }
+      int getRefCount() const    { return refCount;  }
+      EventType type() const     { return _type;     }
+      void setType(EventType t)  { _type = t;        }
       bool selected() const      { return _selected; }
-      void setSelected(bool val) { _selected = val; }
+      void setSelected(bool val) { _selected = val;  }
+      bool recorded() const      { return _recorded; }
+      void setRecorded(bool val) { _recorded = val;  }
 
       void move(int offset);
 

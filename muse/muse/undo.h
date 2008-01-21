@@ -30,6 +30,7 @@ class SigEvent;
 class Part;
 
 extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files, for cleanup on shutdown
+
 //---------------------------------------------------------
 //   UndoOp
 //---------------------------------------------------------

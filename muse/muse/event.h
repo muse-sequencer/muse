@@ -57,6 +57,8 @@ class Event {
       int getRefCount() const;
       bool selected() const;
       void setSelected(bool val);
+      bool recorded() const;
+      void setRecorded(bool val);
       void move(int offset);
 
       void read(QDomNode);
@@ -126,9 +128,9 @@ class EventList : public EL {
       int cloneCount;
       EventList()           { cloneCount = 0; }
       iEvent find(const Event&);
-      iEvent add(Event& event);
-      iEvent add(Event& event, unsigned tick);
-      void move(Event& event, unsigned tick);
+      iEvent add(const Event& event);
+      iEvent add(const Event& event, unsigned tick);
+      void move(const Event& event, unsigned tick);
       void dump() const;
       void read(QDomNode, bool midi);
       };

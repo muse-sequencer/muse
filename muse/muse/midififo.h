@@ -40,10 +40,11 @@ class MidiFifo {
       MidiFifo()  { clear(); }
       bool put(const MidiEvent& event);   // returns true on fifo overflow
       MidiEvent get();
-      MidiEvent peek();
+      const MidiEvent& peek(int n = 0);
       void remove();
       bool isEmpty() const { return size == 0; }
       void clear()         { size = 0, wIndex = 0, rIndex = 0; }
+      int getSize() const  { return size; }
       };
 
 //---------------------------------------------------------

@@ -51,8 +51,8 @@ SET(MusE_INSTALL_NAME  "muse-2.0")
 include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
 include ( ${PROJECT_SOURCE_DIR}/cmake/TargetDoc.cmake)
 
-option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface"  ON)
-option ( ENABLE_VST    "enable VST/win support"                  ON)
+option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface"  OFF)
+option ( ENABLE_VST    "enable VST/win support"                  OFF)
 option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"     ON)
 option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin" OFF)
 
@@ -225,6 +225,14 @@ if ( ENABLE_DSSI )
       endif (NOT DSSI_INCDIR)
 endif ( ENABLE_DSSI )
 
+if (ENABLE_VST)
+      message("VST support enabled")
+      set (VST_SUPPORT TRUE)
+else (ENABLE_VST)
+      message("VST support disabled")
+      set (VST_SUPPORT FALSE)
+endif (ENABLE_VST)
+
 ##
 ## TODO
 ##
@@ -232,12 +240,6 @@ endif ( ENABLE_DSSI )
 ##
 
 SET (USE_SSE true)
-
-##
-## vst
-##
-## TODO
-##
 
 ##
 ## check for fluidsynth

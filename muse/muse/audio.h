@@ -79,6 +79,7 @@ enum {
       SEQM_REMOVE_PART,
       SEQM_CHANGE_PART,
       SEQM_ADD_EVENT,
+      SEQM_ADD_EVENTS,
       SEQM_REMOVE_EVENT,
       SEQM_CHANGE_EVENT,
       SEQM_ADD_TEMPO,
@@ -128,6 +129,7 @@ struct AudioMsg : public ThreadMsg {   // this should be an union
       Part* spart;
       Part* dpart;
       Track* track;
+      QList<Event>* el;
 
       const void *p1, *p2, *p3;
       Event ev1, ev2;
@@ -242,6 +244,7 @@ class Audio {
       void msgMoveTrack(Track*, Track*);
 
       void msgAddEvent(const Event&, Part*, bool u = true);
+      void msgAddEvents(QList<Event>* el, Part* part);
       void msgDeleteEvent(const Event&, Part*, bool u = true);
       void msgChangeEvent(const Event&, const Event&, Part*, bool u = true);
 
