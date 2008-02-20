@@ -14,7 +14,7 @@
 
 #include "muse/midictrl.h"
 
-#define SS_VERSIONSTRING "0.2"
+#define SS_VERSIONSTRING "1.0"
 
 #define SS_DEBUG        0
 #define SS_DEBUG_INIT   0
@@ -33,8 +33,6 @@
 #define SS_DBG_LADSPA(string1) if (SS_DEBUG_LADSPA) fprintf(stderr, "%s:%d:%s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string1);
 #define SS_DBG_LADSPA2(string1, string2) if (SS_DEBUG_LADSPA) fprintf(stderr, "%s:%d:%s: %s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string1, string2);
 
-//#define SS_TRACE_IN
-//#define SS_TRACE_OUT
 #define SS_SYSEX_INIT_DATA_VERSION           1
 
 #define SS_NR_OF_CHANNELS                   16
@@ -88,10 +86,11 @@ typedef unsigned char byte;
 
 enum {
       SS_SYSEX_LOAD_SAMPLE = 0,   // gui -> synth: tell synth to load sample
-      SS_SYSEX_INIT_DATA,         // synth reinitialization, this must not be changed since this value is written into proj file
+      SS_SYSEX_INIT_DATA,         // synth reinitialization, the position of this (1) in the enum must not be changed since this value is written into proj file
       SS_SYSEX_LOAD_SAMPLE_OK,    // synth -> gui: tell gui sample loaded OK
       SS_SYSEX_LOAD_SAMPLE_ERROR, // synth -> gui: tell gui sample ! loaded OK
       SS_SYSEX_CLEAR_SAMPLE,       // gui -> synth: tell synth to clear sample
+      SS_SYSEX_CLEAR_SAMPLE_OK,    // synth->gui: confirm sample cleared OK
       SS_SYSEX_LOAD_SENDEFFECT,   // gui -> synth: tell synth to load laspa-effect
       SS_SYSEX_LOAD_SENDEFFECT_OK,// synth->gui: plugin loaded ok
       SS_SYSEX_LOAD_SENDEFFECT_ERROR, // synth->gui: plugin _not_ loaded ok
@@ -99,7 +98,9 @@ enum {
       SS_SYSEX_CLEAR_SENDEFFECT_OK,// synth->gui: plugin cleared
       SS_SYSEX_SET_PLUGIN_PARAMETER, //gui->synth: set plugin parameter
       SS_SYSEX_SET_PLUGIN_PARAMETER_OK, // synth->gui: set plugin parameter (update gui)
-      SS_SYSEX_ERRORMSG           // synth -> gui: general error message from synth
+      SS_SYSEX_ERRORMSG,           // synth -> gui: general error message from synth
+      SS_SYSEX_GET_INIT_DATA,      // gui->synth: request init data
+      SS_SYSEX_SEND_INIT_DATA      // synth->gui: give gui init data
       };
 
 extern int SS_samplerate;

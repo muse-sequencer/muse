@@ -13,7 +13,7 @@
 #define __MUSE_TESTOGUI_H__
 
 #include "libsynti/gui.h"
-#include "simpledrumsguibase.h"
+#include "ui_simpledrumsguibase.h"
 #include "common.h"
 
 class QButtonGroup;
@@ -164,8 +164,13 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
 
       QPushButton*            openPluginsButton;
       QPushButton*            aboutButton;
+      QPushButton*            loadButton;
+      QPushButton*            saveButton;
+
 
       QString lastDir;
+      QString lastSavedProject;
+      QString lastProjectDir;
       SS_PluginGui* pluginGui;
 
    public:
@@ -191,6 +196,8 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       void sendFxChanged(int ch, int fxid, int val);
       void openPluginButtonClicked();
       void aboutButtonClicked();
+      void loadSetup();
+      void saveSetup();
 
    };
 

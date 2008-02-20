@@ -13,7 +13,7 @@
 #ifndef __SS_PLUGINGUI_H__
 #define __SS_PLUGINGUI_H__
 
-#include "sspluginchooserbase.h"
+#include "ui_sspluginchooserbase.h"
 #include "common.h"
 #include "ssplugin.h"
 
@@ -187,7 +187,7 @@ class SS_PluginGui : public QDialog
 
    public:
       SS_PluginGui(QWidget* parent);
-      SS_PluginFront* getPluginFront(unsigned i) { SS_TRACE_IN if (i<SS_NR_OF_SENDEFFECTS) SS_TRACE_OUT return pluginFronts[i];}
+      SS_PluginFront* getPluginFront(unsigned i);
       ~SS_PluginGui() {}
 private slots:
     void pluginFrontSizeChanged(int fxid, int val);

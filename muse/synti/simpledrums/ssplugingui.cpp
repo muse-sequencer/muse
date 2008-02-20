@@ -229,9 +229,16 @@ SS_PluginFront::~SS_PluginFront()
 void SS_PluginFront::clearPluginDisplay()
       {
       SS_TRACE_IN
+      if (expanded)
+            expandButtonPressed();
+
       pluginName->setText("No plugin loaded");
       pluginName->setEnabled(false);
       onOff->setEnabled(false);
+      onOff->blockSignals(true);
+      onOff->setChecked(false);
+      onOff->blockSignals(false);
+
       clearFxButton->setEnabled(false);
       expandButton->setEnabled(false);
       outGainSlider->setEnabled(false);
@@ -514,4 +521,10 @@ void SS_PluginGui::pluginFrontSizeChanged(int /*fxid*/, int val)
       adjustSize();
       }
 
-
+SS_PluginFront* SS_PluginGui::getPluginFront(unsigned i)
+      {
+      SS_TRACE_IN
+      if (i<SS_NR_OF_SENDEFFECTS)
+      SS_TRACE_OUT
+      return pluginFronts[i];
+      }

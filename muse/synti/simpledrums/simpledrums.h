@@ -15,7 +15,7 @@
 #include <sndfile.h>
 #include "libsynti/mess.h"
 #include "common.h"
-#include "libsynti/mpevent.h"
+#include "libsynti/midievent.h"
 #include "simpledrumsgui.h"
 #include "ssplugin.h"
 
@@ -142,6 +142,7 @@ private:
       void parseInitData(const unsigned char* data);
       void updateVolume(int ch, int in_volume_ctrlval);
       void updateBalance(int ch, int pan);
+      void guiNotifySampleCleared(int ch);
       void guiUpdateBalance(int ch, int bal);
       void guiUpdateVolume(int ch, int val);
       void guiUpdateNoff(int ch, bool b);
@@ -153,6 +154,7 @@ private:
       void setSendFxLevel(int channel, int effectid, double val);
       void cleanupPlugin(int id);
       void setFxParameter(int fxid, int param, float val);
+      void clearSample(int ch);
       double master_vol;
       int master_vol_ctrlval;
 

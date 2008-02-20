@@ -11,7 +11,7 @@
 //
 
 #include "simpledrumsgui.h"
-#include "libsynti/mpevent.h"
+#include "libsynti/midievent.h"
 #include "muse/midi.h"
 #include "ssplugingui.h"
 
@@ -209,7 +209,7 @@ SimpleSynthGui::SimpleSynthGui()
       //this->setFixedHeight(SS_GUI_WINDOW_HEIGHT);
       for (int i=0; i<SS_NR_OF_CHANNELS; i++) {
             channelButtonGroups[i] = new QGroupBox(this);
-            channelButtonGroups[i]->setMinimumSize(SS_BTNGRP_WIDTH, SS_BTNGRP_HEIGHT);
+//            channelButtonGroups[i]->setMinimumSize(SS_BTNGRP_WIDTH, SS_BTNGRP_HEIGHT);
             channelButtonGroups[i]->setTitle(QString::number(i + 1));
 
             QString name = QString("volumeSlider");
@@ -221,7 +221,7 @@ SimpleSynthGui::SimpleSynthGui()
             inchnlLayout->setAlignment(Qt::AlignHCenter);
 
             onOff[i] = new QChannelCheckbox(channelButtonGroups[i], i);
-            onOff[i]->setMinimumSize(SS_ONOFF_WIDTH, SS_ONOFF_HEIGHT);
+//            onOff[i]->setMinimumSize(SS_ONOFF_WIDTH, SS_ONOFF_HEIGHT);
             onOff[i]->setToolTip("Channel " + QString::number(i + 1) + " on/off");
             inchnlLayout->addWidget(onOff[i]);
             connect(onOff[i], SIGNAL(channelState(int, bool)), SLOT(channelOnOff(int, bool)));
@@ -230,19 +230,19 @@ SimpleSynthGui::SimpleSynthGui()
             volumeSliders[i]->setMinimum(SS_VOLUME_MIN_VALUE);
             volumeSliders[i]->setMaximum(SS_VOLUME_MAX_VALUE);
             volumeSliders[i]->setValue(SS_VOLUME_MAX_VALUE - SS_VOLUME_DEFAULT_VALUE);
-            volumeSliders[i]->setMinimumSize(SS_VOLSLDR_WIDTH, SS_VOLSLDR_LENGTH);
+//            volumeSliders[i]->setMinimumSize(SS_VOLSLDR_WIDTH, SS_VOLSLDR_LENGTH);
             volumeSliders[i]->setToolTip("Volume, channel " + QString::number(i + 1));
-            setMinimumSize(SS_VOLSLDR_WIDTH, SS_VOLSLDR_LENGTH);
+//            setMinimumSize(SS_VOLSLDR_WIDTH, SS_VOLSLDR_LENGTH);
             inchnlLayout->addWidget(volumeSliders[i]);
             connect(volumeSliders[i], SIGNAL(valueChanged(int, int)), SLOT(volumeChanged(int, int)));
 
             nOffLabel[i] = new QLabel(channelButtonGroups[i]);
-            nOffLabel[i]->setMinimumSize(SS_NONOFF_LABEL_WIDTH, SS_NONOFF_LABEL_HEIGHT);
+//            nOffLabel[i]->setMinimumSize(SS_NONOFF_LABEL_WIDTH, SS_NONOFF_LABEL_HEIGHT);
             nOffLabel[i]->setText("nOff");
             inchnlLayout->addWidget(nOffLabel[i]);
 
             nOffIgnore[i] = new QChannelCheckbox(channelButtonGroups[i], i);
-            nOffIgnore[i]->setMinimumSize(SS_NONOFF_WIDTH, SS_NONOFF_HEIGHT);
+//            nOffIgnore[i]->setMinimumSize(SS_NONOFF_WIDTH, SS_NONOFF_HEIGHT);
             nOffIgnore[i]->setToolTip("Note off ignore, channel " + QString::number(i + 1));
             inchnlLayout->addWidget(nOffIgnore[i]);
             connect(nOffIgnore[i], SIGNAL(channelState(int, bool)),SLOT(channelNoteOffIgnore(int, bool)));
@@ -250,7 +250,7 @@ SimpleSynthGui::SimpleSynthGui()
             panSliders[i] = new QChannelSlider(Qt::Horizontal, i, channelButtonGroups[i]);
             panSliders[i]->setRange(0, 127);
             panSliders[i]->setValue(SS_PANSLDR_DEFAULT_VALUE);
-            panSliders[i]->setMinimumSize(SS_PANSLDR_WIDTH, SS_PANSLDR_LENGTH);
+//            panSliders[i]->setMinimumSize(SS_PANSLDR_WIDTH, SS_PANSLDR_LENGTH);
             panSliders[i]->setToolTip("Pan, channel " + QString::number(i + 1));
             inchnlLayout->addWidget(panSliders[i]);
             connect(panSliders[i], SIGNAL(valueChanged(int, int)), SLOT(panChanged(int, int)));
@@ -299,13 +299,13 @@ SimpleSynthGui::SimpleSynthGui()
       channelLayout->addWidget(masterButtonGroup);
       QVBoxLayout* mbgLayout = new QVBoxLayout(masterButtonGroup);
       mbgLayout->setAlignment(Qt::AlignCenter);
-      masterButtonGroup->setMinimumSize(SS_BTNGRP_WIDTH, SS_BTNGRP_HEIGHT);
+//      masterButtonGroup->setMinimumSize(SS_BTNGRP_WIDTH, SS_BTNGRP_HEIGHT);
       masterSlider = new QInvertedSlider(Qt::Vertical, masterButtonGroup);
       masterSlider->setToolTip("Master volume");
       mbgLayout->addWidget(masterSlider);
       masterSlider->setRange(0, 127);
       masterSlider->setValue(SS_VOLUME_MAX_VALUE - (int)(SS_MASTERVOL_DEFAULT_VALUE*SS_VOLUME_MAX_VALUE));
-      masterSlider->setMinimumSize(SS_MASTERSLDR_WIDTH, SS_MASTERSLDR_HEIGHT);
+//      masterSlider->setMinimumSize(SS_MASTERSLDR_WIDTH, SS_MASTERSLDR_HEIGHT);
       connect(masterSlider, SIGNAL(invertedValueChanged(int)), SLOT(masterVolChanged(int)));
 
       //Main groupbox
@@ -329,13 +329,13 @@ SimpleSynthGui::SimpleSynthGui()
                   strip->addWidget(sampleNameLineEdit[i]);
 
                   loadSampleButton[i] = new QChannelButton(mainGroupBox, "L", i);
-                  loadSampleButton[i]->setMinimumSize(SS_SAMPLE_LOAD_WIDTH, SS_SAMPLE_LOAD_HEIGHT);
+//                  loadSampleButton[i]->setMinimumSize(SS_SAMPLE_LOAD_WIDTH, SS_SAMPLE_LOAD_HEIGHT);
                   loadSampleButton[i]->setToolTip("Load sample on channel " + QString::number(i + 1));
                   strip->addWidget(loadSampleButton[i]);
                   connect(loadSampleButton[i], SIGNAL(channelState(int, bool)), SLOT(loadSampleDialogue(int)));
 
                   clearSampleButton[i] = new QChannelButton(mainGroupBox, "C", i);
-                  clearSampleButton[i]->setMinimumSize(SS_SAMPLE_CLEAR_WIDTH, SS_SAMPLE_CLEAR_HEIGHT);
+//                  clearSampleButton[i]->setMinimumSize(SS_SAMPLE_CLEAR_WIDTH, SS_SAMPLE_CLEAR_HEIGHT);
                   clearSampleButton[i]->setToolTip("Clear sample on channel " + QString::number(i + 1));
                   strip->addWidget(clearSampleButton[i]);
                   connect(clearSampleButton[i], SIGNAL(channelState(int, bool)), SLOT(clearSample(int)));
@@ -352,11 +352,23 @@ SimpleSynthGui::SimpleSynthGui()
       openPluginsButton = new QPushButton("&Send Effects");
       openPluginsButton->setToolTip("Configure LADSPA send effects");
       connect(openPluginsButton, SIGNAL(clicked()), SLOT(openPluginButtonClicked()));
-      rbLayout->addWidget(openPluginsButton, 2, 1, Qt::AlignLeft | Qt::AlignVCenter);
+      rbLayout->addWidget(openPluginsButton, 2, 1, Qt::AlignCenter | Qt::AlignVCenter);
       aboutButton = new QPushButton("About SimpleDrums");
       connect(aboutButton, SIGNAL(clicked()), SLOT(aboutButtonClicked()));
 //TD      rbLayout->addRowSpacing(3, 20);
       rbLayout->addWidget(aboutButton, 4, 1, Qt::AlignLeft | Qt::AlignVCenter);
+
+
+      loadButton = new QPushButton(tr("&Load setup"), rbPanel);
+      connect(loadButton, SIGNAL(clicked()), SLOT(loadSetup()));
+      saveButton = new QPushButton(tr("&Save setup"), rbPanel);
+      connect(saveButton, SIGNAL(clicked()), SLOT(saveSetup()));
+      //rbLayout->addWidget(openPluginsButton, 1, 1, Qt::AlignCenter | Qt::AlignVCenter);
+//      rbLayout->addRowSpacing(2, 20);
+      rbLayout->addWidget(loadButton,  3, 1, Qt::AlignCenter | Qt::AlignVCenter);
+      rbLayout->addWidget(saveButton,  4, 1, Qt::AlignCenter | Qt::AlignVCenter);
+//      rbLayout->addRowSpacing(5, 20);
+      rbLayout->addWidget(aboutButton, 6, 1, Qt::AlignCenter | Qt::AlignVCenter);
 
       lastDir = "";
       //Connect socketnotifier to fifo
@@ -540,6 +552,15 @@ void SimpleSynthGui::processEvent(const MidiEvent& ev)
                               break;
                               }
 
+                        case SS_SYSEX_CLEAR_SAMPLE_OK: {
+                              if (SS_DEBUG_MIDI) {
+                                    printf("SimpleSynthGui - sysex clear samle OK on channel: %d\n", *(data+1));
+                                    }
+                              byte ch = *(data+1);
+                              sampleNameLineEdit[ch]->setText("");
+                              break;
+                              }
+
                         case SS_SYSEX_SET_PLUGIN_PARAMETER_OK: {
                               if (SS_DEBUG_MIDI) {
                                     printf("SimpleSynthGui - plugin parameter OK on fxid: %d\n", *(data+1));
@@ -552,6 +573,45 @@ void SimpleSynthGui::processEvent(const MidiEvent& ev)
                               pf->blockSignals(false);
                               break;
                               }
+
+                        case SS_SYSEX_SEND_INIT_DATA: {
+// FN: TODO
+#if 1
+                              const unsigned initdata_len = ev.len() - 1;
+                              byte* init_data = (data + 1);
+                              QFileInfo fileInfo = QFileInfo(lastSavedProject);
+
+                              lastProjectDir = fileInfo.path();
+                              if (fileInfo.suffix() != "sds" && fileInfo.suffix() != "SDS") {
+                                    lastSavedProject += ".sds";
+                                    fileInfo = QFileInfo(lastSavedProject);
+                                    }
+                              QFile theFile(fileInfo.filePath());
+
+                              // Write data
+                              if (theFile.open(QIODevice::WriteOnly)) {
+                                    theFile.write((const char*)&initdata_len, sizeof(initdata_len)); // First write length
+                                    if (theFile.write((const char*)init_data, initdata_len) == -1) {
+                                          // Fatal error writing
+                                          QMessageBox* msgBox = new QMessageBox(QMessageBox::Warning, "SimpleDrums error Dialog", "Fatal error when writing to file. Setup not saved.",
+                                                QMessageBox::Ok, this);
+                                          msgBox->exec();
+                                          delete msgBox;
+                                          }
+                                    theFile.close();
+                                    }
+                              else {
+                                    // An error occured when opening
+                                    QMessageBox* msgBox = new QMessageBox(QMessageBox::Warning, "SimpleDrums error Dialog", "Error opening file. Setup was not saved.",
+                                          QMessageBox::Ok, this);
+                                    msgBox->exec();
+                                    delete msgBox;
+                                    }
+#endif
+
+                              break;
+                              }
+
 
                         default:
                               if (SS_DEBUG_MIDI) {
@@ -632,7 +692,7 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
       					   this,
                                        tr("Load sample dialog"),
       					   lastDir,
-                                       QString("*.wav;*.WAV"));
+                                       QString("*.wav *.WAV"));
 
       if (filename != QString::null) {
             QFileInfo fi(filename);
@@ -761,3 +821,61 @@ void SimpleSynthGui::aboutButtonClicked()
             QMessageBox::Ok, Qt::NoButton, Qt::NoButton, this);
       msgBox->exec();
       }
+
+
+/*!
+    \fn SimpleSynthGui::loadSetup()
+    \brief Load setup from file
+ */
+void SimpleSynthGui::loadSetup()
+      {
+      bool success = true;
+      QString filename =
+            QFileDialog::getOpenFileName(this, "Load setup dialog", lastProjectDir,
+                                       QString("*.sds *.SDS"));
+
+      if (filename != QString::null) {
+            QFile theFile(filename);
+            if (theFile.open(QIODevice::ReadOnly)) {
+                  unsigned initdata_len = 0;
+                  if (theFile.read((char*)&initdata_len, sizeof(initdata_len)) == -1)
+                     success = false;
+
+                  byte* init_data = new byte[initdata_len];
+                  if (theFile.read((char*)(init_data), initdata_len) == -1)
+                     success = false;
+
+                  if (!success) {
+                        QMessageBox* msgBox = new QMessageBox(QMessageBox::Warning, "SimpleDrums Error Dialog", "Error opening/reading from file. Setup not loaded.",
+                              QMessageBox::Ok, this);
+                        msgBox->exec();
+                        delete msgBox;
+                        }
+                  else {
+                        sendSysex(init_data, initdata_len);
+                        }
+
+                  delete[] init_data;
+                  }
+            }
+      }
+
+
+/*!
+    \fn SimpleSynthGui::saveSetup()
+    \brief Save setup to file
+ */
+void SimpleSynthGui::saveSetup()
+      {
+      QString filename =
+            QFileDialog::getSaveFileName(this, "Save setup dialog", lastProjectDir,
+                                       QString("*.sds *.SDS"));
+
+      if (filename != QString::null) {
+            lastSavedProject = filename;
+            byte d[1];
+            d[0] = SS_SYSEX_GET_INIT_DATA;
+            sendSysex(d, 1); // Makes synth send gui initdata, where rest of the saving takes place
+            }
+      }
+

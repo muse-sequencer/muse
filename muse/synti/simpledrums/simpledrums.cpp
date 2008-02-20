@@ -12,7 +12,7 @@
 
 #include "muse/midictrl.h"
 #include "muse/midi.h"
-#include "libsynti/mpevent.h"
+#include "libsynti/midievent.h"
 #include "simpledrums.h"
 // #include <qstring.h>
 #include <samplerate.h>
@@ -515,18 +515,7 @@ bool SimpleSynth::sysex(int /*len*/, const unsigned char* data)
             case SS_SYSEX_CLEAR_SAMPLE:
                   {
                   int ch = data[1];
-                  if (channels[ch].sample) {
-                        SS_State prevstate = synth_state;
-                        SWITCH_CHAN_STATE(ch, SS_CHANNEL_INACTIVE);
-                        SWITCH_SYNTH_STATE(SS_CLEARING_SAMPLE);
-                        delete[] channels[ch].sample->data;
-                        delete channels[ch].sample;
-                        channels[ch].sample = 0;
-                        SWITCH_SYNTH_STATE(prevstate);
-                        if (SS_DEBUG_MIDI) {
-                              printf("Sysex cmd: clear sample - sample cleared on channel %d\n", ch);
-                              }
-                        }
+                  clearSample(ch);
                   break;
                   }
 
@@ -568,6 +557,28 @@ bool SimpleSynth::sysex(int /*len*/, const unsigned char* data)
                   // Write it to the plugin:
                   float floatval = sendEffects[fxid].plugin->convertGuiControlValue(parameter, val);
                   setFxParameter(fxid, parameter, floatval);
+                  break;
+                  }
+
+            case SS_SYSEX_GET_INIT_DATA:
+                  {
+                  int initdata_len = 0;
+                  const byte* tmp_initdata = NULL;
+                  byte* event_data = NULL;
+
+                  getInitData(&initdata_len, &tmp_initdata);
+                  int totlen = initdata_len + 1;
+
+                  event_data = new byte[initdata_len + 1];
+                  event_data[0] = SS_SYSEX_SEND_INIT_DATA;
+                  memcpy(event_data + 1, tmp_initdata, initdata_len);
+                  delete[] tmp_initdata;
+                  tmp_initdata = NULL;
+
+                  MidiEvent ev(0, ME_SYSEX, event_data, totlen);
+                  gui->writeEvent(ev);
+                  delete[] event_data;
+
                   break;
                   }
 
@@ -875,6 +886,7 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
 
       // First, SS_SYSEX_INIT_DATA
       byte* buffer = new byte[len];
+      memset(buffer, 0, len);
       buffer[0] = SS_SYSEX_INIT_DATA;
       buffer[1] = SS_SYSEX_INIT_DATA_VERSION;
       if (SS_DEBUG_INIT) {
@@ -1001,10 +1013,10 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
             // No plugin loaded:
             else {
                   buffer[i] = SS_NO_PLUGIN;
-                  i++;
                   if (SS_DEBUG_INIT) {
                         printf("buffer[%d]: SS_NO_PLUGIN\n", i);
                         }
+                  i++;
                   }
             }
 
@@ -1028,10 +1040,10 @@ void SimpleSynth::parseInitData(const unsigned char* data)
 
                if (SS_DEBUG_INIT) {
                      printf("Channel %d:\n", ch);
-                     printf("buffer[%d] - channels[ch].volume_ctrlval = \t%d\n", ptr-data, *ptr);
-                     printf("buffer[%d] - channels[ch].pan = \t\t%d\n", ptr-data+1, *(ptr+1));
-                     printf("buffer[%d] - channels[ch].noteoff_ignore = \t%d\n", ptr-data+2, *(ptr+2));
-                     printf("buffer[%d] - channels[ch].channel_on = \t%d\n", ptr-data+3, *(ptr+3));
+                     printf("buffer[%ld] - channels[ch].volume_ctrlval = \t%d\n", ptr-data, *ptr);
+                     printf("buffer[%ld] - channels[ch].pan = \t\t%d\n", ptr-data+1, *(ptr+1));
+                     printf("buffer[%ld] - channels[ch].noteoff_ignore = \t%d\n", ptr-data+2, *(ptr+2));
+                     printf("buffer[%ld] - channels[ch].channel_on = \t%d\n", ptr-data+3, *(ptr+3));
                      }
                updateVolume(ch, *(ptr));
                guiUpdateVolume(ch, *(ptr));
@@ -1080,6 +1092,11 @@ void SimpleSynth::parseInitData(const unsigned char* data)
                      //printf("We should load %s\n", filenametmp.c_str());
                      loadSample(ch, filenametmp.c_str());
                      }
+               else {
+                     //Clear sample
+                     clearSample(ch);
+                     guiNotifySampleCleared(ch);
+                     }
                }
       //Master vol:
       master_vol_ctrlval = *(ptr);
@@ -1099,6 +1116,8 @@ void SimpleSynth::parseInitData(const unsigned char* data)
       ptr++;
 
       for (int i=0; i<SS_NR_OF_SENDEFFECTS; i++) {
+            if (SS_DEBUG_INIT)
+                  printf("buffer[%ld] - sendeffect[%d], labelnamelen=%d\n", ptr-data, i, *ptr);
             int labelnamelen = *(ptr);
 
             if (labelnamelen != SS_NO_PLUGIN) {
@@ -1128,11 +1147,15 @@ void SimpleSynth::parseInitData(const unsigned char* data)
                   gui->writeEvent(ev);
 
                   for (int j=0; j<params; j++) {
+                        if (SS_DEBUG_INIT)
+                              printf("buffer[%ld] - sendeffect[%d], parameter[%d]=%d\n", ptr-data, i, j, *ptr);
                         setFxParameter(i, j, sendEffects[i].plugin->convertGuiControlValue(j, *(ptr)));
                         ptr++;
                         }
                   }
             else {
+                  if (sendEffects[i].plugin)
+                        cleanupPlugin(i);
                   ptr++;
                   }
             }
@@ -1580,6 +1603,8 @@ void SimpleSynth::cleanupPlugin(int id)
       plugin->stop();
       SS_DBG2("Stopped fx", plugin->label().toLatin1().data());
       sendEffects[id].nrofparameters = 0;
+      sendEffects[id].state = SS_SENDFX_OFF;
+      sendEffects[id].plugin = 0;
 
       byte d[2];
       d[0] = SS_SYSEX_CLEAR_SENDEFFECT_OK;
@@ -1648,3 +1673,47 @@ void SimpleSynth::guiUpdateFxParameter(int fxid, int param, float val)
       }
 
 
+/*!
+    \fn SimpleSynth::clearSample(int ch)
+    \brief Clears a sample (actually clears a channel)
+ */
+void SimpleSynth::clearSample(int ch)
+      {
+      SS_TRACE_IN
+      if (channels[ch].sample) {
+            if (SS_DEBUG)
+                  printf("Clearing sample on channel %d\n", ch);
+            SS_State prevstate = synth_state;
+            SWITCH_CHAN_STATE(ch, SS_CHANNEL_INACTIVE);
+            SWITCH_SYNTH_STATE(SS_CLEARING_SAMPLE);
+            if (channels[ch].sample->data) {
+                  delete[] channels[ch].sample->data;
+                  channels[ch].sample->data = 0;
+                  }
+            if (channels[ch].sample) {
+                  delete channels[ch].sample;
+                  channels[ch].sample = 0;
+                  }
+            SWITCH_SYNTH_STATE(prevstate);
+            guiNotifySampleCleared(ch);
+            if (SS_DEBUG) {
+                  printf("Clear sample - sample cleared on channel %d\n", ch);
+                  }
+            }
+      SS_TRACE_OUT
+      }
+
+
+/*!
+    \fn SimpleSynth::guiNotifySampleCleared(int ch)
+ */
+void SimpleSynth::guiNotifySampleCleared(int ch)
+      {
+      SS_TRACE_IN
+      byte d[2];
+      d[0] = SS_SYSEX_CLEAR_SAMPLE_OK;
+      d[1] = (byte) ch;
+      MidiEvent ev(0, ME_SYSEX, d, 2);
+      gui->writeEvent(ev);
+      SS_TRACE_OUT
+      }

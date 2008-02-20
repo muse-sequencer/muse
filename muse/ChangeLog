@@ -1,3 +1,6 @@
+21.02. (fn)
+      - "Ported" simpledrums to Qt4 - it builds, runs, produces sound (and
+		  compiler warnings); review is welcome. The GUI is rather large now.
 21.1. (ws)
       - fix: recorded midi events were echoed to midi output even if the "monitor"
         switch was "off"

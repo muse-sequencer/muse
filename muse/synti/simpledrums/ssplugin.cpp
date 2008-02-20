@@ -252,6 +252,7 @@ void LadspaPlugin::stop()
       if (handle) {
             SS_DBG_LADSPA2("Trying to stop plugin", label().toLatin1().data());
             if (plugin->deactivate) {
+                  SS_DBG_LADSPA2("Deactivating ", label().toLatin1().data());
                   plugin->deactivate(handle);
                   active = false;
                   }
