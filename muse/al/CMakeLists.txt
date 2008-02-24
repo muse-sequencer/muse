@@ -23,7 +23,7 @@ set_source_files_properties(
    al.cpp marker.cpp pos.cpp sig.cpp tempo.cpp xml.cpp
    dsp.cpp
    dspXMM.cpp
-   PROPERTIES COMPILE_FLAGS "-msse2 -fPIC -include ${PROJECT_SOURCE_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_SOURCE_DIR}/all.h"
    )
 
 set_source_files_properties( dspSSE.cpp
