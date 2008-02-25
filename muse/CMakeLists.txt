@@ -51,7 +51,7 @@ SET(MusE_INSTALL_NAME  "muse-2.0")
 include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
 include ( ${PROJECT_SOURCE_DIR}/cmake/TargetDoc.cmake)
 
-option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface"  OFF)
+option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface"  ON)
 option ( ENABLE_VST         "enable VST/win support"                  OFF)
 option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"     ON)
 option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin"      ON)
@@ -133,8 +133,8 @@ endif (APPLE)
 
 if (ENABLE_ZYNADDSUBFX)
       # HACK:
-      #set (FLTK_INCLUDE_DIR     "/usr/include")
-      #set(FLTK_FLUID_EXECUTABLE "/usr/bin/fluid")
+      set (FLTK_INCLUDE_DIR     "/usr/include")
+      set(FLTK_FLUID_EXECUTABLE "/usr/bin/fluid")
 
       include (FindFLTK)
       if (NOT FLTK_FOUND)
@@ -208,13 +208,12 @@ endif (NOT JACK_INCDIR)
 ## check for dssi
 ##
 
-if ( ENABLE_DSSI )
+if (ENABLE_DSSI)
       PKGCONFIG (dssi 0.9.0 DSSI_INCDIR DSSI_LIBDIR DSSI_LIB DSSI_CPP )
       if (NOT DSSI_INCDIR)
             message("Error: dssi >= 0.9.0 not found, disabling feature")
             set ( ENABLE_DSSI OFF )
       else (NOT DSSI_INCDIR)
-            message("DSSI found.")
             PKGCONFIG (liblo 0.23 LIBLO_INCDIR LIBLO_LIBDIR LIBLO_LIB LIBLO_CPP )
             if (NOT LIBLO_INCDIR)
                   message("Error: liblo >= 0.23 not found, disabling DSSI")
@@ -222,9 +221,14 @@ if ( ENABLE_DSSI )
             else (NOT LIBLO_INCDIR)
                   message("liblo >= 0.23 found.")
                   set (DSSI_SUPPORT TRUE)
+                  message("DSSI enabled")
             endif (NOT LIBLO_INCDIR)
       endif (NOT DSSI_INCDIR)
-endif ( ENABLE_DSSI )
+else (ENABLE_DSSI)
+      message("DSSI disabled")
+endif (ENABLE_DSSI)
+
+
 
 if (ENABLE_VST)
       message("VST support enabled")

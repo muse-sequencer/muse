@@ -18,9 +18,11 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+subdirs("UI")
+
 include_directories(
       BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/UI
-      BEFORE ${CMAKE_CURRENT_BINARY_DIR}
+      BEFORE ${CMAKE_CURRENT_BINARY_DIR}/UI
       )
 
 add_library (
@@ -82,9 +84,11 @@ set_target_properties ( zynaddsubfx
    )
 
 target_link_libraries( zynaddsubfx
-      synti fftw3 mxml
-      m z fltk
       zyngui
+      synti
+      fftw3
+      mxml
+      m z fltk
       )
 
 INSTALL(
@@ -92,5 +96,4 @@ INSTALL(
       DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${MusE_INSTALL_NAME}/presets/zynaddsubfx
       )
 
-subdirs(UI)
 
