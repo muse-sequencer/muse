@@ -40,6 +40,6 @@ set ( marker_src ${mocCPP} ${moc_headers})
 
 add_library ( marker STATIC ${marker_src})
 set_target_properties( marker
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
    )
 

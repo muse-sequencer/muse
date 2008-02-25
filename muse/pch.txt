@@ -54,7 +54,7 @@ add_custom_command(
          -I${QT_INCLUDE_DIR}
          -I${QT_QTCORE_INCLUDE_DIR}
          -I${QT_QTGUI_INCLUDE_DIR}
-         -o all-pic.h.pch all.h
+         -o all-pic.h.pch all-pic.h
       DEPENDS ${PROJECT_BINARY_DIR}/all-pic.h
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )

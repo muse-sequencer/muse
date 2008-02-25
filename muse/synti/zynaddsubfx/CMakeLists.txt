@@ -78,7 +78,7 @@ add_library (
 
 set_target_properties ( zynaddsubfx
    PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-O6 -fvisibility=hidden -DASM_F2I_YES -DOS_LINUX -DFFTW_VERSION_3"
+   COMPILE_FLAGS "-O2 -fvisibility=hidden -DASM_F2I_YES -DOS_LINUX -DFFTW_VERSION_3"
    )
 
 target_link_libraries( zynaddsubfx

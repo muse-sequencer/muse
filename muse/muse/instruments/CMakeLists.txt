@@ -22,20 +22,20 @@ QT4_WRAP_CPP ( instruments_mocs
    minstrument.h editinstrument.h
    )
 
-QT4_WRAP_UI ( instruments_ui_headers 
-      editinstrument.ui 
+QT4_WRAP_UI ( instruments_ui_headers
+      editinstrument.ui
       )
 
-add_library ( instruments STATIC 
-   minstrument.cpp 
+add_library ( instruments STATIC
+   minstrument.cpp
    editinstrument.cpp
-   minstrument.h 
+   minstrument.h
    editinstrument.h
    ${instruments_mocs}
    ${instruments_ui_headers}
    )
 
 set_target_properties( instruments
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
    )
 

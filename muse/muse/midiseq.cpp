@@ -212,7 +212,7 @@ void MidiSeq::midiTick(void* p, void*)
       // schedule all events upto curFrame()
       //
       unsigned curFrame = audioDriver->frameTime();
-      iMidiOutEvent i = at->playEvents.begin();
+      iMidiOutEvent i   = at->playEvents.begin();
       for (; i != at->playEvents.end(); ++i) {
             if (i->event.time() > curFrame)
                   break;

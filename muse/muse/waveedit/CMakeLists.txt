@@ -23,12 +23,12 @@ QT4_WRAP_CPP ( waveedit_mocs
       waveview.h
       )
 
-add_library ( waveedit STATIC 
+add_library ( waveedit STATIC
       ${waveedit_mocs}
       waveedit.cpp
       waveview.cpp
       )
 
 set_target_properties( waveedit
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       )

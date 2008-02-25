@@ -30,13 +30,13 @@ QT4_WRAP_CPP ( arranger_mocs
       trackinfo.h
       )
 
-QT4_WRAP_UI ( arranger_ui_headers 
+QT4_WRAP_UI ( arranger_ui_headers
       configtrack.ui
       midiportinfo.ui
       miditrackinfo.ui
       )
 
-add_library ( arranger STATIC 
+add_library ( arranger STATIC
       ${arranger_ui_headers}
       ${arranger_mocs}
       selectfilter.h
@@ -55,6 +55,6 @@ add_library ( arranger STATIC
       )
 
 set_target_properties( arranger
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       )
 

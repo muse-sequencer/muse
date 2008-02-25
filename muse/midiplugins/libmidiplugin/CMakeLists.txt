@@ -21,6 +21,6 @@
 add_library ( midiplugin mempi.cpp )
 
 set_target_properties( midiplugin
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
    )
 

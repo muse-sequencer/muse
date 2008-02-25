@@ -21,7 +21,7 @@
 #ifndef __CTRL_EDIT_H__
 #define __CTRL_EDIT_H__
 
-#include "ctrl/ctrleditor.h"
+#include "ctrleditor.h"
 #include "gui.h"
 
 class SimpleButton;

@@ -28,11 +28,11 @@ QT4_WRAP_CPP ( mixer_mocs
       strip.h
       )
 
-QT4_WRAP_UI ( mixer_ui_headers 
+QT4_WRAP_UI ( mixer_ui_headers
       routedialog.ui
       )
 
-add_library ( mixer STATIC 
+add_library ( mixer STATIC
       ${mixer_ui_headers}
       ${mixer_mocs}
       astrip.cpp
@@ -45,5 +45,5 @@ add_library ( mixer STATIC
       )
 
 set_target_properties( mixer
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       )

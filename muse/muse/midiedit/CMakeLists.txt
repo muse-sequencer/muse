@@ -33,14 +33,14 @@ QT4_WRAP_CPP ( midiedit_mocs
       trackpattern.h
       )
 
-QT4_WRAP_UI ( midiedit_ui_headers 
+QT4_WRAP_UI ( midiedit_ui_headers
       midicmd.ui
       gatetime.ui
       velocity.ui
       quantconfig.ui
       )
 
-add_library ( midiedit STATIC 
+add_library ( midiedit STATIC
       midicmd.h
       gatetime.h
       ${midiedit_ui_headers}
@@ -66,6 +66,6 @@ add_library ( midiedit STATIC
       )
 
 set_target_properties( midiedit
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       )
 

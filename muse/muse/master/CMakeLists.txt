@@ -32,6 +32,6 @@ set ( master_src ${mocCPP} ${moc_headers})
 
 add_library ( master STATIC ${master_src})
 set_target_properties( master
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
    )
 

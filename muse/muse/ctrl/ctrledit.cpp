@@ -91,7 +91,7 @@ void CtrlEdit::setCtrl(int id)
             }
       else
             _ctrl = _track->getController(id);
-      
+
       if (!_ctrl)
             printf("CtrlEdit::setCtrl(%d): not found for track <%s>\n", id,
                _track->name().toLocal8Bit().data());

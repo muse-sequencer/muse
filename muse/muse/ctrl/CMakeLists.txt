@@ -18,32 +18,29 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-QT4_WRAP_CPP (ctrl_mocs       
-      configmidictrl.h 
-      definemidictrl.h 
+QT4_WRAP_CPP (ctrl_mocs
+      configmidictrl.h
+      definemidictrl.h
       ctrldialog.h
       ctrledit.h
       )
-QT4_WRAP_UI (ctrl_ui_headers 
-      configmidictrl.ui 
-      definemidictrl.ui 
+
+QT4_WRAP_UI (ctrl_ui_headers
+      configmidictrl.ui
+      definemidictrl.ui
       ctrldialog.ui
       )
 
-add_library ( ctrl STATIC 
-      configmidictrl.cpp 
-      definemidictrl.cpp 
+add_library ( ctrl STATIC
+      configmidictrl.cpp
+      definemidictrl.cpp
       ctrldialog.cpp
-      ctrldialog.h
       ctrleditor.cpp
-      configmidictrl.h
-      definemidictrl.h
-      ctrleditor.h
       ctrledit.cpp
       ${ctrl_mocs}
       ${ctrl_ui_headers}
       )
 set_target_properties( ctrl
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
-   )
+  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+  )
 

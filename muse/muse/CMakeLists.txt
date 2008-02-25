@@ -179,7 +179,6 @@ set_target_properties( muse
       )
 
 target_link_libraries(muse
-      ctrl
       midiedit
       master
       driver
@@ -191,9 +190,9 @@ target_link_libraries(muse
       mixer
       waveedit
       widgets
-      ctrl
       al
       awl
+      ctrl
       ${QT_LIBRARIES}
       QtSvg
       ${ALSA_LIB}

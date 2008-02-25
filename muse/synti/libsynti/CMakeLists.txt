@@ -18,7 +18,10 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+include(${PROJECT_SOURCE_DIR}/pch.txt)
+
 add_library(synti
+      ${PROJECT_BINARY_DIR}/all-pic.h.pch
       mess.cpp
       mess2.cpp
       gui.cpp
@@ -31,6 +34,6 @@ add_library(synti
 # -fPIC is necessary for 64 bit systems
 #
 set_target_properties( synti
-   PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_SOURCE_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 

@@ -3,7 +3,7 @@
 #  Linux Music Editor
 #  $Id:$
 #
-#  Copyright (C) 2002-2006 by Werner Schweer and others
+#  Copyright (C) 2002-2008 by Werner Schweer and others
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License version 2.
@@ -18,22 +18,35 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-default:
+CPUS     = `grep -c processor /proc/cpuinfo`
+PREFIX   = "/usr/local"
+VERSION  = "muse-2.0.0"
+
+release:
+	if test ! -d build;                         \
+         then                                       \
+            mkdir build;                            \
+            cd build;                               \
+            cmake -DCMAKE_BUILD_TYPE=RELEASE	    \
+            	  -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+            	   ../muse; 			    \
+            make -j ${CPUS};                        \
+         else                                       \
+            echo "build directory does already exist, please remove first with 'make clean'";       \
+         fi;
+
+debug:
 	if test ! -d build;                           \
          then                                       \
-            echo "+creating build directory";       \
             mkdir build;                            \
-            echo "+entering build directory";       \
             cd build;                               \
-            echo "+calling cmake" ;                 \
-            cmake ../muse ;                         \
+            cmake -DCMAKE_BUILD_TYPE=DEBUG	    \
+            	  -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+            	   ../muse; 			    \
+            make -j ${CPUS};                        \
          else                                       \
-            echo "+entering build directory";       \
-            cd build;                               \
-         fi;                                        \
-      echo "+start top level make...";              \
-      make -f Makefile
-
+            echo "build directory does already exist, please remove first with 'make clean'";       \
+         fi
 
 #
 # clean out of source build
@@ -43,37 +56,32 @@ clean:
 	-rm -rf build
 
 #
-# create source distribution
+# dist
+#     create source distribution
+#     - get current version from sourceforge
+#     - remove .svn directories
+#     - tar
 #
 
 dist:
-	cd build; make package_source
-	mv build/muse-*.tar.gz .
+	-rm -rf muse.dist
+	mkdir muse.dist
+	cd muse.dist; svn co https://lmuse.svn.sourceforge.net/svnroot/muse/trunk ${VERSION}
+	cd muse.dist; find . -name .svn -print0 | xargs -0 /bin/rm -rf
+	cd muse.dist; tar cvfj ${VERSION}.tar.bz2 ${VERSION}
+	mv muse.dist/${VERSION}.tar.bz2 .
 
 install:
 	cd build; make install
 
 #
 # this creates a shell archive / installer for
-#     MusE binary
+#     Mscore binary
 #
 
 package:
 	cd build; make package
-	mv build/muse-*.sh .
 
-
-# build muse/doc/man/de/man-de.pdf
-#   and muse/doc/man/en/man-en.pdf
-manual:
-	cd build; make manual
-
-# build muse/doc/dimple/dimpl.pdf
-program_doc:
-	cd build; make program_doc
-
-# build doxygen program documentation
-doxy:
-	cd build; make doxy
-
+man:
+	cd build; make man
 

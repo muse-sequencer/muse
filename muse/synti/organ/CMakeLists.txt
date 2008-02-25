@@ -37,7 +37,7 @@ add_library ( organ SHARED
 #
 set_target_properties ( organ
    PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-O6 -include ${PROJECT_BINARY_DIR}/all-pic.h"
+   COMPILE_FLAGS "-O2 -include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
 target_link_libraries(organ

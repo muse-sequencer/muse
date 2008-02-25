@@ -18,26 +18,32 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+include(${PROJECT_SOURCE_DIR}/pch.txt)
+
 QT4_WRAP_CPP ( deicsonze_mocs deicsonzegui.h )
 QT4_WRAP_UI (  deicsonze_uis deicsonzegui.ui )
 
-add_library ( deicsonze SHARED 
+add_library ( deicsonze SHARED
+      ${PROJECT_BINARY_DIR}/all.h
+      ${PROJECT_BINARY_DIR}/all-pic.h.pch
       deicsonze.cpp
       deicsonzepreset.cpp
       deicsonzeplugin.cpp
       deicsonzefilter.cpp
       deicsonzegui.cpp
       deicsonzegui.h
+
       ${deicsonze_mocs}
       ${deicsonze_uis}
       )
+
 target_link_libraries( deicsonze synti )
 
-# - tell cmake to name target deicsonze.so instead of 
+# - tell cmake to name target deicsonze.so instead of
 #   libdeicsonze.so
 # - use precompiled header files
 #
-set_target_properties ( deicsonze 
+set_target_properties ( deicsonze
    PROPERTIES PREFIX ""
    #COMPILE_FLAGS "-O2 -include ${PROJECT_BINARY_DIR}/all-pic.h"
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"

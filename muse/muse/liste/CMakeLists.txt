@@ -42,7 +42,7 @@ add_library ( liste STATIC
       ${liste_ui_headers}
       )
 set_target_properties( liste
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_SOURCE_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
    )
 
 

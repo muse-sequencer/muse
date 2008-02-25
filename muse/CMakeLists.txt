@@ -27,7 +27,7 @@ if (NOT CMAKE_INSTALL_LIBDIR)
 endif (NOT CMAKE_INSTALL_LIBDIR)
 
 #set(CMAKE_BUILD_TYPE debug)
-set(CMAKE_BUILD_TYPE release)
+#set(CMAKE_BUILD_TYPE release)
 
 # for debugging the make system uncomment next line:
 # set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -51,10 +51,10 @@ SET(MusE_INSTALL_NAME  "muse-2.0")
 include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
 include ( ${PROJECT_SOURCE_DIR}/cmake/TargetDoc.cmake)
 
-option ( ENABLE_DSSI   "enable Disposable Soft Synth Interface"  OFF)
-option ( ENABLE_VST    "enable VST/win support"                  OFF)
-option ( ENABLE_FLUID  "enable fluidsynth softsynth plugins"     ON)
-option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin" ON)
+option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface"  OFF)
+option ( ENABLE_VST         "enable VST/win support"                  OFF)
+option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"     ON)
+option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin"      ON)
 
 ##
 ## Just print a notice if this is OS X
@@ -125,15 +125,16 @@ endif (APPLE)
 ## mxml
 ## fltk + fluid
 ##
-## problems with FLTK:
+## problems with FLTK/CMake:
 ##    - fltk is not found on kubuntu/ubuntu
 ##    - cmake version > 2.4 crashes
 ##    - there is an annoying (and wrong) usage message from cmake concerning FLTK
 ##
 
 if (ENABLE_ZYNADDSUBFX)
-##      set (FLTK_INCLUDE_DIR     "/usr/include")
-##      set(FLTK_FLUID_EXECUTABLE "/usr/fluid")
+      # HACK:
+      #set (FLTK_INCLUDE_DIR     "/usr/include")
+      #set(FLTK_FLUID_EXECUTABLE "/usr/bin/fluid")
 
       include (FindFLTK)
       if (NOT FLTK_FOUND)
@@ -151,7 +152,7 @@ if (ENABLE_ZYNADDSUBFX)
              message("mxml found.")
       endif (NOT MXML_INCDIR)
       #
-      #  TODO: check for fftw3 library
+      #  check for fftw3 library
       #
       PKGCONFIG (fftw3 3.1.2 FFTW_INCDIR FFTW_LIBDIR FFTW_LIB FFTW_CPP )
       if (NOT FFTW_INCDIR)
@@ -271,52 +272,17 @@ add_custom_command(
       )
 
 add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/all.h.pch
-      COMMAND ${CMAKE_CXX_COMPILER}
-         -g -Wextra -fno-exceptions -Wall
-         -I${QT_INCLUDE_DIR}
-         -I${QT_QTCORE_INCLUDE_DIR}
-         -I${QT_QTGUI_INCLUDE_DIR}
-         -o all.h.pch all.h
-      DEPENDS ${PROJECT_BINARY_DIR}/all.h
+      OUTPUT ${PROJECT_BINARY_DIR}/all-pic.h
+      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h
+      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )
 
 add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/all-pic.h.pch
-      COMMAND ${CMAKE_CXX_COMPILER}
-         -fPIC
-         -Dawlplugin_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB
-         -DQT_PLUGIN -DQT_SHARED -DQT_NO_DEBUG
-         -g -Wextra -fno-exceptions -Wall
-         -I${QT_INCLUDE_DIR}
-         -I${QT_QTCORE_INCLUDE_DIR}
-         -I${QT_QTGUI_INCLUDE_DIR}
-         -o all-pic.h.pch all.h
-      DEPENDS ${PROJECT_BINARY_DIR}/all.h
+      OUTPUT ${PROJECT_BINARY_DIR}/all-pic-debug.h
+      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic-debug.h
+      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-      )
-
-add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/all-pic-debug.h.pch
-      COMMAND ${CMAKE_CXX_COMPILER}
-         -fPIC
-          -Dawlplugin_debug_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB
-         -DQT_PLUGIN -DQT_SHARED -DQT_DEBUG
-         -g -Wextra -fno-exceptions -Wall
-         -I${QT_INCLUDE_DIR}
-         -I${QT_QTCORE_INCLUDE_DIR}
-         -I${QT_QTGUI_INCLUDE_DIR}
-         -o all-pic-debug.h.pch all.h
-      DEPENDS ${PROJECT_BINARY_DIR}/all.h
-      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-      )
-set_source_files_properties(
-      ${PROJECT_BINARY_DIR}/all.h
-      ${PROJECT_BINARY_DIR}/all.h.pch
-      ${PROJECT_BINARY_DIR}/all-pic.h.pch
-      ${PROJECT_BINARY_DIR}/all-pic-debug.h.pch
-      PROPERTIES generated true
       )
 
 include_directories(
@@ -337,6 +303,8 @@ include_directories(
    ${LIBLO_INCDIR}
    ${DSSI_INCDIR}
    )
+
+# include (pch.txt)
 
 #
 # If the cmake version includes cpack, use it
