@@ -48,7 +48,7 @@ add_library (
 
 set_target_properties ( zyngui
       PROPERTIES
-      COMPILE_FLAGS "-O3 -fvisibility=hidden -DASM_F2I_YES -DOS_LINUX -DFFTW_VERSION_3"
+      COMPILE_FLAGS "-O3 -PIC -fvisibility=hidden -DASM_F2I_YES -DOS_LINUX -DFFTW_VERSION_3"
       )
 
 
