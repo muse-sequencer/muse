@@ -96,4 +96,5 @@ INSTALL(
       DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${MusE_INSTALL_NAME}/presets/zynaddsubfx
       )
 
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ zynaddsubfx )
 
