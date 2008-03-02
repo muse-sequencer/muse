@@ -21,7 +21,7 @@
 #ifndef __GLOBALDEFS_H__
 #define __GLOBALDEFS_H__
 
-const int MAX_CHANNELS = 2;   // max audio channels
+static const int MAX_CHANNELS = 2;   // max audio channels
 // const int MIDI_PORTS   = 16;  // max Number of Midi Ports
 
 #ifndef MIDI_CHANNELS

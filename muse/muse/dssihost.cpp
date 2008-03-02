@@ -346,11 +346,9 @@ bool DssiSynthIF::init(DssiSynth* s)
       const DSSI_Descriptor* dssi = synth->dssi;
       const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
       handle = ld->instantiate(ld, AL::sampleRate);
-#if 0
-      if (ld->activate)
-            ld->activate(handle);
-#endif
+
       queryPrograms();
+
       int controlPorts = synth->_controller;
       controls = new LadspaPort[controlPorts];
 
@@ -359,10 +357,10 @@ bool DssiSynthIF::init(DssiSynth* s)
 		controls[k].val = ladspaDefaultValue(ld, i);
 		ld->connect_port(handle, i, &controls[k].val);
             }
-#if 1
+
       if (ld->activate)
             ld->activate(handle);
-#endif
+
       if (dssi->configure) {
             char *rv = dssi->configure(handle, DSSI_PROJECT_DIRECTORY_KEY,
                song->projectPath().toAscii().data());
@@ -576,18 +574,24 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
             const LADSPA_Descriptor* d = dssi->LADSPA_Plugin;
             for (unsigned k = 0; k < d->PortCount; ++k) {
                   LADSPA_PortDescriptor pd = d->PortDescriptors[k];
-                  static const int CI = LADSPA_PORT_CONTROL | LADSPA_PORT_INPUT;
-                  if ((pd &  CI) == CI) {
-                        ++_controller;
-                        pIdx.push_back(k);
+                  if (LADSPA_IS_PORT_AUDIO(pd)) {
+                        if (LADSPA_IS_PORT_INPUT(pd)) {
+                              ++_inports;
+                              iIdx.push_back(k);
+                              }
+                        else if (LADSPA_IS_PORT_OUTPUT(pd)) {
+                              ++_outports;
+                              oIdx.push_back(k);
+                              }
                         }
-                  else if (pd &  LADSPA_PORT_INPUT) {
-                        ++_inports;
-                        iIdx.push_back(k);
-                        }
-                  else if (pd &  LADSPA_PORT_OUTPUT) {
-                        ++_outports;
-                        oIdx.push_back(k);
+                  else if (LADSPA_IS_PORT_CONTROL(pd)) {
+                        if (LADSPA_IS_PORT_INPUT(pd)) {
+                              ++_controller;
+                              pIdx.push_back(k);
+                              }
+                        else {
+                              // ??
+                              }
                         }
                   }
             }

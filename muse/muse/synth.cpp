@@ -251,7 +251,8 @@ bool SynthI::initInstance(Synth* s)
       _sif        = s->createSIF(this);
 
       setIName(name());   // set instrument name
-      AudioTrack::setChannels(_sif->channels());
+      int n = _sif->channels();
+      AudioTrack::setChannels(n);
 
       //---------------------------------------------------
       //  read available controller from synti

@@ -1,3 +1,5 @@
+2.3. (ws)
+      - dssi plugins: fix count of LADSPA ports
 21.02. (fn)
       - "Ported" simpledrums to Qt4 - it builds, runs, produces sound (and
 		  compiler warnings); review is welcome. The GUI is rather large now.
