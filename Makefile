@@ -85,3 +85,7 @@ package:
 man:
 	cd build; make man
 
+revision:
+	svn info -r HEAD | grep Revision | cut -f 2 -d ' ' > muse/muse/revision.h
+
+

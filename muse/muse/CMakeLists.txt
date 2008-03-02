@@ -20,17 +20,6 @@
 
 include(${PROJECT_SOURCE_DIR}/pch.txt)
 
-add_custom_command(
-   OUTPUT ${CMAKE_BINARY_DIR}/revision.h
-   COMMAND svn info ${PROJECT_SOURCE_DIR} | grep Revision | cut -f 2 -d \" \" > ${CMAKE_BINARY_DIR}/revision.h
-   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-   )
-
-set_source_files_properties(
-      ${PROJECT_BINARY_DIR}/revision.h
-      PROPERTIES generated true
-      )
-
 include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}
       )
@@ -171,7 +160,6 @@ add_executable ( muse
       audiogroup.cpp
       exportmidi.cpp
       revision.cpp
-      ${PROJECT_BINARY_DIR}/revision.h
       )
 
 set_target_properties( muse
