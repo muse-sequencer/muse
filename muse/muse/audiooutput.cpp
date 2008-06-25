@@ -19,7 +19,7 @@
 //=============================================================================
 
 #include "audiooutput.h"
-#include "driver/jackaudio.h"
+#include "jackaudio.h"
 #include "audio.h"
 #include "globals.h"
 #include "song.h"

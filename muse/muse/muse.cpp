@@ -34,7 +34,7 @@
 #include "master/masteredit.h"
 #include "midiedit/drumedit.h"
 #include "mixer/mixer.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "waveedit/waveedit.h"
 #include "icons.h"
 #include "widgets/mixdowndialog.h"

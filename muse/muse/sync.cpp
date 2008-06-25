@@ -23,7 +23,7 @@
 #include "widgets/utils.h"
 #include "globals.h"
 #include "audio.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "gconfig.h"
 #include "al/tempo.h"
 #include "al/al.h"

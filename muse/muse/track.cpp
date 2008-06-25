@@ -28,7 +28,7 @@
 #include "midictrl.h"
 #include "part.h"
 #include "gui.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 
 // synchronize with TrackType!:
 

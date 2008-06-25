@@ -25,7 +25,7 @@
 #include "al/tempo.h"
 #include "al/sig.h"
 #include "audio.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "audio.h"
 #include "arranger/arranger.h"
 #include "plugin.h"

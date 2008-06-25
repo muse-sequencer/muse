@@ -33,7 +33,7 @@
 #include "vst.h"
 #include "globals.h"
 #include "synth.h"
-#include "driver/jackaudio.h"
+#include "jackaudio.h"
 #include "midi.h"
 #include "al/xml.h"
 #include "song.h"

@@ -25,7 +25,7 @@
 #include "mixer.h"
 #include "widgets/simplebutton.h"
 #include "widgets/utils.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "synth.h"
 #include "midirack.h"
 #include "midiplugin.h"

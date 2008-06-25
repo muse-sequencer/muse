@@ -21,7 +21,7 @@
 #include "song.h"
 #include "audio.h"
 #include "midiplugin.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "muse.h"
 
 //---------------------------------------------------------

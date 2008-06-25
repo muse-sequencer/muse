@@ -29,7 +29,7 @@
 
 #include "dssihost.h"
 #include "synth.h"
-#include "driver/jackaudio.h"
+#include "jackaudio.h"
 #include "midi.h"
 #include "al/al.h"
 #include "al/xml.h"

@@ -34,7 +34,7 @@
 #include "audio.h"
 #include "midictrl.h"
 #include "instruments/minstrument.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 
 std::vector<Synth*> synthis;  // array of available synthis
 

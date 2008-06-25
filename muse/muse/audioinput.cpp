@@ -20,7 +20,7 @@
 
 #include "globals.h"
 #include "audioinput.h"
-#include "driver/jackaudio.h"
+#include "jackaudio.h"
 #include "audio.h"
 
 //---------------------------------------------------------

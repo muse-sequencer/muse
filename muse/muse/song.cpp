@@ -27,7 +27,7 @@
 #include "midiedit/drummap.h"
 #include "audio.h"
 #include "mixer/mixer.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "gconfig.h"
 #include "al/marker.h"
 #include "al/sig.h"

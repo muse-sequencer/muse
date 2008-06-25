@@ -23,7 +23,7 @@
 #include "midi.h"
 #include "midictrl.h"
 #include "al/xml.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "audio.h"
 #include "gconfig.h"
 

@@ -23,7 +23,7 @@
 #include "audio.h"
 #include "track.h"
 #include "synth.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "al/xml.h"
 #include "auxplugin.h"
 

@@ -24,7 +24,7 @@
 #include "muse.h"
 #include "globals.h"
 #include "song.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "audioprefetch.h"
 #include "audiowriteback.h"
 #include "audio.h"

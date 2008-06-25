@@ -19,7 +19,7 @@
 //=============================================================================
 
 #include "audio.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "song.h"
 #include "astrip.h"
 #include "synth.h"

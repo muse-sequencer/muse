@@ -22,7 +22,7 @@
 #define __MIDIFIFO_H__
 
 #include "midievent.h"
-#include "driver/port.h"
+#include "port.h"
 
 #define MIDI_FIFO_SIZE    512
 

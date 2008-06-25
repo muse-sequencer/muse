@@ -24,7 +24,7 @@
 #include "al/al.h"
 #include "al/tempo.h"
 #include "al/xml.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "audio.h"
 #include "midioutport.h"
 #include "sync.h"

@@ -28,7 +28,7 @@
 #include "wave.h"
 #include "auxplugin.h"
 #include "pipeline.h"
-#include "driver/audiodev.h"
+#include "audiodev.h"
 #include "gconfig.h"
 
 //---------------------------------------------------------
