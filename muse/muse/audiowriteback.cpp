@@ -65,7 +65,9 @@ void AudioWriteback::start(int priority)
 void AudioWriteback::processMsg1(const void*)
       {
       while (counter) {
-            q_atomic_decrement(&counter);
+            //q_atomic_decrement(&counter);
+            --counter;
+
       	OutputList* ol = song->outputs();
       	if (!ol->empty()) {
             	AudioOutput* ao = ol->front();
@@ -88,7 +90,8 @@ void AudioWriteback::processMsg1(const void*)
 
 void AudioWriteback::trigger()
 	{
-	q_atomic_increment(&counter);
+	// q_atomic_increment(&counter);
+      ++counter;
       if (counter < 2) {
       	if (sendMsg1("0", 1)) {
             	printf("AudioWriteback::msgTick(): send failed!\n");

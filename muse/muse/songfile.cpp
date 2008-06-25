@@ -27,7 +27,6 @@
 #include "al/marker.h"
 #include "midictrl.h"
 #include "conf.h"
-#include "midiseq.h"
 #include "al/tempo.h"
 #include "al/sig.h"
 #include "synth.h"

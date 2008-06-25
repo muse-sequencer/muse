@@ -48,11 +48,6 @@ class MidiOutPort;
 class MidiInPort;
 class MidiOut;
 
-#ifndef __APPLE__
-// actually it should check for ALSA but I don't know how to do that
-typedef struct snd_seq_event snd_seq_event_t;
-#endif
-
 //---------------------------------------------------------
 //   ArrangerTrack
 //---------------------------------------------------------
@@ -105,7 +100,7 @@ class Track : public QObject {
    private:
       QString _comment;
       PartList* _parts;
-      Port _alsaPort[MAX_CHANNELS], _jackPort[MAX_CHANNELS];
+      Port _jackPort[MAX_CHANNELS];
       bool _sendSync;   // this port sends mtc/mmc events
       int _deviceId;    // midi device id: 0-126; 127 == all
 
@@ -314,12 +309,8 @@ class Track : public QObject {
       bool inRouteExists(const Route& r) const;
       bool outRouteExists(const Route& r) const;
 
-      Port alsaPort(int channel = 0) const    { return _alsaPort[channel]; }
       Port jackPort(int channel = 0) const    { return _jackPort[channel]; }
 
-      void setAlsaPort(const Port& port, int channel = 0) {
-            _alsaPort[channel] = port;
-            }
       void setJackPort(const Port& port, int channel = 0) {
             _jackPort[channel] = port;
             }

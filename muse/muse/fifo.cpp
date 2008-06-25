@@ -40,7 +40,8 @@ void FifoBase::clear()
 void FifoBase::push()
       {
       widx = (widx + 1) % FIFO_BUFFER;
-      q_atomic_increment(&counter);
+//      q_atomic_increment(&counter);
+      ++counter;
       }
 
 //---------------------------------------------------------
@@ -50,7 +51,8 @@ void FifoBase::push()
 void FifoBase::pop()
       {
       ridx = (ridx + 1) % FIFO_BUFFER;
-      q_atomic_decrement(&counter);
+      // q_atomic_decrement(&counter);
+      --counter;
       }
 
 //---------------------------------------------------------

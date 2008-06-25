@@ -23,7 +23,6 @@
 #include "midi.h"
 #include "midictrl.h"
 #include "al/xml.h"
-#include "driver/mididev.h"
 #include "driver/audiodev.h"
 #include "audio.h"
 #include "gconfig.h"
@@ -57,8 +56,8 @@ MidiInPort::~MidiInPort()
 void MidiInPort::setName(const QString& s)
       {
       Track::setName(s);
-      if (!alsaPort(0).isZero())
-            midiDriver->setPortName(alsaPort(), s);
+//      if (!alsaPort(0).isZero())
+//            midiDriver->setPortName(alsaPort(), s);
       if (!jackPort(0).isZero())
             audioDriver->setPortName(jackPort(), s);
       }
@@ -89,12 +88,12 @@ void MidiInPort::read(QDomNode node)
             }
       }
 
+#if 0
 //---------------------------------------------------------
 //   midiReceived
 //    called from midiSeq context
 //---------------------------------------------------------
 
-#ifndef __APPLE__
 void MidiInPort::eventReceived(snd_seq_event_t* ev)
       {
       MidiEvent event;

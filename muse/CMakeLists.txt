@@ -20,6 +20,9 @@
 
 project(muse)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
+if (COMMAND cmake_policy)
+      cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
 
 # set libdir if not use -DCMAKE_INSTALL_LIBDIR
 if (NOT CMAKE_INSTALL_LIBDIR)
@@ -54,7 +57,7 @@ include ( ${PROJECT_SOURCE_DIR}/cmake/TargetDoc.cmake)
 option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface"  ON)
 option ( ENABLE_VST         "enable VST/win support"                  OFF)
 option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"     ON)
-option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin"      OFF)
+option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin"      ON)
 
 ##
 ## Just print a notice if this is OS X

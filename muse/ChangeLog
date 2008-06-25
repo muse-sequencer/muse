@@ -1,3 +1,7 @@
+25.6. (ws)
+      As part of a major code cleanup i removed ALSA midi. This also removes the
+      need for a realtime timer (JACK midi and MusE are competing for it) and simplifies
+      a lot of other code.
 2.3. (ws)
       - dssi plugins: fix count of LADSPA ports
 21.02. (fn)

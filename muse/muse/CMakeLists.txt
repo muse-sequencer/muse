@@ -122,7 +122,6 @@ add_executable ( muse
 	help.cpp
 	midictrl.cpp
       fifo.cpp
-	midiseq.cpp
       helper.cpp
       route.cpp
       shortcuts.cpp

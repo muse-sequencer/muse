@@ -34,7 +34,6 @@
 #include "audio.h"
 #include "mixer/mixer.h"
 #include "midirc.h"
-#include "driver/mididev.h"
 #include "instruments/minstrument.h"
 #include "midiedit/pianoroll.h"
 #include "midiedit/drumedit.h"
@@ -223,22 +222,7 @@ PreferencesDialog::PreferencesDialog(Arranger* a, QWidget* parent)
                   break;
                   }
             }
-      QList<PortName> ol = midiDriver->inputPorts(true);
       int i = 0;
-      for (QList<PortName>::iterator ip = ol.begin(); ip != ol.end(); ++ip, ++i) {
-            preferredInput->addItem(ip->name);
-            if (ip->name == config->defaultMidiInputDevice)
-                  preferredInput->setCurrentIndex(i);
-            }
-      ol = midiDriver->outputPorts(true);
-      i = 0;
-      for (QList<PortName>::iterator ip = ol.begin(); ip != ol.end(); ++ip, ++i) {
-            preferredOutput->addItem(ip->name);
-            if (ip->name == config->defaultMidiOutputDevice)
-                  preferredOutput->setCurrentIndex(i);
-            }
-
-      i = 0;
       for (iMidiInstrument mi = midiInstruments.begin(); mi != midiInstruments.end(); ++mi, ++i) {
             preferredInstrument->addItem((*mi)->iname());
             if ((*mi)->iname() == config->defaultMidiInstrument)

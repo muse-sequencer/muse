@@ -27,9 +27,6 @@ details.
         ftp://ftp.trolltech.com/qt/source
         MusE does _not_ compile with older versions
 
-      - ALSA 1.0 or newer
-        http://www.alsa-project.org/
-
       - gcc 4.x.x
 
       - libsndfile >= 1.0.1

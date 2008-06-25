@@ -24,11 +24,9 @@
 #include "al/al.h"
 #include "al/tempo.h"
 #include "al/xml.h"
-#include "driver/mididev.h"
 #include "driver/audiodev.h"
 #include "audio.h"
 #include "midioutport.h"
-#include "midiseq.h"
 #include "sync.h"
 #include "gconfig.h"
 #include "instruments/minstrument.h"
@@ -64,8 +62,8 @@ MidiOutPort::~MidiOutPort()
 void MidiOutPort::setName(const QString& s)
       {
       Track::setName(s);
-      if (!alsaPort().isZero())
-            midiDriver->setPortName(alsaPort(), s);
+//      if (!alsaPort().isZero())
+//            midiDriver->setPortName(alsaPort(), s);
       if (!jackPort().isZero())
             audioDriver->setPortName(jackPort(), s);
 //      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
@@ -125,9 +123,6 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
       {
       for (iRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
             switch (r->dst.type) {
-                  case RouteNode::MIDIPORT:
-                        queueAlsaEvent(event);
-                        break;
                   case RouteNode::JACKMIDIPORT:
                         queueJackEvent(event);
                         break;
@@ -137,98 +132,6 @@ void MidiOutPort::routeEvent(const MidiEvent& event)
                   }
             }
       }
-
-//---------------------------------------------------------
-//    queueAlsaEvent
-//    called from MidiSeq
-//---------------------------------------------------------
-
-#define AO(e) midiSeq->putEvent(alsaPort(0), e);
-
-void MidiOutPort::queueAlsaEvent(const MidiEvent& ev)
-      {
-      if (ev.type() == ME_CONTROLLER) {
-            int a      = ev.dataA();
-            int b      = ev.dataB();
-            int chn    = ev.channel();
-            unsigned t = ev.time();
-
-            if (a == CTRL_PITCH) {
-                  AO(MidiEvent(t, chn, ME_PITCHBEND, b, 0));
-                  }
-            else if (a == CTRL_PROGRAM) {
-                  int hb = (b >> 16) & 0xff;
-                  int lb = (b >> 8) & 0xff;
-                  int pr = b & 0x7f;
-                  if (hb != 0xff)
-                        AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HBANK, hb));
-                  if (lb != 0xff)
-                        AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LBANK, lb));
-                  AO(MidiEvent(t+2, chn, ME_PROGRAM, pr, 0));
-                  }
-            else if (a == CTRL_MASTER_VOLUME) {
-                  unsigned char sysex[] = {
-                        0x7f, 0x7f, 0x04, 0x01, 0x00, 0x00
-                        };
-                  sysex[1] = deviceId();
-                  sysex[4] = b & 0x7f;
-                  sysex[5] = (b >> 7) & 0x7f;
-                  AO(MidiEvent(t, ME_SYSEX, sysex, 6));
-                  }
-            else if (a < CTRL_14_OFFSET) {               // 7 Bit Controller
-                  AO(ev);
-                  }
-            else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
-                  int ctrlH = (a >> 8) & 0x7f;
-                  int ctrlL = a & 0x7f;
-                  int dataH = (b >> 7) & 0x7f;
-                  int dataL = b & 0x7f;
-                  AO(MidiEvent(t, chn, ME_CONTROLLER, ctrlH, dataH));
-                  AO(MidiEvent(t+1, chn, ME_CONTROLLER, ctrlL, dataL));
-                  }
-            else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
-                  int ctrlH = (a >> 8) & 0x7f;
-                  int ctrlL = a & 0x7f;
-                  AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-                  AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-                  AO(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, b));
-                  }
-            else if (a < CTRL_RPN14_OFFSET) {     // NRPN 7-Bit Controller
-                  int ctrlH = (a >> 8) & 0x7f;
-                  int ctrlL = a & 0x7f;
-                  AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-                  AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-                  AO(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, b));
-                  }
-            else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
-                  int ctrlH = (a >> 8) & 0x7f;
-                  int ctrlL = a & 0x7f;
-                  int dataH = (b >> 7) & 0x7f;
-                  int dataL = b & 0x7f;
-                  AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-                  AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-                  AO(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-                  AO(MidiEvent(t+3, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
-                  }
-            else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
-                  int ctrlH = (a >> 8) & 0x7f;
-                  int ctrlL = a & 0x7f;
-                  int dataH = (b >> 7) & 0x7f;
-                  int dataL = b & 0x7f;
-                  AO(MidiEvent(t, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-                  AO(MidiEvent(t+1, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-                  AO(MidiEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-                  AO(MidiEvent(t+3, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
-                  }
-            else {
-                  printf("putEvent: unknown controller type 0x%x\n", a);
-                  }
-            }
-      else {
-            AO(ev);
-            }
-      }
-#undef AO
 
 //---------------------------------------------------------
 //    queueJackEvent

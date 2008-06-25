@@ -25,11 +25,9 @@
 #include "globals.h"
 #include "song.h"
 #include "driver/audiodev.h"
-#include "driver/mididev.h"
 #include "audioprefetch.h"
 #include "audiowriteback.h"
 #include "audio.h"
-#include "midiseq.h"
 #include "sync.h"
 #include "midi.h"
 #include "gconfig.h"
@@ -141,7 +139,7 @@ bool Audio::start()
       _seqTime.nextTickPos  = 0;
       _seqTime.pos.setFrame(~0);      // make sure seek is not optimized away
 
-      msg           = 0;
+      msg = 0;
 
       //
       // init marker for synchronous loop processing
@@ -159,7 +157,6 @@ bool Audio::start()
                 (*i)->activate1();
           seek(song->cpos());
           process(segmentSize, STOP);   // warm up caches; audio must be stopped
-          audioDriver->start(realTimePriority);
           }
       else {
 
@@ -185,13 +182,13 @@ bool Audio::start()
                           (*i)->setJackPort(Port(), x);  // zero out the old connection
                       (*i)->activate1();
                       }
-               audioDriver->start(realTimePriority);
                }
           else {
                printf("Failed to init audio!\n");
                return false;
                }
           }
+      audioDriver->start(realTimePriority);
       audioDriver->stopTransport();
       return true;
       }
@@ -511,7 +508,7 @@ void Audio::process(unsigned frames, int jackState)
             _seqTime.pos       += frames;
             _seqTime.curTickPos = _seqTime.nextTickPos;
             }
-      midiDriver->updateConnections();
+//      midiDriver->updateConnections();
       }
 
 //---------------------------------------------------------
@@ -565,10 +562,6 @@ void Audio::processMsg()
 
             case SEQM_IDLE:
                   idle = msg->a;
-                  break;
-
-            case MS_SET_RTC:
-                  midiSeq->initRealtimeTimer();
                   break;
 
             case AUDIO_ADDMIDIPLUGIN:

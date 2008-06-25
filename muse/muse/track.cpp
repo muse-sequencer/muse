@@ -29,7 +29,6 @@
 #include "part.h"
 #include "gui.h"
 #include "driver/audiodev.h"
-#include "driver/mididev.h"
 
 // synchronize with TrackType!:
 
@@ -48,7 +47,7 @@ const char* Track::_clname[] = {
 //   ArrangerTrack
 //---------------------------------------------------------
 
-ArrangerTrack::ArrangerTrack() 
+ArrangerTrack::ArrangerTrack()
 	{
 	tw   = 0;
       ctrl = -1;        // first ctrl in list
@@ -122,12 +121,12 @@ Track::~Track()
       delete _parts;
 
       for (int i = 0; i < MAX_CHANNELS; ++i) {
-            if (!_alsaPort[i].isZero())
-                  midiDriver->unregisterPort(_alsaPort[i]);
+//            if (!_alsaPort[i].isZero())
+//                  midiDriver->unregisterPort(_alsaPort[i]);
             if (!_jackPort[i].isZero())
                   audioDriver->unregisterPort(_jackPort[i]);
             }
-      
+
       }
 
 //---------------------------------------------------------
@@ -824,16 +823,12 @@ void Track::resetAllMeter()
 void Track::activate1()
       {
       if (isMidiTrack()) {
-            if (!alsaPort(0).isZero())
-                  printf("Track::activate1() midi: alsa port already active!\n");
             if (!jackPort(0).isZero())
                   printf("Track::activate1() midi: jack port already active!\n");
             if (type() == MIDI_OUT) {
-                  _alsaPort[0] = midiDriver->registerInPort(_name, true);
                   _jackPort[0] = audioDriver->registerOutPort(_name, true);
                   }
             else if (type() == MIDI_IN) {
-                  _alsaPort[0] = midiDriver->registerOutPort(_name, true);
                   _jackPort[0] = audioDriver->registerInPort(_name, true);
                   }
             return;
@@ -874,10 +869,6 @@ void Track::activate2()
                   audioDriver->connect(_jackPort[r.src.channel], r.dst.port);
                   r.disconnected = false;
                   }
-            else if (r.dst.type == RouteNode::MIDIPORT) {
-                  midiDriver->connect(_alsaPort[0], r.dst.port);
-                  r.disconnected = false;
-                  }
             }
       foreach(Route r, _inRoutes) {
             if (r.src.type == RouteNode::JACKMIDIPORT) {
@@ -886,10 +877,6 @@ void Track::activate2()
                   }
             else if (r.src.type == RouteNode::AUDIOPORT) {
                   audioDriver->connect(r.src.port, _jackPort[r.dst.channel]);
-                  r.disconnected = false;
-                  }
-            else if (r.src.type == RouteNode::MIDIPORT) {
-                  midiDriver->connect(r.src.port, _alsaPort[0]);
                   r.disconnected = false;
                   }
             }
@@ -912,10 +899,6 @@ void Track::deactivate()
                   audioDriver->disconnect(_jackPort[r.src.channel], r.dst.port);
                   r.disconnected = true;
                   }
-            else if (r.dst.type == RouteNode::MIDIPORT) {
-                  r.disconnected = true;
-                  midiDriver->disconnect(_alsaPort[0], r.dst.port);
-                  }
             }
       foreach(Route r, _inRoutes) {
             if (r.src.type == RouteNode::JACKMIDIPORT) {
@@ -926,19 +909,11 @@ void Track::deactivate()
                   r.disconnected = true;
                   audioDriver->disconnect(r.src.port, _jackPort[r.dst.channel]);
                   }
-            else if (r.src.type == RouteNode::MIDIPORT) {
-                  r.disconnected = true;
-                  midiDriver->disconnect(r.src.port, _alsaPort[0]);
-                  }
             }
       for (int i = 0; i < channels(); ++i) {
             if (!_jackPort[i].isZero()) {
                   audioDriver->unregisterPort(_jackPort[i]);
                   _jackPort[i].setZero();
-                  }
-            if (!_alsaPort[i].isZero()) {
-                  midiDriver->unregisterPort(_alsaPort[i]);
-                  _alsaPort[i].setZero();
                   }
             }
       }
@@ -1045,26 +1020,26 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
 //   addInRoute
 //---------------------------------------------------------
 
-void Track::addInRoute(const Route& r)  
+void Track::addInRoute(const Route& r)
       {
       if (_inRoutes.indexOf(r) != -1) {
             printf("Track::addInRoute: route already there\n");
             return;
             }
-      _inRoutes.push_back(r); 
+      _inRoutes.push_back(r);
       }
 
 //---------------------------------------------------------
 //   addOutRoute
 //---------------------------------------------------------
 
-void Track::addOutRoute(const Route& r) 
-      { 
+void Track::addOutRoute(const Route& r)
+      {
       if (_outRoutes.indexOf(r) != -1) {
             printf("Track::addOutRoute: route already there\n");
             return;
             }
-      _outRoutes.push_back(r); 
+      _outRoutes.push_back(r);
       }
 
 //---------------------------------------------------------

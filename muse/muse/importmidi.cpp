@@ -30,7 +30,6 @@
 #include "al/tempo.h"
 #include "instruments/minstrument.h"
 #include "gconfig.h"
-#include "driver/mididev.h"
 #include "part.h"
 #include "importmidi.h"
 #include "projectdialog.h"
@@ -315,15 +314,6 @@ void MusE::addMidiFile(const QString name)
             outPort->setDefaultName();
             song->insertTrack0(outPort, -1);
 
-#if 0
-            //
-            // route output to preferred midi device
-            //
-            if (!config.defaultMidiOutputDevice.isEmpty()) {
-                  Route dst(config.defaultMidiOutputDevice, 0, Route::MIDIPORT);
-                  outPort->outRoutes()->push_back(dst);
-                  }
-#endif
             //
             // set preferred instrument
             //

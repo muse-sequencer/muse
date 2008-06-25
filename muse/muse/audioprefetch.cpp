@@ -134,7 +134,9 @@ void AudioPrefetch::msgSeek(unsigned samplePos)
       if (samplePos == seekPos)
             return;
 
-      q_atomic_increment(&seekCount);
+      //q_atomic_increment(&seekCount);
+      ++seekCount;
+
       PrefetchMsg msg;
       msg.id  = PREFETCH_SEEK;
       msg.pos = samplePos;
@@ -191,6 +193,7 @@ void AudioPrefetch::seek(unsigned seekTo)
       writePos = seekTo;
 	prefetch(true);
       seekPos = seekTo;
-      q_atomic_decrement(&seekCount);
+      // q_atomic_decrement(&seekCount);
+      --seekCount;
       }
 

@@ -26,7 +26,6 @@
 #include "al/sig.h"
 #include "audio.h"
 #include "driver/audiodev.h"
-#include "driver/mididev.h"
 #include "audio.h"
 #include "arranger/arranger.h"
 #include "plugin.h"
@@ -102,15 +101,9 @@ void Audio::msgRemoveRoute(Route r)
       else if (r.src.type == RouteNode::JACKMIDIPORT) {
             audioDriver->disconnect(r.src.port, ((MidiInPort*)r.dst.track)->jackPort());
             }
-      else if (r.src.type == RouteNode::MIDIPORT) {
-            midiDriver->disconnect(r.src.port, ((MidiInPort*)r.dst.track)->alsaPort());
-            }
       else if (r.dst.type == RouteNode::AUDIOPORT) {
             AudioOutput* ai = (AudioOutput*)(r.src.track);
             audioDriver->disconnect(ai->jackPort(r.src.channel), r.dst.port);
-            }
-      else if (r.dst.type == RouteNode::MIDIPORT) {
-            midiDriver->disconnect(((MidiOutPort*)r.src.track)->alsaPort(), r.dst.port);
             }
       else if (r.dst.type == RouteNode::JACKMIDIPORT) {
             audioDriver->disconnect(((MidiOutPort*)r.src.track)->jackPort(), r.dst.port);
@@ -144,16 +137,10 @@ void Audio::msgAddRoute(Route r)
       else if (r.src.type == RouteNode::JACKMIDIPORT) {
             audioDriver->connect(r.src.port, ((MidiInPort*)r.dst.track)->jackPort());
             }
-      else if (r.src.type == RouteNode::MIDIPORT) {
-            midiDriver->connect(r.src.port, ((MidiInPort*)r.dst.track)->alsaPort());
-            }
       else if (r.dst.type == RouteNode::AUDIOPORT) {
             AudioOutput* ao = (AudioOutput*)r.src.track;
 printf("msgAddRoute to AUDIPORT %p\n", ao);
             audioDriver->connect(ao->jackPort(r.src.channel), r.dst.port);
-            }
-      else if (r.dst.type == RouteNode::MIDIPORT) {
-            midiDriver->connect(((MidiOutPort*)r.src.track)->alsaPort(), r.dst.port);
             }
       else if (r.dst.type == RouteNode::JACKMIDIPORT) {
             audioDriver->connect(((MidiOutPort*)r.src.track)->jackPort(), r.dst.port);

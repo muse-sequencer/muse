@@ -45,7 +45,6 @@
 #include "transpose.h"
 #include "preferences.h"
 #include "audio.h"
-#include "midiseq.h"
 #include "audioprefetch.h"
 #include "audiowriteback.h"
 #include "widgets/shortcutconfig.h"
@@ -54,11 +53,6 @@
 #include "song.h"
 #include "awl/poslabel.h"
 #include "shortcuts.h"
-#ifdef __APPLE__
-#include "driver/coremidi.h"
-#else
-#include "driver/alsamidi.h"
-#endif
 #include "midiplugin.h"
 #include "midiedit/drummap.h"
 #include "widgets/utils.h"
@@ -111,61 +105,6 @@ static RasterVal rasterTable[] = {
       };
 
 //---------------------------------------------------------
-//   watchdog thread
-//	realtime priorities are:
-//	   realTimePriority	- priority of jack thread
-//	   realTimePriority+1	- priority of midi thread
-//	   realTimePriority+2	- priority of watchdog thread
-//---------------------------------------------------------
-
-static void* watchdog(void*)
-      {
-      int policy;
-#ifndef __APPLE__
-      if ((policy = sched_getscheduler (0)) < 0)
-            printf("Cannot get current client scheduler: %s\n", strerror(errno));
-      if (policy != SCHED_FIFO)
-            printf("MusE: watchdog process _NOT_ running SCHED_FIFO\n");
-#endif
-      int fatal = 0;
-      for (;;) {
-            watchAudio = 0;
-            watchMidi = 0;
-            static const int WD_TIMEOUT = 3;
-
-            int to = WD_TIMEOUT;
-            while (to > 0)           // sleep can be interrupted by signal
-                  to = sleep(to);
-
-            bool timeout = false;
-            if (watchMidi == 0)
-                  timeout = true;
-            if (watchAudio == 0)
-                  timeout = true;
-            if (watchAudio > 500000)
-                  timeout = true;
-            if (watchMidi > (config.rtcTicks * WD_TIMEOUT * 2))
-                  timeout = true;
-            if (timeout)
-                  ++fatal;
-            else
-                  fatal = 0;
-            if (fatal >= 3) {
-                  printf("MusE: WatchDog: fatal error, realtime task timeout\n");
-                  printf("   (%d,%d-%d) - stopping all services\n",
-                     watchMidi, watchAudio, fatal);
-                  break;
-                  }
-//            printf("wd %d %d %d\n", watchMidi, watchAudio, fatal);
-            }
-      audio->stop();
-      audioWriteback->stop(true);
-      audioPrefetch->stop(true);
-      fatalError("watchdog timeout");
-      return 0;
-      }
-
-//---------------------------------------------------------
 //   seqStart
 //---------------------------------------------------------
 
@@ -198,58 +137,15 @@ bool MusE::seqStart()
       // priority
 
       realTimePriority = audioDriver->realtimePriority();
-
-      //
-      //  create midi thread with a higher priority than JACK
-      //
-      midiSeq->start(realTimePriority ? realTimePriority + 2 : 0);
-
+      audioState = AUDIO_RUNNING;
       if (realTimePriority) {
-            //
-            //  create watchdog thread with realTimePriority+2
-            //
-            int priority = realTimePriority + 3;
-            struct sched_param rt_param;
-            memset(&rt_param, 0, sizeof(rt_param));
-            rt_param.sched_priority = priority;
-
-            pthread_attr_t* attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
-            pthread_attr_init(attributes);
-
-            if (pthread_attr_setschedpolicy(attributes, SCHED_FIFO)) {
-                  printf("MusE: cannot set FIFO scheduling class for RT thread\n");
-                  }
-            if (pthread_attr_setschedparam (attributes, &rt_param)) {
-                  // printf("Cannot set scheduling priority for RT thread (%s)\n", strerror(errno));
-                  }
-            if (pthread_attr_setscope (attributes, PTHREAD_SCOPE_SYSTEM)) {
-                  printf("MusE: Cannot set scheduling scope for RT thread\n");
-                  }
-            if (pthread_attr_setinheritsched(attributes, PTHREAD_EXPLICIT_SCHED)) {
-                  printf("Cannot set setinheritsched for RT thread\n");
-                  }
-            int rv;
-            if ((rv = pthread_create(&watchdogThread, attributes, ::watchdog, 0)))
-                  fprintf(stderr, "MusE: creating watchdog thread failed: %s\n",
-            	   strerror(rv));
-            pthread_attr_destroy(attributes);
-            //
-            // start audio prefetch threads with realtime
-            // priority
-            //
-            audioPrefetch->start(realTimePriority-5);
-            audioWriteback->start(realTimePriority-5);
+            audioPrefetch->start(realTimePriority - 5);
+            audioWriteback->start(realTimePriority - 5);
             }
       else {
-            printf("MusE: Warning - starting threads without realtime priority since audio is not running realtime.\n");
-            //
-            // start audio prefetch threads as normal
-            // (non realtime) threads
-            //
             audioPrefetch->start(0);
             audioWriteback->start(0);
             }
-      audioState = AUDIO_RUNNING;
       //
       // do connections
       //
@@ -265,10 +161,8 @@ bool MusE::seqStart()
 
 void MusE::seqStop()
       {
-//      audio->msgIdle(true);
       song->setStop(true);
       song->setStopPlay(false);
-      midiSeq->stop(true);
       audio->stop();
       audioWriteback->stop(true);
       audioPrefetch->stop(true);
@@ -532,26 +426,6 @@ MusE::MusE()
       redoAction->setEnabled(false);
       connect(redoAction, SIGNAL(triggered()), song, SLOT(redo()));
 
-#ifdef __APPLE__
-      if (coreMidi.init()) {
-          QMessageBox::critical(NULL, "MusE fatal error.",
-            "MusE failed to initialize the\n"
-            "Core midi subsystem, check\n"
-            "your configuration.");
-          fatalError("init core-midi failed");
-          }
-      midiDriver = &coreMidi;
-#else
-      if (alsaMidi.init()) {
-          QMessageBox::critical(NULL, "MusE fatal error.",
-            "MusE failed to initialize the\n"
-            "Alsa midi subsystem, check\n"
-            "your configuration.");
-          fatalError("init alsa failed");
-          }
-      midiDriver = &alsaMidi;
-#endif
-
       fileOpenAction = getAction("open_project", this);
       connect(fileOpenAction, SIGNAL(triggered()), SLOT(loadProject()));
 
@@ -600,7 +474,6 @@ MusE::MusE()
       audio          = new Audio();
       audioPrefetch  = new AudioPrefetch("Prefetch");
       audioWriteback = new AudioWriteback("Writeback");
-      midiSeq        = new MidiSeq("Midi");
 
       //---------------------------------------------------
       //    MenuBar

@@ -22,7 +22,6 @@
 #include "song.h"
 #include "widgets/utils.h"
 #include "globals.h"
-#include "midiseq.h"
 #include "audio.h"
 #include "driver/audiodev.h"
 #include "gconfig.h"

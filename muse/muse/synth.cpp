@@ -32,7 +32,6 @@
 #include "event.h"
 #include "midievent.h"
 #include "audio.h"
-#include "midiseq.h"
 #include "midictrl.h"
 #include "instruments/minstrument.h"
 #include "driver/audiodev.h"

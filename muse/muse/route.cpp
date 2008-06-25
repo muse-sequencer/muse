@@ -24,7 +24,6 @@
 #include "track.h"
 #include "synth.h"
 #include "driver/audiodev.h"
-#include "driver/mididev.h"
 #include "al/xml.h"
 #include "auxplugin.h"
 
@@ -85,8 +84,7 @@ bool addRoute(const Route& r)
 //         r.src.tname(), r.src.channel, r.src.name().toLatin1().data(),
 //         r.dst.tname(), r.dst.channel, r.dst.name().toLatin1().data());
 
-      if (r.src.type == RouteNode::AUDIOPORT || r.src.type == RouteNode::MIDIPORT 
-         || r.src.type == RouteNode::JACKMIDIPORT) {
+      if (r.src.type == RouteNode::AUDIOPORT || r.src.type == RouteNode::JACKMIDIPORT) {
             if (r.dst.type != RouteNode::TRACK) {
                   fprintf(stderr, "addRoute: bad route 1\n");
                   return false;
@@ -102,8 +100,7 @@ bool addRoute(const Route& r)
                   }
             inRoutes->push_back(r);
             }
-      else if (r.dst.type == RouteNode::AUDIOPORT || r.dst.type == RouteNode::MIDIPORT
-         || r.dst.type == RouteNode::JACKMIDIPORT) {
+      else if (r.dst.type == RouteNode::AUDIOPORT || r.dst.type == RouteNode::JACKMIDIPORT) {
             if (r.src.type != RouteNode::TRACK) {
                   fprintf(stderr, "addRoute: bad route 3\n");
                   return false;
@@ -143,8 +140,7 @@ void removeRoute(const Route& r)
 //      printf("removeRoute %s.%d:<%s> %s.%d:<%s>\n",
 //         r.src.tname(), r.src.channel, r.src.name().toLatin1().data(),
 //         r.dst.tname(), r.dst.channel, r.dst.name().toLatin1().data());
-      if (r.src.type == RouteNode::AUDIOPORT || r.src.type == RouteNode::MIDIPORT
-         || r.src.type == RouteNode::JACKMIDIPORT) {
+      if (r.src.type == RouteNode::AUDIOPORT || r.src.type == RouteNode::JACKMIDIPORT) {
             if (r.dst.type != RouteNode::TRACK) {
                   fprintf(stderr, "removeRoute: bad route 1\n");
                   goto error;
@@ -164,8 +160,7 @@ void removeRoute(const Route& r)
                         }
                   }
             }
-      else if (r.dst.type == RouteNode::AUDIOPORT || r.dst.type == RouteNode::MIDIPORT
-         || r.dst.type == RouteNode::JACKMIDIPORT) {
+      else if (r.dst.type == RouteNode::AUDIOPORT || r.dst.type == RouteNode::JACKMIDIPORT) {
             if (r.src.type != RouteNode::TRACK) {
                   fprintf(stderr, "removeRoute: bad route 3\n");
                   goto error;
@@ -245,10 +240,6 @@ QString RouteNode::name() const
                   if (port.isZero())
                         return QString("0");
                   return audioDriver->portName(port);
-            case MIDIPORT:
-                  if (port.isZero())
-                        return QString("0");
-                  return midiDriver->portName(port);
             case AUXPLUGIN:
                   return plugin->pluginInstance()->name();
             }
@@ -309,7 +300,6 @@ bool RouteNode::operator==(const RouteNode& a) const
       switch(type) {
             case TRACK:
                   return (channel == a.channel) && (track == a.track);
-            case MIDIPORT:
             case JACKMIDIPORT:
             case AUDIOPORT:
                   return port == a.port;
@@ -326,7 +316,7 @@ bool RouteNode::operator==(const RouteNode& a) const
 const char* RouteNode::tname(RouteNodeType t)
       {
       static const char* names[] = {
-            "TRACK", "AUDIOPORT", "MIDIPORT", "JACKMIDIPORT", "AUX"
+            "TRACK", "AUDIOPORT", "JACKMIDIPORT", "AUX"
             };
       if (t > (int)(sizeof(names)/sizeof(*names)))
             return "???";
@@ -388,12 +378,6 @@ void RouteNode::read(QDomNode node)
             port = audioDriver->findPort(s);
             if (port.isZero())
                   printf("Route::read(): jack midiport <%s> not found\n", s.toLatin1().data());
-            }
-      else if (st == "MIDIPORT") {
-            type = RouteNode::MIDIPORT;
-            port = midiDriver->findPort(s);
-            if (port.isZero())
-                  printf("Route::read(): midiport <%s> not found\n", s.toLatin1().data());
             }
       else if (st == "AUX") {
             type = RouteNode::AUXPLUGIN;

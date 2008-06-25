@@ -41,8 +41,8 @@ using AL::Xml;
 //---------------------------------------------------------
 
 struct RouteNode {
-      enum RouteNodeType { 
-            TRACK, AUDIOPORT, MIDIPORT, JACKMIDIPORT, AUXPLUGIN
+      enum RouteNodeType {
+            TRACK, AUDIOPORT, JACKMIDIPORT, AUXPLUGIN
             };
 
       Port   port;
@@ -61,7 +61,7 @@ struct RouteNode {
       RouteNode(AuxPluginIF*);
 
       bool isPortType() const {
-            return type==AUDIOPORT || type == MIDIPORT || type == JACKMIDIPORT;
+            return type==AUDIOPORT || type == JACKMIDIPORT;
             }
       bool isValid() const {
             return (isPortType() && !port.isZero())
@@ -90,7 +90,7 @@ struct Route {
 
       Route() { disconnected = false;}
       Route(const RouteNode& s, const RouteNode& d) : src(s), dst(d) { disconnected = false;}
-      bool operator==(const Route& a) const { 
+      bool operator==(const Route& a) const {
             return (src==a.src) && (dst==a.dst);
             }
       };

@@ -220,7 +220,6 @@ static void noJackError(const char* /* s */)
 JackAudio::JackAudio(jack_client_t* cl, char* name)
    : AudioDriver()
       {
-printf("JackAudio::JackAudio(%p,%s)\n", cl, name);
       strcpy(jackRegisteredName, name);
       _client = cl;
       }
@@ -237,7 +236,6 @@ JackAudio::~JackAudio()
                      strerror(errno));
                   }
             }
-printf("JackAudio::~JackAudio\n");
       _client = 0;
       }
 
@@ -256,7 +254,7 @@ char* JackAudio::getJackName()
 
 bool JackAudio::restart()
       {
-printf("JackAudio::restart\n");
+      printf("JackAudio::restart\n");
       _client = jack_client_new(jackRegisteredName);
       if (!_client)
             return true;

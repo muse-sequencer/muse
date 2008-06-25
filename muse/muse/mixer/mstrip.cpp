@@ -25,7 +25,6 @@
 #include "mixer.h"
 #include "widgets/simplebutton.h"
 #include "widgets/utils.h"
-#include "driver/mididev.h"
 #include "driver/audiodev.h"
 #include "synth.h"
 #include "midirack.h"
@@ -801,26 +800,12 @@ void MidiOutPortStrip::oRouteShow()
       {
       QMenu* pup = oR->menu();
       pup->clear();
-      pup->addSeparator()->setText(tr("AlsaDevices"));
       RouteList* orl = track->outRoutes();
 
-      //
-      // add ALSA midi ports to list
-      //
-      QList<PortName> ol = midiDriver->outputPorts(true);
-      foreach (PortName ip, ol) {
-            QAction* oa = pup->addAction(ip.name);
-            oa->setCheckable(true);
-            RouteNode dst(ip.port, RouteNode::MIDIPORT);
-            Route r = Route(RouteNode(track), dst);
-            oa->setData(QVariant::fromValue(r));
-            oa->setChecked(orl->indexOf(r) != -1);
-            }
-
+      QList<PortName> ol;
       //
       // add JACK midi ports to list
       //
-      pup->addSeparator()->setText(tr("JackDevices"));
       ol = audioDriver->inputPorts(true);
       foreach (PortName ip, ol) {
             QAction* oa = pup->addAction(ip.name);
@@ -990,23 +975,13 @@ void MidiInPortStrip::iRouteShow()
       {
       QMenu* pup = iR->menu();
       pup->clear();
-      pup->addSeparator()->setText(tr("AlsaDevices"));
 
       RouteList* irl = track->inRoutes();
 
-      QList<PortName> ol = midiDriver->inputPorts(false);
-      foreach (PortName ip, ol) {
-            RouteNode src(ip.port, RouteNode::MIDIPORT);
-            Route r = Route(src, RouteNode(track));
-            QAction* action = pup->addAction(ip.name);
-            action->setCheckable(true);
-            action->setData(QVariant::fromValue(r));
-            action->setChecked(irl->indexOf(r) != -1);
-            }
+      QList<PortName> ol;
       //
       // add JACK midi ports to list
       //
-      pup->addSeparator()->setText(tr("JackDevices"));
       ol = audioDriver->outputPorts(true);
       foreach (PortName ip, ol) {
             QAction* action = pup->addAction(ip.name);

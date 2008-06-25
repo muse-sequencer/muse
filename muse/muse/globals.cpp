@@ -130,5 +130,4 @@ QAction* recordAction;
 QAction* panicAction;
 
 bool rcEnable = false;
-bool midiSeqRunning = false;
 

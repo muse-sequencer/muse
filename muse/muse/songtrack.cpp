@@ -22,7 +22,6 @@
 #include "audio.h"
 #include "midiplugin.h"
 #include "driver/audiodev.h"
-#include "driver/mididev.h"
 #include "muse.h"
 
 //---------------------------------------------------------
@@ -105,7 +104,7 @@ Track* Song::addTrack(QAction* action)
             MidiSynti* si = new MidiSynti();
             QString sName(s->name());
             for (k = s->instances(); k < 1000; ++k) {
-                  QString instanceName = (k == 0) ? 
+                  QString instanceName = (k == 0) ?
                      sName : instanceName.arg(sName).arg(k);
 
                   MidiSyntiList* sl = midiSyntis();
@@ -138,7 +137,7 @@ Track* Song::addTrack(QAction* action)
             SynthI* si = new SynthI();
             int i;
             for (i = s->instances(); i < 1000; ++i) {
-                  QString instanceName = (i == 0) ? 
+                  QString instanceName = (i == 0) ?
                      s->name() : QString("%1-%2").arg(s->name()).arg(i);
 
                   SynthIList* sl = syntis();
@@ -225,6 +224,7 @@ void Song::insertTrack(Track* track, int idx)
             case Track::TRACK_TYPES:
             case Track::MIDI_OUT:
                   {
+#if 0
                   QList<PortName> op = midiDriver->outputPorts(false);
                   if (!op.isEmpty()) {
                         RouteNode src(track);
@@ -232,12 +232,14 @@ void Song::insertTrack(Track* track, int idx)
                         Route r = Route(src, dst);
                         track->addOutRoute(r);
                         }
+#endif
                   //TODO: autoconnect to JACK midi ports
                   }
                   break;
-                  
+
             case Track::MIDI_IN:
                   {
+#if 0
                   QList<PortName> op = midiDriver->inputPorts(true);
                   if (!op.isEmpty()) {
                         RouteNode src(op.back().port, -1, RouteNode::MIDIPORT);
@@ -245,6 +247,7 @@ void Song::insertTrack(Track* track, int idx)
                         Route r = Route(src, dst);
                         track->addInRoute(r);
                         }
+#endif
                   //TODO: autoconnect to JACK midi ports
                   }
                   break;
@@ -253,7 +256,7 @@ void Song::insertTrack(Track* track, int idx)
                   break;
             case Track::MIDI:
                   //
-                  // connect to first channel of all all midi input ports, 
+                  // connect to first channel of all all midi input ports,
                   // if there is not already a route
                   //
                   if (track->noInRoute()) {

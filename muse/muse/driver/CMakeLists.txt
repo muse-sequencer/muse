@@ -9,8 +9,7 @@ set ( driver_src
       )
 ELSE (APPLE)
 set ( driver_src
-     alsamidi.cpp jack.cpp dummyaudio.cpp alsatimer.cpp
-      rtctimer.cpp posixtimer.cpp
+      jack.cpp dummyaudio.cpp
       )
 ENDIF (APPLE)
 
