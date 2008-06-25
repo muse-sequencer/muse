@@ -35,7 +35,7 @@
 #include "projectdialog.h"
 #include "templatedialog.h"
 #include "audio.h"
-#include "mixer/mixer.h"
+#include "mixer.h"
 #include "arranger/arranger.h"
 #include "midictrl.h"
 #include "midiinport.h"

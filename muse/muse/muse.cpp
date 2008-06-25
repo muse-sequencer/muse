@@ -33,7 +33,7 @@
 #include "liste/listedit.h"
 #include "master/masteredit.h"
 #include "midiedit/drumedit.h"
-#include "mixer/mixer.h"
+#include "mixer.h"
 #include "audiodev.h"
 #include "waveedit/waveedit.h"
 #include "icons.h"
@@ -63,7 +63,7 @@
 #include "midiedit/miditracker.h"
 #include "projectpropsdialog.h"
 #include "liste/listedit.h"
-#include "mixer/strip.h"
+#include "strip.h"
 
 extern void initMidiInstruments();
 

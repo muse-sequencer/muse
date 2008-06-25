@@ -32,7 +32,6 @@ subdirs (
       instruments
       marker
       liste
-      mixer
       arranger
       waveedit
       )
@@ -48,6 +47,7 @@ QT4_WRAP_UI  (muse_ui_headers
       projectdialog.ui
       templatedialog.ui
       importmidi.ui
+      routedialog.ui
       )
 
 QT4_WRAP_CPP ( muse_moc_headers
@@ -78,6 +78,13 @@ QT4_WRAP_CPP ( muse_moc_headers
       importmidi.h
       midiinport.h
       midioutport.h
+      astrip.h
+      midirack.h
+      mixer.h
+      mstrip.h
+      rack.h
+      routedialog.h
+      strip.h
       )
 
 QT4_ADD_RESOURCES (muse_qrc_files muse.qrc)
@@ -159,6 +166,13 @@ add_executable ( muse
       exportmidi.cpp
       revision.cpp
       jack.cpp dummyaudio.cpp
+      astrip.cpp
+      midirack.cpp
+      mixer.cpp
+      mstrip.cpp
+      rack.cpp
+      routedialog.cpp
+      strip.cpp
       )
 
 set_target_properties( muse
@@ -173,7 +187,6 @@ target_link_libraries(muse
       liste
       synti
       arranger
-      mixer
       waveedit
       widgets
       al

@@ -32,7 +32,7 @@
 #include "gconfig.h"
 
 #include "audio.h"
-#include "mixer/mixer.h"
+#include "mixer.h"
 #include "midirc.h"
 #include "instruments/minstrument.h"
 #include "midiedit/pianoroll.h"

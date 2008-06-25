@@ -21,7 +21,7 @@
 #include "song.h"
 #include "instruments/minstrument.h"
 #include "muse.h"
-#include "mixer/mixer.h"
+#include "mixer.h"
 #include "al/tempo.h"
 #include "al/sig.h"
 #include "audio.h"

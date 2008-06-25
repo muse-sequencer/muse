@@ -28,7 +28,7 @@
 #include "al/xml.h"
 #include "widgets/midisync.h"
 #include "sync.h"
-#include "mixer/mixer.h"
+#include "mixer.h"
 #include "globals.h"
 #include "midirc.h"
 #include "awl/tcanvas.h"
