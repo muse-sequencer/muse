@@ -50,7 +50,7 @@ class MidiInPort : public MidiTrackBase {
       virtual bool isMute() const         { return _mute; }
       virtual Part* newPart(Part*, bool)  { return 0; }
 
-//      void eventReceived(snd_seq_event_t*);
+      void eventReceived(jack_midi_event_t*);
 
       virtual void getEvents(unsigned from, unsigned to, int channel, MidiEventList* dst);
       void beforeProcess();

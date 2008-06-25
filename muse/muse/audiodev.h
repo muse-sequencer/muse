@@ -23,6 +23,8 @@
 
 #include "driver.h"
 
+class MidiInPort;
+
 //---------------------------------------------------------
 //   AudioDevice
 //---------------------------------------------------------
@@ -50,6 +52,7 @@ class AudioDriver : public Driver {
       virtual void setFreewheel(bool f) = 0;
       virtual void graphChanged() {}
       virtual void startMidiCycle(Port) {}
+      virtual void collectMidiEvents(MidiInPort*, Port) {}
       };
 
 #endif

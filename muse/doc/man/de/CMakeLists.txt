@@ -18,8 +18,8 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-add_custom_command (
-      OUTPUT man-de.pdf
+add_custom_target (
+      manual
       DEPENDS
             ${CMAKE_CURRENT_SOURCE_DIR}/man-de.tex
             ${CMAKE_CURRENT_SOURCE_DIR}/projekte.tex
@@ -33,10 +33,6 @@ add_custom_command (
             --result=man-de.pdf
             ${CMAKE_CURRENT_SOURCE_DIR}/man-de.tex
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      )
-
-add_custom_target ( manual
-      DEPENDS man-de.pdf
       )
 
 install_files ( /share/${MusE_INSTALL_NAME}/doc/ .pdf

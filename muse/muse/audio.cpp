@@ -281,9 +281,6 @@ void Audio::process(unsigned frames, int jackState)
       {
       _seqTime.lastFrameTime = audioDriver->lastFrameTime();
 
-      extern int watchAudio;
-      ++watchAudio;           // make a simple watchdog happy
-
       //
       //  process messages from gui
       //

@@ -25,7 +25,7 @@
 
 #include "config.h"
 #include "libsynti/mess.h"
-#include "driver/jackaudio.h"
+#include "jackaudio.h"
 #include <jack/midiport.h>
 
 static const char* versionString = "1.0";

@@ -26,8 +26,8 @@
 #include "audiodev.h"
 #include "audio.h"
 #include "gconfig.h"
-
 #include "midiinport.h"
+#include "jackaudio.h"
 
 //---------------------------------------------------------
 //   MidiInPort
@@ -56,8 +56,6 @@ MidiInPort::~MidiInPort()
 void MidiInPort::setName(const QString& s)
       {
       Track::setName(s);
-//      if (!alsaPort(0).isZero())
-//            midiDriver->setPortName(alsaPort(), s);
       if (!jackPort(0).isZero())
             audioDriver->setPortName(jackPort(), s);
       }
@@ -88,16 +86,16 @@ void MidiInPort::read(QDomNode node)
             }
       }
 
-#if 0
 //---------------------------------------------------------
 //   midiReceived
 //    called from midiSeq context
 //---------------------------------------------------------
 
-void MidiInPort::eventReceived(snd_seq_event_t* ev)
+void MidiInPort::eventReceived(jack_midi_event_t* ev)
       {
       MidiEvent event;
       event.setB(0);
+
       //
       // move all events 2*segmentSize into the future to get
       // jitterfree playback
@@ -107,16 +105,22 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
       //               ^          ^          ^
       //               catch      process    play
       //
-      event.setTime(audioDriver->frameTime() + 2 * segmentSize);
+      event.setTime(audioDriver->frameTime() + ev->time);
 
-      switch(ev->type) {
-            case SND_SEQ_EVENT_NOTEON:
-                  event.setChannel(ev->data.note.channel);
+      switch(*(ev->buffer) & 0xf0) {
+            case 0x90:
+                  event.setChannel(*(ev->buffer) & 0xf);
                   event.setType(ME_NOTEON);
-                  event.setA(ev->data.note.note);
-                  event.setB(ev->data.note.velocity);
+                  event.setA(*(ev->buffer + 1));
+                  event.setB(*(ev->buffer + 2));
                   break;
-
+            case 0x80:
+                  event.setChannel(*(ev->buffer) & 0xf);
+                  event.setType(ME_NOTEOFF);
+                  event.setA(*(ev->buffer + 1));
+                  event.setB(*(ev->buffer + 2));
+                  break;
+#if 0
             case SND_SEQ_EVENT_KEYPRESS:
                   event.setChannel(ev->data.note.channel);
                   event.setType(ME_POLYAFTER);
@@ -163,6 +167,9 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
                   event.setA(ev->data.control.param);
                   event.setB(ev->data.control.value);
                   break;
+#endif
+            default:
+                  return;     // ignore
             }
 
       if (midiInputTrace) {
@@ -190,7 +197,6 @@ void MidiInPort::eventReceived(snd_seq_event_t* ev)
                   printf("MusE: eventReceived(): fifo overflow\n");
             }
       }
-#endif
 
 //---------------------------------------------------------
 //   afterProcess
@@ -210,6 +216,13 @@ void MidiInPort::afterProcess()
 
 void MidiInPort::beforeProcess()
       {
+      if (!jackPort(0).isZero())
+            audioDriver->collectMidiEvents(this, jackPort(0));
+
+//      Port _jackPort[MAX_CHANNELS];
+      // collect jack midi events
+//      void eventReceived(snd_seq_event_t*);
+
       tmpRecordCount = recordFifo.getSize();
       }
 

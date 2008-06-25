@@ -67,8 +67,6 @@
 
 extern void initMidiInstruments();
 
-static pthread_t watchdogThread;
-
 #define PROJECT_LIST_LEN  6
 static QString* projectList[PROJECT_LIST_LEN];
 
@@ -82,7 +80,6 @@ extern void exitJackAudio();
 
 QStyle* smallStyle;
 
-int watchAudio, watchAudioPrefetch, watchMidi;
 pthread_t splashThread;
 MusE* muse;
 
@@ -166,8 +163,6 @@ void MusE::seqStop()
       audio->stop();
       audioWriteback->stop(true);
       audioPrefetch->stop(true);
-      if (realTimePriority)
-            pthread_cancel(watchdogThread);
       audioState = AUDIO_STOP;
       }
 

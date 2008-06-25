@@ -26,6 +26,7 @@
 #include "song.h"
 #include "jackaudio.h"
 #include "track.h"
+#include "midiinport.h"
 
 #ifdef VST_SUPPORT
 #include <fst.h>
@@ -928,4 +929,20 @@ void JackAudio::startMidiCycle(Port port)
       jack_midi_clear_buffer(port_buf, segmentSize);
 #endif
       }
+
+//---------------------------------------------------------
+//   collectMidiEvents
+//---------------------------------------------------------
+
+void JackAudio::collectMidiEvents(MidiInPort* track, Port port)
+      {
+      void* port_buf = jack_port_get_buffer(port.jackPort(), segmentSize);
+      jack_midi_event_t event;
+      jack_nframes_t eventCount = jack_midi_get_event_count(port_buf);
+      for (jack_nframes_t i = 0; i < eventCount; ++i) {
+            jack_midi_event_get(&event, port_buf, i);
+            track->eventReceived(&event);
+            }
+      }
+
 

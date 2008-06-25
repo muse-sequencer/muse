@@ -22,6 +22,7 @@
 #define __JACKAUDIO_H__
 
 #include "audiodev.h"
+class MidiInPort;
 
 //---------------------------------------------------------
 //   JackAudio
@@ -81,6 +82,7 @@ class JackAudio : public AudioDriver {
       virtual unsigned lastFrameTime() const { return jack_last_frame_time(_client); }
       virtual unsigned frameTime() const     { return jack_frame_time(_client); }
       virtual unsigned curFrame() const      { return pos.frame; }
+      virtual void collectMidiEvents(MidiInPort*, Port);
       };
 
 #endif

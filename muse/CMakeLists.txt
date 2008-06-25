@@ -231,8 +231,6 @@ else (ENABLE_DSSI)
       message("DSSI disabled")
 endif (ENABLE_DSSI)
 
-
-
 if (ENABLE_VST)
       message("VST support enabled")
       set (VST_SUPPORT TRUE)
