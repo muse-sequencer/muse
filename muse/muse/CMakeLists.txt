@@ -29,7 +29,6 @@ subdirs (
       midiedit
       widgets
       master
-      driver
       instruments
       marker
       liste
@@ -159,6 +158,7 @@ add_executable ( muse
       audiogroup.cpp
       exportmidi.cpp
       revision.cpp
+      jack.cpp dummyaudio.cpp
       )
 
 set_target_properties( muse
@@ -168,7 +168,6 @@ set_target_properties( muse
 target_link_libraries(muse
       midiedit
       master
-      driver
       instruments
       marker
       liste
