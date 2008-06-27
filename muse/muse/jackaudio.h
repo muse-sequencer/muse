@@ -33,6 +33,9 @@ class JackAudio : public AudioDriver {
       jack_position_t pos;
       char jackRegisteredName[8];
       jack_transport_state_t transportState;
+      jack_nframes_t _frameCounter;
+
+      static int processAudio(jack_nframes_t frames, void*);
 
    public:
       JackAudio(jack_client_t* cl, char * jack_id_string);
@@ -79,9 +82,7 @@ class JackAudio : public AudioDriver {
       virtual void putEvent(Port, const MidiEvent&);
       virtual void startMidiCycle(Port);
 
-      virtual unsigned lastFrameTime() const { return jack_last_frame_time(_client); }
-      virtual unsigned frameTime() const     { return jack_frame_time(_client); }
-      virtual unsigned curFrame() const      { return pos.frame; }
+      virtual unsigned frameTime() const     { return _frameCounter; }
       virtual void collectMidiEvents(MidiInPort*, Port);
       };
 

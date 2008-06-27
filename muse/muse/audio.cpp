@@ -279,7 +279,8 @@ printf("JACK: shutdown callback\n");
 
 void Audio::process(unsigned frames, int jackState)
       {
-      _seqTime.lastFrameTime = audioDriver->lastFrameTime();
+//      _seqTime.lastFrameTime = audioDriver->lastFrameTime();
+      _seqTime.lastFrameTime = audioDriver->frameTime();
 
       //
       //  process messages from gui
@@ -579,9 +580,9 @@ void Audio::processMsg()
 void Audio::seek(const Pos& p)
       {
       _seqTime.pos.setFrame(p.frame());
-      _seqTime.curTickPos      = _seqTime.pos.tick();
-      _seqTime.nextTickPos     = _seqTime.curTickPos;
-      updateController = true;
+      _seqTime.curTickPos  = _seqTime.pos.tick();
+      _seqTime.nextTickPos = _seqTime.curTickPos;
+      updateController     = true;
 
       loopPassed = true;      // for record loop mode
       if (state != LOOP2 && !freewheel())
@@ -602,7 +603,6 @@ void Audio::seek(const Pos& p)
 
 void Audio::startRolling()
       {
-      startRecordPos = _seqTime.pos;
       if (song->record()) {
             startRecordPos = _seqTime.pos;
             recording      = true;
@@ -641,7 +641,7 @@ void Audio::stopRolling()
 
 	recording    = false;
       endRecordPos = _seqTime.pos;
-      _bounce = 0;
+      _bounce      = 0;
       sendMsgToGui(MSG_STOP);
       seek(_seqTime.pos);
       }

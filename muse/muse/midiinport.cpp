@@ -105,71 +105,52 @@ void MidiInPort::eventReceived(jack_midi_event_t* ev)
       //               ^          ^          ^
       //               catch      process    play
       //
-      event.setTime(audioDriver->frameTime() + ev->time);
+      const SeqTime* st = audio->seqTime();
 
-      switch(*(ev->buffer) & 0xf0) {
-            case 0x90:
-                  event.setChannel(*(ev->buffer) & 0xf);
-                  event.setType(ME_NOTEON);
+//      unsigned curFrame = st->startFrame() + segmentSize;
+      unsigned curFrame = st->lastFrameTime;
+      event.setTime(curFrame + ev->time);
+
+      event.setChannel(*(ev->buffer) & 0xf);
+      int type = *(ev->buffer) & 0xf0;
+      int a    = *(ev->buffer + 1) & 0x7f;
+      int b    = *(ev->buffer + 2) & 0x7f;
+      event.setType(type);
+      switch(type) {
+            case ME_NOTEON:
+            case ME_NOTEOFF:
+            case ME_CONTROLLER:
                   event.setA(*(ev->buffer + 1));
                   event.setB(*(ev->buffer + 2));
                   break;
-            case 0x80:
-                  event.setChannel(*(ev->buffer) & 0xf);
-                  event.setType(ME_NOTEOFF);
+            case ME_PROGRAM:
+            case ME_AFTERTOUCH:
                   event.setA(*(ev->buffer + 1));
-                  event.setB(*(ev->buffer + 2));
-                  break;
-#if 0
-            case SND_SEQ_EVENT_KEYPRESS:
-                  event.setChannel(ev->data.note.channel);
-                  event.setType(ME_POLYAFTER);
-                  event.setA(ev->data.note.note);
-                  event.setB(ev->data.note.velocity);
                   break;
 
-            case SND_SEQ_EVENT_SYSEX:
-                  event.setTime(0);      // mark as used
-                  event.setType(ME_SYSEX);
-                  event.setData((unsigned char*)(ev->data.ext.ptr)+1,
-                     ev->data.ext.len-2);
+            case ME_PITCHBEND:
+                  event.setA(((b << 7) + a) - 8192);
                   break;
 
-            case SND_SEQ_EVENT_NOTEOFF:
-                  event.setChannel(ev->data.note.channel);
-                  event.setType(ME_NOTEOFF);
-                  event.setA(ev->data.note.note);
-                  event.setB(ev->data.note.velocity);
-                  break;
-
-            case SND_SEQ_EVENT_CHANPRESS:
-                  event.setChannel(ev->data.control.channel);
-                  event.setType(ME_AFTERTOUCH);
-                  event.setA(ev->data.control.value);
-                  break;
-
-            case SND_SEQ_EVENT_PGMCHANGE:
-                  event.setChannel(ev->data.control.channel);
-                  event.setType(ME_PROGRAM);
-                  event.setA(ev->data.control.value);
-                  break;
-
-            case SND_SEQ_EVENT_PITCHBEND:
-                  event.setChannel(ev->data.control.channel);
-                  event.setType(ME_CONTROLLER);
-                  event.setA(CTRL_PITCH);
-                  event.setB(ev->data.control.value);
-                  break;
-
-            case SND_SEQ_EVENT_CONTROLLER:
-                  event.setChannel(ev->data.control.channel);
-                  event.setType(ME_CONTROLLER);
-                  event.setA(ev->data.control.param);
-                  event.setB(ev->data.control.value);
-                  break;
-#endif
-            default:
-                  return;     // ignore
+            case ME_SYSEX:
+                  {
+                  int type = *(ev->buffer) & 0xff;
+                  switch(type) {
+                        case ME_SYSEX:
+                              event.setTime(0);      // mark as used
+                              event.setType(ME_SYSEX);
+                              event.setData((unsigned char*)(ev->buffer + 1),
+                                 ev->size - 2);
+                              break;
+                        case ME_CLOCK:
+                        case ME_SENSE:
+                              break;
+                        default:
+                              printf("unknown event 0x%02x\n", type);
+                              return;
+                        }
+                  }
+                  return;
             }
 
       if (midiInputTrace) {
@@ -183,7 +164,7 @@ void MidiInPort::eventReceived(jack_midi_event_t* ev)
 
       MidiEventList il, ol;
       il.insert(event);
-      pipeline()->apply(audio->seqTime()->curTickPos, audio->seqTime()->nextTickPos, &il, &ol);
+      pipeline()->apply(st->curTickPos, st->nextTickPos, &il, &ol);
 
       //
       // update midi activity
@@ -218,11 +199,6 @@ void MidiInPort::beforeProcess()
       {
       if (!jackPort(0).isZero())
             audioDriver->collectMidiEvents(this, jackPort(0));
-
-//      Port _jackPort[MAX_CHANNELS];
-      // collect jack midi events
-//      void eventReceived(snd_seq_event_t*);
-
       tmpRecordCount = recordFifo.getSize();
       }
 

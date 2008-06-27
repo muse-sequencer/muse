@@ -215,8 +215,8 @@ void MidiTrack::startRecording()
 void MidiTrack::recordBeat()
       {
       int updateFlags = 0;
-      unsigned cpos  = song->cpos();
-      unsigned ptick = recordPart->tick();
+      unsigned cpos   = song->cpos();
+      unsigned ptick  = recordPart->tick();
 
       if (song->punchout()) {
             if (song->rPos() >= song->cPos()) {
@@ -547,7 +547,7 @@ void MidiTrack::processMidi(SeqTime* t)
             //
             if (autoRead()) {
                   for (iCtrl ic = controller()->begin(); ic != controller()->end(); ++ic) {
-                        Ctrl* c = ic->second;
+                        Ctrl* c     = ic->second;
                         iCtrlVal is = c->lowerBound(t->curTickPos);
                         iCtrlVal ie = c->lowerBound(t->nextTickPos);
                         for (iCtrlVal ic = is; ic != ie; ++ic) {
@@ -601,6 +601,7 @@ void MidiTrack::processMidi(SeqTime* t)
                                     event.setB(velo);
                                     }
                               }
+                        event.setTime(eventTime + segmentSize);
                         schedEvents.insert(event);
                         }
                   }

@@ -20,18 +20,14 @@
 
 set (SRC dimpl.tex)
 
-add_custom_command (
-      OUTPUT dimpl.pdf
+add_custom_target (
+      dimpl
       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dimpl.tex
       COMMAND ${TEXEXEC_PATH}/texexec
       ARGS  --language=en --verbose --batch --pdf
             --result=dimpl.pdf
             ${CMAKE_CURRENT_SOURCE_DIR}/dimpl.tex
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      )
-
-add_custom_target ( program_doc
-      DEPENDS dimpl.pdf
       )
 
 install_files ( /share/${MusE_INSTALL_NAME}/doc/ .pdf

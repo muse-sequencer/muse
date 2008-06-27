@@ -1,3 +1,5 @@
+27.6. (ws)
+      JACK cleanups and implementation of JACK midi input
 25.6. (ws)
       As part of a major code cleanup i removed ALSA midi. This also removes the
       need for a realtime timer (JACK midi and MusE are competing for it) and simplifies

@@ -149,7 +149,8 @@ void MidiOutPort::queueJackEvent(const MidiEvent& ev)
             unsigned t = ev.time();
 
             if (a == CTRL_PITCH) {
-                  JO(MidiEvent(t, chn, ME_PITCHBEND, b, 0));
+                  int v = b + 8192;
+                  JO(MidiEvent(t, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
                   }
             else if (a == CTRL_PROGRAM) {
                   // don't output program changes for GM drum channel

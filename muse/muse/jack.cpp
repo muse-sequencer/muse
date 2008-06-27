@@ -105,16 +105,9 @@ static void timebase_callback(jack_transport_state_t /* state */,
 //    JACK callback
 //---------------------------------------------------------
 
-static int processAudio(jack_nframes_t frames, void*)
+int JackAudio::processAudio(jack_nframes_t frames, void*)
       {
-#if 0
-      unsigned t1 = jackAudio->frameTime();
-      unsigned t2 = jackAudio->lastFrameTime();
-      unsigned t3 = jackAudio->framesSinceCyleStart();
-      unsigned t4 = jackAudio->getCurFrame();
-
-printf("cycle %8d %8d %8d %08d\n", t1, t2, t3, t4);
-#endif
+      jackAudio->_frameCounter += frames;
 
       int jackState = jackAudio->getTransportState();
       segmentSize = frames;
@@ -223,6 +216,7 @@ JackAudio::JackAudio(jack_client_t* cl, char* name)
       {
       strcpy(jackRegisteredName, name);
       _client = cl;
+      _frameCounter = 0;
       }
 
 //---------------------------------------------------------
@@ -468,12 +462,6 @@ void JackAudio::graphChanged()
             audio->msgAddRoute1(r);
       }
 
-//static int xrun_callback(void*)
-//      {
-//      printf("JACK: xrun\n");
-//      return 0;
-//      }
-
 //---------------------------------------------------------
 //   register
 //---------------------------------------------------------
@@ -487,7 +475,6 @@ void JackAudio::registerClient()
       jack_set_sample_rate_callback(_client, srate_callback, 0);
       jack_set_port_registration_callback(_client, registration_callback, 0);
       jack_set_graph_order_callback(_client, graph_callback, 0);
-//      jack_set_xrun_callback(_client, xrun_callback, 0);
       jack_set_freewheel_callback (_client, freewheel_callback, 0);
 	jack_set_thread_init_callback(_client, (JackThreadInitCallback) jack_thread_init, 0);
 	jack_set_timebase_callback(_client, 0, timebase_callback, 0);
@@ -516,12 +503,6 @@ Port JackAudio::registerOutPort(const QString& name, bool midi)
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
       Port p(jack_port_register(_client, name.toLatin1().data(), type, JackPortIsOutput, 0));
 // printf("JACK: registerOutPort<%s>: <%s> %p\n", type, name.toLatin1().data(), p.jackPort());
-#if 0
-      if (midi) {
-            jack_nframes_t nframes = jack_get_buffer_size(_client);
-            jack_midi_reset_new_port(jack_port_get_buffer(p.jackPort(), nframes), nframes);
-            }
-#endif
       if (!p.jackPort())
             p.setZero();
       return p;
@@ -712,7 +693,6 @@ void JackAudio::setFreewheel(bool f)
 
 void JackAudio::startTransport()
       {
-//      printf("JACK: startTransport\n");
       jack_transport_start(_client);
       }
 
@@ -722,7 +702,6 @@ void JackAudio::startTransport()
 
 void JackAudio::stopTransport()
       {
-//      printf("JACK: stopTransport\n");
       if (_client)
             jack_transport_stop(_client);
       }
@@ -733,7 +712,6 @@ void JackAudio::stopTransport()
 
 void JackAudio::seekTransport(unsigned frame)
       {
-//      printf("JACK: seekTransport %d\n", frame);
       jack_transport_locate(_client, frame);
       }
 
@@ -748,7 +726,6 @@ Port JackAudio::findPort(const QString& name)
             return Port();
             }
       jack_port_t* port = jack_port_by_name(_client, name.toLatin1().data());
-// printf("Jack::findPort <%s>, %p\n", name.toLatin1().data(), port);
       return (port == 0) ? Port() : Port(port);
       }
 
@@ -838,9 +815,9 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             e.dump();
             }
       void* pb = jack_port_get_buffer(port.jackPort(), segmentSize);
-      int ft = e.time() - lastFrameTime();
+      int ft = e.time() - _frameCounter;
       if (ft < 0 || ft >= (int)segmentSize) {
-            printf("JackAudio::putEvent: time out of range %d\n", ft);
+            printf("JackAudio::putEvent: time out of range %d(seg=%d)\n", ft, segmentSize);
             if (ft < 0)
                   ft = 0;
             if (ft > (int)segmentSize)
@@ -853,12 +830,7 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             case ME_CONTROLLER:
             case ME_PITCHBEND:
                   {
-#ifdef JACK107
                   unsigned char* p = jack_midi_event_reserve(pb, ft, 3);
-#endif
-#ifdef JACK103
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 3, segmentSize);
-#endif
                   if (p == 0) {
                         fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
                         return;
@@ -872,12 +844,7 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             case ME_PROGRAM:
             case ME_AFTERTOUCH:
                   {
-#ifdef JACK107
                   unsigned char* p = jack_midi_event_reserve(pb, ft, 2);
-#endif
-#ifdef JACK103
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, 2, segmentSize);
-#endif
                   if (p == 0) {
                         fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
                         return;
@@ -890,12 +857,7 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
                   {
                   const unsigned char* data = e.data();
                   int len = e.len();
-#ifdef JACK107
                   unsigned char* p = jack_midi_event_reserve(pb, ft, len+2);
-#endif
-#ifdef JACK103
-                  unsigned char* p = jack_midi_event_reserve(pb, ft, len+2, segmentSize);
-#endif
                   if (p == 0) {
                         fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
                         return;
@@ -922,12 +884,7 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
 void JackAudio::startMidiCycle(Port port)
       {
       void* port_buf = jack_port_get_buffer(port.jackPort(), segmentSize);
-#ifdef JACK107
       jack_midi_clear_buffer(port_buf);
-#endif
-#ifdef JACK103
-      jack_midi_clear_buffer(port_buf, segmentSize);
-#endif
       }
 
 //---------------------------------------------------------

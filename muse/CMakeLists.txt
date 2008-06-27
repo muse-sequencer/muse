@@ -339,5 +339,5 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
-subdirs(al awl grepmidi plugins midiplugins muse share synti)
+subdirs(al awl grepmidi plugins midiplugins muse share synti doc)
 
