@@ -51,8 +51,6 @@ MidiOutPort::MidiOutPort()
 
 MidiOutPort::~MidiOutPort()
       {
-//      for (int ch = 0; ch < MIDI_CHANNEL; ++ch)
-//            delete _channel[ch];
       }
 
 //---------------------------------------------------------
@@ -62,12 +60,8 @@ MidiOutPort::~MidiOutPort()
 void MidiOutPort::setName(const QString& s)
       {
       Track::setName(s);
-//      if (!alsaPort().isZero())
-//            midiDriver->setPortName(alsaPort(), s);
       if (!jackPort().isZero())
             audioDriver->setPortName(jackPort(), s);
-//      for (int ch = 0; ch < MIDI_CHANNELS; ++ch)
-//            _channel[ch]->setDefaultName();
       }
 
 //---------------------------------------------------------
@@ -80,10 +74,6 @@ void MidiOutPort::write(Xml& xml) const
       MidiTrackBase::writeProperties(xml);
       if (_instrument)
             xml.tag("instrument", _instrument->iname());
-//      for (int i = 0; i < MIDI_CHANNELS; ++i) {
-//            if (!_channel[i]->noInRoute())
-//                  _channel[i]->write(xml);
-//            }
       xml.tag("sendSync", sendSync());
       xml.tag("deviceId", deviceId());
       xml.etag("MidiOutPort");
@@ -98,10 +88,6 @@ void MidiOutPort::read(QDomNode node)
       for (; !node.isNull(); node = node.nextSibling()) {
             QDomElement e = node.toElement();
             QString tag(e.tagName());
-//            if (tag == "MidiChannel") {
-//                  int idx = e.attribute("idx", "0").toInt();
-//                  _channel[idx]->read(node.firstChild());
-//                  }
             if (tag == "instrument") {
                   QString iname = e.text();
                   _instrument = registerMidiInstrument(iname);
@@ -122,14 +108,10 @@ void MidiOutPort::read(QDomNode node)
 void MidiOutPort::routeEvent(const MidiEvent& event)
       {
       for (iRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) {
-            switch (r->dst.type) {
-                  case RouteNode::JACKMIDIPORT:
-                        queueJackEvent(event);
-                        break;
-                  default:
-                        fprintf(stderr, "MidiOutPort::process(): invalid routetype\n");
-                        break;
-                  }
+            if (r->dst.type == RouteNode::JACKMIDIPORT)
+                  queueJackEvent(event);
+            else
+                  fprintf(stderr, "MidiOutPort::process(): invalid routetype\n");
             }
       }
 
@@ -150,7 +132,7 @@ void MidiOutPort::queueJackEvent(const MidiEvent& ev)
 
             if (a == CTRL_PITCH) {
                   int v = b + 8192;
-                  JO(MidiEvent(t, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
+                  audioDriver->putEvent(jackPort(0), MidiEvent(t, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
                   }
             else if (a == CTRL_PROGRAM) {
                   // don't output program changes for GM drum channel
@@ -239,40 +221,6 @@ void MidiOutPort::setInstrument(MidiInstrument* i)
       emit instrumentChanged();
       }
 
-#if 0
-//---------------------------------------------------------
-//   processMidiClock
-//---------------------------------------------------------
-
-void MidiSeq::processMidiClock()
-      {
-      if (genMCSync)
-            midiPorts[txSyncPort].sendClock();
-      if (state == START_PLAY) {
-            // start play on sync
-            state      = PLAY;
-            _midiTick  = playTickPos;
-            midiClock  = playTickPos;
-
-            int bar, beat, tick;
-            sigmap.tickValues(_midiTick, &bar, &beat, &tick);
-            midiClick      = sigmap.bar2tick(bar, beat+1, 0);
-
-            double cpos    = tempomap.tick2time(playTickPos);
-            samplePosStart = samplePos - lrint(cpos * sampleRate);
-            rtcTickStart   = rtcTick - lrint(cpos * realRtcTicks);
-
-            endSlice       = playTickPos;
-            lastTickPos    = playTickPos;
-
-            tempoSN = tempomap.tempoSN();
-
-            startRecordPos.setPosTick(playTickPos);
-            }
-      midiClock += config.division/24;
-      }
-#endif
-
 //-------------------------------------------------------------------
 //   process
 //    Collect all midi events for the current process cycle and put
@@ -280,8 +228,7 @@ void MidiSeq::processMidiClock()
 //    note off events. The note off events maybe played after the
 //    current process cycle.
 //    From _schedEvents queue copy all events for the current cycle
-//    to all output routes. Events routed to ALSA go into the
-//    _playEvents queue which is processed by the MidiSeq thread.
+//    to all output routes.
 //-------------------------------------------------------------------
 
 void MidiOutPort::processMidi(const SeqTime* t)
@@ -312,5 +259,4 @@ void MidiOutPort::processMidi(const SeqTime* t)
       _schedEvents.erase(_schedEvents.begin(), i);
       addMidiMeter(portVelo);
       }
-
 

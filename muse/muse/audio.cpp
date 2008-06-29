@@ -279,8 +279,10 @@ printf("JACK: shutdown callback\n");
 
 void Audio::process(unsigned frames, int jackState)
       {
-//      _seqTime.lastFrameTime = audioDriver->lastFrameTime();
       _seqTime.lastFrameTime = audioDriver->frameTime();
+
+      for (iMidiOutPort i = song->midiOutPorts()->begin(); i != song->midiOutPorts()->end(); ++i)
+            audioDriver->startMidiCycle((*i)->jackPort(0));
 
       //
       //  process messages from gui
@@ -417,9 +419,6 @@ void Audio::process(unsigned frames, int jackState)
       MidiInPortList* mil = song->midiInPorts();
       MidiTrackList*  mtl = song->midis();
 
-      for (iMidiOutPort i = ol->begin(); i != ol->end(); ++i)
-            audioDriver->startMidiCycle((*i)->jackPort(0));
-
       for (iMidiInPort i = mil->begin(); i != mil->end(); ++i)
             (*i)->beforeProcess();
       for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i)
@@ -506,7 +505,6 @@ void Audio::process(unsigned frames, int jackState)
             _seqTime.pos       += frames;
             _seqTime.curTickPos = _seqTime.nextTickPos;
             }
-//      midiDriver->updateConnections();
       }
 
 //---------------------------------------------------------

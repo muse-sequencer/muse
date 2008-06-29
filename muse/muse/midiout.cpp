@@ -249,10 +249,11 @@ void MidiOut::stop()
       //    stop all notes
       //---------------------------------------------------
 
+      int time = audio->seqTime()->lastFrameTime;
       for (iMidiEvent i = _schedEvents.begin(); i != _schedEvents.end(); ++i) {
             MidiEvent ev = *i;
             if (ev.isNoteOff()) {
-                  ev.setTime(0);
+                  ev.setTime(time);
                   track->routeEvent(ev);
                   }
             }
@@ -272,7 +273,7 @@ void MidiOut::stop()
                   Ctrl* c = ic->second;
                   if (c->id() == CTRL_SUSTAIN) {
                         if (c->curVal().i > 0) {
-                              MidiEvent ev(0, dstChannel, ME_CONTROLLER, c->id(), 0);
+                              MidiEvent ev(time, dstChannel, ME_CONTROLLER, c->id(), 0);
                               track->routeEvent(ev);
                               c->setCurVal(0);
                               }

@@ -367,11 +367,6 @@ void SynthI::write(Xml& xml) const
       AudioTrack::writeProperties(xml);
       xml.tag("class", synth()->name());
 
-//      for (int i = 0; i < MIDI_CHANNELS; ++i) {
-//            if (!_channel[i]->noInRoute())
-//                  _channel[i]->write(xml);
-//            }
-
       //---------------------------------------------
       // if soft synth is attached to a midi port,
       // write out port number
@@ -437,10 +432,6 @@ void SynthI::read(QDomNode node)
                   }
             else if (tag == "geometry")
                   r = AL::readGeometry(node);
-//            else if (tag == "MidiChannel") {
-//                  int idx = e.attribute("idx", "0").toInt();
-//                  _channel[idx]->read(node.firstChild());
-//                  }
             else if (AudioTrack::readProperties(node)) {
                   printf("MusE:SynthI: unknown tag %s\n", e.tagName().toLatin1().data());
                   }
