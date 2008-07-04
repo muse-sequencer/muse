@@ -510,7 +510,7 @@ void EventCanvas::mouseMoveCanvasA(QPoint pos)
       		bool shift = keyState & Qt::ShiftModifier;
       		bool ctrl  = keyState & Qt::ControlModifier;
                   if (shift && ctrl) {
-                        if (std::abs(dist.x()) > std::abs(dist.y())) {
+                        if (qAbs(dist.x()) > qAbs(dist.y())) {
                               if (drag == DRAG_MOVE_START)
                                     drag = DRAGX_MOVE;
                               else
