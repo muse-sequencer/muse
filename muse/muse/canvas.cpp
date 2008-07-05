@@ -644,7 +644,7 @@ void PartCanvas::mousePress(QMouseEvent* me)
 
 void PartCanvas::mouseMove(QPoint pos)
       {
-      
+
      if(rubberBand)
         rubberBand->setGeometry(QRect(rubberBandStartPos, pos).normalized());
 
@@ -773,10 +773,10 @@ void PartCanvas::mouseMove(QPoint pos)
 
 void PartCanvas::mouseRelease(QMouseEvent* me)
       {
-      
+
       if (rubberBand)
         rubberBand->hide(); // TODO robert, nothing more happens for the moment/
-      
+
       if (state == S_SUBTRACK) {
             ((TLSWidget*)(at->tw))->mouseRelease();
             state = S_NORMAL;
@@ -852,7 +852,7 @@ void PartCanvas::mouseDoubleClick(QMouseEvent* me)
 //   keyboardNavigate
 //---------------------------------------------------------
 
-void PartCanvas::keyboardNavigate(QKeyEvent *e)
+void PartCanvas::keyboardNavigate(QKeyEvent*)
       {
       printf("nothing here go away\n");
       }

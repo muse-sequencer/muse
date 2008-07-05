@@ -260,13 +260,13 @@ static void scanDSSIDir(const QString& s)
 
 void initDSSI()
       {
-      char* dssiPath = getenv("DSSI_PATH");
+      const char* dssiPath = getenv("DSSI_PATH");
       if (dssiPath == 0)
             dssiPath = "/usr/lib/dssi:/usr/local/lib/dssi";
 
-      char* p = dssiPath;
+      const char* p = dssiPath;
       while (*p != '\0') {
-            char* pe = p;
+            const char* pe = p;
             while (*pe != ':' && *pe != '\0')
                   pe++;
 

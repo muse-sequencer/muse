@@ -191,8 +191,8 @@ void Ctrl::read(QDomNode node, bool)
       _name         = e.attribute("name");
       _type         = e.attribute("type","0").toInt();
 
-      char* minS    = "0.0f";
-      char* maxS    = "1.0f";
+      const char* minS    = "0.0f";
+      const char* maxS    = "1.0f";
 
       if (_type & INT) {
             minS  = "0";

@@ -84,7 +84,7 @@ static void loadPluginDir(const QString& s)
       {
       if (debugMsg)
             printf("scan ladspa plugin dir <%s>\n", s.toLatin1().data());
-#ifdef __APPLE__      
+#ifdef __APPLE__
       QDir pluginDir(s, QString("*.dylib"), 0, QDir::Files);
 #else
       QDir pluginDir(s, QString("*.so"), 0, QDir::Files);
@@ -107,13 +107,13 @@ void initPlugins()
       {
       loadPluginDir(museGlobalLib + QString("/plugins"));
 
-      char* ladspaPath = getenv("LADSPA_PATH");
+      const char* ladspaPath = getenv("LADSPA_PATH");
       if (ladspaPath == 0)
             ladspaPath = "/usr/lib/ladspa:/usr/local/lib/ladspa";
 
-      char* p = ladspaPath;
+      const char* p = ladspaPath;
       while (*p != '\0') {
-            char* pe = p;
+            const char* pe = p;
             while (*pe != ':' && *pe != '\0')
                   pe++;
 
