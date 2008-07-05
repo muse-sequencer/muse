@@ -74,11 +74,10 @@ class MidiStrip : public Strip {
       void autoReadToggled(bool);
       void autoWriteToggled(bool);
       void iRouteShow();
-      void iRouteHide();
       void oRouteShow();
-      void oRouteHide();
       void recordToggled(bool);
       void monitorToggled(bool);
+      QMenu* sendMenu() const { return static_cast<QMenu*>(sender()); }
 
    public slots:
       virtual void songChanged(int);

@@ -36,7 +36,7 @@
 #include "templatedialog.h"
 #include "audio.h"
 #include "mixer.h"
-#include "arranger/arranger.h"
+#include "arranger.h"
 #include "midictrl.h"
 #include "midiinport.h"
 #include "midioutport.h"

@@ -29,7 +29,6 @@ class Meter;
 class SimpleButton;
 class Mixer;
 
-// static const QSize buttonSize(STRIP_WIDTH/2-2, BUTTON_HEIGHT);
 static const QSize entrySize(STRIP_WIDTH/2-2, ENTRY_HEIGHT);
 
 //---------------------------------------------------------
@@ -55,6 +54,8 @@ class Strip : public QFrame {
 
       void recordToggled(bool);
       void addAutomationButtons(int row);
+      void addMidiInPorts(QMenu* menu, Track* dtrack, int channel);
+      void addMidiOutPorts(QMenu* menu, Track* strack, int channel);
 
    public slots:
       void resetPeaks();

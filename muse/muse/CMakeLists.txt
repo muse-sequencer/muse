@@ -32,7 +32,6 @@ subdirs (
       instruments
       marker
       liste
-      arranger
       waveedit
       )
 
@@ -48,6 +47,9 @@ QT4_WRAP_UI  (muse_ui_headers
       templatedialog.ui
       importmidi.ui
       routedialog.ui
+      configtrack.ui
+      midiportinfo.ui
+      miditrackinfo.ui
       )
 
 QT4_WRAP_CPP ( muse_moc_headers
@@ -85,6 +87,15 @@ QT4_WRAP_CPP ( muse_moc_headers
       rack.h
       routedialog.h
       strip.h
+      arranger.h
+      canvas.h
+      configtrack.h
+      partdrag.h
+      tllineedit.h
+      tlswidget.h
+      tlwidget.h
+      trackdrag.h
+      trackinfo.h
       )
 
 QT4_ADD_RESOURCES (muse_qrc_files muse.qrc)
@@ -173,6 +184,17 @@ add_executable ( muse
       rack.cpp
       routedialog.cpp
       strip.cpp
+
+      arranger.cpp
+      canvas.cpp
+      configtrack.cpp
+      partdrag.cpp
+      tllineedit.cpp
+      tlswidget.cpp
+      tlwidget.cpp
+      tlwlayout.cpp
+      trackdrag.cpp
+      trackinfo.cpp
       )
 
 set_target_properties( muse
@@ -186,7 +208,6 @@ target_link_libraries(muse
       marker
       liste
       synti
-      arranger
       waveedit
       widgets
       al

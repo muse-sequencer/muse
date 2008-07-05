@@ -37,10 +37,10 @@ enum {
 struct TrElement {
       int id;
       int grp;          // default group
-      char* name;
+      const char* name;
       int trackMask;
 
-      TrElement(int i, int g, char* s, int m)
+      TrElement(int i, int g, const char* s, int m)
         : id(i), grp(g), name(s), trackMask(m) {}
       };
 
@@ -61,4 +61,3 @@ extern const int nTrElements;
 extern TrGroupList glist[Track::TRACK_TYPES];
 
 #endif
-

@@ -20,7 +20,7 @@
 
 #include "muse.h"
 #include "song.h"
-#include "arranger/arranger.h"
+#include "arranger.h"
 #include "al/al.h"
 #include "al/xml.h"
 #include "midiedit/drummap.h"

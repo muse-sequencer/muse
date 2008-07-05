@@ -1226,7 +1226,7 @@ void Arranger::moveTrack(Track* src, Track* dst)
 //!    @param e The key event
 //---------------------------------------------------------
 
-void Arranger::keyPressEvent(QKeyEvent* e)
+void Arranger::keyPressEvent(QKeyEvent* /*e*/)
       {
       printf("Arranger::keyPressEvent\n");
 #if 0 //TODOB
@@ -1328,7 +1328,7 @@ void Arranger::keyPressEvent(QKeyEvent* e)
     @param t Track the selected part belongs to (null if no part selected)
     @param p The selected Part (null if no part selected)
  */
-void Arranger::kbdMovementUpdate(Track* t, Part* p)
+void Arranger::kbdMovementUpdate(Track*, Part*)
       {
       printf("kbdMovementUpdate\n");
 //       if (t && p ) {

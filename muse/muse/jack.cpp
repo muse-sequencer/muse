@@ -53,25 +53,6 @@ static void jack_thread_init (void* /*data*/)
       if (loadVST)
             fst_adopt_thread();
 #endif
-      int policy;
-      if ( (policy = sched_getscheduler (0)) < 0) {
-            printf("cannot get current client scheduler for JACK thread: %s!\n", strerror(errno));
-            }
-      else {
-            if (policy != SCHED_FIFO)
-                  printf("JACK thread %d _NOT_ running SCHED_FIFO\n", getpid());
-            else if (debugMsg) {
-            	struct sched_param rt_param;
-            	memset(&rt_param, 0, sizeof(sched_param));
-            	int type;
-            	int rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
-            	if (rv == -1)
-                  	perror("get scheduler parameter");
-                  printf("JACK thread running SCHED_FIFO priority %d\n",
-                     rt_param.sched_priority);
-                  }
-            }
-
       }
 
 //---------------------------------------------------------
@@ -816,10 +797,10 @@ void JackAudio::putEvent(Port port, const MidiEvent& e)
             }
       void* pb = jack_port_get_buffer(port.jackPort(), segmentSize);
       int ft = e.time() - _frameCounter;
-      if (ft < 0 || ft >= (int)segmentSize) {
+      if (ft < 0)
+            ft = 0;
+      if (ft >= (int)segmentSize) {
             printf("JackAudio::putEvent: time out of range %d(seg=%d)\n", ft, segmentSize);
-            if (ft < 0)
-                  ft = 0;
             if (ft > (int)segmentSize)
                   ft = segmentSize - 1;
             }

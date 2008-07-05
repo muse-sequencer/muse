@@ -26,7 +26,7 @@
 #include "wave.h"
 #include "muse.h"
 #include "widgets/filedialog.h"
-#include "arranger/arranger.h"
+#include "arranger.h"
 #include "globals.h"
 #include "event.h"
 #include "audio.h"
@@ -65,9 +65,9 @@ static bool copyWaveFileToProject(const QString& path)
             //       we cannot easily check for identity if destination
             //       file is sample rate converted
             //
-            // for now we assume that the file has already 
+            // for now we assume that the file has already
             // be imported:
-            // 
+            //
             printf("File already exists\n");
             return true;
             }
@@ -90,7 +90,7 @@ static bool copyWaveFileToProject(const QString& path)
       SNDFILE* sfDst       = sf_open(dstFile.fileName().toLatin1().data(),
             SFM_WRITE, &sfinfoDst);
       if (sfDst == 0) {
-            printf("Cannot open destination file<%s>: %s\n", 
+            printf("Cannot open destination file<%s>: %s\n",
                dstFile.fileName().toLatin1().data(), strerror(errno));
             return false;
             }
@@ -119,7 +119,7 @@ static bool copyWaveFileToProject(const QString& path)
       bool returnValue = true;
       if (sfinfoSrc.samplerate != AL::sampleRate) {
             // TODO: convertsample rate
-            printf("wave file has samplerate of %d, our project has %d\n", 
+            printf("wave file has samplerate of %d, our project has %d\n",
                sfinfoSrc.samplerate,AL::sampleRate);
 
             int srcType = SRC_SINC_MEDIUM_QUALITY;
@@ -161,7 +161,7 @@ static bool copyWaveFileToProject(const QString& path)
 
                   int rv = src_process(src, &data);
                   if (rv > 0) {
-                        printf("error sampe rate conversion: %s\n", 
+                        printf("error sampe rate conversion: %s\n",
                            src_strerror(rv));
                         src_delete(src);
                         returnValue = false;
@@ -171,7 +171,7 @@ static bool copyWaveFileToProject(const QString& path)
                   // write buffer
                   sf_count_t n = sf_writef_float(sfDst, outBuffer, data.output_frames_gen);
                   if (n != data.output_frames_gen) {
-                        printf("sound write failed: returns %lld, should return %ld\n", 
+                        printf("sound write failed: returns %lld, should return %ld\n",
                            n, data.output_frames_gen);
                         returnValue = false;
                         break;
@@ -220,7 +220,7 @@ static bool copyWaveFileToProject(const QString& path)
                   // write buffer
                   nn = sf_writef_float(sfDst, buffer, n);
                   if (n != nn) {
-                        printf("sound write failed: returns %lld, should return %lld\n", 
+                        printf("sound write failed: returns %lld, should return %lld\n",
                            nn, n);
                         returnValue = false;
                         break;

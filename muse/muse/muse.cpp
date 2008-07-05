@@ -23,7 +23,7 @@
 #include "muse.h"
 #include "transport.h"
 #include "widgets/bigtime.h"
-#include "arranger/arranger.h"
+#include "arranger.h"
 #include "midiedit/pianoroll.h"
 #include "al/al.h"
 #include "al/xml.h"

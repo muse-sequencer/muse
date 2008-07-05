@@ -27,7 +27,7 @@
 #include "audio.h"
 #include "audiodev.h"
 #include "audio.h"
-#include "arranger/arranger.h"
+#include "arranger.h"
 #include "plugin.h"
 #include "midi.h"
 #include "midictrl.h"

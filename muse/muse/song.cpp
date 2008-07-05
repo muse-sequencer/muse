@@ -1103,8 +1103,12 @@ void Song::seqSignal(int fd)
                strerror(errno));
             return;
             }
+      bool graphChangedCalled = false;
+      bool seekDone = false;
+
+// printf("seqSignal %d\n", n);
       for (int i = 0; i < n; ++i) {
-// printf("seqSignal to gui:<%c>\n", buffer[i]);
+// printf("   seqSignal to gui:<%c>\n", buffer[i]);
             switch(buffer[i]) {
                   case MSG_STOP:
                         stopRolling();
@@ -1116,9 +1120,12 @@ void Song::seqSignal(int fd)
                         setRecord(true);
                         break;
                   case MSG_SEEK:
-	                  setPos(0, audio->seqTime()->curTickPos, true, false, !seekInProgress);
-                  	seekInProgress = false;
-                        beat();           // update controller guis
+                        if (!seekDone) {
+                              seekDone = true;
+	                        setPos(0, audio->seqTime()->curTickPos, true, false, !seekInProgress);
+                  	      seekInProgress = false;
+                              beat();           // update controller guis
+                              }
                         break;
                   case MSG_JACK_SHUTDOWN:
                         restartJack();
@@ -1152,7 +1159,11 @@ void Song::seqSignal(int fd)
                         break;
 
                   case MSG_GRAPH_CHANGED:
-                        audioDriver->graphChanged();
+                        if (!graphChangedCalled) {
+                              printf("  graph changed\n");
+                              graphChangedCalled = true;
+                              audioDriver->graphChanged();
+                              }
                         break;
 
                   default:

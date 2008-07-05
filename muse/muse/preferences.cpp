@@ -24,7 +24,7 @@
 #include "muse.h"
 #include "song.h"
 #include "event.h"
-#include "arranger/arranger.h"
+#include "arranger.h"
 #include "widgets/filedialog.h"
 #include "waveedit/waveedit.h"
 #include "globals.h"

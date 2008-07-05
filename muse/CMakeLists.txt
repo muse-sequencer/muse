@@ -93,16 +93,6 @@ endif (NOT QT4_FOUND)
 include(${QT_USE_FILE})
 
 ##
-## find texexec (ConTeXt)
-##
-
-find_path( TEXEXEC_PATH texutil )
-if (NOT TEXEXEC_PATH)
-      message("texexec from ConTeXt package not found. Documentation will not be build")
-endif (NOT TEXEXEC_PATH)
-
-
-##
 ## find doxygen
 ##    TODO
 
@@ -209,6 +199,8 @@ endif (NOT JACK_INCDIR)
 
 ##
 ## check for dssi
+##    dssi >= 0.9.0
+##    liblo >= 0.23
 ##
 
 if (ENABLE_DSSI)
@@ -339,5 +331,5 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
-subdirs(al awl grepmidi plugins midiplugins muse share synti doc)
+subdirs(al awl grepmidi plugins midiplugins muse share synti)
 

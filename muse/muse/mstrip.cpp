@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //  $Id:$
 //
-//  Copyright (C) 2002-2006 by Werner Schweer and others
+//  Copyright (C) 2002-2008 by Werner Schweer and others
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 2.
@@ -75,7 +75,7 @@ void addMidiTracks(QMenu* menu, Track* track, int channel, bool input)
 //    can only be added to input route lists
 //---------------------------------------------------------
 
-void addMidiInPorts(QMenu* menu, Track* dtrack, int channel)
+void Strip::addMidiInPorts(QMenu* menu, Track* dtrack, int channel)
       {
       RouteList* rl = dtrack->inRoutes();
       RouteNode dst(dtrack, channel, RouteNode::TRACK);
@@ -84,8 +84,6 @@ void addMidiInPorts(QMenu* menu, Track* dtrack, int channel)
       for (iMidiInPort i = tl->begin();i != tl->end(); ++i) {
             MidiInPort* track = *i;
             QMenu* m = menu->addMenu(track->name());
-            m->setSeparatorsCollapsible(false);
-            m->addSeparator()->setText(QT_TR_NOOP("Channels"));
             for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                   QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
                   a->setCheckable(true);
@@ -102,7 +100,7 @@ void addMidiInPorts(QMenu* menu, Track* dtrack, int channel)
 //    can only be added to output route lists
 //---------------------------------------------------------
 
-static void addMidiOutPorts(QMenu* menu, Track* strack, int channel)
+void Strip::addMidiOutPorts(QMenu* menu, Track* strack, int channel)
       {
       RouteList* rl = strack->outRoutes();
       RouteNode src(strack, channel, RouteNode::TRACK);
@@ -111,8 +109,6 @@ static void addMidiOutPorts(QMenu* menu, Track* strack, int channel)
       for (iMidiOutPort i = tl->begin();i != tl->end(); ++i) {
             MidiOutPort* op = *i;
             QMenu* m = menu->addMenu(op->name());
-            m->setSeparatorsCollapsible(false);
-            m->addSeparator()->setText(QT_TR_NOOP("Channels"));
             for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                   QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
                   a->setCheckable(true);
@@ -138,8 +134,6 @@ static void addSyntiPorts(QMenu* menu, Track* strack, int channel)
       for (iSynthI i = sl->begin(); i != sl->end(); ++i) {
             SynthI* sy = *i;
             QMenu* m = menu->addMenu(sy->name());
-            m->setSeparatorsCollapsible(false);
-            m->addSeparator()->setText(QT_TR_NOOP("Channels"));
             for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                   QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
                   a->setCheckable(true);
@@ -227,7 +221,6 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
 
       sl = new Awl::MidiVolEntry(this);
       sl->setId(CTRL_VOLUME);
-//      sl->setFont(config.fonts[1]);
       sl->setFixedHeight(entrySize.height());
 
       connect(slider, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double, int)));
@@ -287,13 +280,11 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       iR = newInRouteButton();
       grid->addWidget(iR, 14, 0);
       connect(iR->menu(), SIGNAL(aboutToShow()), SLOT(iRouteShow()));
-      connect(iR->menu(), SIGNAL(aboutToHide()), SLOT(iRouteHide()));
       connect(iR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
       oR = newOutRouteButton();
       grid->addWidget(oR, 14, 1);
       connect(oR->menu(), SIGNAL(aboutToShow()), SLOT(oRouteShow()));
-      connect(oR->menu(), SIGNAL(aboutToHide()), SLOT(oRouteHide()));
       connect(oR->menu(), SIGNAL(triggered(QAction*)), song, SLOT(routeChanged(QAction*)));
 
       connect(song,  SIGNAL(songChanged(int)), SLOT(songChanged(int)));
@@ -308,34 +299,6 @@ MidiStrip::MidiStrip(Mixer* m, MidiTrack* t, bool align)
       controllerChanged(CTRL_VARIATION_SEND);
       controllerChanged(CTRL_REVERB_SEND);
       controllerChanged(CTRL_CHORUS_SEND);
-      }
-
-//---------------------------------------------------------
-//   iRouteHide
-//---------------------------------------------------------
-
-void MidiStrip::iRouteHide()
-      {
-      // dont leave the menu if SHIFT is pressed; this allows
-      // for fast selecting of more than one input source
-      //
-      if (qApp->keyboardModifiers() & Qt::ShiftModifier) {
-            iR->menu()->show();
-            }
-      }
-
-//---------------------------------------------------------
-//   oRouteHide
-//---------------------------------------------------------
-
-void MidiStrip::oRouteHide()
-      {
-      // dont leave the menu if SHIFT is pressed; this allows
-      // for fast selecting of more than one input source
-      //
-      if (qApp->keyboardModifiers() & Qt::ShiftModifier) {
-            oR->menu()->show();
-            }
       }
 
 //---------------------------------------------------------
@@ -508,7 +471,6 @@ void MidiStrip::iRouteShow()
       {
       QMenu* pup = iR->menu();
       pup->clear();
-      pup->addSeparator()->setText(tr("Tracks"));
       addMidiInPorts(pup, track, -1); // add midi inputs to menu
       }
 
@@ -520,7 +482,6 @@ void MidiStrip::oRouteShow()
       {
       QMenu* pup = oR->menu();
       pup->clear();
-      pup->addSeparator()->setText(tr("OutputPorts"));
       addMidiOutPorts(pup, track, -1);
       addSyntiPorts(pup, track, -1);
       }
@@ -783,7 +744,6 @@ void MidiOutPortStrip::iRouteShow()
       {
       QMenu* pup = iR->menu();
       pup->clear();
-      pup->addSeparator()->setText(tr("MidiChannel"));
 
       for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
             QMenu* m = pup->addMenu(QString("Channel %1").arg(ch+1));
@@ -1001,7 +961,6 @@ void MidiInPortStrip::oRouteShow()
       {
       QMenu* pup = oR->menu();
       pup->clear();
-      pup->addSeparator()->setText(tr("MidiChannel"));
 
       for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
             QMenu* m = pup->addMenu(QString("Channel %1").arg(ch+1));
@@ -1230,33 +1189,7 @@ void MidiSyntiStrip::oRouteShow()
       {
       QMenu* pup = oR->menu();
       pup->clear();
-      pup->addSeparator()->setText(tr("OutputPorts"));
-
-      MidiOutPortList* mpl = song->midiOutPorts();
-      int pn = 0;
-      for (iMidiOutPort i = mpl->begin(); i != mpl->end(); ++i, ++pn) {
-            MidiOutPort* op = *i;
-            QMenu* m = pup->addMenu(op->name());
-            m->addSeparator()->setText(tr("Channel"));
-#if 0 //TODO
-            for (int channel = 0; channel < MIDI_CHANNELS; ++channel) {
-                  QString s;
-                  s.setNum(channel+1);
-                  QAction* action = m->addAction(s);
-                  MidiChannel* mc = op->channel(channel);
-                  Route r(mc, -1, Route::TRACK);
-                  action->setData(QVariant::fromValue(r));
-                  action->setCheckable(true);
-
-                  for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
-                        if (r == *ir) {
-                              action->setChecked(true);
-                              break;
-                              }
-                        }
-                  }
-#endif
-            }
+      addMidiOutPorts(pup, track, -1);
       }
 
 //---------------------------------------------------------
@@ -1268,7 +1201,6 @@ void MidiSyntiStrip::iRouteShow()
       QMenu* pup = oR->menu();
       pup->clear();
 
-      pup->addSeparator()->setText(tr("Input Ports"));
       MidiOutPort* t = (MidiOutPort*)track;
 
       for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
