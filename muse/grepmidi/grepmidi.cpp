@@ -35,7 +35,7 @@
 
 int cpos;
 bool printName = false;
-const char* curName;
+char* curName;
 
 //---------------------------------------------------------
 //   readLong
@@ -277,7 +277,7 @@ int grep(FILE* f)
 //   grep
 //---------------------------------------------------------
 
-int grepMidi(const char* name)
+int grepMidi(char* name)
       {
       curName = name;
       char*p = strrchr(name, '.');

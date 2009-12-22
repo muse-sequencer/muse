@@ -35,10 +35,6 @@ endif (NOT CMAKE_INSTALL_LIBDIR)
 # for debugging the make system uncomment next line:
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set(CMAKE_CXX_FLAGS         "-Wall -Wextra -Winvalid-pch -fno-exceptions")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fstrength-reduce")
-set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG")
-
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
@@ -330,6 +326,10 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   SET(CPACK_PACKAGE_EXECUTABLES "muse" "MusE" "grepmidi" "grepmidi")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+
+set(CMAKE_CXX_FLAGS         "-Wl,-rpath,${QT_LIBRARY_DIR} -Wall -Wextra -Winvalid-pch -fno-exceptions")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fstrength-reduce")
+set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG")
 
 subdirs(al awl grepmidi plugins midiplugins muse share synti)
 
