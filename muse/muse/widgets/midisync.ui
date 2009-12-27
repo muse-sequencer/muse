@@ -1,0 +1,350 @@
+<!DOCTYPE UI><UI version="3.2" stdsetdef="1">
+<class>MidiSyncConfigBase</class>
+<comment>midi sync
+configuration dialog</comment>
+<author>werner schweer</author>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>MidiSyncConfigBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>574</width>
+            <height>419</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>MusE: Midi Sync</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QLayoutWidget" row="2" column="0">
+            <property name="name">
+                <cstring>ApplyOk</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <spacer>
+                    <property name="name">
+                        <cstring>Spacer1_2</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>20</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>applyButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Apply</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>okButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Ok</string>
+                    </property>
+                    <property name="default">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>cancelButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Cancel</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QGroupBox" row="1" column="0">
+            <property name="name">
+                <cstring>GroupBox13</cstring>
+            </property>
+            <property name="enabled">
+                <bool>true</bool>
+            </property>
+            <property name="title">
+                <string>MTC</string>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>11</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout7</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Type:</string>
+                            </property>
+                        </widget>
+                        <widget class="QComboBox">
+                            <item>
+                                <property name="text">
+                                    <string>24</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>25</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>30D</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>30N</string>
+                                </property>
+                            </item>
+                            <property name="name">
+                                <cstring>mtcSyncType</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>1</hsizetype>
+                                    <vsizetype>1</vsizetype>
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                        </widget>
+                        <spacer>
+                            <property name="name">
+                                <cstring>spacer4</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>40</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                    </hbox>
+                </widget>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout5</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel1</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Offset:</string>
+                            </property>
+                        </widget>
+                        <widget class="QSpinBox">
+                            <property name="name">
+                                <cstring>mtcOffH</cstring>
+                            </property>
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="maxValue">
+                                <number>23</number>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>hour</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>h</string>
+                            </property>
+                        </widget>
+                        <widget class="QSpinBox">
+                            <property name="name">
+                                <cstring>mtcOffM</cstring>
+                            </property>
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="maxValue">
+                                <number>59</number>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>minute</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel3</cstring>
+                            </property>
+                            <property name="text">
+                                <string>m</string>
+                            </property>
+                        </widget>
+                        <widget class="QSpinBox">
+                            <property name="name">
+                                <cstring>mtcOffS</cstring>
+                            </property>
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="maxValue">
+                                <number>59</number>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>second</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel4</cstring>
+                            </property>
+                            <property name="text">
+                                <string>s</string>
+                            </property>
+                        </widget>
+                        <widget class="QSpinBox">
+                            <property name="name">
+                                <cstring>mtcOffF</cstring>
+                            </property>
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="maxValue">
+                                <number>30</number>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>frame</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel5</cstring>
+                            </property>
+                            <property name="text">
+                                <string>f</string>
+                            </property>
+                        </widget>
+                        <widget class="QSpinBox">
+                            <property name="name">
+                                <cstring>mtcOffSf</cstring>
+                            </property>
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>subframe</string>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+            </vbox>
+        </widget>
+        <widget class="QGroupBox" row="0" column="0">
+            <property name="name">
+                <cstring>syncGen</cstring>
+            </property>
+            <property name="title">
+                <string>Sync receiving and sending</string>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QListView" row="1" column="0">
+                    <property name="name">
+                        <cstring>devicesListView</cstring>
+                    </property>
+                </widget>
+                <widget class="QCheckBox" row="0" column="0">
+                    <property name="name">
+                        <cstring>extSyncCheckbox</cstring>
+                    </property>
+                    <property name="enabled">
+                        <bool>true</bool>
+                    </property>
+                    <property name="text">
+                        <string>Slave to external sync</string>
+                    </property>
+                    <property name="checked">
+                        <bool>false</bool>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Allow Muse to be controlled by external midi</string>
+                    </property>
+                    <property name="whatsThis" stdset="0">
+                        <string>When in slave mode, tempo is
+ controlled externally, as well
+ as the transport (play, stop etc.)
+Enabled inputs in the list will
+ be in effect (RMC, RMMC, RMTC).</string>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
+    </grid>
+</widget>
+<tabstops>
+    <tabstop>mtcOffH</tabstop>
+    <tabstop>mtcOffM</tabstop>
+    <tabstop>mtcOffS</tabstop>
+    <tabstop>mtcOffF</tabstop>
+    <tabstop>mtcOffSf</tabstop>
+    <tabstop>applyButton</tabstop>
+    <tabstop>okButton</tabstop>
+    <tabstop>cancelButton</tabstop>
+</tabstops>
+<slots>
+    <slot>mopslot()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

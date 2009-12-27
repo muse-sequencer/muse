@@ -1,0 +1,42 @@
+AM_CXXFLAGS = $(MUSECXXFLAGS) -I.. -I$(top_srcdir)/synti -I$(top_srcdir)/muse/widgets
+AM_CXXFLAGS += -DQT_SHARED -DQT_THREAD_SUPPORT -DQT_PLUGIN
+AM_CPPFLAGS =
+
+UIFILES = $(wildcard *.ui)
+
+MOCFILES = $(shell for h in $(filter %.h,$(SOURCES)); do \
+		     if grep -q Q_OBJECT $$h; then \
+		       echo $$h | sed "s/\(.*\)\.h/moc_\1.cpp/"; \
+		     fi; \
+		   done)
+
+BUILT_SOURCES = $(MOCFILES) $(UIFILES:%.ui=%.h)
+
+MOSTLYCLEANFILES = $(MOCFILES) $(UIFILES:%.ui=%.h)
+
+de:
+	@for base in $(MOCFILES); do echo -e "\t$${base}.cpp $${base}.h \\"; done
+
+nde:
+	@for base in $(MOCFILES); do echo -e "\tmoc_$${base}.cpp \\"; done
+
+SUFFIXES = .ui .h.gch
+
+.ui.o: %.h
+	$(UIC) -L $(top_srcdir)/muse/widgets -o $*.cpp -impl $*.h $*.ui
+	$(MOC) $*.h >> $*.cpp
+	$(CXXCOMPILE) -c $*.cpp -o $*.o
+	$(RM) $*.cpp moc_$*.cpp moc_$*.o
+
+.ui.lo: %.h
+	$(UIC) -L $(top_srcdir)/muse/widgets -o $*.cpp -impl $*.h $*.ui
+	$(MOC) $*.h >> $*.cpp
+	$(LTCXXCOMPILE) -c $*.cpp -o $*.lo
+	$(RM) $*.cpp moc_$*.cpp moc_$*.lo moc_$*.o
+
+
+moc_%.cpp: %.h
+	$(MOC) $< -o $@
+
+%.h: %.ui
+	$(UIC) -L $(top_srcdir)/muse/widgets -o $@ $<

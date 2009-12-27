@@ -1,0 +1,27 @@
+<!DOCTYPE UI><UI version="3.2" stdsetdef="1">
+<class>SimpleDrumsGuiBase</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>SimpleDrumsGuiBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>602</width>
+            <height>509</height>
+        </rect>
+    </property>
+    <property name="paletteBackgroundColor">
+        <color>
+            <red>194</red>
+            <green>194</green>
+            <blue>194</blue>
+        </color>
+    </property>
+    <property name="caption">
+        <string>DrumSynth 0.1</string>
+    </property>
+</widget>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

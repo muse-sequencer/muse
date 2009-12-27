@@ -1,0 +1,23 @@
+/* XPM */
+static const char *loop_xpm[] = {
+"    29    15        4            1",
+". c #000000",
+"# c #7f7f7f",
+"a c None",
+"b c #ffffff",
+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+"aaaaaaaaaaaaa...#aaaaaaaaaaaa",
+"aaaaaa########....#####aaaaaa",
+"aaaaa#.................#aaaaa",
+"aaaa#.bbbbbb##....bbbbb.#aaaa",
+"aaa#.baaaaaaa...bbaaaaa#.baaa",
+"aaa#.baaaaaaabbbaaaaaaa#.baaa",
+"aaa#.aaaaaaaaaaaaaaaaaa#.baaa",
+"aaa#.aaaaaaaaaaaaaaaaaa#.baaa",
+"aaaa.aaaaaaaaaaaaaaaaaa#.baaa",
+"aaaa#.#################.baaaa",
+"aaaaa#.................baaaaa",
+"aaaaaabbbbbbbbbbbbbbbbbaaaaaa",
+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+};

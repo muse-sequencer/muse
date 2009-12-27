@@ -1,0 +1,28 @@
+/* XPM */
+/* Drawn  by Mark Donohoe for the K Desktop Environment */
+/* See http://www.kde.org */
+static const char*find_xpm[]={
+"22 16 6 1",
+"# c #000000",
+"c c #ffffff",
+"b c #dcdcdc",
+"a c #a0a0a4",
+"d c #dcdcdc",
+". c None",
+".......####...........",
+".....a#bccd#a.........",
+".....#ccaacc#a........",
+"....#dcaccccd#........",
+"....#cccccccc#........",
+"....#cccccccc#........",
+"....#dccccccd#........",
+"....a#cccccc#a........",
+".....a#dccd###........",
+"......a####a###.......",
+".......aaaaaa###......",
+"............aa###.....",
+".............aa###....",
+"..............aa###...",
+"...............aa#a...",
+"................aa...."};
+
