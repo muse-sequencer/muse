@@ -36,7 +36,9 @@ class CItem {
    public:
       CItem(const QPoint& p, const QRect& r);
       CItem();
-      CItem(Event e, Part* p);
+      // Changed by Tim. p3.3.20
+      //CItem(Event e, Part* p);
+      CItem(const Event& e, Part* p);
 
       bool isMoving() const        { return _isMoving;  }
       void setMoving(bool f)       { _isMoving = f;     }

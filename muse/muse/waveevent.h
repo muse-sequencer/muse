@@ -9,7 +9,12 @@
 #ifndef __WAVE_EVENT_H__
 #define __WAVE_EVENT_H__
 
+//#include <samplerate.h>
+#include <sys/types.h>
+
 #include "eventbase.h"
+
+class AudioConverter;
 
 //---------------------------------------------------------
 //   WaveEvent
@@ -43,7 +48,12 @@ class WaveEventBase : public EventBase {
       
       // Changed by Tim. p3.3.17
       //virtual void read(unsigned offset, float** bpp, int channels, int nn, bool overwrite = true);
-      virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
+      //virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
+      //virtual off_t readAudio(SRC_STATE* /*src_state*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
+      //                       float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
+      virtual off_t readAudio(AudioConverter* /*audConv*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
+                             float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
       };
+      
 #endif
 

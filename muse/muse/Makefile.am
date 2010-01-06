@@ -39,6 +39,7 @@ dist_muse_SOURCES = \
 	thread.cpp thread.h \
 	audio.cpp audio.h \
 	audioprefetch.cpp audioprefetch.h \
+	audioconvert.cpp audioconvert.h \
 	globals.cpp globals.h \
       sync.cpp sync.h \
 	midiport.cpp midiport.h \

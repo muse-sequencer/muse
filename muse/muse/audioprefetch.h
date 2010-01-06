@@ -24,6 +24,8 @@ class AudioPrefetch : public Thread {
       void prefetch(bool doSeek);
       void seek(unsigned pos);
 
+      volatile int seekCount;
+      
    public:
       //AudioPrefetch(int prio, const char* name);
       AudioPrefetch(const char* name);
@@ -34,7 +36,9 @@ class AudioPrefetch : public Thread {
 
       void msgTick();
       void msgSeek(unsigned samplePos, bool force=false);
-      volatile bool seekDone;
+      
+      //volatile bool seekDone;
+      bool seekDone() const { return seekCount == 0; }
       };
 
 extern AudioPrefetch* audioPrefetch;

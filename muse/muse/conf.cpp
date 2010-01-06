@@ -638,6 +638,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               mtcType= xml.parseInt();
                         else if (tag == "extSync")
                               extSyncFlag.setValue(xml.parseInt());
+                        else if (tag == "useJackTransport")
+                              useJackTransport = xml.parseInt();
                         else if (tag == "syncgentype") {
                               // for compatibility
                               //int syncGenType= xml.parseInt();
@@ -1058,6 +1060,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
         mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
         mtcOffset.f(), mtcOffset.sf());
+      //xml.intTag(level, "useJackTransport", useJackTransport);
       extSyncFlag.save(level, xml);
       
 //      xml.intTag(level, "genMTCSync", genMTCSync);
@@ -1159,6 +1162,7 @@ void MusE::writeConfiguration(int level, Xml& xml) const
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
         mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
         mtcOffset.f(), mtcOffset.sf());
+      xml.intTag(level, "useJackTransport", useJackTransport);
       extSyncFlag.save(level, xml);
       
 //      xml.intTag(level, "genMTCSync", genMTCSync);

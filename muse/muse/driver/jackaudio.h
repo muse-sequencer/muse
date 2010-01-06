@@ -24,6 +24,8 @@ class JackAudioDevice : public AudioDevice {
       jack_transport_state_t transportState;
       jack_position_t pos;
       char jackRegisteredName[8];
+      int dummyState;
+      int dummyPos;
 
    public:
       JackAudioDevice(jack_client_t* cl, char * jack_id_string);
@@ -33,6 +35,7 @@ class JackAudioDevice : public AudioDevice {
       //virtual void start();
       virtual void start(int);
       virtual void stop ();
+      virtual bool dummySync(int state); // Artificial sync when not using Jack transport.
       
       virtual int framePos() const;
 
@@ -57,7 +60,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void* findPort(const char* name);
       virtual QString portName(void* port);
       virtual int getState();
-      virtual unsigned int getCurFrame() { return pos.frame; }
+      virtual unsigned int getCurFrame();
       virtual bool isRealtime()          { return jack_is_realtime(_client); }
       virtual int realtimePriority() const;
       virtual void startTransport();
@@ -65,8 +68,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void seekTransport(unsigned frame);
       virtual void seekTransport(const Pos &p);
       virtual void setFreewheel(bool f);
-      jack_transport_state_t transportQuery(jack_position_t* pos)
-         { return jack_transport_query(_client, pos); }
+      jack_transport_state_t transportQuery(jack_position_t* pos);
       void graphChanged();
       virtual int setMaster(bool f);
 

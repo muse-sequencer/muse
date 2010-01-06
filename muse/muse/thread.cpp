@@ -302,12 +302,10 @@ void Thread::loop()
       pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
       pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
 
-      int policy;
-      /*
+      int policy = 0;
       if ((policy = sched_getscheduler (0)) < 0) {
             printf("Thread: Cannot get current client scheduler: %s\n", strerror(errno));
             }
-      */
 
       /*
       if (debugMsg)
@@ -422,7 +420,6 @@ bool Thread::sendMsg1(const void* m, int n)
 
 void Thread::readMsg()
       {
-
       ThreadMsg* p;
       if (read(toThreadFdr, &p, sizeof(p)) != sizeof(p)) {
             perror("Thread::readMessage(): read pipe failed");

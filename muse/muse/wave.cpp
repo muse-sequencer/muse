@@ -29,9 +29,6 @@
 //#define WAVE_DEBUG
 //#define WAVE_DEBUG_PRC
 
-// Added by Tim. p3.3.18
-//#define USE_SAMPLERATE
-
 const char* audioFilePattern[] = {
       "Wave/Binary (*.wav *.ogg *.bin)",
       "Wave (*.wav *.ogg)",
@@ -56,8 +53,6 @@ SndFile::SndFile(const QString& name)
       sfUI  = 0;
       csize = 0;
       cache = 0;
-      _src_state = 0;
-      _src_ratio = 1.0;
       openFlag = false;
       sndFiles.push_back(this);
       refCount=0;
@@ -80,9 +75,6 @@ SndFile::~SndFile()
             delete[] cache;
             cache = 0;
             }
-            
-      if(_src_state)
-        src_delete(_src_state);    
       }
 
 //---------------------------------------------------------
@@ -103,17 +95,6 @@ bool SndFile::openRead()
       if (sf == 0 || sfUI == 0)
             return true;
             
-      int srcerr;
-      if(_src_state)
-        src_delete(_src_state);
-      _src_state = src_new(SRC_SINC_MEDIUM_QUALITY, sfinfo.channels, &srcerr);
-      if(!_src_state)      
-        printf("SndFile::openRead Creation of samplerate converter (channels:%d) failed: %s\n", sfinfo.channels, src_strerror(srcerr));
-      //_src_ratio = (double)sampleRate / (double)sfinfo.samplerate;
-      //srcerr = src_set_ratio(_src_state, _src_ratio);
-      //if(srcerr != 0)      
-      //  printf("SndFile::openRead Setting of samplerate converter ratio failed: %s\n", src_strerror(srcerr));
-
       writeFlag = false;
       openFlag  = true;
       QString cacheName = finfo->dirPath(true) + QString("/") + finfo->baseName(true) + QString(".wca");
@@ -366,17 +347,6 @@ bool SndFile::openWrite()
             QString cacheName = finfo->dirPath(true) +
                QString("/") + finfo->baseName(true) + QString(".wca");
             readCache(cacheName, true);
-            
-            int srcerr;
-            if(_src_state)
-              src_delete(_src_state);
-            _src_state = src_new(SRC_SINC_MEDIUM_QUALITY, sfinfo.channels, &srcerr);
-            if(!_src_state)      
-              printf("SndFile::openWrite Creation of samplerate converter (channels:%d) failed: %s\n", sfinfo.channels, src_strerror(srcerr));
-            //_src_ratio = (double)sampleRate / (double)sfinfo.samplerate;
-            //srcerr = src_set_ratio(_src_state, _src_ratio);
-            //if(srcerr != 0)      
-            //  printf("SndFile::openRead Setting of samplerate converter ratio failed: %s\n", src_strerror(srcerr));
             }
       return sf == 0;
       }
@@ -468,17 +438,6 @@ void SndFile::setFormat(int fmt, int ch, int rate)
       sfinfo.format     = fmt;
       sfinfo.seekable   = true;
       sfinfo.frames     = 0;
-      
-      int srcerr;
-      if(_src_state)
-        src_delete(_src_state);
-      _src_state = src_new(SRC_SINC_MEDIUM_QUALITY, sfinfo.channels, &srcerr);
-      if(!_src_state)      
-        printf("SndFile::setFormat Creation of samplerate converter (channels:%d) failed: %s\n", sfinfo.channels, src_strerror(srcerr));
-      //_src_ratio = (double)sampleRate / (double)sfinfo.samplerate;
-      //srcerr = src_set_ratio(_src_state, _src_ratio);
-      //if(srcerr != 0)      
-      //  printf("SndFile::openRead Setting of samplerate converter ratio failed: %s\n", src_strerror(srcerr));
       }
 
 //---------------------------------------------------------
@@ -490,120 +449,7 @@ size_t SndFile::read(int srcChannels, float** dst, size_t n, bool overwrite)
       // Changed by Tim. p3.3.17
       //float *buffer = new float[n * sfinfo.channels];
       float buffer[n * sfinfo.channels];
-      
-      size_t rn;
-      
-      // Do we need to resample?
-      // FIXME: Disabled resampling for now...
-#ifdef USE_SAMPLERATE
-      if(sampleRate == sfinfo.samplerate)
-      {
-        rn = sf_readf_float(sf, buffer, n);
-      }
-      else
-      {
-        if(sfinfo.samplerate == 0)
-        {  
-          if(debugMsg)
-            printf("SndFile::read Using SRC: Error: File samplerate is zero!\n");
-          return 0;
-        }  
-        
-        // Ratio is defined as output sample rate over input samplerate.
-        double srcratio = (double)sampleRate / (double)sfinfo.samplerate;
-        long outFrames = n;  
-        //long outSize = n * sfinfo.channels;
-        
-        //long inSize = long(outSize * srcratio) + 1                      // From MusE-2 file converter.
-        //long inSize = (long)floor(((double)outSize / srcratio));        // From simplesynth.
-        //long inFrames = (long)floor(((double)outFrames / srcratio));    // From simplesynth.
-        long inFrames = (long)ceil(((double)outFrames / srcratio));    // From simplesynth.
-        //long inFrames = (long)floor(double(outFrames * sfinfo.samplerate) / double(sampleRate));    // From simplesynth.
-        
-        // Extra input compensation - sometimes src requires more input frames than expected in order to
-        //  always get a reliable number of used out frames !
-        //inFrames = inFrames / (srcratio / 2.0);
-        long inComp = 10;
-        inFrames += inComp;
-        
-        long inSize = inFrames * sfinfo.channels;
-        
-        float inbuffer[inSize];
-            
-        rn = sf_readf_float(sf, inbuffer, inFrames);
-        
-        // convert
-        SRC_DATA srcdata;
-        srcdata.data_in       = inbuffer;
-        srcdata.data_out      = buffer;
-        //srcdata.input_frames  = inSize;
-        srcdata.input_frames  = rn;
-        srcdata.output_frames = outFrames;
-        srcdata.end_of_input  = ((long)rn != inFrames);
-        srcdata.src_ratio     = srcratio;
-  
-        #ifdef WAVE_DEBUG_PRC
-        printf("SndFile::read SampleRate %s inFrames:%ld inSize:%ld outFrames:%ld outSize:%ld rn:%d", name().latin1(), inFrames, inSize, outFrames, n * sfinfo.channels, rn);
-        #endif
-        
-        int srcerr = src_process(_src_state, &srcdata);
-        if(srcerr != 0)      
-        {
-          printf("\nSndFile::read SampleRate converter src_process failed: %s\n", src_strerror(srcerr));
-          return 0;
-        }
-        
-        #ifdef WAVE_DEBUG_PRC
-        printf(" frames used in:%ld out:%ld\n", srcdata.input_frames_used, srcdata.output_frames_gen);
-        #endif
-        
-        // If the number of frames read by the soundfile equals the input frames, go back.
-        // Otherwise we have reached the end of the file, so going back is useless since
-        //  there shouldn't be any further calls. (Definitely get buffer underruns if further calls!)
-        if((long)rn == inFrames)
-        {
-          // Go back by the amount of unused frames.
-          sf_count_t seekn = inFrames - srcdata.input_frames_used;
-          #ifdef WAVE_DEBUG_PRC
-          printf("SndFile::read seeking:%ld\n", seekn);
-          #endif
-          sf_seek(sf, -seekn, SEEK_CUR);
-        }  
-        
-        if(debugMsg)
-        {
-          if(srcdata.output_frames_gen != outFrames)
-            printf("SndFile::read SampleRate %s output_frames_gen:%ld != outFrames:%ld outSize:%u inFrames:%ld srcdata.input_frames_used:%ld inSize:%ld rn:%d\n", name().latin1(), srcdata.output_frames_gen, outFrames, n * sfinfo.channels, inFrames, srcdata.input_frames_used, inSize, rn);
-        }
-        
-        if(inFrames != (long)rn)
-        {
-          // Back-convert.
-          long d = inFrames - (long)rn;
-          //rn = (double)d * srcratio + 1; 
-          rn = (long)floor((double)d * srcratio); 
-        }
-        else 
-        if(srcdata.output_frames_gen < outFrames)
-        {
-          // SRC didn't give us the number of frames we requested. 
-          // This can occasionally be radically different from the requested frames, or zero,
-          //  even when ample excess input frames are supplied.
-          // We're not done converting yet - we haven't reached the end of the file. 
-          // We must do something with the buffer. So let's zero whatever SRC didn't fill.
-          // FIXME: Instead of zeroing, try processing more input data until the out buffer is full.
-          long b = srcdata.output_frames_gen * sfinfo.channels;
-          long e = outFrames  * sfinfo.channels;
-          for(long i = b; i < e; ++i)
-            buffer[i] = 0.0f;
-          rn = outFrames;  
-        }  
-        else  
-          rn = srcdata.output_frames_gen;
-      }
-#else
-      rn = sf_readf_float(sf, buffer, n);
-#endif      
+      size_t rn = sf_readf_float(sf, buffer, n);
       
       float* src      = buffer;
       int dstChannels = sfinfo.channels;
@@ -720,36 +566,7 @@ size_t SndFile::write(int srcChannels, float** src, size_t n)
 
 off_t SndFile::seek(off_t frames, int whence)
       {
-      // Changed by Tim. p3.3.17
-      //return sf_seek(sf, frames, whence);
-      
-      off_t n = frames;
-      
-      // FIXME: Disabled resampling for now...
-#ifdef USE_SAMPLERATE
-      if(sfinfo.samplerate != sampleRate)
-      {
-        double srcratio = (double)sfinfo.samplerate / (double)sampleRate;
-        //long inSize = long((double)frames * _src_ratio) + 1     // From MusE-2 file converter.
-        n = (off_t)floor(((double)frames * srcratio));    // From simplesynth.
-      
-        // Added by Tim. p3.3.17
-        #ifdef WAVE_DEBUG
-        printf("SndFile::seek frames:%ld converted to frames:%ld whence:%d\n", frames, n, whence);
-        #endif
-        
-        n = sf_seek(sf, n, whence);
-        
-        // Reset the src converter.
-        int srcerr = src_reset(_src_state);
-        if(srcerr != 0)      
-          printf("SndFile::seek Samplerate converter reset failed: %s\n", src_strerror(srcerr));
-      }
-      else
-#endif      
-        n = sf_seek(sf, n, whence);
-      
-      return n;
+      return sf_seek(sf, frames, whence);
       }
 
 //---------------------------------------------------------

@@ -9,7 +9,12 @@
 #ifndef __EVENTBASE_H__
 #define __EVENTBASE_H__
 
+//#include <samplerate.h>
+#include <sys/types.h>
+
 #include "pos.h"
+
+class AudioConverter;
 
 //---------------------------------------------------------
 //   EventBase
@@ -76,8 +81,13 @@ class EventBase : public PosLen {
       virtual SndFileR sndFile() const              { return 0;      }
       virtual void setSndFile(SndFileR&)            { }
       virtual EventBase* clone() = 0;
+      
       //virtual void read(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool overwrite = true) {}
-      virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) {}
+      //virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) {}
+      //virtual off_t readAudio(SRC_STATE* /*src_state*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
+      //                       float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { return 0; }
+      virtual off_t readAudio(AudioConverter* /*audConv*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
+                             float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { return 0; }
       };
 #endif
 

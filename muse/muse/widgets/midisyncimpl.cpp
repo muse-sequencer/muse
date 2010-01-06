@@ -22,6 +22,7 @@
 //#include <qwhatsthis.h>
 #include <qmessagebox.h>
 
+#include "app.h"
 #include "song.h"
 #include "midiport.h"
 #include "midiseq.h"
@@ -292,6 +293,8 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent, const char* name)
 
       //connect(syncMode, SIGNAL(clicked(int)), SLOT(syncChanged(int)));
       connect(extSyncCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
+      connect(mtcSyncType, SIGNAL(activated(int)), SLOT(syncChanged()));
+      connect(useJackTransportCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
       connect(&extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(extSyncChanged(bool)));
       
   
@@ -328,7 +331,12 @@ void MidiSyncConfig::songChanged(int flags)
       //for(int i = 0; i < MIDI_PORTS; ++i)
       //  tmpMidiSyncPorts[i] = midiSyncPorts[i];
       
+      extSyncCheckbox->blockSignals(true);
+      useJackTransportCheckbox->blockSignals(true);
       extSyncCheckbox->setChecked(extSyncFlag.value());
+      useJackTransportCheckbox->setChecked(useJackTransport);
+      useJackTransportCheckbox->blockSignals(false);
+      extSyncCheckbox->blockSignals(false);
       
       mtcSyncType->setCurrentItem(mtcType);
 
@@ -455,6 +463,8 @@ void MidiSyncConfig::extSyncChanged(bool v)
       {
       extSyncCheckbox->blockSignals(true);
       extSyncCheckbox->setChecked(v);
+//      if(v)
+//        song->setMasterFlag(false);
       extSyncCheckbox->blockSignals(false);
       }
 
@@ -541,7 +551,12 @@ void MidiSyncConfig::apply()
 
       mtcType     = mtcSyncType->currentItem();
       //extSyncFlag.setValue(syncMode->id(syncMode->selected()));
+      //extSyncFlag.blockSignals(true);
       extSyncFlag.setValue(extSyncCheckbox->isChecked());
+//      if(extSyncFlag.value())
+//        song->setMasterFlag(false);
+      //extSyncFlag.blockSignals(false);
+      useJackTransport = useJackTransportCheckbox->isChecked();
 
       mtcOffset.setH(mtcOffH->value());
       mtcOffset.setM(mtcOffM->value());
@@ -567,6 +582,8 @@ void MidiSyncConfig::apply()
         
         lvi = (MidiSyncLViewItem*)lvi->nextSibling();
       }
+  
+  //muse->changeConfig(true);    // save settings
   
   _dirty = false;
   if(applyButton->isEnabled())

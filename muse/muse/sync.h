@@ -108,6 +108,7 @@ extern BValue extSyncFlag;
 //extern bool acceptMC;
 //extern bool acceptMMC;
 extern int curMidiSyncInPort;
+extern bool useJackTransport;
 
 #endif
 

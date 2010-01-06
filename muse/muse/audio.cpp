@@ -227,7 +227,10 @@ void Audio::stop(bool)
 
 bool Audio::sync(int jackState, unsigned frame)
       {
-//  printf("sync state %s jackState %s frame %d\n", audioStates[state], audioStates[jackState], frame);
+      // Added by Tim. p3.3.20
+      if(debugMsg)
+        printf("Audio::sync state %s jackState %s frame %d\n", audioStates[state], audioStates[jackState], frame);
+      
       bool done = true;
       if (state == LOOP1) 
             state = LOOP2;
@@ -238,8 +241,14 @@ bool Audio::sync(int jackState, unsigned frame)
                   }
             state = State(jackState);
             if (!_freewheel)
-                  done = audioPrefetch->seekDone;
+                  //done = audioPrefetch->seekDone;
+                  done = audioPrefetch->seekDone();
             }
+      
+      // Added by Tim. p3.3.20
+      //if(debugMsg)
+      //  printf("Audio::sync done:%d state %s\n", done, audioStates[state]);
+      
       return done;
       }
 
@@ -296,6 +305,10 @@ void Audio::process(unsigned frames)
 
       int jackState = audioDevice->getState();
 
+      // Added by Tim. p3.3.20
+      //if(debugMsg)
+      //  printf("Audio::process Current state:%s jackState:%s\n", audioStates[state], audioStates[jackState]);
+      
       if (state == START_PLAY && jackState == PLAY) {
             _loopCount = 0;
             startRolling();
@@ -367,6 +380,10 @@ void Audio::process(unsigned frames)
                && !(song->record()
                 || _bounce
                 || song->loop())) {
+                  // Added by Tim. p3.3.20
+                  //if(debugMsg)
+                  //  printf("Audio::process curTickPos >= song->len\n");
+                  
                   audioDevice->stopTransport();
                   return;
                   }
@@ -1026,6 +1043,10 @@ void Audio::startRolling()
 
 void Audio::stopRolling()
       {
+      // Added by Tim. p3.3.20
+      //if(debugMsg)
+      //  printf("Audio::stopRolling state %s\n", audioStates[state]);
+      
       state = STOP;
       midiSeq->msgStop();
 

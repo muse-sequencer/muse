@@ -18,6 +18,9 @@
 #include "audio.h"
 #include "sync.h"
 
+// Added by Tim. p3.3.20
+//#define AUDIOPREFETCH_DEBUG
+
 enum { PREFETCH_TICK, PREFETCH_SEEK
       };
 
@@ -42,7 +45,8 @@ AudioPrefetch::AudioPrefetch(const char* name)
       {
       seekPos  = ~0;
       writePos = ~0;
-      seekDone = true;
+      //seekDone = true;
+      seekCount = 0;
       }
 
 //---------------------------------------------------------
@@ -97,6 +101,10 @@ void AudioPrefetch::processMsg1(const void* m)
                   seekPos = ~0;     // invalidate cached last seek position
                   break;
             case PREFETCH_SEEK:
+                  #ifdef AUDIOPREFETCH_DEBUG
+                  printf("AudioPrefetch::processMsg1 PREFETCH_SEEK msg->pos:%d\n", msg->pos); 
+                  #endif
+                  
                   // process seek in background
                   seek(msg->pos);
                   break;
@@ -126,10 +134,17 @@ void AudioPrefetch::msgTick()
 void AudioPrefetch::msgSeek(unsigned samplePos, bool force)
       {
       if (samplePos == seekPos && !force) {
-            seekDone = true;
+            //seekDone = true;
             return;
             }
-      seekDone = false;
+
+      ++seekCount;
+      //seekDone = false;
+      
+      #ifdef AUDIOPREFETCH_DEBUG
+      printf("AudioPrefetch::msgSeek samplePos:%u force:%d seekCount:%d\n", samplePos, force, seekCount); 
+      #endif
+      
       PrefetchMsg msg;
       msg.id  = PREFETCH_SEEK;
       msg.pos = samplePos;
@@ -147,7 +162,7 @@ void AudioPrefetch::msgSeek(unsigned samplePos, bool force)
 void AudioPrefetch::prefetch(bool doSeek)
       {
       if (writePos == ~0U) {
-            printf("prefetch(): invalid write position\n");
+            printf("AudioPrefetch::prefetch: invalid write position\n");
             return;
             }
       if (song->loop() && !audio->bounce() && !extSyncFlag.value()) {
@@ -169,8 +184,7 @@ void AudioPrefetch::prefetch(bool doSeek)
             float* bp[ch];
 // printf("prefetch %d\n", writePos);
             if (track->prefetchFifo()->getWriteBuffer(ch, segmentSize, bp, writePos)) {
-                  // Too many of these. Chokes muse. Turn on later. (muse works OK anyway).
-                  //printf("Prefetch: NO BUFFER\n");
+                  printf("AudioPrefetch::prefetch No write buffer!\n");
                   continue;
                   }
             //track->fetchData(writePos, segmentSize, bp);
@@ -186,6 +200,26 @@ void AudioPrefetch::prefetch(bool doSeek)
 void AudioPrefetch::seek(unsigned seekTo)
       {
 // printf("seek %d\n", seekTo);
+      #ifdef AUDIOPREFETCH_DEBUG
+      printf("AudioPrefetch::seek to:%u seekCount:%d\n", seekTo, seekCount); 
+      #endif
+      
+      // Speedup: More than one seek message pending?
+      // Eat up seek messages until we get to the very LATEST one, 
+      //  because all the rest which came before it are irrelevant now,
+      //  and processing them all was taking extreme time, especially with
+      //  resampling enabled.
+      // In particular, when the user 'slides' the play cursor back and forth   
+      //  there are MANY seek messages in the pipe, and with resampling enabled
+      //  it was taking minutes to finish seeking. If the user hit play during that time,
+      //  things were messed up (FIFO underruns, choppy intermittent sound etc).
+      // Added by Tim. p3.3.20
+      if(seekCount > 1)
+      {
+        --seekCount;
+        return;
+      }
+      
       writePos = seekTo;
       WaveTrackList* tl = song->waves();
       for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
@@ -202,9 +236,18 @@ void AudioPrefetch::seek(unsigned seekTo)
             prefetch(isFirstPrefetch);
             
             isFirstPrefetch = false;
+            
+            // To help speed things up even more, check the count again. Return if more seek messages are pending.
+            // Added by Tim. p3.3.20
+            if(seekCount > 1)
+            {
+              --seekCount;
+              return;
+            }  
       }
             
       seekPos  = seekTo;
-      seekDone = true;
+      //seekDone = true;
+      --seekCount;
       }
 

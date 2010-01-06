@@ -13,7 +13,6 @@
 #include <list>
 #include <qfileinfo.h>
 #include <sndfile.h>
-#include <samplerate.h>
 
 class Xml;
 
@@ -53,9 +52,6 @@ class SndFile {
       SampleV** cache;
       int csize;                    //!< frames in cache
 
-      SRC_STATE* _src_state;
-      double _src_ratio;
-      
       void writeCache(const QString& path);
 
       bool openFlag;
@@ -94,9 +90,9 @@ class SndFile {
       unsigned format() const;
       int sampleBits() const;
       void setFormat(int fmt, int ch, int rate);
-      double srcRatio() { return _src_ratio; }
 
       size_t read(int channel, float**, size_t, bool overwrite = true);
+      size_t readDirect(float* buf, size_t n)    { return sf_readf_float(sf, buf, n); }
       size_t write(int channel, float**, size_t);
 
       off_t seek(off_t frames, int whence);
@@ -151,6 +147,8 @@ class SndFileR {
       size_t read(int channel, float** f, size_t n, bool overwrite = true) {
             return sf->read(channel, f, n, overwrite);
             }
+      size_t readDirect(float* f, size_t n) { return sf->readDirect(f, n); }  
+      
       size_t write(int channel, float** f, size_t n) {
             return sf->write(channel, f, n);
             }

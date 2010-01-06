@@ -694,8 +694,8 @@ int MidiPort::hwCtrlState(int ch, int ctrl) const
       ch &= 0xff;
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end()) {
-            if (debugMsg)
-                  printf("hwCtrlState: chan %d ctrl 0x%x not found\n", ch, ctrl);
+            //if (debugMsg)
+            //      printf("hwCtrlState: chan %d ctrl 0x%x not found\n", ch, ctrl);
             return CTRL_VAL_UNKNOWN;
             }
       MidiCtrlValList* vl = cl->second;
@@ -796,9 +796,9 @@ int MidiPort::getCtrl(int ch, int tick, int ctrl) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end()) {
-            if (debugMsg)
-                  printf("getCtrl: controller %d(0x%x) for channel %d not found size %zd\n",
-                     ctrl, ctrl, ch, _controller->size());
+            //if (debugMsg)
+            //      printf("getCtrl: controller %d(0x%x) for channel %d not found size %zd\n",
+            //         ctrl, ctrl, ch, _controller->size());
             return CTRL_VAL_UNKNOWN;
             }
       return cl->second->value(tick);
@@ -808,7 +808,9 @@ int MidiPort::getCtrl(int ch, int tick, int ctrl, Part* part) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end()) {
-            if (debugMsg)
+            //if (debugMsg)
+            //      printf("getCtrl: controller %d(0x%x) for channel %d not found size %zd\n",
+            //         ctrl, ctrl, ch, _controller->size());
             return CTRL_VAL_UNKNOWN;
             }
       return cl->second->value(tick, part);

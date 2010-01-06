@@ -11,6 +11,8 @@
 
 #include <qstring.h>
 #include <map>
+//#include <samplerate.h>
+#include <sys/types.h>
 
 #include "wave.h"   // wg. SndFile
 #include "pos.h"
@@ -20,6 +22,7 @@ enum EventType { Note, Controller, Sysex, PAfter, CAfter, Meta, Wave };
 
 class Xml;
 class EventBase;
+class AudioConverter;
 
 //---------------------------------------------------------
 //   Event
@@ -28,8 +31,12 @@ class EventBase;
 class Event {
       EventBase* ev;
 
+      off_t _sfCurFrame;
+      AudioConverter* _audConv;
+      
    public:
-      Event() { ev = 0; }
+      //Event() { ev = 0; }
+      Event();
       Event(EventType t);
       Event(const Event& e);
       Event(EventBase* eb);
@@ -79,6 +86,7 @@ class Event {
       void setName(const QString& s);
       int spos() const;
       void setSpos(int s);
+      //AudioConverter* audioConverter() { return _audConv;} 
       SndFileR sndFile() const;
       virtual void setSndFile(SndFileR& sf);
       //virtual void read(unsigned offset, float** bpp, int channels, int nn, bool overwrite = true);

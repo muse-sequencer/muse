@@ -1,3 +1,7 @@
+06.01.2010
+      * Feature: Jack transport enable/disable in Midi Sync settings window. Stores setting per-song. (T356)
+        - Should be Ok to use and test. Needs a bit more work. See jack.cpp and jackaudio.h
+      * Fixed: Speedups of audio pre-fetch especially when moving the cursor around (seeking). (T356)
 23.12.2009:
       * Added: DeicsOnze2 initial import. (ng)
       * Fix: deicsonzepreset.cpp for Xml muse 1 API

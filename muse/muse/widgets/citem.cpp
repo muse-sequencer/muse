@@ -25,7 +25,9 @@ CItem::CItem(const QPoint&p, const QRect& r)
       _isMoving = false;
       }
 
-CItem::CItem(Event e, Part* p)
+// Changed by Tim. p3.3.20
+//CItem::CItem(Event e, Part* p)
+CItem::CItem(const Event& e, Part* p)
       {
       _event = e;
       _part  = p;

@@ -36,6 +36,7 @@ BValue extSyncFlag(0, "extSync");       // false - MASTER, true - SLAVE
 //bool acceptMTC  = false;
 //bool acceptMC   = true;
 //bool acceptMMC  = true;
+bool useJackTransport = true;
 
 static MTC mtcCurTime;
 static int mtcState;    // 0-7 next expected quarter message

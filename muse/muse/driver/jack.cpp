@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdarg.h>
+//#include <time.h> 
+#include <unistd.h>
 
 #include "audio.h"
 #include "globals.h"
@@ -17,6 +19,8 @@
 #include "track.h"
 #include "pos.h"
 #include "tempo.h"
+#include "sync.h"
+#include "utils.h"
 
 #define JACK_DEBUG 0
 
@@ -131,6 +135,9 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
       if (JACK_DEBUG)
             printf("processSync()\n");
       
+      if(!useJackTransport)
+        return 1;
+        
       int audioState = Audio::STOP;
       switch (state) {
             case JackTransportStopped:   
@@ -243,6 +250,8 @@ JackAudioDevice::JackAudioDevice(jack_client_t* cl, char * name)
       //JackAudioDevice::jackStarted=false;
       strcpy(jackRegisteredName, name);
       _client = cl;
+      dummyState = Audio::STOP;
+      dummyPos = 0;
       }
 
 //---------------------------------------------------------
@@ -590,6 +599,12 @@ void JackAudioDevice::registerClient()
       if(!checkJackClient(_client)) return;
       jack_set_process_callback(_client, processAudio, 0);
       jack_set_sync_callback(_client, processSync, 0);
+      // FIXME: FIXME:
+      // Added by Tim. p3.3.20
+      // Did not help. Seek during play: Jack keeps switching to STOP state after about 1-2 seconds timeout if sync is holding it up.
+      // Nothing in MusE seems to be telling it to stop.
+      //jack_set_sync_timeout(_client, 5000000); // Change default 2 to 5 second sync timeout because prefetch may be very slow esp. with resampling !
+      
       jack_on_shutdown(_client, processShutdown, 0);
       jack_set_buffer_size_callback(_client, bufsize_callback, 0);
       jack_set_sample_rate_callback(_client, srate_callback, 0);
@@ -735,6 +750,7 @@ void JackAudioDevice::start(int /*priority*/)
                         }
                   }
             }
+      
       undoSetuid();
       
       //MUSE_DEBUG("JackAudioDevice::start()\n");
@@ -758,13 +774,53 @@ void JackAudioDevice::stop()
       }
 
 //---------------------------------------------------------
+//   transportQuery
+//---------------------------------------------------------
+
+jack_transport_state_t JackAudioDevice::transportQuery(jack_position_t* pos)
+{ 
+  if (JACK_DEBUG)
+    printf("JackAudioDevice::transportQuery pos:%d\n", (unsigned int)pos->frame);
+  
+  // TODO: Compose and return a state if MusE is disengaged from Jack transport.
+  
+  return jack_transport_query(_client, pos); 
+}
+
+//---------------------------------------------------------
+//   getCurFrame
+//---------------------------------------------------------
+
+unsigned int JackAudioDevice::getCurFrame()
+{ 
+  if (JACK_DEBUG)
+    printf("JackAudioDevice::getCurFrame pos.frame:%d\n", pos.frame);
+  
+  if(!useJackTransport)
+    return (unsigned int)dummyPos;
+    
+  return pos.frame; 
+}
+
+//---------------------------------------------------------
 //   framePos
 //---------------------------------------------------------
 
 int JackAudioDevice::framePos() const
       {
+      //if(!useJackTransport)
+      //{
+      //  if (JACK_DEBUG)
+      //    printf("JackAudioDevice::framePos dummyPos:%d\n", dummyPos);
+      //  return dummyPos;
+      //}
+      
       if(!checkJackClient(_client)) return 0;
       jack_nframes_t n = jack_frame_time(_client);
+      
+      if (JACK_DEBUG)
+        printf("JackAudioDevice::framePos jack frame:%d\n", (int)n);
+      
       return (int)n;
       }
 
@@ -877,10 +933,24 @@ void JackAudioDevice::unregisterPort(void* p)
 
 int JackAudioDevice::getState()
       {
+      // If we're not using Jack's transport, just return current state.
+      if(!useJackTransport)
+      {
+        //pos.valid = jack_position_bits_t(0);
+        //pos.frame = audio->pos().frame();
+        //return audio->getState();
+        if (JACK_DEBUG)
+          printf("JackAudioDevice::getState dummyState:%d\n", dummyState);
+        return dummyState;
+      }
+      
       //if (JACK_DEBUG)
       //      printf("JackAudioDevice::getState ()\n");
       if(!checkJackClient(_client)) return 0;
       transportState = jack_transport_query(_client, &pos);
+      if (JACK_DEBUG)
+          printf("JackAudioDevice::getState transportState:%d\n", transportState);
+      
       switch (transportState) {
             case JackTransportStopped:  
               return Audio::STOP;
@@ -920,46 +990,136 @@ void JackAudioDevice::setFreewheel(bool f)
       }
 
 //---------------------------------------------------------
+//   dummySync
+//---------------------------------------------------------
+
+bool JackAudioDevice::dummySync(int state)
+{
+  // Roughly segment time length.
+  //timespec ts = { 0, (1000000000 * segmentSize) / sampleRate };     // In nanoseconds.
+  unsigned int sl = (1000000 * segmentSize) / sampleRate;            // In microseconds.
+  
+  double ct = curTime();
+  // Wait for a default maximum of 5 seconds. 
+  // Similar to how Jack is supposed to wait a default of 2 seconds for slow clients.
+  // TODO: Make this timeout a 'settings' option so it can be applied both to Jack and here.
+  while((curTime() - ct) < 5.0)  
+  {
+    // Is MusE audio ready to roll?
+    if(audio->sync(state, dummyPos))
+      return true;
+    
+    // Not ready. Wait a 'segment', try again...
+    //nanosleep(&ts, NULL);  
+    usleep(sl);              // usleep is supposed to be obsolete!
+  }
+    
+  //if(JACK_DEBUG)
+    printf("JackAudioDevice::dummySync Sync timeout - audio not ready!\n");
+  
+  return false;
+}
+
+//---------------------------------------------------------
 //   startTransport
 //---------------------------------------------------------
 
 void JackAudioDevice::startTransport()
-      {
+    {
       if (JACK_DEBUG)
             printf("JackAudioDevice::startTransport()\n");
+      
+      // If we're not using Jack's transport, just pass PLAY and current frame along
+      //  as if processSync was called. 
+      if(!useJackTransport)
+      {
+        //dummyState = Audio::START_PLAY;
+        
+        // Is MusE audio ready to roll?
+        //if(dummySync(dummyState))
+        if(dummySync(Audio::START_PLAY))
+        {
+          // MusE audio is ready to roll. Let's play.
+          dummyState = Audio::PLAY;
+          return;
+        }
+          
+        // Ready or not, we gotta roll. Similar to how Jack is supposed to roll anyway.
+        dummyState = Audio::PLAY;
+        return;
+      }
+      
       if(!checkJackClient(_client)) return;
 //      printf("JACK: startTransport\n");
       jack_transport_start(_client);
-      }
+    }
 
 //---------------------------------------------------------
 //   stopTransport
 //---------------------------------------------------------
 
 void JackAudioDevice::stopTransport()
-      {
+    {
       if (JACK_DEBUG)
             printf("JackAudioDevice::stopTransport()\n");
+      
+      dummyState = Audio::STOP;
+      
+      if(!useJackTransport)
+      {
+        //dummyState = Audio::STOP;
+        return;
+      }
+      
       if(!checkJackClient(_client)) return;
       if (transportState != JackTransportStopped) {
         //      printf("JACK: stopTransport\n");
             jack_transport_stop(_client);
             transportState=JackTransportStopped;
             }
-      }
+    }
 
 //---------------------------------------------------------
 //   seekTransport
 //---------------------------------------------------------
 
 void JackAudioDevice::seekTransport(unsigned frame)
-      {
+    {
       if (JACK_DEBUG)
             printf("JackAudioDevice::seekTransport() frame:%d\n", frame);
+      
+      dummyPos = frame;
+      if(!useJackTransport)
+      {
+        // If we're not using Jack's transport, just pass the current state and new frame along
+        //  as if processSync was called. 
+        //dummyPos = frame;
+        int tempState = dummyState;
+        //dummyState = Audio::START_PLAY;
+        
+        // Is MusE audio ready yet?
+        //audio->sync(dummyState, dummyPos);
+        //if(dummySync(dummyState))
+        if(dummySync(Audio::START_PLAY))
+        {
+          dummyState = tempState;
+          return;
+        }
+        
+        // Not ready, resume previous state anyway.
+        // FIXME: Observed: Seek during play: Jack transport STOPs on timeout. 
+        // Docs say when starting play, transport will roll anyway, ready or not (observed),
+        //  but don't mention what should happen on seek during play. 
+        // And setting the slow-sync timeout doesn't seem to do anything!
+        //dummyState = tempState;
+        dummyState = Audio::STOP;
+        return;
+      }
+      
       if(!checkJackClient(_client)) return;
 //      printf("JACK: seekTransport %d\n", frame);
       jack_transport_locate(_client, frame);
-      }
+    }
 
 //---------------------------------------------------------
 //   seekTransport
@@ -969,6 +1129,32 @@ void JackAudioDevice::seekTransport(const Pos &p)
       {
       if (JACK_DEBUG)
             printf("JackAudioDevice::seekTransport() frame:%d\n", p.frame());
+      
+      dummyPos = p.frame();
+      if(!useJackTransport)
+      {
+        // If we're not using Jack's transport, just pass the current state and new frame along
+        //  as if processSync was called. 
+        //dummyPos = p.frame();
+        int tempState = dummyState;
+        //dummyState = Audio::START_PLAY;
+        
+        // Is MusE audio ready yet?
+        //audio->sync(dummyState, dummyPos);
+        //if(dummySync(dummyState))
+        if(dummySync(Audio::START_PLAY))
+        {
+          dummyState = tempState;
+          return;
+        }
+        
+        // Not ready, resume previous state anyway.
+        // FIXME: See fixme in other seekTransport...
+        //dummyState = tempState;
+        dummyState = Audio::STOP;
+        return;
+      }
+      
       if(!checkJackClient(_client)) return;
       
       /*
@@ -1016,13 +1202,21 @@ int JackAudioDevice::setMaster(bool f)
   int r = 0;
   if(f)
   {
-    // Make Muse the Jack timebase master. Do it unconditionally (second param = 0).
-    r = jack_set_timebase_callback(_client, 0, (JackTimebaseCallback) timebase_callback, 0);
-    if(debugMsg || JACK_DEBUG)
+    if(useJackTransport)
     {
-      if(r)
-        printf("JackAudioDevice::setMaster jack_set_timebase_callback failed: result:%d\n", r);
-    }      
+      // Make Muse the Jack timebase master. Do it unconditionally (second param = 0).
+      r = jack_set_timebase_callback(_client, 0, (JackTimebaseCallback) timebase_callback, 0);
+      if(debugMsg || JACK_DEBUG)
+      {
+        if(r)
+          printf("JackAudioDevice::setMaster jack_set_timebase_callback failed: result:%d\n", r);
+      }      
+    }  
+    else
+    {
+      r = 1;
+      printf("JackAudioDevice::setMaster cannot set master because useJackTransport is false\n");
+    }
   }  
   else
   {

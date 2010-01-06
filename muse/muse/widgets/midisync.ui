@@ -290,46 +290,67 @@ configuration dialog</comment>
             </vbox>
         </widget>
         <widget class="QGroupBox" row="0" column="0">
+          <property name="name">
+            <cstring>syncGen</cstring>
+          </property>
+          <property name="title">
+            <string>Sync receiving and sending</string>
+          </property>
+          <grid>
             <property name="name">
-                <cstring>syncGen</cstring>
+              <cstring>unnamed</cstring>
             </property>
-            <property name="title">
-                <string>Sync receiving and sending</string>
-            </property>
-            <grid>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QListView" row="1" column="0">
-                    <property name="name">
-                        <cstring>devicesListView</cstring>
-                    </property>
-                </widget>
-                <widget class="QCheckBox" row="0" column="0">
-                    <property name="name">
-                        <cstring>extSyncCheckbox</cstring>
-                    </property>
-                    <property name="enabled">
-                        <bool>true</bool>
-                    </property>
-                    <property name="text">
-                        <string>Slave to external sync</string>
-                    </property>
-                    <property name="checked">
-                        <bool>false</bool>
-                    </property>
-                    <property name="toolTip" stdset="0">
-                        <string>Allow Muse to be controlled by external midi</string>
-                    </property>
-                    <property name="whatsThis" stdset="0">
-                        <string>When in slave mode, tempo is
- controlled externally, as well
- as the transport (play, stop etc.)
+            <widget class="QCheckBox" row="0" column="0">
+              <property name="name">
+                <cstring>useJackTransportCheckbox</cstring>
+              </property>
+              <property name="enabled">
+                <bool>true</bool>
+              </property>
+              <property name="text">
+                <string>Use Jack transport</string>
+              </property>
+              <property name="checked">
+                <bool>false</bool>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>Send and receive Jack transport</string>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Send and receive Jack transport information,
+ including stop, start and position.</string>
+              </property>
+            </widget>
+            <widget class="QCheckBox" row="1" column="0">
+              <property name="name">
+                <cstring>extSyncCheckbox</cstring>
+              </property>
+              <property name="enabled">
+                <bool>true</bool>
+              </property>
+              <property name="text">
+                <string>Slave to external sync</string>
+              </property>
+              <property name="checked">
+                <bool>false</bool>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>Control MusE timing by external midi clock or MTC sync</string>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>When in slave mode, tempo is
+ controlled externally.
+MusE can sync to midi clock, or MTC quarter frame sync. 
 Enabled inputs in the list will
  be in effect (RMC, RMMC, RMTC).</string>
-                    </property>
-                </widget>
-            </grid>
+              </property>
+            </widget>
+            <widget class="QListView" row="2" column="0">
+              <property name="name">
+                <cstring>devicesListView</cstring>
+              </property>
+            </widget>
+          </grid>
         </widget>
     </grid>
 </widget>
