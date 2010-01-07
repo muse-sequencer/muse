@@ -176,6 +176,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             //  generate Midi channel/port Strips
             //---------------------------------------------------
       
+            // Changed by Tim. p3.3.21
+            /*
             MidiTrackList* mtl = song->midis();
             int ports[MIDI_PORTS];
             memset(ports, 0, MIDI_PORTS * sizeof(int));
@@ -188,6 +190,12 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                         ports[port] |= 1 << channel;
                         }
                   }
+            */      
+            MidiTrackList* mtl = song->midis();
+            for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
+            {
+              addStrip(*i, idx++);
+            }
       
             setMaximumWidth(STRIP_WIDTH * stripList.size());
             if (stripList.size() < 8)
@@ -224,6 +232,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       //  generate Midi channel/port Strips
       //---------------------------------------------------
 
+      // Changed by Tim. p3.3.21
+      /*
       MidiTrackList* mtl = song->midis();
       int ports[MIDI_PORTS];
       memset(ports, 0, MIDI_PORTS * sizeof(int));
@@ -236,6 +246,12 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                   ports[port] |= 1 << channel;
                   }
             }
+      */      
+      MidiTrackList* mtl = song->midis();
+      for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
+      {
+        addStrip(*i, idx++);
+      }
 
       //---------------------------------------------------
       //  Groups

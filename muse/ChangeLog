@@ -1,3 +1,6 @@
+06.02.2010
+      * Fixed: Midi meters now show for each track even if they're all on same device and channel. (T356)
+        - Oversight, long overdue. The meters AND automation control needed to be 'per-track'.
 06.01.2010
       * Feature: Jack transport enable/disable in Midi Sync settings window. Stores setting per-song. (T356)
         - Should be Ok to use and test. Needs a bit more work. See jack.cpp and jackaudio.h

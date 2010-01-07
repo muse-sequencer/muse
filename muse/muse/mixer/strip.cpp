@@ -119,6 +119,8 @@ void Strip::setLabelText()
             case Track::MIDI:
             case Track::DRUM:
                   {
+                  // Changed by Tim. p3.3.21 
+                  /*
                   MidiTrack* mt = (MidiTrack*)track;
                   int port = mt->outPort();
                   int channel = mt->outChannel();
@@ -126,7 +128,9 @@ void Strip::setLabelText()
                   s.sprintf("%d-%d", port + 1, channel + 1);
                   //label->setText(s);
                   //label->setBackgroundColor(gray);
+                  */
                   label->setBackgroundColor(QColor(0, 160, 255)); // Med blue
+                  s = track->name();
                   }
                   break;
             }

@@ -37,6 +37,7 @@
 #include "icons.h"
 #include "gconfig.h"
 #include "ttoolbutton.h"
+//#include "utils.h"
 
 enum { KNOB_PAN, KNOB_VAR_SEND, KNOB_REV_SEND, KNOB_CHO_SEND };
 
@@ -273,7 +274,11 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       record  = new TransparentToolButton(this);
       record->setBackgroundMode(PaletteMid);
       record->setToggleButton(true);
-      record->setFixedWidth(STRIP_WIDTH/2);
+      
+      //record->setFixedWidth(STRIP_WIDTH/2);
+      //record->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
+      record->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+      
       QIconSet iconSet;
       iconSet.setPixmap(*record_on_Icon, QIconSet::Automatic, QIconSet::Normal, QIconSet::On);
       iconSet.setPixmap(*record_off_Icon, QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
@@ -318,9 +323,29 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       smBox2->addWidget(mute);
       smBox2->addWidget(solo);
 
-      QToolTip::add(record, tr("record"));
-      smBox1->addStretch(100);
+      // Changed by Tim. p3.3.21
+      //QToolTip::add(record, tr("record"));
+      //smBox1->addStretch(100);
+      //smBox1->addWidget(record);
+      QLabel* dev_ch_label = new QLabel(this);
+      dev_ch_label->setMinimumWidth(STRIP_WIDTH/2);
+      //dev_ch_label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
+      dev_ch_label->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
+      dev_ch_label->setAlignment(AlignCenter);
+      int port = t->outPort();
+      int channel = t->outChannel();
+      QString dcs;
+      dcs.sprintf("%d-%d", port + 1, channel + 1);
+      dev_ch_label->setText(dcs);
+      //dev_ch_label->setBackgroundColor(QColor(0, 160, 255)); // Med blue
+      //dev_ch_label->setFont(config.fonts[6]);
+      dev_ch_label->setFont(config.fonts[1]);
+      // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
+      //autoAdjustFontSize(dev_ch_label, dev_ch_label->text(), false, true, config.fonts[6].pointSize(), 5);
+      QToolTip::add(dev_ch_label, tr("output: device - channel"));
+      smBox1->addWidget(dev_ch_label);
       smBox1->addWidget(record);
+      
       layout->addLayout(smBox1);
       layout->addLayout(smBox2);
 
