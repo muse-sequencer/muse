@@ -3,6 +3,7 @@
         - Changed midievent.cpp MidiEventBase::write(). Now saves value A, B, C and sysex/meta data. Tested OK.  
       * Fixed: Midi meters now show for each track even if they're all on same device and channel. (T356)
         - Oversight, long overdue. The meters AND automation control needed to be 'per-track'.
+      * Applied: muse-destdir.patch Scripts and utils packaging fix submitted by Orcan Ogetbil. (T356)
 06.01.2010
       * Feature: Jack transport enable/disable in Midi Sync settings window. Stores setting per-song. (T356)
         - Should be Ok to use and test. Needs a bit more work. See jack.cpp and jackaudio.h
