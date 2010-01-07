@@ -85,6 +85,15 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
                   xml.nput(" type=\"%d\"", type());
                   break;
             }
+      
+      // Changed by T356. BUG: *.med does not save meta event types - ID: 2879426
+      if (a)
+            xml.nput(" a=\"%d\"", a);
+      if (b)
+            xml.nput(" b=\"%d\"", b);
+      if (c)
+            xml.nput(" c=\"%d\"", c);
+      
       if (edata.dataLen) {
             xml.nput(" datalen=\"%d\">\n", edata.dataLen);
             xml.nput(level, "");
@@ -94,12 +103,12 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
             xml.tag(level, "/event");
             }
       else {
-            if (a)
-                  xml.nput(" a=\"%d\"", a);
-            if (b)
-                  xml.nput(" b=\"%d\"", b);
-            if (c)
-                  xml.nput(" c=\"%d\"", c);
+            //if (a)
+            //      xml.nput(" a=\"%d\"", a);
+            //if (b)
+            //      xml.nput(" b=\"%d\"", b);
+            //if (c)
+            //      xml.nput(" c=\"%d\"", c);
             xml.nput(" />\n");
             }
       }

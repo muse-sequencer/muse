@@ -1,4 +1,7 @@
 06.02.2010
+      * Fixed: BUG ID: 2879426: *.med does not save meta event types. (T356)
+        - Changed midievent.cpp MidiEventBase::write(). Now saves value A, B, C and sysex/meta data. Tested OK.  
+06.02.2010
       * Fixed: Midi meters now show for each track even if they're all on same device and channel. (T356)
         - Oversight, long overdue. The meters AND automation control needed to be 'per-track'.
 06.01.2010
