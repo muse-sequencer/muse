@@ -203,6 +203,19 @@
                         </sizepolicy>
                     </property>
                 </widget>
+                <widget class="QLabel" row="1" column="2">
+                  <property name="name">
+                    <cstring>metaTypeLabel</cstring>
+                  </property>
+                  <property name="sizePolicy">
+                    <sizepolicy>
+                      <hsizetype>4</hsizetype>
+                      <vsizetype>1</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                </widget>
                 <widget class="PosEdit" row="0" column="1">
                     <property name="name">
                         <cstring>PosEdit1</cstring>

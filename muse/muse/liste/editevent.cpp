@@ -31,6 +31,8 @@
 #include "midiport.h"
 #include "midiedit/drummap.h"
 #include "instruments/minstrument.h"
+#include "midi.h"
+
 //---------------------------------------------------------
 //   string2qhex
 //---------------------------------------------------------
@@ -284,8 +286,15 @@ EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
 
       QLabel* l2 = new QLabel(tr("Meta Type"), this);
       il2 = new IntLabel(-1, 0, 127, this, -1);
+      il2->setFixedWidth(100);
       il2->setFrame(true);
       il2->setDark();
+      typeLabel = new QLabel(this);
+      typeLabel->setAlignment(AlignLeft | AlignVCenter);
+      QHBoxLayout* typeLayout = new QHBoxLayout(this);
+      typeLayout->addWidget(il2);
+      typeLayout->addWidget(typeLabel);
+      typeLayout->addStretch();
 
       hexButton = new QRadioButton(tr("Enter Hex"), this, "hextoggle");
       hexButton->setChecked(true);
@@ -305,13 +314,28 @@ EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
             il2->setValue(0);
             }
 
+      typeChanged(il2->value());
+      connect(il2, SIGNAL(valueChanged(int)), SLOT(typeChanged(int)));
+      
       layout1->addWidget(l1,  0, 0);
       layout1->addWidget(pos, 0, 1, AlignLeft);
       layout1->addWidget(l2,  1, 0);
-      layout1->addWidget(il2, 1, 1, AlignLeft);
+      
+      //layout1->addWidget(il2, 1, 1, AlignLeft);
+      layout1->addLayout(typeLayout, 1, 1);
+      
       layout1->addMultiCellWidget(hexButton, 2, 2, 0, 1);
       layout1->addMultiCellWidget(edit, 3, 3, 0, 1);
       }
+
+//---------------------------------------------------------
+//   typeChanged
+//---------------------------------------------------------
+
+void EditMetaDialog::typeChanged(int val)
+{
+  typeLabel->setText(midiMetaName(val));
+}
 
 //---------------------------------------------------------
 //   toggled

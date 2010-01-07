@@ -126,6 +126,7 @@ class EditMetaDialog : public EditEventDialog {
       QMultiLineEdit* edit;
       IntLabel* il2;
       QRadioButton* hexButton;
+      QLabel* typeLabel;
 
    protected:
       QGridLayout* layout;
@@ -133,6 +134,7 @@ class EditMetaDialog : public EditEventDialog {
    private slots:
       virtual void accept();
       void toggled(bool);
+      void typeChanged(int);
 
    public:
       EditMetaDialog(int tick, const Event&,
