@@ -1,3 +1,13 @@
+09.01.2010
+      * Removed: Disabled watchdog thread. (T356)
+        - Tested OK (normally) without it, although behaviour needs to be tested if audio or midi thread
+           would stop unexpectedly.
+      * Changed/Fixed: Thread priorites: Added command line switches for audio (-P) and midi (-Y). (T356)
+        - Audio (-P) applies to dummy driver only. (Else audio priority is fixed by Jack).   
+        - Also changed default settings so that no two threads have same priority. May fix problem reported
+           by user GB, concerning high midi latency.
+      * Added: Enable/disable LASH command line switch (-L), (if LASH support is compiled in). (T356)
+        - Helps prevent some issues like auto-starting Jack, or automatically routing midi to fluidsynth (observed).
 07.01.2010
       * Fixed: BUG ID: 2879426: *.med does not save meta event types. (T356)
         - Changed midievent.cpp MidiEventBase::write(). Now saves value A, B, C and sysex/meta data. Tested OK.  

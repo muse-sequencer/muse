@@ -44,7 +44,7 @@ class DummyAudioDevice : public AudioDevice {
       // Changed by Tim. p3.3.15
       //float buffer[1024];
       float* buffer;
-      int realTimePriority;
+      int _realTimePriority;
 
    public:
       std::list<Msg> cmdQueue;
@@ -109,7 +109,8 @@ class DummyAudioDevice : public AudioDevice {
       
       return _framePos; }
       virtual bool isRealtime() { return realtimeFlag; }
-      virtual int realtimePriority() const { return 40; }
+      //virtual int realtimePriority() const { return 40; }
+      virtual int realtimePriority() const { return _realTimePriority; }
       virtual void startTransport() {
             if(DEBUG_DUMMY)
                 printf("DummyAudioDevice::startTransport playPos=%d\n", playPos);
@@ -284,7 +285,8 @@ static void* dummyLoop(void* ptr)
       
 #ifndef __APPLE__
       doSetuid();
-      if (realTimePriority) {
+      //if (realTimePriority) {
+      if (realTimeScheduling) {
             //
             // check if we really got realtime priviledges
             //
@@ -364,10 +366,12 @@ static void* dummyLoop(void* ptr)
 //void DummyAudioDevice::start()
 void DummyAudioDevice::start(int priority)
       {
-      realTimePriority = priority;
+      //realTimePriority = priority;
+      _realTimePriority = priority;
       pthread_attr_t* attributes = 0;
 
-      if (priority) {
+      //if (priority) {
+      if (realTimeScheduling && priority > 0) {
             attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
             pthread_attr_init(attributes);
 

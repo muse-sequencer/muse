@@ -505,8 +505,9 @@ void MidiSeq::midiTick(void* p, void*)
 
 void MidiSeq::processTimerTick()
       {
-      extern int watchMidi;
-      ++watchMidi;      // make a simple watchdog happy
+      // Disabled by Tim. p3.3.22
+//      extern int watchMidi;
+//      ++watchMidi;      // make a simple watchdog happy
 
       //---------------------------------------------------
       //    read elapsed rtc timer ticks

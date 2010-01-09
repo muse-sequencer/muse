@@ -84,11 +84,13 @@ bool debugMsg = false;
 bool midiInputTrace = false;
 bool midiOutputTrace = false;
 bool realTimeScheduling = false;
-int realTimePriority = 80;
+int realTimePriority = 40;  // 80
+int midiRTPrioOverride = -1;
 bool loadPlugins = true;
 bool loadVST = true;
 bool loadDSSI = true;
 bool usePythonBridge = false;
+bool useLASH = true;
 
 const char* midi_file_pattern[] = {
       "Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)",

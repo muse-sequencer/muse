@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <getopt.h>
 #include <errno.h>
+#include <sys/mman.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -132,7 +133,7 @@ extern void initDSSI();
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
-lash_client_t * lash_client;
+lash_client_t * lash_client = 0;
 extern snd_seq_t * alsaSeq;
 #endif /* HAVE_LASH */
 
@@ -198,7 +199,7 @@ static void* watchdog(void*)
       rt_param.sched_priority = sched_get_priority_max(SCHED_FIFO);
       int rv = pthread_setschedparam(pthread_self(), SCHED_FIFO, &rt_param);
       if (rv != 0)
-            perror("3set realtime scheduler");
+            perror("Set realtime scheduler");
 
       int policy;
       if (pthread_getschedparam(pthread_self(), &policy, &rt_param)!= 0) {
@@ -338,6 +339,8 @@ bool MusE::seqStart()
       if(debugMsg)
         printf("MusE::seqStart: getting audio driver realTimePriority:%d\n", realTimePriority);
       
+      // Disabled by Tim. p3.3.22
+      /*
       if(realTimeScheduling) 
       {
             //
@@ -365,8 +368,19 @@ bool MusE::seqStart()
             pthread_attr_destroy(attributes);
             undoSetuid();
       }
+      */
+      
+      //int policy;
+      //if ((policy = sched_getscheduler (0)) < 0) {
+      //      printf("Cannot get current client scheduler: %s\n", strerror(errno));
+      //      }
+      //if (policy != SCHED_FIFO)
+      //      printf("midi thread %d _NOT_ running SCHED_FIFO\n", getpid());
+      
       
       //audioState = AUDIO_RUNNING;
+      // Changed by Tim. p3.3.22
+      /*
       //if(realTimePriority) 
       if(realTimeScheduling) 
       {
@@ -383,11 +397,69 @@ bool MusE::seqStart()
         audioPrefetch->start(0);
         //audioWriteback->start(0);
       }
-
+      */
+      int pfprio = 0;
+      int midiprio = 0;
+      if(realTimeScheduling) 
+      {
+        if(realTimePriority < 5)
+          printf("MusE: WARNING: Recommend setting audio realtime priority to at least 5!\n");
+        if(realTimePriority == 1)
+        {
+          pfprio = 2;
+          midiprio = 3;
+        }  
+        else
+        if(realTimePriority == 2)
+        {
+          pfprio = 1;
+          midiprio = 3;
+        }  
+        else
+        if(realTimePriority == 3)
+        {
+          pfprio = 1;
+          midiprio = 2;
+        }  
+        else
+        if(realTimePriority == 4)
+        {
+          pfprio = 1;
+          midiprio = 3;
+        }  
+        else
+        if(realTimePriority == 5)
+        {
+          pfprio = 1;
+          midiprio = 3;
+        }  
+        else
+        {
+          pfprio = realTimePriority - 5;
+          midiprio = realTimePriority - 2;
+        }  
+      }
+      
+      if(midiRTPrioOverride > 0)
+        midiprio = midiRTPrioOverride;
+      
+      // FIXME FIXME: The realTimePriority of the Jack thread seems to always be 5 less than the value passed to jackd command.
+      //if(midiprio == realTimePriority)
+      //  printf("MusE: WARNING: Midi realtime priority %d is the same as audio realtime priority %d. Try a different setting.\n", 
+      //         midiprio, realTimePriority);
+      //if(midiprio == pfprio)
+      //  printf("MusE: WARNING: Midi realtime priority %d is the same as audio prefetch realtime priority %d. Try a different setting.\n", 
+      //         midiprio, pfprio);
+      
+      audioPrefetch->start(pfprio);
+      
       audioPrefetch->msgSeek(0, true); // force
       
       //midiSeqRunning = !midiSeq->start(realTimeScheduling ? realTimePriority : 0);
-      midiSeq->start(realTimeScheduling ? realTimePriority : 0);
+      // Changed by Tim. p3.3.22
+      //midiSeq->start(realTimeScheduling ? realTimePriority : 0);
+      midiSeq->start(midiprio);
+      
       int counter=0;
       while (++counter) {
         if (counter > 10) {
@@ -873,6 +945,15 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       else if (realTimePriority > sched_get_priority_max(SCHED_FIFO))
             realTimePriority = sched_get_priority_max(SCHED_FIFO);
 
+      // If we requested to force the midi thread priority...
+      if(midiRTPrioOverride > 0)
+      {
+        if (midiRTPrioOverride < sched_get_priority_min(SCHED_FIFO))
+            midiRTPrioOverride = sched_get_priority_min(SCHED_FIFO);
+        else if (midiRTPrioOverride > sched_get_priority_max(SCHED_FIFO))
+            midiRTPrioOverride = sched_get_priority_max(SCHED_FIFO);
+      }
+            
       // Changed by Tim. p3.3.17
       //midiSeq       = new MidiSeq(realTimeScheduling ? realTimePriority : 0, "Midi");
       midiSeq       = new MidiSeq("Midi");
@@ -1695,7 +1776,7 @@ void MusE::closeEvent(QCloseEvent*)
       
 #ifdef HAVE_LASH
       // Disconnect gracefully from LASH.
-      if(!lash_client)
+      if(lash_client)
       {
         if(debugMsg)
           printf("Muse: Disconnecting from LASH\n");
@@ -2185,7 +2266,8 @@ class MuseApplication : public QApplication {
       void setMuse(MusE* m) {
             muse = m;
 #ifdef HAVE_LASH
-            startTimer (300);
+            if(useLASH)
+              startTimer (300);
 #endif
             }
 
@@ -2210,7 +2292,8 @@ class MuseApplication : public QApplication {
 
 #ifdef HAVE_LASH
      virtual void timerEvent (QTimerEvent * /* e */) {
-            muse->lash_idle_cb ();
+            if(useLASH)
+              muse->lash_idle_cb ();
             }
 #endif /* HAVE_LASH */
 
@@ -2233,6 +2316,8 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -s       debug mode: trace sync\n");
       fprintf(stderr, "   -a       no audio\n");
       //fprintf(stderr, "   -P  n    set real time priority to n (default: 50)\n");
+      fprintf(stderr, "   -P  n    set audio driver real time priority to n (Dummy only, default 40. Else fixed by Jack.)\n");
+      fprintf(stderr, "   -Y  n    force midi real time priority to n (default: audio driver prio -2)\n");
       fprintf(stderr, "   -p       don't load LADSPA plugins\n");
 #ifdef ENABLE_PYTHON
       fprintf(stderr, "   -y       enable Python control support\n");
@@ -2242,6 +2327,9 @@ static void usage(const char* prog, const char* txt)
 #endif
 #ifdef DSSI_SUPPORT
       fprintf(stderr, "   -I       don't load DSSI plugins\n");
+#endif
+#ifdef HAVE_LASH
+      fprintf(stderr, "   -L       don't use LASH\n");
 #endif
       fprintf(stderr, "useful environment variables:\n");
       fprintf(stderr, "   MUSE             override library and shared directories location\n");
@@ -2320,8 +2408,9 @@ int main(int argc, char* argv[])
         museUserInstruments = museUser + QString("/muse_instruments");
 
 #ifdef HAVE_LASH
-      lash_args_t * lash_args;
-      lash_args = lash_extract_args (&argc, &argv);
+      lash_args_t * lash_args = 0;
+      if(useLASH)
+        lash_args = lash_extract_args (&argc, &argv);
 #endif
 
       srand(time(0));   // initialize random number generator
@@ -2350,12 +2439,15 @@ int main(int argc, char* argv[])
             }
       int i;
       
-      QString optstr("ahvdDmMsP:py");
+      QString optstr("ahvdDmMsP:Y:py");
 #ifdef VST_SUPPORT
       optstr += QString("V");
 #endif
 #ifdef DSSI_SUPPORT
       optstr += QString("I");
+#endif
+#ifdef HAVE_LASH
+      optstr += QString("L");
 #endif
 
 //#ifdef VST_SUPPORT
@@ -2379,10 +2471,12 @@ int main(int argc, char* argv[])
                   case 'm': midiInputTrace = true; break;
                   case 'M': midiOutputTrace = true; break;
                   case 's': debugSync = true; break;
-                  //case 'P': realTimePriority = atoi(optarg); break;
+                  case 'P': realTimePriority = atoi(optarg); break;
+                  case 'Y': midiRTPrioOverride = atoi(optarg); break;
                   case 'p': loadPlugins = false; break;
                   case 'V': loadVST = false; break;
                   case 'I': loadDSSI = false; break;
+                  case 'L': useLASH = false; break;
                   case 'y': usePythonBridge = true; break;
                   case 'h': usage(argv[0], argv[1]); return -1;
                   default:  usage(argv[0], "bad argument"); return -1;
@@ -2500,18 +2594,27 @@ int main(int argc, char* argv[])
       muse = new MusE(argc, &argv[optind]);
       app.setMuse(muse);
       muse->setIcon(*museIcon);
+      // Added by Tim. p3.3.22
+      if (!debugMode) {
+            if (mlockall(MCL_CURRENT | MCL_FUTURE))
+                  perror("WARNING: Cannot lock memory:");
+            }
+      
       muse->show();
       muse->seqStart();
 
 #ifdef HAVE_LASH
       {
-        int lash_flags = LASH_Config_File;
-        const char *muse_name = PACKAGE_NAME;
-        lash_client = lash_init (lash_args, muse_name, lash_flags, LASH_PROTOCOL(2,0));
-        lash_alsa_client_id (lash_client, snd_seq_client_id (alsaSeq));
-        if (!noAudio) {
-               char *jack_name = ((JackAudioDevice*)audioDevice)->getJackName();
-               lash_jack_client_name (lash_client, jack_name);
+        if(useLASH)
+        {
+          int lash_flags = LASH_Config_File;
+          const char *muse_name = PACKAGE_NAME;
+          lash_client = lash_init (lash_args, muse_name, lash_flags, LASH_PROTOCOL(2,0));
+          lash_alsa_client_id (lash_client, snd_seq_client_id (alsaSeq));
+          if (!noAudio) {
+                char *jack_name = ((JackAudioDevice*)audioDevice)->getJackName();
+                lash_jack_client_name (lash_client, jack_name);
+          }      
         }
       }
 #endif /* HAVE_LASH */

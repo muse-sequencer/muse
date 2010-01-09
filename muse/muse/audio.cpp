@@ -281,8 +281,10 @@ void Audio::shutdown()
 
 void Audio::process(unsigned frames)
       {
-      extern int watchAudio;
-      ++watchAudio;           // make a simple watchdog happy
+      // Disabled by Tim. p3.3.22
+//      extern int watchAudio;
+//      ++watchAudio;           // make a simple watchdog happy
+      
       if (!checkAudioDevice()) return;
       if (msg) {
             processMsg(msg);

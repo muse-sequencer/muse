@@ -60,9 +60,12 @@ extern bool loadPlugins;
 extern bool loadVST;
 extern bool loadDSSI;
 extern bool usePythonBridge;
+extern bool useLASH;
 
 extern bool realTimeScheduling;
 extern int realTimePriority;
+extern int midiRTPrioOverride;
+
 extern const char* midi_file_pattern[];  //!< File name pattern for midi files
 extern const char* med_file_pattern[];   //!< File name pattern for muse project files
 extern const char* image_file_pattern[]; //!< File name pattern for image files (gfx)
