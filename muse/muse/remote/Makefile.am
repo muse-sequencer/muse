@@ -8,7 +8,7 @@ else
 AM_CXXFLAGS += -DINSTPREFIX=\"$(prefix)\"
 endif
 
-AM_CPPFLAGS += -I$(PYTHON_INCLUDE_DIR) -DENABLE_PYTHON
+AM_CPPFLAGS += -I$(PYTHON_INCLUDES) -DENABLE_PYTHON
 
 dist_libremote_a_SOURCES = \
 	pyapi.cpp pyapi.h

@@ -19,7 +19,7 @@ endif
 if ENABLE_PYTHON
 AM_CPPFLAGS += -DENABLE_PYTHON
 SUBDIRS += remote
-PYLIBS=-l$(PYTHON_LIB) remote/libremote.a
+PYLIBS=$(PYTHON_LIB) remote/libremote.a
 endif
 
 

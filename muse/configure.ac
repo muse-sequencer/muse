@@ -462,55 +462,100 @@ AM_CONDITIONAL(USE_SSE, test "$USE_SSE" = "yes")
 ##########
 # PYTHON #
 ##########
+# python detection borrowed from libvirt (http://libvirt.org)
+AC_ARG_WITH([python],
+[  --enable-python              Build python bindings (on)],[],[enable_python=yes])
 
-AC_ARG_ENABLE(python,
- [  --enable-python         enable python bindings for MusE, default=yes],[default=yes],[
-   case "$enableval" in
-     "yes")
-       enable_python="yes"
-       ;;
-     "no")
-       enable_python="no"
-       ;;
-     *)
-       AC_MSG_ERROR([must use --enable-python(=yes/no) or --disable-python])
-       ;;
-   esac
- ])
-
-if test "$enable_python" = "yes"; then
-    AX_PYTHON
-    if test -n "$PYTHON_INCLUDE_DIR" ; then
-        python_bindings="yes"
+PYTHON_VERSION=
+PYTHON_INCLUDES=
+if test "$enable_python" != "no" ; then
+    if test -x "$enable_python/bin/python"
+    then
+        AC_MSG_NOTICE(Found python in $enable_python/bin/python)
+        PYTHON="$enable_python/bin/python"
+        enable_python=yes
     else
-        python_bindings="no - devel pkg not found"
+        if test -x "$enable_python"
+        then
+            AC_MSG_NOTICE(Found python in $enable_python)
+            PYTHON="$enable_python"
+            enable_python=yes
+        else
+            if test -x "$PYTHON"
+            then
+                AC_MSG_NOTICE(Found python in environment PYTHON=$PYTHON)
+                enable_python=yes
+            fi
+        fi
+    fi
+
+    if test "$enable_python" == "yes" ; then
+        AM_PATH_PYTHON(,, [:])
+
+        if test "$PYTHON" != : ; then
+            PYTHON_CONFIG="$PYTHON-config"
+
+            if test -x "$PYTHON_CONFIG"
+            then
+                PYTHON_INCLUDES=`$PYTHON_CONFIG --includes`
+                PYTHON_LIB=`$PYTHON_CONFIG --libs`
+            else
+                if test -r $PYTHON_EXEC_PREFIX/include/python$PYTHON_VERSION/Python.h
+                then
+                    PYTHON_INCLUDES=-I$PYTHON_EXEC_PREFIX/include/python$PYTHON_VERSION
+                else
+                    if test -r $prefix/include/python$PYTHON_VERSION/Python.h
+                    then
+                        PYTHON_INCLUDES=-I$prefix/include/python$PYTHON_VERSION
+                    else
+                        if test -r /usr/include/python$PYTHON_VERSION/Python.h
+                        then
+                            PYTHON_INCLUDES=-I/usr/include/python$PYTHON_VERSION
+                        else
+                            AC_MSG_NOTICE([Could not find python$PYTHON_VERSION/Python.h, disabling bindings])
+                            enable_python=no
+                        fi
+                    fi
+                fi
+            fi
+        else
+            AC_MSG_NOTICE([Could not find python interpreter, disabling bindings])
+            enable_python=no
+        fi
+    else
+        AC_MSG_NOTICE([Could not find python in $enable_python, disabling bindings])
+        enable_python=no
     fi
 fi
-AM_CONDITIONAL(ENABLE_PYTHON, test "$python_bindings" = "yes")
+AM_CONDITIONAL(ENABLE_PYTHON, test "$enable_python" = "yes")
+AC_SUBST([PYTHON_VERSION])
+AC_SUBST([PYTHON_INCLUDES])
+AC_SUBST([PYTHON_LIB])
 
-## python_bindings="yes"
-## AC_ARG_ENABLE(python,
-##   [  --enable-python         enable python bindings for MusE, default=yes],[
-##     case "$enableval" in
-##       "yes")
-##       AX_PYTHON
-##       if test -n "$PYTHON_INCLUDE_DIR" ; then
-##             python_bindings="yes"
-##       else
-##             AC_MSG_WARN([Python headers not found! MusE will be built without Python bindings!])
-##             python_bindings="no"
-##       fi
-##         ;;
-##       "no")
-##         python_bindings="no"
-##         ;;
-##       *)
-##         AC_MSG_ERROR([must use --enable-python(=yes/no) or --disable-python])
-##         ;;
-##     esac
-##   ])
-## 
-## AM_CONDITIONAL(ENABLE_PYTHON, test "$python_bindings" = "yes")
+#AC_ARG_ENABLE(python,
+#enable_python="yes"
+# [  --disable-python         disable python bindings for MusE],[
+#   case "$enableval" in
+#     "no")
+#       enable_python="no"
+#       ;;
+#     *)
+#       AC_MSG_ERROR([must use --enable-python(=yes/no) or --disable-python])
+#       ;;
+#   esac
+# ])
+#
+#if test "$enable_python" = "yes"; then
+#    AM_PATH_PYTHON
+#    PYTHON_INCLUDE_DIR=""
+#    if test -n "$PYTHON_INCLUDES" ; then
+#        PYTHON_INCLUDE_DIR=$PYTHON_INCLUDES
+#        python_bindings="yes"
+#    else
+#        python_bindings="no - devel pkg not found"
+#    fi
+#fi
+#AM_CONDITIONAL(ENABLE_PYTHON, test "$python_bindings" = "yes")
 
 ###################
 ### vst plugins ###
@@ -690,7 +735,7 @@ AC_MSG_NOTICE([
   debug:                         $report_debug
   optimise for arch:             $report_march
   SSE optimizations              $report_sse
-  python bindings:               $python_bindings
+  python bindings:               $enable_python
 
   installation prefix:           $prefix
 
