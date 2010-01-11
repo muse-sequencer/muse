@@ -74,7 +74,7 @@
                 <cstring>textLabel1</cstring>
             </property>
             <property name="text">
-                <string>Version 1.0
+                <string>Version 1.0.1
 
 (C) Copyright 1999-2009 Werner Schweer and others.
 See http://www.muse-sequencer.org for new versions and

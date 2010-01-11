@@ -2,9 +2,9 @@ dnl --------------------------------------------------
 dnl configure.ac for the MusE
 dnl --------------------------------------------------
 
-AC_INIT(MusE, 1.0)
+AC_INIT(MusE, 1.0.1)
 AC_CONFIG_SRCDIR(muse/app.cpp)
-AM_INIT_AUTOMAKE(1.0)
+AM_INIT_AUTOMAKE(1.0.1)
 AM_CONFIG_HEADER(config.h)
 ### AM_MAINTAINER_MODE
 AM_ACLOCAL_INCLUDE(m4)
