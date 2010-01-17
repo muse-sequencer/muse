@@ -106,7 +106,7 @@ class MusE : public QMainWindow
       QPopupMenu* menu_functions, *menuScriptPlugins;
       QPopupMenu* select, *master, *midiEdit, *addTrack;
 
-      int aid1, aid2, aid3, autoId;
+      int aid1a, aid1b, aid2, aid3, autoId;
       int tr_id, bt_id, mr_id;
       int cc_id;
       QPopupMenu* follow;
@@ -127,6 +127,8 @@ class MusE : public QMainWindow
       MidiInputTransformDialog* midiInputTransform;
       ShortcutConfig* shortcutConfig;
       Appearance* appearance;
+      AudioMixerApp* mixer1;
+      AudioMixerApp* mixer2;
 
       ToplevelList toplevels;
       ClipListEdit* clipListEdit;
@@ -183,7 +185,9 @@ class MusE : public QMainWindow
       void toggleTransport();
       void toggleMarker();
       void toggleBigTime();
-      void toggleMixer();
+      //void toggleMixer();
+      void toggleMixer1();
+      void toggleMixer2();
 
       void configMidiPorts();
       void configMidiSync();
@@ -247,7 +251,9 @@ class MusE : public QMainWindow
       void takeAutomationSnapshot();
       void clearAutomation();
       void bigtimeClosed();
-      void mixerClosed();
+      //void mixerClosed();
+      void mixer1Closed();
+      void mixer2Closed();
       void markerClosed();
 
       void execDeliveredScript(int);
@@ -264,7 +270,9 @@ class MusE : public QMainWindow
       bool seqRestart();
       void loadTemplate();
       void showBigtime(bool);
-      void showMixer(bool);
+      //void showMixer(bool);
+      void showMixer1(bool);
+      void showMixer2(bool);
       void showMarker(bool);
       void importMidi(const QString &file);
       void setUsedTool(int);
@@ -282,7 +290,9 @@ class MusE : public QMainWindow
       bool seqStart();
       void setHeartBeat();
       void importController(int, MidiPort*, int);
-      QWidget* mixerWindow();
+      //QWidget* mixerWindow();
+      QWidget* mixer1Window();
+      QWidget* mixer2Window();
       QWidget* transportWindow();
       QWidget* bigtimeWindow();
       bool importWaveToTrack(QString& name, unsigned tick=0, Track* track=NULL);

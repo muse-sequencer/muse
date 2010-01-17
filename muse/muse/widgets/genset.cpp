@@ -67,7 +67,9 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent, const char* name)
 
       showTransport->setChecked(config.transportVisible);
       showBigtime->setChecked(config.bigTimeVisible);
-      showMixer->setChecked(config.mixerVisible);
+      //showMixer->setChecked(config.mixerVisible);
+      showMixer->setChecked(config.mixer1Visible);
+      showMixer2->setChecked(config.mixer2Visible);
 
       arrangerX->setValue(config.geometryMain.x());
       arrangerY->setValue(config.geometryMain.y());
@@ -82,12 +84,23 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent, const char* name)
       bigtimeW->setValue(config.geometryBigTime.width());
       bigtimeH->setValue(config.geometryBigTime.height());
 
-      mixerX->setValue(config.geometryMixer.x());
-      mixerY->setValue(config.geometryMixer.y());
-      mixerW->setValue(config.geometryMixer.width());
-      mixerH->setValue(config.geometryMixer.height());
+      //mixerX->setValue(config.geometryMixer.x());
+      //mixerY->setValue(config.geometryMixer.y());
+      //mixerW->setValue(config.geometryMixer.width());
+      //mixerH->setValue(config.geometryMixer.height());
+      mixerX->setValue(config.mixer1.geometry.x());
+      mixerY->setValue(config.mixer1.geometry.y());
+      mixerW->setValue(config.mixer1.geometry.width());
+      mixerH->setValue(config.mixer1.geometry.height());
+      mixer2X->setValue(config.mixer2.geometry.x());
+      mixer2Y->setValue(config.mixer2.geometry.y());
+      mixer2W->setValue(config.mixer2.geometry.width());
+      mixer2H->setValue(config.mixer2.geometry.height());
 
-      setMixerCurrent->setEnabled(muse->mixerWindow());
+      //setMixerCurrent->setEnabled(muse->mixerWindow());
+      setMixerCurrent->setEnabled(muse->mixer1Window());
+      setMixer2Current->setEnabled(muse->mixer2Window());
+      
       setBigtimeCurrent->setEnabled(muse->bigtimeWindow());
       setTransportCurrent->setEnabled(muse->transportWindow());
 
@@ -100,6 +113,7 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent, const char* name)
       connect(okButton, SIGNAL(clicked()), SLOT(ok()));
       connect(cancelButton, SIGNAL(clicked()), SLOT(cancel()));
       connect(setMixerCurrent, SIGNAL(clicked()), SLOT(mixerCurrent()));
+      connect(setMixer2Current, SIGNAL(clicked()), SLOT(mixer2Current()));
       connect(setBigtimeCurrent, SIGNAL(clicked()), SLOT(bigtimeCurrent()));
       connect(setArrangerCurrent, SIGNAL(clicked()), SLOT(arrangerCurrent()));
       connect(setTransportCurrent, SIGNAL(clicked()), SLOT(transportCurrent()));
@@ -131,7 +145,9 @@ void GlobalSettingsConfig::apply()
       
       config.transportVisible = showTransport->isChecked();
       config.bigTimeVisible   = showBigtime->isChecked();
-      config.mixerVisible     = showMixer->isChecked();
+      //config.mixerVisible     = showMixer->isChecked();
+      config.mixer1Visible     = showMixer->isChecked();
+      config.mixer2Visible     = showMixer2->isChecked();
 
       config.geometryMain.setX(arrangerX->value());
       config.geometryMain.setY(arrangerY->value());
@@ -148,16 +164,28 @@ void GlobalSettingsConfig::apply()
       config.geometryBigTime.setWidth(bigtimeW->value());
       config.geometryBigTime.setHeight(bigtimeH->value());
 
-      config.geometryMixer.setX(mixerX->value());
-      config.geometryMixer.setY(mixerY->value());
-      config.geometryMixer.setWidth(mixerW->value());
-      config.geometryMixer.setHeight(mixerH->value());
+      //config.geometryMixer.setX(mixerX->value());
+      //config.geometryMixer.setY(mixerY->value());
+      //config.geometryMixer.setWidth(mixerW->value());
+      //config.geometryMixer.setHeight(mixerH->value());
+      config.mixer1.geometry.setX(mixerX->value());
+      config.mixer1.geometry.setY(mixerY->value());
+      config.mixer1.geometry.setWidth(mixerW->value());
+      config.mixer1.geometry.setHeight(mixerH->value());
+      config.mixer2.geometry.setX(mixer2X->value());
+      config.mixer2.geometry.setY(mixer2Y->value());
+      config.mixer2.geometry.setWidth(mixer2W->value());
+      config.mixer2.geometry.setHeight(mixer2H->value());
 
       config.showSplashScreen = showSplash->isChecked();
       config.showDidYouKnow   = showDidYouKnow->isChecked();
       config.externalWavEditor = externalWavEditorSelect->text();
       config.useOldStyleStopShortCut = oldStyleStopCheckBox->isChecked();
-      muse->showMixer(config.mixerVisible);
+      
+      //muse->showMixer(config.mixerVisible);
+      muse->showMixer1(config.mixer1Visible);
+      muse->showMixer2(config.mixer2Visible);
+      
       muse->showBigtime(config.bigTimeVisible);
       muse->showTransport(config.transportVisible);
       QWidget* w = muse->transportWindow();
@@ -165,10 +193,20 @@ void GlobalSettingsConfig::apply()
             w->resize(config.geometryTransport.size());
             w->move(config.geometryTransport.topLeft());
             }
-      w = muse->mixerWindow();
+      //w = muse->mixerWindow();
+      //if (w) {
+      //      w->resize(config.geometryMixer.size());
+      //      w->move(config.geometryMixer.topLeft());
+      //      }
+      w = muse->mixer1Window();
       if (w) {
-            w->resize(config.geometryMixer.size());
-            w->move(config.geometryMixer.topLeft());
+            w->resize(config.mixer1.geometry.size());
+            w->move(config.mixer1.geometry.topLeft());
+            }
+      w = muse->mixer2Window();
+      if (w) {
+            w->resize(config.mixer2.geometry.size());
+            w->move(config.mixer2.geometry.topLeft());
             }
       w = muse->bigtimeWindow();
       if (w) {
@@ -208,7 +246,7 @@ void GlobalSettingsConfig::cancel()
 
 void GlobalSettingsConfig::mixerCurrent()
       {
-      QWidget* w = muse->mixerWindow();
+      QWidget* w = muse->mixer1Window();
       if (!w)
             return;
       QRect r(w->frameGeometry());
@@ -216,6 +254,22 @@ void GlobalSettingsConfig::mixerCurrent()
       mixerY->setValue(r.y());
       mixerW->setValue(r.width());
       mixerH->setValue(r.height());
+      }
+
+//---------------------------------------------------------
+//   mixer2Current
+//---------------------------------------------------------
+
+void GlobalSettingsConfig::mixer2Current()
+      {
+      QWidget* w = muse->mixer2Window();
+      if (!w)
+            return;
+      QRect r(w->frameGeometry());
+      mixer2X->setValue(r.x());
+      mixer2Y->setValue(r.y());
+      mixer2W->setValue(r.width());
+      mixer2H->setValue(r.height());
       }
 
 //---------------------------------------------------------

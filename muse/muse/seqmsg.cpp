@@ -412,7 +412,11 @@ void Audio::msgSeek(const Pos& pos)
       {
       if (!checkAudioDevice()) return;
       //audioDevice->seekTransport(pos.frame());
+            // p3.3.23
+            //printf("Audio::msgSeek before audioDevice->seekTransport frame:%d\n", pos.frame());
       audioDevice->seekTransport(pos);
+            // p3.3.23
+            //printf("Audio::msgSeek after audioDevice->seekTransport frame:%d\n", pos.frame());
       }
 
 //---------------------------------------------------------

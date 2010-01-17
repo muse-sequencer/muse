@@ -16,7 +16,7 @@
 //#include "globals.h"
 
 // Added by Tim. p3.3.20
-#define USE_SAMPLERATE
+//#define USE_SAMPLERATE
 
 //---------------------------------------------------------
 //   Event

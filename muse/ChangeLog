@@ -1,3 +1,6 @@
+17.01.2010
+      * Feature: MusE now has two mixers, with selectable track type display. (T356)
+        - Changes to .med file were needed. Tested OK so far with old and new song files.
 12.01.2010
       * Release: 1.0.1 (rj)
 10.01.2010

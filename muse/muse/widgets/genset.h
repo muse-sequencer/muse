@@ -23,6 +23,7 @@ class GlobalSettingsConfig : public GlobalSettingsDialogBase {
       void ok();
       void cancel();
       void mixerCurrent();
+      void mixer2Current();
       void bigtimeCurrent();
       void arrangerCurrent();
       void transportCurrent();

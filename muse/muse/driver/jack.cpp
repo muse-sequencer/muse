@@ -168,7 +168,13 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
       // Added by Tim. p3.3.6
       //printf("processSync valid:%d frame:%d\n", pos->valid, frame);
       
-      return audio->sync(audioState, frame);
+            // p3.3.23
+            //printf("Jack processSync() before audio->sync frame:%d\n", frame);
+      //return audio->sync(audioState, frame);
+      int rv = audio->sync(audioState, frame);
+            // p3.3.23
+            //printf("Jack processSync() after audio->sync frame:%d\n", frame);
+      return rv;      
       }
 
 //---------------------------------------------------------
@@ -603,7 +609,7 @@ void JackAudioDevice::registerClient()
       // Added by Tim. p3.3.20
       // Did not help. Seek during play: Jack keeps switching to STOP state after about 1-2 seconds timeout if sync is holding it up.
       // Nothing in MusE seems to be telling it to stop.
-      //jack_set_sync_timeout(_client, 5000000); // Change default 2 to 5 second sync timeout because prefetch may be very slow esp. with resampling !
+      jack_set_sync_timeout(_client, 5000000); // Change default 2 to 5 second sync timeout because prefetch may be very slow esp. with resampling !
       
       jack_on_shutdown(_client, processShutdown, 0);
       jack_set_buffer_size_callback(_client, bufsize_callback, 0);

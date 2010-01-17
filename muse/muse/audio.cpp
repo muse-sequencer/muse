@@ -227,6 +227,9 @@ void Audio::stop(bool)
 
 bool Audio::sync(int jackState, unsigned frame)
       {
+      
+// Changed by Tim. p3.3.24
+/*      
       // Added by Tim. p3.3.20
       if(debugMsg)
         printf("Audio::sync state %s jackState %s frame %d\n", audioStates[state], audioStates[jackState], frame);
@@ -250,6 +253,39 @@ bool Audio::sync(int jackState, unsigned frame)
       //  printf("Audio::sync done:%d state %s\n", done, audioStates[state]);
       
       return done;
+*/      
+      bool done = true;
+      if (state == LOOP1)
+            state = LOOP2;
+      else {
+            State s = State(jackState);
+            //
+            //  STOP -> START_PLAY      start rolling
+            //  STOP -> STOP            seek in stop state
+            //  PLAY -> START_PLAY  seek in play state
+
+            if (state != START_PLAY) {
+                //Pos p(frame, AL::FRAMES);
+                //    seek(p);
+                Pos p(frame, false);
+                seek(p);
+              if (!_freewheel)
+                      done = audioPrefetch->seekDone();
+                if (s == START_PLAY)
+                        state = START_PLAY;
+                }
+            else {
+                //if (frame != _seqTime.pos.frame()) {
+                if (frame != _pos.frame()) {
+                        // seek during seek
+                            //seek(Pos(frame, AL::FRAMES));
+                            seek(Pos(frame, false));
+                        }
+                done = audioPrefetch->seekDone();
+                  }
+            }
+      return done;
+      
       }
 
 //---------------------------------------------------------
@@ -719,10 +755,13 @@ void Audio::processMsg(AudioMsg* msg)
 void Audio::seek(const Pos& p)
       {
       if (_pos == p) {
-            printf("seek: already there\n");
-            return;
+            if(debugMsg)
+              printf("Audio::seek already there\n");
+            return;        
             }
       
+            // p3.3.23
+            //printf("Audio::seek frame:%d\n", p.frame());
       _pos        = p;
       if (!checkAudioDevice()) return;
       syncFrame   = audioDevice->framePos();

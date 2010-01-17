@@ -1184,12 +1184,16 @@ void Song::setPos(int idx, const Pos& val, bool sig,
 //      val.dump(0);
 //      printf("\n");
 
+            // p3.3.23
+            //printf("Song::setPos before audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
       if (pos[idx] == val)
             return;
       if (idx == CPOS) {
             _vcpos = val;
             if (isSeek && !extSyncFlag.value()) {
                   audio->msgSeek(val);
+            // p3.3.23
+            //printf("Song::setPos after audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
                   return;
                   }
             }

@@ -782,7 +782,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       midiTransformerDialog = 0;
       shortcutConfig        = 0;
       appearance            = 0;
-      audioMixer            = 0;
+      //audioMixer            = 0;
+      mixer1                = 0;
+      mixer2                = 0;
       watchdogThread        = 0;
       editInstrument        = 0;
 
@@ -1110,10 +1112,15 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
          QIconSet(*view_transport_windowIcon), tr("Transport Panel"), this, SLOT(toggleTransport()), 0);
       bt_id = menuView->insertItem(
          QIconSet(*view_bigtime_windowIcon), tr("Bigtime window"),  this, SLOT(toggleBigTime()), 0);
-      aid1  = menuView->insertItem(
-         QIconSet(*mixerSIcon), tr("Mixer"), this, SLOT(toggleMixer()), 0);
-//      aid2  = menuView->insertItem(
-//         QIconSet(*cliplistSIcon), tr("Cliplist"), this, SLOT(startClipList()), 0);
+      //aid1  = menuView->insertItem(
+      //   QIconSet(*mixerSIcon), tr("Mixer"), this, SLOT(toggleMixer()), 0);
+      aid1a  = menuView->insertItem(
+         QIconSet(*mixerSIcon), tr("Mixer A"), this, SLOT(toggleMixer1()), 0);
+      aid1b  = menuView->insertItem(
+         QIconSet(*mixerSIcon), tr("Mixer B"), this, SLOT(toggleMixer2()), 0);
+      // p3.2.24
+      aid2  = menuView->insertItem(
+         QIconSet(*cliplistSIcon), tr("Cliplist"), this, SLOT(startClipList()), 0);
       mr_id = menuView->insertItem(
          QIconSet(*view_markerIcon), tr("Marker View"),  this, SLOT(toggleMarker()), 0);
       //markerAction->addTo(menuView);
@@ -1445,8 +1452,12 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
 
 void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll)
       {
-      if (audioMixer)
-            audioMixer->clear();
+      //if (audioMixer)
+      //      audioMixer->clear();
+      if (mixer1)
+            mixer1->clear();
+      if (mixer2)
+            mixer2->clear();
       arranger->clear();      // clear track info
       if (clearSong())
             return;
@@ -1519,7 +1530,9 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
 
       if (loadAll) {
             showBigtime(config.bigTimeVisible);
-            showMixer(config.mixerVisible);
+            //showMixer(config.mixerVisible);
+            showMixer1(config.mixer1Visible);
+            showMixer2(config.mixer1Visible);
             showMarker(config.markerVisible);
             resize(config.geometryMain.size());
             move(config.geometryMain.topLeft());
@@ -2231,8 +2244,14 @@ void MusE::kbAccel(int key)
       else if (key == shortcuts[SHRT_OPEN_BIGTIME].key) {
             toggleBigTime();
             }
+      //else if (key == shortcuts[SHRT_OPEN_MIXER].key) {
+      //      toggleMixer();
+      //      }
       else if (key == shortcuts[SHRT_OPEN_MIXER].key) {
-            toggleMixer();
+            toggleMixer1();
+            }
+      else if (key == shortcuts[SHRT_OPEN_MIXER2].key) {
+            toggleMixer2();
             }
       else if (key == shortcuts[SHRT_NEXT_MARKER].key) {
             if (markerView)
@@ -3655,7 +3674,9 @@ void MusE::updateConfiguration()
 
       menuView->setAccel(shortcuts[SHRT_OPEN_TRANSPORT].key, tr_id);
       menuView->setAccel(shortcuts[SHRT_OPEN_BIGTIME].key, bt_id);
-      menuView->setAccel(shortcuts[SHRT_OPEN_MIXER].key, aid1);
+      //menuView->setAccel(shortcuts[SHRT_OPEN_MIXER].key, aid1);
+      menuView->setAccel(shortcuts[SHRT_OPEN_MIXER].key, aid1a);
+      menuView->setAccel(shortcuts[SHRT_OPEN_MIXER2].key, aid1b);
 //      menuView->setAccel(shortcuts[SHRT_OPEN_CLIPS].key, aid2);
 //      markerAction->setAccel(shortcuts[SHRT_OPEN_MARKER].key );
       menuView->setAccel(shortcuts[SHRT_OPEN_MARKER].key, mr_id );
@@ -3754,6 +3775,7 @@ void MusE::bigtimeClosed()
 //   showMixer
 //---------------------------------------------------------
 
+/*
 void MusE::showMixer(bool on)
       {
       if (on && audioMixer == 0) {
@@ -3766,26 +3788,107 @@ void MusE::showMixer(bool on)
             audioMixer->setShown(on);
       menuView->setItemChecked(aid1, on);
       }
+*/
+
+//---------------------------------------------------------
+//   showMixer1
+//---------------------------------------------------------
+
+void MusE::showMixer1(bool on)
+      {
+      if (on && mixer1 == 0) {
+            mixer1 = new AudioMixerApp(this, &(config.mixer1));
+            connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
+            mixer1->resize(config.mixer1.geometry.size());
+            mixer1->move(config.mixer1.geometry.topLeft());
+            }
+      if (mixer1)
+            mixer1->setShown(on);
+      menuView->setItemChecked(aid1a, on);
+      }
+
+//---------------------------------------------------------
+//   showMixer2
+//---------------------------------------------------------
+
+void MusE::showMixer2(bool on)
+      {
+      if (on && mixer2 == 0) {
+            mixer2 = new AudioMixerApp(this, &(config.mixer2));
+            connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
+            mixer2->resize(config.mixer2.geometry.size());
+            mixer2->move(config.mixer2.geometry.topLeft());
+            }
+      if (mixer2)
+            mixer2->setShown(on);
+      menuView->setItemChecked(aid1b, on);
+      }
 
 //---------------------------------------------------------
 //   toggleMixer
 //---------------------------------------------------------
 
+/*
 void MusE::toggleMixer()
       {
       showMixer(!menuView->isItemChecked(aid1));
+      }
+*/
+
+//---------------------------------------------------------
+//   toggleMixer1
+//---------------------------------------------------------
+
+void MusE::toggleMixer1()
+      {
+      showMixer1(!menuView->isItemChecked(aid1a));
+      }
+
+//---------------------------------------------------------
+//   toggleMixer2
+//---------------------------------------------------------
+
+void MusE::toggleMixer2()
+      {
+      showMixer2(!menuView->isItemChecked(aid1b));
       }
 
 //---------------------------------------------------------
 //   mixerClosed
 //---------------------------------------------------------
 
+/*
 void MusE::mixerClosed()
       {
       menuView->setItemChecked(aid1, false);
       }
+*/
 
-QWidget* MusE::mixerWindow()     { return audioMixer; }
+//---------------------------------------------------------
+//   mixer1Closed
+//---------------------------------------------------------
+
+void MusE::mixer1Closed()
+      {
+      //aid1a->setChecked(false);
+      menuView->setItemChecked(aid1a, false);
+      }
+
+//---------------------------------------------------------
+//   mixer2Closed
+//---------------------------------------------------------
+
+void MusE::mixer2Closed()
+      {
+      //aid1b->setChecked(false);
+      menuView->setItemChecked(aid1b, false);
+      }
+
+
+//QWidget* MusE::mixerWindow()     { return audioMixer; }
+QWidget* MusE::mixer1Window()     { return mixer1; }
+QWidget* MusE::mixer2Window()     { return mixer2; }
+
 QWidget* MusE::transportWindow() { return transport; }
 QWidget* MusE::bigtimeWindow()   { return bigtime; }
 
@@ -3795,8 +3898,12 @@ QWidget* MusE::bigtimeWindow()   { return bigtime; }
 
 void MusE::focusInEvent(QFocusEvent* ev)
       {
-      if (audioMixer)
-            audioMixer->raise();
+      //if (audioMixer)
+      //      audioMixer->raise();
+      if (mixer1)
+            mixer1->raise();
+      if (mixer2)
+            mixer2->raise();
       raise();
       QMainWindow::focusInEvent(ev);
       }

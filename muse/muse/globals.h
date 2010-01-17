@@ -115,7 +115,7 @@ extern QAction* panicAction;
 
 class AudioMixerApp;
 class MusE;
-extern AudioMixerApp* audioMixer;
+//extern AudioMixerApp* audioMixer;
 extern MusE* muse;
 
 extern int preMeasures;

@@ -455,6 +455,7 @@ static void readSeqConfiguration(Xml& xml)
 
 void readConfiguration(Xml& xml, bool readOnlySequencer)
       {
+      int mixers = 0;
       for (;;) {
             Xml::Token token = xml.parse();
             if (token == Xml::Error || token == Xml::End)
@@ -592,8 +593,15 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.transportVisible = xml.parseInt();
                         else if (tag == "markerVisible")
                               config.markerVisible = xml.parseInt();
+                        
                         else if (tag == "mixerVisible")
-                              config.mixerVisible = xml.parseInt();
+                              // config.mixerVisible = xml.parseInt();  // Obsolete
+                              xml.skip(tag);
+                        else if (tag == "mixer1Visible")
+                              config.mixer1Visible = xml.parseInt();
+                        else if (tag == "mixer2Visible")
+                              config.mixer2Visible = xml.parseInt();
+                        
                         else if (tag == "showSplashScreen")
                               config.showSplashScreen = xml.parseInt();
                         else if (tag == "canvasShowPartType")
@@ -614,8 +622,23 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.geometryPianoroll = readGeometry(xml, tag);
                         else if (tag == "geometryDrumedit")
                               config.geometryDrumedit = readGeometry(xml, tag);
+                        
                         else if (tag == "geometryMixer")
-                              config.geometryMixer = readGeometry(xml, tag);
+                              // config.geometryMixer = readGeometry(xml, tag); // Obsolete
+                              xml.skip(tag);
+                        //else if (tag == "mixer1")
+                        //      config.mixer1.read(xml);
+                        //else if (tag == "mixer2")
+                        //      config.mixer2.read(xml);
+                        else if (tag == "Mixer")
+                        {
+                              if(mixers == 0)
+                                config.mixer1.read(xml);
+                              else  
+                                config.mixer2.read(xml);
+                              ++mixers;
+                        }
+                        
                         else if (tag == "bigtimeForegroundcolor")
                               config.bigTimeForegroundColor = readColor(xml);
                         else if (tag == "bigtimeBackgroundcolor")
@@ -1075,11 +1098,18 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.qrectTag(level, "geometryBigTime",   config.geometryBigTime);
       xml.qrectTag(level, "geometryPianoroll", config.geometryPianoroll);
       xml.qrectTag(level, "geometryDrumedit",  config.geometryDrumedit);
-      xml.qrectTag(level, "geometryMixer",     config.geometryMixer);
+      //xml.qrectTag(level, "geometryMixer",     config.geometryMixer);  // Obsolete
 
       xml.intTag(level, "bigtimeVisible", config.bigTimeVisible);
       xml.intTag(level, "transportVisible", config.transportVisible);
-      xml.intTag(level, "mixerVisible", config.mixerVisible);
+      
+      //xml.intTag(level, "mixerVisible", config.mixerVisible);  // Obsolete
+      xml.intTag(level, "mixer1Visible", config.mixer1Visible);
+      xml.intTag(level, "mixer2Visible", config.mixer2Visible);
+      //config.mixer1.write(level, xml, "mixer1");
+      //config.mixer2.write(level, xml, "mixer2");
+      config.mixer1.write(level, xml);
+      config.mixer2.write(level, xml);
 
       xml.intTag(level, "showSplashScreen", config.showSplashScreen);
       xml.intTag(level, "canvasShowPartType", config.canvasShowPartType);
@@ -1175,15 +1205,24 @@ void MusE::writeConfiguration(int level, Xml& xml) const
       xml.intTag(level, "bigtimeVisible",   menuView->isItemChecked(bt_id));
       xml.intTag(level, "transportVisible", menuView->isItemChecked(tr_id));
       xml.intTag(level, "markerVisible",     menuView->isItemChecked(mr_id));
-      xml.intTag(level, "mixerVisible",     menuView->isItemChecked(aid1));
+      //xml.intTag(level, "mixerVisible",     menuView->isItemChecked(aid1));  // Obsolete
 
       xml.geometryTag(level, "geometryMain", this);
       if (transport)
             xml.geometryTag(level, "geometryTransport", transport);
       if (bigtime)
             xml.geometryTag(level, "geometryBigTime", bigtime);
-      if (audioMixer)
-            xml.geometryTag(level, "geometryMixer", audioMixer);
+      
+      //if (audioMixer)
+      //      xml.geometryTag(level, "geometryMixer", audioMixer);   // Obsolete
+      xml.intTag(level, "mixer1Visible",    menuView->isItemChecked(aid1a));
+      xml.intTag(level, "mixer2Visible",    menuView->isItemChecked(aid1b));
+      if (mixer1)
+            //mixer1->write(level, xml, "mixer1");
+            mixer1->write(level, xml);
+      if (mixer2)
+            //mixer2->write(level, xml, "mixer2");
+            mixer2->write(level, xml);
 
       arranger->writeStatus(level, xml);
       writeSeqConfiguration(level, xml, true);
@@ -1313,4 +1352,88 @@ void MusE::configGlobalSettings()
           globalSettingsConfig->show();
       }
 
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+//void MixerConfig::write(Xml& xml, const char* name)
+void MixerConfig::write(int level, Xml& xml)
+//void MixerConfig::write(int level, Xml& xml, const char* name)
+      {
+      //xml.stag(QString(name));
+      //xml.tag(level++, name.latin1());
+      xml.tag(level++, "Mixer");
+      //xml.tag(level++, name);
+      
+      xml.strTag(level, "name", name);
+      
+      //xml.tag("geometry",       geometry);
+      xml.qrectTag(level, "geometry", geometry);
+      
+      xml.intTag(level, "showMidiTracks",   showMidiTracks);
+      xml.intTag(level, "showDrumTracks",   showDrumTracks);
+      xml.intTag(level, "showInputTracks",  showInputTracks);
+      xml.intTag(level, "showOutputTracks", showOutputTracks);
+      xml.intTag(level, "showWaveTracks",   showWaveTracks);
+      xml.intTag(level, "showGroupTracks",  showGroupTracks);
+      xml.intTag(level, "showAuxTracks",    showAuxTracks);
+      xml.intTag(level, "showSyntiTracks",  showSyntiTracks);
+      
+      //xml.etag(name);
+      //xml.etag(level, name.latin1());
+      xml.etag(level, "Mixer");
+      //xml.etag(level, name);
+      }
+
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+//void MixerConfig::read(QDomNode node)
+void MixerConfig::read(Xml& xml)
+//void MixerConfig::read(Xml& xml, const QString& name)
+      {
+      for (;;) {
+            Xml::Token token(xml.parse());
+            const QString& tag(xml.s1());
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (tag == "name")
+                              name = xml.parse1();
+                        else if (tag == "geometry")
+                              geometry = readGeometry(xml, tag);
+                        else if (tag == "showMidiTracks")
+                              showMidiTracks = xml.parseInt();
+                        else if (tag == "showDrumTracks")
+                              showDrumTracks = xml.parseInt();
+                        else if (tag == "showInputTracks")
+                              showInputTracks = xml.parseInt();
+                        else if (tag == "showOutputTracks")
+                              showOutputTracks = xml.parseInt();
+                        else if (tag == "showWaveTracks")
+                              showWaveTracks = xml.parseInt();
+                        else if (tag == "showGroupTracks")
+                              showGroupTracks = xml.parseInt();
+                        else if (tag == "showAuxTracks")
+                              showAuxTracks = xml.parseInt();
+                        else if (tag == "showSyntiTracks")
+                              showSyntiTracks = xml.parseInt();
+                        else
+                              //xml.unknown(name.latin1());
+                              xml.unknown("Mixer");
+                        break;
+                  case Xml::TagEnd:
+                        //if (tag == name)
+                        if (tag == "Mixer")
+                            return;
+                  default:
+                        break;
+                  }
+            }
+      
+      }
 

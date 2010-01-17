@@ -19,10 +19,15 @@
 #include "astrip.h"
 #include "mstrip.h"
 
+#include "gconfig.h"
+#include "xml.h"
+
 extern void populateAddTrack(QPopupMenu* addTrack);
 
-typedef std::list<Strip*> StripList;
-static StripList stripList;
+#define __WIDTH_COMPENSATION 4
+
+//typedef std::list<Strip*> StripList;
+//static StripList stripList;
 
 //---------------------------------------------------------
 //   AudioMixer
@@ -30,12 +35,17 @@ static StripList stripList;
 //    inputs | synthis | tracks | groups | master
 //---------------------------------------------------------
 
-AudioMixerApp::AudioMixerApp(QWidget* parent)
+//AudioMixerApp::AudioMixerApp(QWidget* parent)
+AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
    : QMainWindow(parent, "mixer")
       {
+      cfg = c;
       oldAuxsSize = 0;
       routingDialog = 0;
-      setCaption(tr("MusE: Mixer"));
+      //setCaption(tr("MusE: Mixer"));
+      //name = cfg->name;
+      //setCaption(name);
+      setCaption(cfg->name);
 
       QPopupMenu* menuConfig = new QPopupMenu(this);
       menuBar()->insertItem(tr("&Create"), menuConfig);
@@ -45,6 +55,64 @@ AudioMixerApp::AudioMixerApp(QWidget* parent)
       menuBar()->insertItem(tr("&View"), menuView);
       routingId = menuView->insertItem(tr("Routing"), this, SLOT(toggleRouteDialog()));
 
+      menuView->insertSeparator();
+      
+      QActionGroup* actionItems = new QActionGroup(this, "actionItems", false);
+      
+      /*
+      showMidiTracksId = new QAction(tr("Show Midi Tracks"), 0, menuView);
+      showDrumTracksId = new QAction(tr("Show Drum Tracks"), 0, menuView);
+      showWaveTracksId = new QAction(tr("Show Wave Tracks"), 0, menuView);
+      */
+      showMidiTracksId = new QAction(tr("Show Midi Tracks"), 0, actionItems);
+      showDrumTracksId = new QAction(tr("Show Drum Tracks"), 0, actionItems);
+      showWaveTracksId = new QAction(tr("Show Wave Tracks"), 0, actionItems);
+      //showMidiTracksId->addTo(menuView);
+      //showDrumTracksId->addTo(menuView);
+      //showWaveTracksId->addTo(menuView);
+
+      //menuView->insertSeparator();
+      actionItems->addSeparator();
+
+      /*
+      showInputTracksId= new QAction(tr("Show Inputs"), 0, menuView);
+      showOutputTracksId = new QAction(tr("Show Outputs"), 0, menuView);
+      showGroupTracksId = new QAction(tr("Show Groups"), 0, menuView);
+      showAuxTracksId = new QAction(tr("Show Auxs"), 0, menuView);
+      showSyntiTracksId = new QAction(tr("Show Synthesizers"), 0, menuView);
+      */
+      showInputTracksId = new QAction(tr("Show Inputs"), 0, actionItems);
+      showOutputTracksId = new QAction(tr("Show Outputs"), 0, actionItems);
+      showGroupTracksId = new QAction(tr("Show Groups"), 0, actionItems);
+      showAuxTracksId = new QAction(tr("Show Auxs"), 0, actionItems);
+      showSyntiTracksId = new QAction(tr("Show Synthesizers"), 0, actionItems);
+      //showInputTracksId->addTo(menuView);
+      //showOutputTracksId->addTo(menuView);
+      //showGroupTracksId->addTo(menuView);
+      //showAuxTracksId->addTo(menuView);
+      //showSyntiTracksId->addTo(menuView);
+      
+      showMidiTracksId->setToggleAction(true);
+      showDrumTracksId->setToggleAction(true);
+      showWaveTracksId->setToggleAction(true);
+      showInputTracksId->setToggleAction(true);
+      showOutputTracksId->setToggleAction(true);
+      showGroupTracksId->setToggleAction(true);
+      showAuxTracksId->setToggleAction(true);
+      showSyntiTracksId->setToggleAction(true);
+
+      //connect(menuView, SIGNAL(triggered(QAction*)), SLOT(showTracksChanged(QAction*)));
+      //connect(actionItems, SIGNAL(selected(QAction*)), this, SLOT(showTracksChanged(QAction*)));
+      connect(showMidiTracksId, SIGNAL(toggled(bool)), SLOT(showMidiTracksChanged(bool)));
+      connect(showDrumTracksId, SIGNAL(toggled(bool)), SLOT(showDrumTracksChanged(bool)));      
+      connect(showWaveTracksId, SIGNAL(toggled(bool)), SLOT(showWaveTracksChanged(bool)));      
+      connect(showInputTracksId, SIGNAL(toggled(bool)), SLOT(showInputTracksChanged(bool)));      
+      connect(showOutputTracksId, SIGNAL(toggled(bool)), SLOT(showOutputTracksChanged(bool)));      
+      connect(showGroupTracksId, SIGNAL(toggled(bool)), SLOT(showGroupTracksChanged(bool)));      
+      connect(showAuxTracksId, SIGNAL(toggled(bool)), SLOT(showAuxTracksChanged(bool)));      
+      connect(showSyntiTracksId, SIGNAL(toggled(bool)), SLOT(showSyntiTracksChanged(bool)));      
+              
+      actionItems->addTo(menuView);
       view = new QScrollView(this);
       setCentralWidget(view);
       central = new QWidget(view);
@@ -113,6 +181,19 @@ void AudioMixerApp::clear()
 
 void AudioMixerApp::updateMixer(UpdateAction action)
       {
+      //name = cfg->name;
+      //setCaption(name);
+      setCaption(cfg->name);
+      
+      showMidiTracksId->setOn(cfg->showMidiTracks);
+      showDrumTracksId->setOn(cfg->showDrumTracks);
+      showInputTracksId->setOn(cfg->showInputTracks);
+      showOutputTracksId->setOn(cfg->showOutputTracks);
+      showWaveTracksId->setOn(cfg->showWaveTracks);
+      showGroupTracksId->setOn(cfg->showGroupTracks);
+      showAuxTracksId->setOn(cfg->showAuxTracks);
+      showSyntiTracksId->setOn(cfg->showSyntiTracks);
+
       int auxsSize = song->auxs()->size();
       if ((action == UPDATE_ALL) || (auxsSize != oldAuxsSize)) {
             clear();
@@ -137,10 +218,10 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                   delete *ssi;
                   stripList.erase(ssi);
                   }
-            setMaximumWidth(STRIP_WIDTH * stripList.size());
+            setMaximumWidth(STRIP_WIDTH * stripList.size() + __WIDTH_COMPENSATION);
             // Added by Tim. p3.3.7
             if (stripList.size() < 8)
-                  view->setMinimumWidth(stripList.size() * STRIP_WIDTH);
+                  view->setMinimumWidth(stripList.size() * STRIP_WIDTH + __WIDTH_COMPENSATION);
                   
             return;
       }
@@ -194,12 +275,14 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             MidiTrackList* mtl = song->midis();
             for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
             {
-              addStrip(*i, idx++);
+              MidiTrack* mt = *i;
+              if((mt->type() == Track::MIDI && cfg->showMidiTracks) || (mt->type() == Track::DRUM && cfg->showDrumTracks)) 
+                addStrip(*i, idx++);
             }
       
-            setMaximumWidth(STRIP_WIDTH * stripList.size());
+            setMaximumWidth(STRIP_WIDTH * stripList.size() + __WIDTH_COMPENSATION);
             if (stripList.size() < 8)
-                  view->setMinimumWidth(stripList.size() * STRIP_WIDTH);
+                  view->setMinimumWidth(stripList.size() * STRIP_WIDTH + __WIDTH_COMPENSATION);
             return;
       }
 
@@ -208,26 +291,35 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       //  generate Input Strips
       //---------------------------------------------------
 
-      InputList* itl = song->inputs();
-      for (iAudioInput i = itl->begin(); i != itl->end(); ++i)
+      if(cfg->showInputTracks)
+      {
+        InputList* itl = song->inputs();
+        for (iAudioInput i = itl->begin(); i != itl->end(); ++i)
             addStrip(*i, idx++);
-
+      }
+      
       //---------------------------------------------------
       //  Synthesizer Strips
       //---------------------------------------------------
 
-      SynthIList* sl = song->syntis();
-      for (iSynthI i = sl->begin(); i != sl->end(); ++i)
+      if(cfg->showSyntiTracks)
+      {
+        SynthIList* sl = song->syntis();
+        for (iSynthI i = sl->begin(); i != sl->end(); ++i)
             addStrip(*i, idx++);
-
+      }
+      
       //---------------------------------------------------
       //  generate Wave Track Strips
       //---------------------------------------------------
 
-      WaveTrackList* wtl = song->waves();
-      for (iWaveTrack i = wtl->begin(); i != wtl->end(); ++i)
+      if(cfg->showWaveTracks)
+      {
+        WaveTrackList* wtl = song->waves();
+        for (iWaveTrack i = wtl->begin(); i != wtl->end(); ++i)
             addStrip(*i, idx++);
-
+      }
+      
       //---------------------------------------------------
       //  generate Midi channel/port Strips
       //---------------------------------------------------
@@ -250,36 +342,47 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       MidiTrackList* mtl = song->midis();
       for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
       {
-        addStrip(*i, idx++);
+        MidiTrack* mt = *i;
+        if((mt->type() == Track::MIDI && cfg->showMidiTracks) || (mt->type() == Track::DRUM && cfg->showDrumTracks)) 
+          addStrip(*i, idx++);
       }
 
       //---------------------------------------------------
       //  Groups
       //---------------------------------------------------
 
-      GroupList* gtl = song->groups();
-      for (iAudioGroup i = gtl->begin(); i != gtl->end(); ++i)
+      if(cfg->showGroupTracks)
+      {
+        GroupList* gtl = song->groups();
+        for (iAudioGroup i = gtl->begin(); i != gtl->end(); ++i)
             addStrip(*i, idx++);
-
+      }
+      
       //---------------------------------------------------
       //  Aux
       //---------------------------------------------------
 
-      AuxList* al = song->auxs();
-      for (iAudioAux i = al->begin(); i != al->end(); ++i)
+      if(cfg->showAuxTracks)
+      {
+        AuxList* al = song->auxs();
+        for (iAudioAux i = al->begin(); i != al->end(); ++i)
             addStrip(*i, idx++);
-
+      }
+      
       //---------------------------------------------------
       //    Master
       //---------------------------------------------------
 
-      OutputList* otl = song->outputs();
-      for (iAudioOutput i = otl->begin(); i != otl->end(); ++i)
+      if(cfg->showOutputTracks)
+      {
+        OutputList* otl = song->outputs();
+        for (iAudioOutput i = otl->begin(); i != otl->end(); ++i)
             addStrip(*i, idx++);
-
-      setMaximumWidth(STRIP_WIDTH * idx);
+      }
+      
+      setMaximumWidth(STRIP_WIDTH * idx + __WIDTH_COMPENSATION);
       if (idx < 8)
-            view->setMinimumWidth(idx * STRIP_WIDTH);
+            view->setMinimumWidth(idx * STRIP_WIDTH + __WIDTH_COMPENSATION);
       }
 
 //---------------------------------------------------------
@@ -365,5 +468,114 @@ void AudioMixerApp::showRouteDialog(bool on)
 void AudioMixerApp::routingDialogClosed()
       {
       menuView->setItemChecked(routingId, false);
+      }
+
+//---------------------------------------------------------
+//   showTracksChanged
+//---------------------------------------------------------
+
+/*
+void AudioMixerApp::showTracksChanged(QAction* id)
+      {
+      bool val = id->isOn();
+      if (id == showMidiTracksId)
+            cfg->showMidiTracks = val;
+      else if (id == showDrumTracksId)
+            cfg->showDrumTracks = val;
+      else if (id == showInputTracksId)
+            cfg->showInputTracks = val;
+      else if (id == showOutputTracksId)
+            cfg->showOutputTracks = val;
+      else if (id == showWaveTracksId)
+            cfg->showWaveTracks = val;
+      else if (id == showGroupTracksId)
+            cfg->showGroupTracks = val;
+      else if (id == showAuxTracksId)
+            cfg->showAuxTracks = val;
+      else if (id == showSyntiTracksId)
+            cfg->showSyntiTracks = val;
+      updateMixer(UPDATE_ALL);
+      }
+*/
+
+void AudioMixerApp::showMidiTracksChanged(bool v)
+{
+      // p3.2.24
+      printf("AudioMixerApp::showMidiTracksChanged v:%d\n", v);
+      cfg->showMidiTracks = v;
+      updateMixer(UPDATE_ALL);
+}
+
+void AudioMixerApp::showDrumTracksChanged(bool v)
+{
+      cfg->showDrumTracks = v;
+      updateMixer(UPDATE_ALL);
+}
+
+void AudioMixerApp::showWaveTracksChanged(bool v)
+{
+      cfg->showWaveTracks = v;
+      updateMixer(UPDATE_ALL);
+}
+
+void AudioMixerApp::showInputTracksChanged(bool v)
+{
+      cfg->showInputTracks = v;
+      updateMixer(UPDATE_ALL);
+}
+
+void AudioMixerApp::showOutputTracksChanged(bool v)
+{
+      cfg->showOutputTracks = v;
+      updateMixer(UPDATE_ALL);
+}
+
+void AudioMixerApp::showGroupTracksChanged(bool v)
+{
+      cfg->showGroupTracks = v;
+      updateMixer(UPDATE_ALL);
+}
+
+void AudioMixerApp::showAuxTracksChanged(bool v)
+{
+      cfg->showAuxTracks = v;
+      updateMixer(UPDATE_ALL);
+}
+
+void AudioMixerApp::showSyntiTracksChanged(bool v)
+{
+      cfg->showSyntiTracks = v;
+      updateMixer(UPDATE_ALL);
+}
+
+//---------------------------------------------------------
+//   write
+//---------------------------------------------------------
+
+//void AudioMixerApp::write(Xml& xml, const char* name)
+void AudioMixerApp::write(int level, Xml& xml)
+//void AudioMixerApp::write(int level, Xml& xml, const char* name)
+      {
+      //xml.stag(QString(name));
+      //xml.tag(level++, name.latin1());
+      xml.tag(level++, "Mixer");
+      
+      xml.strTag(level, "name", cfg->name);
+      
+      //xml.tag("geometry",       geometry());
+      xml.qrectTag(level, "geometry", geometry());
+      
+      xml.intTag(level, "showMidiTracks",   cfg->showMidiTracks);
+      xml.intTag(level, "showDrumTracks",   cfg->showDrumTracks);
+      xml.intTag(level, "showInputTracks",  cfg->showInputTracks);
+      xml.intTag(level, "showOutputTracks", cfg->showOutputTracks);
+      xml.intTag(level, "showWaveTracks",   cfg->showWaveTracks);
+      xml.intTag(level, "showGroupTracks",  cfg->showGroupTracks);
+      xml.intTag(level, "showAuxTracks",    cfg->showAuxTracks);
+      xml.intTag(level, "showSyntiTracks",  cfg->showSyntiTracks);
+      
+      //xml.etag(name);
+      //xml.etag(level, name.latin1());
+      xml.etag(level, "Mixer");
       }
 

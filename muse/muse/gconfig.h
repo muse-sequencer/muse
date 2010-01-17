@@ -17,6 +17,32 @@
 #define NUM_PARTCOLORS 17
 #define NUM_FONTS 7
 
+class Xml;
+
+//---------------------------------------------------------
+//   MixerConfig
+//---------------------------------------------------------
+
+struct MixerConfig {
+      QString name;
+      QRect geometry;
+      bool showMidiTracks;
+      bool showDrumTracks;
+      bool showInputTracks;
+      bool showOutputTracks;
+      bool showWaveTracks;
+      bool showGroupTracks;
+      bool showAuxTracks;
+      bool showSyntiTracks;
+
+      //void write(Xml&, const char* name);
+      //void write(int level, Xml& xml, const char* name);
+      void write(int level, Xml& xml);
+      //void read(QDomNode);
+      //void read(Xml& xml, const QString& name);
+      void read(Xml& xml);
+      };
+
 //---------------------------------------------------------
 //   GlobalConfigValues
 //---------------------------------------------------------
@@ -71,10 +97,14 @@ struct GlobalConfigValues {
       QRect geometryBigTime;
       QRect geometryPianoroll;
       QRect geometryDrumedit;
-      QRect geometryMixer;
+//      QRect geometryMixer;
+      MixerConfig mixer1;
+      MixerConfig mixer2;
       bool transportVisible;
       bool bigTimeVisible;
-      bool mixerVisible;
+//      bool mixerVisible;
+      bool mixer1Visible;
+      bool mixer2Visible;
       bool markerVisible;
 
       bool showSplashScreen;

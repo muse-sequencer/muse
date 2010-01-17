@@ -157,7 +157,7 @@ QAction* punchoutAction;
 QAction* recordAction;
 QAction* panicAction;
 
-AudioMixerApp* audioMixer;
+//AudioMixerApp* audioMixer;
 MusE* muse;
 
 int preMeasures = 2;

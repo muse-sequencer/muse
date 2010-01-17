@@ -37,22 +37,38 @@ class RouteDialog;
 class QPopupMenu;
 class Strip;
 
+struct MixerConfig;
+
 #define EFX_HEIGHT     16
+
+typedef std::list<Strip*> StripList;
 
 //---------------------------------------------------------
 //   AudioMixerApp
 //---------------------------------------------------------
 
 class AudioMixerApp : public QMainWindow {
+      //QString name;
+      MixerConfig* cfg;
+      StripList stripList;
       QScrollView* view;
       QWidget* central;
       QHBoxLayout* lbox;
-      Strip* master;
+      //Strip* master;
       QHBoxLayout* layout;
       QPopupMenu* menuView;
       RouteDialog* routingDialog;
       int routingId;
       int oldAuxsSize;
+
+      QAction* showMidiTracksId;
+      QAction* showDrumTracksId;
+      QAction* showInputTracksId;
+      QAction* showOutputTracksId;
+      QAction* showWaveTracksId;
+      QAction* showGroupTracksId;
+      QAction* showAuxTracksId;
+      QAction* showSyntiTracksId;
 
       Q_OBJECT
 
@@ -74,9 +90,22 @@ class AudioMixerApp : public QMainWindow {
       void configChanged();
       void toggleRouteDialog();
       void routingDialogClosed();
+      //void showTracksChanged(QAction*);
+      void showMidiTracksChanged(bool);
+      void showDrumTracksChanged(bool);
+      void showWaveTracksChanged(bool);
+      void showInputTracksChanged(bool);
+      void showOutputTracksChanged(bool);
+      void showGroupTracksChanged(bool);
+      void showAuxTracksChanged(bool);
+      void showSyntiTracksChanged(bool);
 
    public:
-      AudioMixerApp(QWidget* parent);
+      //AudioMixerApp(QWidget* parent);
+      AudioMixerApp(QWidget* parent, MixerConfig* c);
+      //void write(Xml&, const char* name);
+      //void write(int level, Xml& xml, const char* name);
+      void write(int level, Xml& xml);
       void clear();
       };
 

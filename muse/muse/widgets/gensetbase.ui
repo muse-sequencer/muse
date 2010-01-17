@@ -141,7 +141,7 @@
                                     <string>x-pos</string>
                                 </property>
                             </widget>
-                            <widget class="QCheckBox" row="2" column="1" rowspan="2" colspan="1">
+                            <widget class="QCheckBox" row="2" column="1" colspan="1">
                                 <property name="name">
                                     <cstring>showBigtime</cstring>
                                 </property>
@@ -149,7 +149,7 @@
                                     <string>show</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="2" column="2" rowspan="2" colspan="1">
+                            <widget class="QSpinBox" row="2" column="2" colspan="1">
                                 <property name="name">
                                     <cstring>bigtimeX</cstring>
                                 </property>
@@ -160,7 +160,7 @@
                                     <string>x-pos</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="2" column="3" rowspan="2" colspan="1">
+                            <widget class="QSpinBox" row="2" column="3" colspan="1">
                                 <property name="name">
                                     <cstring>bigtimeY</cstring>
                                 </property>
@@ -171,7 +171,7 @@
                                     <string>y-pos</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="2" column="4" rowspan="2" colspan="1">
+                            <widget class="QSpinBox" row="2" column="4" colspan="1">
                                 <property name="name">
                                     <cstring>bigtimeW</cstring>
                                 </property>
@@ -182,7 +182,7 @@
                                     <string>width</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="2" column="5" rowspan="2" colspan="1">
+                            <widget class="QSpinBox" row="2" column="5" colspan="1">
                                 <property name="name">
                                     <cstring>bigtimeH</cstring>
                                 </property>
@@ -193,7 +193,7 @@
                                     <string>height</string>
                                 </property>
                             </widget>
-                            <widget class="QCheckBox" row="4" column="1">
+                            <widget class="QCheckBox" row="3" column="1">
                                 <property name="name">
                                     <cstring>showMixer</cstring>
                                 </property>
@@ -201,7 +201,15 @@
                                     <string>show</string>
                                 </property>
                             </widget>
-                            <widget class="QLabel" row="4" column="0">
+                            <widget class="QCheckBox" row="4" column="1">
+                              <property name="name">
+                                <cstring>showMixer2</cstring>
+                              </property>
+                              <property name="text">
+                                <string>show</string>
+                              </property>
+                            </widget>
+                            <widget class="QLabel" row="3" column="0">
                                 <property name="name">
                                     <cstring>textLabel4</cstring>
                                 </property>
@@ -214,10 +222,26 @@
                                     </sizepolicy>
                                 </property>
                                 <property name="text">
-                                    <string>Mixer</string>
+                                    <string>Mixer 1</string>
                                 </property>
                             </widget>
-                            <widget class="QLabel" row="3" column="0">
+                            <widget class="QLabel" row="4" column="0">
+                              <property name="name">
+                                <cstring>textLabel4_2</cstring>
+                              </property>
+                              <property name="sizePolicy">
+                                <sizepolicy>
+                                  <hsizetype>5</hsizetype>
+                                  <vsizetype>0</vsizetype>
+                                  <horstretch>0</horstretch>
+                                  <verstretch>0</verstretch>
+                                </sizepolicy>
+                              </property>
+                              <property name="text">
+                                <string>Mixer 2</string>
+                              </property>
+                            </widget>
+                            <widget class="QLabel" row="2" column="0">
                                 <property name="name">
                                     <cstring>textLabel3</cstring>
                                 </property>
@@ -265,7 +289,7 @@
                                     <string>Transport</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="4" column="5">
+                            <widget class="QSpinBox" row="3" column="5">
                                 <property name="name">
                                     <cstring>mixerH</cstring>
                                 </property>
@@ -276,7 +300,7 @@
                                     <string>height</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="4" column="4">
+                            <widget class="QSpinBox" row="3" column="4">
                                 <property name="name">
                                     <cstring>mixerW</cstring>
                                 </property>
@@ -287,7 +311,7 @@
                                     <string>width</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="4" column="3">
+                            <widget class="QSpinBox" row="3" column="3">
                                 <property name="name">
                                     <cstring>mixerY</cstring>
                                 </property>
@@ -298,7 +322,7 @@
                                     <string>y-pos</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="4" column="2">
+                            <widget class="QSpinBox" row="3" column="2">
                                 <property name="name">
                                     <cstring>mixerX</cstring>
                                 </property>
@@ -309,7 +333,7 @@
                                     <string>x-pos</string>
                                 </property>
                             </widget>
-                            <widget class="QPushButton" row="4" column="6">
+                            <widget class="QPushButton" row="3" column="6">
                                 <property name="name">
                                     <cstring>setMixerCurrent</cstring>
                                 </property>
@@ -328,7 +352,70 @@
                                     <string>set current values</string>
                                 </property>
                             </widget>
-                            <widget class="QPushButton" row="3" column="6">
+                            <widget class="QSpinBox" row="4" column="5">
+                              <property name="name">
+                                <cstring>mixer2H</cstring>
+                              </property>
+                              <property name="maxValue">
+                                <number>9999</number>
+                              </property>
+                              <property name="toolTip" stdset="0">
+                                <string>height</string>
+                              </property>
+                            </widget>
+                            <widget class="QSpinBox" row="4" column="4">
+                              <property name="name">
+                                <cstring>mixer2W</cstring>
+                              </property>
+                              <property name="maxValue">
+                                <number>9999</number>
+                              </property>
+                              <property name="toolTip" stdset="0">
+                                <string>width</string>
+                              </property>
+                            </widget>
+                            <widget class="QSpinBox" row="4" column="3">
+                              <property name="name">
+                                <cstring>mixer2Y</cstring>
+                              </property>
+                              <property name="maxValue">
+                                <number>9999</number>
+                              </property>
+                              <property name="toolTip" stdset="0">
+                                <string>y-pos</string>
+                              </property>
+                            </widget>
+                            <widget class="QSpinBox" row="4" column="2">
+                              <property name="name">
+                                <cstring>mixer2X</cstring>
+                              </property>
+                              <property name="maxValue">
+                                <number>9999</number>
+                              </property>
+                              <property name="toolTip" stdset="0">
+                                <string>x-pos</string>
+                              </property>
+                            </widget>
+                            <widget class="QPushButton" row="4" column="6">
+                              <property name="name">
+                                <cstring>setMixer2Current</cstring>
+                              </property>
+                              <property name="sizePolicy">
+                                <sizepolicy>
+                                  <hsizetype>1</hsizetype>
+                                  <vsizetype>0</vsizetype>
+                                  <horstretch>0</horstretch>
+                                  <verstretch>0</verstretch>
+                                </sizepolicy>
+                              </property>
+                              <property name="text">
+                                <string>Cur</string>
+                              </property>
+                              <property name="toolTip" stdset="0">
+                                <string>set current values</string>
+                              </property>
+                            </widget>
+                            <widget class="QPushButton" row="2" column="6">
                                 <property name="name">
                                     <cstring>setBigtimeCurrent</cstring>
                                 </property>
@@ -366,7 +453,7 @@
                                     <string>set current values</string>
                                 </property>
                             </widget>
-                            <widget class="QPushButton" row="1" column="6" rowspan="2" colspan="1">
+                            <widget class="QPushButton" row="1" column="6" colspan="1">
                                 <property name="name">
                                     <cstring>setTransportCurrent</cstring>
                                 </property>

@@ -96,10 +96,24 @@ GlobalConfigValues config = {
       QRect(0, 0, 600, 200),        // GeometryBigTime;
       QRect(0, 0, 400, 300),        // GeometryPianoroll;
       QRect(0, 0, 400, 300),        // GeometryDrumedit;
-      QRect(0, 0, 300, 500),        // GeometryMixer;
+      //QRect(0, 0, 300, 500),        // GeometryMixer;  // Obsolete
+      {
+         QString("Mixer 1"),
+         QRect(0, 0, 300, 500),        // Mixer1
+         true, true, true, true,
+         true, true, true, true
+         },
+      {
+         QString("Mixer 2"),
+         QRect(200, 200, 300, 500),    // Mixer2
+         true, true, true, true,
+         true, true, true, true
+         },
       true,                         // TransportVisible;
       false,                        // BigTimeVisible;
-      false,                        // mixerVisible;
+      false,                        // mixer1Visible;
+      false,                        // mixer2Visible;
+      
       false,                        // markerVisible;
       true,                         // showSplashScreen
       1,                            // canvasShowPartType 1 - names, 2 events
