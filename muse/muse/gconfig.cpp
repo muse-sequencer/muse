@@ -98,13 +98,13 @@ GlobalConfigValues config = {
       QRect(0, 0, 400, 300),        // GeometryDrumedit;
       //QRect(0, 0, 300, 500),        // GeometryMixer;  // Obsolete
       {
-         QString("Mixer 1"),
+         QString("Mixer A"),
          QRect(0, 0, 300, 500),        // Mixer1
          true, true, true, true,
          true, true, true, true
          },
       {
-         QString("Mixer 2"),
+         QString("Mixer B"),
          QRect(200, 200, 300, 500),    // Mixer2
          true, true, true, true,
          true, true, true, true
