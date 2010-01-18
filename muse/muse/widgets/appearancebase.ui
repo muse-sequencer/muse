@@ -245,7 +245,8 @@
                 <attribute name="title">
                     <string>Colors</string>
                 </attribute>
-                <grid>
+                <vbox>
+                  <grid>
                     <property name="name">
                         <cstring>unnamed</cstring>
                     </property>
@@ -893,6 +894,24 @@
                         </property>
                     </widget>
                 </grid>
+                <spacer>
+                  <property name="name">
+                    <cstring>botColorSpacer</cstring>
+                  </property>
+                  <property name="orientation">
+                    <enum>Vertical</enum>
+                  </property>
+                  <property name="sizeType">
+                    <enum>Expanding</enum>
+                  </property>
+                  <property name="sizeHint">
+                    <size>
+                      <width>20</width>
+                      <height>40</height>
+                    </size>
+                  </property>
+                </spacer>
+              </vbox>
             </widget>
             <widget class="QWidget">
                 <property name="name">

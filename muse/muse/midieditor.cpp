@@ -196,7 +196,7 @@ void MidiEditor::setCurDrumInstrument(int instr)
       }
 
 //---------------------------------------------------------
-//   curMidiPart
+//   curCanvasPart
 //---------------------------------------------------------
 
 Part* MidiEditor::curCanvasPart() 
@@ -217,5 +217,15 @@ WavePart* MidiEditor::curWavePart()
     return wview->part(); 
   else 
     return 0; 
+}
+
+//---------------------------------------------------------
+//   setCurCanvasPart
+//---------------------------------------------------------
+
+void MidiEditor::setCurCanvasPart(Part* part) 
+{ 
+  if(canvas) 
+    canvas->setCurrentPart(part); 
 }
 

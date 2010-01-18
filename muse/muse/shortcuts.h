@@ -169,6 +169,8 @@ enum {
       SHRT_SELECT_INVERT, //Ctrl+I
       SHRT_SELECT_ILOOP, //Default: Undefined
       SHRT_SELECT_OLOOP, //Default: Undefined
+      SHRT_SELECT_PREV_PART, // Ctrl+-
+      SHRT_SELECT_NEXT_PART, // Ctrl++
       SHRT_SEL_LEFT, //left
       SHRT_SEL_LEFT_ADD, //move left and add to selection
       SHRT_SEL_RIGHT, //Right

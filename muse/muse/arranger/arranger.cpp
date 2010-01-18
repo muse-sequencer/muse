@@ -67,14 +67,14 @@ QString TWhatsThis::text(const QPoint& pos)
       if (section == -1)
             return QString::null;
       switch(section) {
-            case COL_RECORD:   return QHeader::tr("Enable Recording"); break;
-            case COL_MUTE:     return QHeader::tr("Mute Indicator"); break;
-            case COL_SOLO:     return QHeader::tr("Solo Indicator"); break;
-            case COL_CLASS:    return QHeader::tr("Track Type"); break;
-            case COL_NAME:     return QHeader::tr("Track Name"); break;
-            case COL_OCHANNEL: return QHeader::tr("Output Channel Number"); break;
-            case COL_OPORT:    return QHeader::tr("Output Port"); break;
-            case COL_TIMELOCK: return QHeader::tr("Time Lock"); break;
+            case COL_RECORD:   return QHeader::tr("Enable recording. Click to toggle."); break;
+            case COL_MUTE:     return QHeader::tr("Mute indicator. Click to toggle."); break;
+            case COL_SOLO:     return QHeader::tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed,\n indicated by a dark square."); break;
+            case COL_CLASS:    return QHeader::tr("Track type. Right-click to change\n midi and drum track types."); break;
+            case COL_NAME:     return QHeader::tr("Track name. Double-click to edit.\nRight-click for more options."); break;
+            case COL_OCHANNEL: return QHeader::tr("Midi/drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."); break;
+            case COL_OPORT:    return QHeader::tr("Midi/drum track: Output port.\nSynth track: Assigned midi port.\nLeft-click to change.\nRight-click to show GUI."); break;
+            case COL_TIMELOCK: return QHeader::tr("Time lock"); break;
             default: break;
             }
       return QString::null;

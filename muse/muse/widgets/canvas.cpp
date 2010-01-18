@@ -1367,4 +1367,11 @@ void Canvas::canvasPopup(int n)
       emit toolChanged(n);
       }
 
-
+void Canvas::setCurrentPart(Part* part)
+{
+  curItem = NULL;
+  deselectAll();
+  curPart = part;
+  curPartId = curPart->sn();
+  curPartChanged();
+}

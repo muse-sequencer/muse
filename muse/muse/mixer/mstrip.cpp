@@ -311,7 +311,8 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
         useSoloIconSet2 = false;
       }  
       
-      QToolTip::add(solo, tr("pre fader listening"));
+      //QToolTip::add(solo, tr("pre fader listening"));
+      QToolTip::add(solo, tr("solo mode"));
       solo->setToggleButton(true);
       solo->setOn(t->solo());
       solo->setFixedWidth(STRIP_WIDTH/2);

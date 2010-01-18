@@ -77,6 +77,7 @@ class MidiEditor : public TopWin  {
       int curDrumInstrument() const  { return _curDrumInstrument; }
       Part* curCanvasPart();
       WavePart* curWavePart();
+      void setCurCanvasPart(Part*); 
       };
 
 #endif

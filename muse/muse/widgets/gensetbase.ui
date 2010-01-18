@@ -222,7 +222,7 @@
                                     </sizepolicy>
                                 </property>
                                 <property name="text">
-                                    <string>Mixer 1</string>
+                                    <string>Mixer A</string>
                                 </property>
                             </widget>
                             <widget class="QLabel" row="4" column="0">
@@ -238,7 +238,7 @@
                                 </sizepolicy>
                               </property>
                               <property name="text">
-                                <string>Mixer 2</string>
+                                <string>Mixer B</string>
                               </property>
                             </widget>
                             <widget class="QLabel" row="2" column="0">

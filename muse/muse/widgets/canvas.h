@@ -173,6 +173,7 @@ class Canvas : public View {
       int selectionSize();
       Tool tool() const { return _tool; }
       Part* part() const { return curPart; }
+      void setCurrentPart(Part*); 
       void setCanvasTools(int n) { canvasTools = n; }
       };
 #endif

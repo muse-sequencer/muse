@@ -59,12 +59,12 @@ void THeaderTip::maybeTip(const QPoint &pos)
       switch (section) {
             case COL_RECORD:   p = QHeader::tr("Enable Recording"); break;
             case COL_MUTE:     p = QHeader::tr("Mute Indicator"); break;
-            case COL_SOLO:     p = QHeader::tr("Solo/Pre Fader Listening"); break;
+            case COL_SOLO:     p = QHeader::tr("Solo Indicator"); break;
             case COL_CLASS:    p = QHeader::tr("Track Type"); break;
             case COL_NAME:     p = QHeader::tr("Track Name"); break;
-            case COL_OCHANNEL: p = QHeader::tr("Output Channel Number"); break;
+            case COL_OCHANNEL: p = QHeader::tr("Midi output channel number or audio channels"); break;
             //case COL_OPORT:    p = QHeader::tr("Output Port"); break;
-            case COL_OPORT:    p = QHeader::tr("Output midi port, or synth midi port"); break;
+            case COL_OPORT:    p = QHeader::tr("Midi output port or synth midi port"); break;
             case COL_TIMELOCK: p = QHeader::tr("Time Lock"); break;
             default: return;
             }

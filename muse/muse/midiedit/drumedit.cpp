@@ -181,6 +181,12 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       menuSelect->insertSeparator();
       menuSelect->insertItem(tr("Inside Loop"),  DrumCanvas::CMD_SELECT_ILOOP);
       menuSelect->insertItem(tr("Outside Loop"), DrumCanvas::CMD_SELECT_OLOOP);
+      
+      menuSelect->insertSeparator();
+
+      menuSelect->insertItem(tr("Previous Part"), DrumCanvas::CMD_SELECT_PREV_PART);
+      menuSelect->insertItem(tr("Next Part"), DrumCanvas::CMD_SELECT_NEXT_PART);
+      
       menuEdit->insertItem(tr("&Select"), menuSelect);
 
       QPopupMenu* menuScriptPlugins = new QPopupMenu(this);
@@ -240,7 +246,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw, "Ctrl");
       ctrl->setFont(config.fonts[3]);
       hscroll           = new ScrollScale(-25, -2, xscale, 20000, Horizontal, mainw);
-      ctrl->setFixedSize(50, hscroll->sizeHint().height());
+      ctrl->setFixedSize(40, hscroll->sizeHint().height());
       QToolTip::add(ctrl, tr("Add Controller View"));
 
       QSizeGrip* corner = new QSizeGrip(mainw);
@@ -1106,6 +1112,9 @@ void DrumEdit::initShortcuts()
       menuSelect->setAccel(shortcuts[SHRT_SELECT_INVERT].key, DrumCanvas::CMD_SELECT_INVERT);
       menuSelect->setAccel(shortcuts[SHRT_SELECT_ILOOP].key,  DrumCanvas::CMD_SELECT_ILOOP);
       menuSelect->setAccel(shortcuts[SHRT_SELECT_OLOOP].key,  DrumCanvas::CMD_SELECT_OLOOP);
+      
+      menuSelect->setAccel(shortcuts[SHRT_SELECT_PREV_PART].key, DrumCanvas::CMD_SELECT_PREV_PART);
+      menuSelect->setAccel(shortcuts[SHRT_SELECT_NEXT_PART].key, DrumCanvas::CMD_SELECT_NEXT_PART);
       }
 
 //---------------------------------------------------------

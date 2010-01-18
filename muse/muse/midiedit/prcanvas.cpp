@@ -963,6 +963,42 @@ void PianoCanvas::cmd(int cmd, int quantStrength,
                               selectItem(k->second, false);
                         }
                   break;
+            case CMD_SELECT_PREV_PART:     // select previous part
+                  {
+                    Part* pt = editor->curCanvasPart();
+                    Part* newpt = pt;
+                    PartList* pl = editor->parts();
+                    for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
+                      if(ip->second == pt) 
+                      {
+                        if(ip == pl->begin())
+                          ip = pl->end();
+                        --ip;
+                        newpt = ip->second;
+                        break;    
+                      }
+                    if(newpt != pt)
+                      editor->setCurCanvasPart(newpt);
+                  }
+                  break;
+            case CMD_SELECT_NEXT_PART:     // select next part
+                  {
+                    Part* pt = editor->curCanvasPart();
+                    Part* newpt = pt;
+                    PartList* pl = editor->parts();
+                    for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
+                      if(ip->second == pt) 
+                      {
+                        ++ip;
+                        if(ip == pl->end())
+                          ip = pl->begin();
+                        newpt = ip->second;
+                        break;    
+                      }
+                    if(newpt != pt)
+                      editor->setCurCanvasPart(newpt);
+                  }
+                  break;
             case CMD_MODIFY_GATE_TIME:
                   {
                   GateTime w(this);

@@ -75,8 +75,8 @@ class DrumCanvas : public EventCanvas {
       enum {
          CMD_CUT, CMD_COPY, CMD_PASTE, CMD_SAVE, CMD_LOAD, CMD_RESET,
          CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
-         CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_DEL,
-         CMD_FIXED_LEN, CMD_RIGHT, CMD_LEFT, CMD_MODIFY_VELOCITY
+         CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PREV_PART, CMD_SELECT_NEXT_PART, 
+         CMD_DEL, CMD_FIXED_LEN, CMD_RIGHT, CMD_LEFT, CMD_MODIFY_VELOCITY
          };
       DrumCanvas(MidiEditor*, QWidget*, int, int,
          const char* name = 0);

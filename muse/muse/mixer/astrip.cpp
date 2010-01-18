@@ -874,10 +874,12 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
       if (type == Track::AUDIO_OUTPUT) {
             QToolTip::add(record, tr("record downmix"));
-            QToolTip::add(solo, tr("solo mode (monitor)"));
+            //QToolTip::add(solo, tr("solo mode (monitor)"));
+            QToolTip::add(solo, tr("solo mode"));
             }
       else {
-            QToolTip::add(solo, tr("pre fader listening"));
+            //QToolTip::add(solo, tr("pre fader listening"));
+            QToolTip::add(solo, tr("solo mode"));
             }
 
       off  = new TransparentToolButton(this);

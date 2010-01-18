@@ -107,7 +107,12 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       menuSelect->insertItem(tr("Inside Loop"),  PianoCanvas::CMD_SELECT_ILOOP);
 
       menuSelect->insertItem(tr("Outside Loop"), PianoCanvas::CMD_SELECT_OLOOP);
+      
+      menuSelect->insertSeparator();
 
+      menuSelect->insertItem(tr("Previous Part"), PianoCanvas::CMD_SELECT_PREV_PART);
+      menuSelect->insertItem(tr("Next Part"), PianoCanvas::CMD_SELECT_NEXT_PART);
+      
       menuEdit->insertItem(tr("&Select"), menuSelect);
 
       eventColor = new QPopupMenu(this);
@@ -206,6 +211,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       splitter = new Splitter(Vertical, mainw, "splitter");
       QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw, "Ctrl");
+      ctrl->setFont(config.fonts[3]);
       QToolTip::add(ctrl, tr("Add Controller View"));
       hscroll = new ScrollScale(-25, -2, xscale, 20000, Horizontal, mainw);
       ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
@@ -1047,6 +1053,9 @@ void PianoRoll::initShortcuts()
       menuSelect->setAccel(shortcuts[SHRT_SELECT_INVERT].key, PianoCanvas::CMD_SELECT_INVERT);
       menuSelect->setAccel(shortcuts[SHRT_SELECT_ILOOP].key, PianoCanvas::CMD_SELECT_ILOOP);
       menuSelect->setAccel(shortcuts[SHRT_SELECT_OLOOP].key, PianoCanvas::CMD_SELECT_OLOOP);
+      
+      menuSelect->setAccel(shortcuts[SHRT_SELECT_PREV_PART].key, PianoCanvas::CMD_SELECT_PREV_PART);
+      menuSelect->setAccel(shortcuts[SHRT_SELECT_NEXT_PART].key, PianoCanvas::CMD_SELECT_NEXT_PART);
 
       menuConfig->setAccel(shortcuts[SHRT_EVENT_COLOR].key, menu_ids[CMD_EVENT_COLOR]);
 

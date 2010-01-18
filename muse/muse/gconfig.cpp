@@ -64,7 +64,7 @@ GlobalConfigValues config = {
       QColor(0x80, 0xff, 0x80),     // selected track Bg;
       QColor(0x00, 0x00, 0x00),     // selected track Fg;
       QColor(220, 220, 220),     // midiTrackBg;
-      QColor(0x00, 0x00, 0xff),     // ctrlGraphFg;
+      QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
       QColor(220, 220, 220),     // drumTrackBg;
       QColor(220, 220, 220),     // waveTrackBg;
       QColor(189, 220, 193),     // outputTrackBg;
