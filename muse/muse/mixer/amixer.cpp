@@ -500,8 +500,6 @@ void AudioMixerApp::showTracksChanged(QAction* id)
 
 void AudioMixerApp::showMidiTracksChanged(bool v)
 {
-      // p3.2.24
-      printf("AudioMixerApp::showMidiTracksChanged v:%d\n", v);
       cfg->showMidiTracks = v;
       updateMixer(UPDATE_ALL);
 }

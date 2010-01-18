@@ -15,6 +15,7 @@
 #include <qmainwindow.h>
 #include <qstring.h>
 #include <qwidget.h>
+#include <qwidgetfactory.h>
 #include <qdialog.h>
 #include <qfileinfo.h>
 #include <qcombobox.h>
@@ -33,6 +34,16 @@ class QToolButton;
 class DoubleLabel;
 class AudioTrack;
 class MidiController;
+
+//---------------------------------------------------------
+//   PluginWidgetFactory
+//---------------------------------------------------------
+
+class PluginWidgetFactory : public QWidgetFactory
+{
+  public:
+    virtual QWidget* createWidget(const QString& className, QWidget* parent, const char* name) const; 
+};
 
 //---------------------------------------------------------
 //   Plugin

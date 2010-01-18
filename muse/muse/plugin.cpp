@@ -24,7 +24,7 @@
 #include <qwhatsthis.h>
 #include <qcheckbox.h>
 #include <qtooltip.h>
-#include <qwidgetfactory.h>
+//#include <qwidgetfactory.h>
 #include <qfile.h>
 #include <qobjectlist.h>
 #include <qcombobox.h>
@@ -2051,6 +2051,7 @@ PluginGui::PluginGui(PluginI* p)
                   if (LADSPA_IS_HINT_TOGGLED(range.HintDescriptor)) {
                         params[i].type = GuiParam::GUI_SWITCH;
                         CheckBox* cb = new CheckBox(mw, i, "param");
+                        cb->setId(i);
                         cb->setText(QString(plugin->paramName(i)));
                         cb->setChecked(plugin->param(i) != 0.0);
                         cb->setFixedHeight(h);
@@ -2872,3 +2873,17 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
   if(id != -1)
     song->execAutomationCtlPopup((AudioTrack*)plugin->track(), p, genACnum(id, param));
 }
+
+//---------------------------------------------------------
+//   PluginWidgetFactory
+//---------------------------------------------------------
+
+QWidget* PluginWidgetFactory::createWidget(const QString& className, QWidget* parent, const char* name) const
+{
+  if(className == "DoubleLabel")
+    return new DoubleLabel(parent, name); 
+  if(className == "Slider")
+    return new Slider(parent, name); 
+  return 0;  
+};
+

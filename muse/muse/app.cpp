@@ -764,6 +764,9 @@ void populateAddTrack(QPopupMenu* addTrack)
 
 MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       {
+      // By T356. For LADSPA plugins in plugin.cpp
+      QWidgetFactory::addWidgetFactory( new PluginWidgetFactory );
+      
       setFocusPolicy(WheelFocus);
       muse                  = this;    // hack
       clipListEdit          = 0;
