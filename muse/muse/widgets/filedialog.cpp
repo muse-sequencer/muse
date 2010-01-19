@@ -304,6 +304,53 @@ QString getSaveFileName(const QString &startWith,
       if (dlg->exec() == QDialog::Accepted) {
             result = dlg->selectedFile();
             }
+      
+      // Added by T356.
+      QString filt = dlg->selectedFilter();
+      int p2 = filt.findRev(')');
+      if(p2 != -1)
+      {
+        int p1 = filt.findRev('*', p2);
+        if(p1 != -1)
+        {
+          filt = filt.mid(p1 + 1, p2 - p1 - 1);
+          // Do we have a valid extension?
+          if(!filt.isEmpty())
+          {
+            // If the rightmost characters of the filename do not already contain
+            //  the extension, add the extension to the filename.
+            if(result.right(filt.length()) != filt)
+              result += filt;
+          }
+          else
+          {
+            // Works, but no, we want to allow saving as any name without an extension...
+            /*
+            // Force the filter list to the first one (the preferred one), and then get the filter.
+            dlg->setSelectedFilter(0);
+            filt = dlg->selectedFilter();
+            p2 = filt.findRev(')');
+            if(p2 != -1)
+            {
+              p1 = filt.findRev('*', p2);
+              if(p1 != -1)
+              {
+                filt = filt.mid(p1 + 1, p2 - p1 - 1);
+                // Do we have a valid extension?
+                if(!filt.isEmpty())
+                {
+                  // If the rightmost characters of the filename do not already contain
+                  //  the extension, add the extension to the filename.
+                  if(result.right(filt.length()) != filt)
+                    result += filt;
+                }
+              }
+            }
+            */
+          }
+        }
+      }
+      
       delete dlg;
       return result;
       }

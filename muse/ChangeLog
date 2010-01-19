@@ -1,3 +1,10 @@
+19.01.2010
+      * Fixed: Saving/loading compressed .gz/.bz2 MusE .med files, + loading compressed .mid/.kar files (save broken, off for now). (T356)
+        - Changed filedialog.cpp:getSaveFileName() and MusE::loadProjectFile1.
+        - Added seperate save file dialog filters in globals.cpp.
+        - Disabled exporting of compressed midi/karaoke files (.mid/.kar) for now because
+           a compressed file is opened as a pipe, and pipes can't seek, resulting in a 
+           corrupted midi file in MidiFile::writeTrack(). 
 18.01.2010
       * Added: Piano roll and drum editor edit menus: "Select prev/next part". With default hotkeys Alt+Left/Right. (T356) 
         - This is an easy way to switch parts when multiple part editing in one window (via Ctrl-E or Ctrl-D).

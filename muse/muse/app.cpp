@@ -1479,11 +1479,18 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             museProject = fi.dirPath(true);
             project.setFile(name);
             }
-      QString ex = fi.extension(false).lower();
-      if (ex.length() == 3)
-            ex += ".";
-      ex = ex.left(4);
-      if (ex.isEmpty() || ex == "med.") {
+      // Changed by T356. 01/19/2010. We want the complete extension here. 
+      //QString ex = fi.extension(false).lower();
+      //if (ex.length() == 3)
+      //      ex += ".";
+      //ex = ex.left(4);
+      QString ex = fi.extension(true).lower();
+      QString mex = ex.section('.', -1, -1);  
+      if((mex == "gz") || (mex == "bz2"))
+        mex = ex.section('.', -2, -2);  
+        
+      //if (ex.isEmpty() || ex == "med.") {
+      if (ex.isEmpty() || mex == "med") {
             //
             //  read *.med file
             //
@@ -1510,14 +1517,15 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                         }
                   }
             }
-      else if (ex == "mid." || ex == "kar.") {
+      //else if (ex == "mid." || ex == "kar.") {
+      else if (mex == "mid." || mex == "kar.") {
             setConfigDefaults();
             if (!importMidi(name, false))
                   setUntitledProject();
             }
       else {
             QMessageBox::critical(this, QString("MusE"),
-               tr("Unknown File Format"));
+               tr("Unknown File Format: ") + ex);
             setUntitledProject();
             }
       if (!songTemplate) {
@@ -1872,7 +1880,8 @@ void MusE::showTransport(bool flag)
 bool MusE::saveAs()
       {
 //      QString name = getSaveFileName(museProject, med_file_pattern, this,
-      QString name = getSaveFileName(QString(""), med_file_pattern, this,
+//      QString name = getSaveFileName(QString(""), med_file_pattern, this,
+      QString name = getSaveFileName(QString(""), med_file_save_pattern, this,
          tr("MusE: Save As"));
       bool ok = false;
       if (!name.isEmpty()) {

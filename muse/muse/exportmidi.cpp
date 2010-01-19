@@ -112,7 +112,8 @@ void MusE::exportMidi()
       {
       MFile file(QString("midis"), QString(".mid"));
 
-      FILE* fp = file.open("w", midi_file_pattern, this, false, true,
+      //FILE* fp = file.open("w", midi_file_pattern, this, false, true,
+      FILE* fp = file.open("w", midi_file_save_pattern, this, false, true,
          tr("MusE: Export Midi"));
       if (fp == 0)
             return;

@@ -99,8 +99,43 @@ const char* midi_file_pattern[] = {
       "All Files (*)",
       0
       };
+
+//FIXME: By T356 01/19/2010
+// If saving as a compressed file (gz or bz2),
+//  the file is a pipe, and pipes can't seek !
+// This results in a corrupted midi file from MidiFile::writeTrack(). 
+// So exporting compressed midi has simply been disabled here for now...
+/*
+const char* midi_file_save_pattern[] = {
+      "Midi (*.mid)",
+      "gzip compressed Midi (*.mid.gz)",
+      "bzip2 compressed Midi (*.mid.bz2)",
+      "Karaoke (*.kar)",
+      "gzip compressed karaoke (*.kar.gz)",
+      "bzip2 compressed karaoke (*.kar.bz2)",
+      "All Files (*)",
+      0
+      };
+*/
+const char* midi_file_save_pattern[] = {
+      "Midi (*.mid)",
+      "Karaoke (*.kar)",
+      "All Files (*)",
+      0
+      };
+
 const char* med_file_pattern[] = {
       "med Files (*.med *.med.gz *.med.bz2)",
+      "gzip compressed med Files (*.med.gz)",
+      "bzip2 compressed med Files (*.med.bz2)",
+      "Uncompressed med Files (*.med)",
+      "All Files (*)",
+      0
+      };
+const char* med_file_save_pattern[] = {
+      "med Files (*.med)",
+      "gzip compressed med Files (*.med.gz)",
+      "bzip2 compressed med Files (*.med.bz2)",
       "All Files (*)",
       0
       };
@@ -113,11 +148,14 @@ const char* image_file_pattern[] = {
       0
       };
 
+// Not used.
+/*
 const char* ctrl_file_pattern[] = {
       "ctrl Files (*.ctrl *.ctrl.gz *.ctrl.bz2)",
       "All Files (*)",
       0
       };
+*/
 
 const char* part_file_pattern[] = {
       "part Files (*.mpt)",

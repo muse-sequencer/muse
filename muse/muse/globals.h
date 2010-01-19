@@ -67,7 +67,9 @@ extern int realTimePriority;
 extern int midiRTPrioOverride;
 
 extern const char* midi_file_pattern[];  //!< File name pattern for midi files
+extern const char* midi_file_save_pattern[];  //!< File name pattern for saving midi files
 extern const char* med_file_pattern[];   //!< File name pattern for muse project files
+extern const char* med_file_save_pattern[];   //!< File name pattern for saving muse project files
 extern const char* image_file_pattern[]; //!< File name pattern for image files (gfx)
 extern const char* ctrl_file_pattern[];  //!< File name pattern for controller-files
 extern const char* part_file_pattern[];  //!< File name pattern for part files

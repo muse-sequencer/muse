@@ -500,6 +500,13 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
 
 bool MidiFile::writeTrack(const MidiFileTrack* t)
       {
+      //FIXME: By T356 01/19/2010
+      // If saving as a compressed file (gz or bz2),
+      //  the file is a pipe, and pipes can't seek !
+      // This results in a corrupted midi file. 
+      // So exporting compressed midi has been disabled (elsewhere)
+      //  for now...
+      
       const MPEventList* events = &(t->events);
       write("MTrk", 4);
       int lenpos = ftell(fp);
