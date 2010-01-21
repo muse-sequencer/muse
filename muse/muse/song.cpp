@@ -13,6 +13,7 @@
 #include <qmessagebox.h>
 #include <qpopupmenu.h>
 #include <qdir.h>
+#include <qaction.h>
 
 #include "app.h"
 #include "song.h"

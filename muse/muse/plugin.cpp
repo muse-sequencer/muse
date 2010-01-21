@@ -53,11 +53,21 @@
 
 PluginList plugins;
 
+/*
 static const char* preset_file_pattern[] = {
-      QT_TR_NOOP("presets (*.pre *.pre.gz *.pre.bz2)"),
+      QT_TR_NOOP("Presets (*.pre *.pre.gz *.pre.bz2)"),
       QT_TR_NOOP("All Files (*)"),
       0
       };
+
+static const char* preset_file_save_pattern[] = {
+      QT_TR_NOOP("Presets (*.pre)"),
+      QT_TR_NOOP("gzip compressed presets (*.pre.gz)"),
+      QT_TR_NOOP("bzip2 compressed presets (*.pre.bz2)"),
+      QT_TR_NOOP("All Files (*)"),
+      0
+      };
+*/
 
 int PluginDialog::selectedPlugType = 0;
 QStringList PluginDialog::sortItems = QStringList();
@@ -2383,7 +2393,8 @@ void PluginGui::save()
       s += plugin->plugin()->label();
       s += "/";
 
-      QString fn = getSaveFileName(s, preset_file_pattern, this,
+      //QString fn = getSaveFileName(s, preset_file_pattern, this,
+      QString fn = getSaveFileName(s, preset_file_save_pattern, this,
         tr("MusE: save preset"));
       if (fn.isEmpty())
             return;

@@ -665,6 +665,9 @@ void MidiSeq::processTimerTick()
             // printf("Midi Time Code Sync generation not impl.\n");
 //            }
 
+      // P3.3.25
+      int tickpos = audio->tickPos();
+      bool extsync = extSyncFlag.value();
       //
       // play all events upto curFrame
       //
@@ -679,7 +682,11 @@ void MidiSeq::processTimerTick()
                   continue;
             iMPEvent i = md->nextPlayEvent();
             for (; i != el->end(); ++i) {
-                  if (i->time() > curFrame) {
+                  // P3.3.25
+                  // If syncing to external midi sync, we cannot use the tempo map.
+                  // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames.
+                  //if (i->time() > curFrame) {
+                  if (i->time() > (extsync ? tickpos : curFrame)) {
                         //printf("  curT %d  frame %d\n", i->time(), curFrame);
                         break; // skip this event
                         }

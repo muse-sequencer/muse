@@ -22,6 +22,7 @@
 #include <qapplication.h>
 #include <qclipboard.h>
 #include <qmessagebox.h>
+#include <qaction.h>
 
 #include "drumedit.h"
 #include "mtscale.h"
@@ -43,11 +44,21 @@
 #include "audio.h"
 #include "gconfig.h"
 
+/*
 static const char* map_file_pattern[] = {
-      "presets (*.map *.map.gz *.map.bz2)",
+      "Presets (*.map *.map.gz *.map.bz2)",
       "All Files (*)",
       0
       };
+static const char* map_file_save_pattern[] = {
+      "Presets (*.map)",
+      "gzip compressed presets (*.map.gz)",
+      "bzip2 compressed presets (*.map.bz2)",
+      "All Files (*)",
+      0
+      };
+*/      
+
 int DrumEdit::_quantInit = 96;
 int DrumEdit::_rasterInit = 96;
 int DrumEdit::_widthInit = 600;
@@ -696,7 +707,8 @@ void DrumEdit::writeConfiguration(int level, Xml& xml)
 
 void DrumEdit::load()
       {
-      QString fn = getOpenFileName("drummaps", map_file_pattern,
+      //QString fn = getOpenFileName("drummaps", map_file_pattern,
+      QString fn = getOpenFileName("drummaps", drum_map_file_pattern,
          this, tr("Muse: Load Drum Map"), 0);
       if (fn.isEmpty())
             return;
@@ -748,7 +760,8 @@ ende:
 
 void DrumEdit::save()
       {
-      QString fn = getSaveFileName(QString("drummaps"), map_file_pattern,
+      //QString fn = getSaveFileName(QString("drummaps"), map_file_pattern,
+      QString fn = getSaveFileName(QString("drummaps"), drum_map_file_save_pattern,
         this, tr("MusE: Store Drum Map"));
       if (fn.isEmpty())
             return;

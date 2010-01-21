@@ -11,6 +11,7 @@
 
 #include <qapplication.h>
 #include <qmenubar.h>
+#include <qaction.h>
 
 #include "app.h"
 #include "amixer.h"

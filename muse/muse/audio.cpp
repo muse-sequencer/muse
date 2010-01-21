@@ -35,6 +35,10 @@ extern double curTime();
 Audio* audio;
 AudioDevice* audioDevice;   // current audio device in use
 
+// p3.3.25
+extern unsigned int midiExtSyncTicks;
+
+
 static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
 static const unsigned char mmcStopMsg[] =         { 0x7f, 0x7f, 0x06, 0x01 };
 
@@ -464,10 +468,23 @@ void Audio::process(unsigned frames)
 // printf("  process: seek to %d, end %d\n", _loopFrame, loop.frame());
                         }
                   }
-            Pos ppp(_pos);
-            ppp += frames;
-            nextTickPos = ppp.tick();
+            
+            
+            // P3.3.25
+            if(extSyncFlag.value())
+            {
+              nextTickPos = curTickPos + midiExtSyncTicks;
+              // Probably not good - interfere with midi thread.
+              midiExtSyncTicks = 0;
             }
+            else
+            {
+              
+              Pos ppp(_pos);
+              ppp += frames;
+              nextTickPos = ppp.tick();
+            }
+          }
       //
       // resync with audio interface
       //

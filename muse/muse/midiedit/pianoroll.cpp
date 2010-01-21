@@ -19,6 +19,7 @@
 #include <qapplication.h>
 #include <qclipboard.h>
 #include <qdir.h>
+#include <qaction.h>
 
 #include <stdio.h>
 

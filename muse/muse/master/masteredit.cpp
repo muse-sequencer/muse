@@ -39,6 +39,7 @@
 #include <qheader.h>
 #include <qpopupmenu.h>
 #include <qmenubar.h>
+#include <qaction.h>
 
 int MasterEdit::_rasterInit = 0;
 

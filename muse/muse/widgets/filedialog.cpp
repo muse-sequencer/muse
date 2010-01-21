@@ -263,11 +263,39 @@ void ContentsPreview::previewUrl(const QUrl& url)
       }
 
 //---------------------------------------------------------
+//   getFilterExtension
+//---------------------------------------------------------
+
+QString getFilterExtension(const QString &filter)
+{
+  //
+  // Return the first extension found. Must contain at least one * character.
+  //
+  
+  int pos = filter.find('*');
+  if(pos == -1)
+    return QString(); 
+  
+  QString filt;
+  int len = filter.length();
+  ++pos;
+  for( ; pos < len; ++pos)
+  {
+    QChar c = filter[pos];
+    if((c == ')') || (c == ';') || (c == ',') || (c == ' '))
+      break; 
+    filt += filter[pos];
+  }
+  return filt;
+}
+
+//---------------------------------------------------------
 //   getOpenFileName
 //---------------------------------------------------------
 
 QString getOpenFileName(const QString &startWith,
-   const char** filters, QWidget* parent, const QString& name, bool* all)
+   //const char** filters, QWidget* parent, const QString& name, bool* all)
+   const QStringList& filters, QWidget* parent, const QString& name, bool* all)
       {
       QString initialSelection;
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, false);
@@ -294,7 +322,8 @@ QString getOpenFileName(const QString &startWith,
 //---------------------------------------------------------
 
 QString getSaveFileName(const QString &startWith,
-   const char** filters, QWidget* parent, const QString& name)
+   //const char** filters, QWidget* parent, const QString& name)
+   const QStringList& filters, QWidget* parent, const QString& name)
       {
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, true);
       dlg->setFilters(filters);
@@ -307,47 +336,39 @@ QString getSaveFileName(const QString &startWith,
       
       // Added by T356.
       QString filt = dlg->selectedFilter();
-      int p2 = filt.findRev(')');
-      if(p2 != -1)
+      filt = getFilterExtension(filt);
+      // Do we have a valid extension?
+      if(!filt.isEmpty())
       {
-        int p1 = filt.findRev('*', p2);
-        if(p1 != -1)
+        // If the rightmost characters of the filename do not already contain
+        //  the extension, add the extension to the filename.
+        //if(result.right(filt.length()) != filt)
+        if(!result.endsWith(filt))
+          result += filt;
+      }
+      else
+      {
+        // No valid extension, or just * was given. Although it would be nice to allow no extension
+        //  or any desired extension by commenting this section out, it's probably not a good idea to do so.
+        //
+        // NOTE: Most calls to this routine getSaveFileName() are followed by fileOpen(),
+        //  which can tack on its own extension, but only if the *complete* extension is blank. 
+        // So there is some overlap going on. Enabling this actually stops that action, 
+        //  but only if there are no errors in the list of filters. fileOpen() will act as a 'catchall'.
+        //
+        // Force the filter list to the first one (the preferred one), and then get the filter.
+        dlg->setSelectedFilter(0);
+        filt = dlg->selectedFilter();
+        filt = getFilterExtension(filt);
+            
+        // Do we have a valid extension?
+        if(!filt.isEmpty())
         {
-          filt = filt.mid(p1 + 1, p2 - p1 - 1);
-          // Do we have a valid extension?
-          if(!filt.isEmpty())
-          {
-            // If the rightmost characters of the filename do not already contain
-            //  the extension, add the extension to the filename.
-            if(result.right(filt.length()) != filt)
-              result += filt;
-          }
-          else
-          {
-            // Works, but no, we want to allow saving as any name without an extension...
-            /*
-            // Force the filter list to the first one (the preferred one), and then get the filter.
-            dlg->setSelectedFilter(0);
-            filt = dlg->selectedFilter();
-            p2 = filt.findRev(')');
-            if(p2 != -1)
-            {
-              p1 = filt.findRev('*', p2);
-              if(p1 != -1)
-              {
-                filt = filt.mid(p1 + 1, p2 - p1 - 1);
-                // Do we have a valid extension?
-                if(!filt.isEmpty())
-                {
-                  // If the rightmost characters of the filename do not already contain
-                  //  the extension, add the extension to the filename.
-                  if(result.right(filt.length()) != filt)
-                    result += filt;
-                }
-              }
-            }
-            */
-          }
+          // If the rightmost characters of the filename do not already contain
+          //  the extension, add the extension to the filename.
+          //if(result.right(filt.length()) != filt)
+          if(!result.endsWith(filt))
+            result += filt;
         }
       }
       
@@ -360,7 +381,8 @@ QString getSaveFileName(const QString &startWith,
 //---------------------------------------------------------
 
 QString getImageFileName(const QString& startWith,
-   const char** filters, QWidget* parent, const QString& name)
+   //const char** filters, QWidget* parent, const QString& name)
+   const QStringList& filters, QWidget* parent, const QString& name)
       {
       QString initialSelection;
 	QString* workingDirectory = new QString(QDir::currentDirPath());
@@ -491,7 +513,8 @@ MFile::~MFile()
 //   open
 //---------------------------------------------------------
 
-FILE* MFile::open(const char* mode, const char** pattern,
+//FILE* MFile::open(const char* mode, const char** pattern,
+FILE* MFile::open(const char* mode, const QStringList& pattern,
    QWidget* parent, bool noError, bool warnIfOverwrite, const QString& caption)
       {
       QString name;

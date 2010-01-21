@@ -37,6 +37,7 @@
 #include <qheader.h>
 #include <qpopupmenu.h>
 #include <qmenubar.h>
+#include <qaction.h>
 
 extern QColor readColor(Xml& xml);
 

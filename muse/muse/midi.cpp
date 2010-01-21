@@ -812,14 +812,30 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
 
                               if (port == defaultPort) {
                                     //printf("Adding event normally: frame=%d port=%d channel=%d pitch=%d velo=%d\n",frame, port, channel, pitch, velo);
-                                    playEvents->add(MidiPlayEvent(frame, port, channel, 0x90, pitch, velo));
+                                    
+                                    // P3.3.25
+                                    // If syncing to external midi sync, we cannot use the tempo map.
+                                    // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames.
+                                    if(extSyncFlag.value())
+                                      playEvents->add(MidiPlayEvent(tick, port, channel, 0x90, pitch, velo));
+                                    else
+                                    
+                                      playEvents->add(MidiPlayEvent(frame, port, channel, 0x90, pitch, velo));
+                                      
                                     stuckNotes->add(MidiPlayEvent(tick + len, port, channel,
                                        veloOff ? 0x80 : 0x90, pitch, veloOff));
                                     }
                               else { //Handle events to different port than standard.
                                     MidiDevice* mdAlt = midiPorts[port].device();
                                     if (mdAlt) {
-                                        mdAlt->playEvents()->add(MidiPlayEvent(frame, port, channel, 0x90, pitch, velo));
+                                        
+                                        // P3.3.25
+                                        if(extSyncFlag.value())
+                                          mdAlt->playEvents()->add(MidiPlayEvent(tick, port, channel, 0x90, pitch, velo));
+                                        else  
+                                          
+                                          mdAlt->playEvents()->add(MidiPlayEvent(frame, port, channel, 0x90, pitch, velo));
+                                          
                                         mdAlt->stuckNotes()->add(MidiPlayEvent(tick + len, port, channel,
                                           veloOff ? 0x80 : 0x90, pitch, veloOff));
                                       }
@@ -850,20 +866,40 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                                     MidiDevice* mdAlt = midiPorts[port].device();
                                     if(mdAlt) 
                                     {
-                                      //playEvents->add(MidiPlayEvent(frame, port, channel, ev));
-                                      mdAlt->playEvents()->add(MidiPlayEvent(frame, port, channel, 
+                                      // P3.3.25
+                                      // If syncing to external midi sync, we cannot use the tempo map.
+                                      // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames.
+                                      if(extSyncFlag.value())
+                                        mdAlt->playEvents()->add(MidiPlayEvent(tick, port, channel, 
                                                                              ME_CONTROLLER, ctl | pitch, ev.dataB()));
+                                      else
+                                                                             
+                                        //playEvents->add(MidiPlayEvent(frame, port, channel, ev));
+                                        mdAlt->playEvents()->add(MidiPlayEvent(frame, port, channel, 
+                                                                             ME_CONTROLLER, ctl | pitch, ev.dataB()));
+                                                                             
                                     }  
                                     break;
                                   }  
                                 }
-                                playEvents->add(MidiPlayEvent(frame, port, channel, ev));
+                                // P3.3.25
+                                if(extSyncFlag.value())
+                                  playEvents->add(MidiPlayEvent(tick, port, channel, ev));
+                                else  
+                                
+                                  playEvents->add(MidiPlayEvent(frame, port, channel, ev));
                               }     
                               break;
                                    
                                    
                         default:
-                              playEvents->add(MidiPlayEvent(frame, port, channel, ev));
+                              // P3.3.25
+                              if(extSyncFlag.value())
+                                playEvents->add(MidiPlayEvent(tick, port, channel, ev));
+                              else
+                                
+                                playEvents->add(MidiPlayEvent(frame, port, channel, ev));
+                                
                               break;
                         }
                   }
@@ -909,6 +945,9 @@ void Audio::processMidi()
       iMPEvent nextPlayEvent  = metronome->nextPlayEvent();
       playEvents->erase(playEvents->begin(), nextPlayEvent);
 
+      // P3.3.25
+      bool extsync = extSyncFlag.value();
+      
       for (iMidiTrack t = song->midis()->begin(); t != song->midis()->end(); ++t) 
       {
             MidiTrack* track = *t;
@@ -1046,7 +1085,13 @@ void Audio::processMidi()
                                 }
                               }
                               
-                              unsigned time = event.time() + segmentSize*(segmentCount-1);
+                              // p3.3.25 
+                              // MusE uses a fixed clocks per quarternote of 24. 
+                              // At standard 384 ticks per quarternote for example, 
+                              // 384/24=16 for a division of 16 sub-frames (16 MusE 'ticks').
+                              // That is what we'll use if syncing externally.
+                              //unsigned time = event.time() + segmentSize*(segmentCount-1);
+                              unsigned time = event.time() + (extsync ? config.division/24 : segmentSize*(segmentCount-1));
                               event.setTime(time);
 
                               // dont't echo controller changes back to software
@@ -1076,8 +1121,14 @@ void Audio::processMidi()
                                   track->setActivity(event.dataB());
                               }
                               
-                              time = tempomap.frame2tick(event.time());
-                              event.setTime(time);  // set tick time
+                              // p3.3.25
+                              // If syncing externally the event time is already in units of ticks, set above.
+                              if(!extsync)
+                              {
+                                
+                                time = tempomap.frame2tick(event.time());
+                                event.setTime(time);  // set tick time
+                              }  
 
                               // Special handling of events stored in rec-lists. a bit hACKish. TODO: Clean up (after 0.7)! :-/ (ml)
                               if (recording) 
@@ -1160,8 +1211,22 @@ void Audio::processMidi()
                   if (k->time() >= nextTickPos)
                         break;
                   MidiPlayEvent ev(*k);
-                  int frame = tempomap.tick2frame(k->time()) + frameOffset;
-                  ev.setTime(frame);
+                  
+                  // P3.3.25
+                  //int frame = tempomap.tick2frame(k->time()) + frameOffset;
+                  if(extsync)
+                  {
+                    ev.setTime(k->time());
+                  }
+                  else
+                  {
+                    int frame = tempomap.tick2frame(k->time()) + frameOffset;
+                    ev.setTime(frame);
+                  }  
+                  
+                  // P3.3.25
+                  //ev.setTime(frame);
+                  
                   playEvents->add(ev);
                   }
             stuckNotes->erase(stuckNotes->begin(), k);
@@ -1193,12 +1258,21 @@ void Audio::processMidi()
                   else if (state == PRECOUNT) {
                         isMeasure = (clickno % clicksMeasure) == 0;
                         }
-                  int frame = tempomap.tick2frame(midiClick) + frameOffset;
-                  MidiPlayEvent ev(frame, clickPort, clickChan, ME_NOTEON,
+                  // P3.3.25
+                  //int frame = tempomap.tick2frame(midiClick) + frameOffset;
+                  int evtime = extsync ? midiClick : tempomap.tick2frame(midiClick) + frameOffset;
+                  
+                  // P3.3.25
+                  //MidiPlayEvent ev(frame, clickPort, clickChan, ME_NOTEON,
+                  MidiPlayEvent ev(evtime, clickPort, clickChan, ME_NOTEON,
                      beatClickNote, beatClickVelo);
+                     
                   if (md) {
-                        MidiPlayEvent ev(frame, clickPort, clickChan, ME_NOTEON,
+                        // P3.3.25
+                        //MidiPlayEvent ev(frame, clickPort, clickChan, ME_NOTEON,
+                        MidiPlayEvent ev(evtime, clickPort, clickChan, ME_NOTEON,
                            beatClickNote, beatClickVelo);
+                        
                         if (isMeasure) {
                               ev.setA(measureClickNote);
                               ev.setB(measureClickVelo);
@@ -1206,14 +1280,23 @@ void Audio::processMidi()
                         playEvents->add(ev);
                         }
                   if (audioClickFlag) {
-                        MidiPlayEvent ev1(frame, 0, 0, ME_NOTEON, 0, 0);
+                        // P3.3.25
+                        //MidiPlayEvent ev1(frame, 0, 0, ME_NOTEON, 0, 0);
+                        MidiPlayEvent ev1(evtime, 0, 0, ME_NOTEON, 0, 0);
+                        
                         ev1.setA(isMeasure ? 0 : 1);
                         metronome->playEvents()->add(ev1);
                         }
                   if (md) {
                         ev.setB(0);
-                        frame = tempomap.tick2frame(midiClick+20) + frameOffset;
+                        // P3.3.25
+                        // Removed. Why was this here?
+                        //frame = tempomap.tick2frame(midiClick+20) + frameOffset;
+                        //
+                        // Does it mean this should be changed too? 
+                        // No, stuck notes are in units of ticks, not frames like (normal, non-external) play events...
                         ev.setTime(midiClick+10);
+                        
                         if (md)
                               stuckNotes->add(ev);
                         }

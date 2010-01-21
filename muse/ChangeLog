@@ -1,3 +1,22 @@
+21.01.2010
+      * Fixed: First tests: External midi sync in works now! Should be rock solid no matter what is thrown at it. (T356)
+        - All changes are labeled "p3.3.25"
+        - Switched to a 'direct drive' method instead of 'calculation of tempo' method.
+          Drift between source of master and slave is non-existant since the incoming midi clocks 
+           drive the midi engine directly. This is at the expense of exact 64th note resolution.
+          At MusE's fixed 24 midi clocks per quarternote, triplet 32nd notes are resolved (32nd note divided by three).
+          MusE's default 'division' (ticks per quarternote) is 384. 384/24 gives a division of 16 MusE 'ticks' per midi clock.
+        - Normally when using the tempo map (external sync is off), device play event times are in frames,
+           because the tempo map provides for that kind of sub-tick frame resolution.
+          But now, during external sync, device play event times are in ticks, not frames. 
+          Hence the compromise between exactness of note times, and master/slave drift.
+        - Tested heavily with a Roland TR-505 which has a variable 'analog' tempo knob.  
+          Combined that with a complete midi song, and other test 'tick' tracks driving external synth KB,
+           was rock solid going 'absolutely nuts' with the tempo knob up to 260BPM, surprisingly good resolution.
+        - TODO: Check safety of 'midiExtSyncTicks = 0' inside audio thread while midi thread is counting it up.
+          Also fix seek operations and check for any more place needing these 'tick'frame' alterations.
+      * Changed: Some more changes for compressed files operations. (T356)
+        - More to be done, but tests OK so far.    
 19.01.2010
       * Fixed: Saving/loading compressed .gz/.bz2 MusE .med files, + loading compressed .mid/.kar files (save broken, off for now). (T356)
         - Changed filedialog.cpp:getSaveFileName() and MusE::loadProjectFile1.

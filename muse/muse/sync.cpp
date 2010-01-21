@@ -48,6 +48,9 @@ static bool mtcSync;    // receive complete mtc frame?
 // static bool mcStart = false;
 // static int mcStartTick;
 
+// p3.3.25
+unsigned int midiExtSyncTicks = 0;
+
 //---------------------------------------------------------
 //  MidiSyncInfo
 //---------------------------------------------------------
@@ -650,6 +653,14 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     if(p != port && midiPorts[p].syncInfo().MCOut())
                       midiPorts[p].sendClock();
                   
+                  // p3.3.25
+                  if(audio->isPlaying())
+                  {
+                    int div = config.division/24;
+                    midiExtSyncTicks += div;
+                  }
+                  
+                  /*
                   double mclock0 = curTime();
                   // Difference in time last 2 rounds:
                   double tdiff0   = mclock0 - mclock1;
@@ -675,7 +686,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         }
 
                   // Compare w audio if playing:
-                  if (playStateExt == true /* audio->isPlaying() */ /*state == PLAY*/) {
+                  if (playStateExt == true ) {  //audio->isPlaying()  state == PLAY
                         //BEGIN standard setup:
                         recTick  += config.division / 24; // The one we're syncing to
                         int tempo = tempomap.tempo(0);
@@ -697,13 +708,15 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                                       songtick, recTick, tickdiff, song_beat, sync_beat, scale, curFrame);
                               }
 
-                        if ((mclock2 !=0.0) && (tdiff1 > 0.0) /*&& fabs(tickdiff) > 0.5*/ && lastTempo != 0) {
+                        //if ((mclock2 !=0.0) && (tdiff1 > 0.0) && fabs(tickdiff) > 0.5 && lastTempo != 0) {
+                        if ((mclock2 !=0.0) && (tdiff1 > 0.0) && lastTempo != 0) {
                               // Interpolate:
                               double tickdiff1 = songtick1 - recTick1;
                               double tickdiff2 = songtick2 - recTick2;
-                              double newtickdiff = (tickdiff1+tickdiff2)/250; /*tickdiff/5.0  +
+                              double newtickdiff = (tickdiff1+tickdiff2)/250; 
+                                                   //tickdiff/5.0  +
                                                    tickdiff1/16.0 +
-                                                   tickdiff2/24.0;*/  //5 mins 30 secs on 116BPM, -p 512 jackd
+                                                   tickdiff2/24.0;  //5 mins 30 secs on 116BPM, -p 512 jackd
 
                               if (newtickdiff != 0.0) {
                                     int newTempo = tempomap.tempo(0);
@@ -757,6 +770,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         }
                   mclock2 = mclock1;
                   mclock1 = mclock0;
+                  */
                   }
                   break;
             case 0xf9:  // midi tick  (every 10 msec)

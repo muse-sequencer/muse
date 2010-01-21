@@ -269,12 +269,16 @@ void EffectRack::doubleClicked(QListBoxItem* it)
 
 void EffectRack::savePreset(int idx)
       {
-      QString name = getSaveFileName(QString(""), plug_file_pattern, this,
+      //QString name = getSaveFileName(QString(""), plug_file_pattern, this,
+      QString name = getSaveFileName(QString(""), preset_file_save_pattern, this,
          tr("MusE: Save Preset"));
-      FILE* presetFp = fopen(name.ascii(),"w+");
+      
+      //FILE* presetFp = fopen(name.ascii(),"w+");
+      bool popenFlag;
+      FILE* presetFp = fileOpen(this, name, QString(".pre"), "w", popenFlag, false, true);
       if (presetFp == 0) {
-            fprintf(stderr, "EffectRack::savePreset() fopen failed: %s\n",
-               strerror(errno));
+            //fprintf(stderr, "EffectRack::savePreset() fopen failed: %s\n",
+            //   strerror(errno));
             return;
             }
       Xml xml(presetFp);
@@ -288,16 +292,28 @@ void EffectRack::savePreset(int idx)
                 }
             else {
                 printf("no plugin!\n");
-                fclose(presetFp);
+                //fclose(presetFp);
+                if (popenFlag)
+                      pclose(presetFp);
+                else
+                      fclose(presetFp);
                 return;
                 }
             }
       else {
           printf("no pipe!\n");
-          fclose(presetFp);
+          //fclose(presetFp);
+          if (popenFlag)
+                pclose(presetFp);
+          else
+                fclose(presetFp);
           return;
           }
-      fclose(presetFp);
+      //fclose(presetFp);
+      if (popenFlag)
+            pclose(presetFp);
+      else
+            fclose(presetFp);
       }
 
 void EffectRack::startDrag(int idx)
@@ -377,17 +393,26 @@ void EffectRack::dropEvent(QDropEvent *event)
             if(QTextDrag::decode(event, text))
                 {
                 text = text.stripWhiteSpace();
-                if (text.endsWith(".pre", false))
+                // Changed by T356.
+                //if (text.endsWith(".pre", false))
+                if (text.endsWith(".pre", false) || text.endsWith(".pre.gz", false) || text.endsWith(".pre.bz2", false))
                     {
                     QUrl url(text);
                     QString newPath = url.path();
       
-                    bool popenFlag = false;
+                    //bool popenFlag = false;
+                    bool popenFlag;
                     FILE* fp = fileOpen(this, newPath, ".pre", "r", popenFlag, false, false);
               
                     if (fp) {
                         Xml xml(fp);
                         initPlugin(xml, idx);
+                        
+                        // Added by T356.
+                        if (popenFlag)
+                              pclose(fp);
+                        else
+                              fclose(fp);
                         }
                     }
                 else if (event->provides("text/x-muse-plugin"))

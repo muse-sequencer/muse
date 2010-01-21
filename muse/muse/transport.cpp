@@ -16,6 +16,7 @@
 #include <qlayout.h>
 #include <qtoolbutton.h>
 #include <qcombobox.h>
+#include <qaction.h>
 
 #include "song.h"
 #include "transport.h"

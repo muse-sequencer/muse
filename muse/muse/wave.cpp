@@ -29,6 +29,7 @@
 //#define WAVE_DEBUG
 //#define WAVE_DEBUG_PRC
 
+/*
 const char* audioFilePattern[] = {
       "Wave/Binary (*.wav *.ogg *.bin)",
       "Wave (*.wav *.ogg)",
@@ -36,6 +37,7 @@ const char* audioFilePattern[] = {
       "All Files (*)",
       0
       };
+*/
 const int cacheMag = 128;
 
 // ClipList* waveClips;
@@ -786,8 +788,9 @@ void MusE::importWave()
               "a wave track"));
             return;
             }
-      QString fn = getOpenFileName(lastWavePath, audioFilePattern, this,
-         tr("Import Wave File"), 0);
+      //QString fn = getOpenFileName(lastWavePath, audioFilePattern, this,
+      QString fn = getOpenFileName(lastWavePath, audio_file_pattern, this,
+         tr("Import Wave File"), 0);                                    
       if (!fn.isEmpty()) {
             lastWavePath = fn;
             importWaveToTrack(fn);

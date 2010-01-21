@@ -26,6 +26,7 @@
 #include <qmessagebox.h>
 #include <qstyle.h>
 #include <qaccel.h>
+#include <qaction.h>
 
 #define LMASTER_BEAT_COL 0
 #define LMASTER_TIME_COL 1

@@ -8,6 +8,7 @@
 #include <qfiledialog.h>
 
 class FileDialogButtons;
+class QStringList;
 
 //---------------------------------------------------------
 //   MFileDialog
@@ -53,12 +54,15 @@ class ContentsPreview : public QWidget, public QFilePreview {
       ~ContentsPreview();
       };
 
-QString getSaveFileName(const QString& startWidth, const char** filter,
+//QString getSaveFileName(const QString& startWidth, const char** filter,
+QString getSaveFileName(const QString& startWidth, const QStringList& filters,
          QWidget* parent, const QString& name);
-QString getOpenFileName(const QString& startWidth, const char** filter,
+//QString getOpenFileName(const QString& startWidth, const char** filter,
+QString getOpenFileName(const QString& startWidth, const QStringList& filters,
          QWidget* parent, const QString& name, bool* openAll);
-QString getImageFileName(const QString& startWith,
-   const char** filters, QWidget* parent, const QString& name);
+//QString getImageFileName(const QString& startWith, const char** filters, 
+QString getImageFileName(const QString& startWith, const QStringList& filters, 
+         QWidget* parent, const QString& name);
 
 FILE* fileOpen(QWidget*, QString, const QString&,
    const char*, bool&, bool = false, bool = false);
@@ -78,7 +82,8 @@ class MFile {
    public:
       MFile(const QString& path, const QString& ext);
       ~MFile();
-      FILE* open(const char* mode, const char** pattern,
+      //FILE* open(const char* mode, const char** pattern,
+      FILE* open(const char* mode, const QStringList& pattern,
          QWidget* parent, bool noError,
          bool warnIfOverwrite, const QString& caption);
       };
