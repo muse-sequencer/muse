@@ -323,6 +323,31 @@ configuration dialog</comment>
             </widget>
             <widget class="QCheckBox" row="1" column="0">
               <property name="name">
+                <cstring>jackTransportMasterCheckbox</cstring>
+              </property>
+              <property name="enabled">
+                <bool>true</bool>
+              </property>
+              <property name="text">
+                <string>Jack transport Timebase Master</string>
+              </property>
+              <property name="checked">
+                <bool>true</bool>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>Make MusE the Jack transport Timebase Master</string>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Make MusE the Jack transport Timebase Master.
+Allows Jack to show time as 
+ MusE Bars, Beats, and Ticks. 
+MusE will try to become master, but other 
+ Jack clients can also take over later.
+You can always click here again for Master.</string>
+              </property>
+            </widget>
+            <widget class="QCheckBox" row="2" column="0">
+              <property name="name">
                 <cstring>extSyncCheckbox</cstring>
               </property>
               <property name="enabled">
@@ -345,7 +370,7 @@ Enabled inputs in the list will
  be in effect (RMC, RMMC, RMTC).</string>
               </property>
             </widget>
-            <widget class="QListView" row="2" column="0">
+            <widget class="QListView" row="3" column="0">
               <property name="name">
                 <cstring>devicesListView</cstring>
               </property>

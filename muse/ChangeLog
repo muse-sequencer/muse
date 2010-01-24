@@ -1,3 +1,6 @@
+24.01.2010
+      * Added: Midi sync: Added 'Jack timebase master' checkbox, removed requirement of MusE being tempo map master. (T356)
+      * Added: While on external sync and Jack timebase master, reports correct MusE BBT info to Jack. (Tempo not correct yet). (T356)
 23.01.2010
       * Fixed: External midi sync in: MusE transport not rewinding upon reception of start. (T356)
       * Added: Midi sync: MusE now transmits and receives some MMC commands, and displays some MTC and SMTPE info. (T356)

@@ -319,7 +319,7 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent, const char* name)
       connect(extSyncCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
       connect(mtcSyncType, SIGNAL(activated(int)), SLOT(syncChanged()));
       connect(useJackTransportCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
-      //connect(jackTransportMasterCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
+      connect(jackTransportMasterCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
       connect(&extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(extSyncChanged(bool)));
       
   
@@ -358,12 +358,12 @@ void MidiSyncConfig::songChanged(int flags)
       
       extSyncCheckbox->blockSignals(true);
       useJackTransportCheckbox->blockSignals(true);
-      //jackTransportMasterCheckbox->blockSignals(true);
+      jackTransportMasterCheckbox->blockSignals(true);
       extSyncCheckbox->setChecked(extSyncFlag.value());
       useJackTransportCheckbox->setChecked(useJackTransport);
-      //jackTransportMasterCheckbox->setChecked(jackTransportMaster);
+      jackTransportMasterCheckbox->setChecked(jackTransportMaster);
       //jackTransportMasterCheckbox->setEnabled(useJackTransport);
-      //jackTransportMasterCheckbox->blockSignals(false);
+      jackTransportMasterCheckbox->blockSignals(false);
       useJackTransportCheckbox->blockSignals(false);
       extSyncCheckbox->blockSignals(false);
       
@@ -710,12 +710,12 @@ void MidiSyncConfig::apply()
       //extSyncFlag.blockSignals(false);
       useJackTransport = useJackTransportCheckbox->isChecked();
 //      if(useJackTransport)
-//        jackTransportMaster = jackTransportMasterCheckbox->isChecked();
+        jackTransportMaster = jackTransportMasterCheckbox->isChecked();
 //      else  
 //        jackTransportMaster = false;
 //      jackTransportMasterCheckbox->setEnabled(useJackTransport);
-//      if(audioDevice)
-//        audioDevice->setMaster(jackTransportMaster);      
+      if(audioDevice)
+        audioDevice->setMaster(jackTransportMaster);      
 
       mtcOffset.setH(mtcOffH->value());
       mtcOffset.setM(mtcOffM->value());

@@ -24,7 +24,7 @@
 //int rxDeviceId = 0x7f;       // any device
 //int txDeviceId = 0x7f;       // any device
 //MidiSyncPort midiSyncPorts[MIDI_PORTS];
-int curMidiSyncInPort = -1;
+int volatile curMidiSyncInPort = -1;
 
 // P3.3.26
 bool debugSync = false;
@@ -38,7 +38,8 @@ BValue extSyncFlag(0, "extSync");       // false - MASTER, true - SLAVE
 //bool acceptMTC  = false;
 //bool acceptMC   = true;
 //bool acceptMMC  = true;
-bool useJackTransport = true;
+bool volatile useJackTransport = true;
+bool volatile jackTransportMaster = true;
 
 static MTC mtcCurTime;
 static int mtcState;    // 0-7 next expected quarter message

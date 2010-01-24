@@ -663,6 +663,12 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               extSyncFlag.setValue(xml.parseInt());
                         else if (tag == "useJackTransport")
                               useJackTransport = xml.parseInt();
+                        else if (tag == "jackTransportMaster")
+                              {
+                                jackTransportMaster = xml.parseInt();
+                                if(audioDevice)
+                                  audioDevice->setMaster(jackTransportMaster);      
+                              }  
                         else if (tag == "syncgentype") {
                               // for compatibility
                               //int syncGenType= xml.parseInt();
@@ -1084,6 +1090,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
         mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
         mtcOffset.f(), mtcOffset.sf());
       //xml.intTag(level, "useJackTransport", useJackTransport);
+      //xml.intTag(level, "jackTransportMaster", jackTransportMaster);
       extSyncFlag.save(level, xml);
       
 //      xml.intTag(level, "genMTCSync", genMTCSync);
@@ -1193,6 +1200,7 @@ void MusE::writeConfiguration(int level, Xml& xml) const
         mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
         mtcOffset.f(), mtcOffset.sf());
       xml.intTag(level, "useJackTransport", useJackTransport);
+      xml.intTag(level, "jackTransportMaster", jackTransportMaster);
       extSyncFlag.save(level, xml);
       
 //      xml.intTag(level, "genMTCSync", genMTCSync);

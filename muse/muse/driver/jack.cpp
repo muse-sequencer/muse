@@ -187,7 +187,10 @@ static void timebase_callback(jack_transport_state_t /* state */,
    int /* new_pos */,
    void*)
   {
-      Pos p(pos->frame, false);
+      // P3.3.27
+      //Pos p(pos->frame, false);
+      Pos p(extSyncFlag.value() ? audio->tickPos() : pos->frame, extSyncFlag.value() ? true : false);
+      
       pos->valid = JackPositionBBT;
       p.mbt(&pos->bar, &pos->beat, &pos->tick);
       pos->bar++;

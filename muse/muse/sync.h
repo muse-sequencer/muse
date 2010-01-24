@@ -123,8 +123,9 @@ extern BValue extSyncFlag;
 //extern bool acceptMTC;
 //extern bool acceptMC;
 //extern bool acceptMMC;
-extern int curMidiSyncInPort;
-extern bool useJackTransport;
+extern int volatile curMidiSyncInPort;
+extern bool volatile useJackTransport;
+extern bool volatile jackTransportMaster;
 
 #endif
 

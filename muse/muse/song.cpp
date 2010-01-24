@@ -1110,7 +1110,8 @@ void Song::setMasterFlag(bool val)
         //audioDevice->setMaster(val);      
         emit songChanged(SC_MASTER);
       }      
-      audioDevice->setMaster(val);      
+      // Removed. p3.3.26
+      //audioDevice->setMaster(val);      
     }
 
 //---------------------------------------------------------
