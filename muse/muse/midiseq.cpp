@@ -389,7 +389,6 @@ void MidiSeq::updatePollFd()
       // (one fd for all devices)
       //    this allows for processing of some alsa events
       //    even if no alsa driver is active (assigned to a port)
-
       addPollFd(alsaSelectRfd(), POLLIN, ::alsaMidiRead, this, 0);
       }
 

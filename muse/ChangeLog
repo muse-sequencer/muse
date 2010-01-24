@@ -1,3 +1,10 @@
+23.01.2010
+      * Fixed: External midi sync in: MusE transport not rewinding upon reception of start. (T356)
+      * Added: Midi sync: MusE now transmits and receives some MMC commands, and displays some MTC and SMTPE info. (T356)
+        - No transmit MTC or receive MTC syncing yet, just transport control stuff.
+        - Tested OK with Rosegarden and Ardour, but they do not seem to have an option to sync to the input midi clock, 
+           only MTC or internally. Must test when MTC output added to MusE. 
+      * Improved: Midi sync editor window: Shows MMC and MTC activity and works with them now. (T356)
 21.01.2010
       * Fixed: First tests: External midi sync in works now! Should be rock solid no matter what is thrown at it. (T356)
         - All changes are labeled "p3.3.25"

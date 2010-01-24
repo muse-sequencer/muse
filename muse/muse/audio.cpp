@@ -36,11 +36,11 @@ Audio* audio;
 AudioDevice* audioDevice;   // current audio device in use
 
 // p3.3.25
-extern unsigned int midiExtSyncTicks;
+extern unsigned int volatile midiExtSyncTicks;
 
 
-static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
-static const unsigned char mmcStopMsg[] =         { 0x7f, 0x7f, 0x06, 0x01 };
+//static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
+//static const unsigned char mmcStopMsg[] =         { 0x7f, 0x7f, 0x06, 0x01 };
 
 const char* seqMsgList[] = {
       "SEQM_ADD_TRACK", "SEQM_REMOVE_TRACK", "SEQM_CHANGE_TRACK", "SEQM_MOVE_TRACK",
@@ -234,10 +234,6 @@ bool Audio::sync(int jackState, unsigned frame)
       
 // Changed by Tim. p3.3.24
 /*      
-      // Added by Tim. p3.3.20
-      if(debugMsg)
-        printf("Audio::sync state %s jackState %s frame %d\n", audioStates[state], audioStates[jackState], frame);
-      
       bool done = true;
       if (state == LOOP1) 
             state = LOOP2;
@@ -251,10 +247,6 @@ bool Audio::sync(int jackState, unsigned frame)
                   //done = audioPrefetch->seekDone;
                   done = audioPrefetch->seekDone();
             }
-      
-      // Added by Tim. p3.3.20
-      //if(debugMsg)
-      //  printf("Audio::sync done:%d state %s\n", done, audioStates[state]);
       
       return done;
 */      
@@ -974,7 +966,8 @@ void Audio::startRolling()
           
         //if(genMMC && si.MMCOut())
         if(si.MMCOut())
-          mp->sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
+          //mp->sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
+          mp->sendMMCDeferredPlay();
         
         //if(genMCSync && si.MCOut())
         if(si.MCOut())
@@ -1093,6 +1086,8 @@ void Audio::startRolling()
                   }
               }
           }
+     
+     //tempomap.clearExtTempoList();     
      }
 
 //---------------------------------------------------------
@@ -1170,20 +1165,23 @@ void Audio::stopRolling()
         //if(genMMC && si.MMCOut())
         if(si.MMCOut())
         {
-          unsigned char mmcPos[] = {
-                0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
-                0, 0, 0, 0, 0
-                };
+          //unsigned char mmcPos[] = {
+          //      0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
+          //      0, 0, 0, 0, 0
+          //      };
           int frame = tempomap.tick2frame(curTickPos);
           MTC mtc(double(frame) / double(sampleRate));
-          mmcPos[6] = mtc.h() | (mtcType << 5);
-          mmcPos[7] = mtc.m();
-          mmcPos[8] = mtc.s();
-          mmcPos[9] = mtc.f();
-          mmcPos[10] = mtc.sf();
+          //mmcPos[6] = mtc.h() | (mtcType << 5);
+          //mmcPos[7] = mtc.m();
+          //mmcPos[8] = mtc.s();
+          //mmcPos[9] = mtc.f();
+          //mmcPos[10] = mtc.sf();
           
-          mp->sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
-          mp->sendSysex(mmcPos, sizeof(mmcPos));
+          //mp->sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
+          mp->sendMMCStop();
+          //mp->sendSysex(mmcPos, sizeof(mmcPos));
+          mp->sendMMCLocate(mtc.h() | (mtcType << 5), 
+                            mtc.m(), mtc.s(), mtc.f(), mtc.sf());
         }
       
         //if(genMCSync && si.MCOut()) // Midi Clock

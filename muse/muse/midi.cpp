@@ -32,12 +32,24 @@
 
 extern void dump(const unsigned char* p, int n);
 
-const unsigned char gmOnMsg[] = { 0x7e, 0x7f, 0x09, 0x01 };
-const unsigned char gsOnMsg[] = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7f, 0x00, 0x41 };
-const unsigned char xgOnMsg[] = { 0x43, 0x10, 0x4c, 0x00, 0x00, 0x7e, 0x00 };
-const unsigned int  gmOnMsgLen = sizeof(gmOnMsg);
-const unsigned int  gsOnMsgLen = sizeof(gsOnMsg);
-const unsigned int  xgOnMsgLen = sizeof(xgOnMsg);
+const unsigned char gmOnMsg[]   = { 0x7e, 0x7f, 0x09, 0x01 };
+const unsigned char gsOnMsg[]   = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7f, 0x00, 0x41 };
+const unsigned char gsOnMsg2[]  = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x33, 0x50, 0x3c };
+const unsigned char gsOnMsg3[]  = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x34, 0x50, 0x3b };
+const unsigned char xgOnMsg[]   = { 0x43, 0x10, 0x4c, 0x00, 0x00, 0x7e, 0x00 };
+const unsigned int  gmOnMsgLen  = sizeof(gmOnMsg);
+const unsigned int  gsOnMsgLen  = sizeof(gsOnMsg);
+const unsigned int  gsOnMsg2Len = sizeof(gsOnMsg2);
+const unsigned int  gsOnMsg3Len = sizeof(gsOnMsg3);
+const unsigned int  xgOnMsgLen  = sizeof(xgOnMsg);
+
+const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
+const unsigned char mmcStopMsg[] =         { 0x7f, 0x7f, 0x06, 0x01 };
+const unsigned char mmcLocateMsg[] =       { 0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01, 0, 0, 0, 0, 0 };
+
+const unsigned int  mmcDeferredPlayMsgLen = sizeof(mmcDeferredPlayMsg);
+const unsigned int  mmcStopMsgLen = sizeof(mmcStopMsg);
+const unsigned int  mmcLocateMsgLen = sizeof(mmcLocateMsg);
 
 #define CALC_TICK(the_tick) lrintf((float(the_tick) * float(config.division) + float(div/2)) / float(div));
 /*---------------------------------------------------------

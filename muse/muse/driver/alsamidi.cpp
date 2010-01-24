@@ -775,9 +775,10 @@ void alsaProcessMidiInput()
             if(event.type())
             {
               mdev->recordEvent(event);
-              if(ev->type != SND_SEQ_EVENT_SYSEX)
+              // p3.3.26 1/23/10 Moved to MidiDevice now. Anticipating Jack midi support, so don't make it ALSA specific. Tim.
+              //if(ev->type != SND_SEQ_EVENT_SYSEX)
                 // Trigger general activity indicator detector. Sysex has no channel, don't trigger.
-                midiPorts[curPort].syncInfo().trigActDetect(event.channel());
+              //  midiPorts[curPort].syncInfo().trigActDetect(event.channel());
             }
                   
             snd_seq_free_event(ev);

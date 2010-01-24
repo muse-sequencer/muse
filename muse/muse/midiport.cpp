@@ -433,11 +433,12 @@ void MidiPort::sendGmOn()
 
 void MidiPort::sendGsOn()
       {
-      static unsigned char data2[] = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x33, 0x50, 0x3c };
-      static unsigned char data3[] = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x34, 0x50, 0x3b };
-
-      sendSysex(data2, sizeof(data2));
-      sendSysex(data3, sizeof(data3));
+      //static unsigned char data2[] = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x33, 0x50, 0x3c };
+      //static unsigned char data3[] = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x34, 0x50, 0x3b };
+      //sendSysex(data2, sizeof(data2));
+      //sendSysex(data3, sizeof(data3));
+      sendSysex(gsOnMsg2, gsOnMsg2Len);
+      sendSysex(gsOnMsg3, gsOnMsg3Len);
       }
 
 //---------------------------------------------------------
@@ -463,6 +464,56 @@ void MidiPort::sendSysex(const unsigned char* p, int n)
            _device->putEvent(event);
             }
       }
+
+//---------------------------------------------------------
+//   sendMMCLocate
+//---------------------------------------------------------
+
+void MidiPort::sendMMCLocate(unsigned char ht, unsigned char m, unsigned char s, unsigned char f, unsigned char sf, int devid)
+{
+  unsigned char msg[mmcLocateMsgLen];
+  memcpy(msg, mmcLocateMsg, mmcLocateMsgLen);
+  if(devid != -1)
+    msg[1]  = devid;
+  else
+    msg[1]  = _syncInfo.idOut();
+  msg[6]    = ht;
+  msg[7]    = m;
+  msg[8]    = s;
+  msg[9]    = f;
+  msg[10]   = sf;
+  sendSysex(msg, mmcLocateMsgLen);
+}
+
+//---------------------------------------------------------
+//   sendMMCStop
+//---------------------------------------------------------
+
+void MidiPort::sendMMCStop(int devid)
+{
+  unsigned char msg[mmcStopMsgLen];
+  memcpy(msg, mmcStopMsg, mmcStopMsgLen);
+  if(devid != -1)
+    msg[1] = devid;
+  else
+    msg[1] = _syncInfo.idOut();
+  sendSysex(msg, mmcStopMsgLen);
+}
+
+//---------------------------------------------------------
+//   sendMMCDeferredPlay
+//---------------------------------------------------------
+
+void MidiPort::sendMMCDeferredPlay(int devid)
+{
+  unsigned char msg[mmcDeferredPlayMsgLen];
+  memcpy(msg, mmcDeferredPlayMsg, mmcDeferredPlayMsgLen);
+  if(devid != -1)
+    msg[1] = devid;
+  else
+    msg[1] = _syncInfo.idOut();
+  sendSysex(msg, mmcDeferredPlayMsgLen);
+}
 
 //---------------------------------------------------------
 //   sendStart

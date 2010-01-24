@@ -26,7 +26,9 @@
 //MidiSyncPort midiSyncPorts[MIDI_PORTS];
 int curMidiSyncInPort = -1;
 
+// P3.3.26
 bool debugSync = false;
+
 int mtcType     = 1;
 MTC mtcOffset;
 BValue extSyncFlag(0, "extSync");       // false - MASTER, true - SLAVE
@@ -49,7 +51,11 @@ static bool mtcSync;    // receive complete mtc frame?
 // static int mcStartTick;
 
 // p3.3.25
-unsigned int midiExtSyncTicks = 0;
+// From the "Introduction to the Volatile Keyword" at Embedded.com
+/* A variable should be declared volatile whenever its value could change unexpectedly. 
+ ... <such as> global variables within a multi-threaded application    
+ ... So all shared global variables should be declared volatile */
+unsigned int volatile midiExtSyncTicks = 0;
 
 //---------------------------------------------------------
 //  MidiSyncInfo
@@ -69,10 +75,17 @@ MidiSyncInfo::MidiSyncInfo()
   
   _lastClkTime   = 0.0;
   _lastTickTime  = 0.0;
+  _lastMMCTime   = 0.0;
+  _lastMTCTime   = 0.0;
   _clockTrig     = false;
   _tickTrig      = false;
+  _MMCTrig       = false;
+  _MTCTrig       = false;
   _clockDetect   = false;
   _tickDetect    = false;
+  _MMCDetect     = false;
+  _MTCDetect     = false;
+  _recMTCtype    = 0;
   _actDetectBits = 0;
   for(int i = 0; i < MIDI_CHANNELS; ++i)
   {
@@ -94,10 +107,17 @@ MidiSyncInfo& MidiSyncInfo::operator=(const MidiSyncInfo &sp)
   
   _lastClkTime   = sp._lastClkTime;
   _lastTickTime  = sp._lastTickTime;
+  _lastMMCTime   = sp._lastMMCTime;
+  _lastMTCTime   = sp._lastMTCTime;
   _clockTrig     = sp._clockTrig;
   _tickTrig      = sp._tickTrig;
+  _MMCTrig       = sp._MMCTrig;
+  _MTCTrig       = sp._MTCTrig;
   _clockDetect   = sp._clockDetect;
   _tickDetect    = sp._tickDetect;
+  _MMCDetect     = sp._MMCDetect;
+  _MTCDetect     = sp._MTCDetect;
+  _recMTCtype    = sp._recMTCtype;
   _actDetectBits = sp._actDetectBits;
   for(int i = 0; i < MIDI_CHANNELS; ++i)
   {
@@ -147,6 +167,7 @@ void MidiSyncInfo::setTime()
   if(_clockDetect && (t - _lastClkTime >= 1.0)) // Set detect indicator timeout to about 1 second.
   {
     _clockDetect = false;
+    // Give up the current midi sync in port number if we took it...
     if(curMidiSyncInPort == _port)
       curMidiSyncInPort = -1;
   }
@@ -159,6 +180,34 @@ void MidiSyncInfo::setTime()
   else
   if(_tickDetect && (t - _lastTickTime) >= 1.0) // Set detect indicator timeout to about 1 second.
     _tickDetect = false;
+    
+  if(_MMCTrig)
+  {
+    _MMCTrig = false;
+    _lastMMCTime = t;  
+  }
+  else
+  if(_MMCDetect && (t - _lastMMCTime) >= 1.0) // Set detect indicator timeout to about 1 second.
+  {
+    _MMCDetect = false;
+    // Give up the current midi sync in port number if we took it...
+    //if(curMidiSyncInPort == _port)
+    //  curMidiSyncInPort = -1;
+  }
+    
+  if(_MTCTrig)
+  {
+    _MTCTrig = false;
+    _lastMTCTime = t;  
+  }
+  else
+  if(_MTCDetect && (t - _lastMTCTime) >= 1.0) // Set detect indicator timeout to about 1 second.
+  {
+    _MTCDetect = false;
+    // Give up the current midi sync in port number if we took it...
+    if(curMidiSyncInPort == _port)
+      curMidiSyncInPort = -1;
+  }
     
   for(int i = 0; i < MIDI_CHANNELS; i++)
   {
@@ -189,6 +238,30 @@ void MidiSyncInfo::setMCIn(const bool v)
 }
 
 //---------------------------------------------------------
+//  setMMCIn
+//---------------------------------------------------------
+
+void MidiSyncInfo::setMMCIn(const bool v) 
+{ 
+  _recMMC = v; 
+  // If sync receive was turned off, clear the current midi sync in port number so another port can grab it.
+  //if(!_recMMC && _port != -1 && curMidiSyncInPort == _port)
+  //  curMidiSyncInPort = -1;
+}
+
+//---------------------------------------------------------
+//  setMTCIn
+//---------------------------------------------------------
+
+void MidiSyncInfo::setMTCIn(const bool v) 
+{ 
+  _recMTC = v; 
+  // If sync receive was turned off, clear the current midi sync in port number so another port can grab it.
+  if(!_recMTC && _port != -1 && curMidiSyncInPort == _port)
+    curMidiSyncInPort = -1;
+}
+
+//---------------------------------------------------------
 //  trigMCSyncDetect
 //---------------------------------------------------------
 
@@ -209,6 +282,32 @@ void MidiSyncInfo::trigTickDetect()
 { 
   _tickDetect = true;
   _tickTrig = true;
+}
+    
+//---------------------------------------------------------
+//  trigMMCDetect
+//---------------------------------------------------------
+
+void MidiSyncInfo::trigMMCDetect()   
+{ 
+  _MMCDetect = true;
+  _MMCTrig = true;
+  // Set the current midi sync in port number if it's not taken...
+  //if(_recMMC && curMidiSyncInPort == -1)
+  //  curMidiSyncInPort = _port;
+}
+    
+//---------------------------------------------------------
+//  trigMTCDetect
+//---------------------------------------------------------
+
+void MidiSyncInfo::trigMTCDetect()   
+{ 
+  _MTCDetect = true;
+  _MTCTrig = true;
+  // Set the current midi sync in port number if it's not taken...
+  if(_recMTC && curMidiSyncInPort == -1)
+    curMidiSyncInPort = _port;
 }
     
 //---------------------------------------------------------
@@ -327,15 +426,29 @@ void MidiSyncInfo::write(int level, Xml& xml)
 //    Midi Machine Control Input received
 //---------------------------------------------------------
 
-void MidiSeq::mmcInput(const unsigned char* p, int n)
+//void MidiSeq::mmcInput(const unsigned char* p, int n)
+void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
       {
       if (debugSync)
             printf("mmcInput: n:%d %02x %02x %02x %02x\n",
                n, p[2], p[3], p[4], p[5]);
+     
+      MidiPort* mp = &midiPorts[port];
+      MidiSyncInfo& msync = mp->syncInfo();
+      // Trigger MMC detect in.
+      msync.trigMMCDetect();
+      // MMC locate SMPTE time code may contain format type bits. Grab them.
+      if(p[3] == 0x44 && p[4] == 6 && p[5] == 1)
+        msync.setRecMTCtype((p[6] >> 5) & 3);
+      
+      // MMC in not turned on? Forget it.
+      if(!msync.MMCIn())
+        return;
+      
       //if (!(extSyncFlag.value() && acceptMMC))
-      if(!extSyncFlag.value())
-            return;
-
+      //if(!extSyncFlag.value())
+      //      return;
+      
       switch(p[3]) {
             case 1:
                   if (debugSync)
@@ -384,18 +497,22 @@ void MidiSeq::mmcInput(const unsigned char* p, int n)
                         break;
                         }
                   else if (p[5] == 1) {
-                        MTC mtc(p[6] & 0x1f, p[7], p[8], p[9], p[10]);
-                        int mmcPos = tempomap.frame2tick(lrint(mtc.time()*sampleRate));
-
-                        Pos tp(mmcPos, true);
                         if (!checkAudioDevice()) return;
+                        MTC mtc(p[6] & 0x1f, p[7], p[8], p[9], p[10]);
+                        int type = (p[6] >> 5) & 3;
+                        //int mmcPos = tempomap.frame2tick(lrint(mtc.time()*sampleRate));
+                        //int mmcPos = lrint(mtc.time()*sampleRate);
+                        int mmcPos = lrint(mtc.time(type) * sampleRate);
+
+                        //Pos tp(mmcPos, true);
+                        Pos tp(mmcPos, false);
                         //audioDevice->seekTransport(tp.frame());
                         audioDevice->seekTransport(tp);
                         alignAllTicks();
                         //seek(tp);
                         if (debugSync) {
-                              printf("MMC: %f %d seek ",
-                                 mtc.time(), mmcPos);
+                              //printf("MMC: %f %d seek ", mtc.time(), mmcPos);
+                              printf("MMC: LOCATE mtc type:%d time:%lf frame:%d mtc: ", type, mtc.time(), mmcPos);
                               mtc.print();
                               printf("\n");
                               }
@@ -413,12 +530,10 @@ void MidiSeq::mmcInput(const unsigned char* p, int n)
 //    process Quarter Frame Message
 //---------------------------------------------------------
 
-void MidiSeq::mtcInputQuarter(int, unsigned char c)
+//void MidiSeq::mtcInputQuarter(int, unsigned char c)
+void MidiSeq::mtcInputQuarter(int port, unsigned char c)
       {
       static int hour, min, sec, frame;
-
-      if (!extSyncFlag.value())
-            return;
 
       int valL = c & 0xf;
       int valH = valL << 4;
@@ -456,35 +571,55 @@ void MidiSeq::mtcInputQuarter(int, unsigned char c)
       frame &= 0x1f;    // 0-29
       sec   &= 0x3f;    // 0-59
       min   &= 0x3f;    // 0-59
+      int tmphour = hour;
+      int type = (hour >> 5) & 3;
       hour  &= 0x1f;
 
-      if (mtcState == 8) {
+      if(mtcState == 8) 
+      {
             mtcValid = (mtcLost == 0);
             mtcState = 0;
             mtcLost  = 0;
-            if (mtcValid) {
+            if(mtcValid) 
+            {
                   mtcCurTime.set(hour, min, sec, frame);
-                  mtcSyncMsg(mtcCurTime, !mtcSync);
-                  mtcSync = true;
+                  if(port != -1)
+                  {
+                    MidiPort* mp = &midiPorts[port];
+                    MidiSyncInfo& msync = mp->syncInfo();
+                    msync.setRecMTCtype(type);
+                    msync.trigMTCDetect();
+                    // Not for the current in port? External sync not turned on? MTC in not turned on? Forget it.
+                    if(port == curMidiSyncInPort && extSyncFlag.value() && msync.MTCIn()) 
+                    {
+                      if(debugSync)
+                        printf("mtcInputQuarter: hour byte:%hx\n", tmphour);
+                      mtcSyncMsg(mtcCurTime, type, !mtcSync);
+                    }  
                   }
+                  mtcSync = true;
             }
-      else if (mtcValid && (mtcLost == 0)) {
-            mtcCurTime.incQuarter();
-            mtcSyncMsg(mtcCurTime, false);
-            }
+      }      
+      else if (mtcValid && (mtcLost == 0)) 
+      {
+            //mtcCurTime.incQuarter();
+            mtcCurTime.incQuarter(type);
+            //mtcSyncMsg(mtcCurTime, type, false);
       }
+    }
 
 //---------------------------------------------------------
 //   mtcInputFull
 //    process Frame Message
 //---------------------------------------------------------
 
-void MidiSeq::mtcInputFull(const unsigned char* p, int n)
+//void MidiSeq::mtcInputFull(const unsigned char* p, int n)
+void MidiSeq::mtcInputFull(int port, const unsigned char* p, int n)
       {
       if (debugSync)
             printf("mtcInputFull\n");
-      if (!extSyncFlag.value())
-            return;
+      //if (!extSyncFlag.value())
+      //      return;
 
       if (p[3] != 1) {
             if (p[3] != 2) {   // silently ignore user bits
@@ -501,20 +636,41 @@ void MidiSeq::mtcInputFull(const unsigned char* p, int n)
       frame &= 0x1f;    // 0-29
       sec   &= 0x3f;    // 0-59
       min   &= 0x3f;    // 0-59
-//      int type = (hour >> 5) & 3;
+      int type = (hour >> 5) & 3;
       hour &= 0x1f;
 
       mtcCurTime.set(hour, min, sec, frame);
       mtcState = 0;
       mtcValid = true;
       mtcLost  = 0;
-      }
+      
+      // Added by Tim.
+      if(debugSync)
+        printf("mtcInputFull: time:%lf stime:%lf hour byte (all bits):%hx\n", mtcCurTime.time(), mtcCurTime.time(type), p[4]);
+      if(port != -1)
+      {
+        MidiPort* mp = &midiPorts[port];
+        MidiSyncInfo& msync = mp->syncInfo();
+        msync.setRecMTCtype(type);
+        msync.trigMTCDetect();
+        // MTC in not turned on? Forget it.
+        //if(extSyncFlag.value() && msync.MTCIn())
+        if(msync.MTCIn())
+        {
+          //Pos tp(lrint(mtcCurTime.time() * sampleRate), false);
+          Pos tp(lrint(mtcCurTime.time(type) * sampleRate), false);
+          audioDevice->seekTransport(tp);
+          alignAllTicks();
+        }
+      }    
+    }
 
 //---------------------------------------------------------
 //   nonRealtimeSystemSysex
 //---------------------------------------------------------
 
-void MidiSeq::nonRealtimeSystemSysex(const unsigned char* p, int n)
+//void MidiSeq::nonRealtimeSystemSysex(const unsigned char* p, int n)
+void MidiSeq::nonRealtimeSystemSysex(int /*port*/, const unsigned char* p, int n)
       {
 //      int chan = p[2];
       switch(p[3]) {
@@ -660,6 +816,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     midiExtSyncTicks += div;
                   }
                   
+//BEGIN : Original code:
                   /*
                   double mclock0 = curTime();
                   // Difference in time last 2 rounds:
@@ -771,6 +928,142 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   mclock2 = mclock1;
                   mclock1 = mclock0;
                   */
+//END : Original Code
+                  
+//BEGIN : Using external tempo map:
+                  /*
+                  double mclock0 = curTime();
+                  // Difference in time last 2 rounds:
+                  double tdiff0   = mclock0 - mclock1;
+                  double tdiff1   = mclock1 - mclock2;
+                  double averagetimediff = 0.0;
+
+                  if (mclock1 != 0.0) {
+                        if (storedtimediffs < 24)
+                        {
+                           timediff[storedtimediffs] = mclock0 - mclock1;
+                           storedtimediffs++;
+                        }
+                        else {
+                              for (int i=0; i<23; i++) {
+                                    timediff[i] = timediff[i+1];
+                                    }
+                              timediff[23] = mclock0 - mclock1;
+                        }
+                        // Calculate average timediff:
+                        for (int i=0; i < storedtimediffs; i++) {
+                              averagetimediff += timediff[i]/storedtimediffs;
+                              }
+                        }
+
+                  // Compare w audio if playing:
+                  //if (playStateExt == true ) {  //audio->isPlaying()  state == PLAY
+                  if (0) {
+                        //BEGIN standard setup:
+                        recTick  += config.division / 24; // The one we're syncing to
+                        int tempo = tempomap.tempo(0);
+                        //unsigned curFrame = audio->pos().frame();
+                        //double songtick = (double(curFrame)/double(sampleRate)) *
+                        //                   double(config.division * 1000000.0) / double(tempo);
+                        double songtick = tempomap.curTickExt(mclock0);
+                        
+                        double scale = double(tdiff0/averagetimediff);
+                        double tickdiff = songtick - ((double) recTick - 24 + scale*24.0);
+
+                        //END standard setup
+                        if (debugSync) {
+                              int m, b, t;
+                              audio->pos().mbt(&m, &b, &t);
+
+                              int song_beat = b + m*4; // if the time-signature is different than 4/4, this will be wrong.
+                              int sync_beat = recTick/config.division;
+                              printf("pT=%.3f rT=%d diff=%.3f songB=%d syncB=%d scale=%.3f, curFrame=%d averagetimediff:%.3lf", 
+                                      songtick, recTick, tickdiff, song_beat, sync_beat, scale, audio->pos().frame(), averagetimediff);
+                              }
+
+                        //if ((mclock2 !=0.0) && (tdiff1 > 0.0) && fabs(tickdiff) > 0.5 && lastTempo != 0) {
+                        if ((mclock2 !=0.0) && (tdiff1 > 0.0) && lastTempo != 0) {
+                              // Interpolate:
+                              double tickdiff1 = songtick1 - recTick1;
+                              double tickdiff2 = songtick2 - recTick2;
+                              double newtickdiff = (tickdiff1+tickdiff2)/250; 
+                              ////double newtickdiff = (tickdiff1+tickdiff2) / 10.0; 
+                              //double newtickdiff = tickdiff/5.0  +
+                              //                     tickdiff1/16.0 +
+                              //                     tickdiff2/24.0;  //5 mins 30 secs on 116BPM, -p 512 jackd
+
+                              if (newtickdiff != 0.0) {
+                                    //int newTempo = tempomap.tempo(0);
+                                    int newTempo = tempo;
+                                    //newTempo += int(24.0 * newtickdiff * scale);
+                                    newTempo += int(24.0 * newtickdiff);
+                                    if (debugSync)
+                                          printf(" tdiff=%f ntd=%f lt=%d tmpo=%.3f", 
+                                                tdiff0, newtickdiff, lastTempo, (float)((1000000.0 * 60.0)/newTempo));
+                                    //syncTempo = newTempo;
+                                    //tempomap.setTempo(0,newTempo);
+                                    // Don't set the last stable tempo.
+                                    //tempomap.setTempo(0, newTempo, false);
+                                    tempomap.setExtTempo(newTempo);
+                                    }
+                              if (debugSync)
+                                    printf("\n");
+                              }
+                        else if (debugSync)
+                              printf("\n");
+
+                        //BEGIN post calc
+                        lastTempo = tempo;
+                        recTick2 = recTick1;
+                        recTick1 = recTick;
+                        mclock2 = mclock1;
+                        mclock1 = mclock0;
+                        songtick2 = songtick1;
+                        songtick1 = songtick;
+                        //END post calc
+                        break;
+                        } // END state play
+                  //
+                  // Pre-sync (when audio is not running)
+                  // Calculate tempo depending on time per pulse
+                  //
+                  if (mclock1 == 0.0) {
+                        mp->device()->discardInput();
+                        if (debugSync)
+                           printf("Discarding input from port %d\n", port);
+                        }
+                  if ((mclock2 != 0.0) && (tdiff0 > 0.0)) {
+                        
+                        //int tempo0 = int(24000000.0 * tdiff0 + .5);
+                        //int tempo1 = int(24000000.0 * tdiff1 + .5);
+                        //int tempo = tempomap.tempo(0);
+                        //int diff0 = tempo0 - tempo;
+                        //int diff1 = tempo1 - tempo0;
+                        
+                        //if (diff0) {
+                        //      int newTempo = tempo + diff0/8 + diff1/16;
+                        //      if (debugSync)
+                        //         printf("setting new tempo %d = %f\n", newTempo, (float)((1000000.0 * 60.0)/newTempo));
+                              //tempomap.setTempo(0, newTempo);
+                              // Don't set the last stable tempo.
+                              //tempomap.setTempo(0, newTempo, false);
+                        //      tempomap.setExtTempo(newTempo);
+                        //      }
+                        
+                        //double tempo0 = 24000000.0 * tdiff0;
+                        //double tempo1 = 24000000.0 * tdiff1;
+                        //int newTempo = int((tempo0 + tempo1) / 2.0);
+                        int newTempo = int(averagetimediff * 24000000.0);
+                        if(debugSync)
+                          printf("setting new tempo %d = %f\n", newTempo, (float)((1000000.0 * 60.0)/newTempo));
+                        tempomap.setExtTempo(newTempo);
+                        }
+                        
+                  mclock2 = mclock1;
+                  mclock1 = mclock0;
+                  */
+//END : Using external tempo map
+                  
                   }
                   break;
             case 0xf9:  // midi tick  (every 10 msec)
@@ -793,6 +1086,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         if (!checkAudioDevice()) return;
                         //audioDevice->seekTransport(0);
                         audioDevice->seekTransport(Pos(0, false));
+
                         unsigned curFrame = audio->curFrame();
                         if (debugSync)
                               printf("       curFrame=%d\n", curFrame);
@@ -804,7 +1098,13 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         storedtimediffs = 0;
                         for (int i=0; i<24; i++)
                               timediff[i] = 0.0;
-                        audio->msgPlay(true);
+                        
+                        // p3.3.26 1/23/10
+                        // Changed because msgPlay calls audioDevice->seekTransport(song->cPos())
+                        //  and song->cPos() may not be changed to 0 yet, causing tranport not to go to 0.
+                        //audio->msgPlay(true);
+                        audioDevice->startTransport();
+                        
                         playStateExt = true;
                         }
                   break;
@@ -815,7 +1115,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                       midiPorts[p].sendContinue();
                   
                   if (debugSync)
-                        printf("   continue\n");
+                        printf("realtimeSystemInput continue\n");
                   if (1 /* !audio->isPlaying() */ /*state == IDLE */) {
                         //unsigned curFrame = audio->curFrame();
                         //recTick = tempomap.frame2tick(curFrame); // don't think this will work... (ml)
@@ -831,7 +1131,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                       midiPorts[p].sendStop();
                   
                   if (debugSync)
-                        printf("   stop\n");
+                        printf("realtimeSystemInput stop\n");
                   if (audio->isPlaying() /*state == PLAY*/) {
                         audio->msgPlay(false);
                         playStateExt = false;
@@ -852,17 +1152,20 @@ void MidiSeq::realtimeSystemInput(int port, int c)
 //                start
 //---------------------------------------------------------
 
-void MidiSeq::mtcSyncMsg(const MTC& mtc, bool seekFlag)
+void MidiSeq::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
       {
       double time = mtc.time();
+      double stime = mtc.time(type);
       if (debugSync)
-            printf("mtcSyncMsg: time %f\n", time);
+            printf("mtcSyncMsg: time:%lf stime:%lf seekFlag:%d\n", time, stime, seekFlag);
 
       if (seekFlag && audio->isRunning() /*state == START_PLAY*/) {
 //            int tick = tempomap.time2tick(time);
             //state = PLAY;
             //write(sigFd, "1", 1);  // say PLAY to gui
             if (!checkAudioDevice()) return;
+            if (debugSync)
+              printf("mtcSyncMsg: starting transport.\n");
             audioDevice->startTransport();
             return;
             }

@@ -27,7 +27,7 @@ class MTC {
       MTC() {
             _h = _m = _s = _f = _sf = 0;
             }
-      MTC(double);
+      MTC(double, int type = -1);
       void set(int h, int m, int s, int f, int sf=0) {
             _h  = h;
             _m  = m;
@@ -35,7 +35,7 @@ class MTC {
             _f  = f;
             _sf = sf;
             }
-      void incQuarter();
+      void incQuarter(int type = -1);
       void setH(int val)  { _h = val; }
       void setM(int val)  { _m = val; }
       void setS(int val)  { _s = val; }
@@ -47,7 +47,7 @@ class MTC {
       int s() const  { return _s; }
       int f() const  { return _f; }
       int sf() const { return _sf; }
-      double time() const;
+      double time(int type = -1) const;
       void print() const;
       };
 

@@ -17,11 +17,13 @@ extern int mtcType;
 //    global mtcType
 //---------------------------------------------------------
 
-double MTC::time() const
+double MTC::time(int type) const
       {
       double time = _h * 3600 + _m * 60 + _s;
       double ft = 0.0;
-      switch (mtcType) {
+      if(type == -1)
+        type = mtcType;
+      switch (type) {
             case 0:     // 24 frames sec
                   ft = 1.0/24.0;
                   break;
@@ -30,6 +32,7 @@ double MTC::time() const
                   break;
             case 2:     // 30 drop frame        TODO
             case 3:     // 30 non drop frame
+            default:
                   ft = 1.0/30.0;
                   break;
             }
@@ -40,7 +43,7 @@ double MTC::time() const
 //   MTC
 //---------------------------------------------------------
 
-MTC::MTC(double t)
+MTC::MTC(double t, int type)
       {
       _h  = int(t/3600);
       t -= _h * 3600;
@@ -49,7 +52,9 @@ MTC::MTC(double t)
       _s  = int(t);
       t -= _s;
       double ft = 1.0/24.0;
-      switch (mtcType) {
+      if(type == -1)
+        type = mtcType;
+      switch (type) {
             case 0:     // 24 frames sec
                   ft = 1.0/24.0;
                   break;
@@ -58,6 +63,7 @@ MTC::MTC(double t)
                   break;
             case 2:     // 30 drop frame
             case 3:     // 30 non drop frame
+            default:
                   ft = 1.0/30.0;
                   break;
             }
@@ -72,10 +78,12 @@ MTC::MTC(double t)
 //    increment MTC time one quarter frame time
 //---------------------------------------------------------
 
-void MTC::incQuarter()
+void MTC::incQuarter(int type)
       {
       int frames = 24;
-      switch (mtcType) {
+      if(type == -1)
+        type = mtcType;
+      switch (type) {
             case 0:
                   frames = 24;
                   break;
@@ -84,6 +92,7 @@ void MTC::incQuarter()
                   break;
             case 2:
             case 3:
+            default:
                   frames = 30;
                   break;
             }

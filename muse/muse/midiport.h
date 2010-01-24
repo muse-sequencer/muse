@@ -91,6 +91,11 @@ class MidiPort {
       void sendSongpos(int);
       void sendClock();
       void sendSysex(const unsigned char* p, int n);
+      void sendMMCLocate(unsigned char ht, unsigned char m,
+                         unsigned char s, unsigned char f, unsigned char sf, int devid = -1);
+      void sendMMCStop(int devid = -1);
+      void sendMMCDeferredPlay(int devid = -1);
+      
       bool sendEvent(const MidiPlayEvent&);
       AutomationType automationType(int channel) { return _automationType[channel]; }
       void setAutomationType(int channel, AutomationType t) {

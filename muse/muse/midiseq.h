@@ -60,9 +60,9 @@ class MidiSeq : public Thread {
       virtual void processMsg(const ThreadMsg*);
       void updatePollFd();
 
-      void mtcSyncMsg(const MTC& mtc, bool seekFlag);
-      void mtcInputFull(const unsigned char* p, int n);
-      void nonRealtimeSystemSysex(const unsigned char* p, int n);
+      void mtcSyncMsg(const MTC&, int, bool);
+      //void mtcInputFull(const unsigned char* p, int n);
+      //void nonRealtimeSystemSysex(const unsigned char* p, int n);
 
    public:
       //MidiSeq(int prio, const char* name);
@@ -80,7 +80,10 @@ class MidiSeq : public Thread {
       void mtcInputQuarter(int, unsigned char);
       void setSongPosition(int, int);
       // void eventReceived(MidiRecordEvent& event);
-      void mmcInput(const unsigned char* p, int n);
+      //void mmcInput(const unsigned char* p, int n);
+      void mmcInput(int, const unsigned char*, int);
+      void mtcInputFull(int, const unsigned char*, int);
+      void nonRealtimeSystemSysex(int, const unsigned char*, int);
 
       void msgMsg(int id);
       void msgProcess();

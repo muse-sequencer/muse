@@ -32,14 +32,22 @@ class MidiSyncInfo
     bool _recMMC;
     bool _recMTC;
     
+    int _recMTCtype;
+    
     double   _lastClkTime;
     double   _lastTickTime;
+    double   _lastMMCTime;
+    double   _lastMTCTime;
     double   _lastActTime[MIDI_CHANNELS];
     bool     _clockTrig;
     bool     _tickTrig;
+    bool     _MMCTrig;
+    bool     _MTCTrig;
     bool     _actTrig[MIDI_CHANNELS];
     bool     _clockDetect;
     bool     _tickDetect;
+    bool     _MMCDetect;
+    bool     _MTCDetect;
     bool     _actDetect[MIDI_CHANNELS];
     int      _actDetectBits;
     
@@ -69,8 +77,8 @@ class MidiSyncInfo
     void setMTCOut(const bool v)  { _sendMTC = v; }
     
     void setMCIn(const bool v);   
-    void setMMCIn(const bool v)   { _recMMC = v; }
-    void setMTCIn(const bool v)   { _recMTC = v; }
+    void setMMCIn(const bool v);   
+    void setMTCIn(const bool v);   
     
     void setTime(); 
     
@@ -79,6 +87,14 @@ class MidiSyncInfo
     
     bool tickDetect() const       { return _tickDetect; }           
     void trigTickDetect();
+    
+    bool MTCDetect() const       { return _MTCDetect; }           
+    void trigMTCDetect();
+    int recMTCtype() const       { return _recMTCtype; }
+    void setRecMTCtype(int t)    { _recMTCtype = t; }
+    
+    bool MMCDetect() const       { return _MMCDetect; }           
+    void trigMMCDetect();
     
     int  actDetectBits() const    { return _actDetectBits; }
     bool actDetect(const int ch) const;

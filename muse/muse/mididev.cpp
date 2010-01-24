@@ -162,36 +162,53 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
             printf("MidiInput: ");
             event.dump();
             }
-#if 0
-      int typ = event.type();
 
-      //---------------------------------------------------
-      // filter some SYSEX events
-      //---------------------------------------------------
+      if(_port != -1)
+      {
+        int idin = midiPorts[_port].syncInfo().idIn();
+        
+// p3.3.26 1/23/10 Section was disabled, enabled by Tim.
+//#if 0
+        int typ = event.type();
+  
+        //---------------------------------------------------
+        // filter some SYSEX events
+        //---------------------------------------------------
+  
+        if (typ == ME_SYSEX) {
+              const unsigned char* p = event.data();
+              int n = event.len();
+              if (n >= 4) {
+                    if ((p[0] == 0x7f)
+                      //&& ((p[1] == 0x7f) || (p[1] == rxDeviceId))) {
+                      && ((p[1] == 0x7f) || (idin == 0x7f) || (p[1] == idin))) {
+                          if (p[2] == 0x06) {
+                                //mmcInput(p, n);
+                                midiSeq->mmcInput(_port, p, n);
+                                return;
+                                }
+                          if (p[2] == 0x01) {
+                                //mtcInputFull(p, n);
+                                midiSeq->mtcInputFull(_port, p, n);
+                                return;
+                                }
+                          }
+                    else if (p[0] == 0x7e) {
+                          //nonRealtimeSystemSysex(p, n);
+                          midiSeq->nonRealtimeSystemSysex(_port, p, n);
+                          return;
+                          }
+                    }
+              }
+          else    
+            // p3.3.26 1/23/10 Moved here from alsaProcessMidiInput(). Anticipating Jack midi support, so don't make it ALSA specific. Tim. 
+            // Trigger general activity indicator detector. Sysex has no channel, don't trigger.
+            midiPorts[_port].syncInfo().trigActDetect(event.channel());
+              
+//#endif
 
-      if (typ == ME_SYSEX) {
-            const unsigned char* p = event.data();
-            int n = event.len();
-            if (n >= 4) {
-                  if ((p[0] == 0x7f)
-                     && ((p[1] == 0x7f) || (p[1] == rxDeviceId))) {
-                        if (p[2] == 0x06) {
-                              mmcInput(p, n);
-                              return;
-                              }
-                        if (p[2] == 0x01) {
-                              mtcInputFull(p, n);
-                              return;
-                              }
-                        }
-                  else if (p[0] == 0x7e) {
-                        nonRealtimeSystemSysex(p, n);
-                        return;
-                        }
-                  }
-            }
-#endif
-
+      }
+      
       //
       //  process midi event input filtering and
       //    transformation
