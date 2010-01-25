@@ -1246,7 +1246,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       menu_ids[CMD_CONFIG_MIDISYNC] = menuSettings->insertItem(
          QIconSet(*settings_midisyncIcon), tr("Midi Sync"), this, SLOT(configMidiSync()), 0);
       menu_ids[CMD_MIDI_FILE_CONFIG] = menuSettings->insertItem(
-         QIconSet(*settings_midifileexportIcon), tr("Midi File Export"), this, SLOT(configMidiFile()), 0);
+         QIconSet(*settings_midifileexportIcon), tr("Midi File Import/Export"), this, SLOT(configMidiFile()), 0);
       menuSettings->insertSeparator();
       menu_ids[CMD_APPEARANCE_SETTINGS] = menuSettings->insertItem(
          QIconSet(*settings_appearance_settingsIcon), tr("Appearance settings"), this, SLOT(configAppearance()), 0);

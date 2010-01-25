@@ -85,6 +85,7 @@ struct GlobalConfigValues {
       int smfFormat;          // smf export file type
       bool exp2ByteTimeSigs;  // Export 2 byte time sigs instead of 4 bytes
       bool expOptimNoteOffs;  // Save space by replacing note offs with note on velocity 0
+      bool importMidiSplitParts; // Split imported tracks into multiple parts.
       
       int startMode;          // 0 - start with last song
                               // 1 - start with default template

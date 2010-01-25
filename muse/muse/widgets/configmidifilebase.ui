@@ -8,21 +8,174 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>449</width>
-            <height>282</height>
+            <width>548</width>
+            <height>353</height>
         </rect>
     </property>
     <property name="caption">
-        <string>MusE: Config Midi File Export</string>
+        <string>MusE: Config Midi File Import/Export</string>
     </property>
     <property name="sizeGripEnabled">
         <bool>true</bool>
     </property>
-    <grid>
+    <vbox>
         <property name="name">
             <cstring>unnamed</cstring>
         </property>
-        <widget class="QLayoutWidget" row="6" column="0" rowspan="1" colspan="2">
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>midiImportGroupBox</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>1</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="title">
+                <string>Import:</string>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QCheckBox" row="0" column="0">
+                    <property name="name">
+                        <cstring>splitPartsCheckBox</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Split tracks into &amp;parts</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+P</string>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Split tracks into parts, or one single part</string>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>midiExportGroupBox</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>7</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="title">
+                <string>Export:</string>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLineEdit" row="2" column="1">
+                    <property name="name">
+                        <cstring>copyrightEdit</cstring>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="1" column="1">
+                    <item>
+                        <property name="text">
+                            <string>96</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>192</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>384</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>divisionCombo</cstring>
+                    </property>
+                </widget>
+                <widget class="QCheckBox" row="3" column="0" rowspan="1" colspan="2">
+                    <property name="name">
+                        <cstring>extendedFormat</cstring>
+                    </property>
+                    <property name="enabled">
+                        <bool>true</bool>
+                    </property>
+                    <property name="text">
+                        <string>Enable extended smf format (currently not implemented)</string>
+                    </property>
+                </widget>
+                <widget class="QCheckBox" row="4" column="0" rowspan="1" colspan="2">
+                    <property name="name">
+                        <cstring>twoByteTimeSigs</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Use &amp;2-byte time signatures instead of standard 4</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+2</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="2" column="0">
+                    <property name="name">
+                        <cstring>textLabel2</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Copyright:</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="0">
+                    <property name="name">
+                        <cstring>textLabel3</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Format:</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="1" column="0">
+                    <property name="name">
+                        <cstring>textLabel1</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Division:</string>
+                    </property>
+                </widget>
+                <widget class="QCheckBox" row="5" column="0" rowspan="1" colspan="2">
+                    <property name="name">
+                        <cstring>optNoteOffs</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Save space by replacing note-offs with &amp;zero velocity note-ons</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+Z</string>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="0" column="1">
+                    <item>
+                        <property name="text">
+                            <string>0 (single track)</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>1 (multiple tracks)</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>formatCombo</cstring>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
+        <widget class="QLayoutWidget">
             <property name="name">
                 <cstring>Layout1</cstring>
             </property>
@@ -86,98 +239,7 @@
                 </widget>
             </hbox>
         </widget>
-        <widget class="QComboBox" row="0" column="1">
-            <item>
-                <property name="text">
-                    <string>0 (single track)</string>
-                </property>
-            </item>
-            <item>
-                <property name="text">
-                    <string>1 (multiple tracks)</string>
-                </property>
-            </item>
-            <property name="name">
-                <cstring>formatCombo</cstring>
-            </property>
-        </widget>
-        <widget class="QLabel" row="0" column="0">
-            <property name="name">
-                <cstring>textLabel3</cstring>
-            </property>
-            <property name="text">
-                <string>Format:</string>
-            </property>
-        </widget>
-        <widget class="QComboBox" row="1" column="1">
-            <item>
-                <property name="text">
-                    <string>96</string>
-                </property>
-            </item>
-            <item>
-                <property name="text">
-                    <string>192</string>
-                </property>
-            </item>
-            <item>
-                <property name="text">
-                    <string>384</string>
-                </property>
-            </item>
-            <property name="name">
-                <cstring>divisionCombo</cstring>
-            </property>
-        </widget>
-        <widget class="QLabel" row="1" column="0">
-            <property name="name">
-                <cstring>textLabel1</cstring>
-            </property>
-            <property name="text">
-                <string>Division:</string>
-            </property>
-        </widget>
-        <widget class="QLabel" row="2" column="0">
-            <property name="name">
-                <cstring>textLabel2</cstring>
-            </property>
-            <property name="text">
-                <string>Copyright:</string>
-            </property>
-        </widget>
-        <widget class="QLineEdit" row="2" column="1">
-            <property name="name">
-                <cstring>copyrightEdit</cstring>
-            </property>
-        </widget>
-        <widget class="QCheckBox" row="3" column="0" rowspan="1" colspan="2">
-            <property name="name">
-                <cstring>extendedFormat</cstring>
-            </property>
-            <property name="enabled">
-                <bool>true</bool>
-            </property>
-            <property name="text">
-                <string>Enable extended smf format (currently not implemented)</string>
-            </property>
-        </widget>
-        <widget class="QCheckBox" row="4" column="0" rowspan="1" colspan="2">
-            <property name="name">
-                <cstring>twoByteTimeSigs</cstring>
-            </property>
-            <property name="text">
-                <string>Use &amp;2-byte time signatures instead of standard 4</string>
-            </property>
-        </widget>
-        <widget class="QCheckBox" row="5" column="0" rowspan="1" colspan="2">
-            <property name="name">
-                <cstring>optNoteOffs</cstring>
-            </property>
-            <property name="text">
-                <string>Save space by replacing note-offs with &amp;zero velocity note-ons</string>
-            </property>
-        </widget>
-    </grid>
+    </vbox>
 </widget>
 <connections>
     <connection>

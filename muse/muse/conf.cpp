@@ -571,6 +571,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.exp2ByteTimeSigs = xml.parseInt();
                         else if (tag == "expOptimNoteOffs")
                               config.expOptimNoteOffs = xml.parseInt();
+                        else if (tag == "importMidiSplitParts")
+                              config.importMidiSplitParts = xml.parseInt();
                         else if (tag == "midiInputDevice")
                               midiInputPorts = xml.parseInt();
                         else if (tag == "midiInputChannel")
@@ -1007,6 +1009,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.intTag(level, "smfFormat", config.smfFormat);
       xml.intTag(level, "exp2ByteTimeSigs", config.exp2ByteTimeSigs);
       xml.intTag(level, "expOptimNoteOffs", config.expOptimNoteOffs);
+      xml.intTag(level, "importMidiSplitParts", config.importMidiSplitParts);
       xml.intTag(level, "startMode", config.startMode);
       xml.strTag(level, "startSong", config.startSong);
 
@@ -1311,6 +1314,7 @@ void MidiFileConfig::updateValues()
       copyrightEdit->setText(config.copyright);
       optNoteOffs->setChecked(config.expOptimNoteOffs);
       twoByteTimeSigs->setChecked(config.exp2ByteTimeSigs);
+      splitPartsCheckBox->setChecked(config.importMidiSplitParts);
       }
 
 //---------------------------------------------------------
@@ -1329,6 +1333,7 @@ void MidiFileConfig::okClicked()
       config.copyright    = copyrightEdit->text();
       config.expOptimNoteOffs = optNoteOffs->isChecked();
       config.exp2ByteTimeSigs = twoByteTimeSigs->isChecked();
+      config.importMidiSplitParts = splitPartsCheckBox->isChecked();
 
       muse->changeConfig(true);  // write config file
       close();

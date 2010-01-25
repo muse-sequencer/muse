@@ -27,6 +27,7 @@
 #include "drummap.h"
 #include "xml.h"
 #include "audio.h"
+#include "gconfig.h"
 
 //---------------------------------------------------------
 //   importMidi
@@ -288,61 +289,76 @@ void MusE::processTrack(MidiTrack* track)
                   lastTick = epos;
             }
 
-      int len = song->roundUpBar(lastTick+1);
-      int bar2, beat;
-      unsigned tick;
-      sigmap.tickValues(len, &bar2, &beat, &tick);
-
       QString partname = track->name();
+      int len = song->roundUpBar(lastTick+1);
 
-      int lastOff = 0;
-      int st = -1;      // start tick current part
-      int x1 = 0;       // start tick current measure
-      int x2 = 0;       // end tick current measure
-
-      for (int bar = 0; bar < bar2; ++bar, x1 = x2) {
-            x2 = sigmap.bar2tick(bar+1, 0, 0);
-            if (lastOff > x2) {
-                  // this measure is busy!
-                  continue;
-                  }
-            iEvent i1 = tevents->lower_bound(x1);
-            iEvent i2 = tevents->lower_bound(x2);
-
-            if (i1 == i2) {   // empty?
-                  if (st != -1) {
-                        MidiPart* part = new MidiPart(track);
-                        part->setTick(st);
-                        part->setLenTick(x1-st);
-// printf("new part %d len: %d\n", st, x1-st);
-                        part->setName(partname);
-                        pl->add(part);
-                        st = -1;
-                        }
-                  }
-            else {
-                  if (st == -1)
-                        st = x1;    // begin new  part
-                  //HACK:
-                  //lastOff:
-                  for (iEvent i = i1; i != i2; ++i) {
-                        Event event = i->second;
-                        if (event.type() == Note) {
-                              int off = event.tick() + event.lenTick();
-                              if (off > lastOff)
-                                    lastOff = off;
-                              }
-                        }
-                  }
-            }
-      if (st != -1) {
-            MidiPart* part = new MidiPart(track);
-            part->setTick(st);
-// printf("new part %d len: %d\n", st, x2-st);
-            part->setLenTick(x2-st);
-            part->setName(partname);
-            pl->add(part);
-            }
+      // p3.3.27
+      if(config.importMidiSplitParts)
+      {
+        
+        int bar2, beat;
+        unsigned tick;
+        sigmap.tickValues(len, &bar2, &beat, &tick);
+        
+        int lastOff = 0;
+        int st = -1;      // start tick current part
+        int x1 = 0;       // start tick current measure
+        int x2 = 0;       // end tick current measure
+  
+        for (int bar = 0; bar < bar2; ++bar, x1 = x2) {
+              x2 = sigmap.bar2tick(bar+1, 0, 0);
+              if (lastOff > x2) {
+                    // this measure is busy!
+                    continue;
+                    }
+              iEvent i1 = tevents->lower_bound(x1);
+              iEvent i2 = tevents->lower_bound(x2);
+  
+              if (i1 == i2) {   // empty?
+                    if (st != -1) {
+                          MidiPart* part = new MidiPart(track);
+                          part->setTick(st);
+                          part->setLenTick(x1-st);
+  // printf("new part %d len: %d\n", st, x1-st);
+                          part->setName(partname);
+                          pl->add(part);
+                          st = -1;
+                          }
+                    }
+              else {
+                    if (st == -1)
+                          st = x1;    // begin new  part
+                    //HACK:
+                    //lastOff:
+                    for (iEvent i = i1; i != i2; ++i) {
+                          Event event = i->second;
+                          if (event.type() == Note) {
+                                int off = event.tick() + event.lenTick();
+                                if (off > lastOff)
+                                      lastOff = off;
+                                }
+                          }
+                    }
+              }
+        if (st != -1) {
+              MidiPart* part = new MidiPart(track);
+              part->setTick(st);
+  // printf("new part %d len: %d\n", st, x2-st);
+              part->setLenTick(x2-st);
+              part->setName(partname);
+              pl->add(part);
+              }
+      }
+      else
+      {
+        // Just one long part...
+        MidiPart* part = new MidiPart(track);
+        //part->setTick(st);
+        part->setTick(0);
+        part->setLenTick(len);
+        part->setName(partname);
+        pl->add(part);
+      }
 
       //-------------------------------------------------------------
       //    assign events to parts

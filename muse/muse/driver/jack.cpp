@@ -196,12 +196,30 @@ static void timebase_callback(jack_transport_state_t /* state */,
       pos->bar++;
       pos->beat++;
       pos->bar_start_tick = Pos(pos->bar, 0, 0).tick();
+      
       //
       //  dummy:
       //
-      pos->beats_per_bar = 4;
-      pos->beat_type = 4;
-      pos->ticks_per_beat = 384;
+      
+      // p3.3.26
+      //pos->beats_per_bar = 4;
+      //pos->beat_type = 4;
+      //pos->ticks_per_beat = 384;
+      //
+      /* // From example client transport.c :
+      float time_beats_per_bar = 4.0;
+      float time_beat_type = 0.25;            // Huh? Inverted? From docs: "Time signature 'denominator'" 
+      double time_ticks_per_beat = 1920.0;    // Huh? Ticks per beat should be 24 etc. not 384 or 1920 etc. Otherwise it would be called 'frames_per_beat'.
+      double time_beats_per_minute = 120.0;
+      */
+      //
+      int z, n;
+      sigmap.timesig(p.tick(), z, n);
+      pos->beats_per_bar = z;
+      pos->beat_type = n;
+      //pos->ticks_per_beat = config.division;
+      pos->ticks_per_beat = 24;
+      
       int tempo = tempomap.tempo(p.tick());
       pos->beats_per_minute = (60000000.0 / tempo) * tempomap.globalTempo()/100.0;
       }
