@@ -47,12 +47,15 @@ static bool mtcValid;
 static int mtcLost;
 static bool mtcSync;    // receive complete mtc frame?
 
+// p3.3.28
+static bool playPendingFirstClock = false;
+
 // Not used yet.
 // static bool mcStart = false;
 // static int mcStartTick;
 
 // p3.3.25
-// From the "Introduction to the Volatile Keyword" at Embedded.com
+// From the "Introduction to the Volatile Keyword" at Embedded dot com
 /* A variable should be declared volatile whenever its value could change unexpectedly. 
  ... <such as> global variables within a multi-threaded application    
  ... So all shared global variables should be declared volatile */
@@ -454,6 +457,9 @@ void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
             case 1:
                   if (debugSync)
                         printf("  MMC: STOP\n");
+                  
+                  playPendingFirstClock = false;
+                  
                   //if ((state == PLAY || state == PRECOUNT))
                   if (audio->isPlaying())
                         audio->msgPlay(false);
@@ -479,18 +485,23 @@ void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
 
             case 4:
                   printf("MMC: FF not implemented\n");
+                  playPendingFirstClock = false;
                   break;
             case 5:
                   printf("MMC: REWIND not implemented\n");
+                  playPendingFirstClock = false;
                   break;
             case 6:
                   printf("MMC: REC STROBE not implemented\n");
+                  playPendingFirstClock = false;
                   break;
             case 7:
                   printf("MMC: REC EXIT not implemented\n");
+                  playPendingFirstClock = false;
                   break;
             case 0xd:
                   printf("MMC: RESET not implemented\n");
+                  playPendingFirstClock = false;
                   break;
             case 0x44:
                   if (p[5] == 0) {
@@ -594,7 +605,7 @@ void MidiSeq::mtcInputQuarter(int port, unsigned char c)
                     if(port == curMidiSyncInPort && extSyncFlag.value() && msync.MTCIn()) 
                     {
                       if(debugSync)
-                        printf("mtcInputQuarter: hour byte:%hx\n", tmphour);
+                        printf("MidiSeq::mtcInputQuarter hour byte:%hx\n", tmphour);
                       mtcSyncMsg(mtcCurTime, type, !mtcSync);
                     }  
                   }
@@ -810,8 +821,21 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     if(p != port && midiPorts[p].syncInfo().MCOut())
                       midiPorts[p].sendClock();
                   
-                  // p3.3.25
-                  if(audio->isPlaying())
+                  // p3.3.28
+                  if(playPendingFirstClock)
+                  {
+                    playPendingFirstClock = false;
+                    // Hopefully the transport will be ready by now, the seek upon start should mean the 
+                    //  audio prefetch has already finished or at least started...
+                    // Must comfirm that play does not force a complete prefetch again, but don't think so...
+                    if(!audio->isPlaying())
+                      audioDevice->startTransport();
+                  }
+                  else
+                  // This part will be run on the second and subsequent clocks, after start.
+                  // Can't check audio state, might not be playing yet, we might miss some increments.
+                  //if(audio->isPlaying())
+                  if(playStateExt)
                   {
                     int div = config.division/24;
                     midiExtSyncTicks += div;
@@ -1104,7 +1128,9 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         // Changed because msgPlay calls audioDevice->seekTransport(song->cPos())
                         //  and song->cPos() may not be changed to 0 yet, causing tranport not to go to 0.
                         //audio->msgPlay(true);
-                        audioDevice->startTransport();
+                        //audioDevice->startTransport();
+                        // p3.3.28
+                        playPendingFirstClock = true;
                         
                         playStateExt = true;
                         }
@@ -1121,7 +1147,11 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         //unsigned curFrame = audio->curFrame();
                         //recTick = tempomap.frame2tick(curFrame); // don't think this will work... (ml)
                         //alignAllTicks();
-                        audio->msgPlay(true);
+                        
+                        // p3.3.28
+                        //audio->msgPlay(true);
+                        playPendingFirstClock = true;
+                        
                         playStateExt = true;
                         }
                   break;
@@ -1130,6 +1160,8 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   for(int p = 0; p < MIDI_PORTS; ++p)
                     if(p != port && midiPorts[p].syncInfo().MCOut())
                       midiPorts[p].sendStop();
+                  
+                  playPendingFirstClock = false;
                   
                   if (debugSync)
                         printf("realtimeSystemInput stop\n");
@@ -1158,7 +1190,7 @@ void MidiSeq::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
       double time = mtc.time();
       double stime = mtc.time(type);
       if (debugSync)
-            printf("mtcSyncMsg: time:%lf stime:%lf seekFlag:%d\n", time, stime, seekFlag);
+            printf("MidiSeq::mtcSyncMsg time:%lf stime:%lf seekFlag:%d\n", time, stime, seekFlag);
 
       if (seekFlag && audio->isRunning() /*state == START_PLAY*/) {
 //            int tick = tempomap.time2tick(time);
@@ -1166,7 +1198,7 @@ void MidiSeq::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
             //write(sigFd, "1", 1);  // say PLAY to gui
             if (!checkAudioDevice()) return;
             if (debugSync)
-              printf("mtcSyncMsg: starting transport.\n");
+              printf("MidiSeq::mtcSyncMsg starting transport.\n");
             audioDevice->startTransport();
             return;
             }

@@ -127,6 +127,9 @@ void MidiSeq::processMsg(const ThreadMsg* m)
 
 void MidiSeq::processStop()
       {
+      // p3.3.28
+      playStateExt = false; // not playing
+      
       //
       //    stop stuck notes
       //
