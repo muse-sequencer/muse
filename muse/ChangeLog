@@ -1,3 +1,6 @@
+26.01.2010
+      * Fixed: Import midi 'replace' broken last fixes. (T356)
+      * Fixed: External midi sync: Wait until first clock after start to start transport, and >= second clock to increment ticks. (T356)
 24.01.2010
       * Added: Midi sync: Added 'Jack timebase master' checkbox, removed requirement of MusE being tempo map master. (T356)
       * Added: While on external sync and Jack timebase master, reports correct MusE BBT info to Jack. (Tempo not correct yet). (T356)

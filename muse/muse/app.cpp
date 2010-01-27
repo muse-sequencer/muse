@@ -1518,7 +1518,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                   }
             }
       //else if (ex == "mid." || ex == "kar.") {
-      else if (mex == "mid." || mex == "kar.") {
+      else if (mex == "mid" || mex == "kar") {
             setConfigDefaults();
             if (!importMidi(name, false))
                   setUntitledProject();
