@@ -35,63 +35,70 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
       // reset buffer to zero
       for (int i = 0; i < channels(); ++i)
             memset(bp[i], 0, samples * sizeof(float));
-      PartList* pl = parts();
-
-      unsigned n = samples;
-      for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
-            WavePart* part = (WavePart*)(ip->second);
-            // Changed by Tim. p3.3.17
-            //if (part->mute() || isMute())
-            if (part->mute())
+      
+      // p3.3.29
+      // Process only if track is not off.
+      if(!off())
+      {  
+        
+        PartList* pl = parts();
+        unsigned n = samples;
+        for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
+              WavePart* part = (WavePart*)(ip->second);
+              // Changed by Tim. p3.3.17
+              //if (part->mute() || isMute())
+              if (part->mute())
+                  continue;
+              
+              unsigned p_spos = part->frame();
+              unsigned p_epos = p_spos + part->lenFrame();
+              if (pos + n < p_spos)
+                break;
+              if (pos >= p_epos)
                 continue;
-            
-            unsigned p_spos = part->frame();
-            unsigned p_epos = p_spos + part->lenFrame();
-            if (pos + n < p_spos)
-              break;
-            if (pos >= p_epos)
-              continue;
-
-            EventList* events = part->events();
-            for (iEvent ie = events->begin(); ie != events->end(); ++ie) {
-                  Event& event = ie->second;
-                  unsigned e_spos  = event.frame() + p_spos;
-                  unsigned nn      = event.lenFrame();
-                  unsigned e_epos  = e_spos + nn;
-                  
-                  if (pos + n < e_spos) 
-                    break;
-                  if (pos >= e_epos) 
-                    continue;
-
-                  int offset = e_spos - pos;
-
-                  unsigned srcOffset, dstOffset;
-                  if (offset > 0) {
-                        nn = n - offset;
-                        srcOffset = 0;
-                        dstOffset = offset;
-                        }
-                  else {
-                        srcOffset = -offset;
-                        dstOffset = 0;
-                        
-                        nn += offset;
-                        if (nn > n)
-                              nn = n;
-                        }
-                  float* bpp[channels()];
-                  for (int i = 0; i < channels(); ++i)
-                        bpp[i] = bp[i] + dstOffset;
-
-                  // By T356. Allow overlapping parts or events to mix together !
-                  // Since the buffers are cleared above, just read and add (don't overwrite) the samples.
-                  //event.read(srcOffset, bpp, channels(), nn);
-                  //event.read(srcOffset, bpp, channels(), nn, false);
-                  event.readAudio(srcOffset, bpp, channels(), nn, doSeek, false);
-                  
-                  }
-            }
+  
+              EventList* events = part->events();
+              for (iEvent ie = events->begin(); ie != events->end(); ++ie) {
+                    Event& event = ie->second;
+                    unsigned e_spos  = event.frame() + p_spos;
+                    unsigned nn      = event.lenFrame();
+                    unsigned e_epos  = e_spos + nn;
+                    
+                    if (pos + n < e_spos) 
+                      break;
+                    if (pos >= e_epos) 
+                      continue;
+  
+                    int offset = e_spos - pos;
+  
+                    unsigned srcOffset, dstOffset;
+                    if (offset > 0) {
+                          nn = n - offset;
+                          srcOffset = 0;
+                          dstOffset = offset;
+                          }
+                    else {
+                          srcOffset = -offset;
+                          dstOffset = 0;
+                          
+                          nn += offset;
+                          if (nn > n)
+                                nn = n;
+                          }
+                    float* bpp[channels()];
+                    for (int i = 0; i < channels(); ++i)
+                          bpp[i] = bp[i] + dstOffset;
+  
+                    // By T356. Allow overlapping parts or events to mix together !
+                    // Since the buffers are cleared above, just read and add (don't overwrite) the samples.
+                    //event.read(srcOffset, bpp, channels(), nn);
+                    //event.read(srcOffset, bpp, channels(), nn, false);
+                    event.readAudio(srcOffset, bpp, channels(), nn, doSeek, false);
+                    
+                    }
+              }
+      }
+              
       if(config.useDenormalBias) {
             // add denormal bias to outdata
             for (int i = 0; i < channels(); ++i)

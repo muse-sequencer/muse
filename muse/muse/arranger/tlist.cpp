@@ -58,7 +58,7 @@ void THeaderTip::maybeTip(const QPoint &pos)
       QString p;
       switch (section) {
             case COL_RECORD:   p = QHeader::tr("Enable Recording"); break;
-            case COL_MUTE:     p = QHeader::tr("Mute Indicator"); break;
+            case COL_MUTE:     p = QHeader::tr("Mute/Off Indicator"); break;
             case COL_SOLO:     p = QHeader::tr("Solo Indicator"); break;
             case COL_CLASS:    p = QHeader::tr("Track Type"); break;
             case COL_NAME:     p = QHeader::tr("Track Name"); break;
@@ -878,10 +878,16 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     
                   break;
             case COL_MUTE:
-                  if (t->off())
-                        t->setOff(false);
+                  // p3.3.29
+                  if ((button == QMouseEvent::RightButton) || (ev->state() & ControlButton))
+                    t->setOff(!t->off());
                   else
-                        t->setMute(!t->mute());
+                  {
+                    if (t->off())
+                          t->setOff(false);
+                    else
+                          t->setMute(!t->mute());
+                  }        
                   song->update(SC_MUTE);
                   break;
             case COL_SOLO:
@@ -1145,10 +1151,16 @@ void TList::wheelEvent(QWheelEvent* ev)
             case COL_NAME:
                   break;
             case COL_MUTE:
-                  if (t->off())
-                        t->setOff(false);
+                  // p3.3.29
+                  if (ev->state() & ControlButton)
+                    t->setOff(!t->off());
                   else
-                        t->setMute(!t->mute());
+                  {
+                    if (t->off())
+                          t->setOff(false);
+                    else
+                          t->setMute(!t->mute());
+                  }        
                   song->update(SC_MUTE);
                   break;
 

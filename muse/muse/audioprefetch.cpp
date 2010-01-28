@@ -180,6 +180,11 @@ void AudioPrefetch::prefetch(bool doSeek)
       WaveTrackList* tl = song->waves();
       for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
             WaveTrack* track = *it;
+            // p3.3.29
+            // Save time. Don't bother if track is off. Track On/Off not designed for rapid repeated response (but mute is).
+            if(track->off())
+              continue;
+            
             int ch           = track->channels();
             float* bp[ch];
 // printf("prefetch %d\n", writePos);

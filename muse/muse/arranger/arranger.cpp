@@ -68,7 +68,7 @@ QString TWhatsThis::text(const QPoint& pos)
             return QString::null;
       switch(section) {
             case COL_RECORD:   return QHeader::tr("Enable recording. Click to toggle."); break;
-            case COL_MUTE:     return QHeader::tr("Mute indicator. Click to toggle."); break;
+            case COL_MUTE:     return QHeader::tr("Mute indicator. Click to toggle.\nRight-click to toggle track on/off.\nMute is designed for rapid, repeated action.\nOn/Off is not!"); break;
             case COL_SOLO:     return QHeader::tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed,\n indicated by a dark square."); break;
             case COL_CLASS:    return QHeader::tr("Track type. Right-click to change\n midi and drum track types."); break;
             case COL_NAME:     return QHeader::tr("Track name. Double-click to edit.\nRight-click for more options."); break;

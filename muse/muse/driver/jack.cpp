@@ -187,10 +187,14 @@ static void timebase_callback(jack_transport_state_t /* state */,
    int /* new_pos */,
    void*)
   {
+      // p3.3.29
+      //printf("Jack timebase_callback pos->frame:%u audio->tickPos:%d song->cpos:%d\n", pos->frame, audio->tickPos(), song->cpos());
+      
       // P3.3.27
       //Pos p(pos->frame, false);
-      //Pos p(extSyncFlag.value() ? audio->tickPos() : pos->frame, extSyncFlag.value() ? true : false);
-      Pos p(extSyncFlag.value() ? song->cpos() : pos->frame, extSyncFlag.value() ? true : false);
+      Pos p(extSyncFlag.value() ? audio->tickPos() : pos->frame, extSyncFlag.value() ? true : false);
+      // Can't use song pos - it is only updated every (slow) GUI heartbeat !
+      //Pos p(extSyncFlag.value() ? song->cpos() : pos->frame, extSyncFlag.value() ? true : false);
       
       pos->valid = JackPositionBBT;
       p.mbt(&pos->bar, &pos->beat, &pos->tick);

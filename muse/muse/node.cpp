@@ -360,7 +360,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
   
     // getData can use the supplied buffers, or change buffer to point to its own local buffers or Jack buffers etc. 
     // For ex. if this is an audio input, Jack will set the pointers for us in AudioInput::getData!
-    if(!getData(pos, srcChannels, nframes, buffer) || off() || (isMute() && !_prefader)) 
+    // p3.3.29 1/27/10 Don't do any processing at all if off. Whereas, mute needs to be ready for action at all times,
+    //  so still call getData before it. Off is NOT meant to be toggled rapidly, but mute is !
+    //if(!getData(pos, srcChannels, nframes, buffer) || off() || (isMute() && !_prefader)) 
+    if(off() || !getData(pos, srcChannels, nframes, buffer) || (isMute() && !_prefader)) 
     {
       //Added by Tim. p3.3.16
       #ifdef NODE_DEBUG

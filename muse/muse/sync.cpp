@@ -548,7 +548,7 @@ void MidiSeq::mtcInputQuarter(int port, unsigned char c)
       static int hour, min, sec, frame;
 
       // p3.3.28
-      printf("MidiSeq::mtcInputQuarter c:%h\n", c);
+      //printf("MidiSeq::mtcInputQuarter c:%h\n", c);
       
       int valL = c & 0xf;
       int valH = valL << 4;
