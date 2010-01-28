@@ -3,6 +3,7 @@
       * Added: Arranger track list: Quick 'right-click' or 'ctrl-click' or 'ctrl-mouse-wheel' toggling of Track On/Off. (T356) 
         - Note this includes midi tracks now! Remains to be seen whether allowing midi off is useful and will work, 
            or should be filtered out. **TODO: Turn off remaining controls in midi strips, turn off actual midi playback and record.
+      * Feature: Initial Jack midi support. Imported from Larry Valkama's GIT repo. (T356)
 26.01.2010
       * Fixed: Import midi 'replace' broken last fixes. (T356)
       * Fixed: External midi sync: Wait until first clock after start to start transport, and >= second clock to increment ticks. (T356)

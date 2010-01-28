@@ -11,6 +11,7 @@
 #include <stdarg.h>
 //#include <time.h> 
 #include <unistd.h>
+#include <jack/midiport.h>
 
 #include "audio.h"
 #include "globals.h"
@@ -21,6 +22,9 @@
 #include "tempo.h"
 #include "sync.h"
 #include "utils.h"
+
+#include "jackmidi.h"
+
 
 #define JACK_DEBUG 0
 
@@ -34,6 +38,15 @@ extern void undoSetuid();
 #ifdef VST_SUPPORT
 #include <fst.h>
 #endif
+
+extern int jackmidi_pi[2];
+extern int jackmidi_po[2];
+
+jack_port_t *midi_port_in[JACK_MIDI_CHANNELS];
+jack_port_t *midi_port_out[JACK_MIDI_CHANNELS];
+
+muse_jack_midi_buffer jack_midi_out_data[JACK_MIDI_CHANNELS];
+muse_jack_midi_buffer jack_midi_in_data[JACK_MIDI_CHANNELS];
 
 JackAudioDevice* jackAudio;
 
@@ -105,12 +118,117 @@ static void jack_thread_init (void* )  // data
       }
 
 //---------------------------------------------------------
-//   processAudio
+//   processAudio + Midi
 //    JACK callback
 //---------------------------------------------------------
+void
+print_triplet(unsigned char *data)
+{
+  int a,b,c;
+  a = b = c = 0;
+  memcpy(&a, data, 1);
+  memcpy(&b, data+1, 1);
+  memcpy(&c, data+2, 1);
+  fprintf(stderr, "%x,%x,%x", a, b, c);
+}
+
+void handle_jack_midi_in_events(jack_nframes_t frames)
+{
+  char buf = 0;
+  int i,j;
+  jack_midi_event_t midi_event;
+  unsigned char t,n,v;
+
+  for(j = 0; j < JACK_MIDI_CHANNELS; j++){
+    void *midi_buffer_in = jack_port_get_buffer(midi_port_in[j], frames);
+    int event_count = jack_midi_get_event_count(midi_buffer_in);
+
+    for(i = 0; i < event_count; i++){
+      jack_midi_event_get(&midi_event, midi_buffer_in, i);
+      t = midi_event.buffer[0];
+      n = midi_event.buffer[1];
+      v = midi_event.buffer[2];
+      if(((*(midi_event.buffer) & 0xf0)) == 0x90){
+        fprintf(stderr, "jack-midi-in-event: ON_ time=%d %u ", midi_event.time,
+                midi_event.size);
+        print_triplet(midi_event.buffer);
+        fprintf(stderr, "\n");
+      }else if(((*(midi_event.buffer)) & 0xf0) == 0x80){
+        fprintf(stderr, "jack-midi-in-event: OFF time=%d %u ", midi_event.time,
+                midi_event.size);
+        print_triplet(midi_event.buffer);
+        fprintf(stderr, "\n");
+      }else{
+        fprintf(stderr, "jack-midi-in-event: ??? time=%d %u ", midi_event.time,
+                midi_event.size);
+        print_triplet(midi_event.buffer);
+        fprintf(stderr, "\n");
+      }
+      jack_midi_in_data[j].buffer[0] = t;
+      jack_midi_in_data[j].buffer[1] = n;
+      jack_midi_in_data[j].buffer[2] = v;
+      jack_midi_in_data[j].buffer[3] = 1;
+      fprintf(stderr, "handle_jack_midi_in_events() w\n");
+      write(jackmidi_pi[1], &buf, 1);
+      fprintf(stderr, "handle_jack_midi_in_events() wd\n");
+    }
+  }
+}
+
+void handle_jack_midi_out_events(jack_nframes_t frames)
+{
+  unsigned char *data;
+  void *port_buf;
+  int i,j,n,x;
+
+  for(i = 0; i < JACK_MIDI_CHANNELS; i++){
+    /* jack-midi-clear any old events */
+    while(jack_midi_out_data[i].buffer[jack_midi_out_data[i].take*4+3] == 2){
+      port_buf = jack_port_get_buffer(midi_port_out[i], frames);
+      jack_midi_clear_buffer(port_buf);
+      jack_midi_out_data[i].buffer[jack_midi_out_data[i].take*4+3] = 0;
+      /* point the take to the next slot */
+      jack_midi_out_data[i].take++;
+      if(jack_midi_out_data[i].take >= JACK_MIDI_BUFFER_SIZE){
+        jack_midi_out_data[i].take = 0;
+      }
+    }
+    /* check if any incoming midi-events from muse */
+    if(jack_midi_out_data[i].give != jack_midi_out_data[i].take){
+
+      if(jack_midi_out_data[i].give > jack_midi_out_data[i].take){
+        n = jack_midi_out_data[i].give - jack_midi_out_data[i].take;
+      }else{
+        n = jack_midi_out_data[i].give +
+            (JACK_MIDI_BUFFER_SIZE - jack_midi_out_data[i].take);
+      }
+      port_buf = jack_port_get_buffer(midi_port_out[i], frames);
+      jack_midi_clear_buffer(port_buf);
+      /* FIX: midi events has different sizes, compare note-on to
+              program-change. We should first walk over the events
+              counting the size. */
+      data = jack_midi_event_reserve(port_buf, 0, n*3);
+      x = jack_midi_out_data[i].take;
+      for(j = 0; j < n; j++){
+        data[j*3+0] = jack_midi_out_data[i].buffer[x*4+0];
+        data[j*3+1] = jack_midi_out_data[i].buffer[x*4+1];
+        data[j*3+2] = jack_midi_out_data[i].buffer[x*4+2];
+        /* after having copied the buffer over to the jack-buffer, 
+         * mark the muses midi-out buffer as 'need-cleaning' */
+        jack_midi_out_data[i].buffer[x*4+3] = 2;
+        x++;
+        if(x >= JACK_MIDI_BUFFER_SIZE){
+          x = 0;
+        }
+      }
+    }
+  }
+}
 
 static int processAudio(jack_nframes_t frames, void*)
-      {
+{
+  handle_jack_midi_in_events(frames);
+  handle_jack_midi_out_events(frames);
 //      if (JACK_DEBUG)
 //            printf("processAudio - >>>>\n");
       segmentSize = frames;
@@ -122,8 +240,8 @@ static int processAudio(jack_nframes_t frames, void*)
             }
 //      if (JACK_DEBUG)
 //            printf("processAudio - <<<<\n");
-      return 0;
-      }
+  return 0;
+}
 
 //---------------------------------------------------------
 //   processSync
@@ -382,6 +500,33 @@ bool initJackAudio()
             }
       undoSetuid();
       
+  /* setup midi input/output */
+  memset(jack_midi_out_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
+  memset(jack_midi_in_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
+  if(client){
+    for(i = 0; i < JACK_MIDI_CHANNELS; i++){
+      char buf[80];
+      snprintf(buf, 80, "muse-jack-midi-in-%d", i+1);
+      midi_port_in[i] = jack_port_register(client, buf,
+                                           JACK_DEFAULT_MIDI_TYPE,
+                                           JackPortIsInput, 0);
+      if(midi_port_in[i] == NULL){
+        fprintf(stderr, "failed to register jack-midi-in\n");
+        exit(-1);
+      }
+      snprintf(buf, 80, "muse-jack-midi-out-%d", i+1);
+      midi_port_out[i] = jack_port_register(client, buf,
+                                            JACK_DEFAULT_MIDI_TYPE,
+                                            JackPortIsOutput, 0);
+      if(midi_port_out == NULL){
+        fprintf(stderr, "failed to register jack-midi-out\n");
+        exit(-1);
+      }
+    }
+  }else{
+    fprintf(stderr, "WARNING NO muse-jack midi connection\n");
+  }
+
       if (client) {
             audioDevice = jackAudio;
             return false;

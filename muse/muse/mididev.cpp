@@ -29,6 +29,7 @@
 extern void initMidiSerial();
 #endif
 extern bool initMidiAlsa();
+extern bool initMidiJack();
 
 MidiDeviceList midiDevices;
 extern void processMidiInputTransformPlugins(MEvent&);
@@ -46,6 +47,13 @@ void initMidiDevices()
           {
           QMessageBox::critical(NULL, "MusE fatal error.", "MusE failed to initialize the\n" 
                                                           "Alsa midi subsystem, check\n"
+                                                          "your configuration.");
+          exit(-1);
+          }
+      if(initMidiJack())
+          {
+          QMessageBox::critical(NULL, "MusE fatal error.", "MusE failed to initialize the\n" 
+                                                          "Jack midi subsystem, check\n"
                                                           "your configuration.");
           exit(-1);
           }
