@@ -40,6 +40,11 @@ class Event {
       Event(EventType t);
       Event(const Event& e);
       Event(EventBase* eb);
+      
+      //#ifdef USE_SAMPLERATE
+      //Event(EventBase* eb, AudioConverter* cv); 
+      //#endif  
+      
       virtual ~Event();
 
       bool empty() const;

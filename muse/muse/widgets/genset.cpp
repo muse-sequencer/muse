@@ -13,6 +13,7 @@
 #include <qlineedit.h>
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
+#include <qlabel.h>
 
 #include "genset.h"
 #include "app.h"
@@ -25,6 +26,9 @@ static int rtcResolutions[] = {
       };
 static int divisions[] = {
       48, 96, 192, 384, 768, 1536, 3072, 6144, 12288
+      };
+static int dummyAudioBufSizes[] = {
+      16, 32, 64, 128, 256, 512, 1024, 2048
       };
 
 //---------------------------------------------------------
@@ -52,6 +56,12 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent, const char* name)
                   break;
                   }
             }
+      for (unsigned i = 0; i < sizeof(dummyAudioBufSizes)/sizeof(*dummyAudioBufSizes); ++i) {
+            if (dummyAudioBufSizes[i] == config.dummyAudioBufSize) {
+                  dummyAudioSize->setCurrentItem(i);
+                  break;
+                  }
+            }
       
       guiRefreshSelect->setValue(config.guiRefresh);
       minSliderSelect->setValue(int(config.minSlider));
@@ -60,6 +70,11 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent, const char* name)
       denormalCheckBox->setChecked(config.useDenormalBias);
       outputLimiterCheckBox->setChecked(config.useOutputLimiter);
       vstInPlaceCheckBox->setChecked(config.vstInPlace);
+      dummyAudioRate->setValue(config.dummyAudioSampleRate);
+      
+      //DummyAudioDevice* dad = dynamic_cast<DummyAudioDevice*>(audioDevice);
+      //dummyAudioRealRate->setText(dad ? QString().setNum(sampleRate) : "---");
+      dummyAudioRealRate->setText(QString().setNum(sampleRate));
       
       helpBrowser->setText(config.helpBrowser);
       startSongEntry->setText(config.startSong);
@@ -137,6 +152,9 @@ void GlobalSettingsConfig::apply()
       config.helpBrowser = helpBrowser->text();
       config.startSong   = startSongEntry->text();
       config.startMode   = startSongGroup->selectedId();
+      int das = dummyAudioSize->currentItem();
+      config.dummyAudioBufSize = dummyAudioBufSizes[das];
+      config.dummyAudioSampleRate = dummyAudioRate->value();
 
       int div            = midiDivisionSelect->currentItem();
       config.division    = divisions[div];

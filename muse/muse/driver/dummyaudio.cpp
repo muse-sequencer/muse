@@ -19,13 +19,14 @@
 #include "song.h"
 #include "driver/alsatimer.h"
 #include "pos.h"
+#include "gconfig.h"
 
 #define DEBUG_DUMMY 0
 //---------------------------------------------------------
 //   DummyAudioDevice
 //---------------------------------------------------------
 
-static const unsigned dummyFrames = 1024;
+//static const unsigned dummyFrames = 1024;
 
 enum Cmd {
 trSeek,
@@ -72,8 +73,12 @@ class DummyAudioDevice : public AudioDevice {
 
       virtual float* getBuffer(void* /*port*/, unsigned long nframes)
             {
-            if (nframes > dummyFrames) {
-                  printf("error: segment size > 1024\n");
+            // p3.3.30
+            //if (nframes > dummyFrames) {
+                  //printf("error: segment size > 1024\n");
+            if (nframes > segmentSize) {
+                  printf("DummyAudioDevice::getBuffer nframes > segment size\n");
+                  
                   exit(-1);
                   }
             return buffer;
@@ -162,7 +167,9 @@ DummyAudioDevice* dummyAudio = 0;
 DummyAudioDevice::DummyAudioDevice() 
       {
       // Added by Tim. p3.3.15
-      posix_memalign((void**)&buffer, 16, sizeof(float) * dummyFrames);
+      // p3.3.30
+      //posix_memalign((void**)&buffer, 16, sizeof(float) * dummyFrames);
+      posix_memalign((void**)&buffer, 16, sizeof(float) * config.dummyAudioBufSize);
       
       realtimeFlag = false;
       state = Audio::STOP;
@@ -225,9 +232,14 @@ std::list<QString> DummyAudioDevice::inputPorts()
 static void* dummyLoop(void* ptr)
       {
       //unsigned int tickRate = 25;
-      sampleRate = 25600;
-      segmentSize = dummyFrames;
-      unsigned int tickRate = sampleRate / dummyFrames;
+      
+      // P3.3.30
+      //sampleRate = 25600;
+      sampleRate = config.dummyAudioSampleRate;
+      //segmentSize = dummyFrames;
+      segmentSize = config.dummyAudioBufSize;
+      //unsigned int tickRate = sampleRate / dummyFrames;
+      unsigned int tickRate = sampleRate / segmentSize;
       
       AlsaTimer timer;
       fprintf(stderr, "Finding best alsa timer for dummy driver:\n");
@@ -240,6 +252,12 @@ static void* dummyLoop(void* ptr)
        * consistent.
        */
       tickRate = timer.setTimerFreq( /*250*/ tickRate );
+      
+      // p3.3.31
+      // If it didn't work, get the actual rate.
+      if(tickRate == 0)
+        tickRate = timer.getTimerFreq();
+        
       sampleRate = tickRate * segmentSize;
       timer.startTimer();
 

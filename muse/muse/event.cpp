@@ -65,7 +65,16 @@ void EventBase::dump(int n) const
 
 Event Event::clone()
       {
+      // p3.3.31
+      printf("Event::clone() this:%p\n", this);
+      
+      // p3.3.31
+      //return Event(ev->clone());
+      #ifdef USE_SAMPLERATE
+      return Event(ev->clone(), _audConv);
+      #else
       return Event(ev->clone());
+      #endif
       }
 
 Event::Event() 
@@ -113,7 +122,19 @@ Event::Event(EventBase* eb) {
               _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
             #endif  
             }
-
+#ifdef USE_SAMPLERATE
+Event::Event(EventBase* eb, AudioConverter* cv) {
+            _sfCurFrame = 0;
+            _audConv = 0;
+            
+            ev = eb;
+            ++(ev->refCount);
+            
+            if(cv)
+              _audConv = cv->reference();
+            }
+#endif  
+            
 Event::~Event() {
             if (ev && --(ev->refCount) == 0) {
                   delete ev;
@@ -254,14 +275,30 @@ void Event::setSndFile(SndFileR& sf)
   
   #ifdef USE_SAMPLERATE
   //if(_audConv)
-  if(_audConv && !sf.isNull())
-  { 
+//  if(_audConv && !sf.isNull())
+//  { 
     //_audConv->setSndFile(sf);
     //if(sf.isNull())
     //  AudioConverter::release(_audConv);
     //else
+//      _audConv->setChannels(sf.channels());
+//  }  
+  
+  if(_audConv)
+  { 
+    // Do we release? Or keep the converter around, while gaining speed since no rapid creation/destruction. 
+    //if(sf.isNull())
+    //  _audConv = AudioConverter::release(_audConv);
+    //else
+    //  _audConv->setChannels(sf.channels());
+    if(!sf.isNull())
       _audConv->setChannels(sf.channels());
-  }  
+  }
+  else
+  {
+    if(!sf.isNull())
+      _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
+  }
   #endif
 }
 

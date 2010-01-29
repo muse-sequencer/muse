@@ -1,3 +1,6 @@
+29.01.2010
+      * Feature: Dummy audio driver: Added global settings for sample rate and period size. (T356)
+        - The period size affects midi resolution, and the default was just too long. So this was added.
 27.01.2010
       * Changed: Don't process audio prefetch, or getData() in Audio::copyData(), if track is 'Off'. (T356)
       * Added: Arranger track list: Quick 'right-click' or 'ctrl-click' or 'ctrl-mouse-wheel' toggling of Track On/Off. (T356) 

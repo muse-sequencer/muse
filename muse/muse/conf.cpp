@@ -747,6 +747,10 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.useOutputLimiter = xml.parseInt();
                         else if (tag == "vstInPlace")
                               config.vstInPlace = xml.parseInt();
+                        else if (tag == "dummyAudioSampleRate")
+                              config.dummyAudioSampleRate = xml.parseInt();
+                        else if (tag == "dummyAudioBufSize")
+                              config.dummyAudioBufSize = xml.parseInt();
                         else if (tag == "guiRefresh")
                               config.guiRefresh = xml.parseInt();
                         else if (tag == "helpBrowser")
@@ -999,6 +1003,8 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.intTag(level, "didYouKnow", config.showDidYouKnow);
       xml.intTag(level, "outputLimiter", config.useOutputLimiter);
       xml.intTag(level, "vstInPlace", config.vstInPlace);
+      xml.intTag(level, "dummyAudioBufSize", config.dummyAudioBufSize);
+      xml.intTag(level, "dummyAudioSampleRate", config.dummyAudioSampleRate);
 
       xml.intTag(level, "guiRefresh", config.guiRefresh);
       xml.strTag(level, "helpBrowser", config.helpBrowser);

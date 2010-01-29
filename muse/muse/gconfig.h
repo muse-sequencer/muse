@@ -121,6 +121,8 @@ struct GlobalConfigValues {
       bool useOutputLimiter;
       bool showDidYouKnow;
       bool vstInPlace; // Enable VST in-place processing
+      int dummyAudioSampleRate; 
+      int dummyAudioBufSize;
       };
 
 extern GlobalConfigValues config;

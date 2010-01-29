@@ -11,12 +11,18 @@
 #ifndef __AUDIOCONVERT_H__
 #define __AUDIOCONVERT_H__
 
+//#include <map>
+
 #ifdef RUBBERBAND_SUPPORT
 #include <RubberBandStretcher.h>
 #endif
 
 #include <samplerate.h>
 #include <sys/types.h>
+
+//#include "eventbase.h"
+//class EventBase;
+//class EventList;
 
 class SndFileR;
 
@@ -90,6 +96,24 @@ class RubberBandAudioConverter : public AudioConverter
 };
 
 #endif // RUBBERBAND_SUPPORT
+
+//---------------------------------------------------------
+//   AudioConvertMap
+//---------------------------------------------------------
+
+/*
+typedef std::map<EventBase*, AudioConverter*, std::less<EventBase*> >::iterator iAudioConvertMap;
+typedef std::map<EventBase*, AudioConverter*, std::less<EventBase*> >::const_iterator ciAudioConvertMap;
+
+//typedef std::map<EventBase*, AudioConverter*, std::less<EventBase*> > AudioConvertMap;
+class AudioConvertMap : public std::map<EventBase*, AudioConverter*, std::less<EventBase*> > 
+{
+   public:
+      void remapEvents(const EventList*);  
+      iAudioConvertMap addEventBase(const EventBase*);
+      AudioConverter* findConverter(const EventBase*);
+};
+*/
 
 #endif
 

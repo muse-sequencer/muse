@@ -155,6 +155,8 @@ GlobalConfigValues config = {
       false,                        // useOutputLimiter
       true,                         // showDidYouKnow
       false                         // vstInPlace  Enable VST in-place processing
+      44100,                        // Dummy audio preferred sample rate
+      512                           // Dummy audio buffer size
       };
 
 //---------------------------------------------------------

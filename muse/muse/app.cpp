@@ -462,7 +462,8 @@ bool MusE::seqStart()
       
       int counter=0;
       while (++counter) {
-        if (counter > 10) {
+        //if (counter > 10) {
+        if (counter > 1000) {
             fprintf(stderr,"midi sequencer thread does not start!? Exiting...\n");
             exit(33);
         }
@@ -2526,9 +2527,9 @@ int main(int argc, char* argv[])
       else if (noAudio) {
             initDummyAudio();
             realTimeScheduling = true;
-            if (debugMode) {
-                      realTimeScheduling = false;
-                      }
+            //if (debugMode) {              // ??
+            //          realTimeScheduling = false;
+            //          }
             }
       else if (initJackAudio()) {
             if (!debugMode)

@@ -18,6 +18,30 @@
 //#define AUDIOCONVERT_DEBUG_PRC
 
 //---------------------------------------------------------
+//   AudioConvertMap
+//---------------------------------------------------------
+
+/*
+void AudioConvertMap::remapEvents(const EventList*)  
+{
+
+}
+
+iAudioConvertMap AudioConvertMap::addEventBase(const EventBase*)
+{
+
+}
+
+AudioConverter* AudioConvertMap::findConverter(const EventBase* eb)
+{
+  iAudioConvertMap iacm = find(eb);
+  if(iacm != end())
+    return iacm->second;
+  return 0;
+}
+*/
+
+//---------------------------------------------------------
 //   AudioConverter
 //---------------------------------------------------------
 
@@ -50,11 +74,12 @@ AudioConverter* AudioConverter::release(AudioConverter* cv)
 {
   if(!cv)
     return 0;
-  #ifdef AUDIOCONVERT_DEBUG
-  printf("AudioConverter::release converter:%p\n", cv);
-  #endif
   //if(cv->incRefCount(-1) <= 0)
-  if((cv->_refCount -= 1) <= 0)
+  cv->_refCount -= 1;
+  #ifdef AUDIOCONVERT_DEBUG
+  printf("AudioConverter::release converter:%p current refcount:%d\n", cv, cv->_refCount);
+  #endif
+  if(cv->_refCount <= 0)
   {
     #ifdef AUDIOCONVERT_DEBUG
     printf("AudioConverter::release deleting converter:%p\n", cv);
