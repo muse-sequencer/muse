@@ -17,6 +17,7 @@
 #include "../audio.h"
 #include "mpevent.h"
 //#include "sync.h"
+#include "utils.h"
 
 static int alsaSeqFdi = -1;
 static int alsaSeqFdo = -1;

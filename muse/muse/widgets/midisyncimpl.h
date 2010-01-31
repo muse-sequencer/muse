@@ -91,6 +91,9 @@ class MidiSyncLViewItem : public QListViewItem
       bool _recMMC;
       bool _recMTC;
       
+      bool _recRewOnStart;
+      //bool _sendContNotStart;
+      
       int port() const { return _port; }
       void setPort(int port);
       //MidiDevice* device() const { return _device; }

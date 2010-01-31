@@ -26,8 +26,7 @@
 //MidiSyncPort midiSyncPorts[MIDI_PORTS];
 int volatile curMidiSyncInPort = -1;
 
-// P3.3.26
-bool debugSync = true;
+bool debugSync = false;
 
 int mtcType     = 1;
 MTC mtcOffset;
@@ -49,6 +48,9 @@ static bool mtcSync;    // receive complete mtc frame?
 
 // p3.3.28
 static bool playPendingFirstClock = false;
+unsigned int syncSendFirstClockDelay = 1; // In milliseconds.
+//static int lastStoppedBeat = 0;
+static unsigned int curExtMidiSyncTick = 0;
 
 // Not used yet.
 // static bool mcStart = false;
@@ -90,6 +92,8 @@ MidiSyncInfo::MidiSyncInfo()
   _MMCDetect     = false;
   _MTCDetect     = false;
   _recMTCtype    = 0;
+  _recRewOnStart  = true;
+  //_sendContNotStart = false;
   _actDetectBits = 0;
   for(int i = 0; i < MIDI_CHANNELS; ++i)
   {
@@ -122,7 +126,6 @@ MidiSyncInfo& MidiSyncInfo::operator=(const MidiSyncInfo &sp)
   _MMCDetect     = sp._MMCDetect;
   _MTCDetect     = sp._MTCDetect;
   _recMTCtype    = sp._recMTCtype;
-  _actDetectBits = sp._actDetectBits;
   for(int i = 0; i < MIDI_CHANNELS; ++i)
   {
     _lastActTime[i] = sp._lastActTime[i];
@@ -148,6 +151,8 @@ MidiSyncInfo& MidiSyncInfo::copyParams(const MidiSyncInfo &sp)
   setMCIn(sp._recMC);
   _recMMC        = sp._recMMC;
   _recMTC        = sp._recMTC;
+  _recRewOnStart = sp._recRewOnStart;
+  //_sendContNotStart = sp._sendContNotStart;
   return *this;
 }
 
@@ -364,12 +369,16 @@ void MidiSyncInfo::read(Xml& xml)
                               _sendMMC = xml.parseInt();
                         else if (tag == "sendMTC")
                               _sendMTC = xml.parseInt();
+                        //else if (tag == "sendContNotStart")
+                        //      _sendContNotStart = xml.parseInt();
                         else if (tag == "recMC")
                               _recMC = xml.parseInt();
                         else if (tag == "recMMC")
                               _recMMC = xml.parseInt();
                         else if (tag == "recMTC")
                               _recMTC = xml.parseInt();
+                        else if (tag == "recRewStart")
+                              _recRewOnStart = xml.parseInt();
                         else
                               xml.unknown("midiSyncInfo");
                         break;
@@ -393,7 +402,8 @@ void MidiSyncInfo::write(int level, Xml& xml)
   //  return;
   
   // All defaults? Nothing to write.
-  if(_idOut == 127 && _idIn == 127 && !_sendMC && !_sendMMC && !_sendMTC && !_recMC && !_recMMC && !_recMTC)
+  if(_idOut == 127 && _idIn == 127 && !_sendMC && !_sendMMC && !_sendMTC && 
+     /* !_sendContNotStart && */ !_recMC && !_recMMC && !_recMTC && _recRewOnStart)
     return;
   
   xml.tag(level++, "midiSyncInfo");
@@ -414,6 +424,8 @@ void MidiSyncInfo::write(int level, Xml& xml)
     xml.intTag(level, "sendMMC", true);
   if(_sendMTC)
     xml.intTag(level, "sendMTC", true);
+  //if(_sendContNotStart)
+  //  xml.intTag(level, "sendContNotStart", true);
   
   if(_recMC)
     xml.intTag(level, "recMC", true);
@@ -421,6 +433,8 @@ void MidiSyncInfo::write(int level, Xml& xml)
     xml.intTag(level, "recMMC", true);
   if(_recMTC)
     xml.intTag(level, "recMTC", true);
+  if(!_recRewOnStart)
+    xml.intTag(level, "recRewStart", false);
   
   xml.etag(level, "midiSyncInfo");
 }
@@ -719,13 +733,15 @@ void MidiSeq::setSongPosition(int port, int midiBeat)
       if(!extSyncFlag.value() || !midiPorts[port].syncInfo().MCIn())
             return;
             
-      Pos pos((config.division * midiBeat) / 4, true);
-      
       // Re-transmit song position to other devices if clock out turned on.
       for(int p = 0; p < MIDI_PORTS; ++p)
         if(p != port && midiPorts[p].syncInfo().MCOut())
           midiPorts[p].sendSongpos(midiBeat);
                   
+      curExtMidiSyncTick = (config.division * midiBeat) / 4;
+      //Pos pos((config.division * midiBeat) / 4, true);
+      Pos pos(curExtMidiSyncTick, true);
+      
       if (!checkAudioDevice()) return;
 
       //audioDevice->seekTransport(pos.frame());
@@ -815,6 +831,9 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if(port != curMidiSyncInPort)
                     break;
                   
+                  // p3.3.31
+                  //printf("midi clock:%f\n", curTime());
+                  
                   // Re-transmit clock to other devices if clock out turned on.
                   // Must be careful not to allow more than one clock input at a time.
                   // Would re-transmit mixture of multiple clocks - confusing receivers.
@@ -834,7 +853,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     if(!audio->isPlaying())
                       audioDevice->startTransport();
                   }
-                  else
+                  //else
                   // This part will be run on the second and subsequent clocks, after start.
                   // Can't check audio state, might not be playing yet, we might miss some increments.
                   //if(audio->isPlaying())
@@ -842,6 +861,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   {
                     int div = config.division/24;
                     midiExtSyncTicks += div;
+                    curExtMidiSyncTick += div;
                   }
                   
 //BEGIN : Original code:
@@ -1110,18 +1130,29 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   
                   if (debugSync)
                         printf("   start\n");
+                  
+                  // p3.3.31
+                  //printf("midi start:%f\n", curTime());
+                  
                   if (1 /* !audio->isPlaying()*/ /*state == IDLE*/) {
                         if (!checkAudioDevice()) return;
-                        //audioDevice->seekTransport(0);
-                        audioDevice->seekTransport(Pos(0, false));
+                        
+                        // p3.3.31
+                        // Rew on start option.
+                        if(midiPorts[port].syncInfo().recRewOnStart())
+                        {
+                          curExtMidiSyncTick = 0;
+                          //audioDevice->seekTransport(0);
+                          audioDevice->seekTransport(Pos(0, false));
+                        }  
 
-                        unsigned curFrame = audio->curFrame();
-                        if (debugSync)
-                              printf("       curFrame=%d\n", curFrame);
+                        //unsigned curFrame = audio->curFrame();
+                        //if (debugSync)
+                        //      printf("       curFrame=%d\n", curFrame);
                         
                         alignAllTicks();
-                        if (debugSync)
-                              printf("   curFrame: %d curTick: %d tempo: %d\n", curFrame, recTick, tempomap.tempo(0));
+                        //if (debugSync)
+                        //      printf("   curFrame: %d curTick: %d tempo: %d\n", curFrame, recTick, tempomap.tempo(0));
 
                         storedtimediffs = 0;
                         for (int i=0; i<24; i++)
@@ -1135,6 +1166,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         // p3.3.28
                         playPendingFirstClock = true;
                         
+                        midiExtSyncTicks = 0;
                         playStateExt = true;
                         }
                   break;
@@ -1146,6 +1178,10 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   
                   if (debugSync)
                         printf("realtimeSystemInput continue\n");
+                  
+                  // p3.3.31
+                  //printf("continue:%f\n", curTime());
+                  
                   if (1 /* !audio->isPlaying() */ /*state == IDLE */) {
                         //unsigned curFrame = audio->curFrame();
                         //recTick = tempomap.frame2tick(curFrame); // don't think this will work... (ml)
@@ -1153,25 +1189,45 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         
                         // p3.3.28
                         //audio->msgPlay(true);
+                        // p3.3.31
+                        // Begin incrementing immediately upon first clock reception.
                         playPendingFirstClock = true;
                         
                         playStateExt = true;
                         }
                   break;
             case 0xfc:  // stop
-                  // Re-transmit stop to other devices if clock out turned on.
-                  for(int p = 0; p < MIDI_PORTS; ++p)
-                    if(p != port && midiPorts[p].syncInfo().MCOut())
-                      midiPorts[p].sendStop();
+                  {
+                    // Re-transmit stop to other devices if clock out turned on.
+                    for(int p = 0; p < MIDI_PORTS; ++p)
+                      if(p != port && midiPorts[p].syncInfo().MCOut())
+                        midiPorts[p].sendStop();
+                    
+                    playPendingFirstClock = false;
+                    
+                    //lastStoppedBeat = (audio->tickPos() * 4) / config.division;
+                    //curExtMidiSyncTick = (config.division * lastStoppedBeat) / 4;
+                    
+                    if (debugSync)
+                          printf("realtimeSystemInput stop\n");
+                    
+                    // p3.3.31
+                    //printf("stop:%f\n", curTime());
+                    
+                    if (audio->isPlaying() /*state == PLAY*/) {
+                          audio->msgPlay(false);
+                          playStateExt = false;
+                          }
+                    
+                    // Just in case the process still runs a cycle or two and causes the 
+                    //  audio tick position to increment, reset the incrementer and force 
+                    //  the transport position to what the hardware thinks is the current position.
+                    midiExtSyncTicks = 0;
+                    //Pos pos((config.division * lastStoppedBeat) / 4, true);
+                    Pos pos(curExtMidiSyncTick, true);
+                    audioDevice->seekTransport(pos);
+                  }
                   
-                  playPendingFirstClock = false;
-                  
-                  if (debugSync)
-                        printf("realtimeSystemInput stop\n");
-                  if (audio->isPlaying() /*state == PLAY*/) {
-                        audio->msgPlay(false);
-                        playStateExt = false;
-                        }
                   break;
             case 0xfd:  // unknown
             case 0xfe:  // active sensing

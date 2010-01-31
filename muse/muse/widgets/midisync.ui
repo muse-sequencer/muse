@@ -300,7 +300,7 @@ configuration dialog</comment>
             <property name="name">
               <cstring>unnamed</cstring>
             </property>
-            <widget class="QCheckBox" row="0" column="0">
+            <widget class="QCheckBox" row="0" column="0" rowspan="1" colspan="2">
               <property name="name">
                 <cstring>useJackTransportCheckbox</cstring>
               </property>
@@ -321,7 +321,7 @@ configuration dialog</comment>
  including stop, start and position.</string>
               </property>
             </widget>
-            <widget class="QCheckBox" row="1" column="0">
+            <widget class="QCheckBox" row="1" column="0" rowspan="1" colspan="2">
               <property name="name">
                 <cstring>jackTransportMasterCheckbox</cstring>
               </property>
@@ -346,7 +346,7 @@ MusE will try to become master, but other
 You can always click here again for Master.</string>
               </property>
             </widget>
-            <widget class="QCheckBox" row="2" column="0">
+            <widget class="QCheckBox" row="2" column="0" rowspan="1" colspan="2">
               <property name="name">
                 <cstring>extSyncCheckbox</cstring>
               </property>
@@ -370,7 +370,54 @@ Enabled inputs in the list will
  be in effect (RMC, RMMC, RMTC).</string>
               </property>
             </widget>
-            <widget class="QListView" row="3" column="0">
+            <widget class="QLayoutWidget" row="3" column="0">
+              <property name="name">
+                <cstring>syncDelayLayout</cstring>
+              </property>
+              <hbox>
+                <widget class="QSpinBox">
+                  <property name="name">
+                    <cstring>syncDelaySpinBox</cstring>
+                  </property>
+                  <property name="suffix">
+                    <string>ms</string>
+                  </property>
+                  <property name="maxValue">
+                    <number>60000</number>
+                  </property>
+                  <property name="minValue">
+                    <number>0</number>
+                  </property>
+                  <property name="lineStep">
+                    <number>1</number>
+                  </property>
+                  <property name="value">
+                    <number>1</number>
+                  </property>
+                  <property name="toolTip" stdset="0">
+                    <string>Send start to first clock delay</string>
+                  </property>
+                  <property name="whatsThis" stdset="0">
+                    <string>Allows 'slow sync' devices time
+ to synchronize to MusE. This value is the
+ delay from sending start to sending
+ the first clock.</string>
+                  </property>
+                </widget>
+                <widget class="QLabel">
+                  <property name="name">
+                    <cstring>syncDelayLabel</cstring>
+                  </property>
+                  <property name="text">
+                    <string>Send sync delay</string>
+                  </property>
+                  <property name="alignment">
+                    <set>AlignVCenter|AlignLeft</set>
+                  </property>
+                </widget>
+              </hbox>
+            </widget>
+            <widget class="QListView" row="4" column="0">
               <property name="name">
                 <cstring>devicesListView</cstring>
               </property>

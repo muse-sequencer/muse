@@ -1,3 +1,11 @@
+31.01.2010
+      * Fixed: Midi sync in: Should be very solid and 'in time' now, play/stop/continue. (T356)
+        - Re-coded to begin incrementing immediately upon first-clock detection. Forbid MusE to send transport commands 
+           while in external sync mode - our sync router handles that. Was causing problems. 
+        - Tested OK: Ensoniq ESQ-1 KB (sends clocks ony between start and stop) and Roland TR-505 drums (clocks always running). 
+          The measured general timings were quite different, but (thankfully) clocks and events were not. 
+        - MusE responds better to the TR-505 than the ESQ-1 does with a direct midi cable connection! (ESQ gains ticks on continue).
+      * Added: Midi sync window: 'Rewind on start' column. (Also a 'Send first clock delay' box - not implemented yet). (T356)
 29.01.2010
       * Feature: Dummy audio driver: Added global settings for sample rate and period size. (T356)
         - The period size affects midi resolution, and the default was just too long. So this was added.

@@ -661,6 +661,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                                 xml.parseInt();
                         else if (tag == "mtctype")
                               mtcType= xml.parseInt();
+                        else if (tag == "sendClockDelay")
+                              syncSendFirstClockDelay = xml.parseUInt();
                         else if (tag == "extSync")
                               extSyncFlag.setValue(xml.parseInt());
                         else if (tag == "useJackTransport")
@@ -1098,6 +1100,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
         mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
         mtcOffset.f(), mtcOffset.sf());
+      //xml.uintTag(level, "sendClockDelay", syncSendFirstClockDelay);
       //xml.intTag(level, "useJackTransport", useJackTransport);
       //xml.intTag(level, "jackTransportMaster", jackTransportMaster);
       extSyncFlag.save(level, xml);
@@ -1208,6 +1211,7 @@ void MusE::writeConfiguration(int level, Xml& xml) const
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
         mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
         mtcOffset.f(), mtcOffset.sf());
+      xml.uintTag(level, "sendClockDelay", syncSendFirstClockDelay);
       xml.intTag(level, "useJackTransport", useJackTransport);
       xml.intTag(level, "jackTransportMaster", jackTransportMaster);
       extSyncFlag.save(level, xml);

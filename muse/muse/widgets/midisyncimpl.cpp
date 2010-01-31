@@ -34,10 +34,9 @@
 #include "driver/audiodev.h"
 #include "audio.h"
 
-//enum { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_IN, DEVCOL_TICKIN, DEVCOL_RID, DEVCOL_RCLK, DEVCOL_RMMC, DEVCOL_RMTC, 
-enum { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_IN, DEVCOL_TICKIN, DEVCOL_MMCIN, DEVCOL_MTCIN, DEVCOL_MTCTYPE, DEVCOL_RID, DEVCOL_RCLK, DEVCOL_RMMC, DEVCOL_RMTC, 
-//enum { DEVCOL_NAME = 0, DEVCOL_IN, DEVCOL_RID, DEVCOL_RCLK, DEVCOL_RMMC, DEVCOL_RMTC, 
-       DEVCOL_TID, DEVCOL_TCLK, DEVCOL_TMMC, DEVCOL_TMTC };
+enum { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_IN, DEVCOL_TICKIN, DEVCOL_MMCIN, DEVCOL_MTCIN, DEVCOL_MTCTYPE, 
+       DEVCOL_RID, DEVCOL_RCLK, DEVCOL_RMMC, DEVCOL_RMTC, DEVCOL_RREWSTART, 
+       DEVCOL_TID, DEVCOL_TCLK, DEVCOL_TMMC, DEVCOL_TMTC, /* DEVCOL_TREWSTART, */  };
 
 //MidiSyncInfo tmpMidiSyncPorts[MIDI_PORTS];
 
@@ -67,10 +66,12 @@ void MSyncHeaderTip::maybeTip(const QPoint &pos)
             case DEVCOL_RCLK:     p = QHeader::tr("Accept midi realtime input"); break;
             case DEVCOL_RMMC:     p = QHeader::tr("Accept MMC input"); break;
             case DEVCOL_RMTC:     p = QHeader::tr("Accept MTC input"); break;
+            case DEVCOL_RREWSTART: p = QHeader::tr("Receiving start rewinds before playing"); break;
             case DEVCOL_TID:      p = QHeader::tr("Transmit id number. 127 = Global. Double click to edit."); break;
             case DEVCOL_TCLK:     p = QHeader::tr("Send midi realtime output"); break;
             case DEVCOL_TMMC:     p = QHeader::tr("Send MMC output"); break;
             case DEVCOL_TMTC:     p = QHeader::tr("Send MTC output"); break;
+            //case DEVCOL_TREWSTART: p = QHeader::tr("Send continue instead of start"); break;
             default: return;
             }
       tip(r, p);
@@ -119,6 +120,9 @@ QString MSyncWhatsThis::text(const QPoint& pos)
             case DEVCOL_RMTC:
                   return QHeader::tr("Accept MTC input, including forward quarter-frame sync and full-frame locate.\n"
                                      "See rmc column for more help.");
+            case DEVCOL_RREWSTART:
+                  return QHeader::tr("When start is received, rewind before playing. It may be impossible\n"
+                                     " to rewind fast enough to synchronize with the external device.");
             case DEVCOL_TID:
                   return QHeader::tr("Transmit id number. 127 = global transmit to all.");
             case DEVCOL_TCLK:
@@ -130,6 +134,8 @@ QString MSyncWhatsThis::text(const QPoint& pos)
                   return QHeader::tr("Send MMC output");
             case DEVCOL_TMTC:
                   return QHeader::tr("Send MTC output");
+            //case DEVCOL_TREWSTART:
+            //      return QHeader::tr("When transport is starting, send continue instead of start.\n");
             default:
                   break;
             }
@@ -180,6 +186,8 @@ void MidiSyncLViewItem::copyFromSyncInfo(const MidiSyncInfo &sp)
   _recMC         = sp.MCIn();
   _recMMC        = sp.MMCIn();
   _recMTC        = sp.MTCIn();
+  _recRewOnStart = sp.recRewOnStart();
+  //_sendContNotStart = sp.sendContNotStart();
 }
 
 //---------------------------------------------------------
@@ -197,6 +205,8 @@ void MidiSyncLViewItem::copyToSyncInfo(MidiSyncInfo &sp)
   sp.setMCIn(_recMC);
   sp.setMMCIn(_recMMC);
   sp.setMTCIn(_recMTC);
+  sp.setRecRewOnStart(_recRewOnStart);
+  //sp.setSendContNotStart(_sendContNotStart);
 }
 
 //---------------------------------------------------------
@@ -260,10 +270,12 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent, const char* name)
       devicesListView->addColumn(tr("rmc")); // Receive
       devicesListView->addColumn(tr("rmmc")); // Receive
       devicesListView->addColumn(tr("rmtc")); // Receive
+      devicesListView->addColumn(tr("rrs")); // Receive
       devicesListView->addColumn(tr("tid"));  // Transmit
       devicesListView->addColumn(tr("tmc")); // Transmit
       devicesListView->addColumn(tr("tmmc")); // Transmit
       devicesListView->addColumn(tr("tmtc")); // Transmit
+      //devicesListView->addColumn(tr("trs")); // Transmit
       devicesListView->setFocusPolicy(NoFocus);
 
       devicesListView->setColumnAlignment(DEVCOL_NO, AlignHCenter);
@@ -276,10 +288,12 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent, const char* name)
       devicesListView->setColumnAlignment(DEVCOL_RCLK, AlignCenter);
       devicesListView->setColumnAlignment(DEVCOL_RMMC, AlignCenter);
       devicesListView->setColumnAlignment(DEVCOL_RMTC, AlignCenter);
+      devicesListView->setColumnAlignment(DEVCOL_RREWSTART, AlignCenter);
       //devicesListView->setColumnAlignment(DEVCOL_TID, AlignCenter);
       devicesListView->setColumnAlignment(DEVCOL_TCLK, AlignCenter);
       devicesListView->setColumnAlignment(DEVCOL_TMMC, AlignCenter);
       devicesListView->setColumnAlignment(DEVCOL_TMTC, AlignCenter);
+      //devicesListView->setColumnAlignment(DEVCOL_TREWSTART, AlignCenter);
       devicesListView->header()->setResizeEnabled(false, DEVCOL_NO);
       devicesListView->header()->setResizeEnabled(false, DEVCOL_IN);
       devicesListView->header()->setResizeEnabled(false, DEVCOL_TICKIN);
@@ -287,9 +301,11 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent, const char* name)
       devicesListView->header()->setResizeEnabled(false, DEVCOL_RCLK);
       devicesListView->header()->setResizeEnabled(false, DEVCOL_RMMC);
       devicesListView->header()->setResizeEnabled(false, DEVCOL_RMTC);
+      devicesListView->header()->setResizeEnabled(false, DEVCOL_RMTC);
+      devicesListView->header()->setResizeEnabled(false, DEVCOL_RREWSTART);
       devicesListView->header()->setResizeEnabled(false, DEVCOL_TCLK);
       devicesListView->header()->setResizeEnabled(false, DEVCOL_TMMC);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_TMTC);
+      //devicesListView->header()->setResizeEnabled(false, DEVCOL_TREWSTART);
       //devicesListView->setResizeMode(QListView::LastColumn);
       devicesListView->setResizeMode(QListView::NoColumn);
 
@@ -321,7 +337,7 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent, const char* name)
       connect(useJackTransportCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
       connect(jackTransportMasterCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
       connect(&extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(extSyncChanged(bool)));
-      
+      connect(syncDelaySpinBox, SIGNAL(valueChanged(int)), SLOT(syncChanged()));
   
       // Done in show().
       //connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
@@ -359,10 +375,13 @@ void MidiSyncConfig::songChanged(int flags)
       extSyncCheckbox->blockSignals(true);
       useJackTransportCheckbox->blockSignals(true);
       jackTransportMasterCheckbox->blockSignals(true);
+      syncDelaySpinBox->blockSignals(true);
       extSyncCheckbox->setChecked(extSyncFlag.value());
       useJackTransportCheckbox->setChecked(useJackTransport);
       jackTransportMasterCheckbox->setChecked(jackTransportMaster);
       //jackTransportMasterCheckbox->setEnabled(useJackTransport);
+      syncDelaySpinBox->setValue(syncSendFirstClockDelay);
+      syncDelaySpinBox->blockSignals(false);
       jackTransportMasterCheckbox->blockSignals(false);
       useJackTransportCheckbox->blockSignals(false);
       extSyncCheckbox->blockSignals(false);
@@ -701,6 +720,8 @@ void MidiSyncConfig::apply()
 //      genMCSync   = mcSync->isChecked();
 //      genMMC      = midiMachineControl->isChecked();
 
+      syncSendFirstClockDelay = syncDelaySpinBox->value();
+      
       mtcType     = mtcSyncType->currentItem();
       //extSyncFlag.setValue(syncMode->id(syncMode->selected()));
       //extSyncFlag.blockSignals(true);
@@ -763,6 +784,16 @@ void MidiSyncConfig::updateSyncInfoLV()
       {
             MidiPort* port  = &midiPorts[i];
             MidiDevice* dev = port->device();
+            // p3.3.31
+            // Don't show if it is a synthesizer device.
+            // Hmm, some synths might support transport commands or even sync?
+            // If anything, the DSSI or VST synths just might... 
+            // TODO: Must test to see if it screws any of them up, especially clock out.
+            // Also, if we do this, we must prevent such messages from reaching
+            //  those ports at several other places in the code.
+            //if(dev && dev->isSynti())
+            //  continue;
+              
             QString s;
             s.setNum(i+1);
             MidiSyncLViewItem* lvi = new MidiSyncLViewItem(devicesListView);
@@ -899,16 +930,18 @@ void MidiSyncConfig::updateSyncInfoLV()
             lvi->setPixmap(DEVCOL_RCLK, lvi->_recMC ? *dotIcon : *dothIcon);
             lvi->setPixmap(DEVCOL_RMMC, lvi->_recMMC ? *dotIcon : *dothIcon);
             lvi->setPixmap(DEVCOL_RMTC, lvi->_recMTC ? *dotIcon : *dothIcon);
+            lvi->setPixmap(DEVCOL_RREWSTART, lvi->_recRewOnStart ? *dotIcon : *dothIcon);
             
             //lvi->setText(DEVCOL_TID,    QString().setNum(si.idOut()) );
             //lvi->setRenameEnabled(DEVCOL_TID, true);
             //lvi->setPixmap(DEVCOL_TCLK, si.MCOut() ? *dotIcon : *dothIcon);
             //lvi->setPixmap(DEVCOL_TMMC, si.MMCOut() ? *dotIcon : *dothIcon);
             //lvi->setPixmap(DEVCOL_TMTC, si.MTCOut() ? *dotIcon : *dothIcon);
-            lvi->setText(DEVCOL_TID,    QString().setNum(lvi->_idOut) );
-            lvi->setPixmap(DEVCOL_TCLK, lvi->_sendMC ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_TMMC, lvi->_sendMMC ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_TMTC, lvi->_sendMTC ? *dotIcon : *dothIcon);
+            lvi->setText(DEVCOL_TID,          QString().setNum(lvi->_idOut) );
+            lvi->setPixmap(DEVCOL_TCLK,       lvi->_sendMC ? *dotIcon : *dothIcon);
+            lvi->setPixmap(DEVCOL_TMMC,       lvi->_sendMMC ? *dotIcon : *dothIcon);
+            lvi->setPixmap(DEVCOL_TMTC,       lvi->_sendMTC ? *dotIcon : *dothIcon);
+            //lvi->setPixmap(DEVCOL_TREWSTART,  lvi->_sendContNotStart ? *dotIcon : *dothIcon);
             
             devicesListView->insertItem(lvi);
       }
@@ -1050,6 +1083,11 @@ void MidiSyncConfig::dlvClicked(int /*button*/, QListViewItem* item, const QPoin
                   lvi->setPixmap(DEVCOL_RMTC, lvi->_recMTC ? *dotIcon : *dothIcon);
                   setDirty();
                   break;
+            case DEVCOL_RREWSTART:
+                  lvi->_recRewOnStart = (lvi->_recRewOnStart ? false : true);
+                  lvi->setPixmap(DEVCOL_RREWSTART, lvi->_recRewOnStart ? *dotIcon : *dothIcon);
+                  setDirty();
+                  break;
             case DEVCOL_TID:
                   break;
             case DEVCOL_TCLK:
@@ -1073,6 +1111,11 @@ void MidiSyncConfig::dlvClicked(int /*button*/, QListViewItem* item, const QPoin
                   lvi->setPixmap(DEVCOL_TMTC, lvi->_sendMTC ? *dotIcon : *dothIcon);
                   setDirty();
                   break;
+            //case DEVCOL_TREWSTART:
+            //      lvi->_sendContNotStart = (lvi->_sendContNotStart ? false : true);
+            //      lvi->setPixmap(DEVCOL_TREWSTART, lvi->_sendContNotStart ? *dotIcon : *dothIcon);
+            //      setDirty();
+            //      break;
       }
       //songChanged(-1);
 }
@@ -1097,27 +1140,27 @@ void MidiSyncConfig::dlvDoubleClicked(QListViewItem* item, const QPoint&, int co
       bool ok = false;
       if(col == DEVCOL_RID)
       {
-        //int id = lvi->syncInfo().idIn();
-        int id = lvi->_idIn;
-        int newid = QInputDialog::getInteger("Muse: Sync info" , "Enter new id number (127 = all):", id, 0, 127, 1, &ok, this);
+        //int val = lvi->syncInfo().idIn();
+        int val = lvi->_idIn;
+        int newval = QInputDialog::getInteger("Muse: Sync info" , "Enter new id number (127 = all):", val, 0, 127, 1, &ok, this);
         if(ok)
         {
-          //lvi->syncInfo().setIdIn(newid);
-          lvi->_idIn = newid;
-          lvi->setText(DEVCOL_RID, QString().setNum(newid)); 
+          //lvi->syncInfo().setIdIn(newval);
+          lvi->_idIn = newval;
+          lvi->setText(DEVCOL_RID, QString().setNum(newval)); 
         }  
       }  
       else
       if(col == DEVCOL_TID)
       {
-        //int id = lvi->syncInfo().idOut();
-        int id = lvi->_idOut;
-        int newid = QInputDialog::getInteger("Muse: Sync info" , "Enter new id number (127 = global):", id, 0, 127, 1, &ok, this);
+        //int val = lvi->syncInfo().idOut();
+        int val = lvi->_idOut;
+        int newval = QInputDialog::getInteger("Muse: Sync info" , "Enter new id number (127 = global):", val, 0, 127, 1, &ok, this);
         if(ok)
         {
-          //lvi->syncInfo().setIdOut(newid);
-          lvi->_idOut = newid;
-          lvi->setText(DEVCOL_TID, QString().setNum(newid)); 
+          //lvi->syncInfo().setIdOut(newval);
+          lvi->_idOut = newval;
+          lvi->setText(DEVCOL_TID, QString().setNum(newval)); 
         }  
       }  
       

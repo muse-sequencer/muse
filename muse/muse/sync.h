@@ -34,6 +34,9 @@ class MidiSyncInfo
     
     int _recMTCtype;
     
+    bool _recRewOnStart;
+    //bool _sendContNotStart;
+    
     double   _lastClkTime;
     double   _lastTickTime;
     double   _lastMMCTime;
@@ -82,7 +85,12 @@ class MidiSyncInfo
     
     void setTime(); 
     
-    bool MCSyncDetect() const     { return _clockDetect; }          
+    bool recRewOnStart() const            { return _recRewOnStart; }
+    void setRecRewOnStart(const bool v)   { _recRewOnStart = v; }
+    //bool sendContNotStart() const           { return _sendContNotStart; }
+    //void setSendContNotStart(const bool v)  { _sendContNotStart = v; }
+    
+    bool MCSyncDetect() const             { return _clockDetect; }          
     void trigMCSyncDetect();
     
     bool tickDetect() const       { return _tickDetect; }           
@@ -126,6 +134,8 @@ extern BValue extSyncFlag;
 extern int volatile curMidiSyncInPort;
 extern bool volatile useJackTransport;
 extern bool volatile jackTransportMaster;
+extern unsigned int syncSendFirstClockDelay; // In milliseconds.
+
 
 #endif
 

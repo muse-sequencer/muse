@@ -779,8 +779,12 @@ void Audio::seek(const Pos& p)
 
       midiSeq->msgSeek();     // handle stuck notes and set
                               // controller for new position
-      //if(genMCSync) 
-      //{
+      
+      // p3.3.31
+      // Don't send if external sync is on. The master, and our sync routing system will take care of that.
+      if(!extSyncFlag.value())
+      {
+        
         for(int port = 0; port < MIDI_PORTS; ++port) 
         {
           MidiPort* mp = &midiPorts[port];
@@ -816,7 +820,7 @@ void Audio::seek(const Pos& p)
           if(isPlaying)
             mp->sendContinue();
         }
-      //}
+      }
         
       /*
       if(genMCSync) 
@@ -941,43 +945,49 @@ void Audio::startRolling()
       state = PLAY;
       write(sigFd, "1", 1);   // Play
 
-      // Changed by Tim. p3.3.6
-      //if (genMMC)
-      //    midiPorts[txSyncPort].sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
-      //if (genMCSync) {
-      //      if (curTickPos)
-      //            midiPorts[txSyncPort].sendContinue();
-      //      else
-      //            midiPorts[txSyncPort].sendStart();
-      //      }
-      for(int port = 0; port < MIDI_PORTS; ++port) 
+      // p3.3.31
+      // Don't send if external sync is on. The master, and our sync routing system will take care of that.
+      if(!extSyncFlag.value())
       {
-        MidiPort* mp = &midiPorts[port];
-        MidiDevice* dev = mp->device();
-        if(!dev)
-          continue;
-            
-        // Shall we check open flags?
-        //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
-        //if(!(dev->openFlags() & 1))
-        //  continue;
         
-        MidiSyncInfo& si = mp->syncInfo();
-          
-        //if(genMMC && si.MMCOut())
-        if(si.MMCOut())
-          //mp->sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
-          mp->sendMMCDeferredPlay();
-        
-        //if(genMCSync && si.MCOut())
-        if(si.MCOut())
+        // Changed by Tim. p3.3.6
+        //if (genMMC)
+        //    midiPorts[txSyncPort].sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
+        //if (genMCSync) {
+        //      if (curTickPos)
+        //            midiPorts[txSyncPort].sendContinue();
+        //      else
+        //            midiPorts[txSyncPort].sendStart();
+        //      }
+        for(int port = 0; port < MIDI_PORTS; ++port) 
         {
-          if(curTickPos)
-            mp->sendContinue();
-          else
-            mp->sendStart();
-        }  
-      }
+          MidiPort* mp = &midiPorts[port];
+          MidiDevice* dev = mp->device();
+          if(!dev)
+            continue;
+              
+          // Shall we check open flags?
+          //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
+          //if(!(dev->openFlags() & 1))
+          //  continue;
+          
+          MidiSyncInfo& si = mp->syncInfo();
+            
+          //if(genMMC && si.MMCOut())
+          if(si.MMCOut())
+            //mp->sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
+            mp->sendMMCDeferredPlay();
+          
+          //if(genMCSync && si.MCOut())
+          if(si.MCOut())
+          {
+            if(curTickPos)
+              mp->sendContinue();
+            else
+              mp->sendStart();
+          }  
+        }
+      }  
       
       /*
       for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd) 
@@ -1125,75 +1135,102 @@ void Audio::stopRolling()
         }
 
 #endif
-      // Changed by Tim. p3.3.6
-      //MidiPort* syncPort = &midiPorts[txSyncPort];
-      //if (genMMC) {
-      //      unsigned char mmcPos[] = {
-      //            0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
-      //            0, 0, 0, 0, 0
-      //            };
-      //      int frame = tempomap.tick2frame(curTickPos);
-      //      MTC mtc(double(frame) / double(sampleRate));
-      //      mmcPos[6] = mtc.h() | (mtcType << 5);
-      //      mmcPos[7] = mtc.m();
-      //      mmcPos[8] = mtc.s();
-      //      mmcPos[9] = mtc.f();
-      //      mmcPos[10] = mtc.sf();
-      //      syncPort->sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
-      //      syncPort->sendSysex(mmcPos, sizeof(mmcPos));
-      //      }
-      //if (genMCSync) {         // Midi Clock
+      
+      // p3.3.31
+      // Don't send if external sync is on. The master, and our sync routing system will take care of that.
+      if(!extSyncFlag.value())
+      {
+        
+        // Changed by Tim. p3.3.6
+        //MidiPort* syncPort = &midiPorts[txSyncPort];
+        //if (genMMC) {
+        //      unsigned char mmcPos[] = {
+        //            0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
+        //            0, 0, 0, 0, 0
+        //            };
+        //      int frame = tempomap.tick2frame(curTickPos);
+        //      MTC mtc(double(frame) / double(sampleRate));
+        //      mmcPos[6] = mtc.h() | (mtcType << 5);
+        //      mmcPos[7] = mtc.m();
+        //      mmcPos[8] = mtc.s();
+        //      mmcPos[9] = mtc.f();
+        //      mmcPos[10] = mtc.sf();
+        //      syncPort->sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
+        //      syncPort->sendSysex(mmcPos, sizeof(mmcPos));
+        //      }
+        //if (genMCSync) {         // Midi Clock
+              // send STOP and
+              // "set song position pointer"
+        //      syncPort->sendStop();
+        //      syncPort->sendSongpos(curTickPos * 4 / config.division);
+        //      }
+        for(int port = 0; port < MIDI_PORTS; ++port) 
+        {
+          MidiPort* mp = &midiPorts[port];
+          MidiDevice* dev = mp->device();
+          if(!dev)
+            continue;
+              
+          // Shall we check open flags?
+          //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
+          //if(!(dev->openFlags() & 1))
+          //  continue;
+          
+          MidiSyncInfo& si = mp->syncInfo();
+            
+          //if(genMMC && si.MMCOut())
+          if(si.MMCOut())
+          {
+            //unsigned char mmcPos[] = {
+            //      0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
+            //      0, 0, 0, 0, 0
+            //      };
+  
+            // p3.3.31
+            /*
+            int frame = tempomap.tick2frame(curTickPos);
+            MTC mtc(double(frame) / double(sampleRate));
+            */          
+            
+            //mmcPos[6] = mtc.h() | (mtcType << 5);
+            //mmcPos[7] = mtc.m();
+            //mmcPos[8] = mtc.s();
+            //mmcPos[9] = mtc.f();
+            //mmcPos[10] = mtc.sf();
+            
+            //mp->sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
+            mp->sendMMCStop();
+            //mp->sendSysex(mmcPos, sizeof(mmcPos));
+            
+            // P3.3.31
+            // Added check of option send continue not start.
+            // Hmm, is this required? Seems to make other devices unhappy.
+            /*
+            if(!si.sendContNotStart())
+              mp->sendMMCLocate(mtc.h() | (mtcType << 5), 
+                              mtc.m(), mtc.s(), mtc.f(), mtc.sf());
+            */                  
+            
+          }
+        
+          //if(genMCSync && si.MCOut()) // Midi Clock
+          if(si.MCOut()) // Midi Clock
+          {
             // send STOP and
             // "set song position pointer"
-      //      syncPort->sendStop();
-      //      syncPort->sendSongpos(curTickPos * 4 / config.division);
-      //      }
-      for(int port = 0; port < MIDI_PORTS; ++port) 
-      {
-        MidiPort* mp = &midiPorts[port];
-        MidiDevice* dev = mp->device();
-        if(!dev)
-          continue;
+            mp->sendStop();
             
-        // Shall we check open flags?
-        //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
-        //if(!(dev->openFlags() & 1))
-        //  continue;
-        
-        MidiSyncInfo& si = mp->syncInfo();
-          
-        //if(genMMC && si.MMCOut())
-        if(si.MMCOut())
-        {
-          //unsigned char mmcPos[] = {
-          //      0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
-          //      0, 0, 0, 0, 0
-          //      };
-          int frame = tempomap.tick2frame(curTickPos);
-          MTC mtc(double(frame) / double(sampleRate));
-          //mmcPos[6] = mtc.h() | (mtcType << 5);
-          //mmcPos[7] = mtc.m();
-          //mmcPos[8] = mtc.s();
-          //mmcPos[9] = mtc.f();
-          //mmcPos[10] = mtc.sf();
-          
-          //mp->sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
-          mp->sendMMCStop();
-          //mp->sendSysex(mmcPos, sizeof(mmcPos));
-          mp->sendMMCLocate(mtc.h() | (mtcType << 5), 
-                            mtc.m(), mtc.s(), mtc.f(), mtc.sf());
-        }
-      
-        //if(genMCSync && si.MCOut()) // Midi Clock
-        if(si.MCOut()) // Midi Clock
-        {
-          // send STOP and
-          // "set song position pointer"
-          mp->sendStop();
-          mp->sendSongpos(curTickPos * 4 / config.division);
+            // P3.3.31
+            // Added check of option send continue not start.
+            // Hmm, is this required? Seems to make other devices unhappy.
+            /*
+            if(!si.sendContNotStart())
+              mp->sendSongpos(curTickPos * 4 / config.division);
+            */  
+            
+          }
         }
       }
-      
       
       /*
       for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd) 

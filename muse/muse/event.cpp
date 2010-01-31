@@ -66,7 +66,7 @@ void EventBase::dump(int n) const
 Event Event::clone()
       {
       // p3.3.31
-      printf("Event::clone() this:%p\n", this);
+      //printf("Event::clone() this:%p\n", this);
       
       // p3.3.31
       //return Event(ev->clone());
