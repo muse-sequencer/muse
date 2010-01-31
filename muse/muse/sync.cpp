@@ -1130,7 +1130,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                       // p3.3.31
                       // If we aren't rewinding on start, there's no point in re-sending start.
                       // Re-send continue instead, for consistency.
-                      if(midiPorts[p].syncInfo().recRewOnStart())
+                      if(midiPorts[port].syncInfo().recRewOnStart())
                         midiPorts[p].sendStart();
                       else  
                         midiPorts[p].sendContinue();
