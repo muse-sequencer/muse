@@ -1126,8 +1126,15 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   // Re-transmit start to other devices if clock out turned on.
                   for(int p = 0; p < MIDI_PORTS; ++p)
                     if(p != port && midiPorts[p].syncInfo().MCOut())
-                      midiPorts[p].sendStart();
-                  
+                    {
+                      // p3.3.31
+                      // If we aren't rewinding on start, there's no point in re-sending start.
+                      // Re-send continue instead, for consistency.
+                      if(midiPorts[p].syncInfo().recRewOnStart())
+                        midiPorts[p].sendStart();
+                      else  
+                        midiPorts[p].sendContinue();
+                    }
                   if (debugSync)
                         printf("   start\n");
                   
