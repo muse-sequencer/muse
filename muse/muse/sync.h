@@ -26,9 +26,11 @@ class MidiSyncInfo
     int _idIn;
     
     bool _sendMC;
+    bool _sendMRT;
     bool _sendMMC;
     bool _sendMTC;
     bool _recMC;
+    bool _recMRT;
     bool _recMMC;
     bool _recMTC;
     
@@ -39,16 +41,19 @@ class MidiSyncInfo
     
     double   _lastClkTime;
     double   _lastTickTime;
+    double   _lastMRTTime;
     double   _lastMMCTime;
     double   _lastMTCTime;
     double   _lastActTime[MIDI_CHANNELS];
     bool     _clockTrig;
     bool     _tickTrig;
+    bool     _MRTTrig;
     bool     _MMCTrig;
     bool     _MTCTrig;
     bool     _actTrig[MIDI_CHANNELS];
     bool     _clockDetect;
     bool     _tickDetect;
+    bool     _MRTDetect;
     bool     _MMCDetect;
     bool     _MTCDetect;
     bool     _actDetect[MIDI_CHANNELS];
@@ -68,18 +73,22 @@ class MidiSyncInfo
     void setIdIn(const int v)     { _idIn = v; }
     
     bool MCOut() const            { return _sendMC; }
+    bool MRTOut() const           { return _sendMRT; }
     bool MMCOut() const           { return _sendMMC; }
     bool MTCOut() const           { return _sendMTC; }
     
     bool MCIn() const             { return _recMC; }
+    bool MRTIn() const            { return _recMRT; }
     bool MMCIn() const            { return _recMMC; }
     bool MTCIn() const            { return _recMTC; }
     
     void setMCOut(const bool v)   { _sendMC = v; }
+    void setMRTOut(const bool v)  { _sendMRT = v; }
     void setMMCOut(const bool v)  { _sendMMC = v; }
     void setMTCOut(const bool v)  { _sendMTC = v; }
     
     void setMCIn(const bool v);   
+    void setMRTIn(const bool v);   
     void setMMCIn(const bool v);   
     void setMTCIn(const bool v);   
     
@@ -100,6 +109,9 @@ class MidiSyncInfo
     void trigMTCDetect();
     int recMTCtype() const       { return _recMTCtype; }
     void setRecMTCtype(int t)    { _recMTCtype = t; }
+    
+    bool MRTDetect() const       { return _MRTDetect; }           
+    void trigMRTDetect();
     
     bool MMCDetect() const       { return _MMCDetect; }           
     void trigMMCDetect();

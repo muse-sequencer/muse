@@ -73,22 +73,27 @@ MidiSyncInfo::MidiSyncInfo()
   _idOut         = 127;
   _idIn          = 127;
   _sendMC        = false;
+  _sendMRT       = false;
   _sendMMC       = false;
   _sendMTC       = false;
   _recMC         = false;
+  _recMRT        = false;
   _recMMC        = false;
   _recMTC        = false;
   
   _lastClkTime   = 0.0;
   _lastTickTime  = 0.0;
+  _lastMRTTime   = 0.0;
   _lastMMCTime   = 0.0;
   _lastMTCTime   = 0.0;
   _clockTrig     = false;
   _tickTrig      = false;
+  _MRTTrig       = false;
   _MMCTrig       = false;
   _MTCTrig       = false;
   _clockDetect   = false;
   _tickDetect    = false;
+  _MRTDetect     = false;
   _MMCDetect     = false;
   _MTCDetect     = false;
   _recMTCtype    = 0;
@@ -115,14 +120,17 @@ MidiSyncInfo& MidiSyncInfo::operator=(const MidiSyncInfo &sp)
   
   _lastClkTime   = sp._lastClkTime;
   _lastTickTime  = sp._lastTickTime;
+  _lastMRTTime   = sp._lastMRTTime;
   _lastMMCTime   = sp._lastMMCTime;
   _lastMTCTime   = sp._lastMTCTime;
   _clockTrig     = sp._clockTrig;
   _tickTrig      = sp._tickTrig;
+  _MRTTrig       = sp._MRTTrig;
   _MMCTrig       = sp._MMCTrig;
   _MTCTrig       = sp._MTCTrig;
   _clockDetect   = sp._clockDetect;
   _tickDetect    = sp._tickDetect;
+  _MRTDetect     = sp._MRTDetect;
   _MMCDetect     = sp._MMCDetect;
   _MTCDetect     = sp._MTCDetect;
   _recMTCtype    = sp._recMTCtype;
@@ -146,9 +154,11 @@ MidiSyncInfo& MidiSyncInfo::copyParams(const MidiSyncInfo &sp)
   _idOut         = sp._idOut;
   _idIn          = sp._idIn;
   _sendMC        = sp._sendMC;
+  _sendMRT       = sp._sendMRT;
   _sendMMC       = sp._sendMMC;
   _sendMTC       = sp._sendMTC;
   setMCIn(sp._recMC);
+  _recMRT        = sp._recMRT;
   _recMMC        = sp._recMMC;
   _recMTC        = sp._recMTC;
   _recRewOnStart = sp._recRewOnStart;
@@ -189,6 +199,20 @@ void MidiSyncInfo::setTime()
   else
   if(_tickDetect && (t - _lastTickTime) >= 1.0) // Set detect indicator timeout to about 1 second.
     _tickDetect = false;
+    
+  if(_MRTTrig)
+  {
+    _MRTTrig = false;
+    _lastMRTTime = t;  
+  }
+  else
+  if(_MRTDetect && (t - _lastMRTTime) >= 1.0) // Set detect indicator timeout to about 1 second.
+  {
+    _MRTDetect = false;
+    // Give up the current midi sync in port number if we took it...
+    //if(curMidiSyncInPort == _port)
+    //  curMidiSyncInPort = -1;
+  }
     
   if(_MMCTrig)
   {
@@ -247,6 +271,18 @@ void MidiSyncInfo::setMCIn(const bool v)
 }
 
 //---------------------------------------------------------
+//  setMRTIn
+//---------------------------------------------------------
+
+void MidiSyncInfo::setMRTIn(const bool v) 
+{ 
+  _recMRT = v; 
+  // If sync receive was turned off, clear the current midi sync in port number so another port can grab it.
+  //if(!_recMRT && _port != -1 && curMidiSyncInPort == _port)
+  //  curMidiSyncInPort = -1;
+}
+
+//---------------------------------------------------------
 //  setMMCIn
 //---------------------------------------------------------
 
@@ -291,6 +327,19 @@ void MidiSyncInfo::trigTickDetect()
 { 
   _tickDetect = true;
   _tickTrig = true;
+}
+    
+//---------------------------------------------------------
+//  trigMRTDetect
+//---------------------------------------------------------
+
+void MidiSyncInfo::trigMRTDetect()   
+{ 
+  _MRTDetect = true;
+  _MRTTrig = true;
+  // Set the current midi sync in port number if it's not taken...
+  //if(_recMRT && curMidiSyncInPort == -1)
+  //  curMidiSyncInPort = _port;
 }
     
 //---------------------------------------------------------
@@ -365,6 +414,8 @@ void MidiSyncInfo::read(Xml& xml)
                               _idIn = xml.parseInt();
                         else if (tag == "sendMC")
                               _sendMC = xml.parseInt();
+                        else if (tag == "sendMRT")
+                              _sendMRT = xml.parseInt();
                         else if (tag == "sendMMC")
                               _sendMMC = xml.parseInt();
                         else if (tag == "sendMTC")
@@ -373,6 +424,8 @@ void MidiSyncInfo::read(Xml& xml)
                         //      _sendContNotStart = xml.parseInt();
                         else if (tag == "recMC")
                               _recMC = xml.parseInt();
+                        else if (tag == "recMRT")
+                              _recMRT = xml.parseInt();
                         else if (tag == "recMMC")
                               _recMMC = xml.parseInt();
                         else if (tag == "recMTC")
@@ -402,8 +455,8 @@ void MidiSyncInfo::write(int level, Xml& xml)
   //  return;
   
   // All defaults? Nothing to write.
-  if(_idOut == 127 && _idIn == 127 && !_sendMC && !_sendMMC && !_sendMTC && 
-     /* !_sendContNotStart && */ !_recMC && !_recMMC && !_recMTC && _recRewOnStart)
+  if(_idOut == 127 && _idIn == 127 && !_sendMC && !_sendMRT && !_sendMMC && !_sendMTC && 
+     /* !_sendContNotStart && */ !_recMC && !_recMRT && !_recMMC && !_recMTC && _recRewOnStart)
     return;
   
   xml.tag(level++, "midiSyncInfo");
@@ -420,7 +473,9 @@ void MidiSyncInfo::write(int level, Xml& xml)
   
   if(_sendMC)
     xml.intTag(level, "sendMC", true);
-  if(_sendMMC)
+  if(_sendMRT)
+    xml.intTag(level, "sendMRT", true);
+  if(_sendMRT)
     xml.intTag(level, "sendMMC", true);
   if(_sendMTC)
     xml.intTag(level, "sendMTC", true);
@@ -429,6 +484,8 @@ void MidiSyncInfo::write(int level, Xml& xml)
   
   if(_recMC)
     xml.intTag(level, "recMC", true);
+  if(_recMRT)
+    xml.intTag(level, "recMRT", true);
   if(_recMMC)
     xml.intTag(level, "recMMC", true);
   if(_recMTC)
@@ -726,16 +783,19 @@ void MidiSeq::setSongPosition(int port, int midiBeat)
       if (midiInputTrace)
             printf("set song position port:%d %d\n", port, midiBeat);
       
-      midiPorts[port].syncInfo().trigMCSyncDetect();
+      //midiPorts[port].syncInfo().trigMCSyncDetect();
+      midiPorts[port].syncInfo().trigMRTDetect();
       
       //if (!extSyncFlag.value())
       // External sync not on? Clock in not turned on? 
-      if(!extSyncFlag.value() || !midiPorts[port].syncInfo().MCIn())
+      //if(!extSyncFlag.value() || !midiPorts[port].syncInfo().MCIn())
+      if(!extSyncFlag.value() || !midiPorts[port].syncInfo().MRTIn())
             return;
             
       // Re-transmit song position to other devices if clock out turned on.
       for(int p = 0; p < MIDI_PORTS; ++p)
-        if(p != port && midiPorts[p].syncInfo().MCOut())
+        //if(p != port && midiPorts[p].syncInfo().MCOut())
+        if(p != port && midiPorts[p].syncInfo().MRTOut())
           midiPorts[p].sendSongpos(midiBeat);
                   
       curExtMidiSyncTick = (config.division * midiBeat) / 4;
@@ -815,15 +875,27 @@ void MidiSeq::realtimeSystemInput(int port, int c)
       MidiPort* mp = &midiPorts[port];
       
       // Trigger on any tick, clock, or realtime command. 
-      if(c == 0xf9)
+      if(c == 0xf9) // Tick
         mp->syncInfo().trigTickDetect();
       else
+      if(c == 0xf8) // Clock
         mp->syncInfo().trigMCSyncDetect();
+      else  
+        mp->syncInfo().trigMRTDetect(); // Other
        
-      // External sync not on? Clock in not turned on? 
-      if(!extSyncFlag.value() || !mp->syncInfo().MCIn())
+      // External sync not on? Clock in not turned on? Otherwise realtime in not turned on?
+      if(!extSyncFlag.value())
         return;
-      
+      if(c == 0xf8)
+      { 
+        if(!mp->syncInfo().MCIn())
+          return; 
+      }
+      else 
+      if(!mp->syncInfo().MRTIn())      
+        return;
+        
+        
       switch(c) {
             case 0xf8:  // midi clock (24 ticks / quarter note)
                   {
@@ -1125,7 +1197,8 @@ void MidiSeq::realtimeSystemInput(int port, int c)
             case 0xfa:  // start
                   // Re-transmit start to other devices if clock out turned on.
                   for(int p = 0; p < MIDI_PORTS; ++p)
-                    if(p != port && midiPorts[p].syncInfo().MCOut())
+                    //if(p != port && midiPorts[p].syncInfo().MCOut())
+                    if(p != port && midiPorts[p].syncInfo().MRTOut())
                     {
                       // p3.3.31
                       // If we aren't rewinding on start, there's no point in re-sending start.
@@ -1180,7 +1253,8 @@ void MidiSeq::realtimeSystemInput(int port, int c)
             case 0xfb:  // continue
                   // Re-transmit continue to other devices if clock out turned on.
                   for(int p = 0; p < MIDI_PORTS; ++p)
-                    if(p != port && midiPorts[p].syncInfo().MCOut())
+                    //if(p != port && midiPorts[p].syncInfo().MCOut())
+                    if(p != port && midiPorts[p].syncInfo().MRTOut())
                       midiPorts[p].sendContinue();
                   
                   if (debugSync)
@@ -1207,7 +1281,8 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   {
                     // Re-transmit stop to other devices if clock out turned on.
                     for(int p = 0; p < MIDI_PORTS; ++p)
-                      if(p != port && midiPorts[p].syncInfo().MCOut())
+                      //if(p != port && midiPorts[p].syncInfo().MCOut())
+                      if(p != port && midiPorts[p].syncInfo().MRTOut())
                         midiPorts[p].sendStop();
                     
                     playPendingFirstClock = false;

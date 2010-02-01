@@ -789,7 +789,8 @@ void Audio::seek(const Pos& p)
         {
           MidiPort* mp = &midiPorts[port];
           MidiDevice* dev = mp->device();
-          if(!dev || !mp->syncInfo().MCOut())
+          //if(!dev || !mp->syncInfo().MCOut())
+          if(!dev || !mp->syncInfo().MRTOut())
             continue;
             
           // Added by T356: Shall we check for device write open flag to see if it's ok to send?...
@@ -979,7 +980,8 @@ void Audio::startRolling()
             mp->sendMMCDeferredPlay();
           
           //if(genMCSync && si.MCOut())
-          if(si.MCOut())
+          //if(si.MCOut())
+          if(si.MRTOut())
           {
             if(curTickPos)
               mp->sendContinue();
@@ -1214,7 +1216,8 @@ void Audio::stopRolling()
           }
         
           //if(genMCSync && si.MCOut()) // Midi Clock
-          if(si.MCOut()) // Midi Clock
+          //if(si.MCOut()) // Midi Clock
+          if(si.MRTOut()) // 
           {
             // send STOP and
             // "set song position pointer"

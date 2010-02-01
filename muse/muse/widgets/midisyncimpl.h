@@ -77,6 +77,7 @@ class MidiSyncLViewItem : public QListViewItem
       bool _curDet;
       bool _curMTCDet;
       bool _tickDet;
+      bool _MRTDet;
       bool _MMCDet;
       bool _MTCDet;
       int _recMTCtype;
@@ -85,9 +86,11 @@ class MidiSyncLViewItem : public QListViewItem
       int _idIn;
       
       bool _sendMC;
+      bool _sendMRT;
       bool _sendMMC;
       bool _sendMTC;
       bool _recMC;
+      bool _recMRT;
       bool _recMMC;
       bool _recMTC;
       
