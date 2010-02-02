@@ -95,17 +95,17 @@ bool MidiJackDevice::putMidiEvent(const MidiPlayEvent& event)
 
   if(channel >= JACK_MIDI_CHANNELS) return false;
 
-  /* buffer up events, because jack eats them in chunks, if
-   * the buffer is full, there isn't so much to do, than
-   * drop the event
-   */
+  // buffer up events, because jack eats them in chunks, if
+   // the buffer is full, there isn't so much to do, than
+   // drop the event
+   
   give = jack_midi_out_data[channel].give;
   if(jack_midi_out_data[channel].buffer[give*4+3]){
     fprintf(stderr, "WARNING: muse-to-jack midi-buffer is full, channel=%u\n", channel);
     return false;
   }
-  /* copy event(note-on etc..), pitch and volume */
-  /* see http://www.midi.org/techspecs/midimessages.php */
+  // copy event(note-on etc..), pitch and volume 
+  // see http://www.midi.org/techspecs/midimessages.php 
   switch(event.type()){
     case ME_NOTEOFF:
       jack_midi_out_data[channel].buffer[give*4+0] = 0x80;
@@ -129,7 +129,7 @@ bool MidiJackDevice::putMidiEvent(const MidiPlayEvent& event)
       break;
     case ME_PITCHBEND:
       jack_midi_out_data[channel].buffer[give*4+0] = 0xE0;
-      /* convert muse pitch-bend to midi standard */
+      // convert muse pitch-bend to midi standard 
       x = 0x2000 + event.dataA();
       jack_midi_out_data[channel].buffer[give*4+1] = x & 0x7f;
       jack_midi_out_data[channel].buffer[give*4+2] = (x >> 8) & 0x7f;
@@ -138,14 +138,122 @@ bool MidiJackDevice::putMidiEvent(const MidiPlayEvent& event)
       fprintf(stderr, "jack-midi-out %u WARNING: unknown event %x\n", channel, event.type());
       return false;
   }
-  jack_midi_out_data[channel].buffer[give*4+3] = 1; /* mark state of this slot */
-  /* finally increase give position */
+  jack_midi_out_data[channel].buffer[give*4+3] = 1; // mark state of this slot 
+  // finally increase give position 
   give++;
   if(give >= JACK_MIDI_BUFFER_SIZE){
     give = 0;
   }
   jack_midi_out_data[channel].give = give;
   return false;
+  
+  /*
+  //
+  // NOTICE: Only one MusE port (port 0) is supported for now ! MusE has no mechanism to create 
+  //  or select other MusE ports. MusE ALSA midi only creates one port as well.
+  //
+  const int museport = 0;
+  if(event.type() == ME_CONTROLLER) 
+  {
+    int a      = event.dataA();
+    int b      = event.dataB();
+    int chn    = event.channel();
+    unsigned t = event.time();
+
+    if(a == CTRL_PITCH) 
+    {
+      int v = b + 8192;
+      audioDriver->putEvent(museport, MidiPlayEvent(t, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
+    }
+    else if (a == CTRL_PROGRAM) 
+    {
+      // don't output program changes for GM drum channel
+      //if (!(song->mtype() == MT_GM && chn == 9)) {
+            int hb = (b >> 16) & 0xff;
+            int lb = (b >> 8) & 0xff;
+            int pr = b & 0x7f;
+            if (hb != 0xff)
+                  audioDriver->putEvent(museport, MidiPlayEvent(t, chn, ME_CONTROLLER, CTRL_HBANK, hb));
+            if (lb != 0xff)
+                  audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, CTRL_LBANK, lb));
+            audioDriver->putEvent(museport, MidiPlayEvent(t+2, chn, ME_PROGRAM, pr, 0));
+      //      }
+    }
+    else if (a == CTRL_MASTER_VOLUME) 
+    {
+      unsigned char sysex[] = {
+            0x7f, 0x7f, 0x04, 0x01, 0x00, 0x00
+            };
+      sysex[1] = deviceId();
+      sysex[4] = b & 0x7f;
+      sysex[5] = (b >> 7) & 0x7f;
+      audioDriver->putEvent(museport, MidiPlayEvent(t, ME_SYSEX, sysex, 6));
+    }
+    else if (a < CTRL_14_OFFSET) 
+    {              // 7 Bit Controller
+      audioDriver->putEvent(museport, event);
+    }
+    else if (a < CTRL_RPN_OFFSET) 
+    {     // 14 bit high resolution controller
+      int ctrlH = (a >> 8) & 0x7f;
+      int ctrlL = a & 0x7f;
+      int dataH = (b >> 7) & 0x7f;
+      int dataL = b & 0x7f;
+      audioDriver->putEvent(museport, MidiPlayEvent(t,   chn, ME_CONTROLLER, ctrlH, dataH));
+      audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, ctrlL, dataL));
+    }
+    else if (a < CTRL_NRPN_OFFSET) 
+    {     // RPN 7-Bit Controller
+      int ctrlH = (a >> 8) & 0x7f;
+      int ctrlL = a & 0x7f;
+      audioDriver->putEvent(museport, MidiPlayEvent(t,   chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+      audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+      audioDriver->putEvent(museport, MidiPlayEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, b));
+    }
+    else if (a < CTRL_RPN14_OFFSET) 
+    {     // NRPN 7-Bit Controller
+      int ctrlH = (a >> 8) & 0x7f;
+      int ctrlL = a & 0x7f;
+      audioDriver->putEvent(museport, MidiPlayEvent(t,   chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+      audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+      audioDriver->putEvent(museport, MidiPlayEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, b));
+    }
+    else if (a < CTRL_NRPN14_OFFSET) 
+    {     // RPN14 Controller
+      int ctrlH = (a >> 8) & 0x7f;
+      int ctrlL = a & 0x7f;
+      int dataH = (b >> 7) & 0x7f;
+      int dataL = b & 0x7f;
+      audioDriver->putEvent(museport, MidiPlayEvent(t,   chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+      audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+      audioDriver->putEvent(museport, MidiPlayEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+      audioDriver->putEvent(museport, MidiPlayEvent(t+3, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+    }
+    else if (a < CTRL_NONE_OFFSET) 
+    {     // NRPN14 Controller
+      int ctrlH = (a >> 8) & 0x7f;
+      int ctrlL = a & 0x7f;
+      int dataH = (b >> 7) & 0x7f;
+      int dataL = b & 0x7f;
+      audioDriver->putEvent(museport, MidiPlayEvent(t, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+      audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+      audioDriver->putEvent(museport, MidiPlayEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+      audioDriver->putEvent(museport, MidiPlayEvent(t+3, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+    }
+    else 
+    {
+      printf("MidiJackDevice::putMidiEvent: unknown controller type 0x%x\n", a);
+    }
+  }
+  else 
+  {
+    audioDriver->putEvent(museport, event);
+  }
+  
+  // Just return OK for now.
+  return false;
+  */
+  
 }
 
 //---------------------------------------------------------

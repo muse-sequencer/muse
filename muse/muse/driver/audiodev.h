@@ -12,6 +12,8 @@
 #include <qstring.h>
 #include <list>
 
+class MidiPlayEvent;
+
 //---------------------------------------------------------
 //   AudioDevice
 //---------------------------------------------------------
@@ -27,6 +29,7 @@ class AudioDevice {
       
       virtual void stop () = 0;
       virtual int framePos() const = 0;
+      virtual unsigned frameTime() const = 0;
 
       virtual float* getBuffer(void* port, unsigned long nframes) = 0;
 
@@ -54,6 +57,8 @@ class AudioDevice {
       virtual void setFreewheel(bool f) = 0;
       virtual void graphChanged() {}
       virtual int setMaster(bool f) = 0;
+      
+      virtual bool putEvent(int port, const MidiPlayEvent&) = 0;
       };
 
 #endif

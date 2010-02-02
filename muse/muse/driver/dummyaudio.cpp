@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <pthread.h>
@@ -20,6 +21,9 @@
 #include "driver/alsatimer.h"
 #include "pos.h"
 #include "gconfig.h"
+#include "utils.h"
+
+class MidiPlayEvent;
 
 #define DEBUG_DUMMY 0
 //---------------------------------------------------------
@@ -113,6 +117,9 @@ class DummyAudioDevice : public AudioDevice {
                 printf("DummyAudioDevice::getCurFrame %d\n", _framePos);
       
       return _framePos; }
+      virtual unsigned frameTime() const {
+            return lrint(curTime() * sampleRate);
+            }
       virtual bool isRealtime() { return realtimeFlag; }
       //virtual int realtimePriority() const { return 40; }
       virtual int realtimePriority() const { return _realTimePriority; }
@@ -160,6 +167,8 @@ class DummyAudioDevice : public AudioDevice {
             }
       virtual void setFreewheel(bool) {}
       void setRealTime() { realtimeFlag = true; }
+      
+      virtual bool putEvent(int port, const MidiPlayEvent&) { };
       };
 
 DummyAudioDevice* dummyAudio = 0;

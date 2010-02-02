@@ -11,6 +11,8 @@
 #include <jack/jack.h>
 #include "audiodev.h"
 
+class MidiPlayEvent;
+
 //---------------------------------------------------------
 //   JackAudioDevice
 //---------------------------------------------------------
@@ -26,6 +28,10 @@ class JackAudioDevice : public AudioDevice {
       char jackRegisteredName[8];
       int dummyState;
       int dummyPos;
+      // Free-running frame counter incremented always in process.
+      jack_nframes_t _frameCounter; 
+      
+      static int processAudio(jack_nframes_t frames, void*);
 
    public:
       JackAudioDevice(jack_client_t* cl, char * jack_id_string);
@@ -38,6 +44,7 @@ class JackAudioDevice : public AudioDevice {
       virtual bool dummySync(int state); // Artificial sync when not using Jack transport.
       
       virtual int framePos() const;
+      virtual unsigned frameTime() const     { return _frameCounter; }  
 
       virtual float* getBuffer(void* port, unsigned long nframes) {
             return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
@@ -72,6 +79,9 @@ class JackAudioDevice : public AudioDevice {
       void graphChanged();
       virtual int setMaster(bool f);
 
+      // Port is not midi port, it is the port(s) created for MusE.
+      virtual bool putEvent(int port, const MidiPlayEvent&);
+      
       //static bool jackStarted;
       };
 

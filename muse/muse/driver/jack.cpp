@@ -12,6 +12,7 @@
 //#include <time.h> 
 #include <unistd.h>
 #include <jack/midiport.h>
+#include <string.h>
 
 #include "audio.h"
 #include "globals.h"
@@ -22,6 +23,9 @@
 #include "tempo.h"
 #include "sync.h"
 #include "utils.h"
+
+#include "midi.h"
+#include "mpevent.h"
 
 #include "jackmidi.h"
 
@@ -47,6 +51,10 @@ jack_port_t *midi_port_out[JACK_MIDI_CHANNELS];
 
 muse_jack_midi_buffer jack_midi_out_data[JACK_MIDI_CHANNELS];
 muse_jack_midi_buffer jack_midi_in_data[JACK_MIDI_CHANNELS];
+
+// p3.3.32
+//jack_port_t *jackMidiInPort = 0;
+//jack_port_t *jackMidiOutPort = 0;
 
 JackAudioDevice* jackAudio;
 
@@ -181,7 +189,8 @@ void handle_jack_midi_out_events(jack_nframes_t frames)
   void *port_buf;
   int i,j,n,x;
 
-  for(i = 0; i < JACK_MIDI_CHANNELS; i++){
+  //for(i = 0; i < JACK_MIDI_CHANNELS; i++){
+  for(i = 0; i < JACK_MIDI_CHANNELS; ++i){
     /* jack-midi-clear any old events */
     while(jack_midi_out_data[i].buffer[jack_midi_out_data[i].take*4+3] == 2){
       port_buf = jack_port_get_buffer(midi_port_out[i], frames);
@@ -207,26 +216,54 @@ void handle_jack_midi_out_events(jack_nframes_t frames)
       /* FIX: midi events has different sizes, compare note-on to
               program-change. We should first walk over the events
               counting the size. */
+      /*
       data = jack_midi_event_reserve(port_buf, 0, n*3);
       x = jack_midi_out_data[i].take;
       for(j = 0; j < n; j++){
         data[j*3+0] = jack_midi_out_data[i].buffer[x*4+0];
         data[j*3+1] = jack_midi_out_data[i].buffer[x*4+1];
         data[j*3+2] = jack_midi_out_data[i].buffer[x*4+2];
-        /* after having copied the buffer over to the jack-buffer, 
-         * mark the muses midi-out buffer as 'need-cleaning' */
+        // after having copied the buffer over to the jack-buffer, 
+        // mark the muses midi-out buffer as 'need-cleaning' 
         jack_midi_out_data[i].buffer[x*4+3] = 2;
         x++;
         if(x >= JACK_MIDI_BUFFER_SIZE){
           x = 0;
         }
       }
+      */
+      
+      x = jack_midi_out_data[i].take;
+      for(j = 0; j < n; ++j)
+      {
+        data = jack_midi_event_reserve(port_buf, 0, 3);
+        if(data == 0) 
+        {
+          fprintf(stderr, "handle_jack_midi_out_events: buffer overflow, event lost\n");
+          // Can do no more processing. Just return.
+          return;
+        }
+        data[0] = jack_midi_out_data[i].buffer[x*4+0];
+        data[1] = jack_midi_out_data[i].buffer[x*4+1];
+        data[2] = jack_midi_out_data[i].buffer[x*4+2];
+        // after having copied the buffer over to the jack-buffer, 
+        //  mark the muses midi-out buffer as 'need-cleaning' 
+        jack_midi_out_data[i].buffer[x*4+3] = 2;
+        x++;
+        if(x >= JACK_MIDI_BUFFER_SIZE){
+          x = 0;
+        }
+      }
+      
     }
   }
 }
 
-static int processAudio(jack_nframes_t frames, void*)
+//static int processAudio(jack_nframes_t frames, void*)
+int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
 {
+  jackAudio->_frameCounter += frames;
+  
   handle_jack_midi_in_events(frames);
   handle_jack_midi_out_events(frames);
 //      if (JACK_DEBUG)
@@ -397,6 +434,7 @@ static void noJackError(const char* /* s */)
 JackAudioDevice::JackAudioDevice(jack_client_t* cl, char * name)
    : AudioDevice()
       {
+      _frameCounter = 0;
       //JackAudioDevice::jackStarted=false;
       strcpy(jackRegisteredName, name);
       _client = cl;
@@ -527,6 +565,28 @@ bool initJackAudio()
     fprintf(stderr, "WARNING NO muse-jack midi connection\n");
   }
 
+      
+  /*
+  char buf[80];
+  snprintf(buf, 80, "muse-jack-midi-in-%d", i+1);
+  midi_port_in[i] = jack_port_register(client, buf,
+                                        JACK_DEFAULT_MIDI_TYPE,
+                                        JackPortIsInput, 0);
+  if(midi_port_in[i] == NULL){
+    fprintf(stderr, "failed to register jack-midi-in\n");
+    exit(-1);
+  }
+  snprintf(buf, 80, "muse-jack-midi-out-%d", i+1);
+  midi_port_out[i] = jack_port_register(client, buf,
+                                        JACK_DEFAULT_MIDI_TYPE,
+                                        JackPortIsOutput, 0);
+  if(midi_port_out == NULL){
+    fprintf(stderr, "failed to register jack-midi-out\n");
+    exit(-1);
+      }
+  */
+      
+      
       if (client) {
             audioDevice = jackAudio;
             return false;
@@ -1406,3 +1466,91 @@ int JackAudioDevice::setMaster(bool f)
   }
   return r;  
 }
+
+
+//---------------------------------------------------------
+//   putEvent
+//   return true if successful
+//---------------------------------------------------------
+
+//void JackAudioDevice::putEvent(Port port, const MidiEvent& e)
+bool JackAudioDevice::putEvent(int port, const MidiPlayEvent& e)
+      {
+      if(port >= JACK_MIDI_CHANNELS)
+        return false;
+        
+      //if (midiOutputTrace) {
+      //      printf("MidiOut<%s>: jackMidi: ", portName(port).toLatin1().data());
+      //      e.dump();
+      //      }
+      
+      //void* pb = jack_port_get_buffer(port.jackPort(), segmentSize);
+      void* pb = jack_port_get_buffer(midi_port_out[port], segmentSize);
+      
+      int ft = e.time() - _frameCounter;
+      
+      if (ft < 0)
+            ft = 0;
+      if (ft >= (int)segmentSize) {
+            printf("JackAudio::putEvent: time out of range %d(seg=%d)\n", ft, segmentSize);
+            if (ft > (int)segmentSize)
+                  ft = segmentSize - 1;
+            }
+      switch(e.type()) {
+            case ME_NOTEON:
+            case ME_NOTEOFF:
+            case ME_POLYAFTER:
+            case ME_CONTROLLER:
+            case ME_PITCHBEND:
+                  {
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, 3);
+                  if (p == 0) {
+                        fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
+                        return false;
+                        }
+                  p[0] = e.type() | e.channel();
+                  p[1] = e.dataA();
+                  p[2] = e.dataB();
+                  }
+                  break;
+
+            case ME_PROGRAM:
+            case ME_AFTERTOUCH:
+                  {
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, 2);
+                  if (p == 0) {
+                        fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
+                        return false;
+                        }
+                  p[0] = e.type() | e.channel();
+                  p[1] = e.dataA();
+                  }
+                  break;
+            case ME_SYSEX:
+                  {
+                  const unsigned char* data = e.data();
+                  int len = e.len();
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, len+2);
+                  if (p == 0) {
+                        fprintf(stderr, "JackMidi: buffer overflow, event lost\n");
+                        return false;
+                        }
+                  p[0] = 0xf0;
+                  p[len+1] = 0xf7;
+                  memcpy(p+1, data, len);
+                  }
+                  break;
+            case ME_SONGPOS:
+            case ME_CLOCK:
+            case ME_START:
+            case ME_CONTINUE:
+            case ME_STOP:
+                  printf("JackMidi: event type %x not supported\n", e.type());
+                  return false;
+                  break;
+            }
+            
+            return true;
+      }
+      
+
