@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <values.h>
 #include <uuid/uuid.h>
+#include <math.h>
 
 #include <qapplication.h>
 #include <qclipboard.h>
@@ -2540,9 +2541,50 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
       //////////
       // GRID //
       //////////
+      QColor baseColor(config.partCanvasBg.light(110));
+      p.setPen(baseColor);
 
-      p.setPen(lightGray);
+      //--------------------------------
+      // vertical lines
+      //-------------------------------
+      printf("raster=%d\n", *_raster);
+      if (config.canvasShowGrid) {
+          int bar, beat;
+          unsigned tick;
+          switch (*_raster) {
+                case 0:     // measure
+                      sigmap.tickValues(x, &bar, &beat, &tick);
+                      for (;;) {
+                            int xt = sigmap.bar2tick(bar++, 0, 0);
+                            if (xt >= x + w)
+                                  break;
+                            if (!((bar-1) % 4))
+                                p.setPen(baseColor.dark(130));
+                            else
+                                p.setPen(baseColor);
+                            p.drawLine(xt, y, xt, y+h);
+                      }
+                      break;
+                case 1:           // no raster
+                      break;
+                case 768:         // 1/2
+                case 384:         // 1/4
+                case 192:         // 1/8
+                case 96:          // 1/16
+                {
+                      int r = *_raster;
+                      int rr = rmapx(r);
+                      while (rr < 4) {
+                            r *= 2;
+                            rr = rmapx(r);
+                      }
 
+                      for (int xt = x; xt < (x + w); xt += r)
+                            p.drawLine(xt, y, xt+1, y+h);
+                }
+                break;
+          }
+      }
       //--------------------------------
       // horizontal lines
       //--------------------------------
@@ -2553,52 +2595,17 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
             if (yy > y + h)
                   break;
             Track* track = *it;
-            if (config.canvasShowGrid || !track->isMidiTrack())
+            if (/*config.canvasShowGrid ||*/ !track->isMidiTrack()) {
+              p.setPen(baseColor.dark(130));
               p.drawLine(x, yy, x + w, yy);
+              p.setPen(baseColor);
+            }
             if (!track->isMidiTrack() && (track->type() != Track::WAVE)) {
                   QRect r = rect & QRect(x, yy, w, track->height());
                   drawAudioTrack(p, r, (AudioTrack*)track);
+                  p.setPen(baseColor);
                   }
             yy += track->height();
-            }
-
-      if (!config.canvasShowGrid)
-            return;
-
-      //--------------------------------
-      // vertical lines
-      //--------------------------------
-
-      int bar, beat;
-      unsigned tick;
-      switch (*_raster) {
-            case 0:     // measure
-                  sigmap.tickValues(x, &bar, &beat, &tick);
-                  for (;;) {
-                        int xt = sigmap.bar2tick(bar++, 0, 0);
-                        if (xt >= x + w)
-                              break;
-                        p.drawLine(xt, y, xt, y+h);
-                        }
-                  break;
-            case 1:           // no raster
-                  break;
-            case 768:         // 1/2
-            case 384:         // 1/4
-            case 192:         // 1/8
-            case 96:          // 1/16
-                  {
-                  int r = *_raster;
-                  int rr = rmapx(r);
-                  while (rr < 4) {
-                        r *= 2;
-                        rr = rmapx(r);
-                        }
-
-                  for (int xt = x; xt < (x + w); xt += r)
-                        p.drawLine(xt, y, xt+1, y+h);
-                  }
-                  break;
             }
       }
 

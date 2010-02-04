@@ -1,3 +1,5 @@
+04.02.2010
+      * Improved: Grid handling in arranger improved, it should now be actually usable (rj)
 01.02.2010
       * Fixed: Jack midi output: Stuck or missing notes. (T356)
         - Must only be one jack_midi_event_reserve() per event in handle_jack_midi_out_events().
