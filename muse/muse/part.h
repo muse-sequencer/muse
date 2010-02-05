@@ -17,13 +17,14 @@
 #include <uuid/uuid.h>
 
 #include "event.h"
+#include "audioconvert.h"
 
 class Track;
 class MidiTrack;
 class WaveTrack;
 class Xml;
 class Part;
-class AudioConvertMap;
+//class AudioConvertMap;
 
 // typedef std::multimap<unsigned, Event*, std::less<unsigned> >::iterator iEvent;
 
@@ -123,7 +124,7 @@ class MidiPart : public Part {
 class WavePart : public Part {
 
       // p3.3.31
-      //AudioConvertMap _converters;
+      AudioConvertMap _converters;
       
    public:
       WavePart(WaveTrack* t);

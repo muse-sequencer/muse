@@ -22,7 +22,8 @@ enum EventType { Note, Controller, Sysex, PAfter, CAfter, Meta, Wave };
 
 class Xml;
 class EventBase;
-class AudioConverter;
+//class AudioConverter;
+class WavePart;
 
 //---------------------------------------------------------
 //   Event
@@ -31,8 +32,8 @@ class AudioConverter;
 class Event {
       EventBase* ev;
 
-      off_t _sfCurFrame;
-      AudioConverter* _audConv;
+      //off_t _sfCurFrame;
+      //AudioConverter* _audConv;
       
    public:
       //Event() { ev = 0; }
@@ -94,8 +95,11 @@ class Event {
       //AudioConverter* audioConverter() { return _audConv;} 
       SndFileR sndFile() const;
       virtual void setSndFile(SndFileR& sf);
+      
       //virtual void read(unsigned offset, float** bpp, int channels, int nn, bool overwrite = true);
-      virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
+      //virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
+      virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
+      
       void setTick(unsigned val);
       unsigned tick() const;
       unsigned frame() const;

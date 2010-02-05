@@ -2547,7 +2547,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
       //--------------------------------
       // vertical lines
       //-------------------------------
-      printf("raster=%d\n", *_raster);
+      //printf("raster=%d\n", *_raster);
       if (config.canvasShowGrid) {
           int bar, beat;
           unsigned tick;

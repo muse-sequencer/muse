@@ -1,3 +1,11 @@
+05.02.2010
+      * Fixed: Top level windows: Do not open if there are no parts. Case: bogus -1 top-level part index stored in med file. (T356)
+        - Changed MusE::readToplevels() and stuff in listedit.cpp
+        - Was causing crash of list editor upon loading a song saved with the list editor open. 
+          Somehow a bogus -1 top-level part index can make it in to the .med file. Checking this...
+      * Changed: Preparations for audio processors: Moved stuff out of class Event and into class WavePart. (T356)
+        - WavePart needs a converter map to lookup events in the part's (shared) event list, in case clones exist !
+          Ughh, it's going to be tough to ensure the map is always correct because an event cannot tell what part owns it...
 04.02.2010
       * Improved: Grid handling in arranger improved, it should now be actually usable (rj)
 01.02.2010

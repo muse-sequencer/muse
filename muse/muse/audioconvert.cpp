@@ -13,6 +13,7 @@
 #include "wave.h"
 #include "globals.h"
 #include "audioconvert.h"
+#include "eventbase.h"
 
 //#define AUDIOCONVERT_DEBUG
 //#define AUDIOCONVERT_DEBUG_PRC
@@ -21,25 +22,44 @@
 //   AudioConvertMap
 //---------------------------------------------------------
 
-/*
-void AudioConvertMap::remapEvents(const EventList*)  
+void AudioConvertMap::remapEvents(const EventList* el)  
 {
 
 }
 
-iAudioConvertMap AudioConvertMap::addEventBase(const EventBase*)
+iAudioConvertMap AudioConvertMap::addEvent(EventBase* eb)
 {
-
+  iAudioConvertMap iacm = getConverter(eb);
+  if(iacm == end())
+  {
+    AudioConverter* cv = 0;
+    if(!eb->sndFile().isNull())
+      cv = new SRCAudioConverter(eb->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
+    
+    // Use insert with hint for speed.
+    return insert(iacm, std::pair<EventBase*, AudioConverter*> (eb, cv));
+  }
+  else
+    // Adopt a policy of returning an already existing item to enforce no-duplicates.
+    return iacm;
 }
 
-AudioConverter* AudioConvertMap::findConverter(const EventBase* eb)
+void AudioConvertMap::removeEvent(EventBase* eb)
 {
   iAudioConvertMap iacm = find(eb);
   if(iacm != end())
-    return iacm->second;
-  return 0;
+  {
+    AudioConverter* cv = iacm->second;
+    if(cv)
+      delete cv;
+    erase(iacm);  
+  }    
 }
-*/
+
+iAudioConvertMap AudioConvertMap::getConverter(EventBase* eb)
+{
+  return find(eb);
+}
 
 //---------------------------------------------------------
 //   AudioConverter
@@ -52,6 +72,7 @@ AudioConverter::AudioConverter()
   #endif
 
   _refCount = 1;
+  _sfCurFrame = 0;
 }
 
 AudioConverter::~AudioConverter()
@@ -90,10 +111,11 @@ AudioConverter* AudioConverter::release(AudioConverter* cv)
   return cv;  
 }
 
-off_t AudioConverter::readAudio(SndFileR& f, off_t sfCurFrame, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
+//off_t AudioConverter::readAudio(SndFileR& f, off_t sfCurFrame, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
+off_t AudioConverter::readAudio(SndFileR& f, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
 {
   if(f.isNull())
-    return sfCurFrame;
+    return _sfCurFrame;
   
   // Added by Tim. p3.3.17
   //#ifdef AUDIOCONVERT_DEBUG_PRC
@@ -109,8 +131,8 @@ off_t AudioConverter::readAudio(SndFileR& f, off_t sfCurFrame, unsigned offset, 
   if(!resample)
   {
     // Sample rates are the same. Just a regular seek + read, no conversion.
-    sfCurFrame = f.seek(frame, 0);
-    return sfCurFrame + f.read(channel, buffer, n, overwrite);
+    _sfCurFrame = f.seek(frame, 0);
+    return _sfCurFrame + f.read(channel, buffer, n, overwrite);
   }
   
   // Is a 'transport' seek requested? (Not to be requested with every read! Should only be for 'first read' seeks, or positional 'transport' seeks.)
@@ -124,7 +146,7 @@ off_t AudioConverter::readAudio(SndFileR& f, off_t sfCurFrame, unsigned offset, 
     //long inSize = long((double)frames * _src_ratio) + 1     // From MusE-2 file converter.
     off_t newfr = (off_t)floor(((double)frame * srcratio));    // From simplesynth.
   
-    sfCurFrame = f.seek(newfr, 0);
+    _sfCurFrame = f.seek(newfr, 0);
     
     // Added by Tim. p3.3.17
     //#ifdef AUDIOCONVERT_DEBUG_PRC
@@ -145,7 +167,7 @@ off_t AudioConverter::readAudio(SndFileR& f, off_t sfCurFrame, unsigned offset, 
     // Sample rates are different. We can't just tell seek to go to an absolute calculated position, 
     //  since the last position can vary - it might not be what the calculated position is. 
     // We must use the last position left by SRC conversion, ie. let the file position progress on its own.
-    sfCurFrame = f.seek(sfCurFrame, 0);
+    _sfCurFrame = f.seek(_sfCurFrame, 0);
   }
   
   /*
@@ -157,7 +179,8 @@ off_t AudioConverter::readAudio(SndFileR& f, off_t sfCurFrame, unsigned offset, 
   
   //sfCurFrame = process(f, sfCurFrame, offset, &outbuffer[0], channel, n);
 //  sfCurFrame = process(f, sfCurFrame, outbuffer, channel, n);
-  sfCurFrame = process(f, sfCurFrame, buffer, channel, n, overwrite);
+  //sfCurFrame = process(f, sfCurFrame, buffer, channel, n, overwrite);
+  _sfCurFrame = process(f, buffer, channel, n, overwrite);
   
   /*
   float*  poutbuf = &outbuffer[0];
@@ -218,7 +241,7 @@ off_t AudioConverter::readAudio(SndFileR& f, off_t sfCurFrame, unsigned offset, 
   }
   */
   
-  return sfCurFrame;
+  return _sfCurFrame;
 }
 
 //---------------------------------------------------------
@@ -286,13 +309,14 @@ void SRCAudioConverter::reset()
   return;  
 }
 
-off_t SRCAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, int channel, int n, bool overwrite)
+//off_t SRCAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, int channel, int n, bool overwrite)
+off_t SRCAudioConverter::process(SndFileR& f, float** buffer, int channel, int n, bool overwrite)
 {
   //return src_process(_src_state, sd);
   
   if(f.isNull())
     //return;
-    return sfCurFrame;
+    return _sfCurFrame;
   
   // Added by Tim. p3.3.17
   //#ifdef AUDIOCONVERT_DEBUG_PRC
@@ -310,7 +334,7 @@ off_t SRCAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, 
     #ifdef AUDIOCONVERT_DEBUG
     printf("SRCAudioConverter::process Error: sampleRate or file samplerate is zero!\n");
     #endif
-    return sfCurFrame;
+    return _sfCurFrame;
   }  
   
   SRC_DATA srcdata;
@@ -372,7 +396,7 @@ off_t SRCAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, 
     if(srcerr != 0)      
     {
       printf("\nSRCAudioConverter::process SampleRate converter process failed: %s\n", src_strerror(srcerr));
-      return sfCurFrame += rn;
+      return _sfCurFrame += rn;
     }
     
     totalOutFrames += srcdata.output_frames_gen;
@@ -399,10 +423,10 @@ off_t SRCAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, 
         #ifdef AUDIOCONVERT_DEBUG_PRC
         printf("SRCAudioConverter::process Seek-back by:%d\n", seekn);
         #endif
-        sfCurFrame = f.seek(-seekn, SEEK_CUR);
+        _sfCurFrame = f.seek(-seekn, SEEK_CUR);
       }
       else  
-        sfCurFrame += rn;
+        _sfCurFrame += rn;
       
       if(totalOutFrames == n)
       {
@@ -434,7 +458,7 @@ off_t SRCAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, 
     }
     else
     {
-      sfCurFrame += rn;
+      _sfCurFrame += rn;
       #ifdef AUDIOCONVERT_DEBUG
       printf("SRCAudioConverter::process %s rn:%zd != inFrames:%ld output_frames_gen:%ld outFrames:%ld srcdata.input_frames_used:%ld\n", 
         f.name().latin1(), rn, inFrames, srcdata.output_frames_gen, outFrames, srcdata.input_frames_used);
@@ -523,7 +547,7 @@ off_t SRCAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, 
     #endif
   }
   
-  return sfCurFrame;
+  return _sfCurFrame;
 }
 
 #ifdef RUBBERBAND_SUPPORT
@@ -581,13 +605,14 @@ void RubberBandAudioConverter::reset()
 /////////////////////////////////
 // TODO: Not finished yet..
 ////////////////////////////////
-off_t RubberBandAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, int channel, int n, bool overwrite)
+//off_t RubberBandAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, int channel, int n, bool overwrite)
+off_t RubberBandAudioConverter::process(SndFileR& f, float** buffer, int channel, int n, bool overwrite)
 {
   //return src_process(_src_state, sd);
   
   if(f.isNull())
     //return;
-    return sfCurFrame;
+    return _sfCurFrame;
   
   // Added by Tim. p3.3.17
   //#ifdef AUDIOCONVERT_DEBUG_PRC
@@ -605,7 +630,7 @@ off_t RubberBandAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** b
     #ifdef AUDIOCONVERT_DEBUG
     printf("RubberBandAudioConverter::process Error: sampleRate or file samplerate is zero!\n");
     #endif
-    return sfCurFrame;
+    return _sfCurFrame;
   }  
   
 //  SRC_DATA srcdata;
@@ -704,7 +729,7 @@ off_t RubberBandAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** b
     if(srcerr != 0)      
     {
       printf("\RubberBandAudioConverter::process SampleRate converter process failed: %s\n", src_strerror(srcerr));
-      return sfCurFrame += rn;
+      return _sfCurFrame += rn;
     }
     
     totalOutFrames += srcdata.output_frames_gen;
@@ -731,10 +756,10 @@ off_t RubberBandAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** b
         #ifdef AUDIOCONVERT_DEBUG_PRC
         printf("RubberBandAudioConverter::process Seek-back by:%d\n", seekn);
         #endif
-        sfCurFrame = f.seek(-seekn, SEEK_CUR);
+        _sfCurFrame = f.seek(-seekn, SEEK_CUR);
       }
       else  
-        sfCurFrame += rn;
+        _sfCurFrame += rn;
       
       if(totalOutFrames == n)
       {
@@ -766,7 +791,7 @@ off_t RubberBandAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** b
     }
     else
     {
-      sfCurFrame += rn;
+      _sfCurFrame += rn;
       #ifdef AUDIOCONVERT_DEBUG
       printf("RubberBandAudioConverter::process %s rn:%zd != inFrames:%ld output_frames_gen:%ld outFrames:%ld srcdata.input_frames_used:%ld\n", 
         f.name().latin1(), rn, inFrames, srcdata.output_frames_gen, outFrames, srcdata.input_frames_used);
@@ -855,7 +880,7 @@ off_t RubberBandAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** b
     #endif
   }
   
-  return sfCurFrame;
+  return _sfCurFrame;
 }
 
 #endif // RUBBERBAND_SUPPORT

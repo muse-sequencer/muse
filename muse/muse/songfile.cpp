@@ -990,19 +990,37 @@ void MusE::readToplevels(Xml& xml)
                                     pl->add(part);
                               }
                         else if (tag == "pianoroll") {
-                              startPianoroll(pl);
-                              toplevels.back().cobject()->readStatus(xml);
-                              pl = new PartList;
+                              // p3.3.34
+                              // Do not open if there are no parts.
+                              // Had bogus '-1' part index for list edit in med file,
+                              //  causing list edit to segfault on song load.
+                              // Somehow that -1 was put there on write, because the
+                              //  current part didn't exist anymore, so no index number
+                              //  could be found for it on write. Watching... may be fixed.
+                              // But for now be safe for all the top levels...
+                              if(!pl->empty())
+                              {
+                                
+                                startPianoroll(pl);
+                                toplevels.back().cobject()->readStatus(xml);
+                                pl = new PartList;
+                              }  
                               }
                         else if (tag == "drumedit") {
-                              startDrumEditor(pl);
-                              toplevels.back().cobject()->readStatus(xml);
-                              pl = new PartList;
+                              if(!pl->empty())
+                              {
+                                startDrumEditor(pl);
+                                toplevels.back().cobject()->readStatus(xml);
+                                pl = new PartList;
+                              }  
                               }
                         else if (tag == "listeditor") {
-                              startListEditor(pl);
-                              toplevels.back().cobject()->readStatus(xml);
-                              pl = new PartList;
+                              if(!pl->empty())
+                              {
+                                startListEditor(pl);
+                                toplevels.back().cobject()->readStatus(xml);
+                                pl = new PartList;
+                              }  
                               }
                         else if (tag == "master") {
                               startMasterEditor();
@@ -1017,9 +1035,12 @@ void MusE::readToplevels(Xml& xml)
                               toplevels.back().cobject()->readStatus(xml);
                               }
                         else if (tag == "waveedit") {
-                              startWaveEditor(pl);
-                              toplevels.back().cobject()->readStatus(xml);
-                              pl = new PartList;
+                              if(!pl->empty())
+                              {
+                                startWaveEditor(pl);
+                                toplevels.back().cobject()->readStatus(xml);
+                                pl = new PartList;
+                              }  
                               }
                         else if (tag == "cliplist") {
                               startClipList();

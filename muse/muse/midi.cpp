@@ -1103,7 +1103,10 @@ void Audio::processMidi()
                               // 384/24=16 for a division of 16 sub-frames (16 MusE 'ticks').
                               // That is what we'll use if syncing externally.
                               //unsigned time = event.time() + segmentSize*(segmentCount-1);
-                              unsigned time = event.time() + (extsync ? config.division/24 : segmentSize*(segmentCount-1));
+                              //unsigned time = event.time() + (extsync ? config.division/24 : segmentSize*(segmentCount-1));
+                              // p3.3.34
+                              // Oops, use the current tick. 
+                              unsigned time = extsync ? curTickPos : (event.time() + segmentSize*(segmentCount-1));
                               event.setTime(time);
 
                               // dont't echo controller changes back to software

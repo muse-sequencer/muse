@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 // #include <memory.h>
-#include "audioconvert.h"
+//#include "audioconvert.h"
 #include "event.h"
 #include "eventbase.h"
 #include "waveevent.h"
@@ -80,13 +80,13 @@ Event Event::clone()
 Event::Event() 
 { 
   ev = 0; 
-  _sfCurFrame = 0;
-  _audConv = 0;
+  //_sfCurFrame = 0;
+  //_audConv = 0;
 }
 
 Event::Event(EventType t) {
-            _sfCurFrame = 0;
-            _audConv = 0;
+            //_sfCurFrame = 0;
+            //_audConv = 0;
             
             if (t == Wave)
                   ev = new WaveEventBase(t);
@@ -95,8 +95,8 @@ Event::Event(EventType t) {
             ++(ev->refCount);
             }
 Event::Event(const Event& e) {
-            _sfCurFrame = 0;
-            _audConv = 0;
+            //_sfCurFrame = 0;
+            //_audConv = 0;
             
             ev = e.ev;
             if(ev)
@@ -109,8 +109,8 @@ Event::Event(const Event& e) {
             #endif
           }
 Event::Event(EventBase* eb) {
-            _sfCurFrame = 0;
-            _audConv = 0;
+            //_sfCurFrame = 0;
+            //_audConv = 0;
             
             ev = eb;
             ++(ev->refCount);
@@ -303,12 +303,15 @@ void Event::setSndFile(SndFileR& sf)
 }
 
 //void Event::read(unsigned offset, float** bpp, int channels, int nn, bool overwrite)
-void Event::readAudio(unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
+//void Event::readAudio(unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
+// p3.3.33
+void Event::readAudio(WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
       {
         //ev->read(offset, bpp, channels, nn, overwrite);
         //ev->readAudio(offset, bpp, channels, nn, doSeek, overwrite);
         //_sfCurFrame = ev->readAudio(_src_state, _sfCurFrame, offset, bpp, channels, nn, doSeek, overwrite);
-        _sfCurFrame = ev->readAudio(_audConv, _sfCurFrame, offset, bpp, channels, nn, doSeek, overwrite);
+        // p3.3.33
+        ev->readAudio(part, offset, bpp, channels, nn, doSeek, overwrite);
       }
 void Event::setTick(unsigned val)       { ev->setTick(val); }
 unsigned Event::tick() const            { return ev->tick(); }

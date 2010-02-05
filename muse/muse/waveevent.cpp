@@ -149,7 +149,9 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
 //void WaveEventBase::read(unsigned offset, float** buffer, int channel, int n, bool overwrite)
 //void WaveEventBase::readAudio(unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
 //off_t WaveEventBase::readAudio(SRC_STATE* src_state, off_t sfCurFrame, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
-off_t WaveEventBase::readAudio(AudioConverter* audConv, off_t sfCurFrame, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
+//off_t WaveEventBase::readAudio(AudioConverter* audConv, off_t sfCurFrame, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
+// p3.3.33
+void WaveEventBase::readAudio(WavePart* part, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
 {
   // Added by Tim. p3.3.17
   #ifdef WAVEEVENT_DEBUG_PRC
@@ -159,6 +161,8 @@ off_t WaveEventBase::readAudio(AudioConverter* audConv, off_t sfCurFrame, unsign
   // Changed by Tim. p3.3.18 
   #ifdef USE_SAMPLERATE
   
+  // TODO: 
+  >>>>>>>>>>>+++++++++++++++++++++++++++++
   // If we have a valid audio converter then use it to do the processing. Otherwise just a normal seek + read.
   if(audConv)
     //sfCurFrame = audConv->process(f, sfCurFrame, offset + _spos, buffer, channel, n, doSeek, overwrite);
@@ -171,7 +175,8 @@ off_t WaveEventBase::readAudio(AudioConverter* audConv, off_t sfCurFrame, unsign
       sfCurFrame += f.read(channel, buffer, n, overwrite);
     }  
   }
-  return sfCurFrame;
+  //return sfCurFrame;
+  return;
   
   /*
   unsigned fsrate = f.samplerate();
@@ -428,12 +433,16 @@ off_t WaveEventBase::readAudio(AudioConverter* audConv, off_t sfCurFrame, unsign
   
   #else
   if(f.isNull())
-    //return;
-    return sfCurFrame;
+    return;
+    //return sfCurFrame;
   
-  sfCurFrame = f.seek(offset + _spos, 0);
-  sfCurFrame += f.read(channel, buffer, n, overwrite);
-  return sfCurFrame;
+  //sfCurFrame = f.seek(offset + _spos, 0);
+  //sfCurFrame += f.read(channel, buffer, n, overwrite);
+  f.seek(offset + _spos, 0);
+  f.read(channel, buffer, n, overwrite);
+  
+  //return sfCurFrame;
+  return;
   #endif
   
 }

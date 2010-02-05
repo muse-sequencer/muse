@@ -131,6 +131,10 @@ void MidiEditor::writePartList(int level, Xml& xml) const
             Track* track = part->track();
             int trkIdx   = song->tracks()->index(track);
             int partIdx  = track->parts()->index(part);
+            
+            if((trkIdx == -1) || (partIdx == -1))
+              printf("MidiEditor::writePartList error: trkIdx:%d partIdx:%d\n", trkIdx, partIdx);
+              
             xml.put(level, "<part>%d:%d</part>", trkIdx, partIdx);
             }
       }

@@ -11,7 +11,7 @@
 #ifndef __AUDIOCONVERT_H__
 #define __AUDIOCONVERT_H__
 
-//#include <map>
+#include <map>
 
 #ifdef RUBBERBAND_SUPPORT
 #include <RubberBandStretcher.h>
@@ -21,8 +21,8 @@
 #include <sys/types.h>
 
 //#include "eventbase.h"
-//class EventBase;
-//class EventList;
+class EventBase;
+class EventList;
 
 class SndFileR;
 
@@ -32,7 +32,9 @@ class SndFileR;
 
 class AudioConverter
 {
+   protected:   
       int _refCount;
+      off_t _sfCurFrame;
       
    public:   
       AudioConverter();
@@ -41,13 +43,17 @@ class AudioConverter
       AudioConverter* reference();
       static AudioConverter* release(AudioConverter* cv);
       
-      off_t readAudio(SndFileR& /*sf*/, off_t /*sfCurFrame*/, unsigned /*offset*/, float** /*buffer*/, 
+      //off_t readAudio(SndFileR& /*sf*/, off_t /*sfCurFrame*/, unsigned /*offset*/, float** /*buffer*/, 
+      //                int /*channels*/, int /*frames*/, bool /*doSeek*/, bool /*overwrite*/);
+      off_t readAudio(SndFileR& /*sf*/, unsigned /*offset*/, float** /*buffer*/, 
                       int /*channels*/, int /*frames*/, bool /*doSeek*/, bool /*overwrite*/);
       
       virtual bool isValid() = 0;
       virtual void reset() = 0;
       virtual void setChannels(int ch) = 0;
-      virtual off_t process(SndFileR& /*sf*/, off_t /*sfCurFrame*/, float** /*buffer*/, 
+      //virtual off_t process(SndFileR& /*sf*/, off_t /*sfCurFrame*/, float** /*buffer*/, 
+      //                      int /*channels*/, int /*frames*/, bool /*overwrite*/) = 0; // Interleaved buffer if stereo.
+      virtual off_t process(SndFileR& /*sf*/, float** /*buffer*/, 
                             int /*channels*/, int /*frames*/, bool /*overwrite*/) = 0; // Interleaved buffer if stereo.
 };
 
@@ -68,7 +74,9 @@ class SRCAudioConverter : public AudioConverter
       virtual bool isValid() { return _src_state != 0; }
       virtual void reset();
       virtual void setChannels(int ch);
-      virtual off_t process(SndFileR& /*sf*/, off_t /*sfCurFrame*/, float** /*buffer*/, 
+      //virtual off_t process(SndFileR& /*sf*/, off_t /*sfCurFrame*/, float** /*buffer*/, 
+      //                      int /*channels*/, int /*frames*/, bool /*overwrite*/); // Interleaved buffer if stereo.
+      virtual off_t process(SndFileR& /*sf*/, float** /*buffer*/, 
                             int /*channels*/, int /*frames*/, bool /*overwrite*/); // Interleaved buffer if stereo.
 };
 
@@ -91,7 +99,9 @@ class RubberBandAudioConverter : public AudioConverter
       virtual bool isValid() { return _rbs != 0; }
       virtual void reset();
       virtual void setChannels(int ch);
-      virtual off_t process(SndFileR& /*sf*/, off_t /*sfCurFrame*/, float** /*buffer*/, 
+      //virtual off_t process(SndFileR& /*sf*/, off_t /*sfCurFrame*/, float** /*buffer*/, 
+      //                      int /*channels*/, int /*frames*/, bool /*overwrite*/); // Interleaved buffer if stereo.
+      virtual off_t process(SndFileR& /*sf*/, float** /*buffer*/, 
                             int /*channels*/, int /*frames*/, bool /*overwrite*/); // Interleaved buffer if stereo.
 };
 
@@ -101,7 +111,6 @@ class RubberBandAudioConverter : public AudioConverter
 //   AudioConvertMap
 //---------------------------------------------------------
 
-/*
 typedef std::map<EventBase*, AudioConverter*, std::less<EventBase*> >::iterator iAudioConvertMap;
 typedef std::map<EventBase*, AudioConverter*, std::less<EventBase*> >::const_iterator ciAudioConvertMap;
 
@@ -110,10 +119,11 @@ class AudioConvertMap : public std::map<EventBase*, AudioConverter*, std::less<E
 {
    public:
       void remapEvents(const EventList*);  
-      iAudioConvertMap addEventBase(const EventBase*);
-      AudioConverter* findConverter(const EventBase*);
+      iAudioConvertMap addEvent(EventBase*);
+      void removeEvent(EventBase*);
+      //AudioConverter* getConverter(const EventBase*);
+      iAudioConvertMap getConverter(EventBase*);
 };
-*/
 
 #endif
 

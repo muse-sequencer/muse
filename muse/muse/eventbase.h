@@ -13,8 +13,10 @@
 #include <sys/types.h>
 
 #include "pos.h"
+#include "event.h"
 
-class AudioConverter;
+//class AudioConverter;
+class WavePart;
 
 //---------------------------------------------------------
 //   EventBase
@@ -86,8 +88,10 @@ class EventBase : public PosLen {
       //virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) {}
       //virtual off_t readAudio(SRC_STATE* /*src_state*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
       //                       float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { return 0; }
-      virtual off_t readAudio(AudioConverter* /*audConv*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
-                             float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { return 0; }
+      //virtual off_t readAudio(AudioConverter* /*audConv*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
+      //                       float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { return 0; }
+      virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
+                             float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { }
       };
 #endif
 

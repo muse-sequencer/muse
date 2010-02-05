@@ -227,10 +227,23 @@ void ListEdit::songChanged(int type)
                               }
                         }
                   }
-            if (curPart == 0)
-                  curPart  = (MidiPart*)(parts()->begin()->second);
-            curTrack = curPart->track();
+            
+            // p3.3.34
+            //if (curPart == 0)
+            //      curPart  = (MidiPart*)(parts()->begin()->second);
+            //curTrack = curPart->track();
+            if(!curPart)
+            {
+              if(!parts()->empty())
+              {
+                curPart  = (MidiPart*)(parts()->begin()->second);
+                if(curPart)
+                  curTrack = curPart->track();
+                else  
+                  curPart = 0;
+              }      
             }
+          }  
       }
 
 //---------------------------------------------------------
@@ -495,8 +508,27 @@ ListEdit::ListEdit(PartList* pl)
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       songChanged(-1);
 
-      curPart   = (MidiPart*)(pl->begin()->second);
-      curPartId = curPart->sn();
+      // p3.3.34
+      // Was crashing because of -1 stored, because there was an invalid
+      //  part pointer stored. 
+      //curPart   = (MidiPart*)(pl->begin()->second);
+      if(pl->empty())
+      {
+        curPart = 0;
+        curPartId = -1;
+      }
+      else
+      {
+        curPart   = (MidiPart*)pl->begin()->second;
+        if(curPart)
+          curPartId = curPart->sn();
+        else
+        {
+          curPart = 0;
+          curPartId = -1;
+        }
+      }
+      
       initShortcuts();
       }
 
@@ -515,6 +547,10 @@ ListEdit::~ListEdit()
 
 void ListEdit::editInsertNote()
       {
+      // p3.3.34
+      if(!curPart)
+        return;
+        
       Event event = EditNoteDialog::getEvent(curPart->tick(), Event(), this);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
@@ -536,6 +572,10 @@ void ListEdit::editInsertNote()
 
 void ListEdit::editInsertSysEx()
       {
+      // p3.3.34
+      if(!curPart)
+        return;
+      
       Event event = EditSysexDialog::getEvent(curPart->tick(), Event(), this);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
@@ -557,6 +597,10 @@ void ListEdit::editInsertSysEx()
 
 void ListEdit::editInsertCtrl()
       {
+      // p3.3.34
+      if(!curPart)
+        return;
+      
       Event event = EditCtrlDialog::getEvent(curPart->tick(), Event(), curPart, this);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
@@ -578,6 +622,10 @@ void ListEdit::editInsertCtrl()
 
 void ListEdit::editInsertMeta()
       {
+      // p3.3.34
+      if(!curPart)
+        return;
+      
       Event event = EditMetaDialog::getEvent(curPart->tick(), Event(), this);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
@@ -599,6 +647,10 @@ void ListEdit::editInsertMeta()
 
 void ListEdit::editInsertCAfter()
       {
+      // p3.3.34
+      if(!curPart)
+        return;
+      
       Event event = EditCAfterDialog::getEvent(curPart->tick(), Event(), this);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
@@ -620,6 +672,10 @@ void ListEdit::editInsertCAfter()
 
 void ListEdit::editInsertPAfter()
       {
+      // p3.3.34
+      if(!curPart)
+        return;
+      
       Event ev;
       Event event = EditPAfterDialog::getEvent(curPart->tick(), ev, this);
       if (!event.empty()) {

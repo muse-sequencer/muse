@@ -168,7 +168,7 @@ class DummyAudioDevice : public AudioDevice {
       virtual void setFreewheel(bool) {}
       void setRealTime() { realtimeFlag = true; }
       
-      virtual bool putEvent(int port, const MidiPlayEvent&) { };
+      virtual bool putEvent(int /*port*/, const MidiPlayEvent&) { return true;};
       };
 
 DummyAudioDevice* dummyAudio = 0;

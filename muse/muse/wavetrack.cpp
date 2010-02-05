@@ -93,7 +93,9 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                     // Since the buffers are cleared above, just read and add (don't overwrite) the samples.
                     //event.read(srcOffset, bpp, channels(), nn);
                     //event.read(srcOffset, bpp, channels(), nn, false);
-                    event.readAudio(srcOffset, bpp, channels(), nn, doSeek, false);
+                    //event.readAudio(srcOffset, bpp, channels(), nn, doSeek, false);
+                    // p3.3.33
+                    event.readAudio(part, srcOffset, bpp, channels(), nn, doSeek, false);
                     
                     }
               }

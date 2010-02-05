@@ -15,6 +15,7 @@
 #include "eventbase.h"
 
 class AudioConverter;
+class WavePart;
 
 //---------------------------------------------------------
 //   WaveEvent
@@ -53,7 +54,9 @@ class WaveEventBase : public EventBase {
       //virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
       //virtual off_t readAudio(SRC_STATE* /*src_state*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
       //                       float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
-      virtual off_t readAudio(AudioConverter* /*audConv*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
+      //virtual off_t readAudio(AudioConverter* /*audConv*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
+      //                       float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
+      virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
                              float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
       };
       
