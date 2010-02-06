@@ -51,6 +51,9 @@ static bool playPendingFirstClock = false;
 unsigned int syncSendFirstClockDelay = 1; // In milliseconds.
 //static int lastStoppedBeat = 0;
 static unsigned int curExtMidiSyncTick = 0;
+unsigned int volatile lastExtMidiSyncTick = 0;
+double volatile curExtMidiSyncTime = 0.0;
+double volatile lastExtMidiSyncTime = 0.0;
 
 // Not used yet.
 // static bool mcStart = false;
@@ -799,6 +802,8 @@ void MidiSeq::setSongPosition(int port, int midiBeat)
           midiPorts[p].sendSongpos(midiBeat);
                   
       curExtMidiSyncTick = (config.division * midiBeat) / 4;
+      lastExtMidiSyncTick = curExtMidiSyncTick;
+      
       //Pos pos((config.division * midiBeat) / 4, true);
       Pos pos(curExtMidiSyncTick, true);
       
@@ -931,8 +936,11 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   //if(audio->isPlaying())
                   if(playStateExt)
                   {
+                    lastExtMidiSyncTime = curExtMidiSyncTime;
+                    curExtMidiSyncTime = curTime();
                     int div = config.division/24;
                     midiExtSyncTicks += div;
+                    lastExtMidiSyncTick = curExtMidiSyncTick;
                     curExtMidiSyncTick += div;
                   }
                   
@@ -1222,6 +1230,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         if(midiPorts[port].syncInfo().recRewOnStart())
                         {
                           curExtMidiSyncTick = 0;
+                          lastExtMidiSyncTick = curExtMidiSyncTick;
                           //audioDevice->seekTransport(0);
                           audioDevice->seekTransport(Pos(0, false));
                         }  
@@ -1279,35 +1288,41 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   break;
             case 0xfc:  // stop
                   {
+                    // p3.3.35
+                    // Stop the increment right away.
+                    midiExtSyncTicks = 0;
+                    playStateExt = false;
+                    playPendingFirstClock = false;
+                    
                     // Re-transmit stop to other devices if clock out turned on.
                     for(int p = 0; p < MIDI_PORTS; ++p)
                       //if(p != port && midiPorts[p].syncInfo().MCOut())
                       if(p != port && midiPorts[p].syncInfo().MRTOut())
                         midiPorts[p].sendStop();
                     
-                    playPendingFirstClock = false;
+                    //playPendingFirstClock = false;
                     
                     //lastStoppedBeat = (audio->tickPos() * 4) / config.division;
                     //curExtMidiSyncTick = (config.division * lastStoppedBeat) / 4;
-                    
-                    if (debugSync)
-                          printf("realtimeSystemInput stop\n");
                     
                     // p3.3.31
                     //printf("stop:%f\n", curTime());
                     
                     if (audio->isPlaying() /*state == PLAY*/) {
                           audio->msgPlay(false);
-                          playStateExt = false;
+                          //playStateExt = false;
                           }
+                    
+                    if (debugSync)
+                          printf("realtimeSystemInput stop\n");
                     
                     // Just in case the process still runs a cycle or two and causes the 
                     //  audio tick position to increment, reset the incrementer and force 
                     //  the transport position to what the hardware thinks is the current position.
-                    midiExtSyncTicks = 0;
+                    //midiExtSyncTicks = 0;
                     //Pos pos((config.division * lastStoppedBeat) / 4, true);
-                    Pos pos(curExtMidiSyncTick, true);
-                    audioDevice->seekTransport(pos);
+                    //Pos pos(curExtMidiSyncTick, true);
+                    //audioDevice->seekTransport(pos);
                   }
                   
                   break;

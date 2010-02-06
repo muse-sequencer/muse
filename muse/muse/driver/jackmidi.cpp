@@ -281,12 +281,15 @@ bool initMidiJack()
 
   MidiJackDevice* dev = new MidiJackDevice(adr, QString("jack-midi"));
   dev->setrwFlags(3); /* set read and write flags */
-  if(pipe(jackmidi_pi) < 0){
-    fprintf(stderr, "cant create midi-jack input pipe\n");
-  }
-  if(pipe(jackmidi_po) < 0){
-    fprintf(stderr, "cant create midi-jack output pipe\n");
-  }
+
+// Removed p3.3.35
+///  if(pipe(jackmidi_pi) < 0){
+///    fprintf(stderr, "cant create midi-jack input pipe\n");
+///  }
+///  if(pipe(jackmidi_po) < 0){
+///    fprintf(stderr, "cant create midi-jack output pipe\n");
+///  }
+  
   midiDevices.add(dev);
   gmdev = dev; /* proclaim the global jack-midi instance */
 

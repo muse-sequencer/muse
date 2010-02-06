@@ -1106,8 +1106,13 @@ void Audio::processMidi()
                               //unsigned time = event.time() + (extsync ? config.division/24 : segmentSize*(segmentCount-1));
                               // p3.3.34
                               // Oops, use the current tick. 
-                              unsigned time = extsync ? curTickPos : (event.time() + segmentSize*(segmentCount-1));
-                              event.setTime(time);
+                              //unsigned time = extsync ? curTickPos : (event.time() + segmentSize*(segmentCount-1));
+                              //event.setTime(time);
+                              // p3.3.35
+                              // If ext sync, events are now time-stamped with last tick in MidiDevice::recordEvent().
+                              // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
+                              if(!extsync)
+                                event.setTime(event.time() + segmentSize*(segmentCount-1));
 
                               // dont't echo controller changes back to software
                               // synthesizer:
@@ -1140,9 +1145,10 @@ void Audio::processMidi()
                               // If syncing externally the event time is already in units of ticks, set above.
                               if(!extsync)
                               {
-                                
-                                time = tempomap.frame2tick(event.time());
-                                event.setTime(time);  // set tick time
+                                // p3.3.35
+                                //time = tempomap.frame2tick(event.time());
+                                //event.setTime(time);  // set tick time
+                                event.setTime(tempomap.frame2tick(event.time()));  // set tick time
                               }  
 
                               // Special handling of events stored in rec-lists. a bit hACKish. TODO: Clean up (after 0.7)! :-/ (ml)

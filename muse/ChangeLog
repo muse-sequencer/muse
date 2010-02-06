@@ -1,3 +1,6 @@
+06.02.2010
+      * Fixed: MusE hanging on close, with Jack driver. (T356)
+        - Unregister Jack midi ports on destruction of JackAudioDevice.
 05.02.2010
       * Fixed: Top level windows: Do not open if there are no parts. Case: bogus -1 top-level part index stored in med file. (T356)
         - Changed MusE::readToplevels() and stuff in listedit.cpp

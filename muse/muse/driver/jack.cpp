@@ -266,6 +266,7 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
   
   handle_jack_midi_in_events(frames);
   handle_jack_midi_out_events(frames);
+  
 //      if (JACK_DEBUG)
 //            printf("processAudio - >>>>\n");
       segmentSize = frames;
@@ -451,11 +452,23 @@ JackAudioDevice::~JackAudioDevice()
       if (JACK_DEBUG)
             printf("~JackAudioDevice()\n");
       if (_client) {
+            
+            // p3.3.35
+            for(int i = 0; i < JACK_MIDI_CHANNELS; i++)
+            {
+              if(midi_port_in[i])
+                jack_port_unregister(_client, midi_port_in[i]);
+              if(midi_port_out[i])
+                jack_port_unregister(_client, midi_port_out[i]);
+            }
+            
             if (jack_client_close(_client)) {
                   //error->logError("jack_client_close() failed: %s\n", strerror(errno));
                   fprintf(stderr,"jack_client_close() failed: %s\n", strerror(errno));
                   }
             }
+      if (JACK_DEBUG)
+            printf("~JackAudioDevice() after jack_client_close()\n");
       }
 
 //---------------------------------------------------------
@@ -499,6 +512,13 @@ char* JackAudioDevice::getJackName()
 
 bool initJackAudio()
       {
+      // p3.3.35
+      for(int i = 0; i < JACK_MIDI_CHANNELS; i++)
+      {
+        midi_port_in[i] = 0;
+        midi_port_out[i] = 0;
+      }
+      
       if (JACK_DEBUG)
             printf("initJackAudio()\n");
       if (debugMsg) {
@@ -538,7 +558,7 @@ bool initJackAudio()
             }
       undoSetuid();
       
-  /* setup midi input/output */
+  // setup midi input/output 
   memset(jack_midi_out_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
   memset(jack_midi_in_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
   if(client){
@@ -564,7 +584,6 @@ bool initJackAudio()
   }else{
     fprintf(stderr, "WARNING NO muse-jack midi connection\n");
   }
-
       
   /*
   char buf[80];
@@ -890,6 +909,9 @@ void exitJackAudio()
       if (jackAudio)
             delete jackAudio;
             
+      if (JACK_DEBUG)
+            printf("exitJackAudio() after delete jackAudio\n");
+      
       // Added by Tim. p3.3.14
       audioDevice = NULL;      
       

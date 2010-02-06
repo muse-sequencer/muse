@@ -34,6 +34,8 @@ extern bool initMidiJack();
 MidiDeviceList midiDevices;
 extern void processMidiInputTransformPlugins(MEvent&);
 
+extern unsigned int volatile lastExtMidiSyncTick;
+
 //---------------------------------------------------------
 //   initMidiDevices
 //---------------------------------------------------------
@@ -50,6 +52,7 @@ void initMidiDevices()
                                                           "your configuration.");
           exit(-1);
           }
+      
       if(initMidiJack())
           {
           QMessageBox::critical(NULL, "MusE fatal error.", "MusE failed to initialize the\n" 
@@ -158,7 +161,11 @@ MREventList* MidiDevice::recordEvents()
 
 void MidiDevice::recordEvent(MidiRecordEvent& event)
       {
-      event.setTime(audio->timestamp());
+      // p3.3.35
+      // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice. And revert this line.
+      //event.setTime(audio->timestamp());
+      event.setTime(extSyncFlag.value() ? lastExtMidiSyncTick : audio->timestamp());
+      
       // Added by Tim. p3.3.8
       
       // By T356. Set the loop number which the event came in at.
