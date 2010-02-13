@@ -167,8 +167,6 @@ class DummyAudioDevice : public AudioDevice {
             }
       virtual void setFreewheel(bool) {}
       void setRealTime() { realtimeFlag = true; }
-      
-      virtual bool putEvent(int /*port*/, const MidiPlayEvent&) { return true;};
       };
 
 DummyAudioDevice* dummyAudio = 0;
@@ -242,7 +240,7 @@ static void* dummyLoop(void* ptr)
       {
       //unsigned int tickRate = 25;
       
-      // P3.3.30
+      // p3.3.30
       //sampleRate = 25600;
       sampleRate = config.dummyAudioSampleRate;
       //segmentSize = dummyFrames;

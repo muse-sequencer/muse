@@ -22,7 +22,7 @@
 #include "midictrl.h"
 #include "audio.h"
 #include "driver/alsamidi.h"
-//#include "driver/jackmidi.h"
+#include "driver/jackmidi.h"
 #include "sync.h"
 #include "synth.h"
 #include "song.h"
@@ -676,7 +676,7 @@ void MidiSeq::processTimerTick()
             // printf("Midi Time Code Sync generation not impl.\n");
 //            }
 
-      // P3.3.25
+      // p3.3.25
       int tickpos = audio->tickPos();
       bool extsync = extSyncFlag.value();
       //
@@ -684,16 +684,20 @@ void MidiSeq::processTimerTick()
       //
       for (iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) {
             MidiDevice* md = *id;
-            int port = md->midiPort();
-            MidiPort* mp = port != -1 ? &midiPorts[port] : 0;
+            // Is it a Jack midi device? p3.3.36 
+            MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
+            if(mjd)
+              continue;
             if (md->isSynti())      // syntis are handled by audio thread
                   continue;
+            int port = md->midiPort();
+            MidiPort* mp = port != -1 ? &midiPorts[port] : 0;
             MPEventList* el = md->playEvents();
             if (el->empty())
                   continue;
             iMPEvent i = md->nextPlayEvent();
             for (; i != el->end(); ++i) {
-                  // P3.3.25
+                  // p3.3.25
                   // If syncing to external midi sync, we cannot use the tempo map.
                   // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames.
                   //if (i->time() > curFrame) {

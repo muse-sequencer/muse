@@ -462,7 +462,7 @@ void Audio::process(unsigned frames)
                   }
             
             
-            // P3.3.25
+            // p3.3.25
             if(extSyncFlag.value())
             {
               nextTickPos = curTickPos + midiExtSyncTicks;
@@ -1204,7 +1204,7 @@ void Audio::stopRolling()
             mp->sendMMCStop();
             //mp->sendSysex(mmcPos, sizeof(mmcPos));
             
-            // P3.3.31
+            // p3.3.31
             // Added check of option send continue not start.
             // Hmm, is this required? Seems to make other devices unhappy.
             /*
@@ -1223,7 +1223,7 @@ void Audio::stopRolling()
             // "set song position pointer"
             mp->sendStop();
             
-            // P3.3.31
+            // p3.3.31
             // Added check of option send continue not start.
             // Hmm, is this required? Seems to make other devices unhappy.
             /*

@@ -1,3 +1,13 @@
+13.02.2010
+      * Fixed: Jack midi output should now be frame-accurate, support variable length events (like sysex), 
+                and most controllers should work. (T356)
+        - TODO: No record yet. Just playback. 
+        - TODO: I have code in place for multiple device listing (like ALSA) with auto-connect, 
+           instead of single 'jackmidi' device, but it doesn't seem to want to actually connect. 
+          Simply enable the #define JACK_MIDI_SHOW_MULTIPLE_DEVICES in driver/jackmidi.h 
+           and it will magically switch. Shows port names as their alias #1 (with a rem'able line to 
+           revert to non-alias names - to be made configurable later). I swear it was working, 
+           then intermittent, then not at all. Hmm...
 06.02.2010
       * Fixed: MusE hanging on close, with Jack driver. (T356)
         - Unregister Jack midi ports on destruction of JackAudioDevice.

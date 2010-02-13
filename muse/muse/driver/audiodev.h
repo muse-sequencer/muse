@@ -57,8 +57,6 @@ class AudioDevice {
       virtual void setFreewheel(bool f) = 0;
       virtual void graphChanged() {}
       virtual int setMaster(bool f) = 0;
-      
-      virtual bool putEvent(int port, const MidiPlayEvent&) = 0;
       };
 
 #endif

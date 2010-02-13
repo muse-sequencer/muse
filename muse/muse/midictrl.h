@@ -69,6 +69,7 @@ const int CTRL_RPN_OFFSET    = 0x20000;
 const int CTRL_NRPN_OFFSET   = 0x30000;
 const int CTRL_RPN14_OFFSET  = 0x50000;
 const int CTRL_NRPN14_OFFSET = 0x60000;
+const int CTRL_NONE_OFFSET   = 0x70000;
 
 class Xml;
 class Part;

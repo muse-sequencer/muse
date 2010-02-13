@@ -38,6 +38,8 @@ class JackAudioDevice : public AudioDevice {
       virtual ~JackAudioDevice();
       virtual void nullify_client() { _client = 0; }
       
+      void scanMidiPorts();
+      
       //virtual void start();
       virtual void start(int);
       virtual void stop ();
@@ -79,9 +81,6 @@ class JackAudioDevice : public AudioDevice {
       void graphChanged();
       virtual int setMaster(bool f);
 
-      // Port is not midi port, it is the port(s) created for MusE.
-      virtual bool putEvent(int port, const MidiPlayEvent&);
-      
       //static bool jackStarted;
       };
 

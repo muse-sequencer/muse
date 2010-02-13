@@ -1446,7 +1446,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
                   p.setPen(darkGray);
                   EventList* events = mp->events();
                   iEvent ito(events->lower_bound(to));
-                  // Added by Tim. P3.3.6
                   //printf("PartCanvas::drawItem pTick:%d from:%d to:%d part len:%d\n", pTick, from, to, part->lenTick());
                   
                   for (iEvent i = events->begin(); i != ito; ++i) {
@@ -1455,7 +1454,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
 
                         if (t > (to + pTick))
                         {
-                          // Added by Tim. P3.3.6
                           printf("PartCanvas::drawItem t:%d > to:%d + pTick:%d i->first:%d\n", t, to, pTick, i->first);
                           
                           break;

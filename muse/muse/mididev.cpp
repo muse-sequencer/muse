@@ -166,6 +166,8 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       //event.setTime(audio->timestamp());
       event.setTime(extSyncFlag.value() ? lastExtMidiSyncTick : audio->timestamp());
       
+      //printf("MidiDevice::recordEvent event time:%d\n", event.time());
+      
       // Added by Tim. p3.3.8
       
       // By T356. Set the loop number which the event came in at.

@@ -23,6 +23,7 @@
 #include "audio.h"
 #include "mididev.h"
 #include "driver/alsamidi.h"
+#include "driver/jackmidi.h"
 #include "wave.h"
 #include "synth.h"
 #include "sync.h"
@@ -825,7 +826,7 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                               if (port == defaultPort) {
                                     //printf("Adding event normally: frame=%d port=%d channel=%d pitch=%d velo=%d\n",frame, port, channel, pitch, velo);
                                     
-                                    // P3.3.25
+                                    // p3.3.25
                                     // If syncing to external midi sync, we cannot use the tempo map.
                                     // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames.
                                     if(extSyncFlag.value())
@@ -841,7 +842,7 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                                     MidiDevice* mdAlt = midiPorts[port].device();
                                     if (mdAlt) {
                                         
-                                        // P3.3.25
+                                        // p3.3.25
                                         if(extSyncFlag.value())
                                           mdAlt->playEvents()->add(MidiPlayEvent(tick, port, channel, 0x90, pitch, velo));
                                         else  
@@ -878,7 +879,7 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                                     MidiDevice* mdAlt = midiPorts[port].device();
                                     if(mdAlt) 
                                     {
-                                      // P3.3.25
+                                      // p3.3.25
                                       // If syncing to external midi sync, we cannot use the tempo map.
                                       // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames.
                                       if(extSyncFlag.value())
@@ -894,7 +895,7 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                                     break;
                                   }  
                                 }
-                                // P3.3.25
+                                // p3.3.25
                                 if(extSyncFlag.value())
                                   playEvents->add(MidiPlayEvent(tick, port, channel, ev));
                                 else  
@@ -905,7 +906,7 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                                    
                                    
                         default:
-                              // P3.3.25
+                              // p3.3.25
                               if(extSyncFlag.value())
                                 playEvents->add(MidiPlayEvent(tick, port, channel, ev));
                               else
@@ -957,7 +958,7 @@ void Audio::processMidi()
       iMPEvent nextPlayEvent  = metronome->nextPlayEvent();
       playEvents->erase(playEvents->begin(), nextPlayEvent);
 
-      // P3.3.25
+      // p3.3.25
       bool extsync = extSyncFlag.value();
       
       for (iMidiTrack t = song->midis()->begin(); t != song->midis()->end(); ++t) 
@@ -1111,8 +1112,9 @@ void Audio::processMidi()
                               // p3.3.35
                               // If ext sync, events are now time-stamped with last tick in MidiDevice::recordEvent().
                               // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
-                              if(!extsync)
-                                event.setTime(event.time() + segmentSize*(segmentCount-1));
+                              // p3.3.36
+                              //if(!extsync)
+                              //  event.setTime(event.time() + segmentSize*(segmentCount-1));
 
                               // dont't echo controller changes back to software
                               // synthesizer:
@@ -1233,7 +1235,7 @@ void Audio::processMidi()
                         break;
                   MidiPlayEvent ev(*k);
                   
-                  // P3.3.25
+                  // p3.3.25
                   //int frame = tempomap.tick2frame(k->time()) + frameOffset;
                   if(extsync)
                   {
@@ -1245,7 +1247,7 @@ void Audio::processMidi()
                     ev.setTime(frame);
                   }  
                   
-                  // P3.3.25
+                  // p3.3.25
                   //ev.setTime(frame);
                   
                   playEvents->add(ev);
@@ -1279,17 +1281,17 @@ void Audio::processMidi()
                   else if (state == PRECOUNT) {
                         isMeasure = (clickno % clicksMeasure) == 0;
                         }
-                  // P3.3.25
+                  // p3.3.25
                   //int frame = tempomap.tick2frame(midiClick) + frameOffset;
                   int evtime = extsync ? midiClick : tempomap.tick2frame(midiClick) + frameOffset;
                   
-                  // P3.3.25
+                  // p3.3.25
                   //MidiPlayEvent ev(frame, clickPort, clickChan, ME_NOTEON,
                   MidiPlayEvent ev(evtime, clickPort, clickChan, ME_NOTEON,
                      beatClickNote, beatClickVelo);
                      
                   if (md) {
-                        // P3.3.25
+                        // p3.3.25
                         //MidiPlayEvent ev(frame, clickPort, clickChan, ME_NOTEON,
                         MidiPlayEvent ev(evtime, clickPort, clickChan, ME_NOTEON,
                            beatClickNote, beatClickVelo);
@@ -1301,7 +1303,7 @@ void Audio::processMidi()
                         playEvents->add(ev);
                         }
                   if (audioClickFlag) {
-                        // P3.3.25
+                        // p3.3.25
                         //MidiPlayEvent ev1(frame, 0, 0, ME_NOTEON, 0, 0);
                         MidiPlayEvent ev1(evtime, 0, 0, ME_NOTEON, 0, 0);
                         
@@ -1310,7 +1312,7 @@ void Audio::processMidi()
                         }
                   if (md) {
                         ev.setB(0);
-                        // P3.3.25
+                        // p3.3.25
                         // Removed. Why was this here?
                         //frame = tempomap.tick2frame(midiClick+20) + frameOffset;
                         //
@@ -1355,6 +1357,57 @@ void Audio::processMidi()
                   stuckNotes->clear();
                   }
             }
+            
+            
+      // p3.3.36
+      //int tickpos = audio->tickPos();
+      //bool extsync = extSyncFlag.value();
+      //
+      // Special for Jack midi devices: Play all Jack midi events up to curFrame.
+      //
+      for(iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
+      {
+        MidiDevice* md = *id;
+        // Is it a Jack midi device?
+        MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
+        if(!mjd)
+          continue;
+        
+        mjd->processMidi();
+        
+        /*
+        int port = md->midiPort();
+        MidiPort* mp = port != -1 ? &midiPorts[port] : 0;
+        MPEventList* el = md->playEvents();
+        if (el->empty())
+              continue;
+        iMPEvent i = md->nextPlayEvent();
+        for(; i != el->end(); ++i) 
+        {
+          // If syncing to external midi sync, we cannot use the tempo map.
+          // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames.
+          //if(i->time() > curFrame) 
+          if(i->time() > (extsync ? tickpos : curFrame)) 
+          {
+            //printf("  curT %d  frame %d\n", i->time(), curFrame);
+            break; // skip this event
+          }
+
+          if(mp) 
+          {
+            if(mp->sendEvent(*i))
+              break;
+          }
+          else 
+          {
+            if(md->putEvent(*i))
+              break;
+          }
+        }
+        md->setNextPlayEvent(i);
+        */
+      }
+            
       midiBusy=false;
       }
 
