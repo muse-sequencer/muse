@@ -8,10 +8,16 @@
 #ifndef __JACKMIDI_H__
 #define __JACKMIDI_H__
 
-#include <config.h>
+//#include <config.h>
+
+#include <jack/midiport.h>
 
 #include "mididev.h"
+
+class QString;
 class MidiFifo;
+class MidiRecordEvent;
+class MidiPlayEvent;
 
 // Turn on to show multiple devices, work in progress, 
 //  not working fully yet, can't seem to connect...
@@ -59,6 +65,8 @@ class MidiJackDevice : public MidiDevice {
       
       virtual bool putMidiEvent(const MidiPlayEvent&);
       //bool sendEvent(const MidiPlayEvent&);
+      
+      void eventReceived(jack_midi_event_t*);
 
    public:
       MidiJackDevice() {}
@@ -69,7 +77,10 @@ class MidiJackDevice : public MidiDevice {
       //virtual int selectWfd();
       //virtual void processInput();
       
+      virtual void recordEvent(MidiRecordEvent&);
+      
       virtual bool putEvent(const MidiPlayEvent&);
+      virtual void collectMidiEvents(int port);
       };
 
 extern bool initMidiJack();

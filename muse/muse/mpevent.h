@@ -138,6 +138,7 @@ struct MPEventList : public MPEL {
 typedef MPEventList::iterator iMPEvent;
 typedef MPEventList::const_iterator ciMPEvent;
 
+/*
 //---------------------------------------------------------
 //   MREventList
 //    memory allocation in midi thread domain
@@ -155,6 +156,7 @@ struct MREventList : public MREL {
 
 typedef MREventList::iterator iMREvent;
 typedef MREventList::const_iterator ciMREvent;
+*/
 
 //---------------------------------------------------------
 //   MidiFifo

@@ -82,14 +82,16 @@ void MidiDevice::init()
 
 MidiDevice::MidiDevice()
       {
-      _recBufFlipped = false;
+      ///_recBufFlipped = false;
+      _tmpRecordCount = 0;
       init();
       }
 
 MidiDevice::MidiDevice(const QString& n)
    : _name(n)
       {
-      _recBufFlipped = false;
+      ///_recBufFlipped = false;
+      _tmpRecordCount = 0;
       init();
       }
 
@@ -98,7 +100,8 @@ MidiDevice::MidiDevice(const QString& n)
 //    return true if event filtered
 //---------------------------------------------------------
 
-static bool filterEvent(const MEvent& event, int type, bool thru)
+//static bool filterEvent(const MEvent& event, int type, bool thru)
+bool filterEvent(const MEvent& event, int type, bool thru)
       {
       switch(event.type()) {
             case ME_NOTEON:
@@ -143,6 +146,52 @@ static bool filterEvent(const MEvent& event, int type, bool thru)
       }
 
 //---------------------------------------------------------
+//   afterProcess
+//    clear all recorded events after a process cycle
+//---------------------------------------------------------
+
+void MidiDevice::afterProcess()
+      {
+      while (_tmpRecordCount--)
+            _recordFifo.remove();
+      }
+
+//---------------------------------------------------------
+//   beforeProcess
+//    "freeze" fifo for this process cycle
+//---------------------------------------------------------
+
+void MidiDevice::beforeProcess()
+      {
+      //if (!jackPort(0).isZero())
+      //      audioDriver->collectMidiEvents(this, jackPort(0));
+      _tmpRecordCount = _recordFifo.getSize();
+      }
+
+/*
+//---------------------------------------------------------
+//   getEvents
+//---------------------------------------------------------
+
+void MidiDevice::getEvents(unsigned , unsigned , int ch, MPEventList* dst)  //from //to
+{
+  for (int i = 0; i < _tmpRecordCount; ++i) {
+        const MidiPlayEvent& ev = _recordFifo.peek(i);
+        if (ch == -1 || (ev.channel() == ch))
+              dst->insert(ev);
+        }
+  
+  //while(!recordFifo.isEmpty())
+  //{
+  //  MidiPlayEvent e(recordFifo.get());
+  //  if (ch == -1 || (e.channel() == ch))
+  //        dst->insert(e);
+  //}  
+}
+*/
+
+/*
+//---------------------------------------------------------
 //   recordEvent
 //---------------------------------------------------------
 
@@ -154,6 +203,7 @@ MREventList* MidiDevice::recordEvents()
   else  
     return &_recordEvents2; 
 }
+*/
 
 //---------------------------------------------------------
 //   recordEvent
@@ -251,10 +301,12 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
             song->putEvent(pv);
             }
       
-      if(_recBufFlipped)
-        _recordEvents2.add(event);     // add event to secondary list of recorded events
-      else
-        _recordEvents.add(event);     // add event to primary list of recorded events
+      ///if(_recBufFlipped)
+      ///  _recordEvents2.add(event);     // add event to secondary list of recorded events
+      ///else
+      ///  _recordEvents.add(event);     // add event to primary list of recorded events
+      if(_recordFifo.put(MidiPlayEvent(event)))
+        printf("MidiDevice::recordEvent: fifo overflow\n");
       }
 
 //---------------------------------------------------------

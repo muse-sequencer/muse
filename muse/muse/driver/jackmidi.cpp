@@ -9,9 +9,10 @@
 #include <stdio.h>
 
 #include <jack/jack.h>
-#include <jack/midiport.h>
+//#include <jack/midiport.h>
 
 #include "jackmidi.h"
+#include "song.h"
 #include "globals.h"
 #include "midi.h"
 #include "mididev.h"
@@ -22,12 +23,14 @@
 #include "mpevent.h"
 //#include "sync.h"
 #include "audiodev.h"
+#include "../mplugins/midiitransform.h"
+#include "../mplugins/mitplugin.h"
 
 // Turn on debug messages.
 //#define JACK_MIDI_DEBUG
 
-int jackmidi_pi[2];
-int jackmidi_po[2];
+///int jackmidi_pi[2];
+///int jackmidi_po[2];
 
 //extern muse_jack_midi_buffer jack_midi_out_data[JACK_MIDI_CHANNELS];
 //extern muse_jack_midi_buffer jack_midi_in_data[JACK_MIDI_CHANNELS];
@@ -338,6 +341,202 @@ bool MidiJackDevice::putEvent(int* event)
   return false;
 }
 */
+
+//---------------------------------------------------------
+//   recordEvent
+//---------------------------------------------------------
+
+void MidiJackDevice::recordEvent(MidiRecordEvent& event)
+      {
+      // By T356. Set the loop number which the event came in at.
+      //if(audio->isRecording())
+      if(audio->isPlaying())
+        event.setLoopNum(audio->loopCount());
+      
+      if (midiInputTrace) {
+            printf("Jack MidiInput: ");
+            event.dump();
+            }
+
+      if(_port != -1)
+      {
+        int idin = midiPorts[_port].syncInfo().idIn();
+        
+// p3.3.26 1/23/10 Section was disabled, enabled by Tim.
+//#if 0
+        int typ = event.type();
+  
+        //---------------------------------------------------
+        // filter some SYSEX events
+        //---------------------------------------------------
+  
+        if (typ == ME_SYSEX) {
+              const unsigned char* p = event.data();
+              int n = event.len();
+              if (n >= 4) {
+                    if ((p[0] == 0x7f)
+                      //&& ((p[1] == 0x7f) || (p[1] == rxDeviceId))) {
+                      && ((p[1] == 0x7f) || (idin == 0x7f) || (p[1] == idin))) {
+                          if (p[2] == 0x06) {
+                                //mmcInput(p, n);
+                                midiSeq->mmcInput(_port, p, n);
+                                return;
+                                }
+                          if (p[2] == 0x01) {
+                                //mtcInputFull(p, n);
+                                midiSeq->mtcInputFull(_port, p, n);
+                                return;
+                                }
+                          }
+                    else if (p[0] == 0x7e) {
+                          //nonRealtimeSystemSysex(p, n);
+                          midiSeq->nonRealtimeSystemSysex(_port, p, n);
+                          return;
+                          }
+                    }
+              }
+          else    
+            // p3.3.26 1/23/10 Moved here from alsaProcessMidiInput(). Anticipating Jack midi support, so don't make it ALSA specific. Tim. 
+            // Trigger general activity indicator detector. Sysex has no channel, don't trigger.
+            midiPorts[_port].syncInfo().trigActDetect(event.channel());
+              
+//#endif
+
+      }
+      
+      //
+      //  process midi event input filtering and
+      //    transformation
+      //
+
+      processMidiInputTransformPlugins(event);
+
+      if (filterEvent(event, midiRecordType, false))
+            return;
+      
+      if (!applyMidiInputTransformation(event)) {
+            if (midiInputTrace)
+                  printf("   midi input transformation: event filtered\n");
+            return;
+            }
+
+      //
+      // transfer noteOn events to gui for step recording and keyboard
+      // remote control
+      //
+      if (event.type() == ME_NOTEON) {
+            int pv = ((event.dataA() & 0xff)<<8) + (event.dataB() & 0xff);
+            song->putEvent(pv);
+            }
+      
+      if(_recordFifo.put(MidiPlayEvent(event)))
+        printf("MidiJackDevice::recordEvent: fifo overflow\n");
+      }
+
+//---------------------------------------------------------
+//   midiReceived
+//---------------------------------------------------------
+
+void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
+      {
+      MidiRecordEvent event;
+      event.setB(0);
+
+      //
+      // move all events 2*segmentSize into the future to get
+      // jitterfree playback
+      //
+      //  cycle   n-1         n          n+1
+      //          -+----------+----------+----------+-
+      //               ^          ^          ^
+      //               catch      process    play
+      //
+//      const SeqTime* st = audio->seqTime();
+
+      //unsigned curFrame = st->startFrame() + segmentSize;
+//      unsigned curFrame = st->lastFrameTime;
+      //int frameOffset = audio->getFrameOffset();
+      unsigned pos = audio->pos().frame();
+      event.setTime(pos + ev->time);
+
+      event.setChannel(*(ev->buffer) & 0xf);
+      int type = *(ev->buffer) & 0xf0;
+      int a    = *(ev->buffer + 1) & 0x7f;
+      int b    = *(ev->buffer + 2) & 0x7f;
+      event.setType(type);
+      switch(type) {
+            case ME_NOTEON:
+            case ME_NOTEOFF:
+            case ME_CONTROLLER:
+                  event.setA(*(ev->buffer + 1));
+                  event.setB(*(ev->buffer + 2));
+                  break;
+            case ME_PROGRAM:
+            case ME_AFTERTOUCH:
+                  event.setA(*(ev->buffer + 1));
+                  break;
+
+            case ME_PITCHBEND:
+                  event.setA(((b << 7) + a) - 8192);
+                  break;
+
+            case ME_SYSEX:
+                  {
+                  int type = *(ev->buffer) & 0xff;
+                  switch(type) {
+                        case ME_SYSEX:
+                              event.setTime(0);      // mark as used
+                              event.setType(ME_SYSEX);
+                              event.setData((unsigned char*)(ev->buffer + 1),
+                                 ev->size - 2);
+                              break;
+                        case ME_CLOCK:
+                        case ME_SENSE:
+                              break;
+                        default:
+                              printf("MidiJackDevice::eventReceived unknown event 0x%02x\n", type);
+                              return;
+                        }
+                  }
+                  return;
+            }
+
+      if (midiInputTrace) {
+            printf("MidiInput<%s>: ", name().latin1());
+            event.dump();
+            }
+            
+      #ifdef JACK_MIDI_DEBUG
+      printf("MidiJackDevice::eventReceived time:%d type:%d ch:%d A:%d B:%d\n", event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
+      #endif  
+      
+      // Let recordEvent handle it from here, with timestamps, filtering, gui triggering etc.
+      recordEvent(event);      
+      }
+
+//---------------------------------------------------------
+//   collectMidiEvents
+//---------------------------------------------------------
+
+//void MidiJackDevice::collectMidiEvents(MidiInPort* track, Port port)
+void MidiJackDevice::collectMidiEvents(int port)
+      {
+      //void* port_buf = jack_port_get_buffer(port.jackPort(), segmentSize);
+      void* port_buf = jack_port_get_buffer(midi_port_in[port], segmentSize);
+      jack_midi_event_t event;
+      jack_nframes_t eventCount = jack_midi_get_event_count(port_buf);
+      for (jack_nframes_t i = 0; i < eventCount; ++i) {
+            jack_midi_event_get(&event, port_buf, i);
+            
+            #ifdef JACK_MIDI_DEBUG
+            printf("MidiJackDevice::collectMidiEvents number:%d time:%d\n", i, event.time);
+            #endif  
+      
+            //track->eventReceived(&event);
+            eventReceived(&event);
+            }
+      }
+
 
 //---------------------------------------------------------
 //   queueEvent

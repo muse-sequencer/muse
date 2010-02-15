@@ -23,9 +23,13 @@ class MidiDevice {
       MPEventList _stuckNotes;
       MPEventList _playEvents;
       iMPEvent _nextPlayEvent;
-      MREventList _recordEvents;
-      MREventList _recordEvents2;
-      bool _recBufFlipped;
+      ///MREventList _recordEvents;
+      ///MREventList _recordEvents2;
+      
+      // Used for multiple reads of fifo during process.
+      int _tmpRecordCount;
+      
+      ///bool _recBufFlipped;
       // Holds sync settings and detection monitors.
       //MidiSyncInfo _syncInfo;
 
@@ -36,6 +40,8 @@ class MidiDevice {
       int _openFlags;    // configured open flags
       bool _readEnable;  // set when opened/closed.
       bool _writeEnable; //
+      // Recording fifo. 
+      MidiFifo _recordFifo;
       void init();
       virtual bool putMidiEvent(const MidiPlayEvent&) = 0;
 
@@ -67,15 +73,22 @@ class MidiDevice {
       virtual void processInput()      {}
       virtual void discardInput()      {}
 
-      void recordEvent(MidiRecordEvent&);
+      virtual void recordEvent(MidiRecordEvent&);
 
       virtual bool putEvent(const MidiPlayEvent&);
 
       MPEventList* stuckNotes()          { return &_stuckNotes; }
       MPEventList* playEvents()          { return &_playEvents; }
-      MREventList* recordEvents();
-      void flipRecBuffer()               { _recBufFlipped = _recBufFlipped ? false : true; }
-      bool recBufFlipped()               { return _recBufFlipped; }
+      
+      ///MREventList* recordEvents();
+      ///void flipRecBuffer()               { _recBufFlipped = _recBufFlipped ? false : true; }
+      ///bool recBufFlipped()               { return _recBufFlipped; }
+      void beforeProcess();
+      void afterProcess();
+      int tmpRecordCount() { return _tmpRecordCount; }
+      MidiFifo& recordEvents() { return _recordFifo; }
+      //virtual void getEvents(unsigned /*from*/, unsigned /*to*/, int /*channel*/, MPEventList* /*dst*/);
+      
       iMPEvent nextPlayEvent()           { return _nextPlayEvent; }
       void setNextPlayEvent(iMPEvent i)  { _nextPlayEvent = i; }
       bool sendNullRPNParams(int, bool);
@@ -97,6 +110,7 @@ class MidiDeviceList : public std::list<MidiDevice*> {
 
 extern MidiDeviceList midiDevices;
 extern void initMidiDevices();
+extern bool filterEvent(const MEvent& event, int type, bool thru);
 
 #endif
 

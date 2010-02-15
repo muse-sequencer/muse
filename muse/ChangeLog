@@ -1,3 +1,7 @@
+14.02.2010
+      * Added: Jack midi input should be working now. Controllers, too. (T356)
+        - Tested with large 1024 frame buffer. Events are recorded with good sub-tick (frame) resolution,
+           as viewed in pianoroll with 64T snap grid. 
 13.02.2010
       * Fixed: Jack midi output should now be frame-accurate, support variable length events (like sysex), 
                 and most controllers should work. (T356)

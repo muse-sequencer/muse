@@ -945,13 +945,25 @@ void Audio::processMidi()
             playEvents->erase(playEvents->begin(), nextPlayEvent);
 
             // klumsy hack for synti devices:
-            if (!md->isSynti())
-                  continue;
-            SynthI* s = (SynthI*)md;
-            while (s->eventsPending()) {
-                  MidiRecordEvent ev = s->receiveEvent();
-                  md->recordEvent(ev);
-                  }
+            if(md->isSynti())
+            {
+              SynthI* s = (SynthI*)md;
+              while (s->eventsPending()) 
+              {
+                MidiRecordEvent ev = s->receiveEvent();
+                md->recordEvent(ev);
+              }
+            }
+            
+            // Is it a Jack midi device?
+            MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
+            if(mjd)
+              // TODO: Just use MusE port 0 for now. Support for multiple MusE ports maybe will come later.
+              mjd->collectMidiEvents(0);
+            
+            // Take snapshots of the current sizes of the recording fifos, 
+            //  because they may change while here in process, asynchronously.
+            md->beforeProcess();
             }
 
       MPEventList* playEvents = metronome->playEvents();
@@ -1008,17 +1020,25 @@ void Audio::processMidi()
                         if (devport == -1 || !(portMask & (1 << devport)))
                               continue;
                               
-                        MREventList* el = dev->recordEvents();
-                        for (iMREvent ie = el->begin(); ie != el->end(); ++ie) 
+                        //MREventList* el = dev->recordEvents();
+                        MidiFifo& rf = dev->recordEvents();
+                        // Get the frozen snapshot of the size.
+                        int count = dev->tmpRecordCount();
+                        
+                        //for (iMREvent ie = el->begin(); ie != el->end(); ++ie) 
+                        for(int i = 0; i < count; ++i) 
                         {
-                              int channel = ie->channel();
+                              MidiPlayEvent event(rf.peek(i));
+                              
+                              //int channel = ie->channel();
+                              int channel = event.channel();
                               int defaultPort = devport;
                               if (!(channelMask & (1 << channel)))
                               {
                                     continue;
                               }      
 
-                              MidiPlayEvent event(*ie);
+                              //MidiPlayEvent event(*ie);
                               int drumRecPitch=0; //prevent compiler warning: variable used without initialization
                               MidiController *mc = 0;
                               int ctl = 0;
@@ -1121,23 +1141,18 @@ void Audio::processMidi()
 
                               if (!dev->isSynti()) 
                               {
-                                // Added by Tim. p3.3.8
-                                if(track->recEcho())
-                                {
-                                
-                                  //Check if we're outputting to another port than default:
-                                  if (devport == defaultPort) {
-                                        event.setPort(port);
-                                        if(md)
-                                          playEvents->add(event);
-                                        }
-                                  else {
-                                        // Hmm, this appears to work, but... Will this induce trouble with md->setNextPlayEvent??
-                                        MidiDevice* mdAlt = midiPorts[devport].device();
-                                        if(mdAlt)
-                                          mdAlt->playEvents()->add(event);
-                                        }
-                                }
+                                //Check if we're outputting to another port than default:
+                                if (devport == defaultPort) {
+                                      event.setPort(port);
+                                      if(md && track->recEcho())
+                                        playEvents->add(event);
+                                      }
+                                else {
+                                      // Hmm, this appears to work, but... Will this induce trouble with md->setNextPlayEvent??
+                                      MidiDevice* mdAlt = midiPorts[devport].device();
+                                      if(mdAlt && track->recEcho())
+                                        mdAlt->playEvents()->add(event);
+                                      }
                                 // Shall we activate meters even while rec echo is off? Sure, why not...
                                 if(event.isNote() && event.dataB() > track->activity())
                                   track->setActivity(event.dataB());
@@ -1220,11 +1235,12 @@ void Audio::processMidi()
       //
       for (iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) {
             MidiDevice* md = *id;
-            md->recordEvents()->clear();
-
-            // By T356. Done processing this rec buffer, now flip to the other one.
-            md->flipRecBuffer();
             
+            ///md->recordEvents()->clear();
+            // By T356. Done processing this rec buffer, now flip to the other one.
+            ///md->flipRecBuffer();
+            // We are done with the 'frozen' recording fifos, remove the events. 
+            md->afterProcess();
             
             MPEventList* stuckNotes = md->stuckNotes();
             MPEventList* playEvents = md->playEvents();

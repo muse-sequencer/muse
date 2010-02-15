@@ -15,20 +15,26 @@
 #include <qstring.h>
 
 enum {
-      ME_NOTEOFF    = 0x80,
-      ME_NOTEON     = 0x90,
-      ME_POLYAFTER  = 0xa0,
-      ME_CONTROLLER = 0xb0,
-      ME_PROGRAM    = 0xc0,
-      ME_AFTERTOUCH = 0xd0,
-      ME_PITCHBEND  = 0xe0,
-      ME_SYSEX      = 0xf0,
-      ME_META       = 0xff,
-      ME_SONGPOS    = 0xf2,
-      ME_CLOCK      = 0xf8,
-      ME_START      = 0xfa,
-      ME_CONTINUE   = 0xfb,
-      ME_STOP       = 0xfc,
+      ME_NOTEOFF     = 0x80,
+      ME_NOTEON      = 0x90,
+      ME_POLYAFTER   = 0xa0,
+      ME_CONTROLLER  = 0xb0,
+      ME_PROGRAM     = 0xc0,
+      ME_AFTERTOUCH  = 0xd0,
+      ME_PITCHBEND   = 0xe0,
+      ME_SYSEX       = 0xf0,
+      ME_META        = 0xff,
+      ME_MTC_QUARTER = 0xf1,
+      ME_SONGPOS     = 0xf2,
+      ME_SONGSEL     = 0xf3,
+      ME_TUNE_REQ    = 0xf6,
+      ME_SYSEX_END   = 0xf7,
+      ME_CLOCK       = 0xf8,
+      ME_TICK        = 0xf9,
+      ME_START       = 0xfa,
+      ME_CONTINUE    = 0xfb,
+      ME_STOP        = 0xfc,
+      ME_SENSE       = 0xfe
       };
 
 #define ME_TIMESIG      0x58
