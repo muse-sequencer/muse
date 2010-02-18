@@ -93,10 +93,12 @@ class DummyAudioDevice : public AudioDevice {
 
       virtual void registerClient() {}
 
-      virtual void* registerOutPort(const char*) {
+      //virtual void* registerOutPort(const char*) {
+      virtual void* registerOutPort(const char*, bool) {
             return (void*)1;
             }
-      virtual void* registerInPort(const char*) {
+      //virtual void* registerInPort(const char*) {
+      virtual void* registerInPort(const char*, bool) {
             return (void*)2;
             }
       virtual void unregisterPort(void*) {}

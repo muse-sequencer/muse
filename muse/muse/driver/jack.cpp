@@ -7,6 +7,7 @@
 
 #include "config.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <stdarg.h>
 //#include <time.h> 
@@ -25,6 +26,7 @@
 #include "utils.h"
 
 #include "midi.h"
+#include "mididev.h"
 #include "mpevent.h"
 
 #include "jackmidi.h"
@@ -46,32 +48,11 @@ extern void undoSetuid();
 //extern int jackmidi_pi[2];
 //extern int jackmidi_po[2];
 
-jack_port_t *midi_port_in[JACK_MIDI_CHANNELS];
-jack_port_t *midi_port_out[JACK_MIDI_CHANNELS];
+//jack_port_t *midi_port_in[JACK_MIDI_CHANNELS];
+//jack_port_t *midi_port_out[JACK_MIDI_CHANNELS];
 
 //muse_jack_midi_buffer jack_midi_out_data[JACK_MIDI_CHANNELS];
 //muse_jack_midi_buffer jack_midi_in_data[JACK_MIDI_CHANNELS];
-
-//jack_port_t *jackMidiInPort = 0;
-//jack_port_t *jackMidiOutPort = 0;
-/*
-struct JackPort 
-{
-  int adr;
-  //char* name;
-  QString name;
-  int flags;
-  //JackPort(int a, const char* s, int f) {
-  JackPort(int a, const QString& s, int f) 
-  {
-    adr = a;
-    //name = strdup(s);
-    name = QString(s);
-    flags = f;
-  }
-};
-static std::list<JackPort> portList;
-*/
 
 JackAudioDevice* jackAudio;
 
@@ -470,6 +451,7 @@ JackAudioDevice::~JackAudioDevice()
             printf("~JackAudioDevice()\n");
       if (_client) {
             
+            /*
             // p3.3.35
             for(int i = 0; i < JACK_MIDI_CHANNELS; i++)
             {
@@ -478,6 +460,7 @@ JackAudioDevice::~JackAudioDevice()
               if(midi_port_out[i])
                 jack_port_unregister(_client, midi_port_out[i]);
             }
+            */
             
             if (jack_client_close(_client)) {
                   //error->logError("jack_client_close() failed: %s\n", strerror(errno));
@@ -529,12 +512,14 @@ char* JackAudioDevice::getJackName()
 
 bool initJackAudio()
       {
+      /*
       // p3.3.35
       for(int i = 0; i < JACK_MIDI_CHANNELS; i++)
       {
         midi_port_in[i] = 0;
         midi_port_out[i] = 0;
       }
+      */
       
       if (JACK_DEBUG)
             printf("initJackAudio()\n");
@@ -575,6 +560,7 @@ bool initJackAudio()
             }
       undoSetuid();
       
+      /*
       // setup midi input/output 
       //memset(jack_midi_out_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
       //memset(jack_midi_in_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
@@ -605,6 +591,7 @@ bool initJackAudio()
       {
         fprintf(stderr, "WARNING NO muse-jack midi connection\n");
       }
+      */    
           
       if (client) {
             audioDevice = jackAudio;
@@ -643,9 +630,153 @@ static int srate_callback(jack_nframes_t n, void*)
 //---------------------------------------------------------
 
 static void registration_callback(jack_port_id_t, int, void*)
+{
+  if(debugMsg || JACK_DEBUG)
+    printf("JACK: registration changed\n");
+        
+  audio->sendMsgToGui('R');
+}
+
+//---------------------------------------------------------
+//   JackAudioDevice::registrationChanged
+//    this is called from song in gui context triggered
+//    by registration_callback()
+//---------------------------------------------------------
+
+void JackAudioDevice::registrationChanged()
+{
+  if(JACK_DEBUG)
+    printf("JackAudioDevice::registrationChanged()\n");
+  
+  // Connect the Jack midi client ports to the device ports.
+  connectJackMidiPorts();
+}
+
+//---------------------------------------------------------
+//   JackAudioDevice::connectJackMidiPorts
+//---------------------------------------------------------
+
+void JackAudioDevice::connectJackMidiPorts()
+{
+  if(JACK_DEBUG)
+    printf("JackAudioDevice::connectJackMidiPorts()\n");
+  
+  const char* type = JACK_DEFAULT_MIDI_TYPE;
+  const char** ports = jack_get_ports(_client, 0, type, 0);
+  for (const char** p = ports; p && *p; ++p) 
+  {
+    jack_port_t* port = jack_port_by_name(_client, *p);
+    if(!port)
+      continue;
+    int nsz = jack_port_name_size();
+    char buffer[nsz];
+    strncpy(buffer, *p, nsz);
+    // Ignore the MusE Jack port.
+    //if(strncmp(buffer, "MusE", 4) == 0)
+    //  continue;
+    
+    // If there are aliases for this port, use the first one - much better for identifying. 
+    //char a1[nsz]; 
+    char a2[nsz]; 
+    char* aliases[2];
+    //aliases[0] = a1;
+    aliases[0] = buffer;
+    aliases[1] = a2;
+    // To disable aliases, just rem this line.
+    jack_port_get_aliases(port, aliases);
+    //int na = jack_port_get_aliases(port, aliases);
+    //char* namep = (na >= 1) ? aliases[0] : buffer;
+    char* namep = aliases[0];
+  
+    //int flags = 0;
+    int pf = jack_port_flags(port);
+    // If Jack port can send data to us...
+    //if(pf & JackPortIsOutput)
+      // Mark as input capable.
+    //  flags |= 2;
+    // If Jack port can receive data from us...
+    //if(pf & JackPortIsInput)
+      // Mark as output capable.
+    //  flags |= 1;
+    
+    //JackPort jp(0, QString(buffer), flags);
+    //portList.append(jp);
+    
+    QString name(namep);
+    
+    if(JACK_DEBUG)
+      printf("JackAudioDevice::graphChanged %s\n", name.latin1());
+      
+    for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd)
+    {
+      // Is it a Jack midi device? 
+      MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(*imd);
+      if(!mjd)
+        continue;
+        
+      //if(dev->name() != name)
+      //  continue;
+      
+      // Is this port the one created for the Jack midi device?
+      if(!mjd->clientJackPort() || (mjd->clientJackPort() != port))
+        continue;
+      
+      jack_port_t* devport = jack_port_by_name(_client, mjd->name().latin1());
+      if(!devport)
+        continue;
+      
+      int ofl = mjd->openFlags();
+    
+      if(JACK_DEBUG)
+        printf("JackAudioDevice::graphChanged found MidiJackDevice:%s\n", mjd->name().latin1());
+      
+      // Note docs say it can't be both input and output. src, dest
+      // If Jack port can receive data from us and we actually want to...
+      if((pf & JackPortIsOutput) && (ofl & 1))
+      {
+        if(JACK_DEBUG)
+          printf("JackAudioDevice::graphChanged connecting MusE output\n");
+        audioDevice->connect(port, devport);
+      }
+      else 
+      // If Jack port can send data to us and we actually want it...
+      if((pf & JackPortIsInput) && (ofl & 2))
+      {
+        if(JACK_DEBUG)
+          printf("JackAudioDevice::graphChanged connecting MusE input\n");
+        audioDevice->connect(devport, port);
+      }
+      
+      break;  
+    }
+  }
+  
+  if(ports)
+    free(ports);      
+}
+//---------------------------------------------------------
+//   client_registration_callback
+//---------------------------------------------------------
+
+static void client_registration_callback(const char *name, int isRegister, void*)
       {
       if (debugMsg || JACK_DEBUG)
-            printf("JACK: registration changed\n");
+            printf("JACK: client registration changed:%s register:%d\n", name, isRegister);
+      }
+
+//---------------------------------------------------------
+//   port_connect_callback
+//---------------------------------------------------------
+
+static void port_connect_callback(jack_port_id_t a, jack_port_id_t b, int isConnect, void*)
+      {
+        if (debugMsg || JACK_DEBUG)
+        {
+            //jack_port_t* ap = jack_port_by_id(_client, a);
+            //jack_port_t* bp = jack_port_by_id(_client, b);
+            //printf("JACK: port connections changed: A:%d:%s B:%d:%s isConnect:%d\n", a, jack_port_name(ap), b, jack_port_name(bp), isConnect);
+            printf("JACK: port connections changed: A:%d B:%d isConnect:%d\n", a, b, isConnect);
+        }    
       }
 
 //---------------------------------------------------------
@@ -674,7 +805,7 @@ static int graph_callback(void*)
 //---------------------------------------------------------
 
 void JackAudioDevice::graphChanged()
-      {
+{
       if (JACK_DEBUG)
             printf("graphChanged()\n");
       if(!checkJackClient(_client)) return;
@@ -753,7 +884,10 @@ void JackAudioDevice::graphChanged()
                               ++pn;
                               }
 
-                        delete ports;
+                        // p3.3.37
+                        //delete ports;
+                        free(ports);
+                        
                         ports = NULL;
                         }
                   }
@@ -832,12 +966,16 @@ void JackAudioDevice::graphChanged()
                               ++pn;
                               }
 
-                        delete ports;
+                        // p3.3.37
+                        //delete ports;
+                        free(ports);
+                        
                         ports = NULL;
                         }
                   }
             }
-      }
+            
+}
 
 //static int xrun_callback(void*)
 //      {
@@ -866,6 +1004,10 @@ void JackAudioDevice::registerClient()
       jack_set_buffer_size_callback(_client, bufsize_callback, 0);
       jack_set_sample_rate_callback(_client, srate_callback, 0);
       jack_set_port_registration_callback(_client, registration_callback, 0);
+      // p3.3.37
+      jack_set_client_registration_callback(_client, client_registration_callback, 0);
+      jack_set_port_connect_callback(_client, port_connect_callback, 0);
+      
       jack_set_graph_order_callback(_client, graph_callback, 0);
 //      jack_set_xrun_callback(client, xrun_callback, 0);
       jack_set_freewheel_callback (_client, freewheel_callback, 0);
@@ -875,12 +1017,15 @@ void JackAudioDevice::registerClient()
 //   registerInPort
 //---------------------------------------------------------
 
-void* JackAudioDevice::registerInPort(const char* name)
+//void* JackAudioDevice::registerInPort(const char* name)
+void* JackAudioDevice::registerInPort(const char* name, bool midi)
       {
       if (JACK_DEBUG)
             printf("registerInPort()\n");
       if(!checkJackClient(_client)) return NULL;
-      void* p = jack_port_register(_client, name, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+      const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
+      //void* p = jack_port_register(_client, name, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+      void* p = jack_port_register(_client, name, type, JackPortIsInput, 0);
 // printf("JACK: registerInPort: <%s> %p\n", name, p);
       return p;
       }
@@ -889,12 +1034,15 @@ void* JackAudioDevice::registerInPort(const char* name)
 //   registerOutPort
 //---------------------------------------------------------
 
-void* JackAudioDevice::registerOutPort(const char* name)
+//void* JackAudioDevice::registerOutPort(const char* name)
+void* JackAudioDevice::registerOutPort(const char* name, bool midi)
       {
       if (JACK_DEBUG)
             printf("registerOutPort()\n");
       if(!checkJackClient(_client)) return NULL;
-      void* p = jack_port_register(_client, name, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+      const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
+      //void* p = jack_port_register(_client, name, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+      void* p = jack_port_register(_client, name, type, JackPortIsOutput, 0);
 // printf("JACK: registerOutPort: <%s> %p\n", name, p);
       return p;
       }
@@ -923,7 +1071,7 @@ void exitJackAudio()
 //---------------------------------------------------------
 
 void JackAudioDevice::connect(void* src, void* dst)
-      {
+{
       if (JACK_DEBUG)
             printf("JackAudioDevice::connect()\n");
       if(!checkJackClient(_client)) return;
@@ -933,18 +1081,26 @@ void JackAudioDevice::connect(void* src, void* dst)
             fprintf(stderr, "JackAudio::connect: unknown jack ports\n");
             return;
             }
-      if (jack_connect(_client, sn, dn)) {
-            fprintf(stderr, "jack connect <%s>%p - <%s>%p failed\n",
-               sn, src, dn, dst);
+      int err = jack_connect(_client, sn, dn);
+      //if (jack_connect(_client, sn, dn)) {
+      if (err) {
+            fprintf(stderr, "jack connect <%s>%p - <%s>%p failed with err:%d\n",
+               sn, src, dn, dst, err);
             }
-      }
+      else
+      if (JACK_DEBUG)
+      {
+        fprintf(stderr, "jack connect <%s>%p - <%s>%p succeeded\n",
+           sn, src, dn, dst);
+      }      
+}
 
 //---------------------------------------------------------
 //   disconnect
 //---------------------------------------------------------
 
 void JackAudioDevice::disconnect(void* src, void* dst)
-      {
+{
       if (JACK_DEBUG)
             printf("JackAudioDevice::disconnect()\n");
       if(!checkJackClient(_client)) return;
@@ -954,11 +1110,19 @@ void JackAudioDevice::disconnect(void* src, void* dst)
             fprintf(stderr, "JackAudio::disconnect: unknown jack ports\n");
             return;
             }
-      if (jack_disconnect(_client, sn, dn)) {
-            fprintf(stderr, "jack disconnect <%s> - <%s> failed\n",
-               sn, dn);
+      int err = jack_disconnect(_client, sn, dn);
+      //if (jack_disconnect(_client, sn, dn)) {
+      if (err) {
+            fprintf(stderr, "jack disconnect <%s> - <%s> failed with err:%d\n",
+               sn, dn, err);
             }
-      }
+      else
+      if (JACK_DEBUG)
+      {
+            fprintf(stderr, "jack disconnect <%s> - <%s> succeeded\n",
+               sn, dn);
+      }      
+}
 
 //---------------------------------------------------------
 //   start
@@ -1010,6 +1174,10 @@ void JackAudioDevice::start(int /*priority*/)
                         }
                   }
             }
+      
+      // p3.3.37
+      // Connect the Jack midi client ports to device ports.
+      connectJackMidiPorts();
       
       undoSetuid();
       
@@ -1078,8 +1246,8 @@ int JackAudioDevice::framePos() const
       if(!checkJackClient(_client)) return 0;
       jack_nframes_t n = jack_frame_time(_client);
       
-      if (JACK_DEBUG)
-        printf("JackAudioDevice::framePos jack frame:%d\n", (int)n);
+      //if (JACK_DEBUG)
+      //  printf("JackAudioDevice::framePos jack frame:%d\n", (int)n);
       
       return (int)n;
       }
@@ -1129,6 +1297,10 @@ std::list<QString> JackAudioDevice::outputPorts()
                   continue;
             clientList.push_back(QString(buffer));
             }
+      // p3.3.37
+      if(ports)
+        free(ports);      
+      
       return clientList;
       }
 
@@ -1154,6 +1326,10 @@ std::list<QString> JackAudioDevice::inputPorts()
                   continue;
             clientList.push_back(QString(buffer));
             }
+      // p3.3.37
+      if(ports)
+        free(ports);      
+      
       return clientList;
       }
 
@@ -1199,8 +1375,8 @@ int JackAudioDevice::getState()
         //pos.valid = jack_position_bits_t(0);
         //pos.frame = audio->pos().frame();
         //return audio->getState();
-        if (JACK_DEBUG)
-          printf("JackAudioDevice::getState dummyState:%d\n", dummyState);
+        //if (JACK_DEBUG)
+        //  printf("JackAudioDevice::getState dummyState:%d\n", dummyState);
         return dummyState;
       }
       
@@ -1208,8 +1384,8 @@ int JackAudioDevice::getState()
       //      printf("JackAudioDevice::getState ()\n");
       if(!checkJackClient(_client)) return 0;
       transportState = jack_transport_query(_client, &pos);
-      if (JACK_DEBUG)
-          printf("JackAudioDevice::getState transportState:%d\n", transportState);
+      //if (JACK_DEBUG)
+      //    printf("JackAudioDevice::getState transportState:%d\n", transportState);
       
       switch (transportState) {
             case JackTransportStopped:  
@@ -1500,8 +1676,6 @@ int JackAudioDevice::setMaster(bool f)
 
 void JackAudioDevice::scanMidiPorts()
 {
-  #ifdef JACK_MIDI_SHOW_MULTIPLE_DEVICES
-  
   const char* type = JACK_DEFAULT_MIDI_TYPE;
   const char** ports = jack_get_ports(_client, 0, type, 0);
   for (const char** p = ports; p && *p; ++p) 
@@ -1547,7 +1721,8 @@ void JackAudioDevice::scanMidiPorts()
     dev->setrwFlags(flags);
     midiDevices.add(dev);
   }
-  #endif
-  
+  // p3.3.37
+  if(ports)
+    free(ports);      
 }
 

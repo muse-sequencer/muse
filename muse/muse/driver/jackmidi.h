@@ -10,6 +10,7 @@
 
 //#include <config.h>
 
+#include <jack/jack.h>
 #include <jack/midiport.h>
 
 #include "mididev.h"
@@ -21,12 +22,14 @@ class MidiPlayEvent;
 
 // Turn on to show multiple devices, work in progress, 
 //  not working fully yet, can't seem to connect...
-/// #define JACK_MIDI_SHOW_MULTIPLE_DEVICES
+#define JACK_MIDI_SHOW_MULTIPLE_DEVICES
+
+// It appears one client port per remote port will be necessary.
+// Jack doesn't seem to like manipulation of non-local ports buffers.
+#define JACK_MIDI_USE_MULTIPLE_CLIENT_PORTS
 
 /* jack-midi channels */
-// Sorry, only one MusE Jack midi port for now.
 //#define JACK_MIDI_CHANNELS 32
-#define JACK_MIDI_CHANNELS 1
 
 /* jack-midi buffer size */
 //#define JACK_MIDI_BUFFER_SIZE 32
@@ -54,14 +57,18 @@ class MidiJackDevice : public MidiDevice {
       // direct to midi port:
       MidiFifo eventFifo;
 
+      static int _nextOutIdNum;
+      static int _nextInIdNum;
+      
+      jack_port_t* _client_jackport;
+      
       virtual QString open();
       virtual void close();
       //bool putEvent(int*);
       
-      void processEvent(int /*port*/, const MidiPlayEvent&);
+      void processEvent(const MidiPlayEvent&);
       // Port is not midi port, it is the port(s) created for MusE.
-      bool queueEvent(int /*port*/, const MidiPlayEvent&);
-      //bool queueEvent(const MidiPlayEvent&);
+      bool queueEvent(const MidiPlayEvent&);
       
       virtual bool putMidiEvent(const MidiPlayEvent&);
       //bool sendEvent(const MidiPlayEvent&);
@@ -72,7 +79,7 @@ class MidiJackDevice : public MidiDevice {
       MidiJackDevice() {}
       MidiJackDevice(const int&, const QString& name);
       void processMidi();
-      virtual ~MidiJackDevice() {}
+      virtual ~MidiJackDevice(); 
       //virtual int selectRfd();
       //virtual int selectWfd();
       //virtual void processInput();
@@ -80,7 +87,10 @@ class MidiJackDevice : public MidiDevice {
       virtual void recordEvent(MidiRecordEvent&);
       
       virtual bool putEvent(const MidiPlayEvent&);
-      virtual void collectMidiEvents(int port);
+      virtual void collectMidiEvents();
+      
+      //virtual jack_port_t* jackPort() { return _jackport; }
+      virtual jack_port_t* clientJackPort() { return _client_jackport; }
       };
 
 extern bool initMidiJack();

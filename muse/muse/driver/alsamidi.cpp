@@ -206,17 +206,21 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                   int a   = e.dataA();
                   int b   = e.dataB();
                   int chn = e.channel();
-                  if (a < 0x1000) {          // 7 Bit Controller
+                  // p3.3.37
+                  //if (a < 0x1000) {          // 7 Bit Controller
+                  if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
                         snd_seq_ev_set_controller(&event, chn, a, b);
                         }
-                  else if (a < 0x20000) {     // 14 bit high resolution controller
+                  //else if (a < 0x20000) {     // 14 bit high resolution controller
+                  else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
                         int ctrlH = (a >> 8) & 0x7f;
                         int ctrlL = a & 0x7f;
                         a = (ctrlH << 7) + ctrlL;
                         snd_seq_ev_set_controller(&event, chn, a, b);
                         event.type = SND_SEQ_EVENT_CONTROL14;
                         }
-                  else if (a < 0x30000) {     // RPN 7-Bit Controller
+                  //else if (a < 0x30000) {     // RPN 7-Bit Controller
+                  else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
                         int ctrlH = (a >> 8) & 0x7f;
                         int ctrlL = a & 0x7f;
                         a = (ctrlH << 7) + ctrlL;
@@ -224,7 +228,8 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                         snd_seq_ev_set_controller(&event, chn, a, b);
                         event.type = SND_SEQ_EVENT_REGPARAM;
                         }
-                  else if (a < 0x40000) {     // NRPN 7-Bit Controller
+                  //else if (a < 0x40000) {     // NRPN 7-Bit Controller
+                  else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
                         int ctrlH = (a >> 8) & 0x7f;
                         int ctrlL = a & 0x7f;
                         a = (ctrlH << 7) + ctrlL;
@@ -232,14 +237,16 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                         snd_seq_ev_set_controller(&event, chn, a, b);
                         event.type = SND_SEQ_EVENT_NONREGPARAM;
                         }
-                  else if (a < 0x60000) {     // RPN14 Controller
+                  //else if (a < 0x60000) {     // RPN14 Controller
+                  else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
                         int ctrlH = (a >> 8) & 0x7f;
                         int ctrlL = a & 0x7f;
                         a = (ctrlH << 7) + ctrlL;
                         snd_seq_ev_set_controller(&event, chn, a, b);
                         event.type = SND_SEQ_EVENT_REGPARAM;
                         }
-                  else if (a < 0x70000) {     // NRPN14 Controller
+                  //else if (a < 0x70000) {     // NRPN14 Controller
+                  else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
                         int ctrlH = (a >> 8) & 0x7f;
                         int ctrlL = a & 0x7f;
                         a = (ctrlH << 7) + ctrlL;

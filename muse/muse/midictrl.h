@@ -57,10 +57,17 @@ const int CTRL_LOCAL_OFF          = 0x7a; // 122
 // NRPN - non registered parameter numbers 0x30000 -
 
 // internal controller types:
-const int CTRL_PITCH    = 0x40000;
-const int CTRL_PROGRAM  = 0x40001;
-const int CTRL_VELOCITY = 0x40002;
-const int CTRL_MASTER_VOLUME = 0x40003;
+const int CTRL_INTERNAL_OFFSET = 0x40000;
+
+// p3.3.37
+//const int CTRL_PITCH    = 0x40000;
+//const int CTRL_PROGRAM  = 0x40001;
+//const int CTRL_VELOCITY = 0x40002;
+//const int CTRL_MASTER_VOLUME = 0x40003;
+const int CTRL_PITCH    = CTRL_INTERNAL_OFFSET;
+const int CTRL_PROGRAM  = CTRL_INTERNAL_OFFSET      + 1;
+const int CTRL_VELOCITY = CTRL_INTERNAL_OFFSET      + 2;
+//const int CTRL_MASTER_VOLUME = CTRL_INTERNAL_OFFSET + 3;
 
 const int CTRL_VAL_UNKNOWN   = 0x10000000; // used as unknown hwVal
 

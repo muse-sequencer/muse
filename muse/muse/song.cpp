@@ -2140,9 +2140,15 @@ void Song::seqSignal(int fd)
 #endif
                         break;
 
-                  case 'C':
+                  case 'C': // Graph changed
                         if (audioDevice)
                             audioDevice->graphChanged();
+                        break;
+
+                  // p3.3.37
+                  case 'R': // Registration changed
+                        if (audioDevice)
+                            audioDevice->registrationChanged();
                         break;
 
                   default:

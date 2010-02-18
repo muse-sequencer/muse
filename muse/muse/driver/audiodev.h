@@ -38,8 +38,11 @@ class AudioDevice {
 
       virtual void registerClient() = 0;
 
-      virtual void* registerOutPort(const char* name) = 0;
-      virtual void* registerInPort(const char* name) = 0;
+      //virtual void* registerOutPort(const char* name) = 0;
+      //virtual void* registerInPort(const char* name) = 0;
+      virtual void* registerOutPort(const char* /*name*/, bool /*midi*/) = 0;
+      virtual void* registerInPort(const char* /*name*/, bool /*midi*/) = 0;
+      
       virtual void unregisterPort(void*) = 0;
       virtual void connect(void*, void*) = 0;
       virtual void disconnect(void*, void*) = 0;
@@ -56,6 +59,7 @@ class AudioDevice {
       virtual void seekTransport(const Pos &p) = 0;
       virtual void setFreewheel(bool f) = 0;
       virtual void graphChanged() {}
+      virtual void registrationChanged() {}
       virtual int setMaster(bool f) = 0;
       };
 

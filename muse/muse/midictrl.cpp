@@ -69,7 +69,8 @@ MidiControllerList defaultMidiController;
 MidiController veloCtrl("Velocity",                 CTRL_VELOCITY,      0, 127,   0);
 static MidiController pitchCtrl("PitchBend",        CTRL_PITCH,     -8192, +8191, 0);
 static MidiController programCtrl("Program",        CTRL_PROGRAM,       0, 0xffffff, 0);
-static MidiController mastervolCtrl("MasterVolume", CTRL_MASTER_VOLUME, 0, 0x3fff, 0x3000);
+// Removed p3.3.37
+//static MidiController mastervolCtrl("MasterVolume", CTRL_MASTER_VOLUME, 0, 0x3fff, 0x3000);
 static MidiController volumeCtrl("MainVolume",      CTRL_VOLUME,        0, 127, 100);
 static MidiController panCtrl("Pan",                CTRL_PANPOT,      -64, 63,    0);
 
@@ -132,7 +133,8 @@ void initMidiController()
       defaultMidiController.add(&veloCtrl);
       defaultMidiController.add(&pitchCtrl);
       defaultMidiController.add(&programCtrl);
-      defaultMidiController.add(&mastervolCtrl);
+      // Removed p3.3.37
+      //defaultMidiController.add(&mastervolCtrl);
       defaultMidiController.add(&volumeCtrl);
       defaultMidiController.add(&panCtrl);
       }
@@ -204,13 +206,18 @@ MidiController& MidiController::operator=(const MidiController &mc)
 
 MidiController::ControllerType midiControllerType(int num)
       {
-      if (num < 0x10000)
+      // p3.3.37
+      //if (num < 0x10000)
+      if (num < CTRL_14_OFFSET)
             return MidiController::Controller7;
-      if (num < 0x20000)
+      //if (num < 0x20000)
+      if (num < CTRL_RPN_OFFSET)
             return MidiController::Controller14;
-      if (num < 0x30000)
+      //if (num < 0x30000)
+      if (num < CTRL_NRPN_OFFSET)
             return MidiController::RPN;
-      if (num < 0x40000)
+      //if (num < 0x40000)
+      if (num < CTRL_INTERNAL_OFFSET)
             return MidiController::NRPN;
       if (num == CTRL_PITCH)
             return MidiController::Pitch;
@@ -218,9 +225,11 @@ MidiController::ControllerType midiControllerType(int num)
             return MidiController::Program;
       if (num == CTRL_VELOCITY)
             return MidiController::Velo;
-      if (num < 0x60000)
+      //if (num < 0x60000)
+      if (num < CTRL_NRPN14_OFFSET)
             return MidiController::RPN14;
-      if (num < 0x70000)
+      //if (num < 0x70000)
+      if (num < CTRL_NONE_OFFSET)
             return MidiController::NRPN14;
       return MidiController::Controller7;
       }
@@ -438,31 +447,37 @@ void MidiController::read(Xml& xml)
                                     case RPN:
                                           if (_maxVal == NOT_SET)
                                                 _maxVal = 127;
-                                          _num |= 0x20000;
+                                          // p3.3.37
+                                          //_num |= 0x20000;
+                                          _num |= CTRL_RPN_OFFSET;
                                           break;
                                     case NRPN:
                                           if (_maxVal == NOT_SET)
                                                 _maxVal = 127;
-                                          _num |= 0x30000;
+                                          //_num |= 0x30000;
+                                          _num |= CTRL_NRPN_OFFSET;
                                           break;
                                     case Controller7:
                                           if (_maxVal == NOT_SET)
                                                 _maxVal = 127;
                                           break;
                                     case Controller14:
-                                          _num |= 0x10000;
+                                          //_num |= 0x10000;
+                                          _num |= CTRL_14_OFFSET;
                                           if (_maxVal == NOT_SET)
                                                 _maxVal = 16383;
                                           break;
                                     case RPN14:
                                           if (_maxVal == NOT_SET)
                                                 _maxVal = 16383;
-                                          _num |= 0x50000;
+                                          //_num |= 0x50000;
+                                          _num |= CTRL_RPN14_OFFSET;
                                           break;
                                     case NRPN14:
                                           if (_maxVal == NOT_SET)
                                                 _maxVal = 16383;
-                                          _num |= 0x60000;
+                                          //_num |= 0x60000;
+                                          _num |= CTRL_NRPN14_OFFSET;
                                           break;
                                     case Pitch:
                                           if (_maxVal == NOT_SET)

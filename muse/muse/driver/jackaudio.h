@@ -57,8 +57,10 @@ class JackAudioDevice : public AudioDevice {
 
       virtual void registerClient();
 
-      virtual void* registerOutPort(const char* name);
-      virtual void* registerInPort(const char* name);
+      //virtual void* registerOutPort(const char* name);
+      //virtual void* registerInPort(const char* name);
+      virtual void* registerOutPort(const char* /*name*/, bool /*midi*/);
+      virtual void* registerInPort(const char* /*name*/, bool /*midi*/);
 
       virtual char* getJackName();
 
@@ -79,6 +81,9 @@ class JackAudioDevice : public AudioDevice {
       virtual void setFreewheel(bool f);
       jack_transport_state_t transportQuery(jack_position_t* pos);
       void graphChanged();
+      void registrationChanged();
+      void connectJackMidiPorts();
+      
       virtual int setMaster(bool f);
 
       //static bool jackStarted;

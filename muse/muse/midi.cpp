@@ -958,8 +958,7 @@ void Audio::processMidi()
             // Is it a Jack midi device?
             MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
             if(mjd)
-              // TODO: Just use MusE port 0 for now. Support for multiple MusE ports maybe will come later.
-              mjd->collectMidiEvents(0);
+              mjd->collectMidiEvents();
             
             // Take snapshots of the current sizes of the recording fifos, 
             //  because they may change while here in process, asynchronously.

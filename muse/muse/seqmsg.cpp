@@ -211,7 +211,8 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                         if (i < n && ai->jackPort(i) == 0) {
                               char buffer[128];
                               snprintf(buffer, 128, "%s-%d", name.latin1(), i);
-                              ai->setJackPort(i, audioDevice->registerInPort(buffer));
+                              //ai->setJackPort(i, audioDevice->registerInPort(buffer));
+                              ai->setJackPort(i, audioDevice->registerInPort(buffer, false));
                               }
                         else if ((i >= n) && ai->jackPort(i)) {
                               RouteList* ir = node->inRoutes();
@@ -235,7 +236,8 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                         if (i < n && jp == 0) {
                               char buffer[128];
                               snprintf(buffer, 128, "%s-%d", name.latin1(), i);
-                              ao->setJackPort(i, audioDevice->registerOutPort(buffer));
+                              //ao->setJackPort(i, audioDevice->registerOutPort(buffer));
+                              ao->setJackPort(i, audioDevice->registerOutPort(buffer, false));
                               }
                         else if (i >= n && jp) {
                               RouteList* ir = node->outRoutes();

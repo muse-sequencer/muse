@@ -1165,7 +1165,8 @@ void AudioInput::setName(const QString& s)
             if (jackPorts[i])
                   audioDevice->setPortName(jackPorts[i], buffer);
             else {
-                  jackPorts[i] = audioDevice->registerInPort(buffer);
+                  //jackPorts[i] = audioDevice->registerInPort(buffer);
+                  jackPorts[i] = audioDevice->registerInPort(buffer, false);
                   }
             }
       }
@@ -1444,7 +1445,8 @@ void AudioOutput::setName(const QString& s)
                   audioDevice->setPortName(jackPorts[i], buffer);
                   }
             else {
-                  jackPorts[i] = audioDevice->registerOutPort(buffer);
+                  //jackPorts[i] = audioDevice->registerOutPort(buffer);
+                  jackPorts[i] = audioDevice->registerOutPort(buffer, false);
                   }
             }
       }

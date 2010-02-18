@@ -186,6 +186,8 @@ void microSleep(long msleep)
         sleepOk=usleep(msleep);
 }
 
+// Removed p3.3.17
+/* 
 //---------------------------------------------------------
 //   watchdog thread
 //---------------------------------------------------------
@@ -250,6 +252,7 @@ static void* watchdog(void*)
       printf("watchdog exit\n");
       exit(-1);
       }
+*/
 
 //---------------------------------------------------------
 //   seqStart
@@ -419,24 +422,32 @@ bool MusE::seqStart()
         if(realTimePriority == 3)
         {
           pfprio = 1;
-          midiprio = 2;
+          //midiprio = 2;
+          // p3.3.37
+          midiprio = 4;
         }  
         else
         if(realTimePriority == 4)
         {
           pfprio = 1;
-          midiprio = 3;
+          //midiprio = 3;
+          // p3.3.37
+          midiprio = 5;
         }  
         else
         if(realTimePriority == 5)
         {
           pfprio = 1;
-          midiprio = 3;
+          //midiprio = 3;
+          // p3.3.37
+          midiprio = 6;
         }  
         else
         {
           pfprio = realTimePriority - 5;
-          midiprio = realTimePriority - 2;
+          //midiprio = realTimePriority - 2;
+          // p3.3.37
+          midiprio = realTimePriority + 1;
         }  
       }
       
@@ -473,7 +484,11 @@ bool MusE::seqStart()
         usleep(1000);
         printf("looping waiting for sequencer thread to start\n");
       }
-      printf("midiSeq started, is it running? %d \n",midiSeqRunning);
+      if(!midiSeqRunning)
+      {
+        fprintf(stderr, "midiSeq is not running! Exiting...\n");
+        exit(33);
+      }  
       return true;
       }
 
@@ -2349,7 +2364,7 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -a       no audio\n");
       //fprintf(stderr, "   -P  n    set real time priority to n (default: 50)\n");
       fprintf(stderr, "   -P  n    set audio driver real time priority to n (Dummy only, default 40. Else fixed by Jack.)\n");
-      fprintf(stderr, "   -Y  n    force midi real time priority to n (default: audio driver prio -2)\n");
+      fprintf(stderr, "   -Y  n    force midi real time priority to n (default: audio driver prio +1)\n");
       fprintf(stderr, "   -p       don't load LADSPA plugins\n");
 #ifdef ENABLE_PYTHON
       fprintf(stderr, "   -y       enable Python control support\n");

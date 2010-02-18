@@ -93,10 +93,10 @@ class DspSSE86 : public Dsp {
 void initDsp()
       {
 #if defined(__i386__) || defined(__x86_64__)
-      //if(debugMsg)
+      if(debugMsg)
         printf("Muse: __i386__ or __x86_64__ defined. Using optimized float buffer copying (asm movsl).\n");
 #else
-      //if(debugMsg)
+      if(debugMsg)
         printf("Muse: __i386__ or __x86_64__ not defined. Using non-optimized memcpy for float buffer copying.\n");
 #endif
 
@@ -133,7 +133,7 @@ void initDsp()
             }
       // fall through to not hardware optimized routines
 #endif
-      //if(debugMsg)
+      if(debugMsg)
         printf("Muse: using unoptimized non-SSE dsp routines\n");
       dsp = new Dsp();
       }

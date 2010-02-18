@@ -34,13 +34,16 @@
 
 //extern muse_jack_midi_buffer jack_midi_out_data[JACK_MIDI_CHANNELS];
 //extern muse_jack_midi_buffer jack_midi_in_data[JACK_MIDI_CHANNELS];
-extern jack_port_t *midi_port_in[JACK_MIDI_CHANNELS];
-extern jack_port_t *midi_port_out[JACK_MIDI_CHANNELS];
+///extern jack_port_t *midi_port_in[JACK_MIDI_CHANNELS];
+///extern jack_port_t *midi_port_out[JACK_MIDI_CHANNELS];
 
-MidiJackDevice* gmdev = NULL;
+///MidiJackDevice* gmdev = NULL;
 
-int* jackSeq;
+///int* jackSeq;
 //static snd_seq_addr_t musePort;
+
+int MidiJackDevice::_nextOutIdNum = 0;
+int MidiJackDevice::_nextInIdNum = 0;
 
 //---------------------------------------------------------
 //   MidiAlsaDevice
@@ -49,10 +52,20 @@ int* jackSeq;
 MidiJackDevice::MidiJackDevice(const int& a, const QString& n)
    : MidiDevice(n)
 {
+  _client_jackport = 0;
   adr = a;
   init();
 }
 
+MidiJackDevice::~MidiJackDevice()
+{
+  #ifdef JACK_MIDI_USE_MULTIPLE_CLIENT_PORTS    
+  if(_client_jackport)
+    //audioDevice->unregisterPort(_client_jackport);
+    close();
+  #endif
+}
+            
 /*
 //---------------------------------------------------------
 //   select[RW]fd
@@ -75,8 +88,11 @@ int MidiJackDevice::selectWfd()
 
 QString MidiJackDevice::open()
 {
-  #ifdef JACK_MIDI_SHOW_MULTIPLE_DEVICES
   _openFlags &= _rwFlags; // restrict to available bits
+  
+  #ifdef JACK_MIDI_DEBUG
+  printf("MidiJackDevice::open %s\n", name.latin1());
+  #endif  
   
   //jack_port_t* jp = jack_port_by_name(_client, name().latin1());
   jack_port_t* jp = (jack_port_t*)audioDevice->findPort(name().latin1());
@@ -84,6 +100,8 @@ QString MidiJackDevice::open()
   if(!jp)
   {
     printf("MidiJackDevice::open: Jack midi port %s not found!\n", name().latin1());
+    _writeEnable = false;
+    _readEnable = false;
     return QString("Jack midi port not found");
   }
     
@@ -92,23 +110,43 @@ QString MidiJackDevice::open()
   // If Jack port can receive data from us and we actually want to...
   if((pf & JackPortIsInput) && (_openFlags & 1))
   {
-    // src, dest
-    //TODO: Having trouble here, may need to coordinate or move to graphChanged.
-    audioDevice->connect(midi_port_out[0], jp);
-    _writeEnable = true;
+    char buf[80];
+    snprintf(buf, 80, "muse-jack-midi-out-%d", _nextOutIdNum);
+    _client_jackport = (jack_port_t*)audioDevice->registerOutPort(buf, true);
+    if(_client_jackport == NULL)
+    {
+      fprintf(stderr, "MidiJackDevice::open failed to register jack-midi-out\n");
+      _writeEnable = false;
+      return QString("Could not register jack-midi-out client port");
+    }
+    else
+    {
+      _nextOutIdNum++;
+      // src, dest
+      ///audioDevice->connect(_client_jackport, jp);
+      _writeEnable = true;
+    }
   }
-  
+  else // Note docs say it can't be both input and output.
   // If Jack port can send data to us and we actually want it...
   if((pf & JackPortIsOutput) && (_openFlags & 2))
   {  
-    audioDevice->connect(jp, midi_port_in[0]);
-    _readEnable = true;
+    char buf[80];
+    snprintf(buf, 80, "muse-jack-midi-in-%d", _nextInIdNum);
+    _client_jackport = (jack_port_t*)audioDevice->registerInPort(buf, true);
+    if(_client_jackport == NULL)
+    {
+      fprintf(stderr, "MidiJackDevice::open failed to register jack-midi-in\n");
+      _readEnable = false;
+      return QString("Could not register jack-midi-in client port");
+    }
+    else
+    {
+      _nextInIdNum++;
+      ///audioDevice->connect(jp, _client_jackport);
+      _readEnable = true;
+    }
   }
-  #else
-  _writeEnable = true;
-  _readEnable = true;
-  #endif
-  
   return QString("OK");
 }
 
@@ -118,14 +156,35 @@ QString MidiJackDevice::open()
 
 void MidiJackDevice::close()
 {
-  #ifdef JACK_MIDI_SHOW_MULTIPLE_DEVICES
+  #ifdef JACK_MIDI_DEBUG
+  printf("MidiJackDevice::close %s\n", name.latin1());
+  #endif  
   
+  if(_client_jackport)
+  {
+    int pf = jack_port_flags(_client_jackport);
+
+    if(pf & JackPortIsOutput)
+      _nextOutIdNum--;
+    else
+    if(pf & JackPortIsInput)
+      _nextInIdNum--;
+    audioDevice->unregisterPort(_client_jackport);
+    _client_jackport = 0;
+    _writeEnable = false;
+    _readEnable = false;
+    return;
+  }  
+    
+  /*
   //jack_port_t* jp = jack_port_by_name(_client, name().latin1());
   jack_port_t* jp = (jack_port_t*)audioDevice->findPort(name().latin1());
   
   if(!jp)
   {
     printf("MidiJackDevice::close: Jack midi port %s not found!\n", name().latin1());
+    _writeEnable = false;
+    _readEnable = false;
     return;
   }
     
@@ -136,21 +195,18 @@ void MidiJackDevice::close()
   if(jack_port_connected_to(midi_port_out[0], name().latin1()))
   {
     // src, dest
-    audioDevice->disconnect(midi_port_out[0], jp);
+///    audioDevice->disconnect(midi_port_out[0], jp);
     _writeEnable = false;
   }
-  
+  else // Note docs say it can't be both input and output.  
   // If Jack port can send data to us and we actually want it...
   //if((pf & JackPortIsOutput) && (_openFlags & 2))
   if(jack_port_connected_to(midi_port_in[0], name().latin1()))
   {  
-    audioDevice->disconnect(jp, midi_port_in[0]);
+///    audioDevice->disconnect(jp, midi_port_in[0]);
     _readEnable = false;
   }
-  #else
-  _writeEnable = false;
-  _readEnable = false;
-  #endif
+  */
 }
 
 //---------------------------------------------------------
@@ -222,110 +278,6 @@ bool MidiJackDevice::putMidiEvent(const MidiPlayEvent& /*event*/)
   return false;
   */
   
-  /*
-  //
-  // NOTICE: Only one MusE port (port 0) is supported for now ! MusE has no mechanism to create 
-  //  or select other MusE ports. MusE ALSA midi only creates one port as well.
-  //
-  const int museport = 0;
-  
-  if(event.type() == ME_CONTROLLER) 
-  {
-    int a      = event.dataA();
-    int b      = event.dataB();
-    int chn    = event.channel();
-    unsigned t = event.time();
-
-    if(a == CTRL_PITCH) 
-    {
-      int v = b + 8192;
-      audioDriver->putEvent(museport, MidiPlayEvent(t, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
-    }
-    else if (a == CTRL_PROGRAM) 
-    {
-      // don't output program changes for GM drum channel
-      //if (!(song->mtype() == MT_GM && chn == 9)) {
-            int hb = (b >> 16) & 0xff;
-            int lb = (b >> 8) & 0xff;
-            int pr = b & 0x7f;
-            if (hb != 0xff)
-                  audioDriver->putEvent(museport, MidiPlayEvent(t, chn, ME_CONTROLLER, CTRL_HBANK, hb));
-            if (lb != 0xff)
-                  audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, CTRL_LBANK, lb));
-            audioDriver->putEvent(museport, MidiPlayEvent(t+2, chn, ME_PROGRAM, pr, 0));
-      //      }
-    }
-    else if (a == CTRL_MASTER_VOLUME) 
-    {
-      unsigned char sysex[] = {
-            0x7f, 0x7f, 0x04, 0x01, 0x00, 0x00
-            };
-      sysex[1] = deviceId();
-      sysex[4] = b & 0x7f;
-      sysex[5] = (b >> 7) & 0x7f;
-      audioDriver->putEvent(museport, MidiPlayEvent(t, ME_SYSEX, sysex, 6));
-    }
-    else if (a < CTRL_14_OFFSET) 
-    {              // 7 Bit Controller
-      audioDriver->putEvent(museport, event);
-    }
-    else if (a < CTRL_RPN_OFFSET) 
-    {     // 14 bit high resolution controller
-      int ctrlH = (a >> 8) & 0x7f;
-      int ctrlL = a & 0x7f;
-      int dataH = (b >> 7) & 0x7f;
-      int dataL = b & 0x7f;
-      audioDriver->putEvent(museport, MidiPlayEvent(t,   chn, ME_CONTROLLER, ctrlH, dataH));
-      audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, ctrlL, dataL));
-    }
-    else if (a < CTRL_NRPN_OFFSET) 
-    {     // RPN 7-Bit Controller
-      int ctrlH = (a >> 8) & 0x7f;
-      int ctrlL = a & 0x7f;
-      audioDriver->putEvent(museport, MidiPlayEvent(t,   chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-      audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-      audioDriver->putEvent(museport, MidiPlayEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, b));
-    }
-    else if (a < CTRL_RPN14_OFFSET) 
-    {     // NRPN 7-Bit Controller
-      int ctrlH = (a >> 8) & 0x7f;
-      int ctrlL = a & 0x7f;
-      audioDriver->putEvent(museport, MidiPlayEvent(t,   chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-      audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-      audioDriver->putEvent(museport, MidiPlayEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, b));
-    }
-    else if (a < CTRL_NRPN14_OFFSET) 
-    {     // RPN14 Controller
-      int ctrlH = (a >> 8) & 0x7f;
-      int ctrlL = a & 0x7f;
-      int dataH = (b >> 7) & 0x7f;
-      int dataL = b & 0x7f;
-      audioDriver->putEvent(museport, MidiPlayEvent(t,   chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-      audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-      audioDriver->putEvent(museport, MidiPlayEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-      audioDriver->putEvent(museport, MidiPlayEvent(t+3, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
-    }
-    else if (a < CTRL_NONE_OFFSET) 
-    {     // NRPN14 Controller
-      int ctrlH = (a >> 8) & 0x7f;
-      int ctrlL = a & 0x7f;
-      int dataH = (b >> 7) & 0x7f;
-      int dataL = b & 0x7f;
-      audioDriver->putEvent(museport, MidiPlayEvent(t, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-      audioDriver->putEvent(museport, MidiPlayEvent(t+1, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-      audioDriver->putEvent(museport, MidiPlayEvent(t+2, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-      audioDriver->putEvent(museport, MidiPlayEvent(t+3, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
-    }
-    else 
-    {
-      printf("MidiJackDevice::putMidiEvent: unknown controller type 0x%x\n", a);
-    }
-  }
-  else 
-  {
-    audioDriver->putEvent(museport, event);
-  }
-  */
   return false;
 }
 
@@ -348,7 +300,7 @@ bool MidiJackDevice::putEvent(int* event)
 
 void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       {
-      // By T356. Set the loop number which the event came in at.
+      // Set the loop number which the event came in at.
       //if(audio->isRecording())
       if(audio->isPlaying())
         event.setLoopNum(audio->loopCount());
@@ -362,8 +314,6 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       {
         int idin = midiPorts[_port].syncInfo().idIn();
         
-// p3.3.26 1/23/10 Section was disabled, enabled by Tim.
-//#if 0
         int typ = event.type();
   
         //---------------------------------------------------
@@ -396,12 +346,8 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
                     }
               }
           else    
-            // p3.3.26 1/23/10 Moved here from alsaProcessMidiInput(). Anticipating Jack midi support, so don't make it ALSA specific. Tim. 
             // Trigger general activity indicator detector. Sysex has no channel, don't trigger.
             midiPorts[_port].syncInfo().trigActDetect(event.channel());
-              
-//#endif
-
       }
       
       //
@@ -442,7 +388,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       MidiRecordEvent event;
       event.setB(0);
 
-      //
+      // NOTE: From MusE-2. Not done here in Muse-1 (yet).
       // move all events 2*segmentSize into the future to get
       // jitterfree playback
       //
@@ -518,28 +464,31 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
 //   collectMidiEvents
 //---------------------------------------------------------
 
-//void MidiJackDevice::collectMidiEvents(MidiInPort* track, Port port)
-void MidiJackDevice::collectMidiEvents(int port)
-      {
-      //void* port_buf = jack_port_get_buffer(port.jackPort(), segmentSize);
-      void* port_buf = jack_port_get_buffer(midi_port_in[port], segmentSize);
-      jack_midi_event_t event;
-      jack_nframes_t eventCount = jack_midi_get_event_count(port_buf);
-      for (jack_nframes_t i = 0; i < eventCount; ++i) {
-            jack_midi_event_get(&event, port_buf, i);
-            
-            #ifdef JACK_MIDI_DEBUG
-            printf("MidiJackDevice::collectMidiEvents number:%d time:%d\n", i, event.time);
-            #endif  
-      
-            //track->eventReceived(&event);
-            eventReceived(&event);
-            }
-      }
+void MidiJackDevice::collectMidiEvents()
+{
+  if(!_readEnable)
+    return;
+  
+  if(!_client_jackport)
+    return;
+  void* port_buf = jack_port_get_buffer(_client_jackport, segmentSize);
+  
+  jack_midi_event_t event;
+  jack_nframes_t eventCount = jack_midi_get_event_count(port_buf);
+  for (jack_nframes_t i = 0; i < eventCount; ++i) 
+  {
+    jack_midi_event_get(&event, port_buf, i);
+    
+    #ifdef JACK_MIDI_DEBUG
+    printf("MidiJackDevice::collectMidiEvents number:%d time:%d\n", i, event.time);
+    #endif  
 
+    eventReceived(&event);
+  }
+}
 
 //---------------------------------------------------------
-//   queueEvent
+//   putEvent
 //    return true if event cannot be delivered
 //---------------------------------------------------------
 
@@ -566,15 +515,15 @@ bool MidiJackDevice::putEvent(const MidiPlayEvent& ev)
 //---------------------------------------------------------
 
 //void JackAudioDevice::putEvent(Port port, const MidiEvent& e)
-bool MidiJackDevice::queueEvent(int port, const MidiPlayEvent& e)
+bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
 //bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
 {
       // Perhaps we can find use for this value later, together with the Jack midi MusE port(s).
       // No big deal if not. Not used for now.
       //int port = e.port();
       
-      if(port >= JACK_MIDI_CHANNELS)
-        return false;
+      //if(port >= JACK_MIDI_CHANNELS)
+      //  return false;
         
       //if (midiOutputTrace) {
       //      printf("MidiOut<%s>: jackMidi: ", portName(port).toLatin1().data());
@@ -583,21 +532,14 @@ bool MidiJackDevice::queueEvent(int port, const MidiPlayEvent& e)
       
       //if(debugMsg)
       //  printf("MidiJackDevice::queueEvent\n");
-  
     
-      //void* pb = jack_port_get_buffer(port.jackPort(), segmentSize);
-      void* pb = jack_port_get_buffer(midi_port_out[port], segmentSize);
-      
-      //jack_port_t* jp = (jack_port_t*)audioDevice->findPort(name().latin1());
-      //if(!jp)
-      //  printf("MidiJackDevice::queueEvent: Jack midi port %s not found!\n", name().latin1());
-      //void* pb = jack_port_get_buffer(jp ? jp : midi_port_out[port], segmentSize);
-      
+      if(!_client_jackport)
+        return false;
+      void* pb = jack_port_get_buffer(_client_jackport, segmentSize);
+    
       //unsigned frameCounter = ->frameTime();
       int frameOffset = audio->getFrameOffset();
       unsigned pos = audio->pos().frame();
-      //int ft = e.time() - _frameCounter;
-      //int ft = e.time() - frameOffset - frameCounter;
       int ft = e.time() - frameOffset - pos;
       
       if (ft < 0)
@@ -685,7 +627,7 @@ bool MidiJackDevice::queueEvent(int port, const MidiPlayEvent& e)
 //    processEvent
 //---------------------------------------------------------
 
-void MidiJackDevice::processEvent(int museport, const MidiPlayEvent& event)
+void MidiJackDevice::processEvent(const MidiPlayEvent& event)
 {    
   //int frameOffset = audio->getFrameOffset();
   //unsigned pos = audio->pos().frame();
@@ -713,10 +655,22 @@ void MidiJackDevice::processEvent(int museport, const MidiPlayEvent& event)
     // No big deal if not. Not used for now.
     int port   = event.port();
 
+    int nvh = 0xff;
+    int nvl = 0xff;
+    if(_port != -1)
+    {
+      int nv = midiPorts[_port].nullSendValue();
+      if(nv != -1)
+      {
+        nvh = (nv >> 8) & 0xff;
+        nvl = nv & 0xff;
+      }
+    }
+      
     if(a == CTRL_PITCH) 
     {
       int v = b + 8192;
-      queueEvent(museport, MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
+      queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
     }
     else if (a == CTRL_PROGRAM) 
     {
@@ -726,10 +680,10 @@ void MidiJackDevice::processEvent(int museport, const MidiPlayEvent& event)
             int lb = (b >> 8) & 0xff;
             int pr = b & 0x7f;
             if (hb != 0xff)
-                  queueEvent(museport, MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb));
+                  queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb));
             if (lb != 0xff)
-                  queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LBANK, lb));
-            queueEvent(museport, MidiPlayEvent(t+2, port, chn, ME_PROGRAM, pr, 0));
+                  queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LBANK, lb));
+            queueEvent(MidiPlayEvent(t+2, port, chn, ME_PROGRAM, pr, 0));
       //      }
     }
     /*
@@ -741,12 +695,12 @@ void MidiJackDevice::processEvent(int museport, const MidiPlayEvent& event)
       sysex[1] = deviceId();
       sysex[4] = b & 0x7f;
       sysex[5] = (b >> 7) & 0x7f;
-      queueEvent(museport, MidiPlayEvent(t, port, ME_SYSEX, sysex, 6));
+      queueEvent(MidiPlayEvent(t, port, ME_SYSEX, sysex, 6));
     }
     */
     else if (a < CTRL_14_OFFSET) 
     {              // 7 Bit Controller
-      queueEvent(museport, event);
+      queueEvent(event);
       //queueEvent(museport, MidiPlayEvent(t, port, chn, event));
     }
     else if (a < CTRL_RPN_OFFSET) 
@@ -755,24 +709,46 @@ void MidiJackDevice::processEvent(int museport, const MidiPlayEvent& event)
       int ctrlL = a & 0x7f;
       int dataH = (b >> 7) & 0x7f;
       int dataL = b & 0x7f;
-      queueEvent(museport, MidiPlayEvent(t,   port, chn, ME_CONTROLLER, ctrlH, dataH));
-      queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, ctrlL, dataL));
+      queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, ctrlH, dataH));
+      queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, ctrlL, dataL));
     }
     else if (a < CTRL_NRPN_OFFSET) 
     {     // RPN 7-Bit Controller
       int ctrlH = (a >> 8) & 0x7f;
       int ctrlL = a & 0x7f;
-      queueEvent(museport, MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-      queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-      queueEvent(museport, MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, b));
+      queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+      queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+      queueEvent(MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, b));
+      
+      t += 3;  
+      // Select null parameters so that subsequent data controller events do not upset the last *RPN controller.
+      //sendNullRPNParams(chn, false);
+      if(nvh != 0xff)
+      {
+        queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, nvh & 0x7f));
+        t += 1;  
+      }
+      if(nvl != 0xff)
+        queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, nvl & 0x7f));
     }
-    else if (a < CTRL_RPN14_OFFSET) 
+    //else if (a < CTRL_RPN14_OFFSET) 
+    else if (a < CTRL_INTERNAL_OFFSET) 
     {     // NRPN 7-Bit Controller
       int ctrlH = (a >> 8) & 0x7f;
       int ctrlL = a & 0x7f;
-      queueEvent(museport, MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-      queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-      queueEvent(museport, MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, b));
+      queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+      queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+      queueEvent(MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, b));
+                  
+      t += 3;  
+      //sendNullRPNParams(chn, true);
+      if(nvh != 0xff)
+      {
+        queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, nvh & 0x7f));
+        t += 1;  
+      }
+      if(nvl != 0xff)
+        queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, nvl & 0x7f));
     }
     else if (a < CTRL_NRPN14_OFFSET) 
     {     // RPN14 Controller
@@ -780,10 +756,20 @@ void MidiJackDevice::processEvent(int museport, const MidiPlayEvent& event)
       int ctrlL = a & 0x7f;
       int dataH = (b >> 7) & 0x7f;
       int dataL = b & 0x7f;
-      queueEvent(museport, MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-      queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-      queueEvent(museport, MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-      queueEvent(museport, MidiPlayEvent(t+3, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+      queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+      queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+      queueEvent(MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+      queueEvent(MidiPlayEvent(t+3, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+      
+      t += 4;  
+      //sendNullRPNParams(chn, false);
+      if(nvh != 0xff)
+      {
+        queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, nvh & 0x7f));
+        t += 1;  
+      }
+      if(nvl != 0xff)
+        queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, nvl & 0x7f));
     }
     else if (a < CTRL_NONE_OFFSET) 
     {     // NRPN14 Controller
@@ -791,10 +777,20 @@ void MidiJackDevice::processEvent(int museport, const MidiPlayEvent& event)
       int ctrlL = a & 0x7f;
       int dataH = (b >> 7) & 0x7f;
       int dataL = b & 0x7f;
-      queueEvent(museport, MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-      queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-      queueEvent(museport, MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-      queueEvent(museport, MidiPlayEvent(t+3, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+      queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+      queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+      queueEvent(MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+      queueEvent(MidiPlayEvent(t+3, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+    
+      t += 4;  
+      //sendNullRPNParams(chn, true);
+      if(nvh != 0xff)
+      {
+        queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, nvh & 0x7f));
+        t += 1;  
+      }
+      if(nvl != 0xff)
+        queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, nvl & 0x7f));
     }
     else 
     {
@@ -803,8 +799,8 @@ void MidiJackDevice::processEvent(int museport, const MidiPlayEvent& event)
   }
   else 
   {
-    queueEvent(museport, event);
-    //queueEvent(museport, MidiPlayEvent(t, port, chn, event));
+    queueEvent(event);
+    //queueEvent(MidiPlayEvent(t, port, chn, event));
   }
 }
     
@@ -814,17 +810,10 @@ void MidiJackDevice::processEvent(int museport, const MidiPlayEvent& event)
 
 void MidiJackDevice::processMidi()
 {
-  //
-  // NOTICE: Only one MusE port (port 0) is supported for now ! MusE has no mechanism to create 
-  //  or select other MusE ports. MusE ALSA midi only creates one port as well.
-  //
-  const int museport = 0;
-  void* port_buf = jack_port_get_buffer(midi_port_out[museport], segmentSize);
+  if(!_client_jackport)
+    return;
+  void* port_buf = jack_port_get_buffer(_client_jackport, segmentSize);
   jack_midi_clear_buffer(port_buf);
-  
-  //int frameOffset = audio->getFrameOffset();
-  //unsigned pos = audio->pos().frame();
-  //MPEventList* el = playEvents();
   
   while(!eventFifo.isEmpty())
   {
@@ -844,146 +833,20 @@ void MidiJackDevice::processMidi()
     
     //el->insert(eventFifo.get());
     //el->insert(e);
-    processEvent(museport, e);
+    processEvent(e);
   }
   
   MPEventList* el = playEvents();
   if(el->empty())
     return;
   
-  //if(debugMsg)
-  //  printf("MidiJackDevice::processMidi\n");
-  
-  //int port = midiPort();
-  //MidiPort* mp = port != -1 ? &midiPorts[port] : 0;
   iMPEvent i = nextPlayEvent();
-  //int tickpos = audio->tickPos();
-  //bool extsync = extSyncFlag.value();
-  
-            
   for(; i != el->end(); ++i) 
   {
-    processEvent(museport, *i);
-    
-    /*
-    const MidiPlayEvent& event = *i;
-    int chn    = event.channel();
-    unsigned t = event.time();
-    
-    // No sub-tick playback resolution yet, with external sync.
-    // Just do this for now until we figure out more precise external timings. Tested OK so far !
-    if(extSyncFlag.value()) 
-      t = frameOffset + pos;
-        
-    #ifdef JACK_MIDI_DEBUG
-    printf("MidiJackDevice::processMidi time:%d type:%d ch:%d A:%d B:%d\n", event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
-    #endif  
-        
-    if(event.type() == ME_CONTROLLER) 
-    {
-      int a      = event.dataA();
-      int b      = event.dataB();
-      // Perhaps we can find use for this value later, together with the Jack midi MusE port(s).
-      // No big deal if not. Not used for now.
-      int port   = event.port();
-  
-      if(a == CTRL_PITCH) 
-      {
-        int v = b + 8192;
-        queueEvent(museport, MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
-      }
-      else if (a == CTRL_PROGRAM) 
-      {
-        // don't output program changes for GM drum channel
-        //if (!(song->mtype() == MT_GM && chn == 9)) {
-              int hb = (b >> 16) & 0xff;
-              int lb = (b >> 8) & 0xff;
-              int pr = b & 0x7f;
-              if (hb != 0xff)
-                    queueEvent(museport, MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb));
-              if (lb != 0xff)
-                    queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LBANK, lb));
-              queueEvent(museport, MidiPlayEvent(t+2, port, chn, ME_PROGRAM, pr, 0));
-        //      }
-      }
-      //else if (a == CTRL_MASTER_VOLUME) 
-      //{
-      //  unsigned char sysex[] = {
-      //        0x7f, 0x7f, 0x04, 0x01, 0x00, 0x00
-      //        };
-      //  sysex[1] = deviceId();
-      //  sysex[4] = b & 0x7f;
-      //  sysex[5] = (b >> 7) & 0x7f;
-      //  queueEvent(museport, MidiPlayEvent(t, port, ME_SYSEX, sysex, 6));
-      //}
-      else if (a < CTRL_14_OFFSET) 
-      {              // 7 Bit Controller
-        queueEvent(museport, event);
-        //queueEvent(museport, MidiPlayEvent(t, port, chn, event));
-      }
-      else if (a < CTRL_RPN_OFFSET) 
-      {     // 14 bit high resolution controller
-        int ctrlH = (a >> 8) & 0x7f;
-        int ctrlL = a & 0x7f;
-        int dataH = (b >> 7) & 0x7f;
-        int dataL = b & 0x7f;
-        queueEvent(museport, MidiPlayEvent(t,   port, chn, ME_CONTROLLER, ctrlH, dataH));
-        queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, ctrlL, dataL));
-      }
-      else if (a < CTRL_NRPN_OFFSET) 
-      {     // RPN 7-Bit Controller
-        int ctrlH = (a >> 8) & 0x7f;
-        int ctrlL = a & 0x7f;
-        queueEvent(museport, MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-        queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-        queueEvent(museport, MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, b));
-      }
-      else if (a < CTRL_RPN14_OFFSET) 
-      {     // NRPN 7-Bit Controller
-        int ctrlH = (a >> 8) & 0x7f;
-        int ctrlL = a & 0x7f;
-        queueEvent(museport, MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-        queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-        queueEvent(museport, MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, b));
-      }
-      else if (a < CTRL_NRPN14_OFFSET) 
-      {     // RPN14 Controller
-        int ctrlH = (a >> 8) & 0x7f;
-        int ctrlL = a & 0x7f;
-        int dataH = (b >> 7) & 0x7f;
-        int dataL = b & 0x7f;
-        queueEvent(museport, MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-        queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-        queueEvent(museport, MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-        queueEvent(museport, MidiPlayEvent(t+3, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
-      }
-      else if (a < CTRL_NONE_OFFSET) 
-      {     // NRPN14 Controller
-        int ctrlH = (a >> 8) & 0x7f;
-        int ctrlL = a & 0x7f;
-        int dataH = (b >> 7) & 0x7f;
-        int dataL = b & 0x7f;
-        queueEvent(museport, MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-        queueEvent(museport, MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-        queueEvent(museport, MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-        queueEvent(museport, MidiPlayEvent(t+3, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
-      }
-      else 
-      {
-        printf("MidiJackDevice::processMidi: unknown controller type 0x%x\n", a);
-      }
-    }
-    else 
-    {
-      queueEvent(museport, event);
-      //queueEvent(museport, MidiPlayEvent(t, port, chn, event));
-    }
-    */
-    
+    processEvent(*i);
   }
-  //md->setNextPlayEvent(i);
-  setNextPlayEvent(i);
   
+  setNextPlayEvent(i);
 }
 
 //---------------------------------------------------------
@@ -993,30 +856,28 @@ void MidiJackDevice::processMidi()
 
 bool initMidiJack()
 {
+  /*
   int adr = 0;
 
-// Removed p3.3.36
-///  memset(jack_midi_out_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
-///  memset(jack_midi_in_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
+  memset(jack_midi_out_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
+  memset(jack_midi_in_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
 
   MidiJackDevice* dev = new MidiJackDevice(adr, QString("jack-midi"));
-  dev->setrwFlags(3); /* set read and write flags */
+  dev->setrwFlags(3); // set read and write flags 
 
-// Removed p3.3.35
-///  if(pipe(jackmidi_pi) < 0){
-///    fprintf(stderr, "cant create midi-jack input pipe\n");
-///  }
-///  if(pipe(jackmidi_po) < 0){
-///    fprintf(stderr, "cant create midi-jack output pipe\n");
-///  }
+  if(pipe(jackmidi_pi) < 0){
+    fprintf(stderr, "cant create midi-jack input pipe\n");
+  }
+  if(pipe(jackmidi_po) < 0){
+    fprintf(stderr, "cant create midi-jack output pipe\n");
+  }
   
-  #ifndef JACK_MIDI_SHOW_MULTIPLE_DEVICES
   midiDevices.add(dev);
-  #endif
   
-  gmdev = dev; /* proclaim the global jack-midi instance */
+  gmdev = dev; // proclaim the global jack-midi instance 
 
   //jackScanMidiPorts();
+  */
   
   return false;
 }

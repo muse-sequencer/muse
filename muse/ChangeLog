@@ -1,3 +1,12 @@
+18.02.2010
+      * Added: Separate Jack midi client ports per MusE port. (T356)
+        - For now, you will have to manually add further connections to those ports if desired, each session.
+        - Tested OK rec/play so far.
+      * Fixed: Some inconsistencies in midi controller number decoding. (T356)
+        - Everything now references the values listed in midictrl.h
+      * Fixed: Some Jack code was not calling free after calling certain functions. (T356)
+      * Changed: Midi priority now deaults to audio priority +1. (T356)
+        - Thanks to RJ for the convincing argument.
 14.02.2010
       * Added: Jack midi input should be working now. Controllers, too. (T356)
         - Tested with large 1024 frame buffer. Events are recorded with good sub-tick (frame) resolution,
