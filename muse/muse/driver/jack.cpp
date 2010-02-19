@@ -1676,6 +1676,8 @@ int JackAudioDevice::setMaster(bool f)
 
 void JackAudioDevice::scanMidiPorts()
 {
+  if(debugMsg)
+    printf("JackAudioDevice::scanMidiPorts:\n");
   const char* type = JACK_DEFAULT_MIDI_TYPE;
   const char** ports = jack_get_ports(_client, 0, type, 0);
   for (const char** p = ports; p && *p; ++p) 
@@ -1689,6 +1691,9 @@ void JackAudioDevice::scanMidiPorts()
     // Ignore the MusE Jack port.
     if(strncmp(buffer, "MusE", 4) == 0)
       continue;
+    
+    if(debugMsg)
+      printf(" found port:%s\n", buffer);
     
     // If there are aliases for this port, use the first one - much better for identifying. 
     //char a1[nsz]; 
