@@ -360,6 +360,28 @@ static void scanDSSILib(const QFileInfo& fi)
             //DssiSynth* s = new DssiSynth(fi, label);
             DssiSynth* s = new DssiSynth(fi, label, QString(descr->LADSPA_Plugin->Name), QString(descr->LADSPA_Plugin->Maker), QString());
             
+            if(debugMsg)
+            {
+              fprintf(stderr, "scanDSSILib: name:%s listname:%s lib:%s listlib:%s\n", label.ascii(), s->name().ascii(), fi.baseName(true).ascii(), s->baseName().ascii());
+              int ai = 0, ao = 0, ci = 0, co = 0;
+              for(int pt = 0; pt < descr->LADSPA_Plugin->PortCount; ++pt)
+              {
+                LADSPA_PortDescriptor pd = descr->LADSPA_Plugin->PortDescriptors[pt];
+                if(LADSPA_IS_PORT_INPUT(pd) && LADSPA_IS_PORT_AUDIO(pd))
+                  ai++;
+                else  
+                if(LADSPA_IS_PORT_OUTPUT(pd) && LADSPA_IS_PORT_AUDIO(pd))
+                  ao++;
+                else  
+                if(LADSPA_IS_PORT_INPUT(pd) && LADSPA_IS_PORT_CONTROL(pd))
+                  ci++;
+                else  
+                if(LADSPA_IS_PORT_OUTPUT(pd) && LADSPA_IS_PORT_CONTROL(pd))
+                  co++;
+              }  
+              fprintf(stderr, "audio ins:%d outs:%d control ins:%d outs:%d\n", ai, ao, ci, co);
+            }
+            
             synthis.push_back(s);
           }
           else
@@ -545,7 +567,8 @@ bool DssiSynthIF::init(DssiSynth* s)
         for(int k = 0; k < inports; ++k)
         {
           //audioInBuffers[k] = new LADSPA_Data[segmentSize];
-          posix_memalign((void**)(audioInBuffers + k), 16, sizeof(float) * segmentSize);
+          //posix_memalign((void**)(audioInBuffers + k), 16, sizeof(float) * segmentSize);
+          posix_memalign((void**)&audioInBuffers[k], 16, sizeof(float) * segmentSize);
           memset(audioInBuffers[k], 0, sizeof(float) * segmentSize);
           ld->connect_port(handle, synth->iIdx[k], audioInBuffers[k]);
         }  
@@ -558,9 +581,11 @@ bool DssiSynthIF::init(DssiSynth* s)
         for(int k = 0; k < outports; ++k)
         {
           //audioOutBuffers[k] = new LADSPA_Data[segmentSize];
-          posix_memalign((void**)(audioOutBuffers + k), 16, sizeof(float) * segmentSize);
+          //posix_memalign((void**)(audioOutBuffers + k), 16, sizeof(float) * segmentSize);
+          posix_memalign((void**)&audioOutBuffers[k], 16, sizeof(float) * segmentSize);
           memset(audioOutBuffers[k], 0, sizeof(float) * segmentSize);
           ld->connect_port(handle, synth->oIdx[k], audioOutBuffers[k]);
+          //printf("DssiSynthIF::init output port name: %s\n", ld->PortNames[synth->oIdx[k]]); // out1, out2, out3 etc
         }  
       }
       
@@ -1993,6 +2018,16 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
 int DssiSynthIF::channels() const 
 { 
   return synth->_outports > MAX_CHANNELS ? MAX_CHANNELS : synth->_outports; 
+}
+
+int DssiSynthIF::totalOutChannels() const 
+{ 
+  return synth->_outports; 
+}
+
+int DssiSynthIF::totalInChannels() const 
+{ 
+  return synth->_inports; 
 }
 
 #else //DSSI_SUPPORT

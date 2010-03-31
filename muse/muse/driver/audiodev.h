@@ -33,11 +33,13 @@ class AudioDevice {
 
       virtual float* getBuffer(void* port, unsigned long nframes) = 0;
 
-      virtual std::list<QString> outputPorts() = 0;
-      virtual std::list<QString> inputPorts() = 0;
+      virtual std::list<QString> outputPorts(bool midi = false, int aliases = -1) = 0;
+      virtual std::list<QString> inputPorts(bool midi = false, int aliases = -1) = 0;
 
       virtual void registerClient() = 0;
 
+      virtual const char* clientName() = 0;
+      
       //virtual void* registerOutPort(const char* name) = 0;
       //virtual void* registerInPort(const char* name) = 0;
       virtual void* registerOutPort(const char* /*name*/, bool /*midi*/) = 0;

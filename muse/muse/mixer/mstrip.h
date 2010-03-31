@@ -28,7 +28,9 @@ class MidiStrip : public Strip {
 
       Slider* slider;
       DoubleLabel* sl;
-      QToolButton* route;
+      //QToolButton* route;
+      QToolButton* iR;
+      QToolButton* oR;
 
       struct KNOB {
             Knob* knob;
@@ -49,7 +51,9 @@ class MidiStrip : public Strip {
       void updateOffState();
    
    private slots:
-      void routeClicked();
+      //void routeClicked();
+      void iRoutePressed();
+      void oRoutePressed();
       void setVolume(double);
       void setPan(double);
       void setChorusSend(double);

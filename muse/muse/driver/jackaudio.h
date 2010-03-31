@@ -25,7 +25,7 @@ class JackAudioDevice : public AudioDevice {
       int samplePos;
       jack_transport_state_t transportState;
       jack_position_t pos;
-      char jackRegisteredName[8];
+      char jackRegisteredName[16];
       int dummyState;
       int dummyPos;
       // Free-running frame counter incremented always in process.
@@ -52,17 +52,18 @@ class JackAudioDevice : public AudioDevice {
             return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
             }
 
-      virtual std::list<QString> outputPorts();
-      virtual std::list<QString> inputPorts();
+      virtual std::list<QString> outputPorts(bool midi = false, int aliases = -1);
+      virtual std::list<QString> inputPorts(bool midi = false, int aliases = -1);
 
       virtual void registerClient();
+      virtual const char* clientName() { return jackRegisteredName; }
 
       //virtual void* registerOutPort(const char* name);
       //virtual void* registerInPort(const char* name);
       virtual void* registerOutPort(const char* /*name*/, bool /*midi*/);
       virtual void* registerInPort(const char* /*name*/, bool /*midi*/);
 
-      virtual char* getJackName();
+      //virtual char* getJackName();
 
       virtual void unregisterPort(void*);
       virtual void connect(void*, void*);

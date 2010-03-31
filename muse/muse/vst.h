@@ -61,6 +61,8 @@ class VstSynthIF : public SynthIF
       virtual int eventsPending() const { return 0; }
       virtual bool init(Synth*);
       virtual int channels() const;
+      virtual int totalOutChannels() const;
+      virtual int totalInChannels() const;
       virtual void deactivate3();
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }

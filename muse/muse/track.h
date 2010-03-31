@@ -51,6 +51,9 @@ class Track {
       static bool _tmpSoloChainDoIns;
       static bool _tmpSoloChainNoDec;
       
+      // p3.3.38
+      RouteList _inRoutes;
+      RouteList _outRoutes;
       
       QString _name;
       bool _recordFlag;
@@ -114,6 +117,13 @@ class Track {
 
       TrackType type() const          { return _type; }
       void setType(TrackType t)       { _type = t; }
+
+      // routing
+      RouteList* inRoutes()    { return &_inRoutes; }
+      RouteList* outRoutes()   { return &_outRoutes; }
+      bool noInRoute() const   { return _inRoutes.empty();  }
+      bool noOutRoute() const  { return _outRoutes.empty(); }
+      void writeRouting(int, Xml&) const;
 
       PartList* parts()               { return &_parts; }
       const PartList* cparts() const  { return &_parts; }
@@ -184,8 +194,8 @@ class MidiTrack : public Track {
       int _outPort;
       int _outChannel;
       //int _inPortMask;        
-      unsigned int _inPortMask; // bitmask of accepted record ports
-      int _inChannelMask;     // bitmask of accepted record channels
+      ///unsigned int _inPortMask; // bitmask of accepted record ports
+      ///int _inChannelMask;     // bitmask of accepted record channels
       bool _recEcho;          // For midi (and audio). Whether to echo incoming record events to output device.
 
       EventList* _events;     // tmp Events during midi import
@@ -227,14 +237,14 @@ class MidiTrack : public Track {
       void setOutChanAndUpdate(int i);
       void setOutPortAndUpdate(int i);
       //void setInPortMask(int i)       { _inPortMask = i; }
-      void setInPortMask(unsigned int i) { _inPortMask = i; }
-      void setInChannelMask(int i)    { _inChannelMask = i; }
+      ///void setInPortMask(unsigned int i) { _inPortMask = i; }
+      ///void setInChannelMask(int i)    { _inChannelMask = i; }
       void setRecEcho(bool b)         { _recEcho = b; }
       int outPort() const             { return _outPort;     }
       //int inPortMask() const          { return _inPortMask;  }
-      unsigned int inPortMask() const { return _inPortMask;  }
+      ///unsigned int inPortMask() const { return _inPortMask;  }
       int outChannel() const          { return _outChannel;  }
-      int inChannelMask() const       { return _inChannelMask; }
+      ///int inChannelMask() const       { return _inChannelMask; }
       bool recEcho() const            { return _recEcho; }
 
       virtual bool isMute() const;
@@ -269,8 +279,8 @@ class AudioTrack : public Track {
 
       AutomationType _automationType;
 
-      RouteList _inRoutes;
-      RouteList _outRoutes;
+      //RouteList _inRoutes;
+      //RouteList _outRoutes;
       
       bool _sendMetronome;
       
@@ -278,8 +288,11 @@ class AudioTrack : public Track {
       void readAuxSend(Xml& xml);
 
    protected:
-      //float** outBuffers;
-      float* outBuffers[MAX_CHANNELS];  
+      float** outBuffers;
+      //float* outBuffers[MAX_CHANNELS];  
+      int _totalOutChannels;
+      int _totalInChannels;
+      
       unsigned bufferPos;
       virtual bool getData(unsigned, int, unsigned, float**);
       SndFile* _recFile;
@@ -288,6 +301,8 @@ class AudioTrack : public Track {
 
    public:
       AudioTrack(TrackType t);
+      //AudioTrack(TrackType t, int num_out_bufs = MAX_CHANNELS); 
+      
       //AudioTrack(const AudioTrack&);
       AudioTrack(const AudioTrack&, bool cloneParts);
       virtual ~AudioTrack();
@@ -317,6 +332,10 @@ class AudioTrack : public Track {
       CtrlListList* controller()         { return &_controller; }
 
       virtual void setChannels(int n);
+      virtual void setTotalOutChannels(int num);
+      virtual int totalOutChannels() { return _totalOutChannels; }
+      virtual void setTotalInChannels(int num);
+      virtual int totalInChannels() { return _totalInChannels; }
 
       virtual bool isMute() const;
       virtual void setSolo(bool val);
@@ -355,19 +374,19 @@ class AudioTrack : public Track {
       void setPluginCtrlVal(int param, double val);
       
       void readVolume(Xml& xml);
-      void writeRouting(int, Xml&) const;
+      //void writeRouting(int, Xml&) const;
 
       // routing
-      RouteList* inRoutes()    { return &_inRoutes; }
-      RouteList* outRoutes()   { return &_outRoutes; }
-      bool noInRoute() const   { return _inRoutes.empty();  }
-      bool noOutRoute() const  { return _outRoutes.empty(); }
+      //RouteList* inRoutes()    { return &_inRoutes; }
+      //RouteList* outRoutes()   { return &_outRoutes; }
+      //bool noInRoute() const   { return _inRoutes.empty();  }
+      //bool noOutRoute() const  { return _outRoutes.empty(); }
 
       virtual void preProcessAlways() { _processed = false; }
-      virtual void addData(unsigned, int, unsigned, float**);
-      virtual void copyData(unsigned, int, unsigned, float**);
+      virtual void  addData(unsigned /*samplePos*/, int /*channels*/, int /*srcStartChan*/, int /*srcChannels*/, unsigned /*frames*/, float** /*buffer*/);
+      virtual void copyData(unsigned /*samplePos*/, int /*channels*/, int /*srcStartChan*/, int /*srcChannels*/, unsigned /*frames*/, float** /*buffer*/);
       virtual bool hasAuxSend() const { return false; }
-
+      
       // automation
       virtual AutomationType automationType() const    { return _automationType; }
       virtual void setAutomationType(AutomationType t);

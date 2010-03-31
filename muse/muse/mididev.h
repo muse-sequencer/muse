@@ -14,6 +14,11 @@
 
 #include "mpevent.h"
 //#include "sync.h"
+#include "route.h"
+#include "globaldefs.h"
+
+//class RouteList;
+class Xml;
 
 //---------------------------------------------------------
 //   MidiDevice
@@ -26,8 +31,10 @@ class MidiDevice {
       ///MREventList _recordEvents;
       ///MREventList _recordEvents2;
       
-      // Used for multiple reads of fifo during process.
-      int _tmpRecordCount;
+      // Used for multiple reads of fifos during process.
+      //int _tmpRecordCount;
+      int _tmpRecordCount[MIDI_CHANNELS + 1];
+      bool _sysexFIFOProcessed;
       
       ///bool _recBufFlipped;
       // Holds sync settings and detection monitors.
@@ -40,22 +47,43 @@ class MidiDevice {
       int _openFlags;    // configured open flags
       bool _readEnable;  // set when opened/closed.
       bool _writeEnable; //
+      //int _sysexWriteChunk;
+      //int _sysexReadChunk;
+      //bool _sysexWritingChunks;
+      bool _sysexReadingChunks;
+      
       // Recording fifo. 
-      MidiFifo _recordFifo;
+      //MidiFifo _recordFifo;
+      // Recording fifos. To speed up processing, one per channel plus one special system 'channel' for channel-less events like sysex.
+      MidiFifo _recordFifo[MIDI_CHANNELS + 1];
+      
+      RouteList _inRoutes, _outRoutes;
+      
       void init();
       virtual bool putMidiEvent(const MidiPlayEvent&) = 0;
 
    public:
+      enum { ALSA_MIDI=0, JACK_MIDI=1, SYNTH_MIDI=2 };
+      
       MidiDevice();
       MidiDevice(const QString& name);
       virtual ~MidiDevice() {}
 
+      virtual int deviceType() = 0;
+      
+      virtual void* clientPort() { return 0; }
       virtual QString open() = 0;
       virtual void close() = 0;
+      virtual void writeRouting(int, Xml&) const {  };
 
+      RouteList* inRoutes()   { return &_inRoutes; }
+      RouteList* outRoutes()   { return &_outRoutes; }
+      bool noInRoute() const   { return _inRoutes.empty();  }
+      bool noOutRoute() const  { return _outRoutes.empty(); }
+      
       const QString& name() const      { return _name; }
       void setName(const QString& s)   { _name = s; }
-
+      
       int midiPort() const             { return _port; }
       void setPort(int p)              { _port = p; }
 
@@ -76,6 +104,10 @@ class MidiDevice {
       virtual void recordEvent(MidiRecordEvent&);
 
       virtual bool putEvent(const MidiPlayEvent&);
+      
+      // For Jack-based devices - called in Jack audio process callback
+      virtual void collectMidiEvents() {}   
+      virtual void processMidi() {}
 
       MPEventList* stuckNotes()          { return &_stuckNotes; }
       MPEventList* playEvents()          { return &_playEvents; }
@@ -85,8 +117,16 @@ class MidiDevice {
       ///bool recBufFlipped()               { return _recBufFlipped; }
       void beforeProcess();
       void afterProcess();
-      int tmpRecordCount() { return _tmpRecordCount; }
-      MidiFifo& recordEvents() { return _recordFifo; }
+      //int tmpRecordCount() { return _tmpRecordCount; }
+      int tmpRecordCount(const unsigned int ch)     { return _tmpRecordCount[ch]; }
+      //MidiFifo& recordEvents() { return _recordFifo; }
+      MidiFifo& recordEvents(const unsigned int ch) { return _recordFifo[ch]; }
+      bool sysexFIFOProcessed()                     { return _sysexFIFOProcessed; }
+      void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
+      //bool sysexWritingChunks() { return _sysexWritingChunks; }
+      //void setSysexWritingChunks(bool v) { _sysexWritingChunks = v; }
+      bool sysexReadingChunks() { return _sysexReadingChunks; }
+      void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }
       //virtual void getEvents(unsigned /*from*/, unsigned /*to*/, int /*channel*/, MPEventList* /*dst*/);
       
       iMPEvent nextPlayEvent()           { return _nextPlayEvent; }
@@ -100,13 +140,14 @@ class MidiDevice {
 
 typedef std::list<MidiDevice*>::iterator iMidiDevice;
 
-class MidiDeviceList : public std::list<MidiDevice*> {
+class MidiDeviceList : public std::list<MidiDevice*> 
+{
    public:
       void add(MidiDevice* dev);
       void remove(MidiDevice* dev);
-      MidiDevice* find(const QString& name);
+      MidiDevice* find(const QString& name, int typeHint = -1);
       iMidiDevice find(const MidiDevice* dev);
-      };
+};
 
 extern MidiDeviceList midiDevices;
 extern void initMidiDevices();

@@ -685,10 +685,11 @@ void MidiSeq::processTimerTick()
       for (iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) {
             MidiDevice* md = *id;
             // Is it a Jack midi device? p3.3.36 
-            MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
-            if(mjd)
+            //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
+            //if(mjd)
+            if(md->deviceType() == MidiDevice::JACK_MIDI)
               continue;
-            if (md->isSynti())      // syntis are handled by audio thread
+            if(md->isSynti())      // syntis are handled by audio thread
                   continue;
             int port = md->midiPort();
             MidiPort* mp = port != -1 ? &midiPorts[port] : 0;

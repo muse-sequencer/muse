@@ -126,12 +126,12 @@ static Synth* findSynth(const QString& sclass, const QString& label)
       }
 
 //---------------------------------------------------------
-//   createSynthI
+//   createSynthInstance
 //    create a synthesizer instance of class "label"
 //---------------------------------------------------------
 
 //static SynthI* createSynthI(const QString& sclass)
-static SynthI* createSynthI(const QString& sclass, const QString& label)
+static SynthI* createSynthInstance(const QString& sclass, const QString& label)
       {
       //Synth* s = findSynth(sclass);
       Synth* s = findSynth(sclass, label);
@@ -149,7 +149,7 @@ static SynthI* createSynthI(const QString& sclass, const QString& label)
                   }
             }
       else
-            printf("synthi class:%s label:%s not found\n", sclass.latin1(), label.latin1());
+            printf("createSynthInstance: synthi class:%s label:%s not found\n", sclass.latin1(), label.latin1());
       return si;
       }
 
@@ -300,6 +300,16 @@ int MessSynthIF::channels() const
       return _mess->channels();
       }
 
+int MessSynthIF::totalOutChannels() const
+      {
+      return _mess->channels();
+      }
+
+int MessSynthIF::totalInChannels() const
+      {
+      return 0;
+      }
+
 //SynthIF* MessSynth::createSIF() const
 SynthIF* MessSynth::createSIF(SynthI* si)
       {
@@ -327,8 +337,11 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
       setIName(instanceName);   // set instrument name
       _sif        = s->createSIF(this);
       
-      AudioTrack::setChannels(_sif->channels());
-
+      // p3.3.38
+      //AudioTrack::setChannels(_sif->channels());
+      AudioTrack::setTotalOutChannels(_sif->totalOutChannels());
+      AudioTrack::setTotalInChannels(_sif->totalInChannels());
+      
       //---------------------------------------------------
       //  read available controller from synti
       //---------------------------------------------------
@@ -531,36 +544,38 @@ void initMidiSynth()
 //SynthI* Song::createSynthI(const QString& sclass)
 SynthI* Song::createSynthI(const QString& sclass, const QString& label)
       {
-      // Added by Tim. p3.3.13
       //printf("Song::createSynthI calling ::createSynthI class:%s\n", sclass.latin1());
       
       //SynthI* si = ::createSynthI(sclass);
-      SynthI* si = ::createSynthI(sclass, label);
+      //SynthI* si = ::createSynthI(sclass, label);
+      SynthI* si = createSynthInstance(sclass, label);
       if(!si)
         return 0;
-      // Added by Tim. p3.3.13
       //printf("Song::createSynthI created SynthI. Before insertTrack1...\n");
       
       insertTrack1(si, -1);
-      // Added by Tim. p3.3.13
       //printf("Song::createSynthI after insertTrack1. Before msgInsertTrack...\n");
       
       msgInsertTrack(si, -1, true);       // add to instance list
-      // Added by Tim. p3.3.13
       //printf("Song::createSynthI after msgInsertTrack. Before insertTrack3...\n");
       
       insertTrack3(si, -1);
 
-      // Added by Tim. p3.3.13
       //printf("Song::createSynthI after insertTrack3. Adding default routes...\n");
       
       OutputList* ol = song->outputs();
       // add default route to master (first audio output)
       if (!ol->empty()) {
             AudioOutput* ao = ol->front();
-            audio->msgAddRoute(Route(si, -1), Route(ao, -1));
+            // p3.3.38
+            //audio->msgAddRoute(Route(si, -1), Route(ao, -1));
+            //audio->msgAddRoute(Route((AudioTrack*)si, -1), Route(ao, -1));
+            // Make sure the route channel and channels are valid.
+            audio->msgAddRoute(Route((AudioTrack*)si, 0, ((AudioTrack*)si)->channels()), Route(ao, 0, ((AudioTrack*)si)->channels()));
+            
             audio->msgUpdateSoloStates();
             }
+      
       return si;
       }
 

@@ -177,7 +177,7 @@ void AudioTrack::updateInternalSoloStates()
         const RouteList* rl = inRoutes();
         for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
         {
-          if(ir->type == TRACK_ROUTE)
+          if(ir->type == Route::TRACK_ROUTE)
             ir->track->updateInternalSoloStates();
         }
       }
@@ -186,7 +186,7 @@ void AudioTrack::updateInternalSoloStates()
         const RouteList* rl = outRoutes();
         for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
         {
-          if(ir->type == TRACK_ROUTE)
+          if(ir->type == Route::TRACK_ROUTE)
             ir->track->updateInternalSoloStates();
         }
       }  
@@ -243,7 +243,7 @@ void AudioTrack::updateSoloStates(bool noDec)
     const RouteList* rl = inRoutes();
     for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
     {
-      if(ir->type == TRACK_ROUTE)
+      if(ir->type == Route::TRACK_ROUTE)
         ir->track->updateInternalSoloStates();
     }
   }  
@@ -252,7 +252,7 @@ void AudioTrack::updateSoloStates(bool noDec)
     const RouteList* rl = outRoutes();
     for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
     {
-      if(ir->type == TRACK_ROUTE)
+      if(ir->type == Route::TRACK_ROUTE)
         ir->track->updateInternalSoloStates();
     }
   }  
@@ -280,7 +280,8 @@ void Track::setOff(bool val)
 //   copyData
 //---------------------------------------------------------
 
-void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float** dstBuffer)
+//void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float** dstBuffer)
+void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int srcChannels, unsigned nframes, float** dstBuffer)
 {
   //Changed by T356. 12/12/09. 
   // Overhaul and streamline to eliminate multiple processing during one process loop. 
@@ -288,9 +289,14 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
   // Make better use of AudioTrack::outBuffers as a post-effect pre-volume cache system for multiple calls here during processing.
   // Previously only WaveTrack used them. (Changed WaveTrack as well).
   
-  int srcChannels = channels();
+  if(srcStartChan == -1)
+    srcStartChan = 0;
+    
+  int srcChans = (srcChannels == -1) ? channels() : srcChannels;
+  int srcTotalOutChans = totalOutChannels();
+  if(channels() == 1)
+    srcTotalOutChans = 1;
   
-  //Added by Tim. p3.3.16
   #ifdef NODE_DEBUG
   printf("MusE: AudioTrack::copyData name:%s processed:%d\n", name().latin1(), processed());
   #endif
@@ -304,7 +310,11 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
   
   int i;
   
-  float* buffer[srcChannels];
+  // p3.3.38
+  //float* buffer[srcChannels];
+  float* buffer[srcTotalOutChans];
+  
+  
   //float data[nframes * srcChannels];
   //for(i = 0; i < srcChannels; ++i)
   //      buffer[i] = data + i * nframes;
@@ -315,7 +325,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
   double _pan = pan();
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);
-  float meter[srcChannels];
+  float meter[srcChans];
 
   // Have we been here already during this process cycle?
   if(processed())
@@ -330,7 +340,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
     if(_haveData)
     {
       // Point the input buffers at our local cached 'pre-volume' buffers. They need processing, so continue on after.
-      for(i = 0; i < srcChannels; ++i)
+      //for(i = 0; i < srcChannels; ++i)
+      //  buffer[i] = outBuffers[i];
+      // p3.3.38
+      for(i = 0; i < srcTotalOutChans; ++i)
         buffer[i] = outBuffers[i];
     }
     else
@@ -354,8 +367,12 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
     // First time here during this process cycle. 
     
     // Point the input buffers at a temporary stack buffer.
-    float data[nframes * srcChannels];
-    for(i = 0; i < srcChannels; ++i)
+    //float data[nframes * srcChannels];
+    //for(i = 0; i < srcChannels; ++i)
+    //    buffer[i] = data + i * nframes;
+    // p3.3.38
+    float data[nframes * srcTotalOutChans];
+    for(i = 0; i < srcTotalOutChans; ++i)
         buffer[i] = data + i * nframes;
   
     // getData can use the supplied buffers, or change buffer to point to its own local buffers or Jack buffers etc. 
@@ -363,9 +380,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
     // p3.3.29 1/27/10 Don't do any processing at all if off. Whereas, mute needs to be ready for action at all times,
     //  so still call getData before it. Off is NOT meant to be toggled rapidly, but mute is !
     //if(!getData(pos, srcChannels, nframes, buffer) || off() || (isMute() && !_prefader)) 
-    if(off() || !getData(pos, srcChannels, nframes, buffer) || (isMute() && !_prefader)) 
+    //if(off() || !getData(pos, srcChannels, nframes, buffer) || (isMute() && !_prefader)) 
+    // p3.3.38
+    if(off() || !getData(pos, srcTotalOutChans, nframes, buffer) || (isMute() && !_prefader)) 
     {
-      //Added by Tim. p3.3.16
       #ifdef NODE_DEBUG
       printf("MusE: AudioTrack::copyData name:%s dstChannels:%d zeroing buffers\n", name().latin1(), dstChannels);
       #endif
@@ -383,7 +401,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
           memset(dstBuffer[i], 0, sizeof(float) * nframes);
       }  
       
-      for(i = 0; i < srcChannels; ++i) 
+      for(i = 0; i < srcChans; ++i) 
       {
         //_meter[i] = 0;
         _meter[i] = 0.0;
@@ -411,7 +429,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
     // apply plugin chain
     //---------------------------------------------------
 
-    _efxPipe->apply(srcChannels, nframes, buffer);
+    _efxPipe->apply(srcChans, nframes, buffer);
 
     //---------------------------------------------------
     // aux sends
@@ -429,9 +447,9 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
         AudioAux* a = (AudioAux*)((*al)[k]);
         float** dst = a->sendBuffer();
         int auxChannels = a->channels();
-        if((srcChannels ==1 && auxChannels==1) || srcChannels == 2) 
+        if((srcChans ==1 && auxChannels==1) || srcChans == 2) 
         {
-          for(int ch = 0; ch < srcChannels; ++ch) 
+          for(int ch = 0; ch < srcChans; ++ch) 
           {
             float* db = dst[ch % a->channels()]; // no matter whether there's one or two dst buffers
             float* sb = buffer[ch];
@@ -439,7 +457,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
               *db++ += (*sb++ * m * vol[ch]);   // add to mix
           }
         }
-        else if(srcChannels==1 && auxChannels==2)  // copy mono to both channels
+        else if(srcChans==1 && auxChannels==2)  // copy mono to both channels
         {  
           for(int ch = 0; ch < auxChannels; ++ch) 
           {
@@ -458,7 +476,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
 
     if(_prefader) 
     {
-      for(i = 0; i < srcChannels; ++i) 
+      for(i = 0; i < srcChans; ++i) 
       {
         float* p = buffer[i];
         meter[i] = 0.0;
@@ -514,7 +532,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
     // If we're using local cached 'pre-volume' buffers, copy the input buffers (as they are right now: post-effect pre-volume) back to them. 
     if(!usedirectbuf)
     {
-      for(i = 0; i < srcChannels; ++i)
+      //for(i = 0; i < srcChannels; ++i)
+      //  AL::dsp->cpy(outBuffers[i], buffer[i], nframes);
+      // p3.3.38
+      for(i = 0; i < srcTotalOutChans; ++i)
         AL::dsp->cpy(outBuffers[i], buffer[i], nframes);
     }
     
@@ -522,18 +543,43 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
     _haveData = true;
   }
   
+  // Sanity check. Is source starting channel out of range? Just zero and return.
+  if(srcStartChan >= srcTotalOutChans) 
+  {
+    unsigned int q;
+    for(i = 0; i < dstChannels; ++i)
+    {
+      if(config.useDenormalBias) 
+      {
+        for(q = 0; q < nframes; q++)
+          dstBuffer[i][q] = denormalBias;
+      } 
+      else 
+        memset(dstBuffer[i], 0, sizeof(float) * nframes);
+    }        
+    _processed = true;
+    return;
+  }
+  // Force a source range to fit actual available total out channels.
+  if((srcStartChan + srcChans) > srcTotalOutChans) 
+    srcChans = srcTotalOutChans - srcStartChan;
+  
   //---------------------------------------------------
   // apply volume
   //    postfader metering
   //---------------------------------------------------
 
-  if(srcChannels == dstChannels) 
+    
+  if(srcChans == dstChannels) 
   {
     if(_prefader) 
     {
       for(int c = 0; c < dstChannels; ++c) 
       {
-        float* sp = buffer[c];
+        // p3.3.38
+        //float* sp = buffer[c];
+        float* sp = buffer[c + srcStartChan];
+        
         float* dp = dstBuffer[c];
         for(unsigned k = 0; k < nframes; ++k)
           *dp++ = (*sp++ * vol[c]);
@@ -544,7 +590,11 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
       for(int c = 0; c < dstChannels; ++c) 
       {
         meter[c] = 0.0;
-        float* sp = buffer[c];
+        
+        // p3.3.38
+        //float* sp = buffer[c];
+        float* sp = buffer[c + srcStartChan];
+        
         float* dp = dstBuffer[c];
         //printf("2 dstBuffer[c]=%d\n",long(dstBuffer[c]));
         for(unsigned k = 0; k < nframes; ++k) 
@@ -562,9 +612,12 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
       }
     }
   }
-  else if(srcChannels == 1 && dstChannels == 2) 
+  else if(srcChans == 1 && dstChannels == 2) 
   {
-    float* sp = buffer[0];
+    // p3.3.38
+    //float* sp = buffer[0];
+    float* sp = buffer[srcStartChan];
+    
     if(_prefader) 
     {
       for(int c = 0; c < dstChannels; ++c) 
@@ -592,10 +645,14 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
         _peak[0] = _meter[0];
     }
   }
-  else if(srcChannels == 2 && dstChannels == 1) 
+  else if(srcChans == 2 && dstChannels == 1) 
   {
-    float* sp1 = buffer[0];
-    float* sp2 = buffer[1];
+    // p3.3.38
+    //float* sp1 = buffer[0];
+    //float* sp2 = buffer[1];
+    float* sp1 = buffer[srcStartChan];
+    float* sp2 = buffer[srcStartChan + 1];
+    
     if(_prefader) 
     {
       float* dp = dstBuffer[0];
@@ -637,7 +694,8 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float
 //   addData
 //---------------------------------------------------------
 
-void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float** dstBuffer)
+//void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float** dstBuffer)
+void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int srcChannels, unsigned nframes, float** dstBuffer)
 {
   //Changed by T356. 12/12/09. 
   // Overhaul and streamline to eliminate multiple processing during one process loop.
@@ -656,7 +714,13 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
     return;
   } 
         
-  int srcChannels = channels();
+  if(srcStartChan == -1)
+    srcStartChan = 0;
+    
+  int srcChans = (srcChannels == -1) ? channels() : srcChannels;
+  int srcTotalOutChans = totalOutChannels();
+  if(channels() == 1)
+    srcTotalOutChans = 1;
   
   // Special consideration for metronome: It is not part of the track list,
   //  and it has no in or out routes, yet multiple output tracks may call addData on it !
@@ -666,7 +730,10 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
   
   int i;
   
-  float* buffer[srcChannels];
+  // p3.3.38
+  //float* buffer[srcChannels];
+  float* buffer[srcTotalOutChans];
+  
   //float data[nframes * srcChannels];
   //for (i = 0; i < srcChannels; ++i)
   //      buffer[i] = data + i * nframes;
@@ -677,7 +744,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
   double _pan = pan();
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);
-  float meter[srcChannels];
+  float meter[srcChans];
 
   // Have we been here already during this process cycle?
   if(processed())
@@ -692,7 +759,10 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
     if(_haveData)
     {
       // Point the input buffers at our local cached 'pre-volume' buffers. They need processing, so continue on after.
-      for(i = 0; i < srcChannels; ++i)
+      //for(i = 0; i < srcChannels; ++i)
+      //  buffer[i] = outBuffers[i];
+      // p3.3.38
+      for(i = 0; i < srcTotalOutChans; ++i)
         buffer[i] = outBuffers[i];
     }
     else
@@ -704,16 +774,23 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
     // First time here during this process cycle. 
     
     // Point the input buffers at a temporary stack buffer.
-    float data[nframes * srcChannels];
-    for(i = 0; i < srcChannels; ++i)
-      buffer[i] = data + i * nframes;
+    //float data[nframes * srcChannels];
+    //for(i = 0; i < srcChannels; ++i)
+    //  buffer[i] = data + i * nframes;
+    // p3.3.38
+    float data[nframes * srcTotalOutChans];
+    for(i = 0; i < srcTotalOutChans; ++i)
+        buffer[i] = data + i * nframes;
+  
     
     // getData can use the supplied buffers, or change buffer to point to its own local buffers or Jack buffers etc. 
     // For ex. if this is an audio input, Jack will set the pointers for us.
-    if(!getData(pos, srcChannels, nframes, buffer)) 
+    //if(!getData(pos, srcChannels, nframes, buffer)) 
+    // p3.3.38
+    if(!getData(pos, srcTotalOutChans, nframes, buffer)) 
     {
       // No data was available. Nothing to add, but zero our local buffers and the meters.
-      for(i = 0; i < srcChannels; ++i)
+      for(i = 0; i < srcChans; ++i)
       {
         // If we're using local buffers, we must zero them so that the next thing requiring them 
         //  during this process cycle will see zeros.
@@ -743,7 +820,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
     // apply plugin chain
     //---------------------------------------------------
 
-    _efxPipe->apply(srcChannels, nframes, buffer);
+    _efxPipe->apply(srcChans, nframes, buffer);
 
     //---------------------------------------------------
     // aux sends
@@ -761,9 +838,9 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
         AudioAux* a = (AudioAux*)((*al)[k]);
         float** dst = a->sendBuffer();
         int auxChannels = a->channels();
-        if((srcChannels ==1 && auxChannels==1) || srcChannels==2) 
+        if((srcChans ==1 && auxChannels==1) || srcChans==2) 
         {
-          for(int ch = 0; ch < srcChannels; ++ch) 
+          for(int ch = 0; ch < srcChans; ++ch) 
           {
             float* db = dst[ch % a->channels()];
             float* sb = buffer[ch];
@@ -771,7 +848,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
               *db++ += (*sb++ * m * vol[ch]);   // add to mix
           }
         }
-        else if(srcChannels == 1 && auxChannels == 2) 
+        else if(srcChans == 1 && auxChannels == 2) 
         {
           for(int ch = 0; ch < auxChannels; ++ch) 
           {
@@ -790,7 +867,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
 
     if(_prefader) 
     {
-      for(i = 0; i < srcChannels; ++i) 
+      for(i = 0; i < srcChans; ++i) 
       {
         float* p = buffer[i];
         meter[i] = 0.0;
@@ -835,7 +912,10 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
     // If we're using local cached 'pre-volume' buffers, copy the input buffers (as they are right now: post-effect pre-volume) back to them. 
     if(!usedirectbuf)
     {
-      for(i = 0; i < srcChannels; ++i)
+      //for(i = 0; i < srcChannels; ++i)
+      //  AL::dsp->cpy(outBuffers[i], buffer[i], nframes);
+      // p3.3.38
+      for(i = 0; i < srcTotalOutChans; ++i)
         AL::dsp->cpy(outBuffers[i], buffer[i], nframes);
     }
     
@@ -843,18 +923,42 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
     _haveData = true;
   }  
   
+  // Sanity check. Is source starting channel out of range? Just zero and return.
+  if(srcStartChan >= srcTotalOutChans) 
+  {
+    unsigned int q;
+    for(i = 0; i < dstChannels; ++i)
+    {
+      if(config.useDenormalBias) 
+      {
+        for(q = 0; q < nframes; q++)
+          dstBuffer[i][q] = denormalBias;
+      } 
+      else 
+        memset(dstBuffer[i], 0, sizeof(float) * nframes);
+    }        
+    _processed = true;
+    return;
+  }
+  // Force a source range to fit actual available total out channels.
+  if((srcStartChan + srcChans) > srcTotalOutChans) 
+    srcChans = srcTotalOutChans - srcStartChan;
+  
   //---------------------------------------------------
   // apply volume
   //    postfader metering
   //---------------------------------------------------
 
-  if(srcChannels == dstChannels) 
+  if(srcChans == dstChannels) 
   {
     if(_prefader) 
     {
       for(int c = 0; c < dstChannels; ++c) 
       {
-        float* sp = buffer[c];
+        // p3.3.38
+        //float* sp = buffer[c];
+        float* sp = buffer[c + srcStartChan];
+        
         float* dp = dstBuffer[c];
         for(unsigned k = 0; k < nframes; ++k)
           *dp++ += (*sp++ * vol[c]);
@@ -865,7 +969,10 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
       for(int c = 0; c < dstChannels; ++c) 
       {
         meter[c] = 0.0;
-        float* sp = buffer[c];
+        // p3.3.38
+        //float* sp = buffer[c];
+        float* sp = buffer[c + srcStartChan];
+        
         float* dp = dstBuffer[c];
         for(unsigned k = 0; k < nframes; ++k) 
         {
@@ -882,21 +989,24 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
       }
     }
   }
-  else if(srcChannels == 1 && dstChannels == 2) 
+  else if(srcChans == 1 && dstChannels == 2) 
   {
+    // p3.3.38
+    float* sp = buffer[srcStartChan];
+    
     if(_prefader) 
     {
       for(int c = 0; c < dstChannels; ++c) 
       {
         float* dp = dstBuffer[c];
-        float* sp = buffer[0];
+        //float* sp = buffer[0];
         for(unsigned k = 0; k < nframes; ++k)
           *dp++ += (*sp++ * vol[c]);
       }
     }
     else 
     {
-      float* sp = buffer[0];
+      //float* sp = buffer[0];
       meter[0]  = 0.0;
       for(unsigned k = 0; k < nframes; ++k) 
       {
@@ -913,10 +1023,14 @@ void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float*
         _peak[0] = _meter[0];
     }
   }
-  else if(srcChannels == 2 && dstChannels == 1) 
+  else if(srcChans == 2 && dstChannels == 1) 
   {
-    float* sp1 = buffer[0];
-    float* sp2 = buffer[1];
+    // p3.3.38
+    //float* sp1 = buffer[0];
+    //float* sp2 = buffer[1];
+    float* sp1 = buffer[srcStartChan];
+    float* sp2 = buffer[srcStartChan + 1];
+    
     if(_prefader) 
     {
       float* dp = dstBuffer[0];
@@ -1096,7 +1210,6 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
 
       RouteList* rl = inRoutes();
       
-      // Added by Tim. p3.3.16
       #ifdef NODE_DEBUG
       printf("AudioTrack::getData name:%s inRoutes:%d\n", name().latin1(), rl->size());
       #endif
@@ -1105,20 +1218,37 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       if (ir == rl->end())
             return false;
       
-      // Added by Tim. p3.3.16
+      if(ir->track->isMidiTrack())
+        return false;
+        
       #ifdef NODE_DEBUG
       printf("    calling copyData on %s...\n", ir->track->name().latin1());
       #endif
       
-      ir->track->copyData(pos, channels, nframes, buffer);
+      // p3.3.38
+      //((AudioTrack*)ir->track)->copyData(pos, channels, nframes, buffer);
+      ((AudioTrack*)ir->track)->copyData(pos, channels, 
+                                         //(ir->track->type() == Track::AUDIO_SOFTSYNTH && ir->channel != -1) ? ir->channel : 0,
+                                         ir->channel,
+                                         ir->channels,
+                                         nframes, buffer);
+      
       ++ir;
       for (; ir != rl->end(); ++ir) {
-            // Added by Tim. p3.3.16
             #ifdef NODE_DEBUG
             printf("    calling addData on %s...\n", ir->track->name().latin1());
             #endif
               
-            ir->track->addData(pos, channels, nframes, buffer);
+            if(ir->track->isMidiTrack())
+              continue;
+              
+            // p3.3.38
+            //((AudioTrack*)ir->track)->addData(pos, channels, nframes, buffer);
+            ((AudioTrack*)ir->track)->addData(pos, channels, 
+                                              //(ir->track->type() == Track::AUDIO_SOFTSYNTH && ir->channel != -1) ? ir->channel : 0,
+                                              ir->channel,
+                                              ir->channels,
+                                              nframes, buffer);
             }
       return true;
       }
@@ -1368,7 +1498,7 @@ void AudioOutput::processInit(unsigned nframes)
 //---------------------------------------------------------
 
 void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
-      {
+{
       //Added by Tim. p3.3.16
       #ifdef NODE_DEBUG
       printf("MusE: AudioOutput::process name:%s processed:%d\n", name().latin1(), processed());
@@ -1377,8 +1507,11 @@ void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
       for (int i = 0; i < _channels; ++i) {
             buffer1[i] = buffer[i] + offset;
       }
-      copyData(pos, _channels, n, buffer1);
-      }
+      
+      // p3.3.38
+      //copyData(pos, _channels, n, buffer1);
+      copyData(pos, _channels, -1, -1, n, buffer1);
+}
 
 //---------------------------------------------------------
 //   silence
@@ -1427,7 +1560,9 @@ void AudioOutput::processWrite()
             printf("MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n", audio->pos().frame(), _channels, _nframes);
             #endif
     
-            metronome->addData(audio->pos().frame(), _channels, _nframes, buffer);
+            // p3.3.38
+            //metronome->addData(audio->pos().frame(), _channels, _nframes, buffer);
+            metronome->addData(audio->pos().frame(), _channels, -1, -1, _nframes, buffer);
             }
       }
 //---------------------------------------------------------
@@ -1605,4 +1740,54 @@ void AudioTrack::setChannels(int n)
       if (_efxPipe)
             _efxPipe->setChannels(n);
       }
+
+//---------------------------------------------------------
+//   setTotalOutChannels
+//---------------------------------------------------------
+
+void AudioTrack::setTotalOutChannels(int num)
+{
+      if(num == _totalOutChannels)
+        return;
+        
+      int chans = _totalOutChannels;
+      // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
+      if(chans < MAX_CHANNELS)
+        chans = MAX_CHANNELS;
+      for(int i = 0; i < chans; ++i) 
+      {
+        if(outBuffers[i])
+          free(outBuffers[i]);
+      }
+      delete[] outBuffers;
+      
+      _totalOutChannels = num;
+      chans = num;
+      // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
+      if(chans < MAX_CHANNELS)
+        chans = MAX_CHANNELS;
+        
+      outBuffers = new float*[chans];
+      for (int i = 0; i < chans; ++i)
+            posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * segmentSize);
+      
+      chans = num;
+      // Limit the actual track (meters, copying etc, all 'normal' operation) to two-channel stereo.
+      if(chans > MAX_CHANNELS)
+        chans = MAX_CHANNELS;
+      
+      setChannels(chans);
+}
+
+//---------------------------------------------------------
+//   setTotalInChannels
+//---------------------------------------------------------
+
+void AudioTrack::setTotalInChannels(int num)
+{
+      if(num == _totalInChannels)
+        return;
+        
+      _totalInChannels = num;
+}
 

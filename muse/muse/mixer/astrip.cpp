@@ -21,6 +21,7 @@
 #include <qcursor.h>
 #include <qmenudata.h>
 #include <qpainter.h>
+#include <qstring.h>
 
 #include "globals.h"
 #include "audio.h"
@@ -122,9 +123,6 @@ void AudioStrip::heartBeat()
 
 void AudioStrip::configChanged()    
 { 
-  // Added by Tim. p3.3.6
-  //printf("AudioStrip::configChanged\n");
-      
   songChanged(SC_CONFIG); 
 }
 
@@ -962,137 +960,1399 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       }
 
 //---------------------------------------------------------
+//   addMenuItem
+//---------------------------------------------------------
+
+static int addMenuItem(QButton* /*parent*/, AudioTrack* track, Track* route_track, QPopupMenu* lb, int id, RouteMenuMap& mm, int channel, int channels, bool isOutput)
+{
+  // totalInChannels is only used by syntis.
+  //int channels = (!isOutput || route_track->type() != Track::AUDIO_SOFTSYNTH) ? ((AudioTrack*)route_track)->totalOutChannels() : ((AudioTrack*)route_track)->totalInChannels();
+  //int channels = (!isOutput || track->type() != Track::AUDIO_SOFTSYNTH) ? ((AudioTrack*)track)->totalOutChannels() : ((AudioTrack*)track)->totalInChannels();
+  int toch = ((AudioTrack*)track)->totalOutChannels();
+  // If track channels = 1, it must be a mono synth. And synti channels cannot be changed by user.
+  if(track->channels() == 1)
+    toch = 1;
+  
+  // totalInChannels is only used by syntis.
+  int chans = (isOutput || track->type() != Track::AUDIO_SOFTSYNTH) ? toch : ((AudioTrack*)track)->totalInChannels();
+  
+  // Don't add the last stray mono route if the track is stereo.
+  //if(route_track->channels() > 1 && (channel+1 == chans))
+  //  return id;
+    
+  RouteList* rl = isOutput ? track->outRoutes() : track->inRoutes();
+  
+  QString s(route_track->name());
+  //int trackchans = track->channels();
+  //QString ns;
+  
+  //if(track->channels() > 1 && (channel+1 < channels))
+  //if(track->channels() > 1)
+  //if(route_track->type() == Track::AUDIO_SOFTSYNTH && channels > 2 && track->channels() > 1)
+  ///if(track->type() == Track::AUDIO_SOFTSYNTH && chans > 2 && route_track->channels() > 1)
+  ///  s += QString(" < [%1,%2]").arg(channel+1).arg(channel+2);
+  
+  //int it = lb->insertItem(s);
+  lb->insertItem(s, id);
+  
+  int ach = channel;
+  int bch = -1;
+  
+  Route r(route_track, isOutput ? ach : bch, channels);
+  //Route r(route_track, channel);
+  
+  r.remoteChannel = isOutput ? bch : ach;
+  
+  mm.insert( pRouteMenuMap(id, r) );
+  
+  for(iRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+  {
+    //if (ir->type == 0 && ir->track == track) {
+    //if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->channels == channels) 
+    //if(ir->type == Route::TRACK_ROUTE && ir->track == track && 
+    //   (channel != -1 && ir->channel == channel) && (channels != -1 && ir->channels == channels)) 
+    //if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->channel == channel) 
+    //printf("addMenuItem: ir->type:%d ir->track:%s track:%s ir->channel:%d channel:%d ir->channels:%d channels:%d\n",
+    //       ir->type, ir->track->name().latin1(), track->name().latin1(), ir->channel, channel, ir->channels, channels);
+    //if(ir->type == Route::TRACK_ROUTE && ir->track == route_track && ir->channel == channel && ir->remoteChannel == r.remoteChannel) 
+    //if(*ir == r)
+    //if(ir->type == Route::TRACK_ROUTE && ir->track == route_track && ir->channel == channel && ir->channels == channels && ir->remoteChannel == r.remoteChannel) 
+    
+    if(ir->type == Route::TRACK_ROUTE && ir->track == route_track && ir->remoteChannel == r.remoteChannel)
+    {
+      int tcompch = r.channel;
+      if(tcompch == -1)
+        tcompch = 0;
+      int tcompchs = r.channels;
+      if(tcompchs == -1)
+        tcompchs = isOutput ? track->channels() : route_track->channels();
+      
+      int compch = ir->channel;
+      if(compch == -1)
+        compch = 0;
+      int compchs = ir->channels;
+      if(compchs == -1)
+        compchs = isOutput ? track->channels() : ir->track->channels();
+      
+      //if(ir->type == Route::TRACK_ROUTE && ir->track == route_track && ir->channel == r.channel && ir->channels == r.channels && ir->remoteChannel == r.remoteChannel) 
+      if(compch == tcompch && compchs == tcompchs) 
+      {
+        //lb->setItemChecked(it, true);
+        lb->setItemChecked(id, true);
+        break;
+      }
+    }  
+  }
+  return ++id;      
+}
+
+//---------------------------------------------------------
 //   addAuxPorts
 //---------------------------------------------------------
 
-static void addAuxPorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
+//static void addAuxPorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
+static int addAuxPorts(QButton* parent, AudioTrack* t, QPopupMenu* lb, int id, RouteMenuMap& mm, int channel, int channels, bool isOutput)
       {
       AuxList* al = song->auxs();
       for (iAudioAux i = al->begin(); i != al->end(); ++i) {
             Track* track = *i;
             if (t == track)
                   continue;
+            id = addMenuItem(parent, t, track, lb, id, mm, channel, channels, isOutput);
+            
+            /*
             QString s(track->name());
-            int it = lb->insertItem(s);
+            //int it = lb->insertItem(s);
+            lb->insertItem(s, id);
             for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (ir->type == 0 && ir->track == track) {
-                        lb->setItemChecked(it, true);
+                  //if (ir->type == 0 && ir->track == track) {
+                  if (ir->type == 0 && ir->track == track && ir->channels == channels) {
+                        //lb->setItemChecked(it, true);
+                        lb->setItemChecked(id, true);
                         break;
                         }
                   }
+            ++id;      
+            */      
+            
             }
+      return id;      
       }
 
 //---------------------------------------------------------
 //   addInPorts
 //---------------------------------------------------------
 
-static void addInPorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
+//static void addInPorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
+static int addInPorts(QButton* parent, AudioTrack* t, QPopupMenu* lb, int id, RouteMenuMap& mm, int channel, int channels, bool isOutput)
       {
       InputList* al = song->inputs();
       for (iAudioInput i = al->begin(); i != al->end(); ++i) {
             Track* track = *i;
             if (t == track)
                   continue;
+            id = addMenuItem(parent, t, track, lb, id, mm, channel, channels, isOutput);
+            
+            /*
             QString s(track->name());
-            int it = lb->insertItem(s);
+            //int it = lb->insertItem(s);
+            lb->insertItem(s, id);
             for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (ir->type == 0 && ir->track == track) {
-                        lb->setItemChecked(it, true);
+                  //if (ir->type == 0 && ir->track == track) {
+                  if (ir->type == 0 && ir->track == track && ir->channels == channels) {
+                        //lb->setItemChecked(it, true);
+                        lb->setItemChecked(id, true);
                         break;
                         }
                   }
+            ++id;      
+            */
+            
             }
+      return id;      
       }
 
 //---------------------------------------------------------
 //   addOutPorts
 //---------------------------------------------------------
 
-static void addOutPorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
+//static void addOutPorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
+static int addOutPorts(QButton* parent, AudioTrack* t, QPopupMenu* lb, int id, RouteMenuMap& mm, int channel, int channels, bool isOutput)
       {
       OutputList* al = song->outputs();
       for (iAudioOutput i = al->begin(); i != al->end(); ++i) {
             Track* track = *i;
             if (t == track)
                   continue;
+            id = addMenuItem(parent, t, track, lb, id, mm, channel, channels, isOutput);
+            
+            /*
             QString s(track->name());
-            int it = lb->insertItem(s);
+            //int it = lb->insertItem(s);
+            lb->insertItem(s, id);
             for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (ir->type == 0 && ir->track == track) {
-                        lb->setItemChecked(it, true);
+                  //if (ir->type == 0 && ir->track == track) {
+                  if (ir->type == 0 && ir->track == track && ir->channels == channels) {
+                        //lb->setItemChecked(it, true);
+                        lb->setItemChecked(id, true);
                         break;
                         }
                   }
+            ++id;      
+            */
+            
             }
+      return id;      
       }
 
 //---------------------------------------------------------
 //   addGroupPorts
 //---------------------------------------------------------
 
-static void addGroupPorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
+//static void addGroupPorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
+static int addGroupPorts(QButton* parent, AudioTrack* t, QPopupMenu* lb, int id, RouteMenuMap& mm, int channel, int channels, bool isOutput)
       {
       GroupList* al = song->groups();
       for (iAudioGroup i = al->begin(); i != al->end(); ++i) {
             Track* track = *i;
             if (t == track)
                   continue;
+            id = addMenuItem(parent, t, track, lb, id, mm, channel, channels, isOutput);
+            
+            /*
             QString s(track->name());
-            int it = lb->insertItem(s);
+            //int it = lb->insertItem(s);
+            lb->insertItem(s, id);
             for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (ir->type == 0 && ir->track == track) {
-                        lb->setItemChecked(it, true);
+                  //if (ir->type == 0 && ir->track == track) {
+                  if (ir->type == 0 && ir->track == track && ir->channels == channels) {
+                        //lb->setItemChecked(it, true);
+                        lb->setItemChecked(id, true);
                         break;
                         }
                   }
+            ++id;      
+            */
+            
             }
+      return id;      
       }
 
 //---------------------------------------------------------
 //   addWavePorts
 //---------------------------------------------------------
 
-static void addWavePorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
+//static void addWavePorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
+static int addWavePorts(QButton* parent, AudioTrack* t, QPopupMenu* lb, int id, RouteMenuMap& mm, int channel, int channels, bool isOutput)
       {
       WaveTrackList* al = song->waves();
       for (iWaveTrack i = al->begin(); i != al->end(); ++i) {
             Track* track = *i;
             if (t == track)
                   continue;
+            id = addMenuItem(parent, t, track, lb, id, mm, channel, channels, isOutput);
+            
+            /*
             QString s(track->name());
-            int it = lb->insertItem(s);
+            //int it = lb->insertItem(s);
+            lb->insertItem(s, id);
             for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (ir->type == 0 && ir->track == track) {
-                        lb->setItemChecked(it, true);
+                  //if (ir->type == 0 && ir->track == track) {
+                  if (ir->type == 0 && ir->track == track && ir->channels == channels) {
+                        //lb->setItemChecked(it, true);
+                        lb->setItemChecked(id, true);
                         break;
                         }
                   }
+            ++id;      
+            */
+            
             }
+      return id;      
       }
 
 //---------------------------------------------------------
 //   addSyntiPorts
 //---------------------------------------------------------
 
-static void addSyntiPorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
-      {
+//static void addSyntiPorts(AudioTrack* t, QPopupMenu* lb, RouteList* r)
+static int addSyntiPorts(QButton* parent, AudioTrack* t, QPopupMenu* lb, int id, RouteMenuMap& mm, int channel, int channels, bool isOutput)
+{
+      RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
+      
       SynthIList* al = song->syntis();
-      for (iSynthI i = al->begin(); i != al->end(); ++i) {
+      for (iSynthI i = al->begin(); i != al->end(); ++i) 
+      {
             Track* track = *i;
             if (t == track)
                   continue;
+            //id = addMenuItem(parent, track, lb, r, id, mm, channel, channels);
+            
+            /*
             QString s(track->name());
-            int it = lb->insertItem(s);
+            //int it = lb->insertItem(s);
+            lb->insertItem(s, id);
             for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
-                  if (ir->type == 0 && ir->track == track) {
-                        lb->setItemChecked(it, true);
+                  //if (ir->type == 0 && ir->track == track) {
+                  if (ir->type == 0 && ir->track == track && ir->channels == channels) {
+                        //lb->setItemChecked(it, true);
+                        lb->setItemChecked(id, true);
                         break;
                         }
                   }
+            ++id;      
+            */
+            
+            //SynthI* synti = (SynthI*)track;
+            
+            int toch = ((AudioTrack*)track)->totalOutChannels();
+            // If track channels = 1, it must be a mono synth. And synti channels cannot be changed by user.
+            if(track->channels() == 1)
+              toch = 1;
+            
+            //int chans = synti->totalOutChannels();
+            //int chans = (!isOutput || track->type() != Track::AUDIO_SOFTSYNTH) ? ((AudioTrack*)track)->totalOutChannels() : ((AudioTrack*)track)->totalInChannels();
+            // totalInChannels is only used by syntis.
+            int chans = (!isOutput || track->type() != Track::AUDIO_SOFTSYNTH) ? toch : ((AudioTrack*)track)->totalInChannels();
+            
+            //int schans = synti->channels();
+            //if(schans < chans)
+            //  chans = schans;
+            int tchans = (channels != -1) ? channels: t->channels();
+            if(tchans == 2)
+            {
+              // Ignore odd numbered left-over mono channel.
+              //chans = chans & ~1;
+              //if(chans != 0)
+                chans -= 1;
+            }
+            
+            if(chans > 0)
+            {
+              QPopupMenu* chpup = new QPopupMenu(parent);
+              chpup->setCheckable(true);
+              for(int ch = 0; ch < chans; ++ch)
+              {
+                char buffer[128];
+                if(tchans == 2)
+                  snprintf(buffer, 128, "%s %d,%d", chpup->tr("Channel").latin1(), ch+1, ch+2);
+                else  
+                  snprintf(buffer, 128, "%s %d", chpup->tr("Channel").latin1(), ch+1);
+                chpup->insertItem(QString(buffer), id);
+                
+                int ach = (channel == -1) ? ch : channel;
+                int bch = (channel == -1) ? -1 : ch;
+                
+                Route rt(track, (t->type() != Track::AUDIO_SOFTSYNTH || isOutput) ? ach : bch, tchans);
+                //Route rt(track, ch);
+                //rt.remoteChannel = -1;
+                rt.remoteChannel = (t->type() != Track::AUDIO_SOFTSYNTH || isOutput) ? bch : ach;
+                
+                mm.insert( pRouteMenuMap(id, rt) );
+                
+                for(iRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+                {
+                  //if (ir->type == 0 && ir->track == track) {
+                  //if(ir->type == 0 && ir->track == track && ir->channels == channels) 
+                  //if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->channel == channel && 
+                  //   ir->channels == channels && ir->remoteChannel == r.remoteChannel) 
+                  //if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->channel == ch && 
+                  //   ir->remoteChannel == rt.remoteChannel) 
+                  //if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->channel == rt.channel && 
+                  //   ir->channels == rt.channels && ir->remoteChannel == rt.remoteChannel) 
+                  
+                  if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->remoteChannel == rt.remoteChannel)
+                  {
+                    int tcompch = rt.channel;
+                    if(tcompch == -1)
+                      tcompch = 0;
+                    int tcompchs = rt.channels;
+                    if(tcompchs == -1)
+                      tcompchs = isOutput ? t->channels() : track->channels();
+                    
+                    int compch = ir->channel;
+                    if(compch == -1)
+                      compch = 0;
+                    int compchs = ir->channels;
+                    if(compchs == -1)
+                      compchs = isOutput ? t->channels() : ir->track->channels();
+                    
+                    if(compch == tcompch && compchs == tcompchs) 
+                    {
+                      chpup->setItemChecked(id, true);
+                      break;
+                    }
+                  }
+                }  
+                ++id;
+              }
+            
+              lb->insertItem(track->name(), chpup);
             }
       }
+      return id;      
+}
 
+//---------------------------------------------------------
+//   addMultiChannelOutPorts
+//---------------------------------------------------------
+
+static int addMultiChannelPorts(QButton* parent, AudioTrack* t, QPopupMenu* pup, int id, RouteMenuMap& mm, bool isOutput)
+{
+  int toch = t->totalOutChannels();
+  // If track channels = 1, it must be a mono synth. And synti channels cannot be changed by user.
+  if(t->channels() == 1)
+    toch = 1;
+  
+  // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
+  //int chans = t->totalOutChannels();  
+  // totalInChannels is only used by syntis.
+  //int chans = isOutput ? t->totalOutChannels() : t->totalInChannels();
+  //int chans = (isOutput || t->type() != Track::AUDIO_SOFTSYNTH) ? t->totalOutChannels() : t->totalInChannels();
+  int chans = (isOutput || t->type() != Track::AUDIO_SOFTSYNTH) ? toch : t->totalInChannels();
+
+  // If track channels = 1, it must be a mono synth. And synti channels cannot be changed by user.
+  //if(t->channels() == 1)
+  //  chans = 1;
+  
+  if(chans > 1)
+  {
+    pup->insertItem(new MenuTitleItem("<Mono>"));
+    //pup->insertSeparator();
+  }
+  
+  //
+  // If it's more than one channel, create a sub-menu. If it's just one channel, don't bother with a sub-menu...
+  //
+
+  QPopupMenu* chpup = pup;
+  
+  for(int ch = 0; ch < chans; ++ch)
+  {
+    // If more than one channel, create the sub-menu.
+    if(chans > 1)
+    {
+      chpup = new QPopupMenu(parent);
+      chpup->setCheckable(true);
+    }
+    
+    if(isOutput)
+    {
+      switch(t->type()) 
+      {
+        
+        case Track::AUDIO_INPUT:
+              id = addWavePorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+        case Track::WAVE:
+        case Track::AUDIO_GROUP:
+        case Track::AUDIO_SOFTSYNTH:
+              id = addOutPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              id = addGroupPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              id = addSyntiPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              break;
+        case Track::AUDIO_AUX:
+              id = addOutPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              break;
+        default:
+              break;
+        
+        /*
+        case Track::AUDIO_INPUT:
+               id = addWavePorts(parent, t, chpup, id, mm, ch, isOutput);
+        case Track::WAVE:
+        case Track::AUDIO_GROUP:
+        case Track::AUDIO_SOFTSYNTH:
+              id = addOutPorts(parent, t, chpup, id, mm, ch, isOutput);
+              id = addGroupPorts(parent, t, chpup, id, mm, ch, isOutput);
+              id = addSyntiPorts(parent, t, chpup, id, mm, ch, isOutput);
+              break;
+        case Track::AUDIO_AUX:
+              id = addOutPorts(parent, t, chpup, id, mm, ch, isOutput);
+              break;
+        default:
+              break;
+        */      
+      }
+    }
+    else
+    {
+      switch(t->type()) 
+      {
+        
+        case Track::AUDIO_OUTPUT:
+              id = addWavePorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              id = addInPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              id = addGroupPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              id = addAuxPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              id = addSyntiPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              break;
+        case Track::WAVE:
+              id = addInPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              break;
+        case Track::AUDIO_SOFTSYNTH:
+        case Track::AUDIO_GROUP:
+              id = addWavePorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              id = addInPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              id = addGroupPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              id = addSyntiPorts(parent, t, chpup, id, mm, ch, 1, isOutput);
+              break;
+        default:
+              break;
+        
+        /*
+        case Track::AUDIO_OUTPUT:
+              id = addWavePorts(parent, t, chpup, id, mm, ch, isOutput);
+              id = addInPorts(parent, t, chpup, id, mm, ch, isOutput);
+              id = addGroupPorts(parent, t, chpup, id, mm, ch, isOutput);
+              id = addAuxPorts(parent, t, chpup, id, mm, ch, isOutput);
+              id = addSyntiPorts(parent, t, chpup, id, mm, ch, isOutput);
+              break;
+        case Track::WAVE:
+              id = addInPorts(parent, t, chpup, id, mm, ch, isOutput);
+              break;
+        case Track::AUDIO_SOFTSYNTH:
+        case Track::AUDIO_GROUP:
+              id = addWavePorts(parent, t, chpup, id, mm, ch, isOutput);
+              id = addInPorts(parent, t, chpup, id, mm, ch, isOutput);
+              id = addGroupPorts(parent, t, chpup, id, mm, ch, isOutput);
+              id = addSyntiPorts(parent, t, chpup, id, mm, ch, isOutput);
+              break;
+        default:
+              break;
+       */       
+      }
+    }
+      
+    // If more than one channel, add the created sub-menu.
+    if(chans > 1)
+    {
+      char buffer[128];
+      snprintf(buffer, 128, "%s %d", pup->tr("Channel").latin1(), ch+1);
+      pup->insertItem(QString(buffer), chpup);
+    }  
+  } 
+       
+  // For stereo listing, ignore odd numbered left-over channels.
+  chans -= 1;
+  if(chans > 0)
+  {
+    // Ignore odd numbered left-over channels.
+    //int schans = (chans & ~1) - 1;
+    
+    pup->insertSeparator();
+    pup->insertItem(new MenuTitleItem("<Stereo>"));
+    //pup->insertSeparator();
+  
+    //
+    // If it's more than two channels, create a sub-menu. If it's just two channels, don't bother with a sub-menu...
+    //
+    
+    //QPopupMenu* chpup = pup;
+    chpup = pup;
+    if(chans <= 2)
+      // Just do one iteration.
+      chans = 1;
+    
+    //for(int ch = 0; ch < schans; ++ch)
+    for(int ch = 0; ch < chans; ++ch)
+    {
+      // If more than two channels, create the sub-menu.
+      if(chans > 2)
+      {
+        chpup = new QPopupMenu(parent);
+        chpup->setCheckable(true);
+      }
+      
+      if(isOutput)
+      {
+        switch(t->type()) 
+        {
+          case Track::AUDIO_INPUT:
+                id = addWavePorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+          case Track::WAVE:
+          case Track::AUDIO_GROUP:
+          case Track::AUDIO_SOFTSYNTH:
+                id = addOutPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                id = addGroupPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                id = addSyntiPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                break;
+          case Track::AUDIO_AUX:
+                id = addOutPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                break;
+          default:
+                break;
+        }
+      }    
+      else
+      {
+        switch(t->type()) 
+        {
+          case Track::AUDIO_OUTPUT:
+                id = addWavePorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                id = addInPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                id = addGroupPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                id = addAuxPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                id = addSyntiPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                break;
+          case Track::WAVE:
+                id = addInPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                break;
+          case Track::AUDIO_SOFTSYNTH:
+          case Track::AUDIO_GROUP:
+                id = addWavePorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                id = addInPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                id = addGroupPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                id = addSyntiPorts(parent, t, chpup, id, mm, ch, 2, isOutput);
+                break;
+          default:
+                break;
+        }
+      }
+      
+      // If more than two channels, add the created sub-menu.
+      if(chans > 2)
+      {
+        char buffer[128];
+        snprintf(buffer, 128, "%s %d,%d", pup->tr("Channel").latin1(), ch+1, ch+2);
+        pup->insertItem(QString(buffer), chpup);
+      }  
+    } 
+  }
+  
+  return id;
+}
+
+//---------------------------------------------------------
+//   nonSyntiTrackAddSyntis
+//---------------------------------------------------------
+
+//static int nonSyntiTrackAddSyntis(QButton* parent, AudioTrack* t, QPopupMenu* lb, int id, RouteMenuMap& mm, int channel, int channels, bool isOutput)
+static int nonSyntiTrackAddSyntis(QButton* parent, AudioTrack* t, QPopupMenu* lb, int id, RouteMenuMap& mm, bool isOutput)
+{
+      RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
+      
+      SynthIList* al = song->syntis();
+      for (iSynthI i = al->begin(); i != al->end(); ++i) 
+      {
+            Track* track = *i;
+            if (t == track)
+                  continue;
+            //id = addMenuItem(parent, track, lb, r, id, mm, channel, channels);
+            
+            /*
+            QString s(track->name());
+            //int it = lb->insertItem(s);
+            lb->insertItem(s, id);
+            for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
+                  //if (ir->type == 0 && ir->track == track) {
+                  if (ir->type == 0 && ir->track == track && ir->channels == channels) {
+                        //lb->setItemChecked(it, true);
+                        lb->setItemChecked(id, true);
+                        break;
+                        }
+                  }
+            ++id;      
+            */
+            
+            //SynthI* synti = (SynthI*)track;
+            
+            int toch = ((AudioTrack*)track)->totalOutChannels();
+            // If track channels = 1, it must be a mono synth. And synti channels cannot be changed by user.
+            if(track->channels() == 1)
+              toch = 1;
+            
+            //int chans = synti->totalOutChannels();
+            //int chans = (!isOutput || track->type() != Track::AUDIO_SOFTSYNTH) ? ((AudioTrack*)track)->totalOutChannels() : ((AudioTrack*)track)->totalInChannels();
+            // totalInChannels is only used by syntis.
+            int chans = (!isOutput || track->type() != Track::AUDIO_SOFTSYNTH) ? toch : ((AudioTrack*)track)->totalInChannels();
+            
+            //int schans = synti->channels();
+            //if(schans < chans)
+            //  chans = schans;
+//            int tchans = (channels != -1) ? channels: t->channels();
+//            if(tchans == 2)
+//            {
+              // Ignore odd numbered left-over mono channel.
+              //chans = chans & ~1;
+              //if(chans != 0)
+//                chans -= 1;
+//            }
+            //int tchans = (channels != -1) ? channels: t->channels();
+            
+            if(chans > 0)
+            {
+              QPopupMenu* chpup = new QPopupMenu(parent);
+              chpup->setCheckable(true);
+              
+              if(chans > 1)
+              {
+                chpup->insertItem(new MenuTitleItem("<Mono>"));
+                //pup->insertSeparator();
+              }
+              
+              for(int ch = 0; ch < chans; ++ch)
+              {
+                char buffer[128];
+                //if(tchans == 2)
+                //  snprintf(buffer, 128, "%s %d,%d", chpup->tr("Channel").latin1(), ch+1, ch+2);
+                //else  
+                  snprintf(buffer, 128, "%s %d", chpup->tr("Channel").latin1(), ch+1);
+                chpup->insertItem(QString(buffer), id);
+                
+                //int ach = (channel == -1) ? ch : channel;
+                //int bch = (channel == -1) ? -1 : ch;
+                int ach = ch;
+                int bch = -1;
+                
+                //Route rt(track, (t->type() != Track::AUDIO_SOFTSYNTH || isOutput) ? ach : bch, tchans);
+                Route rt(track, isOutput ? bch : ach, 1);
+                //Route rt(track, ch);
+                
+                //rt.remoteChannel = -1;
+                //rt.remoteChannel = (t->type() != Track::AUDIO_SOFTSYNTH || isOutput) ? bch : ach;
+                rt.remoteChannel = isOutput ? ach : bch;
+                
+                mm.insert( pRouteMenuMap(id, rt) );
+                
+                for(iRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+                {
+                  //if (ir->type == 0 && ir->track == track) {
+                  //if(ir->type == 0 && ir->track == track && ir->channels == channels) 
+                  //if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->channel == channel && 
+                  //   ir->channels == channels && ir->remoteChannel == r.remoteChannel) 
+                  //if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->channel == ch && 
+                  //   ir->remoteChannel == rt.remoteChannel) 
+                  //if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->channel == rt.channel && 
+                  //   ir->channels == rt.channels && ir->remoteChannel == rt.remoteChannel) 
+                  
+                  if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->remoteChannel == rt.remoteChannel)
+                  {
+                    int tcompch = rt.channel;
+                    if(tcompch == -1)
+                      tcompch = 0;
+                    int tcompchs = rt.channels;
+                    if(tcompchs == -1)
+                      tcompchs = isOutput ? t->channels() : track->channels();
+                    
+                    int compch = ir->channel;
+                    if(compch == -1)
+                      compch = 0;
+                    int compchs = ir->channels;
+                    if(compchs == -1)
+                      compchs = isOutput ? t->channels() : ir->track->channels();
+                    
+                    if(compch == tcompch && compchs == tcompchs) 
+                    {
+                      chpup->setItemChecked(id, true);
+                      break;
+                    }
+                  }
+                }
+                ++id;
+              }
+            
+              chans -= 1;
+              if(chans > 0)
+              {
+                // Ignore odd numbered left-over channels.
+                //int schans = (chans & ~1) - 1;
+                
+                chpup->insertSeparator();
+                chpup->insertItem(new MenuTitleItem("<Stereo>"));
+                //pup->insertSeparator();
+              
+                for(int ch = 0; ch < chans; ++ch)
+                {
+                  char buffer[128];
+                  //if(tchans == 2)
+                    snprintf(buffer, 128, "%s %d,%d", chpup->tr("Channel").latin1(), ch+1, ch+2);
+                  //else  
+                  //  snprintf(buffer, 128, "%s %d", chpup->tr("Channel").latin1(), ch+1);
+                  chpup->insertItem(QString(buffer), id);
+                  
+                  //int ach = (channel == -1) ? ch : channel;
+                  //int bch = (channel == -1) ? -1 : ch;
+                  int ach = ch;
+                  int bch = -1;
+                  
+                  //Route rt(track, (t->type() != Track::AUDIO_SOFTSYNTH || isOutput) ? ach : bch, tchans);
+                  Route rt(track, isOutput ? bch : ach, 2);
+                  //Route rt(track, ch);
+                  
+                  //rt.remoteChannel = -1;
+                  //rt.remoteChannel = (t->type() != Track::AUDIO_SOFTSYNTH || isOutput) ? bch : ach;
+                  rt.remoteChannel = isOutput ? ach : bch;
+                  
+                  mm.insert( pRouteMenuMap(id, rt) );
+                  
+                  for(iRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+                  {
+                    //if (ir->type == 0 && ir->track == track) {
+                    //if(ir->type == 0 && ir->track == track && ir->channels == channels) 
+                    //if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->channel == channel && 
+                    //   ir->channels == channels && ir->remoteChannel == r.remoteChannel) 
+                    //if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->channel == ch && 
+                    //   ir->remoteChannel == rt.remoteChannel) 
+                    //if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->channel == rt.channel && 
+                    //  ir->channels == rt.channels && ir->remoteChannel == rt.remoteChannel) 
+                    
+                    
+                    if(ir->type == Route::TRACK_ROUTE && ir->track == track && ir->remoteChannel == rt.remoteChannel)
+                    {
+                      int tcompch = rt.channel;
+                      if(tcompch == -1)
+                        tcompch = 0;
+                      int tcompchs = rt.channels;
+                      if(tcompchs == -1)
+                        tcompchs = isOutput ? t->channels() : track->channels();
+                      
+                      int compch = ir->channel;
+                      if(compch == -1)
+                        compch = 0;
+                      int compchs = ir->channels;
+                      if(compchs == -1)
+                        compchs = isOutput ? t->channels() : ir->track->channels();
+                      
+                      if(compch == tcompch && compchs == tcompchs) 
+                      {
+                        chpup->setItemChecked(id, true);
+                        break;
+                      }
+                    }  
+                  }
+                  ++id;
+                }
+              }
+              
+              lb->insertItem(track->name(), chpup);
+            }
+      }
+      return id;      
+}
+
+//---------------------------------------------------------
+//   iRoutePressed
+//---------------------------------------------------------
+
+void AudioStrip::iRoutePressed()
+      {
+      //if(track->isMidiTrack() || (track->type() == Track::AUDIO_AUX) || (track->type() == Track::AUDIO_SOFTSYNTH))
+      if(track->isMidiTrack() || (track->type() == Track::AUDIO_AUX))
+        return;
+        
+      QPopupMenu* pup = new QPopupMenu(iR);
+      //pup->setCheckable(true);
+      AudioTrack* t = (AudioTrack*)track;
+      RouteList* irl = t->inRoutes();
+
+      int gid = 0;
+      RouteMenuMap mm;
+      
+      switch(track->type()) 
+      {
+        case Track::AUDIO_INPUT:
+        {
+          pup->setCheckable(true);
+          //int gid = 0;
+          for(int i = 0; i < channel; ++i) 
+          {
+            char buffer[128];
+            snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+            MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
+            pup->insertItem(titel);
+  
+            if(!checkAudioDevice())
+            { 
+              delete pup;
+              return;
+            }
+            std::list<QString> ol = audioDevice->outputPorts();
+            for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) 
+            {
+              int id = pup->insertItem(*ip, (gid * 16) + i);
+              //Route dst(*ip, true, i);
+              Route dst(*ip, true, i, Route::JACK_ROUTE);
+              ++gid;
+              for(iRoute ir = irl->begin(); ir != irl->end(); ++ir) 
+              {
+                if(*ir == dst) 
+                {
+                  pup->setItemChecked(id, true);
+                  break;
+                }
+              }
+            }
+            if(i+1 != channel)
+              pup->insertSeparator();
+          }
+        }
+        break;
+        /*
+        case Track::AUDIO_OUTPUT:
+        case Track::WAVE:
+        case Track::AUDIO_GROUP:
+        */
+        
+        case Track::AUDIO_OUTPUT:
+              gid = addWavePorts( iR, t, pup, gid, mm, -1, -1, false);
+              gid = addInPorts(   iR, t, pup, gid, mm, -1, -1, false);
+              gid = addGroupPorts(iR, t, pup, gid, mm, -1, -1, false);
+              gid = addAuxPorts(  iR, t, pup, gid, mm, -1, -1, false);
+              //gid = addSyntiPorts(iR, t, pup, gid, mm, -1, -1, false);
+              gid = nonSyntiTrackAddSyntis(iR, t, pup, gid, mm, false);
+              break;
+        case Track::WAVE:
+              gid = addInPorts(   iR, t, pup, gid, mm, -1, -1, false);
+              break;
+        case Track::AUDIO_GROUP:
+              gid = addWavePorts( iR, t, pup, gid, mm, -1, -1, false);
+              gid = addInPorts(   iR, t, pup, gid, mm, -1, -1, false);
+              gid = addGroupPorts(iR, t, pup, gid, mm, -1, -1, false);
+              //gid = addSyntiPorts(iR, t, pup, gid, mm, -1, -1, false);
+              gid = nonSyntiTrackAddSyntis(iR, t, pup, gid, mm, false);
+              break;
+        
+        case Track::AUDIO_SOFTSYNTH:
+              gid = addMultiChannelPorts(iR, t, pup, gid, mm, false);
+              break;
+        default:
+              delete pup;
+              return;
+      }  
+      
+      if(pup->count() == 0)
+      {
+        delete pup;
+        return;
+      }
+      
+      int n = pup->exec(QCursor::pos());
+      if(n != -1) 
+      {
+            QString s(pup->text(n));
+            
+            if(track->type() == Track::AUDIO_INPUT)
+            {
+              delete pup;
+              int chan = n & 0xf;
+              
+              Route srcRoute(s, false, -1, Route::JACK_ROUTE);
+              Route dstRoute(t, chan);
+              
+              srcRoute.channel = chan;
+              
+              iRoute iir = irl->begin();
+              for(; iir != irl->end(); ++iir) 
+              {
+                if(*iir == srcRoute)
+                  break;
+              }
+              if(iir != irl->end()) 
+                // disconnect
+                audio->msgRemoveRoute(srcRoute, dstRoute);
+              else 
+                // connect
+                audio->msgAddRoute(srcRoute, dstRoute);
+              
+              audio->msgUpdateSoloStates();
+              song->update(SC_ROUTE);
+              iR->setDown(false);     // pup->exec() catches mouse release event
+              return;
+            }
+            
+            iRouteMenuMap imm = mm.find(n);
+            if(imm == mm.end())
+            {  
+              delete pup;
+              iR->setDown(false);     // pup->exec() catches mouse release event
+              return;
+            }  
+            
+            //int chan = n >> 16;
+            //int chans = (chan >> 15) + 1; // Bit 31 MSB: Mono or stereo.
+            //chan &= 0xffff;
+            //int chan = imm->second.channel;
+            //int chans = imm->second.channels; 
+            
+            //Route srcRoute(s, false, -1);
+            //Route srcRoute(s, false, -1, Route::TRACK_ROUTE);
+            Route &srcRoute = imm->second;
+            
+            //Route dstRoute(t, -1);
+            //Route dstRoute(t, chan, chans);
+            Route dstRoute(t, imm->second.channel, imm->second.channels);
+            //Route dstRoute(t, imm->second.channel);
+            dstRoute.remoteChannel = imm->second.remoteChannel;
+
+            iRoute iir = irl->begin();
+            for (; iir != irl->end(); ++iir) {
+                  if (*iir == srcRoute)
+                        break;
+                  }
+            if (iir != irl->end()) {
+                  // disconnect
+                  audio->msgRemoveRoute(srcRoute, dstRoute);
+                  }
+            else {
+                  // connect
+                  audio->msgAddRoute(srcRoute, dstRoute);
+                  }
+            audio->msgUpdateSoloStates();
+            song->update(SC_ROUTE);
+            }
+      delete pup;
+      iR->setDown(false);     // pup->exec() catches mouse release event
+      }
+
+//---------------------------------------------------------
+//   oRoutePressed
+//---------------------------------------------------------
+
+void AudioStrip::oRoutePressed()
+{
+      if(track->isMidiTrack())
+        return;
+        
+      QPopupMenu* pup = new QPopupMenu(oR);
+      //pup->setCheckable(true);
+      AudioTrack* t = (AudioTrack*)track;
+      RouteList* orl = t->outRoutes();
+
+      int gid = 0;
+      RouteMenuMap mm;
+      
+      switch(track->type()) 
+      {
+        case Track::AUDIO_OUTPUT:
+        {
+          pup->setCheckable(true);
+          //int gid = 0;
+          for(int i = 0; i < channel; ++i) 
+          {
+            char buffer[128];
+            snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+            MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
+            pup->insertItem(titel);
+  
+            if(!checkAudioDevice())
+            { 
+              delete pup;
+              return;
+            }
+            std::list<QString> ol = audioDevice->inputPorts();
+            for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) 
+            {
+              int id = pup->insertItem(*ip, (gid * 16) + i);
+              //Route dst(*ip, true, i);
+              Route dst(*ip, true, i, Route::JACK_ROUTE);
+              ++gid;
+              for(iRoute ir = orl->begin(); ir != orl->end(); ++ir) 
+              {
+                if(*ir == dst) 
+                {
+                  pup->setItemChecked(id, true);
+                  break;
+                }
+              }
+            }
+            if(i+1 != channel)
+              pup->insertSeparator();
+          }      
+        }
+        break;
+        /*
+        case Track::AUDIO_INPUT:
+        case Track::WAVE:
+        case Track::AUDIO_GROUP:
+        case Track::AUDIO_AUX:
+        */
+        
+        case Track::AUDIO_SOFTSYNTH:
+              //addOutPorts(t, pup, orl);
+              //addGroupPorts(t, pup, orl);
+              gid = addMultiChannelPorts(oR, t, pup, gid, mm, true);
+        break;
+        
+        case Track::AUDIO_INPUT:
+              gid = addWavePorts(        oR, t, pup, gid, mm, -1, -1, true);
+        case Track::WAVE:
+        case Track::AUDIO_GROUP:
+        //case Track::AUDIO_SOFTSYNTH:
+              gid = addOutPorts(         oR, t, pup, gid, mm, -1, -1, true);
+              gid = addGroupPorts(       oR, t, pup, gid, mm, -1, -1, true);
+              //gid = addSyntiPorts(       oR, t, pup, gid, mm, -1, -1, true);
+              gid = nonSyntiTrackAddSyntis(oR, t, pup, gid, mm, true);
+        break;
+        case Track::AUDIO_AUX:
+              gid = addOutPorts(         oR, t, pup, gid, mm, -1, -1, true);
+        break;
+        
+        default:
+              delete pup;
+              return;
+      }
+      
+      if(pup->count() == 0)
+      {
+        delete pup;
+        return;
+      }
+      
+      int n = pup->exec(QCursor::pos());
+      if (n != -1) {
+            QString s(pup->text(n));
+            
+            if(track->type() == Track::AUDIO_OUTPUT)
+            {
+              delete pup;
+              int chan = n & 0xf;
+              
+              //Route srcRoute(t, -1);
+              //Route srcRoute(t, chan, chans);
+              //Route srcRoute(t, chan, 1);
+              Route srcRoute(t, chan);
+              
+              //Route dstRoute(s, true, -1);
+              Route dstRoute(s, true, -1, Route::JACK_ROUTE);
+              //Route dstRoute(s, true, 0, Route::JACK_ROUTE);
+  
+              //srcRoute.channel = dstRoute.channel = chan;
+              dstRoute.channel = chan;
+              //dstRoute.channels = 1;
+  
+              // check if route src->dst exists:
+              iRoute iorl = orl->begin();
+              for (; iorl != orl->end(); ++iorl) {
+                    if (*iorl == dstRoute)
+                          break;
+                    }
+              if (iorl != orl->end()) {
+                    // disconnect if route exists
+                    audio->msgRemoveRoute(srcRoute, dstRoute);
+                    }
+              else {
+                    // connect if route does not exist
+                    audio->msgAddRoute(srcRoute, dstRoute);
+                    }
+              audio->msgUpdateSoloStates();
+              song->update(SC_ROUTE);
+              oR->setDown(false);     // pup->exec() catches mouse release event
+              return;
+            }
+            
+            iRouteMenuMap imm = mm.find(n);
+            if(imm == mm.end())
+            {  
+              delete pup;
+              oR->setDown(false);     // pup->exec() catches mouse release event
+              return;
+            }  
+            
+            //int chan = n >> 16;
+            //int chans = (chan >> 15) + 1; // Bit 31 MSB: Mono or stereo.
+            //chan &= 0xffff;
+            //int chan = imm->second.channel;
+            //int chans = imm->second.channels; 
+            
+            //Route srcRoute(t, -1);
+            //srcRoute.remoteChannel = chan;
+            //Route srcRoute(t, chan, chans);
+            Route srcRoute(t, imm->second.channel, imm->second.channels);
+            //Route srcRoute(t, imm->second.channel);
+            srcRoute.remoteChannel = imm->second.remoteChannel;
+            
+            //Route dstRoute(s, true, -1);
+            //Route dstRoute(s, true, -1, Route::TRACK_ROUTE);
+            Route &dstRoute = imm->second;
+
+            // check if route src->dst exists:
+            iRoute iorl = orl->begin();
+            for (; iorl != orl->end(); ++iorl) {
+                  if (*iorl == dstRoute)
+                        break;
+                  }
+            if (iorl != orl->end()) {
+                  // disconnect if route exists
+                  audio->msgRemoveRoute(srcRoute, dstRoute);
+                  }
+            else {
+                  // connect if route does not exist
+                  audio->msgAddRoute(srcRoute, dstRoute);
+                  }
+            audio->msgUpdateSoloStates();
+            song->update(SC_ROUTE);
+            }
+      delete pup;
+      oR->setDown(false);     // pup->exec() catches mouse release event
+}
+
+/*
+//---------------------------------------------------------
+//   iRoutePressed
+//---------------------------------------------------------
+
+void AudioStrip::iRoutePressed()
+      {
+      if(track->isMidiTrack() || (track->type() == Track::AUDIO_AUX) || (track->type() == Track::AUDIO_SOFTSYNTH))
+        return;
+        
+      QPopupMenu* pup = new QPopupMenu(iR);
+      //pup->setCheckable(true);
+      AudioTrack* t = (AudioTrack*)track;
+      RouteList* irl = t->inRoutes();
+
+      RouteMenuMap mm;
+      
+      if(track->type() == Track::AUDIO_INPUT)
+      {
+        pup->setCheckable(true);
+        int gid = 0;
+        for(int i = 0; i < channel; ++i) 
+        {
+          char buffer[128];
+          snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+          MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
+          pup->insertItem(titel);
+
+          if(!checkAudioDevice())
+          { 
+            delete pup;
+            return;
+          }
+          std::list<QString> ol = audioDevice->outputPorts();
+          for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) 
+          {
+            int id = pup->insertItem(*ip, (gid * 16) + i);
+            //Route dst(*ip, true, i);
+            Route dst(*ip, true, i, Route::JACK_ROUTE);
+            ++gid;
+            for(iRoute ir = irl->begin(); ir != irl->end(); ++ir) 
+            {
+              if(*ir == dst) 
+              {
+                pup->setItemChecked(id, true);
+                break;
+              }
+            }
+          }
+          if(i+1 != channel)
+            pup->insertSeparator();
+        }
+      }
+      else
+        addMultiChannelOutPorts(iR, t, pup, irl, mm, false);
+      
+      int n = pup->exec(QCursor::pos());
+      if (n != -1) {
+            QString s(pup->text(n));
+            
+            //Route srcRoute(s, false, -1);
+            Route srcRoute(s, false, -1, (track->type() == Track::AUDIO_INPUT) ? Route::JACK_ROUTE : Route::TRACK_ROUTE);
+            Route dstRoute(t, -1);
+
+            if (track->type() == Track::AUDIO_INPUT)
+                  srcRoute.channel = dstRoute.channel = n & 0xf;
+            iRoute iir = irl->begin();
+            for (; iir != irl->end(); ++iir) {
+                  if (*iir == srcRoute)
+                        break;
+                  }
+            if (iir != irl->end()) {
+                  // disconnect
+                  audio->msgRemoveRoute(srcRoute, dstRoute);
+                  }
+            else {
+                  // connect
+                  audio->msgAddRoute(srcRoute, dstRoute);
+                  }
+            audio->msgUpdateSoloStates();
+            song->update(SC_ROUTE);
+            }
+      delete pup;
+      iR->setDown(false);     // pup->exec() catches mouse release event
+      }
+*/
+
+/*
+//---------------------------------------------------------
+//   oRoutePressed
+//---------------------------------------------------------
+
+void AudioStrip::oRoutePressed()
+{
+      if(track->isMidiTrack())
+        return;
+        
+      QPopupMenu* pup = new QPopupMenu(oR);
+      //pup->setCheckable(true);
+      AudioTrack* t = (AudioTrack*)track;
+      RouteList* orl = t->outRoutes();
+
+      RouteMenuMap mm;
+      
+      if(track->type() == Track::AUDIO_OUTPUT)
+      {
+        pup->setCheckable(true);
+        int gid = 0;
+        for(int i = 0; i < channel; ++i) 
+        {
+          char buffer[128];
+          snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+          MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
+          pup->insertItem(titel);
+
+          if(!checkAudioDevice())
+          { 
+            delete pup;
+            return;
+          }
+          std::list<QString> ol = audioDevice->inputPorts();
+          for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) 
+          {
+            int id = pup->insertItem(*ip, (gid * 16) + i);
+            //Route dst(*ip, true, i);
+            Route dst(*ip, true, i, Route::JACK_ROUTE);
+            ++gid;
+            for(iRoute ir = orl->begin(); ir != orl->end(); ++ir) 
+            {
+              if(*ir == dst) 
+              {
+                pup->setItemChecked(id, true);
+                break;
+              }
+            }
+          }
+          if(i+1 != channel)
+            pup->insertSeparator();
+        }      
+      }
+      else
+        addMultiChannelOutPorts(oR, t, pup, orl, mm, true);
+      
+      int n = pup->exec(QCursor::pos());
+      if (n != -1) {
+            QString s(pup->text(n));
+            
+            if(track->type() == Track::AUDIO_OUTPUT)
+            {
+              delete pup;
+              int chan = n & 0xf;
+              
+              //Route srcRoute(t, -1);
+              //Route srcRoute(t, chan, chans);
+              Route srcRoute(t, chan, 1);
+              
+              //Route dstRoute(s, true, -1);
+              Route dstRoute(s, true, -1, Route::JACK_ROUTE);
+              //Route dstRoute(s, true, 0, Route::JACK_ROUTE);
+  
+              //srcRoute.channel = dstRoute.channel = chan;
+              dstRoute.channel = chan;
+              dstRoute.channels = 1;
+  
+              // check if route src->dst exists:
+              iRoute iorl = orl->begin();
+              for (; iorl != orl->end(); ++iorl) {
+                    if (*iorl == dstRoute)
+                          break;
+                    }
+              if (iorl != orl->end()) {
+                    // disconnect if route exists
+                    audio->msgRemoveRoute(srcRoute, dstRoute);
+                    }
+              else {
+                    // connect if route does not exist
+                    audio->msgAddRoute(srcRoute, dstRoute);
+                    }
+              audio->msgUpdateSoloStates();
+              song->update(SC_ROUTE);
+              oR->setDown(false);     // pup->exec() catches mouse release event
+              return;
+            }
+            
+            iRouteMenuMap imm = mm.find(n);
+            if(imm == mm.end())
+            {  
+              delete pup;
+              oR->setDown(false);     // pup->exec() catches mouse release event
+              return;
+            }  
+            
+            //int chan = n >> 16;
+            //int chans = (chan >> 15) + 1; // Bit 31 MSB: Mono or stereo.
+            //chan &= 0xffff;
+            int chan = imm->second.channel;
+            int chans = imm->second.channels; 
+             
+            //Route srcRoute(t, -1);
+            Route srcRoute(t, chan, chans);
+            
+            //Route dstRoute(s, true, -1);
+            Route dstRoute(s, true, -1, Route::TRACK_ROUTE);
+
+            // check if route src->dst exists:
+            iRoute iorl = orl->begin();
+            for (; iorl != orl->end(); ++iorl) {
+                  if (*iorl == dstRoute)
+                        break;
+                  }
+            if (iorl != orl->end()) {
+                  // disconnect if route exists
+                  audio->msgRemoveRoute(srcRoute, dstRoute);
+                  }
+            else {
+                  // connect if route does not exist
+                  audio->msgAddRoute(srcRoute, dstRoute);
+                  }
+            audio->msgUpdateSoloStates();
+            song->update(SC_ROUTE);
+            }
+      delete pup;
+      oR->setDown(false);     // pup->exec() catches mouse release event
+}
+*/
+
+/*
 //---------------------------------------------------------
 //   iRoutePressed
 //---------------------------------------------------------
@@ -1124,7 +2384,8 @@ void AudioStrip::iRoutePressed()
                         std::list<QString> ol = audioDevice->outputPorts();
                         for (std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) {
                               int id = pup->insertItem(*ip, (gid * 16) + i);
-                              Route dst(*ip, true, i);
+                              //Route dst(*ip, true, i);
+                              Route dst(*ip, true, i, Route::JACK_ROUTE);
                               ++gid;
                               for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
                                     if (*ir == dst) {
@@ -1137,7 +2398,6 @@ void AudioStrip::iRoutePressed()
                               pup->insertSeparator();
                         }
                   }
-                  break;
                   break;
             case Track::AUDIO_OUTPUT:
                   addWavePorts(t, pup, irl);
@@ -1159,7 +2419,9 @@ void AudioStrip::iRoutePressed()
       int n = pup->exec(QCursor::pos());
       if (n != -1) {
             QString s(pup->text(n));
-            Route srcRoute(s, false, -1);
+            
+            //Route srcRoute(s, false, -1);
+            Route srcRoute(s, false, -1, (track->type() == Track::AUDIO_INPUT) ? Route::JACK_ROUTE : Route::TRACK_ROUTE);
             Route dstRoute(t, -1);
 
             if (track->type() == Track::AUDIO_INPUT)
@@ -1183,7 +2445,9 @@ void AudioStrip::iRoutePressed()
       delete pup;
       iR->setDown(false);     // pup->exec() catches mouse release event
       }
+*/
 
+/*
 //---------------------------------------------------------
 //   oRoutePressed
 //---------------------------------------------------------
@@ -1213,7 +2477,8 @@ void AudioStrip::oRoutePressed()
                         std::list<QString> ol = audioDevice->inputPorts();
                         for (std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) {
                               int id = pup->insertItem(*ip, (gid * 16) + i);
-                              Route dst(*ip, true, i);
+                              //Route dst(*ip, true, i);
+                              Route dst(*ip, true, i, Route::JACK_ROUTE);
                               ++gid;
                               for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
                                     if (*ir == dst) {
@@ -1243,7 +2508,8 @@ void AudioStrip::oRoutePressed()
       if (n != -1) {
             QString s(pup->text(n));
             Route srcRoute(t, -1);
-            Route dstRoute(s, true, -1);
+            //Route dstRoute(s, true, -1);
+            Route dstRoute(s, true, -1, (track->type() == Track::AUDIO_OUTPUT) ? Route::JACK_ROUTE : Route::TRACK_ROUTE);
 
             if (track->type() == Track::AUDIO_OUTPUT)
                   srcRoute.channel = dstRoute.channel = n & 0xf;
@@ -1268,4 +2534,4 @@ void AudioStrip::oRoutePressed()
       delete pup;
       oR->setDown(false);     // pup->exec() catches mouse release event
       }
-
+*/

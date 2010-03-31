@@ -197,10 +197,39 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
       if ((song->bounceTrack != this) && !noInRoute()) {
             RouteList* irl = inRoutes();
             iRoute i = irl->begin();
-            i->track->copyData(framePos, channels, nframe, bp);
+            if(i->track->isMidiTrack())
+            {
+              if(debugMsg)
+                printf("WaveTrack::getData: Error: First route is a midi track route!\n");
+              return false;
+            }
+            // p3.3.38
+            //((AudioTrack*)i->track)->copyData(framePos, channels, nframe, bp);
+            ((AudioTrack*)i->track)->copyData(framePos, channels, 
+                                              //(i->track->type() == Track::AUDIO_SOFTSYNTH && i->channel != -1) ? i->channel : 0, 
+                                              i->channel, 
+                                              i->channels,
+                                              nframe, bp);
+            
             ++i;
             for (; i != irl->end(); ++i)
-                  i->track->addData(framePos, channels, nframe, bp);
+            {
+              if(i->track->isMidiTrack())
+              {
+                if(debugMsg)
+                  printf("WaveTrack::getData: Error: Route is a midi track route!\n");
+                //return false;
+                continue;
+              }
+              // p3.3.38
+              //((AudioTrack*)i->track)->addData(framePos, channels, nframe, bp);
+              ((AudioTrack*)i->track)->addData(framePos, channels, 
+                                               //(i->track->type() == Track::AUDIO_SOFTSYNTH && i->channel != -1) ? i->channel : 0, 
+                                               i->channel, 
+                                               i->channels,
+                                               nframe, bp);
+              
+            }
             if (recordFlag()) {
                   if (audio->isRecording() && recFile()) {
                         if (audio->freewheel()) {

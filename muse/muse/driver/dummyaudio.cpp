@@ -88,11 +88,13 @@ class DummyAudioDevice : public AudioDevice {
             return buffer;
             }
 
-      virtual std::list<QString> outputPorts();
-      virtual std::list<QString> inputPorts();
+      virtual std::list<QString> outputPorts(bool midi = false, int aliases = -1);
+      virtual std::list<QString> inputPorts(bool midi = false, int aliases = -1);
 
       virtual void registerClient() {}
 
+      virtual const char* clientName() { return "MusE"; }
+      
       //virtual void* registerOutPort(const char*) {
       virtual void* registerOutPort(const char*, bool) {
             return (void*)1;
@@ -214,11 +216,14 @@ bool initDummyAudio()
 //   outputPorts
 //---------------------------------------------------------
 
-std::list<QString> DummyAudioDevice::outputPorts()
+std::list<QString> DummyAudioDevice::outputPorts(bool midi, int /*aliases*/)
       {
       std::list<QString> clientList;
-      clientList.push_back(QString("output1"));
-      clientList.push_back(QString("output2"));
+      if(!midi)
+      {
+        clientList.push_back(QString("output1"));
+        clientList.push_back(QString("output2"));
+      }  
       return clientList;
       }
 
@@ -226,11 +231,14 @@ std::list<QString> DummyAudioDevice::outputPorts()
 //   inputPorts
 //---------------------------------------------------------
 
-std::list<QString> DummyAudioDevice::inputPorts()
+std::list<QString> DummyAudioDevice::inputPorts(bool midi, int /*aliases*/)
       {
       std::list<QString> clientList;
-      clientList.push_back(QString("input1"));
-      clientList.push_back(QString("input2"));
+      if(!midi)
+      {
+        clientList.push_back(QString("input1"));
+        clientList.push_back(QString("input2"));
+      }  
       return clientList;
       }
 

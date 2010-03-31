@@ -6,6 +6,8 @@
 //=========================================================
 
 #include "config.h"
+#include <string>
+#include <set>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -123,6 +125,7 @@ static void jack_thread_init (void* )  // data
       undoSetuid();
       }
 
+/*
 //---------------------------------------------------------
 //   processAudio + Midi
 //    JACK callback
@@ -137,6 +140,7 @@ print_triplet(unsigned char *data)
   memcpy(&c, data+2, 1);
   fprintf(stderr, "%x,%x,%x", a, b, c);
 }
+*/
 
 /*
 void handle_jack_midi_in_events(jack_nframes_t frames)
@@ -430,7 +434,7 @@ static void noJackError(const char* /* s */)
 //   JackAudioDevice
 //---------------------------------------------------------
 
-JackAudioDevice::JackAudioDevice(jack_client_t* cl, char * name)
+JackAudioDevice::JackAudioDevice(jack_client_t* cl, char* name)
    : AudioDevice()
       {
       _frameCounter = 0;
@@ -496,6 +500,7 @@ int JackAudioDevice::realtimePriority() const
       return param.sched_priority;
       }
 
+/*
 //---------------------------------------------------------
 //   getJackName()
 //---------------------------------------------------------
@@ -504,6 +509,22 @@ char* JackAudioDevice::getJackName()
       {
       return jackRegisteredName;
       }
+*/
+
+/*
+//---------------------------------------------------------
+//   clientName()
+//---------------------------------------------------------
+
+const char* JackAudioDevice::clientName()
+{
+  //if(_client)
+  //  return jack_get_client_name(_client);
+  //else
+  //  return "MusE";  
+  return jackRegisteredName;
+}
+*/
 
 //---------------------------------------------------------
 //   initJackAudio
@@ -531,25 +552,41 @@ bool initJackAudio()
             jack_set_error_function(noJackError);
       doSetuid();
 
-      jack_client_t* client = 0;
-      int i = 0;
-      char jackIdString[8];
-      for (i = 0; i < 5; ++i) {
-            sprintf(jackIdString, "MusE-%d", i+1);
+      //jack_client_t* client = 0;
+      //int i = 0;
+      //char jackIdString[8];
+      //for (i = 0; i < 5; ++i) {
+      //      sprintf(jackIdString, "MusE-%d", i+1);
             //client = jack_client_new(jackIdString);
-            client = jack_client_open(jackIdString, JackNoStartServer, 0);
-            if (client)
-                  break;
+      //      client = jack_client_open(jackIdString, JackNoStartServer, 0);
+      //      if (client)
+      //            break;
+      //      }
+      //if (i == 5)
+      //      return true;
+      jack_status_t status;
+      jack_client_t* client = jack_client_open("MusE", JackNoStartServer, &status);
+      if (!client) {
+            if (status & JackServerStarted)
+                  printf("jack server started...\n");
+            if (status & JackServerFailed)
+                  printf("cannot connect to jack server\n");
+            if (status & JackServerError)
+                  printf("communication with jack server failed\n");
+            if (status & JackShmFailure)
+                  printf("jack cannot access shared memory\n");
+            if (status & JackVersionError)
+                  printf("jack server has wrong version\n");
+            printf("cannot create jack client\n");
+            return true;
             }
 
-      if (i == 5)
-            return true;
-
       if (debugMsg)
-            fprintf(stderr, "initJackAudio(): client %s opened.\n", jackIdString);
+            fprintf(stderr, "initJackAudio(): client %s opened.\n", jack_get_client_name(client));
       if (client) {
             jack_set_error_function(jackError);
-            jackAudio = new JackAudioDevice(client, jackIdString);
+            //jackAudio = new JackAudioDevice(client, jackIdString);
+            jackAudio = new JackAudioDevice(client, jack_get_client_name(client));
             if (debugMsg)
                   fprintf(stderr, "initJackAudio(): registering client...\n");
             jackAudio->registerClient();
@@ -648,8 +685,10 @@ void JackAudioDevice::registrationChanged()
   if(JACK_DEBUG)
     printf("JackAudioDevice::registrationChanged()\n");
   
+  // Rescan.
+  scanMidiPorts();
   // Connect the Jack midi client ports to the device ports.
-  connectJackMidiPorts();
+  //connectJackMidiPorts();
 }
 
 //---------------------------------------------------------
@@ -661,6 +700,32 @@ void JackAudioDevice::connectJackMidiPorts()
   if(JACK_DEBUG)
     printf("JackAudioDevice::connectJackMidiPorts()\n");
   
+  for (iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) 
+  {
+    //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(*i);
+    //if(!mjd)
+    MidiDevice* md = *i;
+    if(md->deviceType() != MidiDevice::JACK_MIDI)
+      continue;
+    
+    void* port = md->clientPort();
+    if(md->rwFlags() & 1)
+    {
+      RouteList* rl = md->outRoutes();
+      for (iRoute r = rl->begin(); r != rl->end(); ++r) 
+        connect(port, r->jackPort);
+    }
+    else
+    if(md->rwFlags() & 2)
+    {  
+      RouteList* rl = md->inRoutes();
+      for (iRoute r = rl->begin(); r != rl->end(); ++r) 
+        connect(r->jackPort, port);
+    }    
+  }
+  
+  
+  /*
   const char* type = JACK_DEFAULT_MIDI_TYPE;
   const char** ports = jack_get_ports(_client, 0, type, 0);
   for (const char** p = ports; p && *p; ++p) 
@@ -668,12 +733,22 @@ void JackAudioDevice::connectJackMidiPorts()
     jack_port_t* port = jack_port_by_name(_client, *p);
     if(!port)
       continue;
+    // Ignore our own client ports.
+    if(jack_port_is_mine(_client, port))
+    {
+      if(debugMsg)
+        printf(" ignoring own port: %s\n", *p);
+      continue;         
+    }
     int nsz = jack_port_name_size();
     char buffer[nsz];
     strncpy(buffer, *p, nsz);
     // Ignore the MusE Jack port.
     //if(strncmp(buffer, "MusE", 4) == 0)
     //  continue;
+    
+    if(debugMsg)
+      printf(" found port: %s  ", buffer);
     
     // If there are aliases for this port, use the first one - much better for identifying. 
     //char a1[nsz]; 
@@ -688,6 +763,9 @@ void JackAudioDevice::connectJackMidiPorts()
     //char* namep = (na >= 1) ? aliases[0] : buffer;
     char* namep = aliases[0];
   
+    if(debugMsg)
+      printf("alias: %s\n", aliases[0]);
+    
     //int flags = 0;
     int pf = jack_port_flags(port);
     // If Jack port can send data to us...
@@ -753,6 +831,8 @@ void JackAudioDevice::connectJackMidiPorts()
   
   if(ports)
     free(ports);      
+    
+  */  
 }
 //---------------------------------------------------------
 //   client_registration_callback
@@ -846,7 +926,8 @@ void JackAudioDevice::graphChanged()
                                     }
                               if (!found) {
                                     audio->msgRemoveRoute1(
-                                       Route(portName, false, channel),
+                                       //Route(portName, false, channel),
+                                       Route(portName, false, channel, Route::JACK_ROUTE),
                                        Route(it, channel)
                                        );
                                     erased = true;
@@ -877,7 +958,8 @@ void JackAudioDevice::graphChanged()
                                     }
                               if (!found) {
                                     audio->msgAddRoute1(
-                                       Route(*pn, false, channel),
+                                       //Route(*pn, false, channel),
+                                       Route(*pn, false, channel, Route::JACK_ROUTE),
                                        Route(it, channel)
                                        );
                                     }
@@ -929,7 +1011,8 @@ void JackAudioDevice::graphChanged()
                               if (!found) {
                                     audio->msgRemoveRoute1(
                                        Route(it, channel),
-                                       Route(portName, false, channel)
+                                       //Route(portName, false, channel)
+                                       Route(portName, false, channel, Route::JACK_ROUTE)
                                        );
                                     erased = true;
                                     break;
@@ -960,7 +1043,8 @@ void JackAudioDevice::graphChanged()
                               if (!found) {
                                     audio->msgAddRoute1(
                                        Route(it, channel),
-                                       Route(*pn, false, channel)
+                                       //Route(*pn, false, channel)
+                                       Route(*pn, false, channel, Route::JACK_ROUTE)
                                        );
                                     }
                               ++pn;
@@ -975,6 +1059,201 @@ void JackAudioDevice::graphChanged()
                   }
             }
             
+      for (iMidiDevice ii = midiDevices.begin(); ii != midiDevices.end(); ++ii) 
+      {
+            MidiDevice* md = *ii;
+            if(md->deviceType() != MidiDevice::JACK_MIDI)
+              continue;
+            
+            //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(*ii);
+            //if(!mjd)
+            //  continue;
+            //for (int channel = 0; channel < channels; ++channel) 
+            //{
+                  jack_port_t* port = (jack_port_t*)md->clientPort();
+                  if (port == 0)
+                        continue;
+                  const char** ports = jack_port_get_all_connections(_client, port);
+                  
+                  //---------------------------------------
+                  // outputs
+                  //---------------------------------------
+                  
+                  if(md->rwFlags() & 1) // Writable
+                  {
+                    RouteList* rl      = md->outRoutes();
+  
+                    //---------------------------------------
+                    // check for disconnects
+                    //---------------------------------------
+  
+                    bool erased;
+                    // limit set to 20 iterations for disconnects, don't know how to make it go
+                    // the "right" amount
+                    for (int i = 0; i < 20 ; i++) 
+                    {
+                          erased = false;
+                          for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                                //if (irl->channel != channel)
+                                //      continue;
+                                QString name = irl->name();
+                                const char* portName = name.latin1();
+                                bool found = false;
+                                const char** pn = ports;
+                                while (pn && *pn) {
+                                      if (strcmp(*pn, portName) == 0) {
+                                            found = true;
+                                            break;
+                                            }
+                                      ++pn;
+                                      }
+                                if (!found) {
+                                      audio->msgRemoveRoute1(
+                                        //Route(it, channel),
+                                        //Route(mjd),
+                                        Route(md, -1),
+                                        //Route(portName, false, channel)
+                                        //Route(portName, false, -1)
+                                        Route(portName, false, -1, Route::JACK_ROUTE)
+                                        );
+                                      erased = true;
+                                      break;
+                                      }
+                                }
+                          if (!erased)
+                                break;
+                    }
+  
+                    //---------------------------------------
+                    // check for connects
+                    //---------------------------------------
+  
+                    if (ports) 
+                    {
+                          const char** pn = ports;
+                          while (*pn) {
+                                bool found = false;
+                                for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                                      //if (irl->channel != channel)
+                                      //      continue;
+                                      QString name = irl->name();
+                                      const char* portName = name.latin1();
+                                      if (strcmp(*pn, portName) == 0) {
+                                            found = true;
+                                            break;
+                                            }
+                                      }
+                                if (!found) {
+                                      audio->msgAddRoute1(
+                                        //Route(it, channel),
+                                        //Route(mjd),
+                                        Route(md, -1),
+                                        //Route(*pn, false, channel)
+                                        //Route(*pn, false, -1)
+                                        Route(*pn, false, -1, Route::JACK_ROUTE)
+                                        );
+                                      }
+                                ++pn;
+                                }
+  
+                          // p3.3.37
+                          //delete ports;
+                          //free(ports);
+                          
+                          //ports = NULL;
+                    }
+                  }  
+                  
+                  
+                  //------------------------
+                  // Inputs
+                  //------------------------
+                  
+                  if(md->rwFlags() & 2) // Readable
+                  {
+                    RouteList* rl = md->inRoutes();
+  
+                    //---------------------------------------
+                    // check for disconnects
+                    //---------------------------------------
+  
+                    bool erased;
+                    // limit set to 20 iterations for disconnects, don't know how to make it go
+                    // the "right" amount
+                    for (int i = 0; i < 20 ; i++) 
+                    {
+                          erased = false;
+                          for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                                //if (irl->channel != channel)
+                                //      continue;
+                                QString name = irl->name();
+                                const char* portName = name.latin1();
+                                bool found = false;
+                                const char** pn = ports;
+                                while (pn && *pn) {
+                                      if (strcmp(*pn, portName) == 0) {
+                                            found = true;
+                                            break;
+                                            }
+                                      ++pn;
+                                      }
+                                if (!found) {
+                                      audio->msgRemoveRoute1(
+                                        //Route(portName, false, channel),
+                                        //Route(portName, false, -1),
+                                        Route(portName, false, -1, Route::JACK_ROUTE),
+                                        //Route(it, channel)
+                                        //Route(mjd)
+                                        Route(md, -1)
+                                        );
+                                      erased = true;
+                                      break;
+                                      }
+                                }
+                          if (!erased)
+                                break;
+                    }
+  
+                    //---------------------------------------
+                    // check for connects
+                    //---------------------------------------
+  
+                    if (ports) 
+                    {
+                          const char** pn = ports;
+                          while (*pn) {
+                                bool found = false;
+                                for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                                      //if (irl->channel != channel)
+                                      //      continue;
+                                      QString name = irl->name();
+                                      const char* portName = name.latin1();
+                                      if (strcmp(*pn, portName) == 0) {
+                                            found = true;
+                                            break;
+                                            }
+                                      }
+                                if (!found) {
+                                      audio->msgAddRoute1(
+                                        //Route(*pn, false, channel),
+                                        //Route(*pn, false, -1),
+                                        Route(*pn, false, -1, Route::JACK_ROUTE),
+                                        //Route(it, channel)
+                                        //Route(mjd)
+                                        Route(md, -1)
+                                        );
+                                      }
+                                ++pn;
+                                }
+                    }
+                  }  
+                  if(ports) 
+                    // Done with ports. Free them.
+                    //delete ports;
+                    free(ports);
+                    
+                  ports = NULL;
+      }
 }
 
 //static int xrun_callback(void*)
@@ -1279,24 +1558,67 @@ int JackAudioDevice::frameDelay() const
 //   outputPorts
 //---------------------------------------------------------
 
-std::list<QString> JackAudioDevice::outputPorts()
+std::list<QString> JackAudioDevice::outputPorts(bool midi, int aliases)
       {
       if (JACK_DEBUG)
             printf("JackAudioDevice::outputPorts()\n");
       std::list<QString> clientList;
       if(!checkJackClient(_client)) return clientList;
-      const char** ports = jack_get_ports(_client, 0, JACK_DEFAULT_AUDIO_TYPE, 0);
+      QString qname;
+      const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
+      const char** ports = jack_get_ports(_client, 0, type, JackPortIsOutput);
       for (const char** p = ports; p && *p; ++p) {
             jack_port_t* port = jack_port_by_name(_client, *p);
-            int flags = jack_port_flags(port);
-            if (!(flags & JackPortIsOutput))
-                  continue;
-            char buffer[128];
-            strncpy(buffer, *p, 128);
-            if (strncmp(buffer, "MusE", 4) == 0)
-                  continue;
-            clientList.push_back(QString(buffer));
+            //int flags = jack_port_flags(port);
+            //if (!(flags & JackPortIsOutput))
+            //      continue;
+            //char buffer[128];
+            
+            int nsz = jack_port_name_size();
+            char buffer[nsz];
+            
+            strncpy(buffer, *p, nsz);
+            //if (strncmp(buffer, "MusE", 4) == 0)
+            //{
+            //  if(debugMsg)
+            //    printf("JackAudioDevice::outputPorts ignoring own MusE port: %s\n", *p);
+            //  continue;         
+            //}
+            
+            // Ignore our own client ports.
+            if(jack_port_is_mine(_client, port))
+            {
+              if(debugMsg)
+                printf("JackAudioDevice::outputPorts ignoring own port: %s\n", *p);
+              continue;         
             }
+            
+            // p3.3.38
+            if((aliases == 0) || (aliases == 1)) 
+            {
+              //char a1[nsz]; 
+              char a2[nsz]; 
+              char* al[2];
+              //aliases[0] = a1;
+              al[0] = buffer;
+              al[1] = a2;
+              int na = jack_port_get_aliases(port, al);
+              int a = aliases;
+              if(a >= na)
+              {
+                a = na;
+                if(a > 0)
+                  a--;
+              }    
+              qname = QString(al[a]);
+            }
+            else
+              qname = QString(buffer);
+            
+            //clientList.push_back(QString(buffer));
+            clientList.push_back(qname);
+            }
+            
       // p3.3.37
       if(ports)
         free(ports);      
@@ -1308,24 +1630,67 @@ std::list<QString> JackAudioDevice::outputPorts()
 //   inputPorts
 //---------------------------------------------------------
 
-std::list<QString> JackAudioDevice::inputPorts()
+std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
       {
       if (JACK_DEBUG)
             printf("JackAudioDevice::inputPorts()\n");
       std::list<QString> clientList;
       if(!checkJackClient(_client)) return clientList;
-      const char** ports = jack_get_ports(_client, 0, JACK_DEFAULT_AUDIO_TYPE, 0);
+      QString qname;
+      const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
+      const char** ports = jack_get_ports(_client, 0, type, JackPortIsInput);
       for (const char** p = ports; p && *p; ++p) {
             jack_port_t* port = jack_port_by_name(_client, *p);
-            int flags = jack_port_flags(port);
-            if (!(flags & JackPortIsInput))
-                  continue;
-            char buffer[128];
-            strncpy(buffer, *p, 128);
-            if (strncmp(buffer, "MusE", 4) == 0)
-                  continue;
-            clientList.push_back(QString(buffer));
+            //int flags = jack_port_flags(port);
+            //if (!(flags & JackPortIsInput))
+            //      continue;
+            //char buffer[128];
+            
+            int nsz = jack_port_name_size();
+            char buffer[nsz];
+            
+            strncpy(buffer, *p, nsz);
+            //if (strncmp(buffer, "MusE", 4) == 0)
+            //{
+            //  if(debugMsg)
+            //    printf("JackAudioDevice::inputPorts ignoring own MusE port: %s\n", *p);
+            //  continue;         
+            //}
+            
+            // Ignore our own client ports.
+            if(jack_port_is_mine(_client, port))
+            {
+              if(debugMsg)
+                printf("JackAudioDevice::inputPorts ignoring own port: %s\n", *p);
+              continue;         
             }
+            
+            // p3.3.38
+            if((aliases == 0) || (aliases == 1)) 
+            {
+              //char a1[nsz]; 
+              char a2[nsz]; 
+              char* al[2];
+              //aliases[0] = a1;
+              al[0] = buffer;
+              al[1] = a2;
+              int na = jack_port_get_aliases(port, al);
+              int a = aliases;
+              if(a >= na)
+              {
+                a = na;
+                if(a > 0)
+                  a--;
+              }    
+              qname = QString(al[a]);
+            }
+            else
+              qname = QString(buffer);
+            
+            //clientList.push_back(QString(buffer));
+            clientList.push_back(qname);
+            }
+            
       // p3.3.37
       if(ports)
         free(ports);      
@@ -1678,22 +2043,92 @@ void JackAudioDevice::scanMidiPorts()
 {
   if(debugMsg)
     printf("JackAudioDevice::scanMidiPorts:\n");
+  
+/*  
   const char* type = JACK_DEFAULT_MIDI_TYPE;
   const char** ports = jack_get_ports(_client, 0, type, 0);
+  
+  std::set<std::string> names;
   for (const char** p = ports; p && *p; ++p) 
   {
     jack_port_t* port = jack_port_by_name(_client, *p);
     if(!port)
       continue;
+    // Ignore our own client ports.
+    if(jack_port_is_mine(_client, port))
+    {
+      if(debugMsg)
+        printf(" ignoring own port: %s\n", *p);
+      continue;         
+    }
+    
     int nsz = jack_port_name_size();
     char buffer[nsz];
     strncpy(buffer, *p, nsz);
     // Ignore the MusE Jack port.
-    if(strncmp(buffer, "MusE", 4) == 0)
-      continue;
+    //if(strncmp(buffer, "MusE", 4) == 0)
+    //  continue;
     
     if(debugMsg)
-      printf(" found port:%s\n", buffer);
+      printf(" found port: %s  ", buffer);
+    
+    // If there are aliases for this port, use the first one - much better for identifying. 
+    //char a1[nsz]; 
+    char a2[nsz]; 
+    char* aliases[2];
+    //aliases[0] = a1;
+    aliases[0] = buffer;
+    aliases[1] = a2;
+    // To disable aliases, just rem this line.
+    jack_port_get_aliases(port, aliases);
+    //int na = jack_port_get_aliases(port, aliases);
+    //char* namep = (na >= 1) ? aliases[0] : buffer;
+    //char* namep = aliases[0];
+    //names.insert(std::string(*p));
+    if(debugMsg)
+      printf("alias: %s\n", aliases[0]);
+    
+    names.insert(std::string(aliases[0]));
+  }
+  if(ports)
+    free(ports);      
+  
+  std::list<MidiDevice*> to_del;
+  for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd)
+  {
+    // Only Jack midi devices.
+    if(dynamic_cast<MidiJackDevice*>(*imd) == 0)
+      continue;
+    if(names.find(std::string((*imd)->name().latin1())) == names.end())
+      to_del.push_back(*imd);
+  }
+  
+  for(std::list<MidiDevice*>::iterator imd = to_del.begin(); imd != to_del.end(); ++imd)
+  {
+    if(debugMsg)
+      printf(" removing port device:%s\n", (*imd)->name().latin1());
+    midiDevices.remove(*imd);
+    // This will close (and unregister) the client port.
+    delete (*imd);
+  }
+  
+  //for (const char** p = ports; p && *p; ++p) 
+  for(std::set<std::string>::iterator is = names.begin(); is != names.end(); ++is)
+  {
+    //jack_port_t* port = jack_port_by_name(_client, *p);
+    jack_port_t* port = jack_port_by_name(_client, is->c_str());
+    if(!port)
+      continue;
+*/    
+    
+    /*
+    int nsz = jack_port_name_size();
+    char buffer[nsz];
+    //strncpy(buffer, *p, nsz);
+    strncpy(buffer, is->c_str(), nsz);
+    // Ignore the MusE Jack port.
+    //if(strncmp(buffer, "MusE", 4) == 0)
+    //  continue;
     
     // If there are aliases for this port, use the first one - much better for identifying. 
     //char a1[nsz]; 
@@ -1707,7 +2142,16 @@ void JackAudioDevice::scanMidiPorts()
     //int na = jack_port_get_aliases(port, aliases);
     //char* namep = (na >= 1) ? aliases[0] : buffer;
     char* namep = aliases[0];
-  
+    QString qname(namep);
+    */
+    
+/*
+    QString qname(is->c_str());
+    
+    // Port already exists?
+    if(midiDevices.find(qname))
+      continue;
+    
     int flags = 0;
     int pf = jack_port_flags(port);
     // If Jack port can send data to us...
@@ -1722,12 +2166,13 @@ void JackAudioDevice::scanMidiPorts()
     //JackPort jp(0, QString(buffer), flags);
     //portList.append(jp);
     
-    MidiJackDevice* dev = new MidiJackDevice(0, QString(namep));
+    if(debugMsg)
+      printf(" adding port device:%s\n", qname.latin1());
+    
+    MidiJackDevice* dev = new MidiJackDevice(0, qname);
     dev->setrwFlags(flags);
     midiDevices.add(dev);
   }
-  // p3.3.37
-  if(ports)
-    free(ports);      
+*/
 }
 

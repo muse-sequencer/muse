@@ -1,3 +1,24 @@
+30.03.2010
+      * Major reworks: Jack midi, routing system, multichannel synth ins/outs, midi strips and trackinfo pane. (T356)
+        - WORK IN PROGRESS. Should be usable for current projects.
+        - ADVISORY: If opening current projects you are advised to "save as" or back up your med files (waves should be OK)
+           until all is deemed to be working OK. It is possible more changes to .med file structure are needed later.
+        - Some .med project file structures have CHANGED (like routing). I have tested opening large existing projects, 
+           then re-saving them. OK so far.
+          However, I have not added importing code for the old midi trackinfo panel 'input port' and 'input channel' boxes (gone now).
+          If you want to wait, I am planning to do that, but later... Otherwise you must re-enter them with the new midi input routing.
+        - ** Multichannel synth inputs and outputs: Fairly satisfied with popup menus, hopefully no major reworks... 
+          Routing system fully supports multichannel synth mono/stero paths but is NOT COMPLETE yet. 
+          When changing a connected track from stereo to mono, there is no coding yet to ensure the existing stereo routes are 
+           changed from stereo to mono (just like the audio input and output tracks have always done with Jack routes).
+          Also coding must be added to avoid simultaneous mono and stereo routes - make them mutually exclusive - although
+           there's nothing technically wrong with it, it's just not desirable. 
+        - ** Jack midi: You now create your own Jack midi ports. I have not added any means to delete them yet, but I believe
+           if you 'unselect' them in the midi ports list so that they are not used, then the saved .med file will ignore them.
+        - Multi-instances of MusE should work OK now - all ports should hopefully have unique names.    
+        - Number of midi ports increased from 32 to 128. It's a bit much for the ports list, was planning "create your own
+           midi port as needed" (like RG). Obstacles seem to have been cleared now, but it would be a big job (lots of places to change).
+        - Along the way various tweaks and fixes when I spotted them.
 18.02.2010
       * Added: Separate Jack midi client ports per MusE port. (T356)
         - For now, you will have to manually add further connections to those ports if desired, each session.

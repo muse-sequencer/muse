@@ -10,15 +10,20 @@
 
 //#include <config.h>
 
+#include <map>
+
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
 #include "mididev.h"
+#include "route.h"
 
 class QString;
 class MidiFifo;
 class MidiRecordEvent;
 class MidiPlayEvent;
+//class RouteList;
+class Xml;
 
 // Turn on to show multiple devices, work in progress, 
 //  not working fully yet, can't seem to connect...
@@ -44,23 +49,57 @@ typedef struct {
 } muse_jack_midi_buffer;
 */
 
+/*
+struct JackMidiPort 
+{
+  jack_port_t* _jackPort;
+  QString _name;
+  int _flags; // 1 = writable, 2 = readable - do not mix
+  JackMidiPort(jack_port_t* jp, const QString& s, int f) 
+  {
+    _jackPort = jp;
+    _name = QString(s);
+    _flags = f;
+  }
+};
+
+typedef std::map<jack_port_t*, JackMidiPort, std::less<jack_port_t*> >::iterator iJackMidiPort;
+typedef std::map<jack_port_t*, JackMidiPort, std::less<jack_port_t*> >::const_iterator ciJackMidiPort;
+
+class JackMidiPortList : public std::map<jack_port_t*, JackMidiPort, std::less<jack_port_t*> > 
+{
+   private:   
+      static int _nextOutIdNum;
+      static int _nextInIdNum;
+      
+   public:
+      JackMidiPortList();
+      ~JackMidiPortList();
+      iJackMidiPort createClientPort(int flags);
+      bool removeClientPort(jack_port_t* port);
+};
+
+extern JackMidiPortList jackMidiClientPorts;
+*/
+
 //---------------------------------------------------------
 //   MidiJackDevice
 //---------------------------------------------------------
 
 class MidiJackDevice : public MidiDevice {
    public:
-      int adr;
+      //int adr;
 
    private:
       // fifo for midi events sent from gui
       // direct to midi port:
       MidiFifo eventFifo;
 
-      static int _nextOutIdNum;
-      static int _nextInIdNum;
+      //static int _nextOutIdNum;
+      //static int _nextInIdNum;
       
       jack_port_t* _client_jackport;
+      //RouteList _routes;
       
       virtual QString open();
       virtual void close();
@@ -77,8 +116,14 @@ class MidiJackDevice : public MidiDevice {
 
    public:
       MidiJackDevice() {}
-      MidiJackDevice(const int&, const QString& name);
-      void processMidi();
+      //MidiJackDevice(const int&, const QString& name);
+      MidiJackDevice(jack_port_t* jack_port, const QString& name);
+      
+      static MidiDevice* createJackMidiDevice(QString /*name*/, int /*rwflags*/); // 1:Writable 2: Readable. Do not mix.
+      
+      virtual inline int deviceType() { return JACK_MIDI; } 
+      
+      virtual void processMidi();
       virtual ~MidiJackDevice(); 
       //virtual int selectRfd();
       //virtual int selectWfd();
@@ -90,7 +135,12 @@ class MidiJackDevice : public MidiDevice {
       virtual void collectMidiEvents();
       
       //virtual jack_port_t* jackPort() { return _jackport; }
-      virtual jack_port_t* clientJackPort() { return _client_jackport; }
+      //virtual jack_port_t* clientJackPort() { return _client_jackport; }
+      virtual void* clientPort() { return (void*)_client_jackport; }
+      
+      //RouteList* routes()   { return &_routes; }
+      //bool noRoute() const   { return _routes.empty();  }
+      virtual void writeRouting(int, Xml&) const;
       };
 
 extern bool initMidiJack();

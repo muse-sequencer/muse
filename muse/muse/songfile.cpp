@@ -29,6 +29,7 @@
 #include "midictrl.h"
 #include "amixer.h"
 #include "conf.h"
+#include "driver/jackmidi.h"
 
 //struct ClonePart {
       //const EventList* el;
@@ -1428,12 +1429,25 @@ void Song::write(int level, Xml& xml) const
 
       // write routing
       for (ciTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
-            if ((*i)->isMidiTrack())
-                  continue;
-            WaveTrack* track = (WaveTrack*)(*i);
-            track->writeRouting(level, xml);
+            
+            // p3.3.38 Changed
+            //if ((*i)->isMidiTrack())
+            //      continue;
+            //WaveTrack* track = (WaveTrack*)(*i);
+            //track->writeRouting(level, xml);
+            
+            (*i)->writeRouting(level, xml);
             }
 
+      // Write Jack midi routing.
+      for (iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) {
+            //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(*i);
+            //if (!mjd)
+            //  continue;
+            //mjd->writeRouting(level, xml);
+            (*i)->writeRouting(level, xml);
+            }
+      
       tempomap.write(level, xml);
       sigmap.write(level, xml);
       _markerList->write(level, xml);

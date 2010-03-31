@@ -18,6 +18,7 @@
 #include "audiodev.h"
 #include "gconfig.h"
 #include "xml.h"
+#include "midi.h"
 
 //int rxSyncPort = -1;         // receive from all ports
 //int txSyncPort = 1;
@@ -26,7 +27,7 @@
 //MidiSyncPort midiSyncPorts[MIDI_PORTS];
 int volatile curMidiSyncInPort = -1;
 
-bool debugSync = false;
+bool debugSync = true;
 
 int mtcType     = 1;
 MTC mtcOffset;
@@ -880,10 +881,10 @@ void MidiSeq::realtimeSystemInput(int port, int c)
       MidiPort* mp = &midiPorts[port];
       
       // Trigger on any tick, clock, or realtime command. 
-      if(c == 0xf9) // Tick
+      if(c == ME_TICK) // Tick
         mp->syncInfo().trigTickDetect();
       else
-      if(c == 0xf8) // Clock
+      if(c == ME_CLOCK) // Clock
         mp->syncInfo().trigMCSyncDetect();
       else  
         mp->syncInfo().trigMRTDetect(); // Other
@@ -891,7 +892,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
       // External sync not on? Clock in not turned on? Otherwise realtime in not turned on?
       if(!extSyncFlag.value())
         return;
-      if(c == 0xf8)
+      if(c == ME_CLOCK)
       { 
         if(!mp->syncInfo().MCIn())
           return; 
@@ -902,7 +903,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
         
         
       switch(c) {
-            case 0xf8:  // midi clock (24 ticks / quarter note)
+            case ME_CLOCK:  // midi clock (24 ticks / quarter note)
                   {
                   // Not for the current in port? Forget it.
                   if(port != curMidiSyncInPort)
@@ -1194,7 +1195,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   
                   }
                   break;
-            case 0xf9:  // midi tick  (every 10 msec)
+            case ME_TICK:  // midi tick  (every 10 msec)
                   // FIXME: Unfinished? mcStartTick is uninitialized and Song::setPos doesn't set it either. Dangerous to allow this.
                   //if (mcStart) {
                   //      song->setPos(0, mcStartTick);
@@ -1202,7 +1203,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   //      return;
                   //      }
                   break;
-            case 0xfa:  // start
+            case ME_START:  // start
                   // Re-transmit start to other devices if clock out turned on.
                   for(int p = 0; p < MIDI_PORTS; ++p)
                     //if(p != port && midiPorts[p].syncInfo().MCOut())
@@ -1259,7 +1260,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         playStateExt = true;
                         }
                   break;
-            case 0xfb:  // continue
+            case ME_CONTINUE:  // continue
                   // Re-transmit continue to other devices if clock out turned on.
                   for(int p = 0; p < MIDI_PORTS; ++p)
                     //if(p != port && midiPorts[p].syncInfo().MCOut())
@@ -1286,7 +1287,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         playStateExt = true;
                         }
                   break;
-            case 0xfc:  // stop
+            case ME_STOP:  // stop
                   {
                     // p3.3.35
                     // Stop the increment right away.
@@ -1326,10 +1327,11 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   }
                   
                   break;
-            case 0xfd:  // unknown
-            case 0xfe:  // active sensing
-            case 0xff:  // system reset
-                  break;
+            //case 0xfd:  // unknown
+            //case ME_SENSE:  // active sensing
+            //case ME_META:  // system reset (reset is 0xff same enumeration as file meta event)
+            default:
+                  break;      
             }
 
       }

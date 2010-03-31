@@ -95,7 +95,8 @@
 #include "didyouknow.h"
 #include <qtextedit.h>
 
-extern void cacheJackRouteNames();
+//extern void cacheJackRouteNames();
+
 static pthread_t watchdogThread;
 //ErrorHandler *error;
 static const char* fileOpenText =
@@ -1698,7 +1699,9 @@ bool MusE::save(const QString& name, bool overwriteWarn)
 
       // By T356. Cache the jack in/out route names BEFORE saving. 
       // Because jack often shuts down during save, causing the routes to be lost in the file.
-      cacheJackRouteNames();
+      // Not required any more...
+      //cacheJackRouteNames();
+      
       if (QFile::exists(name)) {
             backupCommand.sprintf("cp \"%s\" \"%s.backup\"", name.latin1(), name.latin1());
             }
@@ -2659,7 +2662,9 @@ int main(int argc, char* argv[])
           lash_client = lash_init (lash_args, muse_name, lash_flags, LASH_PROTOCOL(2,0));
           lash_alsa_client_id (lash_client, snd_seq_client_id (alsaSeq));
           if (!noAudio) {
-                char *jack_name = ((JackAudioDevice*)audioDevice)->getJackName();
+                // p3.3.38
+                //char *jack_name = ((JackAudioDevice*)audioDevice)->getJackName();
+                const char *jack_name = audioDevice->clientName();
                 lash_jack_client_name (lash_client, jack_name);
           }      
         }

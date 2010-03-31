@@ -83,7 +83,14 @@ void MidiDevice::init()
 MidiDevice::MidiDevice()
       {
       ///_recBufFlipped = false;
-      _tmpRecordCount = 0;
+      //_tmpRecordCount = 0;
+      for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
+        _tmpRecordCount[i] = 0;
+      
+      _sysexFIFOProcessed = false;
+      //_sysexWritingChunks = false;
+      _sysexReadingChunks = false;
+      
       init();
       }
 
@@ -91,7 +98,14 @@ MidiDevice::MidiDevice(const QString& n)
    : _name(n)
       {
       ///_recBufFlipped = false;
-      _tmpRecordCount = 0;
+      //_tmpRecordCount = 0;
+      for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
+        _tmpRecordCount[i] = 0;
+      
+      _sysexFIFOProcessed = false;
+      //_sysexWritingChunks = false;
+      _sysexReadingChunks = false;
+      
       init();
       }
 
@@ -151,10 +165,16 @@ bool filterEvent(const MEvent& event, int type, bool thru)
 //---------------------------------------------------------
 
 void MidiDevice::afterProcess()
-      {
-      while (_tmpRecordCount--)
-            _recordFifo.remove();
-      }
+{
+  //while (_tmpRecordCount--)
+  //  _recordFifo.remove();
+  
+  for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
+  {
+    while (_tmpRecordCount[i]--)
+      _recordFifo[i].remove();
+  } 
+}
 
 //---------------------------------------------------------
 //   beforeProcess
@@ -162,11 +182,17 @@ void MidiDevice::afterProcess()
 //---------------------------------------------------------
 
 void MidiDevice::beforeProcess()
-      {
-      //if (!jackPort(0).isZero())
-      //      audioDriver->collectMidiEvents(this, jackPort(0));
-      _tmpRecordCount = _recordFifo.getSize();
-      }
+{
+  //if (!jackPort(0).isZero())
+  //      audioDriver->collectMidiEvents(this, jackPort(0));
+  
+  //_tmpRecordCount = _recordFifo.getSize();
+  for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
+    _tmpRecordCount[i] = _recordFifo[i].getSize();
+  
+  // Reset this.
+  _sysexFIFOProcessed = false;
+}
 
 /*
 //---------------------------------------------------------
@@ -230,13 +256,14 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
             event.dump();
             }
 
+      int typ = event.type();
+      
       if(_port != -1)
       {
         int idin = midiPorts[_port].syncInfo().idIn();
         
 // p3.3.26 1/23/10 Section was disabled, enabled by Tim.
 //#if 0
-        int typ = event.type();
   
         //---------------------------------------------------
         // filter some SYSEX events
@@ -296,7 +323,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       // transfer noteOn events to gui for step recording and keyboard
       // remote control
       //
-      if (event.type() == ME_NOTEON) {
+      if (typ == ME_NOTEON) {
             int pv = ((event.dataA() & 0xff)<<8) + (event.dataB() & 0xff);
             song->putEvent(pv);
             }
@@ -305,18 +332,30 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       ///  _recordEvents2.add(event);     // add event to secondary list of recorded events
       ///else
       ///  _recordEvents.add(event);     // add event to primary list of recorded events
-      if(_recordFifo.put(MidiPlayEvent(event)))
-        printf("MidiDevice::recordEvent: fifo overflow\n");
+      
+      //if(_recordFifo.put(MidiPlayEvent(event)))
+      //  printf("MidiDevice::recordEvent: fifo overflow\n");
+      
+      // p3.3.38
+      // Do not bother recording if it is NOT actually being used by a port.
+      // Because from this point on, process handles things, by selected port.
+      if(_port == -1)
+        return;
+      
+      // Split the events up into channel fifos. Special 'channel' number 17 for sysex events.
+      unsigned int ch = (typ == ME_SYSEX)? MIDI_CHANNELS : event.channel();
+      if(_recordFifo[ch].put(MidiPlayEvent(event)))
+        printf("MidiDevice::recordEvent: fifo channel %d overflow\n", ch);
       }
 
 //---------------------------------------------------------
 //   find
 //---------------------------------------------------------
 
-MidiDevice* MidiDeviceList::find(const QString& s)
+MidiDevice* MidiDeviceList::find(const QString& s, int typeHint)
       {
       for (iMidiDevice i = begin(); i != end(); ++i)
-            if ((*i)->name() == s)
+            if( (typeHint == -1 || typeHint == (*i)->deviceType()) && ((*i)->name() == s) )
                   return *i;
       return 0;
       }

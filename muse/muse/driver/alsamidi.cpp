@@ -18,6 +18,8 @@
 #include "mpevent.h"
 //#include "sync.h"
 #include "utils.h"
+#include "audiodev.h"
+#include "xml.h"
 
 static int alsaSeqFdi = -1;
 static int alsaSeqFdo = -1;
@@ -168,6 +170,101 @@ void MidiAlsaDevice::close()
       }
 }
 
+//---------------------------------------------------------
+//   writeRouting
+//---------------------------------------------------------
+
+void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
+{
+      QString s;
+      /*
+      //if(rwFlags() & 2)  // Readable
+      {
+        //RouteList* rl = _inRoutes;
+        //for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
+        for (ciRoute r = _inRoutes.begin(); r != _inRoutes.end(); ++r) 
+        {
+          // Since an ALSA midi device supports read + write, this is the only way we can tell if this route is using the device as input.  
+          if(r->type == Route::TRACK_ROUTE)
+            continue;
+            
+          if(!r->name().isEmpty())
+          {
+            xml.tag(level++, "Route");
+            
+            //xml.strTag(level, "srcNode", r->name());
+            xml.tag(level, "source type=\"%d\" name=\"%s\"/", r->type, r->name().latin1());
+            
+            //xml.strTag(level, "dstNode", name());
+            xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, name().latin1());
+            
+            xml.etag(level--, "Route");
+          }
+        }  
+      } 
+      */
+      
+      for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) 
+      {
+        //if(r->type != Route::TRACK_ROUTE)
+        //{  
+        //  printf("MidiAlsaDevice::writeRouting Warning out route is not TRACK_ROUTE type\n");
+        //  continue;
+        //}
+          
+        if(!r->name().isEmpty())
+        {
+          //xml.tag(level++, "Route");
+          
+          s = QT_TR_NOOP("Route");
+          if(r->channel != -1)
+            s += QString(QT_TR_NOOP(" channel=\"%1\"")).arg(r->channel);
+          xml.tag(level++, s);
+          
+          /*
+          //xml.strTag(level, "srcNode", name());
+          if(r->channel != -1)  
+            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, r->channel, name().latin1());
+            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::MIDI_DEVICE_ROUTE, r->channel, name().latin1());
+            xml.tag(level, "source devtype=\"%d\" channel=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, r->channel, name().latin1());
+          else  
+            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, name().latin1());
+            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::MIDI_DEVICE_ROUTE, name().latin1());
+          */  
+            xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, name().latin1());
+          
+          /*
+          //xml.strTag(level, "dstNode", r->name());
+          if(r->channel != -1)  
+          {
+            if(r->type == Route::MIDI_DEVICE_ROUTE)  
+              xml.tag(level, "dest devtype=\"%d\" channel=\"%d\" name=\"%s\"/", r->device->deviceType(), r->channel, r->name().latin1());
+            else  
+              xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->channel, r->name().latin1());
+          }
+          else  
+          {
+            if(r->type == Route::MIDI_DEVICE_ROUTE)  
+              xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", r->device->deviceType(), r->name().latin1());
+            else  
+              xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().latin1());
+          }
+          */
+          
+          s = QT_TR_NOOP("dest");
+          if(r->type == Route::MIDI_DEVICE_ROUTE)
+            s += QString(QT_TR_NOOP(" devtype=\"%1\"")).arg(r->device->deviceType());
+          else
+          if(r->type != Route::TRACK_ROUTE)
+            s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
+          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+          xml.tag(level, s);
+          
+          xml.etag(level--, "Route");
+        }
+      }
+}
+    
 //---------------------------------------------------------
 //   putEvent
 //---------------------------------------------------------
@@ -418,7 +515,11 @@ bool initMidiAlsa()
                   
                   }
             }
-      snd_seq_set_client_name(alsaSeq, "MusE Sequencer");
+      
+      // p3.3.38
+      //snd_seq_set_client_name(alsaSeq, "MusE Sequencer");
+      snd_seq_set_client_name(alsaSeq, audioDevice->clientName());
+      
       int ci = snd_seq_poll_descriptors_count(alsaSeq, POLLIN);
       int co = snd_seq_poll_descriptors_count(alsaSeq, POLLOUT);
 
@@ -721,28 +822,39 @@ void alsaProcessMidiInput()
                         break;
 
                   case SND_SEQ_EVENT_CLOCK:
-                        midiSeq->realtimeSystemInput(curPort, 0xf8);
+                        midiSeq->realtimeSystemInput(curPort, ME_CLOCK);
                         //mdev->syncInfo().trigMCSyncDetect();
                         break;
 
                   case SND_SEQ_EVENT_START:
-                        midiSeq->realtimeSystemInput(curPort, 0xfa);
+                        midiSeq->realtimeSystemInput(curPort, ME_START);
                         break;
 
                   case SND_SEQ_EVENT_CONTINUE:
-                        midiSeq->realtimeSystemInput(curPort, 0xfb);
+                        midiSeq->realtimeSystemInput(curPort, ME_CONTINUE);
                         break;
 
                   case SND_SEQ_EVENT_STOP:
-                        midiSeq->realtimeSystemInput(curPort, 0xfc);
+                        midiSeq->realtimeSystemInput(curPort, ME_STOP);
                         break;
 
                   case SND_SEQ_EVENT_TICK:
-                        midiSeq->realtimeSystemInput(curPort, 0xf9);
+                        midiSeq->realtimeSystemInput(curPort, ME_TICK);
                         //mdev->syncInfo().trigTickDetect();
                         break;
 
                   case SND_SEQ_EVENT_SYSEX:
+                        
+                        // TODO: Deal with large sysex, which are broken up into chunks!
+                        // For now, do not accept if the first byte is not SYSEX or the last byte is not EOX, 
+                        //  meaning it's a chunk, possibly with more chunks to follow.
+                        if((*((unsigned char*)ev->data.ext.ptr) != ME_SYSEX) ||
+                           (*(((unsigned char*)ev->data.ext.ptr) + ev->data.ext.len - 1) != ME_SYSEX_END))
+                        {
+                          printf("MusE: alsaProcessMidiInput sysex chunks not supported!\n");
+                          break;
+                        }
+                        
                         event.setTime(0);      // mark as used
                         event.setType(ME_SYSEX);
                         event.setData((unsigned char*)(ev->data.ext.ptr)+1,

@@ -21,6 +21,7 @@
 #include "alsamidi.h"
 #include "audio.h"
 #include "arranger.h"
+#include "driver/jackmidi.h"
 
 //---------------------------------------------------------
 //   sendMsg
@@ -72,14 +73,58 @@ bool Audio::sendMessage(AudioMsg* m, bool doUndo)
 //---------------------------------------------------------
 
 void Audio::msgRemoveRoute(Route src, Route dst)
-      {
+{
       msgRemoveRoute1(src, dst);
-      if (!checkAudioDevice()) return;
-      if (src.type == JACK_ROUTE)
+      //if (!checkAudioDevice()) return;
+      if (src.type == Route::JACK_ROUTE)
+      {
+          if (!checkAudioDevice()) return;
+          
+          //if(dst.type == Route::JACK_MIDI_ROUTE)  
+          if(dst.type == Route::MIDI_DEVICE_ROUTE)  
+          {
+            //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(dst.device);
+            //if(jmd)
+            if(dst.device)
+            {
+              if(dst.device->deviceType() == MidiDevice::JACK_MIDI)
+                audioDevice->disconnect(src.jackPort, dst.device->clientPort());
+              //else
+              //{
+                // TODO...
+                //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(dst.device);
+                //if(amd)
+              //}  
+            }
+          }
+          else  
             audioDevice->disconnect(src.jackPort, ((AudioInput*)dst.track)->jackPort(dst.channel));
-      else if (dst.type == JACK_ROUTE)
+      }
+      else if (dst.type == Route::JACK_ROUTE)
+      {
+          if (!checkAudioDevice()) return;
+          
+          //if(src.type == Route::JACK_MIDI_ROUTE)  
+          if(src.type == Route::MIDI_DEVICE_ROUTE)  
+          {
+            //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(src.device);
+            //if(jmd)
+            if(src.device)
+            {
+              if(src.device->deviceType() == MidiDevice::JACK_MIDI)
+                audioDevice->disconnect(src.device->clientPort(), dst.jackPort);
+              //else
+              //{
+                // TODO...
+                //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(src.device);
+                //if(amd)
+              //}
+            }  
+          }
+          else  
             audioDevice->disconnect(((AudioOutput*)src.track)->jackPort(src.channel), dst.jackPort);
       }
+}
 
 //---------------------------------------------------------
 //   msgRemoveRoute1
@@ -100,16 +145,58 @@ void Audio::msgRemoveRoute1(Route src, Route dst)
 
 void Audio::msgAddRoute(Route src, Route dst)
       {
-      if (src.type == JACK_ROUTE) {
+      if (src.type == Route::JACK_ROUTE) 
+      {
             if (!checkAudioDevice()) return;
             if (isRunning())
+            {
+                //if(dst.type == Route::JACK_MIDI_ROUTE)  
+                if(dst.type == Route::MIDI_DEVICE_ROUTE)  
+                {
+                  //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(dst.device);
+                  //if(jmd)
+                  if(dst.device)
+                  {
+                    if(dst.device->deviceType() == MidiDevice::JACK_MIDI)  
+                      audioDevice->connect(src.jackPort, dst.device->clientPort());
+                    //else
+                    //{
+                      // TODO...
+                      //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(dst.device);
+                      //if(amd)
+                    //}
+                  }  
+                }
+                else  
                   audioDevice->connect(src.jackPort, ((AudioInput*)dst.track)->jackPort(dst.channel));
-            }
-      else if (dst.type == JACK_ROUTE) {
+            }      
+      }
+      else if (dst.type == Route::JACK_ROUTE) 
+      {
             if (!checkAudioDevice()) return;
             if (audio->isRunning())
+            {
+                //if(src.type == Route::JACK_MIDI_ROUTE)  
+                if(src.type == Route::MIDI_DEVICE_ROUTE)  
+                {
+                  //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(src.device);
+                  //if(jmd)
+                  if(src.device)
+                  {
+                    if(src.device->deviceType() == MidiDevice::JACK_MIDI)  
+                      audioDevice->connect(src.device->clientPort(), dst.jackPort);
+                    //else
+                    //{
+                      // TODO...
+                      //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(src.device);
+                      //if(amd)
+                    //}
+                  }  
+                }
+                else  
                   audioDevice->connect(((AudioOutput*)src.track)->jackPort(dst.channel), dst.jackPort);
-            }
+            }      
+      }
       msgAddRoute1(src, dst);
       }
 
@@ -203,57 +290,117 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
       QString name = node->name();
       int mc       = std::max(n, node->channels());
 
-      if (!name.isEmpty()) {
-            if (node->type() == Track::AUDIO_INPUT) {
-                  if (!checkAudioDevice()) return;
-                  AudioInput* ai = (AudioInput*)node;
-                  for (int i = 0; i < mc; ++i) {
-                        if (i < n && ai->jackPort(i) == 0) {
-                              char buffer[128];
-                              snprintf(buffer, 128, "%s-%d", name.latin1(), i);
-                              //ai->setJackPort(i, audioDevice->registerInPort(buffer));
-                              ai->setJackPort(i, audioDevice->registerInPort(buffer, false));
-                              }
-                        else if ((i >= n) && ai->jackPort(i)) {
-                              RouteList* ir = node->inRoutes();
-                              for (iRoute ii = ir->begin(); ii != ir->end(); ++ii) {
-                                    Route r = *ii;
-                                    if ((r.type == JACK_ROUTE) && (r.channel == i)) {
-                                          msgRemoveRoute(r, Route(node,i));
-                                          break;
-                                          }
-                                    }
-                              audioDevice->unregisterPort(ai->jackPort(i));
-                              ai->setJackPort(i, 0);
-                              }
-                        }
+      if (!name.isEmpty()) 
+      {
+            if (node->type() == Track::AUDIO_INPUT) 
+            {
+              if (!checkAudioDevice()) return;
+              AudioInput* ai = (AudioInput*)node;
+              for (int i = 0; i < mc; ++i) 
+              {
+                if (i < n && ai->jackPort(i) == 0) 
+                {
+                  char buffer[128];
+                  snprintf(buffer, 128, "%s-%d", name.latin1(), i);
+                  //ai->setJackPort(i, audioDevice->registerInPort(buffer));
+                  ai->setJackPort(i, audioDevice->registerInPort(buffer, false));
+                }
+                else if ((i >= n) && ai->jackPort(i)) 
+                {
+                  RouteList* ir = node->inRoutes();
+                  for (iRoute ii = ir->begin(); ii != ir->end(); ++ii) 
+                  {
+                    Route r = *ii;
+                    if ((r.type == Route::JACK_ROUTE) && (r.channel == i)) 
+                    {
+                      msgRemoveRoute(r, Route(node,i));
+                      break;
+                    }
                   }
-            else if (node->type() == Track::AUDIO_OUTPUT) {
+                  audioDevice->unregisterPort(ai->jackPort(i));
+                  ai->setJackPort(i, 0);
+                }
+              }      
+            }
+            else if (node->type() == Track::AUDIO_OUTPUT) 
+            {
                   if (!checkAudioDevice()) return;
                   AudioOutput* ao = (AudioOutput*)node;
-                  for (int i = 0; i < mc; ++i) {
+                  for (int i = 0; i < mc; ++i) 
+                  {
                         void* jp = ao->jackPort(i);
-                        if (i < n && jp == 0) {
+                        if (i < n && jp == 0) 
+                        {
                               char buffer[128];
                               snprintf(buffer, 128, "%s-%d", name.latin1(), i);
                               //ao->setJackPort(i, audioDevice->registerOutPort(buffer));
                               ao->setJackPort(i, audioDevice->registerOutPort(buffer, false));
-                              }
-                        else if (i >= n && jp) {
+                        }
+                        else if (i >= n && jp) 
+                        {
                               RouteList* ir = node->outRoutes();
-                              for (iRoute ii = ir->begin(); ii != ir->end(); ++ii) {
+                              for (iRoute ii = ir->begin(); ii != ir->end(); ++ii) 
+                              {
                                     Route r = *ii;
-                                    if ((r.type == JACK_ROUTE) && (r.channel == i)) {
+                                    if ((r.type == Route::JACK_ROUTE) && (r.channel == i)) 
+                                    {
                                           msgRemoveRoute(Route(node,i), r);
                                           break;
-                                          }
                                     }
+                              }
                               audioDevice->unregisterPort(jp);
                               ao->setJackPort(i, 0);
-                              }
                         }
                   }
             }
+      }      
+      
+      /* TODO TODO: Change all stereo routes to mono. 
+      // If we are going from stereo to mono we need to disconnect any stray synti 'mono last channel'...
+      if(n == 1 && node->channels() > 1)
+      {
+        // This should always happen - syntis are fixed channels, user cannot change them. But to be safe...
+        if(node->type() != Track::AUDIO_SOFTSYNTH) 
+        {
+          if(node->type() != Track::AUDIO_INPUT) 
+          {
+            RouteList* rl = node->inRoutes();
+            for(iRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+              // Only interested in synth tracks.
+              if(r->type != Route::TRACK_ROUTE || r->track->type() != Track::AUDIO_SOFTSYNTH)
+                continue;  
+              // If it's the last channel...
+              if(r->channel + 1 == ((AudioTrack*)r->track)->totalOutChannels())
+              {
+                msgRemoveRoute(*r, Route(node, r->channel));
+                //msgRemoveRoute(r, Route(node, r->remoteChannel));
+                break;
+              }
+            }
+          }  
+        
+          if(node->type() != Track::AUDIO_OUTPUT) 
+          {
+            RouteList* rl = node->outRoutes();
+            for(iRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+              // Only interested in synth tracks.
+              if(r->type != Route::TRACK_ROUTE || r->track->type() != Track::AUDIO_SOFTSYNTH)
+                continue;  
+              // If it's the last channel...
+              if(r->channel + 1 == ((AudioTrack*)r->track)->totalOutChannels())
+              {
+                msgRemoveRoute(Route(node, r->channel), *r);
+                //msgRemoveRoute(Route(node, r->remoteChannel), r);
+                break;
+              }
+            }
+          }  
+        }   
+      }
+      */        
+              
       AudioMsg msg;
       msg.id    = AUDIO_SET_CHANNELS;
       msg.snode = node;

@@ -139,6 +139,8 @@ class DssiSynthIF : public SynthIF
       
       //virtual int channels() const { return synth->_outports; }
       virtual int channels() const;
+      virtual int totalOutChannels() const;
+      virtual int totalInChannels() const;
       
       virtual void deactivate3() {}
       

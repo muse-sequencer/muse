@@ -6,6 +6,9 @@
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
+#include <qt.h>
+#include <qstring.h>
+
 #include "track.h"
 #include "event.h"
 #include "mididev.h"
@@ -367,8 +370,8 @@ MidiTrack::MidiTrack(const MidiTrack& mt, bool cloneParts)
       {
       _outPort       = mt.outPort();
       _outChannel    = mt.outChannel();
-      _inPortMask    = mt.inPortMask();
-      _inChannelMask = mt.inChannelMask();
+      ///_inPortMask    = mt.inPortMask();
+      ///_inChannelMask = mt.inChannelMask();
       _events        = new EventList;
       _mpevents      = new MPEventList;
       transposition  = mt.transposition;
@@ -395,9 +398,9 @@ void MidiTrack::init()
       _outChannel    = 0;
       // Changed by Tim. p3.3.8
       //_inPortMask    = 0xffff;
-      _inPortMask    = 0xffffffff;
+      ///_inPortMask    = 0xffffffff;
       
-      _inChannelMask = 0xffff;      // "ALL"
+      ///_inChannelMask = 0xffff;      // "ALL"
       transposition  = 0;
       velocity       = 0;
       delay          = 0;
@@ -648,6 +651,123 @@ bool Track::readProperties(Xml& xml, const QString& tag)
       }
 
 //---------------------------------------------------------
+//   writeRouting
+//---------------------------------------------------------
+
+void Track::writeRouting(int level, Xml& xml) const
+{
+      QString s;
+      
+      if (type() == Track::AUDIO_INPUT) 
+      {
+        const RouteList* rl = &_inRoutes;
+        for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
+        {
+          if(!r->name().isEmpty())
+          {
+            s = QT_TR_NOOP("Route");
+            if(r->channel != -1)
+              s += QString(QT_TR_NOOP(" channel=\"%1\"")).arg(r->channel);
+            
+            ///Route dst(name(), true, r->channel);
+            //xml.tag(level++, "Route");
+            xml.tag(level++, s);
+            
+            // p3.3.38 New routing scheme.
+            ///xml.strTag(level, "srcNode", r->name());
+            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", r->type, r->name().latin1());
+            s = QT_TR_NOOP("source");
+            if(r->type != Route::TRACK_ROUTE)
+              s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
+            s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+            xml.tag(level, s);
+            
+            ///xml.strTag(level, "dstNode", dst.name());
+            
+            //if(r->channel != -1)
+            //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().latin1());
+            //else  
+            //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, name().latin1());
+            xml.tag(level, "dest name=\"%s\"/", name().latin1());
+            
+            xml.etag(level--, "Route");
+          }
+        }
+      }
+      
+      const RouteList* rl = &_outRoutes;
+      for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
+      {
+        if(!r->name().isEmpty())
+        {
+          ///QString src(name());
+          ///if (type() == Track::AUDIO_OUTPUT) 
+          ///{ 
+                ///Route s(src, false, r->channel);
+                ///src = s.name();
+          ///}
+          
+          s = QT_TR_NOOP("Route");
+          if(r->channel != -1)
+            s += QString(QT_TR_NOOP(" channel=\"%1\"")).arg(r->channel);
+          if(r->channels != -1)
+            s += QString(QT_TR_NOOP(" channels=\"%1\"")).arg(r->channels);
+          if(r->remoteChannel != -1)
+            s += QString(QT_TR_NOOP(" remch=\"%1\"")).arg(r->remoteChannel);
+          
+          //xml.tag(level++, "Route");
+          xml.tag(level++, s);
+          
+          ///xml.strTag(level, "srcNode", src);
+          //if(r->channel != -1)
+          
+          // Allow for a regular mono or stereo track to feed a multi-channel synti. 
+          // thisChannel is the 'starting' channel of this source if feeding a regular track.
+          //if(r->type == Route::TRACK_ROUTE && r->track->isSynti() && r->channel != -1)
+          //if(isSynti() && r->thisChannel != -1)
+            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().latin1());
+          //  xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->thisChannel, name().latin1());
+          //else
+          
+          //if(r->channel != -1)
+          //  xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().latin1());
+          //else  
+          //  xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, name().latin1());
+          xml.tag(level, "source name=\"%s\"/", name().latin1());
+          
+          ///xml.strTag(level, "dstNode", r->name());
+          //if(r->channel != -1)
+          //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->channel, r->name().latin1());
+          //else  
+          //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().latin1());
+          
+          // Allow for a regular mono or stereo track to feed a multi-channel synti. 
+          // Channel is the 'starting' channel of the destination.
+          //if(r->type == Route::TRACK_ROUTE && r->track->isSynti() && r->channel != -1)
+          
+          //if(r->type == Route::TRACK_ROUTE && r->track->type() == Track::AUDIO_SOFTSYNTH && r->remoteChannel != -1)
+          //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->remoteChannel, r->name().latin1());
+          //else  
+          //if(r->type == Route::MIDI_DEVICE_ROUTE)
+          //  xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", r->device->deviceType(), r->name().latin1());
+          //else  
+          //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().latin1());
+          
+          s = QT_TR_NOOP("dest");
+          if(r->type == Route::MIDI_DEVICE_ROUTE)
+            s += QString(QT_TR_NOOP(" devtype=\"%1\"")).arg(r->device->deviceType());
+          else
+          if(r->type != Route::TRACK_ROUTE)
+            s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
+          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+          xml.tag(level, s);
+          
+          xml.etag(level--, "Route");
+        }
+      }
+}
+       
+//---------------------------------------------------------
 //   MidiTrack::write
 //---------------------------------------------------------
 
@@ -665,8 +785,8 @@ void MidiTrack::write(int level, Xml& xml) const
       xml.intTag(level, "device", outPort());
       xml.intTag(level, "channel", outChannel());
       //xml.intTag(level, "inportMap", inPortMask());
-      xml.uintTag(level, "inportMap", inPortMask());
-      xml.intTag(level, "inchannelMap", inChannelMask());
+      ///xml.uintTag(level, "inportMap", inPortMask());       // Obsolete
+      ///xml.intTag(level, "inchannelMap", inChannelMask());  // Obsolete
       xml.intTag(level, "locked", _locked);
       xml.intTag(level, "echo", _recEcho);
 
@@ -721,9 +841,11 @@ void MidiTrack::read(Xml& xml)
                               setOutChannel(xml.parseInt());
                         else if (tag == "inportMap")
                               //setInPortMask(xml.parseInt());
-                              setInPortMask(xml.parseUInt());
+                              ///setInPortMask(xml.parseUInt());
+                              xml.skip(tag);                      // Obsolete
                         else if (tag == "inchannelMap")
-                              setInChannelMask(xml.parseInt());
+                              ///setInChannelMask(xml.parseInt());
+                              xml.skip(tag);                      // Obsolete
                         else if (tag == "locked")
                               _locked = xml.parseInt();
                         else if (tag == "echo")

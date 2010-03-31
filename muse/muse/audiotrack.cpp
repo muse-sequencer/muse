@@ -22,6 +22,8 @@
 // By T356. For caching jack in/out routing names BEFORE file save. 
 // Jack often shuts down during file save, causing the routes to be lost in the file.
 // cacheJackRouteNames() is ONLY called from MusE::save() in app.cpp
+// Update: Not required any more because the real problem was Jack RT priority, which has been fixed.
+/*
 typedef std::multimap <const int, QString> jackRouteNameMap;
 std::map <const AudioTrack*, jackRouteNameMap > jackRouteNameCache;
 typedef std::multimap <const int, QString>::const_iterator ciJackRouteNameMap;
@@ -54,13 +56,17 @@ void cacheJackRouteNames()
       }                            
     }
 }
+*/
+
 //---------------------------------------------------------
 //   AudioTrack
 //---------------------------------------------------------
 
 AudioTrack::AudioTrack(TrackType t)
+//AudioTrack::AudioTrack(TrackType t, int num_out_bufs)
    : Track(t)
       {
+      //_totalOutChannels = num_out_bufs; // Is either parameter-default MAX_CHANNELS, or custom value passed (used by syntis).
       _processed = false;
       _haveData = false;
       _sendMetronome = false;
@@ -79,8 +85,9 @@ AudioTrack::AudioTrack(TrackType t)
       //outBuffers = new float*[MAX_CHANNELS];
       //for (int i = 0; i < MAX_CHANNELS; ++i)
       //      outBuffers[i] = new float[segmentSize];
-      for (int i = 0; i < MAX_CHANNELS; ++i)
-            posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * segmentSize);
+      //for (int i = 0; i < MAX_CHANNELS; ++i)
+      //      posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * segmentSize);
+      
       // Let's allocate it all in one block, and just point the remaining buffer pointers into the block
       //  which allows faster one-shot buffer copying.
       // Nope. Nice but interferes with possibility we don't know if other buffers are contiguous (jack buffers, local stack buffers etc.).
@@ -88,6 +95,18 @@ AudioTrack::AudioTrack(TrackType t)
       //for (int i = 0; i < MAX_CHANNELS; ++i)
       //  *(outBuffers + i) = sizeof(float) * segmentSize * i;
             
+      // p3.3.38
+      // Easy way, less desirable... Start out with enough for MAX_CHANNELS. Then multi-channel syntis can re-allocate, 
+      //  via a call to (a modified!) setChannels().
+      // Hard way, more desirable... Creating a synti instance passes the total channels to this constructor, overriding MAX_CHANNELS.
+      _totalOutChannels = MAX_CHANNELS;
+      outBuffers = new float*[_totalOutChannels];
+      for (int i = 0; i < _totalOutChannels; ++i)
+            posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * segmentSize);
+      
+      // This is only set by multi-channel syntis...
+      _totalInChannels = 0;
+      
       bufferPos = MAXINT;
       
       setVolume(1.0);
@@ -98,6 +117,7 @@ AudioTrack::AudioTrack(TrackType t)
 AudioTrack::AudioTrack(const AudioTrack& t, bool cloneParts)
   : Track(t, cloneParts)
       {
+      _totalOutChannels = t._totalOutChannels; // Is either MAX_CHANNELS, or custom value (used by syntis).
       _processed      = false;
       _haveData       = false;
       _sendMetronome  = t._sendMetronome;
@@ -112,8 +132,18 @@ AudioTrack::AudioTrack(const AudioTrack& t, bool cloneParts)
       //outBuffers = new float*[MAX_CHANNELS];
       //for (int i = 0; i < MAX_CHANNELS; ++i)
       //      outBuffers[i] = new float[segmentSize];
-      for (int i = 0; i < MAX_CHANNELS; ++i)
-            posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * segmentSize);
+      //for (int i = 0; i < MAX_CHANNELS; ++i)
+      //      posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * segmentSize);
+      
+      // p3.3.38
+      int chans = _totalOutChannels;
+      // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
+      if(chans < MAX_CHANNELS)
+        chans = MAX_CHANNELS;
+      outBuffers = new float*[chans];
+      for (int i = 0; i < chans; ++i)
+            posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * segmentSize);
+      
       bufferPos = MAXINT;
       _recFile  = t._recFile;
       }
@@ -124,11 +154,26 @@ AudioTrack::~AudioTrack()
       //for (int i = 0; i < MAX_CHANNELS; ++i)
       //      delete[] outBuffers[i];
       //delete[] outBuffers;
-      for(int i = 0; i < MAX_CHANNELS; ++i) 
+      
+      // p3.3.15
+      //for(int i = 0; i < MAX_CHANNELS; ++i) 
+      //{
+      //  if(outBuffers[i])
+      //    free(outBuffers[i]);
+      //}
+      
+      // p3.3.38
+      int chans = _totalOutChannels;
+      // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
+      if(chans < MAX_CHANNELS)
+        chans = MAX_CHANNELS;
+      for(int i = 0; i < chans; ++i) 
       {
         if(outBuffers[i])
           free(outBuffers[i]);
       }
+      delete[] outBuffers;
+      
 }
 
 //---------------------------------------------------------
@@ -1109,12 +1154,13 @@ void AudioTrack::mapRackPluginsToControllers()
     */
 }
 
+/*
 //---------------------------------------------------------
 //   writeRouting
 //---------------------------------------------------------
 
 void AudioTrack::writeRouting(int level, Xml& xml) const
-      {
+{
       QString n;
       if (type() == Track::AUDIO_INPUT) {
                 ciJackRouteNameCache circ = jackRouteNameCache.find(this);
@@ -1168,7 +1214,9 @@ void AudioTrack::writeRouting(int level, Xml& xml) const
             }
         }  
       }  
-    }
+}
+*/       
+       
 //---------------------------------------------------------
 //   AudioInput
 //---------------------------------------------------------

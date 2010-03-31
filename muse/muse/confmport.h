@@ -45,7 +45,9 @@ class MPWhatsThis : public QWhatsThis {
 class MPConfig : public SynthConfigBase {
       QPopupMenu* popup;
       QPopupMenu* instrPopup;
-
+      
+      int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
+      
       Q_OBJECT
 
    private slots:

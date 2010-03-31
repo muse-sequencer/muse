@@ -95,7 +95,7 @@
                 <set>AlignCenter | WordBreak</set>
             </property>
         </widget>
-        <widget class="SpinBox" row="8" column="0">
+        <widget class="SpinBox" row="7" column="0">
             <property name="name">
                 <cstring>iLen</cstring>
             </property>
@@ -136,32 +136,296 @@
                 <string>output port</string>
             </property>
         </widget>
-        <widget class="QLayoutWidget" row="2" column="1">
+        <widget class="QLabel" row="2" column="1">
           <property name="name">
-            <cstring>oPortsLayout</cstring>
+            <cstring>TextLabel2</cstring>
+          </property>
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>5</hsizetype>
+              <vsizetype>0</vsizetype>
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+            </sizepolicy>
+          </property>
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="indent">
+            <number>1</number>
+          </property>
+          <property name="text">
+            <string>Out ch</string>
+          </property>
+        </widget>
+        <widget class="SpinBox" row="6" column="0">
+            <property name="name">
+                <cstring>iVerz</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="specialValueText">
+                <string>off</string>
+            </property>
+            <property name="maxValue">
+                <number>1000</number>
+            </property>
+            <property name="minValue">
+                <number>-1000</number>
+            </property>
+        </widget>
+        <widget class="SpinBox" row="8" column="0">
+            <property name="name">
+                <cstring>iAnschl</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="maxValue">
+                <number>127</number>
+            </property>
+            <property name="minValue">
+                <number>-127</number>
+            </property>
+            <property name="value">
+                <number>0</number>
+            </property>
+        </widget>
+        <widget class="SpinBox" row="9" column="0">
+            <property name="name">
+                <cstring>iKompr</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="prefix">
+                <string></string>
+            </property>
+            <property name="suffix">
+                <string>%</string>
+            </property>
+            <property name="maxValue">
+                <number>200</number>
+            </property>
+            <property name="minValue">
+                <number>25</number>
+            </property>
+            <property name="value">
+                <number>100</number>
+            </property>
+        </widget>
+        <widget class="SpinBox" row="5" column="0">
+            <property name="name">
+                <cstring>iTransp</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="specialValueText">
+                <string>off</string>
+            </property>
+            <property name="maxValue">
+                <number>127</number>
+            </property>
+            <property name="minValue">
+                <number>-127</number>
+            </property>
+            <property name="value">
+                <number>1</number>
+            </property>
+        </widget>
+        <widget class="QLabel" row="5" column="1">
+            <property name="name">
+                <cstring>TextLabel9</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Transp.</string>
+            </property>
+            <property name="indent">
+              <number>2</number>
+            </property>
+        </widget>
+        <widget class="QLabel" row="6" column="1">
+            <property name="name">
+                <cstring>TextLabel10</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Delay</string>
+            </property>
+            <property name="indent">
+              <number>2</number>
+            </property>
+        </widget>
+        <widget class="QLabel" row="9" column="1">
+            <property name="name">
+                <cstring>TextLabel13</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Compr.</string>
+            </property>
+            <property name="indent">
+              <number>2</number>
+            </property>
+        </widget>
+        <widget class="QLabel" row="8" column="1">
+            <property name="name">
+                <cstring>TextLabel12</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Velocity</string>
+            </property>
+            <property name="indent">
+              <number>0</number>
+            </property>
+        </widget>
+        <widget class="QLabel" row="7" column="1">
+            <property name="name">
+                <cstring>TextLabel11</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Length</string>
+            </property>
+            <property name="indent">
+              <number>2</number>
+            </property>
+        </widget>
+        <widget class="QLayoutWidget" row="3" column="0">
+            <property name="name">
+                <cstring>routingLayout</cstring>
+            </property>
+            <hbox>
+              <widget class="QToolButton">
+                <property name="name">
+                  <cstring>iRButton</cstring>
+                </property>
+                <property name="sizePolicy">
+                  <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>1</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="text">
+                  <string>iR</string>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>input routing</string>
+                </property>
+              </widget>
+              <widget class="QToolButton">
+                <property name="name">
+                  <cstring>oRButton</cstring>
+                </property>
+                <property name="sizePolicy">
+                  <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>1</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="text">
+                  <string>oR</string>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>output routing</string>
+                </property>
+              </widget>
+            </hbox>
+        </widget>
+        <widget class="QLayoutWidget" row="3" column="1">
+          <property name="name">
+            <cstring>routingLayout2</cstring>
           </property>
           <hbox>
             <widget class="QLabel">
-                <property name="name">
-                    <cstring>TextLabel2</cstring>
-                </property>
-                <property name="sizePolicy">
-                    <sizepolicy>
-                        <hsizetype>5</hsizetype>
-                        <vsizetype>0</vsizetype>
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                    </sizepolicy>
-                </property>
-                <property name="margin">
-                    <number>0</number>
-                </property>
-                <property name="indent">
-                  <number>1</number>
-                </property>
-                <property name="text">
-                    <string>OCh</string>
-                </property>
+              <property name="name">
+                <cstring>iChanDetectLabel</cstring>
+              </property>
+              <property name="sizePolicy">
+                <sizepolicy>
+                  <hsizetype>5</hsizetype>
+                  <vsizetype>0</vsizetype>
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                </sizepolicy>
+              </property>
+              <property name="text">
+                <string>W</string>
+              </property>
+              <property name="alignment">
+                <set>AlignCenter</set>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>input detect</string>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Input detect indicator. Detects all note on-off, controller, aftertouch, 
+                  program change, and pitchbend (but not sysex or realtime) events 
+                  on the selected channels, on the selected midi ports.</string>
+              </property>
             </widget>
             <widget class="QToolButton">
               <property name="name">
@@ -193,344 +457,24 @@
             </widget>
             <spacer>
               <property name="name">
-                <cstring>recEchoSpacer</cstring>
+                <cstring>echoSpacer</cstring>
               </property>
               <property name="orientation">
                 <enum>Horizontal</enum>
               </property>
               <property name="sizeType">
-                <enum>Minimum</enum>
+                <enum>Maximum</enum>
               </property>
               <property name="sizeHint">
                 <size>
-                  <width>2</width>
+                  <width>4</width>
                   <height>2</height>
                 </size>
               </property>
             </spacer>
           </hbox>
         </widget>
-        <widget class="SpinBox" row="7" column="0">
-            <property name="name">
-                <cstring>iVerz</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>5</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="specialValueText">
-                <string>off</string>
-            </property>
-            <property name="maxValue">
-                <number>1000</number>
-            </property>
-            <property name="minValue">
-                <number>-1000</number>
-            </property>
-        </widget>
-        <widget class="SpinBox" row="9" column="0">
-            <property name="name">
-                <cstring>iAnschl</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>5</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="maxValue">
-                <number>127</number>
-            </property>
-            <property name="minValue">
-                <number>-127</number>
-            </property>
-            <property name="value">
-                <number>0</number>
-            </property>
-        </widget>
-        <widget class="SpinBox" row="10" column="0">
-            <property name="name">
-                <cstring>iKompr</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>5</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="prefix">
-                <string></string>
-            </property>
-            <property name="suffix">
-                <string>%</string>
-            </property>
-            <property name="maxValue">
-                <number>200</number>
-            </property>
-            <property name="minValue">
-                <number>25</number>
-            </property>
-            <property name="value">
-                <number>100</number>
-            </property>
-        </widget>
-        <widget class="SpinBox" row="6" column="0">
-            <property name="name">
-                <cstring>iTransp</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>1</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="specialValueText">
-                <string>off</string>
-            </property>
-            <property name="maxValue">
-                <number>127</number>
-            </property>
-            <property name="minValue">
-                <number>-127</number>
-            </property>
-            <property name="value">
-                <number>1</number>
-            </property>
-        </widget>
-        <widget class="QLabel" row="6" column="1">
-            <property name="name">
-                <cstring>TextLabel9</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>5</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="text">
-                <string>Transp.</string>
-            </property>
-            <property name="indent">
-              <number>2</number>
-            </property>
-        </widget>
-        <widget class="QLabel" row="7" column="1">
-            <property name="name">
-                <cstring>TextLabel10</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>5</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="text">
-                <string>Delay</string>
-            </property>
-            <property name="indent">
-              <number>2</number>
-            </property>
-        </widget>
-        <widget class="QLabel" row="10" column="1">
-            <property name="name">
-                <cstring>TextLabel13</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>5</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="text">
-                <string>Compr.</string>
-            </property>
-            <property name="indent">
-              <number>2</number>
-            </property>
-        </widget>
-        <widget class="QLabel" row="9" column="1">
-            <property name="name">
-                <cstring>TextLabel12</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>5</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="text">
-                <string>Velocity</string>
-            </property>
-            <property name="indent">
-              <number>0</number>
-            </property>
-        </widget>
-        <widget class="QLabel" row="8" column="1">
-            <property name="name">
-                <cstring>TextLabel11</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>5</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="text">
-                <string>Length</string>
-            </property>
-            <property name="indent">
-              <number>2</number>
-            </property>
-        </widget>
-        <widget class="QLineEdit" row="3" column="0">
-            <property name="name">
-                <cstring>iInput</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>7</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="whatsThis" stdset="0">
-              <string>Events from all configured ports are
-recorded to this track.
-You can specify more than one port for
-recording:
-   1 2 3    record from port 1 2 and 3
-   1-3      same
-   1-3 5    record from port 1 2 3 and 5</string>
-            </property>
-            <property name="toolTip" stdset="0">
-                <string>input ports</string>
-            </property>
-        </widget>
-        <widget class="QLabel" row="3" column="1">
-          <property name="name">
-            <cstring>iPortsTextLabel</cstring>
-          </property>
-          <property name="sizePolicy">
-            <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-            </sizepolicy>
-          </property>
-          <property name="margin">
-            <number>0</number>
-          </property>
-          <property name="indent">
-            <number>2</number>
-          </property>
-          <property name="text">
-            <string>IPorts</string>
-          </property>
-        </widget>
-        <widget class="QLayoutWidget" row="4" column="1">
-            <property name="name">
-                <cstring>iChLayout</cstring>
-            </property>
-            <hbox>
-              <widget class="QLabel">
-                  <property name="name">
-                      <cstring>iChanTextLabel</cstring>
-                  </property>
-                  <property name="sizePolicy">
-                      <sizepolicy>
-                          <hsizetype>0</hsizetype>
-                          <vsizetype>0</vsizetype>
-                          <horstretch>0</horstretch>
-                          <verstretch>0</verstretch>
-                      </sizepolicy>
-                  </property>
-                  <property name="margin">
-                      <number>0</number>
-                  </property>
-                  <property name="indent">
-                    <number>2</number>
-                  </property>
-                  <property name="text">
-                      <string>ICh</string>
-                  </property>
-              </widget>
-              <widget class="QLabel">
-                <property name="name">
-                  <cstring>iChanDetectLabel</cstring>
-                </property>
-                <property name="sizePolicy">
-                  <sizepolicy>
-                    <hsizetype>5</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                  </sizepolicy>
-                </property>
-                <property name="text">
-                  <string>W</string>
-                </property>
-                <property name="alignment">
-                  <set>AlignCenter</set>
-                </property>
-                <property name="toolTip" stdset="0">
-                  <string>input detect</string>
-                </property>
-                <property name="whatsThis" stdset="0">
-                  <string>Input detect indicator. Detects all note on-off, controller, aftertouch, 
-                    program change, and pitchbend (but not sysex or realtime) events 
-                    on the selected channels, on the selected midi ports.</string>
-                </property>
-              </widget>
-            </hbox>
-        </widget>
-        <widget class="QLineEdit" row="4" column="0">
-            <property name="name">
-                <cstring>iInputChannel</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>5</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="toolTip" stdset="0">
-                <string>input channels</string>
-            </property>
-            <property name="whatsThis" stdset="0">
-                <string>Events from all configured channels are
-recorded to this track.
-You can specify more than one channel for
-recording:
-   1 2 3    record from channel 1 2 and 3
-   1-3      same
-   1-3 5    record from channel 1 2 3 and 5</string>
-            </property>
-        </widget>
-        <widget class="QLabel" row="11" column="0" rowspan="1" colspan="2">
+        <widget class="QLabel" row="10" column="0" rowspan="1" colspan="2">
             <property name="name">
                 <cstring>TextLabel1_2</cstring>
             </property>
@@ -561,7 +505,7 @@ recording:
                 <set>AlignCenter</set>
             </property>
         </widget>
-        <widget class="QPushButton" row="12" column="0" rowspan="1" colspan="2">
+        <widget class="QPushButton" row="11" column="0" rowspan="1" colspan="2">
             <property name="name">
                 <cstring>iPatch</cstring>
             </property>
@@ -580,7 +524,7 @@ recording:
                 <string>Select instrument patch</string>
             </property>
         </widget>
-        <widget class="QLabel" row="13" column="0">
+        <widget class="QLabel" row="12" column="0">
             <property name="name">
                 <cstring>textLabel1</cstring>
             </property>
@@ -599,7 +543,7 @@ recording:
                 <set>AlignVCenter|AlignRight</set>
             </property>
         </widget>
-        <widget class="QLayoutWidget" row="13" column="1">
+        <widget class="QLayoutWidget" row="12" column="1">
             <property name="name">
               <cstring>recLayout</cstring>
             </property>
@@ -662,7 +606,7 @@ recording:
                 </spacer>
             </hbox>
         </widget>
-        <widget class="SpinBox" row="14" column="0">
+        <widget class="SpinBox" row="13" column="0">
             <property name="name">
                 <cstring>iHBank</cstring>
             </property>
@@ -690,7 +634,7 @@ recording:
                 <string>Bank Select MSB. Double-click on/off.</string>
             </property>
         </widget>
-        <widget class="QLabel" row="14" column="1">
+        <widget class="QLabel" row="13" column="1">
             <property name="name">
                 <cstring>TextLabel4</cstring>
             </property>
@@ -715,7 +659,7 @@ recording:
                 <number>2</number>
             </property>
         </widget>
-        <widget class="SpinBox" row="15" column="0">
+        <widget class="SpinBox" row="14" column="0">
             <property name="name">
                 <cstring>iLBank</cstring>
             </property>
@@ -743,7 +687,7 @@ recording:
                 <string>Bank Select LSB. Double-click on/off.</string>
             </property>
         </widget>
-        <widget class="QLabel" row="15" column="1">
+        <widget class="QLabel" row="14" column="1">
             <property name="name">
                 <cstring>TextLabel5</cstring>
             </property>
@@ -768,7 +712,7 @@ recording:
                 <number>2</number>
             </property>
         </widget>
-        <widget class="SpinBox" row="16" column="0">
+        <widget class="SpinBox" row="15" column="0">
             <property name="name">
                 <cstring>iProgram</cstring>
             </property>
@@ -796,7 +740,7 @@ recording:
                 <string>Program. Double-click on/off.</string>
             </property>
         </widget>
-        <widget class="QLayoutWidget" row="16" column="1">
+        <widget class="QLayoutWidget" row="15" column="1">
             <property name="name">
                 <cstring>progLayout</cstring>
             </property>
@@ -865,7 +809,7 @@ recording:
               </spacer>
             </hbox>
         </widget>
-        <widget class="SpinBox" row="17" column="0">
+        <widget class="SpinBox" row="16" column="0">
             <property name="name">
                 <cstring>iLautst</cstring>
             </property>
@@ -893,7 +837,7 @@ recording:
                 <string>Volume. Double-click on/off.</string>
             </property>
         </widget>
-        <widget class="QLayoutWidget" row="17" column="1">
+        <widget class="QLayoutWidget" row="16" column="1">
             <property name="name">
                 <cstring>volLayout</cstring>
             </property>
@@ -962,7 +906,7 @@ recording:
               </spacer>
             </hbox>
         </widget>
-        <widget class="SpinBox" row="18" column="0">
+        <widget class="SpinBox" row="17" column="0">
             <property name="name">
                 <cstring>iPan</cstring>
             </property>
@@ -993,7 +937,7 @@ recording:
                 <string>Change stereo position. Double-click on/off.</string>
             </property>
         </widget>
-        <widget class="QLayoutWidget" row="18" column="1">
+        <widget class="QLayoutWidget" row="17" column="1">
             <property name="name">
                 <cstring>panLayout</cstring>
             </property>
@@ -1062,7 +1006,7 @@ recording:
               </spacer>
             </hbox>
         </widget>
-        <spacer row="19" column="0" rowspan="1" colspan="2">
+        <spacer row="18" column="0" rowspan="1" colspan="2">
             <property name="name">
                 <cstring>spacer5</cstring>
             </property>
@@ -1107,8 +1051,6 @@ recording:
 <tabstops>
     <tabstop>iOutput</tabstop>
     <tabstop>iOutputChannel</tabstop>
-    <tabstop>iInput</tabstop>
-    <tabstop>iInputChannel</tabstop>
     <tabstop>iTransp</tabstop>
     <tabstop>iVerz</tabstop>
     <tabstop>iLen</tabstop>

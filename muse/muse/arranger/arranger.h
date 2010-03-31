@@ -132,9 +132,9 @@ class Arranger : public QWidget {
       void trackInfoScroll(int);
       
       //void iNameChanged();
-      void iInputChannelChanged(const QString&);
+      ///void iInputChannelChanged(const QString&);
       void iOutputChannelChanged(int);
-      void iInputPortChanged(const QString&);
+      ///void iInputPortChanged(const QString&);
       void iOutputPortChanged(int);
       void iProgHBankChanged();
       void iProgLBankChanged();
@@ -166,6 +166,8 @@ class Arranger : public QWidget {
       void panRecClicked();
       void recEchoToggled(bool);
       void verticalScrollSetYpos(unsigned);
+      void inRoutesPressed();
+      void outRoutesPressed();
       
    signals:
       void redirectWheelEvent(QWheelEvent*);

@@ -74,6 +74,8 @@ class MetronomeSynthIF : public SynthIF
       //virtual bool init(Synth*) { return true; }
       
       virtual int channels() const { return 1; }
+      virtual int totalOutChannels() const { return 1; }
+      virtual int totalInChannels() const { return 0; }
       virtual void deactivate3() {}
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }

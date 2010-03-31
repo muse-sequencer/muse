@@ -596,7 +596,9 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           // Added by Tim. p3.3.13
           //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().latin1());
       
-          track->copyData(samplePos, channels, frames, buffer);
+          // p3.3.38
+          //track->copyData(samplePos, channels, frames, buffer);
+          track->copyData(samplePos, channels, -1, -1, frames, buffer);
         }
       }      
     }

@@ -13,6 +13,8 @@
 
 #include "mididev.h"
 
+class Xml;
+
 //---------------------------------------------------------
 //   MidiAlsaDevice
 //---------------------------------------------------------
@@ -35,6 +37,9 @@ class MidiAlsaDevice : public MidiDevice {
       MidiAlsaDevice() {}
       MidiAlsaDevice(const snd_seq_addr_t&, const QString& name);
       virtual ~MidiAlsaDevice() {}
+      virtual void* clientPort() { return (void*)&adr; }
+      virtual void writeRouting(int, Xml&) const;
+      virtual inline int deviceType() { return ALSA_MIDI; } 
       };
 
 extern bool initMidiAlsa();

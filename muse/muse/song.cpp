@@ -14,6 +14,8 @@
 #include <qpopupmenu.h>
 #include <qdir.h>
 #include <qaction.h>
+#include <qcursor.h>
+#include <qbutton.h>
 
 #include "app.h"
 #include "song.h"
@@ -41,6 +43,26 @@
 extern void clearMidiTransforms();
 extern void clearMidiInputTransforms();
 Song* song;
+
+/*
+//---------------------------------------------------------
+//   RoutingMenuItem
+//---------------------------------------------------------
+
+class RoutingMenuItem : public QCustomMenuItem 
+{
+      Route route;
+      //virtual QSize sizeHint() { return QSize(80, h); }
+      virtual void paint(QPainter* p, const QColorGroup&, bool, bool, int x, int y, int w, int h)
+      {
+        p->fillRect(x, y, w, h, QBrush(lightGray));
+        p->drawText(x, y, w, h, AlignCenter, route.name());
+      }
+
+   public:
+      RoutingMenuItem(const Route& r) : route(r) { }
+};
+*/
 
 //---------------------------------------------------------
 //   Song
@@ -235,8 +257,14 @@ Track* Song::addTrack(int t)
                   case Track::AUDIO_GROUP:
                   case Track::AUDIO_AUX:
                   case Track::AUDIO_INPUT:
-                  case Track::AUDIO_SOFTSYNTH:
+                  // p3.3.38
+                  //case Track::AUDIO_SOFTSYNTH:
                         audio->msgAddRoute(Route((AudioTrack*)track, -1), Route(ao, -1));
+                        updateFlags |= SC_ROUTE;
+                        break;
+                  // p3.3.38 It should actually never get here now, but just in case.
+                  case Track::AUDIO_SOFTSYNTH:
+                        audio->msgAddRoute(Route((AudioTrack*)track, 0, ((AudioTrack*)track)->channels()), Route(ao, 0, ((AudioTrack*)track)->channels()));
                         updateFlags |= SC_ROUTE;
                         break;
                   }
@@ -853,7 +881,6 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                   }
             newPart->setLenTick(endTick); // endTick - part->tick()
 
-            // Added by Tim. p3.3.6
             //printf("Song::cmdAddRecordedEvents before changePart part:%p events:%p refs:%d Arefs:%d newPart:%p events:%p refs:%d Arefs:%d\n", part, part->events(), part->events()->refCount(), part->events()->arefCount(), newPart, newPart->events(), newPart->events()->refCount(), newPart->events()->arefCount());
       
             // Change the part.
@@ -866,7 +893,6 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             // Now add all of the new part's port controller values, and do all clone parts.
             addPortCtrlEvents(newPart, true);
 
-            // Added by Tim. p3.3.6
             //printf("Song::cmdAddRecordedEvents after changePart part:%p events:%p refs:%d Arefs:%d newPart:%p events:%p refs:%d Arefs:%d\n", part, part->events(), part->events()->refCount(), part->events()->arefCount(), newPart, newPart->events(), newPart->events()->refCount(), newPart->events()->arefCount());
       
             //undoOp(UndoOp::ModifyPart, part, newPart);
@@ -877,7 +903,6 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             //part->events()->incARef(-1);
             
             updateFlags |= SC_PART_MODIFIED;
-            // Added by Tim. p3.3.6
             //printf("Song::cmdAddRecordedEvents final part:%p events:%p refs:%d Arefs:%d newPart:%p events:%p refs:%d Arefs:%d\n", part, part->events(), part->events()->refCount(), part->events()->arefCount(), newPart, newPart->events(), newPart->events()->refCount(), newPart->events()->arefCount());
             */
       
@@ -1123,7 +1148,7 @@ void Song::setPlay(bool f)
       {
       if (extSyncFlag.value()) {
           if (debugMsg)
-          printf("not allowed while using external sync");
+            printf("not allowed while using external sync");
           return;
       }
       // only allow the user to set the button "on"
@@ -1137,7 +1162,7 @@ void Song::setStop(bool f)
       {
       if (extSyncFlag.value()) {
           if (debugMsg)
-          printf("not allowed while using external sync");
+            printf("not allowed while using external sync");
           return;
       }
       // only allow the user to set the button "on"
@@ -1857,7 +1882,6 @@ void Song::cmdRemovePart(Part* part)
 //void Song::cmdChangePart(Part* oldPart, Part* newPart)
 void Song::cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClones)
       {
-      // Added by Tim. p3.3.6
       //printf("Song::cmdChangePart before changePart oldPart:%p events:%p refs:%d Arefs:%d sn:%d newPart:%p events:%p refs:%d Arefs:%d sn:%d\n", oldPart, oldPart->events(), oldPart->events()->refCount(), oldPart->events()->arefCount(), oldPart->sn(), newPart, newPart->events(), newPart->events()->refCount(), newPart->events()->arefCount(), newPart->sn());
       
       if(doCtrls)
@@ -1875,7 +1899,6 @@ void Song::cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClon
       
       //oldPart->replaceClone(newPart);
       
-      // Added by Tim. p3.3.6
       //printf("Song::cmdChangePart before repl/unchClone oldPart:%p events:%p refs:%d Arefs:%d sn:%d newPart:%p events:%p refs:%d Arefs:%d sn:%d\n", oldPart, oldPart->events(), oldPart->events()->refCount(), oldPart->events()->arefCount(), oldPart->sn(), newPart, newPart->events(), newPart->events()->refCount(), newPart->events()->arefCount(), newPart->sn());
       
       replaceClone(oldPart, newPart);
@@ -1883,7 +1906,6 @@ void Song::cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClon
       if(doCtrls)
         addPortCtrlEvents(newPart, doClones);
       
-      // Added by Tim. p3.3.6
       //printf("Song::cmdChangePart after repl/unchClone oldPart:%p events:%p refs:%d Arefs:%d sn:%d newPart:%p events:%p refs:%d Arefs:%d sn:%d\n", oldPart, oldPart->events(), oldPart->events()->refCount(), oldPart->events()->arefCount(), oldPart->sn(), newPart, newPart->events(), newPart->events()->refCount(), newPart->events()->arefCount(), newPart->sn());
       
       updateFlags = SC_PART_MODIFIED;
@@ -2028,6 +2050,20 @@ void Song::cleanupForQuit()
         // Remove the controllers and the values.
         midiPorts[i].controller()->clearDelete(true);
         
+      // Can't do this here. Jack isn't running.
+      /*
+      if(debugMsg)
+        printf("deleting midi devices\n");
+      for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd)
+      {
+        // Since Syntis are midi devices, there's no need to delete them below.
+        if((*imd)->isSynti())
+          continue;
+        delete (*imd);
+      }
+      midiDevices.clear();     // midi devices
+      */
+      
       if(debugMsg)
         printf("deleting synths\n");
       // Delete all synths.
@@ -2385,7 +2421,6 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     dctl |= drumMap[note].anote;
   }
     
-  // Added by Tim. p3.3.6
   //printf("Song::execMidiAutomationCtlPopup ctlnum:%d dctl:%d anote:%d\n", ctlnum, dctl, drumMap[ctlnum & 0x7f].anote);
   
   unsigned tick = cpos();
@@ -2428,7 +2463,6 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
         ev = i->second;
         if(ev.type() == Controller)
         {
-          // Added by Tim. p3.3.6
           //printf("Song::execMidiAutomationCtlPopup ev.dataA:%d\n", ev.dataA());
   
           //if(ev.dataA() == dctl)
@@ -2651,7 +2685,7 @@ void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
                         for (iRoute ii = ir->begin(); ii != ir->end(); ++ii)
                         {
                             Route r = *ii;
-                            if ((r.type == JACK_ROUTE) && (r.channel == ch))
+                            if ((r.type == Route::JACK_ROUTE) && (r.channel == ch))
                             {
                                     if(disconnect)
                                     audioDevice->disconnect(ao->jackPort(ch), r.jackPort);
@@ -2684,7 +2718,7 @@ void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
                             for (iRoute ii = ir->begin(); ii != ir->end(); ++ii)
                             {
                                 Route r = *ii;
-                                if ((r.type == JACK_ROUTE) && (r.channel == ch))
+                                if ((r.type == Route::JACK_ROUTE) && (r.channel == ch))
                                 {
                                         if(disconnect)
                                         audioDevice->disconnect(r.jackPort, ai->jackPort(ch));
@@ -2708,6 +2742,199 @@ void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
 }
 
 //---------------------------------------------------------
+//   chooseMidiRoutes
+//---------------------------------------------------------
+
+void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
+{
+  if(!track)
+    return;
+    
+  //if(!track->isMidiTrack())
+  //  return;
+  
+  //if(dst)
+  //{
+    // TODO
+    
+  //}
+  //else
+  //{
+    RouteList* rl = dst ? track->outRoutes() : track->inRoutes();
+    //Route dst(track, -1);
+  
+    QPopupMenu* pup = new QPopupMenu(parent);
+    pup->setCheckable(true);
+    
+    int gid = 0;
+    
+    //MidiInPortList* tl = song->midiInPorts();
+    //for(iMidiInPort i = tl->begin();i != tl->end(); ++i) 
+    for(int i = 0; i < MIDI_PORTS; ++i)
+    {
+      //MidiInPort* track = *i;
+      // NOTE: Could possibly list all devices, bypassing ports, but no, let's stick wth ports.
+      MidiPort* mp = &midiPorts[i];
+      MidiDevice* md = mp->device();
+      if(!md)
+        continue;
+      
+      if(!(md->rwFlags() & (dst ? 1 : 2)))
+        continue;
+        
+      //printf("MidiStrip::iRoutePressed adding submenu portnum:%d\n", i);
+      
+      //QMenu* m = menu->addMenu(track->name());
+      QPopupMenu* subp = new QPopupMenu(parent);
+      
+      for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+      {
+        //QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
+        //subp->insertItem(QT_TR_NOOP(QString("Channel %1").arg(ch+1)), i * MIDI_CHANNELS + ch);
+        gid = i * MIDI_CHANNELS + ch;
+        
+        //printf("MidiStrip::iRoutePressed inserting gid:%d\n", gid);
+        
+        subp->insertItem(QString("Channel %1").arg(ch+1), gid);
+        //a->setCheckable(true);
+        //Route src(track, ch, RouteNode::TRACK);
+        //Route src(md, ch);
+        //Route r = Route(src, dst);
+        //a->setData(QVariant::fromValue(r));
+        //a->setChecked(rl->indexOf(r) != -1);
+        Route srcRoute(md, ch);
+        for(iRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+        {
+          //if(*ir == dst) 
+          if(*ir == srcRoute) 
+          {
+            subp->setItemChecked(gid, true);
+            break;
+          }
+        }
+      }
+      pup->insertItem(QT_TR_NOOP(md->name()), subp);
+    }
+        
+    /*
+    QPopupMenu* pup = new QPopupMenu(iR);
+    pup->setCheckable(true);
+    //MidiTrack* t = (MidiTrack*)track;
+    RouteList* irl = track->inRoutes();
+
+    MidiTrack* t = (MidiTrack*)track;
+    int gid = 0;
+    for (int i = 0; i < channel; ++i) 
+    {
+          char buffer[128];
+          snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+          MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
+          pup->insertItem(titel);
+
+          if (!checkAudioDevice()) return;
+          std::list<QString> ol = audioDevice->outputPorts();
+          for (std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) {
+                int id = pup->insertItem(*ip, (gid * 16) + i);
+                Route dst(*ip, true, i);
+                ++gid;
+                for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
+                      if (*ir == dst) {
+                            pup->setItemChecked(id, true);
+                            break;
+                            }
+                      }
+                }
+          if (i+1 != channel)
+                pup->insertSeparator();
+    }
+    */
+    
+    if(pup->count() == 0)
+    {
+      delete pup;
+      return;
+    }
+    
+    int n = pup->exec(QCursor::pos());
+    delete pup;
+    if (n != -1) 
+    {
+          int mdidx = n / MIDI_CHANNELS;
+          int ch = n % MIDI_CHANNELS;
+          
+          //if(debugMsg)
+            //printf("Song::chooseMidiRoutes mdidx:%d ch:%d\n", mdidx, ch);
+            
+          MidiPort* mp = &midiPorts[mdidx];
+          MidiDevice* md = mp->device();
+          if(!md)
+            return;
+          
+          //if(!(md->rwFlags() & 2))
+          if(!(md->rwFlags() & (dst ? 1 : 2)))
+            return;
+            
+          
+          //QString s(pup->text(n));
+          //QT_TR_NOOP(md->name())
+          
+          //Route srcRoute(s, false, -1);
+          Route aRoute(md, ch);
+          //Route srcRoute(md, -1);
+          //Route dstRoute(track, -1);
+          Route bRoute(track, ch);
+
+          //if (track->type() == Track::AUDIO_INPUT)
+          //      srcRoute.channel = dstRoute.channel = n & 0xf;
+          iRoute iir = rl->begin();
+          for (; iir != rl->end(); ++iir) 
+          {
+            //if(*iir == (dst ? bRoute : aRoute))
+            if(*iir == aRoute)
+                  break;
+          }
+          if (iir != rl->end()) 
+          {
+                // disconnect
+                if(dst)
+                {
+                  //printf("Song::chooseMidiRoutes removing route src track name: %s dst device name: %s\n", track->name().latin1(), md->name().latin1());
+                  audio->msgRemoveRoute(bRoute, aRoute);
+                }
+                else
+                {
+                  //printf("Song::chooseMidiRoutes removing route src device name: %s dst track name: %s\n", md->name().latin1(), track->name().latin1());
+                  audio->msgRemoveRoute(aRoute, bRoute);
+                }
+          }
+          else 
+          {
+            // connect
+            if(dst)
+            {
+              //printf("Song::chooseMidiRoutes adding route src track name: %s dst device name: %s\n", track->name().latin1(), md->name().latin1());
+              audio->msgAddRoute(bRoute, aRoute);
+            }
+            else
+            {
+              //printf("Song::chooseMidiRoutes adding route src device name: %s dst track name: %s\n", md->name().latin1(), track->name().latin1());
+              audio->msgAddRoute(aRoute, bRoute);
+            }  
+          }
+          
+          //printf("Song::chooseMidiRoutes calling msgUpdateSoloStates\n");
+          audio->msgUpdateSoloStates();
+          //printf("Song::chooseMidiRoutes calling song->update\n");
+          song->update(SC_ROUTE);
+    }
+    //delete pup;
+    parent->setDown(false);     // pup->exec() catches mouse release event
+    //printf("Song::chooseMidiRoutes end\n");
+    
+  //}  
+}
+
+//---------------------------------------------------------
 //   insertTrack0
 //---------------------------------------------------------
 
@@ -2725,7 +2952,6 @@ void Song::insertTrack0(Track* track, int idx)
 
 void Song::insertTrack1(Track* track, int /*idx*/)
       {
-      // Added by Tim. p3.3.13
       //printf("Song::insertTrack1 track:%lx\n", track);
       
       switch(track->type()) {
@@ -2742,7 +2968,6 @@ void Song::insertTrack1(Track* track, int /*idx*/)
                   break;
             }
       
-      // Added by Tim. p3.3.13
       //printf("Song::insertTrack1 end of function\n");
       
       }
@@ -2753,8 +2978,7 @@ void Song::insertTrack1(Track* track, int /*idx*/)
 //---------------------------------------------------------
 
 void Song::insertTrack2(Track* track, int idx)
-      {
-      // Added by Tim. p3.3.13
+{
       //printf("Song::insertTrack2 track:%lx\n", track);
       
       int n;
@@ -2805,11 +3029,9 @@ void Song::insertTrack2(Track* track, int idx)
       // initialize missing aux send
       //
       iTrack i = _tracks.index2iterator(idx);
-      // Added by Tim. p3.3.13
       //printf("Song::insertTrack2 inserting into _tracks...\n");
       
       _tracks.insert(i, track);
-      // Added by Tim. p3.3.13
       //printf("Song::insertTrack2 inserted\n");
       
       n = _auxs.size();
@@ -2822,6 +3044,7 @@ void Song::insertTrack2(Track* track, int idx)
                   }
             }
 
+      /*
       //
       //  add routes
       //
@@ -2848,11 +3071,51 @@ void Song::insertTrack2(Track* track, int idx)
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
                   r->track->inRoutes()->push_back(src);
             }
+      */
       
-      // Added by Tim. p3.3.13
+      // p3.3.38
+      
+      //
+      //  add routes
+      //
+
+      if (track->type() == Track::AUDIO_OUTPUT) 
+      {
+            const RouteList* rl = track->inRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  if(r->track == track)
+                    r->track->outRoutes()->push_back(*r);
+            }      
+      }
+      else if (track->type() == Track::AUDIO_INPUT) 
+      {
+            const RouteList* rl = track->outRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  if(r->track == track)
+                    r->track->inRoutes()->push_back(*r);
+            }      
+      }
+      else 
+      {
+            const RouteList* rl = track->inRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  if(r->track == track)
+                    r->track->outRoutes()->push_back(*r);
+            }
+            rl = track->outRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  if(r->track == track)
+                    r->track->inRoutes()->push_back(*r);
+            }      
+      }
+      
       //printf("Song::insertTrack2 end of function\n");
       
-      }
+}
 
 //---------------------------------------------------------
 //   insertTrack3
@@ -2861,7 +3124,6 @@ void Song::insertTrack2(Track* track, int idx)
 
 void Song::insertTrack3(Track* /*track*/, int /*idx*/)//prevent compiler warning: unused parameter
       {
-      // Added by Tim. p3.3.13
       //printf("Song::insertTrack3\n");
       
       /*
@@ -2932,7 +3194,7 @@ void Song::removeTrack1(Track* track)
 //---------------------------------------------------------
 
 void Song::removeTrack2(Track* track)
-      {
+{
       switch(track->type()) {
             case Track::MIDI:
             case Track::DRUM:
@@ -2970,6 +3232,9 @@ void Song::removeTrack2(Track* track)
                   break;
             }
       _tracks.erase(track);
+      
+      
+      /*
       if (track->isMidiTrack())
             return;
       //
@@ -2996,7 +3261,49 @@ void Song::removeTrack2(Track* track)
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
                   r->track->inRoutes()->removeRoute(src);
             }
+      */      
+      
+      // p3.3.38
+      
+      //
+      //  remove routes
+      //
+
+      if (track->type() == Track::AUDIO_OUTPUT) 
+      {
+            const RouteList* rl = track->inRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  if(r->track == track)
+                    r->track->outRoutes()->removeRoute(*r);
+            }      
       }
+      else if (track->type() == Track::AUDIO_INPUT) 
+      {
+            const RouteList* rl = track->outRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  if(r->track == track)
+                    r->track->inRoutes()->removeRoute(*r);
+            }      
+      }
+      else 
+      {
+            const RouteList* rl = track->inRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  if(r->track == track)
+                    r->track->outRoutes()->removeRoute(*r);
+            }
+            rl = track->outRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  if(r->track == track)
+                    r->track->inRoutes()->removeRoute(*r);
+            }      
+      }
+      
+}
 
 //---------------------------------------------------------
 //   removeTrack3

@@ -473,6 +473,18 @@ int VstSynthIF::channels() const
       return plugin->numOutputs;
       }
 
+int VstSynthIF::totalOutChannels() const
+      {
+      AEffect* plugin = _fst->plugin;
+      return plugin->numOutputs;
+      }
+
+int VstSynthIF::totalInChannels() const
+      {
+      AEffect* plugin = _fst->plugin;
+      return plugin->numInputs;
+      }
+
 //---------------------------------------------------------
 //   createSIF
 //---------------------------------------------------------

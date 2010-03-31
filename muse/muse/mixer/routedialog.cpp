@@ -49,13 +49,16 @@ void RouteDialog::routingChanged()
       for (ciTrack i = tl->begin(); i != tl->end(); ++i) {
             if ((*i)->isMidiTrack())
                   continue;
-            WaveTrack* track = (WaveTrack*)(*i);
+            // p3.3.38
+            //WaveTrack* track = (WaveTrack*)(*i);
+            AudioTrack* track = (AudioTrack*)(*i);
             if (track->type() == Track::AUDIO_INPUT) {
                   for (int channel = 0; channel < track->channels(); ++channel)
                         newDstList->insertItem(Route(track, channel).name());
                   const RouteList* rl = track->inRoutes();
                   for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-                        Route dst(track->name(), true, r->channel);
+                        //Route dst(track->name(), true, r->channel);
+                        Route dst(track->name(), true, r->channel, Route::TRACK_ROUTE);
                         new QListViewItem(routeList, r->name(), dst.name());
                         }
                   }

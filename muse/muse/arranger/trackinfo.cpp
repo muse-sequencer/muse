@@ -40,6 +40,7 @@
 #include "mixer/astrip.h"
 #include "icons.h"
 #include "app.h"
+#include "route.h"
 
 
 //---------------------------------------------------------
@@ -59,9 +60,9 @@ void Arranger::midiTrackInfoHeartBeat()
       
       int outChannel = track->outChannel();
       int outPort    = track->outPort();
-      int ichMask    = track->inChannelMask();
+      ///int ichMask    = track->inChannelMask();
       //int iptMask    = track->inPortMask();
-      unsigned int iptMask    = track->inPortMask();
+      ///unsigned int iptMask    = track->inPortMask();
       
       MidiPort* mp = &midiPorts[outPort];
       
@@ -76,19 +77,36 @@ void Arranger::midiTrackInfoHeartBeat()
       // Check for detection of midi general activity on chosen channels...
       int mpt = 0;
       //int mch = 0;
-      for(; mpt < MIDI_PORTS; ++mpt)
+      RouteList* rl = track->inRoutes();
+      
+      ciRoute r = rl->begin();
+      //for( ; mpt < MIDI_PORTS; ++mpt)
+      for( ; r != rl->end(); ++r)
       {
+        //if(!r->isValid() || ((r->type != Route::ALSA_MIDI_ROUTE) && (r->type != Route::JACK_MIDI_ROUTE)))
+        if(!r->isValid() || (r->type != Route::MIDI_DEVICE_ROUTE))
+          continue;
+        
+        // NOTE: TODO: Code for channelless events like sysex, ** IF we end up using the 'special channel 17' method.
+        if(r->channel == -1)
+          continue;
+        
+        // No port assigned to the device?
+        mpt = r->device->midiPort();
+        if(mpt == -1)
+          continue;
+        
         //for(; mch < MIDI_CHANNELS; ++mch)
         //{
           //if(midiPorts[mpt].syncInfo().actDetect(mch) && (iptMask & (1 << mpt)) && (ichMask & (1 << mch)) )
-          if((iptMask & bitShiftLU[mpt]) && (midiPorts[mpt].syncInfo().actDetectBits() & ichMask) )
+          //if((iptMask & bitShiftLU[mpt]) && (midiPorts[mpt].syncInfo().actDetectBits() & ichMask) )
+          if(midiPorts[mpt].syncInfo().actDetectBits() & bitShiftLU[r->channel]) 
           {
             //if(midiTrackInfo->iChanTextLabel->paletteBackgroundColor() != green)
             //  midiTrackInfo->iChanTextLabel->setPaletteBackgroundColor(green);
             //if(midiTrackInfo->iChanDetectLabel->pixmap() != greendotIcon)
             if(!midiTrackInfo->_midiDetect)
             {
-              // Added by Tim. p3.3.6
               //printf("Arranger::midiTrackInfoHeartBeat setting green icon\n");
           
               midiTrackInfo->_midiDetect = true;
@@ -101,14 +119,14 @@ void Arranger::midiTrackInfoHeartBeat()
       }
       // No activity detected?
       //if(mch == MIDI_CHANNELS)
-      if(mpt == MIDI_PORTS)
+      //if(mpt == MIDI_PORTS)
+      if(r == rl->end())
       {
         //if(midiTrackInfo->iChanTextLabel->paletteBackgroundColor() != darkGreen)
         //  midiTrackInfo->iChanTextLabel->setPaletteBackgroundColor(darkGreen);
         //if(midiTrackInfo->iChanDetectLabel->pixmap() != darkgreendotIcon)
         if(midiTrackInfo->_midiDetect)
         {
-          // Added by Tim. p3.3.6
           //printf("Arranger::midiTrackInfoHeartBeat setting darkgreen icon\n");
           
           midiTrackInfo->_midiDetect = false;
@@ -122,7 +140,6 @@ void Arranger::midiTrackInfoHeartBeat()
       {
         if(program != CTRL_VAL_UNKNOWN)
         {
-          // Added by Tim. p3.3.6
           //printf("Arranger::midiTrackInfoHeartBeat setting program to unknown\n");
           
           program = CTRL_VAL_UNKNOWN;
@@ -154,7 +171,6 @@ void Arranger::midiTrackInfoHeartBeat()
           //if(strcmp(midiTrackInfo->iPatch->text().latin1(), n) != 0)
           if(midiTrackInfo->iPatch->text() != n)
           {
-            // Added by Tim. p3.3.6
             //printf("Arranger::midiTrackInfoHeartBeat setting patch <unknown>\n");
           
             midiTrackInfo->iPatch->setText(n);
@@ -172,7 +188,6 @@ void Arranger::midiTrackInfoHeartBeat()
           else
           if(strcmp(midiTrackInfo->iPatch->text().latin1(), name) != 0)
           {
-            // Added by Tim. p3.3.6
             //printf("Arranger::midiTrackInfoHeartBeat setting patch name\n");
           
             midiTrackInfo->iPatch->setText(name);
@@ -207,7 +222,6 @@ void Arranger::midiTrackInfoHeartBeat()
                         pr = 0;
             //}
             
-            // Added by Tim. p3.3.6
             //printf("Arranger::midiTrackInfoHeartBeat setting program\n");
           
             if(midiTrackInfo->iHBank->value() != hb)
@@ -249,7 +263,6 @@ void Arranger::midiTrackInfoHeartBeat()
         volume = v;
         if(midiTrackInfo->iLautst->value() != v)
         {
-          // Added by Tim. p3.3.6
           //printf("Arranger::midiTrackInfoHeartBeat setting volume\n");
           
           midiTrackInfo->iLautst->blockSignals(true);
@@ -277,7 +290,6 @@ void Arranger::midiTrackInfoHeartBeat()
         pan = v;
         if(midiTrackInfo->iPan->value() != v)
         {
-          // Added by Tim. p3.3.6
           //printf("Arranger::midiTrackInfoHeartBeat setting pan\n");
           
           midiTrackInfo->iPan->blockSignals(true);
@@ -405,7 +417,6 @@ void Arranger::switchInfo(int n)
 //---------------------------------------------------------
 //   setTrackInfoLabelText
 //---------------------------------------------------------
-// Added by Tim. p3.3.9
 
 void Arranger::setTrackInfoLabelText()
 {
@@ -419,7 +430,6 @@ void Arranger::setTrackInfoLabelText()
 //---------------------------------------------------------
 //   setTrackInfoLabelFont
 //---------------------------------------------------------
-// Added by Tim. p3.3.9
 
 void Arranger::setTrackInfoLabelFont()
 {
@@ -498,6 +508,7 @@ void Arranger::iOutputChannelChanged(int channel)
             }
       }
 
+/*
 //---------------------------------------------------------
 //   iKanalChanged
 //---------------------------------------------------------
@@ -511,6 +522,7 @@ void Arranger::iInputChannelChanged(const QString& s)
             list->redraw();
             }
       }
+*/
 
 //---------------------------------------------------------
 //   iOutputPortChanged
@@ -531,6 +543,7 @@ void Arranger::iOutputPortChanged(int index)
       list->redraw();
       }
 
+/*
 //---------------------------------------------------------
 //   iInputPortChanged
 //---------------------------------------------------------
@@ -547,6 +560,31 @@ void Arranger::iInputPortChanged(const QString& s)
       track->setInPortMask(val);
       list->redraw();
       }
+*/
+
+//---------------------------------------------------------
+//   inRoutesPressed
+//---------------------------------------------------------
+
+void Arranger::inRoutesPressed()
+{
+  if(!selected)
+    return;
+    
+  song->chooseMidiRoutes(midiTrackInfo->iRButton, (MidiTrack*)selected, false);
+}
+
+//---------------------------------------------------------
+//   outRoutesPressed
+//---------------------------------------------------------
+
+void Arranger::outRoutesPressed()
+{
+  if(!selected)
+    return;
+    
+  song->chooseMidiRoutes(midiTrackInfo->oRButton, (MidiTrack*)selected, true);
+}
 
 //---------------------------------------------------------
 //   iProgHBankChanged
@@ -1124,7 +1162,7 @@ void Arranger::genMidiTrackInfo()
       //connect(midiTrackInfo->iName, SIGNAL(returnPressed()), SLOT(iNameChanged()));
       
       connect(midiTrackInfo->iOutputChannel, SIGNAL(valueChanged(int)), SLOT(iOutputChannelChanged(int)));
-      connect(midiTrackInfo->iInputChannel, SIGNAL(textChanged(const QString&)), SLOT(iInputChannelChanged(const QString&)));
+      ///connect(midiTrackInfo->iInputChannel, SIGNAL(textChanged(const QString&)), SLOT(iInputChannelChanged(const QString&)));
       connect(midiTrackInfo->iHBank, SIGNAL(valueChanged(int)), SLOT(iProgHBankChanged()));
       connect(midiTrackInfo->iLBank, SIGNAL(valueChanged(int)), SLOT(iProgLBankChanged()));
       connect(midiTrackInfo->iProgram, SIGNAL(valueChanged(int)), SLOT(iProgramChanged()));
@@ -1141,12 +1179,17 @@ void Arranger::genMidiTrackInfo()
       connect(midiTrackInfo->iPan, SIGNAL(valueChanged(int)), SLOT(iPanChanged(int)));
       connect(midiTrackInfo->iPan, SIGNAL(doubleClicked()), SLOT(iPanDoubleClicked()));
       connect(midiTrackInfo->iOutput, SIGNAL(activated(int)), SLOT(iOutputPortChanged(int)));
-      connect(midiTrackInfo->iInput, SIGNAL(textChanged(const QString&)), SLOT(iInputPortChanged(const QString&)));
+      ///connect(midiTrackInfo->iInput, SIGNAL(textChanged(const QString&)), SLOT(iInputPortChanged(const QString&)));
       connect(midiTrackInfo->recordButton, SIGNAL(clicked()), SLOT(recordClicked()));
       connect(midiTrackInfo->progRecButton, SIGNAL(clicked()), SLOT(progRecClicked()));
       connect(midiTrackInfo->volRecButton, SIGNAL(clicked()), SLOT(volRecClicked()));
       connect(midiTrackInfo->panRecButton, SIGNAL(clicked()), SLOT(panRecClicked()));
       connect(midiTrackInfo->recEchoButton, SIGNAL(toggled(bool)), SLOT(recEchoToggled(bool)));
+      connect(midiTrackInfo->iRButton, SIGNAL(pressed()), SLOT(inRoutesPressed()));
+      
+      // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
+      midiTrackInfo->oRButton->setEnabled(false);
+      connect(midiTrackInfo->oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
       
       connect(heartBeatTimer, SIGNAL(timeout()), SLOT(midiTrackInfoHeartBeat()));
       }
@@ -1169,12 +1212,12 @@ void Arranger::updateMidiTrackInfo(int flags)
         
       //{
         int outChannel = track->outChannel();
-        int inChannel  = track->inChannelMask();
+        ///int inChannel  = track->inChannelMask();
         int outPort    = track->outPort();
         //int inPort     = track->inPortMask();
-        unsigned int inPort     = track->inPortMask();
+        ///unsigned int inPort     = track->inPortMask();
   
-        midiTrackInfo->iInput->clear();
+        //midiTrackInfo->iInput->clear();
         midiTrackInfo->iOutput->clear();
   
         for (int i = 0; i < MIDI_PORTS; ++i) {
@@ -1185,7 +1228,8 @@ void Arranger::updateMidiTrackInfo(int flags)
                     midiTrackInfo->iOutput->setCurrentItem(i);
               }
         //midiTrackInfo->iInput->setText(bitmap2String(inPort));
-        midiTrackInfo->iInput->setText(u32bitmap2String(inPort));
+        ///midiTrackInfo->iInput->setText(u32bitmap2String(inPort));
+        
         //midiTrackInfo->iInputChannel->setText(bitmap2String(inChannel));
   
         // Removed by Tim. p3.3.9
@@ -1195,7 +1239,7 @@ void Arranger::updateMidiTrackInfo(int flags)
         //      }
         
         midiTrackInfo->iOutputChannel->setValue(outChannel+1);
-        midiTrackInfo->iInputChannel->setText(bitmap2String(inChannel));
+        ///midiTrackInfo->iInputChannel->setText(bitmap2String(inChannel));
         
         // Set record echo.
         if(midiTrackInfo->recEchoButton->isOn() != track->recEcho())

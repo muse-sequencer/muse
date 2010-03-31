@@ -118,6 +118,8 @@ class SynthIF {
       //virtual bool init(Synth* s) = 0;
       
       virtual int channels() const = 0;
+      virtual int totalOutChannels() const = 0;
+      virtual int totalInChannels() const = 0;
       virtual void deactivate3() = 0;
       virtual const char* getPatchName(int, int, int, bool) const = 0;
       virtual const char* getPatchName(int, int, MType, bool) = 0;
@@ -169,6 +171,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       //SynthI* clone() const { return new SynthI(*this); }
       SynthI* clone(bool /*cloneParts*/) const { return new SynthI(*this); }
 
+      virtual inline int deviceType() { return SYNTH_MIDI; } 
+      
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s, const QString& instanceName);
 
@@ -237,6 +241,8 @@ class MessSynthIF : public SynthIF {
       bool init(Synth* s, SynthI* si);
       
       virtual int channels() const;
+      virtual int totalOutChannels() const;
+      virtual int totalInChannels() const;
       virtual void deactivate3();
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool);

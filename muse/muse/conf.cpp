@@ -40,6 +40,7 @@
 #include "midiport.h"
 #include "mididev.h"
 #include "driver/audiodev.h"
+#include "driver/jackmidi.h"
 #include "xml.h"
 #include "waveedit.h"
 #include "midi.h"
@@ -216,6 +217,7 @@ static void readConfigMidiPort(Xml& xml)
       int openFlags = 1;
       bool thruFlag = false;
       MidiSyncInfo tmpSi;
+      int type = MidiDevice::ALSA_MIDI;
 
       for (;;) {
             Xml::Token token = xml.parse();
@@ -226,6 +228,8 @@ static void readConfigMidiPort(Xml& xml)
                   case Xml::TagStart:
                         if (tag == "name")
                               device = xml.parse1();
+                        else if (tag == "type")
+                              type = xml.parseInt();
                         else if (tag == "record") {         // old
                               bool f = xml.parseInt();
                               if (f)
@@ -262,7 +266,19 @@ static void readConfigMidiPort(Xml& xml)
                                        idx, MIDI_PORTS);
                                     idx = 0;
                                     }
+                              
                               MidiDevice* dev = midiDevices.find(device);
+                              
+                              if(debugMsg && !dev)
+                                fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.latin1());
+                                
+                              if(!dev && type == MidiDevice::JACK_MIDI)
+                              {
+                                if(debugMsg)
+                                  fprintf(stderr, "readConfigMidiPort: creating jack midi device %s\n", device.latin1());
+                                dev = MidiJackDevice::createJackMidiDevice(device, openFlags);
+                              }
+                              
                               MidiPort* mp = &midiPorts[idx];
                               mp->syncInfo().copyParams(tmpSi);
                               if (dev) {
@@ -942,6 +958,13 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   xml.strTag(level, "instrument", mport->instrument()->iname());
                   if (dev) {
                         xml.strTag(level, "name",   dev->name());
+                        
+                        // p3.3.38
+                        //if(dynamic_cast<MidiJackDevice*>(dev))
+                        if(dev->deviceType() != MidiDevice::ALSA_MIDI)
+                          //xml.intTag(level, "type", MidiDevice::JACK_MIDI);
+                          xml.intTag(level, "type", dev->deviceType());
+                        
                         // Changed by T356. "record" is old and by mistake written as rwFlags here. 
                         // openFlags was read before, but never written here.
                         //xml.intTag(level, "record", dev->rwFlags() & 0x2 ? 1 : 0);

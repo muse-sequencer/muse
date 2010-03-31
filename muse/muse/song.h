@@ -36,6 +36,7 @@ class MarkerList;
 class Marker;
 class SNode;
 class QPopupMenu;
+class QButton;
 
 class MidiPort;
 class MidiDevice;
@@ -301,6 +302,7 @@ class Song : public QObject {
       int execMidiAutomationCtlPopup(MidiTrack*, MidiPart*, const QPoint&, int);
       void connectJackRoutes(AudioTrack* track, bool disconnect);
       void updateSoloStates();
+      void chooseMidiRoutes(QButton* /*parent*/, MidiTrack* /*track*/, bool /*dst*/);
 
       //-----------------------------------------
       //   undo, redo
