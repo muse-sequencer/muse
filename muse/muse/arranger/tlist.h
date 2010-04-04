@@ -11,6 +11,7 @@
 #include <qtooltip.h>
 #include <qwhatsthis.h>
 #include <qheader.h>
+#include "track.h"
 
 class QPainter;
 class ScrollScale;
@@ -29,6 +30,7 @@ enum TrackColumn {
       COL_OPORT,
       COL_OCHANNEL,
       COL_TIMELOCK,
+      COL_AUTOMATION,
       COL_NONE = -1
       };
 
@@ -91,6 +93,7 @@ class TList : public QWidget {
       void redraw(const QRect& r);
       Track* y2Track(int) const;
       void classesPopupMenu(Track*, int x, int y);
+      TrackList getRecEnabledTracks();
 
    private slots:
       void returnPressed();

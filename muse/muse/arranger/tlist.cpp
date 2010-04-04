@@ -66,6 +66,7 @@ void THeaderTip::maybeTip(const QPoint &pos)
             //case COL_OPORT:    p = QHeader::tr("Output Port"); break;
             case COL_OPORT:    p = QHeader::tr("Midi output port or synth midi port"); break;
             case COL_TIMELOCK: p = QHeader::tr("Time Lock"); break;
+            case COL_AUTOMATION: p = QHeader::tr("Automation parameter selection"); break;
             default: return;
             }
       tip(r, p);
@@ -340,6 +341,19 @@ void TList::paint(const QRect& r)
                                 }  
                               }  
                               
+                              p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                              }
+                              break;
+                        case COL_AUTOMATION:
+                              {
+                              QString s="-";
+
+                              if (!track->isMidiTrack()) {
+                                    int count = ((AudioTrack*)track)->controller()->size();
+                                    s.sprintf("%d", count);
+                                    }
+
+
                               p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
                               }
                               break;
@@ -696,6 +710,14 @@ void TList::moveSelection(int n)
                         }
                   (*s)->setSelected(false);
                   (*t)->setSelected(true);
+
+                  // rec enable track if expected
+                  TrackList recd = getRecEnabledTracks();
+                  if (recd.size() == 1) { // one rec enabled track, move rec enabled with selection
+                    song->setRecordFlag((Track*)recd.front(),false);
+                    song->setRecordFlag((*t),true);
+                  }
+
                   if (editTrack && editTrack != *t)
                         returnPressed();
                   redraw();
@@ -704,6 +726,20 @@ void TList::moveSelection(int n)
             }
       emit selectionChanged();
       }
+
+TrackList TList::getRecEnabledTracks()
+{
+  //printf("getRecEnabledTracks\n");
+      TrackList recEnabled;
+      TrackList* tracks = song->tracks();
+      for (iTrack t = tracks->begin(); t != tracks->end(); ++t) {
+        if ((*t)->recordFlag()) {
+          //printf("rec enabled track\n");
+          recEnabled.push_back(*t);
+        }
+      }
+      return recEnabled;
+}
 
 //---------------------------------------------------------
 //   mousePressEvent
@@ -788,6 +824,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     {
                       song->deselectTracks();
                       t->setSelected(true);
+
                       emit selectionChanged();
                       adjustScrollbar();
                     }  
@@ -900,6 +937,13 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         if (!shift) {
                               song->deselectTracks();
                               t->setSelected(true);
+
+                              // rec enable track if expected
+                              TrackList recd = getRecEnabledTracks();
+                              if (recd.size() == 1) { // one rec enabled track, move rec enabled with selection
+                                song->setRecordFlag((Track*)recd.front(),false);
+                                song->setRecordFlag(t,true);
+                              }
                               }
                         else
                               t->setSelected(!t->selected());
@@ -1149,6 +1193,7 @@ void TList::wheelEvent(QWheelEvent* ev)
             case COL_NONE:
             case COL_CLASS:
             case COL_NAME:
+            case COL_AUTOMATION:
                   break;
             case COL_MUTE:
                   // p3.3.29

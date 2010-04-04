@@ -119,7 +119,7 @@ GlobalConfigValues config = {
       true,                         // showSplashScreen
       1,                            // canvasShowPartType 1 - names, 2 events
       5,                            // canvasShowPartEvent
-      false,                        // canvasShowGrid;
+      true,                        // canvasShowGrid;
       QString(""),                  // canvasBgPixmap;
       QString(""),                  // style
       QString("sweep"),             // externalWavEditor
