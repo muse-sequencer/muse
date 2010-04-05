@@ -11,6 +11,7 @@
 
 #include <qwidget.h>
 #include <qwhatsthis.h>
+#include <qtooltip.h>
 
 #include "synthconfigbase.h"
 
@@ -20,6 +21,19 @@ class QPoint;
 class QPopupMenu;
 class QHeader;
 class Xml;
+
+//----------------------------------------------------------
+//   MPHeaderTip
+//----------------------------------------------------------
+
+class MPHeaderTip : public QToolTip {
+
+   public:
+      MPHeaderTip(QWidget * parent) : QToolTip(parent) {}
+      virtual ~MPHeaderTip() {}
+   protected:
+      void maybeTip(const QPoint &);
+      };
 
 //---------------------------------------------------------
 //   MPWhatsThis
@@ -43,6 +57,7 @@ class MPWhatsThis : public QWhatsThis {
 //---------------------------------------------------------
 
 class MPConfig : public SynthConfigBase {
+      MPHeaderTip* _mptooltip;
       QPopupMenu* popup;
       QPopupMenu* instrPopup;
       
@@ -52,6 +67,7 @@ class MPConfig : public SynthConfigBase {
 
    private slots:
       void rbClicked(QListViewItem*, const QPoint&,int);
+      void mdevViewItemRenamed(QListViewItem*, int, const QString&);
       void songChanged(int);
       void selectionChanged();
       void addInstanceClicked();
@@ -59,6 +75,7 @@ class MPConfig : public SynthConfigBase {
 
    public:
       MPConfig(QWidget* parent, char* name);
+      ~MPConfig();
       };
 
 #endif

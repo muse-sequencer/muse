@@ -50,6 +50,7 @@ class DssiSynth : public Synth {
       std::vector<int> opIdx; // This is sometimes a latency port and...?
       std::vector<int> iIdx;
       std::vector<int> oIdx;
+      std::vector<bool> iUsedIdx; // This is for audio input ports during process to tell whether an input port was used by any input routes.
       int _inports, _outports, _controller, _controllerOut;
       MidiCtl2LadspaPortMap midiCtl2PortMap;
       bool _hasGui;

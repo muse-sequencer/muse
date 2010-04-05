@@ -1,6 +1,8 @@
 05.04.2010
       * Added: Rec enabled track moved with selection when only one track is rec enabled (rj)
       * Changed: Made canvas show grid the default (rj)
+      * Added: Jack midi ports can now be renamed in the ports list dialog, by clicking on the name. (T356)
+        - Also cleaned up ports list behaviour and added tooltips.
 30.03.2010
       * Major reworks: Jack midi, routing system, multichannel synth ins/outs, midi strips and trackinfo pane. (T356)
         - WORK IN PROGRESS. Should be usable for current projects.

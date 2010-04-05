@@ -123,6 +123,8 @@ class MidiJackDevice : public MidiDevice {
       
       virtual inline int deviceType() { return JACK_MIDI; } 
       
+      virtual void setName(const QString&);
+      
       virtual void processMidi();
       virtual ~MidiJackDevice(); 
       //virtual int selectRfd();

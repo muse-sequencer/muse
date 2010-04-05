@@ -1274,7 +1274,61 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent /*i*/,
   for(; k < synth->_outports; ++k)
     descr->connect_port(handle, synth->oIdx[k], audioOutBuffers[k]);
   
-  
+  /*
+  //
+  // p3.3.39 Handle inputs...
+  //
+  //if((song->bounceTrack != this) && !noInRoute()) 
+  if(!((AudioTrack*)synti)->noInRoute()) 
+  {
+    RouteList* irl = ((AudioTrack*)synti)->inRoutes();
+    iRoute i = irl->begin();
+    if(!i->track->isMidiTrack())
+    {
+      //if(debugMsg)
+        printf("DssiSynthIF::getData: Error: First route is a midi track route!\n");
+    }
+    else
+    {
+      int ch     = i->channel       == -1 ? 0 : i->channel;
+      int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
+      int chs    = i->channels      == -1 ? 0 : i->channels;
+      
+      // TODO:
+      //if(ch >= synth->_inports)
+      //iUsedIdx[ch] = true;
+      //if(chs == 2)
+      //  iUsedIdx[ch + 1] = true;
+      
+      //((AudioTrack*)i->track)->copyData(framePos, channels, nframe, bp);
+      ((AudioTrack*)i->track)->copyData(pos, ports, 
+                                      //(i->track->type() == Track::AUDIO_SOFTSYNTH && i->channel != -1) ? i->channel : 0, 
+                                      i->channel, 
+                                      i->channels,
+                                      n, bp);
+    }
+    
+    //unsigned pos, int ports, unsigned n, float** buffer    
+    
+    ++i;
+    for(; i != irl->end(); ++i)
+    {
+      if(i->track->isMidiTrack())
+      {
+        //if(debugMsg)
+          printf("DssiSynthIF::getData: Error: Route is a midi track route!\n");
+        continue;
+      }
+      //((AudioTrack*)i->track)->addData(framePos, channels, nframe, bp);
+      ((AudioTrack*)i->track)->addData(framePos, channels, 
+                                        //(i->track->type() == Track::AUDIO_SOFTSYNTH && i->channel != -1) ? i->channel : 0, 
+                                        i->channel, 
+                                        i->channels,
+                                        nframe, bp);
+    }
+  }  
+  */  
+    
   // Run the synth for one segment. This processes events and gets/fills our local buffers...
   if(synth->dssi->run_synth)
   {
@@ -1399,6 +1453,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
               {
                 ++_inports;
                 iIdx.push_back(k);
+                iUsedIdx.push_back(false); // Start out with all false.
               }
               else if (LADSPA_IS_PORT_OUTPUT(pd)) 
               {

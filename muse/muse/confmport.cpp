@@ -27,6 +27,7 @@
 #include <qtooltip.h>
 #include <qfiledialog.h>
 #include <qtoolbutton.h>
+#include <qmessagebox.h>
 
 #include "confmport.h"
 #include "app.h"
@@ -56,10 +57,57 @@ enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_
        DEVCOL_ROUTES, DEVCOL_STATE };
 
 //---------------------------------------------------------
+//   mdevViewItemRenamed
+//---------------------------------------------------------
+
+void MPConfig::mdevViewItemRenamed(QListViewItem* item, int col, const QString& s)
+{
+  //printf("MPConfig::mdevViewItemRenamed col:%d txt:%s\n", col, s.latin1());
+  if(item == 0)
+    return;
+  switch(col)
+  {
+    case DEVCOL_NAME:
+    {
+      QString id = item->text(DEVCOL_NO);
+      int no = atoi(id.latin1()) - 1;
+      if(no < 0 || no >= MIDI_PORTS)
+        return;
+
+      MidiPort* port      = &midiPorts[no];
+      MidiDevice* dev     = port->device();
+      // Only Jack midi devices.
+      if(!dev || dev->deviceType() != MidiDevice::JACK_MIDI)
+        return;
+      if(dev->name() == s)
+        return;  
+        
+      if(midiDevices.find(s))
+      {
+        QMessageBox::critical(this,
+            tr("MusE: bad device name"),
+            tr("please choose a unique device name"),
+            QMessageBox::Ok,
+            QMessageBox::NoButton,
+            QMessageBox::NoButton);
+        songChanged(-1);
+        return;
+      }
+      dev->setName(s);
+      song->update();
+    }
+    break;    
+    default: 
+      printf("MPConfig::mdevViewItemRenamed unknown column clicked col:%d txt:%s\n", col, s.latin1());
+    break;
+  } 
+}
+
+//---------------------------------------------------------
 //   rbClicked
 //---------------------------------------------------------
 
-void MPConfig::rbClicked(QListViewItem* item, const QPoint&, int col)
+void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
       {
       if (item == 0)
             return;
@@ -74,32 +122,51 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint&, int col)
       int rwFlags         = dev ? dev->rwFlags() : 0;
       int openFlags       = dev ? dev->openFlags() : 0;
       QListView* listView = item->listView();
+      //printf("MPConfig::rbClicked            cpt x:%d y:%d\n", cpt.x(), cpt.y());
+      //printf("MPConfig::rbClicked        new cpt x:%d y:%d\n", cpt.x(), cpt.y());
+      //printf("MPConfig::rbClicked new mapped cpt x:%d y:%d\n", cpt.x(), cpt.y());
       QPoint ppt          = listView->itemRect(item).bottomLeft();
+      //printf("MPConfig::rbClicked            ppt x:%d y:%d\n", ppt.x(), ppt.y());
       ppt += QPoint(listView->header()->sectionPos(col), listView->header()->height());
+      //printf("MPConfig::rbClicked        new ppt x:%d y:%d\n", ppt.x(), ppt.y());
       ppt  = listView->mapToGlobal(ppt);
+      //printf("MPConfig::rbClicked new mapped ppt x:%d y:%d\n", ppt.x(), ppt.y());
 
       switch (col) {
             case DEVCOL_GUI:
                   if (dev == 0)
-                        break;
+                        //break;
+                        return;
                   if (port->hasGui())
+                  {
                         port->instrument()->showGui(!port->guiVisible());
-                  break;
-
+                        item->setPixmap(DEVCOL_GUI, port->guiVisible() ? *dotIcon : *dothIcon);
+                  }
+                  //break;
+                  return;
+                  
             case DEVCOL_REC:
                   if (dev == 0 || !(rwFlags & 2))
-                        break;
+                        //break;
+                        return;
                   openFlags ^= 0x2;
                   dev->setOpenFlags(openFlags);
                   midiSeq->msgSetMidiDevice(port, dev);       // reopen device
-                  break;
+                  item->setPixmap(DEVCOL_REC, openFlags & 2 ? *dotIcon : *dothIcon);
+                  //break;
+                  return;
+                  
             case DEVCOL_PLAY:
                   if (dev == 0 || !(rwFlags & 1))
-                        break;
+                        //break;
+                        return;
                   openFlags ^= 0x1;
                   dev->setOpenFlags(openFlags);
                   midiSeq->msgSetMidiDevice(port, dev);       // reopen device
-                  break;
+                  item->setPixmap(DEVCOL_PLAY, openFlags & 1 ? *dotIcon : *dothIcon);
+                  //break;
+                  return;
+                  
             case DEVCOL_ROUTES:
                   {
                     if(!checkAudioDevice())
@@ -239,211 +306,232 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint&, int col)
                   
                   
                   }
-                  break;
+                  //break;
+                  return;
+                  
             case DEVCOL_NAME:
                   {
-                    QPopupMenu* pup = new QPopupMenu(this);
+                    //printf("MPConfig::rbClicked DEVCOL_NAME\n");
                     
-                    pup->setCheckable(true);
-                    
-                    pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" input"), 0);
-                    pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" output"), 1);
-                    
-                    typedef std::map<std::string, int > asmap;
-                    typedef std::map<std::string, int >::iterator imap;
-                    
-                    asmap mapALSA;
-                    asmap mapJACK;
-                    asmap mapSYNTH;
-                    
-                    int aix = 2;
-                    int jix = 0x10000000;
-                    int six = 0x20000000;
-                    for(iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) 
+                    // Did we click in the text area?
+                    if((cpt.x() - ppt.x()) > buttondownIcon->width())
                     {
-                      //devALSA = dynamic_cast<MidiAlsaDevice*>(*i);
-                      //if(devALSA)
-                      if((*i)->deviceType() == MidiDevice::ALSA_MIDI)
+                      //printf("MPConfig::rbClicked starting item rename... enabled?:%d\n", item->renameEnabled(DEVCOL_NAME));
+                      // Start the renaming of the cell...
+                      if(item->renameEnabled(DEVCOL_NAME))
+                        item->startRename(DEVCOL_NAME);
+                        
+                      return;
+                    }
+                    else
+                    // We clicked the 'down' button.
+                    {
+                      QPopupMenu* pup = new QPopupMenu(this);
+                      
+                      pup->setCheckable(true);
+                      
+                      pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" input"), 0);
+                      pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" output"), 1);
+                      
+                      typedef std::map<std::string, int > asmap;
+                      typedef std::map<std::string, int >::iterator imap;
+                      
+                      asmap mapALSA;
+                      asmap mapJACK;
+                      asmap mapSYNTH;
+                      
+                      int aix = 2;
+                      int jix = 0x10000000;
+                      int six = 0x20000000;
+                      for(iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) 
                       {
-                        //mapALSA.insert( std::pair<std::string, int> (std::string(devALSA->name().lower().latin1()), ii) );
-                        mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().latin1()), aix) );
-                        ++aix;
+                        //devALSA = dynamic_cast<MidiAlsaDevice*>(*i);
+                        //if(devALSA)
+                        if((*i)->deviceType() == MidiDevice::ALSA_MIDI)
+                        {
+                          //mapALSA.insert( std::pair<std::string, int> (std::string(devALSA->name().lower().latin1()), ii) );
+                          mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().latin1()), aix) );
+                          ++aix;
+                        }  
+                        else
+                        if((*i)->deviceType() == MidiDevice::JACK_MIDI)
+                        {  
+                          //devJACK = dynamic_cast<MidiJackDevice*>(*i);
+                          //if(devJACK)
+                            //mapJACK.insert( std::pair<std::string, int> (std::string(devJACK->name().lower().latin1()), ii) );
+                          mapJACK.insert( std::pair<std::string, int> (std::string((*i)->name().latin1()), jix) );
+                          ++jix;
+                        }
+                        else
+                        if((*i)->deviceType() == MidiDevice::SYNTH_MIDI)
+                        {
+                          mapSYNTH.insert( std::pair<std::string, int> (std::string((*i)->name().latin1()), six) );
+                          ++six;  
+                        }
+                        else
+                          printf("MPConfig::rbClicked unknown midi device: %s\n", (*i)->name().latin1());
+                      }
+                      
+                      //int sz = midiDevices.size();
+                      if(!mapALSA.empty())
+                      {
+                        pup->insertSeparator();
+                        pup->insertItem(new MenuTitleItem(QT_TR_NOOP("ALSA:")));
+                        
+                        for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
+                        {
+                          int idx = i->second;
+                          //if(idx > sz)           // Sanity check
+                          //  continue;
+                          QString s(i->first.c_str());
+                          MidiDevice* md = midiDevices.find(s, MidiDevice::ALSA_MIDI);
+                          if(md)
+                          {
+                            //if(!dynamic_cast<MidiAlsaDevice*>(md))
+                            if(md->deviceType() != MidiDevice::ALSA_MIDI)  
+                              continue;
+                              
+                            //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
+                            pup->insertItem(QT_TR_NOOP(md->name()), idx);
+                            
+                            //for(int k = 0; k < MIDI_PORTS; ++k) 
+                            //{
+                              //MidiDevice* dev = midiPorts[k].device();
+                              //if(dev && s == dev->name()) 
+                              if(md == dev) 
+                              {
+                                //pup->setItemEnabled(idx + 3, false);
+                                //pup->setItemChecked(idx + 3, true);
+                                pup->setItemChecked(idx, true);
+                                //break;
+                              }      
+                            //}
+                          }  
+                        }
+                      }  
+                      
+                      if(!mapJACK.empty())
+                      {
+                        pup->insertSeparator();
+                        pup->insertItem(new MenuTitleItem(QT_TR_NOOP("JACK:")));
+                        
+                        for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
+                        {
+                          int idx = i->second;
+                          //if(idx > sz)           
+                          //  continue;
+                          QString s(i->first.c_str());
+                          MidiDevice* md = midiDevices.find(s, MidiDevice::JACK_MIDI);
+                          if(md)
+                          {
+                            //if(!dynamic_cast<MidiJackDevice*>(md))
+                            if(md->deviceType() != MidiDevice::JACK_MIDI)  
+                              continue;
+                              
+                            //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
+                            pup->insertItem(QT_TR_NOOP(md->name()), idx);
+                            
+                            //for(int k = 0; k < MIDI_PORTS; ++k) 
+                            //{
+                              //MidiDevice* dev = midiPorts[k].device();
+                              //if(dev && s == dev->name()) 
+                              if(md == dev) 
+                              {
+                                //pup->setItemEnabled(idx + 3, false);
+                                //pup->setItemChecked(idx + 3, true);
+                                pup->setItemChecked(idx, true);
+                                //break;
+                              }      
+                            //}
+                          }  
+                        }
+                      }  
+                      
+                      if(!mapSYNTH.empty())
+                      {
+                        pup->insertSeparator();
+                        pup->insertItem(new MenuTitleItem(QT_TR_NOOP("SYNTH:")));
+                        
+                        for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
+                        {
+                          int idx = i->second;
+                          //if(idx > sz)           
+                          //  continue;
+                          QString s(i->first.c_str());
+                          MidiDevice* md = midiDevices.find(s, MidiDevice::SYNTH_MIDI);
+                          if(md)
+                          {
+                            //if(!dynamic_cast<MidiJackDevice*>(md))
+                            if(md->deviceType() != MidiDevice::SYNTH_MIDI)  
+                              continue;
+                              
+                            //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
+                            pup->insertItem(QT_TR_NOOP(md->name()), idx);
+                            
+                            //for(int k = 0; k < MIDI_PORTS; ++k) 
+                            //{
+                              //MidiDevice* dev = midiPorts[k].device();
+                              //if(dev && s == dev->name()) 
+                              if(md == dev) 
+                              {
+                                //pup->setItemEnabled(idx + 3, false);
+                                //pup->setItemChecked(idx + 3, true);
+                                pup->setItemChecked(idx, true);
+                                //break;
+                              }      
+                            //}
+                          }  
+                        }
+                      }
+                      
+                      n = pup->exec(ppt, 0);
+                      if(n == -1)
+                      {      
+                        delete pup;
+                        //break;
+                        return;
+                      }
+                      
+                      //printf("MPConfig::rbClicked n:%d\n", n);
+                      
+                      MidiDevice* sdev = 0;
+                      if(n < 2)
+                      {
+                        delete pup;
+                        if(n == 0)
+                          sdev = MidiJackDevice::createJackMidiDevice(QString(), 2); // 2: Readable.
+                        else
+                        if(n == 1)
+                          sdev = MidiJackDevice::createJackMidiDevice(QString(), 1); // 1:Writable.
                       }  
                       else
-                      if((*i)->deviceType() == MidiDevice::JACK_MIDI)
-                      {  
-                        //devJACK = dynamic_cast<MidiJackDevice*>(*i);
-                        //if(devJACK)
-                          //mapJACK.insert( std::pair<std::string, int> (std::string(devJACK->name().lower().latin1()), ii) );
-                        mapJACK.insert( std::pair<std::string, int> (std::string((*i)->name().latin1()), jix) );
-                        ++jix;
-                      }
-                      else
-                      if((*i)->deviceType() == MidiDevice::SYNTH_MIDI)
                       {
-                        mapSYNTH.insert( std::pair<std::string, int> (std::string((*i)->name().latin1()), six) );
-                        ++six;  
-                      }
-                      else
-                        printf("MPConfig::rbClicked unknown midi device: %s\n", (*i)->name().latin1());
-                    }
-                    
-                    //int sz = midiDevices.size();
-                    if(!mapALSA.empty())
-                    {
-                      pup->insertSeparator();
-                      pup->insertItem(new MenuTitleItem(QT_TR_NOOP("ALSA:")));
+                        int typ = MidiDevice::ALSA_MIDI;
+                        if(n >= 0x10000000)
+                          typ = MidiDevice::JACK_MIDI;
+                        if(n >= 0x20000000)
+                          typ = MidiDevice::SYNTH_MIDI;
+                        
+                        sdev = midiDevices.find(pup->text(n), typ);
+                        delete pup;
+                        // Is it the current device? Reset it to <none>.
+                        if(sdev == dev)
+                          sdev = 0;
+                      }    
                       
-                      for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
-                      {
-                        int idx = i->second;
-                        //if(idx > sz)           // Sanity check
-                        //  continue;
-                        QString s(i->first.c_str());
-                        MidiDevice* md = midiDevices.find(s, MidiDevice::ALSA_MIDI);
-                        if(md)
-                        {
-                          //if(!dynamic_cast<MidiAlsaDevice*>(md))
-                          if(md->deviceType() != MidiDevice::ALSA_MIDI)  
-                            continue;
-                            
-                          //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
-                          pup->insertItem(QT_TR_NOOP(md->name()), idx);
-                          
-                          //for(int k = 0; k < MIDI_PORTS; ++k) 
-                          //{
-                            //MidiDevice* dev = midiPorts[k].device();
-                            //if(dev && s == dev->name()) 
-                            if(md == dev) 
-                            {
-                              //pup->setItemEnabled(idx + 3, false);
-                              //pup->setItemChecked(idx + 3, true);
-                              pup->setItemChecked(idx, true);
-                              //break;
-                            }      
-                          //}
-                        }  
-                      }
+                      midiSeq->msgSetMidiDevice(port, sdev);
+                      muse->changeConfig(true);     // save configuration file
+                      song->update();
                     }  
-                    
-                    if(!mapJACK.empty())
-                    {
-                      pup->insertSeparator();
-                      pup->insertItem(new MenuTitleItem(QT_TR_NOOP("JACK:")));
-                      
-                      for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
-                      {
-                        int idx = i->second;
-                        //if(idx > sz)           
-                        //  continue;
-                        QString s(i->first.c_str());
-                        MidiDevice* md = midiDevices.find(s, MidiDevice::JACK_MIDI);
-                        if(md)
-                        {
-                          //if(!dynamic_cast<MidiJackDevice*>(md))
-                          if(md->deviceType() != MidiDevice::JACK_MIDI)  
-                            continue;
-                            
-                          //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
-                          pup->insertItem(QT_TR_NOOP(md->name()), idx);
-                          
-                          //for(int k = 0; k < MIDI_PORTS; ++k) 
-                          //{
-                            //MidiDevice* dev = midiPorts[k].device();
-                            //if(dev && s == dev->name()) 
-                            if(md == dev) 
-                            {
-                              //pup->setItemEnabled(idx + 3, false);
-                              //pup->setItemChecked(idx + 3, true);
-                              pup->setItemChecked(idx, true);
-                              //break;
-                            }      
-                          //}
-                        }  
-                      }
-                    }  
-                    
-                    if(!mapSYNTH.empty())
-                    {
-                      pup->insertSeparator();
-                      pup->insertItem(new MenuTitleItem(QT_TR_NOOP("SYNTH:")));
-                      
-                      for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
-                      {
-                        int idx = i->second;
-                        //if(idx > sz)           
-                        //  continue;
-                        QString s(i->first.c_str());
-                        MidiDevice* md = midiDevices.find(s, MidiDevice::SYNTH_MIDI);
-                        if(md)
-                        {
-                          //if(!dynamic_cast<MidiJackDevice*>(md))
-                          if(md->deviceType() != MidiDevice::SYNTH_MIDI)  
-                            continue;
-                            
-                          //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
-                          pup->insertItem(QT_TR_NOOP(md->name()), idx);
-                          
-                          //for(int k = 0; k < MIDI_PORTS; ++k) 
-                          //{
-                            //MidiDevice* dev = midiPorts[k].device();
-                            //if(dev && s == dev->name()) 
-                            if(md == dev) 
-                            {
-                              //pup->setItemEnabled(idx + 3, false);
-                              //pup->setItemChecked(idx + 3, true);
-                              pup->setItemChecked(idx, true);
-                              //break;
-                            }      
-                          //}
-                        }  
-                      }
-                    }
-                    
-                    n = pup->exec(ppt, 0);
-                    if(n == -1)
-                    {      
-                      delete pup;
-                      break;
-                    }
-                    
-                    //printf("MPConfig::rbClicked n:%d\n", n);
-                    
-                    MidiDevice* sdev = 0;
-                    if(n < 2)
-                    {
-                      delete pup;
-                      if(n == 0)
-                        sdev = MidiJackDevice::createJackMidiDevice(QString(), 2); // 2: Readable.
-                      else
-                      if(n == 1)
-                        sdev = MidiJackDevice::createJackMidiDevice(QString(), 1); // 1:Writable.
-                    }  
-                    else
-                    {
-                      int typ = MidiDevice::ALSA_MIDI;
-                      if(n >= 0x10000000)
-                        typ = MidiDevice::JACK_MIDI;
-                      if(n >= 0x20000000)
-                        typ = MidiDevice::SYNTH_MIDI;
-                      
-                      sdev = midiDevices.find(pup->text(n), typ);
-                      delete pup;
-                      // Is it the current device? Reset it to <none>.
-                      if(sdev == dev)
-                        sdev = 0;
-                    }    
-                    
-                    midiSeq->msgSetMidiDevice(port, sdev);
-                    muse->changeConfig(true);     // save configuration file
-                    song->update();
                   }
-                  break;
+                  //break;
+                  return;
 
             case DEVCOL_INSTR:
                   {
                   if (dev && dev->isSynti())
-                        break;
+                        //break;
+                        return;
                   if (instrPopup == 0)
                         instrPopup = new QPopupMenu(this);
                   instrPopup->clear();
@@ -461,7 +549,8 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint&, int col)
                      }
                   n = instrPopup->exec(ppt, 0);
                   if (n == -1)
-                        break;
+                        //break;
+                        return;
                   QString s = instrPopup->text(n);
                   item->setText(DEVCOL_INSTR, s);
                   for (iMidiInstrument i = midiInstruments.begin(); i
@@ -473,9 +562,37 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint&, int col)
                         }
                   song->update();
                   }
-                  break;
+                  //break;
+                  return;
             }
-      songChanged(-1);
+      //songChanged(-1);
+      }
+
+//---------------------------------------------------------
+//   MPHeaderTip::maybeTip
+//---------------------------------------------------------
+
+void MPHeaderTip::maybeTip(const QPoint &pos)
+      {
+      QHeader* w  = (QHeader*)parentWidget();
+      int section = w->sectionAt(pos.x());
+      if (section == -1)
+            return;
+      QRect r(w->sectionPos(section), 0, w->sectionSize(section),
+         w->height());
+      QString p;
+      switch (section) {
+            case DEVCOL_NO:     p = QHeader::tr("Port Number"); break;
+            case DEVCOL_GUI:    p = QHeader::tr("Enable gui"); break;
+            case DEVCOL_REC:    p = QHeader::tr("Enable reading"); break;
+            case DEVCOL_PLAY:   p = QHeader::tr("Enable writing"); break;
+            case DEVCOL_INSTR:  p = QHeader::tr("Port instrument"); break;
+            case DEVCOL_NAME:   p = QHeader::tr("Midi device name. Click to edit (Jack)"); break;
+            case DEVCOL_ROUTES: p = QHeader::tr("Jack midi ports"); break;
+            case DEVCOL_STATE:  p = QHeader::tr("Device state"); break;
+            default: return;
+            }
+      tip(r, p);
       }
 
 //---------------------------------------------------------
@@ -491,14 +608,14 @@ QString MPWhatsThis::text(const QPoint& pos)
             case DEVCOL_NO:
                   return QHeader::tr("Port Number");
             case DEVCOL_GUI:
-                  return QHeader::tr("enable gui for device");
+                  return QHeader::tr("Enable gui for device");
             case DEVCOL_REC:
-                  return QHeader::tr("enables reading from device");
+                  return QHeader::tr("Enable reading from device");
             case DEVCOL_PLAY:
-                  return QHeader::tr("enables writing to device");
+                  return QHeader::tr("Enable writing to device");
             case DEVCOL_NAME:
                   return QHeader::tr("Name of the midi device associated with"
-                       " this port number");
+                       " this port number. Click to edit Jack midi name.");
             case DEVCOL_INSTR:
                   return QHeader::tr("Instrument connected to port");
             case DEVCOL_ROUTES:
@@ -519,6 +636,7 @@ QString MPWhatsThis::text(const QPoint& pos)
 MPConfig::MPConfig(QWidget* parent, char* name)
    : SynthConfigBase(parent, name)
       {
+      _mptooltip = 0;
       popup      = 0;
       instrPopup = 0;
       _showAliases = -1; // 0: Show first aliases, if available. Nah, stick with -1: none at first.
@@ -547,9 +665,12 @@ MPConfig::MPConfig(QWidget* parent, char* name)
       instanceList->setColumnAlignment(1, AlignHCenter);
 
       new MPWhatsThis(mdevView, mdevView->header());
+      _mptooltip = new MPHeaderTip(mdevView->header());
 
       connect(mdevView, SIGNAL(pressed(QListViewItem*,const QPoint&,int)),
          this, SLOT(rbClicked(QListViewItem*,const QPoint&,int)));
+      connect(mdevView, SIGNAL(itemRenamed(QListViewItem*,int,const QString&)),
+         this, SLOT(mdevViewItemRenamed(QListViewItem*,int,const QString&)));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
 
       connect(synthList, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
@@ -560,6 +681,12 @@ MPConfig::MPConfig(QWidget* parent, char* name)
       songChanged(0);
       }
 
+  
+MPConfig::~MPConfig()
+{
+  delete _mptooltip;
+}
+  
 //---------------------------------------------------------
 //   selectionChanged
 //---------------------------------------------------------
@@ -580,8 +707,21 @@ void MPConfig::songChanged(int flags)
       if(flags == SC_MIDI_CONTROLLER)
         return;
     
+      // Get currently selected index...
+      int no = -1;
+      QListViewItem* sitem = mdevView->selectedItem();
+      if(sitem)
+      {
+        QString id = sitem->text(DEVCOL_NO);
+        no = atoi(id.latin1()) - 1;
+        if(no < 0 || no >= MIDI_PORTS)
+          no = -1;
+      }
+      
+      sitem = 0;
       mdevView->clear();
-      for (int i = MIDI_PORTS-1; i >= 0; --i) {
+      for (int i = MIDI_PORTS-1; i >= 0; --i) 
+      {
             MidiPort* port  = &midiPorts[i];
             MidiDevice* dev = port->device();
             QString s;
@@ -633,8 +773,15 @@ void MPConfig::songChanged(int flags)
             }
             
             mdevView->insertItem(item);
-            }
-
+            if(i == no)
+              sitem = item;
+      }
+      if(sitem)
+      {
+        mdevView->setSelected(sitem, true);
+        mdevView->ensureItemVisible(sitem);
+      }
+      
       QString s;
       synthList->clear();
       for (std::vector<Synth*>::iterator i = synthis.begin();

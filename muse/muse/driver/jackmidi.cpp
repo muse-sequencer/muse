@@ -28,10 +28,10 @@
 #include "../mplugins/mitplugin.h"
 #include "xml.h"
 
-extern unsigned int volatile lastExtMidiSyncTick;
-
 // Turn on debug messages.
 //#define JACK_MIDI_DEBUG
+
+extern unsigned int volatile lastExtMidiSyncTick;
 
 ///int jackmidi_pi[2];
 ///int jackmidi_po[2];
@@ -225,13 +225,16 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
         //snprintf(buf, 80, "midi-out-%d", i);
         name.sprintf("midi-out-%d", i);
         
-        // Does not work.
-        //if(!audioDevice->findPort(buf))
-        //  break;
-        //client_jackport = (jack_port_t*)audioDevice->registerOutPort(buf, true);
-        client_jackport = (jack_port_t*)audioDevice->registerOutPort(name.latin1(), true);
-        if(client_jackport)
-          break;
+        if(!midiDevices.find(name))
+        {
+          // Does not work.
+          //if(!audioDevice->findPort(buf))
+          //  break;
+          //client_jackport = (jack_port_t*)audioDevice->registerOutPort(buf, true);
+          client_jackport = (jack_port_t*)audioDevice->registerOutPort(name.latin1(), true);
+          if(client_jackport)
+            break;
+        }    
           
         if(i == 65535)
         {
@@ -300,13 +303,16 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
         //snprintf(buf, 80, "midi-in-%d", i);
         name.sprintf("midi-in-%d", i); 
         
-        // Does not work.
-        //if(!audioDevice->findPort(buf))
-        //  break;
-        //client_jackport = (jack_port_t*)audioDevice->registerInPort(buf, true);
-        client_jackport = (jack_port_t*)audioDevice->registerInPort(name.latin1(), true);
-        if(client_jackport)
-          break;
+        if(!midiDevices.find(name))
+        {
+          // Does not work.
+          //if(!audioDevice->findPort(buf))
+          //  break;
+          //client_jackport = (jack_port_t*)audioDevice->registerInPort(buf, true);
+          client_jackport = (jack_port_t*)audioDevice->registerInPort(name.latin1(), true);
+          if(client_jackport)
+            break;
+        }    
           
         if(i == 65535)
         {
@@ -346,6 +352,19 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
   dev->setrwFlags(rwflags);
   midiDevices.add(dev);
   return dev;
+}
+
+//---------------------------------------------------------
+//   setName
+//---------------------------------------------------------
+
+void MidiJackDevice::setName(const QString& s)
+{ 
+  #ifdef JACK_MIDI_DEBUG
+  printf("MidiJackDevice::setName %s new name:%s\n", name().latin1(), s.latin1());
+  #endif  
+  _name = s; 
+  audioDevice->setPortName(clientPort(), s.latin1());
 }
 
 //---------------------------------------------------------

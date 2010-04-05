@@ -190,7 +190,6 @@ Part* WaveTrack::newPart(Part*p, bool clone)
 
 bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float** bp)
       {
-      // Added by Tim. p3.3.16
       //if(debugMsg)
       //  printf("WaveTrack::getData framePos:%u channels:%d nframe:%u processed?:%d\n", framePos, channels, nframe, processed());
       
@@ -288,7 +287,6 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
       else {
       */
       
-            // Added by Tim. p3.3.16
             //printf("WaveTrack::getData no out routes\n");
             
             if (audio->freewheel()) {
