@@ -1303,6 +1303,37 @@ void MidiJackDevice::processMidi()
   iMPEvent i = nextPlayEvent();
   for(; i != el->end(); ++i) 
   {
+    // p3.3.39 Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+    // Same code as in MidiPort::sendEvent()
+    if(_port != -1)
+    {
+      MidiPort* mp = &midiPorts[_port];
+      if(i->type() == ME_CONTROLLER) 
+      {
+        int da = i->dataA();
+        int db = i->dataB();
+        db = mp->limitValToInstrCtlRange(da, db);
+        if(!mp->setHwCtrlState(i->channel(), da, db))
+          continue;
+        //mp->setHwCtrlState(i->channel(), da, db);
+      }
+      else
+      if(i->type() == ME_PITCHBEND) 
+      {
+        int da = mp->limitValToInstrCtlRange(CTRL_PITCH, i->dataA());
+        if(!mp->setHwCtrlState(i->channel(), CTRL_PITCH, da))
+          continue;
+        //mp->setHwCtrlState(i->channel(), CTRL_PITCH, da);
+      }
+      else
+      if(i->type() == ME_PROGRAM) 
+      {
+        if(!mp->setHwCtrlState(i->channel(), CTRL_PROGRAM, i->dataA()))
+          continue;
+        //mp->setHwCtrlState(i->channel(), CTRL_PROGRAM, i->dataA());
+      }
+    }
+  
     processEvent(*i);
   }
   

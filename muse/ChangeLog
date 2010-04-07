@@ -1,3 +1,6 @@
+06.04.2010
+      * Fixed: Jack midi, and DSSI: Midi controller knobs, sliders, boxes etc. not updating with current values. (T356)
+        - Copied code in MidiPort::sendEvent() to JackMidi::processMidi() and DssiSynthIF::getData().
 05.04.2010
       * Added: Rec enabled track moved with selection when only one track is rec enabled (rj)
       * Changed: Made canvas show grid the default (rj)
