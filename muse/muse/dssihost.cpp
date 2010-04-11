@@ -956,7 +956,7 @@ void DssiSynthIF::write(int level, Xml& xml) const
               xml.nput("\n");
               xml.tag(level--, "/event");
               xml.etag(level--, "midistate");
-              vstsaved = true;
+              //vstsaved = true;
               }
       }
 #else
