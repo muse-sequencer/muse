@@ -150,6 +150,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
       
+      std::vector<bool> guiUpdateControls;  // List of gui controls to update upon heartbeat.
+      
       //bool putEvent(const MidiPlayEvent& ev);
 
       virtual QString open();

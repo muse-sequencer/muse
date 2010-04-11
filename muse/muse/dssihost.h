@@ -21,6 +21,8 @@
 #ifndef __DSSIHOST_H__
 #define __DSSIHOST_H__
 
+#include <vector>
+
 #include <lo/lo.h>
 #include <dssi.h>
 #include <alsa/asoundlib.h>
@@ -46,13 +48,15 @@ class DssiSynth : public Synth {
       void* handle;
       const DSSI_Descriptor* dssi;
       DSSI_Descriptor_Function df;
-      std::vector<int> pIdx;
-      std::vector<int> opIdx; // This is sometimes a latency port and...?
-      std::vector<int> iIdx;
-      std::vector<int> oIdx;
-      std::vector<bool> iUsedIdx; // This is for audio input ports during process to tell whether an input port was used by any input routes.
+      std::vector<int> pIdx;  // Control input index to port number. 
+      std::vector<int> opIdx; // Control output index to port number. This is sometimes a latency port and...?
+      std::vector<int> iIdx;  // Audio input index to port number.
+      std::vector<int> oIdx;  // Audio output index to port number.
+      std::vector<bool> iUsedIdx; // This is for audio input ports during process to tell whether an audio input port was used by any input routes.
       int _inports, _outports, _controller, _controllerOut;
-      MidiCtl2LadspaPortMap midiCtl2PortMap;
+      std::vector<int> rpIdx;  // Port number to control input index. Item is -1 if it's not a control input.
+      MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to DSSI port numbers.
+      MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps DSSI port numbers to midi controller numbers.
       bool _hasGui;
 
    public:

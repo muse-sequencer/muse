@@ -27,6 +27,8 @@
 #include "muse/midi.h"
 #include "muse/midictrl.h"
 
+//#define ORGANGUI_DEBUG
+
 //---------------------------------------------------------
 //   OrganGui
 //---------------------------------------------------------
@@ -129,6 +131,10 @@ int OrganGui::getControllerMinMax(int id, int* min, int* max) const
 
 void OrganGui::setParam(int param, int val)
       {
+      #ifdef ORGANGUI_DEBUG
+      fprintf(stderr, "OrganGui:setParam param:%d val:%d\n", param, val);
+      #endif
+      
       param &= 0xfff;
       if (param >= int(sizeof(dctrl)/sizeof(*dctrl))) {
             fprintf(stderr, "OrganGui: set unknown Ctrl 0x%x to 0x%x\n", param, val);
@@ -145,6 +151,10 @@ void OrganGui::setParam(int param, int val)
             // By T356. Apply auto-bias center value.
             if(slider->minValue() < 0)
               val -= 8192;
+            
+            #ifdef ORGANGUI_DEBUG
+            fprintf(stderr, "OrganGui:setParam setting slider val:%d\n", val);
+            #endif
             
             slider->setValue(val);
             if (ctrl->label)

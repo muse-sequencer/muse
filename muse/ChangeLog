@@ -1,6 +1,12 @@
+11.04.2010
+      * Fixed: DSSI requested midi mapped controls were not correct. (T356)
+      * Changed: Working on controllers, and saving their state. Synths like Organ should remember their state now. (T356)
+        - Working on DSSI controls... Working on OSC stuff...
 06.04.2010
       * Fixed: Jack midi, and DSSI: Midi controller knobs, sliders, boxes etc. not updating with current values. (T356)
         - Copied code in MidiPort::sendEvent() to JackMidi::processMidi() and DssiSynthIF::getData().
+      * Fixed: DSSI: Crashing with unkown controllers sent to synths. (T356)
+        - Ignore unkown controllers in DssiSynthIF::processEvent(). 
 05.04.2010
       * Added: Rec enabled track moved with selection when only one track is rec enabled (rj)
       * Changed: Made canvas show grid the default (rj)

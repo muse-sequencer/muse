@@ -19,6 +19,8 @@
 #include "organ.h"
 #include "organgui.h"
 
+//#define ORGAN_DEBUG
+
 SynthCtrl Organ::synthCtrl[] = {
       { "harm0",     HARM0,          0 },
       { "harm1",     HARM1,          0 },
@@ -552,6 +554,10 @@ bool Organ::setController(int channel, int ctrl, int data)
             case VELO:
                   {
                   MidiPlayEvent ev(0, 0, channel, ME_CONTROLLER, ctrl, data);
+                  #ifdef ORGAN_DEBUG
+                  fprintf(stderr, "OrganGui:setController before gui->writeEvent ctrl:%d data:%d\n", ctrl, data);
+                  #endif
+            
                   gui->writeEvent(ev);
                   }
                   break;
@@ -567,6 +573,9 @@ bool Organ::setController(int channel, int ctrl, int data)
 
 bool Organ::sysex(int n, const unsigned char* data)
       {
+      #ifdef ORGAN_DEBUG
+      printf("Organ: sysex\n");
+      #endif
       if (unsigned(n) != (NUM_INIT_CONTROLLER * sizeof(int))) {
             printf("Organ: unknown sysex\n");
             return false;
@@ -574,6 +583,9 @@ bool Organ::sysex(int n, const unsigned char* data)
       int* s = (int*) data;
       for (int i = 0; i < NUM_INIT_CONTROLLER; ++i) {
             int val = *s++;
+            #ifdef ORGAN_DEBUG
+            printf("Organ: sysex before setController num:%d val:%d\n", synthCtrl[i].num, val);
+            #endif
             setController(0, synthCtrl[i].num, val);
             }
       return false;

@@ -6,7 +6,7 @@
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include "config.h"
+//#include "config.h"
 
 #include <qpopupmenu.h>
 #include "mididev.h"
@@ -21,9 +21,9 @@
 #include "app.h"
 #include "song.h"
 
-#ifdef DSSI_SUPPORT
-#include "dssihost.h"
-#endif
+//#ifdef DSSI_SUPPORT
+//#include "dssihost.h"
+//#endif
 
 MidiPort midiPorts[MIDI_PORTS];
 
@@ -131,7 +131,9 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
             // The 'reverb level' controller would still be at '100', and could adversely affect the song,
             //  but if the instrument has an available initial value of say '0', it will be used instead.
             //
-            if(_instrument)
+            //if(_instrument)
+            // p3.3.39 NOT for syntis! Use midiState an/or initParams for that.
+            if(_instrument && !_device->isSynti())
             {
               MidiControllerList* cl = _instrument->controller();
               MidiController* mc;
@@ -159,7 +161,7 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                     {
                       int ctl = mc->num();
                       
-#ifdef DSSI_SUPPORT
+///#ifdef DSSI_SUPPORT
                       // Exclude dssi synths from this, as some of them have hundreds of controls.
                       // Another difference is dssi synth devices (usually) have readable default port values,
                       //  unlike a midi output port, which cannot be queried for a current or default value,
@@ -168,15 +170,16 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                       // Another difference is dssi controls are best manipulated as ladspa controls -
                       //  (they ARE ladspa controls). This is stuff I mainly put for midi ports and MESS...
                       // I DO allow midi control of those ladspa controls, so our midi controls shall be updated here...
-                      if(!_device->isSynti() || (dynamic_cast<DssiSynthIF*>(((SynthI*)_device)->sif()) == 0))
-                      {  
-#endif
+                      // p3.3.39 Only non-syntis! Use midiState an/or initParams for that.
+                      ///if(!_device->isSynti() || (dynamic_cast<DssiSynthIF*>(((SynthI*)_device)->sif()) == 0))
+                      ///{  
+///#endif
                         // Note the addition of bias!
                         _device->putEvent(MidiPlayEvent(0, portno(), chan,
                           ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
-#ifdef DSSI_SUPPORT
-                      }
-#endif
+///#ifdef DSSI_SUPPORT
+                      ///}
+///#endif
                         
                       // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
                       //setHwCtrlState(chan, ctl, mc->initVal() + mc->bias());
@@ -190,23 +193,26 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
             }
 
             // init HW controller state
-            for (iMidiCtrlValList i = _controller->begin(); i != _controller->end(); ++i) {
+            // p3.3.39 NOT for syntis! Use midiState an/or initParams for that.
+            if(!_device->isSynti())
+            {
+              for (iMidiCtrlValList i = _controller->begin(); i != _controller->end(); ++i) {
                   int channel = i->first >> 24;
                   int cntrl   = i->first & 0xffffff;
                   int val     = i->second->hwVal();
                   if (val != CTRL_VAL_UNKNOWN) {
                         
                         
-#ifdef DSSI_SUPPORT
+///#ifdef DSSI_SUPPORT
                       // Not for dssi synths...
-                      if(!_device->isSynti() || (dynamic_cast<DssiSynthIF*>(((SynthI*)_device)->sif()) == 0))
-                      {  
-#endif
+                      ///if(!_device->isSynti() || (dynamic_cast<DssiSynthIF*>(((SynthI*)_device)->sif()) == 0))
+                      ///{  
+///#endif
                         _device->putEvent(MidiPlayEvent(0, portno(), channel,
                           ME_CONTROLLER, cntrl, val));
-#ifdef DSSI_SUPPORT
-                      }
-#endif
+///#ifdef DSSI_SUPPORT
+                      ///}
+///#endif
                         
                         // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
                         setHwCtrlState(channel, cntrl, val);
@@ -215,7 +221,8 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                         //setHwCtrlStates(channel, cntrl, CTRL_VAL_UNKNOWN, val);
                         }
                   }
-            }
+              }
+            }  
 
       else
             clearDevice();

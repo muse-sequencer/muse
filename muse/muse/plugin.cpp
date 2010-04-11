@@ -92,13 +92,11 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctl
   //bool isint = desc & LADSPA_HINT_INTEGER;
   MidiController::ControllerType t = midiControllerType(ctlnum);
   
-  // Added by Tim. p3.3.12
   if(PLUGIN_DEBUGIN)
     printf("ladspa2MidiControlValues: ctlnum:%d ladspa port:%d has default?:%d default:%f\n", ctlnum, port, hasdef, fdef);
   
   if(desc & LADSPA_HINT_TOGGLED) 
   {
-    // Added by Tim. p3.3.12
     if(PLUGIN_DEBUGIN)
       printf("ladspa2MidiControlValues: has LADSPA_HINT_TOGGLED\n");
     
@@ -111,7 +109,6 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctl
   float m = 1.0;
   if(desc & LADSPA_HINT_SAMPLE_RATE)
   {
-    // Added by Tim. p3.3.12
     if(PLUGIN_DEBUGIN)
       printf("ladspa2MidiControlValues: has LADSPA_HINT_SAMPLE_RATE\n");
     
@@ -120,7 +117,6 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctl
   
   if(desc & LADSPA_HINT_BOUNDED_BELOW)
   {
-    // Added by Tim. p3.3.12
     if(PLUGIN_DEBUGIN)
       printf("ladspa2MidiControlValues: has LADSPA_HINT_BOUNDED_BELOW\n");
     
@@ -131,7 +127,6 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctl
   
   if(desc & LADSPA_HINT_BOUNDED_ABOVE)
   {  
-    // Added by Tim. p3.3.12
     if(PLUGIN_DEBUGIN)
       printf("ladspa2MidiControlValues: has LADSPA_HINT_BOUNDED_ABOVE\n");
     
@@ -148,7 +143,6 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctl
   int ctlmn = 0;
   int ctlmx = 127;
   
-  // Added by Tim. p3.3.12
   if(PLUGIN_DEBUGIN)
     printf("ladspa2MidiControlValues: port min:%f max:%f \n", fmin, fmax);
   
@@ -206,7 +200,6 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctl
   // Is it an integer control?
   if(desc & LADSPA_HINT_INTEGER)
   {
-    // Added by Tim. p3.3.12
     if(PLUGIN_DEBUGIN)
       printf("ladspa2MidiControlValues: has LADSPA_HINT_INTEGER\n");
   
@@ -250,11 +243,10 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctl
   float normdef = fdef / frng;
   fdef = normdef * fctlrng;
   
-  // FIXME: TODO: Incorrect... Arrrrgh... My brain hurts... Fix this somewhat more trivial stuff later....
+  // FIXME: TODO: Incorrect... Fix this somewhat more trivial stuff later....
   
   *def = (int)lrint(fdef) + bias;
  
-  // Added by Tim. p3.3.12
   if(PLUGIN_DEBUGIN)
     printf("ladspa2MidiControlValues: setting default:%d\n", *def);
   
@@ -282,14 +274,12 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, int port, int ctlnum, in
   //bool isint = desc & LADSPA_HINT_INTEGER;
   MidiController::ControllerType t = midiControllerType(ctlnum);
   
-  // Added by Tim. p3.3.12
   if(PLUGIN_DEBUGIN)
     printf("midi2LadspaValue: ctlnum:%d ladspa port:%d val:%d\n", ctlnum, port, val);
   
   float m = 1.0;
   if(desc & LADSPA_HINT_SAMPLE_RATE)
   {
-    // Added by Tim. p3.3.12
     if(PLUGIN_DEBUGIN)
       printf("midi2LadspaValue: has LADSPA_HINT_SAMPLE_RATE\n");
     
@@ -298,7 +288,6 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, int port, int ctlnum, in
   
   if(desc & LADSPA_HINT_BOUNDED_BELOW)
   {
-    // Added by Tim. p3.3.12
     if(PLUGIN_DEBUGIN)
       printf("midi2LadspaValue: has LADSPA_HINT_BOUNDED_BELOW\n");
     
@@ -309,7 +298,6 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, int port, int ctlnum, in
   
   if(desc & LADSPA_HINT_BOUNDED_ABOVE)
   {  
-    // Added by Tim. p3.3.12
     if(PLUGIN_DEBUGIN)
       printf("midi2LadspaValue: has LADSPA_HINT_BOUNDED_ABOVE\n");
     
@@ -325,7 +313,6 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, int port, int ctlnum, in
 
   if(desc & LADSPA_HINT_TOGGLED) 
   {
-    // Added by Tim. p3.3.12
     if(PLUGIN_DEBUGIN)
       printf("midi2LadspaValue: has LADSPA_HINT_TOGGLED\n");
     
@@ -338,7 +325,6 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, int port, int ctlnum, in
   int ctlmn = 0;
   int ctlmx = 127;
   
-  // Added by Tim. p3.3.12
   if(PLUGIN_DEBUGIN)
     printf("midi2LadspaValue: port min:%f max:%f \n", fmin, fmax);
   
@@ -405,7 +391,6 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, int port, int ctlnum, in
       ret = fmin;
     if(ret > fmax)
       ret = fmax;
-    // Added by Tim. p3.3.12
     if(PLUGIN_DEBUGIN)
       printf("midi2LadspaValue: has LADSPA_HINT_INTEGER returning:%f\n", ret);
   
@@ -425,7 +410,6 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, int port, int ctlnum, in
   
   float ret = normval * frng + fmin;
   
-  // Added by Tim. p3.3.12
   if(PLUGIN_DEBUGIN)
     printf("midi2LadspaValue: float returning:%f\n", ret);
   

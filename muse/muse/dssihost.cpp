@@ -25,6 +25,9 @@
 // Turn on debugging messages
 //#define DSSI_DEBUG 
 
+// Support vst state saving/loading with vst chunks. Requires patches to DSSI and DSSI-vst!
+//#define DSSI_VST_CHUNK_SUPPORT
+
 #include <string.h>
 #include <signal.h>
 #include <dlfcn.h>
@@ -615,6 +618,9 @@ bool DssiSynthIF::init(DssiSynth* s)
       else
         controlsOut = 0;
 
+      synth->midiCtl2PortMap.clear();
+      synth->port2MidiCtlMap.clear();
+                
       for (int k = 0; k < controlPorts; ++k) {
                 int i = synth->pIdx[k];
                 //controls[k].val = ladspaDefaultValue(ld, i);
@@ -675,9 +681,9 @@ bool DssiSynthIF::init(DssiSynth* s)
                 printf("DssiSynthIF::init inserting to midiCtl2PortMap: ctlnum:%d k:%d\n", ctlnum, k);
                 #endif
                 
-                // We have a controller number! Insert it and the DSSI port number into the map.
+                // We have a controller number! Insert it and the DSSI port number into both maps.
                 synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, k));
-                    
+                synth->port2MidiCtlMap.insert(std::pair<int, int>(k, ctlnum));
                 ld->connect_port(handle, i, &controls[k].val);
             }
 
@@ -689,6 +695,9 @@ bool DssiSynthIF::init(DssiSynth* s)
                 #ifdef DSSI_DEBUG 
                 printf("DssiSynthIF::init control output port:%d port idx:%d name:%s\n", k, i, ld->PortNames[i]);
                 #endif
+                
+                // p3.3.39 Removed.
+                /*
                 
                 // This code is duplicated in ::getControllerInfo()
                 //
@@ -739,8 +748,12 @@ bool DssiSynthIF::init(DssiSynth* s)
                 #endif
                 
                 // We have a controller number! Insert it and the DSSI port number into the map.
-                synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, k));
+                // p3.3.39 Removed. Doesn't say whether it's in or out! Don't need this for now. 
+                //synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, k));
                     
+                */    
+                    
+                //  - Control outs are not handled but still must be connected to something.
                 ld->connect_port(handle, i, &controlsOut[k].val);
             }
 
@@ -910,11 +923,13 @@ void DssiSynthIF::setParameter(int, float)
 //void DssiSynthIF::write(Xml&) const
 void DssiSynthIF::write(int level, Xml& xml) const
 {
+      //bool vstsaved = false;
+
 #ifdef DSSI_VST_CHUNK_SUPPORT
       //---------------------------------------------
       // dump current state of synth
       //---------------------------------------------
-printf("dumping data! %d\n", synth->dssi->getCustomData);
+      printf("dumping DSSI custom data! %d\n", synth->dssi->getCustomData);
 
       // this is only needed and supported if
       // we are talking to a VST plugin at the other end.
@@ -941,11 +956,82 @@ printf("dumping data! %d\n", synth->dssi->getCustomData);
               xml.nput("\n");
               xml.tag(level--, "/event");
               xml.etag(level--, "midistate");
+              vstsaved = true;
               }
       }
 #else
       printf("support for vst chunks not compiled in!\n");
 #endif
+
+      // p3.3.39 Store the state of program and bank and all input control values, but only if VSTSAVE above didn't do it already! 
+      // TODO: Not quite good enough, we would want to store all controls for EACH program, not just the current one. 
+      // Need to modify controls array to be inside a program array and act as a cache when the user changes a control on a particular program.
+      /*
+      if(!vstsaved)
+      {
+        if(synth->_controller)
+        {
+          const int fs = sizeof(float);
+          const int uls = sizeof(unsigned long);
+          const unsigned long len = synth->_controller * fs + 2 * uls; // Controllers and bank + program. 
+          
+          unsigned long prog = 0; // TODO: To be added to class. Dummy zero for now.
+          unsigned long bnk = 0;
+          
+          xml.tag(level++, "midistate");
+          xml.nput(level++, "<event type=\"%d\"", Sysex);
+          xml.nput(" datalen=\"%d\">\n", len+9); //  + "PARAMSAVE" length
+          xml.nput(level, "");
+          xml.nput("50 41 52 41 4d 53 41 56 45 "); // Embed a save marker string "PARAMSAVE".
+          
+          unsigned long i = 9;
+          
+          // Store program...
+          void* p = &prog;
+          for(int j = 0; j < uls; ++j)
+          {
+            if(i && ((i % 16) == 0)) 
+            {
+              xml.nput("\n");
+              xml.nput(level, "");
+            }
+            xml.nput("%02x ", ((char*)(p))[j] & 0xff);
+            ++i;
+          }  
+          // Store bank...
+          p = &bnk;
+          for(int j = 0; j < uls; ++j)
+          {
+            if(i && ((i % 16) == 0)) 
+            {
+              xml.nput("\n");
+              xml.nput(level, "");
+            }
+            xml.nput("%02x ", ((char*)(p))[j] & 0xff);
+            ++i;
+          }  
+          // Store controls...
+          for(int c = 0; c < synth->_controller; ++c)
+          {
+            float v = controls[c].val;
+            p = &v;
+            for(int j = 0; j < fs; ++j)
+            {
+              if(i && ((i % 16) == 0)) 
+              {
+                xml.nput("\n");
+                xml.nput(level, "");
+              }
+              xml.nput("%02x ", ((char*)(p))[j] & 0xff);
+              ++i;
+            }  
+          }
+          xml.nput("\n");
+          xml.tag(level--, "/event");
+          xml.etag(level--, "midistate");
+        }
+      }
+      */
 }
 
 //---------------------------------------------------------
@@ -959,6 +1045,7 @@ void DssiSynthIF::preProcessAlways()
 
 //---------------------------------------------------------
 //   processEvent
+//   Return true if event pointer filled.
 //--------------------------------------------------------
 
 bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
@@ -1044,21 +1131,134 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         int prog = b & 0xff;
         if(dssi->select_program)
           dssi->select_program(handle, bank, prog);
+        // Event pointer not filled. Return false.
         return false;
+      }
+          
+      if(a == CTRL_PITCH) 
+      {
+        #ifdef DSSI_DEBUG 
+        fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_PITCH\n");
+        #endif
+        
+        b &= 0x3fff;
+        snd_seq_ev_set_pitchbend(event, chn, b);
+        // Event pointer filled. Return true.
+        return true;
       }
           
       const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
       
       ciMidiCtl2LadspaPort ip = synth->midiCtl2PortMap.find(a);
-      // Is it just a regular midi controller?
+      // Is it just a regular midi controller, not mapped to a LADSPA port (either by the plugin or by us)?
+      // NOTE: There's no way to tell which of these controllers is supported by the plugin.
+      // For example sustain footpedal or pitch bend may be supported, but not mapped to any LADSPA port.
       if(ip == synth->midiCtl2PortMap.end())
       {
-        #ifdef DSSI_DEBUG 
-        fprintf(stderr, "DssiSynthIF::processEvent dataA:%d not found in map (not a ladspa controller). Filling event as regular controller.\n", a);
-        #endif
-        
-        // TODO: Turn on later or remove
+        // p3.3.39 Changed to return false because of crashes with unknown controllers when switching a midi track 
+        //  among different dssi synths and regular synths etc. For example high RPN offset numbers (set by another 
+        //  device selected into the midi port before selecting this synth) were passing through here when in fact 
+        //  the particular synth had no such midi controllers. 
+        // ========================== No, that leaves out regular controllers like footpedal
+        //#ifdef DSSI_DEBUG 
+        //fprintf(stderr, "DssiSynthIF::processEvent dataA:%d not found in map (not a ladspa controller). Ignoring.\n", a);
+        //#endif
         //return false;
+        
+        //#ifdef DSSI_DEBUG 
+        //fprintf(stderr, "DssiSynthIF::processEvent dataA:%d not found in map (not a ladspa controller). Filling event as regular controller.\n", a);
+        //#endif
+        //snd_seq_ev_set_controller(event, chn, a, b);
+        //return true;
+        
+        int ctlnum = a;
+        //switch(midiControllerType(a))
+        if(midiControllerType(a) != MidiController::Controller7)
+          return false;
+        else  
+        {
+          /*
+          case MidiController::NRPN14:
+          case MidiController::Controller14:
+          case MidiController::Pitch:
+          case MidiController::Program:
+          case MidiController::RPN:
+          case MidiController::RPN14:
+          case MidiController::NRPN:
+                #ifdef DSSI_DEBUG 
+                fprintf(stderr, "DssiSynthIF::processEvent non-ladspa midi event controller unsupported. DataA:%d\n", a);
+                #endif
+                return false;
+          */
+          
+          //case MidiController::Controller7:
+                #ifdef DSSI_DEBUG 
+                //fprintf(stderr, "DssiSynthIF::processEvent midi event is Controller7. Changing to DSSI_CC type. Current dataA:%d\n", a);
+                fprintf(stderr, "DssiSynthIF::processEvent non-ladspa midi event is Controller7. Current dataA:%d\n", a);
+                #endif  
+                //a = DSSI_CC(a);
+                a &= 0x7f;
+                ctlnum = DSSI_CC_NUMBER(ctlnum);
+          //      break;
+          
+          /*
+          case MidiController::NRPN14:
+                #ifdef DSSI_DEBUG 
+                //  fprintf(stderr, "DssiSynthIF::processEvent midi event is NRPN. Changing to DSSI_NRPN type. Current dataA:%d\n", a);
+                fprintf(stderr, "DssiSynthIF::processEvent non-ladspa midi event is NRPN. Current dataA:%d\n", a);
+                #endif  
+                //a = DSSI_NRPN(a - CTRL_NRPN14_OFFSET);
+                a &= 0x3fff;
+                ctlnum = DSSI_NRPN_NUMBER(ctlnum);
+                break;
+          case MidiController::Controller14:
+                a &= 0x7f;
+                break;
+          case MidiController::Pitch:
+                // Should be caught above!
+                #ifdef DSSI_DEBUG 
+                //fprintf(stderr, "DssiSynthIF::processEvent non-ladspa midi event is Pitch. DataA:%d\n", a);
+                fprintf(stderr, "DssiSynthIF::processEvent Error! non-ladspa midi event is Pitch. Should have been caught already! DataA:%d\n", a);
+                #endif
+                //a &= 0x3fff;
+                //snd_seq_ev_set_pitchbend(event, chn, b);
+                // Event pointer filled. Return true.
+                //return true;
+                // Event pointer not filled. Return false.
+                return false;
+          case MidiController::Program:
+                // Should be caught above!
+                #ifdef DSSI_DEBUG 
+                fprintf(stderr, "DssiSynthIF::processEvent Error! non-ladspa midi event is Program. Should have been caught already! DataA:%d\n", a);
+                #endif
+                return false;
+          case MidiController::RPN:
+          case MidiController::RPN14:
+          case MidiController::NRPN:
+          default: 
+                #ifdef DSSI_DEBUG 
+                fprintf(stderr, "DssiSynthIF::processEvent non-ladspa midi event is RPN, RPN14, or NRPN type. DataA:%d\n", a);
+                #endif
+                break;      
+          */      
+        }
+        
+        // Verify it's the same number.
+        //if(ctlnum != a)
+        //{
+        //  #ifdef DSSI_DEBUG 
+        //  printf("DssiSynthIF::processEvent Error! non-ladspa midi ctlnum:%d != event dataA:%d\n", ctlnum, a);
+        //  #endif
+          // Event not filled. Return false.
+          
+          // TEMP: TODO: Turn on later
+          //return false;
+        //}  
+        
+        // Fill the event.
+        #ifdef DSSI_DEBUG 
+        printf("DssiSynthIF::processEvent non-ladspa filling midi event chn:%d dataA:%d dataB:%d\n", chn, a, b);
+        #endif
         snd_seq_ev_set_controller(event, chn, a, b);
         return true;
       }
@@ -1079,7 +1279,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         if(k > synth->_controller)
           return false;
           
-        // TODO: If neccesary... choose non-existing numbers...
+        // TODO: If necessary... choose non-existing numbers...
         //for(int k = 0; k < controlPorts; ++k) 
         //{
         //  int i = synth->pIdx[k];
@@ -1087,19 +1287,64 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         
         // Simple but flawed solution: Start them at 0x60000 + 0x2000 = 0x62000. Max NRPN number is 0x3fff.
         ctlnum = k + (CTRL_NRPN14_OFFSET + 0x2000);
+      }  
+      // p3.3.39
+      else
+      {
+        #ifdef DSSI_DEBUG 
+        printf("DssiSynthIF::processEvent plugin requests DSSI-style ctlnum:%x(h) %d(d) be mapped to control port:%d...\n", ctlnum, ctlnum, i);
+        #endif
         
+        int c = ctlnum;
+        // Can be both CC and NRPN! Prefer CC over NRPN.
+        if(DSSI_IS_CC(ctlnum))
+        {
+          ctlnum = DSSI_CC_NUMBER(c);
+          
+          #ifdef DSSI_DEBUG 
+          printf("DssiSynthIF::processEvent is CC ctlnum:%d\n", ctlnum);
+          #endif
+          
+          #ifdef DSSI_DEBUG 
+          if(DSSI_IS_NRPN(ctlnum))
+            printf("DssiSynthIF::processEvent is also NRPN control. Using CC.\n");
+          #endif  
+        }
+        else
+        if(DSSI_IS_NRPN(ctlnum))
+        {
+          ctlnum = DSSI_NRPN_NUMBER(c) + CTRL_NRPN14_OFFSET;
+          
+          #ifdef DSSI_DEBUG 
+          printf("DssiSynthIF::processEvent is NRPN ctlnum:%x(h) %d(d)\n", ctlnum, ctlnum);
+          #endif
+        }  
+      
+      }
+      
+      //{  
         float val = midi2LadspaValue(ld, i, ctlnum, b); 
         
         #ifdef DSSI_DEBUG 
-        fprintf(stderr, "DssiSynthIF::processEvent No midi controller for control port:%d port:%d dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
+        //fprintf(stderr, "DssiSynthIF::processEvent No midi controller for control port:%d port:%d dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
+        fprintf(stderr, "DssiSynthIF::processEvent control port:%d port:%d dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
         #endif
         
         // Set the ladspa port value.
         controls[k].val = val;
+        // FIXME: Testing - Works but is this safe in a RT process callback? Try hooking into gui heartbeat timer instead...
+        //lo_send(uiTarget, uiOscControlPath, "if", i, val);
         
         // Since we absorbed the message as a ladspa control change, return false - the event is not filled.
         return false;
-      }
+      //}
+     
+      // p3.3.39 Removed.
+      // "Hosts should not deliver through run_synth any MIDI controller events that have already
+      //   been mapped to control port values."
+      // D'oh! My mistake, did not understand that the mapping is only a *request* that the app map MIDI 
+      //  controller events to a LADSPA port, and must do the conversion, not to actually *send* them via MIDI...
+      /*
       else
       {
         switch(midiControllerType(a))
@@ -1127,7 +1372,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
                 break;
           case MidiController::Pitch:
                 #ifdef DSSI_DEBUG 
-                fprintf(stderr, "DssiSynthIF::processEvent midi event is Program. DataA:%d\n", a);
+                fprintf(stderr, "DssiSynthIF::processEvent midi event is Pitch. DataA:%d\n", a);
                 #endif
                 a &= 0x3fff;
                 break;
@@ -1168,6 +1413,8 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         #endif
         snd_seq_ev_set_controller(event, chn, a, b);
       }
+      */
+      
     }
     break;
     case ME_PITCHBEND:
@@ -1180,6 +1427,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       #ifdef DSSI_DEBUG 
       fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_SYSEX\n");
       #endif
+      
       if (QString((const char*)e.data()).startsWith("VSTSAVE")) {
 #ifdef DSSI_VST_CHUNK_SUPPORT
         printf("loading chunk from sysex %s!\n", e.data()+7);
@@ -1187,16 +1435,73 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
 #else
         printf("support for vst chunks not compiled in!\n");
 #endif
-      }else {
-      snd_seq_ev_set_sysex(event, len,
-            //(unsigned char*)ba.data());
-            (unsigned char*)ca);
+        // Event not filled.
+        return false;
+      }
+      // p3.3.39 Read the state of program and bank and all input control values.
+      // TODO: Needs to be better. See write().
+      /*
+      else 
+      if (QString((const char*)e.data()).startsWith("PARAMSAVE")) 
+      {
+        #ifdef DSSI_DEBUG 
+        fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_SYSEX PARAMSAVE\n");
+        #endif
+        
+        unsigned long dlen = e.len() - 9; // Minus "PARAMSAVE"
+        if(dlen > 0)
+        {
+          if(dlen < 2 * sizeof(unsigned long))
+            printf("DssiSynthIF::processEvent Error: PARAMSAVE data length does not include at least program and bank!\n");
+          else
+          {
+            //unsigned long* const ulp = (unsigned long*)(e.data() + 9);  // After "PARAMSAVE"
+            //unsigned long prog = ulp[0];
+            //unsigned long bnk = ulp[1];
+            // TODO: TODO: Save them in class and set plugin program and bank.
+            
+            dlen -= 2 * sizeof(unsigned long); // After the program and bank.
+            
+            if(dlen > 0)
+            {
+              if((dlen % sizeof(float)) != 0)
+                printf("DssiSynthIF::processEvent Error: PARAMSAVE float data length not integral multiple of float size!\n");
+              else
+              {
+                const int n = dlen / sizeof(float);
+                if(n != synth->_controller)
+                  printf("DssiSynthIF::processEvent Warning: PARAMSAVE number of floats:%d != number of controls:%d\n", n, synth->_controller);
+                
+                float* const fp = (float*)(e.data() + 9 + 2 * sizeof(unsigned long));  // After "PARAMSAVE" and progam and bank.
+                
+                for(int i = 0; i < synth->_controller && i < n; ++i)
+                {
+                  const float v = fp[i];
+                  controls[i].val = v;
+                }
+              }
+            }  
+          }  
+        }  
+        // Event not filled.
+        return false;
+      }
+      */
+      else
+      {
+        // NOTE: There is a limit on the size of a sysex. Got this: 
+        // "DssiSynthIF::processEvent midi event is ME_SYSEX"
+        // "WARNING: MIDI event of type ? decoded to 367 bytes, discarding"
+        // That might be ALSA doing that.
+        snd_seq_ev_set_sysex(event, len,
+          //(unsigned char*)ba.data());
+          (unsigned char*)ca);
       }
     break;
     default:
       if(debugMsg)
         fprintf(stderr, "DssiSynthIF::processEvent midi event unknown type:%d\n", e.type());
-      
+      // Event not filled.
       return false;
     break;
   }
@@ -1232,7 +1537,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent /*i*/,
   memset(events, 0, sizeof(events));
   nevents = 0;
 
-  int curPos      = pos;
+  //int curPos      = pos;
   //unsigned endPos = pos + samples;
   unsigned endPos = pos + n;
   //int off         = pos;
@@ -1419,6 +1724,11 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent /*i*/,
   }  
   */  
     
+  //#ifdef DSSI_DEBUG 
+  //if(nevents)
+  //  fprintf(stderr, "DssiSynthIF::getData run nevents:%d\n", nevents);
+  //#endif
+  
   // Run the synth for one segment. This processes events and gets/fills our local buffers...
   if(synth->dssi->run_synth)
   {
@@ -1537,9 +1847,9 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
           {
             LADSPA_PortDescriptor pd = d->PortDescriptors[k];
             
-            //#ifdef DSSI_DEBUG 
-            //  printf("DssiSynth::createSIF ladspa plugin Port:%d Name:%s descriptor:%x\n", k, d->PortNames[k], pd);
-            //#endif
+            #ifdef DSSI_DEBUG 
+            printf("DssiSynth::createSIF ladspa plugin Port:%d Name:%s descriptor:%x\n", k, d->PortNames[k], pd);
+            #endif
             
             if (LADSPA_IS_PORT_AUDIO(pd)) 
             {
@@ -1554,16 +1864,20 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
                 ++_outports;
                 oIdx.push_back(k);
               }
+              
+              rpIdx.push_back(-1);
             }
             else if (LADSPA_IS_PORT_CONTROL(pd)) 
             {
               if (LADSPA_IS_PORT_INPUT(pd)) 
               {
+                rpIdx.push_back(_controller);
                 ++_controller;
                 pIdx.push_back(k);
               }
               else if (LADSPA_IS_PORT_OUTPUT(pd))
               {
+                rpIdx.push_back(-1);
                 ++_controllerOut;
                 opIdx.push_back(k);
               }
@@ -1805,19 +2119,53 @@ int DssiSynthIF::oscControl(lo_arg** argv)
   printf("DssiSynthIF::oscControl received oscControl port:%d val:%f\n", port, value);
   #endif
   
-  int controlPorts = synth->_controller;
-  //int controlPorts = synth->_controllerOut;
+  //int controlPorts = synth->_controller;
   
-  if(port >= controlPorts)
-  //if(port >= midiCtl2PortMap.size())
+  //if(port >= controlPorts)
+  if(port < 0 || port >= synth->rpIdx.size())
   {
-    fprintf(stderr, "DssiSynthIF::oscControl: port number:%d is out of range of number of ports:%d\n", port, controlPorts);
+    //fprintf(stderr, "DssiSynthIF::oscControl: port number:%d is out of range of number of ports:%d\n", port, controlPorts);
+    fprintf(stderr, "DssiSynthIF::oscControl: port number:%d is out of range of index list size:%d\n", port, synth->rpIdx.size());
     return 0;
   }
   
+  // Convert from DSSI port number to control input port index.
+  int cport = synth->rpIdx[port];
+  
+  if(cport == -1)
+  {
+    fprintf(stderr, "DssiSynthIF::oscControl: port number:%d is not a control input\n", port);
+    return 0;
+  }
+  
+  // p3.3.39 Set the DSSI control input port's value.
+  // Observations: With a native DSSI synth like LessTrivialSynth, the native GUI's controls do not change the sound at all
+  //  ie. they don't update the DSSI control port values themselves. 
+  // Hence in response to the call to this oscControl, sent by the native GUI, it is required to that here.
+///  controls[cport].val = value;
+  // DSSI-VST synths however, unlike DSSI synths, DO change their OWN sound in response to their gui controls.
+  // AND this function is called ! 
+  // Despite the descrepency we are STILL required to update the DSSI control port values here 
+  //  because dssi-vst is WAITING FOR A RESPONSE! (A CHANGE in the control port value). 
+  // It will output something like "...4 events expected..." and count that number down as 4 actual control port value CHANGES
+  //  are done here in response. Normally it says "...0 events expected..." when MusE is the one doing the DSSI control changes.
+  // TODO: May need FIFOs on each control(!) so that the control changes get sent one per process cycle! 
+  // Observed countdown not actually going to zero upon string of changes.
+   
   const DSSI_Descriptor* dssi = synth->dssi;
   const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
   
+  ciMidiCtl2LadspaPort ip = synth->port2MidiCtlMap.find(cport);
+  if(ip != synth->port2MidiCtlMap.end())
+  {
+    // TODO: TODO: Update midi MusE's midi controller knobs, sliders, boxes etc with a call to the midi port's setHwCtrlState() etc.
+    // But first we need a ladspa2MidiValue() function!  ... 
+    //
+    //
+    //float val = ladspa2MidiValue(ld, i, ?, ?); 
+  
+  }
+
 #if 0
       int port = argv[0]->i;
       LADSPA_Data value = argv[1]->f;
@@ -1851,6 +2199,11 @@ int DssiSynthIF::oscExiting(lo_arg**)
       
       // The gui is gone now, right?
       _guiVisible = false;
+      
+      //const DSSI_Descriptor* dssi = synth->dssi;
+      //const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
+      //if(ld->deactivate) 
+      //  ld->deactivate(handle);
       
       if (uiOscPath == 0) {
             printf("DssiSynthIF::oscExiting(): no uiOscPath\n");
@@ -2125,30 +2478,30 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
     printf("DssiSynthIF::getControllerInfo ctlnum:%d\n", ctlnum);
     #endif
      
-   int c = ctlnum;
-   // Can be both CC and NRPN! Prefer CC over NRPN.
-   if(DSSI_IS_CC(ctlnum))
-   {
-     #ifdef DSSI_DEBUG 
-     printf("DssiSynthIF::getControllerInfo is CC control\n");
-     #endif
-     
-     ctlnum = DSSI_CC_NUMBER(c);
-     
-     #ifdef DSSI_DEBUG 
-     if(DSSI_IS_NRPN(ctlnum))
-       printf("DssiSynthIF::getControllerInfo is also NRPN control. Using CC.\n");
-     #endif  
-   }
-   else
-   if(DSSI_IS_NRPN(ctlnum))
-   {
-     #ifdef DSSI_DEBUG 
-     printf("DssiSynthIF::getControllerInfo is NRPN control\n");
-     #endif
-     
-     ctlnum = DSSI_NRPN_NUMBER(c) + CTRL_NRPN14_OFFSET;
-   }  
+    int c = ctlnum;
+    // Can be both CC and NRPN! Prefer CC over NRPN.
+    if(DSSI_IS_CC(ctlnum))
+    {
+      #ifdef DSSI_DEBUG 
+      printf("DssiSynthIF::getControllerInfo is CC control\n");
+      #endif
+      
+      ctlnum = DSSI_CC_NUMBER(c);
+      
+      #ifdef DSSI_DEBUG 
+      if(DSSI_IS_NRPN(ctlnum))
+        printf("DssiSynthIF::getControllerInfo is also NRPN control. Using CC.\n");
+      #endif  
+    }
+    else
+    if(DSSI_IS_NRPN(ctlnum))
+    {
+      #ifdef DSSI_DEBUG 
+      printf("DssiSynthIF::getControllerInfo is NRPN control\n");
+      #endif
+      
+      ctlnum = DSSI_NRPN_NUMBER(c) + CTRL_NRPN14_OFFSET;
+    }  
   }
   
   int def = CTRL_VAL_UNKNOWN;
