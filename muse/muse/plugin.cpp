@@ -713,6 +713,8 @@ static void loadPluginLib(QFileInfo* fi)
               continue;
             
             LADSPA_Properties properties = descr->Properties;
+            
+            /*
             int ai = 0;
             int ao = 0;
             for (unsigned k = 0; k < descr->PortCount; ++k) {
@@ -724,6 +726,8 @@ static void loadPluginLib(QFileInfo* fi)
                   else
                         ++ao;
                   }
+            */
+            
             bool inPlaceBroken = LADSPA_IS_INPLACE_BROKEN(properties);
             
             plugins.add(fi, ladspa, descr, !inPlaceBroken);
@@ -1073,7 +1077,8 @@ void PluginI::init()
       instances         = 0;
       handle            = 0;
       controls          = 0;
-      controlPorts      = 0;
+      controlsOut       = 0;
+      controlOutPorts   = 0;
       _gui              = 0;
       _on               = true;
       initControlValues = false;
@@ -1098,6 +1103,8 @@ PluginI::~PluginI()
             }
       if (_gui)
             delete _gui;
+      if (controlsOut)
+            delete controlsOut;
       if (controls)
             delete controls;
       if (handle)
@@ -1160,16 +1167,30 @@ void PluginI::setChannels(int c)
                   }
             }
       int curPort = 0;
+      int curOutPort = 0;
       int ports   = _plugin->ports();
-      for (int k = 0; k < ports; ++k) {
+      for (int k = 0; k < ports; ++k) 
+      {
             LADSPA_PortDescriptor pd = _plugin->portd(k);
-            if (pd & LADSPA_PORT_CONTROL) {
-                  for (int i = 0; i < instances; ++i)
-                        _plugin->connectPort(handle[i], k, &controls[curPort].val);
-                  controls[curPort].idx = k;
-                  ++curPort;
+            if (pd & LADSPA_PORT_CONTROL) 
+            {
+                  if(pd & LADSPA_PORT_INPUT) 
+                  {
+                    for (int i = 0; i < instances; ++i)
+                          _plugin->connectPort(handle[i], k, &controls[curPort].val);
+                    controls[curPort].idx = k;
+                    ++curPort;
+                  }
+                  else  
+                  if(pd & LADSPA_PORT_OUTPUT) 
+                  {
+                    for (int i = 0; i < instances; ++i)
+                          _plugin->connectPort(handle[i], k, &controlsOut[curOutPort].val);
+                    controlsOut[curOutPort].idx = k;
+                    ++curOutPort;
                   }
             }
+      }
       activate();
       }
 
@@ -1216,36 +1237,75 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
             }
 
       controlPorts = 0;
+      controlOutPorts = 0;
       int ports    = _plugin->ports();
 
-      for (int k = 0; k < ports; ++k) {
+      for (int k = 0; k < ports; ++k) 
+      {
             LADSPA_PortDescriptor pd = _plugin->portd(k);
             if (pd & LADSPA_PORT_CONTROL)
+            {
+              if (pd & LADSPA_PORT_INPUT)
                   ++controlPorts;
-            }
-      controls = new Port[controlPorts];
-      int i = 0;
-      for (int k = 0; k < ports; ++k) {
+              else    
+              if (pd & LADSPA_PORT_OUTPUT)
+                  ++controlOutPorts;
+            }      
+      }
+      controls    = new Port[controlPorts];
+      controlsOut = new Port[controlOutPorts];
+      int i  = 0;
+      int ii = 0;
+      for (int k = 0; k < ports; ++k) 
+      {
             LADSPA_PortDescriptor pd = _plugin->portd(k);
-            if (pd & LADSPA_PORT_CONTROL) {
+            if (pd & LADSPA_PORT_CONTROL) 
+            {
+              if (pd & LADSPA_PORT_INPUT)
+              {
                   double val = _plugin->defaultValue(k);
                   controls[i].val    = val;
                   controls[i].tmpVal = val;
                   controls[i].enCtrl  = true;
                   controls[i].en2Ctrl = true;
                   ++i;
-                  }
+              }
+              else
+              if (pd & LADSPA_PORT_OUTPUT)
+              {
+                  //double val = _plugin->defaultValue(k);
+                  controls[ii].val     = 0.0;
+                  controls[ii].tmpVal  = 0.0;
+                  controls[ii].enCtrl  = false;
+                  controls[ii].en2Ctrl = false;
+                  ++ii;
+              }
             }
+      }
       int curPort = 0;
-      for (int k = 0; k < ports; ++k) {
+      int curOutPort = 0;
+      for (int k = 0; k < ports; ++k) 
+      {
             LADSPA_PortDescriptor pd = _plugin->portd(k);
-            if (pd & LADSPA_PORT_CONTROL) {
+            if (pd & LADSPA_PORT_CONTROL) 
+            {
+                if (pd & LADSPA_PORT_INPUT)
+                {
                   for (int i = 0; i < instances; ++i)
                         _plugin->connectPort(handle[i], k, &controls[curPort].val);
                   controls[curPort].idx = k;
                   ++curPort;
-                  }
+                }
+                else
+                if (pd & LADSPA_PORT_OUTPUT)
+                {
+                  for (int i = 0; i < instances; ++i)
+                        _plugin->connectPort(handle[i], k, &controlsOut[curOutPort].val);
+                  controlsOut[curOutPort].idx = k;
+                  ++curOutPort;
+                }
             }
+      }
       activate();
       return false;
       }

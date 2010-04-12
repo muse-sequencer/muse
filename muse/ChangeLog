@@ -1,3 +1,5 @@
+12.04.2010
+      * Fixed: LADSPA rack effects: Do not display LADSPA output controls (such as latency). (T356)
 11.04.2010
       * Fixed: DSSI requested midi mapped controls were not correct. (T356)
       * Changed: Working on controllers, and saving their state. Synths like Organ should remember their state now. (T356)

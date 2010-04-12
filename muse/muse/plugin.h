@@ -232,8 +232,10 @@ class PluginI {
 
       LADSPA_Handle* handle;         // per instance
       Port* controls;
+      Port* controlsOut;
 
       int controlPorts;
+      int controlOutPorts;
       PluginGui* _gui;
       bool _on;
       bool initControlValues;
