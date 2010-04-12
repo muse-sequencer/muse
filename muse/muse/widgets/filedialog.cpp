@@ -330,37 +330,15 @@ QString getSaveFileName(const QString &startWith,
       dlg->setCaption(name);
       dlg->setMode(QFileDialog::AnyFile);
       QString result;
-      if (dlg->exec() == QDialog::Accepted) {
-            result = dlg->selectedFile();
-            }
+      if (dlg->exec() == QDialog::Accepted) 
+        result = dlg->selectedFile();
+            
       
       // Added by T356.
-      QString filt = dlg->selectedFilter();
-      filt = getFilterExtension(filt);
-      // Do we have a valid extension?
-      if(!filt.isEmpty())
+      if(!result.isEmpty())
       {
-        // If the rightmost characters of the filename do not already contain
-        //  the extension, add the extension to the filename.
-        //if(result.right(filt.length()) != filt)
-        if(!result.endsWith(filt))
-          result += filt;
-      }
-      else
-      {
-        // No valid extension, or just * was given. Although it would be nice to allow no extension
-        //  or any desired extension by commenting this section out, it's probably not a good idea to do so.
-        //
-        // NOTE: Most calls to this routine getSaveFileName() are followed by fileOpen(),
-        //  which can tack on its own extension, but only if the *complete* extension is blank. 
-        // So there is some overlap going on. Enabling this actually stops that action, 
-        //  but only if there are no errors in the list of filters. fileOpen() will act as a 'catchall'.
-        //
-        // Force the filter list to the first one (the preferred one), and then get the filter.
-        dlg->setSelectedFilter(0);
-        filt = dlg->selectedFilter();
+        QString filt = dlg->selectedFilter();
         filt = getFilterExtension(filt);
-            
         // Do we have a valid extension?
         if(!filt.isEmpty())
         {
@@ -369,6 +347,31 @@ QString getSaveFileName(const QString &startWith,
           //if(result.right(filt.length()) != filt)
           if(!result.endsWith(filt))
             result += filt;
+        }
+        else
+        {
+          // No valid extension, or just * was given. Although it would be nice to allow no extension
+          //  or any desired extension by commenting this section out, it's probably not a good idea to do so.
+          //
+          // NOTE: Most calls to this routine getSaveFileName() are followed by fileOpen(),
+          //  which can tack on its own extension, but only if the *complete* extension is blank. 
+          // So there is some overlap going on. Enabling this actually stops that action, 
+          //  but only if there are no errors in the list of filters. fileOpen() will act as a 'catchall'.
+          //
+          // Force the filter list to the first one (the preferred one), and then get the filter.
+          dlg->setSelectedFilter(0);
+          filt = dlg->selectedFilter();
+          filt = getFilterExtension(filt);
+              
+          // Do we have a valid extension?
+          if(!filt.isEmpty())
+          {
+            // If the rightmost characters of the filename do not already contain
+            //  the extension, add the extension to the filename.
+            //if(result.right(filt.length()) != filt)
+            if(!result.endsWith(filt))
+              result += filt;
+          }
         }
       }
       

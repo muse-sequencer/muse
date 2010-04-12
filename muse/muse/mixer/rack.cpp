@@ -273,6 +273,9 @@ void EffectRack::savePreset(int idx)
       QString name = getSaveFileName(QString(""), preset_file_save_pattern, this,
          tr("MusE: Save Preset"));
       
+      if(name.isEmpty())
+        return;
+        
       //FILE* presetFp = fopen(name.ascii(),"w+");
       bool popenFlag;
       FILE* presetFp = fileOpen(this, name, QString(".pre"), "w", popenFlag, false, true);
