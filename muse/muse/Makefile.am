@@ -4,7 +4,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 AM_CPPFLAGS += -Imidiedit -Iarranger -Iliste \
 	-Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote\
-	-DINSTPREFIX=\"$(prefix)\"
+	-DINSTPREFIX=\"$(prefix)\" -DINSTLIBDIR=\"$(libdir)\"
 
 SUBDIRS = widgets master midiedit mixer arranger \
 	liste driver waveedit ctrl cliplist \

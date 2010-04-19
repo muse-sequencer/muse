@@ -2439,7 +2439,8 @@ int main(int argc, char* argv[])
 
       if (museGlobal.isEmpty()) {
             QString museGlobal(INSTPREFIX);
-            museGlobalLib   =  museGlobal + "/lib/muse";
+            QString museGlobalLibDir(INSTLIBDIR);
+            museGlobalLib   =  museGlobalLibDir + "/muse";
             museGlobalShare =  museGlobal + "/share/muse";
             }
       else {
