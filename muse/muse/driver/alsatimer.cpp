@@ -142,11 +142,13 @@
     setTick = (1000000000 / snd_timer_info_get_resolution(info)) / freq;
 
     if (setTick == 0) {
-      fprintf(stderr,"AlsaTimer::setTimerTicks(): requested freq %u Hz too high for timer (max is %g)\n",
-        freq, 1000000000.0 / snd_timer_info_get_resolution(info));
-      fprintf(stderr,"  freq stays at %ld Hz\n",
-        (long int)((1000000000.0 / snd_timer_info_get_resolution(info)) / snd_timer_params_get_ticks(params)) 
-      );
+      // return, print error if freq i below 500 (timing will suffer)
+      if (((1000000000.0 / snd_timer_info_get_resolution(info)) / snd_timer_params_get_ticks(params)) < 500) {
+        fprintf(stderr,"AlsaTimer::setTimerTicks(): requested freq %u Hz too high for timer (max is %g)\n",
+          freq, 1000000000.0 / snd_timer_info_get_resolution(info));
+        fprintf(stderr,"  freq stays at %ld Hz\n",
+          (long int)((1000000000.0 / snd_timer_info_get_resolution(info)) / snd_timer_params_get_ticks(params)));
+      }
 
       return 0;
     }
