@@ -2539,7 +2539,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
       //////////
       // GRID //
       //////////
-      QColor baseColor(config.partCanvasBg.light(110));
+      QColor baseColor(config.partCanvasBg.light(104));
       p.setPen(baseColor);
 
       //--------------------------------
@@ -2549,38 +2549,42 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
       if (config.canvasShowGrid) {
           int bar, beat;
           unsigned tick;
-          switch (*_raster) {
-                case 0:     // measure
-                      sigmap.tickValues(x, &bar, &beat, &tick);
-                      for (;;) {
-                            int xt = sigmap.bar2tick(bar++, 0, 0);
-                            if (xt >= x + w)
-                                  break;
-                            if (!((bar-1) % 4))
-                                p.setPen(baseColor.dark(130));
-                            else
-                                p.setPen(baseColor);
-                            p.drawLine(xt, y, xt, y+h);
-                      }
-                      break;
-                case 1:           // no raster
-                      break;
-                case 768:         // 1/2
-                case 384:         // 1/4
-                case 192:         // 1/8
-                case 96:          // 1/16
-                {
-                      int r = *_raster;
-                      int rr = rmapx(r);
-                      while (rr < 4) {
-                            r *= 2;
-                            rr = rmapx(r);
-                      }
 
-                      for (int xt = x; xt < (x + w); xt += r)
-                            p.drawLine(xt, y, xt+1, y+h);
-                }
-                break;
+          sigmap.tickValues(x, &bar, &beat, &tick);
+          for (;;) {
+            int xt = sigmap.bar2tick(bar++, 0, 0);
+            if (xt >= x + w)
+                  break;
+            if (!((bar-1) % 4))
+                p.setPen(baseColor.dark(115));
+            else
+                p.setPen(baseColor);
+            p.drawLine(xt, y, xt, y+h);
+
+            // append
+            int noDivisors=0;
+            switch (*_raster) {
+                case 768:         // 1/2
+                    noDivisors=2; break;
+                case 384:         // 1/4
+                    noDivisors=4; break;
+                case 192:         // 1/8
+                    noDivisors=8; break;
+                case 96:          // 1/16
+                    noDivisors=16; break;
+            }
+            int r = *_raster;
+            int rr = rmapx(r);
+            if (*_raster > 1) {
+              while (rr < 4) {
+                r *= 2;
+                rr = rmapx(r);
+                noDivisors=noDivisors/2;
+              }
+              p.setPen(baseColor);
+              for (int t=1;t< noDivisors;t++)
+                p.drawLine(xt+r*t, y, xt+r*t, y+h);
+            }
           }
       }
       //--------------------------------
