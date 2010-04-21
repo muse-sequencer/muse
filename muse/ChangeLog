@@ -1,3 +1,5 @@
+21.04.2010
+      * Fixed: Shortcut for moving between tracks in arranger. Ctrl+Up/Down (rj)
 19.04.2010
       * Patch: Fix for libdir bug causing synths to not be available on some 64bit systems. By Orcan Ogetbil (rj)
       * Fixed: Drawing of grid when snaping to less than measure (rj)

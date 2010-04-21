@@ -109,6 +109,8 @@ class TList : public QWidget {
       void setYPos(int);
       void redraw();
       void selectTrack(Track*);
+      void selectTrackAbove();
+      void selectTrackBelow();
 
    public:
       TList(Header*, QWidget* parent, const char* name);

@@ -163,6 +163,10 @@ enum {
       SHRT_SEL_BELOW, //Down
       SHRT_SEL_BELOW_ADD, //move down and add to selection
 
+      //Arranger tracks
+      SHRT_SEL_TRACK_BELOW,
+      SHRT_SEL_TRACK_ABOVE,
+
       //To be in arranger, pianoroll & drumeditor
       SHRT_SELECT_ALL, //Ctrl+A
       SHRT_SELECT_NONE, //Ctrl+Shift+A

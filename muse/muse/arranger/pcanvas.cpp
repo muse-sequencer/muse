@@ -1086,6 +1086,14 @@ void PartCanvas::keyPress(QKeyEvent* event)
             emit setUsedTool(MuteTool);
             return;
             }
+      else if (key == shortcuts[SHRT_SEL_TRACK_ABOVE].key) {
+            emit selectTrackAbove();
+            return;
+            }
+      else if (key == shortcuts[SHRT_SEL_TRACK_BELOW].key) {
+            emit selectTrackBelow();
+            return;
+            }
 
       //
       // Shortcuts that require selected parts from here

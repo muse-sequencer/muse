@@ -305,6 +305,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(Track*)), list, SLOT(selectTrack(Track*)));
       connect(list, SIGNAL(keyPressExt(QKeyEvent*)), canvas, SLOT(redirKeypress(QKeyEvent*)));
+      connect(canvas, SIGNAL(selectTrackAbove()), list, SLOT(selectTrackAbove()));
+      connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));
 
       connect(this, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
       connect(list, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));

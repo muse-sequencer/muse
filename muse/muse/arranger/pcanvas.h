@@ -103,6 +103,8 @@ class PartCanvas : public Canvas {
       void dropMidiFile(const QString&);
       void setUsedTool(int);
       void trackChanged(Track*);
+      void selectTrackAbove();
+      void selectTrackBelow();
 
       void startEditor(PartList*, int);
 

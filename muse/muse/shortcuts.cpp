@@ -128,6 +128,9 @@ void initShortCuts()
       defShrt(SHRT_SEL_BELOW,             Qt::Key_Down, "Edit: Select nearest part on track below", ARRANG_SHRT, "sel_part_below");
       defShrt(SHRT_SEL_BELOW_ADD,         Qt::SHIFT + Qt::Key_Down, "Edit: Add nearest part on track below", ARRANG_SHRT, "sel_part_below_add");
 
+      defShrt(SHRT_SEL_TRACK_ABOVE,       Qt::CTRL + Qt::Key_Up, "Select track above", ARRANG_SHRT, "sel_track_above");
+      defShrt(SHRT_SEL_TRACK_BELOW,       Qt::CTRL + Qt::Key_Down, "Select track below", ARRANG_SHRT, "sel_track_below");
+
       //-----------------------------------------------------------
 
       defShrt(SHRT_TRANSPOSE,       0, "Midi: Transpose", ARRANG_SHRT + PROLL_SHRT, "midi_transpose");
