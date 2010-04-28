@@ -25,6 +25,19 @@
 #include "globaldefs.h"
 #include "ctrl.h"
 
+//#include "stringparam.h"
+
+#include "config.h"
+ 
+#ifdef OSC_SUPPORT
+//class OscIF;
+#include "osc.h"
+#endif
+
+#ifdef DSSI_SUPPORT
+#include <dssi.h>
+#endif
+
 class Xml;
 class QWidget;
 // class QLabel;
@@ -50,67 +63,107 @@ class PluginWidgetFactory : public QWidgetFactory
 //---------------------------------------------------------
 
 class Plugin {
+   protected:
+      void* _handle;
       int _references;
       int _instNo;
       QFileInfo fi;
       LADSPA_Descriptor_Function ladspa;
       const LADSPA_Descriptor *plugin;
-      int _inports;
-      int _outports;
+      unsigned long _uniqueID;
+      QString _label;
+      QString _name;
+      QString _maker;
+      QString _copyright;
+      
+      bool _isDssi;
+      #ifdef DSSI_SUPPORT
+      const DSSI_Descriptor* dssi_descr;
+      #endif
+      
+      //LADSPA_PortDescriptor* _portDescriptors;
+      unsigned long _portCount;
+      unsigned long _inports;
+      unsigned long _outports;
+      unsigned long _controlInPorts;
+      unsigned long _controlOutPorts;
+      std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
+      
       bool _inPlaceCapable;
    
    public:
-      Plugin(QFileInfo* f,
-         LADSPA_Descriptor_Function df, const LADSPA_Descriptor* d, bool inPlace);
+      Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi = false);
+      ~Plugin();
+      
+      QString label() const                        { return _label; }
+      QString name() const                         { return _name; }
+      unsigned long id() const                     { return _uniqueID; }
+      QString maker() const                        { return _maker; }
+      QString copyright() const                    { return _copyright; }
+      QString lib(bool complete = true) const      { return fi.baseName(complete); }
+      QString dirPath(bool complete = true) const  { return fi.dirPath(complete); }
+      QString filePath() const                     { return fi.filePath(); }
+      int references() const                       { return _references; }
+      int incReferences(int);
+      int instNo()                                 { return _instNo++;        }
 
-      QString label() const    { return QString(plugin->Label); }
-      QString name() const     { return QString(plugin->Name); }
-      unsigned long id() const { return plugin->UniqueID; }
-      QString maker() const    { return QString(plugin->Maker); }
-      QString copyright() const { return QString(plugin->Copyright); }
-      QString lib() const      { return fi.baseName(true); }
-      QString path() const     { return fi.dirPath(); }
-      int references() const   { return _references; }
-      int incReferences(int n) { return _references += n; }
-      int instNo()             { return _instNo++;        }
-
-      LADSPA_Handle instantiate() {
-            return plugin->instantiate(plugin, sampleRate);
-            }
+      bool isDssiPlugin() const { return _isDssi; }  
+      
+      LADSPA_Handle instantiate(); 
       void activate(LADSPA_Handle handle) {
-            if (plugin->activate)
+            if (plugin && plugin->activate)
                   plugin->activate(handle);
             }
       void deactivate(LADSPA_Handle handle) {
-            if (plugin->deactivate)
+            if (plugin && plugin->deactivate)
                   plugin->deactivate(handle);
             }
       void cleanup(LADSPA_Handle handle) {
-            if (plugin->cleanup)
+            if (plugin && plugin->cleanup)
                   plugin->cleanup(handle);
             }
       void connectPort(LADSPA_Handle handle, int port, float* value) {
-            plugin->connect_port(handle, port, value);
+            if(plugin)
+              plugin->connect_port(handle, port, value);
             }
       void apply(LADSPA_Handle handle, int n) {
-            plugin->run(handle, n);
+            if(plugin)
+              plugin->run(handle, n);
             }
-      int ports() { return plugin->PortCount; }
-      double defaultValue(unsigned int port) const;
-      LADSPA_PortDescriptor portd(int k) const {
-            return plugin->PortDescriptors[k];
+      
+      #ifdef OSC_SUPPORT
+      int oscConfigure(LADSPA_Handle /*handle*/, const char* /*key*/, const char* /*value*/);
+      #endif
+      
+      //int ports() { return plugin ? plugin->PortCount : 0; }
+      unsigned long ports() { return _portCount; }
+      
+      LADSPA_PortDescriptor portd(unsigned long k) const {
+            return plugin ? plugin->PortDescriptors[k] : 0;
+            //return _portDescriptors[k];
             }
-      void range(int i, float*, float*) const;
-      LADSPA_PortRangeHint range(int i) {
+      
+      LADSPA_PortRangeHint range(unsigned long i) {
+            // FIXME:
+            //return plugin ? plugin->PortRangeHints[i] : 0;
             return plugin->PortRangeHints[i];
             }
 
-      const char* portName(int i) {
-            return plugin->PortNames[i];
+      double defaultValue(unsigned long port) const;
+      void range(unsigned long i, float*, float*) const;
+      
+      const char* portName(unsigned long i) {
+            return plugin ? plugin->PortNames[i] : 0;
             }
-      int inports() const  { return _inports; }
-      int outports() const { return _outports; }
-      bool inPlaceCapable() const { return _inPlaceCapable; }
+            
+      // Returns (int)-1 if not an input control.   
+      unsigned long port2InCtrl(unsigned long p) { return p >= rpIdx.size() ? (unsigned long)-1 : rpIdx[p]; }   
+      
+      unsigned long inports() const         { return _inports; }
+      unsigned long outports() const        { return _outports; }
+      unsigned long controlInPorts() const  { return _controlInPorts; }
+      unsigned long controlOutPorts() const { return _controlOutPorts; }
+      bool inPlaceCapable() const           { return _inPlaceCapable; }
       };
 
 typedef std::list<Plugin>::iterator iPlugin;
@@ -121,10 +174,11 @@ typedef std::list<Plugin>::iterator iPlugin;
 
 class PluginList : public std::list<Plugin> {
    public:
-      void add(QFileInfo* fi, LADSPA_Descriptor_Function df,
-         const LADSPA_Descriptor* d, bool inPlaceOk) {
-            push_back(Plugin(fi, df, d, inPlaceOk));
-            }
+      void add(QFileInfo* fi, const LADSPA_Descriptor* d, bool isDssi = false) 
+      {
+        push_back(Plugin(fi, d, isDssi));
+      }
+      
       Plugin* find(const QString&, const QString&);
       PluginList() {}
       };
@@ -242,9 +296,18 @@ class PluginI {
       QString _name;
       QString _label;
 
+      //#ifdef DSSI_SUPPORT
+      //StringParamMap _stringParamMap;
+      //#endif
+      
+      #ifdef OSC_SUPPORT
+      OscEffectIF _oscif;
+      #endif
+      bool _showNativeGuiPending;
+
       void init();
       void makeGui();
-
+      
    public:
       PluginI();
       ~PluginI();
@@ -280,13 +343,33 @@ class PluginI {
       CtrlValueType valueType() const;
       QString lib() const            { return _plugin->lib(); }
 
+      #ifdef OSC_SUPPORT
+      OscEffectIF& oscIF() { return _oscif; }
+      /*
+      int oscConfigure(lo_arg**);
+      int oscControl(lo_arg**);
+      //int oscUpdate(lo_arg**);
+      //int oscExiting(lo_arg**);
+      */
+      
+      int oscControl(unsigned long /*dssiPort*/, float /*val*/);
+      int oscConfigure(const char */*key*/, const char */*val*/);
+      int oscUpdate();
+      //int oscExiting();
+      #endif
+      
       void writeConfiguration(int level, Xml& xml);
       bool readConfiguration(Xml& xml, bool readPreset=false);
       bool loadControl(Xml& xml);
       bool setControl(const QString& s, double val);
       void showGui();
       void showGui(bool);
+      bool isDssiPlugin() const { return _plugin->isDssiPlugin(); }  
+      void showNativeGui();
+      void showNativeGui(bool);
+      bool isShowNativeGuiPending() { return _showNativeGuiPending; }
       bool guiVisible();
+      bool nativeGuiVisible();
       int parameters() const           { return controlPorts; }
       void setParam(int i, double val) { controls[i].tmpVal = val; }
       double param(int i) const        { return controls[i].val; }
@@ -330,9 +413,12 @@ class Pipeline : public std::vector<PluginI*> {
       QString label(int idx) const;
       QString name(int idx) const;
       void showGui(int, bool);
+      bool isDssiPlugin(int) const; 
+      void showNativeGui(int, bool);
       void deleteGui(int idx);
       void deleteAllGuis();
       bool guiVisible(int);
+      bool nativeGuiVisible(int);
       void apply(int ports, unsigned long nframes, float** buffer);
       void move(int idx, bool up);
       bool empty(int idx) const;

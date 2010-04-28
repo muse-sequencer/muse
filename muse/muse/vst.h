@@ -50,11 +50,14 @@ class VstSynthIF : public SynthIF
             _guiVisible = false;
             }
             
+      virtual bool initGui()       { return true; };
+      virtual void guiHeartBeat()  {  }
       virtual bool guiVisible() const;
       virtual void showGui(bool v);
       virtual bool hasGui() const;
       virtual void getGeometry(int*, int*, int*, int*) const {}
       virtual void setGeometry(int, int, int, int) {}
+      virtual void preProcessAlways() { };
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer) ;
       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent();
@@ -68,7 +71,8 @@ class VstSynthIF : public SynthIF
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }
       virtual void populatePatchPopup(QPopupMenu*, int, MType, bool) {};
       virtual void write(int level, Xml& xml) const;
-      virtual void setParameter(int idx, float value);
+      virtual float getParameter(unsigned long idx);
+      virtual void setParameter(unsigned long idx, float value);
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
       };
 

@@ -211,47 +211,51 @@ Part* AudioTrack::newPart(Part*, bool /*clone*/)
 //---------------------------------------------------------
 
 void AudioTrack::addPlugin(PluginI* plugin, int idx)
+{
+  if (plugin == 0) 
+  {
+    PluginI* oldPlugin = (*_efxPipe)[idx];
+    if (oldPlugin) 
+    {
+      oldPlugin->setID(-1);
+      oldPlugin->setTrack(0);
+      
+      int controller = oldPlugin->parameters();
+      for (int i = 0; i < controller; ++i) 
       {
-      if (plugin == 0) {
-            PluginI* oldPlugin = (*_efxPipe)[idx];
-            if (oldPlugin) {
-                  
-                  oldPlugin->setID(-1);
-                  oldPlugin->setTrack(0);
-                  
-                  int controller = oldPlugin->parameters();
-                  for (int i = 0; i < controller; ++i) {
-                        int id = genACnum(idx, i);
-                        removeController(id);
-                        }
-                  }
-            }
-      efxPipe()->insert(plugin, idx);
-      if (plugin) {
-            plugin->setID(idx);
-            plugin->setTrack(this);
-                  
-            int controller = plugin->parameters();
-            for (int i = 0; i < controller; ++i) {
-                  int id = genACnum(idx, i);
-                  const char* name = plugin->paramName(i);
-                  float min, max;
-                  plugin->range(i, &min, &max);
-                  CtrlValueType t = plugin->valueType();
-                  CtrlList* cl = new CtrlList(id);
-                  cl->setRange(min, max);
-                  cl->setName(QString(name));
-                  cl->setValueType(t);
-                  LADSPA_PortRangeHint range = plugin->range(i);
-                  if(LADSPA_IS_HINT_TOGGLED(range.HintDescriptor))
-                    cl->setMode(CtrlList::DISCRETE);
-                  else  
-                    cl->setMode(CtrlList::INTERPOLATE);
-                  cl->setCurVal(plugin->param(i));
-                  addController(cl);
-                  }
-            }
+        int id = genACnum(idx, i);
+        removeController(id);
       }
+    }
+  }
+  efxPipe()->insert(plugin, idx);
+  if (plugin) 
+  {
+    plugin->setID(idx);
+    plugin->setTrack(this);
+          
+    int controller = plugin->parameters();
+    for (int i = 0; i < controller; ++i) 
+    {
+      int id = genACnum(idx, i);
+      const char* name = plugin->paramName(i);
+      float min, max;
+      plugin->range(i, &min, &max);
+      CtrlValueType t = plugin->valueType();
+      CtrlList* cl = new CtrlList(id);
+      cl->setRange(min, max);
+      cl->setName(QString(name));
+      cl->setValueType(t);
+      LADSPA_PortRangeHint range = plugin->range(i);
+      if(LADSPA_IS_HINT_TOGGLED(range.HintDescriptor))
+        cl->setMode(CtrlList::DISCRETE);
+      else  
+        cl->setMode(CtrlList::INTERPOLATE);
+      cl->setCurVal(plugin->param(i));
+      addController(cl);
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   addAuxSend
@@ -924,13 +928,14 @@ void AudioTrack::readAuxSend(Xml& xml)
 
 bool AudioTrack::readProperties(Xml& xml, const QString& tag)
       {
-      if (tag == "plugin") {
+      if (tag == "plugin") 
+      {
             int rackpos;
             for(rackpos = 0; rackpos < PipelineDepth; ++rackpos) 
             {
               if(!(*_efxPipe)[rackpos]) 
-                              break;
-                              }
+                break;
+            }
             if(rackpos < PipelineDepth)
             {
               PluginI* pi = new PluginI();
@@ -940,10 +945,10 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
                 delete pi;
               else 
                 (*_efxPipe)[rackpos] = pi;
-                        }
+            }
             else
               printf("can't load plugin - plugin rack is already full\n");
-            }
+      }
       else if (tag == "auxSend")
             readAuxSend(xml);
       else if (tag == "prefader")
@@ -1008,6 +1013,25 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             return Track::readProperties(xml, tag);
       return false;
       }
+
+//---------------------------------------------------------
+//   showPendingPluginNativeGuis
+//   This is needed because OSC needs all tracks with plugins to be already
+//    added to their track lists so it can find them and show their native guis.
+//---------------------------------------------------------
+
+void AudioTrack::showPendingPluginNativeGuis()
+{
+  for(int idx = 0; idx < PipelineDepth; ++idx)
+  {
+    PluginI* p = (*_efxPipe)[idx];
+    if(!p)
+      continue;
+    
+    if(p->isShowNativeGuiPending())
+      p->showNativeGui(true);
+  }      
+}
 
 //---------------------------------------------------------
 //   mapRackPluginsToControllers

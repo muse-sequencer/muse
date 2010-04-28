@@ -1559,9 +1559,15 @@ void Song::beat()
           midiPorts[port].syncInfo().setTime();
       }  
       
+      
       int tick = audio->tickPos();
       if (audio->isPlaying())
             setPos(0, tick, true, false, true);
+      
+      // p3.3.40 Update synth native guis at the heartbeat rate.
+      for(ciSynthI is = _synthIs.begin(); is != _synthIs.end(); ++is)
+        (*is)->guiHeartBeat();
+      
       while (noteFifoSize) {
             int pv = recNoteFifo[noteFifoRindex];
             noteFifoRindex = (noteFifoRindex + 1) % REC_NOTE_FIFO_SIZE;
@@ -3123,7 +3129,7 @@ void Song::insertTrack2(Track* track, int idx)
 //---------------------------------------------------------
 
 void Song::insertTrack3(Track* /*track*/, int /*idx*/)//prevent compiler warning: unused parameter
-      {
+{
       //printf("Song::insertTrack3\n");
       
       /*
@@ -3134,7 +3140,7 @@ void Song::insertTrack3(Track* /*track*/, int /*idx*/)//prevent compiler warning
                   break;
             }
       */
-      }
+}
 
 //---------------------------------------------------------
 //   removeTrack0

@@ -586,14 +586,63 @@ AM_CONDITIONAL(VST_SUPPORT, test x$vst_possible = xyes -a x$vst_requested = xyes
 
 
 ###################
+### OSC support ###
+###################
+
+osc_requested=no
+LO_LIB_FOUND="no"
+OSC="no"
+AC_ARG_ENABLE(osc,[  --enable-osc            build OSC support. (disabled by default) 
+                                             --enable-dssi is also recommended!      ],
+        [ if test x$enable_osc = xyes ; then
+            osc_requested=yes;
+        fi
+        ]
+)
+
+if test x$osc_requested = xyes ; then
+      AC_MSG_CHECKING([support for OSC])
+##      AC_CHECK_LIB(lo, lo_send, LO_LIB_FOUND="yes", LO_LIB_FOUND="no")
+##      PKG_CHECK_MODULES(LO, lo >= 0.2, LO_LIB_FOUND="yes", LO_LIB_FOUND="no")
+      PKG_CHECK_MODULES(LO,liblo, [ LO_LIB_FOUND=yes ], [ LO_LIB_FOUND=no ])
+      if test x$LO_LIB_FOUND = xno; then
+        AC_MSG_ERROR([Library liblo from The Lightweight OSC Implementation is required])
+      fi
+fi
+
+if test x$LO_LIB_FOUND = xyes ; then
+      LO_CFLAGS="$LO_CFLAGS"
+      ##LO_LIBS="$LO_LIBS"
+      LO_LIBS="-llo"
+      OSC="yes"
+      AC_SUBST(LO_CFLAGS)
+      AC_SUBST(LO_LIBS)
+      AC_DEFINE(OSC_SUPPORT, 1, [support for OSC])
+fi
+
+AM_CONDITIONAL(OSC_SUPPORT, test x$LO_LIB_FOUND = xyes)
+
+## LO_LIBS="-llo"
+## AC_SUBST(LO_CFLAGS)
+## AC_SUBST(LO_LIBS)
+
+## PKG_CHECK_MODULES(LO, lo >= 0.23,
+##   true,
+##   AC_MSG_ERROR([need liblo >= 0.23 ])
+## )
+
+
+
+###################
 ### dssi plugins ###
 ###################
 
 dssi_requested=no
-LO_LIB_FOUND="no"
+## LO_LIB_FOUND="no"
 DSSI_H_FOUND="no"
 DSSI="no"
-AC_ARG_ENABLE(dssi,[  --enable-dssi           build DSSI + DSSI-Vst support. (disabled by default) ],
+AC_ARG_ENABLE(dssi,[  --enable-dssi           build DSSI + DSSI-Vst support. (disabled by default) 
+                                              --enable-osc is also recommended!                   ],
         [ if test x$enable_dssi = xyes ; then
             dssi_requested=yes;
         fi
@@ -603,31 +652,33 @@ AC_ARG_ENABLE(dssi,[  --enable-dssi           build DSSI + DSSI-Vst support. (di
 
 if test x$dssi_requested = xyes ; then
       AC_MSG_CHECKING([support for DSSI + DSSI-Vst plugins])
-##      AC_CHECK_LIB(lo, lo_send, LO_LIB_FOUND="yes", LO_LIB_FOUND="no")
-##      PKG_CHECK_MODULES(LO, lo >= 0.2, LO_LIB_FOUND="yes", LO_LIB_FOUND="no")
-      PKG_CHECK_MODULES(LO,liblo, [ LO_LIB_FOUND=yes ], [ LO_LIB_FOUND=no ])
-      if test x$LO_LIB_FOUND = xno; then
-        AC_MSG_ERROR([Library liblo from The Lightweight OSC Implementation is required])
-      fi
+      ## AC_CHECK_LIB(lo, lo_send, LO_LIB_FOUND="yes", LO_LIB_FOUND="no")
+      ## PKG_CHECK_MODULES(LO, lo >= 0.2, LO_LIB_FOUND="yes", LO_LIB_FOUND="no")
+##      PKG_CHECK_MODULES(LO,liblo, [ LO_LIB_FOUND=yes ], [ LO_LIB_FOUND=no ])
+##      if test x$LO_LIB_FOUND = xno; then
+##        AC_MSG_ERROR([Library liblo from The Lightweight OSC Implementation is required])
+##      fi
       
       AC_CHECK_HEADER(dssi.h, DSSI_FOUND="yes", DSSI_FOUND="no")
-##      PKG_CHECK_MODULES(DSSI [ DSSI_FOUND=yes ], [ DSSI_FOUND=no ])
+      ## PKG_CHECK_MODULES(DSSI [ DSSI_FOUND=yes ], [ DSSI_FOUND=no ])
       if test x$DSSI_FOUND = xno; then
       AC_MSG_ERROR([Header file dssi.h from DSSI (Disposable Soft Synth Interface) is required])
       fi
 fi
 
-if test x$LO_LIB_FOUND = xyes -a x$DSSI_FOUND = xyes ; then
-      LO_CFLAGS="$LO_CFLAGS"
+## if test x$LO_LIB_FOUND = xyes -a x$DSSI_FOUND = xyes ; then
+if test x$DSSI_FOUND = xyes ; then
+##      LO_CFLAGS="$LO_CFLAGS"
       ##LO_LIBS="$LO_LIBS"
-      LO_LIBS="-llo"
+##      LO_LIBS="-llo"
       DSSI="yes"
-      AC_SUBST(LO_CFLAGS)
-      AC_SUBST(LO_LIBS)
+##      AC_SUBST(LO_CFLAGS)
+##      AC_SUBST(LO_LIBS)
       AC_DEFINE(DSSI_SUPPORT, 1, [support for DSSI + DSSI-Vst plugins])
 fi
 
-AM_CONDITIONAL(DSSI_SUPPORT, test x$LO_LIB_FOUND = xyes -a x$DSSI_FOUND = xyes)
+## AM_CONDITIONAL(DSSI_SUPPORT, test x$LO_LIB_FOUND = xyes -a x$DSSI_FOUND = xyes)
+AM_CONDITIONAL(DSSI_SUPPORT, test x$DSSI_FOUND = xyes)
 
 ## LO_LIBS="-llo"
 ## AC_SUBST(LO_CFLAGS)
@@ -720,6 +771,7 @@ AC_MSG_NOTICE([
   MusE configured
 
   LASH support:                  $LASH_FOUND
+  OSC support:                   $OSC
   DSSI support:                  $DSSI
   FluidSynth:                    $muse_enable_fluidlib
 

@@ -33,6 +33,8 @@ dist_muse_SOURCES = \
       ticksynth.h ticksynth.cpp \
       vst.h vst.cpp \
       dssihost.h dssihost.cpp \
+      osc.cpp osc.h \
+      stringparam.cpp stringparam.h \
       synth.h synth.cpp  \
 	plugin.cpp plugin.h \
 	mtc.cpp mtc.h \

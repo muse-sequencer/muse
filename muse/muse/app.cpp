@@ -131,6 +131,9 @@ extern void exitDummyAudio();
 extern void initVST_fst_init();
 extern void initVST();
 extern void initDSSI();
+// p3.3.39
+extern void initOSC();
+extern void exitOSC();
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -402,12 +405,25 @@ bool MusE::seqStart()
         //audioWriteback->start(0);
       }
       */
+      
       int pfprio = 0;
       int midiprio = 0;
+      
+      // NOTE: realTimeScheduling can be true (gotten using jack_is_realtime()),
+      //  while the determined realTimePriority can be 0.
+      // realTimePriority is gotten using pthread_getschedparam() on the client thread 
+      //  in JackAudioDevice::realtimePriority() which is a bit flawed - it reports there's no RT...
       if(realTimeScheduling) 
       {
-        if(realTimePriority < 5)
-          printf("MusE: WARNING: Recommend setting audio realtime priority to at least 5!\n");
+        //if(realTimePriority < 5)
+        //  printf("MusE: WARNING: Recommend setting audio realtime priority to a higher value!\n");
+        /*
+        if(realTimePriority == 0)
+        {
+          pfprio = 1;
+          midiprio = 2;
+        }  
+        else
         if(realTimePriority == 1)
         {
           pfprio = 2;
@@ -444,11 +460,17 @@ bool MusE::seqStart()
           midiprio = 6;
         }  
         else
+        */
         {
-          pfprio = realTimePriority - 5;
+          //pfprio = realTimePriority - 5;
+          // p3.3.40
+          pfprio = realTimePriority + 1;
+          
           //midiprio = realTimePriority - 2;
           // p3.3.37
-          midiprio = realTimePriority + 1;
+          //midiprio = realTimePriority + 1;
+          // p3.3.40
+          midiprio = realTimePriority + 2;
         }  
       }
       
@@ -1832,6 +1854,10 @@ void MusE::closeEvent(QCloseEvent*)
         printf("Muse: Exiting Dsp\n");
       AL::exitDsp();
       
+      if(debugMsg)
+        printf("Muse: Exiting OSC\n");
+      exitOSC();
+      
       qApp->quit();
       }
 
@@ -2367,7 +2393,7 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -a       no audio\n");
       //fprintf(stderr, "   -P  n    set real time priority to n (default: 50)\n");
       fprintf(stderr, "   -P  n    set audio driver real time priority to n (Dummy only, default 40. Else fixed by Jack.)\n");
-      fprintf(stderr, "   -Y  n    force midi real time priority to n (default: audio driver prio +1)\n");
+      fprintf(stderr, "   -Y  n    force midi real time priority to n (default: audio driver prio +2)\n");
       fprintf(stderr, "   -p       don't load LADSPA plugins\n");
 #ifdef ENABLE_PYTHON
       fprintf(stderr, "   -y       enable Python control support\n");
@@ -2625,6 +2651,9 @@ int main(int argc, char* argv[])
 
       if(loadDSSI)
         initDSSI();
+      
+      // p3.3.39
+      initOSC();
       
       initIcons();
 

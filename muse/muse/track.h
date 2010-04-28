@@ -321,6 +321,7 @@ class AudioTrack : public Track {
       void writeProperties(int, Xml&) const;
 
       void mapRackPluginsToControllers();
+      void showPendingPluginNativeGuis();
 
       //virtual AudioTrack* clone() const = 0;
       virtual AudioTrack* clone(bool cloneParts) const = 0;

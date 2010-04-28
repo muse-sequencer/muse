@@ -33,6 +33,7 @@
 #include "audio.h"
 #include "midiseq.h"
 #include "midictrl.h"
+//#include "stringparam.h"
 
 std::vector<Synth*> synthis;  // array of available synthis
 
@@ -230,6 +231,11 @@ SynthI::SynthI()
       _openFlags  = 1;
       _readEnable = false;
       _writeEnable = false;
+      
+      _curBankH = 0;
+      _curBankL = 0;
+      _curProgram  = 0;
+
       setVolume(1.0);
       setPan(0.0);
       }
@@ -281,6 +287,20 @@ void SynthI::setName(const QString& s)
       AudioTrack::setName(s);
       MidiDevice::setName(s);
       }
+
+//---------------------------------------------------------
+//   currentProg
+//---------------------------------------------------------
+
+void SynthI::currentProg(unsigned long *prog, unsigned long *bankL, unsigned long *bankH)
+{
+  if(prog)
+    *prog  = _curProgram;
+  if(bankL)
+    *bankL = _curBankL;
+  if(bankH)
+    *bankH = _curBankH;
+}
 
 //---------------------------------------------------------
 //   init
@@ -392,9 +412,14 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
             iel->clear();
             }
 
-      int idx = 0;
+      unsigned long idx = 0;
       for (std::vector<float>::iterator i = initParams.begin(); i != initParams.end(); ++i, ++idx)
             _sif->setParameter(idx, *i);
+      
+      // p3.3.40 Since we are done with the (sometimes huge) initial parameters list, clear it. 
+      // TODO: Decide: Maybe keep them around for a 'reset to previously loaded values' (revert) command? ...
+      initParams.clear();      
+      
       return false;
       }
 
@@ -576,6 +601,12 @@ SynthI* Song::createSynthI(const QString& sclass, const QString& label)
             audio->msgUpdateSoloStates();
             }
       
+      // Now that the track has been added to the lists in insertTrack2(),
+      //  if it's a dssi synth, OSC can find the synth, and initialize (and show) its native gui.
+      // No, initializing OSC without actually showing the gui doesn't work, at least for 
+      //  dssi-vst plugins - without showing the gui they exit after ten seconds.
+      //si->initGui();
+      
       return si;
       }
 
@@ -611,6 +642,10 @@ void SynthI::write(int level, Xml& xml) const
                   xml.qrectTag(level, "geometry", QRect(x, y, w, h));
             }
 
+      _stringParamMap.write(level, xml, "stringParam");
+      
+      xml.tag(level, "curProgram bankH=\"%ld\" bankL=\"%ld\" prog=\"%ld\"/", _curBankH, _curBankL, _curProgram);
+      
       _sif->write(level, xml);
       xml.etag(level, "SynthI");
       }
@@ -643,6 +678,45 @@ void MessSynthIF::write(int level, Xml& xml) const
       }
 
 //---------------------------------------------------------
+//   SynthI::readProgram
+//---------------------------------------------------------
+
+void SynthI::readProgram(Xml& xml, const QString& name)
+{
+  for (;;) 
+  {
+    Xml::Token token = xml.parse();
+    const QString tag = xml.s1();
+    switch (token) 
+    {
+          case Xml::Error:
+          case Xml::End:
+                return;
+          case Xml::TagStart:
+                xml.unknown(name);
+                break;
+          case Xml::Attribut:
+                if(tag == "bankH") 
+                  _curBankH = xml.s2().toUInt();
+                else
+                if(tag == "bankL") 
+                  _curBankL = xml.s2().toUInt();
+                else
+                if(tag == "prog") 
+                  _curProgram = xml.s2().toUInt();
+                else
+                  xml.unknown(name);
+                break;
+          case Xml::TagEnd:
+                if(tag == name) 
+                  return;
+          default:
+                break;
+    }
+  }
+}
+
+//---------------------------------------------------------
 //   SynthI::read
 //---------------------------------------------------------
 
@@ -652,7 +726,7 @@ void SynthI::read(Xml& xml)
       QString label;
       
       int port = -1;
-      bool startGui = false;
+      bool startgui = false;
       QRect r;
 
       for (;;) {
@@ -670,13 +744,17 @@ void SynthI::read(Xml& xml)
                         else if (tag == "port")
                               port  = xml.parseInt();
                         else if (tag == "guiVisible")
-                              startGui = xml.parseInt();
+                              startgui = xml.parseInt();
                         else if (tag == "midistate")
                               readMidiState(xml);
                         else if (tag == "param") {
                               float val = xml.parseFloat();
                               initParams.push_back(val);
                               }
+                        else if (tag == "stringParam") 
+                              _stringParamMap.read(xml, tag);
+                        else if (tag == "curProgram") 
+                              readProgram(xml, tag);
                         else if (tag == "geometry")
                               r = readGeometry(xml, tag);
                         else if (AudioTrack::readProperties(xml, tag))
@@ -693,10 +771,20 @@ void SynthI::read(Xml& xml)
                               song->insertTrack0(this, -1);
                               if (port != -1 && port < MIDI_PORTS)
                                     midiPorts[port].setMidiDevice(this);
-                              showGui(startGui);
+                              
+                              // Now that the track has been added to the lists in insertTrack2(),
+                              //  if it's a dssi synth, OSC can find the synth, and initialize (and show) its native gui.
+                              // No, initializing OSC without actually showing the gui doesn't work, at least for 
+                              //  dssi-vst plugins - without showing the gui they exit after ten seconds.
+                              //initGui();
+                              showGui(startgui);
                               setGeometry(r.x(), r.y(), r.width(), r.height());
                               
                               mapRackPluginsToControllers();
+                              
+                              // Now that the track has been added to the lists in insertTrack2(), if it's a dssi synth 
+                              //  OSC can find the track and its plugins, and start their native guis if required...
+                              showPendingPluginNativeGuis();
                               
                               return;
                               }

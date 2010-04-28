@@ -1257,31 +1257,40 @@ void Song::read(Xml& xml)
                               WaveTrack* track = new WaveTrack();
                               track->read(xml);
                               insertTrack0(track,-1);
+                              // Now that the track has been added to the lists in insertTrack2(), 
+                              //  OSC can find the track and its plugins, and start their native guis if required...
+                              track->showPendingPluginNativeGuis();
                               }
                         else if (tag == "AudioInput") {
                               AudioInput* track = new AudioInput();
                               track->read(xml);
                               insertTrack0(track,-1);
+                              track->showPendingPluginNativeGuis();
                               }
                         else if (tag == "AudioOutput") {
                               AudioOutput* track = new AudioOutput();
                               track->read(xml);
                               insertTrack0(track,-1);
+                              track->showPendingPluginNativeGuis();
                               }
                         else if (tag == "AudioGroup") {
                               AudioGroup* track = new AudioGroup();
                               track->read(xml);
                               insertTrack0(track,-1);
+                              track->showPendingPluginNativeGuis();
                               }
                         else if (tag == "AudioAux") {
                               AudioAux* track = new AudioAux();
                               track->read(xml);
                               insertTrack0(track,-1);
+                              track->showPendingPluginNativeGuis();
                               }
                         else if (tag == "SynthI") {
                               SynthI* track = new SynthI();
                               track->read(xml);
+                              // Done in SynthI::read()
                               // insertTrack(track,-1);
+                              //track->showPendingPluginNativeGuis();
                               }
                         else if (tag == "Route") {
                               readRoute(xml);

@@ -1,3 +1,18 @@
+27.04.2010
+      * Changed: Building: Separate --enable-dssi --enable-osc configure options. (T356) 
+        --enable-dssi (Enable dssi synths AND special handling of dssi-vst ladspa effect plugins. No guis if by itself.) and 
+        --enable-osc (Enable dssi guis. Useless by itself at the moment). 
+        Use both for best features. 
+      * Feature: If dssi and osc support are enabled, audio track effects rack dssi-vst plugins can now show their NATIVE guis. (T356)
+      * Fixed: Storing dssi synth states. Remembers current program, all configure strings, and control settings - for current program ONLY. (T356)
+        - With dssi-vst synths, some better are than others at remembering program.
+        - Todo: Ignore unwanted dssi-vst config strings/values like "guiVisible" "<name-of-fifo-file>" (gives non-fatal error on reload).
+      * Fixed: Dssi native synths (hexter, LTS etc.) should actually work now. Their gui controls operate the sounds now. (T356) 
+        - Todo: If using large audio buffers (Jack), my 'one-at-a-time-per-audio-process' osc control fifo streams kinda suck, 
+           with a delay in their processing. Want to try MULTIPLE 'run's or 'run-multiple's PER audio process, for SAMPLE accuracy and
+           better quicker message processing. Just need to add a timestamp to my osc fifo items, then all forms of change - whether
+           control, midi event, or program - have a timestamp with which we can SPLIT UP the runs into 'runs between changes'.
+      * Tip: Currently a patch to dssi-vst is required for their guis to update properly. (For now, ask about this on our lists.)
 21.04.2010
       * Fixed: Shortcut for moving between tracks in arranger. Ctrl+Up/Down (rj)
 19.04.2010

@@ -61,11 +61,14 @@ class MetronomeSynthIF : public SynthIF
       MetronomeSynthIF(SynthI* s) : SynthIF(s) {
             data = 0;
             }
+      virtual bool initGui()     { return true; };
+      virtual void guiHeartBeat()  {  }
       virtual bool guiVisible() const { return false; }
       virtual void showGui(bool) {}
       virtual bool hasGui() const { return false; }
       virtual void getGeometry(int*, int*, int*, int*) const {}
       virtual void setGeometry(int, int, int, int) {}
+      virtual void preProcessAlways() { };
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent() { return MidiPlayEvent(); }
@@ -81,7 +84,8 @@ class MetronomeSynthIF : public SynthIF
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }
       virtual void populatePatchPopup(QPopupMenu*, int, MType, bool) {};
       virtual void write(int, Xml&) const {}
-      virtual void setParameter(int, float) {}
+      virtual float getParameter(unsigned long)   { return 0.0; }
+      virtual void setParameter(unsigned long, float) {}
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
       };
 

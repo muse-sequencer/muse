@@ -21,16 +21,29 @@
 #ifndef __DSSIHOST_H__
 #define __DSSIHOST_H__
 
-#include <vector>
+#include "config.h"
 
+#include <vector>
+#include <map>
+#include <string>
+
+#ifdef OSC_SUPPORT
 #include <lo/lo.h>
+#include "osc.h"
+#endif
+
 #include <dssi.h>
 #include <alsa/asoundlib.h>
 
 #include "midictrl.h"
 #include "synth.h"
-#include "plugin.h"
+#include "stringparam.h"
 
+//#include "plugin.h"
+
+#define DSSI_PARAMSAVE_VERSION_MAJOR  0
+#define DSSI_PARAMSAVE_VERSION_MINOR  1
+ 
 struct _DSSI;
 class DssiPluginIF;
 
@@ -48,31 +61,34 @@ class DssiSynth : public Synth {
       void* handle;
       const DSSI_Descriptor* dssi;
       DSSI_Descriptor_Function df;
-      std::vector<int> pIdx;  // Control input index to port number. 
-      std::vector<int> opIdx; // Control output index to port number. This is sometimes a latency port and...?
-      std::vector<int> iIdx;  // Audio input index to port number.
-      std::vector<int> oIdx;  // Audio output index to port number.
-      std::vector<bool> iUsedIdx; // This is for audio input ports during process to tell whether an audio input port was used by any input routes.
-      int _inports, _outports, _controller, _controllerOut;
-      std::vector<int> rpIdx;  // Port number to control input index. Item is -1 if it's not a control input.
+      unsigned long _portCount, _inports, _outports, _controlInPorts, _controlOutPorts;
+      std::vector<unsigned long> pIdx;  // Control input index to port number. 
+      std::vector<unsigned long> opIdx; // Control output index to port number. This is sometimes a latency port and...?
+      std::vector<unsigned long> iIdx;  // Audio input index to port number.
+      std::vector<unsigned long> oIdx;  // Audio output index to port number.
+      std::vector<bool> iUsedIdx;       // During process, tells whether an audio input port was used by any input routes.
+      std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
+      //unsigned long* rpIdx;           
       MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to DSSI port numbers.
       MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps DSSI port numbers to midi controller numbers.
       bool _hasGui;
+      bool _inPlaceCapable;
 
    public:
       //DssiSynth(const QFileInfo* fi, QString l) : Synth(fi, l) {
       //DssiSynth(const QFileInfo& fi, QString l) : Synth(fi, l) {
-      DssiSynth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver) : 
-          Synth(fi, label, descr, maker, ver) {
-            df = 0;
-            handle = 0;
-            dssi = 0;
-            _hasGui = false;
-            }
-      virtual ~DssiSynth() {
-            //delete label;
-            }
-      virtual void incInstances(int val);
+      //DssiSynth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver) : 
+      //    Synth(fi, label, descr, maker, ver) {
+      //      rpIdx = 0;
+      //      df = 0;
+      //      handle = 0;
+      //      dssi = 0;
+      //      _hasGui = false;
+      //      }
+      //DssiSynth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver);  
+      DssiSynth(const QFileInfo&, const DSSI_Descriptor*);  
+      virtual ~DssiSynth();
+      virtual void incInstances(int);
       
       //virtual void* instantiate();
       
@@ -80,7 +96,13 @@ class DssiSynth : public Synth {
       //virtual SynthIF* createSIF();
       
       friend class DssiSynthIF;
-      float defaultValue(int);
+      //float defaultValue(int); // Not required
+      unsigned long inPorts()     const { return _inports; }
+      unsigned long outPorts()    const { return _outports; }
+      unsigned long inControls()  const { return _controlInPorts; }
+      unsigned long outControls() const { return _controlOutPorts; }
+      
+      unsigned long inControlPortIdx(unsigned long i) { return pIdx[i]; }
       };
 
 //---------------------------------------------------------
@@ -90,7 +112,7 @@ class DssiSynth : public Synth {
 
 class DssiSynthIF : public SynthIF
       {
-      bool _guiVisible;
+      //bool _guiVisible;
       DssiSynth* synth;
       LADSPA_Handle handle;
       
@@ -98,12 +120,19 @@ class DssiSynthIF : public SynthIF
       Port* controls;
       Port* controlsOut;
       
-      void* uiTarget;
-      char* uiOscShowPath;
-      char* uiOscControlPath;
-      char* uiOscConfigurePath;
-      char* uiOscProgramPath;
-      char* uiOscPath;
+      //unsigned long _curBank;
+      //unsigned long _curProgram;
+      
+      #ifdef OSC_SUPPORT
+      OscDssiIF _oscif;
+      #endif
+
+      //void* uiTarget;
+      //char* uiOscShowPath;
+      //char* uiOscControlPath;
+      //char* uiOscConfigurePath;
+      //char* uiOscProgramPath;
+      //char* uiOscPath;
 
       std::vector<DSSI_Program_Descriptor> programs;
       void queryPrograms();
@@ -114,7 +143,7 @@ class DssiSynthIF : public SynthIF
       
    protected:
       //int guiPid;
-      QProcess* guiQProc;
+      //QProcess* guiQProc;
 
    public:
       DssiSynthIF(SynthI* s);
@@ -122,7 +151,11 @@ class DssiSynthIF : public SynthIF
       
       virtual ~DssiSynthIF();
 
-      virtual bool startGui();
+      virtual DssiSynth* dssiSynth() { return synth; }
+      virtual SynthI* dssiSynthI()   { return synti; }
+      
+      virtual bool initGui();
+      virtual void guiHeartBeat();
       virtual bool guiVisible() const;
       virtual void showGui(bool v);
       virtual bool hasGui() const { return synth->_hasGui; }
@@ -159,19 +192,34 @@ class DssiSynthIF : public SynthIF
       //virtual void write(Xml& xml) const;
       virtual void write(int level, Xml& xml) const;
       
-      virtual void setParameter(int idx, float value);
+      virtual float getParameter(unsigned long /*idx*/);
+      virtual void setParameter(unsigned long /*idx*/, float /*value*/);
       
       //virtual int getControllerInfo(int, const char**, int*, int*, int*) { return 0; }
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*);
       
       bool init(DssiSynth* s);
 
-      int oscUpdate(lo_arg**);
+      //StringParamMap& stringParameters() { return synti->stringParameters(); }
+
+      #ifdef OSC_SUPPORT
+      OscDssiIF& oscIF() { return _oscif; }
+      /*
       int oscProgram(lo_arg**);
       int oscControl(lo_arg**);
-      int oscExiting(lo_arg**);
       int oscMidi(lo_arg**);
       int oscConfigure(lo_arg**);
+      int oscUpdate(lo_arg**);
+      //int oscExiting(lo_arg**);
+      */
+      
+      int oscProgram(unsigned long /*prog*/, unsigned long /*bank*/);
+      int oscControl(unsigned long /*dssiPort*/, float /*val*/);
+      int oscMidi(int /*a*/, int /*b*/, int /*c*/);
+      int oscConfigure(const char */*key*/, const char */*val*/);
+      int oscUpdate();
+      //int oscExiting();
+      #endif
 
       friend class DssiSynth;
       };

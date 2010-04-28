@@ -514,10 +514,19 @@ void VstSynthIF::deactivate3()
       }
 
 //---------------------------------------------------------
+//   getParameter
+//---------------------------------------------------------
+
+float VstSynthIF::getParameter(unsigned long idx)
+      {
+      return _fst->plugin->getParameter(_fst->plugin, idx);
+      }
+
+//---------------------------------------------------------
 //   setParameter
 //---------------------------------------------------------
 
-void VstSynthIF::setParameter(int idx, float value)
+void VstSynthIF::setParameter(unsigned long idx, float value)
       {
       _fst->plugin->setParameter(_fst->plugin, idx, value);
       }

@@ -24,6 +24,7 @@
 #include "gconfig.h"
 #include "plugin.h"
 #include "filedialog.h"
+#include "config.h"
 
 //---------------------------------------------------------
 //   class RackSlot
@@ -149,16 +150,19 @@ void EffectRack::menuRequested(QListBoxItem* it, const QPoint& pt)
             mute  = pipe->isOn(idx);
             }
 
-      enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SAVE };
+      //enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SAVE };
+      enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SHOW_NATIVE, SAVE };
       QPopupMenu* menu = new QPopupMenu;
       menu->insertItem(QIconSet(*upIcon), tr("move up"),   UP, UP);
       menu->insertItem(QIconSet(*downIcon), tr("move down"), DOWN, DOWN);
       menu->insertItem(tr("remove"),    REMOVE, REMOVE);
       menu->insertItem(tr("bypass"),    BYPASS, BYPASS);
       menu->insertItem(tr("show gui"),  SHOW, SHOW);
+      menu->insertItem(tr("show native gui"),  SHOW_NATIVE, SHOW_NATIVE);
 
       menu->setItemChecked(BYPASS, !pipe->isOn(idx));
       menu->setItemChecked(SHOW, pipe->guiVisible(idx));
+      menu->setItemChecked(SHOW_NATIVE, pipe->nativeGuiVisible(idx));
 
       if (pipe->empty(idx)) {
             menu->insertItem(tr("new"), NEW, NEW);
@@ -167,6 +171,7 @@ void EffectRack::menuRequested(QListBoxItem* it, const QPoint& pt)
             menu->setItemEnabled(REMOVE, false);
             menu->setItemEnabled(BYPASS, false);
             menu->setItemEnabled(SHOW, false);
+            menu->setItemEnabled(SHOW_NATIVE, false);
             menu->setItemEnabled(SAVE, false);
             }
       else {
@@ -176,8 +181,14 @@ void EffectRack::menuRequested(QListBoxItem* it, const QPoint& pt)
                   menu->setItemEnabled(UP, false);
             if (idx == (PipelineDepth-1))
                   menu->setItemEnabled(DOWN, false);
+            if(!pipe->isDssiPlugin(idx))
+                  menu->setItemEnabled(SHOW_NATIVE, false);
             }
 
+      #ifndef OSC_SUPPORT
+      menu->setItemEnabled(SHOW_NATIVE, false);
+      #endif
+      
       int sel = menu->exec(pt, 1);
       delete menu;
       if (sel == -1)
@@ -228,6 +239,12 @@ void EffectRack::menuRequested(QListBoxItem* it, const QPoint& pt)
                   {
                   bool flag = !pipe->guiVisible(idx);
                   pipe->showGui(idx, flag);
+                  break;
+                  }
+            case SHOW_NATIVE:
+                  {
+                  bool flag = !pipe->nativeGuiVisible(idx);
+                  pipe->showNativeGui(idx, flag);
                   break;
                   }
             case UP:

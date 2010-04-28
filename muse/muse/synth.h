@@ -9,7 +9,9 @@
 #define __SYNTH_H__
 
 #include <qfileinfo.h>
+#include <string>
 #include <vector>
+#include <map>
 
 #include "globals.h"
 #include "node.h"
@@ -17,6 +19,7 @@
 #include "mididev.h"
 #include "midiport.h"
 #include "track.h"
+#include "stringparam.h"
 
 //class MidiEvent;
 class MidiPlayEvent;
@@ -49,14 +52,16 @@ class Synth {
       //virtual const char* description() const { return ""; }
       //virtual const char* version() const { return ""; }
 
-      int instances() const       { return _instances; }
-      virtual void incInstances(int val) { _instances += val; }
-      QString baseName() const    { return info.baseName(true); }
-      QString name() const        { return _name; }
-      QString path() const        { return info.dirPath(true); }
-      QString description() const { return _description; }
-      QString version() const     { return _version; }
-      QString maker() const       { return _version; }
+      int instances() const                            { return _instances; }
+      virtual void incInstances(int val)               { _instances += val; }
+      QString baseName(bool complete = true) const     { return info.baseName(complete); }
+      QString name() const                             { return _name; }
+      QString dirPath(bool complete = true) const      { return info.dirPath(complete); }
+      QString filePath() const                         { return info.filePath(); }
+      QString description() const                      { return _description; }
+      QString version() const                          { return _version; }
+      //QString maker() const                            { return _version; } ??
+      QString maker() const                            { return _maker; }
       
       //virtual void* instantiate() = 0;
       
@@ -104,12 +109,14 @@ class SynthIF {
       SynthIF(SynthI* s) { synti = s; }
       virtual ~SynthIF() {}
 
+      virtual bool initGui() = 0;
+      virtual void guiHeartBeat() = 0;
       virtual bool guiVisible() const = 0;
       virtual void showGui(bool v) = 0;
       virtual bool hasGui() const = 0;
       virtual void getGeometry(int*, int*, int*, int*) const = 0;
       virtual void setGeometry(int, int, int, int) = 0;
-      virtual void preProcessAlways() { };
+      virtual void preProcessAlways() = 0;
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer) = 0;
       virtual bool putEvent(const MidiPlayEvent& ev) = 0;
       virtual MidiPlayEvent receiveEvent() = 0;
@@ -125,7 +132,8 @@ class SynthIF {
       virtual const char* getPatchName(int, int, MType, bool) = 0;
       virtual void populatePatchPopup(QPopupMenu*, int, MType, bool) = 0;
       virtual void write(int level, Xml& xml) const = 0;
-      virtual void setParameter(int idx, float value) = 0;
+      virtual float getParameter(unsigned long idx) = 0;
+      virtual void setParameter(unsigned long idx, float value) = 0;
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) = 0;
       };
 
@@ -144,13 +152,25 @@ class SynthI : public AudioTrack, public MidiDevice,
 
    protected:
       Synth* synthesizer;
-      std::vector<float> initParams;
       MidiFifo putFifo;
+      
+      // List of initial floating point parameters, for synths which use them. 
+      // Used once upon song reload, then discarded.
+      std::vector<float> initParams;
+      // List of gui controls to update upon heartbeat.
+      std::vector<bool> _guiUpdateControls;  
+      // Update gui program upon heartbeat.
+      bool _guiUpdateProgram;
+      // Initial, and running, string parameters for synths which use them, like dssi.
+      StringParamMap _stringParamMap; 
+      // Current bank and program for synths which use them, like dssi. 
+      // In cases like dssi which have no 'hi' and 'lo' bank, just use _curBankL.
+      unsigned long _curBankH;
+      unsigned long _curBankL;
+      unsigned long _curProgram;
 
       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
-      
-      std::vector<bool> guiUpdateControls;  // List of gui controls to update upon heartbeat.
       
       //bool putEvent(const MidiPlayEvent& ev);
 
@@ -178,6 +198,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s, const QString& instanceName);
 
+      void readProgram(Xml&, const QString&);
       void read(Xml&);
       virtual void write(int, Xml&) const;
 
@@ -194,8 +215,13 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual void populatePatchPopup(QPopupMenu* m, int i, MType t, bool d) {
             _sif->populatePatchPopup(m, i, t, d);
             }
-      void setParameter(const char* name, const char* value) const;
+      
+      // void setParameter(const char* name, const char* value) const;   // Not required
+      //StringParamMap& stringParameters() { return _stringParamMap; }   // Not required
+      void currentProg(unsigned long */*prog*/, unsigned long */*bankL*/, unsigned long */*bankH*/);
 
+      void guiHeartBeat()     { return _sif->guiHeartBeat(); }
+      bool initGui()    const { return _sif->initGui(); }
       bool guiVisible() const { return _sif->guiVisible(); }
       void showGui(bool v)    { _sif->showGui(v); }
       bool hasGui() const     { return _sif->hasGui(); }
@@ -229,6 +255,8 @@ class MessSynthIF : public SynthIF {
       MessSynthIF(SynthI* s) : SynthIF(s) { _mess = 0; }
       virtual ~MessSynthIF() { }
 
+      virtual bool initGui()      { return true; };
+      virtual void guiHeartBeat()  {  }
       virtual bool guiVisible() const;
       virtual void showGui(bool v);
       virtual bool hasGui() const;
@@ -250,7 +278,8 @@ class MessSynthIF : public SynthIF {
       virtual const char* getPatchName(int, int, MType, bool);
       virtual void populatePatchPopup(QPopupMenu*, int, MType, bool);
       virtual void write(int level, Xml& xml) const;
-      virtual void setParameter(int, float) {}
+      virtual float getParameter(unsigned long)   { return 0.0; }
+      virtual void setParameter(unsigned long, float) {}
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval);
       };
 

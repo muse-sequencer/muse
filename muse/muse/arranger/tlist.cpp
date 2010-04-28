@@ -37,6 +37,11 @@
 #include "event.h"
 #include "midiedit/drummap.h"
 #include "synth.h"
+#include "config.h"
+
+#ifdef DSSI_SUPPORT
+#include "dssihost.h"
+#endif
 
 extern QPopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0);
 
@@ -605,6 +610,16 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
         p->setItemEnabled(0, synth->hasGui());
         p->setItemChecked(0, synth->guiVisible());
   
+        #ifndef OSC_SUPPORT
+        #ifdef DSSI_SUPPORT
+        if(dynamic_cast<DssiSynthIF*>(synth->sif()))
+        {
+          p->setItemChecked(0, false);
+          p->setItemEnabled(0, false);
+        }  
+        #endif
+        #endif
+        
         int n = p->exec(mapToGlobal(QPoint(x, y)), 0);
         if (n == 0) {
               bool show = !synth->guiVisible();
@@ -627,6 +642,17 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
       p->setItemEnabled(0, port->hasGui());
       p->setItemChecked(0, port->guiVisible());
 
+      #ifndef OSC_SUPPORT
+      #ifdef DSSI_SUPPORT
+      MidiDevice* dev = port->device();
+      if(dev && dev->isSynti() && (dynamic_cast<DssiSynthIF*>(((SynthI*)dev)->sif())))
+      {
+        p->setItemChecked(0, false);
+        p->setItemEnabled(0, false);
+      }  
+      #endif
+      #endif
+      
       int n = p->exec(mapToGlobal(QPoint(x, y)), 0);
       if (n == 0) {
             bool show = !port->guiVisible();
