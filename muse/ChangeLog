@@ -1,4 +1,4 @@
-06.10.2010
+10.06.2010
       * Fixed: Audio Input tracks: Loud noises or DC output with unconnected input routes. (T356)
         - AudioInput::getData(): Do not get buffers of unconnected client ports. Causes repeating leftover data.
       * Fixed: Audio Input tracks: Stereo processing not correct if both input routes connected to same port. (T356)
