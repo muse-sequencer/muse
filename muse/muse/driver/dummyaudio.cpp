@@ -106,6 +106,7 @@ class DummyAudioDevice : public AudioDevice {
       virtual void unregisterPort(void*) {}
       virtual void connect(void*, void*) {}
       virtual void disconnect(void*, void*) {}
+      virtual int connections(void* /*clientPort*/) { return 0; }
       virtual void setPortName(void*, const char*) {}
       virtual void* findPort(const char*) { return 0;}
       virtual QString portName(void*) {

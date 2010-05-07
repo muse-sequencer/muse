@@ -440,6 +440,10 @@ void WaveEventBase::readAudio(WavePart* part, unsigned offset, float** buffer, i
   //sfCurFrame += f.read(channel, buffer, n, overwrite);
   f.seek(offset + _spos, 0);
   f.read(channel, buffer, n, overwrite);
+      
+  // p3.3.41
+  //fprintf(stderr, "WaveEventBase::readAudio data: n:%ld %e %e %e %e\n", n, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
+      
   
   //return sfCurFrame;
   return;

@@ -68,6 +68,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void unregisterPort(void*);
       virtual void connect(void*, void*);
       virtual void disconnect(void*, void*);
+      virtual int connections(void* clientPort) { return jack_port_connected((jack_port_t*)clientPort); }
       virtual void setPortName(void* p, const char* n) { jack_port_set_name((jack_port_t*)p, n); }
       virtual void* findPort(const char* name);
       virtual QString portName(void* port);

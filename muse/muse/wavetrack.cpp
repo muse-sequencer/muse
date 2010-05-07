@@ -105,8 +105,22 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
             // add denormal bias to outdata
             for (int i = 0; i < channels(); ++i)
                   for (int j = 0; j < samples; ++j)
+                  {
+                      bp[i][j] +=denormalBias;
+                      
+                      /*
+                      // p3.3.41
+                      if(j & 1)
+                        bp[i][j] -=denormalBias;
+                      else  
                         bp[i][j] +=denormalBias;
+                      */  
+                  }      
             }
+      
+      // p3.3.41
+      //fprintf(stderr, "WaveTrack::fetchData data: samples:%ld %e %e %e %e\n", samples, bp[0][0], bp[0][1], bp[0][2], bp[0][3]);
+      
       _prefetchFifo.add();
       }
 
@@ -317,6 +331,10 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                                     }
                               }
                         }
+                        
+                        // p3.3.41
+                        //fprintf(stderr, "WaveTrack::getData %s data: nframe:%ld %e %e %e %e\n", name().latin1(), nframe, bp[0][0], bp[0][1], bp[0][2], bp[0][3]);
+                        
                   }
             //}
       return true;

@@ -429,6 +429,8 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     // apply plugin chain
     //---------------------------------------------------
 
+    // p3.3.41
+    //fprintf(stderr, "AudioTrack::copyData %s efx apply srcChans:%d\n", name().latin1(), srcChans);
     _efxPipe->apply(srcChans, nframes, buffer);
 
     //---------------------------------------------------
@@ -816,11 +818,35 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
       return;
     }
 
+    /*
+    // p3.3.41 Added.
+    unsigned int q;
+    for(i = 0; i < srcChans; ++i) 
+    {
+      if(config.useDenormalBias) 
+      {
+        for(q = 0; q < nframes; ++q)
+        {
+          if(q & 1)
+            buffer[i][q] -= denormalBias;
+          else
+            buffer[i][q] += denormalBias;
+        }  
+      } 
+    }  
+    */
+    
     //---------------------------------------------------
     // apply plugin chain
     //---------------------------------------------------
 
+    // p3.3.41
+    //fprintf(stderr, "AudioTrack::addData %s efx apply srcChans:%d nframes:%ld %e %e %e %e\n", 
+    //        name().latin1(), srcChans, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
     _efxPipe->apply(srcChans, nframes, buffer);
+    // p3.3.41
+    //fprintf(stderr, "AudioTrack::addData after efx: %e %e %e %e\n", 
+    //        buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
 
     //---------------------------------------------------
     // aux sends
@@ -1233,6 +1259,9 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
                                          ir->channels,
                                          nframes, buffer);
       
+      // p3.3.41
+      //fprintf(stderr, "AudioTrack::getData %s data: nframes:%ld %e %e %e %e\n", name().latin1(), nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
+      
       ++ir;
       for (; ir != rl->end(); ++ir) {
             #ifdef NODE_DEBUG
@@ -1261,25 +1290,58 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
 bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffer)
       {
       if (!checkAudioDevice()) return false;
-      for (int ch = 0; ch < channels; ++ch) {
+      for (int ch = 0; ch < channels; ++ch) 
+      {
             void* jackPort = jackPorts[ch];
-            if (jackPort) {
-                  buffer[ch] = audioDevice->getBuffer(jackPort, nframes);
-                  if (config.useDenormalBias) {
+            //float* jackbuf = 0;
+            
+            //if (jackPort) {
+            // p3.3.41 Do not get buffers of unconnected client ports. Causes repeating leftover data, can be loud, or DC !
+            if (jackPort && audioDevice->connections(jackPort)) 
+            {
+                  //buffer[ch] = audioDevice->getBuffer(jackPort, nframes);
+                  // p3.3.41 If the client port buffer is also used by another channel (connected to the same jack port), 
+                  //  don't directly set pointer, copy the data instead. 
+                  // Otherwise the next channel will interfere - it will overwrite the buffer !
+                  // Verified symptoms: Can't use a splitter. Mono noise source on a stereo track sounds in mono. Etc...
+                  // TODO: Problem: What if other Audio Input tracks share the same jack ports as this Audio Input track?
+                  // Users will expect that Audio Inputs just work even if the input routes originate from the same jack port.
+                  // Solution: Rather than having to iterate all other channels, and all other Audio Input tracks and check 
+                  //  their channel port buffers (if that's even possible) in order to determine if the buffer is shared, 
+                  //  let's just copy always, for now shall we ?
+                  float* jackbuf = audioDevice->getBuffer(jackPort, nframes);
+                  //memcpy(buffer[ch], jackbuf, nframes* sizeof(float));
+                  AL::dsp->cpy(buffer[ch], jackbuf, nframes);
+                  
+                  if (config.useDenormalBias) 
+                  {
                       for (unsigned int i=0; i < nframes; i++)
                               buffer[ch][i] += denormalBias;
+                      
+                      // p3.3.41
+                      //fprintf(stderr, "AudioInput::getData %s Jack port %p efx apply channels:%d nframes:%ld %e %e %e %e\n", 
+                      //        name().latin1(), jackPort, channels, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
                   }
-            } else {
-                  if (config.useDenormalBias) {
+            } 
+            else 
+            {
+                  if (config.useDenormalBias) 
+                  {
                       for (unsigned int i=0; i < nframes; i++)
                               buffer[ch][i] = denormalBias;
-                      } else {
+                  } 
+                  else 
+                  {
                               memset(buffer[ch], 0, nframes * sizeof(float));
-                      }
                   }
+                  
+                  // p3.3.41
+                  //fprintf(stderr, "AudioInput::getData %s No Jack port efx apply channels:%d nframes:%ld %e %e %e %e\n", 
+                  //        name().latin1(), channels, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
             }
-      return true;
       }
+      return true;
+}
 
 //---------------------------------------------------------
 //   setName

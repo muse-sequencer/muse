@@ -667,6 +667,10 @@ Plugin::~Plugin()
 
 int Plugin::incReferences(int val)
 {
+  #ifdef PLUGIN_DEBUGIN 
+  fprintf(stderr, "Plugin::incReferences _references:%d val:%d\n", _references, val);
+  #endif
+  
   int newref = _references + val;
   
   if(newref == 0) 
@@ -1068,6 +1072,10 @@ void initPlugins()
       if (ladspaPath == 0)
             ladspaPath = "/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa";
       p = ladspaPath;
+      
+      if(debugMsg)
+        fprintf(stderr, "loadPluginLib: ladspa path:%s\n", ladspaPath);
+      
       while (*p != '\0') {
             const char* pe = p;
             while (*pe != ':' && *pe != '\0')
@@ -1078,6 +1086,9 @@ void initPlugins()
                   char* buffer = new char[n + 1];
                   strncpy(buffer, p, n);
                   buffer[n] = '\0';
+                  if(debugMsg)
+                    fprintf(stderr, "loadPluginLib: loading ladspa dir:%s\n", buffer);
+                  
                   loadPluginDir(QString(buffer));
                   delete[] buffer;
                   }
@@ -1371,6 +1382,9 @@ void Pipeline::apply(int ports, unsigned long nframes, float** buffer1)
       //for (int i = 0; i < ports; ++i)
       //      buffer2[i] = data + i * nframes;
 
+      // p3.3.41
+      //fprintf(stderr, "Pipeline::apply data: nframes:%ld %e %e %e %e\n", nframes, buffer1[0][0], buffer1[0][1], buffer1[0][2], buffer1[0][3]);
+      
       bool swap = false;
 
       for (iPluginI ip = begin(); ip != end(); ++ip) {
@@ -1404,6 +1418,10 @@ void Pipeline::apply(int ports, unsigned long nframes, float** buffer1)
                   //memcpy(buffer1[i], buffer[i], sizeof(float) * nframes);
                   AL::dsp->cpy(buffer1[i], buffer[i], nframes);
       }
+      
+      // p3.3.41
+      //fprintf(stderr, "Pipeline::apply after data: nframes:%ld %e %e %e %e\n", nframes, buffer1[0][0], buffer1[0][1], buffer1[0][2], buffer1[0][3]);
+      
 }
 
 //---------------------------------------------------------
@@ -1487,14 +1505,45 @@ CtrlValueType PluginI::valueType() const
 
 void PluginI::setChannels(int c)
 {
-      if (channel == c)
-            return;
-      int ni = c / _plugin->outports();
-      if (ni == 0)
-            ni = 1;
+      // p3.3.41 Removed
+      //if (channel == c)
+      //      return;
+      
+      // p3.3.41
+      channel = c;
+      
+      //int ni = c / _plugin->outports();
+      //if (ni == 0)
+      //      ni = 1;
+      // p3.3.41 Some plugins have zero out ports, causing exception with the above line.
+      // Also, pick the least number of ins or outs, and base the number of instances on that.
+      unsigned long ins = _plugin->inports();
+      unsigned long outs = _plugin->outports();
+      /*
+      unsigned long minports = ~0ul;
+      if(outs && outs < minports)
+        minports = outs;
+      if(ins && ins < minports)
+        minports = ins;
+      if(minports == ~0ul)
+        minports = 1;
+      int ni = c / minports;
+      */
+      int ni = 1;
+      if(outs)
+        ni = c / outs;
+      else
+      if(ins)
+        ni = c / ins;
+      
+      if(ni < 1)
+        ni = 1;
+      
       if (ni == instances)
             return;
-      channel = c;
+      
+      // p3.3.41 Moved above.
+      //channel = c;
 
       // remove old instances:
       deactivate();
@@ -1592,12 +1641,46 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
       _name  = _plugin->name() + inst;
       _label = _plugin->label() + inst;
 
-      instances = channel/plug->outports();
+      //instances = channel/plug->outports();
+      // p3.3.41 Some plugins have zero out ports, causing exception with the above line.
+      // Also, pick the least number of ins or outs, and base the number of instances on that.
+      unsigned long ins = plug->inports();
+      unsigned long outs = plug->outports();
+      /*
+      unsigned long minports = ~0ul;
+      if(outs && outs < minports)
+        minports = outs;
+      if(ins && ins < minports)
+        minports = ins;
+      if(minports == ~0ul)
+        minports = 1;
+      instances = channel / minports;
       if(instances < 1)
         instances = 1;
+      */  
+      if(outs)
+      {
+        instances = channel / outs;
+        if(instances < 1)
+          instances = 1;
+      }
+      else
+      if(ins)
+      {
+        instances = channel / ins;
+        if(instances < 1)
+          instances = 1;
+      }
+      else
+        instances = 1;
+        
       handle = new LADSPA_Handle[instances];
       for(int i = 0; i < instances; ++i) 
       {
+        #ifdef PLUGIN_DEBUGIN 
+        fprintf(stderr, "PluginI::initPluginInstance instance:%d\n", i);
+        #endif
+        
         handle[i] = _plugin->instantiate();
         //if (handle[i] == 0)
         if(handle[i] == NULL)
@@ -1712,6 +1795,41 @@ void PluginI::connect(int ports, float** src, float** dst)
       }
 
 //---------------------------------------------------------
+//   deactivate
+//---------------------------------------------------------
+
+void PluginI::deactivate()
+      {
+      for (int i = 0; i < instances; ++i) {
+            _plugin->deactivate(handle[i]);
+            _plugin->cleanup(handle[i]);
+            }
+      }
+
+//---------------------------------------------------------
+//   activate
+//---------------------------------------------------------
+
+void PluginI::activate()
+      {
+      for (int i = 0; i < instances; ++i)
+            _plugin->activate(handle[i]);
+      if (initControlValues) {
+            for (int i = 0; i < controlPorts; ++i) {
+                  controls[i].val = controls[i].tmpVal;
+                  }
+            }
+      else {
+            //
+            // get initial control values from plugin
+            //
+            for (int i = 0; i < controlPorts; ++i) {
+                  controls[i].tmpVal = controls[i].val;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
 //   setControl
 //    set plugin instance controller value by name
 //---------------------------------------------------------
@@ -1736,7 +1854,10 @@ bool PluginI::setControl(const QString& s, double val)
 void PluginI::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\" channel=\"%d\"",
-         _plugin->lib().latin1(), _plugin->label().latin1(), instances * _plugin->inports());
+         //_plugin->lib().latin1(), _plugin->label().latin1(), instances * _plugin->inports());
+         // p3.3.41
+         _plugin->lib().latin1(), _plugin->label().latin1(), channel);
+         
       for (int i = 0; i < controlPorts; ++i) {
             int idx = controls[i].idx;
             QString s("control name=\"%1\" val=\"%2\" /");
@@ -1809,7 +1930,9 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
       QString file;
       QString label;
       if (!readPreset)
-            instances = 1;
+            //instances = 1;
+            // p3.3.41
+            channel = 1;
 
       for (;;) {
             Xml::Token token(xml.parse());
@@ -1821,7 +1944,10 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                   case Xml::TagStart:
                         if (!readPreset && _plugin == 0) {
                               _plugin = plugins.find(file, label);
-                              if (_plugin && initPluginInstance(_plugin, instances)) {
+                              
+                              //if (_plugin && initPluginInstance(_plugin, instances)) {
+                              // p3.3.41
+                              if (_plugin && initPluginInstance(_plugin, channel)) {
                                     _plugin = 0;
                                     xml.parse1();
                                     break;
@@ -1875,7 +2001,9 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               }
                         else if (tag == "channel") {
                               if (!readPreset)
-                                    instances = xml.s2().toInt();
+                                    //instances = xml.s2().toInt();
+                                    // p3.3.41
+                                    channel = xml.s2().toInt();
                               }
                         break;
                   case Xml::TagEnd:
@@ -1884,7 +2012,10 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                     _plugin = plugins.find(file, label);
                                     if (_plugin == 0)
                                           return true;
-                                    if (initPluginInstance(_plugin, instances))
+                                    
+                                    //if (initPluginInstance(_plugin, instances))
+                                    // p3.3.41
+                                    if (initPluginInstance(_plugin, channel))
                                           return true;
                                     }
                               if (_gui)
@@ -2105,7 +2236,11 @@ void PluginI::apply(int n)
       //      controls[i].val = controls[i].tmpVal;
       
       for (int i = 0; i < instances; ++i)
+      {
+            // p3.3.41
+            //fprintf(stderr, "PluginI::apply handle %d\n", i);
             _plugin->apply(handle[i], n);
+      }      
       }
 
 //---------------------------------------------------------
@@ -2653,41 +2788,6 @@ Plugin* PluginDialog::getPlugin(QWidget* parent)
       if (dialog->exec())
             return dialog->value();
       return 0;
-      }
-
-//---------------------------------------------------------
-//   deactivate
-//---------------------------------------------------------
-
-void PluginI::deactivate()
-      {
-      for (int i = 0; i < instances; ++i) {
-            _plugin->deactivate(handle[i]);
-            _plugin->cleanup(handle[i]);
-            }
-      }
-
-//---------------------------------------------------------
-//   activate
-//---------------------------------------------------------
-
-void PluginI::activate()
-      {
-      for (int i = 0; i < instances; ++i)
-            _plugin->activate(handle[i]);
-      if (initControlValues) {
-            for (int i = 0; i < controlPorts; ++i) {
-                  controls[i].val = controls[i].tmpVal;
-                  }
-            }
-      else {
-            //
-            // get initial control values from plugin
-            //
-            for (int i = 0; i < controlPorts; ++i) {
-                  controls[i].tmpVal = controls[i].val;
-                  }
-            }
       }
 
 const char* presetOpenText = "<img source=\"fileopen\"> "

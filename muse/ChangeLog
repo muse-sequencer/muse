@@ -1,3 +1,18 @@
+06.10.2010
+      * Fixed: Audio Input tracks: Loud noises or DC output with unconnected input routes. (T356)
+        - AudioInput::getData(): Do not get buffers of unconnected client ports. Causes repeating leftover data.
+      * Fixed: Audio Input tracks: Stereo processing not correct if both input routes connected to same port. (T356)
+        - AudioInput::getData(): Just copy the buffers always, don't set buffer pointer directly.
+      * Fixed: Effect rack plugins: Not saving correct number of plugin channels. Upon reload, channels are wrong. (T356)
+        - PluginI::writeConfiguration() and PluginI::readConfiguration(): Write and read the channels, not instances.
+        - Optimize TODO: Is xml plugin 'channel' really necessary? Well not now, but later if we optimize the effect rack
+           by not creating redundant plugin instances if the next plugin in the rack doesn't need them.
+          What I have changed is always make the number of plugin channels equal to the number of track channels.  
+          PluginI::setChannels() and PluginI::initPluginInstance() then sort out the details of how many instances to create.
+      * Fixed: Effect rack plugins: Some plugins crash MusE, for example plugins with no audio outputs. (T356)
+        - PluginI::setChannels() and PluginI::initPluginInstance(): Be more aware of different audio ins and outs. 
+      * Added: First draft help file README.effects-rack titled "Understanding the Effects Rack". (T356)
+        - Details how MusE uses plugins, especially now with these changes.
 27.04.2010
       * Changed: Building: Separate --enable-dssi --enable-osc configure options. (T356) 
         --enable-dssi (Enable dssi synths AND special handling of dssi-vst ladspa effect plugins. No guis if by itself.) and 

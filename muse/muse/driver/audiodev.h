@@ -48,6 +48,7 @@ class AudioDevice {
       virtual void unregisterPort(void*) = 0;
       virtual void connect(void*, void*) = 0;
       virtual void disconnect(void*, void*) = 0;
+      virtual int connections(void* /*clientPort*/) = 0; 
       virtual void setPortName(void* p, const char* n) = 0;
       virtual void* findPort(const char* name) = 0;
       virtual QString portName(void* port) = 0;

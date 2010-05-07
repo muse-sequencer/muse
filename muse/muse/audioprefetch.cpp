@@ -194,6 +194,10 @@ void AudioPrefetch::prefetch(bool doSeek)
                   }
             //track->fetchData(writePos, segmentSize, bp);
             track->fetchData(writePos, segmentSize, bp, doSeek);
+            
+            // p3.3.41
+            //fprintf(stderr, "AudioPrefetch::prefetch data: segmentSize:%ld %e %e %e %e\n", segmentSize, bp[0][0], bp[0][1], bp[0][2], bp[0][3]);
+      
             }
       writePos += segmentSize;
       }
