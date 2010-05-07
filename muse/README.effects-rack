@@ -1,4 +1,4 @@
-May 6, 2010 v0.0.1 by Tim.
+May 6, 2010 v0.0.2 by Tim.
 
 Understanding the Effects Rack
 ------------------------------
@@ -26,20 +26,20 @@ For mono tracks with plugins having more than one audio input or output,
 
 For stereo tracks:
     
-    Audio     Audio      Independent     Real number      Real number 
-    inputs:   outputs:   plugin          of track         of track
-                         copies:         input route      output route 
-                                         channels used:   channels used:
+    Plugin    Plugin      Independent   Real number      Real number 
+    audio     audio       plugin        of track         of track
+    inputs:   outputs:    copies:       input route      output route 
+                                        channels used:   channels used:
     -------------------------------------------------------------------
        0          0          1              0                0
        0          1          2              0                2
-       0          2          1              0                2
+       0       >= 2          1              0                2
        1          0          2              2                0
        1          1          2              2                2
-       1          2          1              1 L only!        2
-       2          0          1              2                0
-       2          1          2              2                2
-       2          2          1              2                2
+       1       >= 2          1              1 L only!        2
+    >= 2          0          1              2                0
+    >= 2          1          2              2                2
+    >= 2       >= 2          1              2                2
  
 Notice that on a stereo track with a plugin having one audio input and two 
  audio outputs, only the first track input route channel is used (left only).
@@ -48,6 +48,16 @@ These same rules apply to inter-plugin audio when more than one plugin
  is in the rack chain. Extra audio outputs of one plugin may be ignored
  by the next plugin if not used. 
  
+Currently plugins with no audio outputs are not really useful in MusE,
+ chiefly because plugin control outputs are not used or displayed.
+Nor are specialized plugins with many inputs and/or outputs.
+
+Nor are so-called 'realtime' control plugins which use audio inputs 
+ and outputs for control signals. 
+<<< 
+ Loud noise alert! Beware of using such plugins in an audio effects rack. 
+>>>
+
 
 Example: Consider a stereo Audio Input track with these effect rack 
  LADSPA plugins: 
