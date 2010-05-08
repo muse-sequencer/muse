@@ -700,6 +700,15 @@ void Xml::skip(const QString& etag)
 //   xmlString
 //---------------------------------------------------------
 
+QString Xml::xmlString(const char* s)
+      {
+      return Xml::xmlString(QString(s));
+      }
+
+//---------------------------------------------------------
+//   xmlString
+//---------------------------------------------------------
+
 QString Xml::xmlString(const QString& ss)
       {
       QString s(ss);

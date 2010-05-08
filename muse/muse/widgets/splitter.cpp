@@ -26,12 +26,14 @@ Splitter::Splitter(Qt::Orientation o, QWidget* parent, const char* name)
 void Splitter::writeStatus(int level, Xml& xml)
       {
       QValueList<int> vl = sizes();
-      xml.nput(level++, "<%s>", name());
+      //xml.nput(level++, "<%s>", name());
+      xml.nput(level++, "<%s>", Xml::xmlString(name()).latin1());
       QValueListIterator<int> ivl = vl.begin();
       for (; ivl != vl.end(); ++ivl) {
             xml.nput("%d ", *ivl);
             }
-      xml.nput("</%s>\n", name());
+      //xml.nput("</%s>\n", name());
+      xml.nput("</%s>\n", Xml::xmlString(name()).latin1());
       }
 
 //---------------------------------------------------------

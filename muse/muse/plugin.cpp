@@ -1856,12 +1856,14 @@ void PluginI::writeConfiguration(int level, Xml& xml)
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\" channel=\"%d\"",
          //_plugin->lib().latin1(), _plugin->label().latin1(), instances * _plugin->inports());
          // p3.3.41
-         _plugin->lib().latin1(), _plugin->label().latin1(), channel);
+         //_plugin->lib().latin1(), _plugin->label().latin1(), channel);
+         Xml::xmlString(_plugin->lib()).latin1(), Xml::xmlString(_plugin->label()).latin1(), channel);
          
       for (int i = 0; i < controlPorts; ++i) {
             int idx = controls[i].idx;
             QString s("control name=\"%1\" val=\"%2\" /");
-            xml.tag(level, s.arg(_plugin->portName(idx)).arg(controls[i].tmpVal).latin1());
+            //xml.tag(level, s.arg(_plugin->portName(idx)).arg(controls[i].tmpVal).latin1());
+            xml.tag(level, s.arg(Xml::xmlString(_plugin->portName(idx)).latin1()).arg(controls[i].tmpVal).latin1());
             }
       if (_on == false)
             xml.intTag(level, "on", _on);

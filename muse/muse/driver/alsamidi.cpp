@@ -231,7 +231,8 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
             //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, name().latin1());
             //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::MIDI_DEVICE_ROUTE, name().latin1());
           */  
-            xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, name().latin1());
+            //xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, name().latin1());
+            xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, Xml::xmlString(name()).latin1());
           
           /*
           //xml.strTag(level, "dstNode", r->name());
@@ -257,7 +258,8 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
           else
           if(r->type != Route::TRACK_ROUTE)
             s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
-          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+          //s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
           xml.tag(level, s);
           
           xml.etag(level--, "Route");

@@ -51,10 +51,12 @@ void Header::readStatus(Xml& xml)
 
 void Header::writeStatus(int level, Xml& xml) const
       {
-      xml.nput(level, "<%s> ", name());
+      //xml.nput(level, "<%s> ", name());
+      xml.nput(level, "<%s> ", Xml::xmlString(name()).latin1());
       int n = count() - 1;
       for (int i = n; i >= 0; --i)
             xml.nput("%d ", mapToSection(i));
-      xml.put("</%s>", name());
+      //xml.put("</%s>", name());
+      xml.put("</%s>", Xml::xmlString(name()).latin1());
       }
 

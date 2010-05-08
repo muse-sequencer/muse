@@ -527,13 +527,16 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
             s = QT_TR_NOOP("source");
             if(r->type != Route::TRACK_ROUTE)
               s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
-            s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+
+            //s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+            s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
             xml.tag(level, s);
             
             //xml.strTag(level, "dstNode", name());
             //xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::JACK_MIDI_ROUTE, name().latin1());
             //xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::MIDI_DEVICE_ROUTE, name().latin1());
-            xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, name().latin1());
+            //xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, name().latin1());
+            xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, Xml::xmlString(name()).latin1());
             
             xml.etag(level--, "Route");
           }
@@ -561,7 +564,8 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
             //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::JACK_MIDI_ROUTE, name().latin1());
             //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::MIDI_DEVICE_ROUTE, name().latin1());
           */  
-            xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, name().latin1());
+            //xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, name().latin1());
+            xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, Xml::xmlString(name()).latin1());
           
           /*
           //xml.strTag(level, "dstNode", r->name());
@@ -587,7 +591,9 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
           else
           if(r->type != Route::TRACK_ROUTE)
             s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
-          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+
+          //s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
           xml.tag(level, s);
           
           

@@ -164,7 +164,8 @@ void Preset::readConfiguration(Xml& xml)
 
 void Preset::writeConfiguration(Xml& xml, int level)
 {
-	xml.tag(level++, "preset name=\"%s\"", name.ascii());
+	//xml.tag(level++, "preset name=\"%s\"", name.ascii());
+        xml.tag(level++, "preset name=\"%s\"", Xml::xmlString(name).ascii());
 	for (int i = 0; i < NUM_CONTROLLER; ++i) {
 		xml.tag(level, "control idx=\"%d\" val=\"%d\" /", i, ctrl[i]);
 	}

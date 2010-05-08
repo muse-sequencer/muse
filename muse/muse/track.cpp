@@ -679,7 +679,8 @@ void Track::writeRouting(int level, Xml& xml) const
             s = QT_TR_NOOP("source");
             if(r->type != Route::TRACK_ROUTE)
               s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
-            s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+            //s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+            s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
             xml.tag(level, s);
             
             ///xml.strTag(level, "dstNode", dst.name());
@@ -688,7 +689,9 @@ void Track::writeRouting(int level, Xml& xml) const
             //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().latin1());
             //else  
             //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, name().latin1());
-            xml.tag(level, "dest name=\"%s\"/", name().latin1());
+
+            //xml.tag(level, "dest name=\"%s\"/", name().latin1());
+            xml.tag(level, "dest name=\"%s\"/", Xml::xmlString(name()).latin1());
             
             xml.etag(level--, "Route");
           }
@@ -733,7 +736,8 @@ void Track::writeRouting(int level, Xml& xml) const
           //  xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().latin1());
           //else  
           //  xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, name().latin1());
-          xml.tag(level, "source name=\"%s\"/", name().latin1());
+          //xml.tag(level, "source name=\"%s\"/", name().latin1());
+          xml.tag(level, "source name=\"%s\"/", Xml::xmlString(name()).latin1());
           
           ///xml.strTag(level, "dstNode", r->name());
           //if(r->channel != -1)
@@ -759,7 +763,9 @@ void Track::writeRouting(int level, Xml& xml) const
           else
           if(r->type != Route::TRACK_ROUTE)
             s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
-          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+
+          //s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
+          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
           xml.tag(level, s);
           
           xml.etag(level--, "Route");

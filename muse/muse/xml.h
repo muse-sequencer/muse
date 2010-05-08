@@ -85,6 +85,7 @@ class Xml {
       void geometryTag(int level, const char* name, const QWidget* g);
       void qrectTag(int level, const char* name, const QRect& r);
       static QString xmlString(const QString&);
+      static QString xmlString(const char*);
 
       void skip(const QString& tag);
       };

@@ -891,7 +891,8 @@ void Song::writeFont(int level, Xml& xml, const char* name,
    const QFont& font) const
       {
       xml.nput(level, "<%s family=\"%s\" size=\"%d\"",
-         name, font.family().latin1(), font.pointSize());
+         //name, font.family().latin1(), font.pointSize());
+         name, Xml::xmlString(font.family()).latin1(), font.pointSize());
       if (font.weight() != QFont::Normal)
             xml.nput(" weight=\"%d\"", font.weight());
       if (font.italic())

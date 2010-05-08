@@ -1,3 +1,6 @@
+07.05.2010
+      * Fixed: Xml file trouble: Tag attributes not storing xml-friendly entities, trouble reloading song. (T356)
+        - Fixed all usages of Xml::nput, ::put, ::tag, and ::etag. Discovered by Geoff B.
 06.05.2010
       * Fixed: Audio Input tracks: Loud noises or DC output with unconnected input routes. (T356)
         - AudioInput::getData(): Do not get buffers of unconnected client ports. Causes repeating leftover data.

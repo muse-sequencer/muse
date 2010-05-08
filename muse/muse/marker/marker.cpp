@@ -45,7 +45,11 @@ void Marker::read(Xml& xml)
                         else if (tag == "lock")
                               setType(xml.s2().toInt() ? FRAMES:TICKS);
                         else if (tag == "name")
+                        {
                               _name = xml.s2();
+                              //p3.3.42
+                              //printf("Marker::read name:%s\n", _name.latin1());
+                        }      
                         break;
                   case Xml::TagEnd:
                         if (xml.s1() == "marker")
@@ -65,7 +69,8 @@ void MarkerList::write(int level, Xml& xml) const
       for (ciMarker i = begin(); i != end(); ++i) {
             const Marker& m = i->second;
             xml.put(level, "<marker tick=\"%d\" lock=\"%d\" name=\"%s\" />",
-               m.tick(), m.type()==Pos::FRAMES, m.name().latin1());
+               //m.tick(), m.type()==Pos::FRAMES, m.name().latin1());
+               m.tick(), m.type()==Pos::FRAMES, Xml::xmlString(m.name()).latin1());
             }
       }
 
