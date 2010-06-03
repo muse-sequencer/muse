@@ -74,6 +74,8 @@ class PosEdit : public QWidget
       virtual void setValue(const Pos& time);
       void setValue(int t);
       void setValue(const QString& s);
+      // Added p3.3.43
+      virtual void setEnabled(bool);
 
    public:
       PosEdit(QWidget*,  const char* = 0);

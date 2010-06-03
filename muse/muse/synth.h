@@ -132,7 +132,7 @@ class SynthIF {
       virtual const char* getPatchName(int, int, MType, bool) = 0;
       virtual void populatePatchPopup(QPopupMenu*, int, MType, bool) = 0;
       virtual void write(int level, Xml& xml) const = 0;
-      virtual float getParameter(unsigned long idx) = 0;
+      virtual float getParameter(unsigned long idx) const = 0;
       virtual void setParameter(unsigned long idx, float value) = 0;
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) = 0;
       };
@@ -278,7 +278,7 @@ class MessSynthIF : public SynthIF {
       virtual const char* getPatchName(int, int, MType, bool);
       virtual void populatePatchPopup(QPopupMenu*, int, MType, bool);
       virtual void write(int level, Xml& xml) const;
-      virtual float getParameter(unsigned long)   { return 0.0; }
+      virtual float getParameter(unsigned long) const { return 0.0; }
       virtual void setParameter(unsigned long, float) {}
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval);
       };

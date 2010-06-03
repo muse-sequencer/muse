@@ -32,7 +32,10 @@ SigList::SigList()
 void SigList::add(unsigned tick, int z, int n)
       {
       if (z == 0 || n == 0) {
-            printf("illegal signature %d/%d\n", z, n);
+            printf("SigList::add illegal signature %d/%d\n", z, n);
+            
+            // Added p3.3.43
+            return;
             }
       tick = raster1(tick, 0);
       iSigEvent e = upper_bound(tick);

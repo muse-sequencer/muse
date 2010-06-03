@@ -27,7 +27,7 @@ const char* UndoOp::typeName()
             "AddPart",  "DeletePart",  "ModifyPart",
             "AddEvent", "DeleteEvent", "ModifyEvent",
             "AddTempo", "DeleteTempo", "AddSig", "DeleteSig",
-            "SwapTrack"
+            "SwapTrack", "ModifyClip"
             };
       return name[type];
       }

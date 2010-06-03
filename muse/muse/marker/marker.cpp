@@ -47,8 +47,6 @@ void Marker::read(Xml& xml)
                         else if (tag == "name")
                         {
                               _name = xml.s2();
-                              //p3.3.42
-                              //printf("Marker::read name:%s\n", _name.latin1());
                         }      
                         break;
                   case Xml::TagEnd:

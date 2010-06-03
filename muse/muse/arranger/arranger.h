@@ -177,7 +177,7 @@ class Arranger : public QWidget {
       void dropMidiFile(const QString&);
       void startEditor(PartList*, int);
       void toolChanged(int);
-      void addMarker(int);
+      //void addMarker(int);
       void setUsedTool(int);
 
 

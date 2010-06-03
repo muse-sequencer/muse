@@ -71,7 +71,7 @@ class VstSynthIF : public SynthIF
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }
       virtual void populatePatchPopup(QPopupMenu*, int, MType, bool) {};
       virtual void write(int level, Xml& xml) const;
-      virtual float getParameter(unsigned long idx);
+      virtual float getParameter(unsigned long idx) const;
       virtual void setParameter(unsigned long idx, float value);
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
       };

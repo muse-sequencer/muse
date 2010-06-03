@@ -19,6 +19,7 @@ struct Sig {
       int n;
    public:
       Sig(int _z, int _n) : z(_z), n(_n) {}
+      bool isValid() const;
       };
 
 #include "section.h"

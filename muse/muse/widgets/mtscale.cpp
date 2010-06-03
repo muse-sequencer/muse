@@ -96,7 +96,6 @@ void MTScale::setPos(int idx, unsigned val, bool)
       int w = 18;
 
       if (tval < 0) { // tval<0 occurs whenever the window is scrolled left, so I switched to signed int (ml)
-            // Added by Tim. p3.3.6
             //printf("MTScale::setPos - idx:%d val:%d tval:%d opos:%d w:%d h:%d\n", idx, val, tval, opos, width(), height());
       
             redraw(QRect(0,0,width(),height()));
@@ -111,7 +110,6 @@ void MTScale::setPos(int idx, unsigned val, bool)
             w += tval - opos;
             x += opos;
             }
-      // Added by Tim. p3.3.6
       //printf("MTScale::setPos idx:%d val:%d tval:%d opos:%d x:%d w:%d h:%d\n", idx, val, tval, opos, x, w, height());
       
       redraw(QRect(x, 0, w, height()));
@@ -174,7 +172,9 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
             Marker *alreadyExists = song->getMarkerAt(x);
             if (!alreadyExists) {
                   song->addMarker(QString(""), x, false);         
-                  emit addMarker(x);
+                  // Removed p3.3.43 
+                  // Song::addMarker() already emits a 'markerChanged'.
+                  //emit addMarker(x);
                   }
             }
       else if (i== 2 && (event->state() & Qt::ShiftButton )) {  // If shift +RMB we remove a marker 
@@ -270,7 +270,6 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
               else
                     x2 = xp+200;
               
-              // Added by Tim. p3.3.6
               //printf("MTScale::pdraw marker %s xp:%d y:%d h:%d r.x:%d r.w:%d\n", m->second.name().latin1(), xp, height(), y, r.x(), r.width());
   
               // Must be reasonable about very low negative x values! With long songs > 15min

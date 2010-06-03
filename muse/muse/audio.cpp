@@ -339,7 +339,6 @@ void Audio::process(unsigned frames)
 
       int jackState = audioDevice->getState();
 
-      // Added by Tim. p3.3.20
       //if(debugMsg)
       //  printf("Audio::process Current state:%s jackState:%s\n", audioStates[state], audioStates[jackState]);
       
@@ -356,6 +355,16 @@ void Audio::process(unsigned frames)
             startRolling();
             }
       else if (isPlaying() && jackState == STOP) {
+            // p3.3.43 Make sure to stop bounce and freewheel mode, for example if user presses stop 
+            //  in QJackCtl before right-hand marker is reached (which is handled below).
+            //printf("Audio::process isPlaying() && jackState == STOP\n");
+            //if (_bounce) 
+            //{
+              //printf("  stopping bounce...\n");
+            //  _bounce = false;
+            //  write(sigFd, "F", 1);
+            //}
+            
             stopRolling();
             }
       else if (state == START_PLAY && jackState == STOP) {
@@ -414,7 +423,6 @@ void Audio::process(unsigned frames)
                && !(song->record()
                 || _bounce
                 || song->loop())) {
-                  // Added by Tim. p3.3.20
                   //if(debugMsg)
                   //  printf("Audio::process curTickPos >= song->len\n");
                   
@@ -484,7 +492,6 @@ void Audio::process(unsigned frames)
       syncTime    = curTime();
       frameOffset = syncFrame - samplePos;
 
-      // Added by Tim. p3.3.13
       //printf("Audio::process calling process1:\n");
       
       process1(samplePos, offset, frames);
@@ -593,7 +600,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           float data[frames * channels];
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
-          // Added by Tim. p3.3.13
           //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().latin1());
       
           // p3.3.38
@@ -638,7 +644,9 @@ void Audio::processMsg(AudioMsg* msg)
                   msg->snode->addPlugin(msg->plugin, msg->ival);
                   break;
             case AUDIO_SET_PLUGIN_CTRL_VAL:
-                  msg->plugin->track()->setPluginCtrlVal(msg->ival, msg->dval);
+                  //msg->plugin->track()->setPluginCtrlVal(msg->ival, msg->dval);
+                  // p3.3.43
+                  msg->snode->setPluginCtrlVal(msg->ival, msg->dval);
                   break;
             case AUDIO_SWAP_CONTROLLER_IDX:
                   msg->snode->swapControllerIDX(msg->a, msg->b);

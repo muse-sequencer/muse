@@ -37,7 +37,7 @@ class MTScale : public View {
 
    signals:
       void timeChanged(unsigned);
-      void addMarker(int);
+      //void addMarker(int);
 
    public slots:
       void setPos(int, unsigned, bool);

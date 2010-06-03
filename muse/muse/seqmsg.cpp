@@ -412,14 +412,17 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
 //   msgSetPluginCtrlVal
 //---------------------------------------------------------
 
-void Audio::msgSetPluginCtrlVal(PluginI* plugin, int param, double val)
+//void Audio::msgSetPluginCtrlVal(PluginI* plugin, int param, double val)
+// p3.3.43
+void Audio::msgSetPluginCtrlVal(AudioTrack* track, int param, double val)
 {
       AudioMsg msg;
       
       msg.id     = AUDIO_SET_PLUGIN_CTRL_VAL;
       msg.ival   = param;
-      msg.dval = val;
-      msg.plugin = plugin;
+      msg.dval   = val;
+      //msg.plugin = plugin;
+      msg.snode  = track;
       sendMsg(&msg);
 }
 

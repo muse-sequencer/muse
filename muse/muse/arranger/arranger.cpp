@@ -284,7 +284,10 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       hscroll = new ScrollScale(-1000, -10, xscale, song->len(), Horizontal, editor, -offset);
       ib->setFixedHeight(hscroll->sizeHint().height());
 
-      vscroll = new QScrollBar(1, 20*20, 1, 5, 0, Vertical, editor);
+      // Changed p3.3.43 Too small steps for me...
+      //vscroll = new QScrollBar(1, 20*20, 1, 5, 0, Vertical, editor);
+      vscroll = new QScrollBar(1, 20*20, 5, 25, 0, Vertical, editor);
+      
       list->setScroll(vscroll);
 
       QValueList<int> vallist;
@@ -342,7 +345,9 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       connect(canvas, SIGNAL(toolChanged(int)), SIGNAL(toolChanged(int)));
 //      connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(seek()));
 
-      connect(time, SIGNAL(addMarker(int)), SIGNAL(addMarker(int)));
+      // Removed p3.3.43 
+      // Song::addMarker() already emits a 'markerChanged'.
+      //connect(time, SIGNAL(addMarker(int)), SIGNAL(addMarker(int)));
       
       configChanged();  // set configuration values
       showTrackInfo(showTrackinfoFlag);

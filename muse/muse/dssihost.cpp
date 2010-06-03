@@ -1207,7 +1207,7 @@ DssiSynthIF::~DssiSynthIF()
 //   getParameter
 //---------------------------------------------------------
 
-float DssiSynthIF::getParameter(unsigned long n)
+float DssiSynthIF::getParameter(unsigned long n) const
 {
   if(n >= synth->_controlInPorts)
   {
@@ -3022,6 +3022,31 @@ int DssiSynthIF::totalInChannels() const
 { 
   return synth->_inports; 
 }
+
+//--------------------------------
+// Methods for PluginIBase:
+//--------------------------------
+
+bool DssiSynthIF::on() const                                 { return true; }  // Synth is not part of a rack plugin chain. Always on.
+void DssiSynthIF::setOn(bool /*val*/)                        { }   
+int DssiSynthIF::pluginID()                                  { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->UniqueID : 0; } 
+int DssiSynthIF::id()                                        { return 0; } // Synth is not part of a rack plugin chain. Always 0.
+QString DssiSynthIF::pluginLabel() const                     { return (synth && synth->dssi) ? QString(synth->dssi->LADSPA_Plugin->Label) : QString(); } 
+QString DssiSynthIF::name() const                            { return synti->name(); }
+AudioTrack* DssiSynthIF::track()                             { return (AudioTrack*)synti; }
+void DssiSynthIF::enableController(int i, bool v)            { controls[i].enCtrl = v; } 
+bool DssiSynthIF::controllerEnabled(int i) const             { return controls[i].enCtrl; }  
+bool DssiSynthIF::controllerEnabled2(int i) const            { return controls[i].en2Ctrl; }   
+void DssiSynthIF::updateControllers()                        { }
+void DssiSynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
+bool DssiSynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
+int DssiSynthIF::parameters() const                          { return synth ? synth->_controlInPorts : 0; }
+void DssiSynthIF::setParam(int i, double val)                { setParameter(i, val); }
+double DssiSynthIF::param(int i) const                       { return getParameter(i); }
+const char* DssiSynthIF::paramName(int i)                    { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[i] : 0; }
+//LADSPA_PortRangeHint DssiSynthIF::range(int i)               { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortRangeHints[i] : 0; }
+LADSPA_PortRangeHint DssiSynthIF::range(int i)               { return synth->dssi->LADSPA_Plugin->PortRangeHints[i]; }
+
 
 #else //DSSI_SUPPORT
 void initDSSI() {}

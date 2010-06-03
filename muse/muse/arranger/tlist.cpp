@@ -177,6 +177,8 @@ void TList::paint(const QRect& r)
             p.drawTiledPixmap(rect, bgPixmap, QPoint(rect.x(), ypos + rect.y()));
       p.setClipRegion(rect);
 
+      //printf("TList::paint hasClipping:%d\n", p.hasClipping());   // Tested true.
+      
       int y  = rect.y();
       int w  = rect.width();
       int h  = rect.height();
@@ -185,7 +187,7 @@ void TList::paint(const QRect& r)
 
       //---------------------------------------------------
       //    Tracks
-      //---------------------------------------------------
+      //---------------------------------------------------                         
 
       TrackList* l = song->tracks();
       int idx = 0;
@@ -1371,21 +1373,41 @@ void TList::setYPos(int y)
       if (pm.isNull())
             return;
       if (!pmValid) {
+            //printf("TList::setYPos y:%d delta:%d pmValid is false - redrawing...\n", y, delta);
             redraw();
             return;
             }
       int w = width();
       int h = height();
       QRect r;
+      //printf("TList::setYPos y:%d delta:%d w:%d h:%d\n", y, delta, w, h);
+      
       if (delta >= h || delta <= -h)
+      {
+            //printf("TList::setYPos delta >= h || delta <= -h\n");
             r = QRect(0, 0, w, h);
+      }      
       else if (delta < 0) {   // shift up
+            //printf("TList::setYPos delta < 0 : shift up\n");
             bitBlt(&pm,  0, 0, &pm, 0, -delta, w, h + delta, CopyROP, true);
             r = QRect(0, h + delta, w, -delta);
             }
       else {                  // shift down
+            //printf("TList::setYPos delta !< 0 : shift down\n");
             bitBlt(&pm,  0, delta, &pm, 0, 0, w, h-delta, CopyROP, true);
-            r = QRect(0, 0, w, delta);
+            
+            // NOTE: June 2 2010: On my machine with an old NV V8200 + prop drivers (curr 96.43.11),
+            //  this is a problem. There is severe graphical corruption.
+            // Not just here but several other windows (ex. ladspa browser), 
+            //  and I believe (?) other QT3 apps. QT4 apps don't do it. 
+            // Neither does it happen when xorg drivers used. 
+            //
+            // FIXME: This change cures it for me, but we shouldn't leave this in - shouldn't need to do this...
+            //
+            //r = QRect(0, 0, w, delta);
+            // Changed p3.3.43
+            r = QRect(0, 0, w, h);
+            
             }
       paint(r);
       update();

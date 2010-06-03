@@ -32,6 +32,7 @@
 #include "osc.h"
 #endif
 
+#include "ladspa.h"
 #include <dssi.h>
 #include <alsa/asoundlib.h>
 
@@ -39,7 +40,7 @@
 #include "synth.h"
 #include "stringparam.h"
 
-//#include "plugin.h"
+#include "plugin.h"
 
 #define DSSI_PARAMSAVE_VERSION_MAJOR  0
 #define DSSI_PARAMSAVE_VERSION_MINOR  1
@@ -110,7 +111,8 @@ class DssiSynth : public Synth {
 //    VSTi synthesizer instance
 //---------------------------------------------------------
 
-class DssiSynthIF : public SynthIF
+//class DssiSynthIF : public SynthIF 
+class DssiSynthIF : public SynthIF, public PluginIBase
       {
       //bool _guiVisible;
       DssiSynth* synth;
@@ -192,7 +194,7 @@ class DssiSynthIF : public SynthIF
       //virtual void write(Xml& xml) const;
       virtual void write(int level, Xml& xml) const;
       
-      virtual float getParameter(unsigned long /*idx*/);
+      virtual float getParameter(unsigned long /*idx*/) const;
       virtual void setParameter(unsigned long /*idx*/, float /*value*/);
       
       //virtual int getControllerInfo(int, const char**, int*, int*, int*) { return 0; }
@@ -220,6 +222,28 @@ class DssiSynthIF : public SynthIF
       int oscUpdate();
       //int oscExiting();
       #endif
+
+      //-------------------------
+      // Methods for PluginIBase:
+      //-------------------------
+      bool on() const;       
+      void setOn(bool /*val*/);   
+      int pluginID();
+      int id();
+      QString pluginLabel() const;  
+      QString name() const;
+      AudioTrack* track();          
+      void enableController(int /*i*/, bool v = true); 
+      bool controllerEnabled(int /*i*/) const;          
+      bool controllerEnabled2(int /*i*/) const;          
+      void updateControllers();
+      void writeConfiguration(int /*level*/, Xml& /*xml*/);
+      bool readConfiguration(Xml& /*xml*/, bool readPreset=false);
+      int parameters() const;          
+      void setParam(int /*i*/, double /*val*/); 
+      double param(int /*i*/) const;        
+      const char* paramName(int /*i*/);     
+      LADSPA_PortRangeHint range(int /*i*/); 
 
       friend class DssiSynth;
       };

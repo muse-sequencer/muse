@@ -73,9 +73,7 @@ void View::setXPos(int x)
       if (pm.isNull())
             return;
       if (!pmValid) {
-            // Added by Tim. p3.3.6
             //printf("View::setXPos !pmValid x:%d width:%d delta:%d\n", x, width(), delta);
-      
             redraw();
             return;
             }
@@ -100,7 +98,6 @@ void View::setXPos(int x)
       r |= olr;
       r |= olr1;
       
-      // Added by Tim. p3.3.6
       //printf("View::setXPos x:%d w:%d delta:%d r.x:%d r.w:%d\n", x, w, delta, r.x(), r.width());
       
       paint(r);
@@ -118,7 +115,6 @@ void View::setYPos(int y)
       if (pm.isNull())
             return;
       if (!pmValid) {
-            // Added by Tim. p3.3.6
             //printf("View::setYPos !pmValid y:%d height:%d delta:%d\n", y, height(), delta);
             
             redraw();
@@ -135,7 +131,30 @@ void View::setYPos(int y)
             }
       else {                  // shift down
             bitBlt(&pm,  0, delta, &pm, 0, 0, w, h-delta, CopyROP, true);
-            r = QRect(0, 0, w, delta);
+            
+            // NOTE: June 2 2010: On my machine with an old NV V8200 + prop drivers (curr 96.43.11),
+            //  this is a problem. There is severe graphical corruption in some of the view-based windows.
+            // Not just here but several other windows (ex. ladspa browser). 
+            // I believe (?) I saw other QT3 apps exhibit this problem, too. QT4 apps don't do it. 
+            // Neither does it happen when xorg drivers used. 
+            //
+            // However, there is one type of MusE corruption which ALL drivers seem to show, and that is
+            //  the arranger 'grey' non-part-based tracks (Input, Output, Group etc.).
+            // It is also observed on another machine with an ATI card and a different linux distro.
+            // This change also fixes that problem, although the fact that xorg drivers show the problem
+            //  had long made me believe that it was our drawing technique, not particularly this line.
+            // Meaning that perhaps this line is not the right way to fix that problem.
+            //
+            // On the other hand the two problems may be related, and only one shows with xorg drivers... 
+            // Ultimately it could just be my NV card, as a request for similar experience in mail list
+            //  returned all negative.
+            //
+            // FIXME: This change cures it for me, but we shouldn't leave this in - shouldn't need to do this...
+            //
+            //r = QRect(0, 0, w, delta);
+            // Changed p3.3.43
+            r = QRect(0, 0, w, h);
+            
             }
       QRect olr = overlayRect();
       QRect olr1(olr);
@@ -163,9 +182,7 @@ void View::resizeEvent(QResizeEvent* ev)
 
 void View::paintEvent(QPaintEvent* ev)
       {
-      // Added by Tim. p3.3.6
       //printf("View::paintEvent pmValid:%d x:%d width:%d y:%d height:%d\n", pmValid, ev->rect().x(), ev->rect().width(), ev->rect().y(), ev->rect().height());
-      
       if (!pmValid)
             paint(ev->rect());
       bitBlt(this, ev->rect().topLeft(), &pm, ev->rect(), CopyROP, true);
@@ -178,9 +195,7 @@ void View::paintEvent(QPaintEvent* ev)
 void View::redraw()
       {
       QRect r(0, 0, pm.width(), pm.height());
-      // Added by Tim. p3.3.6
       //printf("View::redraw() r.x:%d r.w:%d\n", r.x(), r.width());
-      
       paint(r);
       update();
       }
@@ -191,9 +206,7 @@ void View::redraw()
 
 void View::redraw(const QRect& r)
       {
-      // Added by Tim. p3.3.6
       //printf("View::redraw(QRect& r) r.x:%d r.w:%d\n", r.x(), r.width());
-      
       paint(r);
       update(r);
       }
@@ -219,9 +232,7 @@ void View::paint(const QRect& r)
             p.drawTiledPixmap(rr, bgPixmap, QPoint(xpos + rmapx(xorg)
                + rr.x(), ypos + rmapy(yorg) + rr.y()));
       p.setClipRegion(rr);
-      // Added by Tim. p3.3.6
       //printf("View::paint r.x:%d w:%d\n", rr.x(), rr.width());
-      
       pdraw(p, rr);       // draw into pixmap
 
       p.resetXForm();

@@ -21,6 +21,29 @@
 
 extern int mtcType;
 
+bool Sig::isValid() const
+{
+  if((z < 1) || (z > 63))
+    return false;
+            
+  switch(n) 
+  {
+    case  1:
+    case  2:
+    case  3:
+    case  4:
+    case  8:
+    case 16:
+    case 32:
+    case 64:
+    case 128:
+      return true;
+    default:
+      return false;
+  }                
+}
+
+
 //---------------------------------------------------------
 //   NumberSection
 //---------------------------------------------------------
@@ -287,6 +310,9 @@ bool SigEditor::eventFilter(QObject *o, QEvent *e)
                         return true;
                         }
                   int num = txt[0].digitValue();
+                  
+                  //printf("SigEditor::eventFilter num:%d\n", num);
+                  
                   if (num != -1) {
                         cw->addNumber(focusSec, num);
                         return true;
@@ -581,9 +607,13 @@ bool SigEdit::outOfRange(int secNo, int val) const
             case 32:
             case 64:
             case 128:
-                  return true;
-            default:
+                  // Changed p3.3.43
+                  //return true;
                   return false;
+            default:
+                  // Changed p3.3.43
+                  //return false;
+                  return true;
             }
       }
 
@@ -602,18 +632,32 @@ void SigEdit::addNumber(int secNo, int num)
 
       QString txt = sectionText(secNo);
 
+      //printf("SigEdit::addNumber secNo:%d num:%d voff:%d txt:%s\n", secNo, num, voff, txt.latin1());
+      
       if (txt.length() == sec[secNo].len) {
+            //printf("SigEdit::addNumber txt.length() == sec[secNo].len (%d)\n", sec[secNo].len);
+      
             if (!outOfRange(secNo, num - voff)) {
+                  //printf("SigEdit::addNumber accepted\n");
+                  
                   accepted = true;
                   sec[secNo].val = num - voff;
                   }
             }
       else {
+            //printf("SigEdit::addNumber txt.length() != sec[secNo].len (%d)\n", sec[secNo].len);
+      
             txt += QString::number(num);
             int temp = txt.toInt() - voff;
             if (outOfRange(secNo, temp))
+            {
+                  //printf("SigEdit::addNumber not accepted secNo:%d txt:%s temp:%d\n", secNo, txt.latin1(), temp);
+                  
                   txt = sectionText(secNo);
+            }
             else {
+                  //printf("SigEdit::addNumber accepted\n");
+                  
                   accepted = true;
                   sec[secNo].val = temp;
                   }

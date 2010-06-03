@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "canvas.h"
+#include <qapplication.h>
 #include <qpainter.h>
 #include <qpopupmenu.h>
 #include <qcursor.h>
@@ -635,179 +636,200 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       }
 
 void Canvas::scrollTimerDone()
+{
+      //printf("Canvas::scrollTimerDone drag:%d doScroll:%d\n", drag, doScroll);
+      
+      if (drag != DRAG_OFF && doScroll)
       {
-      if (drag != DRAG_OFF && doScroll){
-          bool doHMove = false;
-          bool doVMove = false;
-          int hoff = rmapx(xOffset())+mapx(xorg)-1;
-          int curxpos;
-          switch(hscrollDir)
-          {  
-            case HSCROLL_RIGHT:
-              hoff += scrollSpeed;
-              switch(drag) 
-              {
-                case DRAG_NEW:
-                case DRAG_RESIZE:
-                case DRAGX_MOVE:
-                case DRAGX_COPY:
-                case DRAGX_CLONE:
-                case DRAGY_MOVE:
-                case DRAGY_COPY:
-                case DRAGY_CLONE:
-                case DRAG_MOVE:
-                case DRAG_COPY:
-                case DRAG_CLONE:
-                  emit horizontalScrollNoLimit(hoff);
-                  canScrollLeft = true;
-                  ev_pos.setX(rmapxDev(rmapx(ev_pos.x()) + scrollSpeed));
-                  doHMove = true;
-                break;
-                default:  
-                  if(canScrollRight)
-                  {
-                    curxpos = xpos;
-                    emit horizontalScroll(hoff);
-                    if(xpos <= curxpos)
-                    {  
-                      canScrollRight = false;
-                    }
-                    else
-                    {
-                      canScrollLeft = true;
-                      ev_pos.setX(rmapxDev(rmapx(ev_pos.x()) + scrollSpeed));
-                      doHMove = true;
-                    }  
-                  }  
-                  else
+        //printf("Canvas::scrollTimerDone drag != DRAG_OFF && doScroll\n");
+        
+        bool doHMove = false;
+        bool doVMove = false;
+        int hoff = rmapx(xOffset())+mapx(xorg)-1;
+        int curxpos;
+        switch(hscrollDir)
+        {  
+          case HSCROLL_RIGHT:
+            hoff += scrollSpeed;
+            switch(drag) 
+            {
+              case DRAG_NEW:
+              case DRAG_RESIZE:
+              case DRAGX_MOVE:
+              case DRAGX_COPY:
+              case DRAGX_CLONE:
+              case DRAGY_MOVE:
+              case DRAGY_COPY:
+              case DRAGY_CLONE:
+              case DRAG_MOVE:
+              case DRAG_COPY:
+              case DRAG_CLONE:
+                emit horizontalScrollNoLimit(hoff);
+                canScrollLeft = true;
+                ev_pos.setX(rmapxDev(rmapx(ev_pos.x()) + scrollSpeed));
+                doHMove = true;
+              break;
+              default:  
+                if(canScrollRight)
+                {
+                  curxpos = xpos;
+                  emit horizontalScroll(hoff);
+                  if(xpos <= curxpos)
                   {  
+                    canScrollRight = false;
                   }
-                break;
-              }
-            break;  
-            case HSCROLL_LEFT:
-              if(canScrollLeft)
-              {
-                curxpos = xpos;
-                hoff -= scrollSpeed;
-                emit horizontalScroll(hoff);
-                if(xpos >= curxpos)
-                {  
-                  canScrollLeft = false;
-                }
+                  else
+                  {
+                    canScrollLeft = true;
+                    ev_pos.setX(rmapxDev(rmapx(ev_pos.x()) + scrollSpeed));
+                    doHMove = true;
+                  }  
+                }  
                 else
-                {
-                  canScrollRight = true;
-                  ev_pos.setX(rmapxDev(rmapx(ev_pos.x()) - scrollSpeed));
-                  doHMove = true;
-                }
-              }    
-              else
-              {  
-              }
-            break; 
-            default:
-            break;   
-          }
-          int voff = rmapy(yOffset())+mapy(yorg);
-          int curypos;
-          switch(vscrollDir)
-          {
-            case VSCROLL_DOWN:
-              if(canScrollDown)
-              {
-                curypos = ypos;
-                voff += scrollSpeed;
-                emit verticalScroll(voff);
-                if(ypos <= curypos)
                 {  
-                  canScrollDown = false;
                 }
-                else
-                {
-                  canScrollUp = true;
-                  ev_pos.setY(rmapyDev(rmapy(ev_pos.y()) + scrollSpeed));
-                  doVMove = true;
-                }
-              }    
-              else
+              break;
+            }
+          break;  
+          case HSCROLL_LEFT:
+            if(canScrollLeft)
+            {
+              curxpos = xpos;
+              hoff -= scrollSpeed;
+              emit horizontalScroll(hoff);
+              if(xpos >= curxpos)
               {  
+                canScrollLeft = false;
               }
-            break;  
-            case VSCROLL_UP:
-              if(canScrollUp)
+              else
               {
-                curypos = ypos;
-                voff -= scrollSpeed;
-                emit verticalScroll(voff);
-                if(ypos >= curypos)
-                {  
-                  canScrollUp = false;
-                }
-                else
-                {
-                  canScrollDown = true;
-                  ev_pos.setY(rmapyDev(rmapy(ev_pos.y()) - scrollSpeed));
-                  doVMove = true;
-                } 
-              }   
-              else
-              {  
+                canScrollRight = true;
+                ev_pos.setX(rmapxDev(rmapx(ev_pos.x()) - scrollSpeed));
+                doHMove = true;
               }
-            break;
-            default:
-            break;
-          }
-          
-          if(!doHMove && !doVMove)
-          {
-            delete scrollTimer;
-            scrollTimer=NULL;
-            doScroll = false;
-            return;
-          }  
-          QPoint dist = ev_pos - start;
-          switch(drag) 
-          {
-            case DRAG_MOVE:
-            case DRAG_COPY:
-            case DRAG_CLONE:
-                  moveItems(ev_pos, 0, false);
-                  break;
-            case DRAGX_MOVE:
-            case DRAGX_COPY:
-            case DRAGX_CLONE:
-                  moveItems(ev_pos, 1, false);
-                  break;
-            case DRAGY_MOVE:
-            case DRAGY_COPY:
-            case DRAGY_CLONE:
-                  moveItems(ev_pos, 2, false);
-                  break;
-            case DRAG_LASSO:
-                  lasso = QRect(start.x(), start.y(), dist.x(), dist.y());
-                  redraw();
-                  break;
-            case DRAG_NEW:
-            case DRAG_RESIZE:
-                  if (dist.x()) {
-                        if (dist.x() < 1)
-                              curItem->setWidth(1);
-                        else
-                              curItem->setWidth(dist.x());
-                        redraw();
-                        }
-                  break;
-            default:  
-                  break;
-          }
-          scrollTimer->start( 40, TRUE ); // X ms single-shot timer
+            }    
+            else
+            {  
+            }
+          break; 
+          default:
+          break;   
         }
-      else {
+        int voff = rmapy(yOffset())+mapy(yorg);
+        int curypos;
+        switch(vscrollDir)
+        {
+          case VSCROLL_DOWN:
+            if(canScrollDown)
+            {
+              curypos = ypos;
+              voff += scrollSpeed;
+              emit verticalScroll(voff);
+              if(ypos <= curypos)
+              {  
+                canScrollDown = false;
+              }
+              else
+              {
+                canScrollUp = true;
+                ev_pos.setY(rmapyDev(rmapy(ev_pos.y()) + scrollSpeed));
+                doVMove = true;
+              }
+            }    
+            else
+            {  
+            }
+          break;  
+          case VSCROLL_UP:
+            if(canScrollUp)
+            {
+              curypos = ypos;
+              voff -= scrollSpeed;
+              emit verticalScroll(voff);
+              if(ypos >= curypos)
+              {  
+                canScrollUp = false;
+              }
+              else
+              {
+                canScrollDown = true;
+                ev_pos.setY(rmapyDev(rmapy(ev_pos.y()) - scrollSpeed));
+                doVMove = true;
+              } 
+            }   
+            else
+            {  
+            }
+          break;
+          default:
+          break;
+        }
+        
+        //printf("Canvas::scrollTimerDone doHMove:%d doVMove:%d\n", doHMove, doVMove);
+        
+        if(!doHMove && !doVMove)
+        {
           delete scrollTimer;
           scrollTimer=NULL;
-          }
+          doScroll = false;
+          return;
+        }  
+        QPoint dist = ev_pos - start;
+        switch(drag) 
+        {
+          case DRAG_MOVE:
+          case DRAG_COPY:
+          case DRAG_CLONE:
+                moveItems(ev_pos, 0, false);
+                break;
+          case DRAGX_MOVE:
+          case DRAGX_COPY:
+          case DRAGX_CLONE:
+                moveItems(ev_pos, 1, false);
+                break;
+          case DRAGY_MOVE:
+          case DRAGY_COPY:
+          case DRAGY_CLONE:
+                moveItems(ev_pos, 2, false);
+                break;
+          case DRAG_LASSO:
+                lasso = QRect(start.x(), start.y(), dist.x(), dist.y());
+                redraw();
+                break;
+          case DRAG_NEW:
+          case DRAG_RESIZE:
+                if (dist.x()) {
+                      if (dist.x() < 1)
+                            curItem->setWidth(1);
+                      else
+                            curItem->setWidth(dist.x());
+                      redraw();
+                      }
+                break;
+          default:  
+                break;
+        }
+        //printf("Canvas::scrollTimerDone starting scrollTimer: Currently active?%d\n", scrollTimer->isActive());
+        
+        // p3.3.43 Make sure to yield to other events (for up to 3 seconds), otherwise other events 
+        //  take a long time to reach us, causing scrolling to take a painfully long time to stop.
+        // FIXME: Didn't help at all.
+        //qApp->processEvents();
+        // No, try up to 100 ms for each yield.
+        //qApp->processEvents(100);
+        //
+        //scrollTimer->start( 40, TRUE ); // X ms single-shot timer
+        // OK, changing the timeout from 40 to 80 helped.
+        scrollTimer->start( 80, TRUE ); // X ms single-shot timer
       }
+      else 
+      {
+          //printf("Canvas::scrollTimerDone !(drag != DRAG_OFF && doScroll) deleting scrollTimer\n");
+          
+          delete scrollTimer;
+          scrollTimer=NULL;
+      }
+}
 
 
 //---------------------------------------------------------
@@ -1089,6 +1111,8 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_DELETE:
                   break;
             }
+      //printf("Canvas::viewMouseReleaseEvent setting drag to DRAG_OFF\n");
+      
       drag = DRAG_OFF;
       if (redrawFlag)
             redraw();

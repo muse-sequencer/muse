@@ -84,7 +84,7 @@ class MetronomeSynthIF : public SynthIF
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }
       virtual void populatePatchPopup(QPopupMenu*, int, MType, bool) {};
       virtual void write(int, Xml&) const {}
-      virtual float getParameter(unsigned long)   { return 0.0; }
+      virtual float getParameter(unsigned long) const  { return 0.0; }
       virtual void setParameter(unsigned long, float) {}
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
       };

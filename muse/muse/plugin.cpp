@@ -18,6 +18,7 @@
 #include <qlabel.h>
 #include <qsignalmapper.h>
 #include <qpushbutton.h>
+#include <qscrollview.h>
 #include <qlistview.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
@@ -1486,8 +1487,13 @@ void PluginI::setID(int i)
 
 void PluginI::updateControllers()
 {
+  if(!_track)
+    return;
+    
   for(int i = 0; i < controlPorts; ++i) 
-    audio->msgSetPluginCtrlVal(this, genACnum(_id, i), controls[i].val);
+    //audio->msgSetPluginCtrlVal(this, genACnum(_id, i), controls[i].val);
+    // p3.3.43
+    audio->msgSetPluginCtrlVal(_track, genACnum(_id, i), controls[i].val);
 }
   
 //---------------------------------------------------------
@@ -2204,6 +2210,8 @@ void PluginI::apply(int n)
             // Since we are now in the audio thread context, there's no need to send a message,
             //  just modify directly.
             //audio->msgSetPluginCtrlVal(this, genACnum(_id, k), controls[k].val);
+            // p3.3.43
+            //audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
             _track->setPluginCtrlVal(genACnum(_id, k), v.value);
             
             // Record automation.
@@ -2802,7 +2810,9 @@ const char* presetBypassText = "Click this button to bypass effect unit";
 //   PluginGui
 //---------------------------------------------------------
 
-PluginGui::PluginGui(PluginI* p)
+//PluginGui::PluginGui(PluginI* p)
+// p3.3.43
+PluginGui::PluginGui(PluginIBase* p)
    : QMainWindow(0)
       {
       gw     = 0;
@@ -2839,7 +2849,8 @@ PluginGui::PluginGui(PluginI* p)
       QWhatsThis::add(fileSave, tr(presetSaveText));
 
       QString id;
-      id.setNum(plugin->plugin()->id());
+      //id.setNum(plugin->plugin()->id());
+      id.setNum(plugin->pluginID());
       QString name(museGlobalShare + QString("/plugins/") + id + QString(".ui"));
       QFile uifile(name);
       if (uifile.exists()) {
@@ -2940,15 +2951,28 @@ PluginGui::PluginGui(PluginI* p)
               updateValues(); // otherwise the GUI won't have valid data
             }
       else {
-            mw = new QWidget(this);
-            setCentralWidget(mw);
+            //mw = new QWidget(this);
+            //setCentralWidget(mw);
+            // p3.4.43
+            view = new QScrollView(this);
+            setCentralWidget(view);
+            mw = new QWidget(view);
+            view->setResizePolicy(QScrollView::AutoOneFit);
+            //view->setVScrollBarMode(QScrollView::AlwaysOff);
+            view->addChild(mw);
+            
             QGridLayout* grid = new QGridLayout(mw);
             grid->setSpacing(2);
 
             int n  = plugin->parameters();
             params = new GuiParam[n];
 
-            resize(280, n*20+30);
+            // Changed p3.3.43
+            //resize(280, n*20+30);
+            //int nh = n*20+40;
+            //if(nh > 760)
+            //  nh = 760;
+            //resize(280, nh);
 
             //int style       = Slider::BgTrough | Slider::BgSlot;
             QFontMetrics fm = fontMetrics();
@@ -3045,6 +3069,9 @@ PluginGui::PluginGui(PluginI* p)
                         connect(params[i].actuator, SIGNAL(checkboxRightClicked(const QPoint &, int)), SLOT(ctrlRightClicked(const QPoint &, int)));
                         }
                   }
+            // p3.3.43
+            resize(280, height());
+            
             grid->setColStretch(2, 10);
             }
       connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
@@ -3078,12 +3105,9 @@ void PluginGui::heartBeat()
 void PluginGui::ctrlPressed(int param)
 {
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = 0;
-      if(plugin->track())
-      {
-        track = plugin->track();
+      AudioTrack* track = plugin->track();
+      if(track)
         at = track->automationType();
-      }  
             
       if(at != AUTO_OFF)
         plugin->enableController(param, false);
@@ -3104,17 +3128,33 @@ void PluginGui::ctrlPressed(int param)
               val = rint(val);
         plugin->setParam(param, val);
         ((DoubleLabel*)params[param].label)->setValue(val);
-        audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+        
+        // p3.3.43
+        //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+        
         if(track)
+        {
+          // p3.3.43
+          audio->msgSetPluginCtrlVal(track, id, val);
+          
           track->startAutoRecord(id, val);
+        }  
       }       
       else if(params[param].type == GuiParam::GUI_SWITCH)
       {
         double val = (double)((CheckBox*)params[param].actuator)->isChecked();
         plugin->setParam(param, val);
-        audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+        
+        // p3.3.43
+        //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+        
         if(track)
+        {
+          // p3.3.43
+          audio->msgSetPluginCtrlVal(track, id, val);
+          
           track->startAutoRecord(id, val);
+        }  
       }       
 }
 
@@ -3125,12 +3165,9 @@ void PluginGui::ctrlPressed(int param)
 void PluginGui::ctrlReleased(int param)
 {
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = 0;
-      if(plugin->track())
-      {
-        track = plugin->track();
+      AudioTrack* track = plugin->track();
+      if(track)
         at = track->automationType();
-      }  
         
       // Special for switch - don't enable controller until transport stopped.
       if(at != AUTO_WRITE && ((params[param].type != GuiParam::GUI_SWITCH
@@ -3168,7 +3205,8 @@ void PluginGui::ctrlRightClicked(const QPoint &p, int param)
 {
   int id = plugin->id();
   if(id != -1)
-    song->execAutomationCtlPopup((AudioTrack*)plugin->track(), p, genACnum(id, param));
+    //song->execAutomationCtlPopup((AudioTrack*)plugin->track(), p, genACnum(id, param));
+    song->execAutomationCtlPopup(plugin->track(), p, genACnum(id, param));
 }
 
 //---------------------------------------------------------
@@ -3176,14 +3214,11 @@ void PluginGui::ctrlRightClicked(const QPoint &p, int param)
 //---------------------------------------------------------
 
 void PluginGui::sliderChanged(double val, int param)
-      {
+{
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = 0;
-      if(plugin->track())
-      {
-        track = plugin->track();
+      AudioTrack* track = plugin->track();
+      if(track)
         at = track->automationType();
-      }  
       
       if(at == AUTO_WRITE || (audio->isPlaying() && at == AUTO_TOUCH))
         plugin->enableController(param, false);
@@ -3202,25 +3237,28 @@ void PluginGui::sliderChanged(double val, int param)
         return;
       id = genACnum(id, param);
           
-      audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+      // p3.3.43
+      //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
           
       if(track)
+      {
+        // p3.3.43
+        audio->msgSetPluginCtrlVal(track, id, val);
+        
         track->recordAutomation(id, val);
-      }
+      }  
+}
 
 //---------------------------------------------------------
 //   labelChanged
 //---------------------------------------------------------
 
 void PluginGui::labelChanged(double val, int param)
-      {
+{
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = 0;
-      if(plugin->track())
-      {
-        track = plugin->track();
+      AudioTrack* track = plugin->track();
+      if(track)
         at = track->automationType();
-      }  
       
       if(at == AUTO_WRITE || (audio->isPlaying() && at == AUTO_TOUCH))
         plugin->enableController(param, false);
@@ -3240,10 +3278,18 @@ void PluginGui::labelChanged(double val, int param)
         return;
       
       id = genACnum(id, param);
-      audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+      
+      // p3.3.43
+      //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+      
       if(track)
+      {
+        // p3.3.43
+        audio->msgSetPluginCtrlVal(track, id, val);
+        
         track->startAutoRecord(id, val);
-      }
+      }  
+}
 
 //---------------------------------------------------------
 //   load
@@ -3252,7 +3298,8 @@ void PluginGui::labelChanged(double val, int param)
 void PluginGui::load()
       {
       QString s("presets/plugins/");
-      s += plugin->plugin()->label();
+      //s += plugin->plugin()->label();
+      s += plugin->pluginLabel();
       s += "/";
 
       QString fn = getOpenFileName(s, preset_file_pattern,
@@ -3316,7 +3363,8 @@ ende:
 void PluginGui::save()
       {
       QString s("presets/plugins/");
-      s += plugin->plugin()->label();
+      //s += plugin->plugin()->label();
+      s += plugin->pluginLabel();
       s += "/";
 
       //QString fn = getSaveFileName(s, preset_file_pattern, this,
@@ -3541,18 +3589,15 @@ void PluginGui::updateControls()
 //---------------------------------------------------------
 
 void PluginGui::guiParamChanged(int idx)
-      {
+{
       QWidget* w = gw[idx].widget;
       int param  = gw[idx].param;
       int type   = gw[idx].type;
 
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = 0;
-      if(plugin->track())
-      {
-        track = plugin->track();
+      AudioTrack* track = plugin->track();
+      if(track)
         at = track->automationType();
-      }  
       
       if(at == AUTO_WRITE || (audio->isPlaying() && at == AUTO_TOUCH))
         plugin->enableController(param, false);
@@ -3595,12 +3640,18 @@ void PluginGui::guiParamChanged(int idx)
             }
       
       int id = plugin->id();
-      if(id != -1)
-        {
+      if(track && id != -1)
+      {
           id = genACnum(id, param);
-          audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
-          if(track)
-          {
+          
+          // p3.3.43
+          //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+          
+          //if(track)
+          //{
+            // p3.3.43
+            audio->msgSetPluginCtrlVal(track, id, val);
+            
             switch(type) 
             {
                case GuiWidgets::DOUBLE_LABEL:
@@ -3611,10 +3662,10 @@ void PluginGui::guiParamChanged(int idx)
                  track->recordAutomation(id, val);
                break;  
             }  
-          }  
-        } 
+          //}  
+      } 
       plugin->setParam(param, val);
-      }
+}
 
 //---------------------------------------------------------
 //   guiParamPressed
@@ -3625,12 +3676,9 @@ void PluginGui::guiParamPressed(int idx)
       int param  = gw[idx].param;
 
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = 0;
-      if(plugin->track())
-      {
-        track = plugin->track();
+      AudioTrack* track = plugin->track();
+      if(track)
         at = track->automationType();
-      }  
       
       if(at != AUTO_OFF)
         plugin->enableController(param, false);
@@ -3669,12 +3717,9 @@ void PluginGui::guiParamReleased(int idx)
       int type   = gw[idx].type;
       
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = 0;
-      if(plugin->track())
-      {
-        track = plugin->track();
+      AudioTrack* track = plugin->track();
+      if(track)
         at = track->automationType();
-      }  
       
       // Special for switch - don't enable controller until transport stopped.
       if(at != AUTO_WRITE && (type != GuiWidgets::QCHECKBOX
@@ -3717,12 +3762,9 @@ void PluginGui::guiSliderPressed(int idx)
       QWidget *w = gw[idx].widget;
       
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = 0;
-      if(plugin->track())
-      {
-        track = plugin->track();
+      AudioTrack* track = plugin->track();
+      if(track)
         at = track->automationType();
-      }  
       
       int id = plugin->id();
       
@@ -3736,7 +3778,11 @@ void PluginGui::guiSliderPressed(int idx)
       
       double val = ((Slider*)w)->value();
       plugin->setParam(param, val);
-      audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+      
+      //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+      // p3.3.43
+      audio->msgSetPluginCtrlVal(track, id, val);
+      
       track->startAutoRecord(id, val);
       
       // Needed so that paging a slider updates a label or other buddy control.
@@ -3772,12 +3818,9 @@ void PluginGui::guiSliderReleased(int idx)
       QWidget *w = gw[idx].widget;
       
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = 0;
-      if(plugin->track())
-      {
-        track = plugin->track();
+      AudioTrack* track = plugin->track();
+      if(track)
         at = track->automationType();
-      }  
       
       if(at != AUTO_WRITE || (!audio->isPlaying() && at == AUTO_TOUCH))
         plugin->enableController(param, true);
@@ -3802,7 +3845,8 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
   int param  = gw[idx].param;
   int id = plugin->id();
   if(id != -1)
-    song->execAutomationCtlPopup((AudioTrack*)plugin->track(), p, genACnum(id, param));
+    //song->execAutomationCtlPopup((AudioTrack*)plugin->track(), p, genACnum(id, param));
+    song->execAutomationCtlPopup(plugin->track(), p, genACnum(id, param));
 }
 
 //---------------------------------------------------------

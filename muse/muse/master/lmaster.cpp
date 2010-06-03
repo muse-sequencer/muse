@@ -506,21 +506,29 @@ void LMaster::returnPressed()
       //
       // SigEvent, value changed:
       //
-      else if (editedItem->getType() == LMASTER_SIGEVENT && editorColumn == LMASTER_VAL_COL) {
+      else if (editedItem->getType() == LMASTER_SIGEVENT && editorColumn == LMASTER_VAL_COL) 
+      {
             Sig newSig = sig_editor->sig();
+            
             sig_editor->hide();
-            LMasterSigEventItem* e = (LMasterSigEventItem*) editedItem;
-            int tick = e->tick();
-            if (!editingNewItem) {
-                  song->startUndo();
-                  if (tick > 0)
-                        audio->msgRemoveSig(tick, e->z(), e->n(), false);
-                  audio->msgAddSig(tick, newSig.z, newSig.n, false);
-                  song->endUndo(SC_SIG);
-                  }
-            else
-                  audio->msgAddSig(tick, newSig.z, newSig.n, true);
-            }
+            
+            // Added p3.3.43 Prevents aborting with 0 z or n.
+            if(newSig.isValid())
+            {
+            
+              LMasterSigEventItem* e = (LMasterSigEventItem*) editedItem;
+              int tick = e->tick();
+              if (!editingNewItem) {
+                    song->startUndo();
+                    if (tick > 0)
+                          audio->msgRemoveSig(tick, e->z(), e->n(), false);
+                    audio->msgAddSig(tick, newSig.z, newSig.n, false);
+                    song->endUndo(SC_SIG);
+                    }
+              else
+                    audio->msgAddSig(tick, newSig.z, newSig.n, true);
+            }        
+      }
 
       view->setFocus();
       // No item edited now:

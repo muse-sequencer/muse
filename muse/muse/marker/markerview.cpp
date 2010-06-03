@@ -306,9 +306,14 @@ void MarkerView::addMarker()
 void MarkerView::addMarker(int i)
       {
       if( i==-1 ) i = song->cpos();
-      Marker* m = song->addMarker(QString(""), i, false);
-      MarkerItem* newItem = new MarkerItem(table, m);
-      table->setSelected(newItem, true);
+      
+      // Changed p3.3.43 Let Song::addMarker emit markerChanged(MARKER_ADD)
+      //  and handle it in MarkerView::markerChanged(int)
+      //Marker* m = song->addMarker(QString(""), i, false);
+      //MarkerItem* newItem = new MarkerItem(table, m);
+      //table->setSelected(newItem, true);
+      //
+      song->addMarker(QString(""), i, false);
       }
 
 //---------------------------------------------------------
@@ -320,7 +325,10 @@ void MarkerView::deleteMarker()
       MarkerItem* item = (MarkerItem*)table->selectedItem();
       if (item) {
             song->removeMarker(item->marker());
-            delete item;
+            
+            // Removed p3.3.43 Let Song::removeMarker emit markerChanged(MARKER_REMOVE)
+            //  and handle it in MarkerView::markerChanged(int)
+            //delete item;
             }
       }
 
@@ -329,16 +337,57 @@ void MarkerView::deleteMarker()
 //---------------------------------------------------------
 
 void MarkerView::updateList()
-      {
-      table->clear();
+{
+      
+      // Added p3.3.43
+      // Remember the next selected item, or else any new item added.
       MarkerList* marker = song->marker();
-      for (iMarker i = marker->begin(); i != marker->end(); ++i) {
+      MarkerItem* item     = (MarkerItem*)table->selectedItem();
+      MarkerItem* nextitem = item ? (MarkerItem*)item->nextSibling() : 0;
+      //Marker* selm     = item->marker();
+      //Marker* nextselm = nextitem->marker();
+      Marker* selm     = nextitem ? nextitem->marker() : 0;
+      for (iMarker i = marker->begin(); i != marker->end(); ++i) 
+      {
+        Marker* m = &i->second;
+        bool found = false;
+        MarkerItem* item = (MarkerItem*)table->firstChild();
+        while (item) 
+        {
+          if (item->marker() == m) 
+          {
+            found = true;
+            break;
+          }
+          item = (MarkerItem*)item->nextSibling();
+        }
+        // Anything new found in the marker list?
+        if(!found)
+          selm = m;
+      }
+            
+      table->clear();
+      //MarkerList* marker = song->marker();
+      for (iMarker i = marker->begin(); i != marker->end(); ++i) 
+      {
             Marker* m = &i->second;
-            QString tick;
-            tick.setNum(i->first);
-            new MarkerItem(table, m);
+            
+            // Changed p3.3.43 
+            //QString tick;
+            //tick.setNum(i->first);
+            //new MarkerItem(table, m);
+            MarkerItem* item = new MarkerItem(table, m);
+            if(m == selm)
+            {
+              m->setCurrent(true);
+              table->setSelected(item, true);
+            }
+            else  
+            {
+              m->setCurrent(false);
             }
       }
+}
 
 //---------------------------------------------------------
 //   markerSelected
@@ -364,6 +413,9 @@ void MarkerView::markerSelectionChanged()
             editName->setEnabled(true);
             lock->setOn(item->lock());
             lock->setEnabled(true);
+            
+            //printf("MarkerView::markerSelectionChanged item->lock:%d\n", item->lock());
+            
             editSMPTE->setEnabled(item->lock());
             editTick->setEnabled(!item->lock());
             }
@@ -426,23 +478,42 @@ void MarkerView::lockChanged(bool lck)
 //---------------------------------------------------------
 
 void MarkerView::markerChanged(int val)
+{
+      //if (val != Song::MARKER_CUR)
+      //      return;
+      // p3.3.43
+      switch(val)
       {
-      if (val != Song::MARKER_CUR)
-            return;
-      MarkerList* marker = song->marker();
-      for (iMarker i = marker->begin(); i != marker->end(); ++i) {
-            if (i->second.current()) {
-                  MarkerItem* item = (MarkerItem*)table->firstChild();
-                  while (item) {
-                        if (item->marker() == &i->second) {
-                              table->setSelected(item, true);
-                              return;
-                              }
-                        item = (MarkerItem*)item->nextSibling();
-                        }
-                  }
-            }
-      }
+         // MARKER_CUR, MARKER_ADD, MARKER_REMOVE, MARKER_NAME,
+         // MARKER_TICK, MARKER_LOCK
+        case Song::MARKER_ADD:
+        case Song::MARKER_REMOVE:
+          updateList();      
+        break; // Try falling through and let it try to select something. No, let updateList() do it...
+        
+        case Song::MARKER_CUR:
+        {
+          
+          MarkerList* marker = song->marker();
+          for (iMarker i = marker->begin(); i != marker->end(); ++i) {
+                if (i->second.current()) {
+                      MarkerItem* item = (MarkerItem*)table->firstChild();
+                      while (item) {
+                            if (item->marker() == &i->second) {
+                                  table->setSelected(item, true);
+                                  return;
+                                  }
+                            item = (MarkerItem*)item->nextSibling();
+                            }
+                      }
+                }
+        }
+        break;
+        
+        default:
+        break;        
+      }  
+}
 
 void MarkerView::nextMarker()
       {

@@ -392,7 +392,6 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 
 void AudioMixerApp::configChanged()    
 { 
-  // Added by Tim. p3.3.6
   //printf("AudioMixerApp::configChanged\n");
       
   songChanged(SC_CONFIG); 

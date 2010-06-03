@@ -1,3 +1,23 @@
+03.06.2010
+      * Fixed: Time signature editing problems in master track list and gui. (T356)
+        - Fixed SigEdit::outOfRange(). Added Sig::isValid(), and check it in LMaster::returnPressed() to fix crash with 0 n or z.
+      * Fixed: Marker/list problems. Double entries. Pianoroll/arranger timescale 'shift-left/right-click-to-add/del-marker' fixed. 
+               Marker 'lock' (smpte/ticks) works now. Up/down buttons fixed. Marker list selection 'stays put' now 
+                when adding or deleting markers. (T356)
+      * Fixed: Graphics corruption in arranger and track list when vertically scrolling. (T356)
+        - Changed rectangle to full w/h in 'shift down' section of View::setYPos() and TList::setYPos().
+          Should not have to do this, but it cured my problems. No noticable change in speed.
+        - Arranger corruption occured on more than one machine with xorg nv, ati drivers. More severe arranger AND track list 
+           corruption occured with proprietary drivers. Corruption is also observed in several other windows (ex. ladspa browser) 
+           but there's not much I can do, the corruption is found in ordinary usage of QListView for example.
+      * Changed: Increased arranger vertical scroll step, was too slow to scroll. (T356)
+      * Possible fix: Auto-scroll in pianoroll and arranger take waaay too long to stop scrolling. (T356)
+        - Increased timer timeout from 40 to 80 ms in Canvas::scrollTimerDone(). Helped for me, on a 1.6Ghz P4...
+      * Changed: Ladspa plugin guis now have scroll bars. Helps when there are many controls. (T356)
+        - Still toying with the code a bit, please bear with me while I try to get it right.
+      * Started: Addition of MusE-native ladspa guis for dssi synths. (T356)
+        - No visible changes yet, just under the hood. Added class PluginIBase which is inherited by
+           DssiSynthIF and PluginI. Changed class PluginGui and DssiSynthIF to fit. 
 07.05.2010
       * Fixed: Xml file trouble: Tag attributes not storing xml-friendly entities, trouble reloading song. (T356)
         - Fixed all usages of Xml::nput, ::put, ::tag, and ::etag. Discovered by Geoff B.

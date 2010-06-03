@@ -43,6 +43,7 @@ class QWidget;
 // class QLabel;
 class Slider;
 class QListView;
+class QScrollView;
 class QToolButton;
 class DoubleLabel;
 class AudioTrack;
@@ -226,6 +227,69 @@ struct GuiWidgets {
 
 class PluginI;
 
+/*
+class PluginBase 
+{
+   public:
+      bool on() const        { return _on; }
+      void setOn(bool val)   { _on = val; }
+      int pluginID()                { return plugin()->id(); }
+      int id()                      { return _id; }
+      QString pluginLabel() const    { return _plugin->label(); }
+      QString name() const           { return _name; }
+      
+      AudioTrack* track()           { return _track; }
+      
+      void enableController(int i, bool v = true)   { controls[i].enCtrl = v; }
+      bool controllerEnabled(int i) const           { return controls[i].enCtrl; }
+      bool controllerEnabled2(int i) const          { return controls[i].en2Ctrl; }
+      void updateControllers();
+      
+      void writeConfiguration(int level, Xml& xml);
+      bool readConfiguration(Xml& xml, bool readPreset=false);
+      
+      int parameters() const           { return controlPorts; }
+      void setParam(int i, double val) { controls[i].tmpVal = val; }
+      double param(int i) const        { return controls[i].val; }
+      const char* paramName(int i)     { return _plugin->portName(controls[i].idx); }
+      LADSPA_PortRangeHint range(int i) 
+      {
+            return _plugin->range(controls[i].idx);
+      }
+};
+*/
+
+//---------------------------------------------------------
+//   PluginIBase 
+//---------------------------------------------------------
+
+class PluginIBase 
+{
+   public:
+      virtual bool on() const = 0;       
+      virtual void setOn(bool /*val*/) = 0;   
+      virtual int pluginID() = 0;
+      virtual int id() = 0;
+      virtual QString pluginLabel() const = 0;  
+      virtual QString name() const = 0;
+      
+      virtual AudioTrack* track() = 0;          
+      
+      virtual void enableController(int /*i*/, bool v = true) = 0; 
+      virtual bool controllerEnabled(int /*i*/) const = 0;          
+      virtual bool controllerEnabled2(int /*i*/) const = 0;          
+      virtual void updateControllers() = 0;
+      
+      virtual void writeConfiguration(int /*level*/, Xml& /*xml*/) = 0;
+      virtual bool readConfiguration(Xml& /*xml*/, bool readPreset=false) = 0;
+      
+      virtual int parameters() const = 0;          
+      virtual void setParam(int /*i*/, double /*val*/) = 0; 
+      virtual double param(int /*i*/) const = 0;        
+      virtual const char* paramName(int /*i*/) = 0;     
+      virtual LADSPA_PortRangeHint range(int /*i*/) = 0; 
+};
+
 //---------------------------------------------------------
 //   PluginGui
 //---------------------------------------------------------
@@ -233,13 +297,16 @@ class PluginI;
 class PluginGui : public QMainWindow {
       Q_OBJECT
 
-      PluginI* plugin;        // plugin instance
+      //PluginI* plugin;        // plugin instance
+      PluginIBase* plugin;        // plugin instance
+      
       GuiParam* params;
       int nobj;               // number of widgets in gw
       GuiWidgets* gw;
 
       QToolButton* onOff;
       QWidget* mw;            // main widget
+      QScrollView* view;
 
       void updateControls();
 
@@ -263,7 +330,9 @@ class PluginGui : public QMainWindow {
       void heartBeat();
 
    public:
-      PluginGui(PluginI*);
+      //PluginGui(PluginI*);
+      PluginGui(PluginIBase*);
+      
       ~PluginGui();
       void setOn(bool);
       void updateValues();
@@ -277,7 +346,8 @@ class PluginGui : public QMainWindow {
 #define AUDIO_IN (LADSPA_PORT_AUDIO  | LADSPA_PORT_INPUT)
 #define AUDIO_OUT (LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT)
 
-class PluginI {
+//class PluginI {
+class PluginI : public PluginIBase {
       Plugin* _plugin;
       int channel;
       int instances;
@@ -320,6 +390,7 @@ class PluginI {
       
       void setTrack(AudioTrack* t)  { _track = t; }
       AudioTrack* track()           { return _track; }
+      int pluginID()                { return _plugin->id(); }
       void setID(int i);
       int id()                      { return _id; }
       void updateControllers();
@@ -338,6 +409,7 @@ class PluginI {
       
       void activate();
       void deactivate();
+      QString pluginLabel() const    { return _plugin->label(); }
       QString label() const          { return _label; }
       QString name() const           { return _name; }
       CtrlValueType valueType() const;

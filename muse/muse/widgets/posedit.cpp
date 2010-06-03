@@ -485,6 +485,7 @@ void PosEdit::setValue(const Pos& time)
       else
             time.mbt(&(sec[0].val), &(sec[1].val), &(sec[2].val));
       changed = false;
+      
       updateButtons();
       ed->repaint(ed->rect(), false);
       }
@@ -843,6 +844,8 @@ void PosEdit::updateButtons()
       bool upEnabled   = isEnabled() && (pos() < maxValue());
       bool downEnabled = isEnabled() && (pos() > minValue());
 
+      //printf("PosEdit::updateButtons smpte:%d upEnabled:%d downEnabled:%d\n", smpte(), upEnabled, downEnabled);
+      
       controls->setUpEnabled(upEnabled);
       controls->setDownEnabled(downEnabled);
       }
@@ -854,3 +857,12 @@ void PosEdit::enterPressed()
       {
       emit returnPressed();
       }
+
+//---------------------------------------------------------
+//   setEnabled
+//---------------------------------------------------------
+void PosEdit::setEnabled(bool v) 
+{
+  QWidget::setEnabled(v);
+  updateButtons();
+}

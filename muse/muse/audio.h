@@ -243,7 +243,8 @@ class Audio {
       void msgResetMidiDevices();
       void msgIdle(bool);
       void msgBounce();
-      void msgSetPluginCtrlVal(PluginI* plugin, int param, double val);
+      //void msgSetPluginCtrlVal(PluginI* /*plugin*/, int /*param*/, double /*val*/);
+      void msgSetPluginCtrlVal(AudioTrack*, int /*param*/, double /*val*/);
       void msgSwapControllerIDX(AudioTrack*, int, int);
       void msgClearControllerEvents(AudioTrack*, int);
       void msgSeekPrevACEvent(AudioTrack*, int);

@@ -306,7 +306,6 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
               audioState = Audio::PLAY;
             break;  
             case JackTransportStarting:  
-              // Added by Tim. p3.3.6
               //printf("processSync JackTransportStarting\n");
               
               audioState = Audio::START_PLAY;
@@ -315,7 +314,6 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
             // FIXME: Quick and dirty hack to support both Jack-1 and Jack-2
             // Really need a config check of version...
             case 4:  
-              // Added by Tim. p3.3.6
               //printf("processSync JackTransportNetStarting\n");
               
               audioState = Audio::START_PLAY;
@@ -323,14 +321,12 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
             }
             
       unsigned frame = pos->frame;
-      // Added by Tim. p3.3.6
       //printf("processSync valid:%d frame:%d\n", pos->valid, frame);
       
             // p3.3.23
             //printf("Jack processSync() before audio->sync frame:%d\n", frame);
       //return audio->sync(audioState, frame);
       int rv = audio->sync(audioState, frame);
-            // p3.3.23
             //printf("Jack processSync() after audio->sync frame:%d\n", frame);
       return rv;      
       }
@@ -345,7 +341,6 @@ static void timebase_callback(jack_transport_state_t /* state */,
    int /* new_pos */,
    void*)
   {
-      // p3.3.29
       //printf("Jack timebase_callback pos->frame:%u audio->tickPos:%d song->cpos:%d\n", pos->frame, audio->tickPos(), song->cpos());
       
       // p3.3.27
@@ -1759,7 +1754,6 @@ int JackAudioDevice::getState()
             case JackTransportRolling:  
               return Audio::PLAY;
             case JackTransportStarting:  
-              // Added by Tim. p3.3.6
               //printf("JackAudioDevice::getState JackTransportStarting\n");
               
               return Audio::START_PLAY;
@@ -1767,7 +1761,6 @@ int JackAudioDevice::getState()
             // FIXME: Quick and dirty hack to support both Jack-1 and Jack-2
             // Really need a config check of version...
             case 4:  
-              // Added by Tim. p3.3.6
               //printf("JackAudioDevice::getState JackTransportNetStarting\n");
               
               return Audio::START_PLAY;
