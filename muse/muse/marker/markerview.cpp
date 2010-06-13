@@ -241,7 +241,9 @@ MarkerView::MarkerView(QWidget* parent)
       //    Rest
       //---------------------------------------------------
 
-      connect(song, SIGNAL(songChanged(int)), SLOT(updateList()));
+      //connect(song, SIGNAL(songChanged(int)), SLOT(updateList()));
+      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      
       updateList();
 
       // work around for probable QT/WM interaction bug.
@@ -333,28 +335,70 @@ void MarkerView::deleteMarker()
       }
 
 //---------------------------------------------------------
+//   songChanged
+//---------------------------------------------------------
+
+void MarkerView::songChanged(int flags)
+{
+  // Is it simply a midi controller value adjustment? Forget it.
+  if(flags == SC_MIDI_CONTROLLER)
+    return;
+    
+  updateList();
+}
+
+//---------------------------------------------------------
 //   updateList
 //---------------------------------------------------------
 
 void MarkerView::updateList()
 {
-      
-      // Added p3.3.43
-      // Remember the next selected item, or else any new item added.
+      // Added p3.3.43 Manage selected item, due to clearing of table...
       MarkerList* marker = song->marker();
-      MarkerItem* item     = (MarkerItem*)table->selectedItem();
-      MarkerItem* nextitem = item ? (MarkerItem*)item->nextSibling() : 0;
-      //Marker* selm     = item->marker();
-      //Marker* nextselm = nextitem->marker();
-      Marker* selm     = nextitem ? nextitem->marker() : 0;
-      for (iMarker i = marker->begin(); i != marker->end(); ++i) 
+      MarkerItem* selitem     = (MarkerItem*)table->selectedItem();
+      Marker* selm     = selitem ? selitem->marker() : 0;
+      // p3.3.44 Look for removed markers before added markers...
+      if(selitem)
+      {
+        MarkerItem* mitem = (MarkerItem*)table->firstChild();
+        while(mitem) 
+        {
+          bool found = false;
+          for(iMarker i = marker->begin(); i != marker->end(); ++i) 
+          {
+            Marker* m = &i->second;
+            if(m == mitem->marker()) 
+            {
+              found = true;
+              break;
+            }
+          }
+          // Anything removed from the marker list?
+          if(!found)
+          {
+            // If it is the current selected item, it no longer exists. Make the next item be selected.
+            if(mitem == selitem)
+            {
+              MarkerItem* mi = (MarkerItem*)selitem->nextSibling();
+              if(mi)
+              {
+                selitem = mi;
+                selm    = selitem->marker();
+              }  
+            }  
+          }  
+          mitem = (MarkerItem*)mitem->nextSibling();
+        }
+      }  
+      // Look for added markers...
+      for(iMarker i = marker->begin(); i != marker->end(); ++i) 
       {
         Marker* m = &i->second;
         bool found = false;
         MarkerItem* item = (MarkerItem*)table->firstChild();
-        while (item) 
+        while(item) 
         {
-          if (item->marker() == m) 
+          if(item->marker() == m) 
           {
             found = true;
             break;

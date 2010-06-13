@@ -1,3 +1,5 @@
+13.06.2010
+      * Fixed: More fixes to marker list, selected item was still not right. (T356)
 03.06.2010
       * Fixed: Time signature editing problems in master track list and gui. (T356)
         - Fixed SigEdit::outOfRange(). Added Sig::isValid(), and check it in LMaster::returnPressed() to fix crash with 0 n or z.

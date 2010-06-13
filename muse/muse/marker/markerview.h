@@ -63,6 +63,7 @@ class MarkerView : public TopWin {
       void markerChanged(int);
       void clicked(QListViewItem*);
       void updateList();
+      void songChanged(int);
 
    signals:
       void deleted(unsigned long);
