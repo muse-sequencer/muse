@@ -1100,6 +1100,11 @@ void MidiJackDevice::processEvent(const MidiPlayEvent& event)
 
   int chn    = event.channel();
   unsigned t = event.time();
+  int a      = event.dataA();
+  int b      = event.dataB();
+  // Perhaps we can find use for this value later, together with the Jack midi MusE port(s).
+  // No big deal if not. Not used for now.
+  int port   = event.port();
   
   // TODO: No sub-tick playback resolution yet, with external sync.
   // Just do this 'standard midi 64T timing thing' for now until we figure out more precise external timings. 
@@ -1113,13 +1118,42 @@ void MidiJackDevice::processEvent(const MidiPlayEvent& event)
   printf("MidiJackDevice::processEvent time:%d type:%d ch:%d A:%d B:%d\n", event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
   #endif  
       
+  if(event.type() == ME_PROGRAM) 
+  {
+    // don't output program changes for GM drum channel
+    //if (!(song->mtype() == MT_GM && chn == 9)) {
+          int hb = (a >> 16) & 0xff;
+          int lb = (a >> 8) & 0xff;
+          int pr = a & 0x7f;
+          
+          // p3.3.44
+          //printf("MidiJackDevice::processEvent ME_PROGRAM time:%d type:%d ch:%d A:%d B:%d hb:%d lb:%d pr:%d\n", 
+          //       event.time(), event.type(), event.channel(), event.dataA(), event.dataB(), hb, lb, pr);
+          
+          if (hb != 0xff)
+                queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb));
+          if (lb != 0xff)
+                queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LBANK, lb));
+          queueEvent(MidiPlayEvent(t+2, port, chn, ME_PROGRAM, pr, 0));
+    //      }
+  }
+  else
+  if(event.type() == ME_PITCHBEND) 
+  {
+      int v = a + 8192;
+      // p3.3.44
+      //printf("MidiJackDevice::processEvent ME_PITCHBEND v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
+      
+      queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
+  }
+  else
   if(event.type() == ME_CONTROLLER) 
   {
-    int a      = event.dataA();
-    int b      = event.dataB();
+    //int a      = event.dataA();
+    //int b      = event.dataB();
     // Perhaps we can find use for this value later, together with the Jack midi MusE port(s).
     // No big deal if not. Not used for now.
-    int port   = event.port();
+    //int port   = event.port();
 
     int nvh = 0xff;
     int nvl = 0xff;
@@ -1136,6 +1170,9 @@ void MidiJackDevice::processEvent(const MidiPlayEvent& event)
     if(a == CTRL_PITCH) 
     {
       int v = b + 8192;
+      // p3.3.44
+      //printf("MidiJackDevice::processEvent CTRL_PITCH v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
+      
       queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
     }
     else if (a == CTRL_PROGRAM) 
@@ -1145,6 +1182,11 @@ void MidiJackDevice::processEvent(const MidiPlayEvent& event)
             int hb = (b >> 16) & 0xff;
             int lb = (b >> 8) & 0xff;
             int pr = b & 0x7f;
+          
+            // p3.3.44
+            //printf("MidiJackDevice::processEvent CTRL_PROGRAM time:%d type:%d ch:%d A:%d B:%d hb:%d lb:%d pr:%d\n", 
+            //       event.time(), event.type(), event.channel(), event.dataA(), event.dataB(), hb, lb, pr);
+          
             if (hb != 0xff)
                   queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb));
             if (lb != 0xff)
@@ -1326,10 +1368,15 @@ void MidiJackDevice::processMidi()
       else
       if(i->type() == ME_PITCHBEND) 
       {
+        // p3.3.44
+        //printf("MidiJackDevice::processMidi playEvents ME_PITCHBEND time:%d type:%d ch:%d A:%d B:%d\n", (*i).time(), (*i).type(), (*i).channel(), (*i).dataA(), (*i).dataB());
+        
         int da = mp->limitValToInstrCtlRange(CTRL_PITCH, i->dataA());
         if(!mp->setHwCtrlState(i->channel(), CTRL_PITCH, da))
           continue;
         //mp->setHwCtrlState(i->channel(), CTRL_PITCH, da);
+        
+        //(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
       }
       else
       if(i->type() == ME_PROGRAM) 

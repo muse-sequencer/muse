@@ -325,6 +325,9 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       new DWhatsThis(header, header);
 
       dlist = new DList(header, split1w1, yscale);
+      // p3.3.44
+      setCurDrumInstrument(dlist->getSelectedInstrument());
+      
       connect(dlist, SIGNAL(keyPressed(int, bool)), canvas, SLOT(keyPressed(int, bool)));
       connect(dlist, SIGNAL(keyReleased(int, bool)), canvas, SLOT(keyReleased(int, bool)));
       connect(dlist, SIGNAL(mapChanged(int, int)), canvas, SLOT(mapChanged(int, int)));
@@ -860,8 +863,13 @@ CtrlEdit* DrumEdit::addCtrl()
       connect(tools2,   SIGNAL(toolChanged(int)),   ctrlEdit, SLOT(setTool(int)));
       connect(dlist,    SIGNAL(curDrumInstrumentChanged(int)), SLOT(setCurDrumInstrument(int)));
 
+      //printf("DrumEdit::addCtrl curDrumInstrument:%d\n", dlist->getSelectedInstrument());
+      
       setCurDrumInstrument(dlist->getSelectedInstrument());
 
+      // p3.3.44
+      ctrlEdit->setTool(tools2->curTool());
+      
       ctrlEdit->setXPos(hscroll->pos());
       ctrlEdit->setXMag(hscroll->getScaleValue());
 

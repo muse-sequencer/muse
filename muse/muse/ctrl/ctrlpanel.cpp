@@ -345,7 +345,7 @@ void CtrlPanel::ctrlChanged(double val)
       }
       else
       // Shouldn't happen, but...
-      if(ival < _ctrl->minVal() || ival > _ctrl->maxVal())
+      if((ival < _ctrl->minVal()) || (ival > _ctrl->maxVal()))
       {
         //if(mp->hwCtrlState(chan, _dnum) != CTRL_VAL_UNKNOWN)
         if(curval != CTRL_VAL_UNKNOWN)

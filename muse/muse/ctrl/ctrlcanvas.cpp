@@ -138,7 +138,8 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       
       curDrumInstrument = editor->curDrumInstrument();
-      
+      //printf("CtrlCanvas::CtrlCanvas curDrumInstrument:%d\n", curDrumInstrument);
+                          
       connect(editor, SIGNAL(curDrumInstrumentChanged(int)), SLOT(setCurDrumInstrument(int)));
       updateItems();
       }
@@ -567,8 +568,11 @@ void CtrlCanvas::updateItems()
                     
                     if(_cnum == CTRL_VELOCITY && e.type() == Note) 
                     {
+                          //printf("CtrlCanvas::updateItems CTRL_VELOCITY curDrumInstrument:%d\n", curDrumInstrument);
                           if(curDrumInstrument == -1) 
                           {
+                                // This is interesting - it would allow ALL drum note velocities to be shown.
+                                // But currently the drum list ALWAYS has a selected item so this is not supposed to happen.
                                 items.add(new CEvent(e, part, e.velo()));
                           }
                           else if (e.dataA() == curDrumInstrument) //same note
@@ -1507,6 +1511,7 @@ void CtrlCanvas::draw(QPainter& p, const QRect& rect)
 void CtrlCanvas::setCurDrumInstrument(int di)
       {
       curDrumInstrument = di;
+      //printf("CtrlCanvas::setCurDrumInstrument curDrumInstrument:%d\n", curDrumInstrument);
       
       //
       //  check if current controller is only valid for

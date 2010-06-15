@@ -1,3 +1,11 @@
+15.06.2010
+      * Fixed: Jack midi output: Sent pitch bend and program values were incorrect, if coming from midi keyboard. (T356)
+        - Reported by Pieter while using Hurdy Gurdy vst under fst. Tests OK now, here.
+      * Fixed: Drum editor: Controller graph not in current tool mode (pencil, eraser etc.), when first opened. (T356)
+        - Call setTool() in DrumEdit::addCtrl().
+      * Fixing: Drum editor: Velocity controller graph showing incorrect for selected drum, or showing for all drums, when first opened. (T356) 
+        - WIP. Still not quite correct, but at least now it doesn't show all drum velocities when first opened. 
+          (This is interesting! I will try to allow 'no drum' list selection, to show all drum velocities at once, just like piano roll.)
 13.06.2010
       * Fixed: More fixes to marker list, selected item was still not right. (T356)
 03.06.2010
