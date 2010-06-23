@@ -1163,6 +1163,12 @@ void Route::read(Xml& xml)
                               //if(md->name() == s) 
                               if(md->name() == s && md->deviceType() == dtype) 
                               {
+                                // p3.3.45
+                                // We found a device, but if it is not in use by the song (port is -1), ignore it. 
+                                // This prevents loading and propogation of bogus routes in the med file.
+                                if(md->midiPort() == -1)
+                                  break;
+                                
                                 device = md;
                                 break;
                               }

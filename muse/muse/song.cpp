@@ -18,6 +18,8 @@
 #include <qbutton.h>
 
 #include "app.h"
+#include "driver/jackmidi.h"
+#include "driver/alsamidi.h"
 #include "song.h"
 #include "track.h"
 #include "undo.h"
@@ -1947,8 +1949,49 @@ void Song::clear(bool signal)
       _outputs.clearDelete();    // audio output ports
       _groups.clearDelete();     // mixer groups
       _auxs.clearDelete();       // aux sends
+      
+      // p3.3.45 Clear all midi port devices.
+      for(int i = 0; i < MIDI_PORTS; ++i)
+        // This will also close the device.
+        midiPorts[i].setMidiDevice(0);
+      
       _synthIs.clearDelete();
 
+      // p3.3.45 Make sure to delete Jack midi devices, and remove all ALSA midi device routes...
+      // Otherwise really nasty things happen when loading another song when one is already loaded.
+      // The loop is a safe way to delete while iterating.
+      bool loop;
+      do
+      {
+        loop = false;
+        for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd)
+        {
+          //if((*imd)->deviceType() == MidiDevice::JACK_MIDI)
+          if(dynamic_cast< MidiJackDevice* >(*imd))
+          {
+            // Remove the device from the list.
+            midiDevices.erase(imd);
+            // Since Jack midi devices are created dynamically, we must delete them.
+            // The destructor unregisters the device from Jack, which also disconnects all device-to-jack routes.
+            // This will also delete all midi-track-to-device routes, they point to non-existant midi tracks 
+            //  which were all deleted above
+            delete (*imd);
+            loop = true;
+            break;
+          }  
+          else
+          //if((*imd)->deviceType() == MidiDevice::ALSA_MIDI)
+          if(dynamic_cast< MidiAlsaDevice* >(*imd))
+          {
+            // With alsa devices, we must not delete them (they're always in the list). But we must 
+            //  clear all routes. They point to non-existant midi tracks, which were all deleted above.
+            (*imd)->inRoutes()->clear();
+            (*imd)->outRoutes()->clear();
+          }
+        }
+      }  
+      while (loop);
+      
       tempomap.clear();
       sigmap.clear();
       undoList->clearDelete();

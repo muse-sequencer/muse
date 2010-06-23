@@ -269,8 +269,8 @@ static void readConfigMidiPort(Xml& xml)
                               
                               MidiDevice* dev = midiDevices.find(device);
                               
-                              if(debugMsg && !dev)
-                                fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.latin1());
+                              //if(debugMsg && !dev)
+                              //  fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.latin1());
                                 
                               if(!dev && type == MidiDevice::JACK_MIDI)
                               {
@@ -278,6 +278,9 @@ static void readConfigMidiPort(Xml& xml)
                                   fprintf(stderr, "readConfigMidiPort: creating jack midi device %s\n", device.latin1());
                                 dev = MidiJackDevice::createJackMidiDevice(device, openFlags);
                               }
+                              
+                              if(debugMsg && !dev)
+                                fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.latin1());
                               
                               MidiPort* mp = &midiPorts[idx];
                               mp->syncInfo().copyParams(tmpSi);

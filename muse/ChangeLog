@@ -1,3 +1,10 @@
+22.06.2010
+      * Fixed: Crashes loading a song while another is loaded. Or worse, it loads but saving corrupts the file! (T356)
+        - Song::clear(): Clear all midi port devices. Delete Jack midi devices, and remove all ALSA midi device routes.
+        - Route::read() Ignore bogus midi routes in med file if the device they refer to is not in use by the song (port is -1).
+        - MidiJackDevice::writeRouting(), MidiAlsaDevice::writeRouting(): Ignore and do not write midi routes if the device 
+           they refer to is not in use by the song (port is -1). This prevents bogus midi routes writing to med file.
+        - Fifo::~Fifo(): Free the buffers! Fifo::getWriteBuffer(), Fifo::put(): Verify allocation. Fifo::get(): Verify buffers.
 15.06.2010
       * Fixed: Jack midi output: Sent pitch bend and program values were incorrect, if coming from midi keyboard. (T356)
         - Reported by Pieter while using Hurdy Gurdy vst under fst. Tests OK now, here.

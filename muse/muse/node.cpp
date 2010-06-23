@@ -1666,7 +1666,17 @@ Fifo::Fifo()
 Fifo::~Fifo()
       {
       for (int i = 0; i < nbuffer; ++i)
-            delete buffer[i];
+      {
+        // p3.3.45
+        if(buffer[i]->buffer)
+        {
+          //printf("Fifo::~Fifo freeing buffer\n");
+          free(buffer[i]->buffer);
+        }
+          
+        delete buffer[i];
+      }
+            
       delete[] buffer;
       muse_atomic_destroy(&count);
       }
@@ -1691,14 +1701,32 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
       int n         = segs * samples;
       if (b->maxSize < n) {
             if (b->buffer)
-                 // Changed by Tim. p3.3.15
-                 //delete[] b->buffer;
-                 free(b->buffer);
+            {
+              // Changed by Tim. p3.3.15
+              //delete[] b->buffer;
+              free(b->buffer);
+              // p3.3.45
+              b->buffer = 0;
+            }     
             // Changed by Tim. p3.3.15
             //b->buffer  = new float[n];
             posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
+            // p3.3.45
+            if(!b->buffer)
+            {
+              printf("Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+              return true;
+            }
+            
             b->maxSize = n;
             }
+      // p3.3.45
+      if(!b->buffer)
+      {
+        printf("Fifo::put no buffer! segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+        return true;
+      }
+      
       b->size = samples;
       b->segs = segs;
       b->pos  = pos;
@@ -1726,9 +1754,16 @@ bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
             return true;
             }
       FifoBuffer* b = buffer[ridx];
-
+      // p3.3.45
+      if(!b->buffer)
+      {
+        printf("Fifo::get no buffer! segs:%d samples:%lu b->pos:%u\n", segs, samples, b->pos);
+        return true;
+      }
+      
       if (pos)
             *pos = b->pos;
+      
       for (int i = 0; i < segs; ++i)
             dst[i] = b->buffer + samples * (i % b->segs);
       remove();
@@ -1766,16 +1801,37 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
       int n = segs * samples;
       if (b->maxSize < n) {
             if (b->buffer)
-                 // Changed by Tim. p3.3.15
-                 //delete[] b->buffer;
-                 free(b->buffer);
+            {
+              // Changed by Tim. p3.3.15
+              //delete[] b->buffer;
+              free(b->buffer);
+              // p3.3.45
+              b->buffer = 0;
+            }
+            
             // Changed by Tim. p3.3.15
             //b->buffer = new float[n];
             posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
+            // p3.3.45
+            if(!b->buffer)
+            {
+              printf("Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+              return true;
+            }
+            
             b->maxSize = n;
             }
+      
+      // p3.3.45
+      if(!b->buffer)
+      {
+        printf("Fifo::getWriteBuffer no buffer! segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+        return true;
+      }
+      
       for (int i = 0; i < segs; ++i)
             buf[i] = b->buffer + i * samples;
+            
       b->size = samples;
       b->segs = segs;
       b->pos  = pos;
