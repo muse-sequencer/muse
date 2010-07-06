@@ -38,7 +38,7 @@ BValue extSyncFlag(0, "extSync");       // false - MASTER, true - SLAVE
 //bool acceptMTC  = false;
 //bool acceptMC   = true;
 //bool acceptMMC  = true;
-BValue useJackTransport(1,"useJackTransport");
+BValue useJackTransport(0,"useJackTransport");
 bool volatile jackTransportMaster = true;
 
 static MTC mtcCurTime;

@@ -2657,6 +2657,7 @@ int main(int argc, char* argv[])
       else
             realTimeScheduling = audioDevice->isRealtime();
 
+      useJackTransport.setValue(true);
       // setup the prefetch fifo length now that the segmentSize is known
       // Changed by Tim. p3.3.17
       // Changed to 4 *, JUST FOR TEST!!!
