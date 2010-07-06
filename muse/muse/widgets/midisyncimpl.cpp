@@ -406,7 +406,7 @@ void MidiSyncConfig::songChanged(int flags)
       jackTransportMasterCheckbox->blockSignals(true);
       syncDelaySpinBox->blockSignals(true);
       extSyncCheckbox->setChecked(extSyncFlag.value());
-      useJackTransportCheckbox->setChecked(useJackTransport);
+      useJackTransportCheckbox->setChecked(useJackTransport.value());
       jackTransportMasterCheckbox->setChecked(jackTransportMaster);
       //jackTransportMasterCheckbox->setEnabled(useJackTransport);
       syncDelaySpinBox->setValue(syncSendFirstClockDelay);
@@ -782,7 +782,7 @@ void MidiSyncConfig::apply()
 //      if(extSyncFlag.value())
 //        song->setMasterFlag(false);
       //extSyncFlag.blockSignals(false);
-      useJackTransport = useJackTransportCheckbox->isChecked();
+      useJackTransport.setValue(useJackTransportCheckbox->isChecked());
 //      if(useJackTransport)
         jackTransportMaster = jackTransportMasterCheckbox->isChecked();
 //      else  

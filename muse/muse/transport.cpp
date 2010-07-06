@@ -42,10 +42,10 @@ static const char* fforwardTransportText = QT_TR_NOOP("Click this button to forw
 //---------------------------------------------------------
 
 static QToolButton* newButton(QWidget* parent, const QString& s,
-   const QString& tt, bool toggle=false)
+   const QString& tt, bool toggle=false, int height=25)
       {
       QToolButton* button = new QToolButton(parent);
-      button->setFixedHeight(25);
+      button->setFixedHeight(height);
       button->setText(s);
       button->setToggleButton(toggle);
       QToolTip::add(button, tt);
@@ -339,22 +339,27 @@ Transport::Transport(QWidget*, const char* name)
       //-----------------------------------------------------
 
       QVBox* button1 = new QVBox(this);
-      button1->setMargin(3);
+      button1->setMargin(1);
 
-      quantizeButton = newButton(button1, tr("AC"), tr("quantize during record"), true);
-      clickButton    = newButton(button1, tr("Click"), tr("metronom click on/off"), true);
+      quantizeButton = newButton(button1, tr("AC"), tr("quantize during record"), true,19);
+      clickButton    = newButton(button1, tr("Click"), tr("metronom click on/off"), true,19);
       clickButton->setAccel(shortcuts[SHRT_TOGGLE_METRO].key);
 
-      syncButton     = newButton(button1, tr("Sync"), tr("external sync on/off"), true);
+      syncButton     = newButton(button1, tr("Sync"), tr("external sync on/off"), true,19);
+      jackTransportButton     = newButton(button1, tr("Jack"), tr("Jack transport sync on/off"), true,19);
 
       quantizeButton->setOn(song->quantize());
       clickButton->setOn(song->click());
       syncButton->setOn(extSyncFlag.value());
+      jackTransportButton->setOn(useJackTransport.value());
 
       connect(quantizeButton, SIGNAL(toggled(bool)), song, SLOT(setQuantize(bool)));
       connect(clickButton, SIGNAL(toggled(bool)), song, SLOT(setClick(bool)));
+
       connect(syncButton, SIGNAL(toggled(bool)), &extSyncFlag, SLOT(setValue(bool)));
+      connect(jackTransportButton, SIGNAL(toggled(bool)),&useJackTransport, SLOT(setValue(bool)));
       connect(&extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
+      connect(&useJackTransport, SIGNAL(valueChanged(bool)), SLOT(jackSyncChanged(bool)));
 
       connect(song, SIGNAL(quantizeChanged(bool)), this, SLOT(setQuantizeFlag(bool)));
       connect(song, SIGNAL(clickChanged(bool)), this, SLOT(setClickFlag(bool)));
@@ -626,6 +631,10 @@ void Transport::syncChanged(bool flag)
       forwardAction->setEnabled(!flag);
       }
 
+void Transport::jackSyncChanged(bool flag)
+      {
+      jackTransportButton->setOn(flag);
+      }
 //---------------------------------------------------------
 //   stopToggled
 //---------------------------------------------------------

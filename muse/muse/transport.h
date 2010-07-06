@@ -81,6 +81,7 @@ class Transport : public QWidget
       QToolButton* quantizeButton;
       QToolButton* clickButton;
       QToolButton* syncButton;
+      QToolButton* jackTransportButton;
       QToolButton* buttons[6];      // transport buttons
       QLabel* l2;
       QLabel* l3;
@@ -100,6 +101,7 @@ class Transport : public QWidget
       void setCycleMode(int);
       void songChanged(int);
       void syncChanged(bool);
+      void jackSyncChanged(bool);
       void setRecord(bool flag);
       void stopToggled(bool);
       void playToggled(bool);

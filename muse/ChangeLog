@@ -1,3 +1,6 @@
+06.07.2010
+      * Added: Button in transport to enable/disable jack transport. (rj)
+      * Fixed: Dropdown Snap and Type in arranger toolbar no longer steal focus, annoyed the helloutame (rj)
 22.06.2010
       * Fixed: Crashes loading a song while another is loaded. Or worse, it loads but saving corrupts the file! (T356)
         - Song::clear(): Clear all midi port devices. Delete Jack midi devices, and remove all ALSA midi device routes.

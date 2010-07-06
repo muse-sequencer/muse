@@ -144,7 +144,7 @@ extern BValue extSyncFlag;
 //extern bool acceptMC;
 //extern bool acceptMMC;
 extern int volatile curMidiSyncInPort;
-extern bool volatile useJackTransport;
+extern BValue useJackTransport;
 extern bool volatile jackTransportMaster;
 extern unsigned int syncSendFirstClockDelay; // In milliseconds.
 

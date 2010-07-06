@@ -293,7 +293,7 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
       if (JACK_DEBUG)
             printf("processSync()\n");
       
-      if(!useJackTransport)
+      if(!useJackTransport.value())
         return 1;
         
       int audioState = Audio::STOP;
@@ -1498,7 +1498,7 @@ unsigned int JackAudioDevice::getCurFrame()
   if (JACK_DEBUG)
     printf("JackAudioDevice::getCurFrame pos.frame:%d\n", pos.frame);
   
-  if(!useJackTransport)
+  if(!useJackTransport.value())
     return (unsigned int)dummyPos;
     
   return pos.frame; 
@@ -1510,7 +1510,7 @@ unsigned int JackAudioDevice::getCurFrame()
 
 int JackAudioDevice::framePos() const
       {
-      //if(!useJackTransport)
+      //if(!useJackTransport.value())
       //{
       //  if (JACK_DEBUG)
       //    printf("JackAudioDevice::framePos dummyPos:%d\n", dummyPos);
@@ -1730,7 +1730,7 @@ void JackAudioDevice::unregisterPort(void* p)
 int JackAudioDevice::getState()
       {
       // If we're not using Jack's transport, just return current state.
-      if(!useJackTransport)
+      if(!useJackTransport.value())
       {
         //pos.valid = jack_position_bits_t(0);
         //pos.frame = audio->pos().frame();
@@ -1825,7 +1825,7 @@ void JackAudioDevice::startTransport()
       
       // If we're not using Jack's transport, just pass PLAY and current frame along
       //  as if processSync was called. 
-      if(!useJackTransport)
+      if(!useJackTransport.value())
       {
         //dummyState = Audio::START_PLAY;
         
@@ -1859,7 +1859,7 @@ void JackAudioDevice::stopTransport()
       
       dummyState = Audio::STOP;
       
-      if(!useJackTransport)
+      if(!useJackTransport.value())
       {
         //dummyState = Audio::STOP;
         return;
@@ -1883,7 +1883,7 @@ void JackAudioDevice::seekTransport(unsigned frame)
             printf("JackAudioDevice::seekTransport() frame:%d\n", frame);
       
       dummyPos = frame;
-      if(!useJackTransport)
+      if(!useJackTransport.value())
       {
         // If we're not using Jack's transport, just pass the current state and new frame along
         //  as if processSync was called. 
@@ -1925,7 +1925,7 @@ void JackAudioDevice::seekTransport(const Pos &p)
             printf("JackAudioDevice::seekTransport() frame:%d\n", p.frame());
       
       dummyPos = p.frame();
-      if(!useJackTransport)
+      if(!useJackTransport.value())
       {
         // If we're not using Jack's transport, just pass the current state and new frame along
         //  as if processSync was called. 
@@ -2000,7 +2000,7 @@ int JackAudioDevice::setMaster(bool f)
   int r = 0;
   if(f)
   {
-    if(useJackTransport)
+    if(useJackTransport.value())
     {
       // Make Muse the Jack timebase master. Do it unconditionally (second param = 0).
       r = jack_set_timebase_callback(_client, 0, (JackTimebaseCallback) timebase_callback, 0);
