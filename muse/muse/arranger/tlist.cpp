@@ -71,7 +71,7 @@ void THeaderTip::maybeTip(const QPoint &pos)
             //case COL_OPORT:    p = QHeader::tr("Output Port"); break;
             case COL_OPORT:    p = QHeader::tr("Midi output port or synth midi port"); break;
             case COL_TIMELOCK: p = QHeader::tr("Time Lock"); break;
-            case COL_AUTOMATION: p = QHeader::tr("Automation parameter selection"); break;
+//            case COL_AUTOMATION: p = QHeader::tr("Automation parameter selection"); break;
             default: return;
             }
       tip(r, p);
@@ -351,19 +351,19 @@ void TList::paint(const QRect& r)
                               p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
                               }
                               break;
-                        case COL_AUTOMATION:
-                              {
-                              QString s="-";
-
-                              if (!track->isMidiTrack()) {
-                                    int count = ((AudioTrack*)track)->controller()->size();
-                                    s.sprintf("%d", count);
-                                    }
-
-
-                              p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
-                              }
-                              break;
+//                        case COL_AUTOMATION:
+//                              {
+//                              QString s="-";
+//
+//                              if (!track->isMidiTrack()) {
+//                                    int count = ((AudioTrack*)track)->controller()->size();
+//                                    s.sprintf("%d", count);
+//                                    }
+//
+//
+//                              p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+//                              }
+//                              break;
                         default:
                               break;
                         }
@@ -1237,7 +1237,7 @@ void TList::wheelEvent(QWheelEvent* ev)
             case COL_NONE:
             case COL_CLASS:
             case COL_NAME:
-            case COL_AUTOMATION:
+            //case COL_AUTOMATION:
                   break;
             case COL_MUTE:
                   // p3.3.29

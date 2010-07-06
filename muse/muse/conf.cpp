@@ -685,7 +685,9 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                         else if (tag == "extSync")
                               extSyncFlag.setValue(xml.parseInt());
                         else if (tag == "useJackTransport")
-                              useJackTransport = xml.parseInt();
+                              {
+                              useJackTransport.setValue(xml.parseInt());
+                              }
                         else if (tag == "jackTransportMaster")
                               {
                                 jackTransportMaster = xml.parseInt();
@@ -1238,7 +1240,7 @@ void MusE::writeConfiguration(int level, Xml& xml) const
         mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
         mtcOffset.f(), mtcOffset.sf());
       xml.uintTag(level, "sendClockDelay", syncSendFirstClockDelay);
-      xml.intTag(level, "useJackTransport", useJackTransport);
+      xml.intTag(level, "useJackTransport", useJackTransport.value());
       xml.intTag(level, "jackTransportMaster", jackTransportMaster);
       extSyncFlag.save(level, xml);
       

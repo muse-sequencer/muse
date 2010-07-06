@@ -10,6 +10,7 @@
 
 #include "song.h"
 #include "canvas.h"
+#include "trackautomationview.h"
 #define beats     4
 
 //---------------------------------------------------------
@@ -46,6 +47,7 @@ class PartCanvas : public Canvas {
       int curColorIndex;
       bool editMode;
 
+      std::vector<TrackAutomationView*> automationViews;
       Q_OBJECT
       virtual void keyPress(QKeyEvent*);
       virtual void mousePress(QMouseEvent*);
@@ -90,6 +92,8 @@ class PartCanvas : public Canvas {
       void drawWavePart(QPainter&, const QRect&, WavePart*, const QRect&);
       Track* y2Track(int) const;
       void drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* track);
+      void drawAutomation(QPainter& p, const QRect& r, AudioTrack* track);
+
 
    protected:
       virtual void drawCanvas(QPainter&, const QRect&);
@@ -117,6 +121,7 @@ class PartCanvas : public Canvas {
       PartCanvas(int* raster, QWidget* parent, int, int);
       void partsChanged();
       void cmd(int);
+      void controllerChanged(Track *t);
    public slots:
    void redirKeypress(QKeyEvent* e) { keyPress(e); }
       };

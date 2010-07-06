@@ -21,6 +21,7 @@
 #include "alsamidi.h"
 #include "audio.h"
 #include "arranger.h"
+#include "plugin.h"
 #include "driver/jackmidi.h"
 
 //---------------------------------------------------------
@@ -251,6 +252,7 @@ void Audio::msgSetVolume(AudioTrack* src, double val)
       msg.snode    = src;
       msg.dval  = val;
       sendMsg(&msg);
+      //muse->arranger->controllerChanged(src);
       }
 
 //---------------------------------------------------------
@@ -264,6 +266,7 @@ void Audio::msgSetPan(AudioTrack* node, double val)
       msg.snode = node;
       msg.dval  = val;
       sendMsg(&msg);
+      //muse->arranger->controllerChanged(node);
       }
 
 //---------------------------------------------------------
@@ -424,6 +427,7 @@ void Audio::msgSetPluginCtrlVal(AudioTrack* track, int param, double val)
       //msg.plugin = plugin;
       msg.snode  = track;
       sendMsg(&msg);
+      //muse->arranger->controllerChanged(track);
 }
 
 //---------------------------------------------------------
@@ -439,6 +443,7 @@ void Audio::msgSwapControllerIDX(AudioTrack* node, int idx1, int idx2)
       msg.a      = idx1;
       msg.b      = idx2;
       sendMsg(&msg);
+      //muse->arranger->controllerChanged(node);
 }
 
 //---------------------------------------------------------
@@ -453,6 +458,7 @@ void Audio::msgClearControllerEvents(AudioTrack* node, int acid)
       msg.snode  = node;
       msg.ival   = acid;
       sendMsg(&msg);
+      //muse->arranger->controllerChanged(node);
 }
 
 //---------------------------------------------------------
@@ -496,6 +502,7 @@ void Audio::msgEraseACEvent(AudioTrack* node, int acid, int frame)
       msg.ival   = acid;
       msg.a      = frame; 
       sendMsg(&msg);
+      //muse->arranger->controllerChanged(node);
 }
 
 //---------------------------------------------------------
@@ -512,6 +519,7 @@ void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, int frame1, int fr
       msg.a      = frame1; 
       msg.b      = frame2; 
       sendMsg(&msg);
+      //muse->arranger->controllerChanged(node);
 }
 
 //---------------------------------------------------------
@@ -528,6 +536,7 @@ void Audio::msgAddACEvent(AudioTrack* node, int acid, int frame, double val)
       msg.a      = frame; 
       msg.dval   = val;
       sendMsg(&msg);
+      //muse->arranger->controllerChanged(node);
 }
 
 //---------------------------------------------------------

@@ -1,6 +1,10 @@
 06.07.2010
       * Added: Button in transport to enable/disable jack transport. (rj)
       * Fixed: Dropdown Snap and Type in arranger toolbar no longer steal focus, annoyed the helloutame (rj)
+      * Fixed: Making edits to larger chunks in wave files no longer cause a crash, heap is used for allocation (rj)
+      * Improved: Part selection when navigating with keyboard, previously there was sometimes a need to use the mouse
+        to get a part selected, now one should be arbitrarily selected (rj)
+      * Added: some automation (very)wip stuff, not enabled, just to get it off my harddrive (rj)
 22.06.2010
       * Fixed: Crashes loading a song while another is loaded. Or worse, it loads but saving corrupts the file! (T356)
         - Song::clear(): Clear all midi port devices. Delete Jack midi devices, and remove all ALSA midi device routes.

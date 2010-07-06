@@ -56,6 +56,7 @@ class SndFile {
 
       bool openFlag;
       bool writeFlag;
+      size_t readInternal(int srcChannels, float** dst, size_t n, bool overwrite, float *buffer);
 
    protected:
       int refCount;
@@ -92,6 +93,7 @@ class SndFile {
       void setFormat(int fmt, int ch, int rate);
 
       size_t read(int channel, float**, size_t, bool overwrite = true);
+      size_t readWithHeap(int channel, float**, size_t, bool overwrite = true);
       size_t readDirect(float* buf, size_t n)    { return sf_readf_float(sf, buf, n); }
       size_t write(int channel, float**, size_t);
 

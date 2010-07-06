@@ -443,16 +443,31 @@ void SndFile::setFormat(int fmt, int ch, int rate)
       }
 
 //---------------------------------------------------------
+//   readWithHeap
+//   not as realtime friendly but can retrieve bigger data
+//---------------------------------------------------------
+size_t SndFile::readWithHeap(int srcChannels, float** dst, size_t n, bool overwrite)
+      {
+      float *buffer = new float[n * sfinfo.channels];
+      int rn = readInternal(srcChannels,dst,n,overwrite, buffer);
+      delete buffer;
+      return rn;
+      }
+
+//---------------------------------------------------------
 //   read
 //---------------------------------------------------------
-
 size_t SndFile::read(int srcChannels, float** dst, size_t n, bool overwrite)
       {
-      // Changed by Tim. p3.3.17
-      //float *buffer = new float[n * sfinfo.channels];
       float buffer[n * sfinfo.channels];
+      int rn = readInternal(srcChannels,dst,n,overwrite, buffer);
+      return rn;
+      }
+
+size_t SndFile::readInternal(int srcChannels, float** dst, size_t n, bool overwrite, float *buffer)
+{
       size_t rn = sf_readf_float(sf, buffer, n);
-      
+
       float* src      = buffer;
       int dstChannels = sfinfo.channels;
       if (srcChannels == dstChannels) {
@@ -472,7 +487,7 @@ size_t SndFile::read(int srcChannels, float** dst, size_t n, bool overwrite)
             if(overwrite)
               for (size_t i = 0; i < rn; ++i)
                   *(dst[0] + i) = src[i + i] + src[i + i + 1];
-            else  
+            else
               for (size_t i = 0; i < rn; ++i)
                   *(dst[0] + i) += src[i + i] + src[i + i + 1];
             }
@@ -484,7 +499,7 @@ size_t SndFile::read(int srcChannels, float** dst, size_t n, bool overwrite)
                   *(dst[0]+i) = data;
                   *(dst[1]+i) = data;
                   }
-            else  
+            else
               for (size_t i = 0; i < rn; ++i) {
                   float data = *src++;
                   *(dst[0]+i) += data;
@@ -495,10 +510,11 @@ size_t SndFile::read(int srcChannels, float** dst, size_t n, bool overwrite)
             printf("SndFile:read channel mismatch %d -> %d\n",
                srcChannels, dstChannels);
             }
-      
-      //delete buffer;
+
       return rn;
-      }
+
+}
+
 
 //---------------------------------------------------------
 //   write

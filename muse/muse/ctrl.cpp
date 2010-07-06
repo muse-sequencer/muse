@@ -27,7 +27,19 @@ CtrlList::CtrlList(int id)
       _curVal  = 0.0;
       _mode    = INTERPOLATE;
       }
-
+//---------------------------------------------------------
+//   CtrlList
+//---------------------------------------------------------
+CtrlList::CtrlList(int id, QString name, double min, double max)
+{
+      _id      = id;
+      _default = 0.0;
+      _curVal  = 0.0;
+      _mode    = INTERPOLATE;
+      _name    = name;
+      _min     = min;
+      _max     = max;
+}
 //---------------------------------------------------------
 //   CtrlList
 //---------------------------------------------------------
@@ -91,6 +103,18 @@ double CtrlList::value(int frame)
 // printf("autoVal %d %f\n", frame, _curVal);
       return _curVal;
       }
+
+
+//---------------------------------------------------------
+//   setCurVal
+//---------------------------------------------------------
+void CtrlList::setCurVal(double val)
+{
+  _curVal = val;
+  if (size() < 2) {
+    add(0,val);
+  }
+}
 
 //---------------------------------------------------------
 //   add

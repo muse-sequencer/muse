@@ -123,6 +123,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
             raster->insertItem(tr(rastval[i]), i);
       raster->setCurrentItem(1);
       connect(raster, SIGNAL(activated(int)), SLOT(_setRaster(int)));
+      raster->setFocusPolicy(QWidget::NoFocus);
 
       // Song len
       label = new QLabel(tr("Len"), toolbar, "Len");
@@ -147,6 +148,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       connect(typeBox, SIGNAL(activated(int)), SLOT(modeChange(int)));
       QToolTip::add(typeBox, tr("midi song type"));
       QWhatsThis::add(typeBox, tr("midi song type"));
+      typeBox->setFocusPolicy(QWidget::NoFocus);
 
       label = new QLabel(tr("Pitch"), toolbar, "Pitch");
       label->setAlignment(AlignRight|AlignVCenter);
@@ -235,12 +237,16 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       header->addLabel(tr("Port"), 60);
       header->addLabel(tr("Ch"), 30);
       header->addLabel(tr("T"), fm1.width('T')+fw);
+      //header->addLabel(tr("Automation"),30);
       header->setResizeEnabled(false, COL_RECORD);
       header->setResizeEnabled(false, COL_MUTE);
       header->setResizeEnabled(false, COL_SOLO);
       header->setResizeEnabled(false, COL_CLASS);
       header->setResizeEnabled(false, COL_OCHANNEL);
       header->setResizeEnabled(false, COL_TIMELOCK);
+      //header->setResizeEnabled(true, COL_AUTOMATION);
+      header->setResizeEnabled(true, COL_NAME);
+      header->setResizeEnabled(true, COL_OPORT);
 
       header->setTracking(true);
 
@@ -945,3 +951,8 @@ void Arranger::wheelEvent(QWheelEvent* ev)
       {
       emit redirectWheelEvent(ev);
       }
+
+void Arranger::controllerChanged(Track *t)
+{
+      canvas->controllerChanged(t);
+}

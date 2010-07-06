@@ -561,7 +561,7 @@ void PartCanvas::updateSelection()
       for (iCItem i = items.begin(); i != items.end(); ++i) {
             NPart* part = (NPart*)(i->second);
             part->part()->setSelected(i->second->isSelected());
-            }
+      }
       emit selectionChanged();
       redraw();
       }
@@ -1098,10 +1098,17 @@ void PartCanvas::keyPress(QKeyEvent* event)
       //
       // Shortcuts that require selected parts from here
       //
-      if (!curItem) { //TODO: Fix a curItem from selected parts if song is loaded and has selected parts.
-            event->ignore();
-            return;
-            }
+      if (!curItem) {
+          for (iCItem i = items.begin(); i != items.end(); ++i) {
+              NPart* part = (NPart*)(i->second);
+              if (part->isSelected()) {
+                curItem=part;
+                break;
+              }
+          }
+          if (!curItem)
+            curItem = (NPart*)items.begin()->second; // just grab the first part
+      }
 
       CItem* newItem = 0;
       bool singleSelection = isSingleSelection();
@@ -1186,6 +1193,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   newItem = i->second;
                   }
             }
+
       // Select nearest part on track above
       else if (key == shortcuts[SHRT_SEL_ABOVE].key || key == shortcuts[SHRT_SEL_ABOVE_ADD].key) {
             if (key == shortcuts[SHRT_SEL_ABOVE_ADD].key)
@@ -1196,9 +1204,10 @@ void PartCanvas::keyPress(QKeyEvent* event)
             track = y2Track(track->y() - 1);
 
             //If we're at topmost, leave
-            if (!track)
+            if (!track) {
+              printf("no track above!\n");
                   return;
-
+                }
             int middle = curItem->x() + curItem->part()->lenTick()/2;
             CItem *aboveL = 0, *aboveR = 0;
             //Upper limit: song end, lower limit: song start
@@ -1355,6 +1364,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       int from   = rect.x();
       int to     = from + rect.width();
 
+      //printf("from %d to %d\n", from,to);
       Part* part = ((NPart*)item)->part();
       int pTick  = part->tick();
       from      -= pTick;
@@ -1367,6 +1377,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       QRect r    = item->bbox();
       //QRect r    = item->bbox().intersect(rect);
       int i      = part->colorIndex();
+
+      //printf("part start tick %d part start pixel %d\n", part->tick(), r.x());
 
       // Added by Tim. p3.3.6
       //printf("PartCanvas::drawItem %s evRefs:%d pTick:%d pLen:%d bb.x:%d bb.w:%d rect.x:%d rect.w:%d r.x:%d r.w:%d\n", part->name().latin1(), part->events()->arefCount(), pTick, part->lenTick(), item->bbox().x(), item->bbox().width(), rect.x(), rect.width(), r.x(), r.width());
@@ -2538,7 +2550,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 //---------------------------------------------------------
 
 void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
-      {
+{
       int x = rect.x();
       int y = rect.y();
       int w = rect.width();
@@ -2614,19 +2626,116 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
                   QRect r = rect & QRect(x, yy, w, track->height());
                   drawAudioTrack(p, r, (AudioTrack*)track);
                   p.setPen(baseColor);
-                  }
+            }
+            if (!track->isMidiTrack()) { // draw automation
+                  QRect r = rect & QRect(x, yy, w, track->height());
+                  drawAutomation(p, r, (AudioTrack*)track);
+                  p.setPen(baseColor);
+
+            }
             yy += track->height();
             }
-      }
+}
 
 //---------------------------------------------------------
 //   drawAudioTrack
 //---------------------------------------------------------
 
-void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, AudioTrack*)
-      {
+void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, AudioTrack *t)
+{
       p.setPen(QPen(black, 2, SolidLine));
       p.setBrush(gray);
       p.drawRect(r);
-      }
+}
 
+//---------------------------------------------------------
+//   drawAutomation
+//---------------------------------------------------------
+
+void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
+{
+//     printf("drawAudioTrack %d x %d y %d w %d h %d\n",t, r.x(), r.y(), r.width(), r.height());
+     //int v2=r.x()+r.width();
+     //printf("v2=%d mapx=%d rmapx=%d mapxdev=%d rmapxdev=%d\n",v2, mapx(v2),rmapx(v2),mapxDev(v2),rmapxDev(v2));
+     return;
+
+     p.setPen(QPen(black, 2, SolidLine));
+     int height=r.bottom()-r.top()-4; // limit height
+
+     CtrlListList* cll = t->controller();
+     QColor cols[10];
+     cols[0]=white;
+     cols[1]=red;
+     cols[2]=yellow;
+     cols[3]=black;
+     cols[4]=blue;
+     int colIndex=0;
+     bool firstRun=true;
+     for(CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll)
+     {
+       //iCtrlList *icl = icll->second;
+       CtrlList *cl = icll->second;
+       double prevVal;
+       iCtrl ic=cl->begin();
+       p.setPen(QPen(cols[colIndex++],1,SolidLine));
+
+       if (ic!=cl->end()) { // if there are no automation values we don't draw at all
+         CtrlVal cvFirst = ic->second;
+         ic++;
+         int prevPos=cvFirst.frame;
+         prevVal = cvFirst.val;
+         if (cl->id() == AC_VOLUME ) { // use db scale for volume
+           prevVal = (20.0*log10(cvFirst.val)+60) / 70.0; // represent volume between 0 and 1
+           if (prevVal < 0) prevVal = 0.0;
+         }
+         else {
+           // we need to set curVal between 0 and 1
+           double min, max;
+           cl->range(&min,&max);
+           prevVal = (prevVal- min)/(max-min);
+         }
+         for (; ic !=cl->end(); ++ic)
+         {
+            CtrlVal cv = ic->second;
+            double nextVal = cv.val; // was curVal
+            if (cl->id() == AC_VOLUME ) { // use db scale for volume
+              nextVal = (20.0*log10(cv.val)+60) / 70.0; // represent volume between 0 and 1
+              if (nextVal < 0) nextVal = 0.0;
+            }
+            else {
+              // we need to set curVal between 0 and 1
+              double min, max;
+              cl->range(&min,&max);
+              nextVal = (nextVal- min)/(max-min);
+            }
+            //printf("volume automation event %d %f %f %d\n",cv.frame,cv.val, tempomap.frame2tick(cv.frame));
+            //p.drawLine(r.x(),(r.bottom()-2)-lastVal*height,r.x()+r.width(),(r.bottom()-2)-curVal*height); // debuggingtest
+            int leftX=tempomap.frame2tick(prevPos);
+            if (firstRun && leftX>r.x()) {
+              printf("first run\n");
+              leftX=r.x();
+            }
+
+            printf("inner draw\n");
+            p.drawLine(leftX,(r.bottom()-2)-prevVal*height,tempomap.frame2tick(cv.frame),(r.bottom()-2)-prevVal*height);
+            firstRun=false;
+            //printf("draw line: %d %f %d %f\n",tempomap.frame2tick(lastPos),r.bottom()-lastVal*height,tempomap.frame2tick(cv.frame),r.bottom()-curVal*height);
+            prevPos=cv.frame;
+            prevVal=nextVal;
+         }
+         printf("outer draw %f\n", cvFirst.val);
+         p.drawLine(tempomap.frame2tick(prevPos),(r.bottom()-2)-prevVal*height,tempomap.frame2tick(prevPos)+r.width(),(r.bottom()-2)-prevVal*height);
+         //printf("draw last line: %d %f %d %f\n",tempomap.frame2tick(lastPos),r.bottom()-lastVal*height,150000,r.bottom()-lastVal*height);
+       }
+//       if (height >100) {
+//          p.drawText(tempomap.frame2tick(0)+1000,40,"FOOO");
+//          printf("drawText %s\n", cl->name().latin1());
+//        }
+     }
+}
+
+
+void PartCanvas::controllerChanged(Track *t)
+{
+  redraw();
+}

@@ -74,12 +74,12 @@ AudioTrack::AudioTrack(TrackType t)
       _efxPipe  = new Pipeline();
       _recFile  = 0;
       _channels = 0;
-      _automationType = AUTO_READ;
+      _automationType = AUTO_OFF;
       //setChannels(1);
       setChannels(2);
-      addController(new CtrlList(AC_VOLUME));
-      addController(new CtrlList(AC_PAN));
-      addController(new CtrlList(AC_MUTE));
+      addController(new CtrlList(AC_VOLUME,"Volume",0.0,1.0));
+      addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0));
+      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0));
       
       // Changed by Tim. p3.3.15
       //outBuffers = new float*[MAX_CHANNELS];

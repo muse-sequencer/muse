@@ -91,13 +91,14 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
    public:
       CtrlList();
       CtrlList(int id);
-      
+      CtrlList(int id, QString name, double min, double max);
+
       Mode mode() const          { return _mode; }
       void setMode(Mode m)       { _mode = m; }
       double getDefault() const   { return _default; }
       void setDefault(double val) { _default = val; }
       double curVal() const       { return _curVal; }
-      void setCurVal(double val)  { _curVal = val; } 
+      void setCurVal(double val); //  { _curVal = val; }
       int id() const             { return _id; }
       QString name() const       { return _name; }
       void setName(const QString& s) { _name = s; }
