@@ -324,6 +324,7 @@ class Song : public QObject {
       //void undoOp(UndoOp::UndoType, Part* oPart, Part* nPart);
       void undoOp(UndoOp::UndoType, Part* oPart, Part* nPart, bool doCtrls, bool doClones);
       void undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
+      void undoOp(UndoOp::UndoType type, Marker* copyMarker, Marker* realMarker);
       bool doUndo1();
       void doUndo2();
       void doUndo3();

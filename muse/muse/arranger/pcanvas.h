@@ -86,8 +86,9 @@ class PartCanvas : public Canvas {
       void splitItem(CItem* item, const QPoint&);
 
       void copy(PartList*);
-      void paste(bool clone = false, bool toTrack = true);
+      void paste(bool clone = false, bool toTrack = true, bool doInsert=false);
       int pasteAt(const QString&, Track*, int, bool clone = false, bool toTrack = true);
+      void movePartsTotheRight(int startTick, int length);
       //Part* readClone(Xml&, Track*, bool toTrack = true);
       void drawWavePart(QPainter&, const QRect&, WavePart*, const QRect&);
       Track* y2Track(int) const;
@@ -116,7 +117,8 @@ class PartCanvas : public Canvas {
       void returnPressed();
 
    public:
-      enum { CMD_CUT_PART, CMD_COPY_PART, CMD_PASTE_PART, CMD_PASTE_CLONE_PART, CMD_PASTE_PART_TO_TRACK, CMD_PASTE_CLONE_PART_TO_TRACK };
+      enum { CMD_CUT_PART, CMD_COPY_PART, CMD_PASTE_PART, CMD_PASTE_CLONE_PART, CMD_PASTE_PART_TO_TRACK, CMD_PASTE_CLONE_PART_TO_TRACK,
+             CMD_INSERT_PART, CMD_INSERT_EMPTYMEAS };
 
       PartCanvas(int* raster, QWidget* parent, int, int);
       void partsChanged();

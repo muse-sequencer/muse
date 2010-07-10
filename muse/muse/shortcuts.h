@@ -163,6 +163,9 @@ enum {
       SHRT_SEL_BELOW, //Down
       SHRT_SEL_BELOW_ADD, //move down and add to selection
 
+      SHRT_INSERT, //Ctrl+Shift+I   - insert parts instead of pasting
+      SHRT_INSERTMEAS, //Ctrl+Shift+M - insert measures
+
       //Arranger tracks
       SHRT_SEL_TRACK_BELOW,
       SHRT_SEL_TRACK_ABOVE,

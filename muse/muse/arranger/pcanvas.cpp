@@ -19,7 +19,7 @@
 #include <qpoint.h>
 #include <qlineedit.h>
 #include <qmessagebox.h>
-#include <qdragobject.h>
+#include <qdragobject.h>>
 #include <qpopupmenu.h>
 #include <qurl.h>
 #include <qmenudata.h>
@@ -37,6 +37,7 @@
 #include "gconfig.h"
 #include "app.h"
 #include "filedialog.h"
+#include "marker/marker.h"
 
 const char* partColorNames[] = {
       "Default",
@@ -1697,6 +1698,16 @@ void PartCanvas::cmd(int cmd)
             case CMD_PASTE_CLONE_PART_TO_TRACK:
                   paste(true);
                   break;
+            case CMD_INSERT_PART:
+                  paste(false, false, true);
+                  break;
+            case CMD_INSERT_EMPTYMEAS:
+                  song->startUndo();
+                  int startPos=song->vcpos();
+                  int oneMeas=sigmap.ticksMeasure(startPos);
+                  movePartsTotheRight(startPos,oneMeas);
+                  song->endUndo(SC_PART_INSERTED);
+                  break;
             }
       }
 
@@ -1807,7 +1818,7 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, int pos, bool clone, bo
       int  done = 0;
       bool end = false;
 
-      song->startUndo();
+      //song->startUndo();
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -1856,7 +1867,9 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, int pos, bool clone, bo
                                     posOffset=pos-p->tick();
                                     }
                               p->setTick(p->tick()+posOffset);
-                              finalPos=p->tick()+p->lenTick();
+                              if (p->tick()+p->lenTick()>finalPos) {
+                                finalPos=p->tick()+p->lenTick();
+                              }
                               //pos += p->lenTick();
                               audio->msgAddPart(p,false);
                               }
@@ -1873,7 +1886,7 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, int pos, bool clone, bo
                   break;
             }
       
-      song->endUndo(SC_PART_INSERTED);
+      //song->endUndo(SC_PART_INSERTED);
       //return pos;
       
       if(notDone)
@@ -2285,9 +2298,14 @@ Part* PartCanvas::readClone(Xml& xml, Track* track, bool toTrack)
 //---------------------------------------------------------
 
 //void PartCanvas::paste()
-void PartCanvas::paste(bool clone, bool toTrack)
+void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
 {
       Track* track = 0;
+
+      if (doInsert) // logic depends on keeping track of newly selected tracks
+          deselectAll();
+
+
       // If we want to paste to a selected track...
       if(toTrack)
       {  
@@ -2358,13 +2376,61 @@ void PartCanvas::paste(bool clone, bool toTrack)
             
       QCString subtype = 0;
       QString txt = cb->text(subtype);
-      if (!txt.isEmpty()) 
+      int endPos=0;
+      int startPos=song->vcpos();
+      if (!txt.isEmpty())
       {
-        Pos p(pasteAt(txt, track, song->vcpos(), clone, toTrack), true);
+        song->startUndo();
+        endPos=pasteAt(txt, track, startPos, clone, toTrack);
+        Pos p(endPos, true);
         song->setPos(0, p);
+        if (!doInsert)
+          song->endUndo(SC_PART_INSERTED);
+
+      }
+
+      if (doInsert) {
+        int offset = endPos-startPos;
+        movePartsTotheRight(startPos, offset);
+        song->endUndo(SC_PART_INSERTED);
       }
     }
 
+//---------------------------------------------------------
+//   movePartsToTheRight
+//---------------------------------------------------------
+void PartCanvas::movePartsTotheRight(int startTicks, int length)
+{
+        // all parts that start after the pasted parts will be moved the entire length of the pasted parts
+        for (iCItem i = items.begin(); i != items.end(); ++i) {
+          if (!i->second->isSelected()) {
+              Part* part = i->second->part();
+              if (part->tick() >= startTicks) {
+                //void Audio::msgChangePart(Part* oldPart, Part* newPart, bool doUndoFlag, bool doCtrls, bool doClones)
+                Part *newPart = part->clone();
+                newPart->setTick(newPart->tick()+length);
+                if (part->track()->type() == Track::WAVE) {
+                  audio->msgChangePart((WavePart*)part,(WavePart*)newPart,false,false,false);
+                } else {
+                  audio->msgChangePart(part,newPart,false,false,false);
+                }
+
+              }
+          }
+        }
+        // perhaps ask if markers should be moved?
+        MarkerList *markerlist = song->marker();
+        for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
+        {
+            Marker* m = &i->second;
+            if (m->tick() >= startTicks) {
+              Marker *oldMarker = new Marker();
+              *oldMarker = *m;
+              m->setTick(m->tick()+length);
+              song->undoOp(UndoOp::ModifyMarker,oldMarker, m);
+            }
+        }
+}
 //---------------------------------------------------------
 //   startDrag
 //---------------------------------------------------------
@@ -2491,8 +2557,11 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
                   Track* track = 0;
                   if (trackNo < tracks->size())
                         track = tracks->index(trackNo);
-                  if (track)
+                  if (track) {
+                        song->startUndo();
                         pasteAt(text, track, x);
+                        song->endUndo(SC_PART_INSERTED);
+                      }
                   }
             else if (type == 2) {
                   text = text.stripWhiteSpace();

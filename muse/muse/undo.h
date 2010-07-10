@@ -12,6 +12,7 @@
 #include <list>
 #include <qstring.h>
 #include "event.h"
+#include "marker/marker.h"
 
 class Track;
 class TEvent;
@@ -31,7 +32,8 @@ struct UndoOp {
             AddTempo, DeleteTempo,
             AddSig,   DeleteSig,
             SwapTrack,
-            ModifyClip
+            ModifyClip,
+            ModifyMarker
             };
       UndoType type;
 
@@ -69,6 +71,10 @@ struct UndoOp {
                   const char* filename; //!< The file that is changed
                   const char* tmpwavfile; //!< The file with the changed data
                   };
+            struct {
+                  Marker* realMarker;
+                  Marker* copyMarker;
+                };
             };
       Event oEvent;
       Event nEvent;

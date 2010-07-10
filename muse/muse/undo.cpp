@@ -68,6 +68,7 @@ void UndoOp::dump()
             case SwapTrack:
             case DeleteSig:
             case ModifyClip:
+            case ModifyMarker:
                   break;
             }
       }
@@ -157,6 +158,9 @@ void UndoList::clearDelete()
           //      break;
           //case UndoOp::DeleteSig:
           //      break;
+            case UndoOp::ModifyMarker:
+                if (i->copyMarker)
+                  delete i->copyMarker;
           default:
                 break;
         }
@@ -424,6 +428,7 @@ void Song::doUndo2()
                         updateFlags |= SC_SIG;
                         break;
                   case UndoOp::ModifyClip:
+                  case UndoOp::ModifyMarker:
                         break;
                   }
             }
@@ -649,6 +654,7 @@ void Song::doRedo2()
                         updateFlags |= SC_SIG;
                         break;
                   case UndoOp::ModifyClip:
+                  case UndoOp::ModifyMarker:
                         break;
                   }
             }
@@ -767,6 +773,16 @@ void Song::undoOp(UndoOp::UndoType type, const char* changedFile, const char* ch
       //printf("Adding ModifyClip undo-operation: origfile=%s tmpfile=%s sf=%d ef=%d\n", changedFile, changeData, startframe, endframe);
       }
 
+void Song::undoOp(UndoOp::UndoType type, Marker* copyMarker, Marker* realMarker)
+      {
+      UndoOp i;
+      i.type    = type;
+      i.realMarker  = realMarker;
+      i.copyMarker  = copyMarker;
+
+      addUndo(i);
+      }
+
 //---------------------------------------------------------
 //   addUndo
 //---------------------------------------------------------
@@ -823,6 +839,7 @@ bool Song::doUndo1()
                   case UndoOp::ModifyClip:
                         SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
                         break;
+
                   default:
                         break;
                   }
@@ -850,6 +867,14 @@ void Song::doUndo3()
                         // Not much choice but to do this - Tim.
                         //clearClipboardAndCloneList();
                         break;      
+                  case UndoOp::ModifyMarker:
+                        {
+                          //printf("performing undo for one marker at %d\n", i->realMarker->tick());
+                          Marker tmpMarker = *i->realMarker;
+                          *i->realMarker = *i->copyMarker; // swap them
+                          *i->copyMarker = tmpMarker;
+                        }
+                        break;
                   default:
                         break;
                   }
@@ -924,7 +949,15 @@ void Song::doRedo3()
                         // Not much choice but to do this - Tim.
                         //clearClipboardAndCloneList();
                         break;      
-                  default:
+                  case UndoOp::ModifyMarker:
+                        {
+                          //printf("performing redo for one marker at %d\n", i->realMarker->tick());
+                          Marker tmpMarker = *i->realMarker;
+                          *i->realMarker = *i->copyMarker; // swap them
+                          *i->copyMarker = tmpMarker;
+                        }
+                        break;
+                   default:
                         break;
                   }
             }

@@ -1,9 +1,13 @@
+10.07.2010
+      * Added: Insert measure, inserts empty space and moves everything after playpointer to the right and
+               Part-insert, pastes parts and moves everything after the paste point to the right
+               it's currently not possible to change the shortcuts for these, wip (rj)
 06.07.2010
       * Added: Button in transport to enable/disable jack transport. (rj)
       * Fixed: Dropdown Snap and Type in arranger toolbar no longer steal focus, annoyed the helloutame (rj)
       * Fixed: Making edits to larger chunks in wave files no longer cause a crash, heap is used for allocation (rj)
       * Improved: Part selection when navigating with keyboard, previously there was sometimes a need to use the mouse
-        to get a part selected, now one should be arbitrarily selected (rj)
+        to get a part selected, now the first one should be selected (rj)
       * Added: some automation (very)wip stuff, not enabled, just to get it off my harddrive (rj)
 22.06.2010
       * Fixed: Crashes loading a song while another is loaded. Or worse, it loads but saving corrupts the file! (T356)

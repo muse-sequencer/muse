@@ -1058,6 +1058,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       menuEdit->setAccel(CTRL+Key_C, CMD_COPY);
       menuEdit->insertItem(*editpasteIconSet, tr("&Paste"), CMD_PASTE);
       menuEdit->setAccel(CTRL+Key_V, CMD_PASTE);
+      menuEdit->insertItem(*editpasteIconSet, tr("&Insert"), CMD_INSERT);
+      menuEdit->setAccel(CTRL+SHIFT+Key_I, CMD_INSERT);
       menuEdit->insertItem(*editpasteCloneIconSet, tr("Paste c&lone"), CMD_PASTE_CLONE);
       menuEdit->setAccel(CTRL+SHIFT+Key_V, CMD_PASTE_CLONE);
       menuEdit->insertItem(*editpaste2TrackIconSet, tr("Paste to &track"), CMD_PASTE_TO_TRACK);
@@ -1065,6 +1067,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       menuEdit->insertItem(*editpasteClone2TrackIconSet, tr("Paste clone to trac&k"), CMD_PASTE_CLONE_TO_TRACK);
       menuEdit->setAccel(CTRL+SHIFT+Key_B, CMD_PASTE_CLONE_TO_TRACK);
 
+      menuEdit->insertItem(*editpasteIconSet, tr("&Insert empty measure"), CMD_INSERTMEAS);
+      menuEdit->setAccel(CTRL+SHIFT+Key_M, CMD_INSERTMEAS);
       menuEdit->insertSeparator();
       menuEdit->insertItem(QIconSet(*edit_track_delIcon),
          tr("Delete Selected Tracks"), CMD_DELETE_TRACK);
@@ -2818,6 +2822,12 @@ void MusE::cmd(int cmd)
             case CMD_PASTE_CLONE_TO_TRACK:
                   arranger->cmd(Arranger::CMD_PASTE_CLONE_PART_TO_TRACK);
                   break;
+            case CMD_INSERT:
+                  arranger->cmd(Arranger::CMD_INSERT_PART);
+                  break;
+            case CMD_INSERTMEAS:
+                  arranger->cmd(Arranger::CMD_INSERT_EMPTYMEAS);
+                  break;
             case CMD_DELETE:
                   song->startUndo();
                   if (song->msgRemoveParts()) {
@@ -2920,6 +2930,7 @@ void MusE::clipboardChanged()
                   }
             }
       menuEdit->setItemEnabled(CMD_PASTE, flag);
+      menuEdit->setItemEnabled(CMD_INSERT, flag);
       menuEdit->setItemEnabled(CMD_PASTE_CLONE, flag);
       menuEdit->setItemEnabled(CMD_PASTE_TO_TRACK, flag);
       menuEdit->setItemEnabled(CMD_PASTE_CLONE_TO_TRACK, flag);

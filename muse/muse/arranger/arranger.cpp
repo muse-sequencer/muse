@@ -662,6 +662,12 @@ void Arranger::cmd(int cmd)
             case CMD_PASTE_CLONE_PART_TO_TRACK:
                   ncmd = PartCanvas::CMD_PASTE_CLONE_PART_TO_TRACK;
                   break;
+            case CMD_INSERT_PART:
+                  ncmd = PartCanvas::CMD_INSERT_PART;
+                  break;
+            case CMD_INSERT_EMPTYMEAS:
+                  ncmd = PartCanvas::CMD_INSERT_EMPTYMEAS;
+                  break;
             default:
                   return;
             }
