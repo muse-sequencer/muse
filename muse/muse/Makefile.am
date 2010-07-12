@@ -21,7 +21,7 @@ AM_CPPFLAGS += -DENABLE_PYTHON
 SUBDIRS += remote
 PYLIBS=$(PYTHON_LIB) remote/libremote.a
 endif
-
+AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
 
 
 EXTRA_PROGRAMS = givertcap

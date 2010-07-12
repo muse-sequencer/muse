@@ -71,7 +71,7 @@
         </widget>
         <widget class="QLabel">
             <property name="name">
-                <cstring>textLabel1</cstring>
+                <cstring>versionLabel</cstring>
             </property>
             <property name="text">
                 <string>Version 1.0.1

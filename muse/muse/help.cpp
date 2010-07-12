@@ -15,7 +15,7 @@
 #include "globals.h"
 #include "gconfig.h"
 #include "icons.h"
-#include "aboutbox.h"
+#include "aboutbox_impl.h"
 
 //---------------------------------------------------------
 //   startHelpBrowser
@@ -65,7 +65,7 @@ void MusE::startBugBrowser()
 
 void MusE::about()
       {
-      AboutBox ab;
+      AboutBoxImpl ab;
       ab.show();
       ab.exec();
       }

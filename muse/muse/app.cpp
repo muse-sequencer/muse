@@ -2007,7 +2007,7 @@ bool MusE::saveAs()
 
 static void printVersion(const char* prog)
       {
-      fprintf(stderr, "%s: Linux Music Editor; Version %s\n", prog, VERSION);
+      fprintf(stderr, "%s: Linux Music Editor; Version %s, (svn revision %s)\n", prog, VERSION, SVNVERSION);
       }
 
 //---------------------------------------------------------

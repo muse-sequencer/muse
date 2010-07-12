@@ -9,6 +9,9 @@ libwidgets_a_CPPFLAGS         += -include $(top_srcdir)/all.h
 ## musewidgetsplugin_so_CPPFLAGS += -include $(top_srcdir)/all-pic.h 
 endif
 
+AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
+
+
 noinst_LIBRARIES = libwidgets.a
 
 dist_libwidgets_a_SOURCES = \
@@ -71,6 +74,7 @@ dist_libwidgets_a_SOURCES = \
 	shortcutcapturedialog.cpp shortcutcapturedialog.h \
 	combobox.cpp combobox.h \
 	checkbox.cpp checkbox.h \
+	aboutbox_impl.cpp aboutbox_impl.h \
 	listitem.h \
         menutitleitem.h \
 	\
@@ -150,6 +154,7 @@ nodist_libwidgets_a_SOURCES = \
 	moc_shortcutconfig.cpp \
 	moc_shortcutcapturedialog.cpp \
       moc_combobox.cpp \
+	moc_aboutbox_impl.cpp\
       moc_aboutbox.cpp \
       moc_songinfo.cpp \
       moc_didyouknow.cpp \
