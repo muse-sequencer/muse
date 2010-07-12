@@ -660,7 +660,7 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
                      tmpdata[i] = new float[tmpdatalen];
                      }
                file.seek(tmpdataoffset, 0);
-               file.read(file_channels, tmpdata, tmpdatalen);
+               file.readWithHeap(file_channels, tmpdata, tmpdatalen);
                file.close();
                tmpFile.write(file_channels, tmpdata, tmpdatalen);
                tmpFile.close();

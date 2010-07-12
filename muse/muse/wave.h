@@ -146,6 +146,9 @@ class SndFileR {
       void setFormat(int fmt, int ch, int rate) {
             sf->setFormat(fmt, ch, rate);
             }
+      size_t readWithHeap(int channel, float** f, size_t n, bool overwrite = true) {
+            return sf->readWithHeap(channel, f, n, overwrite);
+            }
       size_t read(int channel, float** f, size_t n, bool overwrite = true) {
             return sf->read(channel, f, n, overwrite);
             }

@@ -743,7 +743,7 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
             data2beoverwritten[i] = new float[tmpdatalen];
             }
       orig->seek(startframe, 0);
-      orig->read(file_channels, data2beoverwritten, tmpdatalen);
+      orig->readWithHeap(file_channels, data2beoverwritten, tmpdatalen);
 
       orig->close();
 
@@ -753,7 +753,7 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
             tmpfiledata[i] = new float[tmpdatalen];
             }
       tmp.seek(0, 0);
-      tmp.read(file_channels, tmpfiledata, tmpdatalen);
+      tmp.readWithHeap(file_channels, tmpfiledata, tmpdatalen);
       tmp.close();
 
       // Write temporary data to original file:
