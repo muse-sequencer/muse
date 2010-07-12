@@ -43,7 +43,7 @@ class RemoveShortEvents(QtGui.QWidget):
         inputEvents = testFile.readlines()
         testFile.close()
         
-        beatDiv = int(self.timeEdit.itemData(self.timeEdit.currentIndex()))
+        beatDiv = int(self.timeEdit.itemData(self.timeEdit.currentIndex()).toInt()[0])
         minSize=0 # fill in when we get the beat size value
         outputEvents=[]
 

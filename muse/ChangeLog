@@ -1,6 +1,7 @@
 12.07.2010
       * Fixed: When wave files were edited allocation was on stack which caused crashes for larger selections, now done on heap (rj)
       * Added: Print svn version in -v and About box. (rj)
+      * Fixed: Bug with RemoveShortEvents plugin script, would not remove anything due to index error (rj)
 10.07.2010
       * Added: Insert measure, inserts empty space and moves everything after playpointer to the right and
                Part-insert, pastes parts and moves everything after the paste point to the right
