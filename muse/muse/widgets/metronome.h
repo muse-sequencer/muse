@@ -26,6 +26,7 @@ class MetronomeConfig : public MetronomeConfigBase {
       void midiClickChanged(bool);
       void precountEnableChanged(bool);
       void precountFromMastertrackChanged(bool);
+      void beepVolumeChanged(int);
 
    public:
       MetronomeConfig(QWidget* parent, const char* name = 0);

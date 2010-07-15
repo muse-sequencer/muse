@@ -330,7 +330,7 @@ bool precountPrerecord = false;
 bool precountPreroll = false;
 bool midiClickFlag   = true;
 bool audioClickFlag  = true;
-float audioClickVolume = 0.1f;
+float audioClickVolume = 0.5f;
 
 bool rcEnable = false;
 unsigned char rcStopNote = 28;

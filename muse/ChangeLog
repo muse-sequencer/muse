@@ -1,3 +1,5 @@
+15.07.2010
+      * Added: Volume control for audio metronome (rj)
 12.07.2010
       * Fixed: When wave files were edited allocation was on stack which caused crashes for larger selections, now done on heap (rj)
       * Added: Print svn version in -v and About box. (rj)

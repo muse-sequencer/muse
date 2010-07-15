@@ -416,6 +416,8 @@ static void loadConfigMetronom(Xml& xml)
                               midiClickFlag = xml.parseInt();
                         else if (tag == "audioClickEnable")
                               audioClickFlag = xml.parseInt();
+                        else if (tag == "audioClickVolume")
+                              audioClickVolume = xml.parseFloat();
                         else
                               xml.unknown("Metronome");
                         break;
@@ -932,6 +934,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.intTag(level, "preroll", precountPreroll);
       xml.intTag(level, "midiClickEnable", midiClickFlag);
       xml.intTag(level, "audioClickEnable", audioClickFlag);
+      xml.floatTag(level, "audioClickVolume", audioClickVolume);
       xml.tag(level--, "/metronom");
 
       xml.intTag(level, "rcEnable",   rcEnable);

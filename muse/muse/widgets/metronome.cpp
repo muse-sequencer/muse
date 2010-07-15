@@ -30,7 +30,8 @@ MetronomeConfig::MetronomeConfig(QWidget* parent, const char* name)
       connect(precountFromMastertrack, SIGNAL(toggled(bool)),
          SLOT(precountFromMastertrackChanged(bool)));
       connect(audioBeepRoutesButton, SIGNAL(clicked()), SLOT(audioBeepRoutesClicked()));
-      
+      connect(volumeSlider, SIGNAL(valueChanged(int)), SLOT(beepVolumeChanged(int)));
+
       measureNote->setValue(measureClickNote);
       measureVelocity->setValue(measureClickVelo);
       beatNote->setValue(beatClickNote);
@@ -126,6 +127,7 @@ void MetronomeConfig::apply()
       ::precountPreroll  = precountPreroll->isChecked();
       midiClickFlag      = midiClick->isChecked();
       audioClickFlag     = audioBeep->isChecked();
+      //audioVolumeChanged = volumeSlider->value();
       }
 
 //---------------------------------------------------------
@@ -165,4 +167,8 @@ void MetronomeConfig::precountFromMastertrackChanged(bool flag)
       precountSigN->setEnabled(!flag);
       }
 
-
+void MetronomeConfig::beepVolumeChanged(int volume)
+      {
+      // this value is directly applied, not using th Apply button, it just seems more usable this way.
+      audioClickVolume=volume/100.0;
+      }
