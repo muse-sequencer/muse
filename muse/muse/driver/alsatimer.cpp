@@ -55,7 +55,7 @@
                      };
     int max_ids = sizeof(test_ids) / sizeof(int);
     long best_res = LONG_MAX;
-    int best_dev = SND_TIMER_GLOBAL_SYSTEM;
+    int best_dev = -1; // SND_TIMER_GLOBAL_SYSTEM;
     int i;
 
     if (id || info || params) {
@@ -88,6 +88,9 @@
         }
       device = best_dev;
       }
+
+    if(best_dev==-1)
+      return -1; // no working timer found
 
     sprintf(timername, "hw:CLASS=%i,SCLASS=%i,CARD=%i,DEV=%i,SUBDEV=%i", devclass, sclass, card, device, subdevice);
     if ((err = snd_timer_open(&handle, timername, SND_TIMER_OPEN_NONBLOCK))<0) {
@@ -142,7 +145,7 @@
     setTick = (1000000000 / snd_timer_info_get_resolution(info)) / freq;
 
     if (setTick == 0) {
-      // return, print error if freq i below 500 (timing will suffer)
+      // return, print error if freq is below 500 (timing will suffer)
       if (((1000000000.0 / snd_timer_info_get_resolution(info)) / snd_timer_params_get_ticks(params)) < 500) {
         fprintf(stderr,"AlsaTimer::setTimerTicks(): requested freq %u Hz too high for timer (max is %g)\n",
           freq, 1000000000.0 / snd_timer_info_get_resolution(info));

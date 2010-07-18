@@ -1,3 +1,5 @@
+18.07.2010
+      * Fixed: Handle errors during timer initialization more gracefully (rj)
 15.07.2010
       * Added: Volume control for audio metronome (rj)
 12.07.2010

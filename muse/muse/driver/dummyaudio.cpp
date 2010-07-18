@@ -260,10 +260,15 @@ static void* dummyLoop(void* ptr)
       unsigned int tickRate = sampleRate / segmentSize;
       
       AlsaTimer timer;
-      fprintf(stderr, "Finding best alsa timer for dummy driver:\n");
+      fprintf(stderr, "Get alsa timer for dummy driver:\n");
       timer.setFindBestTimer(false);
       int fd = timer.initTimer();
-      
+      if (fd==-1) {
+        QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer for dummy audio driver!")),
+              /*tr*/(QString("No functional timer was available.\n"
+                         "Alsa timer not available, check if module snd_timer is available and /dev/snd/timer is available")));
+      }
+
       /* Depending on nature of the timer, the requested tickRate might not
        * be available.  The return value is the nearest available frequency,
        * so use this to reset our dummpy sampleRate to keep everything 

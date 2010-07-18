@@ -8,6 +8,8 @@
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
 //=========================================================
 
+#include <qmessagebox.h>
+#include <qobject.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -273,6 +275,10 @@ signed int MidiSeq::selectTimer()
     }
     delete timer;
     timer=NULL;
+    QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer!")),
+              /*tr*/(QString("No functional timer was available.\n"
+                         "RTC timer not available, check if /dev/rtc is available and readable by current user\n"
+                         "Alsa timer not available, check if module snd_timer is available and /dev/snd/timer is available")));
     printf("No functional timer available!!!\n");
     exit(1);
     }
