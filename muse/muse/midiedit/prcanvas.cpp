@@ -853,12 +853,14 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
                   case 0:
                   case 3:
                         p.setPen(black);
+                        p.drawLine(x, yy, x + w, yy);
                         break;
                   default:
-                        p.setPen(gray);
+                        //p.setPen(lightGray);
+                        p.fillRect(x, yy-3, w, 6, QBrush(QColor(230,230,230)));
+                        //p.drawLine(x, yy, x + w, yy);
                         break;
                   }
-            p.drawLine(x, yy, x + w, yy);
             --key;
             }
 

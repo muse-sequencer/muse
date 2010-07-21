@@ -1,3 +1,7 @@
+21.07.2010
+      * Improved: Note lanes in pianoroll and marking of C-notes (rj)
+20.07.2010
+      * Fixed: illegal shortcut no longer reported on startup (rj)
 18.07.2010
       * Fixed: Handle errors during timer initialization more gracefully (rj)
 15.07.2010
