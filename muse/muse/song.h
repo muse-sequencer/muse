@@ -302,7 +302,7 @@ class Song : public QObject {
       int execMidiAutomationCtlPopup(MidiTrack*, MidiPart*, const QPoint&, int);
       void connectJackRoutes(AudioTrack* track, bool disconnect);
       void updateSoloStates();
-      void chooseMidiRoutes(QButton* /*parent*/, MidiTrack* /*track*/, bool /*dst*/);
+      //void chooseMidiRoutes(QButton* /*parent*/, MidiTrack* /*track*/, bool /*dst*/);
 
       //-----------------------------------------
       //   undo, redo

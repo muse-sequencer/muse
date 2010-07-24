@@ -28,6 +28,7 @@
 #include <qfiledialog.h>
 #include <qtoolbutton.h>
 #include <qmessagebox.h>
+#include <qpoint.h>
 
 #include "confmport.h"
 #include "app.h"
@@ -190,14 +191,16 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                     int gid = 0;
                     std::list<QString> sl;
         
-        _redisplay:
-                    // Jack input ports if device is writable, and jack output ports if device is readable.
-                    sl = (dev->rwFlags() & 1) ? audioDevice->inputPorts(true, _showAliases) : audioDevice->outputPorts(true, _showAliases);
-                    
                     pup = new QPopupMenu(this);
                     pup->setCheckable(true);
                     
+        _redisplay:
+                    pup->clear();
                     gid = 0;
+                    
+                    // Jack input ports if device is writable, and jack output ports if device is readable.
+                    sl = (dev->rwFlags() & 1) ? audioDevice->inputPorts(true, _showAliases) : audioDevice->outputPorts(true, _showAliases);
+                    
                     //for (int i = 0; i < channel; ++i) 
                     //{
                       //char buffer[128];
@@ -239,7 +242,7 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                     {
                       if(n == 0) // Show first aliases
                       {
-                        delete pup;
+                        ///delete pup;
                         if(_showAliases == 0)
                           _showAliases = -1;
                         else  
@@ -249,7 +252,7 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                       else
                       if(n == 1) // Show second aliases
                       {
-                        delete pup;
+                        ///delete pup;
                         if(_showAliases == 1)
                           _showAliases = -1;
                         else  
@@ -299,11 +302,17 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                       
                       audio->msgUpdateSoloStates();
                       song->update(SC_ROUTE);
+                      
+                      // p3.3.46
+                      //delete pup;
+                      // FIXME:
+                      // Routes can't be re-read until the message sent from msgAddRoute1() 
+                      //  has had time to be sent and actually affected the routes.
+                      ///goto _redisplay;   // Go back
+                      
                     }
                     delete pup;
                     //iR->setDown(false);     // pup->exec() catches mouse release event
-                  
-                  
                   
                   }
                   //break;

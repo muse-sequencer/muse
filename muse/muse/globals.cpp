@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <qobject.h>
 #include "globals.h"
 #include "config.h"
 
@@ -338,6 +339,10 @@ unsigned char rcRecordNote = 31;
 unsigned char rcGotoLeftMarkNote = 33;
 unsigned char rcPlayNote = 29;
 bool automation = true;
+
+QObject* gRoutingPopupMenuMaster = 0;
+RouteMenuMap gRoutingMenuMap;
+bool gIsOutRoutingPopupMenu = false;
 
 uid_t euid, ruid;  // effective user id, real user id
 

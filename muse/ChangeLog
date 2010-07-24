@@ -1,3 +1,7 @@
+24.07.2010
+      * Feature: Audio and midi routing popup menus now stay open, for making rapid connections. (T356)
+      * Fixed: Delete some objects hanging around upon close like song, audio, midiSeq, and prefetch. (T356)
+               TODO: Find a way to delete the 'muse' object without causing problems like seg faults.
 21.07.2010
       * Improved: Note lanes in pianoroll and marking of C-notes (rj)
 20.07.2010

@@ -75,6 +75,7 @@ dist_libwidgets_a_SOURCES = \
 	combobox.cpp combobox.h \
 	checkbox.cpp checkbox.h \
 	aboutbox_impl.cpp aboutbox_impl.h \
+	popupmenu.cpp popupmenu.h \
 	listitem.h \
         menutitleitem.h \
 	\
@@ -126,6 +127,7 @@ nodist_libwidgets_a_SOURCES = \
 	moc_swidget.cpp \
 	moc_tempolabel.cpp \
 	moc_tools.cpp \
+	moc_popupmenu.cpp \
 	moc_fontsel.cpp \
 	moc_ctrlcombo.cpp \
 	moc_sliderbase.cpp \

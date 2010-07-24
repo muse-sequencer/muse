@@ -261,6 +261,9 @@ MarkerView::MarkerView(QWidget* parent)
 
 MarkerView::~MarkerView()
       {
+      // p3.3.47
+      //printf("MarkerView::~MarkerView() before undoRedo->removeFrom(tools)\n");
+      
       undoRedo->removeFrom(tools);
       }
 

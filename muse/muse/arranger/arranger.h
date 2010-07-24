@@ -169,6 +169,7 @@ class Arranger : public QWidget {
       void verticalScrollSetYpos(unsigned);
       void inRoutesPressed();
       void outRoutesPressed();
+      void routingPopupMenuActivated(int /*id*/);
       
    signals:
       void redirectWheelEvent(QWheelEvent*);

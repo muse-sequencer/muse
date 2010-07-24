@@ -13,6 +13,7 @@
 #include <qiconset.h>
 
 #include "globaldefs.h"
+//#include "route.h"
 
 class Track;
 class QLabel;
@@ -37,10 +38,12 @@ class Strip : public QFrame {
       QVBoxLayout* layout;
       Meter* meter[MAX_CHANNELS];
       bool useSoloIconSet2;
-
+      
       QToolButton* record;
       QToolButton* solo;
       QToolButton* mute;
+      QToolButton* iR; // Input routing button
+      QToolButton* oR; // Output routing button
       QGridLayout* sliderGrid;
       ComboBox* autoType;
       void setLabelText();

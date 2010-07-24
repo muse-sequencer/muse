@@ -189,7 +189,7 @@ void AudioPrefetch::prefetch(bool doSeek)
             float* bp[ch];
 // printf("prefetch %d\n", writePos);
             if (track->prefetchFifo()->getWriteBuffer(ch, segmentSize, bp, writePos)) {
-                  printf("AudioPrefetch::prefetch No write buffer!\n");
+                  // printf("AudioPrefetch::prefetch No write buffer!\n"); // p3.3.46 Was getting this...
                   continue;
                   }
             //track->fetchData(writePos, segmentSize, bp);

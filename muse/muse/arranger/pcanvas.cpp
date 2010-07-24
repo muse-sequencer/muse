@@ -19,7 +19,7 @@
 #include <qpoint.h>
 #include <qlineedit.h>
 #include <qmessagebox.h>
-#include <qdragobject.h>>
+#include <qdragobject.h>
 #include <qpopupmenu.h>
 #include <qurl.h>
 #include <qmenudata.h>

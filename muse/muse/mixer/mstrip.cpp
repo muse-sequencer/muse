@@ -17,10 +17,11 @@
 #include <qcombobox.h>
 #include <qtooltip.h>
 #include <qtimer.h>
-#include <qpopupmenu.h>
+//#include <qpopupmenu.h>
 #include <qcursor.h>
 
 #include <math.h>
+#include "app.h"
 #include "midi.h"
 #include "midictrl.h"
 #include "mstrip.h"
@@ -41,6 +42,7 @@
 #include "gconfig.h"
 #include "ttoolbutton.h"
 //#include "utils.h"
+#include "popupmenu.h"
 
 enum { KNOB_PAN, KNOB_VAR_SEND, KNOB_REV_SEND, KNOB_CHO_SEND };
 
@@ -457,6 +459,11 @@ void MidiStrip::songChanged(int val)
         //label->setFont(config.fonts[1]);
         setLabelFont();
       }  
+      
+      // p3.3.47 Update the routing popup menu if anything relevant changes.
+      if(gRoutingPopupMenuMaster == this && track && (val & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))) 
+        // Use this handy shared routine.
+        muse->updateRouteMenus(track);
     }
 
 //---------------------------------------------------------
@@ -611,7 +618,6 @@ void MidiStrip::updateControls()
               //slider->blockSignals(true);
               if(double(nvolume) != slider->value())
               {
-                // Added by Tim. p3.3.6
                 //printf("MidiStrip::updateControls setting volume slider\n");
                 
                 slider->setValue(double(nvolume));
@@ -623,7 +629,6 @@ void MidiStrip::updateControls()
             int ivol = nvolume;
             nvolume -= ctrl->bias();
             if(nvolume != volume) {
-                // Added by Tim. p3.3.6
                 //printf("MidiStrip::updateControls setting volume slider\n");
                 
                 //slider->blockSignals(true);
@@ -631,7 +636,6 @@ void MidiStrip::updateControls()
                 //sl->setValue(double(nvolume));
                 if(ivol == 0)
                 {
-                  // Added by Tim. p3.3.6
                   //printf("MidiStrip::updateControls setting volume slider label\n");  
                   
                   sl->setValue(sl->minValue() - 0.5 * (sl->minValue() - sl->off()));
@@ -641,14 +645,12 @@ void MidiStrip::updateControls()
                   double v = -fast_log10(float(127*127)/float(ivol*ivol))*20.0;
                   if(v > sl->maxValue())
                   {
-                    // Added by Tim. p3.3.6
                     //printf("MidiStrip::updateControls setting volume slider label\n");
                     
                     sl->setValue(sl->maxValue());
                   }  
                   else  
                   {
-                    // Added by Tim. p3.3.6
                     //printf("MidiStrip::updateControls setting volume slider label\n");
                     
                     sl->setValue(v);
@@ -678,7 +680,6 @@ void MidiStrip::updateControls()
               npan -= ctrl->bias();
               if(double(npan) != gcon->knob->value())
               {
-                // Added by Tim. p3.3.6
                 //printf("MidiStrip::updateControls setting pan knob\n");
                 
                 gcon->knob->setValue(double(npan));
@@ -690,7 +691,6 @@ void MidiStrip::updateControls()
             npan -= ctrl->bias();
             if(npan != pan) 
             {
-                // Added by Tim. p3.3.6
                 //printf("MidiStrip::updateControls setting pan label and knob\n");
                 
                 //controller[KNOB_PAN].knob->blockSignals(true);
@@ -957,15 +957,37 @@ void MidiStrip::updateOffState() // Ripped from AudioStrip, hehh(mg)
       }
 
 //---------------------------------------------------------
+//   routingPopupMenuActivated
+//---------------------------------------------------------
+
+void MidiStrip::routingPopupMenuActivated(int n)
+{
+  if(gRoutingPopupMenuMaster != this || !track || !track->isMidiTrack())
+    return;
+  muse->routingPopupMenuActivated(track, n);
+}
+
+//---------------------------------------------------------
 //   iRoutePressed
 //---------------------------------------------------------
 
 void MidiStrip::iRoutePressed()
 {
-  if(!track->isMidiTrack())
+  if(!track || !track->isMidiTrack())
     return;
   
-  song->chooseMidiRoutes(iR, (MidiTrack*)track, false);
+  //song->chooseMidiRoutes(iR, (MidiTrack*)track, false);
+  PopupMenu* pup = muse->prepareRoutingPopupMenu(track, false);
+  if(!pup)
+    return;
+  
+  //pup->disconnect();
+  gRoutingPopupMenuMaster = this;
+  connect(pup, SIGNAL(activated(int)), SLOT(routingPopupMenuActivated(int)));
+  connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
+  pup->popup(QCursor::pos(), 0);
+  iR->setDown(false);     
+  return;
   
   /*
   RouteList* irl = track->inRoutes();
@@ -1087,10 +1109,21 @@ void MidiStrip::iRoutePressed()
 
 void MidiStrip::oRoutePressed()
       {
-  if(!track->isMidiTrack())
+  if(!track || !track->isMidiTrack())
     return;
   
-  song->chooseMidiRoutes(oR, (MidiTrack*)track, true);
+  //song->chooseMidiRoutes(oR, (MidiTrack*)track, true);
+  PopupMenu* pup = muse->prepareRoutingPopupMenu(track, true);
+  if(!pup)
+    return;
+  
+  //pup->disconnect();
+  gRoutingPopupMenuMaster = this;
+  connect(pup, SIGNAL(activated(int)), SLOT(routingPopupMenuActivated(int)));
+  connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
+  pup->popup(QCursor::pos(), 0);
+  oR->setDown(false);     
+  return;
       
       /*
       QPopupMenu* pup = new QPopupMenu(oR);

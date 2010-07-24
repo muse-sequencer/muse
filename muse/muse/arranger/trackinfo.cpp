@@ -41,6 +41,7 @@
 #include "icons.h"
 #include "app.h"
 #include "route.h"
+#include "popupmenu.h"
 
 
 //---------------------------------------------------------
@@ -563,6 +564,18 @@ void Arranger::iInputPortChanged(const QString& s)
 */
 
 //---------------------------------------------------------
+//   routingPopupMenuActivated
+//---------------------------------------------------------
+
+void Arranger::routingPopupMenuActivated(int n)
+{
+  //if(gRoutingPopupMenuMaster != this || !track || !track->isMidiTrack())
+  if(!midiTrackInfo || gRoutingPopupMenuMaster != midiTrackInfo || !selected || !selected->isMidiTrack())
+    return;
+  muse->routingPopupMenuActivated(selected, n);
+}
+
+//---------------------------------------------------------
 //   inRoutesPressed
 //---------------------------------------------------------
 
@@ -571,7 +584,25 @@ void Arranger::inRoutesPressed()
   if(!selected)
     return;
     
-  song->chooseMidiRoutes(midiTrackInfo->iRButton, (MidiTrack*)selected, false);
+  ///song->chooseMidiRoutes(midiTrackInfo->iRButton, (MidiTrack*)selected, false);
+  
+  if(!selected->isMidiTrack())
+    return;
+  
+  //song->chooseMidiRoutes(iR, (MidiTrack*)track, false);
+  PopupMenu* pup = muse->prepareRoutingPopupMenu(selected, false);
+  if(!pup)
+    return;
+  
+  //pup->disconnect();
+  //gRoutingPopupMenuMaster = this;
+  gRoutingPopupMenuMaster = midiTrackInfo;
+  connect(pup, SIGNAL(activated(int)), SLOT(routingPopupMenuActivated(int)));
+  // Nope, can't clear menu and mm list in there, sub-menus stay open. Never mind for now...
+  connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
+  pup->popup(QCursor::pos(), 0);
+  midiTrackInfo->iRButton->setDown(false);     
+  return;
 }
 
 //---------------------------------------------------------
@@ -583,7 +614,25 @@ void Arranger::outRoutesPressed()
   if(!selected)
     return;
     
-  song->chooseMidiRoutes(midiTrackInfo->oRButton, (MidiTrack*)selected, true);
+  ///song->chooseMidiRoutes(midiTrackInfo->oRButton, (MidiTrack*)selected, true);
+  
+  if(!selected->isMidiTrack())
+    return;
+  
+  //song->chooseMidiRoutes(iR, (MidiTrack*)track, false);
+  PopupMenu* pup = muse->prepareRoutingPopupMenu(selected, true);
+  if(!pup)
+    return;
+  
+  //pup->disconnect();
+  //gRoutingPopupMenuMaster = this;
+  gRoutingPopupMenuMaster = midiTrackInfo;
+  connect(pup, SIGNAL(activated(int)), SLOT(routingPopupMenuActivated(int)));
+  // Nope, can't clear menu and mm list in there, sub-menus stay open. Never mind for now...
+  connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
+  pup->popup(QCursor::pos(), 0);
+  midiTrackInfo->oRButton->setDown(false);     
+  return;
 }
 
 //---------------------------------------------------------
@@ -1206,6 +1255,11 @@ void Arranger::updateMidiTrackInfo(int flags)
       if(flags == SC_MIDI_CONTROLLER)
         return;
         
+      // p3.3.47 Update the routing popup menu if anything relevant changes.
+      if(gRoutingPopupMenuMaster == midiTrackInfo && selected && (flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))) 
+        // Use this handy shared routine.
+        muse->updateRouteMenus(selected);
+      
       // Added by Tim. p3.3.9
       setTrackInfoLabelText();
       setTrackInfoLabelFont();

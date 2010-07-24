@@ -15,6 +15,7 @@
 #include <qdir.h>
 #include <qaction.h>
 #include <qcursor.h>
+#include <qpoint.h>
 #include <qbutton.h>
 
 #include "app.h"
@@ -2790,6 +2791,7 @@ void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
   }
 }
 
+/*
 //---------------------------------------------------------
 //   chooseMidiRoutes
 //---------------------------------------------------------
@@ -2802,6 +2804,9 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
   //if(!track->isMidiTrack())
   //  return;
   
+  QPoint ppt = QCursor::pos();
+  //QPoint ppt = parent->rect().bottomLeft();
+    
   //if(dst)
   //{
     // TODO
@@ -2816,6 +2821,15 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
     pup->setCheckable(true);
     
     int gid = 0;
+    int n;    
+    
+  // FIXME:
+  // Routes can't be re-read until the message sent from msgAddRoute1() 
+  //  has had time to be sent and actually affected the routes.
+  ///_redisplay:
+    
+    pup->clear();
+    gid = 0;
     
     //MidiInPortList* tl = song->midiInPorts();
     //for(iMidiInPort i = tl->begin();i != tl->end(); ++i) 
@@ -2865,38 +2879,36 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
       pup->insertItem(QT_TR_NOOP(md->name()), subp);
     }
         
-    /*
-    QPopupMenu* pup = new QPopupMenu(iR);
-    pup->setCheckable(true);
+//    QPopupMenu* pup = new QPopupMenu(iR);
+//    pup->setCheckable(true);
     //MidiTrack* t = (MidiTrack*)track;
-    RouteList* irl = track->inRoutes();
+//    RouteList* irl = track->inRoutes();
 
-    MidiTrack* t = (MidiTrack*)track;
-    int gid = 0;
-    for (int i = 0; i < channel; ++i) 
-    {
-          char buffer[128];
-          snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
-          MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
-          pup->insertItem(titel);
+//    MidiTrack* t = (MidiTrack*)track;
+//    int gid = 0;
+//    for (int i = 0; i < channel; ++i) 
+//    {
+//          char buffer[128];
+//          snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+//          MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
+//          pup->insertItem(titel);
 
-          if (!checkAudioDevice()) return;
-          std::list<QString> ol = audioDevice->outputPorts();
-          for (std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) {
-                int id = pup->insertItem(*ip, (gid * 16) + i);
-                Route dst(*ip, true, i);
-                ++gid;
-                for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
-                      if (*ir == dst) {
-                            pup->setItemChecked(id, true);
-                            break;
-                            }
-                      }
-                }
-          if (i+1 != channel)
-                pup->insertSeparator();
-    }
-    */
+//          if (!checkAudioDevice()) return;
+//          std::list<QString> ol = audioDevice->outputPorts();
+//          for (std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) {
+//                int id = pup->insertItem(*ip, (gid * 16) + i);
+//                Route dst(*ip, true, i);
+//                ++gid;
+//                for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
+//                      if (*ir == dst) {
+//                            pup->setItemChecked(id, true);
+//                            break;
+//                            }
+//                      }
+//                }
+//          if (i+1 != channel)
+//                pup->insertSeparator();
+//    }
     
     if(pup->count() == 0)
     {
@@ -2904,8 +2916,9 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
       return;
     }
     
-    int n = pup->exec(QCursor::pos());
-    delete pup;
+    //n = pup->exec(QCursor::pos());
+    n = pup->exec(ppt);
+    ///delete pup;
     if (n != -1) 
     {
           int mdidx = n / MIDI_CHANNELS;
@@ -2917,12 +2930,17 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
           MidiPort* mp = &midiPorts[mdidx];
           MidiDevice* md = mp->device();
           if(!md)
+          {
+            delete pup;
             return;
+          }
           
           //if(!(md->rwFlags() & 2))
           if(!(md->rwFlags() & (dst ? 1 : 2)))
+          {
+            delete pup;
             return;
-            
+          }  
           
           //QString s(pup->text(n));
           //QT_TR_NOOP(md->name())
@@ -2944,17 +2962,17 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
           }
           if (iir != rl->end()) 
           {
-                // disconnect
-                if(dst)
-                {
-                  //printf("Song::chooseMidiRoutes removing route src track name: %s dst device name: %s\n", track->name().latin1(), md->name().latin1());
-                  audio->msgRemoveRoute(bRoute, aRoute);
-                }
-                else
-                {
-                  //printf("Song::chooseMidiRoutes removing route src device name: %s dst track name: %s\n", md->name().latin1(), track->name().latin1());
-                  audio->msgRemoveRoute(aRoute, bRoute);
-                }
+            // disconnect
+            if(dst)
+            {
+              //printf("Song::chooseMidiRoutes removing route src track name: %s dst device name: %s\n", track->name().latin1(), md->name().latin1());
+              audio->msgRemoveRoute(bRoute, aRoute);
+            }
+            else
+            {
+              //printf("Song::chooseMidiRoutes removing route src device name: %s dst track name: %s\n", md->name().latin1(), track->name().latin1());
+              audio->msgRemoveRoute(aRoute, bRoute);
+            }
           }
           else 
           {
@@ -2975,13 +2993,17 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
           audio->msgUpdateSoloStates();
           //printf("Song::chooseMidiRoutes calling song->update\n");
           song->update(SC_ROUTE);
+          
+          // p3.3.46
+          ///goto _redisplay;
     }
-    //delete pup;
+    delete pup;
     parent->setDown(false);     // pup->exec() catches mouse release event
     //printf("Song::chooseMidiRoutes end\n");
     
   //}  
 }
+*/
 
 //---------------------------------------------------------
 //   insertTrack0

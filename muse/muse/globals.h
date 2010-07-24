@@ -16,6 +16,7 @@
 //#include <qaction.h>
 #include "value.h"
 #include "mtc.h"
+#include "route.h"
 
 #include <unistd.h>
 
@@ -140,7 +141,7 @@ extern QAction* punchoutAction;
 extern QAction* recordAction;
 extern QAction* panicAction;
 
-class AudioMixerApp;
+//class AudioMixerApp;
 class MusE;
 //extern AudioMixerApp* audioMixer;
 extern MusE* muse;
@@ -170,6 +171,15 @@ extern unsigned char rcPlayNote;
 
 extern bool midiSeqRunning;
 extern bool automation;
+
+class QObject;
+// Which audio strip, midi strip, or midi track info strip
+//  was responsible for popping up the routing menu.
+extern QObject* gRoutingPopupMenuMaster;
+// Map of routing popup menu item IDs to Routes.
+extern RouteMenuMap gRoutingMenuMap;
+// Whether the routes popup was shown by clicking the output routes button, or input routes button.
+extern bool gIsOutRoutingPopupMenu;
 
 extern uid_t euid, ruid;
 extern void doSetuid();

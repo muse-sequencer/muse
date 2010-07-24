@@ -167,10 +167,12 @@ void Strip::soloToggled(bool val)
 Strip::Strip(QWidget* parent, Track* t)
    : QFrame(parent, "Strip", Qt::WDestructiveClose)
       {
+      iR            = 0;
+      oR            = 0;
+      
       setBackgroundMode(PaletteMid);
       setFrameStyle(Panel | Raised);
       setLineWidth(2);
-
       useSoloIconSet2 = false;
       
       track    = t;
@@ -189,7 +191,6 @@ Strip::Strip(QWidget* parent, Track* t)
       //setLabelText();
       //label->setFont(config.fonts[1]);
       
-      // Added by Tim. p3.3.9
       //printf("Strip::Strip w:%d frw:%d layoutmarg:%d lx:%d ly:%d lw:%d lh:%d\n", STRIP_WIDTH, frameWidth(), layout->margin(), label->x(), label->y(), label->width(), label->height());
       
       // Tested: The label's width is 100. It does not become STRIP_WIDTH - 2*layout->margin
@@ -231,5 +232,4 @@ void Strip::setAutomationType(int t,int)
       track->setAutomationType(AutomationType(t));
       song->update(SC_AUTOMATION);
       }
-
 
