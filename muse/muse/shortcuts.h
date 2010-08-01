@@ -62,6 +62,7 @@ enum {
       SHRT_TOGGLE_LOOP, // Slash
       SHRT_TOGGLE_METRO, // C
       SHRT_START_REC, // *(keypad)
+      SHRT_REC_CLEAR, // *(keypad)
 
       //Main + Drumeditor
       SHRT_NEW, //Ctrl+N

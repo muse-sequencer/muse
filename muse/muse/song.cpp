@@ -1001,10 +1001,17 @@ void Song::setLoop(bool f)
       }
 
 //---------------------------------------------------------
-//   setRecord
-//    set transport loop flag
+//   clearTrackRec
 //---------------------------------------------------------
+void Song::clearTrackRec()
+{
+    for (iTrack it = tracks()->begin(); it != tracks()->end(); ++it)
+        setRecordFlag(*it,false);
+}
 
+//---------------------------------------------------------
+//   setRecord
+//---------------------------------------------------------
 void Song::setRecord(bool f, bool autoRecEnable)
       {
       if (recordFlag != f) {

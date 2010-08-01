@@ -35,6 +35,7 @@ void initShortCuts()
       defShrt(SHRT_GOTO_RIGHT,    Qt::Key_PageDown,  "Transport: Goto right marker" , GLOBAL_SHRT, "goto_right");
       defShrt(SHRT_TOGGLE_LOOP,   Qt::Key_Slash, "Transport: Toggle Loop section", GLOBAL_SHRT, "toggle_loop");
       defShrt(SHRT_START_REC,     Qt::Key_Asterisk, "Transport: Toggle Record",    GLOBAL_SHRT, "toggle_rec");
+      defShrt(SHRT_REC_CLEAR,     Qt::SHIFT + Qt::Key_Asterisk, "Transport: Clear all rec enabled tracks",    GLOBAL_SHRT, "rec_clear");
       defShrt(SHRT_COPY,          Qt::CTRL + Qt::Key_C, "Edit: Copy", INVIS_SHRT, "copy");
       defShrt(SHRT_UNDO,          Qt::CTRL + Qt::Key_Z, "Edit: Undo", INVIS_SHRT, "undo");
       defShrt(SHRT_REDO,          Qt::CTRL + Qt::Key_Y, "Edit: Redo", INVIS_SHRT, "redo");

@@ -2943,6 +2943,11 @@ void MusE::kbAccel(int key)
                   song->setRecord(!song->record());
                   }
             }
+      else if (key == shortcuts[SHRT_REC_CLEAR].key) {
+            if (!audio->isPlaying()) {
+                  song->clearTrackRec();
+                  }
+            }
       else if (key == shortcuts[SHRT_OPEN_TRANSPORT].key) {
             toggleTransport();
             }

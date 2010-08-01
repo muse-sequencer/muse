@@ -372,6 +372,7 @@ class Song : public QObject {
       bool getLoop() { return loopFlag; }
       void setLoop(bool f);
       void setRecord(bool f, bool autoRecEnable = true);
+      void clearTrackRec();
       void setPlay(bool f);
       void setStop(bool);
       void forward();
