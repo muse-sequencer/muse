@@ -618,7 +618,6 @@ if test x$LO_LIB_FOUND = xyes ; then
       AC_SUBST(LO_CFLAGS)
       AC_SUBST(LO_LIBS)
       AC_DEFINE(OSC_SUPPORT, 1, [support for OSC])
-      AC_MSG_CHECKING([found liblo])
 fi
 
 AM_CONDITIONAL(OSC_SUPPORT, test x$LO_LIB_FOUND = xyes)
