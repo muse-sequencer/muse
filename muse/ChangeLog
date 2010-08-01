@@ -1,3 +1,5 @@
+01.08.2010
+      * Added: Move track selection when part selection is moved (rj)
 24.07.2010
       * Feature: Audio and midi routing popup menus now stay open, for making rapid connections. (T356)
       * Fixed: Delete some objects hanging around upon close like song, audio, midiSeq, and prefetch. (T356)

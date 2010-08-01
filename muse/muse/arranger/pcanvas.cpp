@@ -1100,6 +1100,9 @@ void PartCanvas::keyPress(QKeyEvent* event)
       // Shortcuts that require selected parts from here
       //
       if (!curItem) {
+          if (items.size()==0) {
+              return;
+          }
           for (iCItem i = items.begin(); i != items.end(); ++i) {
               NPart* part = (NPart*)(i->second);
               if (part->isSelected()) {

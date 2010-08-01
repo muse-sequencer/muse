@@ -608,7 +608,7 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
         QPopupMenu* p = new QPopupMenu(this);
         p->setCheckable(true);
         p->insertItem(tr("Show Gui"), 0);
-  
+        printf("synth hasgui %d, gui visible %d\n",synth->hasGui(), synth->guiVisible());
         p->setItemEnabled(0, synth->hasGui());
         p->setItemChecked(0, synth->guiVisible());
   
@@ -616,6 +616,7 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
         #ifdef DSSI_SUPPORT
         if(dynamic_cast<DssiSynthIF*>(synth->sif()))
         {
+            printf("entering this wierd if statement\n");
           p->setItemChecked(0, false);
           p->setItemEnabled(0, false);
         }  
@@ -1089,8 +1090,16 @@ void TList::selectTrack(Track* tr)
       song->deselectTracks();
       tr->setSelected(true);
       
+
+      // rec enable track if expected
+      TrackList recd = getRecEnabledTracks();
+      if (recd.size() == 1) { // one rec enabled track, move rec enabled with selection
+        song->setRecordFlag((Track*)recd.front(),false);
+        song->setRecordFlag(tr,true);
+      }
+
       // By T356. Force a redraw for wave tracks, since it does not seem to happen.
-      if(!tr->isMidiTrack())
+      //if(!tr->isMidiTrack())
         redraw();
       emit selectionChanged();
       }
