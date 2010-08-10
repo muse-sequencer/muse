@@ -2655,16 +2655,19 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 
             // append
             int noDivisors=0;
-            switch (*_raster) {
-                case 768:         // 1/2
-                    noDivisors=2; break;
-                case 384:         // 1/4
-                    noDivisors=4; break;
-                case 192:         // 1/8
-                    noDivisors=8; break;
-                case 96:          // 1/16
-                    noDivisors=16; break;
-            }
+            if (*_raster == config.division *2)         // 1/2
+                noDivisors=2;
+            else if (*_raster== config.division)        // 1/4
+                noDivisors=4;
+            else if (*_raster==config.division/2)         // 1/8
+                noDivisors=8;
+            else if (*_raster==config.division/4)          // 1/16
+                noDivisors=16;
+            else if (*_raster==config.division/8)          // 1/16
+                noDivisors=32;
+            else if (*_raster==config.division/16)          // 1/16
+                noDivisors=64;
+
             int r = *_raster;
             int rr = rmapx(r);
             if (*_raster > 1) {
