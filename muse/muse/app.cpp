@@ -2900,7 +2900,6 @@ void MusE::ctrlChanged()
 
 void MusE::kbAccel(int key)
       {
-      printf("pressed key %d \n",key);
       if (key == shortcuts[SHRT_TOGGLE_METRO].key) {
             song->setClick(!song->click());
             }
