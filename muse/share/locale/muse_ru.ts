@@ -6532,7 +6532,7 @@ Random Rhythm Generator is not enabled yet!</source>
 <context>
     <name>SynthConfigBase</name>
     <message>
-        <source>MusE: Soft Synth Configuration</source>
+        <source>MusE: Synth Configuration</source>
         <translation>MusE: Настройка программного синтезатора</translation>
     </message>
     <message>

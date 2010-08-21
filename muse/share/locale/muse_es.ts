@@ -6524,7 +6524,7 @@ Random Rhythm Generator is not enabled yet!</source>
 <context>
     <name>SynthConfigBase</name>
     <message>
-        <source>MusE: Soft Synth Configuration</source>
+        <source>MusE: Synth Configuration</source>
         <translation type="unfinished">MusE: Configuraci� del Sintetizador virtual</translation>
     </message>
     <message>

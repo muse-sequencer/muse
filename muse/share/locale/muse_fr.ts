@@ -5387,7 +5387,7 @@ sélectionnées</translation>
 <context>
     <name>SynthConfigBase</name>
     <message>
-        <source>MusE: Soft Synth Configuration</source>
+        <source>MusE: Synth Configuration</source>
         <translation>MusE: Configuration Synth Virtuel</translation>
     </message>
     <message>

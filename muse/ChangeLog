@@ -1,7 +1,10 @@
+21.08.2010
+      * Renamed: Soft synth configuration changed to Synth configuration, as per patch from Geoff King (rj)
 10.08.2010
       * Fixed/Changed: Grid reacts to midi resolution change (rj)
 01.08.2010
-      * Added: Move track selection when part selection is moved (rj)
+      * Added: Move track selection when part selection is moved, is this a good approach? (rj)
+      * Added: Backspace unarms all armed tracks (rj)
 24.07.2010
       * Feature: Audio and midi routing popup menus now stay open, for making rapid connections. (T356)
       * Fixed: Delete some objects hanging around upon close like song, audio, midiSeq, and prefetch. (T356)

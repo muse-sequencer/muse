@@ -5252,7 +5252,7 @@ Losowy Generator Rytmu jeszcze nie jest udostępniony!</translation>
 <context>
     <name>SynthConfigBase</name>
     <message>
-        <source>MusE: Soft Synth Configuration</source>
+        <source>MusE: Synth Configuration</source>
         <translation>MuzA: Konfiguracja Syntezatora Softowego</translation>
     </message>
     <message>

@@ -7377,8 +7377,8 @@ Random Rhythm Generator is not enabled yet!</source>
 <context>
     <name>SynthConfigBase</name>
     <message>
-        <source>MusE: Soft Synth Configuration</source>
-        <translation>MusE: Mjukvarusyntinställningar</translation>
+        <source>MusE: Synth Configuration</source>
+        <translation>MusE: Syntinställningar</translation>
     </message>
     <message>
         <source>Soft Synthesizer</source>
