@@ -189,6 +189,8 @@ enum {
       SHRT_DEC_POS,
       SHRT_LOCATORS_TO_SELECTION, //Alt+P, currently in arranger & pianoroll
       SHRT_INSERT_AT_LOCATION, //Shift+CrsrRight
+      SHRT_INCREASE_LEN,
+      SHRT_DECREASE_LEN,
 
       SHRT_TOOL_1,//Shift+1 Pointer
       SHRT_TOOL_2,//Shift+2 Pen

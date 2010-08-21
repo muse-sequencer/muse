@@ -221,6 +221,9 @@ void initShortCuts()
       defShrt(SHRT_TOGGLE_PUNCT2,      Qt::Key_Comma, "Quantize: Toggle punctuation quantization (2)", PROLL_SHRT, "midi_quant_punct2");
       defShrt(SHRT_INSERT_AT_LOCATION, Qt::SHIFT + Qt::Key_Right, "Edit: Insert at location", PROLL_SHRT, "midi_insert_at_loc");
 
+      defShrt(SHRT_INCREASE_LEN, Qt::CTRL + Qt::SHIFT + Qt::Key_Right, "Edit: Increase length", PROLL_SHRT, "increase_len");
+      defShrt(SHRT_DECREASE_LEN, Qt::CTRL + Qt::SHIFT + Qt::Key_Left, "Edit: Decrease length", PROLL_SHRT, "decrease_len");
+
       //-----------------------------------------------------------
       // List edit:
       //-----------------------------------------------------------

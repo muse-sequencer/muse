@@ -345,6 +345,16 @@ void EventCanvas::keyPress(QKeyEvent* event)
             // TODO: Check boundaries
             modifySelected(NoteInfo::VAL_TIME, 0 - editor->raster());
             }
+
+      else if (key == shortcuts[SHRT_INCREASE_LEN].key) {
+            // TODO: Check boundaries
+            modifySelected(NoteInfo::VAL_LEN, editor->raster());
+            }
+      else if (key == shortcuts[SHRT_DECREASE_LEN].key) {
+            // TODO: Check boundaries
+            modifySelected(NoteInfo::VAL_LEN, 0 - editor->raster());
+            }
+
       else
             event->ignore();
       }
