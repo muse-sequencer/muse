@@ -1,5 +1,6 @@
 21.08.2010
       * Renamed: Soft synth configuration changed to Synth configuration, as per patch from Geoff King (rj)
+      * Fixed: Shortcuts with modifier keys wasn't working for global shortcuts, should be now (rj)
 10.08.2010
       * Fixed/Changed: Grid reacts to midi resolution change (rj)
 01.08.2010

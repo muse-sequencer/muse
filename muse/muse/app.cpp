@@ -2900,6 +2900,7 @@ void MusE::ctrlChanged()
 
 void MusE::kbAccel(int key)
       {
+      printf("pressed key %d \n",key);
       if (key == shortcuts[SHRT_TOGGLE_METRO].key) {
             song->setClick(!song->click());
             }
@@ -3007,7 +3008,14 @@ class MuseApplication : public QApplication {
                   globalKeyState = ke->stateAfter();
                   bool accepted = ke->isAccepted();
                   if (!accepted) {
-                        muse->kbAccel(ke->key());
+                        int key = ke->key();
+                        if (ke->state() & ShiftButton)
+                              key += SHIFT;
+                        if (ke->state() & AltButton)
+                              key += ALT;
+                        if (ke->state() & ControlButton)
+                              key+= CTRL;
+                        muse->kbAccel(key);
                         return true;
                         }
                   }
