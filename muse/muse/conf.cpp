@@ -506,6 +506,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.style = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
                               config.useOldStyleStopShortCut = xml.parseInt();
+                        else if (tag == "moveArmedCheckBox")
+                              config.moveArmedCheckBox = xml.parseInt();
                         else if (tag == "externalWavEditor")
                               config.externalWavEditor = xml.parse1();
                         else if (tag == "font0")
@@ -1067,6 +1069,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.strTag(level, "theme", config.style);
       xml.strTag(level, "externalWavEditor", config.externalWavEditor);
       xml.intTag(level, "useOldStyleStopShortCut", config.useOldStyleStopShortCut);
+      xml.intTag(level, "moveArmedCheckBox", config.moveArmedCheckBox);
 
       //for (int i = 0; i < 6; ++i) {
       for (int i = 0; i < NUM_FONTS; ++i) {

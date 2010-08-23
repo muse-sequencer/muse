@@ -1,4 +1,4 @@
-<!DOCTYPE UI><UI version="3.2" stdsetdef="1">
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
 <class>GlobalSettingsDialogBase</class>
 <widget class="QDialog">
     <property name="name">
@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>584</width>
-            <height>492</height>
+            <width>520</width>
+            <height>478</height>
         </rect>
     </property>
     <property name="caption">
@@ -141,7 +141,7 @@
                                     <string>x-pos</string>
                                 </property>
                             </widget>
-                            <widget class="QCheckBox" row="2" column="1" colspan="1">
+                            <widget class="QCheckBox" row="2" column="1">
                                 <property name="name">
                                     <cstring>showBigtime</cstring>
                                 </property>
@@ -149,7 +149,7 @@
                                     <string>show</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="2" column="2" colspan="1">
+                            <widget class="QSpinBox" row="2" column="2">
                                 <property name="name">
                                     <cstring>bigtimeX</cstring>
                                 </property>
@@ -160,7 +160,7 @@
                                     <string>x-pos</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="2" column="3" colspan="1">
+                            <widget class="QSpinBox" row="2" column="3">
                                 <property name="name">
                                     <cstring>bigtimeY</cstring>
                                 </property>
@@ -171,7 +171,7 @@
                                     <string>y-pos</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="2" column="4" colspan="1">
+                            <widget class="QSpinBox" row="2" column="4">
                                 <property name="name">
                                     <cstring>bigtimeW</cstring>
                                 </property>
@@ -182,7 +182,7 @@
                                     <string>width</string>
                                 </property>
                             </widget>
-                            <widget class="QSpinBox" row="2" column="5" colspan="1">
+                            <widget class="QSpinBox" row="2" column="5">
                                 <property name="name">
                                     <cstring>bigtimeH</cstring>
                                 </property>
@@ -202,12 +202,12 @@
                                 </property>
                             </widget>
                             <widget class="QCheckBox" row="4" column="1">
-                              <property name="name">
-                                <cstring>showMixer2</cstring>
-                              </property>
-                              <property name="text">
-                                <string>show</string>
-                              </property>
+                                <property name="name">
+                                    <cstring>showMixer2</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>show</string>
+                                </property>
                             </widget>
                             <widget class="QLabel" row="3" column="0">
                                 <property name="name">
@@ -226,20 +226,20 @@
                                 </property>
                             </widget>
                             <widget class="QLabel" row="4" column="0">
-                              <property name="name">
-                                <cstring>textLabel4_2</cstring>
-                              </property>
-                              <property name="sizePolicy">
-                                <sizepolicy>
-                                  <hsizetype>5</hsizetype>
-                                  <vsizetype>0</vsizetype>
-                                  <horstretch>0</horstretch>
-                                  <verstretch>0</verstretch>
-                                </sizepolicy>
-                              </property>
-                              <property name="text">
-                                <string>Mixer B</string>
-                              </property>
+                                <property name="name">
+                                    <cstring>textLabel4_2</cstring>
+                                </property>
+                                <property name="sizePolicy">
+                                    <sizepolicy>
+                                        <hsizetype>5</hsizetype>
+                                        <vsizetype>0</vsizetype>
+                                        <horstretch>0</horstretch>
+                                        <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                </property>
+                                <property name="text">
+                                    <string>Mixer B</string>
+                                </property>
                             </widget>
                             <widget class="QLabel" row="2" column="0">
                                 <property name="name">
@@ -353,67 +353,67 @@
                                 </property>
                             </widget>
                             <widget class="QSpinBox" row="4" column="5">
-                              <property name="name">
-                                <cstring>mixer2H</cstring>
-                              </property>
-                              <property name="maxValue">
-                                <number>9999</number>
-                              </property>
-                              <property name="toolTip" stdset="0">
-                                <string>height</string>
-                              </property>
+                                <property name="name">
+                                    <cstring>mixer2H</cstring>
+                                </property>
+                                <property name="maxValue">
+                                    <number>9999</number>
+                                </property>
+                                <property name="toolTip" stdset="0">
+                                    <string>height</string>
+                                </property>
                             </widget>
                             <widget class="QSpinBox" row="4" column="4">
-                              <property name="name">
-                                <cstring>mixer2W</cstring>
-                              </property>
-                              <property name="maxValue">
-                                <number>9999</number>
-                              </property>
-                              <property name="toolTip" stdset="0">
-                                <string>width</string>
-                              </property>
+                                <property name="name">
+                                    <cstring>mixer2W</cstring>
+                                </property>
+                                <property name="maxValue">
+                                    <number>9999</number>
+                                </property>
+                                <property name="toolTip" stdset="0">
+                                    <string>width</string>
+                                </property>
                             </widget>
                             <widget class="QSpinBox" row="4" column="3">
-                              <property name="name">
-                                <cstring>mixer2Y</cstring>
-                              </property>
-                              <property name="maxValue">
-                                <number>9999</number>
-                              </property>
-                              <property name="toolTip" stdset="0">
-                                <string>y-pos</string>
-                              </property>
+                                <property name="name">
+                                    <cstring>mixer2Y</cstring>
+                                </property>
+                                <property name="maxValue">
+                                    <number>9999</number>
+                                </property>
+                                <property name="toolTip" stdset="0">
+                                    <string>y-pos</string>
+                                </property>
                             </widget>
                             <widget class="QSpinBox" row="4" column="2">
-                              <property name="name">
-                                <cstring>mixer2X</cstring>
-                              </property>
-                              <property name="maxValue">
-                                <number>9999</number>
-                              </property>
-                              <property name="toolTip" stdset="0">
-                                <string>x-pos</string>
-                              </property>
+                                <property name="name">
+                                    <cstring>mixer2X</cstring>
+                                </property>
+                                <property name="maxValue">
+                                    <number>9999</number>
+                                </property>
+                                <property name="toolTip" stdset="0">
+                                    <string>x-pos</string>
+                                </property>
                             </widget>
                             <widget class="QPushButton" row="4" column="6">
-                              <property name="name">
-                                <cstring>setMixer2Current</cstring>
-                              </property>
-                              <property name="sizePolicy">
-                                <sizepolicy>
-                                  <hsizetype>1</hsizetype>
-                                  <vsizetype>0</vsizetype>
-                                  <horstretch>0</horstretch>
-                                  <verstretch>0</verstretch>
-                                </sizepolicy>
-                              </property>
-                              <property name="text">
-                                <string>Cur</string>
-                              </property>
-                              <property name="toolTip" stdset="0">
-                                <string>set current values</string>
-                              </property>
+                                <property name="name">
+                                    <cstring>setMixer2Current</cstring>
+                                </property>
+                                <property name="sizePolicy">
+                                    <sizepolicy>
+                                        <hsizetype>1</hsizetype>
+                                        <vsizetype>0</vsizetype>
+                                        <horstretch>0</horstretch>
+                                        <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                </property>
+                                <property name="text">
+                                    <string>Cur</string>
+                                </property>
+                                <property name="toolTip" stdset="0">
+                                    <string>set current values</string>
+                                </property>
                             </widget>
                             <widget class="QPushButton" row="2" column="6">
                                 <property name="name">
@@ -453,7 +453,7 @@
                                     <string>set current values</string>
                                 </property>
                             </widget>
-                            <widget class="QPushButton" row="1" column="6" colspan="1">
+                            <widget class="QPushButton" row="1" column="6">
                                 <property name="name">
                                     <cstring>setTransportCurrent</cstring>
                                 </property>
@@ -889,121 +889,121 @@
                         </grid>
                     </widget>
                     <widget class="QGroupBox" row="2" column="0">
-                      <property name="name">
-                        <cstring>dummyAudioGroupBox</cstring>
-                      </property>
-                      <property name="title">
-                        <string>Dummy Audio Driver (settings require restart)</string>
-                      </property>
-                      <grid>
                         <property name="name">
-                          <cstring>unnamed</cstring>
+                            <cstring>dummyAudioGroupBox</cstring>
                         </property>
-                        <widget class="QLabel" row="0" column="0">
-                          <property name="name">
-                            <cstring>dummyAudioRateLabel</cstring>
-                          </property>
-                          <property name="text">
-                            <string>Preferred sample rate</string>
-                          </property>
-                        </widget>
-                        <widget class="QSpinBox" row="0" column="1">
-                          <property name="name">
-                            <cstring>dummyAudioRate</cstring>
-                          </property>
-                          <property name="suffix">
-                            <string>Hz</string>
-                          </property>
-                          <property name="maxValue">
-                            <number>200000</number>
-                          </property>
-                          <property name="minValue">
-                            <number>3000</number>
-                          </property>
-                          <property name="lineStep">
-                            <number>10</number>
-                          </property>
-                          <property name="value">
-                            <number>44100</number>
-                          </property>
-                          <property name="whatsThis" stdset="0">
-                            <string>Actual rate used depends on limitations of
+                        <property name="title">
+                            <string>Dummy Audio Driver (settings require restart)</string>
+                        </property>
+                        <grid>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <widget class="QLabel" row="0" column="0">
+                                <property name="name">
+                                    <cstring>dummyAudioRateLabel</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>Preferred sample rate</string>
+                                </property>
+                            </widget>
+                            <widget class="QSpinBox" row="0" column="1">
+                                <property name="name">
+                                    <cstring>dummyAudioRate</cstring>
+                                </property>
+                                <property name="suffix">
+                                    <string>Hz</string>
+                                </property>
+                                <property name="maxValue">
+                                    <number>200000</number>
+                                </property>
+                                <property name="minValue">
+                                    <number>3000</number>
+                                </property>
+                                <property name="lineStep">
+                                    <number>10</number>
+                                </property>
+                                <property name="value">
+                                    <number>44100</number>
+                                </property>
+                                <property name="whatsThis" stdset="0">
+                                    <string>Actual rate used depends on limitations of
  timer used. If a high rate timer is available,
  short periods can be used with high sample rates. 
 Period affects midi playback resolution. 
 Shorter periods are desirable.</string>
-                          </property>
-                        </widget>
-                        <widget class="QLabel" row="1" column="0">
-                          <property name="name">
-                            <cstring>dummyAudioRealRateLabel</cstring>
-                          </property>
-                          <property name="text">
-                            <string>Actual rate used now (dummy or not):</string>
-                          </property>
-                        </widget>
-                        <widget class="QLabel" row="1" column="1">
-                          <property name="name">
-                            <cstring>dummyAudioRealRate</cstring>
-                          </property>
-                          <property name="text">
-                            <string>---</string>
-                          </property>
-                        </widget>
-                        <widget class="QLabel" row="2" column="0">
-                          <property name="name">
-                            <cstring>dummyAudioSizeLabel</cstring>
-                          </property>
-                          <property name="text">
-                            <string>Period size (Frames per period):</string>
-                          </property>
-                        </widget>
-                        <widget class="QComboBox" row="2" column="1">
-                          <property name="name">
-                            <cstring>dummyAudioSize</cstring>
-                          </property>
-                          <item>
-                            <property name="text">
-                              <string>16</string>
-                            </property>
-                          </item>
-                          <item>
-                            <property name="text">
-                              <string>32</string>
-                            </property>
-                          </item>
-                          <item>
-                            <property name="text">
-                              <string>64</string>
-                            </property>
-                          </item>
-                          <item>
-                            <property name="text">
-                              <string>128</string>
-                            </property>
-                          </item>
-                          <item>
-                            <property name="text">
-                              <string>256</string>
-                            </property>
-                          </item>
-                          <item>
-                            <property name="text">
-                              <string>512</string>
-                            </property>
-                          </item>
-                          <item>
-                            <property name="text">
-                              <string>1024</string>
-                            </property>
-                          </item>
-                          <item>
-                            <property name="text">
-                              <string>2048</string>
-                            </property>
-                          </item>
-                        </widget>
-                      </grid>
+                                </property>
+                            </widget>
+                            <widget class="QLabel" row="1" column="0">
+                                <property name="name">
+                                    <cstring>dummyAudioRealRateLabel</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>Actual rate used now (dummy or not):</string>
+                                </property>
+                            </widget>
+                            <widget class="QLabel" row="1" column="1">
+                                <property name="name">
+                                    <cstring>dummyAudioRealRate</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>---</string>
+                                </property>
+                            </widget>
+                            <widget class="QLabel" row="2" column="0">
+                                <property name="name">
+                                    <cstring>dummyAudioSizeLabel</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>Period size (Frames per period):</string>
+                                </property>
+                            </widget>
+                            <widget class="QComboBox" row="2" column="1">
+                                <item>
+                                    <property name="text">
+                                        <string>16</string>
+                                    </property>
+                                </item>
+                                <item>
+                                    <property name="text">
+                                        <string>32</string>
+                                    </property>
+                                </item>
+                                <item>
+                                    <property name="text">
+                                        <string>64</string>
+                                    </property>
+                                </item>
+                                <item>
+                                    <property name="text">
+                                        <string>128</string>
+                                    </property>
+                                </item>
+                                <item>
+                                    <property name="text">
+                                        <string>256</string>
+                                    </property>
+                                </item>
+                                <item>
+                                    <property name="text">
+                                        <string>512</string>
+                                    </property>
+                                </item>
+                                <item>
+                                    <property name="text">
+                                        <string>1024</string>
+                                    </property>
+                                </item>
+                                <item>
+                                    <property name="text">
+                                        <string>2048</string>
+                                    </property>
+                                </item>
+                                <property name="name">
+                                    <cstring>dummyAudioSize</cstring>
+                                </property>
+                            </widget>
+                        </grid>
                     </widget>
                 </grid>
             </widget>
@@ -1232,7 +1232,7 @@ Shorter periods are desirable.</string>
                             <string>Help Browser:</string>
                         </property>
                     </widget>
-                    <widget class="QLabel" row="0" column="0" rowspan="1" colspan="3">
+                    <widget class="QLabel" row="0" column="0" rowspan="1" colspan="4">
                         <property name="name">
                             <cstring>TextLabel1</cstring>
                         </property>
@@ -1240,7 +1240,7 @@ Shorter periods are desirable.</string>
                             <string>GUI Refresh Rate</string>
                         </property>
                     </widget>
-                    <widget class="QSpinBox" row="0" column="3" rowspan="1" colspan="2">
+                    <widget class="QSpinBox" row="0" column="4" rowspan="1" colspan="2">
                         <property name="name">
                             <cstring>guiRefreshSelect</cstring>
                         </property>
@@ -1257,12 +1257,12 @@ Shorter periods are desirable.</string>
                             <number>20</number>
                         </property>
                     </widget>
-                    <widget class="QLineEdit" row="1" column="1" rowspan="1" colspan="4">
+                    <widget class="QLineEdit" row="1" column="1" rowspan="1" colspan="5">
                         <property name="name">
                             <cstring>helpBrowser</cstring>
                         </property>
                     </widget>
-                    <spacer row="3" column="0">
+                    <spacer row="4" column="0">
                         <property name="name">
                             <cstring>spacer2</cstring>
                         </property>
@@ -1275,11 +1275,11 @@ Shorter periods are desirable.</string>
                         <property name="sizeHint">
                             <size>
                                 <width>20</width>
-                                <height>300</height>
+                                <height>240</height>
                             </size>
                         </property>
                     </spacer>
-                    <spacer row="3" column="3">
+                    <spacer row="4" column="4">
                         <property name="name">
                             <cstring>spacer3</cstring>
                         </property>
@@ -1292,19 +1292,11 @@ Shorter periods are desirable.</string>
                         <property name="sizeHint">
                             <size>
                                 <width>20</width>
-                                <height>300</height>
+                                <height>240</height>
                             </size>
                         </property>
                     </spacer>
-                    <widget class="QLabel" row="2" column="0" rowspan="1" colspan="2">
-                        <property name="name">
-                            <cstring>textLabel1_4</cstring>
-                        </property>
-                        <property name="text">
-                            <string>Use old-style stop shortcut:</string>
-                        </property>
-                    </widget>
-                    <widget class="QCheckBox" row="2" column="4">
+                    <widget class="QCheckBox" row="2" column="5">
                         <property name="name">
                             <cstring>oldStyleStopCheckBox</cstring>
                         </property>
@@ -1320,7 +1312,23 @@ Shorter periods are desirable.</string>
                             <string></string>
                         </property>
                     </widget>
-                    <spacer row="2" column="2" rowspan="1" colspan="2">
+                    <widget class="QCheckBox" row="3" column="5">
+                        <property name="name">
+                            <cstring>moveArmedCheckBox</cstring>
+                        </property>
+                        <property name="sizePolicy">
+                            <sizepolicy>
+                                <hsizetype>0</hsizetype>
+                                <vsizetype>0</vsizetype>
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                            </sizepolicy>
+                        </property>
+                        <property name="text">
+                            <string></string>
+                        </property>
+                    </widget>
+                    <spacer row="2" column="2" rowspan="1" colspan="3">
                         <property name="name">
                             <cstring>spacer7</cstring>
                         </property>
@@ -1333,6 +1341,39 @@ Shorter periods are desirable.</string>
                         <property name="sizeHint">
                             <size>
                                 <width>270</width>
+                                <height>20</height>
+                            </size>
+                        </property>
+                    </spacer>
+                    <widget class="QLabel" row="2" column="0" rowspan="1" colspan="2">
+                        <property name="name">
+                            <cstring>textLabel1_4</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Use old-style stop shortcut:</string>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="3" column="0" rowspan="1" colspan="3">
+                        <property name="name">
+                            <cstring>textLabel1_4_2</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Move single armed track with selection</string>
+                        </property>
+                    </widget>
+                    <spacer row="3" column="3" rowspan="1" colspan="2">
+                        <property name="name">
+                            <cstring>spacer7_3</cstring>
+                        </property>
+                        <property name="orientation">
+                            <enum>Horizontal</enum>
+                        </property>
+                        <property name="sizeType">
+                            <enum>Expanding</enum>
+                        </property>
+                        <property name="sizeHint">
+                            <size>
+                                <width>210</width>
                                 <height>20</height>
                             </size>
                         </property>

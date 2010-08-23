@@ -151,6 +151,7 @@ GlobalConfigValues config = {
       QString(""),                  // style
       QString(""),                  // externalWavEditor //this line was missing 2007-01-08 (willyfoobar)
       false,                        // useOldStyleStopShortCut
+      true,                         // moveArmedCheckBox
       true,                         // useDenormalBias
       false,                        // useOutputLimiter
       true,                         // showDidYouKnow

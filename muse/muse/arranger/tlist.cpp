@@ -742,7 +742,7 @@ void TList::moveSelection(int n)
 
                   // rec enable track if expected
                   TrackList recd = getRecEnabledTracks();
-                  if (recd.size() == 1) { // one rec enabled track, move rec enabled with selection
+                  if (recd.size() == 1 && config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
                     song->setRecordFlag((Track*)recd.front(),false);
                     song->setRecordFlag((*t),true);
                   }
@@ -969,7 +969,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                               // rec enable track if expected
                               TrackList recd = getRecEnabledTracks();
-                              if (recd.size() == 1) { // one rec enabled track, move rec enabled with selection
+                              if (recd.size() == 1 && config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
                                 song->setRecordFlag((Track*)recd.front(),false);
                                 song->setRecordFlag(t,true);
                               }
@@ -1093,7 +1093,7 @@ void TList::selectTrack(Track* tr)
 
       // rec enable track if expected
       TrackList recd = getRecEnabledTracks();
-      if (recd.size() == 1) { // one rec enabled track, move rec enabled with selection
+      if (recd.size() == 1 && config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
         song->setRecordFlag((Track*)recd.front(),false);
         song->setRecordFlag(tr,true);
       }

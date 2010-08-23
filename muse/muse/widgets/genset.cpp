@@ -123,6 +123,7 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent, const char* name)
       showDidYouKnow->setChecked(config.showDidYouKnow);
       externalWavEditorSelect->setText(config.externalWavEditor);
       oldStyleStopCheckBox->setChecked(config.useOldStyleStopShortCut);
+      moveArmedCheckBox->setChecked(config.moveArmedCheckBox);
 
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
       connect(okButton, SIGNAL(clicked()), SLOT(ok()));
@@ -199,7 +200,7 @@ void GlobalSettingsConfig::apply()
       config.showDidYouKnow   = showDidYouKnow->isChecked();
       config.externalWavEditor = externalWavEditorSelect->text();
       config.useOldStyleStopShortCut = oldStyleStopCheckBox->isChecked();
-      
+      config.moveArmedCheckBox = moveArmedCheckBox->isChecked();
       //muse->showMixer(config.mixerVisible);
       muse->showMixer1(config.mixer1Visible);
       muse->showMixer2(config.mixer2Visible);
