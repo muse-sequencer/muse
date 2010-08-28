@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>520</width>
-            <height>478</height>
+            <width>494</width>
+            <height>499</height>
         </rect>
     </property>
     <property name="caption">
@@ -832,6 +832,14 @@
                             </property>
                             <widget class="QLayoutWidget" row="0" column="0">
                                 <property name="name">
+                                    <cstring>layout6</cstring>
+                                </property>
+                                <grid>
+                                    <property name="name">
+                                        <cstring>unnamed</cstring>
+                                    </property>
+                                    <widget class="QLayoutWidget" row="0" column="0">
+                                        <property name="name">
                                     <cstring>layout12</cstring>
                                 </property>
                                 <hbox>
@@ -885,6 +893,21 @@
                                         </property>
                                     </widget>
                                 </hbox>
+                            </widget>
+                                    <widget class="QLabel" row="1" column="0">
+                                        <property name="name">
+                                            <cstring>textLabel1_6</cstring>
+                                        </property>
+                                        <property name="font">
+                                            <font>
+                                                <pointsize>8</pointsize>
+                                            </font>
+                                        </property>
+                                        <property name="text">
+                                            <string>Note: External editor opened from the internal editor.</string>
+                                        </property>
+                                    </widget>
+                                </grid>
                             </widget>
                         </grid>
                     </widget>
@@ -1232,7 +1255,7 @@ Shorter periods are desirable.</string>
                             <string>Help Browser:</string>
                         </property>
                     </widget>
-                    <widget class="QLabel" row="0" column="0" rowspan="1" colspan="4">
+                    <widget class="QLabel" row="0" column="0" rowspan="1" colspan="3">
                         <property name="name">
                             <cstring>TextLabel1</cstring>
                         </property>
@@ -1240,7 +1263,7 @@ Shorter periods are desirable.</string>
                             <string>GUI Refresh Rate</string>
                         </property>
                     </widget>
-                    <widget class="QSpinBox" row="0" column="4" rowspan="1" colspan="2">
+                    <widget class="QSpinBox" row="0" column="3" rowspan="1" colspan="2">
                         <property name="name">
                             <cstring>guiRefreshSelect</cstring>
                         </property>
@@ -1257,7 +1280,7 @@ Shorter periods are desirable.</string>
                             <number>20</number>
                         </property>
                     </widget>
-                    <widget class="QLineEdit" row="1" column="1" rowspan="1" colspan="5">
+                    <widget class="QLineEdit" row="1" column="1" rowspan="1" colspan="4">
                         <property name="name">
                             <cstring>helpBrowser</cstring>
                         </property>

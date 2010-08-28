@@ -2,9 +2,9 @@ dnl --------------------------------------------------
 dnl configure.ac for the MusE
 dnl --------------------------------------------------
 
-AC_INIT(MusE, 1.0.1)
+AC_INIT(MusE, 1.1rc1)
 AC_CONFIG_SRCDIR(muse/app.cpp)
-AM_INIT_AUTOMAKE(1.0.1)
+AM_INIT_AUTOMAKE(1.1)
 AM_CONFIG_HEADER(config.h)
 ### AM_MAINTAINER_MODE
 AM_ACLOCAL_INCLUDE(m4)
@@ -747,7 +747,6 @@ synti/organ/Makefile
 synti/s1/Makefile
 synti/vam/Makefile
 synti/deicsonze/Makefile
-synti/deicsonze2/Makefile
 synti/simpledrums/Makefile
 lib/Makefile
 lib/synthi/Makefile

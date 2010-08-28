@@ -551,6 +551,10 @@ void WaveView::cmd(int n)
       if (modifyoperation != -1) {
             if (selectionStart == selectionStop) {
                   printf("No selection. Ignoring\n"); //@!TODO: Disable menu options when no selection
+                  QMessageBox::information(this,
+                     QString("MusE"),
+                     QWidget::tr("No selection. Ignoring"));
+
                   return;
                   }
             
