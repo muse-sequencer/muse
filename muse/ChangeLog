@@ -1,6 +1,9 @@
+03.09.2010
+      * Changed: Updated German localizations muse_de.qm and muse_de.ts from <babarosa [at] gmx.at> (T356)
+      * Added: Instrument definitions and drum maps for Kurzweil SP2X, from <babarosa [at] gmx.at> (T356)
 28.08.2010
       * Created rc1 release for 1.1 (rj)
-      * Added: Instrument definitions for AKAI SG01 and Waldorf-microQ from babarosa@gmx.at (rj)
+      * Added: Instrument definitions for AKAI SG01 and Waldorf-microQ from <babarosa [at] gmx.at> (rj)
 23.08.2010
       * Added: Possibility to turn on/off move-armed-track with track selection in settings (rj)
 21.08.2010

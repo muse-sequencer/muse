@@ -46,6 +46,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
       //setCaption(tr("MusE: Mixer"));
       //name = cfg->name;
       //setCaption(name);
+      //printf("AudioMixerApp::AudioMixerApp setting caption:%s\n", cfg->name.latin1());
       setCaption(cfg->name);
 
       QPopupMenu* menuConfig = new QPopupMenu(this);
