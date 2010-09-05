@@ -1070,7 +1070,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       menuEdit->setAccel(CTRL+SHIFT+Key_B, CMD_PASTE_CLONE_TO_TRACK);
 
       menuEdit->insertItem(*editpasteIconSet, tr("&Insert empty measure"), CMD_INSERTMEAS);
-      menuEdit->setAccel(CTRL+SHIFT+Key_M, CMD_INSERTMEAS);
+      menuEdit->setAccel(CTRL+SHIFT+Key_X, CMD_INSERTMEAS);
       menuEdit->insertSeparator();
       menuEdit->insertItem(QIconSet(*edit_track_delIcon),
          tr("Delete Selected Tracks"), CMD_DELETE_TRACK);
@@ -2512,6 +2512,7 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
             }
           }
         }
+        subp->insertItem(QString("Toggle all"), 1000+i);
         pup->insertItem(QT_TR_NOOP(md->name()), subp);
       }
           

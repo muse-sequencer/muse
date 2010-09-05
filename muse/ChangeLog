@@ -1,4 +1,6 @@
 05.09.2010
+      * Fixed: shortcut for insert moved to Ctrl+Shift+X (rj)
+      * Added: Select all toggle for midi channels iR menu (rj)
       * Added: Auto-route-connect old songs with obsolete midi input port/channel masks (before iR button added). (T356) 
         - Added MidiTrack::setInPortAndChannelMask() and called it from MidiTrack::read().
 03.09.2010

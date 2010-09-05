@@ -572,7 +572,13 @@ void Arranger::routingPopupMenuActivated(int n)
   //if(gRoutingPopupMenuMaster != this || !track || !track->isMidiTrack())
   if(!midiTrackInfo || gRoutingPopupMenuMaster != midiTrackInfo || !selected || !selected->isMidiTrack())
     return;
-  muse->routingPopupMenuActivated(selected, n);
+  if (n > 999) {
+    for (int i = 0; i < MIDI_CHANNELS; i++)
+      muse->routingPopupMenuActivated(selected, i + MIDI_CHANNELS * (n-1000));
+  }
+  else {
+    muse->routingPopupMenuActivated(selected, n);
+  }
 }
 
 //---------------------------------------------------------
