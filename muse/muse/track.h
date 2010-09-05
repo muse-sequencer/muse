@@ -236,9 +236,13 @@ class MidiTrack : public Track {
       void setOutPort(int i)          { _outPort = i; }
       void setOutChanAndUpdate(int i);
       void setOutPortAndUpdate(int i);
+      
       //void setInPortMask(int i)       { _inPortMask = i; }
-      ///void setInPortMask(unsigned int i) { _inPortMask = i; }
-      ///void setInChannelMask(int i)    { _inChannelMask = i; }
+      ///void setInPortMask(unsigned int i) { _inPortMask = i; }  // Obsolete
+      ///void setInChannelMask(int i)    { _inChannelMask = i; }  //
+      // Backward compatibility: For reading old songs.
+      void setInPortAndChannelMask(unsigned int /*portmask*/, int /*chanmask*/); 
+      
       void setRecEcho(bool b)         { _recEcho = b; }
       int outPort() const             { return _outPort;     }
       //int inPortMask() const          { return _inPortMask;  }

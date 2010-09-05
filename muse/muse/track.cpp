@@ -17,6 +17,8 @@
 #include "xml.h"
 #include "plugin.h"
 #include "drummap.h"
+#include "audio.h"
+#include "globaldefs.h"
 
 unsigned int Track::_soloRefCnt = 0;
 Track* Track::_tmpSoloChainTrack = 0;
@@ -441,6 +443,72 @@ void MidiTrack::setOutPortAndUpdate(int i)
   addPortCtrlEvents(this);
 }
 
+//---------------------------------------------------------
+//   setInPortAndChannelMask
+//   For old song files with port mask (max 32 ports) and channel mask (16 channels), 
+//    before midi routing was added (the iR button). p3.3.48
+//---------------------------------------------------------
+
+void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask) 
+{ 
+  //if(!portmask || !chanmask)
+  //  return;
+     
+  RouteList* rl = inRoutes();
+  bool changed = false;
+  
+  for(int port = 0; port < 32; ++port)  // 32 is the old maximum number of ports.
+  {
+    //if(!(portmask & (1 << port)))
+    //  continue;
+    
+    MidiPort* mp = &midiPorts[port];
+    MidiDevice* md = mp->device();
+    if(!md)
+      continue;
+        
+    for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+    {
+      //if(!(chanmask & (1 << ch)))
+      //  continue;
+    
+      Route aRoute(md, ch);
+      Route bRoute(this, ch);
+    
+      iRoute iir = rl->begin();
+      for(; iir != rl->end(); ++iir) 
+      {
+        if(*iir == aRoute)
+          break;
+      }
+      
+      // Route wanted?
+      if((portmask & (1 << port)) && (chanmask & (1 << ch)))
+      {
+        // Route already exists?
+        if(iir != rl->end()) 
+          continue;
+        audio->msgAddRoute(aRoute, bRoute);
+        changed = true;
+      }
+      else
+      {
+        // Route does not exist?
+        if(iir == rl->end()) 
+          continue;
+        audio->msgRemoveRoute(aRoute, bRoute);
+        changed = true;
+      }
+    }
+  }
+   
+  if(changed)
+  {
+    audio->msgUpdateSoloStates();
+    song->update(SC_ROUTE);
+  }  
+}
+
 /*
 //---------------------------------------------------------
 //   addPortCtrlEvents
@@ -815,6 +883,9 @@ void MidiTrack::write(int level, Xml& xml) const
 
 void MidiTrack::read(Xml& xml)
       {
+      unsigned int portmask = 0;
+      int chanmask = 0;
+      
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -848,10 +919,12 @@ void MidiTrack::read(Xml& xml)
                         else if (tag == "inportMap")
                               //setInPortMask(xml.parseInt());
                               ///setInPortMask(xml.parseUInt());
-                              xml.skip(tag);                      // Obsolete
+                              //xml.skip(tag);                      // Obsolete. 
+                              portmask = xml.parseUInt();           // p3.3.48: Support old files.
                         else if (tag == "inchannelMap")
                               ///setInChannelMask(xml.parseInt());
-                              xml.skip(tag);                      // Obsolete
+                              //xml.skip(tag);                      // Obsolete.
+                              chanmask = xml.parseInt();            // p3.3.48: Support old files.
                         else if (tag == "locked")
                               _locked = xml.parseInt();
                         else if (tag == "echo")
@@ -868,9 +941,11 @@ void MidiTrack::read(Xml& xml)
                   case Xml::Attribut:
                         break;
                   case Xml::TagEnd:
-                        if (tag == "miditrack" || tag == "drumtrack") {
-                              return;
-                              }
+                        if (tag == "miditrack" || tag == "drumtrack") 
+                        {
+                          setInPortAndChannelMask(portmask, chanmask); // p3.3.48: Support old files.
+                          return;
+                        }
                   default:
                         break;
                   }

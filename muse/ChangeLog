@@ -1,3 +1,6 @@
+05.09.2010
+      * Added: Auto-route-connect old songs with obsolete midi input port/channel masks (before iR button added). (T356) 
+        - Added MidiTrack::setInPortAndChannelMask() and called it from MidiTrack::read().
 03.09.2010
       * Changed: Updated German localizations muse_de.qm and muse_de.ts from <babarosa [at] gmx.at> (T356)
       * Added: Instrument definitions and drum maps for Kurzweil SP2X, from <babarosa [at] gmx.at> (T356)
