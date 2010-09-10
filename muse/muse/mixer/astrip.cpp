@@ -2087,7 +2087,7 @@ void AudioStrip::iRoutePressed()
 void AudioStrip::updateRouteMenus()
 {
       //if(!_isRoutingPopupMenuMaster || track->isMidiTrack() || (track->type() == Track::AUDIO_AUX))
-      if(!track || gRoutingPopupMenuMaster != this || track->isMidiTrack() || track->type() == Track::AUDIO_AUX)
+      if(!track || gRoutingPopupMenuMaster != this || track->isMidiTrack())
         return;
         
       ///QPopupMenu* pup = new QPopupMenu(oR);
@@ -2160,7 +2160,7 @@ void AudioStrip::updateRouteMenus()
 
 void AudioStrip::routingPopupMenuActivated(int n)
 {
-      if(!track || gRoutingPopupMenuMaster != this || track->isMidiTrack() || track->type() == Track::AUDIO_AUX)
+      if(!track || gRoutingPopupMenuMaster != this || track->isMidiTrack())
         return;
       
       PopupMenu* pup = muse->getRoutingPopupMenu();
@@ -2386,7 +2386,7 @@ void AudioStrip::routingPopupMenuActivated(int n)
 
 void AudioStrip::oRoutePressed()
 {
-      if(!track || track->isMidiTrack() || track->type() == Track::AUDIO_AUX)
+      if(!track || track->isMidiTrack())
       {
         gRoutingPopupMenuMaster = 0;
         return;
@@ -2469,8 +2469,7 @@ void AudioStrip::oRoutePressed()
         //case Track::AUDIO_INPUT:
         //case Track::WAVE:
         //case Track::AUDIO_GROUP:
-        //case Track::AUDIO_AUX:
-        
+
         case Track::AUDIO_SOFTSYNTH:
               //addOutPorts(t, pup, orl);
               //addGroupPorts(t, pup, orl);
@@ -2484,6 +2483,7 @@ void AudioStrip::oRoutePressed()
               gid = addWavePorts(        t, pup, gid, gRoutingMenuMap, -1, -1, true);
         case Track::WAVE:
         case Track::AUDIO_GROUP:
+        case Track::AUDIO_AUX:
         //case Track::AUDIO_SOFTSYNTH:
               //gid = addOutPorts(         oR, t, pup, gid, gRoutingMenuMap, -1, -1, true);
               //gid = addGroupPorts(       oR, t, pup, gid, gRoutingMenuMap, -1, -1, true);
@@ -2494,10 +2494,10 @@ void AudioStrip::oRoutePressed()
               //gid = nonSyntiTrackAddSyntis(this, oR, t, pup, gid, gRoutingMenuMap, true);
               gid = nonSyntiTrackAddSyntis(t, pup, gid, gRoutingMenuMap, true);
         break;
-        case Track::AUDIO_AUX:
+        //case Track::AUDIO_AUX:
               //gid = addOutPorts(         oR, t, pup, gid, gRoutingMenuMap, -1, -1, true);
-              gid = addOutPorts(         t, pup, gid, gRoutingMenuMap, -1, -1, true);
-        break;
+        //      gid = addOutPorts(         t, pup, gid, gRoutingMenuMap, -1, -1, true);
+        //break;
         
         default:
               ///delete pup;

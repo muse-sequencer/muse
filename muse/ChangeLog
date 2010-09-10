@@ -1,3 +1,5 @@
+10.09.2010
+      * Fixed: regression with oR routing for Aux strips (rj)
 05.09.2010
       * Fixed: shortcut for insert moved to Ctrl+Shift+X (rj)
       * Added: Select all toggle for midi channels iR menu (rj)
