@@ -9,14 +9,13 @@
 #ifndef __ROUTE_H__
 #define __ROUTE_H__
 
-//#include <alsa/asoundlib.h>
 #include <vector>
 #include <map>
 
+#include "globaldefs.h"
+
 class QString;
-//class AudioTrack;
 class Track;
-//class MidiJackDevice;
 class MidiDevice;
 class Xml;
 
@@ -24,25 +23,27 @@ class Xml;
 //   Route
 //---------------------------------------------------------
 
-//enum { TRACK_ROUTE=0, JACK_ROUTE=1 };
-
 struct Route {
-      //enum { TRACK_ROUTE=0, JACK_ROUTE=1, JACK_MIDI_ROUTE=2, ALSA_MIDI_ROUTE=3 };
-      enum { TRACK_ROUTE=0, JACK_ROUTE=1, MIDI_DEVICE_ROUTE=2 };
+      enum { TRACK_ROUTE=0, JACK_ROUTE=1, MIDI_DEVICE_ROUTE=2, MIDI_PORT_ROUTE=3 }; // p3.3.49
       
       union {
             //AudioTrack* track;
             Track* track;
             //MidiJackDevice* device;
-            MidiDevice* device;
+            MidiDevice* device;      
             void* jackPort;
             };
+      
+      int midiPort;              // p3.3.49 Midi port number. Best not to put this in the union to avoid problems?
       
       //snd_seq_addr_t alsaAdr;
       
       // Starting source channel (of the owner of this route). Normally zero for mono or stereo tracks, higher for multi-channel tracks. 
-      int channel;
-      // Number of channels being routed. 
+      // p3.3.50 NOTICE: channel is now a bit-wise channel mask, for MidiPort <-> MidiTrack routes. 
+      // This saves many routes: Instead of one route per channel as before, there can now be only one single route with a channel mask, 
+      //  for each MidiPort <-> MidiTrack combination.
+      int channel;                             
+      // Number of (audio) channels being routed. 
       int channels;
       
       // Allow for multi-channel syntis to feed to/from regular tracks, and to feed one to another. 
@@ -50,26 +51,21 @@ struct Route {
       // If a synti is feeding to/from another synti, this is not used and individual channels are routed using channel instead.
       int remoteChannel;
       
-      unsigned char type;     // 0 - track, 1 - jackPort, 2 - jack midi device, 3 - alsa midi device
+      unsigned char type;       // 0 - track, 1 - jackPort, 2 - midi device, 3 - midi port   
 
       Route(void* t, int ch=-1);
-      //Route(AudioTrack* t, int ch);
-      //Route(Track* t, int ch);
       Route(Track* t, int ch = -1, int chans = -1);
-      //Route(Track* t, int ch = -1);
-      
-      //Route(MidiJackDevice* d);
-      Route(MidiDevice* d, int ch);
-      //Route(const QString&, bool dst, int ch);
+      Route(MidiDevice* d, int ch);  
+      Route(int port, int ch);         // p3.3.49
       Route(const QString&, bool dst, int ch, int rtype = -1);
       Route();
+      
       QString name() const;
       bool operator==(const Route& a) const;
       bool isValid() const {
-            //return ((type == 0) && (track != 0)) || ((type == 1) && (jackPort != 0));
             return ((type == TRACK_ROUTE) && (track != 0)) || ((type == JACK_ROUTE) && (jackPort != 0)) || 
-                   //(((type == JACK_MIDI_ROUTE) || (type == ALSA_MIDI_ROUTE)) && (device != 0));
-                   ((type == MIDI_DEVICE_ROUTE) && (device != 0));
+                   ((type == MIDI_DEVICE_ROUTE) && (device != 0)) ||
+                   ((type == MIDI_PORT_ROUTE) && (midiPort >= 0) && (midiPort < MIDI_PORTS));   // p3.3.49
             }
       void read(Xml& xml);
       void dump() const;
@@ -89,7 +85,6 @@ typedef RouteList::const_iterator ciRoute;
 
 extern void addRoute(Route, Route);
 extern void removeRoute(Route, Route);
-//extern Route name2route(const QString&, bool dst);
 extern Route name2route(const QString&, bool dst, int rtype = -1);
 extern bool checkRoute(const QString&, const QString&);
 
@@ -97,12 +92,6 @@ extern bool checkRoute(const QString&, const QString&);
 //   RouteMenuMap
 //---------------------------------------------------------
 
-//struct TRouteMenuMap{
-//       Route r;
-//       };
-//typedef std::map<int, TRouteMenuMap, std::less<int> >::iterator iRouteMenuMap;
-//typedef std::map<int, TRouteMenuMap, std::less<int> >::const_iterator ciRouteMenuMap;
-//typedef std::map<int, TRouteMenuMap, std::less<int> > RouteMenuMap;
 typedef std::map<int, Route, std::less<int> >::iterator iRouteMenuMap;
 typedef std::map<int, Route, std::less<int> >::const_iterator ciRouteMenuMap;
 typedef std::map<int, Route, std::less<int> > RouteMenuMap;

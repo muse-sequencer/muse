@@ -137,7 +137,7 @@ void AudioStrip::configChanged()
 void AudioStrip::songChanged(int val)
       {
       // Is it simply a midi controller value adjustment? Forget it.
-      if(val == SC_MIDI_CONTROLLER)
+      if (val == SC_MIDI_CONTROLLER)
         return;
     
       AudioTrack* src = (AudioTrack*)track;
@@ -148,8 +148,11 @@ void AudioStrip::songChanged(int val)
       
       // p3.3.47
       // Update the routing popup menu if anything relevant changed.
-      if (val & (SC_ROUTE | SC_CHANNELS | SC_CONFIG)) 
-        updateRouteMenus();
+      if (val & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))
+      { 
+        //updateRouteMenus();
+        muse->updateRouteMenus(track, this);      // p3.3.50 Use this handy shared routine.
+      }
       
       // Catch when label font, or configuration min slider and meter values change.
       if (val & SC_CONFIG)
@@ -2080,6 +2083,7 @@ void AudioStrip::iRoutePressed()
       
       }
 
+#if 0
 //---------------------------------------------------------
 //   updateRouteMenus
 //---------------------------------------------------------
@@ -2153,6 +2157,7 @@ void AudioStrip::updateRouteMenus()
       
       return;
 }
+#endif
 
 //---------------------------------------------------------
 //   routingPopupMenuActivated

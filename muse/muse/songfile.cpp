@@ -1449,13 +1449,18 @@ void Song::write(int level, Xml& xml) const
             (*i)->writeRouting(level, xml);
             }
 
-      // Write Jack midi routing.
+      // Write midi device routing.
       for (iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) {
             //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(*i);
             //if (!mjd)
             //  continue;
             //mjd->writeRouting(level, xml);
             (*i)->writeRouting(level, xml);
+            }
+      
+      // p3.3.49 Write midi port routing.
+      for (int i = 0; i < MIDI_PORTS; ++i) {
+            midiPorts[i].writeRouting(level, xml);
             }
       
       tempomap.write(level, xml);

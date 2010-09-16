@@ -66,6 +66,8 @@ class DummyAudioDevice : public AudioDevice {
         free(buffer); 
       }
 
+      virtual inline int deviceType() { return DUMMY_AUDIO; } // p3.3.52
+      
       //virtual void start();
       virtual void start(int);
       
@@ -265,9 +267,12 @@ static void* dummyLoop(void* ptr)
       timer.setFindBestTimer(false);
       int fd = timer.initTimer();
       if (fd==-1) {
-        QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer for dummy audio driver!")),
-              /*tr*/(QString("No functional timer was available.\n"
-                         "Alsa timer not available, check if module snd_timer is available and /dev/snd/timer is available")));
+      //  QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer for dummy audio driver!")),
+      //        /*tr*/(QString("No functional timer was available.\n"
+      //                   "Alsa timer not available, check if module snd_timer is available and /dev/snd/timer is available")));
+        fprintf(stderr, "Failed to start timer for dummy audio driver! No functional timer was available.\n" 
+                         "Alsa timer not available, check if module snd_timer is available and /dev/snd/timer is available\n");
+        pthread_exit(0);
       }
 
       /* Depending on nature of the timer, the requested tickRate might not

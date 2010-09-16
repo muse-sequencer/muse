@@ -178,7 +178,7 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
 {
       // p3.3.45
       // If this device is not actually in use by the song, do not write any routes.
-      // This prevents bogus routes from being saved and propogated in the med file.
+      // This prevents bogus routes from being saved and propagated in the med file.
       if(midiPort() == -1)
         return;
      

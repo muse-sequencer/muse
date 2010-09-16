@@ -573,6 +573,7 @@ bool initJackAudio()
             if (status & JackVersionError)
                   printf("jack server has wrong version\n");
             printf("cannot create jack client\n");
+            undoSetuid();   // p3.3.51
             return true;
             }
 
@@ -1412,6 +1413,7 @@ void JackAudioDevice::start(int /*priority*/)
       doSetuid();
 
       if (jack_activate(_client)) {
+            undoSetuid();   // p3.3.51
             fprintf (stderr, "JACK: cannot activate client\n");
             exit(-1);
             }

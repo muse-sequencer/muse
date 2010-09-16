@@ -55,7 +55,8 @@
                      };
     int max_ids = sizeof(test_ids) / sizeof(int);
     long best_res = LONG_MAX;
-    int best_dev = -1; // SND_TIMER_GLOBAL_SYSTEM;
+    //int best_dev = -1; // SND_TIMER_GLOBAL_SYSTEM;
+    int best_dev = SND_TIMER_GLOBAL_SYSTEM;          // p3.3.51
     int i;
 
     if (id || info || params) {
@@ -89,12 +90,14 @@
       device = best_dev;
       }
 
-    if(best_dev==-1)
-      return -1; // no working timer found
+    // p3.3.51 Removed.
+    //if(best_dev==-1)
+    //  return -1; // no working timer found
 
     sprintf(timername, "hw:CLASS=%i,SCLASS=%i,CARD=%i,DEV=%i,SUBDEV=%i", devclass, sclass, card, device, subdevice);
     if ((err = snd_timer_open(&handle, timername, SND_TIMER_OPEN_NONBLOCK))<0) {
       fprintf(stderr, "AlsaTimer::initTimer(): timer open %i (%s)\n", err, snd_strerror(err));
+      return -1;  // p3.3.51
       }
     
     if ((err = snd_timer_info(handle, info)) < 0) {

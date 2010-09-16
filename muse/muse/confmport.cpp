@@ -173,6 +173,9 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                     if(!checkAudioDevice())
                       return;
                       
+                    if(audioDevice->deviceType() != AudioDevice::JACK_AUDIO)  // p3.3.52  Only if Jack is running.
+                      return;
+                      
                     if(!dev)
                       return;
                     

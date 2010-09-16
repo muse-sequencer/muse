@@ -461,9 +461,11 @@ void MidiStrip::songChanged(int val)
       }  
       
       // p3.3.47 Update the routing popup menu if anything relevant changes.
-      if(gRoutingPopupMenuMaster == this && track && (val & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))) 
+      //if(gRoutingPopupMenuMaster == this && track && (val & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))) 
+      if(val & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))      // p3.3.50
         // Use this handy shared routine.
-        muse->updateRouteMenus(track);
+        //muse->updateRouteMenus(track);
+        muse->updateRouteMenus(track, this);              // p3.3.50
     }
 
 //---------------------------------------------------------

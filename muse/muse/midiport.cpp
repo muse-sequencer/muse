@@ -50,7 +50,8 @@ MidiPort::MidiPort()
       _device     = 0;
       _instrument = 0;
       _controller = new MidiCtrlValListList();
-      
+      _foundInSongFile = false;
+
       //
       // create minimum set of managed controllers
       // to make midi mixer operational
@@ -988,3 +989,39 @@ void MidiPort::setNullSendValue(int v)
   if(_instrument) 
     _instrument->setNullSendValue(v); 
 }
+
+//---------------------------------------------------------
+//   writeRouting    // p3.3.50
+//---------------------------------------------------------
+
+void MidiPort::writeRouting(int level, Xml& xml) const
+{
+      // If this device is not actually in use by the song, do not write any routes.
+      // This prevents bogus routes from being saved and propagated in the med file.
+      if(!device())
+        return;
+     
+      QString s;
+      
+      for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) 
+      {
+        if(r->type == Route::TRACK_ROUTE && !r->name().isEmpty())
+        {
+          //xml.tag(level++, "Route");
+          
+          s = QT_TR_NOOP("Route");
+          if(r->channel != -1 && r->channel != 0)  
+            s += QString(QT_TR_NOOP(" channelMask=\"%1\"")).arg(r->channel);  // Use new channel mask.
+          xml.tag(level++, s);
+          
+          xml.tag(level, "source mport=\"%d\"/", portno());
+          
+          s = QT_TR_NOOP("dest");
+          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
+          xml.tag(level, s);
+          
+          xml.etag(level--, "Route");
+        }
+      }
+}
+    

@@ -85,23 +85,27 @@ void Arranger::midiTrackInfoHeartBeat()
       for( ; r != rl->end(); ++r)
       {
         //if(!r->isValid() || ((r->type != Route::ALSA_MIDI_ROUTE) && (r->type != Route::JACK_MIDI_ROUTE)))
-        if(!r->isValid() || (r->type != Route::MIDI_DEVICE_ROUTE))
+        //if(!r->isValid() || (r->type != Route::MIDI_DEVICE_ROUTE))
+        if(!r->isValid() || (r->type != Route::MIDI_PORT_ROUTE))   // p3.3.49
           continue;
         
         // NOTE: TODO: Code for channelless events like sysex, ** IF we end up using the 'special channel 17' method.
-        if(r->channel == -1)
+        //if(r->channel == -1)
+        if(r->channel == -1 || r->channel == 0)  // p3.3.50
           continue;
         
         // No port assigned to the device?
-        mpt = r->device->midiPort();
-        if(mpt == -1)
+        //mpt = r->device->midiPort();
+        mpt = r->midiPort;              // p3.3.49
+        if(mpt < 0 || mpt >= MIDI_PORTS)
           continue;
         
         //for(; mch < MIDI_CHANNELS; ++mch)
         //{
           //if(midiPorts[mpt].syncInfo().actDetect(mch) && (iptMask & (1 << mpt)) && (ichMask & (1 << mch)) )
           //if((iptMask & bitShiftLU[mpt]) && (midiPorts[mpt].syncInfo().actDetectBits() & ichMask) )
-          if(midiPorts[mpt].syncInfo().actDetectBits() & bitShiftLU[r->channel]) 
+          //if(midiPorts[mpt].syncInfo().actDetectBits() & bitShiftLU[r->channel]) 
+          if(midiPorts[mpt].syncInfo().actDetectBits() & r->channel)          // p3.3.50 Use new channel mask.
           {
             //if(midiTrackInfo->iChanTextLabel->paletteBackgroundColor() != green)
             //  midiTrackInfo->iChanTextLabel->setPaletteBackgroundColor(green);
@@ -572,13 +576,15 @@ void Arranger::routingPopupMenuActivated(int n)
   //if(gRoutingPopupMenuMaster != this || !track || !track->isMidiTrack())
   if(!midiTrackInfo || gRoutingPopupMenuMaster != midiTrackInfo || !selected || !selected->isMidiTrack())
     return;
-  if (n > 999) {
-    for (int i = 0; i < MIDI_CHANNELS; i++)
-      muse->routingPopupMenuActivated(selected, i + MIDI_CHANNELS * (n-1000));
-  }
-  else {
+  //if (n > 999) {
+  //if (n >= MIDI_PORTS * MIDI_CHANNELS) {    // p3.3.50
+  //  for (int i = 0; i < MIDI_CHANNELS; i++)
+      //muse->routingPopupMenuActivated(selected, i + MIDI_CHANNELS * (n-1000));
+  //    muse->routingPopupMenuActivated(selected, i + MIDI_CHANNELS * (n - MIDI_PORTS * MIDI_CHANNELS));   // p3.3.50
+  //}
+  //else {
     muse->routingPopupMenuActivated(selected, n);
-  }
+  //}
 }
 
 //---------------------------------------------------------
@@ -1262,9 +1268,11 @@ void Arranger::updateMidiTrackInfo(int flags)
         return;
         
       // p3.3.47 Update the routing popup menu if anything relevant changes.
-      if(gRoutingPopupMenuMaster == midiTrackInfo && selected && (flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))) 
+      //if(gRoutingPopupMenuMaster == midiTrackInfo && selected && (flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))) 
+      if(flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))     // p3.3.50
         // Use this handy shared routine.
-        muse->updateRouteMenus(selected);
+        //muse->updateRouteMenus(selected);
+        muse->updateRouteMenus(selected, midiTrackInfo);   // p3.3.50
       
       // Added by Tim. p3.3.9
       setTrackInfoLabelText();

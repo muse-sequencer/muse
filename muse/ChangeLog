@@ -1,3 +1,16 @@
+16.09.2010
+      * Fixed: Delete track(s) not disconnecting track routes, causing routes to hang around and store in song file. (T356)
+        - Fixed major regressions (my fault) in Song::insertTrack2() and ::removeTrack2().
+      * Fixed: Dummy audio device: Crashes when Jack midi device created in device manager, or loaded from song. (T356)
+        - This allows to create Jack midi devices even when dummy audio driver is used.
+        - Tested OK loading complex Jack midi based songs with dummy audio driver.
+      * Fixed: AlsaTimer cannot start, with dummy audio device. (T356) 
+        - Reverted: Back to default SND_TIMER_GLOBAL_SYSTEM in AlsaTimer, for now until a better fix. 
+        - Also replaced pop-up warning in dummy loop with terminal output instead.
+      * Changed: MidiDevice <-> Track routes replaced with MidiPort <-> Track routes. (T356)
+        - This allows to change a port's device (even to <none> !) while keeping all the track channel routes.
+      * Changed: Single midi <-> track route with channel mask, instead of one route-per-channel. (T356)
+        - Potentially saving very many routes from memory and in song file.
 10.09.2010
       * Fixed: regression with oR routing for Aux strips (rj)
 05.09.2010

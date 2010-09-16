@@ -19,6 +19,7 @@
 #include "drummap.h"
 #include "audio.h"
 #include "globaldefs.h"
+#include "route.h"
 
 unsigned int Track::_soloRefCnt = 0;
 Track* Track::_tmpSoloChainTrack = 0;
@@ -454,52 +455,63 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
   //if(!portmask || !chanmask)
   //  return;
      
-  RouteList* rl = inRoutes();
+  //RouteList* rl = inRoutes();
   bool changed = false;
   
   for(int port = 0; port < 32; ++port)  // 32 is the old maximum number of ports.
   {
+    // p3.3.50 If the port was not used in the song file to begin with, just ignore it.
+    // This saves from having all of the first 32 ports' channels connected.
+    if(!midiPorts[port].foundInSongFile())
+      continue;
+      
     //if(!(portmask & (1 << port)))
     //  continue;
     
-    MidiPort* mp = &midiPorts[port];
-    MidiDevice* md = mp->device();
-    if(!md)
-      continue;
+    // p3.3.50 Removed. Allow to connect to port with no device so user can change device later.
+    //MidiPort* mp = &midiPorts[port];
+    //MidiDevice* md = mp->device();
+    //if(!md)
+    //  continue;
         
-    for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
-    {
+    //for(int ch = 0; ch < MIDI_CHANNELS; ++ch)  // p3.3.50 Removed.
+    //{
       //if(!(chanmask & (1 << ch)))
       //  continue;
     
-      Route aRoute(md, ch);
-      Route bRoute(this, ch);
+      //Route aRoute(md, ch);
+      //Route bRoute(this, ch);
+      Route aRoute(port, chanmask);     // p3.3.50
+      Route bRoute(this, chanmask);
     
-      iRoute iir = rl->begin();
-      for(; iir != rl->end(); ++iir) 
-      {
-        if(*iir == aRoute)
-          break;
-      }
+      // p3.3.50 Removed.
+      //iRoute iir = rl->begin();
+      //for(; iir != rl->end(); ++iir) 
+      //{
+        //if(*iir == aRoute)
+      //  if(iir->type == Route::MIDI_PORT_ROUTE && iir->midiPort == port)      // p3.3.50
+      //    break;
+      //}
       
       // Route wanted?
-      if((portmask & (1 << port)) && (chanmask & (1 << ch)))
+      //if((portmask & (1 << port)) && (chanmask & (1 << ch)))
+      if(portmask & (1 << port))                                          // p3.3.50
       {
         // Route already exists?
-        if(iir != rl->end()) 
-          continue;
+        //if(iir != rl->end()) 
+        //  continue;
         audio->msgAddRoute(aRoute, bRoute);
         changed = true;
       }
       else
       {
         // Route does not exist?
-        if(iir == rl->end()) 
-          continue;
+        //if(iir == rl->end()) 
+        //  continue;
         audio->msgRemoveRoute(aRoute, bRoute);
         changed = true;
       }
-    }
+    //}
   }
    
   if(changed)
@@ -769,7 +781,8 @@ void Track::writeRouting(int level, Xml& xml) const
       const RouteList* rl = &_outRoutes;
       for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
       {
-        if(!r->name().isEmpty())
+        //if(!r->name().isEmpty())
+        if(r->midiPort != -1 || !r->name().isEmpty()) // p3.3.49
         {
           ///QString src(name());
           ///if (type() == Track::AUDIO_OUTPUT) 
@@ -779,8 +792,16 @@ void Track::writeRouting(int level, Xml& xml) const
           ///}
           
           s = QT_TR_NOOP("Route");
-          if(r->channel != -1)
-            s += QString(QT_TR_NOOP(" channel=\"%1\"")).arg(r->channel);
+          if(r->type == Route::MIDI_PORT_ROUTE)  // p3.3.50
+          {
+            if(r->channel != -1 && r->channel != 0)
+              s += QString(QT_TR_NOOP(" channelMask=\"%1\"")).arg(r->channel);  // Use new channel mask.
+          }
+          else
+          {
+            if(r->channel != -1)
+              s += QString(QT_TR_NOOP(" channel=\"%1\"")).arg(r->channel);
+          }    
           if(r->channels != -1)
             s += QString(QT_TR_NOOP(" channels=\"%1\"")).arg(r->channels);
           if(r->remoteChannel != -1)
@@ -826,14 +847,19 @@ void Track::writeRouting(int level, Xml& xml) const
           //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().latin1());
           
           s = QT_TR_NOOP("dest");
-          if(r->type == Route::MIDI_DEVICE_ROUTE)
-            s += QString(QT_TR_NOOP(" devtype=\"%1\"")).arg(r->device->deviceType());
-          else
-          if(r->type != Route::TRACK_ROUTE)
+          
+          //if(r->type == Route::MIDI_DEVICE_ROUTE)                                      // p3.3.49 Obsolete since 1.1-RC2    
+          //  s += QString(QT_TR_NOOP(" devtype=\"%1\"")).arg(r->device->deviceType());  //
+          //if(r->type != Route::TRACK_ROUTE)                                            //
+          if(r->type != Route::TRACK_ROUTE && r->type != Route::MIDI_PORT_ROUTE)
             s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
 
           //s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
-          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
+          if(r->type == Route::MIDI_PORT_ROUTE)                                          // p3.3.49 
+            s += QString(QT_TR_NOOP(" mport=\"%1\"/")).arg(r->midiPort);
+          else  
+            s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
+            
           xml.tag(level, s);
           
           xml.etag(level--, "Route");

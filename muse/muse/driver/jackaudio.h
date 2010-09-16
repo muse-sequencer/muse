@@ -38,6 +38,8 @@ class JackAudioDevice : public AudioDevice {
       virtual ~JackAudioDevice();
       virtual void nullify_client() { _client = 0; }
       
+      virtual inline int deviceType() { return JACK_AUDIO; }   // p3.3.52
+      
       void scanMidiPorts();
       
       //virtual void start();

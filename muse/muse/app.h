@@ -282,7 +282,6 @@ class MusE : public QMainWindow
       void setUsedTool(int);
       void showDidYouKnowDialog();
       
-      void updateRouteMenus(Track* track);
       void routingPopupMenuAboutToHide();
 
    public:
@@ -311,6 +310,7 @@ class MusE : public QMainWindow
       PopupMenu* getRoutingPopupMenu();
       PopupMenu* prepareRoutingPopupMenu(Track* /*track*/, bool /*dst*/);
       void routingPopupMenuActivated(Track* /*track*/, int /*id*/);
+      void updateRouteMenus(Track* /*track*/, QObject* /*master*/);
       
 #ifdef HAVE_LASH
       void lash_idle_cb ();

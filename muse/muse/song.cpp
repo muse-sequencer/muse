@@ -1960,8 +1960,17 @@ void Song::clear(bool signal)
       
       // p3.3.45 Clear all midi port devices.
       for(int i = 0; i < MIDI_PORTS; ++i)
+      {
+        // p3.3.50 Since midi ports are not deleted, clear all midi port in/out routes. They point to non-existant tracks now.
+        midiPorts[i].inRoutes()->clear();
+        midiPorts[i].outRoutes()->clear();
+        
+        // p3.3.50 Reset this.
+        midiPorts[i].setFoundInSongFile(false);
+
         // This will also close the device.
         midiPorts[i].setMidiDevice(0);
+      }
       
       _synthIs.clearDelete();
 
@@ -3162,8 +3171,12 @@ void Song::insertTrack2(Track* track, int idx)
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  if(r->track == track)
-                    r->track->outRoutes()->push_back(*r);
+                  //if(r->track == track)  
+                  //  r->track->outRoutes()->push_back(*r);
+                  // p3.3.50
+                  Route src(track, r->channel, r->channels);
+                  src.remoteChannel = r->remoteChannel;
+                  r->track->outRoutes()->push_back(src);
             }      
       }
       else if (track->type() == Track::AUDIO_INPUT) 
@@ -3171,8 +3184,29 @@ void Song::insertTrack2(Track* track, int idx)
             const RouteList* rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  if(r->track == track)
-                    r->track->inRoutes()->push_back(*r);
+                  //if(r->track == track)  
+                  //  r->track->inRoutes()->push_back(*r);
+                  // p3.3.50
+                  Route src(track, r->channel, r->channels);
+                  src.remoteChannel = r->remoteChannel;
+                  r->track->inRoutes()->push_back(src);
+            }      
+      }
+      else if (track->isMidiTrack())          // p3.3.50
+      {
+            const RouteList* rl = track->inRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  //printf("Song::insertTrack2 %s in route port:%d\n", track->name().latin1(), r->midiPort);   // p3.3.50
+                  Route src(track, r->channel);
+                  midiPorts[r->midiPort].outRoutes()->push_back(src);
+            }
+            rl = track->outRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  //printf("Song::insertTrack2 %s out route port:%d\n", track->name().latin1(), r->midiPort);  // p3.3.50
+                  Route src(track, r->channel);
+                  midiPorts[r->midiPort].inRoutes()->push_back(src);
             }      
       }
       else 
@@ -3180,14 +3214,22 @@ void Song::insertTrack2(Track* track, int idx)
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  if(r->track == track)
-                    r->track->outRoutes()->push_back(*r);
+                  //if(r->track == track)  
+                  //  r->track->outRoutes()->push_back(*r);
+                  // p3.3.50
+                  Route src(track, r->channel, r->channels);
+                  src.remoteChannel = r->remoteChannel;
+                  r->track->outRoutes()->push_back(src);
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  if(r->track == track)
-                    r->track->inRoutes()->push_back(*r);
+                  //if(r->track == track)  
+                  //  r->track->inRoutes()->push_back(*r);
+                  // p3.3.50
+                  Route src(track, r->channel, r->channels);
+                  src.remoteChannel = r->remoteChannel;
+                  r->track->inRoutes()->push_back(src);
             }      
       }
       
@@ -3273,6 +3315,8 @@ void Song::removeTrack1(Track* track)
 
 void Song::removeTrack2(Track* track)
 {
+      //printf("Song::removeTrack2 track:%s\n", track->name().latin1());  // p3.3.50
+                  
       switch(track->type()) {
             case Track::MIDI:
             case Track::DRUM:
@@ -3352,8 +3396,13 @@ void Song::removeTrack2(Track* track)
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  if(r->track == track)
-                    r->track->outRoutes()->removeRoute(*r);
+                  //if(r->track == track)  
+                  //  r->track->outRoutes()->removeRoute(*r);
+                  //printf("Song::removeTrack2 %s audio out track:%s\n", track->name().latin1(), r->track->name().latin1());  // p3.3.50
+                  // p3.3.50
+                  Route src(track, r->channel, r->channels);
+                  src.remoteChannel = r->remoteChannel;
+                  r->track->outRoutes()->removeRoute(src);
             }      
       }
       else if (track->type() == Track::AUDIO_INPUT) 
@@ -3361,8 +3410,30 @@ void Song::removeTrack2(Track* track)
             const RouteList* rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  if(r->track == track)
-                    r->track->inRoutes()->removeRoute(*r);
+                  //if(r->track == track)  
+                  //  r->track->inRoutes()->removeRoute(*r);
+                  //printf("Song::removeTrack2 %s audio in track:%s\n", track->name().latin1(), r->track->name().latin1());  // p3.3.50
+                  // p3.3.50
+                  Route src(track, r->channel, r->channels);
+                  src.remoteChannel = r->remoteChannel;
+                  r->track->inRoutes()->removeRoute(src);
+            }      
+      }
+      else if (track->isMidiTrack())          // p3.3.50
+      {
+            const RouteList* rl = track->inRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  //printf("Song::removeTrack2 %s in route port:%d\n", track->name().latin1(), r->midiPort);   // p3.3.50
+                  Route src(track, r->channel);
+                  midiPorts[r->midiPort].outRoutes()->removeRoute(src);
+            }
+            rl = track->outRoutes();
+            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+            {
+                  //printf("Song::removeTrack2 %s out route port:%d\n", track->name().latin1(), r->midiPort);  // p3.3.50
+                  Route src(track, r->channel);
+                  midiPorts[r->midiPort].inRoutes()->removeRoute(src);
             }      
       }
       else 
@@ -3370,14 +3441,24 @@ void Song::removeTrack2(Track* track)
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  if(r->track == track)
-                    r->track->outRoutes()->removeRoute(*r);
+                  //if(r->track == track)   
+                  //  r->track->outRoutes()->removeRoute(*r);
+                  //printf("Song::removeTrack2 %s in route track:%s\n", track->name().latin1(), r->track->name().latin1());  // p3.3.50
+                  // p3.3.50
+                  Route src(track, r->channel, r->channels);
+                  src.remoteChannel = r->remoteChannel;
+                  r->track->outRoutes()->removeRoute(src);
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  if(r->track == track)
-                    r->track->inRoutes()->removeRoute(*r);
+                  //if(r->track == track)  
+                  //  r->track->inRoutes()->removeRoute(*r);
+                  //printf("Song::removeTrack2 %s out route track:%s\n", track->name().latin1(), r->track->name().latin1());  // p3.3.50
+                  // p3.3.50
+                  Route src(track, r->channel, r->channels);
+                  src.remoteChannel = r->remoteChannel;
+                  r->track->inRoutes()->removeRoute(src);
             }      
       }
       

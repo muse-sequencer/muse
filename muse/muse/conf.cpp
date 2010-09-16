@@ -284,6 +284,9 @@ static void readConfigMidiPort(Xml& xml)
                               
                               MidiPort* mp = &midiPorts[idx];
                               mp->syncInfo().copyParams(tmpSi);
+                              // p3.3.50 Indicate the port was found in the song file, even if no device is assigned to it.
+                              mp->setFoundInSongFile(true);
+                              
                               if (dev) {
                                     dev->setOpenFlags(openFlags);
                                     midiSeq->msgSetMidiDevice(mp, dev);

@@ -213,6 +213,7 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
   jack_port_t* client_jackport = NULL;
   //char buf[80];
     
+  
   // If Jack port can receive data from us and we actually want to...
   //if((pf & JackPortIsInput) && (_openFlags & 1))
   if(rwflags & 1)
@@ -231,9 +232,14 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
           //if(!audioDevice->findPort(buf))
           //  break;
           //client_jackport = (jack_port_t*)audioDevice->registerOutPort(buf, true);
-          client_jackport = (jack_port_t*)audioDevice->registerOutPort(name.latin1(), true);
-          if(client_jackport)
-            break;
+          if(audioDevice->deviceType() == AudioDevice::JACK_AUDIO)   // p3.3.52
+          {
+            client_jackport = (jack_port_t*)audioDevice->registerOutPort(name.latin1(), true);
+            if(client_jackport)
+              break;
+          }
+          else
+            break;    
         }    
           
         if(i == 65535)
@@ -246,12 +252,15 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
     }
     else
     {
-      client_jackport = (jack_port_t*)audioDevice->registerOutPort(name.latin1(), true);
-      if(!client_jackport)
+      if(audioDevice->deviceType() == AudioDevice::JACK_AUDIO)       // p3.3.52
       {
-        fprintf(stderr, "MidiJackDevice::createJackMidiDevice failed creating output port name %s\n", name.latin1());
-        return 0;
-      }
+        client_jackport = (jack_port_t*)audioDevice->registerOutPort(name.latin1(), true);
+        if(!client_jackport)
+        {
+          fprintf(stderr, "MidiJackDevice::createJackMidiDevice failed creating output port name %s\n", name.latin1());
+          return 0;
+        }
+      }  
     }
     /*
     else
@@ -309,9 +318,14 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
           //if(!audioDevice->findPort(buf))
           //  break;
           //client_jackport = (jack_port_t*)audioDevice->registerInPort(buf, true);
-          client_jackport = (jack_port_t*)audioDevice->registerInPort(name.latin1(), true);
-          if(client_jackport)
-            break;
+          if(audioDevice->deviceType() == AudioDevice::JACK_AUDIO)       // p3.3.52
+          {
+            client_jackport = (jack_port_t*)audioDevice->registerInPort(name.latin1(), true);
+            if(client_jackport)
+              break;
+          }
+          else
+            break;    
         }    
           
         if(i == 65535)
@@ -324,11 +338,14 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
     }
     else
     {
-      client_jackport = (jack_port_t*)audioDevice->registerInPort(name.latin1(), true);
-      if(!client_jackport)
+      if(audioDevice->deviceType() == AudioDevice::JACK_AUDIO)       // p3.3.52
       {
-        fprintf(stderr, "MidiJackDevice::createJackMidiDevice failed creating input port name %s\n", name.latin1());
-        return 0;
+        client_jackport = (jack_port_t*)audioDevice->registerInPort(name.latin1(), true);
+        if(!client_jackport)
+        {
+          fprintf(stderr, "MidiJackDevice::createJackMidiDevice failed creating input port name %s\n", name.latin1());
+          return 0;
+        }  
       }
     }
       
@@ -345,8 +362,9 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
     //  _nextInIdNum++;
     
   }
-  if(client_jackport == NULL)
-    return 0;
+    
+  //if(client_jackport == NULL)  // p3.3.52 Removed. Allow the device to be created even if Jack isn't running.
+  //  return 0;
     
   MidiJackDevice* dev = new MidiJackDevice(client_jackport, name);
   dev->setrwFlags(rwflags);
@@ -364,7 +382,8 @@ void MidiJackDevice::setName(const QString& s)
   printf("MidiJackDevice::setName %s new name:%s\n", name().latin1(), s.latin1());
   #endif  
   _name = s; 
-  audioDevice->setPortName(clientPort(), s.latin1());
+  if(clientPort())  // p3.3.52 Added check.
+    audioDevice->setPortName(clientPort(), s.latin1());
 }
 
 //---------------------------------------------------------
@@ -513,7 +532,7 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
 {
       // p3.3.45
       // If this device is not actually in use by the song, do not write any routes.
-      // This prevents bogus routes from being saved and propogated in the med file.
+      // This prevents bogus routes from being saved and propagated in the med file.
       if(midiPort() == -1)
         return;
       

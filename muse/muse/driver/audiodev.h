@@ -21,9 +21,13 @@ class MidiPlayEvent;
 class AudioDevice {
 
    public:
+      enum { DUMMY_AUDIO=0, JACK_AUDIO=1 };  // p3.3.52
+      
       AudioDevice() {}
       virtual ~AudioDevice() {}
 
+      virtual int deviceType() = 0;  // p3.3.52
+      
       //virtual void start() = 0;
       virtual void start(int priority) = 0;
       

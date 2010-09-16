@@ -11,6 +11,7 @@
 
 #include "globaldefs.h"
 #include "sync.h"
+#include "route.h"
 
 class MidiDevice;
 class MidiInstrument;
@@ -33,7 +34,11 @@ class MidiPort {
       AutomationType _automationType[MIDI_CHANNELS];
       // Holds sync settings and detection monitors.
       MidiSyncInfo _syncInfo;
-
+      // p3.3.50 Just a flag to say the port was found in the song file, even if it has no device right now.
+      bool _foundInSongFile;
+      
+      RouteList _inRoutes, _outRoutes;
+      
       void clearDevice();
 
    public:
@@ -60,6 +65,8 @@ class MidiPort {
       bool hasGui() const;
 
       int portno() const;
+      bool foundInSongFile() const              { return _foundInSongFile; }
+      void setFoundInSongFile(bool b)           { _foundInSongFile = b; }
 
       MidiDevice* device() const                { return _device; }
       const QString& state() const              { return _state; }
@@ -77,6 +84,12 @@ class MidiPort {
       int nullSendValue();
       void setNullSendValue(int v);
 
+      RouteList* inRoutes()    { return &_inRoutes; }
+      RouteList* outRoutes()   { return &_outRoutes; }
+      bool noInRoute() const   { return _inRoutes.empty();  }
+      bool noOutRoute() const  { return _outRoutes.empty(); }
+      void writeRouting(int, Xml&) const;
+      
       // send events to midi device and keep track of
       // device state:
       void sendGmOn();
