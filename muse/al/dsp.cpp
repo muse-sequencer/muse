@@ -92,12 +92,14 @@ class DspSSE86 : public Dsp {
 
 void initDsp()
       {
+#if 0    // Disabled for now.
 #if defined(__i386__) || defined(__x86_64__)
       if(debugMsg)
         printf("Muse: __i386__ or __x86_64__ defined. Using optimized float buffer copying (asm movsl).\n");
 #else
       if(debugMsg)
         printf("Muse: __i386__ or __x86_64__ not defined. Using non-optimized memcpy for float buffer copying.\n");
+#endif
 #endif
 
 #if defined(__i386__) && defined(USE_SSE)
@@ -153,7 +155,8 @@ void Dsp::cpy(float* dst, float* src, unsigned n)
 {
 // FIXME: Changed by T356. Not defined. Where are these???
 //#if defined(ARCH_X86) || defined(ARCH_X86_64)
-#if defined(__i386__) || defined(__x86_64__)
+///#if defined(__i386__) || defined(__x86_64__)
+#if 0  // Disabled for now.
             //printf("Dsp: using asm cpy\n");
             // Changed by T356. Get To and From not declared in scope compile errors.
             //register unsigned long int dummy;

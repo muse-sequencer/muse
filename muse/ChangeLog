@@ -1,6 +1,7 @@
 21.09.2010
       * Fixed: Mixers not restoring their size properly upon song load. (T356)
         - Rearranged MusE::loadProjectFile1() slightly so mixer resizing done at end. Tested OK.
+      * Changed: Disabled some optimized code always enabled in Dsp::cpy(), for now, in case of 64-bit issues. (T356) 
 16.09.2010
       * Created rc2 release for 1.1 (rj)
       * Fixed: Delete track(s) not disconnecting track routes, causing routes to hang around and store in song file. (T356)
