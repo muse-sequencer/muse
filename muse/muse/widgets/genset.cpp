@@ -124,7 +124,9 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent, const char* name)
       externalWavEditorSelect->setText(config.externalWavEditor);
       oldStyleStopCheckBox->setChecked(config.useOldStyleStopShortCut);
       moveArmedCheckBox->setChecked(config.moveArmedCheckBox);
-
+      
+      //updateSettings();    // TESTING
+      
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
       connect(okButton, SIGNAL(clicked()), SLOT(ok()));
       connect(cancelButton, SIGNAL(clicked()), SLOT(cancel()));
@@ -134,6 +136,110 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent, const char* name)
       connect(setArrangerCurrent, SIGNAL(clicked()), SLOT(arrangerCurrent()));
       connect(setTransportCurrent, SIGNAL(clicked()), SLOT(transportCurrent()));
       }
+
+//---------------------------------------------------------
+//   updateSettings
+//---------------------------------------------------------
+
+void GlobalSettingsConfig::updateSettings()
+{
+      for (unsigned i = 0; i < sizeof(rtcResolutions)/sizeof(*rtcResolutions); ++i) {
+            if (rtcResolutions[i] == config.rtcTicks) {
+                  rtcResolutionSelect->setCurrentItem(i);
+                  break;
+                  }
+            }
+      for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
+            if (divisions[i] == config.division) {
+                  midiDivisionSelect->setCurrentItem(i);
+                  break;
+                  }
+            }
+      for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
+            if (divisions[i] == config.guiDivision) {
+                  guiDivisionSelect->setCurrentItem(i);
+                  break;
+                  }
+            }
+      for (unsigned i = 0; i < sizeof(dummyAudioBufSizes)/sizeof(*dummyAudioBufSizes); ++i) {
+            if (dummyAudioBufSizes[i] == config.dummyAudioBufSize) {
+                  dummyAudioSize->setCurrentItem(i);
+                  break;
+                  }
+            }
+      
+      guiRefreshSelect->setValue(config.guiRefresh);
+      minSliderSelect->setValue(int(config.minSlider));
+      minMeterSelect->setValue(config.minMeter);
+      freewheelCheckBox->setChecked(config.freewheelMode);
+      denormalCheckBox->setChecked(config.useDenormalBias);
+      outputLimiterCheckBox->setChecked(config.useOutputLimiter);
+      vstInPlaceCheckBox->setChecked(config.vstInPlace);
+      dummyAudioRate->setValue(config.dummyAudioSampleRate);
+      
+      //DummyAudioDevice* dad = dynamic_cast<DummyAudioDevice*>(audioDevice);
+      //dummyAudioRealRate->setText(dad ? QString().setNum(sampleRate) : "---");
+      dummyAudioRealRate->setText(QString().setNum(sampleRate));
+      
+      helpBrowser->setText(config.helpBrowser);
+      startSongEntry->setText(config.startSong);
+      startSongGroup->setButton(config.startMode);
+
+      showTransport->setChecked(config.transportVisible);
+      showBigtime->setChecked(config.bigTimeVisible);
+      //showMixer->setChecked(config.mixerVisible);
+      showMixer->setChecked(config.mixer1Visible);
+      showMixer2->setChecked(config.mixer2Visible);
+
+      arrangerX->setValue(config.geometryMain.x());
+      arrangerY->setValue(config.geometryMain.y());
+      arrangerW->setValue(config.geometryMain.width());
+      arrangerH->setValue(config.geometryMain.height());
+
+      transportX->setValue(config.geometryTransport.x());
+      transportY->setValue(config.geometryTransport.y());
+
+      bigtimeX->setValue(config.geometryBigTime.x());
+      bigtimeY->setValue(config.geometryBigTime.y());
+      bigtimeW->setValue(config.geometryBigTime.width());
+      bigtimeH->setValue(config.geometryBigTime.height());
+
+      //mixerX->setValue(config.geometryMixer.x());
+      //mixerY->setValue(config.geometryMixer.y());
+      //mixerW->setValue(config.geometryMixer.width());
+      //mixerH->setValue(config.geometryMixer.height());
+      mixerX->setValue(config.mixer1.geometry.x());
+      mixerY->setValue(config.mixer1.geometry.y());
+      mixerW->setValue(config.mixer1.geometry.width());
+      mixerH->setValue(config.mixer1.geometry.height());
+      mixer2X->setValue(config.mixer2.geometry.x());
+      mixer2Y->setValue(config.mixer2.geometry.y());
+      mixer2W->setValue(config.mixer2.geometry.width());
+      mixer2H->setValue(config.mixer2.geometry.height());
+
+      //setMixerCurrent->setEnabled(muse->mixerWindow());
+      setMixerCurrent->setEnabled(muse->mixer1Window());
+      setMixer2Current->setEnabled(muse->mixer2Window());
+      
+      setBigtimeCurrent->setEnabled(muse->bigtimeWindow());
+      setTransportCurrent->setEnabled(muse->transportWindow());
+
+      showSplash->setChecked(config.showSplashScreen);
+      showDidYouKnow->setChecked(config.showDidYouKnow);
+      externalWavEditorSelect->setText(config.externalWavEditor);
+      oldStyleStopCheckBox->setChecked(config.useOldStyleStopShortCut);
+      moveArmedCheckBox->setChecked(config.moveArmedCheckBox);
+}
+
+//---------------------------------------------------------
+//   showEvent
+//---------------------------------------------------------
+
+void GlobalSettingsConfig::showEvent(QShowEvent* e)
+{
+  QDialog::showEvent(e);
+  //updateSettings();     // TESTING
+}
 
 //---------------------------------------------------------
 //   apply

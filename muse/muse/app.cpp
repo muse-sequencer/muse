@@ -1591,51 +1591,22 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             showMixer2(config.mixer2Visible);
             
             // Added p3.3.43 Make sure the geometry is correct because showMixerX() will NOT 
-            //  set the geometry if the mixer has already been created, which caused a very
-            //  skinny mixer if enough strips were added to cause a horizontal scrollbar to appear.
-            // If no horizontal scrollbar had appeared, then everything was displayed OK.
-            // FIXME: Resize not working for some reason if mixer is already created !
+            //  set the geometry if the mixer has already been created.
             if(mixer1)
             {
-              if(mixer1->geometry().size() != config.mixer1.geometry.size())
-              {
-                //printf("MusE::loadProjectFile1 resizing mixer1 x:%d y:%d w:%d h:%d\n", config.mixer1.geometry.x(), 
-                //                                                                       config.mixer1.geometry.y(), 
-                //                                                                       config.mixer1.geometry.width(), 
-                //                                                                       config.mixer1.geometry.height()
-                //                                                                       );  
-                mixer1->resize(config.mixer1.geometry.size());
-              }
+              //if(mixer1->geometry().size() != config.mixer1.geometry.size())   // p3.3.53 Moved below
+              //  mixer1->resize(config.mixer1.geometry.size());
+              
               if(mixer1->geometry().topLeft() != config.mixer1.geometry.topLeft())
-              {  
-                //printf("MusE::loadProjectFile1 moving mixer1 x:%d y:%d w:%d h:%d\n", config.mixer1.geometry.x(), 
-                //                                                                       config.mixer1.geometry.y(), 
-                //                                                                       config.mixer1.geometry.width(), 
-                //                                                                       config.mixer1.geometry.height()
-                //                                                                       );  
                 mixer1->move(config.mixer1.geometry.topLeft());
-              }  
             }
             if(mixer2)
             {
-              if(mixer2->geometry().size() != config.mixer2.geometry.size())
-              {
-                //printf("MusE::loadProjectFile1 resizing mixer2 x:%d y:%d w:%d h:%d\n", config.mixer2.geometry.x(), 
-                //                                                                       config.mixer2.geometry.y(), 
-                //                                                                       config.mixer2.geometry.width(), 
-                //                                                                       config.mixer2.geometry.height()
-                //                                                                       );  
-                mixer2->resize(config.mixer2.geometry.size());
-              }
+              //if(mixer2->geometry().size() != config.mixer2.geometry.size())   // p3.3.53 Moved below
+              //  mixer2->resize(config.mixer2.geometry.size());
+              
               if(mixer2->geometry().topLeft() != config.mixer2.geometry.topLeft())
-              {
-                //printf("MusE::loadProjectFile1 moving mixer2 x:%d y:%d w:%d h:%d\n", config.mixer2.geometry.x(), 
-                //                                                                       config.mixer2.geometry.y(), 
-                //                                                                       config.mixer2.geometry.width(), 
-                //                                                                       config.mixer2.geometry.height()
-                //                                                                       );  
                 mixer2->move(config.mixer2.geometry.topLeft());
-              }  
             }
             
             showMarker(config.markerVisible);
@@ -1656,6 +1627,36 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       song->updatePos();
       clipboardChanged(); // enable/disable "Paste"
       selectionChanged(); // enable/disable "Copy" & "Paste"
+      
+      // p3.3.53 Try this AFTER the song update above which does a mixer update... Tested OK - mixers resize properly now.
+      if (loadAll) 
+      {
+            if(mixer1)
+            {
+              if(mixer1->geometry().size() != config.mixer1.geometry.size())
+              {
+                //printf("MusE::loadProjectFile1 resizing mixer1 x:%d y:%d w:%d h:%d\n", config.mixer1.geometry.x(), 
+                //                                                                       config.mixer1.geometry.y(), 
+                //                                                                       config.mixer1.geometry.width(), 
+                //                                                                       config.mixer1.geometry.height()
+                //                                                                       );  
+                mixer1->resize(config.mixer1.geometry.size());
+              }
+            }  
+            if(mixer2)
+            {
+              if(mixer2->geometry().size() != config.mixer2.geometry.size())
+              {
+                //printf("MusE::loadProjectFile1 resizing mixer2 x:%d y:%d w:%d h:%d\n", config.mixer2.geometry.x(), 
+                //                                                                       config.mixer2.geometry.y(), 
+                //                                                                       config.mixer2.geometry.width(), 
+                //                                                                       config.mixer2.geometry.height()
+                //                                                                       );  
+                mixer2->resize(config.mixer2.geometry.size());
+              }
+            }  
+      }
+      
       }
 
 //---------------------------------------------------------

@@ -19,6 +19,7 @@ class GlobalSettingsConfig : public GlobalSettingsDialogBase {
       Q_OBJECT
 
    private slots:
+      void updateSettings();
       void apply();
       void ok();
       void cancel();
@@ -28,6 +29,9 @@ class GlobalSettingsConfig : public GlobalSettingsDialogBase {
       void arrangerCurrent();
       void transportCurrent();
 
+    protected:
+      void showEvent(QShowEvent*);
+      
    public:
       GlobalSettingsConfig(QWidget* parent=0, const char* name=0);
       };

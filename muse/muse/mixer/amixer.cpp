@@ -183,6 +183,8 @@ void AudioMixerApp::clear()
 
 void AudioMixerApp::updateMixer(UpdateAction action)
       {
+      //printf("AudioMixerApp::updateMixer action:%d\n", action);
+      
       //name = cfg->name;
       //setCaption(name);
       setCaption(cfg->name);
@@ -382,9 +384,13 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             addStrip(*i, idx++);
       }
       
+      //printf("AudioMixerApp::updateMixer setting maximum width:%d\n", STRIP_WIDTH * idx + __WIDTH_COMPENSATION);
       setMaximumWidth(STRIP_WIDTH * idx + __WIDTH_COMPENSATION);
       if (idx < 8)
+      {
+            //printf("AudioMixerApp::updateMixer setting minimum width:%d\n", idx * STRIP_WIDTH + __WIDTH_COMPENSATION);
             view->setMinimumWidth(idx * STRIP_WIDTH + __WIDTH_COMPENSATION);
+      }      
       }
 
 //---------------------------------------------------------
