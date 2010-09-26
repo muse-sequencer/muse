@@ -1,3 +1,7 @@
+26.09.2010
+      =======================================
+      * 1.0 tagged (rj)
+      =======================================
 21.09.2010
       * Fixed: Mixers not restoring their size properly upon song load. (T356)
         - Rearranged MusE::loadProjectFile1() slightly so mixer resizing done at end. Tested OK.

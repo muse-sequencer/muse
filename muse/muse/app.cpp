@@ -1314,9 +1314,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       menu_ids[CMD_OPEN_BUG] = menu_help->insertItem(tr("&Report Bug..."), this, SLOT(startBugBrowser()), 0);
       menu_help->insertSeparator();
       menu_help->insertItem(tr("&About MusE"), this, SLOT(about()));
-      menu_help->insertItem(tr("About&Qt"), this, SLOT(aboutQt()));
-      menu_help->insertSeparator();
-      menu_ids[CMD_START_WHATSTHIS] = menu_help->insertItem(tr("What's &This?"), this, SLOT(whatsThis()), 0);
+      //menu_help->insertItem(tr("About&Qt"), this, SLOT(aboutQt()));
+      //menu_help->insertSeparator();
+      //menu_ids[CMD_START_WHATSTHIS] = menu_help->insertItem(tr("What's &This?"), this, SLOT(whatsThis()), 0);
 
       //---------------------------------------------------
       //    Central Widget
