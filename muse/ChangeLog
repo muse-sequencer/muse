@@ -1,6 +1,6 @@
 27.09.2010
       =======================================
-      * 1.0 tagged (rj)
+      * 1.1 tagged (rj)
       =======================================
       * added: missing headerfile in dssihost.cpp, required for building on Ubuntu Maverick (rj)
 21.09.2010
