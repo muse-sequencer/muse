@@ -31,7 +31,7 @@
 #include <signal.h>
 #include <dlfcn.h>
 #include <stdlib.h>
-//#include <sys/stat.h>
+#include <sys/stat.h>
 //#include <dssi.h>
 //#include <alsa/asoundlib.h>
 #include <qdir.h>
