@@ -1,4 +1,5 @@
-27.09.2010
+08.10.2010
+      * Disabled: Precount does not work, disabled function in gui (rj)
       =======================================
       * 1.1 tagged (rj)
       =======================================
@@ -40,6 +41,7 @@
       * Renamed: Soft synth configuration changed to Synth configuration, as per patch from Geoff King (rj)
       * Fixed: Shortcuts with modifier keys wasn't working for global shortcuts, should be now (rj)
       * Added: Shortcuts for changing len of events, default Ctrl+Shift+Left/Right (rj)
+>>>>>>> .r459
 10.08.2010
       * Fixed/Changed: Grid reacts to midi resolution change (rj)
 01.08.2010

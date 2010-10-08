@@ -8,7 +8,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>517</width>
+            <width>557</width>
             <height>347</height>
         </rect>
     </property>
@@ -320,11 +320,14 @@
                             <property name="name">
                                 <cstring>precountEnable</cstring>
                             </property>
+                            <property name="enabled">
+                                <bool>false</bool>
+                            </property>
                             <property name="text">
                                 <string>enable</string>
                             </property>
                             <property name="checked">
-                                <bool>true</bool>
+                                <bool>false</bool>
                             </property>
                         </widget>
                         <widget class="QLayoutWidget">
@@ -344,6 +347,9 @@
                                 <widget class="QSpinBox">
                                     <property name="name">
                                         <cstring>precountBars</cstring>
+                                    </property>
+                                    <property name="enabled">
+                                        <bool>false</bool>
                                     </property>
                                     <property name="maxValue">
                                         <number>10</number>
@@ -368,6 +374,9 @@
                         <widget class="QCheckBox">
                             <property name="name">
                                 <cstring>precountFromMastertrack</cstring>
+                            </property>
+                            <property name="enabled">
+                                <bool>false</bool>
                             </property>
                             <property name="text">
                                 <string>From Mastertrack</string>

@@ -38,6 +38,8 @@ MetronomeConfig::MetronomeConfig(QWidget* parent, const char* name)
       beatVelocity->setValue(beatClickVelo);
       midiChannel->setValue(clickChan+1);
       midiPort->setValue(clickPort+1);
+
+      /*
       precountBars->setValue(preMeasures);
       precountEnable->setChecked(precountEnableFlag);
       precountFromMastertrack->setChecked(precountFromMastertrackFlag);
@@ -45,6 +47,8 @@ MetronomeConfig::MetronomeConfig(QWidget* parent, const char* name)
       precountSigN->setValue(::precountSigN);
       precountPrerecord->setChecked(::precountPrerecord);
       precountPreroll->setChecked(::precountPreroll);
+      */
+
       midiClick->setChecked(midiClickFlag);
       audioBeep->setChecked(audioClickFlag);
       }
@@ -119,12 +123,14 @@ void MetronomeConfig::apply()
       clickChan          = midiChannel->value() - 1;
       clickPort          = midiPort->value() - 1;
       preMeasures        = precountBars->value();
+      /*
       precountEnableFlag = precountEnable->isChecked();
       precountFromMastertrackFlag = precountFromMastertrack->isChecked();
       ::precountSigZ     = precountSigZ->value();
       ::precountSigN     = precountSigN->value();
       ::precountPrerecord = precountPrerecord->isChecked();
       ::precountPreroll  = precountPreroll->isChecked();
+      */
       midiClickFlag      = midiClick->isChecked();
       audioClickFlag     = audioBeep->isChecked();
       //audioVolumeChanged = volumeSlider->value();
@@ -155,16 +161,20 @@ void MetronomeConfig::midiClickChanged(bool flag)
 
 void MetronomeConfig::precountEnableChanged(bool flag)
       {
+      /*
       precountBars->setEnabled(flag);
       precountFromMastertrack->setEnabled(flag);
       precountSigZ->setEnabled(flag && !precountFromMastertrack->isChecked());
       precountSigN->setEnabled(flag && !precountFromMastertrack->isChecked());
+      */
       }
 
 void MetronomeConfig::precountFromMastertrackChanged(bool flag)
       {
+    /*
       precountSigZ->setEnabled(!flag);
       precountSigN->setEnabled(!flag);
+      */
       }
 
 void MetronomeConfig::beepVolumeChanged(int volume)
