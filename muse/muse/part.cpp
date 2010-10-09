@@ -1319,6 +1319,10 @@ void Song::changePart(Part* oPart, Part* nPart)
 
 void Song::cmdGluePart(Track* track, Part* oPart)
       {
+      // p3.3.54
+      if(track->type() != Track::WAVE && !track->isMidiTrack())
+        return;
+      
       PartList* pl   = track->parts();
       Part* nextPart = 0;
 
@@ -1344,12 +1348,36 @@ void Song::cmdGluePart(Track* track, Part* oPart)
             dl->add(ie->second);
 
       EventList* sl2 = nextPart->events();
-      int frameOffset = nextPart->frame() - oPart->frame();
-      for (iEvent ie = sl2->begin(); ie != sl2->end(); ++ie) {
-            Event event = ie->second.clone();
-            event.setFrame(event.frame() + frameOffset);
-            dl->add(event);
-            }
+      
+      //int frameOffset = nextPart->frame() - oPart->frame();
+      //for (iEvent ie = sl2->begin(); ie != sl2->end(); ++ie) {
+      //      Event event = ie->second.clone();
+      //      event.setFrame(event.frame() + frameOffset);
+      //      dl->add(event);
+      //      }
+      // p3.3.54 Changed. 
+      if(track->type() == Track::WAVE)
+      {
+        int frameOffset = nextPart->frame() - oPart->frame();
+        for (iEvent ie = sl2->begin(); ie != sl2->end(); ++ie) 
+        {
+              Event event = ie->second.clone();
+              event.setFrame(event.frame() + frameOffset);
+              dl->add(event);
+        }
+      }
+      else
+      if(track->isMidiTrack())
+      {
+        int tickOffset  = nextPart->tick() - oPart->tick();
+        for (iEvent ie = sl2->begin(); ie != sl2->end(); ++ie) 
+        {
+              Event event = ie->second.clone();
+              event.setTick(event.tick() + tickOffset);
+              dl->add(event);
+        }
+      }
+            
       startUndo();
       audio->msgRemovePart(nextPart, false);
       // Indicate no undo, and do port controller values but not clone parts. 

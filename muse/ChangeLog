@@ -1,3 +1,6 @@
+09.10.2010
+      * Fixed: Gluing of midi track parts, over tempo changes, caused incorrect note times and lengths. (T356)
+        - Fixed Song::cmdGluePart().
 08.10.2010
       * Disabled: Precount does not work, disabled function in gui (rj)
       =======================================
