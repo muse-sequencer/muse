@@ -1,0 +1,36 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>PatchBayBase</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>PatchBayBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>401</width>
+            <height>315</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>ALSA Patch Bay</string>
+    </property>
+    <widget class="QGroupBox">
+        <property name="name">
+            <cstring>alsaPatchbay</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>400</width>
+                <height>315</height>
+            </rect>
+        </property>
+        <property name="title">
+            <string>ALSA Patch Bay</string>
+        </property>
+    </widget>
+</widget>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

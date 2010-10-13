@@ -1,0 +1,467 @@
+<?xml version="1.0"?>
+<muse version="2.0">
+  <configuration>
+    <midiInputDevice>0</midiInputDevice>
+    <midiInputChannel>0</midiInputChannel>
+    <midiRecordType>0</midiRecordType>
+    <midiThruType>0</midiThruType>
+    <midiFilterCtrl1>0</midiFilterCtrl1>
+    <midiFilterCtrl2>0</midiFilterCtrl2>
+    <midiFilterCtrl3>0</midiFilterCtrl3>
+    <midiFilterCtrl4>0</midiFilterCtrl4>
+    <mtctype>1</mtctype>
+    <mtcoffset>00:00:00:00:00</mtcoffset>
+    <useJackTransport>1</useJackTransport>
+    <extSync>0</extSync>
+    <bigtimeVisible>0</bigtimeVisible>
+    <transportVisible>0</transportVisible>
+    <markerVisible>0</markerVisible>
+    <mixerVisible>0</mixerVisible>
+    <geometryMain x="0" y="0" w="972" h="623"></geometryMain>
+    <geometryTransport x="0" y="0" w="696" h="320"></geometryTransport>
+    <arranger>
+      <info>1</info>
+      <split>440 526 </split>
+      <list>
+        <header> 7 6 5 4 3 2 1 0 </header>
+        </list>
+      <xpos>0</xpos>
+      <xmag>266</xmag>
+      <ypos>1</ypos>
+      </arranger>
+    <sequencer>
+      <metronom>
+        <premeasures>2</premeasures>
+        <measurepitch>63</measurepitch>
+        <measurevelo>127</measurevelo>
+        <beatpitch>63</beatpitch>
+        <beatvelo>70</beatvelo>
+        <channel>9</channel>
+        <port>0</port>
+        <precountEnable>0</precountEnable>
+        <fromMastertrack>0</fromMastertrack>
+        <signatureZ>4</signatureZ>
+        <signatureN>4</signatureN>
+        <prerecord>0</prerecord>
+        <preroll>0</preroll>
+        <midiClickEnable>1</midiClickEnable>
+        <audioClickEnable>0</audioClickEnable>
+        </metronom>
+      <rcEnable>0</rcEnable>
+      <rcStop>28</rcStop>
+      <rcRecord>31</rcRecord>
+      <rcGotoLeft>33</rcGotoLeft>
+      <rcPlay>29</rcPlay>
+      <midiport idx="0">
+        <instrument>generic midi</instrument>
+        <channel idx="0">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="1">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="2">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="3">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="4">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="5">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="6">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="7">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="8">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="9">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="10">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="11">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="12">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="13">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="14">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="15">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        </midiport>
+      </sequencer>
+    <drumedit>
+      <quant>96</quant>
+      <raster>96</raster>
+      <width>600</width>
+      <height>400</height>
+      <dlistwidth>50</dlistwidth>
+      <dcanvaswidth>300</dcanvaswidth>
+      <to>0</to>
+      </drumedit>
+    <pianoroll>
+      <quant>96</quant>
+      <raster>96</raster>
+      <quantStrength>80</quantStrength>
+      <quantLimit>50</quantLimit>
+      <quantLen>0</quantLen>
+      <to>0</to>
+      <width>600</width>
+      <height>400</height>
+      <colormode>0</colormode>
+      </pianoroll>
+    <masteredit>
+      <raster>0</raster>
+      </masteredit>
+    <waveedit>
+      <bgcolor r="200" g="200" b="200"></bgcolor>
+      <width>600</width>
+      <height>400</height>
+      </waveedit>
+    </configuration>
+  <song>
+    <info></info>
+    <automation>1</automation>
+    <cpos>0</cpos>
+    <rpos>0</rpos>
+    <lpos>0</lpos>
+    <master>1</master>
+    <loop>0</loop>
+    <punchin>0</punchin>
+    <punchout>0</punchout>
+    <record>0</record>
+    <solo>0</solo>
+    <type>0</type>
+    <recmode>0</recmode>
+    <cycle>0</cycle>
+    <click>0</click>
+    <quantize>0</quantize>
+    <len>0</len>
+    <follow>1</follow>
+    <AudioOutput>
+      <name>Out 1</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>2</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <prefader>0</prefader>
+      <sendMetronome>0</sendMetronome>
+      <automation>1</automation>
+      <controller id="0" cur="1.02164">
+        </controller>
+      <controller id="1" cur="0">
+        </controller>
+      <controller id="2" cur="0">
+        </controller>
+      </AudioOutput>
+    <miditrack>
+      <name>Track 1</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>0</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <device>0</device>
+      <channel>0</channel>
+      <inportMap>4294967295</inportMap>
+      <inchannelMap>65535</inchannelMap>
+      <locked>0</locked>
+      <echo>1</echo>
+      <transposition>0</transposition>
+      <velocity>0</velocity>
+      <delay>0</delay>
+      <len>100</len>
+      <compression>100</compression>
+      <automation>1</automation>
+      </miditrack>
+    <miditrack>
+      <name>Track 2</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>0</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <device>0</device>
+      <channel>0</channel>
+      <inportMap>4294967295</inportMap>
+      <inchannelMap>65535</inchannelMap>
+      <locked>0</locked>
+      <echo>1</echo>
+      <transposition>0</transposition>
+      <velocity>0</velocity>
+      <delay>0</delay>
+      <len>100</len>
+      <compression>100</compression>
+      <automation>1</automation>
+      </miditrack>
+    <miditrack>
+      <name>Track 3</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>0</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <device>0</device>
+      <channel>0</channel>
+      <inportMap>4294967295</inportMap>
+      <inchannelMap>65535</inchannelMap>
+      <locked>0</locked>
+      <echo>1</echo>
+      <transposition>0</transposition>
+      <velocity>0</velocity>
+      <delay>0</delay>
+      <len>100</len>
+      <compression>100</compression>
+      <automation>1</automation>
+      </miditrack>
+    <miditrack>
+      <name>Track 4</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>0</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <device>0</device>
+      <channel>0</channel>
+      <inportMap>4294967295</inportMap>
+      <inchannelMap>65535</inchannelMap>
+      <locked>0</locked>
+      <echo>1</echo>
+      <transposition>0</transposition>
+      <velocity>0</velocity>
+      <delay>0</delay>
+      <len>100</len>
+      <compression>100</compression>
+      <automation>1</automation>
+      </miditrack>
+    <drumtrack>
+      <name>Track 5</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>0</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <device>0</device>
+      <channel>9</channel>
+      <inportMap>4294967295</inportMap>
+      <inchannelMap>65535</inchannelMap>
+      <locked>0</locked>
+      <echo>1</echo>
+      <transposition>0</transposition>
+      <velocity>0</velocity>
+      <delay>0</delay>
+      <len>100</len>
+      <compression>100</compression>
+      <automation>1</automation>
+      </drumtrack>
+    <wavetrack>
+      <name>Track 6</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>2</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <prefader>0</prefader>
+      <sendMetronome>0</sendMetronome>
+      <automation>1</automation>
+      <controller id="0" cur="1">
+        </controller>
+      <controller id="1" cur="0">
+        </controller>
+      <controller id="2" cur="0">
+        </controller>
+      </wavetrack>
+    <AudioOutput>
+      <name>Out 2</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>2</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <prefader>0</prefader>
+      <sendMetronome>0</sendMetronome>
+      <automation>1</automation>
+      <controller id="0" cur="1">
+        </controller>
+      <controller id="1" cur="0">
+        </controller>
+      <controller id="2" cur="0">
+        </controller>
+      </AudioOutput>
+    <AudioOutput>
+      <name>Out 3</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>2</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <prefader>0</prefader>
+      <sendMetronome>0</sendMetronome>
+      <automation>1</automation>
+      <controller id="0" cur="1">
+        </controller>
+      <controller id="1" cur="0">
+        </controller>
+      <controller id="2" cur="0">
+        </controller>
+      </AudioOutput>
+    <AudioInput>
+      <name>Input 1</name>
+      <record>0</record>
+      <mute>1</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>2</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <selected>1</selected>
+      <prefader>0</prefader>
+      <sendMetronome>0</sendMetronome>
+      <automation>1</automation>
+      <controller id="0" cur="1">
+        </controller>
+      <controller id="1" cur="0">
+        </controller>
+      <controller id="2" cur="0">
+        </controller>
+      </AudioInput>
+    <Route>
+      <srcNode>Track 6</srcNode>
+      <dstNode>Out 1</dstNode>
+      </Route>
+    <Route>
+      <srcNode>Input 1</srcNode>
+      <dstNode>Out 1</dstNode>
+      </Route>
+    <tempolist fix="500000">
+      <tempo at="21474837">
+        <tick>0</tick>
+        <val>500000</val>
+        </tempo>
+      </tempolist>
+    <siglist>
+      <sig at="21474836">
+        <tick>0</tick>
+        <nom>4</nom>
+        <denom>4</denom>
+        </sig>
+      </siglist>
+    <drummap>
+      </drummap>
+    </song>
+  <toplevels>
+    </toplevels>
+  </muse>

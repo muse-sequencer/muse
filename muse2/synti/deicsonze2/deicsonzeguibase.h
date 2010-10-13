@@ -1,0 +1,312 @@
+/****************************************************************************
+** Form interface generated from reading ui file 'deicsonzeguibase.ui'
+**
+** Created: Thu Dec 24 07:50:17 2009
+**
+** WARNING! All changes made in this file will be lost!
+****************************************************************************/
+
+#ifndef DEICSONZEGUIBASE_H
+#define DEICSONZEGUIBASE_H
+
+#include <qvariant.h>
+#include <qpixmap.h>
+#include <qdialog.h>
+//Added by qt3to4:
+#include <Q3HBoxLayout>
+#include <QLabel>
+#include <Q3GridLayout>
+#include <Q3VBoxLayout>
+
+class Q3VBoxLayout;
+class Q3HBoxLayout;
+class Q3GridLayout;
+class QSpacerItem;
+class QTabWidget;
+class QWidget;
+class QPushButton;
+class Q3GroupBox;
+class QLineEdit;
+class Q3ListView;
+class Q3ListViewItem;
+class QSpinBox;
+class QLabel;
+class QSlider;
+class QComboBox;
+class QCheckBox;
+
+class DeicsOnzeGuiBase : public QDialog
+{
+    Q_OBJECT
+
+public:
+    DeicsOnzeGuiBase( QWidget* parent = 0, const char* name = 0, bool modal = FALSE, Qt::WFlags fl = 0 );
+    ~DeicsOnzeGuiBase();
+
+    QTabWidget* deicsOnzeTabWidget;
+    QWidget* TabPage;
+    QPushButton* loadPushButton;
+    QPushButton* savePushButton;
+    Q3GroupBox* nameGroupBox;
+    QLineEdit* nameLineEdit;
+    Q3GroupBox* subcategoryGroupBox;
+    QLineEdit* subcategoryLineEdit;
+    Q3GroupBox* categoryGroupBox;
+    QLineEdit* categoryLineEdit;
+    QPushButton* deletePushButton;
+    Q3ListView* categoryListView;
+    Q3ListView* subcategoryListView;
+    Q3ListView* presetsListView;
+    QPushButton* newPushButton;
+    Q3GroupBox* bankGroupBox;
+    QSpinBox* bankSpinBox;
+    Q3GroupBox* progGroupBox;
+    QSpinBox* progSpinBox;
+    QLabel* presentTextLAbel;
+    QWidget* TabPage_2;
+    Q3GroupBox* masterVolGroupBox;
+    QSlider* masterVolSlider;
+    QSpinBox* MasterVolumeSpinBox;
+    Q3GroupBox* FeedbackGroupBox;
+    QSpinBox* feedbackSpinBox;
+    QSlider* feedbackSlider;
+    Q3GroupBox* functionGroupBox;
+    QComboBox* polyMonoComboBox;
+    QLabel* PitchBendRangeLabel;
+    QSlider* PitchBendRangeSlider;
+    QSpinBox* pitchBendRangeSpinBox;
+    Q3GroupBox* LFOGroupBox;
+    QLabel* PModSensLabel;
+    QLabel* PModDepthLabel;
+    QLabel* AModDepthLabel;
+    QLabel* LFOSpeedLabel;
+    QLabel* LFODelayLabel;
+    QLabel* AModSensLabel;
+    QComboBox* LFOWaveComboBox;
+    QCheckBox* LFOSyncCheckBox;
+    QSlider* AModSensSlider;
+    QSlider* PModSensSlider;
+    QSpinBox* PMSSpinBox;
+    QSpinBox* AMSSpinBox;
+    QSlider* PModDepthSlider;
+    QSlider* AModDepthSlider;
+    QSlider* LFOSpeedSlider;
+    QSpinBox* LFOSpeedSpinBox;
+    QSlider* LFODelaySlider;
+    QSpinBox* LFODelaySpinBox;
+    QSpinBox* PModDepthSpinBox;
+    QSpinBox* AModDepthSpinBox;
+    Q3GroupBox* transposeGroupBox;
+    QSlider* transposeSlider;
+    QSpinBox* transposeSpinBox;
+    QSlider* globalDetuneSlider;
+    QSpinBox* globalDetuneSpinBox;
+    QComboBox* algorithmComboBox;
+    QWidget* tab;
+    Q3GroupBox* Frequency1groupBox;
+    QCheckBox* Fix1CheckBox;
+    QLabel* CoarseRatio1Label;
+    QLabel* FineRatio1Label;
+    QLabel* Freq1Label;
+    QSpinBox* CoarseRatio1SpinBox;
+    QSpinBox* FineRatio1SpinBox;
+    QSpinBox* Freq1SpinBox;
+    Q3GroupBox* Env1GroupBox;
+    QLabel* RR1Label;
+    QLabel* D1R1Label;
+    QLabel* D1L1Label;
+    QLabel* D2R1Label;
+    QSlider* D1L1Slider;
+    QSlider* D2R1Slider;
+    QSlider* D1R1Slider;
+    QSlider* RR1Slider;
+    QLabel* AR1Label;
+    QSpinBox* D1R1SpinBox;
+    QSpinBox* D1L1SpinBox;
+    QSpinBox* D2R1SpinBox;
+    QSpinBox* RR1SpinBox;
+    QSlider* AR1Slider;
+    QSpinBox* AR1SpinBox;
+    Q3GroupBox* Scaling1GroupBox;
+    QLabel* LS1Label;
+    QLabel* RS1Label;
+    QSlider* LS1Slider;
+    QSlider* RS1Slider;
+    QSpinBox* LS1SpinBox;
+    QSpinBox* RS1SpinBox;
+    Q3GroupBox* Vol1groupBox;
+    QSlider* Vol1Slider;
+    QSpinBox* Vol1SpinBox;
+    Q3GroupBox* sensitivity1groupBox;
+    QLabel* EGS1Label;
+    QLabel* KVS1Label;
+    QCheckBox* AME1CheckBox;
+    QSlider* KVS1Slider;
+    QSlider* EBS1Slider;
+    QSpinBox* KVS1SpinBox;
+    QSpinBox* EBS1SpinBox;
+    Q3GroupBox* DetWaveEGS1GroupBox;
+    QComboBox* WaveForm1ComboBox;
+    QLabel* DET1Label;
+    QComboBox* EGQ1ComboBox;
+    QSlider* DET1Slider;
+    QSpinBox* DET1SpinBox;
+    QWidget* tab_2;
+    Q3GroupBox* Frequency2groupBox;
+    QCheckBox* Fix2CheckBox;
+    QLabel* Freq2Label;
+    QLabel* FineRatio2Label;
+    QLabel* CoarseRatio2Label;
+    QSpinBox* CoarseRatio2SpinBox;
+    QSpinBox* FineRatio2SpinBox;
+    QSpinBox* Freq2SpinBox;
+    Q3GroupBox* Env2GroupBox;
+    QLabel* AR2Label;
+    QLabel* RR2Label;
+    QLabel* D2R2Label;
+    QLabel* D1L2Label;
+    QLabel* D1R2Label;
+    QSlider* AR2Slider;
+    QSlider* D1R2Slider;
+    QSlider* D1L2Slider;
+    QSlider* D2R2Slider;
+    QSlider* RR2Slider;
+    QSpinBox* D1R2SpinBox;
+    QSpinBox* D1L2SpinBox;
+    QSpinBox* D2R2SpinBox;
+    QSpinBox* RR2SpinBox;
+    QSpinBox* AR2SpinBox;
+    Q3GroupBox* Scaling2GroupBox;
+    QLabel* LS2Label;
+    QLabel* RS2Label;
+    QSlider* LS2Slider;
+    QSlider* RS2Slider;
+    QSpinBox* LS2SpinBox;
+    QSpinBox* RS2SpinBox;
+    Q3GroupBox* Vol2groupBox;
+    QSlider* Vol2Slider;
+    QSpinBox* Vol2SpinBox;
+    Q3GroupBox* sensitivity2groupBox;
+    QLabel* EGS2Label;
+    QLabel* KVS2Label;
+    QCheckBox* AME2CheckBox;
+    QSlider* KVS2Slider;
+    QSlider* EBS2Slider;
+    QSpinBox* EBS2SpinBox;
+    QSpinBox* KVS2SpinBox;
+    Q3GroupBox* DetWaveEGS2GroupBox;
+    QSlider* DET2Slider;
+    QLabel* DET2Label;
+    QComboBox* WaveForm2ComboBox;
+    QComboBox* EGS2comboBox;
+    QSpinBox* DET2SpinBox;
+    QWidget* TabPage_3;
+    Q3GroupBox* Frequency3groupBox;
+    QCheckBox* Fix3CheckBox;
+    QLabel* CoarseRatio3Label;
+    QLabel* FineRatio3Label;
+    QLabel* Freq3Label;
+    QSpinBox* CoarseRatio3SpinBox;
+    QSpinBox* FineRatio3SpinBox;
+    QSpinBox* Freq3SpinBox;
+    Q3GroupBox* Env3GroupBox;
+    QLabel* RR3Label;
+    QLabel* D2R3Label;
+    QLabel* D1L3Label;
+    QLabel* D1R3Label;
+    QLabel* AR3Label;
+    QSlider* AR3Slider;
+    QSlider* D1R3Slider;
+    QSlider* D1L3Slider;
+    QSlider* D2R3Slider;
+    QSlider* RR3Slider;
+    QSpinBox* D1R3SpinBox;
+    QSpinBox* D1L3SpinBox;
+    QSpinBox* D2R3SpinBox;
+    QSpinBox* RR3SpinBox;
+    QSpinBox* AR3SpinBox;
+    Q3GroupBox* Scaling3GroupBox;
+    QLabel* LS3Label;
+    QLabel* RS3Label;
+    QSlider* LS3Slider;
+    QSlider* RS3Slider;
+    QSpinBox* LS3SpinBox;
+    QSpinBox* RS3SpinBox;
+    Q3GroupBox* Vol3groupBox;
+    QSlider* Vol3Slider;
+    QSpinBox* Vol3SpinBox;
+    Q3GroupBox* sensitivity3groupBox;
+    QLabel* EGS3Label;
+    QLabel* KVS3Label;
+    QCheckBox* AME3CheckBox;
+    QSlider* KVS3Slider;
+    QSlider* EBS3Slider;
+    QSpinBox* EBS3SpinBox;
+    QSpinBox* KVS3SpinBox;
+    Q3GroupBox* DetWaveEGS3GroupBox;
+    QComboBox* WaveForm3ComboBox;
+    QComboBox* EGS3comboBox;
+    QLabel* DET3Label;
+    QSlider* DET3Slider;
+    QSpinBox* DET3SpinBox;
+    QWidget* TabPage_4;
+    Q3GroupBox* Frequency4groupBox;
+    QLabel* CoarseRatio4Label;
+    QLabel* FineRatio4Label;
+    QLabel* Freq4Label;
+    QCheckBox* Fix4CheckBox;
+    QSpinBox* FineRatio4SpinBox;
+    QSpinBox* Freq4SpinBox;
+    QSpinBox* CoarseRatio4SpinBox;
+    Q3GroupBox* Scaling4GroupBox;
+    QLabel* LS4Label;
+    QLabel* RS4Label;
+    QSlider* LS4Slider;
+    QSlider* RS4Slider;
+    QSpinBox* RS4SpinBox;
+    QSpinBox* LS4SpinBox;
+    Q3GroupBox* Env4GroupBox;
+    QSlider* AR4Slider;
+    QLabel* AR4Label;
+    QLabel* RR4Label;
+    QLabel* D2R4Label;
+    QSlider* D2R4Slider;
+    QSlider* D1L4Slider;
+    QLabel* D1L4Label;
+    QLabel* D1R4Label;
+    QSlider* D1R4Slider;
+    QSlider* RR4Slider;
+    QSpinBox* D1R4SpinBox;
+    QSpinBox* D1L4SpinBox;
+    QSpinBox* D2R4SpinBox;
+    QSpinBox* RR4SpinBox;
+    QSpinBox* AR4SpinBox;
+    Q3GroupBox* Vol4groupBox;
+    QSlider* Vol4Slider;
+    QSpinBox* Vol4SpinBox;
+    Q3GroupBox* sensitivity4groupBox;
+    QLabel* EGS4Label;
+    QLabel* KVS4Label;
+    QCheckBox* AME4CheckBox;
+    QSlider* KVS4Slider;
+    QSlider* EBS4Slider;
+    QSpinBox* KVS4SpinBox;
+    QSpinBox* EBS4SpinBox;
+    Q3GroupBox* DetWaveEGS4GroupBox;
+    QSlider* DET4Slider;
+    QLabel* DET4Label;
+    QComboBox* WaveForm4ComboBox;
+    QComboBox* EGS4comboBox;
+    QSpinBox* DET4SpinBox;
+
+protected:
+
+protected slots:
+    virtual void languageChange();
+
+private:
+    QPixmap image0;
+
+};
+
+#endif // DEICSONZEGUIBASE_H

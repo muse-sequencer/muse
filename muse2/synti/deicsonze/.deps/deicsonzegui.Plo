@@ -1,0 +1,593 @@
+deicsonzegui.lo: deicsonzegui.cpp /usr/share/qt3/include/qvariant.h \
+ /usr/share/qt3/include/qstring.h /usr/share/qt3/include/qcstring.h \
+ /usr/share/qt3/include/qmemarray.h /usr/share/qt3/include/qgarray.h \
+ /usr/share/qt3/include/qshared.h /usr/share/qt3/include/qglobal.h \
+ /usr/share/qt3/include/qconfig.h /usr/share/qt3/include/qmodules.h \
+ /usr/share/qt3/include/qfeatures.h /usr/share/qt3/include/qwinexport.h \
+ /usr/include/string.h /usr/include/features.h \
+ /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.3/include/stddef.h \
+ /usr/include/xlocale.h /usr/include/bits/string3.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.3/include-fixed/limits.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.3/include-fixed/syslimits.h \
+ /usr/include/limits.h /usr/include/bits/posix1_lim.h \
+ /usr/include/bits/local_lim.h /usr/include/linux/limits.h \
+ /usr/include/bits/posix2_lim.h /usr/include/bits/xopen_lim.h \
+ /usr/include/bits/stdio_lim.h /usr/include/c++/4.4/string \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/c++config.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/os_defines.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/cpu_defines.h \
+ /usr/include/c++/4.4/bits/stringfwd.h \
+ /usr/include/c++/4.4/bits/char_traits.h \
+ /usr/include/c++/4.4/bits/stl_algobase.h /usr/include/c++/4.4/cstddef \
+ /usr/include/c++/4.4/bits/functexcept.h \
+ /usr/include/c++/4.4/exception_defines.h \
+ /usr/include/c++/4.4/bits/cpp_type_traits.h \
+ /usr/include/c++/4.4/ext/type_traits.h \
+ /usr/include/c++/4.4/ext/numeric_traits.h \
+ /usr/include/c++/4.4/bits/stl_pair.h /usr/include/c++/4.4/bits/move.h \
+ /usr/include/c++/4.4/bits/concept_check.h \
+ /usr/include/c++/4.4/bits/stl_iterator_base_types.h \
+ /usr/include/c++/4.4/bits/stl_iterator_base_funcs.h \
+ /usr/include/c++/4.4/bits/stl_iterator.h \
+ /usr/include/c++/4.4/debug/debug.h /usr/include/c++/4.4/bits/postypes.h \
+ /usr/include/c++/4.4/cwchar /usr/include/wchar.h /usr/include/stdio.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.3/include/stdarg.h \
+ /usr/include/bits/wchar.h /usr/include/bits/wchar2.h \
+ /usr/include/c++/4.4/bits/allocator.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/c++allocator.h \
+ /usr/include/c++/4.4/ext/new_allocator.h /usr/include/c++/4.4/new \
+ /usr/include/c++/4.4/exception /usr/include/c++/4.4/bits/localefwd.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/c++locale.h \
+ /usr/include/c++/4.4/clocale /usr/include/locale.h \
+ /usr/include/bits/locale.h /usr/include/c++/4.4/iosfwd \
+ /usr/include/c++/4.4/cctype /usr/include/ctype.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/c++/4.4/bits/ostream_insert.h \
+ /usr/include/c++/4.4/cxxabi-forced.h \
+ /usr/include/c++/4.4/bits/stl_function.h \
+ /usr/include/c++/4.4/backward/binders.h \
+ /usr/include/c++/4.4/bits/basic_string.h \
+ /usr/include/c++/4.4/ext/atomicity.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/gthr.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/gthr-default.h \
+ /usr/include/pthread.h /usr/include/sched.h /usr/include/time.h \
+ /usr/include/bits/sched.h /usr/include/bits/time.h /usr/include/signal.h \
+ /usr/include/bits/sigset.h /usr/include/bits/pthreadtypes.h \
+ /usr/include/bits/setjmp.h /usr/include/unistd.h \
+ /usr/include/bits/posix_opt.h /usr/include/bits/environments.h \
+ /usr/include/bits/confname.h /usr/include/getopt.h \
+ /usr/include/bits/unistd.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/atomic_word.h \
+ /usr/include/c++/4.4/initializer_list \
+ /usr/include/c++/4.4/bits/basic_string.tcc \
+ /usr/share/qt3/include/qvaluelist.h /usr/share/qt3/include/qtl.h \
+ /usr/share/qt3/include/qtextstream.h /usr/share/qt3/include/qiodevice.h \
+ /usr/include/libio.h /usr/include/_G_config.h \
+ /usr/include/bits/sys_errlist.h /usr/include/bits/stdio.h \
+ /usr/include/bits/stdio2.h /usr/share/qt3/include/qdatastream.h \
+ /usr/include/c++/4.4/iterator /usr/include/c++/4.4/ostream \
+ /usr/include/c++/4.4/ios /usr/include/c++/4.4/bits/ios_base.h \
+ /usr/include/c++/4.4/bits/locale_classes.h \
+ /usr/include/c++/4.4/bits/locale_classes.tcc \
+ /usr/include/c++/4.4/streambuf /usr/include/c++/4.4/bits/streambuf.tcc \
+ /usr/include/c++/4.4/bits/basic_ios.h \
+ /usr/include/c++/4.4/bits/locale_facets.h /usr/include/c++/4.4/cwctype \
+ /usr/include/wctype.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/ctype_base.h \
+ /usr/include/c++/4.4/bits/streambuf_iterator.h \
+ /usr/include/c++/4.4/i486-linux-gnu/bits/ctype_inline.h \
+ /usr/include/c++/4.4/bits/locale_facets.tcc \
+ /usr/include/c++/4.4/bits/basic_ios.tcc \
+ /usr/include/c++/4.4/bits/ostream.tcc /usr/include/c++/4.4/istream \
+ /usr/include/c++/4.4/bits/istream.tcc \
+ /usr/include/c++/4.4/bits/stream_iterator.h /usr/include/c++/4.4/list \
+ /usr/include/c++/4.4/bits/stl_list.h /usr/include/c++/4.4/bits/list.tcc \
+ /usr/share/qt3/include/qstringlist.h /usr/share/qt3/include/qstrlist.h \
+ /usr/share/qt3/include/qptrlist.h /usr/share/qt3/include/qglist.h \
+ /usr/share/qt3/include/qptrcollection.h /usr/share/qt3/include/qmap.h \
+ /usr/share/qt3/include/qpair.h /usr/include/c++/4.4/map \
+ /usr/include/c++/4.4/bits/stl_tree.h /usr/include/c++/4.4/bits/stl_map.h \
+ /usr/include/c++/4.4/bits/stl_multimap.h \
+ /usr/share/qt3/include/qgroupbox.h /usr/share/qt3/include/qframe.h \
+ /usr/share/qt3/include/qwidget.h /usr/share/qt3/include/qwindowdefs.h \
+ /usr/share/qt3/include/qobjectdefs.h /usr/share/qt3/include/qnamespace.h \
+ /usr/share/qt3/include/qobject.h /usr/share/qt3/include/qevent.h \
+ /usr/share/qt3/include/qregion.h /usr/share/qt3/include/qrect.h \
+ /usr/share/qt3/include/qsize.h /usr/share/qt3/include/qpoint.h \
+ /usr/share/qt3/include/qmime.h /usr/share/qt3/include/qpaintdevice.h \
+ /usr/share/qt3/include/qpalette.h /usr/share/qt3/include/qcolor.h \
+ /usr/share/qt3/include/qbrush.h /usr/share/qt3/include/qfont.h \
+ /usr/share/qt3/include/qfontmetrics.h /usr/share/qt3/include/qfontinfo.h \
+ /usr/share/qt3/include/qsizepolicy.h /usr/share/qt3/include/qslider.h \
+ /usr/share/qt3/include/qrangecontrol.h \
+ /usr/share/qt3/include/qcombobox.h /usr/share/qt3/include/qcheckbox.h \
+ /usr/share/qt3/include/qbutton.h /usr/share/qt3/include/qkeysequence.h \
+ /usr/share/qt3/include/qlineedit.h /usr/share/qt3/include/qlcdnumber.h \
+ /usr/share/qt3/include/qbitarray.h /usr/share/qt3/include/qlistview.h \
+ /usr/share/qt3/include/qscrollview.h /usr/share/qt3/include/qscrollbar.h \
+ /usr/share/qt3/include/qspinbox.h /usr/share/qt3/include/qlayout.h \
+ /usr/share/qt3/include/qtooltip.h /usr/share/qt3/include/qwhatsthis.h \
+ /usr/share/qt3/include/qcursor.h /usr/share/qt3/include/qstring.h \
+ /usr/share/qt3/include/qfiledialog.h /usr/share/qt3/include/qdir.h \
+ /usr/share/qt3/include/qfileinfo.h /usr/share/qt3/include/qfile.h \
+ /usr/share/qt3/include/qdatetime.h /usr/share/qt3/include/qdialog.h \
+ /usr/share/qt3/include/qurloperator.h /usr/share/qt3/include/qurl.h \
+ /usr/share/qt3/include/qnetworkprotocol.h \
+ /usr/share/qt3/include/qurlinfo.h /usr/share/qt3/include/qdict.h \
+ /usr/share/qt3/include/qgdict.h /usr/share/qt3/include/qmessagebox.h \
+ /usr/share/qt3/include/qpushbutton.h /usr/share/qt3/include/qiconset.h \
+ /usr/share/qt3/include/qpixmap.h /usr/include/math.h \
+ /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h \
+ /usr/include/bits/huge_vall.h /usr/include/bits/inf.h \
+ /usr/include/bits/nan.h /usr/include/bits/mathdef.h \
+ /usr/include/bits/mathcalls.h /usr/include/bits/mathinline.h newpreset.h \
+ /usr/share/qt3/include/qpixmap.h /usr/share/qt3/include/qdialog.h \
+ deicsonzegui.h /usr/include/c++/4.4/vector \
+ /usr/include/c++/4.4/bits/stl_construct.h \
+ /usr/include/c++/4.4/bits/stl_uninitialized.h \
+ /usr/include/c++/4.4/bits/stl_vector.h \
+ /usr/include/c++/4.4/bits/stl_bvector.h \
+ /usr/include/c++/4.4/bits/vector.tcc deicsonzeguibase.h \
+ ../libsynti/gui.h ../libsynti/mpevent.h ../libsynti/evdata.h \
+ /usr/include/memory.h deicsonze.h /usr/include/c++/4.4/iostream \
+ ../libsynti/mess.h
+
+/usr/share/qt3/include/qvariant.h:
+
+/usr/share/qt3/include/qstring.h:
+
+/usr/share/qt3/include/qcstring.h:
+
+/usr/share/qt3/include/qmemarray.h:
+
+/usr/share/qt3/include/qgarray.h:
+
+/usr/share/qt3/include/qshared.h:
+
+/usr/share/qt3/include/qglobal.h:
+
+/usr/share/qt3/include/qconfig.h:
+
+/usr/share/qt3/include/qmodules.h:
+
+/usr/share/qt3/include/qfeatures.h:
+
+/usr/share/qt3/include/qwinexport.h:
+
+/usr/include/string.h:
+
+/usr/include/features.h:
+
+/usr/include/bits/predefs.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-32.h:
+
+/usr/lib/gcc/i486-linux-gnu/4.4.3/include/stddef.h:
+
+/usr/include/xlocale.h:
+
+/usr/include/bits/string3.h:
+
+/usr/lib/gcc/i486-linux-gnu/4.4.3/include-fixed/limits.h:
+
+/usr/lib/gcc/i486-linux-gnu/4.4.3/include-fixed/syslimits.h:
+
+/usr/include/limits.h:
+
+/usr/include/bits/posix1_lim.h:
+
+/usr/include/bits/local_lim.h:
+
+/usr/include/linux/limits.h:
+
+/usr/include/bits/posix2_lim.h:
+
+/usr/include/bits/xopen_lim.h:
+
+/usr/include/bits/stdio_lim.h:
+
+/usr/include/c++/4.4/string:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/c++config.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/os_defines.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/cpu_defines.h:
+
+/usr/include/c++/4.4/bits/stringfwd.h:
+
+/usr/include/c++/4.4/bits/char_traits.h:
+
+/usr/include/c++/4.4/bits/stl_algobase.h:
+
+/usr/include/c++/4.4/cstddef:
+
+/usr/include/c++/4.4/bits/functexcept.h:
+
+/usr/include/c++/4.4/exception_defines.h:
+
+/usr/include/c++/4.4/bits/cpp_type_traits.h:
+
+/usr/include/c++/4.4/ext/type_traits.h:
+
+/usr/include/c++/4.4/ext/numeric_traits.h:
+
+/usr/include/c++/4.4/bits/stl_pair.h:
+
+/usr/include/c++/4.4/bits/move.h:
+
+/usr/include/c++/4.4/bits/concept_check.h:
+
+/usr/include/c++/4.4/bits/stl_iterator_base_types.h:
+
+/usr/include/c++/4.4/bits/stl_iterator_base_funcs.h:
+
+/usr/include/c++/4.4/bits/stl_iterator.h:
+
+/usr/include/c++/4.4/debug/debug.h:
+
+/usr/include/c++/4.4/bits/postypes.h:
+
+/usr/include/c++/4.4/cwchar:
+
+/usr/include/wchar.h:
+
+/usr/include/stdio.h:
+
+/usr/lib/gcc/i486-linux-gnu/4.4.3/include/stdarg.h:
+
+/usr/include/bits/wchar.h:
+
+/usr/include/bits/wchar2.h:
+
+/usr/include/c++/4.4/bits/allocator.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/c++allocator.h:
+
+/usr/include/c++/4.4/ext/new_allocator.h:
+
+/usr/include/c++/4.4/new:
+
+/usr/include/c++/4.4/exception:
+
+/usr/include/c++/4.4/bits/localefwd.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/c++locale.h:
+
+/usr/include/c++/4.4/clocale:
+
+/usr/include/locale.h:
+
+/usr/include/bits/locale.h:
+
+/usr/include/c++/4.4/iosfwd:
+
+/usr/include/c++/4.4/cctype:
+
+/usr/include/ctype.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/include/endian.h:
+
+/usr/include/bits/endian.h:
+
+/usr/include/bits/byteswap.h:
+
+/usr/include/c++/4.4/bits/ostream_insert.h:
+
+/usr/include/c++/4.4/cxxabi-forced.h:
+
+/usr/include/c++/4.4/bits/stl_function.h:
+
+/usr/include/c++/4.4/backward/binders.h:
+
+/usr/include/c++/4.4/bits/basic_string.h:
+
+/usr/include/c++/4.4/ext/atomicity.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/gthr.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/gthr-default.h:
+
+/usr/include/pthread.h:
+
+/usr/include/sched.h:
+
+/usr/include/time.h:
+
+/usr/include/bits/sched.h:
+
+/usr/include/bits/time.h:
+
+/usr/include/signal.h:
+
+/usr/include/bits/sigset.h:
+
+/usr/include/bits/pthreadtypes.h:
+
+/usr/include/bits/setjmp.h:
+
+/usr/include/unistd.h:
+
+/usr/include/bits/posix_opt.h:
+
+/usr/include/bits/environments.h:
+
+/usr/include/bits/confname.h:
+
+/usr/include/getopt.h:
+
+/usr/include/bits/unistd.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/atomic_word.h:
+
+/usr/include/c++/4.4/initializer_list:
+
+/usr/include/c++/4.4/bits/basic_string.tcc:
+
+/usr/share/qt3/include/qvaluelist.h:
+
+/usr/share/qt3/include/qtl.h:
+
+/usr/share/qt3/include/qtextstream.h:
+
+/usr/share/qt3/include/qiodevice.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/bits/sys_errlist.h:
+
+/usr/include/bits/stdio.h:
+
+/usr/include/bits/stdio2.h:
+
+/usr/share/qt3/include/qdatastream.h:
+
+/usr/include/c++/4.4/iterator:
+
+/usr/include/c++/4.4/ostream:
+
+/usr/include/c++/4.4/ios:
+
+/usr/include/c++/4.4/bits/ios_base.h:
+
+/usr/include/c++/4.4/bits/locale_classes.h:
+
+/usr/include/c++/4.4/bits/locale_classes.tcc:
+
+/usr/include/c++/4.4/streambuf:
+
+/usr/include/c++/4.4/bits/streambuf.tcc:
+
+/usr/include/c++/4.4/bits/basic_ios.h:
+
+/usr/include/c++/4.4/bits/locale_facets.h:
+
+/usr/include/c++/4.4/cwctype:
+
+/usr/include/wctype.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/ctype_base.h:
+
+/usr/include/c++/4.4/bits/streambuf_iterator.h:
+
+/usr/include/c++/4.4/i486-linux-gnu/bits/ctype_inline.h:
+
+/usr/include/c++/4.4/bits/locale_facets.tcc:
+
+/usr/include/c++/4.4/bits/basic_ios.tcc:
+
+/usr/include/c++/4.4/bits/ostream.tcc:
+
+/usr/include/c++/4.4/istream:
+
+/usr/include/c++/4.4/bits/istream.tcc:
+
+/usr/include/c++/4.4/bits/stream_iterator.h:
+
+/usr/include/c++/4.4/list:
+
+/usr/include/c++/4.4/bits/stl_list.h:
+
+/usr/include/c++/4.4/bits/list.tcc:
+
+/usr/share/qt3/include/qstringlist.h:
+
+/usr/share/qt3/include/qstrlist.h:
+
+/usr/share/qt3/include/qptrlist.h:
+
+/usr/share/qt3/include/qglist.h:
+
+/usr/share/qt3/include/qptrcollection.h:
+
+/usr/share/qt3/include/qmap.h:
+
+/usr/share/qt3/include/qpair.h:
+
+/usr/include/c++/4.4/map:
+
+/usr/include/c++/4.4/bits/stl_tree.h:
+
+/usr/include/c++/4.4/bits/stl_map.h:
+
+/usr/include/c++/4.4/bits/stl_multimap.h:
+
+/usr/share/qt3/include/qgroupbox.h:
+
+/usr/share/qt3/include/qframe.h:
+
+/usr/share/qt3/include/qwidget.h:
+
+/usr/share/qt3/include/qwindowdefs.h:
+
+/usr/share/qt3/include/qobjectdefs.h:
+
+/usr/share/qt3/include/qnamespace.h:
+
+/usr/share/qt3/include/qobject.h:
+
+/usr/share/qt3/include/qevent.h:
+
+/usr/share/qt3/include/qregion.h:
+
+/usr/share/qt3/include/qrect.h:
+
+/usr/share/qt3/include/qsize.h:
+
+/usr/share/qt3/include/qpoint.h:
+
+/usr/share/qt3/include/qmime.h:
+
+/usr/share/qt3/include/qpaintdevice.h:
+
+/usr/share/qt3/include/qpalette.h:
+
+/usr/share/qt3/include/qcolor.h:
+
+/usr/share/qt3/include/qbrush.h:
+
+/usr/share/qt3/include/qfont.h:
+
+/usr/share/qt3/include/qfontmetrics.h:
+
+/usr/share/qt3/include/qfontinfo.h:
+
+/usr/share/qt3/include/qsizepolicy.h:
+
+/usr/share/qt3/include/qslider.h:
+
+/usr/share/qt3/include/qrangecontrol.h:
+
+/usr/share/qt3/include/qcombobox.h:
+
+/usr/share/qt3/include/qcheckbox.h:
+
+/usr/share/qt3/include/qbutton.h:
+
+/usr/share/qt3/include/qkeysequence.h:
+
+/usr/share/qt3/include/qlineedit.h:
+
+/usr/share/qt3/include/qlcdnumber.h:
+
+/usr/share/qt3/include/qbitarray.h:
+
+/usr/share/qt3/include/qlistview.h:
+
+/usr/share/qt3/include/qscrollview.h:
+
+/usr/share/qt3/include/qscrollbar.h:
+
+/usr/share/qt3/include/qspinbox.h:
+
+/usr/share/qt3/include/qlayout.h:
+
+/usr/share/qt3/include/qtooltip.h:
+
+/usr/share/qt3/include/qwhatsthis.h:
+
+/usr/share/qt3/include/qcursor.h:
+
+/usr/share/qt3/include/qstring.h:
+
+/usr/share/qt3/include/qfiledialog.h:
+
+/usr/share/qt3/include/qdir.h:
+
+/usr/share/qt3/include/qfileinfo.h:
+
+/usr/share/qt3/include/qfile.h:
+
+/usr/share/qt3/include/qdatetime.h:
+
+/usr/share/qt3/include/qdialog.h:
+
+/usr/share/qt3/include/qurloperator.h:
+
+/usr/share/qt3/include/qurl.h:
+
+/usr/share/qt3/include/qnetworkprotocol.h:
+
+/usr/share/qt3/include/qurlinfo.h:
+
+/usr/share/qt3/include/qdict.h:
+
+/usr/share/qt3/include/qgdict.h:
+
+/usr/share/qt3/include/qmessagebox.h:
+
+/usr/share/qt3/include/qpushbutton.h:
+
+/usr/share/qt3/include/qiconset.h:
+
+/usr/share/qt3/include/qpixmap.h:
+
+/usr/include/math.h:
+
+/usr/include/bits/huge_val.h:
+
+/usr/include/bits/huge_valf.h:
+
+/usr/include/bits/huge_vall.h:
+
+/usr/include/bits/inf.h:
+
+/usr/include/bits/nan.h:
+
+/usr/include/bits/mathdef.h:
+
+/usr/include/bits/mathcalls.h:
+
+/usr/include/bits/mathinline.h:
+
+newpreset.h:
+
+/usr/share/qt3/include/qpixmap.h:
+
+/usr/share/qt3/include/qdialog.h:
+
+deicsonzegui.h:
+
+/usr/include/c++/4.4/vector:
+
+/usr/include/c++/4.4/bits/stl_construct.h:
+
+/usr/include/c++/4.4/bits/stl_uninitialized.h:
+
+/usr/include/c++/4.4/bits/stl_vector.h:
+
+/usr/include/c++/4.4/bits/stl_bvector.h:
+
+/usr/include/c++/4.4/bits/vector.tcc:
+
+deicsonzeguibase.h:
+
+../libsynti/gui.h:
+
+../libsynti/mpevent.h:
+
+../libsynti/evdata.h:
+
+/usr/include/memory.h:
+
+deicsonze.h:
+
+/usr/include/c++/4.4/iostream:
+
+../libsynti/mess.h:

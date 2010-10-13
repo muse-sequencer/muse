@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import sys
+testFile = file(sys.argv[1],"r")
+inputEvents = testFile.readlines()
+testFile.close()
+
+outputEvents=[]
+#loop through events
+for line in inputEvents:
+    outputEvents.append(line)
+
+testFile = file(sys.argv[1],"w")
+testFile.writelines(outputEvents)
+testFile.close()

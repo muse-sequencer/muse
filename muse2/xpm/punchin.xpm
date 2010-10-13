@@ -1,0 +1,27 @@
+/* XPM */
+static const char *punchin_xpm[] = {
+/* width height num_colors chars_per_pixel */
+"    22    16       3            1",
+/* colors */
+". c #000000",
+"f c None",
+"h c #ffffff",
+/* pixels */
+"ffffffffffffffffffffff",
+"ffffffffffffffffffffff",
+"ffffffffffffffffffffff",
+"ffffffffffffffffffffff",
+"ffffffffffffffffffffff",
+"fff.......ffffffffffff",
+"ffffffffff.fffffffffff",
+"fffffffffff.ffffffffff",
+"ffffffffffff.fffffffff",
+"fffffffffffff......fff",
+"fffffffffffffhhhhhhhff",
+"ffffffffffffffffffffff",
+"ffffffffffffffffffffff",
+"ffffffffffffffffffffff",
+"ffffffffffffffffffffff",
+"ffffffffffffffffffffff",
+};
+

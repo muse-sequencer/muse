@@ -1,0 +1,62 @@
+Internationalisation
+
+If you want to contribute a translation the following hints
+may be of help to you:
+
+
+Step 1:
+      enter the MusE directory and edit the
+      file "muse.pro"
+
+      Append a new target file name at "TRANSLATIONS"
+      e.g. change
+            TRANSLATIONS = share/locale/muse_de.ts
+      into
+            TRANSLATIONS = share/locale/muse_de.ts \
+               share/locale/muse_fr.ts
+      if you want to generate a french MusE version.
+
+Step 2:
+      start the Qt-Program "lupdate"
+
+            lupdate muse.pro
+
+      Maybe "lupdate" is not in your PATH and you must
+      specify the complete pathname "lupdate"
+      Example:
+            /usr/qt3-2/bin/lupdate muse.pro
+
+      This generates the file "locale/muse_fr.ts".
+
+Step 3:
+      Edit "locale/muse_fr.ts" manually or use the Qt "linguist" tool:
+
+            linguist muse_fr.ts
+
+Step 4:
+     Save the edited file "muse_fr.ts" from linguist and
+     start File->Release. This generates the file "locale/muse_fr.qm"
+
+      or
+
+      start the Qt program "lrelease"
+
+            lrelease muse.pro
+
+      This generates all *.qm files.
+
+Step 5:
+      install the *.qm files: as superuser start "make install"
+
+
+Step 6:
+      Test:
+            set the environment variable LANG to the desired
+            Language:
+                  export LANG=fr
+
+            Start MusE:
+                  muse
+
+
+

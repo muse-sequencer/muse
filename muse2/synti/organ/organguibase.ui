@@ -1,0 +1,1219 @@
+<!DOCTYPE UI><UI version="3.2" stdsetdef="1">
+<class>OrganGuiBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>OrganGuiBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>534</width>
+            <height>366</height>
+        </rect>
+    </property>
+    <property name="sizePolicy">
+        <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>5</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+    </property>
+    <property name="paletteBackgroundColor">
+        <color>
+            <red>198</red>
+            <green>205</green>
+            <blue>220</blue>
+        </color>
+    </property>
+    <property name="caption">
+        <string>MusE: Organ</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>4</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <widget class="QGroupBox" row="1" column="0">
+            <property name="name">
+                <cstring>GroupBox1</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>7</hsizetype>
+                    <vsizetype>7</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="title">
+                <string>Drawbars</string>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>6</number>
+                </property>
+                <property name="spacing">
+                    <number>2</number>
+                </property>
+                <widget class="QLabel" row="0" column="0">
+                    <property name="name">
+                        <cstring>TextLabel1</cstring>
+                    </property>
+                    <property name="text">
+                        <string>16'</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="3" column="0">
+                    <property name="name">
+                        <cstring>TextLabel4</cstring>
+                    </property>
+                    <property name="text">
+                        <string>4'</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="4" column="0">
+                    <property name="name">
+                        <cstring>TextLabel5</cstring>
+                    </property>
+                    <property name="text">
+                        <string>2 2/3'</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="5" column="0">
+                    <property name="name">
+                        <cstring>TextLabel6</cstring>
+                    </property>
+                    <property name="text">
+                        <string>2'</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="2" column="0">
+                    <property name="name">
+                        <cstring>TextLabel2</cstring>
+                    </property>
+                    <property name="text">
+                        <string>5 1/3'</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="1" column="0">
+                    <property name="name">
+                        <cstring>TextLabel3</cstring>
+                    </property>
+                    <property name="text">
+                        <string>8'</string>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="1" column="2">
+                    <property name="name">
+                        <cstring>p2</cstring>
+                    </property>
+                    <property name="paletteForegroundColor">
+                        <color>
+                            <red>0</red>
+                            <green>0</green>
+                            <blue>0</blue>
+                        </color>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>170</red>
+                            <green>85</green>
+                            <blue>0</blue>
+                        </color>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="2" column="2">
+                    <property name="name">
+                        <cstring>p3</cstring>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>255</red>
+                            <green>255</green>
+                            <blue>255</blue>
+                        </color>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="3" column="2">
+                    <property name="name">
+                        <cstring>p4</cstring>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>255</red>
+                            <green>255</green>
+                            <blue>255</blue>
+                        </color>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="4" column="2">
+                    <property name="name">
+                        <cstring>p5</cstring>
+                    </property>
+                    <property name="paletteForegroundColor">
+                        <color>
+                            <red>255</red>
+                            <green>255</green>
+                            <blue>255</blue>
+                        </color>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>0</red>
+                            <green>0</green>
+                            <blue>0</blue>
+                        </color>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="5" column="2">
+                    <property name="name">
+                        <cstring>p6</cstring>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>255</red>
+                            <green>255</green>
+                            <blue>255</blue>
+                        </color>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="0" column="2">
+                    <property name="name">
+                        <cstring>p1</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>170</red>
+                            <green>85</green>
+                            <blue>0</blue>
+                        </color>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="0" column="1">
+                    <property name="name">
+                        <cstring>lcd1</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="1" column="1">
+                    <property name="name">
+                        <cstring>lcd2</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="lineStep">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="2" column="1">
+                    <property name="name">
+                        <cstring>lcd3</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="lineStep">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="3" column="1">
+                    <property name="name">
+                        <cstring>lcd4</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="lineStep">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="4" column="1">
+                    <property name="name">
+                        <cstring>lcd5</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="lineStep">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="5" column="1">
+                    <property name="name">
+                        <cstring>lcd6</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="lineStep">
+                        <number>10</number>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
+        <widget class="QGroupBox" row="1" column="1">
+            <property name="name">
+                <cstring>GroupBox4</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>7</hsizetype>
+                    <vsizetype>7</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="title">
+                <string>Envelope Hi</string>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>11</number>
+                </property>
+                <property name="spacing">
+                    <number>2</number>
+                </property>
+                <widget class="QLabel" row="4" column="0">
+                    <property name="name">
+                        <cstring>TextLabel14</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Release</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="2" column="0" rowspan="2" colspan="1">
+                    <property name="name">
+                        <cstring>TextLabel13</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Sustain</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="1" column="0">
+                    <property name="name">
+                        <cstring>TextLabel12</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Decay</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="0">
+                    <property name="name">
+                        <cstring>TextLabel11</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>5</hsizetype>
+                            <vsizetype>4</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="text">
+                        <string>Attack</string>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="4" column="2">
+                    <property name="name">
+                        <cstring>p14</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>500</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>50</number>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="2" column="2">
+                    <property name="name">
+                        <cstring>p13</cstring>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="1" column="2">
+                    <property name="name">
+                        <cstring>p12</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>5000</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>500</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="0" column="1">
+                    <property name="name">
+                        <cstring>lcd11</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>5</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="suffix">
+                        <string>ms</string>
+                    </property>
+                    <property name="maxValue">
+                        <number>500</number>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="0" column="2">
+                    <property name="name">
+                        <cstring>p11</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="maxValue">
+                        <number>500</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>50</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="1" column="1">
+                    <property name="name">
+                        <cstring>lcd12</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>5</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="suffix">
+                        <string>ms</string>
+                    </property>
+                    <property name="maxValue">
+                        <number>5000</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="2" column="1">
+                    <property name="name">
+                        <cstring>lcd13</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>5</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="suffix">
+                        <string>cB</string>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="3" column="1" rowspan="2" colspan="1">
+                    <property name="name">
+                        <cstring>lcd14</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>5</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="suffix">
+                        <string>ms</string>
+                    </property>
+                    <property name="maxValue">
+                        <number>500</number>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
+        <widget class="QGroupBox" row="0" column="1">
+            <property name="name">
+                <cstring>GroupBox2</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>7</hsizetype>
+                    <vsizetype>7</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="title">
+                <string>Envelope Lo</string>
+            </property>
+            <property name="alignment">
+                <set>AlignLeft</set>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>11</number>
+                </property>
+                <property name="spacing">
+                    <number>2</number>
+                </property>
+                <widget class="QLabel" row="0" column="0">
+                    <property name="name">
+                        <cstring>TextLabel7</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Attack</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="1" column="0">
+                    <property name="name">
+                        <cstring>TextLabel8</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Decay</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="2" column="0">
+                    <property name="name">
+                        <cstring>TextLabel9</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Sustain</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="3" column="0">
+                    <property name="name">
+                        <cstring>TextLabel10</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Release</string>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="0" column="2">
+                    <property name="name">
+                        <cstring>p7</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                        <size>
+                            <width>80</width>
+                            <height>0</height>
+                        </size>
+                    </property>
+                    <property name="maxValue">
+                        <number>500</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>50</number>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="1" column="2">
+                    <property name="name">
+                        <cstring>p8</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>5000</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>500</number>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="2" column="2">
+                    <property name="name">
+                        <cstring>p9</cstring>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>10</number>
+                    </property>
+                </widget>
+                <widget class="QSlider" row="3" column="2">
+                    <property name="name">
+                        <cstring>p10</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>500</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="tickmarks">
+                        <enum>NoMarks</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>50</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="0" column="1">
+                    <property name="name">
+                        <cstring>lcd7</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="suffix">
+                        <string>ms</string>
+                    </property>
+                    <property name="maxValue">
+                        <number>500</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="1" column="1">
+                    <property name="name">
+                        <cstring>lcd8</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="suffix">
+                        <string>ms</string>
+                    </property>
+                    <property name="maxValue">
+                        <number>5000</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="2" column="1">
+                    <property name="name">
+                        <cstring>lcd9</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="suffix">
+                        <string>cB</string>
+                    </property>
+                    <property name="maxValue">
+                        <number>0</number>
+                    </property>
+                    <property name="minValue">
+                        <number>-960</number>
+                    </property>
+                    <property name="value">
+                        <number>0</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="3" column="1">
+                    <property name="name">
+                        <cstring>lcd10</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="suffix">
+                        <string>ms</string>
+                    </property>
+                    <property name="maxValue">
+                        <number>500</number>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
+        <widget class="QLayoutWidget" row="0" column="0">
+            <property name="name">
+                <cstring>layout1</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>TextLabel1_2</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>5</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="paletteForegroundColor">
+                        <color>
+                            <red>0</red>
+                            <green>0</green>
+                            <blue>255</blue>
+                        </color>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>198</red>
+                            <green>205</green>
+                            <blue>220</blue>
+                        </color>
+                    </property>
+                    <property name="font">
+                        <font>
+                            <pointsize>48</pointsize>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string>O-1</string>
+                    </property>
+                    <property name="alignment">
+                        <set>AlignCenter</set>
+                    </property>
+                </widget>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>GroupBox3</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>7</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="title">
+                        <string>Oscillator</string>
+                    </property>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>11</number>
+                        </property>
+                        <property name="spacing">
+                            <number>2</number>
+                        </property>
+                        <widget class="QCheckBox">
+                            <property name="name">
+                                <cstring>sw1</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>5</hsizetype>
+                                    <vsizetype>1</vsizetype>
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="text">
+                                <string>Brass</string>
+                            </property>
+                        </widget>
+                        <widget class="QCheckBox">
+                            <property name="name">
+                                <cstring>sw2</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>5</hsizetype>
+                                    <vsizetype>1</vsizetype>
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="text">
+                                <string>Reed</string>
+                            </property>
+                        </widget>
+                        <widget class="QCheckBox">
+                            <property name="name">
+                                <cstring>sw3</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>5</hsizetype>
+                                    <vsizetype>1</vsizetype>
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="text">
+                                <string>Flute</string>
+                            </property>
+                        </widget>
+                        <spacer>
+                            <property name="name">
+                                <cstring>spacer1</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Vertical</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                        <widget class="QCheckBox">
+                            <property name="name">
+                                <cstring>sw4</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Velocity</string>
+                            </property>
+                        </widget>
+                    </vbox>
+                </widget>
+            </hbox>
+        </widget>
+    </grid>
+</widget>
+<connections>
+    <connection>
+        <sender>p11</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd11</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p12</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd12</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p13</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd13</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p14</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd14</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p7</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd7</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p8</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd8</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p9</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd9</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p10</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd10</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p1</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd1</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p2</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd2</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p3</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd3</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p4</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd4</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p5</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd5</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>p6</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>lcd6</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd1</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p1</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd2</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p2</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd3</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p3</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd4</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p4</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd5</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p5</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd6</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p6</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd7</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p7</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd8</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p8</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd9</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p9</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd10</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p10</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd11</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p11</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd12</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p12</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd13</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p13</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+    <connection>
+        <sender>lcd14</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>p14</receiver>
+        <slot>setValue(int)</slot>
+    </connection>
+</connections>
+<tabstops>
+    <tabstop>p1</tabstop>
+    <tabstop>p3</tabstop>
+    <tabstop>p2</tabstop>
+    <tabstop>p4</tabstop>
+    <tabstop>p5</tabstop>
+    <tabstop>p6</tabstop>
+    <tabstop>p7</tabstop>
+    <tabstop>p8</tabstop>
+    <tabstop>p9</tabstop>
+    <tabstop>p10</tabstop>
+    <tabstop>p11</tabstop>
+    <tabstop>p12</tabstop>
+    <tabstop>p13</tabstop>
+    <tabstop>p14</tabstop>
+    <tabstop>sw1</tabstop>
+    <tabstop>sw2</tabstop>
+    <tabstop>sw3</tabstop>
+</tabstops>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
