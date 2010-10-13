@@ -1,0 +1,1 @@
+pluginsdir = $(pkglibdir)/plugins

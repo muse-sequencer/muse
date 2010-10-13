@@ -1,0 +1,1067 @@
+<!DOCTYPE UI><UI version="3.2" stdsetdef="1">
+<class>MidiTrackInfoBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>MidiTrackInfoBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>149</width>
+            <height>555</height>
+        </rect>
+    </property>
+    <property name="sizePolicy">
+        <sizepolicy>
+            <hsizetype>5</hsizetype>
+            <vsizetype>3</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+    </property>
+    <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>0</height>
+        </size>
+    </property>
+    <property name="maximumSize">
+        <size>
+            <width>32767</width>
+            <height>32767</height>
+        </size>
+    </property>
+    <property name="caption">
+        <string>MusE: TrackInfo</string>
+    </property>
+    <property name="toolTip" stdset="0">
+        <string></string>
+    </property>
+    <property name="whatsThis" stdset="0">
+        <string></string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>0</number>
+        </property>
+        <property name="spacing">
+            <number>0</number>
+        </property>
+        <property name="resizeMode">
+            <enum>Minimum</enum>
+        </property>
+        <widget class="SpinBox" row="2" column="0">
+            <property name="name">
+                <cstring>iOutputChannel</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="maxValue">
+                <number>16</number>
+            </property>
+            <property name="minValue">
+                <number>1</number>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>output channel</string>
+            </property>
+            <property name="whatsThis" stdset="0">
+                <string>all midi events are sent to this output channel</string>
+            </property>
+        </widget>
+        <widget class="QLabel" row="0" column="0" rowspan="1" colspan="2">
+            <property name="name">
+                <cstring>trackNameLabel</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>2</hsizetype>
+                    <vsizetype>1</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="alignment">
+                <set>AlignCenter | WordBreak</set>
+            </property>
+        </widget>
+        <widget class="SpinBox" row="7" column="0">
+            <property name="name">
+                <cstring>iLen</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="suffix">
+                <string>%</string>
+            </property>
+            <property name="maxValue">
+                <number>200</number>
+            </property>
+            <property name="minValue">
+                <number>25</number>
+            </property>
+            <property name="value">
+                <number>100</number>
+            </property>
+        </widget>
+        <widget class="QComboBox" row="1" column="0" rowspan="1" colspan="2">
+            <property name="name">
+                <cstring>iOutput</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>7</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>output port</string>
+            </property>
+        </widget>
+        <widget class="QLabel" row="2" column="1">
+          <property name="name">
+            <cstring>TextLabel2</cstring>
+          </property>
+          <property name="sizePolicy">
+            <sizepolicy>
+              <hsizetype>5</hsizetype>
+              <vsizetype>0</vsizetype>
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+            </sizepolicy>
+          </property>
+          <property name="margin">
+            <number>0</number>
+          </property>
+          <property name="indent">
+            <number>1</number>
+          </property>
+          <property name="text">
+            <string>Out ch</string>
+          </property>
+        </widget>
+        <widget class="SpinBox" row="6" column="0">
+            <property name="name">
+                <cstring>iVerz</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="specialValueText">
+                <string>off</string>
+            </property>
+            <property name="maxValue">
+                <number>1000</number>
+            </property>
+            <property name="minValue">
+                <number>-1000</number>
+            </property>
+        </widget>
+        <widget class="SpinBox" row="8" column="0">
+            <property name="name">
+                <cstring>iAnschl</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="maxValue">
+                <number>127</number>
+            </property>
+            <property name="minValue">
+                <number>-127</number>
+            </property>
+            <property name="value">
+                <number>0</number>
+            </property>
+        </widget>
+        <widget class="SpinBox" row="9" column="0">
+            <property name="name">
+                <cstring>iKompr</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="prefix">
+                <string></string>
+            </property>
+            <property name="suffix">
+                <string>%</string>
+            </property>
+            <property name="maxValue">
+                <number>200</number>
+            </property>
+            <property name="minValue">
+                <number>25</number>
+            </property>
+            <property name="value">
+                <number>100</number>
+            </property>
+        </widget>
+        <widget class="SpinBox" row="5" column="0">
+            <property name="name">
+                <cstring>iTransp</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="specialValueText">
+                <string>off</string>
+            </property>
+            <property name="maxValue">
+                <number>127</number>
+            </property>
+            <property name="minValue">
+                <number>-127</number>
+            </property>
+            <property name="value">
+                <number>1</number>
+            </property>
+        </widget>
+        <widget class="QLabel" row="5" column="1">
+            <property name="name">
+                <cstring>TextLabel9</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Transp.</string>
+            </property>
+            <property name="indent">
+              <number>2</number>
+            </property>
+        </widget>
+        <widget class="QLabel" row="6" column="1">
+            <property name="name">
+                <cstring>TextLabel10</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Delay</string>
+            </property>
+            <property name="indent">
+              <number>2</number>
+            </property>
+        </widget>
+        <widget class="QLabel" row="9" column="1">
+            <property name="name">
+                <cstring>TextLabel13</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Compr.</string>
+            </property>
+            <property name="indent">
+              <number>2</number>
+            </property>
+        </widget>
+        <widget class="QLabel" row="8" column="1">
+            <property name="name">
+                <cstring>TextLabel12</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Velocity</string>
+            </property>
+            <property name="indent">
+              <number>0</number>
+            </property>
+        </widget>
+        <widget class="QLabel" row="7" column="1">
+            <property name="name">
+                <cstring>TextLabel11</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Length</string>
+            </property>
+            <property name="indent">
+              <number>2</number>
+            </property>
+        </widget>
+        <widget class="QLayoutWidget" row="3" column="0">
+            <property name="name">
+                <cstring>routingLayout</cstring>
+            </property>
+            <hbox>
+              <widget class="QToolButton">
+                <property name="name">
+                  <cstring>iRButton</cstring>
+                </property>
+                <property name="sizePolicy">
+                  <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>1</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="text">
+                  <string>iR</string>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>input routing</string>
+                </property>
+              </widget>
+              <widget class="QToolButton">
+                <property name="name">
+                  <cstring>oRButton</cstring>
+                </property>
+                <property name="sizePolicy">
+                  <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>1</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="text">
+                  <string>oR</string>
+                </property>
+                <property name="toolTip" stdset="0">
+                  <string>output routing</string>
+                </property>
+              </widget>
+            </hbox>
+        </widget>
+        <widget class="QLayoutWidget" row="3" column="1">
+          <property name="name">
+            <cstring>routingLayout2</cstring>
+          </property>
+          <hbox>
+            <widget class="QLabel">
+              <property name="name">
+                <cstring>iChanDetectLabel</cstring>
+              </property>
+              <property name="sizePolicy">
+                <sizepolicy>
+                  <hsizetype>5</hsizetype>
+                  <vsizetype>0</vsizetype>
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                </sizepolicy>
+              </property>
+              <property name="text">
+                <string>W</string>
+              </property>
+              <property name="alignment">
+                <set>AlignCenter</set>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>input detect</string>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Input detect indicator. Detects all note on-off, controller, aftertouch, 
+                  program change, and pitchbend (but not sysex or realtime) events 
+                  on the selected channels, on the selected midi ports.</string>
+              </property>
+            </widget>
+            <widget class="QToolButton">
+              <property name="name">
+                <cstring>recEchoButton</cstring>
+              </property>
+              <property name="maximumSize">
+                <size>
+                  <width>14</width>
+                  <height>32767</height>
+                </size>
+              </property>
+              <property name="sizePolicy">
+                <sizepolicy>
+                  <hsizetype>1</hsizetype>
+                  <vsizetype>1</vsizetype>
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                </sizepolicy>
+              </property>
+              <property name="toggleButton">
+                <string>true</string>
+              </property>
+              <property name="whatsThis" stdset="0">
+                <string>Echo recording events to output.</string>
+              </property>
+              <property name="toolTip" stdset="0">
+                <string>Echo</string>
+              </property>
+            </widget>
+            <spacer>
+              <property name="name">
+                <cstring>echoSpacer</cstring>
+              </property>
+              <property name="orientation">
+                <enum>Horizontal</enum>
+              </property>
+              <property name="sizeType">
+                <enum>Maximum</enum>
+              </property>
+              <property name="sizeHint">
+                <size>
+                  <width>4</width>
+                  <height>2</height>
+                </size>
+              </property>
+            </spacer>
+          </hbox>
+        </widget>
+        <widget class="QLabel" row="10" column="0" rowspan="1" colspan="2">
+            <property name="name">
+                <cstring>TextLabel1_2</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>7</hsizetype>
+                    <vsizetype>4</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="frameShape">
+                <enum>WinPanel</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Raised</enum>
+            </property>
+            <property name="lineWidth">
+                <number>1</number>
+            </property>
+            <property name="midLineWidth">
+                <number>1</number>
+            </property>
+            <property name="text">
+                <string>Channel Info</string>
+            </property>
+            <property name="alignment">
+                <set>AlignCenter</set>
+            </property>
+        </widget>
+        <widget class="QPushButton" row="11" column="0" rowspan="1" colspan="2">
+            <property name="name">
+                <cstring>iPatch</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>7</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>&lt;unknown&gt;</string>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>Select instrument patch</string>
+            </property>
+        </widget>
+        <widget class="QLabel" row="12" column="0">
+            <property name="name">
+                <cstring>textLabel1</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Record:</string>
+            </property>
+            <property name="alignment">
+                <set>AlignVCenter|AlignRight</set>
+            </property>
+        </widget>
+        <widget class="QLayoutWidget" row="12" column="1">
+            <property name="name">
+              <cstring>recLayout</cstring>
+            </property>
+            <hbox>
+              <property name="name">
+                <cstring>unnamed</cstring>
+              </property>
+                <spacer>
+                  <property name="name">
+                    <cstring>recSpacer</cstring>
+                  </property>
+                  <property name="orientation">
+                    <enum>Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                    <enum>Maximum</enum>
+                  </property>
+                  <property name="sizeHint">
+                    <size>
+                      <width>4</width>
+                      <height>2</height>
+                    </size>
+                  </property>
+                </spacer>
+                <widget class="QToolButton">
+                    <property name="name">
+                        <cstring>recordButton</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>1</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="text">
+                        <string>All</string>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Add all settings to song</string>
+                    </property>
+                </widget>
+                <spacer>
+                  <property name="name">
+                    <cstring>allRecSpacer</cstring>
+                  </property>
+                  <property name="orientation">
+                    <enum>Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                    <enum>Maximum</enum>
+                  </property>
+                  <property name="sizeHint">
+                    <size>
+                      <width>4</width>
+                      <height>2</height>
+                    </size>
+                  </property>
+                </spacer>
+            </hbox>
+        </widget>
+        <widget class="SpinBox" row="13" column="0">
+            <property name="name">
+                <cstring>iHBank</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="specialValueText">
+                <string>off</string>
+            </property>
+            <property name="maxValue">
+                <number>128</number>
+            </property>
+            <property name="minValue">
+                <number>0</number>
+            </property>
+            <property name="value">
+                <number>0</number>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>Bank Select MSB. Double-click on/off.</string>
+            </property>
+        </widget>
+        <widget class="QLabel" row="13" column="1">
+            <property name="name">
+                <cstring>TextLabel4</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="lineWidth">
+                <number>1</number>
+            </property>
+            <property name="margin">
+                <number>0</number>
+            </property>
+            <property name="text">
+                <string>H-Bank</string>
+            </property>
+            <property name="indent">
+                <number>2</number>
+            </property>
+        </widget>
+        <widget class="SpinBox" row="14" column="0">
+            <property name="name">
+                <cstring>iLBank</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="specialValueText">
+                <string>off</string>
+            </property>
+            <property name="maxValue">
+                <number>128</number>
+            </property>
+            <property name="minValue">
+                <number>0</number>
+            </property>
+            <property name="value">
+                <number>0</number>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>Bank Select LSB. Double-click on/off.</string>
+            </property>
+        </widget>
+        <widget class="QLabel" row="14" column="1">
+            <property name="name">
+                <cstring>TextLabel5</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="lineWidth">
+                <number>1</number>
+            </property>
+            <property name="margin">
+                <number>0</number>
+            </property>
+            <property name="text">
+                <string>L-Bank</string>
+            </property>
+            <property name="indent">
+                <number>2</number>
+            </property>
+        </widget>
+        <widget class="SpinBox" row="15" column="0">
+            <property name="name">
+                <cstring>iProgram</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="specialValueText">
+                <string>off</string>
+            </property>
+            <property name="maxValue">
+                <number>128</number>
+            </property>
+            <property name="minValue">
+                <number>0</number>
+            </property>
+            <property name="value">
+                <number>0</number>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>Program. Double-click on/off.</string>
+            </property>
+        </widget>
+        <widget class="QLayoutWidget" row="15" column="1">
+            <property name="name">
+                <cstring>progLayout</cstring>
+            </property>
+            <hbox>
+              <property name="name">
+                  <cstring>unnamed</cstring>
+              </property>
+              <property name="margin">
+                  <number>0</number>
+              </property>
+              <property name="spacing">
+                  <number>0</number>
+              </property>
+              <spacer>
+                  <property name="name">
+                      <cstring>progSpacer</cstring>
+                  </property>
+                  <property name="orientation">
+                      <enum>Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                      <enum>Maximum</enum>
+                  </property>
+                  <property name="sizeHint">
+                      <size>
+                          <width>4</width>
+                          <height>2</height>
+                      </size>
+                  </property>
+              </spacer>
+              <widget class="QToolButton">
+                  <property name="name">
+                      <cstring>progRecButton</cstring>
+                  </property>
+                  <property name="sizePolicy">
+                      <sizepolicy>
+                          <hsizetype>1</hsizetype>
+                          <vsizetype>1</vsizetype>
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                      </sizepolicy>
+                  </property>
+                  <property name="text">
+                      <string>Prog.</string>
+                  </property>
+                  <property name="toolTip" stdset="0">
+                      <string>Add bank + prog settings to song</string>
+                  </property>
+              </widget>
+              <spacer>
+                <property name="name">
+                  <cstring>progRecSpacer</cstring>
+                </property>
+                <property name="orientation">
+                  <enum>Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                  <enum>Maximum</enum>
+                </property>
+                <property name="sizeHint">
+                  <size>
+                    <width>4</width>
+                    <height>2</height>
+                  </size>
+                </property>
+              </spacer>
+            </hbox>
+        </widget>
+        <widget class="SpinBox" row="16" column="0">
+            <property name="name">
+                <cstring>iLautst</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="specialValueText">
+                <string>off</string>
+            </property>
+            <property name="maxValue">
+                <number>127</number>
+            </property>
+            <property name="minValue">
+                <number>-1</number>
+            </property>
+            <property name="value">
+                <number>-1</number>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>Volume. Double-click on/off.</string>
+            </property>
+        </widget>
+        <widget class="QLayoutWidget" row="16" column="1">
+            <property name="name">
+                <cstring>volLayout</cstring>
+            </property>
+            <hbox>
+              <property name="name">
+                  <cstring>unnamed</cstring>
+              </property>
+              <property name="margin">
+                  <number>0</number>
+              </property>
+              <property name="spacing">
+                  <number>0</number>
+              </property>
+              <spacer>
+                  <property name="name">
+                      <cstring>volSpacer</cstring>
+                  </property>
+                  <property name="orientation">
+                      <enum>Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                      <enum>Maximum</enum>
+                  </property>
+                  <property name="sizeHint">
+                      <size>
+                          <width>4</width>
+                          <height>2</height>
+                      </size>
+                  </property>
+              </spacer>
+              <widget class="QToolButton">
+                  <property name="name">
+                      <cstring>volRecButton</cstring>
+                  </property>
+                  <property name="sizePolicy">
+                      <sizepolicy>
+                          <hsizetype>1</hsizetype>
+                          <vsizetype>1</vsizetype>
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                      </sizepolicy>
+                  </property>
+                  <property name="text">
+                      <string>Vol.</string>
+                  </property>
+                  <property name="toolTip" stdset="0">
+                      <string>Add vol setting to song</string>
+                  </property>
+              </widget>
+              <spacer>
+                <property name="name">
+                  <cstring>volRecSpacer</cstring>
+                </property>
+                <property name="orientation">
+                  <enum>Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                  <enum>Maximum</enum>
+                </property>
+                <property name="sizeHint">
+                  <size>
+                    <width>4</width>
+                    <height>2</height>
+                  </size>
+                </property>
+              </spacer>
+            </hbox>
+        </widget>
+        <widget class="SpinBox" row="17" column="0">
+            <property name="name">
+                <cstring>iPan</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="specialValueText">
+                <string>off</string>
+            </property>
+            <property name="maxValue">
+                <number>63</number>
+            </property>
+            <property name="minValue">
+                <number>-65</number>
+            </property>
+            <property name="value">
+                <number>-65</number>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>Change stereo position. Double-click on/off.</string>
+            </property>
+            <property name="whatsThis" stdset="0">
+                <string>Change stereo position. Double-click on/off.</string>
+            </property>
+        </widget>
+        <widget class="QLayoutWidget" row="17" column="1">
+            <property name="name">
+                <cstring>panLayout</cstring>
+            </property>
+            <hbox>
+              <property name="name">
+                  <cstring>unnamed</cstring>
+              </property>
+              <property name="margin">
+                  <number>0</number>
+              </property>
+              <property name="spacing">
+                  <number>0</number>
+              </property>
+              <spacer>
+                  <property name="name">
+                      <cstring>panSpacer</cstring>
+                  </property>
+                  <property name="orientation">
+                      <enum>Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                      <enum>Maximum</enum>
+                  </property>
+                  <property name="sizeHint">
+                      <size>
+                          <width>4</width>
+                          <height>2</height>
+                      </size>
+                  </property>
+              </spacer>
+              <widget class="QToolButton">
+                  <property name="name">
+                      <cstring>panRecButton</cstring>
+                  </property>
+                  <property name="sizePolicy">
+                      <sizepolicy>
+                          <hsizetype>1</hsizetype>
+                          <vsizetype>1</vsizetype>
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                      </sizepolicy>
+                  </property>
+                  <property name="text">
+                      <string>Pan</string>
+                  </property>
+                  <property name="toolTip" stdset="0">
+                      <string>Add pan setting to song</string>
+                  </property>
+              </widget>
+              <spacer>
+                <property name="name">
+                  <cstring>panRecSpacer</cstring>
+                </property>
+                <property name="orientation">
+                  <enum>Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                  <enum>Maximum</enum>
+                </property>
+                <property name="sizeHint">
+                  <size>
+                    <width>4</width>
+                    <height>2</height>
+                  </size>
+                </property>
+              </spacer>
+            </hbox>
+        </widget>
+        <spacer row="18" column="0" rowspan="1" colspan="2">
+            <property name="name">
+                <cstring>spacer5</cstring>
+            </property>
+            <property name="orientation">
+                <enum>Vertical</enum>
+            </property>
+            <property name="sizeType">
+                <enum>Expanding</enum>
+            </property>
+            <property name="sizeHint">
+                <size>
+                    <width>20</width>
+                    <height>40</height>
+                </size>
+            </property>
+        </spacer>
+    </grid>
+</widget>
+<customwidgets>
+    <customwidget>
+        <class>SpinBox</class>
+        <header location="global">spinbox.h</header>
+        <sizehint>
+            <width>50</width>
+            <height>20</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image0</pixmap>
+    </customwidget>
+</customwidgets>
+<images>
+    <image name="image0">
+        <data format="PNG" length="1002">89504e470d0a1a0a0000000d4948445200000016000000160806000000c4b46c3b000003b149444154388dad945f4c5b551cc73fe7dc4b7b4bcba0762d45c43114323599ee6192609c51d883892ce083f1718b3ebb185f8dc91e972cf39d2d2a2f1af664b6f1e0fe3863a0718969700eb0c52142da0242a1bd6d696f7bcff101585203ceb8fd9ece39f99dcff9fe7edf939f88c562ec465f5f9fe609442c161362173c3e3eae7b7a7ac8e7f36432196cdbfe4f907c3e4f2291201e8fe338cec3737357e9e8e828aded1e229d650e1f2d51754b082110124c13a4dc5ea341eb9dc284c0558a853f3ce8cb0677ef500fde7d39d2596679e326597b8e9abb85d7a770ab16ab6983ec5a05b487a70e36f0f4e10afe408d6a558310980108478dba4a1e8233990c5d474b64ed39aa3a8fe5f3317fbf81dbd70bccfeb205947632fd74f6589c1c6ea2f70d03a58ba0c1f2c9bdc1b66de3b8256a6e11cbe7e3ee1d181b590124fe2693aeee08d223c82c3a2c24b7b874bec8f26288774f7bd054504aef0dde6e99c0eb83f9fb266323cb80a27fb0958141836044605a2ee5523393371cc646fee2da37195aa35d0c0c5b4859ac03d7e91712dcaac5adab3650a3ff9d08ef7dd8404bb48869e5d958b5b87dadc4c9a1464e9f0d0326df7ebd86bd2e310cb1bf62d384d59441f2d70a070e1c60e09489929b988681bdd9cc97170bcc4c65595f71f8e0e3301337fc24a7732467831875a47f289652b0be5e4151e6d07316c1b0c0340d8ab92023e76d66a6b2840e36d2fb7a13fee632475e6edc367ea98a90fb98b7dd6310ca0328a44761582e1bab41befabcc0ec940d28bc5e93b68e064cab84e1d9beaeb48934eac1f53b01c1b000fca496aa54b61a99fcde61662a4b4b4b23d1680be9d426173e4df3602a48ea411989a4fd590f52a8fd156b05ed9d350e3defe3cfdf4b4c7ce770ea7d3fb9f520afbe1620daeee5c26735d20b9b9cfb6811a754a439e4e5c5639a4caa1e5caf586bfc0197b78702005cb9b4cae4cd3267ce8638fe964bd72b393e39d74928d242617303a756a37f284447770dcdbffc6384a05a85de1306e9a52057c7527c7131c3c42d3f475eb2303c82d4fc3276d6811db37efeb148723082d9b08f79f97c1e5729109a9a28307cc622d2d6cdf52b2b24efe548dedb00142009862cfa879ee1a71f6cec928353511472fbf4389148b0b0e0c108081412458dfe21c9f11351e67e7358595468246d1d1e5e38a6e9e851bc39d84ab502a669331dafec0d8ec7e3e8cb06e1a881d727d1ae40180a434a8c9db129a54126ad48a7358c2b4c5352c8c374bcccdab2bb37d8719cba79fab8211f9df218e0582c261e95f8bfc04f1a1e8bc5c4dfe0a190172af6a9690000000049454e44ae426082</data>
+    </image>
+</images>
+<tabstops>
+    <tabstop>iOutput</tabstop>
+    <tabstop>iOutputChannel</tabstop>
+    <tabstop>iTransp</tabstop>
+    <tabstop>iVerz</tabstop>
+    <tabstop>iLen</tabstop>
+    <tabstop>iAnschl</tabstop>
+    <tabstop>iKompr</tabstop>
+    <tabstop>iPatch</tabstop>
+    <tabstop>iHBank</tabstop>
+    <tabstop>iLBank</tabstop>
+    <tabstop>iProgram</tabstop>
+    <tabstop>iLautst</tabstop>
+    <tabstop>iPan</tabstop>
+</tabstops>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

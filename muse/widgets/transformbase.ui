@@ -1,0 +1,1146 @@
+<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
+<class>MidiTransformDialogBase</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>MidiTransformDialogBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>636</width>
+            <height>521</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>MusE: Midi Transformator</string>
+    </property>
+    <property name="sizeGripEnabled">
+        <bool>true</bool>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>11</number>
+        </property>
+        <property name="spacing">
+            <number>6</number>
+        </property>
+        <widget class="QLayoutWidget" row="3" column="0" rowspan="1" colspan="2">
+            <property name="name">
+                <cstring>Layout4</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>buttonNew</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;New</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>buttonDelete</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Delete</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name" stdset="0">
+                        <cstring>Horizontal Spacing2</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>20</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>buttonApply</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Apply</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>buttonOk</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;OK</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                    <property name="default">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>buttonCancel</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Cancel</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QLayoutWidget" row="0" column="0" rowspan="3" colspan="1">
+            <property name="name">
+                <cstring>Layout4</cstring>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>TextLabel1_2</cstring>
+                    </property>
+                    <property name="text">
+                        <string>PresetList</string>
+                    </property>
+                </widget>
+                <widget class="QListBox">
+                    <property name="name">
+                        <cstring>presetList</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>3</hsizetype>
+                            <vsizetype>3</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                </widget>
+            </vbox>
+        </widget>
+        <widget class="QGroupBox" row="1" column="1">
+            <property name="name">
+                <cstring>GroupBox5</cstring>
+            </property>
+            <property name="title">
+                <string>Processing</string>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>11</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QLabel" row="0" column="0">
+                    <property name="name">
+                        <cstring>TextLabel5</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Event Type</string>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="1" column="0">
+                    <item>
+                        <property name="text">
+                            <string>Keep</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Fix</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>procEventOp</cstring>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="2" column="0">
+                    <item>
+                        <property name="text">
+                            <string>Note</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Poly Pressure</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Control Change</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Aftertouch</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Pitch Bend</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>NRPN</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>RPN</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>procType</cstring>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="1" column="1">
+                    <item>
+                        <property name="text">
+                            <string>Keep</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Plus</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Minus</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Multiply</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Divide</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Fix</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Value 2</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Invert</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>ScaleMap</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Flip</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Dyn</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Random</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>procVal1Op</cstring>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="1">
+                    <property name="name">
+                        <cstring>TextLabel6</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Value 1</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="2">
+                    <property name="name">
+                        <cstring>TextLabel7</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Value 2</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="3">
+                    <property name="name">
+                        <cstring>TextLabel10_2</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Length</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="4">
+                    <property name="name">
+                        <cstring>TextLabel12</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Position</string>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="1" column="2">
+                    <item>
+                        <property name="text">
+                            <string>Keep</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Plus</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Minus</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Multiply</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Divide</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Fix</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Value 1</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Invert</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Dyn</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Random</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>procVal2Op</cstring>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="1" column="3">
+                    <item>
+                        <property name="text">
+                            <string>Keep</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Plus</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Minus</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Multiply</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Divide</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Fix</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>procLenOp</cstring>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="3" column="1">
+                    <property name="name">
+                        <cstring>procVal1b</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>9999</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="3" column="2">
+                    <property name="name">
+                        <cstring>procVal2b</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>9999</number>
+                    </property>
+                </widget>
+                <widget class="SpinBoxFP" row="2" column="1">
+                    <property name="name">
+                        <cstring>procVal1a</cstring>
+                    </property>
+                    <property name="maxValue" stdset="0">
+                        <number>99999999</number>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="1" column="4">
+                    <item>
+                        <property name="text">
+                            <string>Keep</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Plus</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Minus</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Multiply</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Divide</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>procPosOp</cstring>
+                    </property>
+                </widget>
+                <widget class="SpinBoxFP" row="2" column="2">
+                    <property name="name">
+                        <cstring>procVal2a</cstring>
+                    </property>
+                    <property name="maxValue" stdset="0">
+                        <number>99999999</number>
+                    </property>
+                </widget>
+                <widget class="SpinBoxFP" row="2" column="3">
+                    <property name="name">
+                        <cstring>procLenA</cstring>
+                    </property>
+                    <property name="maxValue" stdset="0">
+                        <number>99999999</number>
+                    </property>
+                </widget>
+                <widget class="SpinBoxFP" row="2" column="4">
+                    <property name="name">
+                        <cstring>procPosA</cstring>
+                    </property>
+                    <property name="maxValue" stdset="0">
+                        <number>99999999</number>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
+        <widget class="QGroupBox" row="0" column="1">
+            <property name="name">
+                <cstring>GroupBox3</cstring>
+            </property>
+            <property name="title">
+                <string>Filter</string>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>11</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QComboBox" row="1" column="0">
+                    <item>
+                        <property name="text">
+                            <string>All</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Equal</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Unequal</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>selEventOp</cstring>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="2" column="0">
+                    <item>
+                        <property name="text">
+                            <string>Note</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Poly Pressure</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Control Change</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Aftertouch</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Pitch Bend</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>NRPN</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>RPN</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>selType</cstring>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="2">
+                    <property name="name">
+                        <cstring>TextLabel3</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Value 2</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="1">
+                    <property name="name">
+                        <cstring>TextLabel2</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Value 1</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="0">
+                    <property name="name">
+                        <cstring>TextLabel1</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Event Type</string>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="1" column="1">
+                    <item>
+                        <property name="text">
+                            <string>Ignore</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Equal</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Unequal</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Higher</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Lower</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Inside</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Outside</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>selVal1Op</cstring>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="3">
+                    <property name="name">
+                        <cstring>TextLabel10</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Length</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="4">
+                    <property name="name">
+                        <cstring>TextLabel11</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Bar Range</string>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="1" column="2">
+                    <item>
+                        <property name="text">
+                            <string>Ignore</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Equal</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Unequal</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Higher</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Lower</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Inside</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Outside</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>selVal2Op</cstring>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="1" column="3">
+                    <item>
+                        <property name="text">
+                            <string>Ignore</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Equal</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Unequal</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Higher</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Lower</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Inside</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Outside</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>selLenOp</cstring>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="1" column="4">
+                    <item>
+                        <property name="text">
+                            <string>Ignore</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Equal</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Unequal</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Higher</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Lower</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Inside</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>Outside</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>selRangeOp</cstring>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="3" column="1">
+                    <property name="name">
+                        <cstring>selVal1b</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>127</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="2" column="3">
+                    <property name="name">
+                        <cstring>selLenA</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>127</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="3" column="3">
+                    <property name="name">
+                        <cstring>selLenB</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>127</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="2" column="2">
+                    <property name="name">
+                        <cstring>selVal2a</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>127</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="3" column="2">
+                    <property name="name">
+                        <cstring>selVal2b</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>127</number>
+                    </property>
+                </widget>
+                <widget class="QSpinBox" row="2" column="1">
+                    <property name="name">
+                        <cstring>selVal1a</cstring>
+                    </property>
+                    <property name="maxValue">
+                        <number>127</number>
+                    </property>
+                </widget>
+                <widget class="SpinBoxFP" row="3" column="4">
+                    <property name="name">
+                        <cstring>selBarB</cstring>
+                    </property>
+                    <property name="precision" stdset="0">
+                        <number>3</number>
+                    </property>
+                </widget>
+                <widget class="SpinBoxFP" row="2" column="4">
+                    <property name="name">
+                        <cstring>selBarA</cstring>
+                    </property>
+                    <property name="minValue" stdset="0">
+                        <number>1000</number>
+                    </property>
+                    <property name="precision" stdset="0">
+                        <number>3</number>
+                    </property>
+                </widget>
+            </grid>
+        </widget>
+        <widget class="QLayoutWidget" row="2" column="1">
+            <property name="name">
+                <cstring>Layout6</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>GroupBox6_2</cstring>
+                    </property>
+                    <property name="title">
+                        <string>Preset</string>
+                    </property>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>11</number>
+                        </property>
+                        <property name="spacing">
+                            <number>6</number>
+                        </property>
+                        <widget class="QLayoutWidget">
+                            <property name="name">
+                                <cstring>Layout5_3</cstring>
+                            </property>
+                            <hbox>
+                                <property name="name">
+                                    <cstring>unnamed</cstring>
+                                </property>
+                                <property name="margin">
+                                    <number>0</number>
+                                </property>
+                                <property name="spacing">
+                                    <number>6</number>
+                                </property>
+                                <widget class="QLabel">
+                                    <property name="name">
+                                        <cstring>TextLabel13_2</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>Name:</string>
+                                    </property>
+                                </widget>
+                                <widget class="QLineEdit">
+                                    <property name="name">
+                                        <cstring>nameEntry</cstring>
+                                    </property>
+                                </widget>
+                            </hbox>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel14_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Comment:</string>
+                            </property>
+                        </widget>
+                        <widget class="QMultiLineEdit">
+                            <property name="name">
+                                <cstring>commentEntry</cstring>
+                            </property>
+                        </widget>
+                    </vbox>
+                </widget>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>GroupBox5_2</cstring>
+                    </property>
+                    <property name="title">
+                        <string>Range</string>
+                    </property>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>11</number>
+                        </property>
+                        <property name="spacing">
+                            <number>6</number>
+                        </property>
+                        <widget class="QCheckBox">
+                            <property name="name">
+                                <cstring>processAll</cstring>
+                            </property>
+                            <property name="text">
+                                <string>process all events</string>
+                            </property>
+                        </widget>
+                        <widget class="QCheckBox">
+                            <property name="name">
+                                <cstring>selectedTracks</cstring>
+                            </property>
+                            <property name="text">
+                                <string>selected tracks</string>
+                            </property>
+                        </widget>
+                        <widget class="QCheckBox">
+                            <property name="name">
+                                <cstring>insideLoop</cstring>
+                            </property>
+                            <property name="text">
+                                <string>inside loop</string>
+                            </property>
+                        </widget>
+                    </vbox>
+                </widget>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>GroupBox7_2</cstring>
+                    </property>
+                    <property name="title">
+                        <string>Function</string>
+                    </property>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>11</number>
+                        </property>
+                        <property name="spacing">
+                            <number>6</number>
+                        </property>
+                        <widget class="QComboBox">
+                            <item>
+                                <property name="text">
+                                    <string>Select</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>Quantize</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>Delete</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>Transform</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>Insert</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>Copy</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>Extract</string>
+                                </property>
+                            </item>
+                            <property name="name">
+                                <cstring>funcOp</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>TextLabel9_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Quantize Value</string>
+                            </property>
+                        </widget>
+                        <widget class="ComboQuant">
+                            <property name="name">
+                                <cstring>funcQuantVal</cstring>
+                            </property>
+                        </widget>
+                    </vbox>
+                </widget>
+            </hbox>
+        </widget>
+    </grid>
+</widget>
+<customwidgets>
+    <customwidget>
+        <class>SpinBoxFP</class>
+        <header location="global">spinboxFP.h</header>
+        <sizehint>
+            <width>50</width>
+            <height>20</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image0</pixmap>
+        <signal>valueChanged(int value)</signal>
+        <signal>valueChanged(const QString&amp;)</signal>
+        <slot access="public" specifier="">setValue(int)</slot>
+        <slot access="public" specifier="">setPrefix(const QString&amp;)</slot>
+        <slot access="public" specifier="">setSuffix(const QString&amp;)</slot>
+        <slot access="public" specifier="">stepUp()</slot>
+        <slot access="public" specifier="">stepDown()</slot>
+        <property type="Int">precision</property>
+        <property type="Int">minValue</property>
+        <property type="Int">maxValue</property>
+    </customwidget>
+    <customwidget>
+        <class>ComboQuant</class>
+        <header location="local">comboQuant.h</header>
+        <sizehint>
+            <width>50</width>
+            <height>20</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image0</pixmap>
+        <signal>valueChanged(int)</signal>
+        <slot access="public" specifier="">setValue(int)</slot>
+    </customwidget>
+</customwidgets>
+<images>
+    <image name="image0">
+        <data format="XPM.GZ" length="646">789c6dd2c10ac2300c00d07bbf2234b7229d1be245fc04c5a3201e4615f430059d0711ff5ddb2e6bb236ec90eed134cb5a19d8ef36602af5ecdbfeeac05dda0798d3abebde87e3faa374d3807fa0d633a52d38d8de6f679fe33fc776e196f53cd010188256a3600a292882096246517815ca99884606e18044a3a40d91824820924265a7923a2e8bcd05f33db1173e002913175f2a6be6d3294871a2d95fa00e8a94ee017b69d339d90df1e77c57ea072ede6758</data>
+    </image>
+</images>
+<connections>
+    <connection>
+        <sender>buttonOk</sender>
+        <signal>clicked()</signal>
+        <receiver>MidiTransformDialogBase</receiver>
+        <slot>accept()</slot>
+    </connection>
+    <connection>
+        <sender>buttonCancel</sender>
+        <signal>clicked()</signal>
+        <receiver>MidiTransformDialogBase</receiver>
+        <slot>reject()</slot>
+    </connection>
+</connections>
+<tabstops>
+    <tabstop>selEventOp</tabstop>
+    <tabstop>selType</tabstop>
+    <tabstop>selVal1Op</tabstop>
+    <tabstop>selVal1a</tabstop>
+    <tabstop>selVal1b</tabstop>
+    <tabstop>selVal2Op</tabstop>
+    <tabstop>selVal2a</tabstop>
+    <tabstop>selVal2b</tabstop>
+    <tabstop>selLenOp</tabstop>
+    <tabstop>selLenA</tabstop>
+    <tabstop>selLenB</tabstop>
+    <tabstop>selRangeOp</tabstop>
+    <tabstop>procEventOp</tabstop>
+    <tabstop>procType</tabstop>
+    <tabstop>procVal1Op</tabstop>
+    <tabstop>procVal1b</tabstop>
+    <tabstop>procVal2Op</tabstop>
+    <tabstop>procVal2b</tabstop>
+    <tabstop>procLenOp</tabstop>
+    <tabstop>procPosOp</tabstop>
+    <tabstop>nameEntry</tabstop>
+    <tabstop>commentEntry</tabstop>
+    <tabstop>processAll</tabstop>
+    <tabstop>selectedTracks</tabstop>
+    <tabstop>insideLoop</tabstop>
+    <tabstop>funcOp</tabstop>
+    <tabstop>presetList</tabstop>
+    <tabstop>buttonNew</tabstop>
+    <tabstop>buttonDelete</tabstop>
+    <tabstop>buttonApply</tabstop>
+    <tabstop>buttonOk</tabstop>
+    <tabstop>buttonCancel</tabstop>
+</tabstops>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
