@@ -386,7 +386,8 @@ void MidiDeviceList::add(MidiDevice* dev)
                         {
                         char incstr[4];
                         sprintf(incstr,"_%d",++increment);;
-                        dev->setName(origname + incstr);
+                        //dev->setName(origname + incstr);
+                        dev->setName(origname + QString(incstr));    // p4.0.0
                         gotUniqueName = false;
                         }
                   }

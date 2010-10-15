@@ -1,6 +1,9 @@
 15.10.2010
       * Feature: Unified Jack midi devices in midi ports list. Can be both input and output, just like ALSA devices. (T356)
         - Marked as p3.3.55 
+      * Corrected: Three things which did not compile in conversion to new muse-2: (T356) 
+        - <string>true</string> -> <bool>true</bool> in mtrackinfobase.ui, for recEchoButton toggleButton property. (T356)
+        - Surround with QString(): "strerror(errno)" in MusE::save(), and "incstr" in MidiDeviceList::add(). (T356)
 09.10.2010
       * Fixed: Gluing of midi track parts, over tempo changes, caused incorrect note times and lengths. (T356)
         - Fixed Song::cmdGluePart().
