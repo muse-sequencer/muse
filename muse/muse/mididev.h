@@ -71,7 +71,11 @@ class MidiDevice {
 
       virtual int deviceType() = 0;
       
-      virtual void* clientPort() { return 0; }
+      //virtual void* clientPort() { return 0; }
+      // p3.3.55
+      virtual void* inClientPort() { return 0; }
+      virtual void* outClientPort() { return 0; }
+      
       virtual QString open() = 0;
       virtual void close() = 0;
       virtual void writeRouting(int, Xml&) const {  };

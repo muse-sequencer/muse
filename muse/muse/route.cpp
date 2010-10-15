@@ -922,6 +922,36 @@ void removeRoute(Route src, Route dst)
 }
 
 //---------------------------------------------------------
+//   removeAllRoutes
+//   If src is valid, disconnects all output routes from it.
+//   If dst is valid, disconnects all input routes to it.
+//   src and dst Route are used SIMPLY because Route provides convenient way to 
+//    specify the different pointer types (track, port, jack)
+//   This routine will ONLY look at the pointer, not the channel or port etc...
+//   So far it only works with MidiDevice <-> Jack.
+//---------------------------------------------------------
+
+// p3.3.55
+void removeAllRoutes(Route src, Route dst)
+{
+    if(src.isValid())  
+    {
+      if(src.type == Route::MIDI_DEVICE_ROUTE)
+        src.device->outRoutes()->clear();
+      else
+        printf("removeAllRoutes: source is not midi device\n");
+    }  
+      
+    if(dst.isValid())  
+    {
+      if(dst.type == Route::MIDI_DEVICE_ROUTE)
+        dst.device->inRoutes()->clear();
+      else
+        printf("removeAllRoutes: dest is not midi device\n");
+    }  
+}
+
+//---------------------------------------------------------
 //   track2name
 //    create string name representation for audio node
 //---------------------------------------------------------
@@ -955,9 +985,14 @@ QString Route::name() const
       {
         if(device)
         {
+          // p3.3.55 Removed for unified jack in/out devices, the actual port names are now different from device name.
+          // Like this:   device: "MyJackDevice1" ->  inport: "MyJackDevice1_in"  outport: "MyJackDevice1_out"
+          /*  
           if(device->deviceType() == MidiDevice::JACK_MIDI)
             return audioDevice->portName(device->clientPort());
           else
+          */
+          
           //if(device->deviceType() == MidiDevice::ALSA_MIDI)
             return device->name();
         }
@@ -1553,7 +1588,17 @@ void Route::dump() const
           if(device->deviceType() == MidiDevice::JACK_MIDI)
           {
             if(checkAudioDevice())
-              printf("jack midi port device <%s> ", audioDevice->portName(device->clientPort()).latin1());
+              //printf("jack midi port device <%s> ", audioDevice->portName(device->clientPort()).latin1());
+            // p3.3.55
+            {  
+              printf("jack midi device <%s> ", device->name().latin1());
+              if(device->inClientPort())
+                printf("input port <%s> ", 
+                       audioDevice->portName(device->inClientPort()).latin1());
+              if(device->outClientPort())
+                printf("output port <%s> ", 
+                       audioDevice->portName(device->outClientPort()).latin1());
+            }           
           }
           else
           if(device->deviceType() == MidiDevice::ALSA_MIDI)
@@ -1599,8 +1644,10 @@ bool Route::operator==(const Route& a) const
             {
               if (type == JACK_ROUTE)
               {
-                    if (!checkAudioDevice()) return false;
-                    return audioDevice->portName(jackPort) == audioDevice->portName(a.jackPort);
+                    //if (!checkAudioDevice()) return false;
+                    //return audioDevice->portName(jackPort) == audioDevice->portName(a.jackPort);
+                    // p3.3.55 Simplified.
+                    return jackPort == a.jackPort;
               }
               else 
               if (type == MIDI_PORT_ROUTE) // p3.3.49
@@ -1610,6 +1657,9 @@ bool Route::operator==(const Route& a) const
               else 
               if (type == MIDI_DEVICE_ROUTE)
               {
+                // p3.3.55 Changed for unified jack in/out devices, the actual port names are now different from device name.
+                // Like this:   device: "MyJackDevice1" ->  inport: "MyJackDevice1_in"  outport: "MyJackDevice1_out"
+                /*
                 if(device && a.device && device->deviceType() == a.device->deviceType())
                 {
                   if(device->deviceType() == MidiDevice::JACK_MIDI)
@@ -1625,6 +1675,8 @@ bool Route::operator==(const Route& a) const
                   if(device->deviceType() == MidiDevice::SYNTH_MIDI)
                     return device->name() == a.device->name();
                 }    
+                */
+                return device == a.device;
               }
             }    
       }

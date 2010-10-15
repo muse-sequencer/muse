@@ -276,7 +276,8 @@ static void readConfigMidiPort(Xml& xml)
                               {
                                 if(debugMsg)
                                   fprintf(stderr, "readConfigMidiPort: creating jack midi device %s\n", device.latin1());
-                                dev = MidiJackDevice::createJackMidiDevice(device, openFlags);
+                                //dev = MidiJackDevice::createJackMidiDevice(device, openFlags);
+                                dev = MidiJackDevice::createJackMidiDevice(device);  // p3.3.55
                               }
                               
                               if(debugMsg && !dev)

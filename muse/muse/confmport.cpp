@@ -55,7 +55,8 @@ extern std::vector<Synth*> synthis;
 
 enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
        //DEVCOL_STATE };
-       DEVCOL_ROUTES, DEVCOL_STATE };
+       //DEVCOL_ROUTES, DEVCOL_STATE };
+       DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_STATE };  // p3.3.55
 
 //---------------------------------------------------------
 //   mdevViewItemRenamed
@@ -154,6 +155,22 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                   dev->setOpenFlags(openFlags);
                   midiSeq->msgSetMidiDevice(port, dev);       // reopen device
                   item->setPixmap(DEVCOL_REC, openFlags & 2 ? *dotIcon : *dothIcon);
+                  
+                  // p3.3.55
+                  if(dev->deviceType() == MidiDevice::JACK_MIDI)
+                  {
+                    if(dev->openFlags() & 2)  
+                    {
+                      //item->setPixmap(DEVCOL_INROUTES, *buttondownIcon);
+                      item->setText(DEVCOL_INROUTES, tr("in"));
+                    }
+                    else
+                    {
+                      //item->setPixmap(DEVCOL_INROUTES, *buttondownIcon);
+                      item->setText(DEVCOL_INROUTES, "");
+                    }  
+                  }
+            
                   //break;
                   return;
                   
@@ -165,10 +182,28 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                   dev->setOpenFlags(openFlags);
                   midiSeq->msgSetMidiDevice(port, dev);       // reopen device
                   item->setPixmap(DEVCOL_PLAY, openFlags & 1 ? *dotIcon : *dothIcon);
+                  
+                  // p3.3.55
+                  if(dev->deviceType() == MidiDevice::JACK_MIDI)
+                  {
+                    if(dev->openFlags() & 1)  
+                    {
+                      //item->setPixmap(DEVCOL_OUTROUTES, *buttondownIcon);
+                      item->setText(DEVCOL_OUTROUTES, tr("out"));
+                    }
+                    else  
+                    {
+                      //item->setPixmap(DEVCOL_OUTROUTES, *buttondownIcon);
+                      item->setText(DEVCOL_OUTROUTES, "");
+                    }
+                  }
+            
                   //break;
                   return;
                   
-            case DEVCOL_ROUTES:
+            //case DEVCOL_ROUTES:
+            case DEVCOL_INROUTES:  // p3.3.55
+            case DEVCOL_OUTROUTES:
                   {
                     if(!checkAudioDevice())
                       return;
@@ -185,10 +220,13 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                     if(dev->deviceType() != MidiDevice::JACK_MIDI)  
                       return;
                     
-                    if(!dev->rwFlags() & 3)
+                    //if(!(dev->rwFlags() & 3))
+                    //if(!(dev->rwFlags() & ((col == DEVCOL_OUTROUTES) ? 1 : 2)))    // p3.3.55
+                    if(!(dev->openFlags() & ((col == DEVCOL_OUTROUTES) ? 1 : 2)))    
                       return;
                       
-                    RouteList* rl = (dev->rwFlags() & 1) ? dev->outRoutes() : dev->inRoutes();
+                    //RouteList* rl = (dev->rwFlags() & 1) ? dev->outRoutes() : dev->inRoutes();
+                    RouteList* rl = (col == DEVCOL_OUTROUTES) ? dev->outRoutes() : dev->inRoutes();   // p3.3.55
               
                     QPopupMenu* pup = 0;
                     int gid = 0;
@@ -202,7 +240,9 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                     gid = 0;
                     
                     // Jack input ports if device is writable, and jack output ports if device is readable.
-                    sl = (dev->rwFlags() & 1) ? audioDevice->inputPorts(true, _showAliases) : audioDevice->outputPorts(true, _showAliases);
+                    //sl = (dev->rwFlags() & 1) ? audioDevice->inputPorts(true, _showAliases) : audioDevice->outputPorts(true, _showAliases);
+                    // p3.3.55
+                    sl = (col == DEVCOL_OUTROUTES) ? audioDevice->inputPorts(true, _showAliases) : audioDevice->outputPorts(true, _showAliases);
                     
                     //for (int i = 0; i < channel; ++i) 
                     //{
@@ -224,7 +264,8 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                         //int id = pup->insertItem(*ip, gid);
                         pup->insertItem(*ip, gid);
                         //Route dst(*ip, true, i);
-                        Route rt(*ip, (dev->rwFlags() & 1), -1, Route::JACK_ROUTE);
+                        //Route rt(*ip, (dev->rwFlags() & 1), -1, Route::JACK_ROUTE);
+                        Route rt(*ip, (col == DEVCOL_OUTROUTES), -1, Route::JACK_ROUTE);   // p3.3.55
                         for(iRoute ir = rl->begin(); ir != rl->end(); ++ir) 
                         {
                           if (*ir == rt) 
@@ -265,7 +306,8 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                       
                       QString s(pup->text(n));
                       
-                      if(dev->rwFlags() & 1) // Writable
+                      //if(dev->rwFlags() & 1) // Writable
+                      if(col == DEVCOL_OUTROUTES) // Writable  p3.3.55
                       {
                         Route srcRoute(dev, -1);
                         Route dstRoute(s, true, -1, Route::JACK_ROUTE);
@@ -284,7 +326,8 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                           audio->msgAddRoute(srcRoute, dstRoute);
                       }
                       else
-                      if(dev->rwFlags() & 2) // Readable
+                      //if(dev->rwFlags() & 2) // Readable
+                      //if(col == DEVCOL_INROUTES) // Readable    p3.3.55
                       {
                         Route srcRoute(s, false, -1, Route::JACK_ROUTE);
                         Route dstRoute(dev, -1);
@@ -342,8 +385,12 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                       
                       pup->setCheckable(true);
                       
-                      pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" input"), 0);
-                      pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" output"), 1);
+                      // Could do it this way...
+                      //pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" input"), 1);
+                      //pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" output"), 2);
+                      //pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" combo"), 0); // p3.3.55
+                      // ... or keep it simple and let the user click on the green lights instead.
+                      pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" device"), 0);  // 
                       
                       typedef std::map<std::string, int > asmap;
                       typedef std::map<std::string, int >::iterator imap;
@@ -352,9 +399,9 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                       asmap mapJACK;
                       asmap mapSYNTH;
                       
-                      int aix = 2;
-                      int jix = 0x10000000;
-                      int six = 0x20000000;
+                      int aix = 0x10000000;
+                      int jix = 0x20000000;
+                      int six = 0x30000000;
                       for(iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) 
                       {
                         //devALSA = dynamic_cast<MidiAlsaDevice*>(*i);
@@ -385,7 +432,7 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                       }
                       
                       //int sz = midiDevices.size();
-                      if(!mapALSA.empty())
+                      //if(!mapALSA.empty())
                       {
                         pup->insertSeparator();
                         pup->insertItem(new MenuTitleItem(QT_TR_NOOP("ALSA:")));
@@ -401,43 +448,6 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                           {
                             //if(!dynamic_cast<MidiAlsaDevice*>(md))
                             if(md->deviceType() != MidiDevice::ALSA_MIDI)  
-                              continue;
-                              
-                            //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
-                            pup->insertItem(QT_TR_NOOP(md->name()), idx);
-                            
-                            //for(int k = 0; k < MIDI_PORTS; ++k) 
-                            //{
-                              //MidiDevice* dev = midiPorts[k].device();
-                              //if(dev && s == dev->name()) 
-                              if(md == dev) 
-                              {
-                                //pup->setItemEnabled(idx + 3, false);
-                                //pup->setItemChecked(idx + 3, true);
-                                pup->setItemChecked(idx, true);
-                                //break;
-                              }      
-                            //}
-                          }  
-                        }
-                      }  
-                      
-                      if(!mapJACK.empty())
-                      {
-                        pup->insertSeparator();
-                        pup->insertItem(new MenuTitleItem(QT_TR_NOOP("JACK:")));
-                        
-                        for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
-                        {
-                          int idx = i->second;
-                          //if(idx > sz)           
-                          //  continue;
-                          QString s(i->first.c_str());
-                          MidiDevice* md = midiDevices.find(s, MidiDevice::JACK_MIDI);
-                          if(md)
-                          {
-                            //if(!dynamic_cast<MidiJackDevice*>(md))
-                            if(md->deviceType() != MidiDevice::JACK_MIDI)  
                               continue;
                               
                             //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
@@ -496,6 +506,48 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                         }
                       }
                       
+                      //if(!mapJACK.empty())
+                      {
+                        pup->insertSeparator();
+                        pup->insertItem(new MenuTitleItem(QT_TR_NOOP("JACK:")));
+                        
+                        //pup->insertItem(tr("<Create input>"), 1);
+                        //pup->insertItem(tr("<Create output>"), 2);
+                        //pup->insertItem(tr("<Create combo>"), 0);  // p3.3.55
+                        //pup->insertSeparator();
+                        
+                        for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
+                        {
+                          int idx = i->second;
+                          //if(idx > sz)           
+                          //  continue;
+                          QString s(i->first.c_str());
+                          MidiDevice* md = midiDevices.find(s, MidiDevice::JACK_MIDI);
+                          if(md)
+                          {
+                            //if(!dynamic_cast<MidiJackDevice*>(md))
+                            if(md->deviceType() != MidiDevice::JACK_MIDI)  
+                              continue;
+                              
+                            //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
+                            pup->insertItem(QT_TR_NOOP(md->name()), idx);
+                            
+                            //for(int k = 0; k < MIDI_PORTS; ++k) 
+                            //{
+                              //MidiDevice* dev = midiPorts[k].device();
+                              //if(dev && s == dev->name()) 
+                              if(md == dev) 
+                              {
+                                //pup->setItemEnabled(idx + 3, false);
+                                //pup->setItemChecked(idx + 3, true);
+                                pup->setItemChecked(idx, true);
+                                //break;
+                              }      
+                            //}
+                          }  
+                        }
+                      }  
+                      
                       n = pup->exec(ppt, 0);
                       if(n == -1)
                       {      
@@ -507,21 +559,43 @@ void MPConfig::rbClicked(QListViewItem* item, const QPoint& cpt, int col)
                       //printf("MPConfig::rbClicked n:%d\n", n);
                       
                       MidiDevice* sdev = 0;
-                      if(n < 2)
+                      if(n < 0x10000000)
                       {
                         delete pup;
-                        if(n == 0)
-                          sdev = MidiJackDevice::createJackMidiDevice(QString(), 2); // 2: Readable.
-                        else
-                        if(n == 1)
-                          sdev = MidiJackDevice::createJackMidiDevice(QString(), 1); // 1:Writable.
+                        //if(n == 0)  // p3.3.55
+                        //  sdev = MidiJackDevice::createJackMidiDevice(QString(), 3); // 3:Readable/Writable.
+                        //else
+                        //if(n == 1)
+                        //  sdev = MidiJackDevice::createJackMidiDevice(QString(), 2); // 2: Readable.
+                        //else
+                        //if(n == 2)
+                        //  sdev = MidiJackDevice::createJackMidiDevice(QString(), 1); // 1:Writable.
+                        if(n <= 2)  // p3.3.55
+                        {
+                          sdev = MidiJackDevice::createJackMidiDevice(); 
+                          if(sdev)
+                          {
+                            int of = 3;
+                            switch(n)
+                            {
+                              case 0: of = 3; break;  
+                              case 1: of = 2; break;
+                              case 2: of = 1; break;
+                            }  
+                            sdev->setOpenFlags(of);
+                          }  
+                        }  
                       }  
                       else
                       {
-                        int typ = MidiDevice::ALSA_MIDI;
-                        if(n >= 0x10000000)
+                        int typ;
+                        if(n < 0x20000000)
+                          typ = MidiDevice::ALSA_MIDI;
+                        else  
+                        if(n < 0x30000000)
                           typ = MidiDevice::JACK_MIDI;
-                        if(n >= 0x20000000)
+                        else  
+                        //if(n < 0x40000000)
                           typ = MidiDevice::SYNTH_MIDI;
                         
                         sdev = midiDevices.find(pup->text(n), typ);
@@ -600,7 +674,9 @@ void MPHeaderTip::maybeTip(const QPoint &pos)
             case DEVCOL_PLAY:   p = QHeader::tr("Enable writing"); break;
             case DEVCOL_INSTR:  p = QHeader::tr("Port instrument"); break;
             case DEVCOL_NAME:   p = QHeader::tr("Midi device name. Click to edit (Jack)"); break;
-            case DEVCOL_ROUTES: p = QHeader::tr("Jack midi ports"); break;
+            //case DEVCOL_ROUTES: p = QHeader::tr("Jack midi ports"); break;
+            case DEVCOL_INROUTES:  p = QHeader::tr("Connections from Jack Midi outputs"); break;
+            case DEVCOL_OUTROUTES: p = QHeader::tr("Connections to Jack Midi inputs"); break;
             case DEVCOL_STATE:  p = QHeader::tr("Device state"); break;
             default: return;
             }
@@ -630,8 +706,12 @@ QString MPWhatsThis::text(const QPoint& pos)
                        " this port number. Click to edit Jack midi name.");
             case DEVCOL_INSTR:
                   return QHeader::tr("Instrument connected to port");
-            case DEVCOL_ROUTES:
-                  return QHeader::tr("Jack midi ports");
+            //case DEVCOL_ROUTES:
+            //      return QHeader::tr("Jack midi ports");
+            case DEVCOL_INROUTES:
+                  return QHeader::tr("Connections from Jack Midi output ports");
+            case DEVCOL_OUTROUTES:
+                  return QHeader::tr("Connections to Jack Midi input ports");
             case DEVCOL_STATE:
                   return QHeader::tr("State: result of opening the device");
             default:
@@ -661,7 +741,9 @@ MPConfig::MPConfig(QWidget* parent, char* name)
       mdevView->addColumn(tr("O"));
       mdevView->addColumn(tr("Instrument"), 120);
       mdevView->addColumn(tr("Device Name"), 120);
-      mdevView->addColumn(tr("Routing"), 80);
+      //mdevView->addColumn(tr("Routing"), 80);
+      mdevView->addColumn(tr("In routes"), 80);
+      mdevView->addColumn(tr("Out routes"), 80);
       mdevView->addColumn(tr("State"));
       mdevView->setFocusPolicy(NoFocus);
 
@@ -780,8 +862,24 @@ void MPConfig::songChanged(int flags)
             //if(dev && dynamic_cast<MidiJackDevice*>(dev))
             if(dev && dev->deviceType() == MidiDevice::JACK_MIDI)
             {
-              item->setPixmap(DEVCOL_ROUTES, *buttondownIcon);
-              item->setText(DEVCOL_ROUTES, tr("routes"));
+              //item->setPixmap(DEVCOL_ROUTES, *buttondownIcon);
+              //item->setText(DEVCOL_ROUTES, tr("routes"));
+              
+              // p3.3.55
+              if(dev->rwFlags() & 1)  
+              //if(dev->openFlags() & 1)  
+              {
+                item->setPixmap(DEVCOL_OUTROUTES, *buttondownIcon);
+                if(dev->openFlags() & 1)  
+                  item->setText(DEVCOL_OUTROUTES, tr("out"));
+              }  
+              if(dev->rwFlags() & 2)  
+              //if(dev->openFlags() & 2)  
+              {
+                item->setPixmap(DEVCOL_INROUTES, *buttondownIcon);
+                if(dev->openFlags() & 2)  
+                  item->setText(DEVCOL_INROUTES, tr("in"));
+              }  
             }
             
             mdevView->insertItem(item);

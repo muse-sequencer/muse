@@ -1,3 +1,6 @@
+15.10.2010
+      * Feature: Unified Jack midi devices in midi ports list. Can be both input and output, just like ALSA devices. (T356)
+        - Marked as p3.3.55 
 09.10.2010
       * Fixed: Gluing of midi track parts, over tempo changes, caused incorrect note times and lengths. (T356)
         - Fixed Song::cmdGluePart().
