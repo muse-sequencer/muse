@@ -704,19 +704,29 @@ void JackAudioDevice::connectJackMidiPorts()
     if(md->deviceType() != MidiDevice::JACK_MIDI)
       continue;
     
-    void* port = md->clientPort();
+    //void* port = md->clientPort();
     if(md->rwFlags() & 1)
     {
-      RouteList* rl = md->outRoutes();
-      for (iRoute r = rl->begin(); r != rl->end(); ++r) 
-        connect(port, r->jackPort);
+      void* port = md->outClientPort(); // p3.3.55
+      if(port)                          // 
+      {
+        RouteList* rl = md->outRoutes();
+        for (iRoute r = rl->begin(); r != rl->end(); ++r) 
+          connect(port, r->jackPort);
+      }    
     }
-    else
+    
+    // else  // p3.3.55 Removed
+    
     if(md->rwFlags() & 2)
     {  
-      RouteList* rl = md->inRoutes();
-      for (iRoute r = rl->begin(); r != rl->end(); ++r) 
-        connect(r->jackPort, port);
+      void* port = md->inClientPort();  // p3.3.55
+      if(port)                          //
+      {
+        RouteList* rl = md->inRoutes();
+        for (iRoute r = rl->begin(); r != rl->end(); ++r) 
+          connect(r->jackPort, port);
+      }    
     }    
   }
   
@@ -1066,10 +1076,12 @@ void JackAudioDevice::graphChanged()
             //  continue;
             //for (int channel = 0; channel < channels; ++channel) 
             //{
-                  jack_port_t* port = (jack_port_t*)md->clientPort();
-                  if (port == 0)
-                        continue;
-                  const char** ports = jack_port_get_all_connections(_client, port);
+                  
+                  // p3.3.55 Removed
+                  //jack_port_t* port = (jack_port_t*)md->clientPort();
+                  //if (port == 0)
+                  //      continue;
+                  //const char** ports = jack_port_get_all_connections(_client, port);
                   
                   //---------------------------------------
                   // outputs
@@ -1077,87 +1089,95 @@ void JackAudioDevice::graphChanged()
                   
                   if(md->rwFlags() & 1) // Writable
                   {
-                    RouteList* rl      = md->outRoutes();
-  
-                    //---------------------------------------
-                    // check for disconnects
-                    //---------------------------------------
-  
-                    bool erased;
-                    // limit set to 20 iterations for disconnects, don't know how to make it go
-                    // the "right" amount
-                    for (int i = 0; i < 20 ; i++) 
+                    // p3.3.55
+                    jack_port_t* port = (jack_port_t*)md->outClientPort();
+                    if(port != 0)
                     {
-                          erased = false;
-                          for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
-                                //if (irl->channel != channel)
-                                //      continue;
-                                QString name = irl->name();
-                                const char* portName = name.latin1();
-                                bool found = false;
-                                const char** pn = ports;
-                                while (pn && *pn) {
-                                      if (strcmp(*pn, portName) == 0) {
-                                            found = true;
-                                            break;
-                                            }
-                                      ++pn;
-                                      }
-                                if (!found) {
-                                      audio->msgRemoveRoute1(
-                                        //Route(it, channel),
-                                        //Route(mjd),
-                                        Route(md, -1),
-                                        //Route(portName, false, channel)
-                                        //Route(portName, false, -1)
-                                        Route(portName, false, -1, Route::JACK_ROUTE)
-                                        );
-                                      erased = true;
-                                      break;
-                                      }
-                                }
-                          if (!erased)
-                                break;
-                    }
-  
-                    //---------------------------------------
-                    // check for connects
-                    //---------------------------------------
-  
-                    if (ports) 
-                    {
-                          const char** pn = ports;
-                          while (*pn) {
-                                bool found = false;
-                                for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
-                                      //if (irl->channel != channel)
-                                      //      continue;
-                                      QString name = irl->name();
-                                      const char* portName = name.latin1();
-                                      if (strcmp(*pn, portName) == 0) {
-                                            found = true;
-                                            break;
-                                            }
-                                      }
-                                if (!found) {
-                                      audio->msgAddRoute1(
-                                        //Route(it, channel),
-                                        //Route(mjd),
-                                        Route(md, -1),
-                                        //Route(*pn, false, channel)
-                                        //Route(*pn, false, -1)
-                                        Route(*pn, false, -1, Route::JACK_ROUTE)
-                                        );
-                                      }
-                                ++pn;
-                                }
-  
-                          // p3.3.37
-                          //delete ports;
-                          //free(ports);
-                          
-                          //ports = NULL;
-                    }
+                      //printf("graphChanged() valid out client port\n"); // p3.3.55
+                      
+                      const char** ports = jack_port_get_all_connections(_client, port);
+                      
+                      RouteList* rl      = md->outRoutes();
+    
+                      //---------------------------------------
+                      // check for disconnects
+                      //---------------------------------------
+    
+                      bool erased;
+                      // limit set to 20 iterations for disconnects, don't know how to make it go
+                      // the "right" amount
+                      for (int i = 0; i < 20 ; i++) 
+                      {
+                            erased = false;
+                            for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                                  //if (irl->channel != channel)
+                                  //      continue;
+                                  QString name = irl->name();
+                                  //name += QString(JACK_MIDI_OUT_PORT_SUFFIX);    // p3.3.55
+                                  const char* portName = name.latin1();
+                                  bool found = false;
+                                  const char** pn = ports;
+                                  while (pn && *pn) {
+                                        if (strcmp(*pn, portName) == 0) {
+                                              found = true;
+                                              break;
+                                              }
+                                        ++pn;
+                                        }
+                                  if (!found) {
+                                        audio->msgRemoveRoute1(
+                                          //Route(it, channel),
+                                          //Route(mjd),
+                                          Route(md, -1),
+                                          //Route(portName, false, channel)
+                                          //Route(portName, false, -1)
+                                          Route(portName, false, -1, Route::JACK_ROUTE)
+                                          );
+                                        erased = true;
+                                        break;
+                                        }
+                                  }
+                            if (!erased)
+                                  break;
+                      }
+    
+                      //---------------------------------------
+                      // check for connects
+                      //---------------------------------------
+    
+                      if (ports) 
+                      {
+                            const char** pn = ports;
+                            while (*pn) {
+                                  bool found = false;
+                                  for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                                        //if (irl->channel != channel)
+                                        //      continue;
+                                        QString name = irl->name();
+                                        const char* portName = name.latin1();
+                                        if (strcmp(*pn, portName) == 0) {
+                                              found = true;
+                                              break;
+                                              }
+                                        }
+                                  if (!found) {
+                                        audio->msgAddRoute1(
+                                          //Route(it, channel),
+                                          //Route(mjd),
+                                          Route(md, -1),
+                                          //Route(*pn, false, channel)
+                                          //Route(*pn, false, -1)
+                                          Route(*pn, false, -1, Route::JACK_ROUTE)
+                                          );
+                                        }
+                                  ++pn;
+                                  }
+    
+                            // p3.3.55
+                            // Done with ports. Free them.
+                            free(ports);
+                      }
+                    }  
                   }  
                   
                   
@@ -1167,88 +1187,100 @@ void JackAudioDevice::graphChanged()
                   
                   if(md->rwFlags() & 2) // Readable
                   {
-                    RouteList* rl = md->inRoutes();
-  
-                    //---------------------------------------
-                    // check for disconnects
-                    //---------------------------------------
-  
-                    bool erased;
-                    // limit set to 20 iterations for disconnects, don't know how to make it go
-                    // the "right" amount
-                    for (int i = 0; i < 20 ; i++) 
+                    // p3.3.55
+                    jack_port_t* port = (jack_port_t*)md->inClientPort();
+                    if(port != 0)
                     {
-                          erased = false;
-                          for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
-                                //if (irl->channel != channel)
-                                //      continue;
-                                QString name = irl->name();
-                                const char* portName = name.latin1();
-                                bool found = false;
-                                const char** pn = ports;
-                                while (pn && *pn) {
-                                      if (strcmp(*pn, portName) == 0) {
-                                            found = true;
-                                            break;
-                                            }
-                                      ++pn;
-                                      }
-                                if (!found) {
-                                      audio->msgRemoveRoute1(
-                                        //Route(portName, false, channel),
-                                        //Route(portName, false, -1),
-                                        Route(portName, false, -1, Route::JACK_ROUTE),
-                                        //Route(it, channel)
-                                        //Route(mjd)
-                                        Route(md, -1)
-                                        );
-                                      erased = true;
-                                      break;
-                                      }
-                                }
-                          if (!erased)
-                                break;
-                    }
-  
-                    //---------------------------------------
-                    // check for connects
-                    //---------------------------------------
-  
-                    if (ports) 
-                    {
-                          const char** pn = ports;
-                          while (*pn) {
-                                bool found = false;
-                                for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
-                                      //if (irl->channel != channel)
-                                      //      continue;
-                                      QString name = irl->name();
-                                      const char* portName = name.latin1();
-                                      if (strcmp(*pn, portName) == 0) {
-                                            found = true;
-                                            break;
-                                            }
-                                      }
-                                if (!found) {
-                                      audio->msgAddRoute1(
-                                        //Route(*pn, false, channel),
-                                        //Route(*pn, false, -1),
-                                        Route(*pn, false, -1, Route::JACK_ROUTE),
-                                        //Route(it, channel)
-                                        //Route(mjd)
-                                        Route(md, -1)
-                                        );
-                                      }
-                                ++pn;
-                                }
-                    }
+                      //printf("graphChanged() valid in client port\n"); // p3.3.55
+                      const char** ports = jack_port_get_all_connections(_client, port);
+                      
+                      RouteList* rl = md->inRoutes();
+    
+                      //---------------------------------------
+                      // check for disconnects
+                      //---------------------------------------
+    
+                      bool erased;
+                      // limit set to 20 iterations for disconnects, don't know how to make it go
+                      // the "right" amount
+                      for (int i = 0; i < 20 ; i++) 
+                      {
+                            erased = false;
+                            for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                                  //if (irl->channel != channel)
+                                  //      continue;
+                                  QString name = irl->name();
+                                  const char* portName = name.latin1();
+                                  bool found = false;
+                                  const char** pn = ports;
+                                  while (pn && *pn) {
+                                        if (strcmp(*pn, portName) == 0) {
+                                              found = true;
+                                              break;
+                                              }
+                                        ++pn;
+                                        }
+                                  if (!found) {
+                                        audio->msgRemoveRoute1(
+                                          //Route(portName, false, channel),
+                                          //Route(portName, false, -1),
+                                          Route(portName, false, -1, Route::JACK_ROUTE),
+                                          //Route(it, channel)
+                                          //Route(mjd)
+                                          Route(md, -1)
+                                          );
+                                        erased = true;
+                                        break;
+                                        }
+                                  }
+                            if (!erased)
+                                  break;
+                      }
+    
+                      //---------------------------------------
+                      // check for connects
+                      //---------------------------------------
+    
+                      if (ports) 
+                      {
+                            const char** pn = ports;
+                            while (*pn) {
+                                  bool found = false;
+                                  for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                                        //if (irl->channel != channel)
+                                        //      continue;
+                                        QString name = irl->name();
+                                        const char* portName = name.latin1();
+                                        if (strcmp(*pn, portName) == 0) {
+                                              found = true;
+                                              break;
+                                              }
+                                        }
+                                  if (!found) {
+                                        audio->msgAddRoute1(
+                                          //Route(*pn, false, channel),
+                                          //Route(*pn, false, -1),
+                                          Route(*pn, false, -1, Route::JACK_ROUTE),
+                                          //Route(it, channel)
+                                          //Route(mjd)
+                                          Route(md, -1)
+                                          );
+                                        }
+                                  ++pn;
+                                  }
+                            // p3.3.55
+                            // Done with ports. Free them.
+                            free(ports);
+                      }
+                    }  
                   }  
-                  if(ports) 
+                  
+                  // p3.3.55 Removed.
+                  //if(ports) 
                     // Done with ports. Free them.
                     //delete ports;
-                    free(ports);
-                    
-                  ports = NULL;
+                  //  free(ports);
+                  //ports = NULL;
       }
 }
 
@@ -1273,7 +1305,8 @@ void JackAudioDevice::registerClient()
       // Added by Tim. p3.3.20
       // Did not help. Seek during play: Jack keeps switching to STOP state after about 1-2 seconds timeout if sync is holding it up.
       // Nothing in MusE seems to be telling it to stop.
-      jack_set_sync_timeout(_client, 5000000); // Change default 2 to 5 second sync timeout because prefetch may be very slow esp. with resampling !
+      // NOTE: Update: It was a bug in QJackCtl. Fixed now.
+      //jack_set_sync_timeout(_client, 5000000); // Change default 2 to 5 second sync timeout because prefetch may be very slow esp. with resampling !
       
       jack_on_shutdown(_client, processShutdown, 0);
       jack_set_buffer_size_callback(_client, bufsize_callback, 0);
@@ -1379,6 +1412,8 @@ void JackAudioDevice::disconnect(void* src, void* dst)
       if (JACK_DEBUG)
             printf("JackAudioDevice::disconnect()\n");
       if(!checkJackClient(_client)) return;
+      if(!src || !dst)  // p3.3.55
+        return;
       const char* sn = jack_port_name((jack_port_t*) src);
       const char* dn = jack_port_name((jack_port_t*) dst);
       if (sn == 0 || dn == 0) {
@@ -1907,6 +1942,7 @@ void JackAudioDevice::seekTransport(unsigned frame)
         // Docs say when starting play, transport will roll anyway, ready or not (observed),
         //  but don't mention what should happen on seek during play. 
         // And setting the slow-sync timeout doesn't seem to do anything!
+        // NOTE: Update: It was a bug with QJackCtl. Fixed now.
         //dummyState = tempState;
         dummyState = Audio::STOP;
         return;

@@ -34,10 +34,15 @@ class MidiAlsaDevice : public MidiDevice {
       virtual bool putMidiEvent(const MidiPlayEvent&);
 
    public:
-      MidiAlsaDevice() {}
+      //MidiAlsaDevice() {}  // p3.3.55 Removed
       MidiAlsaDevice(const snd_seq_addr_t&, const QString& name);
       virtual ~MidiAlsaDevice() {}
-      virtual void* clientPort() { return (void*)&adr; }
+      
+      //virtual void* clientPort() { return (void*)&adr; }
+      // p3.3.55
+      virtual void* inClientPort() { return (void*)&adr; }     // For ALSA midi, in/out client ports are the same.
+      virtual void* outClientPort() { return (void*)&adr; }    // That is, ALSA midi client ports can be both r/w.
+      
       virtual void writeRouting(int, Xml&) const;
       virtual inline int deviceType() { return ALSA_MIDI; } 
       };

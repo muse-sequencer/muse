@@ -446,7 +446,7 @@
                 </sizepolicy>
               </property>
               <property name="toggleButton">
-                <string>true</string>
+                <bool>true</bool>
               </property>
               <property name="whatsThis" stdset="0">
                 <string>Echo recording events to output.</string>

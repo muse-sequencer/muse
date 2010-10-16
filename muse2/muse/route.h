@@ -85,6 +85,7 @@ typedef RouteList::const_iterator ciRoute;
 
 extern void addRoute(Route, Route);
 extern void removeRoute(Route, Route);
+extern void removeAllRoutes(Route, Route);  // p3.3.55
 extern Route name2route(const QString&, bool dst, int rtype = -1);
 extern bool checkRoute(const QString&, const QString&);
 

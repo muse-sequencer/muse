@@ -27,11 +27,11 @@ class Xml;
 
 // Turn on to show multiple devices, work in progress, 
 //  not working fully yet, can't seem to connect...
-#define JACK_MIDI_SHOW_MULTIPLE_DEVICES
+//#define JACK_MIDI_SHOW_MULTIPLE_DEVICES
 
 // It appears one client port per remote port will be necessary.
 // Jack doesn't seem to like manipulation of non-local ports buffers.
-#define JACK_MIDI_USE_MULTIPLE_CLIENT_PORTS
+//#define JACK_MIDI_USE_MULTIPLE_CLIENT_PORTS
 
 /* jack-midi channels */
 //#define JACK_MIDI_CHANNELS 32
@@ -98,7 +98,11 @@ class MidiJackDevice : public MidiDevice {
       //static int _nextOutIdNum;
       //static int _nextInIdNum;
       
-      jack_port_t* _client_jackport;
+      //jack_port_t* _client_jackport;
+      // p3.3.55
+      jack_port_t* _in_client_jackport;
+      jack_port_t* _out_client_jackport;
+      
       //RouteList _routes;
       
       virtual QString open();
@@ -115,11 +119,15 @@ class MidiJackDevice : public MidiDevice {
       void eventReceived(jack_midi_event_t*);
 
    public:
-      MidiJackDevice() {}
+      //MidiJackDevice() {}  // p3.3.55  Removed.
       //MidiJackDevice(const int&, const QString& name);
-      MidiJackDevice(jack_port_t* jack_port, const QString& name);
       
-      static MidiDevice* createJackMidiDevice(QString /*name*/, int /*rwflags*/); // 1:Writable 2: Readable. Do not mix.
+      //MidiJackDevice(jack_port_t* jack_port, const QString& name);
+      //MidiJackDevice(jack_port_t* in_jack_port, jack_port_t* out_jack_port, const QString& name); // p3.3.55 In or out port can be null.
+      MidiJackDevice(const QString& name); 
+      
+      //static MidiDevice* createJackMidiDevice(QString /*name*/, int /*rwflags*/); // 1:Writable 2: Readable. Do not mix.
+      static MidiDevice* createJackMidiDevice(QString name = "", int rwflags = 3); // p3.3.55 1:Writable 2: Readable 3: Writable + Readable
       
       virtual inline int deviceType() { return JACK_MIDI; } 
       
@@ -138,7 +146,11 @@ class MidiJackDevice : public MidiDevice {
       
       //virtual jack_port_t* jackPort() { return _jackport; }
       //virtual jack_port_t* clientJackPort() { return _client_jackport; }
-      virtual void* clientPort() { return (void*)_client_jackport; }
+      
+      //virtual void* clientPort() { return (void*)_client_jackport; }
+      // p3.3.55
+      virtual void* inClientPort()  { return (void*)  _in_client_jackport; }
+      virtual void* outClientPort() { return (void*) _out_client_jackport; }
       
       //RouteList* routes()   { return &_routes; }
       //bool noRoute() const   { return _routes.empty();  }
