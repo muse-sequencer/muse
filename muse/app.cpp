@@ -1807,7 +1807,8 @@ bool MusE::save(const QString& name, bool overwriteWarn)
       write(xml);
       if (ferror(f)) {
             QString s = "Write File\n" + name + "\nfailed: "
-               + strerror(errno);
+               //+ strerror(errno);
+               + QString(strerror(errno));                 // p4.0.0
             QMessageBox::critical(this,
                tr("MusE: Write File failed"), s);
             popenFlag? pclose(f) : fclose(f);
