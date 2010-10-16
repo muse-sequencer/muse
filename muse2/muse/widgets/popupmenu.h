@@ -76,18 +76,18 @@ class PopupMenu : public Q3PopupMenu
     //virtual void setFirstItemActive();
     //void hideAllPopups();
     //void hidePopups();
-    bool tryMenuBar(QMouseEvent *);
+///    bool tryMenuBar(QMouseEvent *);
     //bool tryMouseEvent(QPopupMenu *, QMouseEvent *);
-    bool tryMouseEvent(PopupMenu *, QMouseEvent *);
+///    bool tryMouseEvent(PopupMenu *, QMouseEvent *);
     //void byeMenuBar();
-    void actSig(int, bool = FALSE);
-    virtual void menuDelPopup(Q3PopupMenu *);
+///    void actSig(int, bool = FALSE);
+///    virtual void menuDelPopup(Q3PopupMenu *);
   
   protected:
     //int            actItem;
     
     //void mousePressEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
+///    void mouseReleaseEvent(QMouseEvent *);
   
   public:
     PopupMenu(QWidget* parent=0, const char* name=0);
