@@ -59,7 +59,7 @@ enum {
       SEQM_UPDATE_SOLO_STATES,
       MIDI_SHOW_INSTR_GUI,
       AUDIO_RECORD,
-      AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE,
+      AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
       AUDIO_VOL, AUDIO_PAN,
       AUDIO_ADDPLUGIN,
       AUDIO_SET_SEG_SIZE,
@@ -223,6 +223,8 @@ class Audio {
       bool sendMessage(AudioMsg* m, bool doUndo);
       void msgRemoveRoute(Route, Route);
       void msgRemoveRoute1(Route, Route);
+      void msgRemoveRoutes(Route, Route);  // p3.3.55
+      void msgRemoveRoutes1(Route, Route);  // p3.3.55
       void msgAddRoute(Route, Route);
       void msgAddRoute1(Route, Route);
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);

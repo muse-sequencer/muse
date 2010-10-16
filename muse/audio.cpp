@@ -64,7 +64,7 @@ const char* seqMsgList[] = {
       "SEQM_UPDATE_SOLO_STATES",
       "MIDI_SHOW_INSTR_GUI",
       "AUDIO_RECORD",
-      "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE",
+      "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
       "AUDIO_VOL", "AUDIO_PAN",
       "AUDIO_ADDPLUGIN",
       "AUDIO_SET_SEG_SIZE",
@@ -624,6 +624,9 @@ void Audio::processMsg(AudioMsg* msg)
                   break;
             case AUDIO_ROUTEREMOVE:
                   removeRoute(msg->sroute, msg->droute);
+                  break;
+            case AUDIO_REMOVEROUTES:      // p3.3.55
+                  removeAllRoutes(msg->sroute, msg->droute);
                   break;
             case AUDIO_VOL:
                   msg->snode->setVolume(msg->dval);

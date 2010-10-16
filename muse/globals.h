@@ -184,6 +184,10 @@ extern RouteMenuMap gRoutingMenuMap;
 // Whether the routes popup was shown by clicking the output routes button, or input routes button.
 extern bool gIsOutRoutingPopupMenu;
 
+// p3.3.55
+#define JACK_MIDI_OUT_PORT_SUFFIX "_out"
+#define JACK_MIDI_IN_PORT_SUFFIX  "_in"
+
 extern uid_t euid, ruid;
 extern void doSetuid();
 extern void undoSetuid();
