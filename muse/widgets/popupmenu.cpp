@@ -20,6 +20,7 @@
 //=========================================================
 
 
+
 // MusE: want no menu bar here. Can't use, not needed for now anyway.
 #define QT_NO_MENUBAR
 #define QT_NO_WHATSTHIS
@@ -36,6 +37,7 @@
 //#include <qdatetime.h>
 
 #include "popupmenu.h"
+ 
  
 // used to provide ONE single-shot timer
 //static QTimer * singleSingleShot = 0;
@@ -122,6 +124,10 @@ PopupMenu::~PopupMenu()
   // Make sure to clear the popup so that any child popups are also deleted !
   //popup->clear();
 }
+
+
+
+#if 0     // p4.0.1
 
 void PopupMenu::menuDelPopup(Q3PopupMenu *popup)
 {
@@ -434,6 +440,8 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
 }
 
 
+
+#endif      // p4.0.1
 
 
 

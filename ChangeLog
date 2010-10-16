@@ -1,3 +1,9 @@
+16.10.2010
+      * Fixed: Routing and popup menus should work now. Sorry, no 'stay-open' menus for now. (T356)
+        - p4.0.1 Reverted back to regular non-overloaded Q3PopupMenu behaviour (self-extinguishing) for PopupMenu class.
+        - Removed "gRoutingMenuMap.clear()" and "gRoutingPopupMenuMaster = 0" from MusE::routingPopupMenuAboutToHide().
+          Instead, added protection from non-visible menu in MusE::updateRouteMenus().
+      * Tested: Pianoroll, drums open but toolbars are very messed up. Marker, transport, bigtime, all others seem OK.    
 15.10.2010
       * Feature: Unified Jack midi devices in midi ports list. Can be both input and output, just like ALSA devices. (T356)
         - Marked as p3.3.55 

@@ -2028,6 +2028,13 @@ void MusE::updateRouteMenus(Track* track, QObject* master)    // p3.3.50
       if(pup->count() == 0)
         return;
         
+      // p4.0.1 Protection since reverting to regular (self-extinguishing) menu behaviour here in muse2.
+      if(!pup->isVisible())
+      {
+        //printf("MusE::updateRouteMenus menu is not visible\n");
+        return;
+      }
+        
       //AudioTrack* t = (AudioTrack*)track;
       RouteList* rl = gIsOutRoutingPopupMenu ? track->outRoutes() : track->inRoutes();
 
@@ -2475,8 +2482,13 @@ void MusE::routingPopupMenuAboutToHide()
       //PopupMenu* pup = muse->getRoutingPopupMenu();
       //pup->disconnect();
       //pup->clear();
-      gRoutingMenuMap.clear();
-      gRoutingPopupMenuMaster = 0;
+      
+      // p4.0.1 Removed. IIRC These lines were not strictly necessary in muse-1, 
+      //  and here in muse-2 we reverted back to regular Q3PopupMenu behaviour for now, 
+      //  which is self-extinguishing, so these lines cannot be enabled - 
+      //  gRoutingPopupMenuMaster and gRoutingMenuMap are required for routingPopupMenuActivated().
+      //gRoutingMenuMap.clear();
+      //gRoutingPopupMenuMaster = 0;
 }
 
 //---------------------------------------------------------
