@@ -20,11 +20,13 @@
 #include "midiport.h"
 #include "transport.h"
 #include "arranger.h"
+//#include "arranger/arranger.h"    // p4.0.2
 #include "mpevent.h"
 #include "event.h"
 #include "midictrl.h"
 #include "instruments/minstrument.h"
 #include "drummap.h"
+//#include "midiedit/drummap.h"    // p4.0.2        
 #include "xml.h"
 #include "audio.h"
 #include "gconfig.h"

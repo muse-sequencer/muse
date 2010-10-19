@@ -13,21 +13,27 @@
 #include "app.h"
 #include "song.h"
 #include "arranger.h"
+//#include "arranger/arranger.h"  // p4.0.2
 #include "transport.h"
 #include "cobject.h"
 #include "drumedit.h"
+//#include "midiedit/drumedit.h"  // p4.0.2
 #include "pianoroll.h"
+//#include "midiedit/pianoroll.h"  // p4.0.2
 #include "globals.h"
 #include "xml.h"
 #include "drummap.h"
+//#include "midiedit/drummap.h"    // p4.0.2
 #include "event.h"
 #include "marker/marker.h"
 #include "midiport.h"
 #include "audio.h"
 #include "mitplugin.h"
+//#include "mplugins/mitplugin.h"           // p4.0.2
 #include "wave.h"
 #include "midictrl.h"
 #include "amixer.h"
+//#include "mixer/amixer.h"              // p4.0.2
 #include "conf.h"
 #include "driver/jackmidi.h"
 

@@ -14,6 +14,7 @@
 #include "song.h"
 #include "midi.h"
 #include "drummap.h"
+//#include "midiedit/drummap.h"  // p4.0.2
 #include "event.h"
 #include "globals.h"
 #include "midictrl.h"

@@ -1893,7 +1893,7 @@ void AudioStrip::iRoutePressed()
             char buffer[128];
             snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
             MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
-            //pup->insertItem(titel); ddskrjo
+            //pup->insertItem(titel); //ddskrjo
   
             if(!checkAudioDevice())
             { 
@@ -2441,7 +2441,7 @@ void AudioStrip::oRoutePressed()
             char buffer[128];
             snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
             MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
-            //pup->insertItem(titel); ddskrjo
+            //pup->insertItem(titel); //ddskrjo
   
             if(!checkAudioDevice())
             { 

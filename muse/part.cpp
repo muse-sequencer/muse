@@ -19,6 +19,7 @@
 #include "wave.h"
 #include "midiport.h"
 #include "drummap.h"
+//#include "midiedit/drummap.h"    // p4.0.2
 
 int Part::snGen;
 

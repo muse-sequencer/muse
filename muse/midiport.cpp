@@ -14,6 +14,7 @@
 #include "midictrl.h"
 #include "midi.h"
 #include "minstrument.h"
+//#include "instruments/minstrument.h"   // p4.0.2
 #include "xml.h"
 #include "globals.h"
 #include "mpevent.h"
