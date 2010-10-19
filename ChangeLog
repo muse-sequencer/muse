@@ -1,4 +1,6 @@
 19.10.2010
+      * Fixed: Some missing files, errors with cmake build. (T356)
+19.10.2010
       * Changed: Build system changed to cmake. (T356)
         - Some other suitable changes. p4.0.2
         - WIP Need to fix a few placed in code with regards to installation search paths (MESS synths not found etc.)
