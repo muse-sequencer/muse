@@ -25,7 +25,8 @@
 #include "midi.h"
 #include "midiport.h"
 #include "mididev.h"
-#include "libsynti/mess.h"
+//#include "libsynti/mess.h"
+#include "synti/libsynti/mess.h"   // p4.0.2
 #include "song.h"
 #include "audio.h"
 #include "event.h"

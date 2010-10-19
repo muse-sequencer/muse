@@ -44,6 +44,7 @@
 #include "synth.h"
 #include "audio.h"
 #include "jackaudio.h"
+//#include "../driver/jackaudio.h"  // p4.0.2
 #include "midi.h"
 #include "midiport.h"
 #include "stringparam.h"

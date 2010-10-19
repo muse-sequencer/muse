@@ -324,9 +324,12 @@ void DeicsOnzeGui::setFeedback(int f) {
 
 void DeicsOnzeGui::setLfoWave(const QString& qs) {
     _deicsOnze->_preset->lfo.wave=
-	((operator==(qs,"Saw Up")?SAWUP:
-	  (operator==(qs,"Square")?SQUARE:
-	   (operator==(qs,"Triangl")?TRIANGL:SHOLD))));
+        //((operator==(qs,"Saw Up")?SAWUP:
+	//  (operator==(qs,"Square")?SQUARE:
+	//   (operator==(qs,"Triangl")?TRIANGL:SHOLD))));
+        ((operator==(qs,QString("Saw Up"))?SAWUP:                   // p4.0.2
+          (operator==(qs,QString("Square"))?SQUARE:
+           (operator==(qs,QString("Triangl"))?TRIANGL:SHOLD))));
     _deicsOnze->setLfo();
 }
 
@@ -370,13 +373,20 @@ void DeicsOnzeGui::setGlobalDetune(int gd) {
 
 void DeicsOnzeGui::setAlgorithm(const QString& a) {
     _deicsOnze->_preset->algorithm=
-	((operator==(a,"Algorithm 1")?FIRST:
-	  (operator==(a,"Algorithm 2")?SECOND:
-	   (operator==(a,"Algorithm 3")?THIRD:
-	    (operator==(a, "Algorithm 4")?FOURTH:
-	     (operator==(a, "Algorithm 5")?FIFTH:
-	      (operator==(a, "Algorithm 6")?SIXTH:
-	       (operator==(a, "Algorithm 7")?SEVENTH:EIGHTH))))))));
+	//((operator==(a,"Algorithm 1")?FIRST:
+	//  (operator==(a,"Algorithm 2")?SECOND:
+	//   (operator==(a,"Algorithm 3")?THIRD:
+	//    (operator==(a, "Algorithm 4")?FOURTH:
+	//     (operator==(a, "Algorithm 5")?FIFTH:
+	//      (operator==(a, "Algorithm 6")?SIXTH:
+	//       (operator==(a, "Algorithm 7")?SEVENTH:EIGHTH))))))));
+        ((operator==(a,QString("Algorithm 1"))?FIRST:                              // p4.0.2
+          (operator==(a,QString("Algorithm 2"))?SECOND:
+           (operator==(a,QString("Algorithm 3"))?THIRD:
+            (operator==(a, QString("Algorithm 4"))?FOURTH:
+             (operator==(a, QString("Algorithm 5"))?FIFTH:
+              (operator==(a, QString("Algorithm 6"))?SIXTH:
+               (operator==(a, QString("Algorithm 7"))?SEVENTH:EIGHTH))))))));
 }
 
 void DeicsOnzeGui::setPitchBendRange(int pbr) {
@@ -528,43 +538,71 @@ void DeicsOnzeGui::setDET4(int val){_deicsOnze->_preset->detune[3]=val;}
 //--------------------------------------------------------------
 void DeicsOnzeGui::setWaveForm1(const QString& a) {
     _deicsOnze->_preset->oscWave[0]=
-	((operator==(a,"Wave1")?W1:
-	  (operator==(a,"Wave2")?W2:
-	   (operator==(a,"Wave3")?W3:
-	    (operator==(a, "Wave4")?W4:
-	     (operator==(a, "Wave5")?W5:
-	      (operator==(a, "Wave6")?W6:
-	       (operator==(a, "Wave7")?W7:W8))))))));
+	//((operator==(a,"Wave1")?W1:
+	//  (operator==(a,"Wave2")?W2:
+	//   (operator==(a,"Wave3")?W3:
+	//    (operator==(a, "Wave4")?W4:
+	//     (operator==(a, "Wave5")?W5:
+	//      (operator==(a, "Wave6")?W6:
+	//       (operator==(a, "Wave7")?W7:W8))))))));
+        ((operator==(a,QString("Wave1"))?W1:             // p4.0.2  
+          (operator==(a,QString("Wave2"))?W2:
+           (operator==(a,QString("Wave3"))?W3:
+            (operator==(a, QString("Wave4"))?W4:
+             (operator==(a, QString("Wave5"))?W5:
+              (operator==(a, QString("Wave6"))?W6:
+               (operator==(a, QString("Wave7"))?W7:W8))))))));
 }
 void DeicsOnzeGui::setWaveForm2(const QString& a) {
     _deicsOnze->_preset->oscWave[1]=
-	((operator==(a,"Wave1")?W1:
-	  (operator==(a,"Wave2")?W2:
-	   (operator==(a,"Wave3")?W3:
-	    (operator==(a, "Wave4")?W4:
-	     (operator==(a, "Wave5")?W5:
-	      (operator==(a, "Wave6")?W6:
-	       (operator==(a, "Wave7")?W7:W8))))))));
+	//((operator==(a,"Wave1")?W1:
+	//  (operator==(a,"Wave2")?W2:
+	//   (operator==(a,"Wave3")?W3:
+	//    (operator==(a, "Wave4")?W4:
+	//     (operator==(a, "Wave5")?W5:
+	//      (operator==(a, "Wave6")?W6:
+	//       (operator==(a, "Wave7")?W7:W8))))))));
+        ((operator==(a,QString("Wave1"))?W1:                     // p4.0.2
+          (operator==(a,QString("Wave2"))?W2:
+           (operator==(a,QString("Wave3"))?W3:
+            (operator==(a, QString("Wave4"))?W4:
+             (operator==(a, QString("Wave5"))?W5:
+              (operator==(a, QString("Wave6"))?W6:
+               (operator==(a, QString("Wave7"))?W7:W8))))))));
 }
 void DeicsOnzeGui::setWaveForm3(const QString& a) {
     _deicsOnze->_preset->oscWave[2]=
-	((operator==(a,"Wave1")?W1:
-	  (operator==(a,"Wave2")?W2:
-	   (operator==(a,"Wave3")?W3:
-	    (operator==(a, "Wave4")?W4:
-	     (operator==(a, "Wave5")?W5:
-	      (operator==(a, "Wave6")?W6:
-	       (operator==(a, "Wave7")?W7:W8))))))));
+	//((operator==(a,"Wave1")?W1:
+	//  (operator==(a,"Wave2")?W2:
+	//   (operator==(a,"Wave3")?W3:
+	//    (operator==(a, "Wave4")?W4:
+	//     (operator==(a, "Wave5")?W5:
+	//      (operator==(a, "Wave6")?W6:
+	//       (operator==(a, "Wave7")?W7:W8))))))));
+        ((operator==(a,QString("Wave1"))?W1:                         // p4.0.2
+          (operator==(a,QString("Wave2"))?W2:
+           (operator==(a,QString("Wave3"))?W3:
+            (operator==(a, QString("Wave4"))?W4:
+             (operator==(a, QString("Wave5"))?W5:
+              (operator==(a, QString("Wave6"))?W6:
+               (operator==(a, QString("Wave7"))?W7:W8))))))));
 }
 void DeicsOnzeGui::setWaveForm4(const QString& a) {
     _deicsOnze->_preset->oscWave[3]=
-	((operator==(a,"Wave1")?W1:
-	  (operator==(a,"Wave2")?W2:
-	   (operator==(a,"Wave3")?W3:
-	    (operator==(a, "Wave4")?W4:
-	     (operator==(a, "Wave5")?W5:
-	      (operator==(a, "Wave6")?W6:
-	       (operator==(a, "Wave7")?W7:W8))))))));
+	//((operator==(a,"Wave1")?W1:
+	//  (operator==(a,"Wave2")?W2:
+	//   (operator==(a,"Wave3")?W3:
+	//    (operator==(a, "Wave4")?W4:
+	//     (operator==(a, "Wave5")?W5:
+	//      (operator==(a, "Wave6")?W6:
+	//       (operator==(a, "Wave7")?W7:W8))))))));
+        ((operator==(a,QString("Wave1"))?W1:                        // p4.0.2
+          (operator==(a,QString("Wave2"))?W2:
+           (operator==(a,QString("Wave3"))?W3:
+            (operator==(a, QString("Wave4"))?W4:
+             (operator==(a, QString("Wave5"))?W5:
+              (operator==(a, QString("Wave6"))?W6:
+               (operator==(a, QString("Wave7"))?W7:W8))))))));
 }
 
 //--------------------------------------------------------------

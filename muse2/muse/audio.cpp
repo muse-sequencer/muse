@@ -15,8 +15,10 @@
 #include "song.h"
 #include "node.h"
 #include "audiodev.h"
+//#include "driver/audiodev.h"   // p4.0.2
 #include "mididev.h"
 #include "alsamidi.h"
+//#include "driver/alsamidi.h"   // p4.0.2
 #include "synth.h"
 #include "audioprefetch.h"
 #include "plugin.h"

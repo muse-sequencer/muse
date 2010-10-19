@@ -9,7 +9,8 @@
 #ifndef __EVDATA_H__
 #define __EVDATA_H__
 
-#include <memory.h>
+//#include <memory.h>
+#include <string.h>    // p4.0.2  
 
 //---------------------------------------------------------
 //   EvData

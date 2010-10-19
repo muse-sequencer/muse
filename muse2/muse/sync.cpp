@@ -16,6 +16,7 @@
 #include "midiseq.h"
 #include "audio.h"
 #include "audiodev.h"
+//#include "driver/audiodev.h"  // p4.0.2
 #include "gconfig.h"
 #include "xml.h"
 #include "midi.h"

@@ -1,3 +1,10 @@
+19.10.2010
+      * Changed: Build system changed to cmake. (T356)
+        - Some other suitable changes. p4.0.2
+        - WIP Need to fix a few placed in code with regards to installation search paths (MESS synths not found etc.)
+        - Choose suitable version number. Currently left at 2.0.1 
+        - Maybe a few other things. Change name of prog so as not to conflict with existing muse installation? etc. etc.
+        - Default install location is /usr/local. Be careful not to overwrite an existing working muse-1 !
 16.10.2010
       * Fixed: Routing and popup menus should work now. Sorry, no 'stay-open' menus for now. (T356)
         - p4.0.1 Reverted back to regular non-overloaded Q3PopupMenu behaviour (self-extinguishing) for PopupMenu class.

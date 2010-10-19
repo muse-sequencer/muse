@@ -8,7 +8,10 @@
 // this file makes some of the MusE widgets available
 // to QT-Designer
 
-#include <qwidgetplugin.h>
+// #include <qwidgetplugin.h>
+#include <QtCore/QtPlugin>                             // p4.0.2
+#include <QtDesigner/QDesignerCustomWidgetInterface>   //
+
 //Added by qt3to4:
 #include <QPixmap>
 #include "posedit.h"
@@ -157,7 +160,7 @@ GlobalConfigValues config = {
       true,                         // useDenormalBias
       false,                        // useOutputLimiter
       true,                         // showDidYouKnow
-      false                         // vstInPlace  Enable VST in-place processing
+      false,                         // vstInPlace  Enable VST in-place processing
       44100,                        // Dummy audio preferred sample rate
       512                           // Dummy audio buffer size
       };
