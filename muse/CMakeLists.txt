@@ -287,9 +287,11 @@ EXEC_PROGRAM( svnversion
 # add_definitions ( -DINSTLIBDIR=${LIBRARY_OUTPUT_DIRECTORY} )
 include_directories (midiedit arranger liste widgets mixer driver waveedit mplugins instruments remote)
 
-# For some reason this was needed to find routedialogbase.h.
+# Make sure to include the uic generated headers paths.
 include_directories(
-      ${CMAKE_CURRENT_BINARY_DIR}/mixer
+      ${CMAKE_CURRENT_BINARY_DIR}/midiedit ${CMAKE_CURRENT_BINARY_DIR}/arranger ${CMAKE_CURRENT_BINARY_DIR}/liste ${CMAKE_CURRENT_BINARY_DIR}/widgets 
+      ${CMAKE_CURRENT_BINARY_DIR}/mixer ${CMAKE_CURRENT_BINARY_DIR}/driver ${CMAKE_CURRENT_BINARY_DIR}/waveedit ${CMAKE_CURRENT_BINARY_DIR}/mplugins 
+      ${CMAKE_CURRENT_BINARY_DIR}/instruments ${CMAKE_CURRENT_BINARY_DIR}/remote
       )
 
 set_target_properties( muse
