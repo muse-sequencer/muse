@@ -125,9 +125,9 @@ QT4_WRAP_CPP (widget_mocs
       shortcutcapturedialog.h  
       combobox.h  
       aboutbox_impl.h 
-      aboutbox.h  
-      songinfo.h  
-      didyouknow.h  
+      # aboutbox.h  
+      # songinfo.h  
+      # didyouknow.h  
       checkbox.h  
       vscale.h  
       action.h

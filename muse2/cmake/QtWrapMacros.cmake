@@ -10,7 +10,8 @@
     FOREACH (it ${ui_files})
       GET_FILENAME_COMPONENT(outfile ${it} NAME_WE)
       GET_FILENAME_COMPONENT(infile ${it} ABSOLUTE)
-      SET(outfile_h ${CMAKE_CURRENT_BINARY_DIR}/ui_${outfile}.h)
+      # SET(outfile_h ${CMAKE_CURRENT_BINARY_DIR}/ui_${outfile}.h)
+      SET(outfile_h ${CMAKE_CURRENT_BINARY_DIR}/${outfile}.h)
       SET(outfile_cpp ${CMAKE_CURRENT_BINARY_DIR}/ui_${outfile}.cpp)
       ADD_CUSTOM_COMMAND(OUTPUT ${outfile_h} ${outfile_cpp}
         COMMAND ${QT_UIC3_EXECUTABLE}

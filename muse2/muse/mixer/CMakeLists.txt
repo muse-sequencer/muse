@@ -23,6 +23,8 @@ QT4_WRAP_CPP ( mixer_mocs amixer.h strip.h astrip.h mstrip.h meter.h rack.h pank
 QT4_WRAP_UI3 (  mixer_uis routedialogbase.ui )
 
 add_library ( mixer STATIC 
+      ${mixer_mocs}
+      ${mixer_uis}
       amixer.cpp  
       meter.cpp 
       rack.cpp 
@@ -30,8 +32,6 @@ add_library ( mixer STATIC
       auxknob.cpp 
       routedialog.cpp 
       strip.cpp astrip.cpp mstrip.cpp
-      ${mixer_mocs}
-      ${mixer_uis}
       )
 
 set_target_properties ( mixer

@@ -39,6 +39,12 @@ add_library ( arranger STATIC
       ${arranger_mocs}
       # ${arranger_ui_headers}
       )
+
+# For some reason this was needed to find routedialogbase.h.
+include_directories(
+      ${CMAKE_CURRENT_BINARY_DIR}/../mixer
+      )
+
 set_target_properties( arranger
   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
   )
