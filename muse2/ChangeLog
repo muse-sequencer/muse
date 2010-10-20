@@ -1,3 +1,8 @@
+20.10.2010
+      * Fixed: cmake should work now. (T356)
+        - Changed the QT4_WRAP_UI3 macro to generate  <filename>.h  instead of  ui_<filename>.h
+        - In /muse/CMakeLists.txt, included all the uic generated headers paths (the 'build' paths). 
+        - Tested OK with fresh svn pull.
 19.10.2010
       * Fixed: Some missing files, errors with cmake build. (T356)
 19.10.2010
