@@ -246,7 +246,7 @@ void WaveEdit::setTime(unsigned samplepos)
 
 WaveEdit::~WaveEdit()
       {
-      undoRedo->removeFrom(tools);
+      // undoRedo->removeFrom(tools); // p4.0.6 Removed
       }
 
 //---------------------------------------------------------

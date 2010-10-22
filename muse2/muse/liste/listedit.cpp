@@ -543,7 +543,7 @@ ListEdit::ListEdit(PartList* pl)
 
 ListEdit::~ListEdit()
       {
-      undoRedo->removeFrom(listTools);
+      // undoRedo->removeFrom(listTools);  // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
