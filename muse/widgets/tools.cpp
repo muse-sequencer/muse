@@ -87,7 +87,8 @@ EditToolBar::EditToolBar(Q3MainWindow* parent, int tools, const char*)
             ++n;
             }
       action->addTo(this);
-      connect(action, SIGNAL(selected(Q3Action*)), SLOT(toolChanged(QAction*)));
+      //connect(action, SIGNAL(selected(Q3Action*)), SLOT(toolChanged(QAction*)));
+      connect(action, SIGNAL(selected(Q3Action*)), SLOT(toolChanged(Q3Action*)));   // p4.0.5
       }
 
 //---------------------------------------------------------
