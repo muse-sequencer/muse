@@ -12,7 +12,9 @@
 #include <qcombobox.h>
 
 class QString;
-class Q3ListBox;
+//class Q3ListBox;
+#include <QAbstractItemView>
+
 
 //---------------------------------------------------------
 //   LabelCombo
@@ -33,6 +35,7 @@ class LabelCombo : public QWidget {
       void insertItem(const QString& txt, int index=-1);
       void setCurrentItem(int i) { box->setCurrentItem(i); }
       //void setListBox(Q3ListBox* lb) { box->setListBox(lb); } // ddskrjo
+      void setView(QAbstractItemView* v) { box->setModel(v->model()); box->setView(v); } // p4.0.3
       void setFocusPolicy ( Qt::FocusPolicy fp );
   
       };

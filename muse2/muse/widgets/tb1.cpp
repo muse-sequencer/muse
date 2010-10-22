@@ -13,6 +13,7 @@
 #include <qlayout.h>
 #include <q3listbox.h>
 #include <qtoolbutton.h>
+#include <QTableWidget>    // p4.0.3
 
 #include "config.h"
 #include "lcombo.h"
@@ -81,18 +82,31 @@ Toolbar1::Toolbar1(Q3MainWindow* parent, int r, int q, bool sp)
       raster = new LabelCombo(tr("Snap"), this);
       quant  = new LabelCombo(tr("Quantize"), this);
 
-      Q3ListBox* rlist = new Q3ListBox(this);
-      Q3ListBox* qlist = new Q3ListBox(this);
+      //Q3ListBox* rlist = new Q3ListBox(this);
+      //Q3ListBox* qlist = new Q3ListBox(this);
+      QTableWidget* rlist = new QTableWidget(10, 3, this);    // p4.0.3
+      QTableWidget* qlist = new QTableWidget(8, 3, this);    //
       rlist->setMinimumWidth(95);
       qlist->setMinimumWidth(95);
       //raster->setListBox(rlist); ddskrjo
       //quant->setListBox(qlist); ddskrjo
-      rlist->setColumnMode(3);
-      qlist->setColumnMode(3);
-      for (int i = 0; i < 30; i++)
-            rlist->insertItem(tr(rasterStrings[i]), i);
-      for (int i = 0; i < 24; i++)
-            qlist->insertItem(tr(quantStrings[i]), i);
+      raster->setView(rlist);              // p4.0.3
+      quant->setView(qlist);               //
+      
+      //rlist->setColumnMode(3);  
+      //qlist->setColumnMode(3);  
+      //for (int i = 0; i < 30; i++)
+      //      rlist->insertItem(tr(rasterStrings[i]), i);
+      //for (int i = 0; i < 24; i++)
+      //      qlist->insertItem(tr(quantStrings[i]), i);
+      // p4.0.3
+      for (int j = 0; j < 3; j++)                                                 
+        for (int i = 0; i < 10; i++)
+          rlist->setItem(i, j, new QTableWidgetItem(tr(rasterStrings[i + j * 10])));
+      for (int j = 0; j < 3; j++)                           
+        for (int i = 0; i < 8; i++)
+          qlist->setItem(i, j, new QTableWidgetItem(tr(quantStrings[i + j * 8])));
+       
       setRaster(r);
       setQuant(q);
 
@@ -101,15 +115,17 @@ Toolbar1::Toolbar1(Q3MainWindow* parent, int r, int q, bool sp)
       //---------------------------------------------------
 
       LabelCombo* to = new LabelCombo(tr("To"), this);
-      Q3ListBox* toList = new Q3ListBox(this);
-      //to->setListBox(toList); ddskrjo
-      toList->insertItem(tr("All Events"), 0);
-      toList->insertItem(tr("Looped Ev."),   CMD_RANGE_LOOP);
-      toList->insertItem(tr("Selected Ev."), CMD_RANGE_SELECTED);
-      toList->insertItem(tr("Looped+Sel."),  CMD_RANGE_LOOP | CMD_RANGE_SELECTED);
+//       Q3ListBox* toList = new Q3ListBox(this);
+//       //to->setListBox(toList); ddskrjo
+//       toList->insertItem(tr("All Events"), 0);
+//       toList->insertItem(tr("Looped Ev."),   CMD_RANGE_LOOP);
+//       toList->insertItem(tr("Selected Ev."), CMD_RANGE_SELECTED);
+//       toList->insertItem(tr("Looped+Sel."),  CMD_RANGE_LOOP | CMD_RANGE_SELECTED);
 
       connect(raster, SIGNAL(activated(int)), SLOT(_rasterChanged(int)));
       connect(quant,  SIGNAL(activated(int)), SLOT(_quantChanged(int)));
+      //connect(raster, SIGNAL(cellActivated(int, int)), SLOT(_rasterChanged(int, int)));  // p4.0.3
+      //connect(quant,  SIGNAL(cellActivated(int, int)), SLOT(_quantChanged(int, int)));   //
       connect(to,     SIGNAL(activated(int)), SIGNAL(toChanged(int)));
       connect(solo,   SIGNAL(toggled(bool)), SIGNAL(soloChanged(bool)));
       pos->setEnabled(false);
@@ -120,8 +136,10 @@ Toolbar1::Toolbar1(Q3MainWindow* parent, int r, int q, bool sp)
 //---------------------------------------------------------
 
 void Toolbar1::_rasterChanged(int index)
+//void Toolbar1::_rasterChanged(int r, int c)    // p4.0.3
       {
       emit rasterChanged(rasterTable[index]);
+      //emit rasterChanged(rasterTable[r + c * 10]);    // p4.0.3
       }
 
 //---------------------------------------------------------
@@ -129,8 +147,10 @@ void Toolbar1::_rasterChanged(int index)
 //---------------------------------------------------------
 
 void Toolbar1::_quantChanged(int index)
+//void Toolbar1::_quantChanged(int r, int c)     // p4.0.3
       {
       emit quantChanged(quantTable[index]);
+      //emit quantChanged(quantTable[r + c * 10]);
       }
 
 //---------------------------------------------------------
