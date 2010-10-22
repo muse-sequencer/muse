@@ -9,11 +9,16 @@
 #include <stdio.h>
 #include <values.h>
 
-#include <qlabel.h>
-#include <qlayout.h>
-#include <q3listbox.h>
-#include <qtoolbutton.h>
-#include <QTableWidget>    // p4.0.3
+//#include <qlabel.h>
+//#include <qlayout.h>
+//#include <q3listbox.h>
+//#include <qtoolbutton.h>
+// p4.0.3
+#include <QLabel>          
+#include <QLayout>
+#include <QToolButton>
+#include <QTableWidget>    
+#include <QListWidget>      
 
 #include "config.h"
 #include "lcombo.h"
@@ -53,10 +58,12 @@ static const char* quantStrings[] = {
 //---------------------------------------------------------
 
 Toolbar1::Toolbar1(Q3MainWindow* parent, int r, int q, bool sp)
-   : Q3ToolBar(QString("Qant'n'Snap-tools"), parent)
+//Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)    // p4.0.4
+   : Q3ToolBar(QString("Quant'n'Snap-tools"), parent)
+   //: QToolBar(QString("Qant'n'Snap-tools"), parent)             
       {
       showPitch = sp;
-      setHorizontalStretchable(false);
+      setHorizontalStretchable(false);    
 
       solo = new QToolButton(this);
       solo->setText(tr("Solo"));
@@ -84,10 +91,23 @@ Toolbar1::Toolbar1(Q3MainWindow* parent, int r, int q, bool sp)
 
       //Q3ListBox* rlist = new Q3ListBox(this);
       //Q3ListBox* qlist = new Q3ListBox(this);
-      QTableWidget* rlist = new QTableWidget(10, 3, this);    // p4.0.3
-      QTableWidget* qlist = new QTableWidget(8, 3, this);    //
-      rlist->setMinimumWidth(95);
-      qlist->setMinimumWidth(95);
+      // p4.0.3
+      QTableWidget* rlist = new QTableWidget(10, 3, this);    
+      QTableWidget* qlist = new QTableWidget(8, 3, this);     
+      rlist->verticalHeader()->setDefaultSectionSize(22);                      
+      rlist->horizontalHeader()->setDefaultSectionSize(32);                      
+      rlist->setSelectionMode(QAbstractItemView::SingleSelection);                      
+      rlist->verticalHeader()->hide();                        
+      rlist->horizontalHeader()->hide();                      
+      qlist->verticalHeader()->setDefaultSectionSize(22);                      
+      qlist->horizontalHeader()->setDefaultSectionSize(32);                      
+      qlist->setSelectionMode(QAbstractItemView::SingleSelection);                      
+      qlist->verticalHeader()->hide();                        
+      qlist->horizontalHeader()->hide();                      
+      
+      rlist->setMinimumWidth(96);
+      qlist->setMinimumWidth(96);
+      
       //raster->setListBox(rlist); ddskrjo
       //quant->setListBox(qlist); ddskrjo
       raster->setView(rlist);              // p4.0.3
@@ -116,16 +136,22 @@ Toolbar1::Toolbar1(Q3MainWindow* parent, int r, int q, bool sp)
 
       LabelCombo* to = new LabelCombo(tr("To"), this);
 //       Q3ListBox* toList = new Q3ListBox(this);
+      QListWidget* toList = new QListWidget(this);       // p4.0.4
 //       //to->setListBox(toList); ddskrjo
+      to->setView(toList);                               // p4.0.4
+
 //       toList->insertItem(tr("All Events"), 0);
 //       toList->insertItem(tr("Looped Ev."),   CMD_RANGE_LOOP);
 //       toList->insertItem(tr("Selected Ev."), CMD_RANGE_SELECTED);
 //       toList->insertItem(tr("Looped+Sel."),  CMD_RANGE_LOOP | CMD_RANGE_SELECTED);
+      // p4.0.4
+      toList->insertItem(0, tr("All Events"));
+      toList->insertItem(CMD_RANGE_LOOP, tr("Looped Ev."));
+      toList->insertItem(CMD_RANGE_SELECTED, tr("Selected Ev."));
+      toList->insertItem(CMD_RANGE_LOOP | CMD_RANGE_SELECTED, tr("Looped+Sel."));
 
       connect(raster, SIGNAL(activated(int)), SLOT(_rasterChanged(int)));
       connect(quant,  SIGNAL(activated(int)), SLOT(_quantChanged(int)));
-      //connect(raster, SIGNAL(cellActivated(int, int)), SLOT(_rasterChanged(int, int)));  // p4.0.3
-      //connect(quant,  SIGNAL(cellActivated(int, int)), SLOT(_quantChanged(int, int)));   //
       connect(to,     SIGNAL(activated(int)), SIGNAL(toChanged(int)));
       connect(solo,   SIGNAL(toggled(bool)), SIGNAL(soloChanged(bool)));
       pos->setEnabled(false);
@@ -136,10 +162,8 @@ Toolbar1::Toolbar1(Q3MainWindow* parent, int r, int q, bool sp)
 //---------------------------------------------------------
 
 void Toolbar1::_rasterChanged(int index)
-//void Toolbar1::_rasterChanged(int r, int c)    // p4.0.3
       {
       emit rasterChanged(rasterTable[index]);
-      //emit rasterChanged(rasterTable[r + c * 10]);    // p4.0.3
       }
 
 //---------------------------------------------------------
@@ -147,10 +171,8 @@ void Toolbar1::_rasterChanged(int index)
 //---------------------------------------------------------
 
 void Toolbar1::_quantChanged(int index)
-//void Toolbar1::_quantChanged(int r, int c)     // p4.0.3
       {
       emit quantChanged(quantTable[index]);
-      //emit quantChanged(quantTable[r + c * 10]);
       }
 
 //---------------------------------------------------------
