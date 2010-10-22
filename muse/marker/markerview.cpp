@@ -268,7 +268,7 @@ MarkerView::~MarkerView()
       // p3.3.47
       //printf("MarkerView::~MarkerView() before undoRedo->removeFrom(tools)\n");
       
-      undoRedo->removeFrom(tools);
+      // undoRedo->removeFrom(tools);   // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
