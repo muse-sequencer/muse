@@ -44,6 +44,8 @@ class Toolbar1 : public Q3ToolBar {
    signals:
       void rasterChanged(int);
       void quantChanged(int);
+      //void rasterChanged(int, int);  // p4.0.3
+      //void quantChanged(int, int);   //
       void soloChanged(bool);
       void toChanged(int);
 
