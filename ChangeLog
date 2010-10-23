@@ -4,7 +4,7 @@
           Drop our obsolete pkgconfig for newer native cmake pkgconfig.
           LASH detection fixed.
           Summary added.
-          Renamed installed executable 'muse' to 'muse2' (todo: fix exec permissions.)
+          Renamed installed executable 'muse' to 'muse2'.
           Install /utils, /packaging, and /demos files.
           Other minor changes.
 21.10.2010  
