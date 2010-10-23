@@ -298,6 +298,7 @@ set_target_properties( muse
       # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${PYREM_CPP_FLAGS} -DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h "
       PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h "
+      OUTPUT_NAME muse2
       )
 
 target_link_libraries(muse
@@ -338,5 +339,5 @@ if(OSC_SUPPORT)
       target_link_libraries(muse ${LIBLO_LIBRARIES})
 endif(OSC_SUPPORT)
 
-install ( FILES ${PROJECT_BINARY_DIR}/muse/muse DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/ RENAME muse2 )
+install ( TARGETS muse RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/ )
 
