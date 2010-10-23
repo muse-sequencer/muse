@@ -39,12 +39,12 @@ target_link_libraries( fluid synti )
 set_target_properties ( fluid
    PROPERTIES PREFIX ""
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-   LINK_FLAGS "-L${FLUID_LIBDIR} ${FLUID_LIB}"
+   LINK_FLAGS "${FLUID_LIBRARIES}"
    )
 target_link_libraries(fluid
       synti
       ${QT_LIBRARIES}
-      ${FLUID_LIB}
+      ${FLUID_LIBRARIES}
       )
 
 install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ fluid )

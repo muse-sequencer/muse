@@ -39,13 +39,13 @@ target_link_libraries( fluidsynth synti )
 set_target_properties ( fluidsynth 
    PROPERTIES PREFIX ""
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-   LINK_FLAGS "-L${FLUID_LIBDIR} ${FLUID_LIB}"
+   LINK_FLAGS "${FLUID_LIBRARIES}"
    )
 
 target_link_libraries(fluidsynth
       synti
       ${QT_LIBRARIES}
-      ${FLUID_LIB}
+      ${FLUID_LIBRARIES}
       )
 
 install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ fluidsynth )
@@ -53,5 +53,5 @@ install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ fluidsyn
 # FIXME: Won't work
 # install_files ( /${MusE_INSTALL_NAME}/synthi TODO README.txt )
 
-install_files ( /share/${MusE_INSTALL_NAME}/synthi TODO )
-install_files ( /share/${MusE_INSTALL_NAME}/synthi README.txt )
+install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/synthi TODO )
+install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/synthi README.txt )

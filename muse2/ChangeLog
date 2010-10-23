@@ -1,7 +1,17 @@
-21.10.2010  Toolbar1 usage of Q3ListBox changed to QTableWidget. (p4.0.3 Tim)
-            More Toolbar1 fixes. (p4.0.4 Tim)
-            Fixed widgets/tools.cpp EditToolBar::EditToolBar connect Q3Action. (p4.0.5 Tim)
-            Crashes: Removed all "undoRedo->removeFrom..." from destructors (~pianoroll() ~drumedit() etc.) (p4.0.6 Tim)
+22.10.2010  
+        - cmake scripts changes thanks to Orcan Ogetbil oget.fedora > gmail.com (Tim.)
+          'make uninstall' facility added! 
+          Drop our obsolete pkgconfig for newer native cmake pkgconfig.
+          LASH detection fixed.
+          Summary added.
+          Renamed installed executable 'muse' to 'muse2' (todo: fix exec permissions.)
+          Install /utils, /packaging, and /demos files.
+          Other minor changes.
+21.10.2010  
+        - Toolbar1 usage of Q3ListBox changed to QTableWidget. (p4.0.3 Tim)
+        - More Toolbar1 fixes. (p4.0.4 Tim)
+        - Fixed widgets/tools.cpp EditToolBar::EditToolBar connect Q3Action. (p4.0.5 Tim)
+        - Crashes: Removed all "undoRedo->removeFrom..." from destructors (~pianoroll() ~drumedit() etc.) (p4.0.6 Tim)
 20.10.2010
       * Fixed: cmake should work now. (T356)
         - Changed the QT4_WRAP_UI3 macro to generate  <filename>.h  instead of  ui_<filename>.h

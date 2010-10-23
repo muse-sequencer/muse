@@ -30,4 +30,4 @@ set_target_properties (freeverb
       COMPILE_FLAGS "-O2"
       )
 
-install_targets ( /lib/${MusE_INSTALL_NAME}/plugins freeverb)
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins freeverb)

@@ -18,6 +18,10 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+include(FindPkgConfig)
+include(cmake/Summary.cmake)
+include(cmake/TargetDoc.cmake)
+
 project(muse)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
 if (COMMAND cmake_policy)
@@ -28,6 +32,10 @@ endif(COMMAND cmake_policy)
 if (NOT CMAKE_INSTALL_LIBDIR)
 	SET(CMAKE_INSTALL_LIBDIR "lib")
 endif (NOT CMAKE_INSTALL_LIBDIR)
+
+IF(NOT DEFINED SHARE_INSTALL_PREFIX)
+        SET(SHARE_INSTALL_PREFIX share)
+ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
 
 #set(CMAKE_BUILD_TYPE debug)
 #set(CMAKE_BUILD_TYPE release)
@@ -47,8 +55,6 @@ SET(MusE_VERSION       "2.0.1")
 SET(MusE_VERSION_FULL  "2.0.1")
 SET(MusE_INSTALL_NAME  "muse-2.0")
 
-include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
-include ( ${PROJECT_SOURCE_DIR}/cmake/TargetDoc.cmake)
 # include ( ${PROJECT_SOURCE_DIR}/cmake/WrapMacros.cmake)
 
 option ( ENABLE_LASH        "enable LASH Audio Session Handler"                              ON)
@@ -134,46 +140,30 @@ include ( ${PROJECT_SOURCE_DIR}/cmake/QtWrapMacros.cmake)
 if (APPLE)
 	message("Disabling ALSA support due to OS X build.")
 else (APPLE)
-PKGCONFIG (alsa 0.9.0 ALSA_INCDIR ALSA_LIBDIR ALSA_LIB ALSA_CPP )
-if (NOT ALSA_INCDIR)
-      message(FATAL_ERROR "Fatal error: ALSA >= 1.0.0 required")
-else (NOT ALSA_INCDIR)
-	message("Alsa found.")
-endif (NOT ALSA_INCDIR)
+PKG_CHECK_MODULES(ALSA REQUIRED alsa>=0.9.0)
+include_directories(${ALSA_INCLUDE_DIRS})
 endif (APPLE)
 
 ##
 ## find sndfile >= 1.0.0
 ##
 
-PKGCONFIG (sndfile 1.0.0 SNDFILE_INCDIR SNDFILE_LIBDIR SNDFILE_LIB SNDFILE_CPP )
-if (NOT SNDFILE_INCDIR)
-      message(FATAL_ERROR "Fatal error: libsndfile >= 1.0.0 required")
-else (NOT SNDFILE_INCDIR)
-	message("sndfile found.")
-endif (NOT SNDFILE_INCDIR)
+PKG_CHECK_MODULES(SNDFILE REQUIRED sndfile>=1.0.0)
+include_directories(${SNDFILE_INCLUDE_DIRS})
 
 ##
 ## find libsamplerate >= 0.1.0
 ##
 
-PKGCONFIG (samplerate 0.1.0 SAMPLERATE_INCDIR SAMPLERATE_LIBDIR SAMPLERATE_LIB SAMPLERATE_CPP )
-if (NOT SAMPLERATE_INCDIR)
-      message(FATAL_ERROR "Fatal error: libsamplerate >= 0.1.0 required")
-else (NOT SAMPLERATE_INCDIR)
-	message("samplerate found")
-endif (NOT SAMPLERATE_INCDIR)
+PKG_CHECK_MODULES(SAMPLERATE REQUIRED samplerate>=0.1.0)
+include_directories(${SAMPLERATE_INCLUDE_DIRS})
 
 ##
 ## find libuuid 
 ##
 
-PKGCONFIG (uuid 0.0.1 UUID_INCDIR UUID_LIBDIR UUID_LIB UUID_CPP )
-if (NOT UUID_INCDIR)
-      message(FATAL_ERROR "Fatal error: libuuid >= 0.0.1 required")
-else (NOT UUID_INCDIR)
-        message("uuid lib found")
-endif (NOT UUID_INCDIR)
+PKG_CHECK_MODULES(UUID REQUIRED uuid>=0.0.1)
+include_directories(${UUID_INCLUDE_DIRS})
 
 # AC_CHECK_HEADER(uuid/uuid.h, UUID_FOUND="yes", UUID_FOUND="no")
 # if test x$UUID_FOUND = xno; then
@@ -197,33 +187,19 @@ endif (NOT UUID_INCDIR)
 ## find jack >= 0.103.0
 ##
 
-PKGCONFIG (jack 0.107.0 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
-if (NOT JACK_INCDIR)
-      PKGCONFIG (jack 0.103.0 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
-      if (NOT JACK_INCDIR)
-            message(FATAL_ERROR "Fatal error: JACK >= 0.103 required")
-      else (NOT JACK_INCDIR)
-	      message("JACK 0.103 found")
-            set(JACK103 ON)
-      endif (NOT JACK_INCDIR)
-else (NOT JACK_INCDIR)
-	message("JACK 0.107 found")
-      set(JACK107 ON)
-endif (NOT JACK_INCDIR)
+PKG_CHECK_MODULES(JACK REQUIRED jack>=0.103)
+include_directories(${JACK_INCLUDE_DIRS})
 
 ##
 ## find LASH 
 ##
 
 if (ENABLE_LASH)
-      PKGCONFIG (lash 0.2 LASH_INCDIR LASH_LIBDIR LASH_LIB LASH_CPP )
-      if (NOT LASH_INCDIR)
-            message("Error: lash >= 0.2 not found, disabling feature")
-      else (NOT LASH_INCDIR)
-            message("lash >= 0.2 found.")
-            set (HAVE_LASH TRUE)
-            message("LASH enabled")
-      endif (NOT LASH_INCDIR)
+      PKG_CHECK_MODULES(LASH lash-1.0>=0.2)
+      if (LASH_FOUND)
+            include_directories(${LASH_INCLUDE_DIRS})
+            set(HAVE_LASH ON)
+      endif (LASH_FOUND)           
 else (ENABLE_LASH)
       message("LASH disabled")
 endif (ENABLE_LASH)
@@ -266,15 +242,11 @@ endif (ENABLE_LASH)
 ##
 
 if (ENABLE_OSC)
-      PKGCONFIG (liblo 0.23 LIBLO_INCDIR LIBLO_LIBDIR LIBLO_LIB LIBLO_CPP )
-      if (NOT LIBLO_INCDIR)
-            message("Error: liblo >= 0.23 not found, disabling feature")
-            set ( ENABLE_OSC OFF )
-      else (NOT LIBLO_INCDIR)
-            message("liblo >= 0.23 found.")
-            set (OSC_SUPPORT TRUE)
-            message("OSC enabled")
-      endif (NOT LIBLO_INCDIR)
+      PKG_CHECK_MODULES(LIBLO liblo>=0.23)
+      if (LIBLO_FOUND)
+            include_directories(${LIBLO_INCLUDE_DIRS})
+            set(OSC_SUPPORT ON)
+      endif (LIBLO_FOUND)
 else (ENABLE_OSC)
       message("OSC disabled")
 endif (ENABLE_OSC)
@@ -284,15 +256,11 @@ endif (ENABLE_OSC)
 ##
 
 if (ENABLE_DSSI)
-      PKGCONFIG (dssi 0.9.0 DSSI_INCDIR DSSI_LIBDIR DSSI_LIB DSSI_CPP )
-      if (NOT DSSI_INCDIR)
-            message("Error: dssi >= 0.9.0 not found, disabling feature")
-            set ( ENABLE_DSSI OFF )
-      else (NOT DSSI_INCDIR)
-            message("dssi >= 0.9.0 found.")
-            set (DSSI_SUPPORT TRUE)
-            message("DSSI enabled")
-      endif (NOT DSSI_INCDIR)
+      PKG_CHECK_MODULES(DSSI dssi>=0.9.0)
+      if (DSSI_FOUND)
+            include_directories(${DSSI_INCLUDE_DIRS})
+            set(DSSI_SUPPORT ON)
+      endif (DSSI_FOUND)
 else (ENABLE_DSSI)
       message("DSSI disabled")
 endif (ENABLE_DSSI)
@@ -317,14 +285,25 @@ SET (USE_SSE false)
 ## check for fluidsynth
 ##
 
+if (ENABLE_LASH)
+      PKG_CHECK_MODULES(LASH lash-1.0>=0.2)
+      if (LASH_FOUND)
+            include_directories(${LASH_INCLUDE_DIRS})
+            set(HAVE_LASH ON)
+      endif (LASH_FOUND)           
+else (ENABLE_LASH)
+      message("LASH disabled")
+endif (ENABLE_LASH)
+
+
 if ( ENABLE_FLUID )
-      PKGCONFIG (fluidsynth 1.0.0 FLUID_INCDIR FLUID_LIBDIR FLUID_LIB FLUID_CPP )
-      if (NOT FLUID_INCDIR)
-            message("Error: fluidsynth >= 0.9.0 not found, disabling feature")
-            set ( ENABLE_FLUID OFF )
-      else (NOT FLUID_INCDIR)
-	    message("Fluidsynth found")
-      endif (NOT FLUID_INCDIR)
+      PKG_CHECK_MODULES(FLUIDSYNTH fluidsynth>=0.9.0)
+      if (FLUIDSYNTH_FOUND)
+            include_directories(${FLUIDSYNTH_INCLUDE_DIRS})
+            set(HAVE_FLUIDSYNTH ON)
+      endif (FLUIDSYNTH_FOUND)
+else ( ENABLE_FLUID )
+      message("Fluidsynth disabled")
 endif ( ENABLE_FLUID )
 
 #
@@ -375,13 +354,6 @@ include_directories(
    ${PROJECT_BINARY_DIR}/muse/widgets
    ${PROJECT_BINARY_DIR}/muse/instruments
    ${PROJECT_BINARY_DIR}/muse/ctrl
-
-   ${ALSA_INCDIR}
-   ${JACK_INCDIR}
-   ${SNDFILE_INCDIR}
-   ${SAMPLERATE_INCDIR}
-   ${LIBLO_INCDIR}
-   ${DSSI_INCDIR}
    )
 
 # include (pch.txt)
@@ -414,13 +386,28 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
-set(CMAKE_CXX_FLAGS         "-Wl,-rpath,${QT_LIBRARY_DIR} -Wall -Wextra -Winvalid-pch -fno-exceptions")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fstrength-reduce")
-set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG")
+set(CMAKE_CXX_FLAGS         "-Wl,-rpath,${QT_LIBRARY_DIR} -Wall -Wextra -Winvalid-pch -fno-exceptions ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fstrength-reduce ${CMAKE_CXX_FLAGS_RELEASE}")
+set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
 
 # subdirs(al awl grepmidi plugins midiplugins muse share synti)
 # subdirs(al lib grepmidi plugins xpm muse share demos doc synti utils)
 #subdirs(al lib grepmidi plugins muse share demos synti )
-subdirs(al grepmidi plugins muse share synti )
-#  TODO        packaging utils)
+subdirs(al grepmidi plugins muse share synti packaging utils demos)
 
+# Uninstall support
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake"
+  IMMEDIATE @ONLY)
+
+add_custom_target(uninstall
+  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
+
+# Show a summary of what we got
+summary_add("Lash support" HAVE_LASH)
+summary_add("OSC (Liblo) support" OSC_SUPPORT)
+summary_add("DSSI support" DSSI_SUPPORT)
+summary_add("VST support" VST_SUPPORT)
+summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
+summary_show()

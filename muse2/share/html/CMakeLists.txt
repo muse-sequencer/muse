@@ -19,10 +19,10 @@
 #=============================================================================
 
 # FIXME: Won't work.
-#install_files( /share/${MusE_INSTALL_NAME}/html .*\\.html .*\\.txt .*\\.jpg )  
+#install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/html .*\\.html .*\\.txt .*\\.jpg )  
 
-install_files( /share/${MusE_INSTALL_NAME}/html .*\\.html )  
-install_files( /share/${MusE_INSTALL_NAME}/html .*\\.jpg )  
+install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/html .*\\.html )  
+install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/html .*\\.jpg )  
 # FIXME: Installs CMakeLists.txt !!!
-install_files( /share/${MusE_INSTALL_NAME}/html .*\\.txt )  
+install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/html .*\\.txt )  
 
