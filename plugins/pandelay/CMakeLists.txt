@@ -30,4 +30,4 @@ set_target_properties (pandelay
       #COMPILE_FLAGS "-O3"
       )
 
-install_targets ( /lib/${MusE_INSTALL_NAME}/plugins pandelay)
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins pandelay)

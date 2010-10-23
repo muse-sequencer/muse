@@ -18,7 +18,7 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-install_files ( /share/${MusE_INSTALL_NAME}/templates .*\\.med
+install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/templates .*\\.med
 #    audio.med
 #    # empty.med 
 #    default.med

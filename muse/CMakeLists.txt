@@ -321,16 +321,22 @@ target_link_libraries(muse
       
       ${QT_LIBRARIES}
       QtSvg
-      ${ALSA_LIB}
-      ${JACK_LIB}
-      ${SNDFILE_LIB}
-      ${SAMPLERATE_LIB}
-      ${UUID_LIB}
+      ${ALSA_LIBRARIES}
+      ${JACK_LIBRARIES}
+      ${SNDFILE_LIBRARIES}
+      ${SAMPLERATE_LIBRARIES}
+      ${UUID_LIBRARIES}
       ${PYLIBS}
-      ${LASH_LIB}
       ${FST_LIB}
-      ${LIBLO_LIB}
       )
 
-install_targets ( /bin muse )
+if(HAVE_LASH)
+      target_link_libraries(muse ${LASH_LIBRARIES})
+endif(HAVE_LASH)
+
+if(OSC_SUPPORT)
+      target_link_libraries(muse ${LIBLO_LIBRARIES})
+endif(OSC_SUPPORT)
+
+install ( FILES ${PROJECT_BINARY_DIR}/muse/muse DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/ RENAME muse2 )
 

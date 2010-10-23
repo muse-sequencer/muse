@@ -86,6 +86,8 @@ add_library ( midiedit STATIC
       ecanvas.cpp # ecanvas.h
       )
 
+add_dependencies(midiedit widgets)
+
 set_target_properties( midiedit
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       )

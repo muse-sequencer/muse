@@ -40,6 +40,8 @@ add_library ( arranger STATIC
       # ${arranger_ui_headers}
       )
 
+add_dependencies(arranger mixer)
+
 set_target_properties( arranger
   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
   )

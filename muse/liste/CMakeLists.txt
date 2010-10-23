@@ -49,6 +49,9 @@ add_library ( liste STATIC
       ${liste_mocs}
       ${liste_ui_headers}
       )
+
+add_dependencies(liste widgets)
+
 set_target_properties( liste
    PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
    )

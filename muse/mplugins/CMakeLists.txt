@@ -54,6 +54,8 @@ add_library ( mplugins STATIC
       ${mplugins_uis}
       )
 
+add_dependencies(mplugins widgets)
+
 #target_link_libraries( mplugins
 #   # midiplugin
 #   ${QT_LIBRARIES}

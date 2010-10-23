@@ -30,9 +30,9 @@ include_directories(
 # set (SubDirs libsynti s1 organ deicsonze deicsonze2 simpledrums vam)
 set (SubDirs libsynti s1 organ deicsonze simpledrums vam)
 
-if (ENABLE_FLUID)
+if (HAVE_FLUIDSYNTH)
       set (SubDirs ${SubDirs} fluid fluidsynth )
-endif (ENABLE_FLUID)
+endif (HAVE_FLUIDSYNTH)
 
 subdirs(${SubDirs})
 

@@ -58,6 +58,6 @@ target_link_libraries(deicsonze
 
 install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ deicsonze )
 
-# install_files ( /share/${MusE_INSTALL_NAME}/presets/deicsonze SutulaBank.dei )
-install_files ( /share/${MusE_INSTALL_NAME}/presets/deicsonze ARCH_ALIN )
-install_files ( /share/${MusE_INSTALL_NAME}/presets/deicsonze README )
+# install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/presets/deicsonze SutulaBank.dei )
+install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/presets/deicsonze ARCH_ALIN )
+install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/presets/deicsonze README )
