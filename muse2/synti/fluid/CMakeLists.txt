@@ -30,7 +30,7 @@ add_library ( fluid SHARED
       ${fluid_uis}
       )
 
-target_link_libraries( fluid synti )
+# target_link_libraries( fluid synti )
 
 # - tell cmake to name target fluid.so instead of 
 #   libfluid.so
@@ -39,12 +39,16 @@ target_link_libraries( fluid synti )
 set_target_properties ( fluid
    PROPERTIES PREFIX ""
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-   LINK_FLAGS "${FLUID_LIBRARIES}"
+   LINK_FLAGS "-l${FLUIDSYN_LIBRARIES}"
    )
 target_link_libraries(fluid
       synti
       ${QT_LIBRARIES}
-      ${FLUID_LIBRARIES}
+      # Can't do this. FLUIDSYN_LIBRARIES = fluidsynth, which is the name of our fluidsynth.so shared synthesizer library.
+      # This caused ../fluidsynth/fluidsynth.so to appear in the link line.
+      # ${FLUIDSYN_LIBRARIES}
+      # Try giving full path: Nope, path is empty!
+      # ${FLUIDSYN_LIBRARY_DIRS}/${FLUIDSYN_LIBRARIES}
       )
 
 install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ fluid )

@@ -280,9 +280,9 @@ add_executable ( muse
       )
 
 # AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
-EXEC_PROGRAM( svnversion
-      ARGS ${PROJECT_SOURCE_DIR}
-      OUTPUT_VARIABLE SVNVER )
+# EXEC_PROGRAM( svnversion
+#      ARGS ${PROJECT_SOURCE_DIR}
+#      OUTPUT_VARIABLE SVNVER )
 
 # add_definitions ( -DINSTLIBDIR=${LIBRARY_OUTPUT_DIRECTORY} )
 include_directories (midiedit arranger liste widgets mixer driver waveedit mplugins instruments remote)
@@ -297,7 +297,8 @@ include_directories(
 set_target_properties( muse
       # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${PYREM_CPP_FLAGS} -DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h "
-      PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h "
+      # PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h "
+      PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
       OUTPUT_NAME muse2
       )
 

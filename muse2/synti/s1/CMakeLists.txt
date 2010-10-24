@@ -20,7 +20,7 @@
 
 add_library ( s1 SHARED s1.cpp )
 
-target_link_libraries( s1 synti )
+# target_link_libraries( s1 synti )
 
 # tell cmake to name target s1.so instead of 
 # libs1.so

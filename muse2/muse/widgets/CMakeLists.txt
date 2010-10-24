@@ -125,9 +125,6 @@ QT4_WRAP_CPP (widget_mocs
       shortcutcapturedialog.h  
       combobox.h  
       aboutbox_impl.h 
-      # aboutbox.h  
-      # songinfo.h  
-      # didyouknow.h  
       checkbox.h  
       vscale.h  
       action.h
@@ -234,19 +231,19 @@ add_library ( widgets STATIC
       combobox.cpp # combobox.h  
       checkbox.cpp # checkbox.h  
       aboutbox_impl.cpp # aboutbox_impl.h  aboutbox.h
-      # didyouknow.h
       popupmenu.cpp # popupmenu.h  
       listitem.h  
       menutitleitem.h  
       )
 
 # AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
-EXEC_PROGRAM( svnversion
-      ARGS ${PROJECT_SOURCE_DIR}
-      OUTPUT_VARIABLE SVNVER )
+# EXEC_PROGRAM( svnversion
+#      ARGS ${PROJECT_SOURCE_DIR}
+#      OUTPUT_VARIABLE SVNVER )
 
 set_target_properties( widgets
-   PROPERTIES COMPILE_FLAGS "-DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
+   # PROPERTIES COMPILE_FLAGS "-DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
+   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
    )
 
 

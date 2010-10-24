@@ -516,6 +516,7 @@ bool FluidSynth::sysex(int n, const unsigned char* d)
 void FluidSynth::sendSysex(int l, const unsigned char* d)
       {
       MidiPlayEvent ev(0, 0, ME_SYSEX, d, l);
+      //printf("FluidSynth::sendSysex gui:%p\n", gui); 
       gui->writeEvent(ev);
       }
 

@@ -28,5 +28,8 @@
 
 #define INSTALL_NAME     "${MusE_INSTALL_NAME}"
 #define INSTPREFIX       "${CMAKE_INSTALL_PREFIX}"
+#define LIBINSTPREFIX    "${CMAKE_INSTALL_LIBDIR}"
+#define SHAREINSTPREFIX  "${SHARE_INSTALL_PREFIX}"
 #define VERSION          "${MusE_VERSION_FULL}"
+#define SVNVERSION       "${MusE_SVNVER}"
 #define PACKAGE_NAME      "MusE"
