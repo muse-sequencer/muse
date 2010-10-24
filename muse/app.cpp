@@ -3227,17 +3227,26 @@ int main(int argc, char* argv[])
             museGlobal = p;
 
       if (museGlobal.isEmpty()) {
-            QString museGlobal(INSTPREFIX);
-            QString museGlobalLibDir(INSTLIBDIR);
-            
+            //QString museGlobal(INSTPREFIX);
+            //QString museGlobalLibDir(INSTLIBDIR); 
+            //QString museGlobalLibDir(LIBINSTPREFIX); // This has no prefix.
             //museGlobalLib   =  museGlobalLibDir + "/muse";
             //museGlobalShare =  museGlobal + "/share/muse";
-            museGlobalLib   =  museGlobalLibDir + QString("/") + QString(INSTALL_NAME);   // p4.0.2
-            museGlobalShare =  museGlobal + QString("/share/") + QString(INSTALL_NAME);   //
+            
+            // p4.0.7
+            museGlobalLib   =  QString(INSTPREFIX) + QString("/") +
+                               QString(LIBINSTPREFIX) + QString("/") + 
+                               QString(INSTALL_NAME);   
+            //museGlobalShare =  museGlobal + QString("/share/") + QString(INSTALL_NAME);   
+            museGlobalShare =  QString(INSTPREFIX) + QString("/") +                                             
+                               QString(SHAREINSTPREFIX) + QString("/") +  // This has no prefix. Default is "share", set in top cmake script.
+                               QString(INSTALL_NAME);   
             }
       else {
-            museGlobalLib   = museGlobal + "/lib";
-            museGlobalShare = museGlobal + "/share";
+            //museGlobalLib   = museGlobal + "/lib";
+            //museGlobalShare = museGlobal + "/share";
+            museGlobalLib   = museGlobal + QString("/") + QString(LIBINSTPREFIX);    // p4.0.7
+            museGlobalShare = museGlobal + QString("/") + QString(SHAREINSTPREFIX);
             }
       museProject = museProjectInitPath; //getcwd(0, 0);
       configName  = QString(getenv("HOME")) + QString("/.MusE");

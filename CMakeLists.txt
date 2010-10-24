@@ -55,6 +55,10 @@ SET(MusE_VERSION       "2.0.1")
 SET(MusE_VERSION_FULL  "2.0.1")
 SET(MusE_INSTALL_NAME  "muse-2.0")
 
+EXEC_PROGRAM( svnversion
+      ARGS ${PROJECT_SOURCE_DIR}
+      OUTPUT_VARIABLE MusE_SVNVER )
+      
 # include ( ${PROJECT_SOURCE_DIR}/cmake/WrapMacros.cmake)
 
 option ( ENABLE_LASH        "enable LASH Audio Session Handler"                              ON)
@@ -297,11 +301,19 @@ endif (ENABLE_LASH)
 
 
 if ( ENABLE_FLUID )
-      PKG_CHECK_MODULES(FLUIDSYNTH fluidsynth>=0.9.0)
-      if (FLUIDSYNTH_FOUND)
-            include_directories(${FLUIDSYNTH_INCLUDE_DIRS})
+      # Be careful with naming here since we have two shared synth libraries
+      #  to be built later, named 'fluidsynth' and 'fluid' !
+      PKG_CHECK_MODULES(FLUIDSYN fluidsynth>=0.9.0)
+      if (FLUIDSYN_FOUND)
+            include_directories(${FLUIDSYN_INCLUDE_DIRS})
             set(HAVE_FLUIDSYNTH ON)
-      endif (FLUIDSYNTH_FOUND)
+            # message("FLUIDSYN_LIBRARIES " ${FLUIDSYN_LIBRARIES} )          # "fluidsynth"
+            # message("FLUIDSYN_LDFLAGS " ${FLUIDSYN_LDFLAGS} )              # "-lfluidsynth"
+            # message("FLUIDSYN_LDFLAGS_OTHER " ${FLUIDSYN_LDFLAGS_OTHER} )  # empty
+            # message("FLUIDSYN_INCLUDE_DIRS " ${FLUIDSYN_INCLUDE_DIRS} )    # empty
+            # message("FLUIDSYN_CFLAGS " ${FLUIDSYN_CFLAGS} )                # empty
+            # message("FLUIDSYN_CFLAGS_OTHER " ${FLUIDSYN_CFLAGS_OTHER} )    # empty
+      endif (FLUIDSYN_FOUND)
 else ( ENABLE_FLUID )
       message("Fluidsynth disabled")
 endif ( ENABLE_FLUID )

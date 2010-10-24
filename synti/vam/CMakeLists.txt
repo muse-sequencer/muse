@@ -30,7 +30,7 @@ add_library ( vam SHARED
       ${vam_uis}
       )
 
-target_link_libraries( vam synti )
+# target_link_libraries( vam synti )
 
 # - tell cmake to name target vam.so instead of 
 #   libvam.so

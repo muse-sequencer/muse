@@ -278,7 +278,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(hscroll, SIGNAL(scaleChanged(int)),  canvas,   SLOT(setXMag(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  time,     SLOT(setXMag(int)));
 
-      connect(canvas, SIGNAL(pitchChanged(int)), piano, SLOT(setPitch(int)));
+      connect(canvas, SIGNAL(pitchChanged(int)), piano, SLOT(setPitch(int)));   
       connect(canvas, SIGNAL(verticalScroll(unsigned)), vscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
@@ -305,7 +305,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       
       updateHScrollRange();
       // connect to toolbar
-      connect(canvas,   SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));
+      connect(canvas,   SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));  
       connect(canvas,   SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(piano,    SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));
       connect(time,     SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
@@ -407,8 +407,8 @@ void PianoRoll::follow(int pos)
 
 void PianoRoll::setTime(unsigned tick)
       {
-      toolbar->setTime(tick);
-      time->setPos(3, tick, false);
+      toolbar->setTime(tick);                      
+      time->setPos(3, tick, false);               
       }
 
 //---------------------------------------------------------

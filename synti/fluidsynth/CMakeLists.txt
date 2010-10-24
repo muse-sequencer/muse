@@ -30,7 +30,7 @@ add_library ( fluidsynth SHARED
       ${fluidsynth_uis}
       )
 
-target_link_libraries( fluidsynth synti )
+# target_link_libraries( fluidsynth synti )
 
 # - tell cmake to name target fluidsynth.so instead of 
 #   libfluidsynth.so
@@ -39,13 +39,16 @@ target_link_libraries( fluidsynth synti )
 set_target_properties ( fluidsynth 
    PROPERTIES PREFIX ""
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-   LINK_FLAGS "${FLUID_LIBRARIES}"
+   LINK_FLAGS "${FLUIDSYN_LDFLAGS}"   # "-lfluidsynth"
    )
 
 target_link_libraries(fluidsynth
       synti
       ${QT_LIBRARIES}
-      ${FLUID_LIBRARIES}
+      # Can't do this here, since FLUIDSYN_LIBRARIES evaluates to 'fluidsynth', the same name as our target.
+      # ${FLUIDSYN_LIBRARIES}
+      # Try giving full path:  Nope, path is empty!
+      #${FLUIDSYN_LIBRARY_DIRS}/${FLUIDSYN_LIBRARIES}
       )
 
 install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ fluidsynth )

@@ -511,8 +511,7 @@ void initMidiSynth()
                   // load Synti dll
                   void* handle = dlopen(path, RTLD_NOW);
                   if (handle == 0) {
-                        //fprintf(stderr, "initMidiSynth: dlopen(%s) failed: %s\n",
-                        //  path, dlerror());
+                        fprintf(stderr, "initMidiSynth: MESS dlopen(%s) failed: %s\n", path, dlerror());
                         //undoSetuid();
                         //return 0;
                         ++it;
@@ -522,23 +521,25 @@ void initMidiSynth()
                   MESS_Function msynth = (MESS_Function)dlsym(handle, "mess_descriptor");
             
                   if (!msynth) {
-                        //const char *txt = dlerror();
-                        //if (txt) {
-                        //      fprintf(stderr,
-                        //        "Unable to find msynth_descriptor() function in plugin "
-                        //        "library file \"%s\": %s.\n"
-                        //        "Are you sure this is a MESS plugin file?\n",
-                        //        info.filePath().ascii(), txt);
+                        #if 1
+                        const char *txt = dlerror();
+                        if (txt) {
+                              fprintf(stderr,
+                                "Unable to find msynth_descriptor() function in plugin "
+                                "library file \"%s\": %s.\n"
+                                "Are you sure this is a MESS plugin file?\n",
+                                path, txt);
                               //undoSetuid();
                               //return 0;
-                        //      }
+                              }
+                        #endif      
                           dlclose(handle);
                           ++it;
                           continue;
                         }
                   const MESS* descr = msynth();
                   if (descr == 0) {
-                        //fprintf(stderr, "Synth::instantiate: no MESS descr found\n");
+                        fprintf(stderr, "initMidiSynth: no MESS descr found in %s\n", path);
                         //undoSetuid();
                         //return 0;
                         dlclose(handle);

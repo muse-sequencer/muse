@@ -155,6 +155,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
       x = sigmap.raster(x, *raster);
       if (x < 0)
             x = 0;
+      //printf("MTScale::viewMouseMoveEvent\n");  
       emit timeChanged(x);
       int i;
       switch (button) {
