@@ -39,7 +39,7 @@ add_library ( fluid SHARED
 set_target_properties ( fluid
    PROPERTIES PREFIX ""
    COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
-   LINK_FLAGS "-l${FLUIDSYN_LIBRARIES}"
+   LINK_FLAGS "${FLUIDSYN_LDFLAGS}"   # "-lfluidsynth"
    )
 target_link_libraries(fluid
       synti
