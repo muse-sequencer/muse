@@ -8,10 +8,10 @@
 
 #include <qdir.h>
 //Added by qt3to4:
-#include <Q3BoxLayout>
-#include <Q3GridLayout>
-#include <Q3HBoxLayout>
-#include <Q3VBoxLayout>
+#include <QBoxLayout>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <Qt3Support>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,13 +20,14 @@
 #include <math.h>
 
 #include <qwidget.h>
-#include <qlayout.h>
+#include <QLayout>
 #include <qlabel.h>
 #include <qsignalmapper.h>
 #include <qpushbutton.h>
 #include <q3scrollview.h>
 #include <q3listview.h>
-#include <q3toolbar.h>
+//#include <q3toolbar.h>
+#include <QToolBar>
 #include <qtoolbutton.h>
 #include <q3whatsthis.h>
 #include <qcheckbox.h>
@@ -35,7 +36,8 @@
 #include <qfile.h>
 #include <qobject.h>
 #include <qcombobox.h>
-#include <q3buttongroup.h>
+#include <QButtonGroup>
+#include <QGroupBox>
 #include <qradiobutton.h>
 #include <qmessagebox.h>
 #include <qtimer.h>
@@ -2530,7 +2532,7 @@ PluginDialog::PluginDialog(QWidget* parent, const char* name, bool modal)
   : QDialog(parent, name, modal)
       {
       setCaption(tr("MusE: select plugin"));
-      Q3VBoxLayout* layout = new Q3VBoxLayout(this);
+      QVBoxLayout* layout = new QVBoxLayout(this);
 
       pList  = new Q3ListView(this);
       pList->setAllColumnsShowFocus(true);
@@ -2553,7 +2555,7 @@ PluginDialog::PluginDialog(QWidget* parent, const char* name, bool modal)
       //  Ok/Cancel Buttons
       //---------------------------------------------------
 
-      Q3BoxLayout* w5 = new Q3HBoxLayout;
+      QBoxLayout* w5 = new QHBoxLayout;
       layout->addLayout(w5);
 
       QPushButton* okB     = new QPushButton(tr("Ok"), this);
@@ -2565,7 +2567,9 @@ PluginDialog::PluginDialog(QWidget* parent, const char* name, bool modal)
       w5->addSpacing(12);
       w5->addWidget(cancelB);
 
-      Q3ButtonGroup* plugSel = new Q3ButtonGroup(4, Qt::Horizontal, this, "Show plugs:");
+      // ORCAN - CHECK
+      //QButtonGroup* plugSel = new QButtonGroup(4, Qt::Horizontal, this, "Show plugs:");
+      QGroupBox* plugSel = new QGroupBox(this);
       plugSel->setTitle("Show plugs:");
       QRadioButton* onlySM = new QRadioButton(plugSel, "Mono and Stereo");
       onlySM->setText( "Mono and Stereo");
@@ -2576,8 +2580,9 @@ PluginDialog::PluginDialog(QWidget* parent, const char* name, bool modal)
       QRadioButton* allPlug = new QRadioButton(plugSel, "Show all");
       allPlug->setText( "Show All");
 
-      plugSel->setRadioButtonExclusive(true);
-      plugSel->setButton(selectedPlugType);
+      // ORCAN - FIXME
+      //plugSel->setRadioButtonExclusive(true);
+      //plugSel->setButton(selectedPlugType);
 
       QToolTip::add(plugSel, tr("Select which types of plugins should be visible in the list.<br>"
                              "Note that using mono plugins on stereo tracks is not a problem, two will be used in parallel.<br>"
@@ -2825,7 +2830,7 @@ PluginGui::PluginGui(PluginIBase* p)
       plugin = p;
       setCaption(plugin->name());
 
-      Q3ToolBar* tools = new Q3ToolBar(tr("File Buttons"), this);
+      QToolBar* tools = new QToolBar(tr("File Buttons"), this);
       QToolButton* fileOpen = new QToolButton(
          QIcon(*openIconS), // ddskrjo
          tr("Load Preset"),
@@ -2968,7 +2973,7 @@ PluginGui::PluginGui(PluginIBase* p)
             //view->setVScrollBarMode(QScrollView::AlwaysOff);
             view->addChild(mw);
             
-            Q3GridLayout* grid = new Q3GridLayout(mw);
+            QGridLayout* grid = new QGridLayout(mw);
             grid->setSpacing(2);
 
             int n  = plugin->parameters();

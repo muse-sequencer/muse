@@ -1,5 +1,5 @@
 //Added by qt3to4:
-#include <Q3Frame>
+#include <QFrame>
 //=========================================================
 //  MusE
 //  Linux Music Editor
@@ -10,7 +10,7 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
-class Q3Frame;
+class QFrame;
 class QWidget;
 
 #include <qstring.h>
@@ -19,11 +19,11 @@ extern QString bitmap2String(int bm);
 extern int string2bitmap(const QString& str);
 extern QString u32bitmap2String(unsigned int bm);
 extern unsigned int string2u32bitmap(const QString& str);
-extern bool autoAdjustFontSize(Q3Frame* w, const QString& s, bool ignoreWidth = false, bool ignoreHeight = false, int max = 10, int min = 4);
+extern bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth = false, bool ignoreHeight = false, int max = 10, int min = 4);
 
 extern int num2cols(int min, int max);
-extern Q3Frame* hLine(QWidget* parent);
-extern Q3Frame* vLine(QWidget* parent);
+extern QFrame* hLine(QWidget* parent);
+extern QFrame* vLine(QWidget* parent);
 extern void dump(const unsigned char* p, int n);
 extern double curTime();
 

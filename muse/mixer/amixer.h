@@ -9,17 +9,17 @@
 #ifndef __AMIXER_H__
 #define __AMIXER_H__
 
-#include <qlayout.h>
+#include <QLayout>
 #include <qpixmap.h>
-#include <q3listbox.h>
+//#include <q3listbox.h>
 #include <qtooltip.h>
-#include <q3frame.h>
+//#include <q3frame.h>
 //Added by qt3to4:
-#include <Q3HBoxLayout>
+#include <QHBoxLayout>
 #include <QLabel>
-#include <Q3PopupMenu>
+#include <QMenu>
 #include <QCloseEvent>
-#include <Q3Action>
+#include <QAction>
 
 #include "cobject.h"
 #include "synth.h"
@@ -28,8 +28,9 @@
 
 class Xml;
 class QWidget;
-class Q3HBoxLayout;
-class Q3ScrollView;
+class QHBoxLayout;
+// ORCAN - CHECK
+class QScrollArea;
 class AudioTrack;
 class Meter;
 class Track;
@@ -40,7 +41,7 @@ class Knob;
 class DoubleLabel;
 class ComboBox;
 class RouteDialog;
-class Q3PopupMenu;
+class QMenu;
 class Strip;
 
 struct MixerConfig;
@@ -53,28 +54,28 @@ typedef std::list<Strip*> StripList;
 //   AudioMixerApp
 //---------------------------------------------------------
 
-class AudioMixerApp : public Q3MainWindow {
+class AudioMixerApp : public QMainWindow {
       //QString name;
       MixerConfig* cfg;
       StripList stripList;
-      Q3ScrollView* view;
+      QScrollArea* view;
       QWidget* central;
-      Q3HBoxLayout* lbox;
+      QHBoxLayout* lbox;
       //Strip* master;
-      Q3HBoxLayout* layout;
-      Q3PopupMenu* menuView;
+      QHBoxLayout* layout;
+      QMenu* menuView;
       RouteDialog* routingDialog;
       int routingId;
       int oldAuxsSize;
 
-      Q3Action* showMidiTracksId;
-      Q3Action* showDrumTracksId;
-      Q3Action* showInputTracksId;
-      Q3Action* showOutputTracksId;
-      Q3Action* showWaveTracksId;
-      Q3Action* showGroupTracksId;
-      Q3Action* showAuxTracksId;
-      Q3Action* showSyntiTracksId;
+      QAction* showMidiTracksId;
+      QAction* showDrumTracksId;
+      QAction* showInputTracksId;
+      QAction* showOutputTracksId;
+      QAction* showWaveTracksId;
+      QAction* showGroupTracksId;
+      QAction* showAuxTracksId;
+      QAction* showSyntiTracksId;
 
       Q_OBJECT
 

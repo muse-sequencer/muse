@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include "utils.h"
 #include <math.h>
-#include <q3frame.h>
+#include <QFrame>
 #include <sys/time.h>
 
 // Quick bit-shift lookup table
@@ -61,10 +61,10 @@ int num2cols(int min, int max)
 //   hLine
 //---------------------------------------------------------
 
-Q3Frame* hLine(QWidget* w)
+QFrame* hLine(QWidget* w)
       {
-      Q3Frame* delim = new Q3Frame(w);
-      delim->setFrameStyle(Q3Frame::HLine | Q3Frame::Sunken);
+      QFrame* delim = new QFrame(w);
+      delim->setFrameStyle(QFrame::HLine | QFrame::Sunken);
       return delim;
       }
 
@@ -72,10 +72,10 @@ Q3Frame* hLine(QWidget* w)
 //   vLine
 //---------------------------------------------------------
 
-Q3Frame* vLine(QWidget* w)
+QFrame* vLine(QWidget* w)
       {
-      Q3Frame* delim = new Q3Frame(w);
-      delim->setFrameStyle(Q3Frame::VLine | Q3Frame::Sunken);
+      QFrame* delim = new QFrame(w);
+      delim->setFrameStyle(QFrame::VLine | QFrame::Sunken);
       return delim;
       }
 
@@ -307,7 +307,7 @@ unsigned int string2u32bitmap(const QString& str)
 //---------------------------------------------------------
 // Added by Tim. p3.3.8
 
-bool autoAdjustFontSize(Q3Frame* w, const QString& s, bool ignoreWidth, bool ignoreHeight, int max, int min)
+bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool ignoreHeight, int max, int min)
 {
   // In case the max or min was obtained from QFont::pointSize() which returns -1 
   //  if the font is a pixel font, or if min is greater than max...

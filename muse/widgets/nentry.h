@@ -8,20 +8,20 @@
 #ifndef __NENTRY_H__
 #define __NENTRY_H__
 
-#include <q3frame.h>
+#include <QFrame>
 #include <qlineedit.h>
 #include <qstring.h>
 //Added by qt3to4:
 #include <QWheelEvent>
 #include <QEvent>
-#include <Q3HBoxLayout>
+#include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QLabel>
 #include <QContextMenuEvent>
 #include <QKeyEvent>
 
 class QTimer;
-class Q3HBoxLayout;
+class QHBoxLayout;
 class QLabel;
 
 class NentryFilter : public QObject {
@@ -38,7 +38,7 @@ class NentryFilter : public QObject {
 //    numerical entry widget with optional label
 //---------------------------------------------------------
 
-class Nentry : public Q3Frame {
+class Nentry : public QFrame {
       Q_OBJECT
 
       int button;
@@ -47,7 +47,7 @@ class Nentry : public Q3Frame {
       QTimer* timer;
       int evx;
       int timecount;
-      Q3HBoxLayout* layout;
+      QHBoxLayout* layout;
       QObject* filter;
       QLabel* label;
       int lPos;   // label Position 0 - left, 1 - right

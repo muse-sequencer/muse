@@ -7,19 +7,21 @@
 #ifndef __NOTE_INFO_H__
 #define __NOTE_INFO_H__
 
-#include <q3toolbar.h>
+//#include <q3toolbar.h>
+#include <QToolBar>
 
 class PosEdit;
 class QSpinBox;
 class PitchEdit;
-class Q3MainWindow;
+//class QMainWindow;
+class QWidget;
 class Pos;
 
 //---------------------------------------------------------
 //   NoteInfo
 //---------------------------------------------------------
 
-class NoteInfo : public Q3ToolBar {
+class NoteInfo : public QToolBar {
       PosEdit* selTime;
       QSpinBox* selLen;
       PitchEdit* selPitch;
@@ -31,7 +33,8 @@ class NoteInfo : public Q3ToolBar {
 
    public:
       enum ValType {VAL_TIME, VAL_LEN, VAL_VELON, VAL_VELOFF, VAL_PITCH };
-      NoteInfo(Q3MainWindow* parent);
+      //NoteInfo(QMainWindow* parent);
+      NoteInfo(QWidget* parent = 0);
       void setValues(unsigned, int, int, int, int);
       void setDeltaMode(bool);
 

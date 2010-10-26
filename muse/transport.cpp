@@ -10,7 +10,8 @@
 #include <qlabel.h>
 #include <qslider.h>
 #include <qpushbutton.h>
-#include <q3frame.h>
+//#include <q3frame.h>
+#include <QFrame>
 #include <q3whatsthis.h>
 #include <qtooltip.h>
 #include <qlayout.h>
@@ -115,8 +116,8 @@ TempoSig::TempoSig(QWidget* parent)
       Q3BoxLayout* vb1 = new Q3VBoxLayout(this);
       vb1->setAutoAdd(true);
 
-      Q3Frame* f = new Q3Frame(this);
-      f->setFrameStyle(Q3Frame::Panel | Q3Frame::Sunken);
+      QFrame* f = new QFrame(this);
+      f->setFrameStyle(QFrame::Panel | QFrame::Sunken);
       f->setLineWidth(1);
 
       Q3BoxLayout* vb2 = new Q3VBoxLayout(f);

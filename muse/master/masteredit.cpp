@@ -22,7 +22,8 @@
 #include "globals.h"
 
 #include <values.h>
-#include <q3toolbar.h>
+//#include <q3toolbar.h>
+#include <QToolBar>
 #include <qtoolbutton.h>
 #include <qtooltip.h>
 #include <q3accel.h>
@@ -100,13 +101,12 @@ MasterEdit::MasterEdit()
 //      menuBar()->insertItem("&File", file);
 
       //---------ToolBar----------------------------------
-      tools = new Q3ToolBar(tr("edit tools"), this);
+      tools = new QToolBar(tr("edit tools"), this);
       undoRedo->addTo(tools);
 
-      EditToolBar* tools2 = new EditToolBar(this,
-         PointerTool | PencilTool | RubberTool);
+      EditToolBar* tools2 = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
 
-      Q3ToolBar* enableMaster = new Q3ToolBar(tr("EnableMaster"), this);
+      QToolBar* enableMaster = new QToolBar(tr("EnableMaster"), this);
       enableButton = new QToolButton(enableMaster);
       enableButton->setToggleButton(true);
       enableButton->setText(tr("Enable"));
@@ -114,7 +114,7 @@ MasterEdit::MasterEdit()
       enableButton->setOn(song->masterFlag());
       connect(enableButton, SIGNAL(toggled(bool)), song, SLOT(setMasterFlag(bool)));
 
-      Q3ToolBar* info = new Q3ToolBar(tr("Info"), this);
+      QToolBar* info = new QToolBar(tr("Info"), this);
       QLabel* label  = new QLabel(tr("Cursor"), info);
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);

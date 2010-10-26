@@ -21,35 +21,62 @@
 //    Start, Lï¿½nge, Note, Velo an, Velo aus, Kanal
 //---------------------------------------------------
 
-NoteInfo::NoteInfo(Q3MainWindow* parent)
-   : Q3ToolBar(tr("Note Info"), parent)
+//NoteInfo::NoteInfo(QMainWindow* parent)
+NoteInfo::NoteInfo(QWidget* parent)
+   : QToolBar(tr("Note Info"), parent)
       {
       deltaMode = false;
 
-      QLabel* label = new QLabel(tr("Start"), this, "Start");
+      //QLabel* label = new QLabel(tr("Start"), this, "Start");
+      QLabel* label = new QLabel(tr("Start"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      selTime = new PosEdit(this, "Start");
+      addWidget(label);
+      //selTime = new PosEdit(this, "Start");
+      selTime = new PosEdit(0, "Start");
+      addWidget(selTime);
 
-      label = new QLabel(tr("Len"), this, "Len");
+      //label = new QLabel(tr("Len"), this, "Len");
+      label = new QLabel(tr("Len"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      selLen = new QSpinBox(0, 100000, 1, this);
+      addWidget(label);
+      //selLen = new QSpinBox(0, 100000, 1, this);
+      selLen = new QSpinBox();
+      selLen->setRange(0, 100000);
+      selLen->setSingleStep(1);
+      addWidget(selLen);
 
-      label = new QLabel(tr("Pitch"), this, "Pitch");
+      //label = new QLabel(tr("Pitch"), this, "Pitch");
+      label = new QLabel(tr("Pitch"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      selPitch = new PitchEdit(this, "selPitch");
+      addWidget(label);
+      //selPitch = new PitchEdit(this, "selPitch");
+      selPitch = new PitchEdit(0, "selPitch");
+      addWidget(selPitch);
 
-      label = new QLabel(tr("Velo On"), this, "Velocity On");
+      //label = new QLabel(tr("Velo On"), this, "Velocity On");
+      label = new QLabel(tr("Velo On"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      selVelOn = new QSpinBox(0, 127, 1, this);
+      addWidget(label);
+      //selVelOn = new QSpinBox(0, 127, 1, this);
+      selVelOn = new QSpinBox();
+      selVelOn->setRange(0, 127);
+      selVelOn->setSingleStep(1);
+      addWidget(selVelOn);
 
-      label = new QLabel(tr("Velo Off"), this, "Velocity Off");
+      //label = new QLabel(tr("Velo Off"), this, "Velocity Off");
+      label = new QLabel(tr("Velo Off"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      selVelOff = new QSpinBox(0, 127, 1, this);
+      addWidget(label);
+      //selVelOff = new QSpinBox(0, 127, 1, this);
+      selVelOff = new QSpinBox();
+      selVelOff->setRange(0, 127);
+      selVelOff->setSingleStep(1);
+      addWidget(selVelOff);
 
       connect(selLen,     SIGNAL(valueChanged(int)), SLOT(lenChanged(int)));
       connect(selPitch,   SIGNAL(valueChanged(int)), SLOT(pitchChanged(int)));

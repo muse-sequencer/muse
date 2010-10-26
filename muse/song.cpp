@@ -11,7 +11,8 @@
 #include <errno.h>
 #include <qapplication.h>
 #include <qmessagebox.h>
-#include <q3popupmenu.h>
+//#include <q3popupmenu.h>
+#include <QMenu>
 #include <qdir.h>
 #include <qaction.h>
 #include <qcursor.h>
@@ -2342,7 +2343,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
 {
   //enum { HEADER, SEP1, PREV_EVENT, NEXT_EVENT, SEP2, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS };
   enum { HEADER, PREV_EVENT, NEXT_EVENT, SEP2, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS };
-  Q3PopupMenu* menu = new Q3PopupMenu;
+  QMenu* menu = new QMenu;
 
   int count = 0;
   bool isEvent = false, canSeekPrev = false, canSeekNext = false, canEraseRange = false;
@@ -2406,6 +2407,8 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   menu->insertItem(tr("clear automation"), CLEAR_ALL_EVENTS, CLEAR_ALL_EVENTS);
   menu->setItemEnabled(CLEAR_ALL_EVENTS, (bool)count);
 
+  // ORCAN - FIXME
+  /*
   int sel = menu->exec(menupos, 1);
   delete menu;
   if (sel == -1)
@@ -2446,6 +2449,8 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
     break;      
   }
   return sel;
+  */
+  return 0;
 }
 
 //---------------------------------------------------------
@@ -2459,7 +2464,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     
   //enum { HEADER, SEP1, PREV_EVENT, NEXT_EVENT, SEP2, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS };
   enum { HEADER, ADD_EVENT, CLEAR_EVENT };
-  Q3PopupMenu* menu = new Q3PopupMenu;
+  QMenu* menu = new QMenu;
 
   //int count = 0;
   bool isEvent = false;
@@ -2576,6 +2581,9 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
 //  menu->insertItem(tr("clear automation"), CLEAR_ALL_EVENTS, CLEAR_ALL_EVENTS);
 //  menu->setItemEnabled(CLEAR_ALL_EVENTS, (bool)count);
 
+
+// ORCAN - FIXME
+/*
   int sel = menu->exec(menupos, 1);
   delete menu;
   if (sel == -1)
@@ -2663,6 +2671,8 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   }
   
   return sel;
+*/
+  return 0;
 }
 
 //---------------------------------------------------------
@@ -3618,7 +3628,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
 
 #define SCRIPTSSUFFIX "/share/muse/scripts/"
 #define USERSCRIPTSSUFFIX "/.muse/scripts/"
-void Song::populateScriptMenu(Q3PopupMenu* menuPlugins, QObject* receiver)
+void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
 {
       //
       // List scripts

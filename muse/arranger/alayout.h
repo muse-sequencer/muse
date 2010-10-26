@@ -9,7 +9,7 @@
 #define __ALAYOUT_H__
 
 #include <qlayout.h>
-#include <q3ptrlist.h>
+#include <Q3PtrList>
 
 class QScrollBar;
 class WidgetStack;

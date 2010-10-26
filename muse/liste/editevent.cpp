@@ -19,10 +19,10 @@
 #include <q3widgetstack.h>
 #include <q3popupmenu.h>
 //Added by qt3to4:
-#include <Q3HBoxLayout>
-#include <Q3GridLayout>
-#include <Q3VBoxLayout>
-#include <Q3BoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QVBoxLayout>
+#include <QBoxLayout>
 
 #include "song.h"
 #include "event.h"
@@ -159,15 +159,15 @@ Event EditPAfterDialog::getEvent(int tick, const Event& event, QWidget* parent)
 EditEventDialog::EditEventDialog(QWidget* parent, const char* name)
    : QDialog(parent, name, true)
       {
-      Q3VBoxLayout* xlayout = new Q3VBoxLayout(this);
-      layout1 = new Q3GridLayout(this); // ddskrjo this
+      QVBoxLayout* xlayout = new QVBoxLayout(this);
+      layout1 = new QGridLayout(this); // ddskrjo this
       xlayout->addLayout(layout1);
 
       //---------------------------------------------------
       //  Ok, Cancel
       //---------------------------------------------------
 
-      Q3BoxLayout* w5 = new Q3HBoxLayout(this); // ddskrjo this
+      QBoxLayout* w5 = new QHBoxLayout(this); // ddskrjo this
       xlayout->addLayout(w5);
       QPushButton* okB = new QPushButton(tr("Ok"), this);
       okB->setDefault(true);
@@ -296,7 +296,7 @@ EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
       il2->setDark();
       typeLabel = new QLabel(this);
       typeLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-      Q3HBoxLayout* typeLayout = new Q3HBoxLayout(this);
+      QHBoxLayout* typeLayout = new QHBoxLayout(this);
       typeLayout->addWidget(il2);
       typeLayout->addWidget(typeLabel);
       typeLayout->addStretch();

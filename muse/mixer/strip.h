@@ -9,11 +9,12 @@
 #ifndef __STRIP_H__
 #define __STRIP_H__
 
-#include <q3frame.h>
+//#include <q3frame.h>
+#include <QFrame>
 #include <qicon.h>
 //Added by qt3to4:
-#include <Q3VBoxLayout>
-#include <Q3GridLayout>
+#include <QVBoxLayout>
+#include <QGridLayout>
 #include <QLabel>
 
 #include "globaldefs.h"
@@ -21,10 +22,10 @@
 
 class Track;
 class QLabel;
-class Q3VBoxLayout;
+class QVBoxLayout;
 class Meter;
 class QToolButton;
-class Q3GridLayout;
+class QGridLayout;
 class ComboBox;
 
 static const int STRIP_WIDTH = 65;
@@ -33,13 +34,13 @@ static const int STRIP_WIDTH = 65;
 //   Strip
 //---------------------------------------------------------
 
-class Strip : public Q3Frame {
+class Strip : public QFrame {
       Q_OBJECT
 
    protected:
       Track* track;
       QLabel* label;
-      Q3VBoxLayout* layout;
+      QVBoxLayout* layout;
       Meter* meter[MAX_CHANNELS];
       bool useSoloIconSet2;
       
@@ -48,7 +49,7 @@ class Strip : public Q3Frame {
       QToolButton* mute;
       QToolButton* iR; // Input routing button
       QToolButton* oR; // Output routing button
-      Q3GridLayout* sliderGrid;
+      QGridLayout* sliderGrid;
       ComboBox* autoType;
       void setLabelText();
 

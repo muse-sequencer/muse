@@ -9,10 +9,10 @@
 #define __TB1_H__
 
 //#include <qwidget.h>
-#include <q3toolbar.h>
+//#include <q3toolbar.h>
 
 #include <QWidget>      // p4.0.4
-//#include <QToolBar>     //
+#include <QToolBar>     //
 
 class PosLabel;
 class PitchLabel;
@@ -24,8 +24,8 @@ class QToolButton;
 //   Toolbar1
 //---------------------------------------------------------
 
-class Toolbar1 : public Q3ToolBar {
-//class Toolbar1 : public QToolBar {       // p4.0.4
+//class Toolbar1 : public Q3ToolBar {
+class Toolbar1 : public QToolBar {       // p4.0.4
       QToolButton* solo;
       PosLabel* pos;
       PitchLabel* pitch;
@@ -52,8 +52,8 @@ class Toolbar1 : public Q3ToolBar {
       void toChanged(int);
 
    public:
-      Toolbar1(Q3MainWindow* parent, int r=96,
-      //Toolbar1(QWidget* parent, int r=96,     // p4.0.4
+      //Toolbar1(QMainWindow* parent = 0, int r=96,
+      Toolbar1(QWidget* parent, int r=96,     
          int q=96, bool showPitch=true);
       void setSolo(bool val);
       void setPitchMode(bool flag);

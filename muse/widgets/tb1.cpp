@@ -57,43 +57,64 @@ static const char* quantStrings[] = {
 //    solo time pitch raster quant
 //---------------------------------------------------------
 
-Toolbar1::Toolbar1(Q3MainWindow* parent, int r, int q, bool sp)
-//Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)    // p4.0.4
-   : Q3ToolBar(QString("Quant'n'Snap-tools"), parent)
+//Toolbar1::Toolbar1(QMainWindow* parent, int r, int q, bool sp)
+Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)    
+   : QToolBar(QString("Quant'n'Snap-tools"), parent)
    //: QToolBar(QString("Qant'n'Snap-tools"), parent)             
       {
+      pitch = 0;
       showPitch = sp;
-      setHorizontalStretchable(false);    
+      // ORCAN - FIXME: Check this:
+      //setHorizontalStretchable(false);
+      //setHorizontalPolicy(QSizePolicy::Minimum);
+      //setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 
-      solo = new QToolButton(this);
+      solo = new QToolButton();    
       solo->setText(tr("Solo"));
       solo->setToggleButton(true);
+      addWidget(solo);
 
       //---------------------------------------------------
       //  Cursor Position
       //---------------------------------------------------
 
-      QLabel* label = new QLabel(tr("Cursor"), this, "Cursor");
+      //QLabel* label = new QLabel(tr("Cursor"), this, "Cursor");
+      QLabel* label = new QLabel(tr("Cursor"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      pos   = new PosLabel(this, "pos");
+      addWidget(label);
+      //pos   = new PosLabel(this, "pos");
+      pos   = new PosLabel(0, "pos");
+      pos->setFixedHeight(22);
+      addWidget(pos);
       if (showPitch) {
-            pitch = new PitchLabel(this);
+            //pitch = new PitchLabel(this);
+            pitch = new PitchLabel(0);
             pitch->setEnabled(false);
+            pitch->setFixedHeight(22);
+            addWidget(pitch);
             }
 
       //---------------------------------------------------
       //  Raster, Quant.
       //---------------------------------------------------
 
-      raster = new LabelCombo(tr("Snap"), this);
-      quant  = new LabelCombo(tr("Quantize"), this);
+      //raster = new LabelCombo(tr("Snap"), this);
+      //quant  = new LabelCombo(tr("Quantize"), this);
+      raster = new LabelCombo(tr("Snap"), 0);
+      quant  = new LabelCombo(tr("Quantize"), 0);
+      //addWidget(raster);
+      //addWidget(quant);
 
       //Q3ListBox* rlist = new Q3ListBox(this);
       //Q3ListBox* qlist = new Q3ListBox(this);
       // p4.0.3
-      QTableWidget* rlist = new QTableWidget(10, 3, this);    
-      QTableWidget* qlist = new QTableWidget(8, 3, this);     
+      //QTableWidget* rlist = new QTableWidget(10, 3, this);    
+      //QTableWidget* qlist = new QTableWidget(8, 3, this);     
+      QTableWidget* rlist = new QTableWidget(10, 3);    
+      QTableWidget* qlist = new QTableWidget(8, 3);     
+      //addWidget(rlist);
+      //addWidget(qlist);
       rlist->verticalHeader()->setDefaultSectionSize(22);                      
       rlist->horizontalHeader()->setDefaultSectionSize(32);                      
       rlist->setSelectionMode(QAbstractItemView::SingleSelection);                      
@@ -130,13 +151,26 @@ Toolbar1::Toolbar1(Q3MainWindow* parent, int r, int q, bool sp)
       setRaster(r);
       setQuant(q);
 
+      addWidget(raster);
+      addWidget(quant);
+      
+      // FIXME: Not working right.
+      raster->setFixedHeight(38);
+      quant->setFixedHeight(38);
+      
       //---------------------------------------------------
       //  To Menu
       //---------------------------------------------------
 
-      LabelCombo* to = new LabelCombo(tr("To"), this);
+      /*      
+      //LabelCombo* to = new LabelCombo(tr("To"), this);
+      LabelCombo* to = new LabelCombo(tr("To"), 0);
+      addWidget(to);
 //       Q3ListBox* toList = new Q3ListBox(this);
-      QListWidget* toList = new QListWidget(this);       // p4.0.4
+      //QListWidget* toList = new QListWidget(this);       // p4.0.4
+      QListWidget* toList = new QListWidget();             
+      toList->setFixedHeight(24);
+      //addWidget(toList);
 //       //to->setListBox(toList); ddskrjo
       to->setView(toList);                               // p4.0.4
 
@@ -149,10 +183,21 @@ Toolbar1::Toolbar1(Q3MainWindow* parent, int r, int q, bool sp)
       toList->insertItem(CMD_RANGE_LOOP, tr("Looped Ev."));
       toList->insertItem(CMD_RANGE_SELECTED, tr("Selected Ev."));
       toList->insertItem(CMD_RANGE_LOOP | CMD_RANGE_SELECTED, tr("Looped+Sel."));
+      */
+
+      addWidget(new QLabel(tr("To")));
+      QComboBox* toList = new QComboBox;
+      toList->setFixedHeight(22);
+      toList->addItem(tr("All Events"),   0);
+      toList->addItem(tr("Looped Ev."),   CMD_RANGE_LOOP);
+      toList->addItem(tr("Selected Ev."), CMD_RANGE_SELECTED);
+      toList->addItem(tr("Looped+Sel."),  CMD_RANGE_LOOP | CMD_RANGE_SELECTED);
+      addWidget(toList);
 
       connect(raster, SIGNAL(activated(int)), SLOT(_rasterChanged(int)));
       connect(quant,  SIGNAL(activated(int)), SLOT(_quantChanged(int)));
-      connect(to,     SIGNAL(activated(int)), SIGNAL(toChanged(int)));
+      //connect(to,     SIGNAL(activated(int)), SIGNAL(toChanged(int)));
+      connect(toList,     SIGNAL(activated(int)), SIGNAL(toChanged(int)));
       connect(solo,   SIGNAL(toggled(bool)), SIGNAL(soloChanged(bool)));
       pos->setEnabled(false);
       }
@@ -181,7 +226,7 @@ void Toolbar1::_quantChanged(int index)
 
 void Toolbar1::setPitch(int val)
       {
-      if (showPitch) {
+      if (pitch && showPitch) {
             pitch->setEnabled(val != -1);
             pitch->setPitch(val);
             }
@@ -189,7 +234,7 @@ void Toolbar1::setPitch(int val)
 
 void Toolbar1::setInt(int val)
       {
-      if (showPitch) {
+      if (pitch && showPitch) {
             pitch->setEnabled(val != -1);
             pitch->setInt(val);
             }
@@ -202,7 +247,7 @@ void Toolbar1::setInt(int val)
 void Toolbar1::setTime(unsigned val)
       {
       if (!pos->isVisible()) {
-            printf("NOT visible\n");
+            //printf("NOT visible\n");
             return;
             }
       if (val == MAXINT)
@@ -262,6 +307,7 @@ void Toolbar1::setSolo(bool flag)
 
 void Toolbar1::setPitchMode(bool /*flag*/)
       {
-//      pitch->setPitchMode(flag);
+     // if(pitch)
+//        pitch->setPitchMode(flag);
       }
 

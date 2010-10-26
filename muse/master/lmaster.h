@@ -96,7 +96,7 @@ class LMasterSigEventItem : public LMasterLViewItem {
 
 class LMaster : public MidiEditor {
       Q3ListView* view;
-      Q3ToolBar* tools;
+      QToolBar* tools;
       Q3PopupMenu* menuEdit;
 
       enum { CMD_DELETE, CMD_INSERT_SIG, CMD_INSERT_TEMPO, CMD_EDIT_BEAT, CMD_EDIT_VALUE };

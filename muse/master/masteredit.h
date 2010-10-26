@@ -47,7 +47,7 @@ class MasterEdit : public MidiEditor {
       TempoEdit* curTempo;
       SigEdit* curSig;
       LabelCombo* rasterLabel;
-      Q3ToolBar* tools;
+      QToolBar* tools;
       PosLabel* cursorPos;
       TempoLabel* tempo;
       QToolButton* enableButton;

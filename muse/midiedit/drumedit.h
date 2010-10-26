@@ -94,7 +94,7 @@ class DrumEdit : public MidiEditor {
       QWidget* split1w1;
       DList* dlist;
       Header* header;
-      Q3ToolBar* tools;
+      QToolBar* tools;
 
       static int _quantInit, _rasterInit;
       static int _widthInit, _heightInit;

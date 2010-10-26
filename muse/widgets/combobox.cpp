@@ -9,7 +9,7 @@
 #include <qcursor.h>
 //Added by qt3to4:
 #include <QMouseEvent>
-#include <Q3Frame>
+#include <QFrame>
 #include <QLabel>
 #include "combobox.h"
 
@@ -24,7 +24,7 @@ ComboBox::ComboBox(QWidget* parent, const char* name)
       _id = -1;
       list = new Q3PopupMenu(0, "comboPopup");
       connect(list, SIGNAL(activated(int)), SLOT(activatedIntern(int)));
-      setFrameStyle(Q3Frame::Panel | Q3Frame::Raised);
+      setFrameStyle(QFrame::Panel | QFrame::Raised);
       setLineWidth(2);
       }
 

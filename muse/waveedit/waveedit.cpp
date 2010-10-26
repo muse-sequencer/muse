@@ -21,7 +21,8 @@
 #include "icons.h"
 #include "shortcuts.h"
 
-#include <q3toolbar.h>
+//#include <q3toolbar.h>
+#include <QToolBar>
 #include <qtoolbutton.h>
 #include <q3accel.h>
 #include <qlayout.h>
@@ -105,7 +106,7 @@ WaveEdit::WaveEdit(PartList* pl)
       connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
-      tools = new Q3ToolBar(this, "waveedit-tools");
+      tools = new QToolBar(this, "waveedit-tools");
       undoRedo->addTo(tools);
 
       Q3Accel* qa = new Q3Accel(this);
@@ -116,13 +117,13 @@ WaveEdit::WaveEdit(PartList* pl)
 
       //--------------------------------------------------
       //    Transport Bar
-      Q3ToolBar* transport = new Q3ToolBar(this);
+      QToolBar* transport = new QToolBar(this);
       transportAction->addTo(transport);
 
       //--------------------------------------------------
       //    ToolBar:   Solo  Cursor1 Cursor2
 
-      tb1 = new Q3ToolBar(this, "pianoroll-tools");
+      tb1 = new QToolBar(this, "pianoroll-tools");
 
       tb1->setLabel(tr("weTools"));
       solo = new QToolButton(tb1);

@@ -8,10 +8,11 @@
 
 #include <qtoolbutton.h>
 #include <qlabel.h>
-#include <qlayout.h>
+#include <QLayout>
 //Added by qt3to4:
-#include <Q3VBoxLayout>
-#include <Q3Frame>
+#include <QVBoxLayout>
+//#include <Q3Frame>
+#include <QFrame>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -168,7 +169,7 @@ void Strip::soloToggled(bool val)
 //---------------------------------------------------------
 
 Strip::Strip(QWidget* parent, Track* t)
-   : Q3Frame(parent, "Strip", Qt::WDestructiveClose)
+   : QFrame(parent, Qt::WDestructiveClose)
       {
       iR            = 0;
       oR            = 0;
@@ -182,7 +183,7 @@ Strip::Strip(QWidget* parent, Track* t)
       meter[0] = 0;
       meter[1] = 0;
       setFixedWidth(STRIP_WIDTH);
-      layout = new Q3VBoxLayout(this);
+      layout = new QVBoxLayout(this);
       layout->setMargin(3);
 
       //---------------------------------------------

@@ -11,7 +11,8 @@
 
 #include "config.h"
 
-#include <q3mainwindow.h>
+//#include <q3mainwindow.h>
+#include <QMainWindow>
 #include <list>
 
 class Xml;
@@ -20,7 +21,7 @@ class Xml;
 //   TopWin
 //---------------------------------------------------------
 
-class TopWin : public Q3MainWindow
+class TopWin : public QMainWindow
       {
       Q_OBJECT
 

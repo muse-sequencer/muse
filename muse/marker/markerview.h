@@ -18,7 +18,7 @@ class QLineEdit;
 class PosEdit;
 class QToolButton;
 class Marker;
-class Q3ToolBar;
+class QToolBar;
 class Pos;
 
 //---------------------------------------------------------
@@ -49,7 +49,7 @@ class MarkerView : public TopWin {
       PosEdit* editSMPTE;
       PosEdit* editTick;
       QToolButton* lock;
-      Q3ToolBar* tools;
+      QToolBar* tools;
 
       Q_OBJECT
       virtual void closeEvent(QCloseEvent*);

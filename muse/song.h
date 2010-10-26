@@ -13,7 +13,8 @@
 #include <qobject.h>
 #include <qfont.h>
 //Added by qt3to4:
-#include <Q3PopupMenu>
+//#include <Q3PopupMenu>
+#include <QMenu>
 #include <QEvent>
 
 #include "pos.h"
@@ -38,7 +39,7 @@ class EventList;
 class MarkerList;
 class Marker;
 class SNode;
-class Q3PopupMenu;
+class QMenu;
 class QButton;
 
 class MidiPort;
@@ -390,7 +391,7 @@ class Song : public QObject {
       Track* addTrack(int);
       Track* addNewTrack(int);
       QString getScriptPath(int id, bool delivered);
-      void populateScriptMenu(Q3PopupMenu* menuPlugins, QObject* receiver);
+      void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
 
    signals:
       void songChanged(int);

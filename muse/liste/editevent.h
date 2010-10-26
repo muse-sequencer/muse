@@ -11,7 +11,7 @@
 #include <qdialog.h>
 //Added by qt3to4:
 #include <Q3PopupMenu>
-#include <Q3GridLayout>
+#include <QGridLayout>
 #include <QLabel>
 
 #include "editnotedialogbase.h"
@@ -22,7 +22,7 @@
 class PosEdit;
 class IntLabel;
 class PitchEdit;
-class Q3GridLayout;
+class QGridLayout;
 class Q3MultiLineEdit;
 class QRadioButton;
 class PosEdit;
@@ -37,7 +37,7 @@ class EditEventDialog : public QDialog {
       Q_OBJECT
 
    protected:
-      Q3GridLayout* layout1;
+      QGridLayout* layout1;
 
    public:
       EditEventDialog(QWidget* parent=0, const char* name=0);
@@ -70,7 +70,7 @@ class EditSysexDialog : public EditSysexDialogBase {
       int len;
 
    protected:
-      Q3GridLayout* layout;
+      QGridLayout* layout;
 
    private slots:
       virtual void accept();
@@ -106,7 +106,7 @@ class EditCtrlDialog : public EditCtrlBase  {
       void instrPopup();
 
    protected:
-      Q3GridLayout* layout;
+      QGridLayout* layout;
 
 
    public:
@@ -133,7 +133,7 @@ class EditMetaDialog : public EditEventDialog {
       QLabel* typeLabel;
 
    protected:
-      Q3GridLayout* layout;
+      QGridLayout* layout;
 
    private slots:
       virtual void accept();
@@ -160,7 +160,7 @@ class EditCAfterDialog : public EditEventDialog {
       IntLabel* il2;
 
    protected:
-      Q3GridLayout* layout;
+      QGridLayout* layout;
 
    public:
       EditCAfterDialog(int tick, const Event&,
@@ -182,7 +182,7 @@ class EditPAfterDialog : public EditEventDialog {
       IntLabel* il2;
 
    protected:
-      Q3GridLayout* layout;
+      QGridLayout* layout;
 
    public:
       EditPAfterDialog(int tick, const Event&,

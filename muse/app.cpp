@@ -22,8 +22,9 @@
 #include <signal.h>
 #include <stdarg.h>
 
-#include <q3buttongroup.h>
-#include <q3popupmenu.h>
+#include <QButtonGroup>
+//#include <q3popupmenu.h>
+#include <QMenu>
 #include <qmessagebox.h>
 #include <qclipboard.h>
 #include <qsocketnotifier.h>
@@ -42,7 +43,7 @@
 #include <QTranslator>
 #include <QKeyEvent>
 #include <QEvent>
-#include <Q3ActionGroup>
+#include <QActionGroup>
 #include <QPixmap>
 #include <QCloseEvent>
 
@@ -608,10 +609,10 @@ struct addSynth_cmp_str
    }
 };
 */
-
-Q3PopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0)
+ // ORCAN - CHECK
+QMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0)
 {
-  Q3PopupMenu* synp = new Q3PopupMenu(parent);
+  QMenu* synp = new QMenu(parent);
   
   //typedef std::multimap<std::string, int, addSynth_cmp_str > asmap;
   typedef std::multimap<std::string, int > asmap;
@@ -620,23 +621,23 @@ Q3PopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slo
   typedef std::multimap<std::string, int >::iterator imap;
   
   MessSynth* synMESS   = 0;
-  Q3PopupMenu* synpMESS = 0;
+  QMenu* synpMESS = 0;
   asmap mapMESS;
 
   #ifdef DSSI_SUPPORT
   DssiSynth* synDSSI   = 0;
-  Q3PopupMenu* synpDSSI = 0;
+  QMenu* synpDSSI = 0;
   asmap mapDSSI;
   #endif                  
   
   #ifdef VST_SUPPORT
   VstSynth*  synVST    = 0;
-  Q3PopupMenu* synpVST  = 0;
+  QMenu* synpVST  = 0;
   asmap mapVST;
   #endif                  
   
   // Not necessary, but what the heck.
-  Q3PopupMenu* synpOther = 0;
+  QMenu* synpOther = 0;
   asmap mapOther;
   
   //const int synth_base_id = 0x1000;
@@ -690,7 +691,7 @@ Q3PopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slo
     {
       // No MESS sub-menu yet? Create it now.
       if(!synpMESS)
-        synpMESS = new Q3PopupMenu(parent);
+        synpMESS = new QMenu(parent);
       synpMESS->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -706,7 +707,7 @@ Q3PopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slo
     {
       // No DSSI sub-menu yet? Create it now.
       if(!synpDSSI)
-        synpDSSI = new Q3PopupMenu(parent);
+        synpDSSI = new QMenu(parent);
       synpDSSI->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -723,7 +724,7 @@ Q3PopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slo
     {
       // No VST sub-menu yet? Create it now.
       if(!synpVST)
-        synpVST = new Q3PopupMenu(parent);
+        synpVST = new QMenu(parent);
       synpVST->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -737,7 +738,7 @@ Q3PopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slo
     Synth* s = synthis[idx];
     // No Other sub-menu yet? Create it now.
     if(!synpOther)
-      synpOther = new Q3PopupMenu(parent);
+      synpOther = new QMenu(parent);
     synpOther->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
   }
   
@@ -781,7 +782,7 @@ Q3PopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slo
 //    this is also used in "mixer"
 //---------------------------------------------------------
 
-void populateAddTrack(Q3PopupMenu* addTrack)
+void populateAddTrack(QMenu* addTrack)
       {
       addTrack->insertItem(QIcon(*addtrack_addmiditrackIcon),
          QT_TR_NOOP("Add Midi Track"), Track::MIDI);
@@ -799,7 +800,7 @@ void populateAddTrack(Q3PopupMenu* addTrack)
          QT_TR_NOOP("Add Aux Send"), Track::AUDIO_AUX);
          
       // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
-      Q3PopupMenu* synp = populateAddSynth(addTrack, song, SLOT(addNewTrack(int)));
+      QMenu* synp = populateAddSynth(addTrack, song, SLOT(addNewTrack(int)));
       // Add the sub-menu to the given menu.
       addTrack->insertItem(*synthIcon, QT_TR_NOOP("Add Synth"), synp, Track::AUDIO_SOFTSYNTH);
          
@@ -812,7 +813,8 @@ void populateAddTrack(Q3PopupMenu* addTrack)
 //   MusE
 //---------------------------------------------------------
 
-MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
+//MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
+MusE::MusE(int argc, char** argv) : QMainWindow()
       {
       // By T356. For LADSPA plugins in plugin.cpp
       // QWidgetFactory::addWidgetFactory( new PluginWidgetFactory ); ddskrjo
@@ -866,11 +868,21 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //---------------------------------------------------
       //    undo/redo
       //---------------------------------------------------
-      undoRedo = new Q3ActionGroup(this, tr("UndoRedo"), false);
-      undoAction = new Q3Action(tr("undo"), QIcon(*undoIconS), tr("Und&o"), // ddskrjo
+      // ORCAN - CHECK:
+      /*
+      undoRedo = new QActionGroup(this, tr("UndoRedo"), false);
+      undoAction = new QAction(tr("undo"), QIcon(*undoIconS), tr("Und&o"), // ddskrjo
         Qt::CTRL+Qt::Key_Z, undoRedo, "undo");
-      redoAction = new Q3Action(tr("redo"), QIcon(*redoIconS), tr("Re&do"), // ddskrjo
+      redoAction = new QAction(tr("redo"), QIcon(*redoIconS), tr("Re&do"), // ddskrjo
         Qt::CTRL+Qt::Key_Y, undoRedo, "redo");
+      */
+      undoRedo = new QActionGroup(this);
+      undoRedo->setExclusive(false);
+      undoAction = new QAction(QIcon(*undoIconS), tr("Und&o"), // ddskrjo
+        undoRedo);
+      redoAction = new QAction(QIcon(*redoIconS), tr("Re&do"), // ddskrjo
+        undoRedo);
+
       undoAction->setWhatsThis(tr("undo last change to song"));
       redoAction->setWhatsThis(tr("redo last undo"));
       undoAction->setEnabled(false);
@@ -881,60 +893,126 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //---------------------------------------------------
       //    Transport
       //---------------------------------------------------
+      // ORCAN - CHECK:
+      /*
+      transportAction = new QActionGroup(this, tr("Transport"), false);
 
-      transportAction = new Q3ActionGroup(this, tr("Transport"), false);
-
-      loopAction = new Q3Action(tr("loop"), QIcon(*loop1Icon),
+      loopAction = new QAction(tr("loop"), QIcon(*loop1Icon),
          tr("Loop"), 0, transportAction, "loop", true);
+      */
+      transportAction = new QActionGroup(this);
+      transportAction->setExclusive(false);
+      
+      loopAction = new QAction(QIcon(*loop1Icon),
+         tr("Loop"), transportAction);
+      loopAction->setCheckable(true);
+
       loopAction->setWhatsThis(tr(infoLoopButton));
       connect(loopAction, SIGNAL(toggled(bool)), song, SLOT(setLoop(bool)));
-
-      punchinAction = new Q3Action(tr("punchin"), QIcon(*punchin1Icon),
+      // ORCAN - CHECK:
+      /*
+      punchinAction = new QAction(tr("punchin"), QIcon(*punchin1Icon),
          tr("Punchin"), 0, transportAction, "Punchin", true);
+      */
+      punchinAction = new QAction(QIcon(*punchin1Icon),
+         tr("Punchin"), transportAction);
+      punchinAction->setCheckable(true);
+
       punchinAction->setWhatsThis(tr(infoPunchinButton));
       connect(punchinAction, SIGNAL(toggled(bool)), song, SLOT(setPunchin(bool)));
 
-      punchoutAction = new Q3Action(tr("punchout"), QIcon(*punchout1Icon),
+      // ORCAN - CHECK:
+      /*
+      punchoutAction = new QAction(tr("punchout"), QIcon(*punchout1Icon),
          tr("Punchout"), 0, transportAction, "punchout", true);
+      */
+      punchoutAction = new QAction(QIcon(*punchout1Icon),
+         tr("Punchout"), transportAction);
+      punchoutAction->setCheckable(true);
+
       punchoutAction->setWhatsThis(tr(infoPunchoutButton));
       connect(punchoutAction, SIGNAL(toggled(bool)), song, SLOT(setPunchout(bool)));
 
       transportAction->addSeparator();
 
-      startAction = new Q3Action(tr("start"), QIcon(*startIcon),
+      // ORCAN - CHECK:
+      /*
+      startAction = new QAction(tr("start"), QIcon(*startIcon),
          tr("Start"), 0, transportAction, "start");
+      */
+      startAction = new QAction(QIcon(*startIcon),
+         tr("Start"), transportAction);
+
       startAction->setWhatsThis(tr(infoStartButton));
       connect(startAction, SIGNAL(activated()), song, SLOT(rewindStart()));
 
-      rewindAction = new Q3Action(tr("rewind"), QIcon(*frewindIcon),
+      // ORCAN - CHECK:
+      /*
+      rewindAction = new QAction(tr("rewind"), QIcon(*frewindIcon),
          tr("Rewind"), 0, transportAction, "rewind");
+      */
+      rewindAction = new QAction(QIcon(*frewindIcon),
+         tr("Rewind"), transportAction);
+
       rewindAction->setWhatsThis(tr(infoRewindButton));
       connect(rewindAction, SIGNAL(activated()), song, SLOT(rewind()));
 
-      forwardAction = new Q3Action(tr("forward"), QIcon(*fforwardIcon),
+      // ORCAN - CHECK:
+      /*
+      forwardAction = new QAction(tr("forward"), QIcon(*fforwardIcon),
          tr("Forward"), 0, transportAction, "forward");
+      */
+      forwardAction = new QAction(QIcon(*fforwardIcon),
+	 tr("Forward"), transportAction);
+
       forwardAction->setWhatsThis(tr(infoForwardButton));
       connect(forwardAction, SIGNAL(activated()), song, SLOT(forward()));
 
-      stopAction = new Q3Action(tr("stop"), QIcon(*stopIcon),
+      // ORCAN - CHECK:
+      /*
+      stopAction = new QAction(tr("stop"), QIcon(*stopIcon),
          tr("Stop"), 0, transportAction, "stop", true);
+      */
+      stopAction = new QAction(QIcon(*stopIcon),
+         tr("Stop"), transportAction);
+      stopAction->setCheckable(true);
+
       stopAction->setWhatsThis(tr(infoStopButton));
       stopAction->setOn(true);
       connect(stopAction, SIGNAL(toggled(bool)), song, SLOT(setStop(bool)));
 
-      playAction = new Q3Action(tr("play"),  QIcon(*playIcon),
+      // ORCAN - CHECK:
+      /*
+      playAction = new QAction(tr("play"),  QIcon(*playIcon),
          tr("Play"), 0, transportAction, "play", true);
+      */
+      playAction = new QAction(QIcon(*playIcon),
+         tr("Play"), transportAction);
+      playAction->setCheckable(true);
+
       playAction->setWhatsThis(tr(infoPlayButton));
       playAction->setOn(false);
       connect(playAction, SIGNAL(toggled(bool)), song, SLOT(setPlay(bool)));
 
-      recordAction = new Q3Action(tr("record"),  QIcon(*recordIcon),
+      // ORCAN - CHECK:
+      /*
+      recordAction = new QAction(tr("record"),  QIcon(*recordIcon),
          tr("Record"), 0, transportAction, "record", true);
+      */
+      recordAction = new QAction(QIcon(*recordIcon),
+         tr("Record"), transportAction);
+      recordAction->setCheckable(true);
       recordAction->setWhatsThis(tr(infoRecordButton));
       connect(recordAction, SIGNAL(toggled(bool)), song, SLOT(setRecord(bool)));
 
-      panicAction = new Q3Action(tr("panic"),  QIcon(*panicIcon),
+      // ORCAN - CHECK:
+      /*
+      panicAction = new QAction(tr("panic"),  QIcon(*panicIcon),
          tr("Panic"), 0, 0, "panic", false);
+      */
+      panicAction = new QAction(QIcon(*panicIcon),
+         tr("Panic"), 0);
+
       panicAction->setWhatsThis(tr(infoPanicButton));
       connect(panicAction, SIGNAL(activated()), song, SLOT(panic()));
 
@@ -944,23 +1022,47 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
 
       //----Actions
 
-      fileNewAction = new Q3Action(tr("new"),
+      // ORCAN - CHECK:
+      /*
+      fileNewAction = new QAction(tr("new"),
         QIcon(*filenewIcon), tr("&New"), 0, this, "new"); // ddskrjo
+      */
+      fileNewAction = new QAction(
+        QIcon(*filenewIcon), tr("&New"), this); // ddskrjo
+
       fileNewAction->setToolTip(tr(fileNewText));
       fileNewAction->setWhatsThis(tr(fileNewText));
 
-      fileOpenAction = new Q3Action(tr("open"),
+      // ORCAN - CHECK:
+      /*
+      fileOpenAction = new QAction(tr("open"),
         QIcon(*openIcon), tr("&Open"), 0, this, "open"); // ddskrjo
+      */
+      fileOpenAction = new QAction(
+        QIcon(*openIcon), tr("&Open"), this); // ddskrjo
+
       fileOpenAction->setToolTip(tr(fileOpenText));
       fileOpenAction->setWhatsThis(tr(fileOpenText));
 
-      fileSaveAction = new Q3Action(tr("save"),
+      // ORCAN - CHECK:
+      /*
+      fileSaveAction = new QAction(tr("save"),
         QIcon(*saveIcon), tr("&Save"), 0, this, "save"); // ddskrjo
+      */
+      fileSaveAction = new QAction(
+        QIcon(*saveIcon), tr("&Save"), this); // ddskrjo
+
       fileSaveAction->setToolTip(tr(fileSaveText));
       fileSaveAction->setWhatsThis(tr(fileSaveText));
 
-      pianoAction = new Q3Action(tr("pianoroll"),
+      // ORCAN - CHECK:
+      /*
+      pianoAction = new QAction(tr("pianoroll"),
         *pianoIconSet, tr("Pianoroll"), 0, this, "pianoroll");
+	*/
+      pianoAction = new QAction(
+        *pianoIconSet, tr("Pianoroll"), this);
+
       connect(pianoAction, SIGNAL(activated()), SLOT(startPianoroll()));
 
 //       markerAction = new QAction(tr("marker"), QIconSet(*view_markerIcon), tr("Marker"),
@@ -974,27 +1076,44 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //--------------------------------------------------
       //    Toolbar
       //--------------------------------------------------
+      // FIXME - Orcan
+      //tools = new QToolBar(tr("File Buttons"), this);
+      tools = addToolBar(tr("File Buttons"));
 
-      tools = new Q3ToolBar(tr("File Buttons"), this);
-      fileNewAction->addTo(tools);
-      fileOpenAction->addTo(tools);
-      fileSaveAction->addTo(tools);
-
+      //fileNewAction->addTo(tools);
+      //fileOpenAction->addTo(tools);
+      //fileSaveAction->addTo(tools);
+      tools->addAction(fileNewAction);
+      tools->addAction(fileOpenAction);
+      tools->addAction(fileSaveAction);
+      
       //
       //    Whats This
       //
-      Q3WhatsThis::whatsThisButton(tools);
-
+      // FIXME - Orcan: Do we need this?
+      //Q3WhatsThis::whatsThisButton(tools);
+      tools->addAction(QWhatsThis::createAction(this));
+      
       tools->addSeparator();
-      undoRedo->addTo(tools);
+      //undoRedo->addTo(tools);
+      tools->addActions(undoRedo->actions());
+      //addToolBar(tools);
 
       tools1 = new EditToolBar(this, arrangerTools);
+      addToolBar(tools1);
 
-      Q3ToolBar* transportToolbar = new Q3ToolBar(this);
-      transportAction->addTo(transportToolbar);
+      //QToolBar* transportToolbar = new QToolBar(this);
+      QToolBar* transportToolbar = addToolBar(tr("Transport"));
+      //transportAction->addTo(transportToolbar);
+      transportToolbar->addActions(transportAction->actions());
+      //addToolBar(transportToolbar);
 
-      Q3ToolBar* panicToolbar = new Q3ToolBar(this);
-      panicAction->addTo(panicToolbar);
+      //QToolBar* panicToolbar = new QToolBar(this);
+      QToolBar* panicToolbar = addToolBar(tr("Panic"));
+      //panicAction->addTo(panicToolbar);
+      panicToolbar->addAction(panicAction);
+      //addToolBar(panicToolbar);
+
 
       if (realTimePriority < sched_get_priority_min(SCHED_FIFO))
             realTimePriority = sched_get_priority_min(SCHED_FIFO);
@@ -1032,16 +1151,19 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //    popup File
       //-------------------------------------------------------------
 
-      menu_file = new Q3PopupMenu(this);
+      menu_file = new QMenu(this);
       menuBar()->insertItem(tr("&File"), menu_file);
-      fileNewAction->addTo(menu_file);
-      fileOpenAction->addTo(menu_file);
-      openRecent = new Q3PopupMenu(menu_file);
+      //fileNewAction->addTo(menu_file);
+      //fileOpenAction->addTo(menu_file);
+      menu_file->addAction(fileNewAction);
+      menu_file->addAction(fileOpenAction);
+      openRecent = new QMenu(menu_file);
       connect(openRecent, SIGNAL(aboutToShow()), this, SLOT(openRecentMenu()));
       connect(openRecent, SIGNAL(activated(int)), this, SLOT(selectProject(int)));
       menu_ids[CMD_OPEN_RECENT] = menu_file->insertItem(tr("Open &Recent"), openRecent, 0);
       menu_file->insertSeparator();
-      fileSaveAction->addTo(menu_file);
+      //fileSaveAction->addTo(menu_file);
+      menu_file->addAction(fileSaveAction);
       menu_ids[CMD_SAVE_AS] = menu_file->insertItem(tr("Save &As"), this, SLOT(saveAs()), 0, -2);
       menu_file->insertSeparator();
       menu_ids[CMD_IMPORT_MIDI] = menu_file->insertItem(*openIconS, tr("Import Midifile"), this, SLOT(importMidi()), 0, -2);
@@ -1049,7 +1171,6 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       menu_ids[CMD_IMPORT_PART]   = menu_file->insertItem(*openIconS, tr("Import Part"), this, SLOT(importPart()), 0, -2);
       menu_file->insertSeparator();
       menu_ids[CMD_IMPORT_AUDIO] = menu_file->insertItem(*openIconS, tr("Import Wave File"), this, SLOT(importWave()), 0, -2);
-
 
       menu_file->insertSeparator();
       menu_ids[CMD_QUIT] = menu_file->insertItem(*exitIconS, tr("&Quit"), this, SLOT(quitDoc()), 0, -2);
@@ -1059,8 +1180,9 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //    popup Edit
       //-------------------------------------------------------------
 
-      menuEdit = new Q3PopupMenu(this);
-      undoRedo->addTo(menuEdit);
+      menuEdit = new QMenu(this);
+      //undoRedo->addTo(menuEdit);
+      menuEdit->addActions(undoRedo->actions());
       menuEdit->insertSeparator();
       menuBar()->insertItem(tr("&Edit"), menuEdit);
 
@@ -1085,14 +1207,14 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       menuEdit->insertItem(QIcon(*edit_track_delIcon),
          tr("Delete Selected Tracks"), CMD_DELETE_TRACK);
 
-      addTrack = new Q3PopupMenu(this);
+      addTrack = new QMenu(this);
       // Moved below. Have to wait until synths are available...
       //populateAddTrack(addTrack);
       
       menuEdit->insertItem(QIcon(*edit_track_addIcon),
          tr("Add Track"), addTrack);
 
-      select = new Q3PopupMenu(this);
+      select = new QMenu(this);
       select->insertItem(QIcon(*select_allIcon),
          tr("Select &All"),  CMD_SELECT_ALL);
       select->insertItem(QIcon(*select_deselect_allIcon),
@@ -1110,7 +1232,8 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
          tr("Select"), select);
       menuEdit->insertSeparator();
 
-      pianoAction->addTo(menuEdit);
+      //pianoAction->addTo(menuEdit);
+      menuEdit->addAction(pianoAction);
       menu_ids[CMD_OPEN_DRUMS] = menuEdit->insertItem(
          QIcon(*edit_drummsIcon), tr("Drums"), this, SLOT(startDrumEditor()), 0);
       menu_ids[CMD_OPEN_LIST]  = menuEdit->insertItem(
@@ -1118,7 +1241,7 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       menu_ids[CMD_OPEN_WAVE]  = menuEdit->insertItem(
          QIcon(*edit_waveIcon), tr("Wave"), this, SLOT(startWaveEditor()), 0);
 
-      master = new Q3PopupMenu(this);
+      master = new QMenu(this);
       master->setCheckable(false);
       menu_ids[CMD_OPEN_GRAPHIC_MASTER] = master->insertItem(
         QIcon(*mastertrack_graphicIcon),tr("Graphic"), this, SLOT(startMasterEditor()), 0);
@@ -1131,7 +1254,7 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
       connect(select, SIGNAL(activated(int)), SLOT(cmd(int)));
 
-      midiEdit = new Q3PopupMenu(this);
+      midiEdit = new QMenu(this);
       midiEdit->setCheckable(false);
 #if 0  // TODO
       menu_ids[CMD_OPEN_MIDI_TRANSFORM] = midiEdit->insertItem(
@@ -1162,7 +1285,7 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //    popup View
       //-------------------------------------------------------------
 
-      menuView = new Q3PopupMenu(this);
+      menuView = new QMenu(this);
       menuView->setCheckable(true);
       menuBar()->insertItem(tr("View"), menuView);
 
@@ -1188,7 +1311,7 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //    popup Structure
       //-------------------------------------------------------------
 
-      menuStructure = new Q3PopupMenu(this);
+      menuStructure = new QMenu(this);
       menuStructure->setCheckable(false);
       menuBar()->insertItem(tr("&Structure"), menuStructure);
       menu_ids[CMD_GLOBAL_CUT] = menuStructure->insertItem(tr("Global Cut"),    this, SLOT(globalCut()), 0);
@@ -1204,7 +1327,7 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //    popup Midi
       //-------------------------------------------------------------
 
-      midiInputPlugins = new Q3PopupMenu(this);
+      midiInputPlugins = new QMenu(this);
       midiInputPlugins->setCheckable(false);
       mpid0 = midiInputPlugins->insertItem(
          QIcon(*midi_inputplugins_transposeIcon), tr("Transpose"), 0);
@@ -1222,12 +1345,12 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
 
 //      midiInputPlugins->setItemEnabled(mpid4, false);
 
-      menu_functions = new Q3PopupMenu(this);
+      menu_functions = new QMenu(this);
       menu_functions->setCheckable(true);
       menuBar()->insertItem(tr("&Midi"), menu_functions);
       menu_functions->setCaption(tr("Midi"));
 
-      menuScriptPlugins = new Q3PopupMenu(this);
+      menuScriptPlugins = new QMenu(this);
       song->populateScriptMenu(menuScriptPlugins, this);
       menu_functions->insertItem(tr("&Plugins"), menuScriptPlugins);
       
@@ -1247,7 +1370,7 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //    popup Audio
       //-------------------------------------------------------------
 
-      menu_audio = new Q3PopupMenu(this);
+      menu_audio = new QMenu(this);
       menu_audio->setCheckable(true);
       menuBar()->insertItem(tr("&Audio"), menu_audio);
       menu_ids[CMD_AUDIO_BOUNCE_TO_TRACK] = menu_audio->insertItem(
@@ -1262,7 +1385,7 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //    popup Automation
       //-------------------------------------------------------------
 
-      menuAutomation = new Q3PopupMenu(this);
+      menuAutomation = new QMenu(this);
       menuAutomation->setCheckable(true);
       menuBar()->insertItem(tr("Automation"), menuAutomation);
       autoId = menuAutomation->insertItem(
@@ -1278,7 +1401,7 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //    popup Settings
       //-------------------------------------------------------------
 
-      follow = new Q3PopupMenu(this);
+      follow = new QMenu(this);
       follow->setCheckable(false);
       fid0 = follow->insertItem(tr("dont follow Song"), CMD_FOLLOW_NO);
       fid1 = follow->insertItem(tr("follow page"), CMD_FOLLOW_JUMP);
@@ -1286,7 +1409,7 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       follow->setItemChecked(fid1, true);
       connect(follow, SIGNAL(activated(int)), SLOT(cmd(int)));
 
-      menuSettings = new Q3PopupMenu(this);
+      menuSettings = new QMenu(this);
       menuSettings->setCheckable(false);
       menuBar()->insertItem(tr("Settings"), menuSettings);
       menu_ids[CMD_GLOBAL_CONFIG] = menuSettings->insertItem(
@@ -1314,7 +1437,7 @@ MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       //---------------------------------------------------
 
       menuBar()->insertSeparator();
-      menu_help = new Q3PopupMenu(this);
+      menu_help = new QMenu(this);
       menu_help->setCheckable(false);
       menuBar()->insertItem(tr("&Help"), menu_help);
 
@@ -4761,7 +4884,7 @@ void MusE::focusInEvent(QFocusEvent* ev)
       if (mixer2)
             mixer2->raise();
       raise();
-      Q3MainWindow::focusInEvent(ev);
+      QMainWindow::focusInEvent(ev);
       }
 
 //---------------------------------------------------------

@@ -5,11 +5,11 @@
 //=========================================================
 
 #include <stdio.h>
-#include <q3button.h>
+#include <QAbstractButton>
 #include <qstring.h>
 #include <qcombobox.h>
 #include <qspinbox.h>
-#include <q3buttongroup.h>
+#include <QButtonGroup>
 #include <qradiobutton.h>
 #include <qcheckbox.h>
 #include <qlabel.h>
@@ -645,7 +645,7 @@ void Appearance::addToPaletteClicked()
       {
       if (!color)
             return;
-      Q3Button* button = (Q3Button*)aPalette->selected(); // ddskrjo
+      QAbstractButton* button = (QAbstractButton*)aPalette->selected(); // ddskrjo
       int r, g, b;
       QColor c;
       if (button) {
@@ -661,7 +661,7 @@ void Appearance::addToPaletteClicked()
                         // found empty slot
                         aPalette->setButton(i);
                         //aPalette->moveFocus(i); ddskrjo
-                        button = (Q3Button*)aPalette->find(i); // ddskrjo
+                        button = (QAbstractButton*)aPalette->find(i); // ddskrjo
                         break;
                         }
                   }
@@ -682,7 +682,7 @@ void Appearance::paletteClicked(int id)
       {
       if (!color)
             return;
-      Q3Button* button = (Q3Button*)aPalette->find(id); // ddskrjo
+      QAbstractButton* button = (QAbstractButton*)aPalette->find(id); // ddskrjo
       if (button) {
             QColor c = button->paletteBackgroundColor();
             int r, g, b;

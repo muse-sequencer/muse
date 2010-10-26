@@ -15,7 +15,7 @@
 #include <Q3PopupMenu>
 #include <QKeyEvent>
 #include <QCloseEvent>
-#include <Q3ActionGroup>
+#include <QActionGroup>
 #include <Qt3Support>
 
 class Event;
@@ -24,7 +24,7 @@ class PartList;
 class MidiPart;
 class MidiPart;
 class Xml;
-class Q3ActionGroup;
+class QActionGroup;
 class QAction;
 class Q3ListView;
 class Q3ListViewItem;
@@ -36,8 +36,8 @@ class Q3ListViewItem;
 class ListEdit : public MidiEditor {
       Q3ListView* liste;
       Q3PopupMenu* menuEdit;
-      Q3ActionGroup* insertItems;
-      Q3ToolBar* listTools;
+      QActionGroup* insertItems;
+      QToolBar* listTools;
       MidiTrack* curTrack;
       MidiPart* curPart;
       int selectedTick;
@@ -49,7 +49,7 @@ class ListEdit : public MidiEditor {
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       void initShortcuts();
-      Q3Action *insertNote, *insertSysEx, *insertCtrl, *insertMeta, *insertCAfter, *insertPAfter;
+      QAction *insertNote, *insertSysEx, *insertCtrl, *insertMeta, *insertCAfter, *insertPAfter;
 
    private slots:
       void editInsertNote();

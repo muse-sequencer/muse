@@ -15,7 +15,7 @@
 #define __SLIDERBASE_H__
 
 #include "drange.h"
-#include <q3frame.h>
+#include <QFrame>
 #include <qpixmap.h>
 #include <qdatetime.h>
 //#include <qbutton.h>

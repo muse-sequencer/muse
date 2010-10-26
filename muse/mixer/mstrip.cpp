@@ -8,7 +8,7 @@
 
 #include <fastlog.h>
 
-#include <qlayout.h>
+#include <QLayout>
 #include <qapplication.h>
 #include <qdialog.h>
 #include <qtoolbutton.h>
@@ -20,8 +20,8 @@
 //#include <qpopupmenu.h>
 #include <qcursor.h>
 //Added by qt3to4:
-#include <Q3HBoxLayout>
-#include <Q3GridLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
 
 #include <math.h>
 #include "app.h"
@@ -144,7 +144,7 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       lb->setFixedHeight(15);
       lb->setEnabled(enabled);
 
-      Q3GridLayout* grid = new Q3GridLayout(0, 2, 2, 0, 0, "grid");
+      QGridLayout* grid = new QGridLayout(0, 2, 2, 0, 0, "grid");
       grid->setMargin(2);
       grid->addWidget(lb, 0, 0);
       grid->addWidget(dl, 1, 0);
@@ -205,7 +205,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       meter[0]->setRange(0, 127.0);
       meter[0]->setFixedWidth(15);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
-      sliderGrid = new Q3GridLayout(this); // ddskrjo this
+      sliderGrid = new QGridLayout(this); // ddskrjo this
       sliderGrid->setRowStretch(0, 100);
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignRight);
       sliderGrid->addWidget(meter[0], 0, 1, Qt::AlignLeft);
@@ -326,8 +326,8 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       solo->setFixedWidth(STRIP_WIDTH/2);
       connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
 
-      Q3HBoxLayout* smBox1 = new Q3HBoxLayout(0);
-      Q3HBoxLayout* smBox2 = new Q3HBoxLayout(0);
+      QHBoxLayout* smBox1 = new QHBoxLayout(0);
+      QHBoxLayout* smBox2 = new QHBoxLayout(0);
 
       smBox2->addWidget(mute);
       smBox2->addWidget(solo);
@@ -369,7 +369,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //route->setText(tr("Route"));
       //QToolTip::add(route, tr("set routing"));
       //layout->addWidget(route);
-      Q3HBoxLayout* rBox = new Q3HBoxLayout(0);
+      QHBoxLayout* rBox = new QHBoxLayout(0);
       iR = new QToolButton(this);
       iR->setFont(config.fonts[1]);
       iR->setFixedWidth((STRIP_WIDTH-4)/2);
