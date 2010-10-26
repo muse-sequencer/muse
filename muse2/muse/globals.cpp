@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <qpixmap.h>
 //Added by qt3to4:
-#include <Q3ActionGroup>
+#include <QActionGroup>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -301,20 +301,20 @@ int midiFilterCtrl2 = 0;
 int midiFilterCtrl3 = 0;
 int midiFilterCtrl4 = 0;
 
-Q3ActionGroup* undoRedo;
-Q3Action* undoAction;
-Q3Action* redoAction;
-Q3ActionGroup* transportAction;
-Q3Action* playAction;
-Q3Action* startAction;
-Q3Action* stopAction;
-Q3Action* rewindAction;
-Q3Action* forwardAction;
-Q3Action* loopAction;
-Q3Action* punchinAction;
-Q3Action* punchoutAction;
-Q3Action* recordAction;
-Q3Action* panicAction;
+QActionGroup* undoRedo;
+QAction* undoAction;
+QAction* redoAction;
+QActionGroup* transportAction;
+QAction* playAction;
+QAction* startAction;
+QAction* stopAction;
+QAction* rewindAction;
+QAction* forwardAction;
+QAction* loopAction;
+QAction* punchinAction;
+QAction* punchoutAction;
+QAction* recordAction;
+QAction* panicAction;
 
 //AudioMixerApp* audioMixer;
 MusE* muse;

@@ -13,11 +13,11 @@
 #include <qmenubar.h>
 #include <qaction.h>
 //Added by qt3to4:
-#include <Q3HBoxLayout>
+#include <QHBoxLayout>
 #include <QCloseEvent>
-#include <Q3PopupMenu>
-#include <Q3ActionGroup>
-#include <Q3Action>
+#include <QMenu>
+#include <QActionGroup>
+#include <QAction>
 
 #include "app.h"
 #include "amixer.h"
@@ -29,7 +29,7 @@
 #include "gconfig.h"
 #include "xml.h"
 
-extern void populateAddTrack(Q3PopupMenu* addTrack);
+extern void populateAddTrack(QMenu* addTrack);
 
 #define __WIDTH_COMPENSATION 4
 
@@ -44,7 +44,7 @@ extern void populateAddTrack(Q3PopupMenu* addTrack);
 
 //AudioMixerApp::AudioMixerApp(QWidget* parent)
 AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
-   : Q3MainWindow(parent, "mixer")
+   : QMainWindow(parent, "mixer")
       {
       cfg = c;
       oldAuxsSize = 0;
@@ -55,26 +55,39 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
       //printf("AudioMixerApp::AudioMixerApp setting caption:%s\n", cfg->name.latin1());
       setCaption(cfg->name);
 
-      Q3PopupMenu* menuConfig = new Q3PopupMenu(this);
+      QMenu* menuConfig = new QMenu(this);
       menuBar()->insertItem(tr("&Create"), menuConfig);
       populateAddTrack(menuConfig);
       
-      menuView = new Q3PopupMenu(this);
+      menuView = new QMenu(this);
       menuBar()->insertItem(tr("&View"), menuView);
       routingId = menuView->insertItem(tr("Routing"), this, SLOT(toggleRouteDialog()));
 
       menuView->insertSeparator();
-      
-      Q3ActionGroup* actionItems = new Q3ActionGroup(this, "actionItems", false);
+
+      // ORCAN - CHECK: 
+      //QActionGroup* actionItems = new QActionGroup(this, "actionItems", false);
+      QActionGroup* actionItems = new QActionGroup(this);
+      actionItems->setExclusive(false);
       
       /*
       showMidiTracksId = new QAction(tr("Show Midi Tracks"), 0, menuView);
       showDrumTracksId = new QAction(tr("Show Drum Tracks"), 0, menuView);
       showWaveTracksId = new QAction(tr("Show Wave Tracks"), 0, menuView);
       */
-      showMidiTracksId = new Q3Action(tr("Show Midi Tracks"), 0, actionItems);
-      showDrumTracksId = new Q3Action(tr("Show Drum Tracks"), 0, actionItems);
-      showWaveTracksId = new Q3Action(tr("Show Wave Tracks"), 0, actionItems);
+
+
+
+      // CHECK - ORCAN
+      //showMidiTracksId = new QAction(tr("Show Midi Tracks"), 0, actionItems);
+      //showDrumTracksId = new QAction(tr("Show Drum Tracks"), 0, actionItems);
+      //showWaveTracksId = new QAction(tr("Show Wave Tracks"), 0, actionItems);
+      showMidiTracksId = new QAction(tr("Show Midi Tracks"), actionItems);
+      showDrumTracksId = new QAction(tr("Show Drum Tracks"), actionItems);
+      showWaveTracksId = new QAction(tr("Show Wave Tracks"), actionItems);
+      
+
+
       //showMidiTracksId->addTo(menuView);
       //showDrumTracksId->addTo(menuView);
       //showWaveTracksId->addTo(menuView);
@@ -89,11 +102,23 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
       showAuxTracksId = new QAction(tr("Show Auxs"), 0, menuView);
       showSyntiTracksId = new QAction(tr("Show Synthesizers"), 0, menuView);
       */
-      showInputTracksId = new Q3Action(tr("Show Inputs"), 0, actionItems);
-      showOutputTracksId = new Q3Action(tr("Show Outputs"), 0, actionItems);
-      showGroupTracksId = new Q3Action(tr("Show Groups"), 0, actionItems);
-      showAuxTracksId = new Q3Action(tr("Show Auxs"), 0, actionItems);
-      showSyntiTracksId = new Q3Action(tr("Show Synthesizers"), 0, actionItems);
+
+
+      // CHECK - ORCAN
+      //showInputTracksId = new QAction(tr("Show Inputs"), 0, actionItems);
+      //showOutputTracksId = new QAction(tr("Show Outputs"), 0, actionItems);
+      //showGroupTracksId = new QAction(tr("Show Groups"), 0, actionItems);
+      //showAuxTracksId = new QAction(tr("Show Auxs"), 0, actionItems);
+      //showSyntiTracksId = new QAction(tr("Show Synthesizers"), 0, actionItems);
+      showInputTracksId = new QAction(tr("Show Inputs"), actionItems);
+      showOutputTracksId = new QAction(tr("Show Outputs"), actionItems);
+      showGroupTracksId = new QAction(tr("Show Groups"), actionItems);
+      showAuxTracksId = new QAction(tr("Show Auxs"), actionItems);
+      showSyntiTracksId = new QAction(tr("Show Synthesizers"), actionItems);
+
+
+
+
       //showInputTracksId->addTo(menuView);
       //showOutputTracksId->addTo(menuView);
       //showGroupTracksId->addTo(menuView);
@@ -121,13 +146,16 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
       connect(showSyntiTracksId, SIGNAL(toggled(bool)), SLOT(showSyntiTracksChanged(bool)));      
               
       actionItems->addTo(menuView);
-      view = new Q3ScrollView(this);
+      view = new QScrollArea(this);
       setCentralWidget(view);
       central = new QWidget(view);
-      view->setResizePolicy(Q3ScrollView::AutoOneFit);
-      view->setVScrollBarMode(Q3ScrollView::AlwaysOff);
+      // ORCAN - FIXME
+      /*
+      view->setResizePolicy(QScrollView::AutoOneFit);
+      view->setVScrollBarMode(QScrollView::AlwaysOff);
       view->addChild(central);
-      layout = new Q3HBoxLayout(central);
+      */
+      layout = new QHBoxLayout(central);
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
       song->update();  // calls update mixer

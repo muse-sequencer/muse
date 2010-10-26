@@ -11,10 +11,10 @@
 #include <qlabel.h>
 #include <q3popupmenu.h>
 #include <qmessagebox.h>
-#include <q3hbox.h>
+//#include <q3hbox.h>
 #include <qcheckbox.h>
 #include <qpushbutton.h>
-#include <q3widgetstack.h>
+//#include <q3widgetstack.h>
 #include <qlineedit.h>
 #include <qtimer.h>
 //Added by qt3to4:

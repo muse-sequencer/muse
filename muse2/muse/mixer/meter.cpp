@@ -12,7 +12,7 @@
 //Added by qt3to4:
 #include <QResizeEvent>
 #include <QMouseEvent>
-#include <Q3Frame>
+#include <QFrame>
 
 #include "meter.h"
 #include "gconfig.h"
@@ -23,7 +23,7 @@
 //---------------------------------------------------------
 
 Meter::Meter(QWidget* parent, MeterType type)
-   : Q3Frame(parent, "", Qt::WNoAutoErase)
+   : QFrame(parent, Qt::WNoAutoErase)
       {
       mtype = type;
       overflow    = false;

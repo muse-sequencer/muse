@@ -72,7 +72,7 @@ class PianoRoll : public MidiEditor {
       Splitter* splitter;
 
       QToolButton* speaker;
-      Q3ToolBar* tools;
+      QToolBar* tools;
       EditToolBar* tools2;
 
       Q3PopupMenu* eventColor;

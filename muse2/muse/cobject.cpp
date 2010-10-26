@@ -9,6 +9,9 @@
 #include "cobject.h"
 #include "xml.h"
 
+const int ICON_WIDTH = 18;
+const QSize ICON_SIZE(ICON_WIDTH, ICON_WIDTH);
+
 //---------------------------------------------------------
 //   readStatus
 //---------------------------------------------------------
@@ -56,7 +59,10 @@ void TopWin::writeStatus(int level, Xml& xml) const
       }
 
 TopWin::TopWin(QWidget* parent, const char* name,
-   Qt::WFlags f) : Q3MainWindow(parent, name, f)
+   Qt::WFlags f) : QMainWindow(parent, name, f)
       {
+      // Allow multiple rows.  Tim.
+      //setDockNestingEnabled(true);
+      setIconSize(ICON_SIZE);
       }
 

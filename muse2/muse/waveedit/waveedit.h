@@ -32,8 +32,8 @@ class SNode;
 class WaveEdit : public MidiEditor {
       WaveView* view;
       QSlider* ymag;
-      Q3ToolBar* tools;
-      Q3ToolBar* tb1;
+      QToolBar* tools;
+      QToolBar* tb1;
       QToolButton* solo;
       PosLabel* pos1;
       PosLabel* pos2;

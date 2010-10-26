@@ -14,7 +14,7 @@
 //#include <qfont.h>
 //#include <qnamespace.h>
 //Added by qt3to4:
-#include <Q3ActionGroup>
+#include <QActionGroup>
 #include <Qt3Support>
 //#include <qaction.h>
 #include "value.h"
@@ -26,7 +26,7 @@
 class QString;
 class QFont;
 class QAction;
-class Q3ActionGroup;
+class QActionGroup;
 class QStringList;
 
 extern const float denormalBias;
@@ -128,21 +128,21 @@ extern int midiFilterCtrl4;
 #define CMD_RANGE_SELECTED    1
 #define CMD_RANGE_LOOP        2
 
-extern Q3ActionGroup* undoRedo;
-extern Q3Action* undoAction;
-extern Q3Action* redoAction;
+extern QActionGroup* undoRedo;
+extern QAction* undoAction;
+extern QAction* redoAction;
 
-extern Q3ActionGroup* transportAction;
-extern Q3Action* playAction;
-extern Q3Action* startAction;
-extern Q3Action* stopAction;
-extern Q3Action* rewindAction;
-extern Q3Action* forwardAction;
-extern Q3Action* loopAction;
-extern Q3Action* punchinAction;
-extern Q3Action* punchoutAction;
-extern Q3Action* recordAction;
-extern Q3Action* panicAction;
+extern QActionGroup* transportAction;
+extern QAction* playAction;
+extern QAction* startAction;
+extern QAction* stopAction;
+extern QAction* rewindAction;
+extern QAction* forwardAction;
+extern QAction* loopAction;
+extern QAction* punchinAction;
+extern QAction* punchoutAction;
+extern QAction* recordAction;
+extern QAction* panicAction;
 
 //class AudioMixerApp;
 class MusE;

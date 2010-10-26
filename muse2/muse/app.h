@@ -11,11 +11,13 @@
 
 #include "config.h"
 
-#include <q3mainwindow.h>
+//#include <q3mainwindow.h>
+#include <QMainWindow>
 #include <qrect.h>
 //Added by qt3to4:
 #include <Qt3Support>
-#include <Q3PopupMenu>
+//#include <Q3PopupMenu>
+#include <QMenu>
 #include <QFocusEvent>
 #include <QCloseEvent>
 #include "cobject.h"
@@ -24,8 +26,8 @@
 
 class Part;
 class PartList;
-class Q3ToolBar;
-class Q3PopupMenu;
+class QToolBar;
+class QMenu;
 class Transport;
 class BigTime;
 class Arranger;
@@ -69,7 +71,7 @@ class EditInstrument;
 //   MusE
 //---------------------------------------------------------
 
-class MusE : public Q3MainWindow
+class MusE : public QMainWindow
       {
       Q_OBJECT
       enum {CMD_CUT, CMD_COPY, CMD_PASTE, CMD_INSERT, CMD_INSERTMEAS, CMD_PASTE_CLONE,
@@ -95,22 +97,22 @@ class MusE : public Q3MainWindow
             CMD_LAST };
 
       int menu_ids[CMD_LAST];
-      Q3Action *fileSaveAction, *fileOpenAction, *pianoAction, *fileNewAction, /* *markerAction,*/ *testAction;
+      QAction *fileSaveAction, *fileOpenAction, *pianoAction, *fileNewAction, /* *markerAction,*/ *testAction;
       QString appName;
 
       QFileInfo project;
-      Q3ToolBar *tools;
+      QToolBar *tools;
       EditToolBar *tools1;
 
       Transport* transport;
       BigTime* bigtime;
       EditInstrument* editInstrument;
       
-      Q3PopupMenu *menu_file, *menuView, *menuSettings, *menu_help;
-      Q3PopupMenu *menuEdit, *menuStructure;
-      Q3PopupMenu* menu_audio, *menuAutomation;
-      Q3PopupMenu* menu_functions, *menuScriptPlugins;
-      Q3PopupMenu* select, *master, *midiEdit, *addTrack;
+      QMenu *menu_file, *menuView, *menuSettings, *menu_help;
+      QMenu *menuEdit, *menuStructure;
+      QMenu* menu_audio, *menuAutomation;
+      QMenu* menu_functions, *menuScriptPlugins;
+      QMenu* select, *master, *midiEdit, *addTrack;
 
       // Special 'stay-open' menu for routes.
       PopupMenu* routingPopupMenu; 
@@ -118,9 +120,9 @@ class MusE : public Q3MainWindow
       int aid1a, aid1b, aid2, aid3, autoId;
       int tr_id, bt_id, mr_id;
       int cc_id;
-      Q3PopupMenu* follow;
+      QMenu* follow;
       int fid0, fid1, fid2;
-      Q3PopupMenu* midiInputPlugins;
+      QMenu* midiInputPlugins;
       int mpid0, mpid1, mpid2, mpid3, mpid4;
 
       QWidget* midiPortConfig;
@@ -143,7 +145,7 @@ class MusE : public Q3MainWindow
       ClipListEdit* clipListEdit;
       MarkerView* markerView;
       MidiTransformerDialog* midiTransformerDialog;
-      Q3PopupMenu* openRecent;
+      QMenu* openRecent;
       
       bool readMidi(FILE*);
       void read(Xml& xml, bool skipConfig);

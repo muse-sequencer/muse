@@ -26,7 +26,8 @@ PitchLabel::PitchLabel(QWidget* parent, const char* name)
       setLineWidth(2);
       setMidLineWidth(3);
       setValue(0);
-      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
+      //int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
+      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth); 
       setIndent(fw);
       }
 
@@ -46,7 +47,8 @@ void PitchLabel::setPitchMode(bool val)
 QSize PitchLabel::sizeHint() const
       {
       QFontMetrics fm(font());
-      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
+      //int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
+      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth); 
       int h  = fm.height() + fw * 2;
 //      int w = 2 + fm.width(QString("A#8")) +  fw * 4;
       int w = 2 + fm.width(QString("-9999")) + fw * 4;     // must display 14Bit controller values

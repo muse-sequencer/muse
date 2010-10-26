@@ -16,7 +16,7 @@
 #include <qlineedit.h>
 #include <qcombobox.h>
 #include <qlabel.h>
-#include <q3buttongroup.h>
+#include <QButtonGroup>
 //Added by qt3to4:
 #include <QPixmap>
 #include <stdio.h>

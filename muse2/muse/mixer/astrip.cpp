@@ -25,8 +25,11 @@
 #include <qevent.h>
 #include <qwidget.h>
 //Added by qt3to4:
-#include <Q3HBoxLayout>
-#include <Q3GridLayout>
+//#include <Q3HBoxLayout>
+//#include <Q3GridLayout>
+
+#include <QHBoxLayout>
+#include <QGridLayout>
 
 #include "app.h"
 #include "globals.h"
@@ -644,7 +647,7 @@ Knob* AudioStrip::addKnob(int type, int id, DoubleLabel** dlabel)
       plb->setFixedWidth(STRIP_WIDTH/2);
       plb->setAlignment(Qt::AlignCenter);
 
-      Q3GridLayout* pangrid = new Q3GridLayout(0, 2, 2, 0, 0, "pangrid");
+      QGridLayout* pangrid = new QGridLayout(0, 2, 2, 0, 0, "pangrid");
       pangrid->addWidget(plb, 0, 0);
       pangrid->addWidget(pl, 1, 0);
       pangrid->addMultiCellWidget(knob, 0, 1, 1, 1);
@@ -723,7 +726,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //    mono/stereo  pre/post
       //---------------------------------------------------
 
-      Q3HBoxLayout* ppBox = new Q3HBoxLayout(0);
+      QHBoxLayout* ppBox = new QHBoxLayout(0);
       stereo  = new QToolButton(this);
       stereo->setFont(config.fonts[1]);
       QIcon stereoSet;
@@ -779,7 +782,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //    slider, label, meter
       //---------------------------------------------------
 
-      sliderGrid = new Q3GridLayout(this); // ddskrjo this
+      sliderGrid = new QGridLayout(this); // ddskrjo this
       sliderGrid->setRowStretch(0, 100);
 
       //slider = new Slider(this);
@@ -849,8 +852,8 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
 
       Track::TrackType type = t->type();
 
-      Q3HBoxLayout* smBox1 = new Q3HBoxLayout(0);
-      Q3HBoxLayout* smBox2 = new Q3HBoxLayout(0);
+      QHBoxLayout* smBox1 = new QHBoxLayout(0);
+      QHBoxLayout* smBox2 = new QHBoxLayout(0);
 
       mute  = new QToolButton(this);
       
@@ -919,7 +922,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //    routing
       //---------------------------------------------------
 
-      Q3HBoxLayout* rBox = new Q3HBoxLayout(0);
+      QHBoxLayout* rBox = new QHBoxLayout(0);
       if (type != Track::AUDIO_AUX) {
             iR = new QToolButton(this);
             iR->setFont(config.fonts[1]);

@@ -14,7 +14,8 @@
 #include "song.h"
 #include "posedit.h"
 
-#include <q3toolbar.h>
+//#include <q3toolbar.h>
+#include <QToolBar>
 #include <qtoolbutton.h>
 #include <qtooltip.h>
 #include <qlayout.h>
@@ -155,14 +156,18 @@ MarkerView::MarkerView(QWidget* parent)
       setCaption(tr("MusE: Marker"));
 
       //---------Actions----------------------------
-      Q3Action* markerAdd = new Q3Action(tr("add marker"),
-         QIcon(*flagIcon), tr("Add Marker"),
-        0, this, "add marker");
+      // CHECK - ORCAN:
+      //QAction* markerAdd = new QAction(tr("add marker"),
+      //   QIcon(*flagIcon), tr("Add Marker"),
+      //  0, this, "add marker");
+      //QAction* markerDelete = new QAction(tr("delete marker"),
+      //   QIcon(*deleteIcon), tr("Delete Marker"),
+      //   0, this, "delete marker");
+
+      QAction* markerAdd = new QAction(QIcon(*flagIcon), tr("add marker"), this);
       connect(markerAdd, SIGNAL(activated()), SLOT(addMarker()));
 
-      Q3Action* markerDelete = new Q3Action(tr("delete marker"),
-         QIcon(*deleteIcon), tr("Delete Marker"),
-         0, this, "delete marker");
+      QAction* markerDelete = new QAction(QIcon(*deleteIcon), tr("delete marker"), this);
       connect(markerDelete, SIGNAL(activated()), SLOT(deleteMarker()));
 
       //---------Pulldown Menu----------------------------
@@ -174,10 +179,10 @@ MarkerView::MarkerView(QWidget* parent)
       markerDelete->addTo(editMenu);
 
       //---------ToolBar----------------------------------
-      tools = new Q3ToolBar(this, "marker-tools");
+      tools = new QToolBar(this, "marker-tools");
       undoRedo->addTo(tools);
 
-      Q3ToolBar* edit = new Q3ToolBar(this, "edit tools");
+      QToolBar* edit = new QToolBar(this, "edit tools");
       markerAdd->addTo(edit);
       markerDelete->addTo(edit);
 

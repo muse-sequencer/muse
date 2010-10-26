@@ -15,7 +15,8 @@
 #include "shortcuts.h"
 #include "debug.h"
 
-#include <q3toolbar.h>
+//#include <q3toolbar.h>
+#include <QToolBar>
 #include <qtoolbutton.h>
 #include <qtooltip.h>
 #include <qlayout.h>
@@ -88,10 +89,10 @@ LMaster::LMaster()
       connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
-      tools = new Q3ToolBar(this, "list-tools");
+      tools = new QToolBar(this, "list-tools");
       undoRedo->addTo(tools);
 
-      Q3ToolBar* edit = new Q3ToolBar(this, "edit tools");
+      QToolBar* edit = new QToolBar(this, "edit tools");
       QToolButton* tempoButton = new QToolButton(edit);
       QToolButton* timeSigButton = new QToolButton(edit);
       tempoButton->setText(tr("Tempo"));

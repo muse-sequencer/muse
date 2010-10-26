@@ -5,7 +5,8 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3toolbar.h>
+//#include <q3toolbar.h>
+#include <QToolBar>
 #include <qtooltip.h>
 #include <qtoolbutton.h>
 #include <qlayout.h>
@@ -14,7 +15,7 @@
 #include <qlabel.h>
 #include <qpushbutton.h>
 #include <qradiobutton.h>
-#include <q3buttongroup.h>
+#include <QButtonGroup>
 #include <q3listbox.h>
 #include <q3listview.h>
 #include <q3header.h>
@@ -25,7 +26,7 @@
 #include <Qt3Support>
 //Added by qt3to4:
 #include <QKeyEvent>
-#include <Q3ActionGroup>
+#include <QActionGroup>
 #include <QCloseEvent>
 
 #include "listedit.h"
@@ -419,19 +420,30 @@ QString EventListItem::text(int col) const
 ListEdit::ListEdit(PartList* pl)
    : MidiEditor(0, 0, pl)
       {
-      insertItems = new Q3ActionGroup(this, "InsertItems", false);
-      insertNote = new Q3Action(tr("Insert Note"), QIcon(*note1Icon), tr("insert Note"),
+      // ORCAN - CHECK:
+      /*
+      insertItems = new QActionGroup(this, "InsertItems", false);
+      insertNote = new QAction(tr("Insert Note"), QIcon(*note1Icon), tr("insert Note"),
         0, insertItems);
-      insertSysEx = new Q3Action(tr("Insert SysEx"), QIcon(*sysexIcon), tr("insert SysEx"),
+      insertSysEx = new QAction(tr("Insert SysEx"), QIcon(*sysexIcon), tr("insert SysEx"),
         0, insertItems);
-      insertCtrl = new Q3Action(tr("Insert Ctrl"), QIcon(*ctrlIcon), tr("insert Ctrl"),
+      insertCtrl = new QAction(tr("Insert Ctrl"), QIcon(*ctrlIcon), tr("insert Ctrl"),
         0, insertItems);
-      insertMeta = new Q3Action(tr("Insert Meta"), QIcon(*metaIcon), tr("insert Meta"),
+      insertMeta = new QAction(tr("Insert Meta"), QIcon(*metaIcon), tr("insert Meta"),
         0, insertItems);
-      insertCAfter = new Q3Action(tr("Insert Channel Aftertouch"), QIcon(*cafterIcon), tr("insert Channel Aftertouch"),
+      insertCAfter = new QAction(tr("Insert Channel Aftertouch"), QIcon(*cafterIcon), tr("insert Channel Aftertouch"),
         0, insertItems);
-      insertPAfter = new Q3Action(tr("Insert Key Aftertouch"), QIcon(*pafterIcon), tr("insert Poly Aftertouch"),
+      insertPAfter = new QAction(tr("Insert Key Aftertouch"), QIcon(*pafterIcon), tr("insert Poly Aftertouch"),
         0, insertItems);
+      */
+      insertItems = new QActionGroup(this);
+      insertItems->setExclusive(false);
+      insertNote = new QAction(QIcon(*note1Icon), tr("insert Note"), insertItems);
+      insertSysEx = new QAction(QIcon(*sysexIcon), tr("insert SysEx"), insertItems);
+      insertCtrl = new QAction(QIcon(*ctrlIcon), tr("insert Ctrl"), insertItems);
+      insertMeta = new QAction(QIcon(*metaIcon), tr("insert Meta"), insertItems);
+      insertCAfter = new QAction(QIcon(*cafterIcon), tr("insert Channel Aftertouch"), insertItems);
+      insertPAfter = new QAction(QIcon(*pafterIcon), tr("insert Poly Aftertouch"), insertItems);
 
       connect(insertNote,    SIGNAL(activated()), SLOT(editInsertNote()));
       connect(insertSysEx,   SIGNAL(activated()), SLOT(editInsertSysEx()));
@@ -468,10 +480,10 @@ ListEdit::ListEdit(PartList* pl)
       connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
-      listTools = new Q3ToolBar(this, "list-tools");
+      listTools = new QToolBar(this, "list-tools");
       listTools->setLabel(tr("List Tools"));
       undoRedo->addTo(listTools);
-      Q3ToolBar* insertTools = new Q3ToolBar(this, "insert");
+      QToolBar* insertTools = new QToolBar(this, "insert");
       insertTools->setLabel(tr("Insert Tools"));
       insertItems->addTo(insertTools);
 

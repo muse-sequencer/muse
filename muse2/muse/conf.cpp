@@ -14,7 +14,7 @@
 #include <qlineedit.h>
 #include <qcombobox.h>
 #include <qlabel.h>
-#include <q3buttongroup.h>
+#include <QButtonGroup>
 #include <stdio.h>
 #include <q3popupmenu.h>
 #include <q3groupbox.h>

@@ -22,8 +22,8 @@
 #include <signal.h>
 #include <stdarg.h>
 
-#include <qbuttongroup.h>
-#include <qpopupmenu.h>
+#include <q3buttongroup.h>
+#include <q3popupmenu.h>
 #include <qmessagebox.h>
 #include <qclipboard.h>
 #include <qsocketnotifier.h>
@@ -35,8 +35,19 @@
 #include <qstyle.h>
 #include <qsplashscreen.h>
 #include <qobject.h>
+//Added by qt3to4:
+#include <QTimerEvent>
+#include <Q3CString>
+#include <QFocusEvent>
+#include <QTranslator>
+#include <QKeyEvent>
+#include <QEvent>
+#include <Q3ActionGroup>
+#include <QPixmap>
+#include <QCloseEvent>
 
 #include "app.h"
+#include "popupmenu.h"
 #include "transport.h"
 #include "bigtime.h"
 #include "arranger.h"
@@ -93,7 +104,7 @@
 #include <alsa/asoundlib.h>
 #include "songinfo.h"
 #include "didyouknow.h"
-#include <qtextedit.h>
+#include <q3textedit.h>
 
 //extern void cacheJackRouteNames();
 
@@ -131,6 +142,9 @@ extern void exitDummyAudio();
 extern void initVST_fst_init();
 extern void initVST();
 extern void initDSSI();
+// p3.3.39
+extern void initOSC();
+extern void exitOSC();
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -402,12 +416,25 @@ bool MusE::seqStart()
         //audioWriteback->start(0);
       }
       */
+      
       int pfprio = 0;
       int midiprio = 0;
+      
+      // NOTE: realTimeScheduling can be true (gotten using jack_is_realtime()),
+      //  while the determined realTimePriority can be 0.
+      // realTimePriority is gotten using pthread_getschedparam() on the client thread 
+      //  in JackAudioDevice::realtimePriority() which is a bit flawed - it reports there's no RT...
       if(realTimeScheduling) 
       {
-        if(realTimePriority < 5)
-          printf("MusE: WARNING: Recommend setting audio realtime priority to at least 5!\n");
+        //if(realTimePriority < 5)
+        //  printf("MusE: WARNING: Recommend setting audio realtime priority to a higher value!\n");
+        /*
+        if(realTimePriority == 0)
+        {
+          pfprio = 1;
+          midiprio = 2;
+        }  
+        else
         if(realTimePriority == 1)
         {
           pfprio = 2;
@@ -444,11 +471,17 @@ bool MusE::seqStart()
           midiprio = 6;
         }  
         else
+        */
         {
-          pfprio = realTimePriority - 5;
+          //pfprio = realTimePriority - 5;
+          // p3.3.40
+          pfprio = realTimePriority + 1;
+          
           //midiprio = realTimePriority - 2;
           // p3.3.37
-          midiprio = realTimePriority + 1;
+          //midiprio = realTimePriority + 1;
+          // p3.3.40
+          midiprio = realTimePriority + 2;
         }  
       }
       
@@ -576,9 +609,9 @@ struct addSynth_cmp_str
 };
 */
 
-QPopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0)
+Q3PopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0)
 {
-  QPopupMenu* synp = new QPopupMenu(parent);
+  Q3PopupMenu* synp = new Q3PopupMenu(parent);
   
   //typedef std::multimap<std::string, int, addSynth_cmp_str > asmap;
   typedef std::multimap<std::string, int > asmap;
@@ -587,23 +620,23 @@ QPopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot
   typedef std::multimap<std::string, int >::iterator imap;
   
   MessSynth* synMESS   = 0;
-  QPopupMenu* synpMESS = 0;
+  Q3PopupMenu* synpMESS = 0;
   asmap mapMESS;
 
   #ifdef DSSI_SUPPORT
   DssiSynth* synDSSI   = 0;
-  QPopupMenu* synpDSSI = 0;
+  Q3PopupMenu* synpDSSI = 0;
   asmap mapDSSI;
   #endif                  
   
   #ifdef VST_SUPPORT
   VstSynth*  synVST    = 0;
-  QPopupMenu* synpVST  = 0;
+  Q3PopupMenu* synpVST  = 0;
   asmap mapVST;
   #endif                  
   
-  // Not neccessary, but what the heck.
-  QPopupMenu* synpOther = 0;
+  // Not necessary, but what the heck.
+  Q3PopupMenu* synpOther = 0;
   asmap mapOther;
   
   //const int synth_base_id = 0x1000;
@@ -657,7 +690,7 @@ QPopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot
     {
       // No MESS sub-menu yet? Create it now.
       if(!synpMESS)
-        synpMESS = new QPopupMenu(parent);
+        synpMESS = new Q3PopupMenu(parent);
       synpMESS->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -673,7 +706,7 @@ QPopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot
     {
       // No DSSI sub-menu yet? Create it now.
       if(!synpDSSI)
-        synpDSSI = new QPopupMenu(parent);
+        synpDSSI = new Q3PopupMenu(parent);
       synpDSSI->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -690,7 +723,7 @@ QPopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot
     {
       // No VST sub-menu yet? Create it now.
       if(!synpVST)
-        synpVST = new QPopupMenu(parent);
+        synpVST = new Q3PopupMenu(parent);
       synpVST->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -704,7 +737,7 @@ QPopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot
     Synth* s = synthis[idx];
     // No Other sub-menu yet? Create it now.
     if(!synpOther)
-      synpOther = new QPopupMenu(parent);
+      synpOther = new Q3PopupMenu(parent);
     synpOther->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
   }
   
@@ -748,25 +781,25 @@ QPopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot
 //    this is also used in "mixer"
 //---------------------------------------------------------
 
-void populateAddTrack(QPopupMenu* addTrack)
+void populateAddTrack(Q3PopupMenu* addTrack)
       {
-      addTrack->insertItem(QIconSet(*addtrack_addmiditrackIcon),
+      addTrack->insertItem(QIcon(*addtrack_addmiditrackIcon),
          QT_TR_NOOP("Add Midi Track"), Track::MIDI);
-      addTrack->insertItem(QIconSet(*addtrack_drumtrackIcon),
+      addTrack->insertItem(QIcon(*addtrack_drumtrackIcon),
          QT_TR_NOOP("Add Drum Track"), Track::DRUM);
-      addTrack->insertItem(QIconSet(*addtrack_wavetrackIcon),
+      addTrack->insertItem(QIcon(*addtrack_wavetrackIcon),
          QT_TR_NOOP("Add Wave Track"), Track::WAVE);
-      addTrack->insertItem(QIconSet(*addtrack_audiooutputIcon),
+      addTrack->insertItem(QIcon(*addtrack_audiooutputIcon),
          QT_TR_NOOP("Add Audio Output"), Track::AUDIO_OUTPUT);
-      addTrack->insertItem(QIconSet(*addtrack_audiogroupIcon),
+      addTrack->insertItem(QIcon(*addtrack_audiogroupIcon),
          QT_TR_NOOP("Add Audio Group"), Track::AUDIO_GROUP);
-      addTrack->insertItem(QIconSet(*addtrack_audioinputIcon),
+      addTrack->insertItem(QIcon(*addtrack_audioinputIcon),
          QT_TR_NOOP("Add Audio Input"), Track::AUDIO_INPUT);
-      addTrack->insertItem(QIconSet(*addtrack_auxsendIcon),
+      addTrack->insertItem(QIcon(*addtrack_auxsendIcon),
          QT_TR_NOOP("Add Aux Send"), Track::AUDIO_AUX);
          
       // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
-      QPopupMenu* synp = populateAddSynth(addTrack, song, SLOT(addNewTrack(int)));
+      Q3PopupMenu* synp = populateAddSynth(addTrack, song, SLOT(addNewTrack(int)));
       // Add the sub-menu to the given menu.
       addTrack->insertItem(*synthIcon, QT_TR_NOOP("Add Synth"), synp, Track::AUDIO_SOFTSYNTH);
          
@@ -779,12 +812,12 @@ void populateAddTrack(QPopupMenu* addTrack)
 //   MusE
 //---------------------------------------------------------
 
-MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
+MusE::MusE(int argc, char** argv) : Q3MainWindow(0, "mainwindow")
       {
       // By T356. For LADSPA plugins in plugin.cpp
-      QWidgetFactory::addWidgetFactory( new PluginWidgetFactory );
+      // QWidgetFactory::addWidgetFactory( new PluginWidgetFactory ); ddskrjo
       
-      setFocusPolicy(WheelFocus);
+      setFocusPolicy(Qt::WheelFocus);
       muse                  = this;    // hack
       clipListEdit          = 0;
       midiSyncConfig        = 0;
@@ -807,7 +840,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       mixer2                = 0;
       watchdogThread        = 0;
       editInstrument        = 0;
-
+      routingPopupMenu      = 0;
+      
       appName               = QString("MusE");
 
       song           = new Song("song");
@@ -832,11 +866,11 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       //---------------------------------------------------
       //    undo/redo
       //---------------------------------------------------
-      undoRedo = new QActionGroup(this, tr("UndoRedo"), false);
-      undoAction = new QAction(tr("undo"), QIconSet(*undoIconS, *undoIcon), tr("Und&o"),
-        CTRL+Key_Z, undoRedo, "undo");
-      redoAction = new QAction(tr("redo"), QIconSet(*redoIconS, *redoIcon), tr("Re&do"),
-        CTRL+Key_Y, undoRedo, "redo");
+      undoRedo = new Q3ActionGroup(this, tr("UndoRedo"), false);
+      undoAction = new Q3Action(tr("undo"), QIcon(*undoIconS), tr("Und&o"), // ddskrjo
+        Qt::CTRL+Qt::Key_Z, undoRedo, "undo");
+      redoAction = new Q3Action(tr("redo"), QIcon(*redoIconS), tr("Re&do"), // ddskrjo
+        Qt::CTRL+Qt::Key_Y, undoRedo, "redo");
       undoAction->setWhatsThis(tr("undo last change to song"));
       redoAction->setWhatsThis(tr("redo last undo"));
       undoAction->setEnabled(false);
@@ -848,58 +882,58 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       //    Transport
       //---------------------------------------------------
 
-      transportAction = new QActionGroup(this, tr("Transport"), false);
+      transportAction = new Q3ActionGroup(this, tr("Transport"), false);
 
-      loopAction = new QAction(tr("loop"), QIconSet(*loop1Icon),
+      loopAction = new Q3Action(tr("loop"), QIcon(*loop1Icon),
          tr("Loop"), 0, transportAction, "loop", true);
       loopAction->setWhatsThis(tr(infoLoopButton));
       connect(loopAction, SIGNAL(toggled(bool)), song, SLOT(setLoop(bool)));
 
-      punchinAction = new QAction(tr("punchin"), QIconSet(*punchin1Icon),
+      punchinAction = new Q3Action(tr("punchin"), QIcon(*punchin1Icon),
          tr("Punchin"), 0, transportAction, "Punchin", true);
       punchinAction->setWhatsThis(tr(infoPunchinButton));
       connect(punchinAction, SIGNAL(toggled(bool)), song, SLOT(setPunchin(bool)));
 
-      punchoutAction = new QAction(tr("punchout"), QIconSet(*punchout1Icon),
+      punchoutAction = new Q3Action(tr("punchout"), QIcon(*punchout1Icon),
          tr("Punchout"), 0, transportAction, "punchout", true);
       punchoutAction->setWhatsThis(tr(infoPunchoutButton));
       connect(punchoutAction, SIGNAL(toggled(bool)), song, SLOT(setPunchout(bool)));
 
       transportAction->addSeparator();
 
-      startAction = new QAction(tr("start"), QIconSet(*startIcon),
+      startAction = new Q3Action(tr("start"), QIcon(*startIcon),
          tr("Start"), 0, transportAction, "start");
       startAction->setWhatsThis(tr(infoStartButton));
       connect(startAction, SIGNAL(activated()), song, SLOT(rewindStart()));
 
-      rewindAction = new QAction(tr("rewind"), QIconSet(*frewindIcon),
+      rewindAction = new Q3Action(tr("rewind"), QIcon(*frewindIcon),
          tr("Rewind"), 0, transportAction, "rewind");
       rewindAction->setWhatsThis(tr(infoRewindButton));
       connect(rewindAction, SIGNAL(activated()), song, SLOT(rewind()));
 
-      forwardAction = new QAction(tr("forward"), QIconSet(*fforwardIcon),
+      forwardAction = new Q3Action(tr("forward"), QIcon(*fforwardIcon),
          tr("Forward"), 0, transportAction, "forward");
       forwardAction->setWhatsThis(tr(infoForwardButton));
       connect(forwardAction, SIGNAL(activated()), song, SLOT(forward()));
 
-      stopAction = new QAction(tr("stop"), QIconSet(*stopIcon),
+      stopAction = new Q3Action(tr("stop"), QIcon(*stopIcon),
          tr("Stop"), 0, transportAction, "stop", true);
       stopAction->setWhatsThis(tr(infoStopButton));
       stopAction->setOn(true);
       connect(stopAction, SIGNAL(toggled(bool)), song, SLOT(setStop(bool)));
 
-      playAction = new QAction(tr("play"),  QIconSet(*playIcon),
+      playAction = new Q3Action(tr("play"),  QIcon(*playIcon),
          tr("Play"), 0, transportAction, "play", true);
       playAction->setWhatsThis(tr(infoPlayButton));
       playAction->setOn(false);
       connect(playAction, SIGNAL(toggled(bool)), song, SLOT(setPlay(bool)));
 
-      recordAction = new QAction(tr("record"),  QIconSet(*recordIcon),
+      recordAction = new Q3Action(tr("record"),  QIcon(*recordIcon),
          tr("Record"), 0, transportAction, "record", true);
       recordAction->setWhatsThis(tr(infoRecordButton));
       connect(recordAction, SIGNAL(toggled(bool)), song, SLOT(setRecord(bool)));
 
-      panicAction = new QAction(tr("panic"),  QIconSet(*panicIcon),
+      panicAction = new Q3Action(tr("panic"),  QIcon(*panicIcon),
          tr("Panic"), 0, 0, "panic", false);
       panicAction->setWhatsThis(tr(infoPanicButton));
       connect(panicAction, SIGNAL(activated()), song, SLOT(panic()));
@@ -910,22 +944,22 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
 
       //----Actions
 
-      fileNewAction = new QAction(tr("new"),
-        QIconSet(*filenewIconS, *filenewIcon), tr("&New"), 0, this, "new");
+      fileNewAction = new Q3Action(tr("new"),
+        QIcon(*filenewIcon), tr("&New"), 0, this, "new"); // ddskrjo
       fileNewAction->setToolTip(tr(fileNewText));
       fileNewAction->setWhatsThis(tr(fileNewText));
 
-      fileOpenAction = new QAction(tr("open"),
-        QIconSet(*openIconS, *openIcon), tr("&Open"), 0, this, "open");
+      fileOpenAction = new Q3Action(tr("open"),
+        QIcon(*openIcon), tr("&Open"), 0, this, "open"); // ddskrjo
       fileOpenAction->setToolTip(tr(fileOpenText));
       fileOpenAction->setWhatsThis(tr(fileOpenText));
 
-      fileSaveAction = new QAction(tr("save"),
-        QIconSet(*saveIconS, *saveIcon), tr("&Save"), 0, this, "save");
+      fileSaveAction = new Q3Action(tr("save"),
+        QIcon(*saveIcon), tr("&Save"), 0, this, "save"); // ddskrjo
       fileSaveAction->setToolTip(tr(fileSaveText));
       fileSaveAction->setWhatsThis(tr(fileSaveText));
 
-      pianoAction = new QAction(tr("pianoroll"),
+      pianoAction = new Q3Action(tr("pianoroll"),
         *pianoIconSet, tr("Pianoroll"), 0, this, "pianoroll");
       connect(pianoAction, SIGNAL(activated()), SLOT(startPianoroll()));
 
@@ -941,7 +975,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       //    Toolbar
       //--------------------------------------------------
 
-      tools = new QToolBar(tr("File Buttons"), this);
+      tools = new Q3ToolBar(tr("File Buttons"), this);
       fileNewAction->addTo(tools);
       fileOpenAction->addTo(tools);
       fileSaveAction->addTo(tools);
@@ -949,17 +983,17 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       //
       //    Whats This
       //
-      QWhatsThis::whatsThisButton(tools);
+      Q3WhatsThis::whatsThisButton(tools);
 
       tools->addSeparator();
       undoRedo->addTo(tools);
 
       tools1 = new EditToolBar(this, arrangerTools);
 
-      QToolBar* transportToolbar = new QToolBar(this);
+      Q3ToolBar* transportToolbar = new Q3ToolBar(this);
       transportAction->addTo(transportToolbar);
 
-      QToolBar* panicToolbar = new QToolBar(this);
+      Q3ToolBar* panicToolbar = new Q3ToolBar(this);
       panicAction->addTo(panicToolbar);
 
       if (realTimePriority < sched_get_priority_min(SCHED_FIFO))
@@ -998,11 +1032,11 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       //    popup File
       //-------------------------------------------------------------
 
-      menu_file = new QPopupMenu(this);
+      menu_file = new Q3PopupMenu(this);
       menuBar()->insertItem(tr("&File"), menu_file);
       fileNewAction->addTo(menu_file);
       fileOpenAction->addTo(menu_file);
-      openRecent = new QPopupMenu(menu_file);
+      openRecent = new Q3PopupMenu(menu_file);
       connect(openRecent, SIGNAL(aboutToShow()), this, SLOT(openRecentMenu()));
       connect(openRecent, SIGNAL(activated(int)), this, SLOT(selectProject(int)));
       menu_ids[CMD_OPEN_RECENT] = menu_file->insertItem(tr("Open &Recent"), openRecent, 0);
@@ -1025,79 +1059,83 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       //    popup Edit
       //-------------------------------------------------------------
 
-      menuEdit = new QPopupMenu(this);
+      menuEdit = new Q3PopupMenu(this);
       undoRedo->addTo(menuEdit);
       menuEdit->insertSeparator();
       menuBar()->insertItem(tr("&Edit"), menuEdit);
 
       menuEdit->insertItem(*editcutIconSet, tr("C&ut"),   CMD_CUT);
-      menuEdit->setAccel(CTRL+Key_X, CMD_CUT);
+      menuEdit->setAccel(Qt::CTRL+Qt::Key_X, CMD_CUT);
       menuEdit->insertItem(*editcopyIconSet, tr("&Copy"),  CMD_COPY);
-      menuEdit->setAccel(CTRL+Key_C, CMD_COPY);
+      menuEdit->setAccel(Qt::CTRL+Qt::Key_C, CMD_COPY);
       menuEdit->insertItem(*editpasteIconSet, tr("&Paste"), CMD_PASTE);
-      menuEdit->setAccel(CTRL+Key_V, CMD_PASTE);
+      menuEdit->setAccel(Qt::CTRL+Qt::Key_V, CMD_PASTE);
+      menuEdit->insertItem(*editpasteIconSet, tr("&Insert"), CMD_INSERT);
+      menuEdit->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_I, CMD_INSERT);
       menuEdit->insertItem(*editpasteCloneIconSet, tr("Paste c&lone"), CMD_PASTE_CLONE);
-      menuEdit->setAccel(CTRL+SHIFT+Key_V, CMD_PASTE_CLONE);
+      menuEdit->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_V, CMD_PASTE_CLONE);
       menuEdit->insertItem(*editpaste2TrackIconSet, tr("Paste to &track"), CMD_PASTE_TO_TRACK);
-      menuEdit->setAccel(CTRL+Key_B, CMD_PASTE_TO_TRACK);
+      menuEdit->setAccel(Qt::CTRL+Qt::Key_B, CMD_PASTE_TO_TRACK);
       menuEdit->insertItem(*editpasteClone2TrackIconSet, tr("Paste clone to trac&k"), CMD_PASTE_CLONE_TO_TRACK);
-      menuEdit->setAccel(CTRL+SHIFT+Key_B, CMD_PASTE_CLONE_TO_TRACK);
+      menuEdit->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_B, CMD_PASTE_CLONE_TO_TRACK);
 
+      menuEdit->insertItem(*editpasteIconSet, tr("&Insert empty measure"), CMD_INSERTMEAS);
+      menuEdit->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_X, CMD_INSERTMEAS);
       menuEdit->insertSeparator();
-      menuEdit->insertItem(QIconSet(*edit_track_delIcon),
+      menuEdit->insertItem(QIcon(*edit_track_delIcon),
          tr("Delete Selected Tracks"), CMD_DELETE_TRACK);
 
-      addTrack = new QPopupMenu(this);
+      addTrack = new Q3PopupMenu(this);
       // Moved below. Have to wait until synths are available...
       //populateAddTrack(addTrack);
       
-      menuEdit->insertItem(QIconSet(*edit_track_addIcon),
+      menuEdit->insertItem(QIcon(*edit_track_addIcon),
          tr("Add Track"), addTrack);
 
-      select = new QPopupMenu(this);
-      select->insertItem(QIconSet(*select_allIcon),
+      select = new Q3PopupMenu(this);
+      select->insertItem(QIcon(*select_allIcon),
          tr("Select &All"),  CMD_SELECT_ALL);
-      select->insertItem(QIconSet(*select_deselect_allIcon),
+      select->insertItem(QIcon(*select_deselect_allIcon),
          tr("&Deselect All"), CMD_SELECT_NONE);
       menuEdit->insertSeparator();
-      select->insertItem(QIconSet(*select_invert_selectionIcon),
+      select->insertItem(QIcon(*select_invert_selectionIcon),
          tr("Invert &Selection"), CMD_SELECT_INVERT);
-      select->insertItem(QIconSet(*select_inside_loopIcon),
+      select->insertItem(QIcon(*select_inside_loopIcon),
          tr("&Inside Loop"), CMD_SELECT_ILOOP);
-      select->insertItem(QIconSet(*select_outside_loopIcon),
+      select->insertItem(QIcon(*select_outside_loopIcon),
          tr("&Outside Loop"), CMD_SELECT_OLOOP);
-      select->insertItem(QIconSet(*select_all_parts_on_trackIcon),
+      select->insertItem(QIcon(*select_all_parts_on_trackIcon),
          tr("All &Parts on Track"), CMD_SELECT_PARTS);
-      menuEdit->insertItem(QIconSet(*selectIcon),
+      menuEdit->insertItem(QIcon(*selectIcon),
          tr("Select"), select);
       menuEdit->insertSeparator();
 
       pianoAction->addTo(menuEdit);
       menu_ids[CMD_OPEN_DRUMS] = menuEdit->insertItem(
-         QIconSet(*edit_drummsIcon), tr("Drums"), this, SLOT(startDrumEditor()), 0);
+         QIcon(*edit_drummsIcon), tr("Drums"), this, SLOT(startDrumEditor()), 0);
       menu_ids[CMD_OPEN_LIST]  = menuEdit->insertItem(
-         QIconSet(*edit_listIcon), tr("List"), this, SLOT(startListEditor()), 0);
+         QIcon(*edit_listIcon), tr("List"), this, SLOT(startListEditor()), 0);
       menu_ids[CMD_OPEN_WAVE]  = menuEdit->insertItem(
-         QIconSet(*edit_waveIcon), tr("Wave"), this, SLOT(startWaveEditor()), 0);
+         QIcon(*edit_waveIcon), tr("Wave"), this, SLOT(startWaveEditor()), 0);
 
-      master = new QPopupMenu(this);
+      master = new Q3PopupMenu(this);
       master->setCheckable(false);
       menu_ids[CMD_OPEN_GRAPHIC_MASTER] = master->insertItem(
-        QIconSet(*mastertrack_graphicIcon),tr("Graphic"), this, SLOT(startMasterEditor()), 0);
+        QIcon(*mastertrack_graphicIcon),tr("Graphic"), this, SLOT(startMasterEditor()), 0);
       menu_ids[CMD_OPEN_LIST_MASTER] = master->insertItem(
-  QIconSet(*mastertrack_listIcon),tr("List"), this, SLOT(startLMasterEditor()), 0);
-      menuEdit->insertItem(QIconSet(*edit_mastertrackIcon),
-         tr("Mastertrack"), master, Key_F);
+  QIcon(*mastertrack_listIcon),tr("List"), this, SLOT(startLMasterEditor()), 0);
+      menuEdit->insertItem(QIcon(*edit_mastertrackIcon),
+         tr("Mastertrack"), master, Qt::Key_F);
 
       menuEdit->insertSeparator();
       connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
       connect(select, SIGNAL(activated(int)), SLOT(cmd(int)));
 
-      midiEdit = new QPopupMenu(this);
+      midiEdit = new Q3PopupMenu(this);
       midiEdit->setCheckable(false);
 #if 0  // TODO
       menu_ids[CMD_OPEN_MIDI_TRANSFORM] = midiEdit->insertItem(
-         QIconSet(*midi_transformIcon), tr("Midi &Transform"), this, SLOT(startMidiTransformer()), 0);
+         QIcon(*midi_transformIcon), tr("Midi &Transform"), this, SLOT(startMidiTransformer()), 0);
       midiEdit->insertItem(tr("Modify Gate Time"), this, SLOT(modifyGateTime()));
       midiEdit->insertItem(tr("Modify Velocity"),  this, SLOT(modifyVelocity()));
       midiEdit->insertItem(tr("Crescendo"),        this, SLOT(crescendo()));
@@ -1113,36 +1151,36 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       midiEdit->insertItem(tr("Mix Track"),        this, SLOT(mixTrack()));
 #endif
       menu_ids[CMD_TRANSPOSE] = midiEdit->insertItem(
-         QIconSet(*midi_transposeIcon), tr("Transpose"), this, SLOT(transpose()), 0);
+         QIcon(*midi_transposeIcon), tr("Transpose"), this, SLOT(transpose()), 0);
       menuEdit->insertItem(
-         QIconSet(*edit_midiIcon), tr("Midi"), midiEdit);
+         QIcon(*edit_midiIcon), tr("Midi"), midiEdit);
 
       menuEdit->insertSeparator();
       menuEdit->insertItem(
-          QIconSet(*edit_listIcon), tr("Song info"), this, SLOT(startSongInfo()), 0);
+          QIcon(*edit_listIcon), tr("Song info"), this, SLOT(startSongInfo()), 0);
       //-------------------------------------------------------------
       //    popup View
       //-------------------------------------------------------------
 
-      menuView = new QPopupMenu(this);
+      menuView = new Q3PopupMenu(this);
       menuView->setCheckable(true);
       menuBar()->insertItem(tr("View"), menuView);
 
       tr_id = menuView->insertItem(
-         QIconSet(*view_transport_windowIcon), tr("Transport Panel"), this, SLOT(toggleTransport()), 0);
+         QIcon(*view_transport_windowIcon), tr("Transport Panel"), this, SLOT(toggleTransport()), 0);
       bt_id = menuView->insertItem(
-         QIconSet(*view_bigtime_windowIcon), tr("Bigtime window"),  this, SLOT(toggleBigTime()), 0);
+         QIcon(*view_bigtime_windowIcon), tr("Bigtime window"),  this, SLOT(toggleBigTime()), 0);
       //aid1  = menuView->insertItem(
       //   QIconSet(*mixerSIcon), tr("Mixer"), this, SLOT(toggleMixer()), 0);
       aid1a  = menuView->insertItem(
-         QIconSet(*mixerSIcon), tr("Mixer A"), this, SLOT(toggleMixer1()), 0);
+         QIcon(*mixerSIcon), tr("Mixer A"), this, SLOT(toggleMixer1()), 0);
       aid1b  = menuView->insertItem(
-         QIconSet(*mixerSIcon), tr("Mixer B"), this, SLOT(toggleMixer2()), 0);
+         QIcon(*mixerSIcon), tr("Mixer B"), this, SLOT(toggleMixer2()), 0);
       // p3.2.24
       aid2  = menuView->insertItem(
-         QIconSet(*cliplistSIcon), tr("Cliplist"), this, SLOT(startClipList()), 0);
+         QIcon(*cliplistSIcon), tr("Cliplist"), this, SLOT(startClipList()), 0);
       mr_id = menuView->insertItem(
-         QIconSet(*view_markerIcon), tr("Marker View"),  this, SLOT(toggleMarker()), 0);
+         QIcon(*view_markerIcon), tr("Marker View"),  this, SLOT(toggleMarker()), 0);
       //markerAction->addTo(menuView);
 
       
@@ -1150,7 +1188,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       //    popup Structure
       //-------------------------------------------------------------
 
-      menuStructure = new QPopupMenu(this);
+      menuStructure = new Q3PopupMenu(this);
       menuStructure->setCheckable(false);
       menuBar()->insertItem(tr("&Structure"), menuStructure);
       menu_ids[CMD_GLOBAL_CUT] = menuStructure->insertItem(tr("Global Cut"),    this, SLOT(globalCut()), 0);
@@ -1166,16 +1204,16 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       //    popup Midi
       //-------------------------------------------------------------
 
-      midiInputPlugins = new QPopupMenu(this);
+      midiInputPlugins = new Q3PopupMenu(this);
       midiInputPlugins->setCheckable(false);
       mpid0 = midiInputPlugins->insertItem(
-         QIconSet(*midi_inputplugins_transposeIcon), tr("Transpose"), 0);
+         QIcon(*midi_inputplugins_transposeIcon), tr("Transpose"), 0);
       mpid1 = midiInputPlugins->insertItem(
-         QIconSet(*midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform"), 1);
+         QIcon(*midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform"), 1);
       mpid2 = midiInputPlugins->insertItem(
-         QIconSet(*midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter"), 2);
+         QIcon(*midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter"), 2);
       mpid3 = midiInputPlugins->insertItem(
-         QIconSet(*midi_inputplugins_remote_controlIcon), tr("Midi Remote Control"), 3);
+         QIcon(*midi_inputplugins_remote_controlIcon), tr("Midi Remote Control"), 3);
 /*
 **      mpid4 = midiInputPlugins->insertItem(
 **         QIconSet(*midi_inputplugins_random_rhythm_generatorIcon), tr("Random Rhythm Generator"), 4);
@@ -1184,63 +1222,63 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
 
 //      midiInputPlugins->setItemEnabled(mpid4, false);
 
-      menu_functions = new QPopupMenu(this);
+      menu_functions = new Q3PopupMenu(this);
       menu_functions->setCheckable(true);
       menuBar()->insertItem(tr("&Midi"), menu_functions);
       menu_functions->setCaption(tr("Midi"));
 
-      menuScriptPlugins = new QPopupMenu(this);
+      menuScriptPlugins = new Q3PopupMenu(this);
       song->populateScriptMenu(menuScriptPlugins, this);
       menu_functions->insertItem(tr("&Plugins"), menuScriptPlugins);
       
       menu_ids[CMD_MIDI_EDIT_INSTRUMENTS] = menu_functions->insertItem(
-         QIconSet(*midi_edit_instrumentIcon), tr("Edit Instrument"), this, SLOT(startEditInstrument()), 0);
+         QIcon(*midi_edit_instrumentIcon), tr("Edit Instrument"), this, SLOT(startEditInstrument()), 0);
       menu_functions->insertItem(
-         QIconSet(*midi_inputpluginsIcon), tr("Input Plugins"), midiInputPlugins, Key_P);
+         QIcon(*midi_inputpluginsIcon), tr("Input Plugins"), midiInputPlugins, Qt::Key_P);
       menu_functions->insertSeparator();
       menu_ids[CMD_MIDI_RESET] = menu_functions->insertItem(
-         QIconSet(*midi_reset_instrIcon), tr("Reset Instr."), this, SLOT(resetMidiDevices()), 0);
+         QIcon(*midi_reset_instrIcon), tr("Reset Instr."), this, SLOT(resetMidiDevices()), 0);
       menu_ids[CMD_MIDI_INIT] = menu_functions->insertItem(
-         QIconSet(*midi_init_instrIcon), tr("Init Instr."),  this, SLOT(initMidiDevices()), 0);
+         QIcon(*midi_init_instrIcon), tr("Init Instr."),  this, SLOT(initMidiDevices()), 0);
       menu_ids[CMD_MIDI_LOCAL_OFF] = menu_functions->insertItem(
-         QIconSet(*midi_local_offIcon), tr("local off"), this, SLOT(localOff()), 0);
+         QIcon(*midi_local_offIcon), tr("local off"), this, SLOT(localOff()), 0);
 
       //-------------------------------------------------------------
       //    popup Audio
       //-------------------------------------------------------------
 
-      menu_audio = new QPopupMenu(this);
+      menu_audio = new Q3PopupMenu(this);
       menu_audio->setCheckable(true);
       menuBar()->insertItem(tr("&Audio"), menu_audio);
       menu_ids[CMD_AUDIO_BOUNCE_TO_TRACK] = menu_audio->insertItem(
-         QIconSet(*audio_bounce_to_trackIcon), tr("Bounce to Track"), this, SLOT(bounceToTrack()), 0);
+         QIcon(*audio_bounce_to_trackIcon), tr("Bounce to Track"), this, SLOT(bounceToTrack()), 0);
       menu_ids[CMD_AUDIO_BOUNCE_TO_FILE] = menu_audio->insertItem(
-         QIconSet(*audio_bounce_to_fileIcon), tr("Bounce to File"), this, SLOT(bounceToFile()), 0);
+         QIcon(*audio_bounce_to_fileIcon), tr("Bounce to File"), this, SLOT(bounceToFile()), 0);
       menu_audio->insertSeparator();
       menu_ids[CMD_AUDIO_RESTART] = menu_audio->insertItem(
-         QIconSet(*audio_restartaudioIcon), tr("Restart Audio"), this, SLOT(seqRestart()), 0);
+         QIcon(*audio_restartaudioIcon), tr("Restart Audio"), this, SLOT(seqRestart()), 0);
 
       //-------------------------------------------------------------
       //    popup Automation
       //-------------------------------------------------------------
 
-      menuAutomation = new QPopupMenu(this);
+      menuAutomation = new Q3PopupMenu(this);
       menuAutomation->setCheckable(true);
       menuBar()->insertItem(tr("Automation"), menuAutomation);
       autoId = menuAutomation->insertItem(
-         QIconSet(*automation_mixerIcon), tr("Mixer Automation"), this, SLOT(switchMixerAutomation()), 0);
+         QIcon(*automation_mixerIcon), tr("Mixer Automation"), this, SLOT(switchMixerAutomation()), 0);
       menuAutomation->insertSeparator();
       menu_ids[CMD_MIXER_SNAPSHOT] = menuAutomation->insertItem(
-         QIconSet(*automation_take_snapshotIcon), tr("Take Snapshot"), this, SLOT(takeAutomationSnapshot()), 0);
+         QIcon(*automation_take_snapshotIcon), tr("Take Snapshot"), this, SLOT(takeAutomationSnapshot()), 0);
       menu_ids[CMD_MIXER_AUTOMATION_CLEAR] = menuAutomation->insertItem(
-         QIconSet(*automation_clear_dataIcon), tr("Clear Automation Data"), this, SLOT(clearAutomation()), 0);
+         QIcon(*automation_clear_dataIcon), tr("Clear Automation Data"), this, SLOT(clearAutomation()), 0);
       menuAutomation->setItemEnabled(menu_ids[CMD_MIXER_AUTOMATION_CLEAR], false);
 
       //-------------------------------------------------------------
       //    popup Settings
       //-------------------------------------------------------------
 
-      follow = new QPopupMenu(this);
+      follow = new Q3PopupMenu(this);
       follow->setCheckable(false);
       fid0 = follow->insertItem(tr("dont follow Song"), CMD_FOLLOW_NO);
       fid1 = follow->insertItem(tr("follow page"), CMD_FOLLOW_JUMP);
@@ -1248,35 +1286,35 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       follow->setItemChecked(fid1, true);
       connect(follow, SIGNAL(activated(int)), SLOT(cmd(int)));
 
-      menuSettings = new QPopupMenu(this);
+      menuSettings = new Q3PopupMenu(this);
       menuSettings->setCheckable(false);
       menuBar()->insertItem(tr("Settings"), menuSettings);
       menu_ids[CMD_GLOBAL_CONFIG] = menuSettings->insertItem(
-         QIconSet(*settings_globalsettingsIcon), tr("Global Settings"), this, SLOT(configGlobalSettings()),0);
+         QIcon(*settings_globalsettingsIcon), tr("Global Settings"), this, SLOT(configGlobalSettings()),0);
       menu_ids[CMD_CONFIG_SHORTCUTS] = menuSettings->insertItem(
-         QIconSet(*settings_configureshortcutsIcon), tr("Configure shortcuts"), this, SLOT(configShortCuts()), 0);
+         QIcon(*settings_configureshortcutsIcon), tr("Configure shortcuts"), this, SLOT(configShortCuts()), 0);
       menuSettings->insertItem(
-         QIconSet(*settings_follow_songIcon), tr("follow song"), follow, Key_F);
+         QIcon(*settings_follow_songIcon), tr("follow song"), follow, Qt::Key_F);
       menu_ids[CMD_CONFIG_METRONOME] = menuSettings->insertItem(
-         QIconSet(*settings_metronomeIcon), tr("Metronome"), this, SLOT(configMetronome()), 0);
+         QIcon(*settings_metronomeIcon), tr("Metronome"), this, SLOT(configMetronome()), 0);
       menuSettings->insertSeparator();
       menu_ids[CMD_CONFIG_MIDISYNC] = menuSettings->insertItem(
-         QIconSet(*settings_midisyncIcon), tr("Midi Sync"), this, SLOT(configMidiSync()), 0);
+         QIcon(*settings_midisyncIcon), tr("Midi Sync"), this, SLOT(configMidiSync()), 0);
       menu_ids[CMD_MIDI_FILE_CONFIG] = menuSettings->insertItem(
-         QIconSet(*settings_midifileexportIcon), tr("Midi File Import/Export"), this, SLOT(configMidiFile()), 0);
+         QIcon(*settings_midifileexportIcon), tr("Midi File Import/Export"), this, SLOT(configMidiFile()), 0);
       menuSettings->insertSeparator();
       menu_ids[CMD_APPEARANCE_SETTINGS] = menuSettings->insertItem(
-         QIconSet(*settings_appearance_settingsIcon), tr("Appearance settings"), this, SLOT(configAppearance()), 0);
+         QIcon(*settings_appearance_settingsIcon), tr("Appearance settings"), this, SLOT(configAppearance()), 0);
       menuSettings->insertSeparator();
       menu_ids[CMD_CONFIG_MIDI_PORTS] = menuSettings->insertItem(
-         QIconSet(*settings_midiport_softsynthsIcon), tr("Midi Ports / Soft Synth"), this, SLOT(configMidiPorts()), 0);
+         QIcon(*settings_midiport_softsynthsIcon), tr("Midi Ports / Soft Synth"), this, SLOT(configMidiPorts()), 0);
 
       //---------------------------------------------------
       //    popup Help
       //---------------------------------------------------
 
       menuBar()->insertSeparator();
-      menu_help = new QPopupMenu(this);
+      menu_help = new Q3PopupMenu(this);
       menu_help->setCheckable(false);
       menuBar()->insertItem(tr("&Help"), menu_help);
 
@@ -1286,9 +1324,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
       menu_ids[CMD_OPEN_BUG] = menu_help->insertItem(tr("&Report Bug..."), this, SLOT(startBugBrowser()), 0);
       menu_help->insertSeparator();
       menu_help->insertItem(tr("&About MusE"), this, SLOT(about()));
-      menu_help->insertItem(tr("About&Qt"), this, SLOT(aboutQt()));
-      menu_help->insertSeparator();
-      menu_ids[CMD_START_WHATSTHIS] = menu_help->insertItem(tr("What's &This?"), this, SLOT(whatsThis()), 0);
+      //menu_help->insertItem(tr("About&Qt"), this, SLOT(aboutQt()));
+      //menu_help->insertSeparator();
+      //menu_ids[CMD_START_WHATSTHIS] = menu_help->insertItem(tr("What's &This?"), this, SLOT(whatsThis()), 0);
 
       //---------------------------------------------------
       //    Central Widget
@@ -1560,7 +1598,27 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             showBigtime(config.bigTimeVisible);
             //showMixer(config.mixerVisible);
             showMixer1(config.mixer1Visible);
-            showMixer2(config.mixer1Visible);
+            showMixer2(config.mixer2Visible);
+            
+            // Added p3.3.43 Make sure the geometry is correct because showMixerX() will NOT 
+            //  set the geometry if the mixer has already been created.
+            if(mixer1)
+            {
+              //if(mixer1->geometry().size() != config.mixer1.geometry.size())   // p3.3.53 Moved below
+              //  mixer1->resize(config.mixer1.geometry.size());
+              
+              if(mixer1->geometry().topLeft() != config.mixer1.geometry.topLeft())
+                mixer1->move(config.mixer1.geometry.topLeft());
+            }
+            if(mixer2)
+            {
+              //if(mixer2->geometry().size() != config.mixer2.geometry.size())   // p3.3.53 Moved below
+              //  mixer2->resize(config.mixer2.geometry.size());
+              
+              if(mixer2->geometry().topLeft() != config.mixer2.geometry.topLeft())
+                mixer2->move(config.mixer2.geometry.topLeft());
+            }
+            
             showMarker(config.markerVisible);
             resize(config.geometryMain.size());
             move(config.geometryMain.topLeft());
@@ -1579,6 +1637,36 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       song->updatePos();
       clipboardChanged(); // enable/disable "Paste"
       selectionChanged(); // enable/disable "Copy" & "Paste"
+      
+      // p3.3.53 Try this AFTER the song update above which does a mixer update... Tested OK - mixers resize properly now.
+      if (loadAll) 
+      {
+            if(mixer1)
+            {
+              if(mixer1->geometry().size() != config.mixer1.geometry.size())
+              {
+                //printf("MusE::loadProjectFile1 resizing mixer1 x:%d y:%d w:%d h:%d\n", config.mixer1.geometry.x(), 
+                //                                                                       config.mixer1.geometry.y(), 
+                //                                                                       config.mixer1.geometry.width(), 
+                //                                                                       config.mixer1.geometry.height()
+                //                                                                       );  
+                mixer1->resize(config.mixer1.geometry.size());
+              }
+            }  
+            if(mixer2)
+            {
+              if(mixer2->geometry().size() != config.mixer2.geometry.size())
+              {
+                //printf("MusE::loadProjectFile1 resizing mixer2 x:%d y:%d w:%d h:%d\n", config.mixer2.geometry.x(), 
+                //                                                                       config.mixer2.geometry.y(), 
+                //                                                                       config.mixer2.geometry.width(), 
+                //                                                                       config.mixer2.geometry.height()
+                //                                                                       );  
+                mixer2->resize(config.mixer2.geometry.size());
+              }
+            }  
+      }
+      
       }
 
 //---------------------------------------------------------
@@ -1719,7 +1807,8 @@ bool MusE::save(const QString& name, bool overwriteWarn)
       write(xml);
       if (ferror(f)) {
             QString s = "Write File\n" + name + "\nfailed: "
-               + strerror(errno);
+               //+ strerror(errno);
+               + QString(strerror(errno));                 // p4.0.0
             QMessageBox::critical(this,
                tr("MusE: Write File failed"), s);
             popenFlag? pclose(f) : fclose(f);
@@ -1798,6 +1887,11 @@ void MusE::closeEvent(QCloseEvent*)
         printf("Muse: Exiting Metronome\n");
       exitMetronome();
       
+      // p3.3.47
+      // Make sure to clear the menu, which deletes any sub menus.
+      if(routingPopupMenu)
+        routingPopupMenu->clear();
+      
       // Changed by Tim. p3.3.14
       //SynthIList* sl = song->syntis();
       //for (iSynthI i = sl->begin(); i != sl->end(); ++i)
@@ -1832,6 +1926,16 @@ void MusE::closeEvent(QCloseEvent*)
         printf("Muse: Exiting Dsp\n");
       AL::exitDsp();
       
+      if(debugMsg)
+        printf("Muse: Exiting OSC\n");
+      exitOSC();
+      
+      // p3.3.47
+      delete audioPrefetch;
+      delete audio;
+      delete midiSeq;
+      delete song;
+      
       qApp->quit();
       }
 
@@ -1854,7 +1958,10 @@ void MusE::showMarker(bool flag)
       if (markerView == 0) {
             markerView = new MarkerView(this);
 
-            connect(arranger, SIGNAL(addMarker(int)), markerView, SLOT(addMarker(int)));
+            // Removed p3.3.43 
+            // Song::addMarker() already emits a 'markerChanged'.
+            //connect(arranger, SIGNAL(addMarker(int)), markerView, SLOT(addMarker(int)));
+            
             connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
             toplevels.push_back(Toplevel(Toplevel::MARKER, (unsigned long)(markerView), markerView));
             markerView->show();
@@ -1893,6 +2000,676 @@ void MusE::showTransport(bool flag)
       }
 
 //---------------------------------------------------------
+//   getRoutingPopupMenu
+//---------------------------------------------------------
+
+PopupMenu* MusE::getRoutingPopupMenu()
+{
+  if(!routingPopupMenu)
+    routingPopupMenu = new PopupMenu(this);
+  return routingPopupMenu;
+}
+
+//---------------------------------------------------------
+//   updateRouteMenus
+//---------------------------------------------------------
+
+//void MusE::updateRouteMenus(Track* track)
+void MusE::updateRouteMenus(Track* track, QObject* master)    // p3.3.50
+{
+      //if(!track || track != gRoutingPopupMenuMaster || track->type() == Track::AUDIO_AUX)
+      //if(!track || track->type() == Track::AUDIO_AUX)
+      if(!track || gRoutingPopupMenuMaster != master)  // p3.3.50
+        return;
+        
+      //QPopupMenu* pup = muse->getORoutesPopup();
+      PopupMenu* pup = getRoutingPopupMenu();
+      
+      if(pup->count() == 0)
+        return;
+        
+      // p4.0.1 Protection since reverting to regular (self-extinguishing) menu behaviour here in muse2.
+      if(!pup->isVisible())
+      {
+        //printf("MusE::updateRouteMenus menu is not visible\n");
+        return;
+      }
+        
+      //AudioTrack* t = (AudioTrack*)track;
+      RouteList* rl = gIsOutRoutingPopupMenu ? track->outRoutes() : track->inRoutes();
+
+      /*
+      iRoute iorl = orl->begin();
+      for(; iorl != orl->end(); ++iorl) 
+      {
+        iRouteMenuMap imm = ormm->begin();
+        for(; imm != ormm->end(); ++imm) 
+        {
+          if(*iorl == imm->second)
+          {
+            orpup->setItemChecked(imm->first, true);
+            break;
+          }
+        }
+        //if(imm == ormm->end()) 
+        //{
+        //}
+        
+      }
+      //if (iorl == orl->end()) 
+      //{
+      //}
+      */     
+           
+      iRouteMenuMap imm = gRoutingMenuMap.begin();
+      for(; imm != gRoutingMenuMap.end(); ++imm) 
+      {
+        // p3.3.50 Ignore the 'toggle' items.
+        if(imm->second.type == Route::MIDI_PORT_ROUTE && 
+           imm->first >= (MIDI_PORTS * MIDI_CHANNELS) && imm->first < (MIDI_PORTS * MIDI_CHANNELS + MIDI_PORTS))   
+          continue;
+          
+        //bool found = false;
+        iRoute irl = rl->begin();
+        for(; irl != rl->end(); ++irl) 
+        {
+          if(imm->second.type == Route::MIDI_PORT_ROUTE)                                     // p3.3.50 Is the map route a midi port route?
+          {
+            if(irl->type == Route::MIDI_PORT_ROUTE && irl->midiPort == imm->second.midiPort  // Is the track route a midi port route?
+               && (irl->channel & imm->second.channel) == imm->second.channel)               // Is the exact channel mask bit(s) set?
+            {
+              //found = true;
+              break;
+            }
+          }
+          else
+          if(*irl == imm->second)
+          {
+            //found = true;
+            break;
+          }
+        }
+        //pup->setItemChecked(imm->first, found);
+        pup->setItemChecked(imm->first, irl != rl->end());
+      }
+      
+      
+      return;
+}      
+      
+//---------------------------------------------------------
+//   routingPopupMenuActivated
+//---------------------------------------------------------
+
+void MusE::routingPopupMenuActivated(Track* track, int n)
+{
+      //if(!track || (track != gRoutingPopupMenuMaster))
+      if(!track)
+        return;
+        
+      if(track->isMidiTrack())
+      {
+        PopupMenu* pup = getRoutingPopupMenu();
+        
+        //printf("MusE::routingPopupMenuActivated midi n:%d count:%d\n", n, pup->count());
+        
+        if(pup->count() == 0)
+          return;
+          
+        //MidiTrack* t = (MidiTrack*)track;
+        RouteList* rl = gIsOutRoutingPopupMenu ? track->outRoutes() : track->inRoutes();
+        
+        if(n == -1) 
+        {
+          //printf("MusE::routingPopupMenuActivated midi n = -1\n");
+          ///delete pup;
+          ///pup = 0;
+          return;
+        }
+        else
+        {
+          //int mdidx = n / MIDI_CHANNELS;
+          //int ch = n % MIDI_CHANNELS;
+          //int chbit = 1 << ch;              // p3.3.50
+          //int chmask = 0;                   
+          
+          //if(n >= MIDI_PORTS * MIDI_CHANNELS)   // p3.3.50  Toggle channels.
+          //{    
+            //for (int i = 0; i < MIDI_CHANNELS; i++)
+              //muse->routingPopupMenuActivated(selected, i + MIDI_CHANNELS * (n-1000));
+              //muse->routingPopupMenuActivated(selected, i + MIDI_CHANNELS * (n - MIDI_PORTS * MIDI_CHANNELS));   // p3.3.50
+          //  chbit = (1 << MIDI_CHANNELS) - 1;
+          //}
+          //if(debugMsg)
+            //printf("MusE::routingPopupMenuActivated mdidx:%d ch:%d\n", mdidx, ch);
+            
+          // p3.3.50
+          iRouteMenuMap imm = gRoutingMenuMap.find(n);
+          if(imm == gRoutingMenuMap.end())
+            return;
+          if(imm->second.type != Route::MIDI_PORT_ROUTE)
+            return;
+          Route &aRoute = imm->second;
+          int chbit = aRoute.channel;
+          Route bRoute(track, chbit);
+          int mdidx = aRoute.midiPort;
+
+          MidiPort* mp = &midiPorts[mdidx];
+          MidiDevice* md = mp->device();
+          if(!md)
+          {
+            ///delete pup;
+            return;
+          }
+          
+          //if(!(md->rwFlags() & 2))
+          if(!(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))
+          {
+            ///delete pup;
+            return;
+          }  
+          
+          //QString s(pup->text(n));
+          //QT_TR_NOOP(md->name())
+          
+          //Route srcRoute(s, false, -1);
+          
+          //Route aRoute(md, ch);
+          //Route aRoute(mdidx, ch);      // p3.3.49
+          //Route aRoute(mdidx, chbit);     // p3.3.50 In accordance with new channel mask, use the bit position.
+          
+          //Route srcRoute(md, -1);
+          //Route dstRoute(track, -1);
+          //Route bRoute(track, ch);
+          //Route bRoute(track, chbit);     // p3.3.50 
+
+          //if (track->type() == Track::AUDIO_INPUT)
+          //      srcRoute.channel = dstRoute.channel = n & 0xf;
+          
+          int chmask = 0;                   
+          iRoute iir = rl->begin();
+          for (; iir != rl->end(); ++iir) 
+          {
+            //if(*iir == (dst ? bRoute : aRoute))
+            //if(*iir == aRoute)
+            if(iir->type == Route::MIDI_PORT_ROUTE && iir->midiPort == mdidx)    // p3.3.50 Is there already a route to this port?
+            {
+                  chmask = iir->channel;  // p3.3.50 Grab the channel mask.
+                  break;
+            }      
+          }
+          //if (iir != rl->end()) 
+          if ((chmask & chbit) == chbit)             // p3.3.50 Is the channel's bit(s) set?
+          {
+            // disconnect
+            if(gIsOutRoutingPopupMenu)
+            {
+              //printf("MusE::routingPopupMenuActivated removing route src track name: %s dst device name: %s\n", track->name().latin1(), md->name().latin1());
+              audio->msgRemoveRoute(bRoute, aRoute);
+            }
+            else
+            {
+              //printf("MusE::routingPopupMenuActivated removing route src device name: %s dst track name: %s\n", md->name().latin1(), track->name().latin1());
+              audio->msgRemoveRoute(aRoute, bRoute);
+            }
+          }
+          else 
+          {
+            // connect
+            if(gIsOutRoutingPopupMenu)
+            {
+              //printf("MusE::routingPopupMenuActivated adding route src track name: %s dst device name: %s\n", track->name().latin1(), md->name().latin1());
+              audio->msgAddRoute(bRoute, aRoute);
+            }
+            else
+            {
+              //printf("MusE::routingPopupMenuActivated adding route src device name: %s dst track name: %s\n", md->name().latin1(), track->name().latin1());
+              audio->msgAddRoute(aRoute, bRoute);
+            }  
+          }
+          
+          //printf("MusE::routingPopupMenuActivated calling msgUpdateSoloStates\n");
+          audio->msgUpdateSoloStates();
+          //printf("MusE::routingPopupMenuActivated calling song->update\n");
+          song->update(SC_ROUTE);
+        }
+      }
+      else
+      {
+        // TODO: Try to move code from AudioStrip::routingPopupMenuActivated into here.
+        
+        /*
+        PopupMenu* pup = getRoutingPopupMenu();
+        
+        printf("MusE::routingPopupMenuActivated audio n:%d count:%d\n", n, pup->count());
+        
+        if(pup->count() == 0)
+          return;
+          
+        AudioTrack* t = (AudioTrack*)track;
+        RouteList* rl = gIsOutRoutingPopupMenu ? t->outRoutes() : t->inRoutes();
+        
+        //QPoint ppt = QCursor::pos();
+        
+        if(n == -1) 
+        {
+          //printf("MusE::routingPopupMenuActivated audio n = -1 deleting popup...\n");
+          printf("MusE::routingPopupMenuActivated audio n = -1\n");
+          ///delete pup;
+          ///pup = 0;
+          return;
+        }
+        else
+        //if(n == 0)
+        //{
+          //printf("MusE::routingPopupMenuActivated audio n = 0 = tearOffHandle\n");
+          //oR->setDown(false);     
+        //  return;
+        //}
+        //else
+        {
+            if(gIsOutRoutingPopupMenu)
+            {  
+              QString s(pup->text(n));
+              
+              //printf("AudioStrip::routingPopupMenuActivated audio text:%s\n", s.latin1());
+              
+              if(track->type() == Track::AUDIO_OUTPUT)
+              {
+                ///delete orpup;
+                
+                int chan = n & 0xf;
+                
+                //Route srcRoute(t, -1);
+                //Route srcRoute(t, chan, chans);
+                //Route srcRoute(t, chan, 1);
+                Route srcRoute(t, chan);
+                
+                //Route dstRoute(s, true, -1);
+                Route dstRoute(s, true, -1, Route::JACK_ROUTE);
+                //Route dstRoute(s, true, 0, Route::JACK_ROUTE);
+    
+                //srcRoute.channel = dstRoute.channel = chan;
+                dstRoute.channel = chan;
+                //dstRoute.channels = 1;
+    
+                // check if route src->dst exists:
+                iRoute irl = rl->begin();
+                for (; irl != rl->end(); ++irl) {
+                      if (*irl == dstRoute)
+                            break;
+                      }
+                if (irl != rl->end()) {
+                      // disconnect if route exists
+                      audio->msgRemoveRoute(srcRoute, dstRoute);
+                      }
+                else {
+                      // connect if route does not exist
+                      audio->msgAddRoute(srcRoute, dstRoute);
+                      }
+                audio->msgUpdateSoloStates();
+                song->update(SC_ROUTE);
+                
+                // p3.3.47
+                //pup->popup(ppt, 0);
+                
+                //oR->setDown(false);   
+                return;
+                
+                // p3.3.46
+                ///goto _redisplay;
+              }
+              
+              iRouteMenuMap imm = gRoutingMenuMap.find(n);
+              if(imm == gRoutingMenuMap.end())
+              {  
+                ///delete orpup;
+                //oR->setDown(false);     // orpup->exec() catches mouse release event
+                return;
+              }  
+              
+              //int chan = n >> 16;
+              //int chans = (chan >> 15) + 1; // Bit 31 MSB: Mono or stereo.
+              //chan &= 0xffff;
+              //int chan = imm->second.channel;
+              //int chans = imm->second.channels; 
+              
+              //Route srcRoute(t, -1);
+              //srcRoute.remoteChannel = chan;
+              //Route srcRoute(t, chan, chans);
+              Route srcRoute(t, imm->second.channel, imm->second.channels);
+              //Route srcRoute(t, imm->second.channel);
+              srcRoute.remoteChannel = imm->second.remoteChannel;
+              
+              //Route dstRoute(s, true, -1);
+              //Route dstRoute(s, true, -1, Route::TRACK_ROUTE);
+              Route &dstRoute = imm->second;
+  
+              // check if route src->dst exists:
+              iRoute irl = rl->begin();
+              for (; irl != rl->end(); ++irl) {
+                    if (*irl == dstRoute)
+                          break;
+                    }
+              if (irl != rl->end()) {
+                    // disconnect if route exists
+                    audio->msgRemoveRoute(srcRoute, dstRoute);
+                    }
+              else {
+                    // connect if route does not exist
+                    audio->msgAddRoute(srcRoute, dstRoute);
+                    }
+              audio->msgUpdateSoloStates();
+              song->update(SC_ROUTE);
+                
+              // p3.3.46
+              //oR->setDown(false);     
+              ///goto _redisplay;
+              
+              // p3.3.47
+              //pup->popup(ppt, 0);
+            }  
+            else
+            {
+              QString s(pup->text(n));
+              
+              if(track->type() == Track::AUDIO_INPUT)
+              {
+                ///delete pup;
+                int chan = n & 0xf;
+                
+                Route srcRoute(s, false, -1, Route::JACK_ROUTE);
+                Route dstRoute(t, chan);
+                
+                srcRoute.channel = chan;
+                
+                iRoute irl = rl->begin();
+                for(; irl != rl->end(); ++irl) 
+                {
+                  if(*irl == srcRoute)
+                    break;
+                }
+                if(irl != rl->end()) 
+                  // disconnect
+                  audio->msgRemoveRoute(srcRoute, dstRoute);
+                else 
+                  // connect
+                  audio->msgAddRoute(srcRoute, dstRoute);
+                
+                audio->msgUpdateSoloStates();
+                song->update(SC_ROUTE);
+                //iR->setDown(false);     // pup->exec() catches mouse release event
+                return;
+                
+                // p3.3.46
+                ///goto _redisplay;
+              }
+              
+              iRouteMenuMap imm = gRoutingMenuMap.find(n);
+              if(imm == gRoutingMenuMap.end())
+              {  
+                //delete pup;
+                //iR->setDown(false);     // pup->exec() catches mouse release event
+                return;
+              }  
+              
+              //int chan = n >> 16;
+              //int chans = (chan >> 15) + 1; // Bit 31 MSB: Mono or stereo.
+              //chan &= 0xffff;
+              //int chan = imm->second.channel;
+              //int chans = imm->second.channels; 
+              
+              //Route srcRoute(s, false, -1);
+              //Route srcRoute(s, false, -1, Route::TRACK_ROUTE);
+              Route &srcRoute = imm->second;
+              
+              //Route dstRoute(t, -1);
+              //Route dstRoute(t, chan, chans);
+              Route dstRoute(t, imm->second.channel, imm->second.channels);
+              //Route dstRoute(t, imm->second.channel);
+              dstRoute.remoteChannel = imm->second.remoteChannel;
+  
+              iRoute irl = rl->begin();
+              for (; irl != rl->end(); ++irl) {
+                    if (*irl == srcRoute)
+                          break;
+                    }
+              if (irl != rl->end()) {
+                    // disconnect
+                    audio->msgRemoveRoute(srcRoute, dstRoute);
+                    }
+              else {
+                    // connect
+                    audio->msgAddRoute(srcRoute, dstRoute);
+                    }
+              audio->msgUpdateSoloStates();
+              song->update(SC_ROUTE);
+              
+              // p3.3.46
+              //iR->setDown(false);     
+              ///goto _redisplay;
+              
+              
+              
+              
+            }
+                
+        }
+       */
+       
+      }
+      //else
+      //{
+      //}
+            
+      ///delete pup;
+      //oR->setDown(false);     
+}
+
+//---------------------------------------------------------
+//   routingPopupMenuAboutToHide
+//---------------------------------------------------------
+
+void MusE::routingPopupMenuAboutToHide()
+{
+      // p3.3.47
+      //printf("MusE::routingPopupMenuAboutToHide\n");
+      //if(track)
+      //  printf("%s", track->name().latin1());
+      //printf("\n");
+      
+      // Hmm, can't do this? Sub-menus stay open with this. Re-arranged, testing... Nope.
+      //PopupMenu* pup = muse->getRoutingPopupMenu();
+      //pup->disconnect();
+      //pup->clear();
+      
+      // p4.0.1 Removed. IIRC These lines were not strictly necessary in muse-1, 
+      //  and here in muse-2 we reverted back to regular Q3PopupMenu behaviour for now, 
+      //  which is self-extinguishing, so these lines cannot be enabled - 
+      //  gRoutingPopupMenuMaster and gRoutingMenuMap are required for routingPopupMenuActivated().
+      //gRoutingMenuMap.clear();
+      //gRoutingPopupMenuMaster = 0;
+}
+
+//---------------------------------------------------------
+//   prepareRoutingPopupMenu
+//---------------------------------------------------------
+
+PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
+{
+  if(!track)
+    return 0;
+    
+  //QPoint ppt = QCursor::pos();
+  
+  if(track->isMidiTrack())
+  {
+  
+    //QPoint ppt = parent->rect().bottomLeft();
+      
+    //if(dst)
+    //{
+      // TODO 
+      
+    //}
+    //else
+    //{
+      RouteList* rl = dst ? track->outRoutes() : track->inRoutes();
+      //Route dst(track, -1);
+    
+      ///QPopupMenu* pup = new QPopupMenu(parent);
+      
+      PopupMenu* pup = getRoutingPopupMenu();
+      pup->disconnect();
+      //connect(pup, SIGNAL(activated(int)), SLOT(routingPopupMenuActivated(int)));
+      //connect(pup, SIGNAL(aboutToHide()), SLOT(routingPopupMenuAboutToHide()));
+        
+      pup->setCheckable(true);
+      
+      int gid = 0;
+      //int n;    
+      
+    // Routes can't be re-read until the message sent from msgAddRoute1() 
+    //  has had time to be sent and actually affected the routes.
+    ///_redisplay:
+      
+      pup->clear();
+      gRoutingMenuMap.clear();
+      gid = 0;
+      
+      //MidiInPortList* tl = song->midiInPorts();
+      //for(iMidiInPort i = tl->begin();i != tl->end(); ++i) 
+      for(int i = 0; i < MIDI_PORTS; ++i)
+      {
+        //MidiInPort* track = *i;
+        // NOTE: Could possibly list all devices, bypassing ports, but no, let's stick with ports.
+        MidiPort* mp = &midiPorts[i];
+        MidiDevice* md = mp->device();
+        if(!md)
+          continue;
+        
+        if(!(md->rwFlags() & (dst ? 1 : 2)))
+          continue;
+          
+        //printf("MusE::prepareRoutingPopupMenu adding submenu portnum:%d\n", i);
+        
+        //QMenu* m = menu->addMenu(track->name());
+        //QPopupMenu* subp = new QPopupMenu(parent);
+        //PopupMenu* subp = new PopupMenu(this);
+        PopupMenu* subp = new PopupMenu();
+        connect(subp, SIGNAL(activated(int)), pup, SIGNAL(activated(int)));
+        //connect(subp, SIGNAL(aboutToHide()), pup, SIGNAL(aboutToHide()));
+        
+        int chanmask = 0;
+        // p3.3.50 To reduce number of routes required, from one per channel to just one containing a channel mask. 
+        // Look for the first route to this midi port. There should always be only a single route for each midi port, now.
+        for(iRoute ir = rl->begin(); ir != rl->end(); ++ir)   
+        {
+          if(ir->type == Route::MIDI_PORT_ROUTE && ir->midiPort == i) 
+          {
+            // We have a route to the midi port. Grab the channel mask.
+            chanmask = ir->channel;
+            break;
+          }
+        }
+        
+        for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+        {
+          //QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
+          //subp->insertItem(QT_TR_NOOP(QString("Channel %1").arg(ch+1)), i * MIDI_CHANNELS + ch);
+          gid = i * MIDI_CHANNELS + ch;
+          
+          //printf("MusE::prepareRoutingPopupMenu inserting gid:%d\n", gid);
+          
+          subp->insertItem(QString("Channel %1").arg(ch+1), gid);
+          //a->setCheckable(true);
+          //Route src(track, ch, RouteNode::TRACK);
+          //Route src(md, ch);
+          //Route r = Route(src, dst);
+          //a->setData(QVariant::fromValue(r));
+          //a->setChecked(rl->indexOf(r) != -1);
+          
+          //Route srcRoute(md, ch);
+          //Route srcRoute(i, ch);     // p3.3.49 New: Midi port route.
+          int chbit = 1 << ch;
+          Route srcRoute(i, chbit);    // p3.3.50 In accordance with new channel mask, use the bit position.
+          
+          gRoutingMenuMap.insert( pRouteMenuMap(gid, srcRoute) );
+          
+          //for(iRoute ir = rl->begin(); ir != rl->end(); ++ir)   // p3.3.50 Removed.
+          //{
+            //if(*ir == dst) 
+          //  if(*ir == srcRoute) 
+          //  {
+          //    subp->setItemChecked(id, true);
+          //    break;
+          //  }
+          //}
+          if(chanmask & chbit)                  // p3.3.50 Is the channel already set? Show item check mark.
+            subp->setItemChecked(gid, true);
+        }
+        //subp->insertItem(QString("Toggle all"), 1000+i);
+        // p3.3.50 One route with all channel bits set.
+        gid = MIDI_PORTS * MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
+        subp->insertItem(QString("Toggle all"), gid);      
+        Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
+        gRoutingMenuMap.insert( pRouteMenuMap(gid, togRoute) );
+        
+        pup->insertItem(QT_TR_NOOP(md->name()), subp);
+      }
+          
+      /*
+      QPopupMenu* pup = new QPopupMenu(iR);
+      pup->setCheckable(true);
+      //MidiTrack* t = (MidiTrack*)track;
+      RouteList* irl = track->inRoutes();
+  
+      MidiTrack* t = (MidiTrack*)track;
+      int gid = 0;
+      for (int i = 0; i < channel; ++i) 
+      {
+            char buffer[128];
+            snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+            MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
+            pup->insertItem(titel);
+  
+            if (!checkAudioDevice()) return;
+            std::list<QString> ol = audioDevice->outputPorts();
+            for (std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) {
+                  int id = pup->insertItem(*ip, (gid * 16) + i);
+                  Route dst(*ip, true, i);
+                  ++gid;
+                  for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
+                        if (*ir == dst) {
+                              pup->setItemChecked(id, true);
+                              break;
+                              }
+                        }
+                  }
+            if (i+1 != channel)
+                  pup->insertSeparator();
+      }
+      */
+      
+      if(pup->count() == 0)
+      {
+        ///delete pup;
+        gRoutingPopupMenuMaster = 0;
+        //pup->clear();
+        //pup->disconnect();
+        gRoutingMenuMap.clear();
+        //oR->setDown(false);     
+        return 0;
+      }
+      
+      gIsOutRoutingPopupMenu = dst;
+      return pup;
+    }
+    
+    return 0;
+}
+
+//---------------------------------------------------------
 //   saveAs
 //---------------------------------------------------------
 
@@ -1925,7 +2702,7 @@ bool MusE::saveAs()
 
 static void printVersion(const char* prog)
       {
-      fprintf(stderr, "%s: Linux Music Editor; Version %s\n", prog, VERSION);
+      fprintf(stderr, "%s: Linux Music Editor; Version %s, (svn revision %s)\n", prog, VERSION, SVNVERSION);
       }
 
 //---------------------------------------------------------
@@ -2269,6 +3046,11 @@ void MusE::kbAccel(int key)
                   song->setRecord(!song->record());
                   }
             }
+      else if (key == shortcuts[SHRT_REC_CLEAR].key) {
+            if (!audio->isPlaying()) {
+                  song->clearTrackRec();
+                  }
+            }
       else if (key == shortcuts[SHRT_OPEN_TRANSPORT].key) {
             toggleTransport();
             }
@@ -2328,7 +3110,14 @@ class MuseApplication : public QApplication {
                   globalKeyState = ke->stateAfter();
                   bool accepted = ke->isAccepted();
                   if (!accepted) {
-                        muse->kbAccel(ke->key());
+                        int key = ke->key();
+                        if (ke->state() & Qt::ShiftModifier)
+                              key += Qt::SHIFT;
+                        if (ke->state() & Qt::AltModifier)
+                              key += Qt::ALT;
+                        if (ke->state() & Qt::ControlModifier)
+                              key+= Qt::CTRL;
+                        muse->kbAccel(key);
                         return true;
                         }
                   }
@@ -2367,7 +3156,7 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -a       no audio\n");
       //fprintf(stderr, "   -P  n    set real time priority to n (default: 50)\n");
       fprintf(stderr, "   -P  n    set audio driver real time priority to n (Dummy only, default 40. Else fixed by Jack.)\n");
-      fprintf(stderr, "   -Y  n    force midi real time priority to n (default: audio driver prio +1)\n");
+      fprintf(stderr, "   -Y  n    force midi real time priority to n (default: audio driver prio +2)\n");
       fprintf(stderr, "   -p       don't load LADSPA plugins\n");
 #ifdef ENABLE_PYTHON
       fprintf(stderr, "   -y       enable Python control support\n");
@@ -2438,13 +3227,26 @@ int main(int argc, char* argv[])
             museGlobal = p;
 
       if (museGlobal.isEmpty()) {
-            QString museGlobal(INSTPREFIX);
-            museGlobalLib   =  museGlobal + "/lib/muse";
-            museGlobalShare =  museGlobal + "/share/muse";
+            //QString museGlobal(INSTPREFIX);
+            //QString museGlobalLibDir(INSTLIBDIR); 
+            //QString museGlobalLibDir(LIBINSTPREFIX); // This has no prefix.
+            //museGlobalLib   =  museGlobalLibDir + "/muse";
+            //museGlobalShare =  museGlobal + "/share/muse";
+            
+            // p4.0.7
+            museGlobalLib   =  QString(INSTPREFIX) + QString("/") +
+                               QString(LIBINSTPREFIX) + QString("/") + 
+                               QString(INSTALL_NAME);   
+            //museGlobalShare =  museGlobal + QString("/share/") + QString(INSTALL_NAME);   
+            museGlobalShare =  QString(INSTPREFIX) + QString("/") +                                             
+                               QString(SHAREINSTPREFIX) + QString("/") +  // This has no prefix. Default is "share", set in top cmake script.
+                               QString(INSTALL_NAME);   
             }
       else {
-            museGlobalLib   = museGlobal + "/lib";
-            museGlobalShare = museGlobal + "/share";
+            //museGlobalLib   = museGlobal + "/lib";
+            //museGlobalShare = museGlobal + "/share";
+            museGlobalLib   = museGlobal + QString("/") + QString(LIBINSTPREFIX);    // p4.0.7
+            museGlobalShare = museGlobal + QString("/") + QString(SHAREINSTPREFIX);
             }
       museProject = museProjectInitPath; //getcwd(0, 0);
       configName  = QString(getenv("HOME")) + QString("/.MusE");
@@ -2578,6 +3380,7 @@ int main(int argc, char* argv[])
       else
             realTimeScheduling = audioDevice->isRealtime();
 
+      useJackTransport.setValue(true);
       // setup the prefetch fifo length now that the segmentSize is known
       // Changed by Tim. p3.3.17
       // Changed to 4 *, JUST FOR TEST!!!
@@ -2625,10 +3428,13 @@ int main(int argc, char* argv[])
       if(loadDSSI)
         initDSSI();
       
+      // p3.3.39
+      initOSC();
+      
       initIcons();
 
       initMetronome();
-      QApplication::clipboard()->setSelectionMode(false);
+      //QApplication::clipboard()->setSelectionMode(false); ddskrjo
 
       QApplication::addLibraryPath(museGlobalLib + "/qtplugins");
       if (debugMsg) {
@@ -2671,7 +3477,15 @@ int main(int argc, char* argv[])
       }
 #endif /* HAVE_LASH */
       QTimer::singleShot(100, muse, SLOT(showDidYouKnowDialog()));
+      
       return app.exec();
+      // p3.3.47 
+      //int rv = app.exec();
+      // FIXME: Can't do, seg fault at MarkerView::~MarkerView() 
+      //  due to already deleted undoRedo.
+      //delete muse; 
+      //return rv;
+      
       }
 
 #if 0
@@ -2734,6 +3548,12 @@ void MusE::cmd(int cmd)
                   break;
             case CMD_PASTE_CLONE_TO_TRACK:
                   arranger->cmd(Arranger::CMD_PASTE_CLONE_PART_TO_TRACK);
+                  break;
+            case CMD_INSERT:
+                  arranger->cmd(Arranger::CMD_INSERT_PART);
+                  break;
+            case CMD_INSERTMEAS:
+                  arranger->cmd(Arranger::CMD_INSERT_EMPTYMEAS);
                   break;
             case CMD_DELETE:
                   song->startUndo();
@@ -2821,7 +3641,7 @@ void MusE::cmd(int cmd)
 
 void MusE::clipboardChanged()
       {
-      QCString subtype("partlist");
+      Q3CString subtype("partlist");
       QMimeSource* ms = QApplication::clipboard()->data(QClipboard::Clipboard);
       if (ms == 0)
             return;
@@ -2837,6 +3657,7 @@ void MusE::clipboardChanged()
                   }
             }
       menuEdit->setItemEnabled(CMD_PASTE, flag);
+      menuEdit->setItemEnabled(CMD_INSERT, flag);
       menuEdit->setItemEnabled(CMD_PASTE_CLONE, flag);
       menuEdit->setItemEnabled(CMD_PASTE_TO_TRACK, flag);
       menuEdit->setItemEnabled(CMD_PASTE_CLONE_TO_TRACK, flag);
@@ -2995,7 +3816,7 @@ void MusE::configAppearance()
 
 void MusE::loadTheme(QString s)
       {
-      if (style().name() != s)
+      if (style()->name() != s)
             QApplication::setStyle(s);
       }
 
@@ -3688,7 +4509,7 @@ void MusE::updateConfiguration()
       menu_file->setAccel(shortcuts[SHRT_IMPORT_AUDIO].key, menu_ids[CMD_IMPORT_AUDIO]);
       menu_file->setAccel(shortcuts[SHRT_QUIT].key, menu_ids[CMD_QUIT]);
 
-      menuEdit->setAccel(Key_Delete, CMD_DELETE);
+      menuEdit->setAccel(Qt::Key_Delete, CMD_DELETE);
       menuEdit->setAccel(shortcuts[SHRT_OPEN_DRUMS].key, menu_ids[CMD_OPEN_DRUMS]);
       menuEdit->setAccel(shortcuts[SHRT_OPEN_LIST].key, menu_ids[CMD_OPEN_LIST]);
       menuEdit->setAccel(shortcuts[SHRT_OPEN_WAVE].key, menu_ids[CMD_OPEN_WAVE]);
@@ -3874,7 +4695,9 @@ void MusE::toggleMixer()
 
 void MusE::toggleMixer1()
       {
-      showMixer1(!menuView->isItemChecked(aid1a));
+      printf("toggle mixer1\n");
+      //showMixer1(!menuView->isItemChecked(aid1a));
+      showMixer1(true);
       }
 
 //---------------------------------------------------------
@@ -3938,7 +4761,7 @@ void MusE::focusInEvent(QFocusEvent* ev)
       if (mixer2)
             mixer2->raise();
       raise();
-      QMainWindow::focusInEvent(ev);
+      Q3MainWindow::focusInEvent(ev);
       }
 
 //---------------------------------------------------------

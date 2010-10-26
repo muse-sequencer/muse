@@ -5,13 +5,13 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qlayout.h>
+#include <QLayout>
 #include <qlabel.h>
 //Added by qt3to4:
-#include <Q3HBoxLayout>
+#include <QHBoxLayout>
 #include <QContextMenuEvent>
 #include <QWheelEvent>
-#include <Q3Frame>
+#include <QFrame>
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include "nentry.h"
@@ -81,7 +81,7 @@ bool NentryFilter::eventFilter(QObject*, QEvent* event)
 //---------------------------------------------------------
 
 Nentry::Nentry(QWidget* parent, const QString& txt,
-   int _lPos, bool dark) : Q3Frame(parent)
+   int _lPos, bool dark) : QFrame(parent)
       {
       focusW     = 0;
       lPos       = _lPos;
@@ -97,7 +97,7 @@ Nentry::Nentry(QWidget* parent, const QString& txt,
       edit->setCursor(QCursor(Qt::arrowCursor));
 //      edit->setFont(font3);
       val = 0;
-      layout = new Q3HBoxLayout(this);
+      layout = new QHBoxLayout(this);
       if (txt == "") {
             layout->addWidget(edit, 1, Qt::AlignHCenter);
             }

@@ -8,20 +8,22 @@
 #ifndef __ACTION_H__
 #define __ACTION_H__
 
-#include <Qt3Support>
+//#include <Qt3Support>
+#include <QAction>
 
 //---------------------------------------------------------
 //   Action
 //---------------------------------------------------------
 
-class Action : public Q3Action {
+class Action : public QAction {
       Q_OBJECT
       int _id;
 
    public:
       Action(QObject* parent, int i, const char* name = 0, bool toggle = false)
-         : Q3Action(parent, name, toggle) {
+         : QAction(name, parent) {
             _id = i;
+            setCheckable(toggle);
             }
       void setId(int i) { _id = i; }
       int id() const    { return _id; }

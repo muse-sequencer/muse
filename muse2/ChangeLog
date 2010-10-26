@@ -1,3 +1,6 @@
+26.10.2010  
+        - Applied large patch by Orcan to (start) converting to native QMainWindow and QToolBar. (Tim)
+        - Completed piano roll, drum edit, MusE app, and arranger toolbars.
 24.10.2010  
         - Finds MESS synths now including fluid/fluidsynth, but all crash except Vam and S1. (Tim.)
 22.10.2010  

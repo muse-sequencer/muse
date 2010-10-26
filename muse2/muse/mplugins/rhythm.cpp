@@ -55,7 +55,8 @@ void RhythmGen::closeEvent(QCloseEvent* ev)
 
 #include <qvariant.h>
 #include <qcheckbox.h>
-#include <q3frame.h>
+//#include <q3frame.h>
+#include <QFrame>
 #include <qlabel.h>
 #include <qlcdnumber.h>
 #include <q3listbox.h>
@@ -231,9 +232,9 @@ RhythmGenerator::RhythmGenerator( QWidget* parent,  const char* name, bool modal
     setCaption( trUtf8( "Form3" ) );
     RhythmGeneratorLayout = new Q3VBoxLayout( this, 11, 6, "RhythmGeneratorLayout");
 
-    Frame6 = new Q3Frame( this, "Frame6" );
-    Frame6->setFrameShape( Q3Frame::StyledPanel );
-    Frame6->setFrameShadow( Q3Frame::Raised );
+    Frame6 = new QFrame( this);
+    Frame6->setFrameShape( QFrame::StyledPanel );
+    Frame6->setFrameShadow( QFrame::Raised );
     Frame6Layout = new Q3VBoxLayout( Frame6, 11, 6, "Frame6Layout");
 
     TextLabel1 = new QLabel( Frame6, "TextLabel1" );
@@ -351,9 +352,9 @@ RhythmGenerator::RhythmGenerator( QWidget* parent,  const char* name, bool modal
 
     Layout27 = new Q3HBoxLayout( 0, 0, 15, "Layout27");
 
-    Frame5 = new Q3Frame( this, "Frame5" );
-    Frame5->setFrameShape( Q3Frame::StyledPanel );
-    Frame5->setFrameShadow( Q3Frame::Raised );
+    Frame5 = new QFrame( this );
+    Frame5->setFrameShape( QFrame::StyledPanel );
+    Frame5->setFrameShadow( QFrame::Raised );
     Frame5Layout = new Q3VBoxLayout( Frame5, 11, 6, "Frame5Layout");
 
     TextLabel2 = new QLabel( Frame5, "TextLabel2" );
@@ -430,9 +431,9 @@ RhythmGenerator::RhythmGenerator( QWidget* parent,  const char* name, bool modal
     Frame5Layout->addWidget( RandomizeCheck );
     Layout27->addWidget( Frame5 );
 
-    Frame5_2 = new Q3Frame( this, "Frame5_2" );
-    Frame5_2->setFrameShape( Q3Frame::StyledPanel );
-    Frame5_2->setFrameShadow( Q3Frame::Raised );
+    Frame5_2 = new QFrame( this );
+    Frame5_2->setFrameShape( QFrame::StyledPanel );
+    Frame5_2->setFrameShadow( QFrame::Raised );
     Frame5_2Layout = new Q3VBoxLayout( Frame5_2, 11, 6, "Frame5_2Layout");
 
     TextLabel3 = new QLabel( Frame5_2, "TextLabel3" );
@@ -477,23 +478,23 @@ RhythmGenerator::RhythmGenerator( QWidget* parent,  const char* name, bool modal
 
     Layout29 = new Q3HBoxLayout( 0, 0, 6, "Layout29");
 
-    Frame6_2 = new Q3Frame( this, "Frame6_2" );
+    Frame6_2 = new QFrame( this );
     Frame6_2->setMinimumSize( QSize( 200, 150 ) );
-    Frame6_2->setFrameShape( Q3Frame::StyledPanel );
-    Frame6_2->setFrameShadow( Q3Frame::Raised );
+    Frame6_2->setFrameShape( QFrame::StyledPanel );
+    Frame6_2->setFrameShadow( QFrame::Raised );
     Layout29->addWidget( Frame6_2 );
 
-    Frame7 = new Q3Frame( this, "Frame7" );
+    Frame7 = new QFrame( this );
     Frame7->setMinimumSize( QSize( 200, 150 ) );
-    Frame7->setFrameShape( Q3Frame::StyledPanel );
-    Frame7->setFrameShadow( Q3Frame::Raised );
+    Frame7->setFrameShape( QFrame::StyledPanel );
+    Frame7->setFrameShadow( QFrame::Raised );
     Layout29->addWidget( Frame7 );
     RhythmGeneratorLayout->addLayout( Layout29 );
 
-    Frame8 = new Q3Frame( this, "Frame8" );
+    Frame8 = new QFrame( this );
     Frame8->setMinimumSize( QSize( 400, 150 ) );
-    Frame8->setFrameShape( Q3Frame::StyledPanel );
-    Frame8->setFrameShadow( Q3Frame::Raised );
+    Frame8->setFrameShape( QFrame::StyledPanel );
+    Frame8->setFrameShadow( QFrame::Raised );
     RhythmGeneratorLayout->addWidget( Frame8 );
 
     // signals and slots connections

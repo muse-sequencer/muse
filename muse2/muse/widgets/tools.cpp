@@ -6,14 +6,18 @@
 //=========================================================
 
 #include "tools.h"
-#include <qpixmap.h>
-#include <q3buttongroup.h>
-#include <qtoolbutton.h>
-#include <qtooltip.h>
-#include <q3whatsthis.h>
-#include <q3mainwindow.h>
+//#include <qpixmap.h>
+//#include <q3buttongroup.h>
+//#include <qtoolbutton.h>
+//#include <qtooltip.h>
+//#include <q3whatsthis.h>
+//#include <q3mainwindow.h>
+
+#include <QPixmap>
+#include <QToolButton>
+
 //Added by qt3to4:
-#include <Q3ActionGroup>
+#include <QActionGroup>
 
 #include "icons.h"
 #include "action.h"
@@ -56,10 +60,12 @@ ToolB toolList[] = {
 //   EditToolBar
 //---------------------------------------------------------
 
-EditToolBar::EditToolBar(Q3MainWindow* parent, int tools, const char*)
-   : Q3ToolBar(tr("Edit Tools"), parent)
+//EditToolBar::EditToolBar(QMainWindow* parent, int tools, const char*)
+EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
+   : QToolBar(tr("Edit Tools"), parent)
       {
-      Q3ActionGroup* action = new Q3ActionGroup(parent, "editaction", true);
+      QActionGroup* action = new QActionGroup(parent);  // Parent needed.
+      action->setExclusive(true);
 
       nactions = 0;
       for (unsigned i = 0; i < sizeof(toolList)/sizeof(*toolList); ++i) {
@@ -77,7 +83,8 @@ EditToolBar::EditToolBar(Q3MainWindow* parent, int tools, const char*)
 
             Action* a = new Action(action, 1<<i, t->tip, true);
             actions[n] = a;
-            a->setIconSet(QIcon(**(t->icon)));
+            //a->setIconSet(QIcon(**(t->icon)));
+            a->setIcon(QIcon(**(t->icon)));
             a->setToolTip(tr(t->tip));
             a->setWhatsThis(tr(t->ltip));
             if (first) {
@@ -86,16 +93,19 @@ EditToolBar::EditToolBar(Q3MainWindow* parent, int tools, const char*)
                   }
             ++n;
             }
-      action->addTo(this);
-      //connect(action, SIGNAL(selected(Q3Action*)), SLOT(toolChanged(QAction*)));
-      connect(action, SIGNAL(selected(Q3Action*)), SLOT(toolChanged(Q3Action*)));   // p4.0.5
+      action->setVisible(true);
+      //action->addTo(this);
+      // Note: Does not take ownership.
+      addActions(action->actions());
+      
+      connect(action, SIGNAL(selected(QAction*)), SLOT(toolChanged(QAction*)));   
       }
 
 //---------------------------------------------------------
 //   toolChanged
 //---------------------------------------------------------
 
-void EditToolBar::toolChanged(Q3Action* action)
+void EditToolBar::toolChanged(QAction* action)
       {
       emit toolChanged(((Action*)action)->id());
       }

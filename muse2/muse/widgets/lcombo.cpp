@@ -7,11 +7,11 @@
 
 #include "lcombo.h"
 
-#include <qlayout.h>
-#include <q3frame.h>
+#include <QLayout>
+#include <QFrame>
 #include <qlabel.h>
 //Added by qt3to4:
-#include <Q3HBoxLayout>
+#include <QHBoxLayout>
 
 //---------------------------------------------------------
 //   LabelCombo
@@ -21,16 +21,18 @@ LabelCombo::LabelCombo(const QString& txt, QWidget* parent,
    const char* name) : QWidget(parent, name)
       {
 //      setFixedHeight(20);
-      Q3HBoxLayout* layout = new Q3HBoxLayout(this);
+      QHBoxLayout* layout = new QHBoxLayout(this);
       QLabel* label = new QLabel(txt, this);
-      box = new QComboBox(false, this);
-      layout->addStretch();
+      //box = new QComboBox(false, this);
+      box = new QComboBox(this);
+      box->setEditable(false);
+      ///layout->addStretch();
       layout->addSpacing(5);
       layout->addWidget(label);
       layout->addSpacing(5);
       layout->addWidget(box);
       layout->addSpacing(5);
-      layout->addStretch();
+      ///layout->addStretch();
       connect(box, SIGNAL(activated(int)), SIGNAL(activated(int)));
       }
 

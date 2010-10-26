@@ -23,6 +23,8 @@
 #include <qclipboard.h>
 #include <qmessagebox.h>
 #include <qaction.h>
+#include <QWhatsThis>
+
 //Added by qt3to4:
 #include <QKeyEvent>
 #include <Q3ValueList>
@@ -221,41 +223,72 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       //    Toolbars
       //---------------------------------------------------
 
-      tools = new Q3ToolBar(this, "drum-tools");
-      new QToolButton(*openIcon, tr("Load Drummap"),
-                  QString::null, this, SLOT(load()),
-                  tools, "load drummap from file");
+      //tools = new QToolBar(this, "drum-tools");
+      tools = addToolBar(tr("drum-tools"));
+      
+      //new QToolButton(*openIcon, tr("Load Drummap"),
+      //            QString::null, this, SLOT(load()),
+      //            tools, "load drummap from file");
 
-      new QToolButton(*saveIcon, tr("Store Drummap"),
-                  QString::null,
-                  this, SLOT(save()),
-                  tools, "store drummap to file");
-
-      Q3WhatsThis::whatsThisButton(tools);
+      //new QToolButton(*saveIcon, tr("Store Drummap"),
+      //            QString::null,
+      //            this, SLOT(save()),
+      //            tools, "store drummap to file");
+                  
+      QToolButton *ldm = new QToolButton();
+      QToolTip::add(ldm, tr("Load Drummap"));
+      ldm->setIcon(*openIcon);
+      connect(ldm, SIGNAL(clicked()), SLOT(load()));
+      tools->addWidget(ldm);
+      
+      QToolButton *sdm = new QToolButton();
+      QToolTip::add(sdm, tr("Store Drummap"));
+      sdm->setIcon(*saveIcon);
+      connect(sdm, SIGNAL(clicked()), SLOT(save()));
+      tools->addWidget(sdm);
+      
+      //Q3WhatsThis::whatsThisButton(tools);
+      tools->addAction(QWhatsThis::createAction(this));
 
       tools->addSeparator();
-      undoRedo->addTo(tools);
+      //undoRedo->addTo(tools);
+      tools->addActions(undoRedo->actions());
       tools->addSeparator();
 
-      srec  = new QToolButton(tools, "srec");
+      //srec  = new QToolButton(tools, "srec");
+      srec  = new QToolButton();
       QToolTip::add(srec, tr("Step Record"));
-      srec->setPixmap(*steprecIcon);
+      srec->setIcon(*steprecIcon);
       srec->setToggleButton(true);
+      tools->addWidget(srec);
 
-      midiin  = new QToolButton(tools, "midiin");
+      //midiin  = new QToolButton(tools, "midiin");
+      midiin  = new QToolButton();
       QToolTip::add(midiin, tr("Midi Input"));
-      midiin->setPixmap(*midiinIcon);
+      midiin->setIcon(*midiinIcon);
       midiin->setToggleButton(true);
-
+      tools->addWidget(midiin);
+      
       tools2 = new EditToolBar(this, drumeditTools);
+      addToolBar(tools2);
 
-      Q3ToolBar* transport = new Q3ToolBar(this);
-      transportAction->addTo(transport);
-
-      // dontt show pitch value in toolbar
-      //toolbar = new Toolbar1(this, _rasterInit, _quantInit, false);
-      toolbar = new Toolbar1(this, _rasterInit, _quantInit);
+      QToolBar* panicToolbar = addToolBar(tr("panic"));         
+      //panicAction->addTo(panicToolbar);
+      panicToolbar->addAction(panicAction);
+      
+      //QToolBar* transport = new QToolBar(this);
+      QToolBar* transport = addToolBar(tr("transport"));
+      //transportAction->addTo(transport);
+      transport->addActions(transportAction->actions());
+      
+      addToolBarBreak();
+      // don't show pitch value in toolbar
+      toolbar = new Toolbar1(this, _rasterInit, _quantInit, false);
+      addToolBar(toolbar);
+      
+      addToolBarBreak();
       info    = new NoteInfo(this);
+      addToolBar(info);
 
       //---------------------------------------------------
       //    split

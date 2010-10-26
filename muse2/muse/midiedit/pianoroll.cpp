@@ -22,7 +22,7 @@
 #include <qaction.h>
 //Added by qt3to4:
 #include <QKeyEvent>
-#include <Q3GridLayout>
+#include <QGridLayout>
 #include <QResizeEvent>
 #include <QCloseEvent>
 
@@ -178,38 +178,59 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(menuFunctions, SIGNAL(activated(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
-      tools = new Q3ToolBar(this, "pianoroll-tools");
-      tools->setLabel(tr("Pianoroll Tools"));
-      undoRedo->addTo(tools);
+      //tools = new QToolBar(this, "pianoroll-tools");
+      tools = addToolBar(tr("pianoroll-tools"));          
+      //undoRedo->addTo(tools);
+      tools->addActions(undoRedo->actions());
       tools->addSeparator();
 
-      srec  = new QToolButton(tools, "srec");
+      //srec  = new QToolButton(tools, "srec");
+      // Does not like this, draws on top of other buttons! Must use QToolBar::addWidget()
+      //srec  = new QToolButton(tools);          
+      srec  = new QToolButton();
       QToolTip::add(srec, tr("Step Record"));
-      srec->setPixmap(*steprecIcon);
+      srec->setIcon(*steprecIcon);
       srec->setToggleButton(true);
+      tools->addWidget(srec);
 
-      midiin  = new QToolButton(tools, "midiin");
+      //midiin  = new QToolButton(tools, "midiin");
+      midiin  = new QToolButton();
       QToolTip::add(midiin, tr("Midi Input"));
-      midiin->setPixmap(*midiinIcon);
+      midiin->setIcon(*midiinIcon);
       midiin->setToggleButton(true);
+      tools->addWidget(midiin);
 
-      speaker  = new QToolButton(tools, "speaker");
+      //speaker  = new QToolButton(tools, "speaker");
+      speaker  = new QToolButton();
       QToolTip::add(speaker, tr("Play Events"));
-      speaker->setPixmap(*speakerIcon);
+      speaker->setIcon(*speakerIcon);
       speaker->setToggleButton(true);
+      tools->addWidget(speaker);
 
       tools2 = new EditToolBar(this, pianorollTools);
+      addToolBar(tools2);
 
-      Q3ToolBar* panicToolbar = new Q3ToolBar(this);
-      panicAction->addTo(panicToolbar);
+      //QToolBar* panicToolbar = new QToolBar(this);
+      QToolBar* panicToolbar = addToolBar(tr("panic"));         
+      //panicAction->addTo(panicToolbar);
+      panicToolbar->addAction(panicAction);
+      //this->addToolBar(panicToolbar);
 
       //-------------------------------------------------------------
       //    Transport Bar
-      Q3ToolBar* transport = new Q3ToolBar(this);
-      transportAction->addTo(transport);
+      //QToolBar* transport = new QToolBar(this);
+      QToolBar* transport = addToolBar(tr("transport"));
+      //transportAction->addTo(transport);
+      transport->addActions(transportAction->actions());
+      //this->addToolBar(transport);
 
+      addToolBarBreak();
       toolbar = new Toolbar1(this, _rasterInit, _quantInit);
+      addToolBar(toolbar);
+
+      addToolBarBreak();
       info    = new NoteInfo(this);
+      addToolBar(info);
 
       //---------------------------------------------------
       //    split
@@ -233,7 +254,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       mainGrid->addRowSpacing(1, hscroll->sizeHint().height());
 
       QWidget* split1     = new QWidget(splitter, "split1");
-      Q3GridLayout* gridS1 = new Q3GridLayout(split1);
+      QGridLayout* gridS1 = new QGridLayout(split1);
       time                = new MTScale(&_raster, split1, xscale);
       Piano* piano        = new Piano(split1, yscale);
       canvas              = new PianoCanvas(this, split1, xscale, yscale);

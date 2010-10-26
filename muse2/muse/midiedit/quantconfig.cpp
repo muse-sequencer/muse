@@ -7,7 +7,7 @@
 //=========================================================
 
 #include <qspinbox.h>
-#include <qlayout.h>
+#include <QLayout>
 #include <qlabel.h>
 #include <qradiobutton.h>
 #include <q3groupbox.h>
@@ -15,7 +15,7 @@
 
 #include "quantconfig.h"
 //Added by qt3to4:
-#include <Q3VBoxLayout>
+#include <QVBoxLayout>
 
 const char* wtStrengthTxt = QT_TR_NOOP("sets amount of quantization:\n"
                             "0   - no quantization\n"
@@ -31,7 +31,7 @@ QuantConfig::QuantConfig(int s, int l, bool lenFlag)
    : QDialog()
       {
       setCaption(tr("MusE: Config Quantize"));
-      Q3VBoxLayout* layout = new Q3VBoxLayout(this);
+      QVBoxLayout* layout = new QVBoxLayout(this);
       Q3GroupBox* gb = new Q3GroupBox(2, Qt::Horizontal, tr("Config Quantize"), this);
       layout->addWidget(gb);
 

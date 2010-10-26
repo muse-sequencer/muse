@@ -8,12 +8,15 @@
 #ifndef __LCOMBO_H__
 #define __LCOMBO_H__
 
-#include <qwidget.h>
-#include <qcombobox.h>
+//#include <qwidget.h>
+//#include <qcombobox.h>
 
 class QString;
+class QWidget;
+
 //class Q3ListBox;
 #include <QAbstractItemView>
+#include <QComboBox>
 
 
 //---------------------------------------------------------

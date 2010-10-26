@@ -9,13 +9,14 @@
 #ifndef __METER_H__
 #define __METER_H__
 
-#include <q3frame.h>
+//#include <q3frame.h>
+#include <QFrame>
 #include <qpixmap.h>
 //Added by qt3to4:
 #include <QResizeEvent>
 #include <QMouseEvent>
 
-class Meter : public Q3Frame {
+class Meter : public QFrame {
    public:
       enum MeterType {DBMeter, LinMeter};
    private:  

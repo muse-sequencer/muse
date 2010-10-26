@@ -32,7 +32,8 @@ PosLabel::PosLabel(QWidget* parent, const char* name)
       setFrameStyle(WinPanel | Sunken);
       setLineWidth(2);
       setMidLineWidth(3);
-      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
+      //int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
+      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth); 
       setIndent(fw);
       updateValue();
       }
@@ -44,7 +45,8 @@ PosLabel::PosLabel(QWidget* parent, const char* name)
 QSize PosLabel::sizeHint() const
       {
       QFontMetrics fm(font());
-      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
+      //int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
+      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth); 
       int h  = fm.height() + fw * 2;
       int w;
       if (_smpte)

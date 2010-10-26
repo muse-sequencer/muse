@@ -8,13 +8,15 @@
 #ifndef __TOOLS_H__
 #define __TOOLS_H__
 
-#include <q3toolbar.h>
+//#include <q3toolbar.h>
+#include <QToolBar>
 //Added by qt3to4:
 #include <QPixmap>
 
-class Q3Action;
+class QAction;
 class Action;
-class Q3MainWindow;
+//class QMainWindow;
+class QWidget;
 
 enum Tool { PointerTool=1, PencilTool=2, RubberTool=4, CutTool=8,
    ScoreTool=16, GlueTool=32, QuantTool=64, DrawTool=128, MuteTool=256};
@@ -33,13 +35,13 @@ extern ToolB toolList[];
 //   EditToolBar
 //---------------------------------------------------------
 
-class EditToolBar : public Q3ToolBar {
+class EditToolBar : public QToolBar {
       Q_OBJECT
       Action** actions;
       int nactions;
 
    private slots:
-      void toolChanged(Q3Action* action);
+      void toolChanged(QAction* action);
 
    signals:
       void toolChanged(int);
@@ -48,7 +50,8 @@ class EditToolBar : public Q3ToolBar {
       void set(int id);
 
    public:
-      EditToolBar(Q3MainWindow*, int, const char* name = 0);
+      //EditToolBar(QMainWindow*, int, const char* name = 0);
+      EditToolBar(QWidget* /*parent*/, int /*tools*/, const char* name = 0);  // Needs a parent !
       ~EditToolBar();
       int curTool();
       };
