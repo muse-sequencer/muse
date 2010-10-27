@@ -5,6 +5,7 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
+#include <stdio.h>
 #include "tools.h"
 //#include <qpixmap.h>
 //#include <q3buttongroup.h>
@@ -128,7 +129,8 @@ void EditToolBar::set(int id)
       for (int i = 0; i < nactions; ++i) {
             Action* action = actions[i];
             if (action->id() == id) {
-                  action->setOn(true);
+                  action->setChecked(true);
+                  toolChanged(action);
                   return;
                   }
             }
@@ -142,7 +144,7 @@ int EditToolBar::curTool()
       {
       for (int i = 0; i < nactions; ++i) {
             Action* action = actions[i];
-            if (action->isOn())
+            if (action->isChecked())
                   return action->id();
             }
       return -1;
