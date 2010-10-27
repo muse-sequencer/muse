@@ -8,9 +8,7 @@
 
 #include "cobject.h"
 #include "xml.h"
-
-const int ICON_WIDTH = 18;
-const QSize ICON_SIZE(ICON_WIDTH, ICON_WIDTH);
+#include "gui.h"
 
 //---------------------------------------------------------
 //   readStatus
