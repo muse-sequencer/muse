@@ -102,8 +102,10 @@ void Meter::setRange(double min, double max)
 //   paintEvent
 //---------------------------------------------------------
 
-void Meter::drawContents(QPainter* p)
+void Meter::paintEvent(QPaintEvent*)
       {
+      QPainter p;
+      p.begin(this);
       double range = maxScale - minScale;
 
       int fw = frameWidth();
@@ -122,8 +124,8 @@ void Meter::drawContents(QPainter* p)
         ymax = maxVal == 0 ? 0 : int(((maxScale - (fast_log10(maxVal) * 20.0)) * h)/range);
       else
         ymax = maxVal == 0 ? 0 : int(((maxScale - maxVal) * h)/range);
-      p->setPen(Qt::white);
-      p->drawLine(0, ymax, width()-2*fw, ymax);
+      p.setPen(Qt::white);
+      p.drawLine(0, ymax, width()-2*fw, ymax);
       }
 
 //---------------------------------------------------------

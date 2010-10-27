@@ -33,6 +33,7 @@ class Meter : public QFrame {
       void drawVU(int w, int h);
 
       Q_OBJECT
+      void paintEvent(QPaintEvent*);
       virtual void drawContents(QPainter* p);
       virtual void resizeEvent(QResizeEvent*);
       virtual void mousePressEvent(QMouseEvent*);
