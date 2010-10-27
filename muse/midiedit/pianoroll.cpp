@@ -83,16 +83,23 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       _quantLen      = _quantLenInit;
       _to            = _toInit;
       colorMode      = colorModeInit;
-      //---------Men----------------------------------
+      
+      //---------Menu----------------------------------
+      
       menuEdit = new Q3PopupMenu(this);
+      //menuEdit = new QMenu(this);
       menuBar()->insertItem(tr("&Edit"), menuEdit);
+      //menuEdit = menuBar()->addMenu(tr("&Edit"));
       undoRedo->addTo(menuEdit);
+      //menuEdit->addActions(undoRedo->actions());
+      
       Q3Accel* ud = new Q3Accel(this);
       ud->connectItem(ud->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
       Q3Accel* rd = new Q3Accel(this);
       rd->connectItem(rd->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
 
       menuEdit->insertSeparator();
+      //menuEdit->addSeparator();
       menuEdit->insertItem(tr("Cut"),   PianoCanvas::CMD_CUT);
       menuEdit->setAccel(Qt::CTRL+Qt::Key_X,    PianoCanvas::CMD_CUT);
       menuEdit->insertItem(tr("Copy"),  PianoCanvas::CMD_COPY);

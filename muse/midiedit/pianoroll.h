@@ -10,6 +10,7 @@
 
 #include <qwidget.h>
 #include <q3mainwindow.h>
+//#include <QMenu>
 //Added by qt3to4:
 #include <QCloseEvent>
 #include <QResizeEvent>
@@ -43,6 +44,7 @@ class QuantConfig;
 class ScrollScale;
 class Part;
 class SNode;
+class QMenu;
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -56,6 +58,7 @@ class PianoRoll : public MidiEditor {
       enum { CMD_EVENT_COLOR, CMD_CONFIG_QUANT, CMD_LAST };
       int menu_ids[CMD_LAST];
       Q3PopupMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *menuPlugins;
+      //QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *menuPlugins;
 
       int tickOffset;
       int lenOffset;
@@ -75,7 +78,7 @@ class PianoRoll : public MidiEditor {
       QToolBar* tools;
       EditToolBar* tools2;
 
-      Q3PopupMenu* eventColor;
+      QMenu* eventColor;
       int colorMode;
 
       static int _quantInit, _rasterInit;
