@@ -113,17 +113,13 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       //    create toolbar in toplevel widget
       //---------------------------------------------------
 
-      // FIXME - Orcan: This toolbar needs a hand
-      //QToolBar* toolbar = new QToolBar(tr("Arranger"), parent);
       parent->addToolBarBreak();
       QToolBar* toolbar = parent->addToolBar(tr("Arranger"));
       
-      //QLabel* label = new QLabel(tr("Cursor"), toolbar, "Cursor");
       QLabel* label = new QLabel(tr("Cursor"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       toolbar->addWidget(label);
-      //cursorPos = new PosLabel(toolbar);
       cursorPos = new PosLabel(0);
       cursorPos->setEnabled(false);
       cursorPos->setFixedHeight(22);
@@ -132,22 +128,19 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       const char* rastval[] = {
             QT_TR_NOOP("Off"), QT_TR_NOOP("Bar"), "1/2", "1/4", "1/8", "1/16"
             };
-      //label = new QLabel(tr("Snap"), toolbar, "Snap");
       label = new QLabel(tr("Snap"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       toolbar->addWidget(label);
-      //QComboBox* raster = new QComboBox(toolbar);
       QComboBox* raster = new QComboBox();
       for (int i = 0; i < 6; i++)
             raster->insertItem(tr(rastval[i]), i);
       raster->setCurrentItem(1);
+      toolbar->addWidget(raster);
       connect(raster, SIGNAL(activated(int)), SLOT(_setRaster(int)));
       raster->setFocusPolicy(Qt::NoFocus);
-      toolbar->addWidget(raster);
 
       // Song len
-      //label = new QLabel(tr("Len"), toolbar, "Len");
       label = new QLabel(tr("Len"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
@@ -156,40 +149,37 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       // song length is limited to 10000 bars; the real song len is limited
       // by overflows in tick computations
       //
-      //lenEntry = new SpinBox(1, 10000, 1, toolbar);
       lenEntry = new SpinBox(1, 10000, 1);
       lenEntry->setValue(song->len());
-      connect(lenEntry, SIGNAL(valueChanged(int)), SLOT(songlenChanged(int)));
       QToolTip::add(lenEntry, tr("song length - bars"));
       Q3WhatsThis::add(lenEntry, tr("song length - bars"));
       toolbar->addWidget(lenEntry);
+      connect(lenEntry, SIGNAL(valueChanged(int)), SLOT(songlenChanged(int)));
 
-      //typeBox = new LabelCombo(tr("Type"), toolbar);
       typeBox = new LabelCombo(tr("Type"), 0);
       typeBox->insertItem(tr("NO"), 0);
       typeBox->insertItem(tr("GM"), 1);
       typeBox->insertItem(tr("GS"), 2);
       typeBox->insertItem(tr("XG"), 3);
       typeBox->setCurrentItem(0);
-      connect(typeBox, SIGNAL(activated(int)), SLOT(modeChange(int)));
       QToolTip::add(typeBox, tr("midi song type"));
       Q3WhatsThis::add(typeBox, tr("midi song type"));
       typeBox->setFocusPolicy(Qt::NoFocus);
       toolbar->addWidget(typeBox);
+      connect(typeBox, SIGNAL(activated(int)), SLOT(modeChange(int)));
 
-      //label = new QLabel(tr("Pitch"), toolbar, "Pitch");
       label = new QLabel(tr("Pitch"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       toolbar->addWidget(label);
-      //globalPitchSpinBox = new SpinBox(-127, 127, 1, toolbar);
+      
       globalPitchSpinBox = new SpinBox(-127, 127, 1);
       globalPitchSpinBox->setValue(song->globalPitchShift());
       QToolTip::add(globalPitchSpinBox, tr("midi pitch"));
       Q3WhatsThis::add(globalPitchSpinBox, tr("global midi pitch shift"));
-      connect(globalPitchSpinBox, SIGNAL(valueChanged(int)), SLOT(globalPitchChanged(int)));
       toolbar->addWidget(globalPitchSpinBox);
-      //label = new QLabel(tr("Tempo"), toolbar, "Tempo");
+      connect(globalPitchSpinBox, SIGNAL(valueChanged(int)), SLOT(globalPitchChanged(int)));
+      
       label = new QLabel(tr("Tempo"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
@@ -200,25 +190,23 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       globalTempoSpinBox->setValue(tempomap.globalTempo());
       QToolTip::add(globalTempoSpinBox, tr("midi tempo"));
       Q3WhatsThis::add(globalTempoSpinBox, tr("midi tempo"));
-      connect(globalTempoSpinBox, SIGNAL(valueChanged(int)), SLOT(globalTempoChanged(int)));
       toolbar->addWidget(globalTempoSpinBox);
+      connect(globalTempoSpinBox, SIGNAL(valueChanged(int)), SLOT(globalTempoChanged(int)));
       
-      //QToolButton* tempo50  = new QToolButton(toolbar, "tempo50");
       QToolButton* tempo50  = new QToolButton();
       tempo50->setText(QString("50%"));
-      connect(tempo50, SIGNAL(clicked()), SLOT(setTempo50()));
       toolbar->addWidget(tempo50);
-      //QToolButton* tempo100 = new QToolButton(toolbar, "tempo100");
+      connect(tempo50, SIGNAL(clicked()), SLOT(setTempo50()));
+      
       QToolButton* tempo100 = new QToolButton();
       tempo100->setText(tr("N"));
-      connect(tempo100, SIGNAL(clicked()), SLOT(setTempo100()));
       toolbar->addWidget(tempo100);
-      //QToolButton* tempo200 = new QToolButton(toolbar, "tempo200");
+      connect(tempo100, SIGNAL(clicked()), SLOT(setTempo100()));
+      
       QToolButton* tempo200 = new QToolButton();
       tempo200->setText(QString("200%"));
-      connect(tempo200, SIGNAL(clicked()), SLOT(setTempo200()));
       toolbar->addWidget(tempo200);
-      //parent->addToolBar(toolbar);
+      connect(tempo200, SIGNAL(clicked()), SLOT(setTempo200()));
 
       QVBoxLayout* box  = new QVBoxLayout(this);
       box->addWidget(hLine(this), Qt::AlignTop);
@@ -256,14 +244,10 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       // Track-Info Button
       ib  = new QToolButton(tracklist);
       ib->setText(tr("TrackInfo"));
-      ib->setToggleButton(true);
+      ib->setCheckable(true);
       ib->setOn(showTrackinfoFlag);
-
       connect(ib, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
 
-      // Changed by T356 Mar 8 2008. Did someone accidentally change to header1 recently? 
-      // Muse was saying Tlist: unknown tag <header> at line 32
-      //header = new Header(tracklist, "header1");
       header = new Header(tracklist, "header");
       
       header->setFixedHeight(30);

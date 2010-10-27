@@ -178,51 +178,40 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(menuFunctions, SIGNAL(activated(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
-      //tools = new QToolBar(this, "pianoroll-tools");
       tools = addToolBar(tr("pianoroll-tools"));          
-      //undoRedo->addTo(tools);
       tools->addActions(undoRedo->actions());
       tools->addSeparator();
 
-      //srec  = new QToolButton(tools, "srec");
       // Does not like this, draws on top of other buttons! Must use QToolBar::addWidget()
       //srec  = new QToolButton(tools);          
       srec  = new QToolButton();
       QToolTip::add(srec, tr("Step Record"));
       srec->setIcon(*steprecIcon);
-      srec->setToggleButton(true);
+      srec->setCheckable(true);
       tools->addWidget(srec);
 
-      //midiin  = new QToolButton(tools, "midiin");
       midiin  = new QToolButton();
       QToolTip::add(midiin, tr("Midi Input"));
       midiin->setIcon(*midiinIcon);
-      midiin->setToggleButton(true);
+      midiin->setCheckable(true);
       tools->addWidget(midiin);
 
-      //speaker  = new QToolButton(tools, "speaker");
       speaker  = new QToolButton();
       QToolTip::add(speaker, tr("Play Events"));
       speaker->setIcon(*speakerIcon);
-      speaker->setToggleButton(true);
+      speaker->setCheckable(true);
       tools->addWidget(speaker);
 
       tools2 = new EditToolBar(this, pianorollTools);
       addToolBar(tools2);
 
-      //QToolBar* panicToolbar = new QToolBar(this);
       QToolBar* panicToolbar = addToolBar(tr("panic"));         
-      //panicAction->addTo(panicToolbar);
       panicToolbar->addAction(panicAction);
-      //this->addToolBar(panicToolbar);
 
       //-------------------------------------------------------------
       //    Transport Bar
-      //QToolBar* transport = new QToolBar(this);
       QToolBar* transport = addToolBar(tr("transport"));
-      //transportAction->addTo(transport);
       transport->addActions(transportAction->actions());
-      //this->addToolBar(transport);
 
       addToolBarBreak();
       toolbar = new Toolbar1(this, _rasterInit, _quantInit);

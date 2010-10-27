@@ -106,37 +106,43 @@ WaveEdit::WaveEdit(PartList* pl)
       connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
-      tools = new QToolBar(this, "waveedit-tools");
-      undoRedo->addTo(tools);
+      tools = addToolBar(tr("waveedit-tools"));          
+      tools->addActions(undoRedo->actions());
 
       Q3Accel* qa = new Q3Accel(this);
       qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
       qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
-
       //--------------------------------------------------
       //    Transport Bar
-      QToolBar* transport = new QToolBar(this);
-      transportAction->addTo(transport);
+      QToolBar* transport = addToolBar(tr("transport"));          
+      transport->addActions(transportAction->actions());
 
       //--------------------------------------------------
       //    ToolBar:   Solo  Cursor1 Cursor2
 
-      tb1 = new QToolBar(this, "pianoroll-tools");
+      addToolBarBreak();
+      tb1 = addToolBar(tr("pianoroll-tools"));          
 
-      tb1->setLabel(tr("weTools"));
-      solo = new QToolButton(tb1);
+      //tb1->setLabel(tr("weTools"));
+      solo = new QToolButton();
       solo->setText(tr("Solo"));
-      solo->setToggleButton(true);
+      solo->setCheckable(true);
+      tb1->addWidget(solo);
       connect(solo,  SIGNAL(toggled(bool)), SLOT(soloChanged(bool)));
-
-      QLabel* label = new QLabel(tr("Cursor"), tb1, "Cursor");
+      
+      QLabel* label = new QLabel(tr("Cursor"));
+      tb1->addWidget(label);
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      pos1 = new PosLabel(tb1);
-      pos2 = new PosLabel(tb1);
+      pos1 = new PosLabel(0);
+      pos1->setFixedHeight(22);
+      tb1->addWidget(pos1);
+      pos2 = new PosLabel(0);
+      pos2->setFixedHeight(22);
       pos2->setSmpte(true);
+      tb1->addWidget(pos2);
 
       //---------------------------------------------------
       //    Rest

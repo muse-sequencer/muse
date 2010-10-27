@@ -223,18 +223,8 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       //    Toolbars
       //---------------------------------------------------
 
-      //tools = new QToolBar(this, "drum-tools");
       tools = addToolBar(tr("drum-tools"));
       
-      //new QToolButton(*openIcon, tr("Load Drummap"),
-      //            QString::null, this, SLOT(load()),
-      //            tools, "load drummap from file");
-
-      //new QToolButton(*saveIcon, tr("Store Drummap"),
-      //            QString::null,
-      //            this, SLOT(save()),
-      //            tools, "store drummap to file");
-                  
       QToolButton *ldm = new QToolButton();
       QToolTip::add(ldm, tr("Load Drummap"));
       ldm->setIcon(*openIcon);
@@ -247,38 +237,31 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(sdm, SIGNAL(clicked()), SLOT(save()));
       tools->addWidget(sdm);
       
-      //Q3WhatsThis::whatsThisButton(tools);
       tools->addAction(QWhatsThis::createAction(this));
 
       tools->addSeparator();
-      //undoRedo->addTo(tools);
       tools->addActions(undoRedo->actions());
       tools->addSeparator();
 
-      //srec  = new QToolButton(tools, "srec");
       srec  = new QToolButton();
       QToolTip::add(srec, tr("Step Record"));
       srec->setIcon(*steprecIcon);
-      srec->setToggleButton(true);
+      srec->setCheckable(true);
       tools->addWidget(srec);
 
-      //midiin  = new QToolButton(tools, "midiin");
       midiin  = new QToolButton();
       QToolTip::add(midiin, tr("Midi Input"));
       midiin->setIcon(*midiinIcon);
-      midiin->setToggleButton(true);
+      midiin->setCheckable(true);
       tools->addWidget(midiin);
       
       tools2 = new EditToolBar(this, drumeditTools);
       addToolBar(tools2);
 
       QToolBar* panicToolbar = addToolBar(tr("panic"));         
-      //panicAction->addTo(panicToolbar);
       panicToolbar->addAction(panicAction);
       
-      //QToolBar* transport = new QToolBar(this);
       QToolBar* transport = addToolBar(tr("transport"));
-      //transportAction->addTo(transport);
       transport->addActions(transportAction->actions());
       
       addToolBarBreak();
