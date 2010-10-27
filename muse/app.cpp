@@ -93,6 +93,7 @@
 #include "synth.h"
 #include "remote/pyapi.h"
 #include "al/dsp.h"
+#include "gui.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -819,6 +820,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       // By T356. For LADSPA plugins in plugin.cpp
       // QWidgetFactory::addWidgetFactory( new PluginWidgetFactory ); ddskrjo
       
+      setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::WheelFocus);
       muse                  = this;    // hack
       clipListEdit          = 0;
