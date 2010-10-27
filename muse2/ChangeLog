@@ -1,4 +1,9 @@
 26.10.2010  
+        - Fixed non-opening view menu windows (mixers, marker, bigtime etc). (Tim)
+          Found all the isItemChecked() returning opposite of before (for example in toggleBigTime()). 
+          And yet the setItemChecked() remains unmodified and it works (for example in showBigtime()).
+          Not understood why - yet.
+26.10.2010  
         - Applied large patch by Orcan to (start) converting to native QMainWindow and QToolBar. (Tim)
         - Completed piano roll, drum edit, MusE app, and arranger toolbars.
 24.10.2010  

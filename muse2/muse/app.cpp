@@ -1967,7 +1967,8 @@ void MusE::closeEvent(QCloseEvent*)
 
 void MusE::toggleMarker()
       {
-      showMarker(!menuView->isItemChecked(mr_id));
+      //showMarker(!menuView->isItemChecked(mr_id));
+      showMarker(menuView->isItemChecked(mr_id));    // Tim - QT4
       }
 
 //---------------------------------------------------------
@@ -2008,7 +2009,8 @@ void MusE::markerClosed()
 
 void MusE::toggleTransport()
       {
-      showTransport(!menuView->isItemChecked(tr_id));
+      //showTransport(!menuView->isItemChecked(tr_id));
+      showTransport(menuView->isItemChecked(tr_id));    // Tim - QT4
       }
 
 //---------------------------------------------------------
@@ -4478,7 +4480,7 @@ void MusE::switchMixerAutomation()
       // Clear all pressed and touched and rec event lists.
       song->clearRecAutomation(true);
 
-printf("automation = %d\n", automation);
+// printf("automation = %d\n", automation);
       menuAutomation->setItemChecked(autoId, automation);
       }
 
@@ -4635,7 +4637,8 @@ void MusE::showBigtime(bool on)
 
 void MusE::toggleBigTime()
       {
-      showBigtime(!menuView->isItemChecked(bt_id));
+      //showBigtime(!menuView->isItemChecked(bt_id));
+      showBigtime(menuView->isItemChecked(bt_id));     // Tim - QT4
       }
 
 //---------------------------------------------------------
@@ -4717,9 +4720,8 @@ void MusE::toggleMixer()
 
 void MusE::toggleMixer1()
       {
-      printf("toggle mixer1\n");
       //showMixer1(!menuView->isItemChecked(aid1a));
-      showMixer1(true);
+      showMixer1(menuView->isItemChecked(aid1a));      // Tim - QT4
       }
 
 //---------------------------------------------------------
@@ -4728,7 +4730,8 @@ void MusE::toggleMixer1()
 
 void MusE::toggleMixer2()
       {
-      showMixer2(!menuView->isItemChecked(aid1b));
+      //showMixer2(!menuView->isItemChecked(aid1b));
+      showMixer2(menuView->isItemChecked(aid1b));     // Tim - QT4
       }
 
 //---------------------------------------------------------
