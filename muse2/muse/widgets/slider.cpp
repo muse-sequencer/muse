@@ -775,12 +775,7 @@ void Slider::resizeEvent(QResizeEvent *e)
 
 void Slider::valueChange()
       {
-      QPainter p;
-
-      p.begin(this);
-      drawSlider(&p, d_sliderRect);
-      p.end();
-
+      update();
       SliderBase::valueChange();
       }
 
