@@ -71,7 +71,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)
 
       solo = new QToolButton();    
       solo->setText(tr("Solo"));
-      solo->setToggleButton(true);
+      solo->setCheckable(true);
       addWidget(solo);
 
       //---------------------------------------------------

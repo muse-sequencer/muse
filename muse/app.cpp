@@ -868,19 +868,12 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //---------------------------------------------------
       //    undo/redo
       //---------------------------------------------------
-      // ORCAN - CHECK:
-      /*
-      undoRedo = new QActionGroup(this, tr("UndoRedo"), false);
-      undoAction = new QAction(tr("undo"), QIcon(*undoIconS), tr("Und&o"), // ddskrjo
-        Qt::CTRL+Qt::Key_Z, undoRedo, "undo");
-      redoAction = new QAction(tr("redo"), QIcon(*redoIconS), tr("Re&do"), // ddskrjo
-        Qt::CTRL+Qt::Key_Y, undoRedo, "redo");
-      */
+      
       undoRedo = new QActionGroup(this);
       undoRedo->setExclusive(false);
-      undoAction = new QAction(QIcon(*undoIconS), tr("Und&o"), // ddskrjo
+      undoAction = new QAction(QIcon(*undoIconS), tr("Und&o"), 
         undoRedo);
-      redoAction = new QAction(QIcon(*redoIconS), tr("Re&do"), // ddskrjo
+      redoAction = new QAction(QIcon(*redoIconS), tr("Re&do"), 
         undoRedo);
 
       undoAction->setWhatsThis(tr("undo last change to song"));
@@ -893,13 +886,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //---------------------------------------------------
       //    Transport
       //---------------------------------------------------
-      // ORCAN - CHECK:
-      /*
-      transportAction = new QActionGroup(this, tr("Transport"), false);
-
-      loopAction = new QAction(tr("loop"), QIcon(*loop1Icon),
-         tr("Loop"), 0, transportAction, "loop", true);
-      */
+      
       transportAction = new QActionGroup(this);
       transportAction->setExclusive(false);
       
@@ -909,11 +896,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       loopAction->setWhatsThis(tr(infoLoopButton));
       connect(loopAction, SIGNAL(toggled(bool)), song, SLOT(setLoop(bool)));
-      // ORCAN - CHECK:
-      /*
-      punchinAction = new QAction(tr("punchin"), QIcon(*punchin1Icon),
-         tr("Punchin"), 0, transportAction, "Punchin", true);
-      */
+      
       punchinAction = new QAction(QIcon(*punchin1Icon),
          tr("Punchin"), transportAction);
       punchinAction->setCheckable(true);
@@ -921,11 +904,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       punchinAction->setWhatsThis(tr(infoPunchinButton));
       connect(punchinAction, SIGNAL(toggled(bool)), song, SLOT(setPunchin(bool)));
 
-      // ORCAN - CHECK:
-      /*
-      punchoutAction = new QAction(tr("punchout"), QIcon(*punchout1Icon),
-         tr("Punchout"), 0, transportAction, "punchout", true);
-      */
       punchoutAction = new QAction(QIcon(*punchout1Icon),
          tr("Punchout"), transportAction);
       punchoutAction->setCheckable(true);
@@ -935,44 +913,24 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       transportAction->addSeparator();
 
-      // ORCAN - CHECK:
-      /*
-      startAction = new QAction(tr("start"), QIcon(*startIcon),
-         tr("Start"), 0, transportAction, "start");
-      */
       startAction = new QAction(QIcon(*startIcon),
          tr("Start"), transportAction);
 
       startAction->setWhatsThis(tr(infoStartButton));
       connect(startAction, SIGNAL(activated()), song, SLOT(rewindStart()));
 
-      // ORCAN - CHECK:
-      /*
-      rewindAction = new QAction(tr("rewind"), QIcon(*frewindIcon),
-         tr("Rewind"), 0, transportAction, "rewind");
-      */
       rewindAction = new QAction(QIcon(*frewindIcon),
          tr("Rewind"), transportAction);
 
       rewindAction->setWhatsThis(tr(infoRewindButton));
       connect(rewindAction, SIGNAL(activated()), song, SLOT(rewind()));
 
-      // ORCAN - CHECK:
-      /*
-      forwardAction = new QAction(tr("forward"), QIcon(*fforwardIcon),
-         tr("Forward"), 0, transportAction, "forward");
-      */
       forwardAction = new QAction(QIcon(*fforwardIcon),
 	 tr("Forward"), transportAction);
 
       forwardAction->setWhatsThis(tr(infoForwardButton));
       connect(forwardAction, SIGNAL(activated()), song, SLOT(forward()));
 
-      // ORCAN - CHECK:
-      /*
-      stopAction = new QAction(tr("stop"), QIcon(*stopIcon),
-         tr("Stop"), 0, transportAction, "stop", true);
-      */
       stopAction = new QAction(QIcon(*stopIcon),
          tr("Stop"), transportAction);
       stopAction->setCheckable(true);
@@ -981,11 +939,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       stopAction->setOn(true);
       connect(stopAction, SIGNAL(toggled(bool)), song, SLOT(setStop(bool)));
 
-      // ORCAN - CHECK:
-      /*
-      playAction = new QAction(tr("play"),  QIcon(*playIcon),
-         tr("Play"), 0, transportAction, "play", true);
-      */
       playAction = new QAction(QIcon(*playIcon),
          tr("Play"), transportAction);
       playAction->setCheckable(true);
@@ -994,22 +947,12 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       playAction->setOn(false);
       connect(playAction, SIGNAL(toggled(bool)), song, SLOT(setPlay(bool)));
 
-      // ORCAN - CHECK:
-      /*
-      recordAction = new QAction(tr("record"),  QIcon(*recordIcon),
-         tr("Record"), 0, transportAction, "record", true);
-      */
       recordAction = new QAction(QIcon(*recordIcon),
          tr("Record"), transportAction);
       recordAction->setCheckable(true);
       recordAction->setWhatsThis(tr(infoRecordButton));
       connect(recordAction, SIGNAL(toggled(bool)), song, SLOT(setRecord(bool)));
 
-      // ORCAN - CHECK:
-      /*
-      panicAction = new QAction(tr("panic"),  QIcon(*panicIcon),
-         tr("Panic"), 0, 0, "panic", false);
-      */
       panicAction = new QAction(QIcon(*panicIcon),
          tr("Panic"), 0);
 
@@ -1022,47 +965,21 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       //----Actions
 
-      // ORCAN - CHECK:
-      /*
-      fileNewAction = new QAction(tr("new"),
-        QIcon(*filenewIcon), tr("&New"), 0, this, "new"); // ddskrjo
-      */
-      fileNewAction = new QAction(
-        QIcon(*filenewIcon), tr("&New"), this); // ddskrjo
-
+      fileNewAction = new QAction(QIcon(*filenewIcon), tr("&New"), this); 
       fileNewAction->setToolTip(tr(fileNewText));
       fileNewAction->setWhatsThis(tr(fileNewText));
 
-      // ORCAN - CHECK:
-      /*
-      fileOpenAction = new QAction(tr("open"),
-        QIcon(*openIcon), tr("&Open"), 0, this, "open"); // ddskrjo
-      */
-      fileOpenAction = new QAction(
-        QIcon(*openIcon), tr("&Open"), this); // ddskrjo
+      fileOpenAction = new QAction(QIcon(*openIcon), tr("&Open"), this); 
 
       fileOpenAction->setToolTip(tr(fileOpenText));
       fileOpenAction->setWhatsThis(tr(fileOpenText));
 
-      // ORCAN - CHECK:
-      /*
-      fileSaveAction = new QAction(tr("save"),
-        QIcon(*saveIcon), tr("&Save"), 0, this, "save"); // ddskrjo
-      */
-      fileSaveAction = new QAction(
-        QIcon(*saveIcon), tr("&Save"), this); // ddskrjo
+      fileSaveAction = new QAction(QIcon(*saveIcon), tr("&Save"), this); 
 
       fileSaveAction->setToolTip(tr(fileSaveText));
       fileSaveAction->setWhatsThis(tr(fileSaveText));
 
-      // ORCAN - CHECK:
-      /*
-      pianoAction = new QAction(tr("pianoroll"),
-        *pianoIconSet, tr("Pianoroll"), 0, this, "pianoroll");
-	*/
-      pianoAction = new QAction(
-        *pianoIconSet, tr("Pianoroll"), this);
-
+      pianoAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
       connect(pianoAction, SIGNAL(activated()), SLOT(startPianoroll()));
 
 //       markerAction = new QAction(tr("marker"), QIconSet(*view_markerIcon), tr("Marker"),
@@ -1076,13 +993,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //--------------------------------------------------
       //    Toolbar
       //--------------------------------------------------
-      // FIXME - Orcan
-      //tools = new QToolBar(tr("File Buttons"), this);
+      
       tools = addToolBar(tr("File Buttons"));
 
-      //fileNewAction->addTo(tools);
-      //fileOpenAction->addTo(tools);
-      //fileSaveAction->addTo(tools);
       tools->addAction(fileNewAction);
       tools->addAction(fileOpenAction);
       tools->addAction(fileSaveAction);
@@ -1090,30 +1003,19 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //
       //    Whats This
       //
-      // FIXME - Orcan: Do we need this?
-      //Q3WhatsThis::whatsThisButton(tools);
       tools->addAction(QWhatsThis::createAction(this));
       
       tools->addSeparator();
-      //undoRedo->addTo(tools);
       tools->addActions(undoRedo->actions());
-      //addToolBar(tools);
 
       tools1 = new EditToolBar(this, arrangerTools);
       addToolBar(tools1);
 
-      //QToolBar* transportToolbar = new QToolBar(this);
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
-      //transportAction->addTo(transportToolbar);
       transportToolbar->addActions(transportAction->actions());
-      //addToolBar(transportToolbar);
 
-      //QToolBar* panicToolbar = new QToolBar(this);
       QToolBar* panicToolbar = addToolBar(tr("Panic"));
-      //panicAction->addTo(panicToolbar);
       panicToolbar->addAction(panicAction);
-      //addToolBar(panicToolbar);
-
 
       if (realTimePriority < sched_get_priority_min(SCHED_FIFO))
             realTimePriority = sched_get_priority_min(SCHED_FIFO);
@@ -1153,8 +1055,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       menu_file = new QMenu(this);
       menuBar()->insertItem(tr("&File"), menu_file);
-      //fileNewAction->addTo(menu_file);
-      //fileOpenAction->addTo(menu_file);
       menu_file->addAction(fileNewAction);
       menu_file->addAction(fileOpenAction);
       openRecent = new QMenu(menu_file);
@@ -1162,7 +1062,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(openRecent, SIGNAL(activated(int)), this, SLOT(selectProject(int)));
       menu_ids[CMD_OPEN_RECENT] = menu_file->insertItem(tr("Open &Recent"), openRecent, 0);
       menu_file->insertSeparator();
-      //fileSaveAction->addTo(menu_file);
       menu_file->addAction(fileSaveAction);
       menu_ids[CMD_SAVE_AS] = menu_file->insertItem(tr("Save &As"), this, SLOT(saveAs()), 0, -2);
       menu_file->insertSeparator();
@@ -1181,7 +1080,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //-------------------------------------------------------------
 
       menuEdit = new QMenu(this);
-      //undoRedo->addTo(menuEdit);
       menuEdit->addActions(undoRedo->actions());
       menuEdit->insertSeparator();
       menuBar()->insertItem(tr("&Edit"), menuEdit);
@@ -1232,7 +1130,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
          tr("Select"), select);
       menuEdit->insertSeparator();
 
-      //pianoAction->addTo(menuEdit);
       menuEdit->addAction(pianoAction);
       menu_ids[CMD_OPEN_DRUMS] = menuEdit->insertItem(
          QIcon(*edit_drummsIcon), tr("Drums"), this, SLOT(startDrumEditor()), 0);
