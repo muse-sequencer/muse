@@ -8,9 +8,9 @@
 #ifndef __DRUM_EDIT_H__
 #define __DRUM_EDIT_H__
 
-#include <qwidget.h>
-#include <q3mainwindow.h>
-#include <qtooltip.h>
+#include <QWidget>
+//#include <q3mainwindow.h>
+#include <QToolTip>
 #include <q3whatsthis.h>
 //Added by qt3to4:
 #include <QResizeEvent>

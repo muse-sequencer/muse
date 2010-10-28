@@ -16,16 +16,17 @@
 
 //#include <q3toolbar.h>
 #include <QToolBar>
-#include <qtoolbutton.h>
-#include <qtooltip.h>
-#include <qlayout.h>
-#include <qsizegrip.h>
+#include <QToolButton>
+#include <QToolTip>
+#include <QLayout>
+#include <QSizeGrip>
 #include <q3popupmenu.h>
-#include <qmenubar.h>
-#include <qaction.h>
+#include <QMenuBar>
+//#include <qaction.h>
 #include <q3groupbox.h>
-#include <qlineedit.h>
+#include <QLineEdit>
 #include <Qt3Support>
+#include <QAction>
 //Added by qt3to4:
 #include <QCloseEvent>
 #include <Q3VBoxLayout>
@@ -155,15 +156,6 @@ MarkerView::MarkerView(QWidget* parent)
       {
       setCaption(tr("MusE: Marker"));
 
-      //---------Actions----------------------------
-      // CHECK - ORCAN:
-      //QAction* markerAdd = new QAction(tr("add marker"),
-      //   QIcon(*flagIcon), tr("Add Marker"),
-      //  0, this, "add marker");
-      //QAction* markerDelete = new QAction(tr("delete marker"),
-      //   QIcon(*deleteIcon), tr("Delete Marker"),
-      //   0, this, "delete marker");
-
       QAction* markerAdd = new QAction(QIcon(*flagIcon), tr("add marker"), this);
       connect(markerAdd, SIGNAL(activated()), SLOT(addMarker()));
 
@@ -179,12 +171,12 @@ MarkerView::MarkerView(QWidget* parent)
       markerDelete->addTo(editMenu);
 
       //---------ToolBar----------------------------------
-      tools = new QToolBar(this, "marker-tools");
-      undoRedo->addTo(tools);
+      tools = addToolBar(tr("marker-tools"));
+      tools->addActions(undoRedo->actions());
 
-      QToolBar* edit = new QToolBar(this, "edit tools");
-      markerAdd->addTo(edit);
-      markerDelete->addTo(edit);
+      QToolBar* edit = addToolBar(tr("edit tools"));
+      edit->addAction(markerAdd);
+      edit->addAction(markerDelete);
 
       //---------------------------------------------------
       //    master
@@ -222,8 +214,8 @@ MarkerView::MarkerView(QWidget* parent)
          QSizePolicy::Fixed));
 
       lock = new QToolButton(props);
-      lock->setPixmap(*lockIcon);
-      lock->setToggleButton(true);
+      lock->setIcon(*lockIcon);
+      lock->setCheckable(true);
 
       editName = new QLineEdit(props);
       editName->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,

@@ -8,8 +8,8 @@
 #ifndef __LMASTER_EDIT_H__
 #define __LMASTER_EDIT_H__
 
-#include <qwidget.h>
-#include <qlineedit.h>
+#include <QWidget>
+#include <QLineEdit>
 //Added by qt3to4:
 #include <QMouseEvent>
 #include <Q3PopupMenu>
@@ -17,8 +17,8 @@
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
-#include <q3mainwindow.h>
-#include <q3listview.h>
+//#include <q3mainwindow.h>
+#include <Q3ListView>
 #include "tempo.h"
 #include "sig.h"
 

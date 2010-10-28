@@ -10,27 +10,27 @@
 #include <stdio.h>
 
 #include <values.h>
-#include <qlayout.h>
-#include <qcombobox.h>
-#include <qtoolbutton.h>
+#include <QLayout>
+//#include <qcombobox.h>
+#include <QToolButton>
 #include <QButtonGroup>
-#include <qlabel.h>
+#include <QLabel>
 //#include <q3accel.h>
-#include <qcombobox.h>
+#include <QComboBox>
 //#include <q3whatsthis.h>
 //#include <q3toolbar.h>
 #include <QToolBar>
-#include <qtooltip.h>
+//#include <QToolTip>
 #include <q3popupmenu.h>
 #include <q3hbox.h>
-#include <qstringlist.h>
+#include <QStringList>
 #include <q3filedialog.h>
-#include <qcheckbox.h>
-#include <qpushbutton.h>
+#include <QCheckBox>
+#include <QPushButton>
 //#include <q3mainwindow.h>
 #include <QMainWindow>
 #include <q3widgetstack.h>
-#include <qscrollbar.h>
+#include <QScrollBar>
 //Added by qt3to4:
 #include <QKeyEvent>
 #include <Q3ValueList>
@@ -134,8 +134,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       toolbar->addWidget(label);
       QComboBox* raster = new QComboBox();
       for (int i = 0; i < 6; i++)
-            raster->insertItem(tr(rastval[i]), i);
-      raster->setCurrentItem(1);
+            raster->insertItem(i, tr(rastval[i]));
+      raster->setCurrentIndex(1);
       toolbar->addWidget(raster);
       connect(raster, SIGNAL(activated(int)), SLOT(_setRaster(int)));
       raster->setFocusPolicy(Qt::NoFocus);
@@ -151,19 +151,19 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       //
       lenEntry = new SpinBox(1, 10000, 1);
       lenEntry->setValue(song->len());
-      QToolTip::add(lenEntry, tr("song length - bars"));
+      lenEntry->setToolTip(tr("song length - bars"));
       Q3WhatsThis::add(lenEntry, tr("song length - bars"));
       toolbar->addWidget(lenEntry);
       connect(lenEntry, SIGNAL(valueChanged(int)), SLOT(songlenChanged(int)));
 
       typeBox = new LabelCombo(tr("Type"), 0);
-      typeBox->insertItem(tr("NO"), 0);
-      typeBox->insertItem(tr("GM"), 1);
-      typeBox->insertItem(tr("GS"), 2);
-      typeBox->insertItem(tr("XG"), 3);
-      typeBox->setCurrentItem(0);
-      QToolTip::add(typeBox, tr("midi song type"));
-      Q3WhatsThis::add(typeBox, tr("midi song type"));
+      typeBox->insertItem(0, tr("NO"));
+      typeBox->insertItem(1, tr("GM"));
+      typeBox->insertItem(2, tr("GS"));
+      typeBox->insertItem(3, tr("XG"));
+      typeBox->setCurrentIndex(0);
+      typeBox->setToolTip(tr("midi song type"));
+      typeBox->setWhatsThis(tr("midi song type"));
       typeBox->setFocusPolicy(Qt::NoFocus);
       toolbar->addWidget(typeBox);
       connect(typeBox, SIGNAL(activated(int)), SLOT(modeChange(int)));
@@ -175,8 +175,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       
       globalPitchSpinBox = new SpinBox(-127, 127, 1);
       globalPitchSpinBox->setValue(song->globalPitchShift());
-      QToolTip::add(globalPitchSpinBox, tr("midi pitch"));
-      Q3WhatsThis::add(globalPitchSpinBox, tr("global midi pitch shift"));
+      globalPitchSpinBox->setToolTip(tr("midi pitch"));
+      globalPitchSpinBox->setWhatsThis(tr("global midi pitch shift"));
       toolbar->addWidget(globalPitchSpinBox);
       connect(globalPitchSpinBox, SIGNAL(valueChanged(int)), SLOT(globalPitchChanged(int)));
       
@@ -188,8 +188,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       globalTempoSpinBox = new SpinBox(50, 200, 1, toolbar);
       globalTempoSpinBox->setSuffix(QString("%"));
       globalTempoSpinBox->setValue(tempomap.globalTempo());
-      QToolTip::add(globalTempoSpinBox, tr("midi tempo"));
-      Q3WhatsThis::add(globalTempoSpinBox, tr("midi tempo"));
+      globalTempoSpinBox->setToolTip(tr("midi tempo"));
+      globalTempoSpinBox->setWhatsThis(tr("midi tempo"));
       toolbar->addWidget(globalTempoSpinBox);
       connect(globalTempoSpinBox, SIGNAL(valueChanged(int)), SLOT(globalTempoChanged(int)));
       
@@ -506,7 +506,7 @@ void Arranger::songChanged(int type)
   
         trackSelectionChanged();
         canvas->partsChanged();
-        typeBox->setCurrentItem(int(song->mtype()));
+        typeBox->setCurrentIndex(int(song->mtype()));
         if (type & SC_SIG)
               time->redraw();
         if (type & SC_TEMPO)
@@ -572,7 +572,7 @@ void Arranger::modeChange(int mode)
 
 void Arranger::setMode(int mode)
       {
-      typeBox->setCurrentItem(mode);
+      typeBox->setCurrentIndex(mode);
       }
 
 //---------------------------------------------------------

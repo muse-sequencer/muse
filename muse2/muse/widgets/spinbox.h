@@ -12,7 +12,7 @@
 #ifndef __SPINBOX_H__
 #define __SPINBOX_H__
 
-#include <qspinbox.h>
+#include <QSpinBox>
 //Added by qt3to4:
 #include <QEvent>
 

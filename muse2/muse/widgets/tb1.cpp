@@ -188,10 +188,10 @@ Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)
       addWidget(new QLabel(tr("To")));
       QComboBox* toList = new QComboBox;
       toList->setFixedHeight(22);
-      toList->addItem(tr("All Events"),   0);
-      toList->addItem(tr("Looped Ev."),   CMD_RANGE_LOOP);
-      toList->addItem(tr("Selected Ev."), CMD_RANGE_SELECTED);
-      toList->addItem(tr("Looped+Sel."),  CMD_RANGE_LOOP | CMD_RANGE_SELECTED);
+      toList->insertItem(0, tr("All Events"));
+      toList->insertItem(CMD_RANGE_LOOP, tr("Looped Ev."));
+      toList->insertItem(CMD_RANGE_SELECTED, tr("Selected Ev."));
+      toList->insertItem(CMD_RANGE_LOOP | CMD_RANGE_SELECTED, tr("Looped+Sel."));
       addWidget(toList);
 
       connect(raster, SIGNAL(activated(int)), SLOT(_rasterChanged(int)));
@@ -266,12 +266,12 @@ void Toolbar1::setRaster(int val)
       {
       for (unsigned i = 0; i < sizeof(rasterTable)/sizeof(*rasterTable); i++) {
             if (val == rasterTable[i]) {
-                  raster->setCurrentItem(i);
+                  raster->setCurrentIndex(i);
                   return;
                   }
             }
       printf("setRaster(%d) not defined\n", val);
-      raster->setCurrentItem(0);
+      raster->setCurrentIndex(0);
       }
 
 //---------------------------------------------------------
@@ -282,12 +282,12 @@ void Toolbar1::setQuant(int val)
       {
       for (unsigned i = 0; i < sizeof(quantTable)/sizeof(*quantTable); i++) {
             if (val == quantTable[i]) {
-                  quant->setCurrentItem(i);
+                  quant->setCurrentIndex(i);
                   return;
                   }
             }
       printf("setQuant(%d) not defined\n", val);
-      quant->setCurrentItem(0);
+      quant->setCurrentIndex(0);
       }
 
 //---------------------------------------------------------

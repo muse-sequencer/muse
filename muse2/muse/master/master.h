@@ -8,7 +8,7 @@
 #ifndef __MASTER_H__
 #define __MASTER_H__
 
-#include <qpoint.h>
+#include <QPoint>
 //Added by qt3to4:
 #include <QMouseEvent>
 #include <QEvent>

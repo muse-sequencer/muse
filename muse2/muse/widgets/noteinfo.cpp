@@ -8,8 +8,8 @@
 #include "config.h"
 
 #include "noteinfo.h"
-#include <qlayout.h>
-#include <qlabel.h>
+#include <QLayout>
+#include <QLabel>
 #include "song.h"
 #include "globals.h"
 #include "posedit.h"

@@ -13,7 +13,7 @@
 
 //#include <q3mainwindow.h>
 #include <QMainWindow>
-#include <qrect.h>
+#include <QRect>
 //Added by qt3to4:
 #include <Qt3Support>
 //#include <Q3PopupMenu>

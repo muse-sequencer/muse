@@ -7,8 +7,8 @@
 
 #include <stdlib.h>
 #include <cmath>
-#include <qapplication.h>
-#include <qstyle.h>
+#include <QApplication>
+#include <QStyle>
 //Added by qt3to4:
 #include <QLabel>
 

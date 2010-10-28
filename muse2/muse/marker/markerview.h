@@ -9,7 +9,7 @@
 #define __MARKERVIEW_H__
 
 #include "cobject.h"
-#include <q3mainwindow.h>
+//#include <q3mainwindow.h>
 #include <q3listview.h>
 //Added by qt3to4:
 #include <QCloseEvent>

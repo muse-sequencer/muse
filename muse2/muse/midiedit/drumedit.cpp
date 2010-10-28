@@ -5,24 +5,24 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qtoolbutton.h>
+#include <QToolButton>
 #include <q3accel.h>
-#include <qlayout.h>
+#include <QLayout>
 #include <q3hbox.h>
-#include <qsizegrip.h>
-#include <qscrollbar.h>
-#include <qlabel.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
+#include <QSizeGrip>
+#include <QScrollBar>
+#include <QLabel>
+#include <QPushButton>
+#include <QRadioButton>
 #include <q3buttongroup.h>
 #include <q3listbox.h>
 #include <q3popupmenu.h>
-#include <qmenubar.h>
-#include <qtooltip.h>
-#include <qapplication.h>
-#include <qclipboard.h>
-#include <qmessagebox.h>
-#include <qaction.h>
+#include <QMenuBar>
+#include <QToolTip>
+#include <QApplication>
+#include <QClipboard>
+#include <QMessageBox>
+#include <QAction>
 #include <QWhatsThis>
 
 //Added by qt3to4:
@@ -223,16 +223,16 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       //    Toolbars
       //---------------------------------------------------
 
-      tools = addToolBar(tr("drum-tools"));
+      tools = addToolBar(tr("Drum tools"));
       
       QToolButton *ldm = new QToolButton();
-      QToolTip::add(ldm, tr("Load Drummap"));
+      ldm->setToolTip(tr("Load Drummap"));
       ldm->setIcon(*openIcon);
       connect(ldm, SIGNAL(clicked()), SLOT(load()));
       tools->addWidget(ldm);
       
       QToolButton *sdm = new QToolButton();
-      QToolTip::add(sdm, tr("Store Drummap"));
+      sdm->setToolTip(tr("Store Drummap"));
       sdm->setIcon(*saveIcon);
       connect(sdm, SIGNAL(clicked()), SLOT(save()));
       tools->addWidget(sdm);
@@ -244,13 +244,13 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       tools->addSeparator();
 
       srec  = new QToolButton();
-      QToolTip::add(srec, tr("Step Record"));
+      srec->setToolTip(tr("Step Record"));
       srec->setIcon(*steprecIcon);
       srec->setCheckable(true);
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
-      QToolTip::add(midiin, tr("Midi Input"));
+      midiin->setToolTip(tr("Midi Input"));
       midiin->setIcon(*midiinIcon);
       midiin->setCheckable(true);
       tools->addWidget(midiin);
@@ -282,7 +282,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       ctrl->setFont(config.fonts[3]);
       hscroll           = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
-      QToolTip::add(ctrl, tr("Add Controller View"));
+      ctrl->setToolTip(tr("Add Controller View"));
 
       QSizeGrip* corner = new QSizeGrip(mainw);
       corner->setFixedHeight(hscroll->sizeHint().height());
