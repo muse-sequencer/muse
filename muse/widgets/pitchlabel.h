@@ -8,7 +8,7 @@
 #ifndef __PITCHLABEL_H__
 #define __PITCHLABEL_H__
 
-#include <qlabel.h>
+#include <QLabel>
 
 //---------------------------------------------------------
 //   PitchLabel

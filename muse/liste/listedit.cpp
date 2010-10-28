@@ -7,23 +7,24 @@
 
 //#include <q3toolbar.h>
 #include <QToolBar>
-#include <qtooltip.h>
-#include <qtoolbutton.h>
-#include <qlayout.h>
+#include <QToolTip>
+#include <QToolButton>
+#include <QLayout>
 #include <q3hbox.h>
-#include <qscrollbar.h>
-#include <qlabel.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
+#include <QScrollBar>
+#include <QLabel>
+#include <QPushButton>
+#include <QRadioButton>
 #include <QButtonGroup>
 #include <q3listbox.h>
 #include <q3listview.h>
 #include <q3header.h>
 #include <q3popupmenu.h>
-#include <qmenubar.h>
-#include <qaction.h>
+#include <QMenuBar>
+//#include <qaction.h>
 #include <q3accel.h>
 #include <Qt3Support>
+#include <QAction>
 //Added by qt3to4:
 #include <QKeyEvent>
 #include <QActionGroup>
@@ -420,22 +421,6 @@ QString EventListItem::text(int col) const
 ListEdit::ListEdit(PartList* pl)
    : MidiEditor(0, 0, pl)
       {
-      // ORCAN - CHECK:
-      /*
-      insertItems = new QActionGroup(this, "InsertItems", false);
-      insertNote = new QAction(tr("Insert Note"), QIcon(*note1Icon), tr("insert Note"),
-        0, insertItems);
-      insertSysEx = new QAction(tr("Insert SysEx"), QIcon(*sysexIcon), tr("insert SysEx"),
-        0, insertItems);
-      insertCtrl = new QAction(tr("Insert Ctrl"), QIcon(*ctrlIcon), tr("insert Ctrl"),
-        0, insertItems);
-      insertMeta = new QAction(tr("Insert Meta"), QIcon(*metaIcon), tr("insert Meta"),
-        0, insertItems);
-      insertCAfter = new QAction(tr("Insert Channel Aftertouch"), QIcon(*cafterIcon), tr("insert Channel Aftertouch"),
-        0, insertItems);
-      insertPAfter = new QAction(tr("Insert Key Aftertouch"), QIcon(*pafterIcon), tr("insert Poly Aftertouch"),
-        0, insertItems);
-      */
       insertItems = new QActionGroup(this);
       insertItems->setExclusive(false);
       insertNote = new QAction(QIcon(*note1Icon), tr("insert Note"), insertItems);
@@ -453,6 +438,7 @@ ListEdit::ListEdit(PartList* pl)
       connect(insertPAfter,  SIGNAL(activated()), SLOT(editInsertPAfter()));
 
       //---------Pulldown Menu----------------------------
+      
       menuEdit = new Q3PopupMenu(this);
       menuBar()->insertItem(tr("&Edit"), menuEdit);
       undoRedo->addTo(menuEdit);
@@ -480,12 +466,12 @@ ListEdit::ListEdit(PartList* pl)
       connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
-      listTools = new QToolBar(this, "list-tools");
-      listTools->setLabel(tr("List Tools"));
-      undoRedo->addTo(listTools);
-      QToolBar* insertTools = new QToolBar(this, "insert");
-      insertTools->setLabel(tr("Insert Tools"));
-      insertItems->addTo(insertTools);
+      
+      listTools = addToolBar(tr("List tools"));
+      listTools->addActions(undoRedo->actions());
+      
+      QToolBar* insertTools = addToolBar(tr("Insert tools"));
+      insertTools->addActions(insertItems->actions());
 
       //
       //---------------------------------------------------

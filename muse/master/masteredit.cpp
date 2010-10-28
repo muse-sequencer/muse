@@ -24,23 +24,23 @@
 #include <values.h>
 //#include <q3toolbar.h>
 #include <QToolBar>
-#include <qtoolbutton.h>
-#include <qtooltip.h>
+#include <QToolButton>
+#include <QToolTip>
 #include <q3accel.h>
-#include <qlayout.h>
+#include <QLayout>
 #include <q3hbox.h>
-#include <qsizegrip.h>
-#include <qscrollbar.h>
-#include <qlabel.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
+#include <QSizeGrip>
+#include <QScrollBar>
+#include <QLabel>
+#include <QPushButton>
+#include <QRadioButton>
 #include <q3buttongroup.h>
 #include <q3listbox.h>
-#include <qcombobox.h>
+#include <QComboBox>
 #include <q3header.h>
 #include <q3popupmenu.h>
-#include <qmenubar.h>
-#include <qaction.h>
+#include <QMenuBar>
+#include <QAction>
 //Added by qt3to4:
 #include <QCloseEvent>
 
@@ -101,47 +101,57 @@ MasterEdit::MasterEdit()
 //      menuBar()->insertItem("&File", file);
 
       //---------ToolBar----------------------------------
-      tools = new QToolBar(tr("edit tools"), this);
-      undoRedo->addTo(tools);
+      
+      tools = addToolBar(tr("Master tools"));
+      tools->addActions(undoRedo->actions());
 
       EditToolBar* tools2 = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
+      addToolBar(tools2);
 
-      QToolBar* enableMaster = new QToolBar(tr("EnableMaster"), this);
-      enableButton = new QToolButton(enableMaster);
-      enableButton->setToggleButton(true);
+      QToolBar* enableMaster = addToolBar(tr("Enable master"));
+      enableButton = new QToolButton();
+      enableButton->setCheckable(true);
       enableButton->setText(tr("Enable"));
-      QToolTip::add(enableButton, tr("Enable usage of master track"));
+      enableButton->setToolTip(tr("Enable usage of master track"));
       enableButton->setOn(song->masterFlag());
+      enableMaster->addWidget(enableButton);
       connect(enableButton, SIGNAL(toggled(bool)), song, SLOT(setMasterFlag(bool)));
 
-      QToolBar* info = new QToolBar(tr("Info"), this);
-      QLabel* label  = new QLabel(tr("Cursor"), info);
+      QToolBar* info = addToolBar(tr("Info"));
+      QLabel* label  = new QLabel(tr("Cursor"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
+      info->addWidget(label);
 
-      cursorPos = new PosLabel(info);
-      tempo = new TempoLabel(info);
+      cursorPos = new PosLabel(0);
+      cursorPos->setFixedHeight(22);
+      cursorPos->setToolTip(tr("time at cursor position"));
+      info->addWidget(cursorPos);
+      tempo = new TempoLabel(0);
+      tempo->setFixedHeight(22);
+      tempo->setToolTip(tr("tempo at cursor position"));
+      info->addWidget(tempo);
 
       const char* rastval[] = {
             QT_TR_NOOP("Off"), "Bar", "1/2", "1/4", "1/8", "1/16"
             };
-      rasterLabel = new LabelCombo(tr("Snap"), info);
-	  rasterLabel->setFocusPolicy(Qt::NoFocus);
+      rasterLabel = new LabelCombo(tr("Snap"), 0);
+      rasterLabel->setFocusPolicy(Qt::NoFocus);
       for (int i = 0; i < 6; i++)
-            rasterLabel->insertItem(tr(rastval[i]), i);
-      rasterLabel->setCurrentItem(1);
+            rasterLabel->insertItem(i, tr(rastval[i]));
+      rasterLabel->setCurrentIndex(1);
+      info->addWidget(rasterLabel);
       connect(rasterLabel, SIGNAL(activated(int)), SLOT(_setRaster(int)));
 
-      QToolTip::add(cursorPos, tr("time at cursor position"));
-      QToolTip::add(tempo, tr("tempo at cursor position"));
-
       //---------values for current position---------------
-      new QLabel(tr("CurPos "), info);
-      curTempo = new TempoEdit(info);
-      curSig   = new SigEdit(info);
+      info->addWidget(new QLabel(tr("CurPos ")));
+      curTempo = new TempoEdit(0);
+      curSig   = new SigEdit(0);
       curSig->setValue(Sig(4, 4));
-      QToolTip::add(curTempo, tr("tempo at current position"));
-      QToolTip::add(curSig, tr("time signature at current position"));
+      curTempo->setToolTip(tr("tempo at current position"));
+      curSig->setToolTip(tr("time signature at current position"));
+      info->addWidget(curTempo);
+      info->addWidget(curSig);
       connect(curSig, SIGNAL(valueChanged(int,int)), song, SLOT(setSig(int,int)));
       connect(curTempo, SIGNAL(valueChanged(double)), song, SLOT(setTempo(double)));
 
@@ -276,7 +286,7 @@ void MasterEdit::readStatus(Xml& xml)
                                     case 96:  item = 5; break;
                                     }
                               _rasterInit = _raster;
-                              rasterLabel->setCurrentItem(item);
+                              rasterLabel->setCurrentIndex(item);
                               return;
                               }
                   default:

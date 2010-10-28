@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include <qwidget.h>
+#include <QWidget>
 #include <q3header.h>
 #include <q3whatsthis.h>
 //Added by qt3to4:

@@ -8,13 +8,13 @@
 #ifndef __MASTER_EDIT_H__
 #define __MASTER_EDIT_H__
 
-#include <qwidget.h>
+#include <QWidget>
 //Added by qt3to4:
 #include <QCloseEvent>
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
-#include <q3mainwindow.h>
+//#include <q3mainwindow.h>
 
 class QToolButton;
 class Master;

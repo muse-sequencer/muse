@@ -11,8 +11,8 @@
 //#include <qwidget.h>
 //#include <q3toolbar.h>
 
-#include <QWidget>      // p4.0.4
-#include <QToolBar>     //
+#include <QWidget>      
+#include <QToolBar>     
 
 class PosLabel;
 class PitchLabel;

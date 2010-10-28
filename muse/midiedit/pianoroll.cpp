@@ -6,20 +6,20 @@
 //=========================================================
 
 #include <q3accel.h>
-#include <qlayout.h>
+#include <QLayout>
 #include <q3hbox.h>
-#include <qsizegrip.h>
-#include <qlabel.h>
-#include <qpushbutton.h>
+#include <QSizeGrip>
+#include <QLabel>
+#include <QPushButton>
 #include <q3buttongroup.h>
-#include <qtoolbutton.h>
-#include <qtooltip.h>
+#include <QToolButton>
+#include <QToolTip>
 #include <q3popupmenu.h>
-#include <qmenubar.h>
-#include <qapplication.h>
-#include <qclipboard.h>
-#include <qdir.h>
-#include <qaction.h>
+#include <QMenuBar>
+#include <QApplication>
+#include <QClipboard>
+#include <QDir>
+#include <QAction>
 //Added by qt3to4:
 #include <QKeyEvent>
 #include <QGridLayout>
@@ -185,26 +185,26 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(menuFunctions, SIGNAL(activated(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
-      tools = addToolBar(tr("pianoroll-tools"));          
+      tools = addToolBar(tr("Pianoroll tools"));          
       tools->addActions(undoRedo->actions());
       tools->addSeparator();
 
       // Does not like this, draws on top of other buttons! Must use QToolBar::addWidget()
       //srec  = new QToolButton(tools);          
       srec  = new QToolButton();
-      QToolTip::add(srec, tr("Step Record"));
+      srec->setToolTip(tr("Step Record"));
       srec->setIcon(*steprecIcon);
       srec->setCheckable(true);
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
-      QToolTip::add(midiin, tr("Midi Input"));
+      midiin->setToolTip(tr("Midi Input"));
       midiin->setIcon(*midiinIcon);
       midiin->setCheckable(true);
       tools->addWidget(midiin);
 
       speaker  = new QToolButton();
-      QToolTip::add(speaker, tr("Play Events"));
+      speaker->setToolTip(tr("Play Events"));
       speaker->setIcon(*speakerIcon);
       speaker->setCheckable(true);
       tools->addWidget(speaker);
@@ -235,7 +235,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       splitter = new Splitter(Qt::Vertical, mainw, "splitter");
       QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw, "Ctrl");
       ctrl->setFont(config.fonts[3]);
-      QToolTip::add(ctrl, tr("Add Controller View"));
+      ctrl->setToolTip(tr("Add Controller View"));
       hscroll = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
 

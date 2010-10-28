@@ -9,12 +9,11 @@
 
 #include <stdio.h>
 #include <q3rangecontrol.h>
-#include <qapplication.h>
-#include <qpixmap.h>
-#include <qapplication.h>
+#include <QApplication>
+#include <QPixmap>
 #include <q3valuelist.h>
-#include <qstring.h>
-#include <qstyle.h>
+#include <QString>
+#include <QStyle>
 //Added by qt3to4:
 #include <QTimerEvent>
 #include <QPaintEvent>
@@ -23,8 +22,8 @@
 #include <QKeyEvent>
 #include <QEvent>
 #include <values.h>
-#include <qpainter.h>
-#include <qtimer.h>
+#include <QPainter>
+#include <QTimer>
 #include "sig.h"
 
 extern int mtcType;

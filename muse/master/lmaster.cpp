@@ -17,17 +17,17 @@
 
 //#include <q3toolbar.h>
 #include <QToolBar>
-#include <qtoolbutton.h>
-#include <qtooltip.h>
-#include <qlayout.h>
-#include <qsizegrip.h>
-#include <q3popupmenu.h>
-#include <qmenubar.h>
-#include <q3listview.h>
-#include <qmessagebox.h>
-#include <qstyle.h>
-#include <q3accel.h>
-#include <qaction.h>
+#include <QToolButton>
+#include <QToolTip>
+#include <QLayout>
+#include <QSizeGrip>
+#include <Q3PopupMenu>
+#include <QMenuBar>
+#include <Q3ListView>
+#include <QMessageBox>
+#include <QStyle>
+#include <Q3Accel>
+#include <QAction>
 //Added by qt3to4:
 #include <QCloseEvent>
 
@@ -89,16 +89,22 @@ LMaster::LMaster()
       connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
-      tools = new QToolBar(this, "list-tools");
-      undoRedo->addTo(tools);
+      tools = addToolBar(tr("Master tools"));
+      tools->addActions(undoRedo->actions());
 
-      QToolBar* edit = new QToolBar(this, "edit tools");
-      QToolButton* tempoButton = new QToolButton(edit);
-      QToolButton* timeSigButton = new QToolButton(edit);
+      //QToolBar* edit = new QToolBar(this, "edit tools");
+      QToolBar* edit = addToolBar(tr("Edit tools"));
+      //QToolButton* tempoButton = new QToolButton(edit);
+      QToolButton* tempoButton = new QToolButton();
+      //QToolButton* timeSigButton = new QToolButton(edit);
+      QToolButton* timeSigButton = new QToolButton();
       tempoButton->setText(tr("Tempo"));
       timeSigButton->setText(tr("Timesig"));
-      QToolTip::add(tempoButton, tr("new tempo"));
-      QToolTip::add(timeSigButton, tr("new signature"));
+      tempoButton->setToolTip(tr("new tempo"));
+      timeSigButton->setToolTip(tr("new signature"));
+      edit->addWidget(tempoButton);
+      edit->addWidget(timeSigButton);
+      
       Q3Accel* qa = new Q3Accel(this);
       qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
       qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));

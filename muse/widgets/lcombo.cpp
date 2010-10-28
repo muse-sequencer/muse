@@ -36,16 +36,3 @@ LabelCombo::LabelCombo(const QString& txt, QWidget* parent,
       connect(box, SIGNAL(activated(int)), SIGNAL(activated(int)));
       }
 
-void LabelCombo::insertItem(const QString& txt, int index)
-      {
-      box->insertItem(txt, index);
-      }
-
-void LabelCombo::clearFocus()
-{
-  box->clearFocus();
-}
-void LabelCombo::setFocusPolicy ( Qt::FocusPolicy fp )
-{
-  box->setFocusPolicy(fp);
-}

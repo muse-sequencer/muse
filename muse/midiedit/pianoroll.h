@@ -8,8 +8,8 @@
 #ifndef __PIANOROLL_H__
 #define __PIANOROLL_H__
 
-#include <qwidget.h>
-#include <q3mainwindow.h>
+#include <QWidget>
+//#include <q3mainwindow.h>
 //#include <QMenu>
 //Added by qt3to4:
 #include <QCloseEvent>
