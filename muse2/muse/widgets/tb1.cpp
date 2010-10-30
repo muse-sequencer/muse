@@ -111,8 +111,8 @@ Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)
       // p4.0.3
       //QTableWidget* rlist = new QTableWidget(10, 3, this);    
       //QTableWidget* qlist = new QTableWidget(8, 3, this);     
-      QTableWidget* rlist = new QTableWidget(10, 3);    
-      QTableWidget* qlist = new QTableWidget(8, 3);     
+      rlist = new QTableWidget(10, 3);    
+      qlist = new QTableWidget(8, 3);     
       //addWidget(rlist);
       //addWidget(qlist);
       rlist->verticalHeader()->setDefaultSectionSize(22);                      
@@ -196,6 +196,8 @@ Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)
 
       connect(raster, SIGNAL(activated(int)), SLOT(_rasterChanged(int)));
       connect(quant,  SIGNAL(activated(int)), SLOT(_quantChanged(int)));
+      //connect(rlist, SIGNAL(cellClicked(int,int)), SLOT(_rasterChanged(int, int)));
+      //connect(qlist,  SIGNAL(cellClicked(int,int)), SLOT(_quantChanged(int,int)));
       //connect(to,     SIGNAL(activated(int)), SIGNAL(toChanged(int)));
       connect(toList,     SIGNAL(activated(int)), SIGNAL(toChanged(int)));
       connect(solo,   SIGNAL(toggled(bool)), SIGNAL(soloChanged(bool)));
@@ -206,18 +208,22 @@ Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)
 //   rasterChanged
 //---------------------------------------------------------
 
-void Toolbar1::_rasterChanged(int index)
+void Toolbar1::_rasterChanged(int i)
+//void Toolbar1::_rasterChanged(int r, int c)
       {
-      emit rasterChanged(rasterTable[index]);
+      emit rasterChanged(rasterTable[rlist->currentRow() + rlist->currentColumn() * 10]);
+      //emit rasterChanged(rasterTable[r + c * 10]);
       }
 
 //---------------------------------------------------------
 //   quantChanged
 //---------------------------------------------------------
 
-void Toolbar1::_quantChanged(int index)
+void Toolbar1::_quantChanged(int i)
+//void Toolbar1::_quantChanged(int r, int c)
       {
-      emit quantChanged(quantTable[index]);
+      emit quantChanged(quantTable[qlist->currentRow() + qlist->currentColumn() * 8]);
+      //emit quantChanged(quantTable[r + c * 8]);
       }
 
 //---------------------------------------------------------
@@ -267,11 +273,15 @@ void Toolbar1::setRaster(int val)
       for (unsigned i = 0; i < sizeof(rasterTable)/sizeof(*rasterTable); i++) {
             if (val == rasterTable[i]) {
                   raster->setCurrentIndex(i);
+                  //raster->setModelColumn(i / 10);
+                  //raster->setCurrentIndex(i % 10);
+                  //rlist->setCurrentCell(i % 10, i / 10);
                   return;
                   }
             }
       printf("setRaster(%d) not defined\n", val);
-      raster->setCurrentIndex(0);
+      //raster->setCurrentIndex(0);
+      rlist->setCurrentCell(0, 0);
       }
 
 //---------------------------------------------------------
@@ -283,11 +293,15 @@ void Toolbar1::setQuant(int val)
       for (unsigned i = 0; i < sizeof(quantTable)/sizeof(*quantTable); i++) {
             if (val == quantTable[i]) {
                   quant->setCurrentIndex(i);
+                  //quant->setModelColumn(i / 8);
+                  //quant->setCurrentIndex(i % 8);
+                  //qlist->setCurrentCell(i % 8, i / 8);
                   return;
                   }
             }
       printf("setQuant(%d) not defined\n", val);
-      quant->setCurrentIndex(0);
+      //quant->setCurrentIndex(0);
+      qlist->setCurrentCell(0, 0);
       }
 
 //---------------------------------------------------------

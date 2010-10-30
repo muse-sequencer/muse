@@ -32,6 +32,8 @@
 
 #include <stdio.h>
 
+#include "config.h"
+
 #include "libsynti/mess.h"
 #include "muse/midictrl.h"
 #include "deicsonze.h"
@@ -638,14 +640,20 @@ void DeicsOnze::loadSutulaPresets()
     nBank=0;
     nPreset=0;
 
-    QString presetPath(INSTPREFIX);
-    presetPath += "/share/muse/presets/deicsonze/ARCH_ALIN";
+    //QString presetPath(INSTPREFIX);
+    //presetPath += "/share/muse/presets/deicsonze/ARCH_ALIN";
+    //museGlobalShare
+    QString presetPath(QString(INSTPREFIX) + QString("/") +                                             
+                               QString(SHAREINSTPREFIX) + QString("/") +  // This has no prefix. Default is "share", set in top cmake script.
+                               QString(INSTALL_NAME));   
+    presetPath += "/presets/deicsonze/ARCH_ALIN";
 
     file = fopen (presetPath.latin1(), "rt");
     if (file == NULL) {
 	printf("can't open ");
 	printf("%s",presetPath.latin1());
 	printf("\n");
+        return;
     }
     else
     {

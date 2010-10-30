@@ -19,6 +19,7 @@ class PitchLabel;
 class Track;
 class LabelCombo;
 class QToolButton;
+class QTableWidget;
 
 //---------------------------------------------------------
 //   Toolbar1
@@ -30,7 +31,9 @@ class Toolbar1 : public QToolBar {       // p4.0.4
       PosLabel* pos;
       PitchLabel* pitch;
       LabelCombo* quant;
+      QTableWidget* qlist;
       LabelCombo* raster;
+      QTableWidget* rlist;
       bool showPitch;
       Q_OBJECT
 
