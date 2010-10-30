@@ -106,7 +106,7 @@ WaveEdit::WaveEdit(PartList* pl)
       connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
-      tools = addToolBar(tr("waveedit-tools"));          
+      tools = addToolBar(tr("Wave edit tools"));          
       tools->addActions(undoRedo->actions());
 
       Q3Accel* qa = new Q3Accel(this);
@@ -123,7 +123,7 @@ WaveEdit::WaveEdit(PartList* pl)
       //    ToolBar:   Solo  Cursor1 Cursor2
 
       addToolBarBreak();
-      tb1 = addToolBar(tr("pianoroll-tools"));          
+      tb1 = addToolBar(tr("Pianoroll tools"));          
 
       //tb1->setLabel(tr("weTools"));
       solo = new QToolButton();

@@ -32,13 +32,13 @@ class LabelCombo : public QWidget {
 
    public slots:
       void clearFocus() { box->clearFocus(); }
+      void setCurrentIndex(int i) { box->setCurrentIndex(i); } 
 
    public:
       LabelCombo(const QString& label, QWidget* parent,
          const char* name=0);
       void addItem(const QString& txt, const QVariant & userData = QVariant()) { box->addItem(txt, userData); }
       void insertItem(int index, const QString& txt, const QVariant & userData = QVariant()) { box->insertItem(index, txt, userData); }
-      void setCurrentIndex(int i) { box->setCurrentIndex(i); }
       //void setListBox(Q3ListBox* lb) { box->setListBox(lb); } // ddskrjo
       void setView(QAbstractItemView* v) { box->setModel(v->model()); box->setView(v); } // p4.0.3
       void setFocusPolicy ( Qt::FocusPolicy fp ) { box->setFocusPolicy(fp); }
