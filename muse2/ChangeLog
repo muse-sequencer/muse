@@ -1,6 +1,10 @@
+30.10.2010
+        - Fixed Deicsonze crash and missing Organ. Both load now. (Tim.)
 27.10.2010
         - Fixed drawing of Slider widget and Meter widget (rj)
         - Fixed keyboard shortcuts for tools on toolbar (rj)
+        - More conversions with windows done previously done, fixes. Marker, Master gui + List. (Tim)
+          Some new style header fixes here/there. 
 26.10.2010  
         - Fixed non-opening view menu windows (mixers, marker, bigtime etc). (Tim)
           Found all the isItemChecked() returning opposite of before (for example in toggleBigTime()). 
