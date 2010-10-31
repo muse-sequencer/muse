@@ -1,3 +1,5 @@
+31.10.2010
+        - Fixed Toolbar1 class. 'Snap', 'Quantize' combo boxes should work now. Thanks to Luis G. for help. (Tim)
 30.10.2010
         - Fixed Deicsonze crash and missing Organ. Both load now. (Tim.)
 27.10.2010

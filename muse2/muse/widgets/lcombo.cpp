@@ -36,3 +36,15 @@ LabelCombo::LabelCombo(const QString& txt, QWidget* parent,
       connect(box, SIGNAL(activated(int)), SIGNAL(activated(int)));
       }
 
+void LabelCombo::setCurrentIndex(int i) 
+{ 
+  int rc = box->model()->rowCount();
+  if(rc == 0)
+    return;
+  int r = i % rc;
+  int c = i / rc;
+  if(c >= box->model()->columnCount())
+    return;
+  box->setModelColumn(c);
+  box->setCurrentIndex(r); 
+} 

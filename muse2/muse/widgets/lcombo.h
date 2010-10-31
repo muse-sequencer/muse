@@ -32,7 +32,7 @@ class LabelCombo : public QWidget {
 
    public slots:
       void clearFocus() { box->clearFocus(); }
-      void setCurrentIndex(int i) { box->setCurrentIndex(i); } 
+      void setCurrentIndex(int i);
 
    public:
       LabelCombo(const QString& label, QWidget* parent,
