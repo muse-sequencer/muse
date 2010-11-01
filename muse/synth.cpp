@@ -36,6 +36,9 @@
 #include "midictrl.h"
 //#include "stringparam.h"
 
+// REMOVE Tim.
+#include "plugin.h"
+
 std::vector<Synth*> synthis;  // array of available synthis
 
 extern void connectNodes(AudioTrack*, AudioTrack*);
@@ -509,6 +512,8 @@ void initMidiSynth()
                   const char* path = fi->filePath().latin1();
             
                   // load Synti dll
+                  //printf("initMidiSynth: dlopen file:%s name:%s desc:%s\n", fi->filePath().latin1(), QString(descr->name), QString(descr->description), QString(""), QString(descr->version)));
+                  printf("initMidiSynth: dlopen file:%s\n", fi->filePath().latin1());
                   void* handle = dlopen(path, RTLD_NOW);
                   if (handle == 0) {
                         fprintf(stderr, "initMidiSynth: MESS dlopen(%s) failed: %s\n", path, dlerror());

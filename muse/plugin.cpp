@@ -972,6 +972,9 @@ static void loadPluginLib(QFileInfo* fi)
         //LADSPA_Properties properties = descr->LADSPA_Plugin->Properties;
         //bool inPlaceBroken = LADSPA_IS_INPLACE_BROKEN(properties);
         //plugins.add(fi, descr, !inPlaceBroken);
+        if(debugMsg)
+          fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s\n", fi->filePath().latin1(), descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label);
+      
         plugins.add(fi, descr->LADSPA_Plugin, true);
       }
     }      
@@ -1014,6 +1017,8 @@ static void loadPluginLib(QFileInfo* fi)
       //LADSPA_Properties properties = descr->Properties;
       //bool inPlaceBroken = LADSPA_IS_INPLACE_BROKEN(properties);
       //plugins.add(fi, ladspa, descr, !inPlaceBroken);
+      if(debugMsg)
+        fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s\n", fi->filePath().latin1(), descr->Name, descr->Label);
       plugins.add(fi, descr);
     }
   }  
@@ -1082,7 +1087,7 @@ void initPlugins()
       p = ladspaPath;
       
       if(debugMsg)
-        fprintf(stderr, "loadPluginLib: ladspa path:%s\n", ladspaPath);
+        fprintf(stderr, "loadPluginDir: ladspa path:%s\n", ladspaPath);
       
       while (*p != '\0') {
             const char* pe = p;
@@ -1095,7 +1100,7 @@ void initPlugins()
                   strncpy(buffer, p, n);
                   buffer[n] = '\0';
                   if(debugMsg)
-                    fprintf(stderr, "loadPluginLib: loading ladspa dir:%s\n", buffer);
+                    fprintf(stderr, "loadPluginDir: loading ladspa dir:%s\n", buffer);
                   
                   loadPluginDir(QString(buffer));
                   delete[] buffer;

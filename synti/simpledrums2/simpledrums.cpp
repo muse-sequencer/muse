@@ -14,7 +14,7 @@
 #include "muse/midi.h"
 #include "libsynti/mpevent.h"
 #include "simpledrums.h"
-#include <qstring.h>
+// #include <qstring.h>
 #include <samplerate.h>
 
 const char* SimpleSynth::synth_state_descr[] =
@@ -138,36 +138,36 @@ SimpleSynth::SimpleSynth(int sr)
             QString c6 = "Channel " + QString::number(ch + 1) + " fx send 2";
             QString c7 = "Channel " + QString::number(ch + 1) + " fx send 3";
             QString c8 = "Channel " + QString::number(ch + 1) + " fx send 4";
-            controllers[i].name = c1.latin1();
+            controllers[i].name = c1.toLatin1().data();
             controllers[i].num  = CTRL_NRPN14_OFFSET+i;
             controllers[i].min  = 0;
             controllers[i].max  = 127;
 
-            controllers[i+1].name = c2.latin1();
+            controllers[i+1].name = c2.toLatin1().data();
             controllers[i+1].num  = CTRL_NRPN14_OFFSET+i+1;
             controllers[i+1].min  = 0;
             controllers[i+1].max  = 127;
 
-            controllers[i+2].name = c3.latin1();
+            controllers[i+2].name = c3.toLatin1().data();
             controllers[i+2].num  = CTRL_NRPN14_OFFSET+i+2;
             controllers[i+2].min  = 0;
             controllers[i+2].max  = 1;
 
-            controllers[i+3].name = c4.latin1();
+            controllers[i+3].name = c4.toLatin1().data();
             controllers[i+3].num  = CTRL_NRPN14_OFFSET+i+3;
             controllers[i+3].min  = 0;
             controllers[i+3].max  = 1;
 
-            controllers[i+4].name = c5.latin1();
+            controllers[i+4].name = c5.toLatin1().data();
             controllers[i+4].num  = CTRL_NRPN14_OFFSET+i+4;
 
-            controllers[i+5].name = c6.latin1();
+            controllers[i+5].name = c6.toLatin1().data();
             controllers[i+5].num  = CTRL_NRPN14_OFFSET+i+5;
 
-            controllers[i+6].name = c7.latin1();
+            controllers[i+6].name = c7.toLatin1().data();
             controllers[i+6].num  = CTRL_NRPN14_OFFSET+i+6;
 
-            controllers[i+7].name = c8.latin1();
+            controllers[i+7].name = c8.toLatin1().data();
             controllers[i+7].num  = CTRL_NRPN14_OFFSET+i+7;
 
             controllers[i+4].min = controllers[i+5].min = controllers[i+6].min = controllers[i+7].min = 0;
@@ -179,12 +179,12 @@ SimpleSynth::SimpleSynth(int sr)
       for (int sfx=0; sfx<SS_NR_OF_SENDEFFECTS; sfx++) {
             QString c1 = "Sendfx " + QString::number(sfx) + " ret gain";
             QString c2 = "Sendfx " + QString::number(sfx) + " on/off";
-            controllers[i].name = c1.latin1();
+            controllers[i].name = c1.toLatin1().data();
             controllers[i].num  = CTRL_NRPN14_OFFSET+i;
             controllers[i].min  = 0;
             controllers[i].max  = 127;
 
-            controllers[i+1].name = c2.latin1();
+            controllers[i+1].name = c2.toLatin1().data();
             controllers[i+1].num  = CTRL_NRPN14_OFFSET+i+1;
             controllers[i+1].min  = 0;
             controllers[i+1].max  = 1;
@@ -531,7 +531,7 @@ bool SimpleSynth::sysex(int /*len*/, const unsigned char* data)
                   QString lib = (const char*) (data + 2);
                   QString label = (const char*) (data + lib.length() + 3);
                   if (SS_DEBUG_MIDI) {
-                        printf("Sysex cmd load effect: %d %s %s\n", fxid, lib.latin1(), label.latin1());
+                        printf("Sysex cmd load effect: %d %s %s\n", fxid, lib.toLatin1().data(), label.toLatin1().data());
                         }
                   initSendEffect(fxid, lib, label);
                   break;
@@ -597,17 +597,14 @@ bool SimpleSynth::sysex(int /*len*/, const unsigned char* data)
     \fn SimpleSynth::getPatchName
     \brief Called from host to get names of patches
     \param index - which patchnr we're about to deliver
-    \param drum - is it a drum track?
     \return const char* with patchname
  */
 //---------------------------------------------------------
-const char* SimpleSynth::getPatchName(int /*index*/, int, int, bool /*drum*/) const
+const char* SimpleSynth::getPatchName(int /*index*/, int, int) const
       {
       SS_TRACE_IN
       SS_TRACE_OUT
-      //return 0;
-      //return "<unknown>";
-      return "SimpleSynth";
+      return 0;
       }
 
 //---------------------------------------------------------
@@ -641,7 +638,7 @@ const MidiPatch* SimpleSynth::getPatchInfo(int index, const MidiPatch* patch) co
     \return 0 when done, otherwise return next desired controller index
  */
 //---------------------------------------------------------
-int SimpleSynth::getControllerInfo(int index, const char** name, int* controller, int* min, int* max, int* /*initval*/ ) const
+int SimpleSynth::getControllerInfo(int index, const char** name, int* controller, int* min, int* max)
       {
       SS_TRACE_IN
       if (index >= SS_NR_OF_CONTROLLERS) {
@@ -662,41 +659,10 @@ int SimpleSynth::getControllerInfo(int index, const char** name, int* controller
       }
 
 //---------------------------------------------------------
-//   processMessages
-/*!
-    \fn SimpleSynth::processMessages
-    \brief Called from host always, even if output path is unconnected
- */
-//---------------------------------------------------------
-void SimpleSynth::processMessages()
-{
-  //Process messages from the gui
-  while (gui->fifoSize()) 
-  {
-    MidiPlayEvent ev = gui->readEvent();
-    if (ev.type() == ME_SYSEX) 
-    {
-      sysex(ev.len(), ev.data());
-      sendEvent(ev);
-    }
-    else if (ev.type() == ME_CONTROLLER) 
-    {
-      setController(ev.channel(), ev.dataA(), ev.dataB(), true);
-      sendEvent(ev);
-    }
-    else 
-    {
-      if(SS_DEBUG)
-        printf("SimpleSynth::process(): unknown event, type: %d\n", ev.type());
-    }
-  }
-}
-  
-//---------------------------------------------------------
 //   process
 /*!
     \fn SimpleSynth::process
-    \brief Realtime function where the processing actually occurs. Called from host, ONLY if output path is connected.
+    \brief Realtime function where the processing actually occurs
     \param channels - audio data
     \param offset - sample offset
     \param len - nr of samples to process
@@ -704,7 +670,6 @@ void SimpleSynth::processMessages()
 //---------------------------------------------------------
 void SimpleSynth::process(float** out, int offset, int len)
       {
-      /*
       //Process messages from the gui
       while (gui->fifoSize()) {
             MidiPlayEvent ev = gui->readEvent();
@@ -721,8 +686,7 @@ void SimpleSynth::process(float** out, int offset, int len)
                         printf("SimpleSynth::process(): unknown event, type: %d\n", ev.type());
                   }
             }
-      */
-      
+
       if (synth_state == SS_RUNNING) {
 
       //Temporary mix-doubles
@@ -871,7 +835,7 @@ bool SimpleSynth::init(const char* name)
       SWITCH_SYNTH_STATE(SS_INITIALIZING);
       gui = new SimpleSynthGui();
       gui->show();
-      gui->setCaption(name);
+      gui->setWindowTitle(name);
       SWITCH_SYNTH_STATE(SS_RUNNING);
       SS_TRACE_OUT
       return true;
@@ -885,7 +849,7 @@ bool SimpleSynth::init(const char* name)
     \param data - data that is sent as a sysex to the synth on reload of project
  */
 //---------------------------------------------------------
-void SimpleSynth::getInitData(int* n, const unsigned char** data) const
+void SimpleSynth::getInitData(int* n, const unsigned char** data)
       {
       SS_TRACE_IN
       // Calculate length of data
@@ -908,8 +872,8 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data) const
       for (int i=0; i<SS_NR_OF_SENDEFFECTS; i++) {
             Plugin* plugin = sendEffects[i].plugin;
             if (plugin) {
-                  int namelen = strlen(plugin->lib()) + 2;
-                  int labelnamelen = strlen(plugin->label()) + 2;
+                  int namelen = plugin->lib().size() + 2;
+                  int labelnamelen = plugin->label().size() + 2;
                   len+=(namelen + labelnamelen);
 
                   len+=3; //1 byte for nr of parameters, 1 byte for return gain, 1 byte for effect on/off
@@ -993,13 +957,13 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data) const
       if (SS_DEBUG_INIT) {
             printf("buffer[%d]: Control value, SS_SYSEX_INIT_DATA_VERSION\n", i);
             }
-      i++;
 
+      i++;
       for (int j=0; j<SS_NR_OF_SENDEFFECTS; j++) {
             if (sendEffects[j].plugin) {
-                  int labelnamelen = strlen(sendEffects[j].plugin->label()) + 1;
+                  int labelnamelen = sendEffects[j].plugin->label().size() + 1;
                   buffer[i] = labelnamelen;
-                  memcpy((buffer+i+1), sendEffects[j].plugin->label(), labelnamelen);
+                  memcpy((buffer+i+1), sendEffects[j].plugin->label().toLatin1().data(), labelnamelen);
                   if (SS_DEBUG_INIT) {
                         printf("buffer[%d] - labelnamelen: %d\n", i, labelnamelen);
                         printf("buffer[%d] - buffer[%d] - filename: ", (i+1), (i+1) + labelnamelen - 1);
@@ -1011,9 +975,9 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data) const
 
                   i+=(labelnamelen + 1);
 
-                  int namelen = strlen(sendEffects[j].plugin->lib()) + 1;
+                  int namelen = sendEffects[j].plugin->lib().size() + 1;
                   buffer[i] = namelen;
-                  memcpy((buffer+i+1), sendEffects[j].plugin->lib(), namelen);
+                  memcpy((buffer+i+1), sendEffects[j].plugin->lib().toLatin1().data(), namelen);
                   if (SS_DEBUG_INIT) {
                         printf("buffer[%d] - libnamelen : %d\n", i, namelen);
                         printf("buffer[%d] - buffer[%d] - filename: ", (i+1), (i+1) + namelen - 1);
@@ -1076,10 +1040,10 @@ void SimpleSynth::parseInitData(const unsigned char* data)
 
                if (SS_DEBUG_INIT) {
                      printf("Channel %d:\n", ch);
-                     printf("buffer[%zd] - channels[ch].volume_ctrlval = \t%d\n", ptr-data, *ptr);
-                     printf("buffer[%zd] - channels[ch].pan = \t\t%d\n", ptr-data+1, *(ptr+1));
-                     printf("buffer[%zd] - channels[ch].noteoff_ignore = \t%d\n", ptr-data+2, *(ptr+2));
-                     printf("buffer[%zd] - channels[ch].channel_on = \t%d\n", ptr-data+3, *(ptr+3));
+                     printf("buffer[%ld] - channels[ch].volume_ctrlval = \t%d\n", ptr-data, *ptr);
+                     printf("buffer[%ld] - channels[ch].pan = \t\t%d\n", ptr-data+1, *(ptr+1));
+                     printf("buffer[%ld] - channels[ch].noteoff_ignore = \t%d\n", ptr-data+2, *(ptr+2));
+                     printf("buffer[%ld] - channels[ch].channel_on = \t%d\n", ptr-data+3, *(ptr+3));
                      }
                updateVolume(ch, *(ptr));
                guiUpdateVolume(ch, *(ptr));
@@ -1153,7 +1117,7 @@ void SimpleSynth::parseInitData(const unsigned char* data)
 
       for (int i=0; i<SS_NR_OF_SENDEFFECTS; i++) {
             if (SS_DEBUG_INIT)
-                  printf("buffer[%zd] - sendeffect[%d], labelnamelen=%d\n", ptr-data, i, *ptr);
+                  printf("buffer[%ld] - sendeffect[%d], labelnamelen=%d\n", ptr-data, i, *ptr);
             int labelnamelen = *(ptr);
 
             if (labelnamelen != SS_NO_PLUGIN) {
@@ -1184,7 +1148,7 @@ void SimpleSynth::parseInitData(const unsigned char* data)
 
                   for (int j=0; j<params; j++) {
                         if (SS_DEBUG_INIT)
-                              printf("buffer[%zd] - sendeffect[%d], parameter[%d]=%d\n", ptr-data, i, j, *ptr);
+                              printf("buffer[%ld] - sendeffect[%d], parameter[%d]=%d\n", ptr-data, i, j, *ptr);
                         setFxParameter(i, j, sendEffects[i].plugin->convertGuiControlValue(j, *(ptr)));
                         ptr++;
                         }
@@ -1306,7 +1270,7 @@ static void* loadSampleThread(void* p)
             smp->samples = smp->frames * smp->channels;
 
             if (SS_DEBUG) {
-                  printf("Resampling from %ld frames to %ld frames - srcration: %lf\n", (long) sfi.frames, smp->frames, srcratio);
+                  printf("Resampling from %ld frames to %ld frames - srcration: %lf\n", sfi.frames, smp->frames, srcratio);
                   printf("Nr of new samples: %ld\n", smp->samples);
                   }
 
@@ -1362,11 +1326,10 @@ static void* loadSampleThread(void* p)
       pthread_exit(0);
       }
 
-QString *projPathPtr;
 
+//static Mess* instantiate(int sr, const char* name)
 static Mess* instantiate(int sr, QWidget*, QString* projectPathPtr, const char* name)
       {
-      projPathPtr = projectPathPtr;
       printf("SimpleSynth sampleRate %d\n", sr);
       SimpleSynth* synth = new SimpleSynth(sr);
       if (!synth->init(name)) {
@@ -1526,7 +1489,7 @@ extern "C"
       {
       static MESS descriptor = {
             "SimpleSynth",
-            "SimpleSynth drums by Mathias Lundgren", // (lunar_shuttle@users.sf.net)
+            "Mathias Lundgren (lunar_shuttle@users.sf.net)",
             "0.1",      //Version string
             MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
             instantiate,
@@ -1560,7 +1523,7 @@ bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
             sendEffects[id].outputs = plugin->outports();
 
             if (plugin->instantiate()) {
-                  SS_DBG2("Plugin instantiated", name.latin1());
+                  SS_DBG2("Plugin instantiated", name.toLatin1().data());
                   SS_DBG_I("Parameters", plugin->parameter());
                   SS_DBG_I("No of inputs", plugin->inports());
                   SS_DBG_I("No of outputs",plugin->outports());
@@ -1619,7 +1582,7 @@ bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
 
       if (!success) {
             QString errorString = "Error loading plugin \"" + plugin->label() + "\"";
-            guiSendError(errorString);
+            guiSendError(errorString.toLatin1().data());
             }
       return success;
       SS_TRACE_OUT
@@ -1645,7 +1608,7 @@ void SimpleSynth::cleanupPlugin(int id)
       SS_TRACE_IN
       LadspaPlugin* plugin = sendEffects[id].plugin;
       plugin->stop();
-      SS_DBG2("Stopped fx", plugin->label().latin1());
+      SS_DBG2("Stopped fx", plugin->label().toLatin1().data());
       sendEffects[id].nrofparameters = 0;
       sendEffects[id].state = SS_SENDFX_OFF;
       sendEffects[id].plugin = 0;
@@ -1715,8 +1678,6 @@ void SimpleSynth::guiUpdateFxParameter(int fxid, int param, float val)
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
-
-
 
 
 /*!

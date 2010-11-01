@@ -1,3 +1,9 @@
+01.11.2010
+        - Fixed all MESS plugins: compile with -fvisibility=hidden, to avoid namespace conflicts.
+          In particular, simplesynth was causing conflict with variable 'plugins' causing it to 
+           be overwritten. 
+        - So, this fixes LADSPA plugins not appearing in plugin list.
+        - Added simpledrums from muse_qt4_evolution, is called 'simpledrums2' and replaces the original.
 31.10.2010
         - Fixed Toolbar1 class. 'Snap', 'Quantize' combo boxes should work now. Thanks to Luis G. for help. (Tim)
 30.10.2010

@@ -1,0 +1,18 @@
+RELEASE NOTES:
+--------------
+????-??-?? ver 0.2
+- Support for 4 LADSPA sendeffects added
+- Resampling of samples when loading (libsamplerate)
+- Synth state is saved to/restored from project file
+- Channel settings: balance, volume, effect tap for each sendeffect
+- Effect settings: all LADSPA parameters controllable and saved to MusE project, effect master volume, effect on/off
+- Support for mono + stereo samples
+- Support for stereo + mono LADSPA effects
+- Bugfixes, GUI-improvements etc...
+
+2004-11-09 ver 0.1
+- Simpledrums initial release
+- 16 channels (1 sample for each channel) with parameters: volume, balance, noteoff-ignore
+
+(C) Copyright Mathias Lundgren, Werner Schweer 2000-2004
+Licensed under the GNU General Public License

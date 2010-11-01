@@ -46,7 +46,7 @@ target_link_libraries( deicsonze synti )
 set_target_properties ( deicsonze
    PROPERTIES PREFIX ""
    #COMPILE_FLAGS "-O2 -include ${PROJECT_BINARY_DIR}/all-pic.h"
-   COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
+   COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
 target_link_libraries(deicsonze

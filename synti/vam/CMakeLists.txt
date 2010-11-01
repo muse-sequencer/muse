@@ -38,7 +38,7 @@ add_library ( vam SHARED
 #
 set_target_properties ( vam 
    PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
+   COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
 target_link_libraries(vam
