@@ -4350,7 +4350,12 @@ extern "C" {
 	MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
 	instantiate
     };
+    // We must compile with -fvisibility=hidden to avoid namespace
+    // conflicts with global variables.
+    // Only visible symbol is "mess_descriptor".
+    // (TODO: all plugins should be compiled this way)
 
+    __attribute__ ((visibility("default")))
     const MESS* mess_descriptor() { return &descriptor; }
 }
 

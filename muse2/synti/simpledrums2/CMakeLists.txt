@@ -18,23 +18,35 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-include_directories(
-   .
-   ${CMAKE_CURRENT_BINARY}
-   ${PROJECT_SOURCE_DIR}
-   ${PROJECT_SOURCE_DIR}/muse
-   ${PROJECT_SOURCE_DIR}/muse/widgets
-   ${PROJECT_SOURCE_DIR}/synti
+QT4_WRAP_CPP ( simpledrums_mocs simpledrumsgui.h ssplugingui.h )
+QT4_WRAP_UI (  simpledrums_uis simpledrumsguibase.ui sspluginchooserbase.ui )
+
+add_library ( simpledrums SHARED
+      simpledrums.cpp
+      simpledrumsgui.cpp
+      simpledrums.h
+      ssplugin.cpp
+      ssplugingui.cpp
+      ssplugin.h
+      common.h
+      ${simpledrums_mocs}
+      ${simpledrums_uis}
+      )
+
+# - tell cmake to name target simpledrums.so instead of
+#   libsimpledrums.so
+# - use precompiled header files
+#
+set_target_properties ( simpledrums
+   PROPERTIES PREFIX ""
+   COMPILE_FLAGS "-O6 -fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
-# set (SubDirs libsynti s1 organ deicsonze deicsonze2 simpledrums vam)
-# set (SubDirs libsynti s1 organ deicsonze simpledrums vam)
-set (SubDirs libsynti s1 organ deicsonze simpledrums2 vam)
+target_link_libraries(simpledrums
+      synti
+#      awl
+      ${QT_LIBRARIES}
+      )
 
-if (HAVE_FLUIDSYNTH)
-      set (SubDirs ${SubDirs} fluid fluidsynth )
-endif (HAVE_FLUIDSYNTH)
-
-subdirs(${SubDirs})
-
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ simpledrums )
 

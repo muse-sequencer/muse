@@ -25,7 +25,10 @@ add_library ( s1 SHARED s1.cpp )
 # tell cmake to name target s1.so instead of 
 # libs1.so
 #
-set_target_properties ( s1 PROPERTIES PREFIX "" )
+set_target_properties ( s1 
+  PROPERTIES PREFIX "" 
+  COMPILE_FLAGS "-fvisibility=hidden"
+  )
 
 target_link_libraries(s1
       synti

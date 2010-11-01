@@ -1395,7 +1395,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
             }
 
       initMidiSynth();
-
+      
       populateAddTrack(addTrack);
       
       transport = new Transport(this, "transport");
@@ -3460,6 +3460,7 @@ int main(int argc, char* argv[])
       initMetronome();
       //QApplication::clipboard()->setSelectionMode(false); ddskrjo
 
+      
       QApplication::addLibraryPath(museGlobalLib + "/qtplugins");
       if (debugMsg) {
             QStringList list = app.libraryPaths();
@@ -3474,6 +3475,7 @@ int main(int argc, char* argv[])
       muse = new MusE(argc, &argv[optind]);
       app.setMuse(muse);
       muse->setIcon(*museIcon);
+      
       // Added by Tim. p3.3.22
       if (!debugMode) {
             if (mlockall(MCL_CURRENT | MCL_FUTURE))

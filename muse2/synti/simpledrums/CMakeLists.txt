@@ -40,7 +40,7 @@ add_library ( simpledrums SHARED
 #
 set_target_properties ( simpledrums
    PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-O6 -include ${PROJECT_BINARY_DIR}/all-pic.h"
+   COMPILE_FLAGS "-O6 -fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
 target_link_libraries(simpledrums

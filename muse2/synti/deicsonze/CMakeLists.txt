@@ -47,7 +47,7 @@ add_library ( deicsonze SHARED
 set_target_properties ( deicsonze
    PROPERTIES PREFIX ""
    #COMPILE_FLAGS "-O2 -include ${PROJECT_BINARY_DIR}/all-pic.h"
-   COMPILE_FLAGS "-DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -include ${PROJECT_BINARY_DIR}/all-pic.h"
+   COMPILE_FLAGS "-fvisibility=hidden -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
 target_link_libraries(deicsonze
