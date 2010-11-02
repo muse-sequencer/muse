@@ -1,3 +1,6 @@
+02.11.2010
+        - Fluid, fluidsynth, simpledrums: Testing: For now, disable certain sendSysex() calls crashing. (Tim)
+          Marked as "MusE FIXME:". At least fluidsynth appears to be working now. Other two not so good.
 01.11.2010
         - Fixed all MESS plugins: compile with -fvisibility=hidden, to avoid namespace conflicts.
           In particular, simplesynth was causing conflict with variable 'plugins' causing it to 

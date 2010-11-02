@@ -684,7 +684,9 @@ void FluidSynth::sendChannelData()
             *(chdptr+1)  = i; //Channel nr
             chdptr += chunk_size;
             }
-      sendSysex(chdata_length, chdata);
+      // FIXME By Tim. This is crashing, after the conversion to QT4 and cmake.            
+      printf("MusE FIXME: FluidSynth::sendChannelData() sendSysex disabled.\n");
+///      sendSysex(chdata_length, chdata);
       // Send drum channel info afterwards (later addition, not very neat, but works...)
 
       int drumchdata_length = FS_MAX_NR_OF_CHANNELS + 1; //1 byte for the command, one byte for each channel
@@ -696,7 +698,8 @@ void FluidSynth::sendChannelData()
             drumchdataptr++;
             *drumchdataptr = channels[i].drumchannel;
             }
-      sendSysex(drumchdata_length, drumchdata);
+      // FIXME By Tim. This is crashing, after the conversion to QT4 and cmake.            
+///      sendSysex(drumchdata_length, drumchdata);
       }
 
 //---------------------------------------------------------

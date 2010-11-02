@@ -717,7 +717,9 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
             d[1] = (byte) channel;
             d[2] = (byte) filename.length();
             memcpy(d+3, filename.toLatin1().data(), filename.length()+1);
-            sendSysex(d, l);
+            // FIXME By Tim. This is crashing, after the conversion to QT4 and cmake.            
+            printf("MusE FIXME: SimpleSynthGui::loadSampleDialogue() sendSysex disabled.\n");
+///            sendSysex(d, l);
             }
       }
 
