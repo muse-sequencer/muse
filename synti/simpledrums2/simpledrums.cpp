@@ -1490,7 +1490,7 @@ extern "C"
       {
       static MESS descriptor = {
             "SimpleSynth",
-            "Mathias Lundgren (lunar_shuttle@users.sf.net)",
+            "SimpleSynth by Mathias Lundgren",   // (lunar_shuttle@users.sf.net)",
             "0.1",      //Version string
             MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
             instantiate,
