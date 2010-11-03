@@ -319,7 +319,8 @@ target_link_libraries(muse
       liste mixer driver marker 
       master waveedit mplugins arranger 
       cliplist instruments widgets 
-      synti al      
+      synti       
+      al      
       
       ${QT_LIBRARIES}
       QtSvg

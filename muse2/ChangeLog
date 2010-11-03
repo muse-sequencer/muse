@@ -1,4 +1,11 @@
 02.11.2010
+        - Solved! All the MESS synths load now. Removed mpevent(.h, .cpp) and evdata.h from /libsynti, 
+           conflicting with copies in /muse, causing crashes. Versions in /muse are newer. 
+          Should only be one version. Whether we end up putting it in a library, or leaving it 
+           in the main app as I have done here, it had to be moved one way or another. 
+          If we really need 'reduced, simplified' functionality of the /libsynti mpevent versions,
+           then it should be a base/inherited class type of solution, not two different copies. (Tim)
+02.11.2010
         - Fluid, fluidsynth, simpledrums: Testing: For now, disable certain sendSysex() calls crashing. (Tim)
           Marked as "MusE FIXME:". At least fluidsynth appears to be working now. Other two not so good.
 01.11.2010

@@ -12,7 +12,8 @@
 
 #include "muse/midictrl.h"
 #include "muse/midi.h"
-#include "libsynti/mpevent.h"
+//#include "libsynti/mpevent.h"
+#include "muse/mpevent.h"   
 #include "simpledrums.h"
 // #include <qstring.h>
 #include <samplerate.h>

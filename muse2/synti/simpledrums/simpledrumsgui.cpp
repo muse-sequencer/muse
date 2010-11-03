@@ -24,7 +24,8 @@
 #include <Q3VBoxLayout>
 
 #include "simpledrumsgui.h"
-#include "libsynti/mpevent.h"
+//#include "libsynti/mpevent.h"
+#include "muse/mpevent.h"   
 #include "muse/midi.h"
 #include "ssplugingui.h"
 

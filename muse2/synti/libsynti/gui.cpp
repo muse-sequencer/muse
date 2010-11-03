@@ -94,8 +94,7 @@ void MessGui::sendSysex(unsigned char* p, int n)
       {
 //      MidiPlayEvent pe(0, 0, ME_SYSEX, p, n);
 //      sendEvent(pe);
-
-        printf("MusE TESTING: MessGui::sendSysex(): sendEvent\n");
+        
         sendEvent(MidiPlayEvent(0, 0, ME_SYSEX, p, n));
       }
 
