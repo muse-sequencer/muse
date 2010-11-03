@@ -14,7 +14,6 @@
 #include <iostream>
 #include <qfileinfo.h>
 
-
 FluidCtrl FluidSynth::fluidCtrl[] = {
       //{ "Expression", CTRL_EXPRESSION, 0, 127 },
       //{ "Sustain", CTRL_SUSTAIN, 0, 127 },
@@ -164,7 +163,7 @@ void FluidSynth::processMessages()
     else 
     {
       if (FS_DEBUG)
-            printf("FluidSynth::process(): unknown event, type: %d\n", ev.type());
+            printf("FluidSynth::processMessages(): unknown event, type: %d\n", ev.type());
     }
   }
 
@@ -684,9 +683,7 @@ void FluidSynth::sendChannelData()
             *(chdptr+1)  = i; //Channel nr
             chdptr += chunk_size;
             }
-      // FIXME By Tim. This is crashing, after the conversion to QT4 and cmake.            
-      printf("MusE FIXME: FluidSynth::sendChannelData() sendSysex disabled.\n");
-///      sendSysex(chdata_length, chdata);
+      sendSysex(chdata_length, chdata);
       // Send drum channel info afterwards (later addition, not very neat, but works...)
 
       int drumchdata_length = FS_MAX_NR_OF_CHANNELS + 1; //1 byte for the command, one byte for each channel
@@ -699,7 +696,8 @@ void FluidSynth::sendChannelData()
             *drumchdataptr = channels[i].drumchannel;
             }
       // FIXME By Tim. This is crashing, after the conversion to QT4 and cmake.            
-///      sendSysex(drumchdata_length, drumchdata);
+      //usleep(1000);
+      sendSysex(drumchdata_length, drumchdata);
       }
 
 //---------------------------------------------------------

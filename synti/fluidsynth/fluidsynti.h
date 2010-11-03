@@ -17,7 +17,8 @@
 #include "fluidsynthgui.h"
 #include "libsynti/mess.h"
 #include "muse/debug.h"
-#include "libsynti/mpevent.h"
+//#include "libsynti/mpevent.h"
+#include "muse/mpevent.h"   
 #include "muse/midictrl.h"
 
 #define FS_DEBUG_DATA 0 //Turn on/off debug print of midi data sent to fluidsynth

@@ -15,7 +15,8 @@
 #include <sndfile.h>
 #include "libsynti/mess.h"
 #include "common.h"
-#include "libsynti/mpevent.h"
+//#include "libsynti/mpevent.h"
+#include "muse/mpevent.h"   
 #include "simpledrumsgui.h"
 #include "ssplugin.h"
 

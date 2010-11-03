@@ -28,7 +28,8 @@ add_library(synti
       mono.cpp
       poly.cpp
       # midievent.cpp
-      mpevent.cpp
+      # Removed. Causing conflicts with /muse/mpevent
+      ## mpevent.cpp
       )
 
 #

@@ -12,7 +12,8 @@
 #include "organguibase.h"
 #include "organ.h"
 #include "libsynti/gui.h"
-#include "libsynti/mpevent.h"
+//#include "libsynti/mpevent.h"
+#include "muse/mpevent.h"   
 
 class QSignalMapper;
 

@@ -65,9 +65,7 @@ void FLUIDGui::loadFont()
       buffer[k++] = 0x00;       // fluid
       buffer[k++] = 0x01;       // load sound font
       strcpy((char*)(&buffer[k]), path);
-      // FIXME By Tim. This is crashing, after the conversion to QT4 and cmake.            
-      printf("MusE FIXME: FLUIDGui::loadFont(): sendSysex disabled.\n");
-///      sendSysex(buffer, len);
+      sendSysex(buffer, len);
       }
 
 //---------------------------------------------------------

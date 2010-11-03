@@ -20,7 +20,8 @@
 #include <QMessageBox>
 
 #include "simpledrumsgui.h"
-#include "libsynti/mpevent.h"
+//#include "libsynti/mpevent.h"
+#include "muse/mpevent.h"   
 #include "muse/midi.h"
 #include "ssplugingui.h"
 
@@ -717,9 +718,7 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
             d[1] = (byte) channel;
             d[2] = (byte) filename.length();
             memcpy(d+3, filename.toLatin1().data(), filename.length()+1);
-            // FIXME By Tim. This is crashing, after the conversion to QT4 and cmake.            
-            printf("MusE FIXME: SimpleSynthGui::loadSampleDialogue() sendSysex disabled.\n");
-///            sendSysex(d, l);
+            sendSysex(d, l);
             }
       }
 
