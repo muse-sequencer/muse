@@ -513,7 +513,6 @@ void initMidiSynth()
             
                   // load Synti dll
                   //printf("initMidiSynth: dlopen file:%s name:%s desc:%s\n", fi->filePath().latin1(), QString(descr->name), QString(descr->description), QString(""), QString(descr->version)));
-                  printf("initMidiSynth: dlopen file:%s\n", fi->filePath().latin1());
                   void* handle = dlopen(path, RTLD_NOW);
                   if (handle == 0) {
                         fprintf(stderr, "initMidiSynth: MESS dlopen(%s) failed: %s\n", path, dlerror());
