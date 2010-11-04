@@ -9,18 +9,19 @@
 #ifndef __CONFMPORT_H__
 #define __CONFMPORT_H__
 
-#include <qwidget.h>
-#include <q3whatsthis.h>
-#include <qtooltip.h>
+#include <QWidget>
+#include <Q3WhatsThis>
+#include <QToolTip>
 //Added by qt3to4:
-#include <Q3PopupMenu>
+//#include <Q3PopupMenu>
 
 #include "synthconfigbase.h"
 
 class Q3ListView;
 class Q3ListViewItem;
 class QPoint;
-class Q3PopupMenu;
+//class Q3PopupMenu;
+class QMenu;
 class Q3Header;
 class Xml;
 
@@ -60,8 +61,8 @@ class MPWhatsThis : public Q3WhatsThis {
 
 class MPConfig : public SynthConfigBase {
       MPHeaderTip* _mptooltip;
-      Q3PopupMenu* popup;
-      Q3PopupMenu* instrPopup;
+      //Q3PopupMenu* popup;
+      QMenu* instrPopup;
       
       int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
       
