@@ -12,7 +12,7 @@
 #include <qapplication.h>
 #include <qdialog.h>
 #include <qtoolbutton.h>
-#include <qlabel.h>
+#include <QLabel>
 #include <qdialog.h>
 #include <qcombobox.h>
 #include <qtooltip.h>
@@ -54,48 +54,24 @@
 #include "menutitleitem.h"
 #include "popupmenu.h"
 
-/*
 //---------------------------------------------------------
 //   MenuTitleItem
 //---------------------------------------------------------
 
-class MenuTitleItem : public QCustomMenuItem {
-      QString s;
-      virtual bool fullSpan() const    { return true; }
-      virtual bool isSeparator() const { return true; }
-      virtual void paint(QPainter* p, const QColorGroup& cg, bool act,
-         bool, int, int, int, int);
-      virtual QSize sizeHint();
-
-   public:
-      MenuTitleItem(QString s);
-      };
-*/
-
-//---------------------------------------------------------
-//   MenuTitleItem
-//---------------------------------------------------------
-
-MenuTitleItem::MenuTitleItem(QString ss)
-  : s(ss)
+MenuTitleItem::MenuTitleItem(const QString& ss, QWidget* parent)
+  : QWidgetAction(parent)
       {
+        s = ss;
+        // Don't allow to click on it.
+        setEnabled(false);
       }
 
-QSize MenuTitleItem::sizeHint()
-      {
-      return QSize(60, 20);
-      }
-
-//---------------------------------------------------------
-//   drawItem
-//---------------------------------------------------------
-
-void MenuTitleItem::paint(QPainter* p, const QColorGroup&, bool,
-   bool, int x, int y, int w, int h)
-      {
-      p->fillRect(x, y, w, h, QBrush(Qt::lightGray));
-      p->drawText(x, y, w, h, Qt::AlignCenter, s);
-      }
+QWidget* MenuTitleItem::createWidget(QWidget *parent)
+{
+  QLabel* l = new QLabel(s, parent);
+  l->setAlignment(Qt::AlignCenter);
+  return l;
+}
 
 //---------------------------------------------------------
 //   minimumSizeHint
@@ -1895,8 +1871,10 @@ void AudioStrip::iRoutePressed()
           {
             char buffer[128];
             snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
-            MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
+            //MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
+            MenuTitleItem* titel = new MenuTitleItem(QString(buffer), pup);
             //pup->insertItem(titel); //ddskrjo
+            pup->addAction(titel); 
   
             if(!checkAudioDevice())
             { 
@@ -2443,8 +2421,10 @@ void AudioStrip::oRoutePressed()
           {
             char buffer[128];
             snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
-            MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
+            //MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
+            MenuTitleItem* titel = new MenuTitleItem(QString(buffer), pup);
             //pup->insertItem(titel); //ddskrjo
+            pup->addAction(titel); 
   
             if(!checkAudioDevice())
             { 

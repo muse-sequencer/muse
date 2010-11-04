@@ -17,10 +17,11 @@
 #include <qcombobox.h>
 #include <qlabel.h>
 #include <QButtonGroup>
+#include <QMenu>
 //Added by qt3to4:
 #include <QPixmap>
 #include <stdio.h>
-#include <q3popupmenu.h>
+//#include <q3popupmenu.h>
 #include <q3groupbox.h>
 #include <qradiobutton.h>
 #include <qspinbox.h>
@@ -230,12 +231,14 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                     //RouteList* rl = (dev->rwFlags() & 1) ? dev->outRoutes() : dev->inRoutes();
                     RouteList* rl = (col == DEVCOL_OUTROUTES) ? dev->outRoutes() : dev->inRoutes();   // p3.3.55
               
-                    Q3PopupMenu* pup = 0;
+                    ///Q3PopupMenu* pup = 0;
+                    QMenu* pup = 0;
                     int gid = 0;
                     std::list<QString> sl;
         
-                    pup = new Q3PopupMenu(this);
-                    pup->setCheckable(true);
+                    ///pup = new Q3PopupMenu(this);
+                    pup = new QMenu(this);
+                    ///pup->setCheckable(true);
                     
         _redisplay:
                     pup->clear();
@@ -253,18 +256,38 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                       //MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
                       //pup->insertItem(titel);
   
-                      pup->insertItem(tr("Show first aliases"), gid);
-                      pup->setItemChecked(gid, (_showAliases == 0));
+                      QAction* act;
+                      
+                      act = pup->addAction(tr("Show first aliases"));
+                      act->setData(gid);
+                      act->setCheckable(true);
+                      act->setChecked(_showAliases == 0);
+                      
+                      ///pup->insertItem(tr("Show first aliases"), gid);
+                      ///pup->setItemChecked(gid, (_showAliases == 0));
                       ++gid;
-                      pup->insertItem(tr("Show second aliases"), gid);
-                      pup->setItemChecked(gid, (_showAliases == 1));
+                      
+                      
+                      act = pup->addAction(tr("Show second aliases"));
+                      act->setData(gid);
+                      act->setCheckable(true);
+                      act->setChecked(_showAliases == 1);
+                      
+                      ///pup->insertItem(tr("Show second aliases"), gid);
+                      ///pup->setItemChecked(gid, (_showAliases == 1));
                       ++gid;
-                      pup->insertSeparator();
+                      
+                      ///pup->insertSeparator();
+                      pup->addSeparator();
                       
                       for(std::list<QString>::iterator ip = sl.begin(); ip != sl.end(); ++ip) 
                       {
                         //int id = pup->insertItem(*ip, gid);
-                        pup->insertItem(*ip, gid);
+                        ///pup->insertItem(*ip, gid);
+                        act = pup->addAction(*ip);
+                        act->setData(gid);
+                        act->setCheckable(true);
+                        
                         //Route dst(*ip, true, i);
                         //Route rt(*ip, (dev->rwFlags() & 1), -1, Route::JACK_ROUTE);
                         Route rt(*ip, (col == DEVCOL_OUTROUTES), -1, Route::JACK_ROUTE);   // p3.3.55
@@ -273,7 +296,8 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                           if (*ir == rt) 
                           {
                             //pup->setItemChecked(id, true);
-                            pup->setItemChecked(gid, true);
+                            ///pup->setItemChecked(gid, true);
+                            act->setChecked(true);
                             break;
                           }
                         }
@@ -283,82 +307,88 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                       //      pup->insertSeparator();
                     //}
                     
-                    n = pup->exec(ppt, 0);
-                    if (n != -1) 
+                    ///n = pup->exec(ppt, 0);
+                    act = pup->exec(ppt);
+                    if(act)
                     {
-                      if(n == 0) // Show first aliases
-                      {
-                        ///delete pup;
-                        if(_showAliases == 0)
-                          _showAliases = -1;
-                        else  
-                          _showAliases = 0;
-                        goto _redisplay;   // Go back
-                      }
-                      else
-                      if(n == 1) // Show second aliases
-                      {
-                        ///delete pup;
-                        if(_showAliases == 1)
-                          _showAliases = -1;
-                        else  
-                          _showAliases = 1;
-                        goto _redisplay;   // Go back
-                      }
-                      
-                      QString s(pup->text(n));
-                      
-                      //if(dev->rwFlags() & 1) // Writable
-                      if(col == DEVCOL_OUTROUTES) // Writable  p3.3.55
-                      {
-                        Route srcRoute(dev, -1);
-                        Route dstRoute(s, true, -1, Route::JACK_ROUTE);
-            
-                        iRoute iir = rl->begin();
-                        for(; iir != rl->end(); ++iir) 
+                      n = act->data().toInt();
+                      //if (n != -1) 
+                      //{
+                        if(n == 0) // Show first aliases
                         {
-                          if(*iir == dstRoute)
-                            break;
+                          //delete pup;
+                          if(_showAliases == 0)
+                            _showAliases = -1;
+                          else  
+                            _showAliases = 0;
+                          goto _redisplay;   // Go back
                         }
-                        if(iir != rl->end()) 
-                          // disconnect
-                          audio->msgRemoveRoute(srcRoute, dstRoute);
-                        else 
-                          // connect
-                          audio->msgAddRoute(srcRoute, dstRoute);
-                      }
-                      else
-                      //if(dev->rwFlags() & 2) // Readable
-                      //if(col == DEVCOL_INROUTES) // Readable    p3.3.55
-                      {
-                        Route srcRoute(s, false, -1, Route::JACK_ROUTE);
-                        Route dstRoute(dev, -1);
-            
-                        iRoute iir = rl->begin();
-                        for(; iir != rl->end(); ++iir) 
+                        else
+                        if(n == 1) // Show second aliases
                         {
-                          if(*iir == srcRoute)
-                            break;
+                          //delete pup;
+                          if(_showAliases == 1)
+                            _showAliases = -1;
+                          else  
+                            _showAliases = 1;
+                          goto _redisplay;   // Go back
                         }
-                        if(iir != rl->end()) 
-                          // disconnect
-                          audio->msgRemoveRoute(srcRoute, dstRoute);
-                        else 
-                          // connect
-                          audio->msgAddRoute(srcRoute, dstRoute);
-                      }  
-                      
-                      audio->msgUpdateSoloStates();
-                      song->update(SC_ROUTE);
-                      
-                      // p3.3.46
-                      //delete pup;
-                      // FIXME:
-                      // Routes can't be re-read until the message sent from msgAddRoute1() 
-                      //  has had time to be sent and actually affected the routes.
-                      ///goto _redisplay;   // Go back
-                      
-                    }
+                        
+                        ///QString s(pup->text(n));
+                        QString s(act->text());
+                        
+                        //if(dev->rwFlags() & 1) // Writable
+                        if(col == DEVCOL_OUTROUTES) // Writable  p3.3.55
+                        {
+                          Route srcRoute(dev, -1);
+                          Route dstRoute(s, true, -1, Route::JACK_ROUTE);
+              
+                          iRoute iir = rl->begin();
+                          for(; iir != rl->end(); ++iir) 
+                          {
+                            if(*iir == dstRoute)
+                              break;
+                          }
+                          if(iir != rl->end()) 
+                            // disconnect
+                            audio->msgRemoveRoute(srcRoute, dstRoute);
+                          else 
+                            // connect
+                            audio->msgAddRoute(srcRoute, dstRoute);
+                        }
+                        else
+                        //if(dev->rwFlags() & 2) // Readable
+                        //if(col == DEVCOL_INROUTES) // Readable    p3.3.55
+                        {
+                          Route srcRoute(s, false, -1, Route::JACK_ROUTE);
+                          Route dstRoute(dev, -1);
+              
+                          iRoute iir = rl->begin();
+                          for(; iir != rl->end(); ++iir) 
+                          {
+                            if(*iir == srcRoute)
+                              break;
+                          }
+                          if(iir != rl->end()) 
+                            // disconnect
+                            audio->msgRemoveRoute(srcRoute, dstRoute);
+                          else 
+                            // connect
+                            audio->msgAddRoute(srcRoute, dstRoute);
+                        }  
+                        
+                        audio->msgUpdateSoloStates();
+                        song->update(SC_ROUTE);
+                        
+                        // p3.3.46
+                        //delete pup;
+                        // FIXME:
+                        // Routes can't be re-read until the message sent from msgAddRoute1() 
+                        //  has had time to be sent and actually affected the routes.
+                        ///goto _redisplay;   // Go back
+                        
+                      //}
+                    }  
                     delete pup;
                     //iR->setDown(false);     // pup->exec() catches mouse release event
                   
