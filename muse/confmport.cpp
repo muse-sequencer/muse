@@ -230,15 +230,10 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                       
                     //RouteList* rl = (dev->rwFlags() & 1) ? dev->outRoutes() : dev->inRoutes();
                     RouteList* rl = (col == DEVCOL_OUTROUTES) ? dev->outRoutes() : dev->inRoutes();   // p3.3.55
-              
-                    ///Q3PopupMenu* pup = 0;
                     QMenu* pup = 0;
                     int gid = 0;
                     std::list<QString> sl;
-        
-                    ///pup = new Q3PopupMenu(this);
                     pup = new QMenu(this);
-                    ///pup->setCheckable(true);
                     
         _redisplay:
                     pup->clear();
@@ -262,28 +257,17 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                       act->setData(gid);
                       act->setCheckable(true);
                       act->setChecked(_showAliases == 0);
-                      
-                      ///pup->insertItem(tr("Show first aliases"), gid);
-                      ///pup->setItemChecked(gid, (_showAliases == 0));
                       ++gid;
-                      
                       
                       act = pup->addAction(tr("Show second aliases"));
                       act->setData(gid);
                       act->setCheckable(true);
                       act->setChecked(_showAliases == 1);
-                      
-                      ///pup->insertItem(tr("Show second aliases"), gid);
-                      ///pup->setItemChecked(gid, (_showAliases == 1));
                       ++gid;
                       
-                      ///pup->insertSeparator();
                       pup->addSeparator();
-                      
                       for(std::list<QString>::iterator ip = sl.begin(); ip != sl.end(); ++ip) 
                       {
-                        //int id = pup->insertItem(*ip, gid);
-                        ///pup->insertItem(*ip, gid);
                         act = pup->addAction(*ip);
                         act->setData(gid);
                         act->setCheckable(true);
@@ -295,8 +279,6 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                         {
                           if (*ir == rt) 
                           {
-                            //pup->setItemChecked(id, true);
-                            ///pup->setItemChecked(gid, true);
                             act->setChecked(true);
                             break;
                           }
@@ -307,91 +289,84 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                       //      pup->insertSeparator();
                     //}
                     
-                    ///n = pup->exec(ppt, 0);
                     act = pup->exec(ppt);
                     if(act)
                     {
                       n = act->data().toInt();
-                      //if (n != -1) 
-                      //{
-                        if(n == 0) // Show first aliases
-                        {
-                          //delete pup;
-                          if(_showAliases == 0)
-                            _showAliases = -1;
-                          else  
-                            _showAliases = 0;
-                          goto _redisplay;   // Go back
-                        }
-                        else
-                        if(n == 1) // Show second aliases
-                        {
-                          //delete pup;
-                          if(_showAliases == 1)
-                            _showAliases = -1;
-                          else  
-                            _showAliases = 1;
-                          goto _redisplay;   // Go back
-                        }
-                        
-                        ///QString s(pup->text(n));
-                        QString s(act->text());
-                        
-                        //if(dev->rwFlags() & 1) // Writable
-                        if(col == DEVCOL_OUTROUTES) // Writable  p3.3.55
-                        {
-                          Route srcRoute(dev, -1);
-                          Route dstRoute(s, true, -1, Route::JACK_ROUTE);
-              
-                          iRoute iir = rl->begin();
-                          for(; iir != rl->end(); ++iir) 
-                          {
-                            if(*iir == dstRoute)
-                              break;
-                          }
-                          if(iir != rl->end()) 
-                            // disconnect
-                            audio->msgRemoveRoute(srcRoute, dstRoute);
-                          else 
-                            // connect
-                            audio->msgAddRoute(srcRoute, dstRoute);
-                        }
-                        else
-                        //if(dev->rwFlags() & 2) // Readable
-                        //if(col == DEVCOL_INROUTES) // Readable    p3.3.55
-                        {
-                          Route srcRoute(s, false, -1, Route::JACK_ROUTE);
-                          Route dstRoute(dev, -1);
-              
-                          iRoute iir = rl->begin();
-                          for(; iir != rl->end(); ++iir) 
-                          {
-                            if(*iir == srcRoute)
-                              break;
-                          }
-                          if(iir != rl->end()) 
-                            // disconnect
-                            audio->msgRemoveRoute(srcRoute, dstRoute);
-                          else 
-                            // connect
-                            audio->msgAddRoute(srcRoute, dstRoute);
-                        }  
-                        
-                        audio->msgUpdateSoloStates();
-                        song->update(SC_ROUTE);
-                        
-                        // p3.3.46
+                      if(n == 0) // Show first aliases
+                      {
                         //delete pup;
-                        // FIXME:
-                        // Routes can't be re-read until the message sent from msgAddRoute1() 
-                        //  has had time to be sent and actually affected the routes.
-                        ///goto _redisplay;   // Go back
-                        
-                      //}
+                        if(_showAliases == 0)
+                          _showAliases = -1;
+                        else  
+                          _showAliases = 0;
+                        goto _redisplay;   // Go back
+                      }
+                      else
+                      if(n == 1) // Show second aliases
+                      {
+                        //delete pup;
+                        if(_showAliases == 1)
+                          _showAliases = -1;
+                        else  
+                          _showAliases = 1;
+                        goto _redisplay;   // Go back
+                      }
+                      
+                      QString s(act->text());
+                      
+                      //if(dev->rwFlags() & 1) // Writable
+                      if(col == DEVCOL_OUTROUTES) // Writable  p3.3.55
+                      {
+                        Route srcRoute(dev, -1);
+                        Route dstRoute(s, true, -1, Route::JACK_ROUTE);
+            
+                        iRoute iir = rl->begin();
+                        for(; iir != rl->end(); ++iir) 
+                        {
+                          if(*iir == dstRoute)
+                            break;
+                        }
+                        if(iir != rl->end()) 
+                          // disconnect
+                          audio->msgRemoveRoute(srcRoute, dstRoute);
+                        else 
+                          // connect
+                          audio->msgAddRoute(srcRoute, dstRoute);
+                      }
+                      else
+                      //if(dev->rwFlags() & 2) // Readable
+                      //if(col == DEVCOL_INROUTES) // Readable    p3.3.55
+                      {
+                        Route srcRoute(s, false, -1, Route::JACK_ROUTE);
+                        Route dstRoute(dev, -1);
+            
+                        iRoute iir = rl->begin();
+                        for(; iir != rl->end(); ++iir) 
+                        {
+                          if(*iir == srcRoute)
+                            break;
+                        }
+                        if(iir != rl->end()) 
+                          // disconnect
+                          audio->msgRemoveRoute(srcRoute, dstRoute);
+                        else 
+                          // connect
+                          audio->msgAddRoute(srcRoute, dstRoute);
+                      }  
+                      
+                      audio->msgUpdateSoloStates();
+                      song->update(SC_ROUTE);
+                      
+                      // p3.3.46
+                      //delete pup;
+                      // FIXME:
+                      // Routes can't be re-read until the message sent from msgAddRoute1() 
+                      //  has had time to be sent and actually affected the routes.
+                      ///goto _redisplay;   // Go back
                     }  
                     delete pup;
                     //iR->setDown(false);     // pup->exec() catches mouse release event
-                  
                   }
                   //break;
                   return;
@@ -413,16 +388,17 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                     else
                     // We clicked the 'down' button.
                     {
-                      Q3PopupMenu* pup = new Q3PopupMenu(this);
+                      QMenu* pup = new QMenu(this);
                       
-                      pup->setCheckable(true);
+                      QAction* act;
                       
                       // Could do it this way...
-                      //pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" input"), 1);
-                      //pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" output"), 2);
-                      //pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" combo"), 0); // p3.3.55
+                      //act = pup->addAction(tr("Create") + QT_TR_NOOP(" Jack") + tr(" input"));
+                      //act = pup->addAction(tr("Create") + QT_TR_NOOP(" Jack") + tr(" output"));
+                      //act = pup->addAction(tr("Create") + QT_TR_NOOP(" Jack") + tr(" combo"));
                       // ... or keep it simple and let the user click on the green lights instead.
-                      pup->insertItem(tr("Create") + QT_TR_NOOP(" Jack") + tr(" device"), 0);  // 
+                      act = pup->addAction(tr("Create") + QT_TR_NOOP(" Jack") + tr(" device"));
+                      act->setData(0);
                       
                       typedef std::map<std::string, int > asmap;
                       typedef std::map<std::string, int >::iterator imap;
@@ -466,8 +442,8 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                       //int sz = midiDevices.size();
                       //if(!mapALSA.empty())
                       {
-                        pup->insertSeparator();
-                        // pup->insertItem(new MenuTitleItem(QT_TR_NOOP("ALSA:"))); ddskrjo
+                        pup->addSeparator();
+                        pup->addAction(new MenuTitleItem(QT_TR_NOOP("ALSA:"), pup));
                         
                         for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
                         {
@@ -482,29 +458,18 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                             if(md->deviceType() != MidiDevice::ALSA_MIDI)  
                               continue;
                               
-                            //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
-                            pup->insertItem(QT_TR_NOOP(md->name()), idx);
-                            
-                            //for(int k = 0; k < MIDI_PORTS; ++k) 
-                            //{
-                              //MidiDevice* dev = midiPorts[k].device();
-                              //if(dev && s == dev->name()) 
-                              if(md == dev) 
-                              {
-                                //pup->setItemEnabled(idx + 3, false);
-                                //pup->setItemChecked(idx + 3, true);
-                                pup->setItemChecked(idx, true);
-                                //break;
-                              }      
-                            //}
+                            act = pup->addAction(QT_TR_NOOP(md->name()));
+                            act->setData(idx);
+                            act->setCheckable(true);
+                            act->setChecked(md == dev);
                           }  
                         }
                       }  
                       
                       if(!mapSYNTH.empty())
                       {
-                        pup->insertSeparator();
-                        //pup->insertItem(new MenuTitleItem(QT_TR_NOOP("SYNTH:"))); ddskrjo
+                        pup->addSeparator();
+                        pup->addAction(new MenuTitleItem(QT_TR_NOOP("SYNTH:"), pup));
                         
                         for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
                         {
@@ -519,34 +484,18 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                             if(md->deviceType() != MidiDevice::SYNTH_MIDI)  
                               continue;
                               
-                            //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
-                            pup->insertItem(QT_TR_NOOP(md->name()), idx);
-                            
-                            //for(int k = 0; k < MIDI_PORTS; ++k) 
-                            //{
-                              //MidiDevice* dev = midiPorts[k].device();
-                              //if(dev && s == dev->name()) 
-                              if(md == dev) 
-                              {
-                                //pup->setItemEnabled(idx + 3, false);
-                                //pup->setItemChecked(idx + 3, true);
-                                pup->setItemChecked(idx, true);
-                                //break;
-                              }      
-                            //}
+                            act = pup->addAction(QT_TR_NOOP(md->name()));
+                            act->setData(idx);
+                            act->setCheckable(true);
+                            act->setChecked(md == dev);
                           }  
                         }
                       }  
                       
                       //if(!mapJACK.empty())
                       {
-                        pup->insertSeparator();
-                        //pup->insertItem(new MenuTitleItem(QT_TR_NOOP("JACK:"))); ddskrjo
-                        
-                        //pup->insertItem(tr("<Create input>"), 1);
-                        //pup->insertItem(tr("<Create output>"), 2);
-                        //pup->insertItem(tr("<Create combo>"), 0);  // p3.3.55
-                        //pup->insertSeparator();
+                        pup->addSeparator();
+                        pup->addAction(new MenuTitleItem(QT_TR_NOOP("JACK:"), pup));
                         
                         for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
                         {
@@ -561,32 +510,23 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                             if(md->deviceType() != MidiDevice::JACK_MIDI)  
                               continue;
                               
-                            //pup->insertItem(QT_TR_NOOP(md->name()), idx + 3);
-                            pup->insertItem(QT_TR_NOOP(md->name()), idx);
-                            
-                            //for(int k = 0; k < MIDI_PORTS; ++k) 
-                            //{
-                              //MidiDevice* dev = midiPorts[k].device();
-                              //if(dev && s == dev->name()) 
-                              if(md == dev) 
-                              {
-                                //pup->setItemEnabled(idx + 3, false);
-                                //pup->setItemChecked(idx + 3, true);
-                                pup->setItemChecked(idx, true);
-                                //break;
-                              }      
-                            //}
+                            act = pup->addAction(QT_TR_NOOP(md->name()));
+                            act->setData(idx);
+                            act->setCheckable(true);
+                            act->setChecked(md == dev);
                           }  
                         }
                       }  
                       
-                      n = pup->exec(ppt, 0);
-                      if(n == -1)
+                      act = pup->exec(ppt);
+                      if(!act)
                       {      
                         delete pup;
                         //break;
                         return;
                       }
+                      
+                      n = act->data().toInt();
                       
                       //printf("MPConfig::rbClicked n:%d\n", n);
                       
@@ -594,14 +534,6 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                       if(n < 0x10000000)
                       {
                         delete pup;
-                        //if(n == 0)  // p3.3.55
-                        //  sdev = MidiJackDevice::createJackMidiDevice(QString(), 3); // 3:Readable/Writable.
-                        //else
-                        //if(n == 1)
-                        //  sdev = MidiJackDevice::createJackMidiDevice(QString(), 2); // 2: Readable.
-                        //else
-                        //if(n == 2)
-                        //  sdev = MidiJackDevice::createJackMidiDevice(QString(), 1); // 1:Writable.
                         if(n <= 2)  // p3.3.55
                         {
                           sdev = MidiJackDevice::createJackMidiDevice(); 
@@ -630,7 +562,7 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                         //if(n < 0x40000000)
                           typ = MidiDevice::SYNTH_MIDI;
                         
-                        sdev = midiDevices.find(pup->text(n), typ);
+                        sdev = midiDevices.find(act->text(), typ);
                         delete pup;
                         // Is it the current device? Reset it to <none>.
                         if(sdev == dev)
@@ -651,7 +583,7 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                         //break;
                         return;
                   if (instrPopup == 0)
-                        instrPopup = new Q3PopupMenu(this);
+                        instrPopup = new QMenu(this);
                   instrPopup->clear();
                   for (iMidiInstrument i = midiInstruments.begin(); i
                      != midiInstruments.end(); ++i) 
@@ -663,13 +595,14 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                         //  makes no sense for a non-synth device).
                         SynthI* si = dynamic_cast<SynthI*>(*i);
                         if(!si)
-                          instrPopup->insertItem((*i)->iname());
+                          instrPopup->addAction((*i)->iname());
                      }
-                  n = instrPopup->exec(ppt, 0);
-                  if (n == -1)
-                        //break;
-                        return;
-                  QString s = instrPopup->text(n);
+                  
+                  QAction* act = instrPopup->exec(ppt, 0);
+                  if(!act)
+                    //break;
+                    return;
+                  QString s = act->text();
                   item->setText(DEVCOL_INSTR, s);
                   for (iMidiInstrument i = midiInstruments.begin(); i
                      != midiInstruments.end(); ++i) {
@@ -763,7 +696,7 @@ MPConfig::MPConfig(QWidget* parent, char* name)
    : SynthConfigBase(parent, name)
       {
       _mptooltip = 0;
-      popup      = 0;
+      //popup      = 0;
       instrPopup = 0;
       _showAliases = -1; // 0: Show first aliases, if available. Nah, stick with -1: none at first.
       
