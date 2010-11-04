@@ -8,22 +8,18 @@
 #ifndef __MENU_TITLE_ITEM_H__
 #define __MENU_TITLE_ITEM_H__
 
-#include <qmenudata.h>
+#include <QWidgetAction>
 
 //---------------------------------------------------------
 //   MenuTitleItem
 //---------------------------------------------------------
 
-class MenuTitleItem { //: public QCustomMenuItem { ddskrjo
+class MenuTitleItem : public QWidgetAction { 
       QString s;
-      virtual bool fullSpan() const    { return true; }
-      virtual bool isSeparator() const { return true; }
-      virtual void paint(QPainter* p, const QColorGroup& cg, bool act,
-         bool, int, int, int, int);
-      virtual QSize sizeHint();
 
    public:
-      MenuTitleItem(QString s);
+      MenuTitleItem(const QString&, QWidget* /*parent*/);
+      QWidget* createWidget(QWidget* /*parent*/);
       };
 
 #endif

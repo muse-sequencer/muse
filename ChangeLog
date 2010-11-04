@@ -1,5 +1,6 @@
 04.11.2010
         - Fixed LADSPA plugin dialog. TODO: fix sorting order. (Tim)
+        - Fixed MenuTitleItem class. Fixed some usages of it (Jack popup routes, midi cfg routes). (Tim) 
 02.11.2010
         - Solved! All the MESS synths load now. Removed mpevent(.h, .cpp) and evdata.h from /libsynti, 
            conflicting with copies in /muse, causing crashes. Versions in /muse are newer. 
