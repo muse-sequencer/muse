@@ -504,17 +504,24 @@ typedef Pipeline::const_iterator ciPluginI;
 //   PluginDialog
 //---------------------------------------------------------
 
+enum { SEL_SM, SEL_S, SEL_M, SEL_ALL };
+
 class PluginDialog : public QDialog {
-      Q3ListView* pList;
+      QTreeWidget* pList;
+      QRadioButton* allPlug;
+      QRadioButton* onlyM;
+      QRadioButton* onlyS;
+      QRadioButton* onlySM;
 
       Q_OBJECT
 
    public:
-      PluginDialog(QWidget* parent=0, const char* name=0, bool modal=true);
+      PluginDialog(QWidget* parent=0);
       static Plugin* getPlugin(QWidget* parent);
       Plugin* value();
       void accept();
 public slots:
+    void fillPlugs(QAbstractButton*);
     void fillPlugs(int i);
     void fillPlugs(const QString& sortValue);
   private:
