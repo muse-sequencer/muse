@@ -10,6 +10,7 @@
 
 #include <QMouseEvent>
 #include <QAction>
+#include <stdio.h>
 //#include <QStandardItemModel>
 
 #include "popupmenu.h"
