@@ -37,6 +37,7 @@ class Q3ListViewItem;
 class QPoint;
 class QToolButton;
 class PopupMenu;
+class PopupView;
 class Track;
 class PrinterConfig;
 class MidiSyncConfig;
@@ -116,6 +117,7 @@ class MusE : public QMainWindow
 
       // Special 'stay-open' menu for routes.
       PopupMenu* routingPopupMenu; 
+      PopupView* routingPopupView; 
 
       int aid1a, aid1b, aid2, aid3, autoId;
       int tr_id, bt_id, mr_id;
@@ -318,6 +320,10 @@ class MusE : public QMainWindow
       PopupMenu* prepareRoutingPopupMenu(Track* /*track*/, bool /*dst*/);
       void routingPopupMenuActivated(Track* /*track*/, int /*id*/);
       void updateRouteMenus(Track* /*track*/, QObject* /*master*/);
+      // Testing...
+      //PopupView* getRoutingPopupView();
+      //PopupView* prepareRoutingPopupView(Track* /*track*/, bool /*dst*/);
+      //void routingPopupViewActivated(Track* /*track*/, int /*id*/);
       
 #ifdef HAVE_LASH
       void lash_idle_cb ();

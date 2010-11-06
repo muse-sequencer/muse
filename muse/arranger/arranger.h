@@ -41,6 +41,9 @@ class TLLayout;
 class WidgetStack;
 class AudioStrip;
 class SpinBox;
+class QAction;
+//class QModelIndex;
+
 //---------------------------------------------------------
 //   TWhatsThis
 //---------------------------------------------------------
@@ -172,7 +175,8 @@ class Arranger : public QWidget {
       void verticalScrollSetYpos(unsigned);
       void inRoutesPressed();
       void outRoutesPressed();
-      void routingPopupMenuActivated(int /*id*/);
+      void routingPopupMenuActivated(QAction*);
+      //void routingPopupViewActivated(const QModelIndex&);
       
    signals:
       void redirectWheelEvent(QWheelEvent*);
