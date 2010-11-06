@@ -36,9 +36,6 @@
 #include "midictrl.h"
 //#include "stringparam.h"
 
-// REMOVE Tim.
-#include "plugin.h"
-
 std::vector<Synth*> synthis;  // array of available synthis
 
 extern void connectNodes(AudioTrack*, AudioTrack*);
