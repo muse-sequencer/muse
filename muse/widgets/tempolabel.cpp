@@ -5,9 +5,8 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qapplication.h>
-#include <qstyle.h>
-#include <qvalidator.h>
+#include <QApplication>
+#include <QStyle>
 //Added by qt3to4:
 #include <QLabel>
 #include "tempolabel.h"
@@ -63,14 +62,13 @@ QSize TempoLabel::sizeHint() const
 //   TempoSpinBox
 //---------------------------------------------------------
 
-TempoEdit::TempoEdit(QWidget* parent, const char* name)
-   : QSpinBox(parent, name)
+TempoEdit::TempoEdit(QWidget* parent)
+   : QDoubleSpinBox(parent)
       {
-      setLineStep(100);
-      setMaxValue(60000);
-      setMinValue(3000);
-      //setValidator(new QDoubleValidator(this)); ddskrjo
-      connect(this, SIGNAL(valueChanged(int)), SLOT(tempoChanged(int)));
+      curVal = -1.0;
+      setSingleStep(1.0);
+      setRange(30.0, 600.0);
+      connect(this, SIGNAL(valueChanged(double)), SLOT(newValue(double)));
       }
 
 //---------------------------------------------------------
@@ -80,39 +78,22 @@ TempoEdit::TempoEdit(QWidget* parent, const char* name)
 QSize TempoEdit::sizeHint() const
       {
       QFontMetrics fm(font());
-      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0, this); // ddskrjo
+      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth); 
       int h  = fm.height() + fw * 2;
       int w  = 2 + fm.width(QString("000.00")) +  fw * 4 + 30;
       return QSize(w, h).expandedTo(QApplication::globalStrut());
       }
 
 //---------------------------------------------------------
-//   mapValueToText
-//---------------------------------------------------------
-
-QString TempoEdit::mapValueToText(int val)
-      {
-      double v = val / 100.0;
-      return QString("%1").arg(v, 3, 'f', 2);
-      }
-
-//---------------------------------------------------------
-//   mapTextToValue
-//---------------------------------------------------------
-
-int TempoEdit::mapTextToValue(bool* ok)
-      {
-      double v = text().toDouble(ok);
-      return int(v * 100);
-      }
-
-//---------------------------------------------------------
 //   tempoChanged
 //---------------------------------------------------------
 
-void TempoEdit::tempoChanged(int val)
+void TempoEdit::newValue(double val)
       {
-      emit valueChanged(double(val)/100.0);
+      if (val != curVal) {
+      curVal = val;
+          emit tempoChanged(curVal);
+          }
       }
 
 //---------------------------------------------------------
@@ -121,6 +102,22 @@ void TempoEdit::tempoChanged(int val)
 
 void TempoEdit::setValue(double val)
       {
-      QSpinBox::setValue(int(val*100));
+      if (val != curVal) {
+        curVal = val;
+                blockSignals(true);
+        QDoubleSpinBox::setValue(val);
+                blockSignals(false);
+                }
       }
+
+
+//---------------------------------------------------------
+//   tempo
+//---------------------------------------------------------
+
+//int TempoEdit::tempo() const
+//      {
+//        return lrint(60000000.0/value());
+//      }
+
 

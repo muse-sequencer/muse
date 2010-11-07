@@ -8,8 +8,8 @@
 #ifndef __TEMPOLABEL_H__
 #define __TEMPOLABEL_H__
 
-#include <qlabel.h>
-#include <qspinbox.h>
+#include <QLabel>
+#include <QDoubleSpinBox>
 
 //---------------------------------------------------------
 //   TempoLabel
@@ -35,25 +35,26 @@ class TempoLabel : public QLabel {
 //   TempoEdit
 //---------------------------------------------------------
 
-class TempoEdit : public QSpinBox {
+class TempoEdit : public QDoubleSpinBox {
       Q_OBJECT
 
+      double curVal;
+      
    protected:
       QSize sizeHint() const;
-      virtual QString mapValueToText(int);
-      virtual int mapTextToValue(bool*);
 
    private slots:
-      void tempoChanged(int);
+      void newValue(double);
 
    public slots:
       void setValue(double);
 
    signals:
-      void valueChanged(double);
+      void tempoChanged(double);
 
    public:
-      TempoEdit(QWidget*, const char* name = 0);
+      TempoEdit(QWidget*);
+      //int tempo() const;
       };
 
 #endif
