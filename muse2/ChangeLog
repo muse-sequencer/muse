@@ -1,5 +1,6 @@
 07.11.2010
         - Conversion of TLLayout class to QT4. (Tim)
+        - Conversion of TempoEdit class to QT4. Displays proper doubles now.
 06.11.2010
         - Yipee! De retour aux les popup menus 'stay-open'. (Tim)
         - Fixed PopupMenu class. All routing popups done (midi trackinfo, midi strip, audio strip).

@@ -153,8 +153,9 @@ MasterEdit::MasterEdit()
       info->addWidget(curTempo);
       info->addWidget(curSig);
       connect(curSig, SIGNAL(valueChanged(int,int)), song, SLOT(setSig(int,int)));
-      connect(curTempo, SIGNAL(valueChanged(double)), song, SLOT(setTempo(double)));
-
+      ///connect(curTempo, SIGNAL(valueChanged(double)), song, SLOT(setTempo(double)));
+      connect(curTempo, SIGNAL(tempoChanged(double)), song, SLOT(setTempo(double)));
+                                                                                    
       //---------------------------------------------------
       //    master
       //---------------------------------------------------
