@@ -6,9 +6,10 @@
 //=========================================================
 
 #include "alayout.h"
-#include <qscrollbar.h>
+#include <QScrollBar>
+#include <QList>
 //Added by qt3to4:
-#include <Q3PtrList>
+//#include <Q3PtrList>
 
 #include "arranger.h"
 
@@ -26,6 +27,7 @@ void TLLayout::wadd(int idx, QWidget* w)
       addItem(li[idx]);
       }
 
+#if 0
 //---------------------------------------------------------
 //   TLLayoutIterator
 //---------------------------------------------------------
@@ -60,6 +62,8 @@ TLLayout::~TLLayout()
       {
       deleteAllItems();
       }
+
+#endif
 
 //---------------------------------------------------------
 //   setGeometry
@@ -159,3 +163,27 @@ QSize TLLayout::maximumSize() const
       return QSize(440, 100000);
       }
 
+//---------------------------------------------------------
+//   takeAt
+//---------------------------------------------------------
+
+QLayoutItem* TLLayout::takeAt(int i)
+      {
+      if (i >= 0 && i < ilist.size())
+            return ilist.takeAt(i);
+      else
+            return 0;
+      }
+
+//---------------------------------------------------------
+//   clear
+//---------------------------------------------------------
+
+void TLLayout::clear()
+      {
+      QLayoutItem* child;
+      while ((child = takeAt(0)) != 0) {
+            delete child->widget();
+            delete child;
+            }
+      }

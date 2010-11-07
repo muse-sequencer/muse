@@ -8,11 +8,13 @@
 #ifndef __ALAYOUT_H__
 #define __ALAYOUT_H__
 
-#include <qlayout.h>
-#include <Q3PtrList>
+#include <QLayout>
+//#include <Q3PtrList>
+#include <QList>
 
 class QScrollBar;
 class WidgetStack;
+class QLayoutItem;
 
 //---------------------------------------------------------
 //   TLLayout
@@ -23,26 +25,36 @@ class TLLayout : public QLayout
       {
       Q_OBJECT
 
-      Q3PtrList<QLayoutItem> ilist;
+      //Q3PtrList<QLayoutItem> ilist;
+      QList<QLayoutItem*> ilist;
       QLayoutItem* li[6];
       QScrollBar* sb;
       WidgetStack* stack;
 
     public:
-      TLLayout(QWidget *parent) : QLayout(parent, 0, -1) {}
-      ~TLLayout();
+      //TLLayout(QWidget *parent) : QLayout(parent, 0, -1) {}
+      TLLayout(QWidget *parent) : QLayout(parent) { setMargin(0); setSpacing(0); }
+      ~TLLayout() { clear(); }
 
-      void addItem(QLayoutItem *item);
+      void addItem(QLayoutItem *item) { ilist.append(item); }
+      Qt::Orientations expandingDirections() const { return 0; }
+      bool hasHeightForWidth() const { return false; }
+      int count() const { return ilist.size(); }
+      void clear();
 
       void wadd(int idx, QWidget* w);
-      virtual QSize sizeHint() const;
-      virtual QSize minimumSize() const;
-      virtual QSize maximumSize() const;
-      QLayoutIterator iterator();
+      ///virtual QSize sizeHint() const;
+      ///virtual QSize minimumSize() const;
+      ///virtual QSize maximumSize() const;
+      QSize sizeHint() const;
+      QSize minimumSize() const;
+      QSize maximumSize() const;
+      ///QLayoutIterator iterator();
       void setGeometry(const QRect &rect);
 
-      virtual QLayoutItem* itemAt(int) const { return 0;} // ddskrjo, is pure virtual, overridden
-      virtual QLayoutItem* takeAt(int) { return 0;} // ddskrjo, is pure virtual, overridden
-      virtual int count() const { return ilist.count(); } // ddskrjo, is pure virtual, overridden
+      //virtual QLayoutItem* itemAt(int) const { return 0;} // ddskrjo, is pure virtual, overridden
+      virtual QLayoutItem* itemAt(int i) const { return ilist.value(i);} 
+      virtual QLayoutItem* takeAt(int); // { return 0;} // ddskrjo, is pure virtual, overridden
+      ///virtual int count() const { return ilist.count(); } // ddskrjo, is pure virtual, overridden
       };
 #endif
