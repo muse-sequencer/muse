@@ -9,6 +9,7 @@
 #include <fastlog.h>
 
 #include <QLayout>
+#include <QAction>
 #include <qapplication.h>
 #include <qdialog.h>
 #include <qtoolbutton.h>
@@ -965,11 +966,12 @@ void MidiStrip::updateOffState() // Ripped from AudioStrip, hehh(mg)
 //   routingPopupMenuActivated
 //---------------------------------------------------------
 
-void MidiStrip::routingPopupMenuActivated(int n)
+void MidiStrip::routingPopupMenuActivated(QAction* act)
 {
   if(gRoutingPopupMenuMaster != this || !track || !track->isMidiTrack())
     return;
-  muse->routingPopupMenuActivated(track, n);
+  
+  muse->routingPopupMenuActivated(track, act->data().toInt());
 }
 
 //---------------------------------------------------------
@@ -981,131 +983,15 @@ void MidiStrip::iRoutePressed()
   if(!track || !track->isMidiTrack())
     return;
   
-  //song->chooseMidiRoutes(iR, (MidiTrack*)track, false);
   PopupMenu* pup = muse->prepareRoutingPopupMenu(track, false);
   if(!pup)
     return;
   
-  //pup->disconnect();
   gRoutingPopupMenuMaster = this;
-  connect(pup, SIGNAL(activated(int)), SLOT(routingPopupMenuActivated(int)));
+  connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));
   connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
-  pup->popup(QCursor::pos(), 0);
+  pup->popup(QCursor::pos());
   iR->setDown(false);     
-  return;
-  
-  /*
-  RouteList* irl = track->inRoutes();
-  //Route dst(track, -1);
-
-  QPopupMenu* pup = new QPopupMenu(iR);
-  pup->setCheckable(true);
-  
-  int gid = 0;
-  
-  //MidiInPortList* tl = song->midiInPorts();
-  //for(iMidiInPort i = tl->begin();i != tl->end(); ++i) 
-  for(int i = 0; i < MIDI_PORTS; ++i)
-  {
-    //MidiInPort* track = *i;
-    // NOTE: Could possibly list all devices, bypassing ports, but no, let's stick wth ports.
-    MidiPort* mp = &midiPorts[i];
-    MidiDevice* md = mp->device();
-    if(!md)
-      continue;
-    
-    if(!(md->rwFlags() & 2))
-      continue;
-      
-    //printf("MidiStrip::iRoutePressed adding submenu portnum:%d\n", i);
-    
-    //QMenu* m = menu->addMenu(track->name());
-    QPopupMenu* subp = new QPopupMenu(iR);
-    
-    for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
-    {
-      //QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
-      //subp->insertItem(QT_TR_NOOP(QString("Channel %1").arg(ch+1)), i * MIDI_CHANNELS + ch);
-      gid = i * MIDI_CHANNELS + ch;
-      
-      //printf("MidiStrip::iRoutePressed inserting gid:%d\n", gid);
-      
-      subp->insertItem(QString("Channel %1").arg(ch+1), gid);
-      //a->setCheckable(true);
-      //Route src(track, ch, RouteNode::TRACK);
-      //Route src(md, ch);
-      //Route r = Route(src, dst);
-      //a->setData(QVariant::fromValue(r));
-      //a->setChecked(rl->indexOf(r) != -1);
-      Route srcRoute(md, ch);
-      for(iRoute ir = irl->begin(); ir != irl->end(); ++ir) 
-      {
-        //if(*ir == dst) 
-        if(*ir == srcRoute) 
-        {
-          subp->setItemChecked(gid, true);
-          break;
-        }
-      }
-    }
-    pup->insertItem(QT_TR_NOOP(md->name()), subp);
-  }
-      
-      int n = pup->exec(QCursor::pos());
-      delete pup;
-      if (n != -1) 
-      {
-            int mdidx = n / MIDI_CHANNELS;
-            int ch = n % MIDI_CHANNELS;
-            
-            //if(debugMsg)
-              printf("MidiStrip::iRoutePressed mdidx:%d ch:%d\n", mdidx, ch);
-              
-            MidiPort* mp = &midiPorts[mdidx];
-            MidiDevice* md = mp->device();
-            if(!md)
-              return;
-            
-            if(!(md->rwFlags() & 2))
-              return;
-              
-            
-            //QString s(pup->text(n));
-            //QT_TR_NOOP(md->name())
-            
-            //Route srcRoute(s, false, -1);
-            Route srcRoute(md, ch);
-            //Route srcRoute(md, -1);
-            //Route dstRoute(track, -1);
-            Route dstRoute(track, ch);
-
-            //if (track->type() == Track::AUDIO_INPUT)
-            //      srcRoute.channel = dstRoute.channel = n & 0xf;
-            iRoute iir = irl->begin();
-            for (; iir != irl->end(); ++iir) {
-                  if (*iir == srcRoute)
-                        break;
-                  }
-            if (iir != irl->end()) {
-                  // disconnect
-                  printf("MidiStrip::iRoutePressed removing route src device name: %s dst track name: %s\n", md->name().latin1(), track->name().latin1());
-                  audio->msgRemoveRoute(srcRoute, dstRoute);
-                  }
-            else {
-                  // connect
-                  printf("MidiStrip::iRoutePressed adding route src device name: %s dst track name: %s\n", md->name().latin1(), track->name().latin1());
-                  audio->msgAddRoute(srcRoute, dstRoute);
-                  }
-            printf("MidiStrip::iRoutePressed calling msgUpdateSoloStates\n");
-            audio->msgUpdateSoloStates();
-            printf("MidiStrip::iRoutePressed calling song->update\n");
-            song->update(SC_ROUTE);
-      }
-      //delete pup;
-      iR->setDown(false);     // pup->exec() catches mouse release event
-      printf("MidiStrip::iRoutePressed end\n");
-      */
-      
 }
 
 //---------------------------------------------------------
@@ -1113,104 +999,19 @@ void MidiStrip::iRoutePressed()
 //---------------------------------------------------------
 
 void MidiStrip::oRoutePressed()
-      {
+{
   if(!track || !track->isMidiTrack())
     return;
   
-  //song->chooseMidiRoutes(oR, (MidiTrack*)track, true);
   PopupMenu* pup = muse->prepareRoutingPopupMenu(track, true);
   if(!pup)
     return;
   
-  //pup->disconnect();
   gRoutingPopupMenuMaster = this;
-  connect(pup, SIGNAL(activated(int)), SLOT(routingPopupMenuActivated(int)));
+  connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));
   connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
-  pup->popup(QCursor::pos(), 0);
+  pup->popup(QCursor::pos());
   oR->setDown(false);     
-  return;
-      
-      /*
-      QPopupMenu* pup = new QPopupMenu(oR);
-      pup->setCheckable(true);
-      AudioTrack* t = (AudioTrack*)track;
-      RouteList* orl = t->outRoutes();
-
-      switch(track->type()) {
-            case Track::MIDI:
-            case Track::DRUM:
-                  delete pup;
-                  return;
-            case Track::AUDIO_OUTPUT:
-                  {
-                  int gid = 0;
-                  for (int i = 0; i < channel; ++i) {
-                        char buffer[128];
-                        snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
-                        MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
-                        pup->insertItem(titel);
-
-                        if (!checkAudioDevice()) return;
-                        std::list<QString> ol = audioDevice->inputPorts();
-                        for (std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) {
-                              int id = pup->insertItem(*ip, (gid * 16) + i);
-                              Route dst(*ip, true, i);
-                              ++gid;
-                              for (iRoute ir = orl->begin(); ir != orl->end(); ++ir) {
-                                    if (*ir == dst) {
-                                          pup->setItemChecked(id, true);
-                                          break;
-                                          }
-                                    }
-                              }
-                        if (i+1 != channel)
-                              pup->insertSeparator();
-                        }
-                  }
-                  break;
-            case Track::AUDIO_INPUT:
-                  addWavePorts(t, pup, orl);
-            case Track::WAVE:
-            case Track::AUDIO_GROUP:
-            case Track::AUDIO_SOFTSYNTH:
-                  addOutPorts(t, pup, orl);
-                  addGroupPorts(t, pup, orl);
-                  break;
-            case Track::AUDIO_AUX:
-                  addOutPorts(t, pup, orl);
-                  break;
-            }
-      int n = pup->exec(QCursor::pos());
-      if (n != -1) {
-            QString s(pup->text(n));
-            Route srcRoute(t, -1);
-            Route dstRoute(s, true, -1);
-
-            if (track->type() == Track::AUDIO_OUTPUT)
-                  srcRoute.channel = dstRoute.channel = n & 0xf;
-
-            // check if route src->dst exists:
-            iRoute iorl = orl->begin();
-            for (; iorl != orl->end(); ++iorl) {
-                  if (*iorl == dstRoute)
-                        break;
-                  }
-            if (iorl != orl->end()) {
-                  // disconnect if route exists
-                  audio->msgRemoveRoute(srcRoute, dstRoute);
-                  }
-            else {
-                  // connect if route does not exist
-                  audio->msgAddRoute(srcRoute, dstRoute);
-                  }
-            audio->msgUpdateSoloStates();
-            song->update(SC_ROUTE);
-            }
-      delete pup;
-      oR->setDown(false);     // pup->exec() catches mouse release event
-      */
-      
-      
-      }
+}
 
 
