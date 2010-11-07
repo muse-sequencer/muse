@@ -577,19 +577,9 @@ void Arranger::iInputPortChanged(const QString& s)
 //void Arranger::routingPopupMenuActivated(int n)
 void Arranger::routingPopupMenuActivated(QAction* act)
 {
-  //if(gRoutingPopupMenuMaster != this || !track || !track->isMidiTrack())
   if(!midiTrackInfo || gRoutingPopupMenuMaster != midiTrackInfo || !selected || !selected->isMidiTrack())
     return;
-  //if (n > 999) {
-  //if (n >= MIDI_PORTS * MIDI_CHANNELS) {    // p3.3.50
-  //  for (int i = 0; i < MIDI_CHANNELS; i++)
-      //muse->routingPopupMenuActivated(selected, i + MIDI_CHANNELS * (n-1000));
-  //    muse->routingPopupMenuActivated(selected, i + MIDI_CHANNELS * (n - MIDI_PORTS * MIDI_CHANNELS));   // p3.3.50
-  //}
-  //else {
-    ///muse->routingPopupMenuActivated(selected, n);
-    muse->routingPopupMenuActivated(selected, act->data().toInt());
-  //}
+  muse->routingPopupMenuActivated(selected, act->data().toInt());
 }
 
 #if 0
@@ -599,19 +589,9 @@ void Arranger::routingPopupMenuActivated(QAction* act)
 
 void Arranger::routingPopupViewActivated(const QModelIndex& mdi)
 {
-  //if(gRoutingPopupMenuMaster != this || !track || !track->isMidiTrack())
   if(!midiTrackInfo || gRoutingPopupMenuMaster != midiTrackInfo || !selected || !selected->isMidiTrack())
     return;
-  //if (n > 999) {
-  //if (n >= MIDI_PORTS * MIDI_CHANNELS) {    // p3.3.50
-  //  for (int i = 0; i < MIDI_CHANNELS; i++)
-      //muse->routingPopupMenuActivated(selected, i + MIDI_CHANNELS * (n-1000));
-  //    muse->routingPopupMenuActivated(selected, i + MIDI_CHANNELS * (n - MIDI_PORTS * MIDI_CHANNELS));   // p3.3.50
-  //}
-  //else {
-///    muse->routingPopupMenuActivated(selected, n);
-    muse->routingPopupMenuActivated(selected, mdi.data().toInt());
-  //}
+  muse->routingPopupMenuActivated(selected, mdi.data().toInt());
 }
 #endif
 
@@ -623,25 +603,17 @@ void Arranger::inRoutesPressed()
 {
   if(!selected)
     return;
-    
-  ///song->chooseMidiRoutes(midiTrackInfo->iRButton, (MidiTrack*)selected, false);
-  
   if(!selected->isMidiTrack())
     return;
   
-  //song->chooseMidiRoutes(iR, (MidiTrack*)track, false);
   PopupMenu* pup = muse->prepareRoutingPopupMenu(selected, false);
   //PopupView* pup = muse->prepareRoutingPopupView(selected, false);
   if(!pup)
     return;
   
-  //pup->disconnect();
-  //gRoutingPopupMenuMaster = this;
   gRoutingPopupMenuMaster = midiTrackInfo;
-  //connect(pup, SIGNAL(activated(int)), SLOT(routingPopupMenuActivated(int)));
   connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));
   //connect(pup, SIGNAL(activated(const QModelIndex&)), SLOT(routingPopupViewActivated(const QModelIndex&)));
-  // Nope, can't clear menu and mm list in there, sub-menus stay open. Never mind for now...
   connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
   //connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupViewAboutToHide()));
   pup->popup(QCursor::pos());
@@ -658,24 +630,17 @@ void Arranger::outRoutesPressed()
 {
   if(!selected)
     return;
-    
-  ///song->chooseMidiRoutes(midiTrackInfo->oRButton, (MidiTrack*)selected, true);
-  
   if(!selected->isMidiTrack())
     return;
   
-  //song->chooseMidiRoutes(iR, (MidiTrack*)track, false);
   PopupMenu* pup = muse->prepareRoutingPopupMenu(selected, true);
   if(!pup)
     return;
   
-  //pup->disconnect();
-  //gRoutingPopupMenuMaster = this;
   gRoutingPopupMenuMaster = midiTrackInfo;
-  connect(pup, SIGNAL(activated(int)), SLOT(routingPopupMenuActivated(int)));
-  // Nope, can't clear menu and mm list in there, sub-menus stay open. Never mind for now...
+  connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));
   connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
-  pup->popup(QCursor::pos(), 0);
+  pup->popup(QCursor::pos());
   midiTrackInfo->oRButton->setDown(false);     
   return;
 }

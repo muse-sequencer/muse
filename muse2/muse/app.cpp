@@ -2065,7 +2065,7 @@ void MusE::updateRouteMenus(Track* track, QObject* master)
         
       PopupMenu* pup = getRoutingPopupMenu();
       
-      if(pup->actions().size() == 0)
+      if(pup->actions().isEmpty())
         return;
         
       if(!pup->isVisible())
@@ -2127,7 +2127,7 @@ void MusE::routingPopupMenuActivated(Track* track, int n)
       {
         PopupMenu* pup = getRoutingPopupMenu();
         
-        if(pup->actions().size() == 0)
+        if(pup->actions().isEmpty())
           return;
           
         //MidiTrack* t = (MidiTrack*)track;
@@ -2597,7 +2597,7 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
       }
       */
       
-      if(pup->actions().size() == 0)
+      if(pup->actions().isEmpty())
       {
         gRoutingPopupMenuMaster = 0;
         //pup->clear();

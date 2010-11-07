@@ -8,9 +8,9 @@
 //  PopupMenu sub-class of QMenu created by Tim.
 //=========================================================
 
+//#include <stdio.h>
 #include <QMouseEvent>
 #include <QAction>
-#include <stdio.h>
 //#include <QStandardItemModel>
 
 #include "popupmenu.h"
@@ -28,7 +28,7 @@ PopupMenu::PopupMenu(QWidget* parent)
 
 PopupMenu::~PopupMenu()
 {
-  printf("PopupMenu::~PopupMenu\n");  // REMOVE Tim.
+  //printf("PopupMenu::~PopupMenu\n");  
 }
 
 void PopupMenu::clear()

@@ -20,6 +20,7 @@ class Knob;
 class QString;
 class MidiTrack;
 class QLabel;
+class QAction;
 
 //---------------------------------------------------------
 //   MidiStrip
@@ -56,7 +57,7 @@ class MidiStrip : public Strip {
       //void routeClicked();
       void iRoutePressed();
       void oRoutePressed();
-      void routingPopupMenuActivated(int /*id*/);
+      void routingPopupMenuActivated(QAction*);
       void setVolume(double);
       void setPan(double);
       void setChorusSend(double);

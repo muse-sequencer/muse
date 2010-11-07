@@ -18,6 +18,7 @@ class Slider;
 class Knob;
 class QDialog;
 class QToolButton;
+class QAction;
 //class QPopupMenu;
 class PopupMenu;
 class QButton;
@@ -66,7 +67,7 @@ class AudioStrip : public Strip {
       void offToggled(bool);
       void iRoutePressed();
       void oRoutePressed();
-      void routingPopupMenuActivated(int /*id*/);
+      void routingPopupMenuActivated(QAction*);
       void auxChanged(double, int);
       void volumeChanged(double);
       void volumePressed();

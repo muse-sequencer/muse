@@ -1,9 +1,9 @@
 06.11.2010
         - Yipee! De retour aux les popup menus 'stay-open'. (Tim)
-        - Fixed PopupMenu class.
-          Work in progress. Currently midi trackinfo 'iR' button routing is complete. 
-          TODO: Strip routing popups. Also, try to eliminate global routing menu map (gRoutingMenuMap)
-           and directly store the routes as QVariant action user data. Someone started this already...
+        - Fixed PopupMenu class. All routing popups done (midi trackinfo, midi strip, audio strip).
+          TODO: Fix midi 'toggle all'. Use routes as QVariant action user data (someone started this already)...
+        - Major cleanup of audio and midi strip comments, code. (A fresh start for your tired eyes, you guys...)
+        - Test OK so far with all track types. 
 04.11.2010
         - Fixed LADSPA plugin dialog. TODO: fix sorting order. (Tim)
         - Fixed MenuTitleItem class. Fixed some usages of it (Jack popup routes, midi cfg routes). (Tim) 
