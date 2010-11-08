@@ -331,6 +331,7 @@ target_link_libraries(muse
       ${UUID_LIBRARIES}
       ${PYLIBS}
       ${FST_LIB}
+      dl
       )
 
 if(HAVE_LASH)

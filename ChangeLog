@@ -1,3 +1,5 @@
+08.11.2010
+	- Add missing link to libdl.so. Caused bulid failure on Fedora 14 (Orcan)
 07.11.2010
         - Mixer is fixed and converted to QT4. (Tim)
         - Conversion of TLLayout class to QT4. 
