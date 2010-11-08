@@ -10,9 +10,9 @@
 #define __AMIXER_H__
 
 #include <QLayout>
-#include <qpixmap.h>
+#include <QPixmap>
 //#include <q3listbox.h>
-#include <qtooltip.h>
+#include <QToolTip>
 //#include <q3frame.h>
 //Added by qt3to4:
 #include <QHBoxLayout>
@@ -29,7 +29,6 @@
 class Xml;
 class QWidget;
 class QHBoxLayout;
-// ORCAN - CHECK
 class QScrollArea;
 class AudioTrack;
 class Meter;
@@ -65,7 +64,7 @@ class AudioMixerApp : public QMainWindow {
       QHBoxLayout* layout;
       QMenu* menuView;
       RouteDialog* routingDialog;
-      int routingId;
+      QAction* routingId;
       int oldAuxsSize;
 
       QAction* showMidiTracksId;

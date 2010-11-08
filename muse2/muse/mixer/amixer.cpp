@@ -9,9 +9,8 @@
 #include <list>
 #include <cmath>
 
-#include <qapplication.h>
-#include <qmenubar.h>
-#include <qaction.h>
+#include <QApplication>
+#include <QMenuBar>
 //Added by qt3to4:
 #include <QHBoxLayout>
 #include <QCloseEvent>
@@ -20,6 +19,7 @@
 #include <QAction>
 
 #include "app.h"
+#include "icons.h"
 #include "amixer.h"
 #include "song.h"
 
@@ -42,120 +42,73 @@ extern void populateAddTrack(QMenu* addTrack);
 //    inputs | synthis | tracks | groups | master
 //---------------------------------------------------------
 
-//AudioMixerApp::AudioMixerApp(QWidget* parent)
 AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
-   : QMainWindow(parent, "mixer")
+   : QMainWindow(parent)
       {
       cfg = c;
       oldAuxsSize = 0;
       routingDialog = 0;
-      //setCaption(tr("MusE: Mixer"));
-      //name = cfg->name;
-      //setCaption(name);
-      //printf("AudioMixerApp::AudioMixerApp setting caption:%s\n", cfg->name.latin1());
-      setCaption(cfg->name);
+      setWindowTitle(cfg->name);
+      setWindowIcon(*museIcon);
 
-      QMenu* menuConfig = new QMenu(this);
-      menuBar()->insertItem(tr("&Create"), menuConfig);
+      QMenu* menuConfig = menuBar()->addMenu(tr("&Create"));
       populateAddTrack(menuConfig);
       
-      menuView = new QMenu(this);
-      menuBar()->insertItem(tr("&View"), menuView);
-      routingId = menuView->insertItem(tr("Routing"), this, SLOT(toggleRouteDialog()));
+      QMenu* menuView = menuBar()->addMenu(tr("&View"));
+      routingId = menuView->addAction(tr("Routing"), this, SLOT(toggleRouteDialog()));
+      routingId->setCheckable(true);
 
-      menuView->insertSeparator();
+      menuView->addSeparator();
 
-      // ORCAN - CHECK: 
-      //QActionGroup* actionItems = new QActionGroup(this, "actionItems", false);
       QActionGroup* actionItems = new QActionGroup(this);
       actionItems->setExclusive(false);
       
-      /*
-      showMidiTracksId = new QAction(tr("Show Midi Tracks"), 0, menuView);
-      showDrumTracksId = new QAction(tr("Show Drum Tracks"), 0, menuView);
-      showWaveTracksId = new QAction(tr("Show Wave Tracks"), 0, menuView);
-      */
-
-
-
-      // CHECK - ORCAN
-      //showMidiTracksId = new QAction(tr("Show Midi Tracks"), 0, actionItems);
-      //showDrumTracksId = new QAction(tr("Show Drum Tracks"), 0, actionItems);
-      //showWaveTracksId = new QAction(tr("Show Wave Tracks"), 0, actionItems);
       showMidiTracksId = new QAction(tr("Show Midi Tracks"), actionItems);
       showDrumTracksId = new QAction(tr("Show Drum Tracks"), actionItems);
       showWaveTracksId = new QAction(tr("Show Wave Tracks"), actionItems);
-      
 
-
-      //showMidiTracksId->addTo(menuView);
-      //showDrumTracksId->addTo(menuView);
-      //showWaveTracksId->addTo(menuView);
-
-      //menuView->insertSeparator();
       actionItems->addSeparator();
 
-      /*
-      showInputTracksId= new QAction(tr("Show Inputs"), 0, menuView);
-      showOutputTracksId = new QAction(tr("Show Outputs"), 0, menuView);
-      showGroupTracksId = new QAction(tr("Show Groups"), 0, menuView);
-      showAuxTracksId = new QAction(tr("Show Auxs"), 0, menuView);
-      showSyntiTracksId = new QAction(tr("Show Synthesizers"), 0, menuView);
-      */
-
-
-      // CHECK - ORCAN
-      //showInputTracksId = new QAction(tr("Show Inputs"), 0, actionItems);
-      //showOutputTracksId = new QAction(tr("Show Outputs"), 0, actionItems);
-      //showGroupTracksId = new QAction(tr("Show Groups"), 0, actionItems);
-      //showAuxTracksId = new QAction(tr("Show Auxs"), 0, actionItems);
-      //showSyntiTracksId = new QAction(tr("Show Synthesizers"), 0, actionItems);
       showInputTracksId = new QAction(tr("Show Inputs"), actionItems);
       showOutputTracksId = new QAction(tr("Show Outputs"), actionItems);
       showGroupTracksId = new QAction(tr("Show Groups"), actionItems);
       showAuxTracksId = new QAction(tr("Show Auxs"), actionItems);
       showSyntiTracksId = new QAction(tr("Show Synthesizers"), actionItems);
 
-
-
-
-      //showInputTracksId->addTo(menuView);
-      //showOutputTracksId->addTo(menuView);
-      //showGroupTracksId->addTo(menuView);
-      //showAuxTracksId->addTo(menuView);
-      //showSyntiTracksId->addTo(menuView);
-      
-      showMidiTracksId->setToggleAction(true);
-      showDrumTracksId->setToggleAction(true);
-      showWaveTracksId->setToggleAction(true);
-      showInputTracksId->setToggleAction(true);
-      showOutputTracksId->setToggleAction(true);
-      showGroupTracksId->setToggleAction(true);
-      showAuxTracksId->setToggleAction(true);
-      showSyntiTracksId->setToggleAction(true);
+      showMidiTracksId->setCheckable(true);
+      showDrumTracksId->setCheckable(true);
+      showWaveTracksId->setCheckable(true);
+      showInputTracksId->setCheckable(true);
+      showOutputTracksId->setCheckable(true);
+      showGroupTracksId->setCheckable(true);
+      showAuxTracksId->setCheckable(true);
+      showSyntiTracksId->setCheckable(true);
 
       //connect(menuView, SIGNAL(triggered(QAction*)), SLOT(showTracksChanged(QAction*)));
       //connect(actionItems, SIGNAL(selected(QAction*)), this, SLOT(showTracksChanged(QAction*)));
-      connect(showMidiTracksId, SIGNAL(toggled(bool)), SLOT(showMidiTracksChanged(bool)));
-      connect(showDrumTracksId, SIGNAL(toggled(bool)), SLOT(showDrumTracksChanged(bool)));      
-      connect(showWaveTracksId, SIGNAL(toggled(bool)), SLOT(showWaveTracksChanged(bool)));      
-      connect(showInputTracksId, SIGNAL(toggled(bool)), SLOT(showInputTracksChanged(bool)));      
-      connect(showOutputTracksId, SIGNAL(toggled(bool)), SLOT(showOutputTracksChanged(bool)));      
-      connect(showGroupTracksId, SIGNAL(toggled(bool)), SLOT(showGroupTracksChanged(bool)));      
-      connect(showAuxTracksId, SIGNAL(toggled(bool)), SLOT(showAuxTracksChanged(bool)));      
-      connect(showSyntiTracksId, SIGNAL(toggled(bool)), SLOT(showSyntiTracksChanged(bool)));      
+      connect(showMidiTracksId, SIGNAL(triggered(bool)), SLOT(showMidiTracksChanged(bool)));
+      connect(showDrumTracksId, SIGNAL(triggered(bool)), SLOT(showDrumTracksChanged(bool)));      
+      connect(showWaveTracksId, SIGNAL(triggered(bool)), SLOT(showWaveTracksChanged(bool)));      
+      connect(showInputTracksId, SIGNAL(triggered(bool)), SLOT(showInputTracksChanged(bool)));      
+      connect(showOutputTracksId, SIGNAL(triggered(bool)), SLOT(showOutputTracksChanged(bool)));      
+      connect(showGroupTracksId, SIGNAL(triggered(bool)), SLOT(showGroupTracksChanged(bool)));      
+      connect(showAuxTracksId, SIGNAL(triggered(bool)), SLOT(showAuxTracksChanged(bool)));      
+      connect(showSyntiTracksId, SIGNAL(triggered(bool)), SLOT(showSyntiTracksChanged(bool)));      
               
-      actionItems->addTo(menuView);
-      view = new QScrollArea(this);
+      menuView->addActions(actionItems->actions());
+      
+      view = new QScrollArea();
+      view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(view);
+      
       central = new QWidget(view);
-      // ORCAN - FIXME
-      /*
-      view->setResizePolicy(QScrollView::AutoOneFit);
-      view->setVScrollBarMode(QScrollView::AlwaysOff);
-      view->addChild(central);
-      */
-      layout = new QHBoxLayout(central);
+      layout = new QHBoxLayout();
+      central->setLayout(layout);
+      layout->setSpacing(0);
+      layout->setMargin(0);
+      view->setWidget(central);
+      view->setWidgetResizable(true);
+      
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
       song->update();  // calls update mixer
@@ -295,21 +248,6 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             //  generate Midi channel/port Strips
             //---------------------------------------------------
       
-            // Changed by Tim. p3.3.21
-            /*
-            MidiTrackList* mtl = song->midis();
-            int ports[MIDI_PORTS];
-            memset(ports, 0, MIDI_PORTS * sizeof(int));
-            for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) {
-                  MidiTrack* track = *i;
-                  int port = track->outPort();
-                  int channel = track->outChannel();
-                  if ((ports[port] & (1 << channel)) == 0) {
-                        addStrip(*i, idx++);
-                        ports[port] |= 1 << channel;
-                        }
-                  }
-            */      
             MidiTrackList* mtl = song->midis();
             for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
             {
@@ -362,21 +300,6 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       //  generate Midi channel/port Strips
       //---------------------------------------------------
 
-      // Changed by Tim. p3.3.21
-      /*
-      MidiTrackList* mtl = song->midis();
-      int ports[MIDI_PORTS];
-      memset(ports, 0, MIDI_PORTS * sizeof(int));
-      for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) {
-            MidiTrack* track = *i;
-            int port = track->outPort();
-            int channel = track->outChannel();
-            if ((ports[port] & (1 << channel)) == 0) {
-                  addStrip(*i, idx++);
-                  ports[port] |= 1 << channel;
-                  }
-            }
-      */      
       MidiTrackList* mtl = song->midis();
       for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
       {
@@ -418,13 +341,9 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             addStrip(*i, idx++);
       }
       
-      //printf("AudioMixerApp::updateMixer setting maximum width:%d\n", STRIP_WIDTH * idx + __WIDTH_COMPENSATION);
       setMaximumWidth(STRIP_WIDTH * idx + __WIDTH_COMPENSATION);
       if (idx < 8)
-      {
-            //printf("AudioMixerApp::updateMixer setting minimum width:%d\n", idx * STRIP_WIDTH + __WIDTH_COMPENSATION);
             view->setMinimumWidth(idx * STRIP_WIDTH + __WIDTH_COMPENSATION);
-      }      
       }
 
 //---------------------------------------------------------
@@ -433,8 +352,6 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 
 void AudioMixerApp::configChanged()    
 { 
-  //printf("AudioMixerApp::configChanged\n");
-      
   songChanged(SC_CONFIG); 
 }
 
@@ -448,7 +365,6 @@ void AudioMixerApp::songChanged(int flags)
       if(flags == SC_MIDI_CONTROLLER)
         return;
     
-// printf("  =======AudioMixer::songChanged %x\n", flags);
       UpdateAction action = NO_UPDATE;
       if (flags == -1)
             action = UPDATE_ALL;
@@ -484,7 +400,7 @@ void AudioMixerApp::closeEvent(QCloseEvent* e)
 
 void AudioMixerApp::toggleRouteDialog()
       {
-      showRouteDialog(!menuView->isItemChecked(routingId));
+      showRouteDialog(routingId->isChecked());
       }
 
 //---------------------------------------------------------
@@ -499,7 +415,8 @@ void AudioMixerApp::showRouteDialog(bool on)
             }
       if (routingDialog)
             routingDialog->setShown(on);
-      menuView->setItemChecked(routingId, on);
+      //menuView->setItemChecked(routingId, on);
+      routingId->setChecked(on);
       }
 
 //---------------------------------------------------------
@@ -508,7 +425,7 @@ void AudioMixerApp::showRouteDialog(bool on)
 
 void AudioMixerApp::routingDialogClosed()
       {
-      menuView->setItemChecked(routingId, false);
+      routingId->setChecked(false);
       }
 
 //---------------------------------------------------------
