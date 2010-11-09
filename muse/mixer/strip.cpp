@@ -162,7 +162,7 @@ Strip::Strip(QWidget* parent, Track* t)
       iR            = 0;
       oR            = 0;
       
-      setBackgroundMode(Qt::PaletteMid);
+      setBackgroundRole(QPalette::Mid);
       setFrameStyle(Panel | Raised);
       setLineWidth(2);
       useSoloIconSet2 = false;
@@ -171,8 +171,10 @@ Strip::Strip(QWidget* parent, Track* t)
       meter[0] = 0;
       meter[1] = 0;
       setFixedWidth(STRIP_WIDTH);
-      layout = new QVBoxLayout(this);
+      //layout = new QVBoxLayout(this);
+      layout = new QVBoxLayout();
       layout->setMargin(3);
+      setLayout(layout);
 
       //---------------------------------------------
       //    label
@@ -202,6 +204,8 @@ Strip::Strip(QWidget* parent, Track* t)
       label->setAlignment(Qt::AlignCenter | Qt::TextWordWrap);
       label->setWordWrap(true);
       label->setAutoFillBackground(true);
+      label->setLineWidth(2);
+      label->setFrameStyle(Sunken | StyledPanel);
       
       //label->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum));
       label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));

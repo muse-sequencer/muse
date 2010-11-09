@@ -16,9 +16,9 @@
 
 class Slider;
 class Knob;
-class QDialog;
+//class QDialog;
 class QToolButton;
-class QAction;
+//class QAction;
 //class QPopupMenu;
 class PopupMenu;
 class QButton;
