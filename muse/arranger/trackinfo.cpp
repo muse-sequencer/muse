@@ -5,19 +5,21 @@
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qlayout.h>
-#include <qcombobox.h>
-#include <qtoolbutton.h>
-#include <qlabel.h>
+#include <QLayout>
+#include <QComboBox>
+#include <QToolButton>
+#include <QLabel>
+#include <QPalette>
+#include <QColor>
 #include <QMenu>
-#include <qmessagebox.h>
+#include <QMessageBox>
 //#include <q3hbox.h>
-#include <qcheckbox.h>
-#include <qpushbutton.h>
+#include <QCheckBox>
+#include <QPushButton>
 //#include <q3widgetstack.h>
-#include <qlineedit.h>
-#include <qtimer.h>
-#include <QModelIndex>
+#include <QLineEdit>
+#include <QTimer>
+//#include <QModelIndex>
 //Added by qt3to4:
 #include <QPixmap>
 #include <math.h>
@@ -449,7 +451,7 @@ void Arranger::setTrackInfoLabelFont()
       // Set the label's font.
       midiTrackInfo->trackNameLabel->setFont(config.fonts[6]);
       // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
-      //autoAdjustFontSize(midiTrackInfo->trackNameLabel, midiTrackInfo->trackNameLabel->text(), false, true, config.fonts[6].pointSize(), 5); ddskrjo
+      autoAdjustFontSize(midiTrackInfo->trackNameLabel, midiTrackInfo->trackNameLabel->text(), false, true, config.fonts[6].pointSize(), 5); 
 }
   
 // Removed by Tim. p3.3.9
@@ -1199,18 +1201,23 @@ void Arranger::genMidiTrackInfo()
       recEchoIconSet.setPixmap(*recEchoIconOff, QIcon::Automatic, QIcon::Normal, QIcon::Off);
       midiTrackInfo->recEchoButton->setIconSet(recEchoIconSet);
       
-      //midiTrackInfo->trackNameLabel->setAlignment(AlignCenter | WordBreak);
+      
+      // MusE-2: AlignCenter and WordBreak are set in the ui(3) file, but not supported by QLabel. Turn them on here.
+      midiTrackInfo->trackNameLabel->setAlignment(Qt::AlignCenter | Qt::TextWordWrap);
+      // MusE-2 Tested: TextWrapAnywhere actually works, but in fact it takes precedence 
+      //  over word wrap, so I found it is not really desirable. Maybe with a user setting...
+      //midiTrackInfo->trackNameLabel->setAlignment(Qt::AlignCenter | Qt::TextWordWrap | Qt::TextWrapAnywhere);
       //midiTrackInfo->trackNameLabel->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
-      //frameShape WinPanel
-      //frameShadow Raised
-      //lineWidth 1
-      //midLineWidth 0
-      midiTrackInfo->trackNameLabel->setBackgroundColor(QColor(0, 160, 255)); // Med blue
+      
+      QPalette pal;
+      pal.setColor(midiTrackInfo->trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
+      midiTrackInfo->trackNameLabel->setPalette(pal);
+      midiTrackInfo->trackNameLabel->setWordWrap(true);
+      midiTrackInfo->trackNameLabel->setAutoFillBackground(true);
       
       // Added by Tim. p3.3.9
       setTrackInfoLabelText();
       setTrackInfoLabelFont();
-        
 
       connect(midiTrackInfo->iPatch, SIGNAL(released()), SLOT(instrPopup()));
 

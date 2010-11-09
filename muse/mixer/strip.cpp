@@ -6,9 +6,11 @@
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qtoolbutton.h>
-#include <qlabel.h>
+#include <QToolButton>
+#include <QLabel>
 #include <QLayout>
+#include <QPalette>
+#include <QColor>
 //Added by qt3to4:
 #include <QVBoxLayout>
 //#include <Q3Frame>
@@ -82,7 +84,7 @@ void Strip::setLabelFont()
   // Set the label's font.
   label->setFont(config.fonts[6]);
   // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
-  //autoAdjustFontSize(label, label->text(), false, true, config.fonts[6].pointSize(), 5); ddskrjo
+  autoAdjustFontSize(label, label->text(), false, true, config.fonts[6].pointSize(), 5); 
 }
 
 //---------------------------------------------------------
@@ -90,58 +92,43 @@ void Strip::setLabelFont()
 //---------------------------------------------------------
 
 void Strip::setLabelText()
-      {
-      //label->setText(track->name());
-      QString s;
+{
+      QColor c;
       switch(track->type()) {
             case Track::AUDIO_OUTPUT:
-                  label->setBackgroundColor(Qt::green);
-                  s = track->name();
+                  c = Qt::green;
                   break;
             case Track::AUDIO_GROUP:
-                  label->setBackgroundColor(Qt::yellow);
-                  s = track->name();
+                  c = Qt::yellow;
                   break;
             case Track::AUDIO_AUX:
-                  //label->setBackgroundColor(cyan);
-                  label->setBackgroundColor(QColor(120, 255, 255)); // Light blue
-                  s = track->name();
+                  c = QColor(120, 255, 255);   // Light blue
                   break;
             case Track::WAVE:
-                  label->setBackgroundColor(Qt::magenta);
-                  s = track->name();
+                  c = Qt::magenta;
                   break;
             case Track::AUDIO_INPUT:
-                  label->setBackgroundColor(Qt::red);
-                  s = track->name();
+                  c = Qt::red;
                   break;
             case Track::AUDIO_SOFTSYNTH:
-                  //label->setBackgroundColor(white);
-                  label->setBackgroundColor(QColor(255, 130, 0)); // Med orange
-                  s = track->name();
+                  c = QColor(255, 130, 0);  // Med orange
                   break;
             case Track::MIDI:
             case Track::DRUM:
                   {
-                  // Changed by Tim. p3.3.21 
-                  /*
-                  MidiTrack* mt = (MidiTrack*)track;
-                  int port = mt->outPort();
-                  int channel = mt->outChannel();
-                  //QString s;
-                  s.sprintf("%d-%d", port + 1, channel + 1);
-                  //label->setText(s);
-                  //label->setBackgroundColor(gray);
-                  */
-                  label->setBackgroundColor(QColor(0, 160, 255)); // Med blue
-                  s = track->name();
+                  c = QColor(0, 160, 255); // Med blue
                   }
                   break;
+            default:
+                  return;      
             }
-            // Added by Tim. p3.3.9
-            label->setText(s);
-            
-      }
+      
+      label->setText(track->name());
+      QPalette palette;
+      palette.setColor(label->backgroundRole(), c);
+      //palette.setColor(QPalette::Window, c);
+      label->setPalette(palette);
+}
 
 //---------------------------------------------------------
 //   muteToggled
@@ -208,7 +195,13 @@ Strip::Strip(QWidget* parent, Track* t)
       // Changed by Tim. p3.3.9
       //label->setAlignment(AlignCenter);
       //label->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
+      // MusE-2 Tested: TextWrapAnywhere actually works, but in fact it takes precedence 
+      //  over word wrap, so I found it is not really desirable. Maybe with a user setting...
+      //label->setAlignment(Qt::AlignCenter | Qt::TextWordWrap | Qt::TextWrapAnywhere);
       label->setAlignment(Qt::AlignCenter | Qt::TextWordWrap);
+      label->setWordWrap(true);
+      label->setAutoFillBackground(true);
+      
       //label->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum));
       label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
       

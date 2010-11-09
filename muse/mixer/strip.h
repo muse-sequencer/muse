@@ -11,7 +11,7 @@
 
 //#include <q3frame.h>
 #include <QFrame>
-#include <qicon.h>
+#include <QIcon>
 //Added by qt3to4:
 #include <QVBoxLayout>
 #include <QGridLayout>
