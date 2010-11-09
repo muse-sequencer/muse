@@ -707,31 +707,32 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //---------------------------------------------------
 
       QHBoxLayout* ppBox = new QHBoxLayout(0);
-      stereo  = new QToolButton(this);
+      
+      stereo  = new QToolButton();
       stereo->setFont(config.fonts[1]);
       QIcon stereoSet;
-      stereoSet.setPixmap(*monoIcon,   QIcon::Automatic, QIcon::Normal, QIcon::Off);
-      stereoSet.setPixmap(*stereoIcon, QIcon::Automatic, QIcon::Normal, QIcon::On);
-      stereo->setIconSet(stereoSet);
+      stereoSet.addPixmap(*monoIcon, QIcon::Normal, QIcon::Off);
+      stereoSet.addPixmap(*stereoIcon, QIcon::Normal, QIcon::On);
+      stereo->setIcon(stereoSet);
 
-      stereo->setToggleButton(true);
-      QToolTip::add(stereo, tr("1/2 channel"));
-      stereo->setOn(channel == 2);
+      stereo->setCheckable(true);
+      stereo->setToolTip(tr("1/2 channel"));
+      stereo->setChecked(channel == 2);
       stereo->setFixedWidth(STRIP_WIDTH/2);
-      connect(stereo, SIGNAL(toggled(bool)), SLOT(stereoToggled(bool)));
+      connect(stereo, SIGNAL(clicked(bool)), SLOT(stereoToggled(bool)));
 
       // disable mono/stereo for Synthesizer-Plugins
       if (t->type() == Track::AUDIO_SOFTSYNTH)
             stereo->setEnabled(false);
 
-      pre = new QToolButton(this);
+      pre = new QToolButton();
       pre->setFont(config.fonts[1]);
-      pre->setToggleButton(true);
+      pre->setCheckable(true);
       pre->setText(tr("Pre"));
-      QToolTip::add(pre, tr("pre fader - post fader"));
-      pre->setOn(t->prefader());
+      pre->setToolTip(tr("pre fader - post fader"));
+      pre->setChecked(t->prefader());
       pre->setFixedWidth(STRIP_WIDTH/2);
-      connect(pre, SIGNAL(toggled(bool)), SLOT(preToggled(bool)));
+      connect(pre, SIGNAL(clicked(bool)), SLOT(preToggled(bool)));
 
       ppBox->addWidget(stereo);
       ppBox->addWidget(pre);
@@ -762,7 +763,8 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //    slider, label, meter
       //---------------------------------------------------
 
-      sliderGrid = new QGridLayout(this); // ddskrjo this
+      //sliderGrid = new QGridLayout(this); // ddskrjo this
+      sliderGrid = new QGridLayout(); // ddskrjo this
       sliderGrid->setRowStretch(0, 100);
 
       //slider = new Slider(this);
