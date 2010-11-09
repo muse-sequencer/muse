@@ -29,7 +29,7 @@ class TopWin : public QMainWindow
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
       TopWin(QWidget* parent=0, const char* name=0,
-         Qt::WFlags f = Qt::WType_TopLevel|Qt::WDestructiveClose);
+         Qt::WFlags f = Qt::Window);
       };
 
 //---------------------------------------------------------

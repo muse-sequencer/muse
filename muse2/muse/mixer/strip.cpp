@@ -156,8 +156,9 @@ void Strip::soloToggled(bool val)
 //---------------------------------------------------------
 
 Strip::Strip(QWidget* parent, Track* t)
-   : QFrame(parent, Qt::WDestructiveClose)
+   : QFrame(parent)
       {
+      setAttribute(Qt::WA_DeleteOnClose);
       iR            = 0;
       oR            = 0;
       

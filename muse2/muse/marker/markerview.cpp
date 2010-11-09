@@ -152,8 +152,10 @@ void MarkerView::closeEvent(QCloseEvent* e)
 //---------------------------------------------------------
 
 MarkerView::MarkerView(QWidget* parent)
-   : TopWin(parent, "markerview", Qt::WType_TopLevel /*| WDestructiveClose*/)
+   : TopWin(parent, "markerview", Qt::Window /*| WDestructiveClose*/)
       {
+      //setAttribute(Qt::WA_DeleteOnClose);
+      
       setCaption(tr("MusE: Marker"));
 
       QAction* markerAdd = new QAction(QIcon(*flagIcon), tr("add marker"), this);

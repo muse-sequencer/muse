@@ -177,7 +177,7 @@ void Preset::writeConfiguration(Xml& xml, int level)
 //---------------------------------------------------------
 
 VAMGui::VAMGui()
-   : VAMGuiBase(0, "vamgui", Qt::WType_TopLevel),
+   : VAMGuiBase(0, "vamgui", Qt::Window),
 	MessGui()
 {
       QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);

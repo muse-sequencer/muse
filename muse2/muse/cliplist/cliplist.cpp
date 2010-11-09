@@ -103,8 +103,9 @@ QString ClipItem::text(int col) const
 //---------------------------------------------------------
 
 ClipListEdit::ClipListEdit()
-   : TopWin(0, "cliplist", Qt::WType_TopLevel /*|WDestructiveClose*/)
+   : TopWin(0, "cliplist", Qt::Window)
       {
+      //setAttribute(Qt::WA_DeleteOnClose);
       setCaption(tr("MusE: Clip List Editor"));
 
       editor = new ClipListEditorBase(this, "edit");

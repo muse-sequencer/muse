@@ -27,11 +27,11 @@ extern int mtcType;
 //---------------------------------------------------------
 
 BigTime::BigTime(QWidget* parent)
-   : QWidget(parent, 0, Qt::WType_TopLevel | Qt::WStyle_StaysOnTop)
+   : QWidget(parent, 0, Qt::Window | Qt::WindowStaysOnTopHint)  // Possibly also Qt::X11BypassWindowManagerHint
       {
       
       tickmode = true;
-      dwin = new QWidget(this, "bigtime-dwin", Qt::WStyle_StaysOnTop);
+      dwin = new QWidget(this, "bigtime-dwin", Qt::WindowStaysOnTopHint);  // Possibly also Qt::X11BypassWindowManagerHint
       dwin->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       fmtButton = new QCheckBox(QString(""), this);
       fmtButton->resize(18,18);

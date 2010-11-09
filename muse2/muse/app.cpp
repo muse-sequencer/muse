@@ -3518,7 +3518,8 @@ int main(int argc, char* argv[])
 
             if (!splsh.isNull()) {
                   QSplashScreen* muse_splash = new QSplashScreen(splsh,
-                     Qt::WStyle_StaysOnTop | Qt::WDestructiveClose);
+                     Qt::WindowStaysOnTopHint);           
+                  muse_splash->setAttribute(Qt::WA_DeleteOnClose);  // Possibly also Qt::X11BypassWindowManagerHint
                   muse_splash->show();
                   QTimer* stimer = new QTimer(0);
                   muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
