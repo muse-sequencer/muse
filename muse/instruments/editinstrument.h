@@ -85,7 +85,7 @@ class EditInstrument : public EditInstrumentBase {
       void ctrlNullParamLChanged(int);
 
    public:
-      EditInstrument(QWidget* parent = 0, const char* name = 0, Qt::WFlags fl = Qt::WType_TopLevel);
+      EditInstrument(QWidget* parent = 0, const char* name = 0, Qt::WFlags fl = Qt::Window);
       };
 
 #endif

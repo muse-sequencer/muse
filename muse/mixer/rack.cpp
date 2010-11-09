@@ -87,8 +87,9 @@ void RackSlot::paint(QPainter* painter)
 //---------------------------------------------------------
 
 EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
-   : Q3ListBox(parent, "Rack", Qt::WDestructiveClose)
+   : Q3ListBox(parent, "Rack")
       {
+      setAttribute(Qt::WA_DeleteOnClose);
       track = t;
       setFont(config.fonts[1]);
 

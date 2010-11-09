@@ -29,7 +29,7 @@
 //---------------------------------------------------------
 
 FLUIDGui::FLUIDGui()
-   : FLUIDGuiBase(0, "fluidgui", Qt::WType_TopLevel), MessGui()
+   : FLUIDGuiBase(0, "fluidgui", Qt::Window), MessGui()
       {
       connect(fdialogButton, SIGNAL(clicked()), SLOT(soundFontFileDialog()));
       connect(loadButton, SIGNAL(clicked()), SLOT(loadFont()));

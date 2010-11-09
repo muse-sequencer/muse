@@ -34,7 +34,7 @@
 //---------------------------------------------------------
 
 OrganGui::OrganGui()
-   : OrganGuiBase(0, "organgui", Qt::WType_TopLevel), MessGui()
+   : OrganGuiBase(0, "organgui", Qt::Window), MessGui()
       {
       QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
       connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));

@@ -208,7 +208,8 @@ void Transport::setRecord(bool flag)
 Transport::Transport(QWidget*, const char* name)
   // : QWidget(0, name, WStyle_Customize | WType_TopLevel | WStyle_Tool
   //| WStyle_NoBorder | WStyle_StaysOnTop)
-   : QWidget(0, name, Qt::WStyle_Customize | Qt::WType_TopLevel | Qt::WStyle_NoBorder | Qt::WStyle_StaysOnTop)
+   //: QWidget(0, name, Qt::WStyle_Customize | Qt::Window | Qt::WStyle_NoBorder | Qt::WStyle_StaysOnTop)
+   : QWidget(0, name, Qt::Window | Qt::WindowStaysOnTopHint)  // Possibly also Qt::X11BypassWindowManagerHint
       {
       setCaption(QString("Muse: Transport"));
       setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
