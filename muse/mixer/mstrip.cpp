@@ -371,7 +371,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       off->setCheckable(true);
       off->setToolTip(tr("off"));
       off->setChecked(t->off());
-      connect(off, SIGNAL(toggled(bool)), SLOT(offToggled(bool)));
+      connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
 
       grid->addWidget(off, _curGridRow, 0);
       grid->addWidget(record, _curGridRow++, 1);
