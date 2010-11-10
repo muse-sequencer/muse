@@ -14,7 +14,6 @@
 #include "song.h"
 #include "arranger.h"
 //#include "arranger/arranger.h"  // p4.0.2
-#include "transport.h"
 #include "cobject.h"
 #include "drumedit.h"
 //#include "midiedit/drumedit.h"  // p4.0.2

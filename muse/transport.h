@@ -9,13 +9,11 @@
 #ifndef __TRANSPORT_H__
 #define __TRANSPORT_H__
 
-#include <qwidget.h>
-//Added by qt3to4:
 #include <QMouseEvent>
 #include <QLabel>
 
 class QToolButton;
-class Q3HBox;
+class QHBoxLayout;
 class PosEdit;
 class QSlider;
 class DoubleLabel;
@@ -46,7 +44,7 @@ class TempoSig : public QWidget {
       void sigChanged(int, int);
 
    public:
-      TempoSig(QWidget* parent);
+      TempoSig(QWidget* parent=0);
       void setTimesig(int a, int b);
       };
 
@@ -60,7 +58,7 @@ class Handle : public QWidget {
       void mouseMoveEvent(QMouseEvent* ev);
       void mousePressEvent(QMouseEvent* ev);
    public:
-      Handle(QWidget* parent, QWidget* root);
+      Handle(QWidget* r, QWidget* parent=0);
       };
 
 class TimeLLabel;
@@ -77,7 +75,7 @@ class Transport : public QWidget
       PosEdit* time2;         // SMPTE
       QSlider* slider;
       TempoSig* tempo;
-      Q3HBox* tb;
+      QHBoxLayout* tb;
       QToolButton* masterButton;
       QComboBox* recMode;
       QComboBox* cycleMode;

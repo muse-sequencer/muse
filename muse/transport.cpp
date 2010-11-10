@@ -6,24 +6,20 @@
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3vbox.h>
 #include <qlabel.h>
 #include <qslider.h>
 #include <qpushbutton.h>
-//#include <q3frame.h>
 #include <QFrame>
-#include <q3whatsthis.h>
 #include <qtooltip.h>
 #include <qlayout.h>
 #include <qtoolbutton.h>
 #include <qcombobox.h>
 #include <qaction.h>
-//Added by qt3to4:
-#include <Q3HBoxLayout>
+#include <QHBoxLayout>
 #include <QPixmap>
 #include <QMouseEvent>
-#include <Q3VBoxLayout>
-#include <Q3BoxLayout>
+#include <QVBoxLayout>
+#include <QBoxLayout>
 
 #include "song.h"
 #include "transport.h"
@@ -48,19 +44,20 @@ static const char* fforwardTransportText = QT_TR_NOOP("Click this button to forw
 //   toolButton
 //---------------------------------------------------------
 
-static QToolButton* newButton(QWidget* parent, const QString& s,
-   const QString& tt, bool toggle=false, int height=25)
+static QToolButton* newButton(const QString& s, const QString& tt, 
+			      bool toggle=false, int height=25, QWidget* parent=0)
       {
       QToolButton* button = new QToolButton(parent);
       button->setFixedHeight(height);
       button->setText(s);
       button->setToggleButton(toggle);
+      button->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
       QToolTip::add(button, tt);
       return button;
       }
 
-static QToolButton* newButton(QWidget* parent, const QPixmap* pm,
-   const QString& tt, bool toggle=false)
+static QToolButton* newButton(const QPixmap* pm, const QString& tt, 
+			      bool toggle=false, QWidget* parent=0)
       {
       QToolButton* button = new QToolButton(parent);
       button->setFixedHeight(25);
@@ -76,13 +73,16 @@ static QToolButton* newButton(QWidget* parent, const QPixmap* pm,
 //    Maus
 //---------------------------------------------------------
 
-Handle::Handle(QWidget* root, QWidget* r)
-   : QWidget(root)
+Handle::Handle(QWidget* r, QWidget* parent)
+   : QWidget(parent)
       {
       rootWin = r;
       setFixedWidth(20);
       setCursor(Qt::pointingHandCursor);
-      setBackgroundColor(config.transportHandleColor);
+      // ORCAN - coloring does not seem to work properly
+      QPalette palette;
+      palette.setColor(this->backgroundRole(), config.transportHandleColor);
+      this->setPalette(palette);
       }
 
 //---------------------------------------------------------
@@ -111,25 +111,35 @@ void Handle::mousePressEvent(QMouseEvent* ev)
 //---------------------------------------------------------
 
 TempoSig::TempoSig(QWidget* parent)
-   : QWidget(parent, "TempoSig")
+  : QWidget(parent)
       {
-      Q3BoxLayout* vb1 = new Q3VBoxLayout(this);
-      vb1->setAutoAdd(true);
+      QBoxLayout* vb1 = new QVBoxLayout;
+      vb1->setMargin(0);
+      vb1->setSpacing(0);
 
-      QFrame* f = new QFrame(this);
+      QBoxLayout* vb2 = new QVBoxLayout;
+      vb2->setMargin(0);
+      vb2->setSpacing(0);
+
+
+      QFrame* f = new QFrame;
       f->setFrameStyle(QFrame::Panel | QFrame::Sunken);
       f->setLineWidth(1);
 
-      Q3BoxLayout* vb2 = new Q3VBoxLayout(f);
-      vb2->setAutoAdd(true);
-
-      l1 = new DoubleLabel(120.0, 20.0, 400.0, f);
-      
+      // ORCAN get rid of l1 l2 last arguments (parent)?
+      l1 = new DoubleLabel(120.0, 20.0, 400.0, 0);
       l1->setSpecialText(QString("extern"));
-      l2 = new SigLabel(4, 4, f);
+      vb2->addWidget(l1);
+      
+      l2 = new SigLabel(4, 4, 0);
+      vb2->addWidget(l2);
 
-      l3 = new QLabel(tr("Tempo/Sig"), this);
+      f->setLayout(vb2);
+      vb1->addWidget(f);
+
+      l3 = new QLabel(tr("Tempo/Sig"));
       l3->setFont(config.fonts[2]);
+      vb1->addWidget(l3);
 
       l1->setBackgroundMode(Qt::PaletteLight);
       l1->setAlignment(Qt::AlignCenter);
@@ -143,6 +153,8 @@ TempoSig::TempoSig(QWidget* parent)
       connect(l1, SIGNAL(valueChanged(double,int)), SLOT(setTempo(double)));
       connect(l2, SIGNAL(valueChanged(int,int)), SIGNAL(sigChanged(int,int)));
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
+
+      this->setLayout(vb1);
       }
 
 //---------------------------------------------------------
@@ -209,58 +221,75 @@ Transport::Transport(QWidget*, const char* name)
   // : QWidget(0, name, WStyle_Customize | WType_TopLevel | WStyle_Tool
   //| WStyle_NoBorder | WStyle_StaysOnTop)
    //: QWidget(0, name, Qt::WStyle_Customize | Qt::Window | Qt::WStyle_NoBorder | Qt::WStyle_StaysOnTop)
-   : QWidget(0, name, Qt::Window | Qt::WindowStaysOnTopHint)  // Possibly also Qt::X11BypassWindowManagerHint
+  : QWidget(0, name, Qt::Window | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
       {
       setCaption(QString("Muse: Transport"));
       setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 
-      Q3HBoxLayout* hbox = new Q3HBoxLayout(this, 2, 5);
+      QHBoxLayout* hbox = new QHBoxLayout;
+      hbox->setMargin(2);
 
-      hbox->setAutoAdd(true);
-      lefthandle = new Handle(this, this);
-  
+      lefthandle = new Handle(this);
+      hbox->addWidget(lefthandle);
+
       //-----------------------------------------------------
       //    Record & Cycle Mode
       //-----------------------------------------------------
 
-      Q3VBox* box1 = new Q3VBox(this);
-      recMode     = new QComboBox(box1);
+      QVBoxLayout *box1 = new QVBoxLayout;
+      recMode     = new QComboBox;
       recMode->setFocusPolicy(Qt::NoFocus);
       recMode->insertItem(tr("Overdub"), Song::REC_OVERDUP);
       recMode->insertItem(tr("Replace"), Song::REC_REPLACE);
       recMode->setCurrentItem(song->recMode());
-      l2 = new QLabel(tr("Rec Mode"), box1);
+
+      box1->addWidget(recMode);
+
+      l2 = new QLabel(tr("Rec Mode"));
       l2->setFont(config.fonts[2]);
       l2->setAlignment(Qt::AlignCenter);
       connect(recMode, SIGNAL(activated(int)), SLOT(setRecMode(int)));
+      box1->addWidget(l2);
 
-      cycleMode = new QComboBox(box1);
+      cycleMode = new QComboBox;
       cycleMode->setFocusPolicy(Qt::NoFocus);
       cycleMode->insertItem(tr("Normal"),  Song::CYCLE_NORMAL);
       cycleMode->insertItem(tr("Mix"),     Song::CYCLE_MIX);
       cycleMode->insertItem(tr("Replace"), Song::CYCLE_REPLACE);
       cycleMode->setCurrentItem(song->cycleMode());
-      l3 = new QLabel(tr("Cycle Rec"), box1);
+
+      box1->addWidget(cycleMode);
+
+      l3 = new QLabel(tr("Cycle Rec"));
       l3->setFont(config.fonts[2]);
       l3->setAlignment(Qt::AlignCenter);
       connect(cycleMode, SIGNAL(activated(int)), SLOT(setCycleMode(int)));
+      box1->addWidget(l3);
+
+      box1->setSpacing(0);
+      hbox->addLayout(box1);
 
       //-----------------------------------------------------
       //  loop flags
       //-----------------------------------------------------
 
-      Q3VBox* button2 = new Q3VBox(this);
-      button2->setMargin(3);
+      QVBoxLayout *button2 = new QVBoxLayout;
+      button2->setSpacing(0);
 
-      QToolButton* b1 = newButton(button2, punchinIcon, tr("punchin"), true);
-      QToolButton* b2 = newButton(button2, loopIcon, tr("loop"), true);
+      QToolButton* b1 = newButton(punchinIcon, tr("punchin"), true);
+      QToolButton* b2 = newButton(loopIcon, tr("loop"), true);
       b2->setAccel(shortcuts[SHRT_TOGGLE_LOOP].key);
 
-      QToolButton* b3 = newButton(button2, punchoutIcon, tr("punchout"), true);
+      QToolButton* b3 = newButton(punchoutIcon, tr("punchout"), true);
+      button2->addWidget(b1);
+      button2->addWidget(b2);
+      button2->addWidget(b3);
       QToolTip::add(b1, tr("Punch In"));
       QToolTip::add(b2, tr("Loop"));
       QToolTip::add(b3, tr("Punch Out"));
-      Q3WhatsThis::add(b1, tr("Punch In"));
+      b1->setWhatsThis(tr("Punch In"));
+      b2->setWhatsThis(tr("Loop"));
+      b3->setWhatsThis(tr("Punch Out"));
 
       connect(b1, SIGNAL(toggled(bool)), song, SLOT(setPunchin(bool)));
       connect(b2, SIGNAL(toggled(bool)), song, SLOT(setLoop(bool)));
@@ -274,65 +303,94 @@ Transport::Transport(QWidget*, const char* name)
       connect(song, SIGNAL(punchoutChanged(bool)), b3, SLOT(setOn(bool)));
       connect(song, SIGNAL(loopChanged(bool)),     b2, SLOT(setOn(bool)));
 
+      hbox->addLayout(button2);
+
       //-----------------------------------------------------
       //  left right mark
       //-----------------------------------------------------
 
-      Q3VBox* marken = new Q3VBox(this);
-      tl1 = new PosEdit(marken);
-      l5 = new QLabel(tr("Left Mark"), marken);
+      // ORCAN: should we change PosEdit constructor so we can call it without a parent argument?
+      QVBoxLayout *marken = new QVBoxLayout;
+      marken->setSpacing(0);
+      marken->setMargin(0);
+
+      tl1 = new PosEdit(0);
+      tl1->setMinimumSize(105,0);
+      tl1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+      marken->addWidget(tl1);
+
+      l5 = new QLabel(tr("Left Mark"));
       l5->setFont(config.fonts[2]);
       l5->setAlignment(Qt::AlignCenter);
-      tl2 = new PosEdit(marken);
-      l6 = new QLabel(tr("Right Mark"), marken);
+      marken->addWidget(l5);
+
+      tl2 = new PosEdit(0);
+      tl2->setMinimumSize(105,0);
+      tl2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+      marken->addWidget(tl2);
+
+      l6 = new QLabel(tr("Right Mark"));
       l6->setFont(config.fonts[2]);
       l6->setAlignment(Qt::AlignCenter);
+      marken->addWidget(l6);
+
+      hbox->addLayout(marken);
 
       //-----------------------------------------------------
       //  Transport Buttons
       //-----------------------------------------------------
 
-      Q3VBox* box4 = new Q3VBox(this);
-      box4->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
-      box4->setSpacing(3);
-      Q3HBox* hbox1 = new Q3HBox(box4);
-      hbox1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
-      time1 = new PosEdit(hbox1);
-      time2 = new PosEdit(hbox1);
+      QVBoxLayout *box4 = new QVBoxLayout;
+      box4->setSpacing(0);
+      box4->setMargin(0);
+
+      QHBoxLayout *hbox1 = new QHBoxLayout;
+      hbox1->setMargin(0);
+      
+      time1 = new PosEdit(0);
+      time2 = new PosEdit(0);
       time2->setSmpte(true);
+      time1->setMinimumSize(105,0);
+      time2->setMinimumSize(105,0);
       time1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       time2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
 
-      slider = new QSlider(0, 200000, 1000, 0, Qt::Horizontal, box4);
+      hbox1->addWidget(time1);
+      hbox1->addWidget(time2);
+      box4->addLayout(hbox1);
 
-      tb = new Q3HBox(box4);
-      tb->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+      slider = new QSlider(0, 200000, 1000, 0, Qt::Horizontal);
+      box4->addWidget(slider);
 
-      buttons[0] = newButton(tb, startIcon, tr("rewind to start"));
-      Q3WhatsThis::add(buttons[0], tr(startTransportText));
+      tb = new QHBoxLayout;
+      tb->setSpacing(0);
 
-      buttons[1] = newButton(tb, frewindIcon, tr("rewind"));
+      buttons[0] = newButton(startIcon, tr("rewind to start"));
+      buttons[0]->setWhatsThis(tr(startTransportText));
+
+      buttons[1] = newButton(frewindIcon, tr("rewind"));
       buttons[1]->setAutoRepeat(true);
-      Q3WhatsThis::add(buttons[1], tr(frewindTransportText));
+      buttons[1]->setWhatsThis(tr(frewindTransportText));
 
-      buttons[2] = newButton(tb, fforwardIcon, tr("forward"));
+      buttons[2] = newButton(fforwardIcon, tr("forward"));
       buttons[2]->setAutoRepeat(true);
-      Q3WhatsThis::add(buttons[2], tr(fforwardTransportText));
+      buttons[2]->setWhatsThis(tr(fforwardTransportText));
 
-      buttons[3] = newButton(tb, stopIcon, tr("stop"), true);
+      buttons[3] = newButton(stopIcon, tr("stop"), true);
       buttons[3]->setOn(true);     // set STOP
-      Q3WhatsThis::add(buttons[3], tr(stopTransportText));
+      buttons[3]->setWhatsThis(tr(stopTransportText));
 
-      buttons[4] = newButton(tb, playIcon, tr("play"), true);
-      Q3WhatsThis::add(buttons[4], tr(playTransportText));
+      buttons[4] = newButton(playIcon, tr("play"), true);
+      buttons[4]->setWhatsThis(tr(playTransportText));
 
-      buttons[5] = newButton(tb, record_on_Icon, tr("record"), true);
-      Q3WhatsThis::add(buttons[5], tr(recordTransportText));
+      buttons[5] = newButton(record_on_Icon, tr("record"), true);
+      buttons[5]->setWhatsThis(tr(recordTransportText));
 
       for (int i = 0; i < 6; ++i)
+	{
             buttons[i]->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-
-
+	    tb->addWidget(buttons[i]);
+	}
       connect(buttons[3], SIGNAL(toggled(bool)), SLOT(stopToggled(bool)));
       connect(buttons[4], SIGNAL(toggled(bool)), SLOT(playToggled(bool)));
 
@@ -342,24 +400,35 @@ Transport::Transport(QWidget*, const char* name)
       connect(buttons[1], SIGNAL(clicked()), song, SLOT(rewind()));
       connect(buttons[2], SIGNAL(clicked()), song, SLOT(forward()));
 
+      box4->addLayout(tb);
+      hbox->addLayout(box4);
+
       //-----------------------------------------------------
       //  AQ - Click - Sync
       //-----------------------------------------------------
 
-      Q3VBox* button1 = new Q3VBox(this);
-      button1->setMargin(1);
+      QVBoxLayout *button1 = new QVBoxLayout;
+      button1->setMargin(0);
+      button1->setSpacing(0);
 
-      quantizeButton = newButton(button1, tr("AC"), tr("quantize during record"), true,19);
-      clickButton    = newButton(button1, tr("Click"), tr("metronom click on/off"), true,19);
+      quantizeButton = newButton(tr("AC"), tr("quantize during record"), true,19);
+
+      clickButton    = newButton(tr("Click"), tr("metronom click on/off"), true,19);
       clickButton->setAccel(shortcuts[SHRT_TOGGLE_METRO].key);
 
-      syncButton     = newButton(button1, tr("Sync"), tr("external sync on/off"), true,19);
-      jackTransportButton     = newButton(button1, tr("Jack"), tr("Jack transport sync on/off"), true,19);
+      syncButton     = newButton(tr("Sync"), tr("external sync on/off"), true,19);
+
+      jackTransportButton     = newButton(tr("Jack"), tr("Jack transport sync on/off"), true,19);
 
       quantizeButton->setOn(song->quantize());
       clickButton->setOn(song->click());
       syncButton->setOn(extSyncFlag.value());
       jackTransportButton->setOn(useJackTransport.value());
+
+      button1->addWidget(quantizeButton);
+      button1->addWidget(clickButton);
+      button1->addWidget(syncButton);
+      button1->addWidget(jackTransportButton);
 
       connect(quantizeButton, SIGNAL(toggled(bool)), song, SLOT(setQuantize(bool)));
       connect(clickButton, SIGNAL(toggled(bool)), song, SLOT(setClick(bool)));
@@ -372,18 +441,29 @@ Transport::Transport(QWidget*, const char* name)
       connect(song, SIGNAL(quantizeChanged(bool)), this, SLOT(setQuantizeFlag(bool)));
       connect(song, SIGNAL(clickChanged(bool)), this, SLOT(setClickFlag(bool)));
 
+      hbox->addLayout(button1);
+
       //-----------------------------------------------------
       //  Tempo/Sig
       //-----------------------------------------------------
 
-      Q3VBox* box5  = new Q3VBox(this);
-      tempo        = new TempoSig(box5);
+      QVBoxLayout *box5 = new QVBoxLayout;
+      box5->setSpacing(0);
+      box5->setMargin(0);
+
+
+      tempo        = new TempoSig;
       tempo->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-      masterButton = newButton(box5, tr("Master"), tr("use master track"), true);
+      box5->addWidget(tempo);
+
+      masterButton = newButton(tr("Master"), tr("use master track"), true);
       masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+      box5->addWidget(masterButton);
 
       connect(masterButton, SIGNAL(toggled(bool)), song, SLOT(setMasterFlag(bool)));
 
+      hbox->addLayout(box5);
+      
       //-----------------------------------------------------
 
       connect(tl1,   SIGNAL(valueChanged(const Pos&)), SLOT(lposChanged(const Pos&)));
@@ -398,7 +478,11 @@ Transport::Transport(QWidget*, const char* name)
       connect(song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
       connect(song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
-      righthandle = new Handle(this, this);
+
+
+      this->setLayout(hbox);
+      righthandle = new Handle(this);
+      hbox->addWidget(righthandle);
       }
 
 //---------------------------------------------------------
