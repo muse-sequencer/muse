@@ -9,10 +9,8 @@
 #ifndef __STRIP_H__
 #define __STRIP_H__
 
-//#include <q3frame.h>
 #include <QFrame>
 #include <QIcon>
-//Added by qt3to4:
 #include <QVBoxLayout>
 #include <QGridLayout>
 #include <QLabel>
@@ -22,7 +20,7 @@
 
 class Track;
 class QLabel;
-class QVBoxLayout;
+//class QVBoxLayout;
 class Meter;
 class QToolButton;
 class QGridLayout;
@@ -36,11 +34,13 @@ static const int STRIP_WIDTH = 65;
 
 class Strip : public QFrame {
       Q_OBJECT
-
+   
    protected:
       Track* track;
       QLabel* label;
-      QVBoxLayout* layout;
+      //QVBoxLayout* layout;
+      QGridLayout* grid;
+      int _curGridRow;
       Meter* meter[MAX_CHANNELS];
       bool useSoloIconSet2;
       

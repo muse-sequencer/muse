@@ -126,7 +126,6 @@ void Strip::setLabelText()
       label->setText(track->name());
       QPalette palette;
       palette.setColor(label->backgroundRole(), c);
-      //palette.setColor(QPalette::Window, c);
       label->setPalette(palette);
 }
 
@@ -158,6 +157,7 @@ void Strip::soloToggled(bool val)
 Strip::Strip(QWidget* parent, Track* t)
    : QFrame(parent)
       {
+      _curGridRow = 0;
       setAttribute(Qt::WA_DeleteOnClose);
       iR            = 0;
       oR            = 0;
@@ -171,16 +171,22 @@ Strip::Strip(QWidget* parent, Track* t)
       meter[0] = 0;
       meter[1] = 0;
       setFixedWidth(STRIP_WIDTH);
-      //layout = new QVBoxLayout(this);
-      layout = new QVBoxLayout();
-      layout->setMargin(3);
-      setLayout(layout);
+      
+      grid = new QGridLayout();
+      grid->setMargin(0);
+      grid->setSpacing(0);
+      setLayout(grid);
 
       //---------------------------------------------
       //    label
       //---------------------------------------------
 
+      //label = new QLabel(this);
+      // NOTE: This was required, otherwise the strip labels have no colour in the mixer only - track info OK !
+      // Not sure why...
       label = new QLabel(this);
+      
+      
       // Moved by Tim. p3.3.9
       //setLabelText();
       //label->setFont(config.fonts[1]);
@@ -192,7 +198,9 @@ Strip::Strip(QWidget* parent, Track* t)
       // Therefore 'fake' set the size of the label now.
       // Added by Tim. p3.3.9
       //label->setGeometry(label->x(), label->y(), STRIP_WIDTH - 2*frameWidth() - 2*layout->margin(), label->height());
-      label->setGeometry(label->x(), label->y(), STRIP_WIDTH - 2*layout->margin(), label->height());
+      label->setGeometry(label->x(), label->y(), STRIP_WIDTH - 2*grid->margin(), label->height());
+      
+      label->setTextFormat(Qt::PlainText);
       
       // Unfortunately for the mixer labels, QLabel doesn't support the BreakAnywhere flag.
       // Changed by Tim. p3.3.9
@@ -214,7 +222,8 @@ Strip::Strip(QWidget* parent, Track* t)
       setLabelText();
       setLabelFont();
       
-      layout->addWidget(label);
+      //layout->addWidget(label);
+      grid->addWidget(label, _curGridRow++, 0, 1, 2);
       }
 
 //---------------------------------------------------------

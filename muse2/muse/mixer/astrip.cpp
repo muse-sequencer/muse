@@ -8,29 +8,23 @@
 
 #include <fastlog.h>
 
-#include <qlayout.h>
-#include <qapplication.h>
-#include <qdialog.h>
-#include <qtoolbutton.h>
+#include <QLayout>
+#include <QApplication>
+//#include <QDialog>
+#include <QToolButton>
 #include <QLabel>
-#include <qdialog.h>
-#include <qcombobox.h>
-#include <qtooltip.h>
-#include <qtimer.h>
-//#include <qpopupmenu.h>
-#include <qcursor.h>
-#include <qpainter.h>
-#include <qstring.h>
-#include <qpoint.h>
-#include <qevent.h>
-#include <qwidget.h>
+#include <QComboBox>
+#include <QToolTip>
+#include <QTimer>
+//#include <QPopupMenu>
+#include <QCursor>
+#include <QPainter>
+#include <QString>
+#include <QPoint>
+#include <QEvent>
+#include <QWidget>
 #include <QVariant>
 #include <QAction>
-//Added by qt3to4:
-//#include <Q3HBoxLayout>
-//#include <Q3GridLayout>
-
-#include <QHBoxLayout>
 #include <QGridLayout>
 
 #include "app.h"
@@ -583,17 +577,17 @@ void AudioStrip::updateChannels()
 Knob* AudioStrip::addKnob(int type, int id, DoubleLabel** dlabel)
       {
       Knob* knob = new Knob(this);
-      knob->setFixedWidth(STRIP_WIDTH/2);
+      knob->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       if (type == 0)
             knob->setRange(-1.0, +1.0);
       else
             knob->setRange(config.minSlider-0.1, 10.0);
-      knob->setBackgroundMode(Qt::PaletteMid);
+      knob->setBackgroundRole(QPalette::Mid);
 
       if (type == 0)
-            QToolTip::add(knob, tr("panorama"));
+            knob->setToolTip(tr("panorama"));
       else
-            QToolTip::add(knob, tr("aux send level"));
+            knob->setToolTip(tr("aux send level"));
 
 
       DoubleLabel* pl;
@@ -606,7 +600,7 @@ Knob* AudioStrip::addKnob(int type, int id, DoubleLabel** dlabel)
             *dlabel = pl;
       pl->setSlider(knob);
       pl->setFont(config.fonts[1]);
-      pl->setBackgroundMode(Qt::PaletteMid);
+      pl->setBackgroundRole(QPalette::Mid);
       pl->setFrame(true);
       if (type == 0)
             pl->setPrecision(2);
@@ -614,7 +608,7 @@ Knob* AudioStrip::addKnob(int type, int id, DoubleLabel** dlabel)
             pl->setPrecision(0);
             pl->setPrecision(0);
             }
-      pl->setFixedWidth(STRIP_WIDTH/2);
+      pl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
 
       QString label;
       if (type == 0)
@@ -624,14 +618,15 @@ Knob* AudioStrip::addKnob(int type, int id, DoubleLabel** dlabel)
 
       QLabel* plb = new QLabel(label, this);
       plb->setFont(config.fonts[1]);
-      plb->setFixedWidth(STRIP_WIDTH/2);
+      plb->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       plb->setAlignment(Qt::AlignCenter);
 
-      QGridLayout* pangrid = new QGridLayout(0, 2, 2, 0, 0, "pangrid");
+      QGridLayout* pangrid = new QGridLayout();
+      pangrid->setMargin(0);
       pangrid->addWidget(plb, 0, 0);
       pangrid->addWidget(pl, 1, 0);
-      pangrid->addMultiCellWidget(knob, 0, 1, 1, 1);
-      layout->addLayout(pangrid);
+      pangrid->addWidget(knob, 0, 1, 2, 1);
+      grid->addLayout(pangrid, _curGridRow++, 0, 1, 2);
 
       connect(knob, SIGNAL(valueChanged(double,int)), pl, SLOT(setValue(double)));
       //connect(pl, SIGNAL(valueChanged(double, int)), SLOT(panChanged(double)));
@@ -672,19 +667,14 @@ AudioStrip::~AudioStrip()
 AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
    : Strip(parent, at)
       {
-      //iR            = 0;
-      //oR            = 0;
-      
-      off           = 0;
-      
       volume        = -1.0;
       panVal        = 0;
       
       record        = 0;
+      off           = 0;
       
       AudioTrack* t = (AudioTrack*)track;
       channel       = at->channels();
-      setFixedWidth(STRIP_WIDTH);
       setMinimumWidth(STRIP_WIDTH);
 
       int ch = 0;
@@ -698,27 +688,25 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //---------------------------------------------------
 
       EffectRack* rack = new EffectRack(this, t);
-      rack->setFixedWidth(STRIP_WIDTH);
-      rack->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
-      layout->addWidget(rack);
+      rack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+      grid->addWidget(rack, _curGridRow++, 0, 1, 2);
 
       //---------------------------------------------------
       //    mono/stereo  pre/post
       //---------------------------------------------------
 
-      QHBoxLayout* ppBox = new QHBoxLayout(0);
-      
       stereo  = new QToolButton();
       stereo->setFont(config.fonts[1]);
       QIcon stereoSet;
       stereoSet.addPixmap(*monoIcon, QIcon::Normal, QIcon::Off);
       stereoSet.addPixmap(*stereoIcon, QIcon::Normal, QIcon::On);
       stereo->setIcon(stereoSet);
+      stereo->setIconSize(monoIcon->size());  
 
       stereo->setCheckable(true);
       stereo->setToolTip(tr("1/2 channel"));
       stereo->setChecked(channel == 2);
-      stereo->setFixedWidth(STRIP_WIDTH/2);
+      stereo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(stereo, SIGNAL(clicked(bool)), SLOT(stereoToggled(bool)));
 
       // disable mono/stereo for Synthesizer-Plugins
@@ -731,12 +719,11 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       pre->setText(tr("Pre"));
       pre->setToolTip(tr("pre fader - post fader"));
       pre->setChecked(t->prefader());
-      pre->setFixedWidth(STRIP_WIDTH/2);
+      stereo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(pre, SIGNAL(clicked(bool)), SLOT(preToggled(bool)));
 
-      ppBox->addWidget(stereo);
-      ppBox->addWidget(pre);
-      layout->addLayout(ppBox);
+      grid->addWidget(stereo, _curGridRow, 0);
+      grid->addWidget(pre, _curGridRow++, 1);
 
       //---------------------------------------------------
       //    aux send
@@ -755,19 +742,19 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
                   }
             }
       else {
-            if (auxsSize)
-                  layout->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);
+            ///if (auxsSize)
+                  //layout->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);
+                  ///grid->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);  // ???
             }
 
       //---------------------------------------------------
       //    slider, label, meter
       //---------------------------------------------------
 
-      //sliderGrid = new QGridLayout(this); // ddskrjo this
-      sliderGrid = new QGridLayout(); // ddskrjo this
+      sliderGrid = new QGridLayout(); 
       sliderGrid->setRowStretch(0, 100);
-
-      //slider = new Slider(this);
+      sliderGrid->setMargin(0);
+      
       slider = new Slider(this, "vol", Qt::Vertical, Slider::None,
          Slider::BgTrough | Slider::BgSlot);
       slider->setCursorHoming(true);
@@ -786,16 +773,16 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
             sliderGrid->addWidget(meter[i], 0, i+1, Qt::AlignHCenter);
             sliderGrid->setColStretch(i, 50);
             }
-      layout->addLayout(sliderGrid);
+      grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 
       sl = new DoubleLabel(0.0, config.minSlider, 10.0, this);
       sl->setSlider(slider);
       sl->setFont(config.fonts[1]);
-      sl->setBackgroundMode(Qt::PaletteMid);
+      sl->setBackgroundRole(QPalette::Mid);
       sl->setSuffix(tr("dB"));
       sl->setFrame(true);
       sl->setPrecision(0);
-      sl->setFixedWidth(STRIP_WIDTH);
+      sl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       sl->setValue(fast_log10(t->volume()) * 20.0);
 
       connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volLabelChanged(double)));
@@ -805,7 +792,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(volumePressed()));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(volumeReleased()));
       connect(slider, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(volumeRightClicked(const QPoint &)));
-      layout->addWidget(sl);
+      grid->addWidget(sl, _curGridRow++, 0, 1, 2);
 
       //---------------------------------------------------
       //    pan, balance
@@ -820,113 +807,103 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
 
       if (track->canRecord()) {
             record  = new TransparentToolButton(this);
-            record->setToggleButton(true);
-            record->setFixedWidth(STRIP_WIDTH/2);
-            record->setBackgroundMode(Qt::PaletteMid);
+            record->setCheckable(true);
+            record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+            record->setBackgroundRole(QPalette::Mid);
             QIcon iconSet;
-            iconSet.setPixmap(*record_on_Icon, QIcon::Automatic, QIcon::Normal, QIcon::On);
-            iconSet.setPixmap(*record_off_Icon, QIcon::Automatic, QIcon::Normal, QIcon::Off);
-            record->setIconSet(iconSet);
-            QToolTip::add(record, tr("record"));
-            record->setOn(t->recordFlag());
-            connect(record, SIGNAL(toggled(bool)), SLOT(recordToggled(bool)));
+            iconSet.addPixmap(*record_on_Icon, QIcon::Normal, QIcon::On);
+            iconSet.addPixmap(*record_off_Icon, QIcon::Normal, QIcon::Off);
+            record->setIcon(iconSet);
+            record->setIconSize(record_on_Icon->size());  
+            record->setToolTip(tr("record"));
+            record->setChecked(t->recordFlag());
+            connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
             }
 
       Track::TrackType type = t->type();
 
-      QHBoxLayout* smBox1 = new QHBoxLayout(0);
-      QHBoxLayout* smBox2 = new QHBoxLayout(0);
-
-      mute  = new QToolButton(this);
-      
+      mute  = new QToolButton();
       QIcon muteSet;
-      muteSet.setPixmap(*muteIconOn,   QIcon::Automatic, QIcon::Normal, QIcon::Off);
-      muteSet.setPixmap(*muteIconOff, QIcon::Automatic, QIcon::Normal, QIcon::On);
-      mute->setIconSet(muteSet);
-      mute->setToggleButton(true);
-      QToolTip::add(mute, tr("mute"));
-      mute->setOn(t->mute());
-      mute->setFixedWidth(STRIP_WIDTH/2-2);
-      connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
-      smBox2->addWidget(mute);
+      muteSet.addPixmap(*muteIconOn, QIcon::Normal, QIcon::Off);
+      muteSet.addPixmap(*muteIconOff, QIcon::Normal, QIcon::On);
+      mute->setIcon(muteSet);
+      mute->setIconSize(muteIconOn->size());  
+      mute->setCheckable(true);
+      mute->setToolTip(tr("mute"));
+      mute->setChecked(t->mute());
+      mute->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
-      solo  = new QToolButton(this);
+      solo  = new QToolButton();
       
       if((bool)t->internalSolo())
       {
-        solo->setIconSet(*soloIconSet2);
+        solo->setIcon(*soloIconSet2);
         useSoloIconSet2 = true;
       }  
       else  
       {
-        solo->setIconSet(*soloIconSet1);
+        solo->setIcon(*soloIconSet1);
         useSoloIconSet2 = false;
       }  
               
-      solo->setToggleButton(true);
-      solo->setOn(t->solo());
-      
-      solo->setFixedWidth(STRIP_WIDTH/2-2);
-      smBox2->addWidget(solo);
-      connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
+      solo->setCheckable(true);
+      solo->setChecked(t->solo());
+      solo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
       if (type == Track::AUDIO_OUTPUT) {
-            QToolTip::add(record, tr("record downmix"));
-            //QToolTip::add(solo, tr("solo mode (monitor)"));
-            QToolTip::add(solo, tr("solo mode"));
+            record->setToolTip(tr("record downmix"));
+            //solo->setToolTip(tr("solo mode (monitor)"));
+            solo->setToolTip(tr("solo mode"));
             }
       else {
-            //QToolTip::add(solo, tr("pre fader listening"));
-            QToolTip::add(solo, tr("solo mode"));
+            //solo->setToolTip(tr("pre fader listening"));
+            solo->setToolTip(tr("solo mode"));
             }
 
       off  = new TransparentToolButton(this);
       QIcon iconSet;
-      iconSet.setPixmap(*exit1Icon, QIcon::Automatic, QIcon::Normal, QIcon::On);
-      iconSet.setPixmap(*exitIcon, QIcon::Automatic, QIcon::Normal, QIcon::Off);
-      off->setIconSet(iconSet);
-      off->setBackgroundMode(Qt::PaletteMid);
-      off->setFixedWidth(STRIP_WIDTH/2);
-      off->setToggleButton(true);
-      QToolTip::add(off, tr("off"));
-      off->setOn(t->off());
-      connect(off, SIGNAL(toggled(bool)), SLOT(offToggled(bool)));
+      iconSet.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
+      iconSet.addPixmap(*exitIcon, QIcon::Normal, QIcon::Off);
+      off->setIcon(iconSet);
+      off->setIconSize(exit1Icon->size());  
+      off->setBackgroundRole(QPalette::Mid);
+      off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      off->setCheckable(true);
+      off->setToolTip(tr("off"));
+      off->setChecked(t->off());
+      connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
 
-      smBox1->addWidget(off);
-      if (track->canRecord())
-            smBox1->addWidget(record);
-      else
-            smBox1->addStretch(100);
-
-      layout->addLayout(smBox1);
-      layout->addLayout(smBox2);
+      grid->addWidget(off, _curGridRow, 0);
+      if (record)
+            grid->addWidget(record, _curGridRow, 1);
+      ++_curGridRow;      
+      grid->addWidget(mute, _curGridRow, 0);
+      grid->addWidget(solo, _curGridRow++, 1);
 
       //---------------------------------------------------
       //    routing
       //---------------------------------------------------
 
-      QHBoxLayout* rBox = new QHBoxLayout(0);
       if (type != Track::AUDIO_AUX) {
-            iR = new QToolButton(this);
+            iR = new QToolButton();
             iR->setFont(config.fonts[1]);
-            iR->setFixedWidth((STRIP_WIDTH-4)/2);
+            iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
             iR->setText(tr("iR"));
-            iR->setToggleButton(false);
-            QToolTip::add(iR, tr("input routing"));
-            rBox->addWidget(iR);
+            iR->setCheckable(false);
+            iR->setToolTip(tr("input routing"));
+            grid->addWidget(iR, _curGridRow, 0);
             connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
             }
-      else
-            rBox->addSpacing((STRIP_WIDTH-4)/2);
-      oR = new QToolButton(this);
+      
+      oR = new QToolButton();
       oR->setFont(config.fonts[1]);
-      oR->setFixedWidth((STRIP_WIDTH-4)/2);
+      oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       oR->setText(tr("oR"));
-      oR->setToggleButton(false);
-      QToolTip::add(oR, tr("output routing"));
-      rBox->addWidget(oR);
+      oR->setCheckable(false);
+      oR->setToolTip(tr("output routing"));
+      grid->addWidget(oR, _curGridRow++, 1);
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
-
-      layout->addLayout(rBox);
 
       //---------------------------------------------------
       //    automation type
@@ -934,21 +911,30 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
 
       autoType = new ComboBox(this);
       autoType->setFont(config.fonts[1]);
-      autoType->setFixedWidth(STRIP_WIDTH-4);
+      autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      
       autoType->insertItem(tr("Off"), AUTO_OFF);
       autoType->insertItem(tr("Read"), AUTO_READ);
       autoType->insertItem(tr("Touch"), AUTO_TOUCH);
       autoType->insertItem(tr("Write"), AUTO_WRITE);
       autoType->setCurrentItem(t->automationType());
+      // FIXME: TODO: Convert ComboBox to QT4
+      //autoType->insertItem(AUTO_OFF, tr("Off"));
+      //autoType->insertItem(AUTO_READ, tr("Read"));
+      //autoType->insertItem(AUTO_TOUCH, tr("Touch"));
+      //autoType->insertItem(AUTO_WRITE, tr("Write"));
+      //autoType->setCurrentIndex(t->automationType());
       
       if(t->automationType() == AUTO_TOUCH || t->automationType() == AUTO_WRITE)
+        // FIXME:
         autoType->setPaletteBackgroundColor(Qt::red);
       else  
+        // FIXME:
         autoType->setPaletteBackgroundColor(qApp->palette().active().background());
       
-      QToolTip::add(autoType, tr("automation type"));
+      autoType->setToolTip(tr("automation type"));
       connect(autoType, SIGNAL(activated(int,int)), SLOT(setAutomationType(int,int)));
-      layout->addWidget(autoType);
+      grid->addWidget(autoType, _curGridRow++, 0, 1, 2);
 
       if (off) {
             off->blockSignals(true);

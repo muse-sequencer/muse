@@ -10,18 +10,15 @@
 
 #include <QLayout>
 #include <QAction>
-#include <qapplication.h>
-#include <qdialog.h>
-#include <qtoolbutton.h>
-#include <qlabel.h>
-#include <qdialog.h>
-#include <qcombobox.h>
-#include <qtooltip.h>
-#include <qtimer.h>
-//#include <qpopupmenu.h>
-#include <qcursor.h>
-//Added by qt3to4:
-#include <QHBoxLayout>
+#include <QApplication>
+//#include <QDialog>
+#include <QToolButton>
+#include <QLabel>
+#include <QComboBox>
+#include <QToolTip>
+#include <QTimer>
+//#include <QPopupMenu>
+#include <QCursor>
 #include <QGridLayout>
 
 #include <math.h>
@@ -84,23 +81,21 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       knob->setId(ctl);
       
       controller[idx].knob = knob;
-      knob->setFixedWidth(STRIP_WIDTH/2-3);
-      knob->setFixedHeight(30);
-      knob->setBackgroundMode(Qt::PaletteMid);
-      QToolTip::add(knob, tt);
+      knob->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      knob->setBackgroundRole(QPalette::Mid);
+      knob->setToolTip(tt);
       knob->setEnabled(enabled);
 
       DoubleLabel* dl = new DoubleLabel(0.0, double(mn), double(mx), this);
       dl->setId(idx);
       dl->setSpecialText(tr("off"));
-      QToolTip::add(dl, tr("double click on/off"));
+      dl->setToolTip(tr("double click on/off"));
       controller[idx].dl = dl;
       dl->setFont(config.fonts[1]);
-      dl->setBackgroundMode(Qt::PaletteMid);
+      dl->setBackgroundRole(QPalette::Mid);
       dl->setFrame(true);
       dl->setPrecision(0);
-      dl->setFixedWidth(STRIP_WIDTH/2);
-      dl->setFixedHeight(15);
+      dl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       dl->setEnabled(enabled);
 
       double dlv;
@@ -140,17 +135,16 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       QLabel* lb = new QLabel(label, this);
       controller[idx].lb = lb;
       lb->setFont(config.fonts[1]);
-      lb->setFixedWidth(STRIP_WIDTH/2-3);
+      lb->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       lb->setAlignment(Qt::AlignCenter);
-      lb->setFixedHeight(15);
       lb->setEnabled(enabled);
 
-      QGridLayout* grid = new QGridLayout(0, 2, 2, 0, 0, "grid");
-      grid->setMargin(2);
-      grid->addWidget(lb, 0, 0);
-      grid->addWidget(dl, 1, 0);
-      grid->addMultiCellWidget(knob, 0, 1, 1, 1);
-      layout->addLayout(grid);
+      QGridLayout* gr = new QGridLayout();
+      gr->setMargin(0);
+      gr->addWidget(lb, 0, 0);
+      gr->addWidget(dl, 1, 0);
+      gr->addWidget(knob, 0, 1, 2, 1);
+      grid->addLayout(gr, _curGridRow++, 0, 1, 2);
 
       connect(knob, SIGNAL(sliderMoved(double,int)), slot);
       connect(knob, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(controlRightClicked(const QPoint &, int)));
@@ -181,8 +175,9 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       addKnob(KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(setReverbSend(double)), false);
       addKnob(KNOB_CHO_SEND, tr("ChorusSend"), tr("Cho"), SLOT(setChorusSend(double)), false);
       int auxsSize = song->auxs()->size();
-      if (auxsSize)
-            layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize);
+      ///if (auxsSize)
+            //layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize);
+            ///grid->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize);  // ??
 
       //---------------------------------------------------
       //    slider, label, meter
@@ -206,21 +201,22 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       meter[0]->setRange(0, 127.0);
       meter[0]->setFixedWidth(15);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
-      sliderGrid = new QGridLayout(this); // ddskrjo this
+      
+      sliderGrid = new QGridLayout(); 
       sliderGrid->setRowStretch(0, 100);
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignRight);
       sliderGrid->addWidget(meter[0], 0, 1, Qt::AlignLeft);
-      layout->addLayout(sliderGrid);
+      grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 
       sl = new DoubleLabel(0.0, -98.0, 0.0, this);
       sl->setFont(config.fonts[1]);
-      sl->setBackgroundMode(Qt::PaletteMid);
+      sl->setBackgroundRole(QPalette::Mid);
       sl->setSpecialText(tr("off"));
       sl->setSuffix(tr("dB"));
-      QToolTip::add(sl, tr("double click on/off"));
+      sl->setToolTip(tr("double click on/off"));
       sl->setFrame(true);
       sl->setPrecision(0);
-      sl->setFixedWidth(STRIP_WIDTH);
+      sl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       // Set the label's slider 'buddy'.
       sl->setSlider(slider);
       
@@ -264,7 +260,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       connect(sl, SIGNAL(valueChanged(double, int)), SLOT(volLabelChanged(double)));
       connect(sl, SIGNAL(doubleClicked(int)), SLOT(labelDoubleClicked(int)));
       
-      layout->addWidget(sl);
+      grid->addWidget(sl, _curGridRow++, 0, 1, 2); 
 
       //---------------------------------------------------
       //    pan, balance
@@ -281,66 +277,73 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //---------------------------------------------------
 
       record  = new TransparentToolButton(this);
-      record->setBackgroundMode(Qt::PaletteMid);
-      record->setToggleButton(true);
-      
-      //record->setFixedWidth(STRIP_WIDTH/2);
-      //record->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
-      record->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+      record->setBackgroundRole(QPalette::Mid);
+      record->setCheckable(true);
+      record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       
       QIcon iconSet;
-      iconSet.setPixmap(*record_on_Icon, QIcon::Automatic, QIcon::Normal, QIcon::On);
-      iconSet.setPixmap(*record_off_Icon, QIcon::Automatic, QIcon::Normal, QIcon::Off);
-      record->setIconSet(iconSet);
-      QToolTip::add(record, tr("record"));
-      record->setOn(track->recordFlag());
-      connect(record, SIGNAL(toggled(bool)), SLOT(recordToggled(bool)));
+      iconSet.addPixmap(*record_on_Icon, QIcon::Normal, QIcon::On);
+      iconSet.addPixmap(*record_off_Icon, QIcon::Normal, QIcon::Off);
+      record->setIcon(iconSet);
+      record->setIconSize(record_on_Icon->size());  
+      record->setToolTip(tr("record"));
+      record->setChecked(track->recordFlag());
+      connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
 
-      mute  = new QToolButton(this);
+      mute  = new QToolButton();
       QIcon muteSet;
-      muteSet.setPixmap(*muteIconOn,   QIcon::Automatic, QIcon::Normal, QIcon::Off);
-      muteSet.setPixmap(*muteIconOff, QIcon::Automatic, QIcon::Normal, QIcon::On);
-      mute->setIconSet(muteSet);
-      mute->setToggleButton(true);
-      QToolTip::add(mute, tr("mute"));
-      mute->setOn(track->mute());
-      mute->setFixedWidth(STRIP_WIDTH/2);
-      connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
+      muteSet.addPixmap(*muteIconOn, QIcon::Normal, QIcon::Off);
+      muteSet.addPixmap(*muteIconOff, QIcon::Normal, QIcon::On);
+      mute->setIcon(muteSet);
+      mute->setIconSize(muteIconOn->size());  
+      mute->setCheckable(true);
+      mute->setToolTip(tr("mute"));
+      mute->setChecked(track->mute());
+      mute->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
-      solo  = new QToolButton(this);
+      solo  = new QToolButton();
 
       if((bool)t->internalSolo())
       {
-        solo->setIconSet(*soloIconSet2);
+        solo->setIcon(*soloIconSet2);
         useSoloIconSet2 = true;
       }  
       else  
       {
-        solo->setIconSet(*soloIconSet1);
+        solo->setIcon(*soloIconSet1);
         useSoloIconSet2 = false;
       }  
       
-      //QToolTip::add(solo, tr("pre fader listening"));
-      QToolTip::add(solo, tr("solo mode"));
-      solo->setToggleButton(true);
-      solo->setOn(t->solo());
-      solo->setFixedWidth(STRIP_WIDTH/2);
-      connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
-
-      QHBoxLayout* smBox1 = new QHBoxLayout(0);
-      QHBoxLayout* smBox2 = new QHBoxLayout(0);
-
-      smBox2->addWidget(mute);
-      smBox2->addWidget(solo);
-
+      //solo->setToolTip(tr("pre fader listening"));
+      solo->setToolTip(tr("solo mode"));
+      solo->setCheckable(true);
+      solo->setChecked(t->solo());
+      solo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
+      
+      /*
       // Changed by Tim. p3.3.21
       //QToolTip::add(record, tr("record"));
       //smBox1->addStretch(100);
       //smBox1->addWidget(record);
-      QLabel* dev_ch_label = new QLabel(this);
-      dev_ch_label->setMinimumWidth(STRIP_WIDTH/2);
+      QLabel* dev_ch_label = new QLabel();
+      ///dev_ch_label->setMinimumWidth(STRIP_WIDTH/2);
+      
+      // Special here: Must make label same size as the 'exit' button would be IF this were an audio strip...
+      // (The 'exit1' icon is BIGGER than the 'record on' icon.)
+      TransparentToolButton* off  = new TransparentToolButton(this);
+      QIcon iconOff;
+      iconOff.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
+      iconOff.addPixmap(*exitIcon, QIcon::Normal, QIcon::Off);
+      off->setIcon(iconOff);
+      off->setIconSize(exit1Icon->size());  
+      dev_ch_label->setMinimumHeight(off->height());  
+      delete off;
+      
       //dev_ch_label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
-      dev_ch_label->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
+      ///dev_ch_label->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
+      dev_ch_label->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       dev_ch_label->setAlignment(Qt::AlignCenter);
       int port = t->outPort();
       int channel = t->outChannel();
@@ -353,43 +356,48 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
       //autoAdjustFontSize(dev_ch_label, dev_ch_label->text(), false, true, config.fonts[6].pointSize(), 5);
       QToolTip::add(dev_ch_label, tr("output port and channel"));
-      smBox1->addWidget(dev_ch_label);
-      smBox1->addWidget(record);
+      */
       
-      layout->addLayout(smBox1);
-      layout->addLayout(smBox2);
+      off  = new TransparentToolButton(this);
+      QIcon iconOff;
+      iconOff.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
+      iconOff.addPixmap(*exitIcon, QIcon::Normal, QIcon::Off);
+      off->setIcon(iconOff);
+      off->setIconSize(exit1Icon->size());  
+      off->setBackgroundRole(QPalette::Mid);
+      off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      off->setCheckable(true);
+      off->setToolTip(tr("off"));
+      off->setChecked(t->off());
+      connect(off, SIGNAL(toggled(bool)), SLOT(offToggled(bool)));
+
+      grid->addWidget(off, _curGridRow, 0);
+      grid->addWidget(record, _curGridRow++, 1);
+      grid->addWidget(mute, _curGridRow, 0);
+      grid->addWidget(solo, _curGridRow++, 1);
 
       //---------------------------------------------------
       //    routing
       //---------------------------------------------------
 
-      // p3.3.38
-      //route = new QToolButton(this);
-      //route->setFont(config.fonts[1]);
-      //route->setFixedWidth(STRIP_WIDTH);
-      //route->setText(tr("Route"));
-      //QToolTip::add(route, tr("set routing"));
-      //layout->addWidget(route);
-      QHBoxLayout* rBox = new QHBoxLayout(0);
-      iR = new QToolButton(this);
+      iR = new QToolButton();
       iR->setFont(config.fonts[1]);
-      iR->setFixedWidth((STRIP_WIDTH-4)/2);
+      iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       iR->setText(tr("iR"));
-      iR->setToggleButton(false);
-      QToolTip::add(iR, tr("input routing"));
-      rBox->addWidget(iR);
+      iR->setCheckable(false);
+      iR->setToolTip(tr("input routing"));
+      grid->addWidget(iR, _curGridRow, 0);
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
-      oR = new QToolButton(this);
+      oR = new QToolButton();
       oR->setFont(config.fonts[1]);
-      oR->setFixedWidth((STRIP_WIDTH-4)/2);
+      oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       oR->setText(tr("oR"));
-      oR->setToggleButton(false);
+      oR->setCheckable(false);
       // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
       oR->setEnabled(false);
-      QToolTip::add(oR, tr("output routing"));
-      rBox->addWidget(oR);
+      oR->setToolTip(tr("output routing"));
+      grid->addWidget(oR, _curGridRow++, 1);
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
-      layout->addLayout(rBox);
 
       //---------------------------------------------------
       //    automation mode
@@ -397,8 +405,9 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
 
       autoType = new ComboBox(this);
       autoType->setFont(config.fonts[1]);
-      autoType->setFixedWidth(STRIP_WIDTH-4);
+      autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       autoType->setEnabled(false);
+      
       // Removed by T356. 
       // Disabled for now. There is no midi automation mechanism yet...
       //autoType->insertItem(tr("Off"), AUTO_OFF);
@@ -406,11 +415,49 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //autoType->insertItem(tr("Touch"), AUTO_TOUCH);
       //autoType->insertItem(tr("Write"), AUTO_WRITE);
       //autoType->setCurrentItem(t->automationType());
-      //QToolTip::add(autoType, tr("automation type"));
+      // TODO: Convert ComboBox to QT4
+      //autoType->insertItem(AUTO_OFF, tr("Off"));
+      //autoType->insertItem(AUTO_READ, tr("Read"));
+      //autoType->insertItem(AUTO_TOUCH, tr("Touch"));
+      //autoType->insertItem(AUTO_WRITE, tr("Write"));
+      //autoType->setCurrentIndex(t->automationType());
+      //autoType->setToolTip(tr("automation type"));
+      
       //connect(autoType, SIGNAL(activated(int,int)), SLOT(setAutomationType(int,int)));
-      layout->addWidget(autoType);
+      grid->addWidget(autoType, _curGridRow++, 0, 1, 2);
       connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       inHeartBeat = false;
+      }
+
+//---------------------------------------------------------
+//   updateOffState
+//---------------------------------------------------------
+
+void MidiStrip::updateOffState()
+      {
+      bool val = !track->off();
+      slider->setEnabled(val);
+      sl->setEnabled(val);
+      //pan->setEnabled(val);
+      label->setEnabled(val);
+      
+      if (record)
+            record->setEnabled(val);
+      if (solo)
+            solo->setEnabled(val);
+      if (mute)
+            mute->setEnabled(val);
+      if (autoType)
+            autoType->setEnabled(val);
+      if (iR)
+            iR->setEnabled(val);
+      if (oR)
+            oR->setEnabled(val);
+      if (off) {
+            off->blockSignals(true);
+            off->setOn(track->off());
+            off->blockSignals(false);
+            }
       }
 
 //---------------------------------------------------------
@@ -431,13 +478,13 @@ void MidiStrip::songChanged(int val)
             {
               if(!useSoloIconSet2)
               {
-                solo->setIconSet(*soloIconSet2);
+                solo->setIcon(*soloIconSet2);
                 useSoloIconSet2 = true;
               }  
             }  
             else if(useSoloIconSet2)
             {
-              solo->setIconSet(*soloIconSet1);
+              solo->setIcon(*soloIconSet1);
               useSoloIconSet2 = false;
             }  
             solo->blockSignals(true);
@@ -554,6 +601,16 @@ void MidiStrip::labelDoubleClicked(int idx)
   song->update(SC_MIDI_CONTROLLER);
 }
 
+
+//---------------------------------------------------------
+//   offToggled
+//---------------------------------------------------------
+
+void MidiStrip::offToggled(bool val)
+      {
+      track->setOff(val);
+      song->update(SC_MUTE);
+      }
 
 /*
 //---------------------------------------------------------
@@ -943,25 +1000,6 @@ void MidiStrip::setReverbSend(double val)
       ctrlChanged(CTRL_REVERB_SEND, lrint(val));
       }
       
-//---------------------------------------------------------
-//   updateOffState
-//---------------------------------------------------------
-
-void MidiStrip::updateOffState() // Ripped from AudioStrip, hehh(mg)
-      {
-      bool val = !track->off();
-      slider->setEnabled(val);
-      //KNOB* gcon = &controller[KNOB_PAN]; // TODO: Pan ctrl
-      //gcon->setOn(val);
-      label->setEnabled(val);
-      if (record)
-            record->setEnabled(val);
-      if (solo)
-            solo->setEnabled(val);
-      if (mute)
-            mute->setEnabled(val);
-      }
-
 //---------------------------------------------------------
 //   routingPopupMenuActivated
 //---------------------------------------------------------

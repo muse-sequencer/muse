@@ -1,3 +1,6 @@
+09.11.2010
+        - Fixed audio and midi strips and converted to Qt4. Looks OK now, but will be better... (Tim)
+          TODO: Convert Slider, Knob, EffectRack, ComboBox classes etc. (After that the strips will be perfect.)
 08.11.2010
 	- Add missing link to libdl.so. Caused bulid failure on Fedora 14 (Orcan)
         - Fixed strip name label colours, also name label auto-font-sizing. (Tim) 
