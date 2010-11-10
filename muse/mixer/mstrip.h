@@ -10,7 +10,6 @@
 #define __MSTRIP_H__
 
 #include "strip.h"
-//Added by qt3to4:
 #include <QLabel>
 
 class Slider;
@@ -21,6 +20,7 @@ class QString;
 class MidiTrack;
 class QLabel;
 class QAction;
+class TransparentToolButton;
 
 //---------------------------------------------------------
 //   MidiStrip
@@ -31,6 +31,7 @@ class MidiStrip : public Strip {
 
       Slider* slider;
       DoubleLabel* sl;
+      TransparentToolButton* off;
       //QToolButton* route;
       //QToolButton* iR;
       //QToolButton* oR;
@@ -55,6 +56,7 @@ class MidiStrip : public Strip {
    
    private slots:
       //void routeClicked();
+      void offToggled(bool);
       void iRoutePressed();
       void oRoutePressed();
       void routingPopupMenuActivated(QAction*);
