@@ -37,7 +37,6 @@
 #include "app.h"
 #include "icons.h"
 #include "globals.h"
-#include "transport.h"
 #include "arranger.h"
 #include "midiport.h"
 #include "mididev.h"
