@@ -175,13 +175,15 @@ void AudioStrip::songChanged(int val)
             {
               if(!useSoloIconSet2)
               {
-                solo->setIconSet(*soloIconSet2);
+                solo->setIcon(*soloIconSet2);
+                solo->setIconSize(soloIconOn->size());  
                 useSoloIconSet2 = true;
               }  
             }  
             else if(useSoloIconSet2)
             {
-              solo->setIconSet(*soloIconSet1);
+              solo->setIcon(*soloIconSet1);
+              solo->setIconSize(soloblksqIconOn->size());  
               useSoloIconSet2 = false;
             }  
             
@@ -839,11 +841,13 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       if((bool)t->internalSolo())
       {
         solo->setIcon(*soloIconSet2);
+        solo->setIconSize(soloIconOn->size());  
         useSoloIconSet2 = true;
       }  
       else  
       {
         solo->setIcon(*soloIconSet1);
+        solo->setIconSize(soloblksqIconOn->size());  
         useSoloIconSet2 = false;
       }  
               

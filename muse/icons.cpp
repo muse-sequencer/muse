@@ -514,10 +514,10 @@ void initIcons()
       soloblksqIconOff     = new QPixmap(solobutton_off_blksq_xpm);
       soloIconSet1         = new QIcon(); 
       soloIconSet2         = new QIcon();
-      soloIconSet1->setPixmap(*soloIconOn, QIcon::Automatic, QIcon::Normal, QIcon::On);
-      soloIconSet1->setPixmap(*soloIconOff, QIcon::Automatic, QIcon::Normal, QIcon::Off);
-      soloIconSet2->setPixmap(*soloblksqIconOn, QIcon::Automatic, QIcon::Normal, QIcon::On);
-      soloIconSet2->setPixmap(*soloblksqIconOff, QIcon::Automatic, QIcon::Normal, QIcon::Off);
+      soloIconSet1->addPixmap(*soloIconOn, QIcon::Normal, QIcon::On);
+      soloIconSet1->addPixmap(*soloIconOff, QIcon::Normal, QIcon::Off);
+      soloIconSet2->addPixmap(*soloblksqIconOn, QIcon::Normal, QIcon::On);
+      soloIconSet2->addPixmap(*soloblksqIconOff, QIcon::Normal, QIcon::Off);
       
       redLedIcon           = new QPixmap(redled_xpm);
       darkRedLedIcon       = new QPixmap(darkredled_xpm);

@@ -307,11 +307,13 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       if((bool)t->internalSolo())
       {
         solo->setIcon(*soloIconSet2);
+        solo->setIconSize(soloIconOn->size());  
         useSoloIconSet2 = true;
       }  
       else  
       {
         solo->setIcon(*soloIconSet1);
+        solo->setIconSize(soloblksqIconOn->size());  
         useSoloIconSet2 = false;
       }  
       
@@ -479,12 +481,14 @@ void MidiStrip::songChanged(int val)
               if(!useSoloIconSet2)
               {
                 solo->setIcon(*soloIconSet2);
+                solo->setIconSize(soloIconOn->size());  
                 useSoloIconSet2 = true;
               }  
             }  
             else if(useSoloIconSet2)
             {
               solo->setIcon(*soloIconSet1);
+              solo->setIconSize(soloblksqIconOn->size());  
               useSoloIconSet2 = false;
             }  
             solo->blockSignals(true);
