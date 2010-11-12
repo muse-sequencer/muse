@@ -1,10 +1,9 @@
 #ifndef QWT_KNOB_H
 #define QWT_KNOB_H
 
-#include <sliderbase.h>
-#include <sclif.h>
-#include <qcolor.h>
-//Added by qt3to4:
+#include "sliderbase.h"
+#include "sclif.h"
+#include <QColor>
 #include <QResizeEvent>
 #include <QPaintEvent>
 
@@ -50,7 +49,7 @@ class Knob : public SliderBase, public ScaleIf
       void drawKnob(QPainter *p, const QRect &r);
       void drawMarker(QPainter *p, double arc, const QColor &c);
 
-      void paintEvent(QPaintEvent *e);
+      void paintEvent(QPaintEvent *);
       void resizeEvent(QResizeEvent *e);
       double getValue(const QPoint &p);
       void getScrollMode( QPoint &p, const Qt::ButtonState &button, int &scrollMode, int &direction );

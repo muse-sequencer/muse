@@ -48,6 +48,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
       cfg = c;
       oldAuxsSize = 0;
       routingDialog = 0;
+      setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding));   // TESTING Tim
       setWindowTitle(cfg->name);
       setWindowIcon(*museIcon);
 
@@ -209,10 +210,10 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                   delete *ssi;
                   stripList.erase(ssi);
                   }
-            setMaximumWidth(STRIP_WIDTH * stripList.size() + __WIDTH_COMPENSATION);
+            ///setMaximumWidth((STRIP_WIDTH + 10) * stripList.size() + __WIDTH_COMPENSATION);  // 10 REMOVE Tim
             // Added by Tim. p3.3.7
-            if (stripList.size() < 8)
-                  view->setMinimumWidth(stripList.size() * STRIP_WIDTH + __WIDTH_COMPENSATION);
+            ///if (stripList.size() < 8)
+            ///      view->setMinimumWidth(stripList.size() * (STRIP_WIDTH + 10) + __WIDTH_COMPENSATION);  // 10 REMOVE Tim
                   
             return;
       }
@@ -256,9 +257,9 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                 addStrip(*i, idx++);
             }
       
-            setMaximumWidth(STRIP_WIDTH * stripList.size() + __WIDTH_COMPENSATION);
-            if (stripList.size() < 8)
-                  view->setMinimumWidth(stripList.size() * STRIP_WIDTH + __WIDTH_COMPENSATION);
+            ///setMaximumWidth((STRIP_WIDTH + 10) * stripList.size() + __WIDTH_COMPENSATION);  // 10 REMOVE Tim
+            ///if (stripList.size() < 8)
+            ///      view->setMinimumWidth(stripList.size() * (STRIP_WIDTH + 10) + __WIDTH_COMPENSATION); // 10 REMOVE Tim
             return;
       }
 
@@ -341,9 +342,9 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             addStrip(*i, idx++);
       }
       
-      setMaximumWidth(STRIP_WIDTH * idx + __WIDTH_COMPENSATION);
-      if (idx < 8)
-            view->setMinimumWidth(idx * STRIP_WIDTH + __WIDTH_COMPENSATION);
+      ///setMaximumWidth((STRIP_WIDTH + 10) * idx + __WIDTH_COMPENSATION);     // 10 REMOVE Tim
+      ///if (idx < 8)
+      ///      view->setMinimumWidth(idx * (STRIP_WIDTH + 10) + __WIDTH_COMPENSATION); // 10 REMOVE Tim
       }
 
 //---------------------------------------------------------

@@ -23,9 +23,8 @@
 #include <cmath>
 #include "mmath.h"
 
-#include <qpainter.h>
-#include <qpalette.h>
-//Added by qt3to4:
+#include <QPainter>
+#include <QPalette>
 #include <QPaintEvent>
 #include <QResizeEvent>
 
@@ -57,10 +56,10 @@ Knob::Knob(QWidget* parent, const char* name)
       d_maxScaleTicks = 11;
       d_knobWidth     = 30;
       _faceColSel     = FALSE; 
-      d_faceColor     = backgroundColor();
+      d_faceColor     = palette().color(QPalette::Window);
       d_curFaceColor  = d_faceColor;
       d_altFaceColor  = d_faceColor;
-      d_markerColor   = foregroundColor();
+      d_markerColor   = palette().color(QPalette::WindowText);
       d_dotWidth      = 8;
 
       setMinimumSize(30,30);
@@ -101,7 +100,7 @@ void Knob::drawKnob(QPainter* p, const QRect& r)
       {
       QRect aRect;
 
-      QColorGroup g = colorGroup();
+      const QPalette& pal = palette();
       QPen pn;
       int bw2 = d_borderWidth / 2;
 
@@ -123,18 +122,20 @@ void Knob::drawKnob(QPainter* p, const QRect& r)
     pn.setWidth(d_borderWidth);
 
 
-    pn.setColor(g.light());
+    pn.setColor(pal.light());
     p->setPen(pn);
     p->drawArc(aRect, 45*16,180*16);
 
-    pn.setColor(g.dark());
+    pn.setColor(pal.dark());
     p->setPen(pn);
     p->drawArc(aRect, 225*16,180*16);
 
       //
       // draw marker
       //
-      drawMarker(p, d_angle, d_markerColor);
+      //drawMarker(p, d_angle, isEnabled() ? d_markerColor : Qt::gray);
+      drawMarker(p, d_angle, pal.currentColorGroup() == QPalette::Disabled ? 
+                              pal.color(QPalette::Disabled, QPalette::WindowText) : d_markerColor);
       }
 
 //------------------------------------------------------------
@@ -299,9 +300,9 @@ void Knob::resizeEvent(QResizeEvent *)
 //    paintEvent
 //------------------------------------------------------------
 
-void Knob::paintEvent(QPaintEvent* e)
+void Knob::paintEvent(QPaintEvent*)
       {
-      QPainter p(this);
+/*      QPainter p(this);
       const QRect &r = e->rect();
 
       if ((r == kRect) && d_newVal ) {        // event from valueChange()
@@ -318,6 +319,17 @@ void Knob::paintEvent(QPaintEvent* e)
                   d_scale.draw(&p);
             drawKnob(&p, kRect);
             }
+      d_newVal = 0;
+*/
+      
+      QPainter p(this);
+      p.setRenderHint(QPainter::Antialiasing, true);
+      if(hasScale)
+        d_scale.draw(&p);
+      drawKnob(&p, kRect);
+      //drawMarker(&p, d_oldAngle, d_curFaceColor);
+      //drawMarker(&p, d_angle, d_markerColor);
+ 
       d_newVal = 0;
       }
 

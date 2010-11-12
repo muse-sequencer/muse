@@ -16,11 +16,10 @@
 
 #include "drange.h"
 #include <QFrame>
-#include <qpixmap.h>
-#include <qdatetime.h>
+#include <QPixmap>
+#include <QDateTime>
 //#include <qbutton.h>
 #include <QtGui>
-//Added by qt3to4:
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QTimerEvent>
