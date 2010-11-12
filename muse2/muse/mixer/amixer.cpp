@@ -166,6 +166,23 @@ void AudioMixerApp::clear()
       }
 
 //---------------------------------------------------------
+//   computeWidth
+//---------------------------------------------------------
+int AudioMixerApp::computeWidth()
+{
+      int w = 0;
+      StripList::iterator si = stripList.begin();
+      for (; si != stripList.end(); ++si) {
+            //w += (*si)->width();
+            //w += (*si)->frameGeometry().width();
+            Strip* s = *si;
+            //w += s->width() + 2 * (s->frameWidth() + s->lineWidth() + s->midLineWidth());
+            w += s->width() + 2 * s->frameWidth();
+            }
+      return w;      
+}
+
+//---------------------------------------------------------
 //   updateMixer
 //---------------------------------------------------------
 
@@ -210,10 +227,24 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                   delete *ssi;
                   stripList.erase(ssi);
                   }
-            ///setMaximumWidth((STRIP_WIDTH + 10) * stripList.size() + __WIDTH_COMPENSATION);  // 10 REMOVE Tim
-            // Added by Tim. p3.3.7
-            ///if (stripList.size() < 8)
-            ///      view->setMinimumWidth(stripList.size() * (STRIP_WIDTH + 10) + __WIDTH_COMPENSATION);  // 10 REMOVE Tim
+                  
+            // TODO: See help Qt4 "Window Geometry"      
+            // "On X11, a window does not have a frame until the window manager decorates it. 
+            //  This happens asynchronously at some point in time after calling QWidget::show() 
+            //   and the first paint event the window receives, or it does not happen at all. 
+            // " ...you cannot make any safe assumption about the decoration frame your window will get." 
+            // "X11 provides no standard or easy way to get the frame geometry once the window is decorated. 
+            //  Qt solves this problem with nifty heuristics and clever code that works on a wide range of 
+            //  window managers that exist today..."
+            //
+            // I think I may be seeing these issues here... 
+            //
+            //setMaximumWidth(STRIP_WIDTH * stripList.size() + __WIDTH_COMPENSATION);  
+///            int w = computeWidth();      
+///            setMaximumWidth(w);      
+///            if (stripList.size() < 8)
+            //      view->setMinimumWidth(stripList.size() * STRIP_WIDTH + __WIDTH_COMPENSATION);  
+///                  view->setMinimumWidth(w);
                   
             return;
       }
@@ -257,9 +288,12 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                 addStrip(*i, idx++);
             }
       
-            ///setMaximumWidth((STRIP_WIDTH + 10) * stripList.size() + __WIDTH_COMPENSATION);  // 10 REMOVE Tim
-            ///if (stripList.size() < 8)
-            ///      view->setMinimumWidth(stripList.size() * (STRIP_WIDTH + 10) + __WIDTH_COMPENSATION); // 10 REMOVE Tim
+            //setMaximumWidth(STRIP_WIDTH * stripList.size() + __WIDTH_COMPENSATION);  
+///            int w = computeWidth();      
+///            setMaximumWidth(w);      
+///            if (stripList.size() < 8)
+            //      view->setMinimumWidth(stripList.size() * STRIP_WIDTH + __WIDTH_COMPENSATION); 
+///                  view->setMinimumWidth(w);
             return;
       }
 
@@ -342,9 +376,12 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             addStrip(*i, idx++);
       }
       
-      ///setMaximumWidth((STRIP_WIDTH + 10) * idx + __WIDTH_COMPENSATION);     // 10 REMOVE Tim
-      ///if (idx < 8)
-      ///      view->setMinimumWidth(idx * (STRIP_WIDTH + 10) + __WIDTH_COMPENSATION); // 10 REMOVE Tim
+      //setMaximumWidth(STRIP_WIDTH * idx + __WIDTH_COMPENSATION);     
+///      int w = computeWidth();      
+///      setMaximumWidth(w);      
+///      if (idx < 8)
+      //      view->setMinimumWidth(idx * STRIP_WIDTH + __WIDTH_COMPENSATION); 
+///            view->setMinimumWidth(w);
       }
 
 //---------------------------------------------------------
