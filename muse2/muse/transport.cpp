@@ -79,10 +79,10 @@ Handle::Handle(QWidget* r, QWidget* parent)
       rootWin = r;
       setFixedWidth(20);
       setCursor(Qt::pointingHandCursor);
-      // ORCAN - coloring does not seem to work properly
       QPalette palette;
       palette.setColor(this->backgroundRole(), config.transportHandleColor);
       this->setPalette(palette);
+      setAutoFillBackground(true);
       }
 
 //---------------------------------------------------------
