@@ -14,7 +14,6 @@
 #include <cmath>
 #include "sliderbase.h"
 #include "mmath.h"
-//Added by qt3to4:
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QTimerEvent>

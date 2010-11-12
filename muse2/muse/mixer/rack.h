@@ -27,6 +27,7 @@ class EffectRack : public Q3ListBox {
       Q_OBJECT
 
       virtual QSize minimumSizeHint() const;
+      virtual QSize sizeHint() const;
       
       void startDrag(int idx);
       void initPlugin(Xml xml, int idx);

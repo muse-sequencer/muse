@@ -12,6 +12,7 @@
 #include <qpalette.h>
 #include <stdio.h>
 #include <values.h>
+#include <math.h>
 
 #include "utils.h"
 
@@ -170,9 +171,10 @@ QSize DoubleLabel::sizeHint() const
       {
       QFontMetrics fm = fontMetrics();
       int h           = fm.height() + 4;
-      int n = _precision + 6;
-#if 0
-      double aval = fabs(val);
+      int n = _precision;
+      
+      ++n;  // For some reason I have to add one digit. Shouldn't have to.
+      double aval = fmax(fabs(max), fabs(min));
       if (aval >= 10.0)
             ++n;
       if (aval >= 100.0)
@@ -183,7 +185,16 @@ QSize DoubleLabel::sizeHint() const
             ++n;
       if (aval >= 100000.0)
             ++n;
-#endif
+      
       int w = fm.width(QString("-0.")) + fm.width('0') * n + 6;
+      if(!_suffix.isEmpty())
+      {
+        w += fm.width(QString(" ")) + fm.width(_suffix);
+      }
       return QSize(w, h);
       }
+
+QSize DoubleLabel::minimumSizeHint() const
+{
+  return sizeHint();
+}

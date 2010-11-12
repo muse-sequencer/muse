@@ -71,7 +71,7 @@ QWidget* MenuTitleItem::createWidget(QWidget *parent)
   return l;
 }
 
-//---------------------------------------------------------
+/*//---------------------------------------------------------
 //   minimumSizeHint
 //---------------------------------------------------------
 
@@ -81,6 +81,7 @@ QSize AudioStrip::minimumSizeHint () const
     //return QWidget::minimumSizeHint();
     return QSize(66,QWidget::minimumSizeHint().height());
 }
+*/
 
 //---------------------------------------------------------
 //   heartBeat
@@ -166,7 +167,7 @@ void AudioStrip::songChanged(int val)
       
       if (mute && (val & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);
-            mute->setOn(src->mute());
+            mute->setChecked(src->mute());
             mute->blockSignals(false);
             updateOffState();
             }
@@ -188,7 +189,7 @@ void AudioStrip::songChanged(int val)
             }  
             
             solo->blockSignals(true);
-            solo->setOn(track->solo());
+            solo->setChecked(track->solo());
             solo->blockSignals(false);
             }
       if (val & SC_RECFLAG)
@@ -205,7 +206,7 @@ void AudioStrip::songChanged(int val)
       if (val & SC_ROUTE) {
             if (pre) {
                   pre->blockSignals(true);
-                  pre->setOn(src->prefader());
+                  pre->setChecked(src->prefader());
                   pre->blockSignals(false);
                   }
             }
@@ -324,7 +325,7 @@ void AudioStrip::updateOffState()
             oR->setEnabled(val);
       if (off) {
             off->blockSignals(true);
-            off->setOn(track->off());
+            off->setChecked(track->off());
             off->blockSignals(false);
             }
       }
@@ -566,7 +567,7 @@ void AudioStrip::updateChannels()
             }
       channel = c;
       stereo->blockSignals(true);
-      stereo->setOn(channel == 2);
+      stereo->setChecked(channel == 2);
       stereo->blockSignals(false);
       }
 
@@ -591,7 +592,6 @@ Knob* AudioStrip::addKnob(int type, int id, DoubleLabel** dlabel)
       else
             knob->setToolTip(tr("aux send level"));
 
-
       DoubleLabel* pl;
       if (type == 0)
             pl = new DoubleLabel(0, -1.0, +1.0, this);
@@ -608,10 +608,9 @@ Knob* AudioStrip::addKnob(int type, int id, DoubleLabel** dlabel)
             pl->setPrecision(2);
       else {
             pl->setPrecision(0);
-            pl->setPrecision(0);
             }
       pl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-
+      
       QString label;
       if (type == 0)
             label = tr("Pan");
@@ -623,12 +622,13 @@ Knob* AudioStrip::addKnob(int type, int id, DoubleLabel** dlabel)
       plb->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       plb->setAlignment(Qt::AlignCenter);
 
-      QGridLayout* pangrid = new QGridLayout();
-      pangrid->setMargin(0);
-      pangrid->addWidget(plb, 0, 0);
-      pangrid->addWidget(pl, 1, 0);
-      pangrid->addWidget(knob, 0, 1, 2, 1);
-      grid->addLayout(pangrid, _curGridRow++, 0, 1, 2);
+      grid->addWidget(plb, _curGridRow, 0);
+      grid->addWidget(pl, _curGridRow+1, 0);
+      grid->addWidget(knob, _curGridRow, 1, 2, 1);
+      //grid->addWidget(plb, _curGridRow, 0, Qt::AlignCenter);
+      //grid->addWidget(pl, _curGridRow+1, 0, Qt::AlignCenter);
+      //grid->addWidget(knob, _curGridRow, 1, 2, 1, Qt::AlignCenter);
+      _curGridRow += 2;
 
       connect(knob, SIGNAL(valueChanged(double,int)), pl, SLOT(setValue(double)));
       //connect(pl, SIGNAL(valueChanged(double, int)), SLOT(panChanged(double)));
@@ -677,8 +677,8 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       
       AudioTrack* t = (AudioTrack*)track;
       channel       = at->channels();
-      setMinimumWidth(STRIP_WIDTH);
-
+      ///setMinimumWidth(STRIP_WIDTH);
+      
       int ch = 0;
       for (; ch < channel; ++ch)
             meter[ch] = new Meter(this);
@@ -721,7 +721,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       pre->setText(tr("Pre"));
       pre->setToolTip(tr("pre fader - post fader"));
       pre->setChecked(t->prefader());
-      stereo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      pre->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(pre, SIGNAL(clicked(bool)), SLOT(preToggled(bool)));
 
       grid->addWidget(stereo, _curGridRow, 0);
@@ -784,7 +784,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       sl->setSuffix(tr("dB"));
       sl->setFrame(true);
       sl->setPrecision(0);
-      sl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      sl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum));
       sl->setValue(fast_log10(t->volume()) * 20.0);
 
       connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volLabelChanged(double)));
@@ -794,7 +794,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(volumePressed()));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(volumeReleased()));
       connect(slider, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(volumeRightClicked(const QPoint &)));
-      grid->addWidget(sl, _curGridRow++, 0, 1, 2);
+      grid->addWidget(sl, _curGridRow++, 0, 1, 2, Qt::AlignCenter);
 
       //---------------------------------------------------
       //    pan, balance
@@ -916,6 +916,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       autoType = new ComboBox(this);
       autoType->setFont(config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      autoType->setAlignment(Qt::AlignCenter);
       
       autoType->insertItem(tr("Off"), AUTO_OFF);
       autoType->insertItem(tr("Read"), AUTO_READ);

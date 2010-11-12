@@ -39,6 +39,7 @@ class DoubleLabel : public Dentry {
       DoubleLabel(QWidget*, const char* name = 0);
       DoubleLabel(double val, double min, double max, QWidget*);
       virtual QSize sizeHint() const;
+      virtual QSize minimumSizeHint () const;
       double minValue() const               { return min; }
       double maxValue() const               { return max; }
       double off()      const               { return _off; }

@@ -139,13 +139,11 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       lb->setAlignment(Qt::AlignCenter);
       lb->setEnabled(enabled);
 
-      QGridLayout* gr = new QGridLayout();
-      gr->setMargin(0);
-      gr->addWidget(lb, 0, 0);
-      gr->addWidget(dl, 1, 0);
-      gr->addWidget(knob, 0, 1, 2, 1);
-      grid->addLayout(gr, _curGridRow++, 0, 1, 2);
-
+      grid->addWidget(lb, _curGridRow, 0);
+      grid->addWidget(dl, _curGridRow+1, 0);
+      grid->addWidget(knob, _curGridRow, 1, 2, 1);
+      _curGridRow += 2;
+      
       connect(knob, SIGNAL(sliderMoved(double,int)), slot);
       connect(knob, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(controlRightClicked(const QPoint &, int)));
       connect(dl, SIGNAL(valueChanged(double, int)), slot);
@@ -174,7 +172,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       addKnob(KNOB_VAR_SEND, tr("VariationSend"), tr("Var"), SLOT(setVariSend(double)), false);
       addKnob(KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(setReverbSend(double)), false);
       addKnob(KNOB_CHO_SEND, tr("ChorusSend"), tr("Cho"), SLOT(setChorusSend(double)), false);
-      int auxsSize = song->auxs()->size();
+      ///int auxsSize = song->auxs()->size();
       ///if (auxsSize)
             //layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize);
             ///grid->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize);  // ??
@@ -216,7 +214,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       sl->setToolTip(tr("double click on/off"));
       sl->setFrame(true);
       sl->setPrecision(0);
-      sl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      sl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum));
       // Set the label's slider 'buddy'.
       sl->setSlider(slider);
       
@@ -260,7 +258,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       connect(sl, SIGNAL(valueChanged(double, int)), SLOT(volLabelChanged(double)));
       connect(sl, SIGNAL(doubleClicked(int)), SLOT(labelDoubleClicked(int)));
       
-      grid->addWidget(sl, _curGridRow++, 0, 1, 2); 
+      grid->addWidget(sl, _curGridRow++, 0, 1, 2, Qt::AlignCenter); 
 
       //---------------------------------------------------
       //    pan, balance
@@ -408,6 +406,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       autoType = new ComboBox(this);
       autoType->setFont(config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      autoType->setAlignment(Qt::AlignCenter);
       autoType->setEnabled(false);
       
       // Removed by T356. 
@@ -440,7 +439,8 @@ void MidiStrip::updateOffState()
       bool val = !track->off();
       slider->setEnabled(val);
       sl->setEnabled(val);
-      //pan->setEnabled(val);
+      controller[KNOB_PAN].knob->setEnabled(val);         
+      controller[KNOB_PAN].dl->setEnabled(val);         
       label->setEnabled(val);
       
       if (record)
@@ -453,11 +453,12 @@ void MidiStrip::updateOffState()
             autoType->setEnabled(val);
       if (iR)
             iR->setEnabled(val);
-      if (oR)
-            oR->setEnabled(val);
+      // TODO: Disabled for now.
+      //if (oR)
+      //      oR->setEnabled(val);
       if (off) {
             off->blockSignals(true);
-            off->setOn(track->off());
+            off->setChecked(track->off());
             off->blockSignals(false);
             }
       }
@@ -470,7 +471,7 @@ void MidiStrip::songChanged(int val)
       {
       if (mute && (val & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);
-            mute->setOn(track->isMute());
+            mute->setChecked(track->isMute());
             updateOffState();
             mute->blockSignals(false);
             }
@@ -492,7 +493,7 @@ void MidiStrip::songChanged(int val)
               useSoloIconSet2 = false;
             }  
             solo->blockSignals(true);
-            solo->setOn(track->solo());
+            solo->setChecked(track->solo());
             solo->blockSignals(false);
       }      
       

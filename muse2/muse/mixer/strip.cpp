@@ -165,12 +165,23 @@ Strip::Strip(QWidget* parent, Track* t)
       setBackgroundRole(QPalette::Mid);
       setFrameStyle(Panel | Raised);
       setLineWidth(2);
+      
+      // NOTE: Workaround for freakin' improper disabled button text colour (at least with Oxygen colours). 
+      // Just set the parent palette.
+      QPalette pal(palette());
+      pal.setColor(QPalette::Disabled, QPalette::ButtonText, 
+                   pal.color(QPalette::Disabled, QPalette::WindowText));
+      setPalette(pal);
+      
       useSoloIconSet2 = false;
       
       track    = t;
       meter[0] = 0;
       meter[1] = 0;
-      setFixedWidth(STRIP_WIDTH);
+      //setFixedWidth(STRIP_WIDTH);
+      //setMinimumWidth(STRIP_WIDTH);     // TESTING Tim.
+      //setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding)); // TESTING Tim.
+      setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding)); // TESTING Tim.
       
       grid = new QGridLayout();
       grid->setMargin(0);

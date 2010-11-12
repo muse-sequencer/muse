@@ -1,9 +1,8 @@
 #include <cmath>
 #include "mmath.h"
 #include <qdrawutil.h>
-#include <qpainter.h>
-#include <qcursor.h>
-//Added by qt3to4:
+#include <QPainter>
+#include <QCursor>
 #include <QPaintEvent>
 #include <QResizeEvent>
 
@@ -186,10 +185,10 @@ void Slider::fontChange(const QFont & /*oldFont*/)
 
 void Slider::drawSlider(QPainter *p, const QRect &r)
       {
-      QColorGroup g = colorGroup();
-      QBrush brBack(g.background());
+      const QPalette& pal = palette();
+      QBrush brBack(pal.window());
       QBrush brMid;
-      QBrush brDark(g.dark());
+      QBrush brDark(pal.dark());
 
       QRect cr;
 
@@ -200,12 +199,12 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
       if (d_bwTrough > 0) {
             qDrawShadePanel(p, r.x(), r.y(),
       r.width(), r.height(),
-      g, TRUE, d_bwTrough,0);
+      pal, TRUE, d_bwTrough,0);
         cr.setRect(r.x() + d_bwTrough,
        r.y() + d_bwTrough,
        r.width() - 2*d_bwTrough,
        r.height() - 2*d_bwTrough);
-        brMid = QBrush(g.mid());
+        brMid = pal.mid();
             }
     else {
             cr = r;
@@ -242,18 +241,18 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
   //  Draw thumb
   //
   qDrawShadePanel(p,ipos, cr.y(), d_thumbLength, cr.height(),
-      colorGroup(), FALSE, d_borderWidth, &brBack);
+      pal, FALSE, d_borderWidth, &brBack);
   
   if (lineDist > 1)
      qDrawShadeLine(p,markerPos, cr.y() + lineDist , markerPos,
         cr.y() + cr.height() - lineDist,
-        colorGroup(), TRUE, 1);
+        pal, TRUE, 1);
   else
   {
-      p->setPen(g.dark());
+      p->setPen(pal.dark());
       p->drawLine(markerPos -1 , cr.y() + lineDist, markerPos -1,
       cr.y() + cr.height() - lineDist - 1);
-      p->setPen(g.light());
+      p->setPen(pal.light());
       p->drawLine(markerPos, cr.y() + lineDist, markerPos,
       cr.y() + cr.height() - lineDist - 1);
   }
@@ -279,17 +278,17 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
   }
   
   qDrawShadePanel(p,cr.x(),ipos , cr.width(), d_thumbLength,
-      colorGroup(),FALSE,d_borderWidth, &brBack);
+      pal,FALSE,d_borderWidth, &brBack);
   if (lineDist > 1)
      qDrawShadeLine(p, cr.x() + lineDist , markerPos,
         cr.x() + cr.width() - lineDist, markerPos,
-        colorGroup(), TRUE, 1);
+        pal, TRUE, 1);
   else {
     
-    p->setPen(g.dark());
+    p->setPen(pal.dark());
     p->drawLine(cr.x() + lineDist, markerPos - 1 ,
           cr.x() + cr.width() -  lineDist - 1, markerPos - 1);
-    p->setPen(g.light());
+    p->setPen(pal.light());
     p->drawLine(cr.x() + lineDist, markerPos,
           cr.x() + cr.width() -  lineDist - 1 , markerPos);
       }
@@ -314,7 +313,7 @@ void Slider::drawHsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
     int ws, ds, dLeft;
     int lPos, rPos;
     QRect rSlot;
-    const QColorGroup &g = colorGroup();
+    const QPalette& pal = palette();
 
     ws = rBound.height();
     if ((ws / 2) * 2 != ws)
@@ -339,19 +338,19 @@ void Slider::drawHsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
      p->fillRect(rBound.x(),rSlot.y(),
            rPos - rBound.left(),ws,brBack);
 
-  p->setPen(g.dark());
+  p->setPen(pal.dark());
   if (rSlot.x() < rThumb.left())
      p->drawLine(rSlot.x(), rSlot.bottom(), rSlot.x(), rSlot.top());
   if (rSlot.x() < rThumb.left() - 1)
   {
       p->drawLine(rSlot.x(), rSlot.top(), rThumb.left() - 1, rSlot.top());
-      p->setPen(g.light());
+      p->setPen(pal.light());
       p->drawLine(rSlot.x() + 1, rSlot.bottom(),
       rThumb.left() - 1, rSlot.bottom());
   
       p->fillRect(rSlot.x() + 1, rSlot.y() + 1, dLeft - ds -1,
-      rSlot.height() -2, QBrush(Qt::black));
-  
+      rSlot.height() -2, QBrush(pal.currentColorGroup() == QPalette::Disabled ? 
+                                 pal.color(QPalette::Disabled, QPalette::WindowText) : Qt::black));
   }
     }
 
@@ -366,22 +365,23 @@ void Slider::drawHsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
   if (lPos <= rBound.right())
      p->fillRect(lPos, rSlot.y() , rBound.right() - lPos + 1, ws ,brBack);
 
-  p->setPen(g.dark());
+  p->setPen(pal.dark());
   if (rSlot.right() > rThumb.right())
   {
       p->drawLine(rThumb.right() + 1, rSlot.top(), rSlot.right(), rSlot.top());
-      p->setPen(g.light());
+      p->setPen(pal.light());
       p->drawLine(rSlot.right(), rSlot.bottom(), rSlot.right(), rSlot.top() + 1);
   }
 
   if (rSlot.right() > rThumb.right() + 1)
   {
-      p->setPen(g.light());
+      p->setPen(pal.light());
       p->drawLine(rThumb.right() + 1, rSlot.bottom(),
       rSlot.right() -1, rSlot.bottom());
       p->fillRect(rThumb.right() + 1, rSlot.y() + 1,
       rSlot.right() - rThumb.right() - 1,
-      rSlot.height() -2, QBrush(Qt::black));
+      rSlot.height() -2, QBrush(pal.currentColorGroup() == QPalette::Disabled ? 
+                                 pal.color(QPalette::Disabled, QPalette::WindowText) : Qt::black));
   }
     }
 
@@ -409,7 +409,7 @@ void Slider::drawVsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
     int ws, ds, dTop;
     int lPos, hPos;
     QRect rSlot;
-    const QColorGroup &g = colorGroup();
+    const QPalette& pal = palette();
 
     ws = rBound.width();
     if ((ws / 2) * 2 != ws)
@@ -434,7 +434,7 @@ void Slider::drawVsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
      p->fillRect(rSlot.x(),rBound.y(), ws,
            hPos - rBound.top(),brBack);
 
-  p->setPen(g.dark());
+  p->setPen(pal.dark());
   if (rSlot.top() < rThumb.top())
      p->drawLine(rSlot.left(), rSlot.top(), rSlot.right(), rSlot.top());
 
@@ -442,12 +442,13 @@ void Slider::drawVsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
   if (rSlot.top() < rThumb.top() - 1)
   {
       p->drawLine(rSlot.left(), rThumb.top() - 1, rSlot.left(), rSlot.top());
-      p->setPen(g.light());
+      p->setPen(pal.light());
       p->drawLine(rSlot.right(), rSlot.top() + 1, rSlot.right(),
       rThumb.top() - 1);
   
       p->fillRect(rSlot.x() + 1, rSlot.y() + 1, rSlot.width() - 2,
-      dTop - ds -1, QBrush(Qt::black));
+      dTop - ds -1, QBrush(pal.currentColorGroup() == QPalette::Disabled ? 
+                                 pal.color(QPalette::Disabled, QPalette::WindowText) : Qt::black));
   
   }
     }
@@ -464,22 +465,23 @@ void Slider::drawVsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
   if (lPos <= rBound.bottom())
      p->fillRect(rSlot.left(), lPos, ws, rBound.bottom() - lPos + 1, brBack);
 
-  p->setPen(g.dark());
+  p->setPen(pal.dark());
   if (rSlot.bottom() > rThumb.bottom())
   {
       p->drawLine(rSlot.left(), rThumb.bottom() + 1, rSlot.left(), rSlot.bottom());
-      p->setPen(g.light());
+      p->setPen(pal.light());
       p->drawLine(rSlot.left() * 1, rSlot.bottom(), rSlot.right(), rSlot.bottom());
   }
 
   if (rSlot.bottom() > rThumb.bottom() + 1)
   {
-      p->setPen(g.light());
+      p->setPen(pal.light());
       p->drawLine(rSlot.right(), rThumb.bottom() + 1, rSlot.right(),
       rSlot.bottom());
       p->fillRect(rSlot.left() + 1, rThumb.bottom() + 1,
       rSlot.width() - 2, rSlot.bottom() - rThumb.bottom() - 1,
-      QBrush(Qt::black));
+        QBrush(pal.currentColorGroup() == QPalette::Disabled ? 
+                                 pal.color(QPalette::Disabled, QPalette::WindowText) : Qt::black));
   }
     }
 
@@ -663,7 +665,7 @@ void Slider::paintEvent(QPaintEvent* /*e*/)
 
       if (p.begin(this)) {
             if (d_scalePos != None) {
-                  p.fillRect(this->rect(), this->backgroundColor());
+                  p.fillRect(rect(), palette().window());
                   d_scale.draw(&p);
                   }
             drawSlider(&p, d_sliderRect);
