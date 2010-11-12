@@ -86,7 +86,8 @@ class AudioMixerApp : public QMainWindow {
             NO_UPDATE, UPDATE_ALL, UPDATE_MIDI, STRIP_INSERTED, STRIP_REMOVED
             };
       void updateMixer(UpdateAction);
-
+      int computeWidth();
+      
    signals:
       void closed();
 
