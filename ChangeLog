@@ -1,8 +1,9 @@
 11.11.2010
         - WIP: Mixer and strips re-designed to be theme/font friendly - no more fixed STRIP_WIDTH. (Tim)
         - Fixed Slider, Knob and DoubleEntry classes. Knob anti-aliasing applied (where allowed).
+        - Transport handle colour fixed - added setAutoFillBackground(true). 
 10.11.2010
-        - Ported transport window to Qt4. The handle color needs a fix (Orcan)
+        - Ported transport window to Qt4. The handle color needs a fix (Orcan) 
 09.11.2010
         - Fixed audio and midi strips and converted to Qt4. Looks OK now, but will be better... (Tim)
           TODO: Convert Slider, Knob, EffectRack, ComboBox classes etc. (After that the strips will be perfect.)
