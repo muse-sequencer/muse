@@ -33,7 +33,7 @@ class TLLayout : public QLayout
 
     public:
       //TLLayout(QWidget *parent) : QLayout(parent, 0, -1) {}
-      TLLayout(QWidget *parent) : QLayout(parent) { setMargin(0); setSpacing(0); }
+      TLLayout(QWidget *parent) : QLayout(parent) { setMargin(0); setSpacing(-1); }
       ~TLLayout() { clear(); }
 
       void addItem(QLayoutItem *item) { ilist.append(item); }
