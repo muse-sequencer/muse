@@ -221,6 +221,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       split  = new Splitter(Qt::Horizontal, this, "split");
       split->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       box->addWidget(split, 1000);
+      //split->setHandleWidth(10);
 
       QWidget* tracklist = new QWidget(split);
       split->setResizeMode(tracklist, QSplitter::KeepSize);
@@ -330,6 +331,9 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       QGridLayout* egrid  = new QGridLayout(editor);
       egrid->setColStretch(0, 50);
       egrid->setRowStretch(2, 50);
+      //egrid->setContentsMargins(0, 0, 0, 0);  
+      egrid->setMargin(0);  
+      egrid->setSpacing(0);  
 
       time = new MTScale(&_raster, editor, xscale);
       time->setOrigin(-offset, 0);
