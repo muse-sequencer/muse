@@ -1,10 +1,10 @@
 //===========================================================================
 //
-//    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
+//    DeicsOnze2 an emulator of the YAMAHA DX11 synthesizer
 //
 //    Version 0.5.5
 //
-//
+//    deicsonzefilter.h
 //
 //
 //  Copyright (c) 2004-2006 Nil Geisweiller
@@ -27,14 +27,33 @@
 // 02111-1307, USA or point your web browser to http://www.gnu.org.
 //===========================================================================
 
-#ifndef __DEICSONZEPLUGIN_H
-#define __DEICSONZEPLUGIN_H
+#ifndef __DEICSONZE2FILTER_H
+#define __DEICSONZE2FILTER_H
 
-#include "deicsonze.h"
-#include "deicsonzegui.h"
-#include "plugins/pandelay/pandelaymodel.h"
+#include <math.h>
 
-class DeicsOnze;
-class DeicsOnzeGui;
+class LowFilter {
+ private:
+  int _samplerate;
 
-#endif
+  double _cutoff; //frequency cutoff
+  float _a;
+  float _b;
+
+  float _li; //last left input sample
+  float _ri; //last right input sample
+  float _lo; //last left output sample
+  float _ro; //last right output sample
+ public:
+  LowFilter();
+  ~LowFilter() {}
+
+  void setSamplerate(int sr);
+  void setCutoff(double cut);
+  //int getSamplerate();
+  //double getCutoff();
+
+  void process(float* leftSamples, float* RightSamples, unsigned n);
+};
+
+#endif /* __DEICSONZE2FILTER_H */

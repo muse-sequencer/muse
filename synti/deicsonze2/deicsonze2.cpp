@@ -1,6 +1,6 @@
 //===========================================================================
 //
-//    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
+//    DeicsOnze2 an emulator of the YAMAHA DX11 synthesizer
 //
 //    Version 0.5.5
 //
@@ -36,20 +36,20 @@
 #include "libsynti/mess.h"
 #include "muse/plugin.h"
 #include "muse/midictrl.h"
-#include "deicsonze.h"
+#include "deicsonze2.h"
 #include "config.h"
 
 #define ABS(x) (x>=0?x:-x)
 
 
-float DeicsOnze::waveTable[NBRWAVES][RESOLUTION];
-int DeicsOnze::useCount = 0;
+float DeicsOnze2::waveTable[NBRWAVES][RESOLUTION];
+int DeicsOnze2::useCount = 0;
 
 //---------------------------------------------------------
-//   DeicsOnze
+//   DeicsOnze2
 //---------------------------------------------------------
 
-DeicsOnze::DeicsOnze() : Mess(2) {
+DeicsOnze2::DeicsOnze2() : Mess(2) {
   if (useCount++ == 0) {
     // create sinus wave table, W1
     for(int i = 0; i < RESOLUTION; i++)
@@ -114,18 +114,18 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _saveOnlyUsed = true;
   _saveConfig = true;
   _isInitSet = true; //false if an initial bank must be download
-  _initSetPath = INSTPREFIX "/share/muse-" VERSION "/presets/deicsonze/SutulaBank.dei";
-  //"/usr/local/share/muse-1.0pre1/presets/deicsonze/SutulaBank.dei";
+  _initSetPath = INSTPREFIX "/share/muse-" VERSION "/presets/deicsonze2/SutulaBank.dei";
+  //"/usr/local/share/muse-1.0pre1/presets/deicsonze2/SutulaBank.dei";
   //TODO
-  //INSTPREFIX + "/share/" + PACKAGEVERSION + "/presets/deicsonze/ARCH_ALIN";
+  //INSTPREFIX + "/share/" + PACKAGEVERSION + "/presets/deicsonze2/ARCH_ALIN";
   _isBackgroundPix = true; //false if an initial bank must be download
   _backgroundPixPath = INSTPREFIX "/share/muse-" VERSION "/wallpapers/paper2.jpg";
   //"/usr/local/share/muse-1.0pre1/wallpapers/abstractdeicsonze1.jpg";
 
   //initialization GUI
-  _gui = new DeicsOnzeGui(this);
+  _gui = new DeicsOnze2Gui(this);
   // TODO _gui->hide();   // to avoid flicker during MusE startup
-  // TODO _gui->setWindowTitle(QString("DeicsOnze"));
+  // TODO _gui->setWindowTitle(QString("DeicsOnze2"));
 
   //FX
   Plugin* p;
@@ -210,10 +210,10 @@ DeicsOnze::DeicsOnze() : Mess(2) {
 }
 
 //---------------------------------------------------------
-//   ~DeicsOnze
+//   ~DeicsOnze2
 //---------------------------------------------------------
 
-DeicsOnze::~DeicsOnze()
+DeicsOnze2::~DeicsOnze2()
 {
   //if (--useCount == 0)
   //delete[] sine_table;
@@ -235,14 +235,14 @@ DeicsOnze::~DeicsOnze()
 //---------------------------------------------------------
 // getSinusWaveTable
 //---------------------------------------------------------
-float* DeicsOnze::getSinusWaveTable() {
+float* DeicsOnze2::getSinusWaveTable() {
   return waveTable[W1];
 }
 
 //---------------------------------------------------------
 //   guiVisible
 //---------------------------------------------------------
-bool DeicsOnze::guiVisible() const
+bool DeicsOnze2::guiVisible() const
 {
     return _gui->isVisible();
 }
@@ -250,7 +250,7 @@ bool DeicsOnze::guiVisible() const
 //---------------------------------------------------------
 // showGui
 //---------------------------------------------------------
-void DeicsOnze::showGui(bool val)
+void DeicsOnze2::showGui(bool val)
 {
     _gui->setShown(val);
 }
@@ -259,7 +259,7 @@ void DeicsOnze::showGui(bool val)
 //   getGeometry
 //---------------------------------------------------------
 
-void DeicsOnze::getGeometry(int* x, int* y, int* w, int* h) const {
+void DeicsOnze2::getGeometry(int* x, int* y, int* w, int* h) const {
   QPoint pos(_gui->pos());
   QSize size(_gui->size());
   *x = pos.x();
@@ -268,7 +268,7 @@ void DeicsOnze::getGeometry(int* x, int* y, int* w, int* h) const {
   *h = size.height();
 }
 
-void DeicsOnze::setSampleRate(int sr) {
+void DeicsOnze2::setSampleRate(int sr) {
   Mess::setSampleRate(sr);
   _dryFilter->setSamplerate(sr);
   _chorusFilter->setSamplerate(sr);
@@ -281,7 +281,7 @@ void DeicsOnze::setSampleRate(int sr) {
 //   setGeometry
 //---------------------------------------------------------
 
-void DeicsOnze::setGeometry(int x, int y, int w, int h) {
+void DeicsOnze2::setGeometry(int x, int y, int w, int h) {
     _gui->resize(QSize(w, h));
     _gui->move(QPoint(x, y));
 }
@@ -289,7 +289,7 @@ void DeicsOnze::setGeometry(int x, int y, int w, int h) {
 //---------------------------------------------------------
 // initCtrls
 //---------------------------------------------------------
-void DeicsOnze::initCtrls() {
+void DeicsOnze2::initCtrls() {
     int i=0;
     for(int k=0; k<NBROP; k++) {
 	_ctrl[i].name=(QString(ARSTR)+QString::number(k+1)).toAscii().data();
@@ -535,7 +535,7 @@ void DeicsOnze::initCtrls() {
 //---------------------------------------------------------
 // initGlobal
 //---------------------------------------------------------
-void DeicsOnze::initGlobal() {
+void DeicsOnze2::initGlobal() {
   setMasterVol(INITMASTERVOL);
   _global.quality = high;
   setFilter(false);
@@ -549,12 +549,12 @@ void DeicsOnze::initGlobal() {
   initChannels();
 }
 
-void DeicsOnze::initChannels() {
+void DeicsOnze2::initChannels() {
   for(int c=0; c<NBRCHANNELS; c++) initChannel(c);
   _global.channel[0].isEnable = true; //the first one is enable
 }
 
-void DeicsOnze::initChannel(int c) {
+void DeicsOnze2::initChannel(int c) {
   _global.channel[c].isEnable = false;
   _global.channel[c].sustain = false;
   _global.channel[c].volume = DEFAULTVOL;
@@ -578,7 +578,7 @@ void DeicsOnze::initChannel(int c) {
 //---------------------------------------------------------
 // resetVoices
 //---------------------------------------------------------
-void DeicsOnze::resetVoices() {
+void DeicsOnze2::resetVoices() {
   for(int c = 0; c<NBRCHANNELS; c++) initVoices(c);
   //take care of this if initVoices() changes
 }
@@ -586,7 +586,7 @@ void DeicsOnze::resetVoices() {
 //---------------------------------------------------------
 // initVoice
 //---------------------------------------------------------
-void DeicsOnze::initVoice(int c /*channel*/, int v) {
+void DeicsOnze2::initVoice(int c /*channel*/, int v) {
   _global.channel[c].voices[v].hasAttractor = false;
   _global.channel[c].voices[v].isOn = false;
   _global.channel[c].voices[v].keyOn = false;
@@ -599,7 +599,7 @@ void DeicsOnze::initVoice(int c /*channel*/, int v) {
 //---------------------------------------------------------
 // initVoices
 //---------------------------------------------------------
-void DeicsOnze::initVoices(int c) {
+void DeicsOnze2::initVoices(int c) {
   for(int v=0; v<MAXNBRVOICES; v++) {
     initVoice(c, v);
     _global.channel[c].lastVoiceKeyOn.clear();
@@ -609,13 +609,13 @@ void DeicsOnze::initVoices(int c) {
 //--------------------------------------------------------
 // findPreset findSubcategory findCategory
 //--------------------------------------------------------
-Preset* DeicsOnze::findPreset(int hbank, int lbank, int prog) const {
+Preset* DeicsOnze2::findPreset(int hbank, int lbank, int prog) const {
   return _set->findPreset(hbank, lbank, prog);
 }
-Subcategory* DeicsOnze::findSubcategory(int hbank, int lbank) const {
+Subcategory* DeicsOnze2::findSubcategory(int hbank, int lbank) const {
   return _set->findSubcategory(hbank, lbank);
 }
-Category* DeicsOnze::findCategory(int hbank) const {
+Category* DeicsOnze2::findCategory(int hbank) const {
   return _set->findCategory(hbank);
 }
 //---------------------------------------------------------
@@ -658,7 +658,7 @@ inline double getPitchEnvCoefInctInct(int pl1, int pl2, int pr, double sr) {
 //---------------------------------------------------------
 // existsKeyOn
 //---------------------------------------------------------
-bool DeicsOnze::existsKeyOn(int ch) {
+bool DeicsOnze2::existsKeyOn(int ch) {
   return !_global.channel[ch].lastVoiceKeyOn.empty();
 }
 
@@ -688,7 +688,7 @@ inline double delay2Time(int d) {
 //----------------------------------------------------------------
 // setNbrVoices
 //----------------------------------------------------------------
-void DeicsOnze::setNbrVoices(int c, int nv) {
+void DeicsOnze2::setNbrVoices(int c, int nv) {
   nv=(nv>MAXNBRVOICES?MAXNBRVOICES:(nv<1?1:nv));
   //we assume that any voices
   //that is not included in the active voices is properly initialized
@@ -700,13 +700,13 @@ void DeicsOnze::setNbrVoices(int c, int nv) {
 //----------------------------------------------------------------
 // setMasterVol
 //----------------------------------------------------------------
-void DeicsOnze::setMasterVol(int mv) {
+void DeicsOnze2::setMasterVol(int mv) {
   _global.masterVolume=level2amp(mv); //watch out that MAXMASTERVOLUME==255
 }
 //----------------------------------------------------------------
 // setChannelEnable
 //----------------------------------------------------------------
-void DeicsOnze::setChannelEnable(int c, bool e) {
+void DeicsOnze2::setChannelEnable(int c, bool e) {
   _global.channel[c].isEnable = e;
   setLfo(c);
 }
@@ -714,11 +714,11 @@ void DeicsOnze::setChannelEnable(int c, bool e) {
 //----------------------------------------------------------------
 // setChannelVol
 //----------------------------------------------------------------
-void DeicsOnze::setChannelVol(int c, int v) {
+void DeicsOnze2::setChannelVol(int c, int v) {
   _global.channel[c].volume = v;
 }
 
-void DeicsOnze::applyChannelAmp(int c) {
+void DeicsOnze2::applyChannelAmp(int c) {
   _global.channel[c].ampLeft = 
     level2amp(_global.channel[c].volume)
     * ((double)(MAXCHANNELPAN - _global.channel[c].pan)
@@ -732,108 +732,108 @@ void DeicsOnze::applyChannelAmp(int c) {
 //----------------------------------------------------------------
 // setChannelPan
 //----------------------------------------------------------------
-void DeicsOnze::setChannelPan(int c, int p) {
+void DeicsOnze2::setChannelPan(int c, int p) {
   _global.channel[c].pan = p;
 }
 //----------------------------------------------------------------
 // setChannelDetune
 //----------------------------------------------------------------
-void DeicsOnze::setChannelDetune(int c, int p) {
+void DeicsOnze2::setChannelDetune(int c, int p) {
   _global.channel[c].detune = p;
 }
 //----------------------------------------------------------------
 // setChannelBrightness
 //----------------------------------------------------------------
-void DeicsOnze::setChannelBrightness(int c, int b) {
+void DeicsOnze2::setChannelBrightness(int c, int b) {
   _global.channel[c].brightness = b;
 }
 //----------------------------------------------------------------
 // setChannelModulation
 //----------------------------------------------------------------
-void DeicsOnze::setChannelModulation(int c, int m) {
+void DeicsOnze2::setChannelModulation(int c, int m) {
   _global.channel[c].modulation = m;
 }
 //----------------------------------------------------------------
 // setChannelAttack
 //----------------------------------------------------------------
-void DeicsOnze::setChannelAttack(int c, int a) {
+void DeicsOnze2::setChannelAttack(int c, int a) {
   _global.channel[c].attack = a;
 }
 //----------------------------------------------------------------
 // setChannelRelease
 //----------------------------------------------------------------
-void DeicsOnze::setChannelRelease(int c, int r) {
+void DeicsOnze2::setChannelRelease(int c, int r) {
   _global.channel[c].release = r;
 }
 //----------------------------------------------------------------
 // setChannelReverb
 //----------------------------------------------------------------
-void DeicsOnze::setChannelReverb(int c, int r) {
+void DeicsOnze2::setChannelReverb(int c, int r) {
   _global.channel[c].reverbAmount = (float)lowlevel2amp(r);
 }
 //----------------------------------------------------------------
 // setChannelChorus
 //----------------------------------------------------------------
-void DeicsOnze::setChannelChorus(int c, int val) {
+void DeicsOnze2::setChannelChorus(int c, int val) {
   _global.channel[c].chorusAmount = (float)lowlevel2amp(val);
 }
 //----------------------------------------------------------------
 // setChannelDelay
 //----------------------------------------------------------------
-void DeicsOnze::setChannelDelay(int c, int val) {
+void DeicsOnze2::setChannelDelay(int c, int val) {
   _global.channel[c].delayAmount = (float)lowlevel2amp(val);
 }
 
 //----------------------------------------------------------------
 // setChorusReturn
 //----------------------------------------------------------------
-void DeicsOnze::setChorusReturn(int val) {
+void DeicsOnze2::setChorusReturn(int val) {
   _global.chorusReturn = 2.0*(float)level2amp(val); //beware MAXFXRETURN==255
 }
 
 //----------------------------------------------------------------
 // setReverbReturn
 //----------------------------------------------------------------
-void DeicsOnze::setReverbReturn(int val) {
+void DeicsOnze2::setReverbReturn(int val) {
   _global.reverbReturn = 2.0*(float)level2amp(val); //beware MAXFXRETURN==255
 }
 
 //----------------------------------------------------------------
 // setDelayReturn
 //----------------------------------------------------------------
-void DeicsOnze::setDelayReturn(int val) {
+void DeicsOnze2::setDelayReturn(int val) {
   _global.delayReturn = 2.0*(float)level2amp(val); //beware MAXFXRETURN==255
 }
 
 //----------------------------------------------------------------
 // getNbrVoices
 //----------------------------------------------------------------
-int DeicsOnze::getNbrVoices(int c) const {
+int DeicsOnze2::getNbrVoices(int c) const {
   return(_global.channel[c].nbrVoices);
 }
 //----------------------------------------------------------------
 // getMasterVol
 //----------------------------------------------------------------
-int DeicsOnze::getMasterVol(void) const {
+int DeicsOnze2::getMasterVol(void) const {
   return(amp2level(_global.masterVolume));
 }
 //----------------------------------------------------------------
 // getFilter
 //----------------------------------------------------------------
-bool DeicsOnze::getFilter(void) const {
+bool DeicsOnze2::getFilter(void) const {
   return _global.filter;
 }
 //----------------------------------------------------------------
 // getChannelEnable
 //----------------------------------------------------------------
-bool DeicsOnze::getChannelEnable(int c) const {
+bool DeicsOnze2::getChannelEnable(int c) const {
   return _global.channel[c].isEnable;
 }
 
 //----------------------------------------------------------------
 // getChannelVol
 //----------------------------------------------------------------
-int DeicsOnze::getChannelVol(int c) const { //TODO : to see if correct
+int DeicsOnze2::getChannelVol(int c) const { //TODO : to see if correct
   //return((int)(MAX(_global.channel[c].ampLeft, _global.channel[c].ampRight)
   //*(double)MAXCHANNELVOLUME));
   return(_global.channel[c].volume);
@@ -841,80 +841,80 @@ int DeicsOnze::getChannelVol(int c) const { //TODO : to see if correct
 //----------------------------------------------------------------
 // getChannelPan
 //----------------------------------------------------------------
-int DeicsOnze::getChannelPan(int c) const {
+int DeicsOnze2::getChannelPan(int c) const {
   return(_global.channel[c].pan);
 }
 //----------------------------------------------------------------
 // setChannelDetune
 //----------------------------------------------------------------
-int DeicsOnze::getChannelDetune(int c) const {
+int DeicsOnze2::getChannelDetune(int c) const {
     return _global.channel[c].detune;
 }
 //----------------------------------------------------------------
 // getChannelBrightness
 //----------------------------------------------------------------
-int DeicsOnze::getChannelBrightness(int c) const {
+int DeicsOnze2::getChannelBrightness(int c) const {
   return(_global.channel[c].brightness);
 }
 //----------------------------------------------------------------
 // getChannelModulation
 //----------------------------------------------------------------
-int DeicsOnze::getChannelModulation(int c) const {
+int DeicsOnze2::getChannelModulation(int c) const {
   return(_global.channel[c].modulation);
 }
 //----------------------------------------------------------------
 // getChannelAttack
 //----------------------------------------------------------------
-int DeicsOnze::getChannelAttack(int c) const {
+int DeicsOnze2::getChannelAttack(int c) const {
   return(_global.channel[c].attack);
 }
 //----------------------------------------------------------------
 // getChannelRelease
 //----------------------------------------------------------------
-int DeicsOnze::getChannelRelease(int c) const {
+int DeicsOnze2::getChannelRelease(int c) const {
   return(_global.channel[c].release);
 }
 //----------------------------------------------------------------
 // getChannelReverb
 //----------------------------------------------------------------
-int DeicsOnze::getChannelReverb(int c) const {
+int DeicsOnze2::getChannelReverb(int c) const {
   return(amp2lowlevel(_global.channel[c].reverbAmount));
 }
 //----------------------------------------------------------------
 // getChannelChorus
 //----------------------------------------------------------------
-int DeicsOnze::getChannelChorus(int c) const {
+int DeicsOnze2::getChannelChorus(int c) const {
   return(amp2lowlevel(_global.channel[c].chorusAmount));
 }
 //----------------------------------------------------------------
 // getChannelDelay
 //----------------------------------------------------------------
-int DeicsOnze::getChannelDelay(int c) const {
+int DeicsOnze2::getChannelDelay(int c) const {
   return(amp2lowlevel(_global.channel[c].delayAmount));
 }
 //----------------------------------------------------------------
 // getChorusReturn
 //----------------------------------------------------------------
-int DeicsOnze::getChorusReturn() const {
+int DeicsOnze2::getChorusReturn() const {
   return(amp2level(_global.chorusReturn/2.0));
 }
 //----------------------------------------------------------------
 // getReverbReturn
 //----------------------------------------------------------------
-int DeicsOnze::getReverbReturn() const {
+int DeicsOnze2::getReverbReturn() const {
   return(amp2level(_global.reverbReturn/2.0));
 }
 //----------------------------------------------------------------
 // getReverbReturn
 //----------------------------------------------------------------
-int DeicsOnze::getDelayReturn() const {
+int DeicsOnze2::getDelayReturn() const {
   return(amp2level(_global.delayReturn/2.0));
 }
 
 //----------------------------------------------------------------
 // setLfo
 //----------------------------------------------------------------
-void DeicsOnze::setLfo(int c/*channel*/)
+void DeicsOnze2::setLfo(int c/*channel*/)
 {
     double x;
     x=(double)_preset[c]->lfo.speed;
@@ -972,7 +972,7 @@ void DeicsOnze::setLfo(int c/*channel*/)
 //-----------------------------------------------------------------
 // setOutLevel
 //-----------------------------------------------------------------
-void DeicsOnze::setOutLevel(int c, int k) {
+void DeicsOnze2::setOutLevel(int c, int k) {
   for(int v=0; v<_global.channel[c].nbrVoices; v++) {
     if(_global.channel[c].voices[v].op[k].envState!=OFF) {
       _global.channel[c].voices[v].op[k].amp =
@@ -982,7 +982,7 @@ void DeicsOnze::setOutLevel(int c, int k) {
     }
   }
 }
-void DeicsOnze::setOutLevel(int c) {
+void DeicsOnze2::setOutLevel(int c) {
   for(int k=0; k<NBROP; k++) {
     setOutLevel(c, k);
   }
@@ -990,7 +990,7 @@ void DeicsOnze::setOutLevel(int c) {
 //-----------------------------------------------------------------
 // setEnvAttack
 //-----------------------------------------------------------------
-void DeicsOnze::setEnvAttack(int c, int v, int k) {
+void DeicsOnze2::setEnvAttack(int c, int v, int k) {
   if(_global.channel[c].voices[v].op[k].envState==ATTACK)
     _global.channel[c].voices[v].op[k].envInct=
       (_preset[c]->eg[k].ar==0?0:
@@ -998,31 +998,31 @@ void DeicsOnze::setEnvAttack(int c, int v, int k) {
 			       *_global.deiSampleRate))
       *coefAttack(_global.channel[c].attack);
 }
-void DeicsOnze::setEnvAttack(int c, int k) {
+void DeicsOnze2::setEnvAttack(int c, int k) {
   for(int v=0; v<_global.channel[c].nbrVoices; v++) setEnvAttack(c, v, k);
 }
-void DeicsOnze::setEnvAttack(int c) {
+void DeicsOnze2::setEnvAttack(int c) {
   for(int k=0; k<NBROP; k++) setEnvAttack(c, k);
 }
 //-----------------------------------------------------------------
 // setEnvRelease
 //-----------------------------------------------------------------
-void DeicsOnze::setEnvRelease(int c, int v, int k) {
+void DeicsOnze2::setEnvRelease(int c, int v, int k) {
   if(_global.channel[c].voices[v].op[k].envState==RELEASE)
     _global.channel[c].voices[v].op[k].coefVLevel =
       envRR2coef(_preset[c]->eg[k].rr, _global.deiSampleRate,
 		 _global.channel[c].release);
 }
-void DeicsOnze::setEnvRelease(int c, int k) {
+void DeicsOnze2::setEnvRelease(int c, int k) {
   for(int v=0; v<_global.channel[c].nbrVoices; v++) setEnvRelease(c, v, k);
 }
-void DeicsOnze::setEnvRelease(int c) {
+void DeicsOnze2::setEnvRelease(int c) {
   for(int k=0; k<NBROP; k++) setEnvRelease(c, k);
 }  
 //-----------------------------------------------------------------
 // setPitchEnvRelease
 //-----------------------------------------------------------------
-void DeicsOnze::setPitchEnvRelease(int c, int v) {
+void DeicsOnze2::setPitchEnvRelease(int c, int v) {
   if(isPitchEnv(&_preset[c]->pitchEg)) {
     if(_global.channel[c].voices[v].pitchEnvCoefInct
        > _global.channel[c].voices[v].pitchEnvCoefInctPhase1) {
@@ -1048,7 +1048,7 @@ void DeicsOnze::setPitchEnvRelease(int c, int v) {
 //-----------------------------------------------------------------
 // setQuality
 //-----------------------------------------------------------------
-void DeicsOnze::setQuality(Quality q) {
+void DeicsOnze2::setQuality(Quality q) {
   _global.quality = q;
   switch(q) {
   case high :
@@ -1082,13 +1082,13 @@ void DeicsOnze::setQuality(Quality q) {
 //-----------------------------------------------------------------
 // setFilter
 //-----------------------------------------------------------------
-void DeicsOnze::setFilter(bool f) {
+void DeicsOnze2::setFilter(bool f) {
   _global.filter = f;
 }
 //-----------------------------------------------------------------
 // brightness2Amp
 //-----------------------------------------------------------------
-double DeicsOnze::brightness2Amp(int c, int k) {
+double DeicsOnze2::brightness2Amp(int c, int k) {
   if(
      (k==1 && (_preset[c]->algorithm!=SIXTH || _preset[c]->algorithm!=SEVENTH
 	       || _preset[c]->algorithm!=EIGHTH))
@@ -1108,7 +1108,7 @@ double DeicsOnze::brightness2Amp(int c, int k) {
 //-----------------------------------------------------------------
 // setFeedback
 //-----------------------------------------------------------------
-void DeicsOnze::setFeedback(int c) {
+void DeicsOnze2::setFeedback(int c) {
   _global.channel[c].feedbackAmp =
     COEFFEEDBACK*exp(log(2)*(double)(_preset[c]->feedback-MAXFEEDBACK));
 }
@@ -1117,7 +1117,7 @@ void DeicsOnze::setFeedback(int c) {
 // setPreset
 //-----------------------------------------------------------------
 
-void DeicsOnze::setPreset(int c) {
+void DeicsOnze2::setPreset(int c) {
     setFeedback(c);
     setLfo(c);
     setEnvAttack(c);
@@ -1200,7 +1200,7 @@ inline double coarseFine2Ratio(int c,int f) {
 //---------------------------------------------------------------
 // loadSet
 //---------------------------------------------------------------
-void DeicsOnze::loadSet(QString fileName) {
+void DeicsOnze2::loadSet(QString fileName) {
   // read the XML file and create DOM tree
   if(!fileName.isEmpty()) {
     QFile deicsonzeFile(fileName);
@@ -1241,7 +1241,7 @@ void DeicsOnze::loadSet(QString fileName) {
 	else printf("unsupported *.dei file version %s\n",
 		    version.toLatin1().data());
       }
-      else printf("DeicsOnze: %s not supported\n",
+      else printf("DeicsOnze2: %s not supported\n",
 		  e.tagName().toLatin1().data());
       node = node.nextSibling();
     }
@@ -1251,7 +1251,7 @@ void DeicsOnze::loadSet(QString fileName) {
 // loadSutulaPreset
 //---------------------------------------------------------------
 
-void DeicsOnze::loadSutulaPresets()
+void DeicsOnze2::loadSutulaPresets()
 {
     FILE* file;
     int v;
@@ -1273,9 +1273,9 @@ void DeicsOnze::loadSutulaPresets()
     nPreset=0;
 
     //QString presetPath(INSTPREFIX);
-    //presetPath += "/share/" PACKAGEVERSION "/presets/deicsonze/ARCH_ALIN";
+    //presetPath += "/share/" PACKAGEVERSION "/presets/deicsonze2/ARCH_ALIN";
 
-    QString presetPath("/home/a-lin/sources/svnMusEDev/lmuse/muse/synti/deicsonze/ARCH_ALIN");
+    QString presetPath("/home/a-lin/sources/svnMusEDev/lmuse/muse/synti/deicsonze2/ARCH_ALIN");
 
     file = fopen (presetPath.toLatin1().data(), "rt");
     if (file == NULL) {
@@ -1472,7 +1472,7 @@ void DeicsOnze::loadSutulaPresets()
 //  return the number of the voice which is the least aloud
 //  and is not is the ATTACK state
 //---------------------------------------------------------
-int DeicsOnze::minVolu2Voice(int c) {
+int DeicsOnze2::minVolu2Voice(int c) {
   int minVoice=0;
   double min=MAXVOLUME;
   for(int i=0; i<_global.channel[c].nbrVoices; i++)
@@ -1492,7 +1492,7 @@ int DeicsOnze::minVolu2Voice(int c) {
 // noteOff2Voice
 //  return the number of one off voice, MAXNBRVOICES otherwise
 //---------------------------------------------------------
-int DeicsOnze::noteOff2Voice(int c) {
+int DeicsOnze2::noteOff2Voice(int c) {
   int offVoice=MAXNBRVOICES;
   for(int i=0; i<_global.channel[c].nbrVoices; i++)
     offVoice = (_global.channel[c].voices[i].isOn
@@ -1506,7 +1506,7 @@ int DeicsOnze::noteOff2Voice(int c) {
 //  return the number of the voice which has the input
 //   pitch and is keyOn
 //---------------------------------------------------------
-int DeicsOnze::pitchOn2Voice(int c, int pitch) {
+int DeicsOnze2::pitchOn2Voice(int c, int pitch) {
   int pitchVoice=MAXNBRVOICES;
   for(int i=0; i<_global.channel[c].nbrVoices; i++) {
     if(_global.channel[c].voices[i].pitch==
@@ -1951,7 +1951,7 @@ inline double env2AmpR(double sr, float* wt, Eg eg, OpVoice* p_opVoice) {
 // programSelect
 //---------------------------------------------------------
 
-void DeicsOnze::programSelect(int c, int hbank, int lbank, int prog) {
+void DeicsOnze2::programSelect(int c, int hbank, int lbank, int prog) {
     Preset* foundPreset;
     foundPreset=findPreset(hbank, lbank, prog);
     if (foundPreset) _preset[c]=foundPreset;
@@ -1967,14 +1967,14 @@ void DeicsOnze::programSelect(int c, int hbank, int lbank, int prog) {
 //---------------------------------------------------------
 //   setModulation
 //---------------------------------------------------------
-void DeicsOnze::setModulation(int c, int val) {
+void DeicsOnze2::setModulation(int c, int val) {
   _global.channel[c].modulation = (unsigned char) val;
   setLfo(c);
 }
 //---------------------------------------------------------
 //   setPitchBendCoef
 //---------------------------------------------------------
-void DeicsOnze::setPitchBendCoef(int c, int val) {
+void DeicsOnze2::setPitchBendCoef(int c, int val) {
   _global.channel[c].pitchBendCoef =
     exp(log(2)*((double)_preset[c]->function.pBendRange
 		/(double)MAXPBENDRANGE)
@@ -1984,7 +1984,7 @@ void DeicsOnze::setPitchBendCoef(int c, int val) {
 //---------------------------------------------------------
 // setSustain
 //---------------------------------------------------------
-void DeicsOnze::setSustain(int c, int val) {
+void DeicsOnze2::setSustain(int c, int val) {
   _global.channel[c].sustain=(val>64);
   if(!_global.channel[c].sustain)
     for(int i=0; i<_global.channel[c].nbrVoices; i++)
@@ -2014,7 +2014,7 @@ QColor readColor(QDomNode node)
 //---------------------------------------------------------
 // readConfiguration
 //---------------------------------------------------------
-void DeicsOnze::readConfiguration(QDomNode qdn) {
+void DeicsOnze2::readConfiguration(QDomNode qdn) {
   QColor textColor, backgroundColor, editTextColor, editBackgroundColor;
   while(!qdn.isNull()) {
     QDomElement qdEl = qdn.toElement();
@@ -2173,7 +2173,7 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
 //-----------------------------------------------------------
 // loadConfiguration
 //-----------------------------------------------------------
-void DeicsOnze::loadConfiguration(QString fileName) {
+void DeicsOnze2::loadConfiguration(QString fileName) {
   // read the XML file and create DOM tree
   if(!fileName.isEmpty()) {
     QFile confFile(fileName);
@@ -2205,7 +2205,7 @@ void DeicsOnze::loadConfiguration(QString fileName) {
 	else printf("unsupported *.dco file version %s\n",
 		    version.toLatin1().data());
       }
-      else printf("DeicsOnze: %s not supported\n",
+      else printf("DeicsOnze2: %s not supported\n",
 		  e.tagName().toLatin1().data());
       node = node.nextSibling();
     }
@@ -2215,7 +2215,7 @@ void DeicsOnze::loadConfiguration(QString fileName) {
 //---------------------------------------------------------
 // writeConfiguration
 //---------------------------------------------------------
-void DeicsOnze::writeConfiguration(AL::Xml* xml) {
+void DeicsOnze2::writeConfiguration(AL::Xml* xml) {
   QString str;
   xml->stag("deicsOnzeConfiguation version=\"1.0\"");
   //xml->intTag(NBRVOICESSTR, (int)_global.nbrVoices);
@@ -2247,7 +2247,7 @@ void DeicsOnze::writeConfiguration(AL::Xml* xml) {
 //---------------------------------------------------------
 // getInitData
 //---------------------------------------------------------
-void DeicsOnze::getInitData(int* length, const unsigned char** data) {
+void DeicsOnze2::getInitData(int* length, const unsigned char** data) {
   
   //write the set in a temporary file and in a QByteArray
   QTemporaryFile file;
@@ -2393,7 +2393,7 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
 //---------------------------------------------------------
 // parseInitData
 //---------------------------------------------------------
-void DeicsOnze::parseInitData(int length, const unsigned char* data) {
+void DeicsOnze2::parseInitData(int length, const unsigned char* data) {
   if(data[1]==SYSEX_INIT_DATA_VERSION) {
     //load global parameters
     //master volume
@@ -2757,11 +2757,11 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
 //---------------------------------------------------------
 // sysex
 //---------------------------------------------------------
-bool DeicsOnze::sysex(int length, const unsigned char* data) {
+bool DeicsOnze2::sysex(int length, const unsigned char* data) {
   sysex(length, data, false);
   return false;
 }
-bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
+bool DeicsOnze2::sysex(int length, const unsigned char* data, bool fromGui) {
   int cmd=data[0];
   int index;
   float f;
@@ -2967,11 +2967,11 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
 //---------------------------------------------------------
 //   setController
 //---------------------------------------------------------
-bool DeicsOnze::setController(int channel, int id, int val) {
+bool DeicsOnze2::setController(int channel, int id, int val) {
     setController(channel, id, val, false);
     return false;
 }
-bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
+bool DeicsOnze2::setController(int ch, int ctrl, int val, bool fromGui) {
   int deiPan, k=0;
   if(_global.channel[ch].isEnable || ctrl==CTRL_CHANNELENABLE) {
     if(ctrl>=CTRL_AR && ctrl<CTRL_ALG) {
@@ -3576,7 +3576,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
 //   getPatchName
 //---------------------------------------------------------
 
-const char* DeicsOnze::getPatchName(int ch, int val, int) const {
+const char* DeicsOnze2::getPatchName(int ch, int val, int) const {
   if(_global.channel[ch].isEnable) {
     Preset* p_preset;
     int hbank = (val & 0xff0000) >> 16;
@@ -3599,7 +3599,7 @@ const char* DeicsOnze::getPatchName(int ch, int val, int) const {
 //---------------------------------------------------------
 //   getPatchInfo
 //---------------------------------------------------------
-const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* p) const {
+const MidiPatch* DeicsOnze2::getPatchInfo(int /*ch*/, const MidiPatch* p) const {
   Preset* preset = NULL;
   Subcategory* sub = NULL;
   Category* cat = NULL;
@@ -3701,7 +3701,7 @@ const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* p) const {
   \return 0 when done, otherwise return next desired controller index
 */
 //---------------------------------------------------------
-int DeicsOnze::getControllerInfo(int index, const char** name,
+int DeicsOnze2::getControllerInfo(int index, const char** name,
 				 int* controller, int* min, int* max)
 {
     if (index >= nbrCtrl) {
@@ -3719,7 +3719,7 @@ int DeicsOnze::getControllerInfo(int index, const char** name,
 //   playNote
 //    process note on
 //---------------------------------------------------------
-bool DeicsOnze::playNote(int ch, int pitch, int velo) {
+bool DeicsOnze2::playNote(int ch, int pitch, int velo) {
   int newVoice;
   int nO2V;
   int p2V;
@@ -3952,7 +3952,7 @@ inline double plusMod(double x, double y) {
 //   write
 //    synthesize n samples into buffer+offset
 //---------------------------------------------------------
-void DeicsOnze::process(float** buffer, int offset, int n) {
+void DeicsOnze2::process(float** buffer, int offset, int n) {
   //Process messages from the gui
   while (_gui->fifoSize()) {
     MidiPlayEvent ev = _gui->readEvent();
@@ -4337,15 +4337,15 @@ class QWidget;
 
 static Mess* instantiate(int sr, const char*)
 {
-    DeicsOnze* deicsonze = new DeicsOnze();
-    deicsonze->setSampleRate(sr);
-    return deicsonze;
+    DeicsOnze2* deicsonze2 = new DeicsOnze2();
+    deicsonze2->setSampleRate(sr);
+    return deicsonze2;
 }
 
 extern "C" {
     static MESS descriptor = {
-	"DeicsOnze",
-	"DeicsOnze FM DX11/TX81Z emulator",
+	"DeicsOnze2",
+	"DeicsOnze2 FM DX11/TX81Z emulator",
 	"0.5.5",      // version string
 	MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
 	instantiate

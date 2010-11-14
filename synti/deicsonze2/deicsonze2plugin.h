@@ -1,10 +1,10 @@
 //===========================================================================
 //
-//    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
+//    DeicsOnze2 an emulator of the YAMAHA DX11 synthesizer
 //
 //    Version 0.5.5
 //
-//    deicsonzefilter.cpp
+//
 //
 //
 //  Copyright (c) 2004-2006 Nil Geisweiller
@@ -27,41 +27,14 @@
 // 02111-1307, USA or point your web browser to http://www.gnu.org.
 //===========================================================================
 
-#include "deicsonzefilter.h"
+#ifndef __DEICSONZE2PLUGIN_H
+#define __DEICSONZE2PLUGIN_H
 
-LowFilter::LowFilter() {
-  _li = 0.0;
-  _ri = 0.0;
-  _lo = 0.0;
-  _ro = 0.0;
-}
+#include "deicsonze2.h"
+#include "deicsonze2gui.h"
+#include "plugins/pandelay/pandelaymodel.h"
 
-void LowFilter::setSamplerate(int sr) {
-  _samplerate = sr;
-}
+class DeicsOnze2;
+class DeicsOnze2Gui;
 
-void LowFilter::setCutoff(double cut) {
-  _cutoff = cut;
-  float w = 2.0 * (float)_samplerate;
-  float fCut = _cutoff * 2.0 * M_PI;
-  float norm = 1.0 / (fCut + w);
-  _a = fCut * norm;
-  _b = (w - fCut) * norm;
-}
-
-void LowFilter::process(float* leftSamples, float* rightSamples, unsigned n) {
-  float cl, cr;
-  for(unsigned i = 0; i < n; i++) {
-    cl = leftSamples[i];
-    cr = rightSamples[i];
-
-    leftSamples[i] = _a * (cl + _li) + _b * _lo;
-    rightSamples[i] = _a * (cr + _ri) + _b * _ro;
-
-    _li = cl;
-    _ri = cr;
-    _lo = leftSamples[i];
-    _ro = rightSamples[i];
-  }
-}
-
+#endif

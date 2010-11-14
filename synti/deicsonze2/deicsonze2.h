@@ -1,6 +1,6 @@
 //===========================================================================
 //
-//    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
+//    DeicsOnze2 an emulator of the YAMAHA DX11 synthesizer
 //
 //    Version 0.5.5
 //
@@ -28,19 +28,19 @@
 //===========================================================================
 
 
-#ifndef __DEICSONZE_H
-#define __DEICSONZE_H
+#ifndef __DEICSONZE2_H
+#define __DEICSONZE2_H
 
 #include <list>
 
-#include "deicsonzepreset.h"
-#include "deicsonzegui.h"
-#include "deicsonzeplugin.h"
-#include "deicsonzefilter.h"
+#include "deicsonze2preset.h"
+#include "deicsonze2gui.h"
+#include "deicsonze2plugin.h"
+#include "deicsonze2filter.h"
 #include "libsynti/mess.h"
 #include "muse/plugin.h"
 
-#define DEICSONZESTR "deicsonze"
+#define DEICSONZE2STR "deicsonze2"
 
 #define MAXPITCHBENDVALUE 8191
 
@@ -221,8 +221,8 @@ enum {
   NUM_CONFIGLENGTH = NUM_DELAY_LFO_DEPTH + sizeof(float)
 };
 
-class DeicsOnzeGui;
-class DeicsOnzePlugin;
+class DeicsOnze2Gui;
+class DeicsOnze2Plugin;
 
 //---------------------------------------------------------
 // outLevel2Amp, Amp for amplitude //between 0.0 and 2.0 or more
@@ -274,9 +274,9 @@ inline double coefAttack(unsigned char attack);
 inline double envRR2coef(int rr, double sr, unsigned char release);
 
 //--------------------------------------------------------
-// DeicsOnzeCtrl
+// DeicsOnze2Ctrl
 //--------------------------------------------------------
-struct DeicsOnzeCtlr
+struct DeicsOnze2Ctlr
 {
   std::string name;
   int num;
@@ -427,11 +427,11 @@ struct Global {
 };
 
 //---------------------------------------------------------
-//   DeicsOnze : DX11 emulator
+//   DeicsOnze2 : DX11 emulator
 //---------------------------------------------------------
 
-class DeicsOnze : public Mess {
-  DeicsOnzeGui* _gui;
+class DeicsOnze2 : public Mess {
+  DeicsOnze2Gui* _gui;
 
   static int useCount;
   static float waveTable[NBRWAVES][RESOLUTION];
@@ -458,7 +458,7 @@ class DeicsOnze : public Mess {
   bool _isBackgroundPix;
   bool _saveOnlyUsed;
   bool _saveConfig;
-  DeicsOnzeCtlr _ctrl[NBRCTRLS];
+  DeicsOnze2Ctlr _ctrl[NBRCTRLS];
   Global _global;
   Preset* _preset[NBRCHANNELS];
   Preset* _initialPreset;
@@ -595,9 +595,9 @@ class DeicsOnze : public Mess {
   virtual void getGeometry(int* x, int* y, int* w, int* h) const;
   virtual void setGeometry(int, int, int, int);
   
-  DeicsOnze();
-  ~DeicsOnze();
+  DeicsOnze2();
+  ~DeicsOnze2();
 };
 
 
-#endif /* __DEICSONZE_H */
+#endif /* __DEICSONZE2_H */

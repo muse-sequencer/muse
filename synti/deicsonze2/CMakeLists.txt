@@ -20,40 +20,40 @@
 
 include(${PROJECT_SOURCE_DIR}/pch.txt)
 
-QT4_WRAP_CPP ( deicsonze_mocs deicsonzegui.h )
-QT4_WRAP_UI (  deicsonze_uis deicsonzegui.ui )
+QT4_WRAP_CPP ( deicsonze2_mocs deicsonze2gui.h )
+QT4_WRAP_UI (  deicsonze2_uis deicsonze2gui.ui )
 
-add_library ( deicsonze SHARED
+add_library ( deicsonze2 SHARED
       ${PROJECT_BINARY_DIR}/all.h
       ${PROJECT_BINARY_DIR}/all-pic.h.pch
-      deicsonze.cpp
-      deicsonzepreset.cpp
-      deicsonzeplugin.cpp
-      deicsonzefilter.cpp
-      deicsonzegui.cpp
-      deicsonzegui.h
+      deicsonze2.cpp
+      deicsonze2preset.cpp
+      deicsonze2plugin.cpp
+      deicsonze2filter.cpp
+      deicsonze2gui.cpp
+      deicsonze2gui.h
 
-      ${deicsonze_mocs}
-      ${deicsonze_uis}
+      ${deicsonze2_mocs}
+      ${deicsonze2_uis}
       )
 
-target_link_libraries( deicsonze synti )
+target_link_libraries( deicsonze2 synti )
 
-# - tell cmake to name target deicsonze.so instead of
-#   libdeicsonze.so
+# - tell cmake to name target deicsonze2.so instead of
+#   libdeicsonze2.so
 # - use precompiled header files
 #
-set_target_properties ( deicsonze
+set_target_properties ( deicsonze2
    PROPERTIES PREFIX ""
    #COMPILE_FLAGS "-O2 -include ${PROJECT_BINARY_DIR}/all-pic.h"
    COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
    )
 
-target_link_libraries(deicsonze
+target_link_libraries(deicsonze2
       al awl synti
       ${QT_LIBRARIES}
       )
 
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ deicsonze )
+install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ deicsonze2 )
 
-install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/presets/deicsonze SutulaBank.dei )
+install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/presets/deicsonze2 SutulaBank.dei )
