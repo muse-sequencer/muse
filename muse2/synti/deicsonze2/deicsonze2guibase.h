@@ -1,13 +1,13 @@
 /****************************************************************************
-** Form interface generated from reading ui file 'deicsonzeguibase.ui'
+** Form interface generated from reading ui file 'deicsonze2guibase.ui'
 **
 ** Created: Thu Dec 24 07:50:17 2009
 **
 ** WARNING! All changes made in this file will be lost!
 ****************************************************************************/
 
-#ifndef DEICSONZEGUIBASE_H
-#define DEICSONZEGUIBASE_H
+#ifndef DEICSONZE2GUIBASE_H
+#define DEICSONZE2GUIBASE_H
 
 #include <qvariant.h>
 #include <qpixmap.h>
@@ -35,13 +35,13 @@ class QSlider;
 class QComboBox;
 class QCheckBox;
 
-class DeicsOnzeGuiBase : public QDialog
+class DeicsOnze2GuiBase : public QDialog
 {
     Q_OBJECT
 
 public:
-    DeicsOnzeGuiBase( QWidget* parent = 0, const char* name = 0, bool modal = FALSE, Qt::WFlags fl = 0 );
-    ~DeicsOnzeGuiBase();
+    DeicsOnze2GuiBase( QWidget* parent = 0, const char* name = 0, bool modal = FALSE, Qt::WFlags fl = 0 );
+    ~DeicsOnze2GuiBase();
 
     QTabWidget* deicsOnzeTabWidget;
     QWidget* TabPage;
@@ -309,4 +309,4 @@ private:
 
 };
 
-#endif // DEICSONZEGUIBASE_H
+#endif // DEICSONZE2GUIBASE_H

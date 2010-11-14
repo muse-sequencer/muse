@@ -1,6 +1,6 @@
 //===========================================================================
 //
-//    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
+//    DeicsOnze2 an emulator of the YAMAHA DX11 synthesizer
 //
 //    Version 0.5.5
 //
@@ -27,8 +27,8 @@
 // 02111-1307, USA or point your web browser to http://www.gnu.org.
 //===========================================================================
 
-#ifndef __DEICSONZEPRESET_H
-#define __DEICSONZEPRESET_H
+#ifndef __DEICSONZE2PRESET_H
+#define __DEICSONZE2PRESET_H
 
 #include <string>
 #include <vector>
@@ -564,4 +564,4 @@ class Set {
     }
 };
 
-#endif /* __DEICSONZE_H */
+#endif /* __DEICSONZE2PRESET_H */

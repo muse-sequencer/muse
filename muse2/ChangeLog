@@ -1,3 +1,5 @@
+14.11.2010
+	- renamed deicsonze2 files and classes with '2' suffixes
 12.11.2010
         - Fixed arranger alignment issues - set layout margins to zero. (Tim)
           TODO: Track list items aligned to canvas tracks are still off by one lousy vertical pixel.

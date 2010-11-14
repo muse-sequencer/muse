@@ -1,6 +1,6 @@
 //===========================================================================
 //
-//    DeicsOnze an emulator of the YAMAHA DX11 synthesizer
+//    DeicsOnze2 an emulator of the YAMAHA DX11 synthesizer
 //
 //    Version 0.5.5
 //
@@ -27,8 +27,8 @@
 // 02111-1307, USA or point your web browser to http://www.gnu.org.
 //===========================================================================
 
-#ifndef __DEICSONZEGUI_H
-#define __DEICSONZEGUI_H
+#ifndef __DEICSONZE2GUI_H
+#define __DEICSONZE2GUI_H
 
 #include <q3listview.h>
 //Added by qt3to4:
@@ -38,11 +38,11 @@
 #include <QPaintEvent>
 #include <vector>
 
-#include "deicsonze.h"
+#include "deicsonze2.h"
 
-#include "deicsonzepreset.h"
-#include "deicsonzeguibase.h"
-//#include "ui_deicsonzegui.h"
+#include "deicsonze2preset.h"
+#include "deicsonze2guibase.h"
+//#include "ui_deicsonze2gui.h"
 #include "libsynti/gui.h"
 //#include "awl/floatentry.h"
 //#include "awl/slider.h"
@@ -84,7 +84,7 @@
 #define ETCOLOR QColor(0, 150, 0) //edit text color
 #define EBCOLOR QColor(255, 255, 30) //edit background color
 
-class DeicsOnze;
+class DeicsOnze2;
 class QFramePitchEnvelope;
 class QFrameEnvelope;
 
@@ -123,9 +123,9 @@ class QTreePreset:public Q3ListViewItem {
 };
 
 //---------------------------------------------------------
-//   DeicsOnzeGui
+//   DeicsOnze2Gui
 //---------------------------------------------------------
-class DeicsOnzeGui : public QDialog, public DeicsOnzeGuiBase, public MessGui {
+class DeicsOnze2Gui : public QDialog, public DeicsOnze2GuiBase, public MessGui {
     bool _enabledPreset;
 
     QFramePitchEnvelope* pitchEnvelopeGraph;
@@ -496,7 +496,7 @@ class DeicsOnzeGui : public QDialog, public DeicsOnzeGuiBase, public MessGui {
     void updatePreset(void); //update gui following the current preset
     //void updateCurrentChannel(); //update gui channel attributes
     QString num3Digits(int);
-    DeicsOnzeGui(DeicsOnze*);
+    DeicsOnze2Gui(DeicsOnze2*);
 
     int _currentChannel;
 
@@ -506,7 +506,7 @@ class DeicsOnzeGui : public QDialog, public DeicsOnzeGuiBase, public MessGui {
     QColor* ebColor;//edit background color
     QColor* curColor;//current color
 
-    DeicsOnze* _deicsOnze;
+    DeicsOnze2* _deicsonze2;
 };
 
 class QFramePitchEnvelope:private Q3Frame {
@@ -519,9 +519,9 @@ class QFramePitchEnvelope:private Q3Frame {
   bool isP2linkP3Edit;
   bool isP3linkEndEdit;
  public:
-  DeicsOnzeGui* _deicsOnzeGui;
-  QFramePitchEnvelope(QWidget* parent, DeicsOnzeGui* dog):Q3Frame(parent){
-    _deicsOnzeGui = dog;
+  DeicsOnze2Gui* _deicsOnze2Gui;
+  QFramePitchEnvelope(QWidget* parent, DeicsOnze2Gui* dog):Q3Frame(parent){
+    _deicsOnze2Gui = dog;
     isStartlinkP1Edit=false;
     isP1linkP2Edit=false;
     isP2linkP3Edit=false;
@@ -548,9 +548,9 @@ class QFrameEnvelope:private Q3Frame {
   bool isD2linkRREdit;
   bool isRRlinkEndEdit;
  public:
-  DeicsOnzeGui* _deicsOnzeGui;
-  QFrameEnvelope(QWidget* parent, DeicsOnzeGui* dog, unsigned char k):Q3Frame(parent){
-    _deicsOnzeGui = dog;
+  DeicsOnze2Gui* _deicsonze2Gui;
+  QFrameEnvelope(QWidget* parent, DeicsOnze2Gui* dog, unsigned char k):Q3Frame(parent){
+    _deicsonze2Gui = dog;
     isARlinkD1Edit=false;
     isD1linkD2Edit=false;
     isD2linkRREdit=false;
@@ -568,4 +568,4 @@ class QFrameEnvelope:private Q3Frame {
   void mouseReleaseEvent(QMouseEvent * e);
 };
 
-#endif /* __DEICSONZEGUI_H */
+#endif /* __DEICSONZE2GUI_H */
