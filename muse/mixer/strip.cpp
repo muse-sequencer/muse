@@ -184,7 +184,7 @@ Strip::Strip(QWidget* parent, Track* t)
       setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding)); // TESTING Tim.
       
       grid = new QGridLayout();
-      grid->setMargin(0);
+      grid->setContentsMargins(0, 0, 0, 0);
       grid->setSpacing(0);
       setLayout(grid);
 

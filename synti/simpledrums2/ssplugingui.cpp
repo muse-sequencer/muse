@@ -140,7 +140,7 @@ SS_PluginFront::SS_PluginFront(QWidget* parent, int in_fxid)
       setMaximumSize(SS_PLUGINGUI_MAX_WIDTH, SS_PLUGINFRONT_MINHEIGHT);
 
       QVBoxLayout* bigLayout = new QVBoxLayout(this);
-      bigLayout->setMargin(SS_PLUGINFRONT_MARGIN);
+      bigLayout->setContentsMargins(SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN);
       bigLayout->setAlignment(Qt::AlignTop);
 //TODO      bigLayout->setResizeMode(QLayout::SetNoConstraint);
 
@@ -152,7 +152,7 @@ SS_PluginFront::SS_PluginFront(QWidget* parent, int in_fxid)
 
       QVBoxLayout* onOffLayout = new QVBoxLayout;
       layout->addLayout(onOffLayout);
-      onOffLayout->setMargin(SS_PLUGINFRONT_MARGIN);
+      onOffLayout->setContentsMargins(SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN);
       onOff = new QCheckBox(this);
       onOffLayout->addWidget(new QLabel("On/Off", this));
       onOffLayout->addWidget(onOff);
@@ -196,7 +196,7 @@ SS_PluginFront::SS_PluginFront(QWidget* parent, int in_fxid)
       QVBoxLayout* gainSliderLayout = new QVBoxLayout;
       layout->addLayout(gainSliderLayout);
       gainSliderLayout->addWidget(new QLabel("Return level", this));
-      gainSliderLayout->setMargin(SS_PLUGINFRONT_MARGIN);
+      gainSliderLayout->setContentsMargins(SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN);
       outGainSlider = new QSlider(Qt::Horizontal, this);
       outGainSlider->setMinimumSize(100, pluginName->geometry().height());
       outGainSlider->setMaximumSize(500, pluginName->geometry().height());
@@ -419,7 +419,7 @@ void SS_PluginFront::createPluginParameters()
       QVBoxLayout* expGroupLayout = new QVBoxLayout(expGroup); // , 1);
       expGroupLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 //TD      expGroupLayout->setResizeMode(QLayout::FreeResize);
-      expGroupLayout->setMargin(SS_PLUGINFRONT_MARGIN);
+      expGroupLayout->setContentsMargins(SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN);
 
       for (int i=0; i < plugin->parameter(); i++) {
             QHBoxLayout* paramStrip = new QHBoxLayout; // (expGroupLayout, 3);

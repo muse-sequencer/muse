@@ -755,7 +755,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
 
       sliderGrid = new QGridLayout(); 
       sliderGrid->setRowStretch(0, 100);
-      sliderGrid->setMargin(0);
+      sliderGrid->setContentsMargins(0, 0, 0, 0);
       
       slider = new Slider(this, "vol", Qt::Vertical, Slider::None,
          Slider::BgTrough | Slider::BgSlot);

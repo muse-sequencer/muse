@@ -3028,7 +3028,7 @@ PluginGui::PluginGui(PluginIBase* p)
                         params[i].label->setPrecision(2);
                         params[i].label->setId(i);
 
-                        //params[i].label->setMargin(2);
+                        //params[i].label->setContentsMargins(2, 2, 2, 2);
                         //params[i].label->setFixedHeight(h);
 
                         Slider* s = new Slider(mw, "param", Qt::Horizontal,

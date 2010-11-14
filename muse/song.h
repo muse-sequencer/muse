@@ -389,7 +389,7 @@ class Song : public QObject {
       void panic();
       void seqSignal(int fd);
       Track* addTrack(int);
-      Track* addNewTrack(int);
+      Track* addNewTrack(QAction* action);
       QString getScriptPath(int id, bool delivered);
       void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
 

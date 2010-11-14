@@ -50,7 +50,7 @@
 #include "dssihost.h"
 #endif
 
-extern Q3PopupMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0);
+extern QMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0);
 
 static const int MIN_TRACKHEIGHT = 20;
 static const int WHEEL_DELTA = 120;
@@ -795,30 +795,40 @@ void TList::mousePressEvent(QMouseEvent* ev)
       TrackColumn col = TrackColumn(header->sectionAt(x));
       if (t == 0) {
             if (button == Qt::RightButton) {
-                  Q3PopupMenu* p = new Q3PopupMenu(this);
+                  QMenu* p = new QMenu(this);
                   p->clear();
-                  p->insertItem(*addtrack_addmiditrackIcon,
-                     tr("Add Midi Track"), Track::MIDI, 0);
-                  p->insertItem(*addtrack_drumtrackIcon,
-                     tr("Add Drum Track"),Track::DRUM, 1);
-                  p->insertItem(*addtrack_wavetrackIcon,
-                     tr("Add Wave Track"), Track::WAVE, 2);
-                  p->insertItem(*addtrack_audiooutputIcon,
-                     tr("Add Output"), Track::AUDIO_OUTPUT, 3);
-                  p->insertItem(*addtrack_audiogroupIcon,
-                     tr("Add Group"), Track::AUDIO_GROUP, 4);
-                  p->insertItem(*addtrack_audioinputIcon,
-                     tr("Add Input"), Track::AUDIO_INPUT, 5);
-                  p->insertItem(*addtrack_auxsendIcon,
-                     tr("Add Aux Send"), Track::AUDIO_AUX, 6);
+                  QAction* midi = p->addAction(*addtrack_addmiditrackIcon,
+					       tr("Add Midi Track"));
+		  midi->setData(Track::MIDI);
+                  QAction* drum = p->addAction(*addtrack_drumtrackIcon,
+					       tr("Add Drum Track"));
+		  drum->setData(Track::DRUM);
+                  QAction* wave = p->addAction(*addtrack_wavetrackIcon,
+						tr("Add Wave Track"));
+		  wave->setData(Track::WAVE);
+                  QAction* aoutput = p->addAction(*addtrack_audiooutputIcon,
+						  tr("Add Output"));
+		  aoutput->setData(Track::AUDIO_OUTPUT);
+                  QAction* agroup = p->addAction(*addtrack_audiogroupIcon,
+						 tr("Add Group"));
+		  agroup->setData(Track::AUDIO_GROUP);
+                  QAction* ainput = p->addAction(*addtrack_audioinputIcon,
+						 tr("Add Input"));
+		  ainput->setData(Track::AUDIO_INPUT);
+                  QAction* aaux = p->addAction(*addtrack_auxsendIcon,
+					       tr("Add Aux Send"));
+		  aaux->setData(Track::AUDIO_AUX);
                   
                   // Create a sub-menu and fill it with found synth types. Make p the owner.
-                  Q3PopupMenu* synp = populateAddSynth(p);
+                  QMenu* synp = populateAddSynth(p);
+		  synp->setIcon(*synthIcon);
+		  synp->setTitle(QT_TR_NOOP("Add Synth"));
+
                   // Add the 'Add Synth' sub-menu to the menu.
-                  p->insertItem(*synthIcon, tr("Add Synth"), synp, Track::AUDIO_SOFTSYNTH);
-                  
+		  p->addMenu(synp);
+
                   // Show the menu
-                  int n = p->exec(ev->globalPos(), 0);
+                  int n = p->exec(ev->globalPos(), 0)->data().toInt();
 
                   // Valid click?
                   if((n >= 0) && ((Track::TrackType)n != Track::AUDIO_SOFTSYNTH))

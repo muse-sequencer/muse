@@ -106,7 +106,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
       layout = new QHBoxLayout();
       central->setLayout(layout);
       layout->setSpacing(0);
-      layout->setMargin(0);
+      layout->setContentsMargins(0, 0, 0, 0);
       view->setWidget(central);
       view->setWidgetResizable(true);
       
