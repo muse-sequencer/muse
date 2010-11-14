@@ -45,7 +45,7 @@ static const char* fforwardTransportText = QT_TR_NOOP("Click this button to forw
 //---------------------------------------------------------
 
 static QToolButton* newButton(const QString& s, const QString& tt, 
-			      bool toggle=false, int height=25, QWidget* parent=0)
+                              bool toggle=false, int height=25, QWidget* parent=0)
       {
       QToolButton* button = new QToolButton(parent);
       button->setFixedHeight(height);
@@ -57,7 +57,7 @@ static QToolButton* newButton(const QString& s, const QString& tt,
       }
 
 static QToolButton* newButton(const QPixmap* pm, const QString& tt, 
-			      bool toggle=false, QWidget* parent=0)
+                              bool toggle=false, QWidget* parent=0)
       {
       QToolButton* button = new QToolButton(parent);
       button->setFixedHeight(25);
@@ -114,11 +114,11 @@ TempoSig::TempoSig(QWidget* parent)
   : QWidget(parent)
       {
       QBoxLayout* vb1 = new QVBoxLayout;
-      vb1->setMargin(0);
+      vb1->setContentsMargins(0, 0, 0, 0);
       vb1->setSpacing(0);
 
       QBoxLayout* vb2 = new QVBoxLayout;
-      vb2->setMargin(0);
+      vb2->setContentsMargins(0, 0, 0, 0);
       vb2->setSpacing(0);
 
 
@@ -227,7 +227,7 @@ Transport::Transport(QWidget*, const char* name)
       setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 
       QHBoxLayout* hbox = new QHBoxLayout;
-      hbox->setMargin(2);
+      hbox->setContentsMargins(2, 2, 2, 2);
 
       lefthandle = new Handle(this);
       hbox->addWidget(lefthandle);
@@ -312,7 +312,7 @@ Transport::Transport(QWidget*, const char* name)
       // ORCAN: should we change PosEdit constructor so we can call it without a parent argument?
       QVBoxLayout *marken = new QVBoxLayout;
       marken->setSpacing(0);
-      marken->setMargin(0);
+      marken->setContentsMargins(0, 0, 0, 0);
 
       tl1 = new PosEdit(0);
       tl1->setMinimumSize(105,0);
@@ -342,10 +342,10 @@ Transport::Transport(QWidget*, const char* name)
 
       QVBoxLayout *box4 = new QVBoxLayout;
       box4->setSpacing(0);
-      box4->setMargin(0);
+      box4->setContentsMargins(0, 0, 0, 0);
 
       QHBoxLayout *hbox1 = new QHBoxLayout;
-      hbox1->setMargin(0);
+      hbox1->setContentsMargins(0, 0, 0, 0);
       
       time1 = new PosEdit(0);
       time2 = new PosEdit(0);
@@ -387,10 +387,10 @@ Transport::Transport(QWidget*, const char* name)
       buttons[5]->setWhatsThis(tr(recordTransportText));
 
       for (int i = 0; i < 6; ++i)
-	{
+        {
             buttons[i]->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-	    tb->addWidget(buttons[i]);
-	}
+            tb->addWidget(buttons[i]);
+        }
       connect(buttons[3], SIGNAL(toggled(bool)), SLOT(stopToggled(bool)));
       connect(buttons[4], SIGNAL(toggled(bool)), SLOT(playToggled(bool)));
 
@@ -408,7 +408,7 @@ Transport::Transport(QWidget*, const char* name)
       //-----------------------------------------------------
 
       QVBoxLayout *button1 = new QVBoxLayout;
-      button1->setMargin(0);
+      button1->setContentsMargins(0, 0, 0, 0);
       button1->setSpacing(0);
 
       quantizeButton = newButton(tr("AC"), tr("quantize during record"), true,19);
@@ -449,7 +449,7 @@ Transport::Transport(QWidget*, const char* name)
 
       QVBoxLayout *box5 = new QVBoxLayout;
       box5->setSpacing(0);
-      box5->setMargin(0);
+      box5->setContentsMargins(0, 0, 0, 0);
 
 
       tempo        = new TempoSig;
@@ -518,8 +518,8 @@ void Transport::setTempo(int t)
 
 void Transport::setHandleColor(QColor c)
       {
-     	lefthandle->setBackgroundColor(c);
-     	righthandle->setBackgroundColor(c);
+        lefthandle->setBackgroundColor(c);
+        righthandle->setBackgroundColor(c);
       }
 
 //---------------------------------------------------------

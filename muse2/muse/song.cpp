@@ -140,8 +140,9 @@ void Song::setSig(int z, int n)
 //    Besides normal track types, n includes synth menu ids from populateAddTrack()
 //---------------------------------------------------------
 
-Track* Song::addNewTrack(int n)
+Track* Song::addNewTrack(QAction* action)
 {
+  int n = action->data().toInt();
     // Ignore negative numbers since this slot could be called by a menu or list etc. passing -1.
     if(n < 0)
       return 0;                  

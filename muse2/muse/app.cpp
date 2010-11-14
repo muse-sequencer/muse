@@ -694,7 +694,8 @@ QMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0)
       // No MESS sub-menu yet? Create it now.
       if(!synpMESS)
         synpMESS = new QMenu(parent);
-      synpMESS->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
+      QAction* sM = synpMESS->addAction(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">");
+      sM->setData(MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
   
@@ -710,7 +711,9 @@ QMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0)
       // No DSSI sub-menu yet? Create it now.
       if(!synpDSSI)
         synpDSSI = new QMenu(parent);
-      synpDSSI->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
+      //synpDSSI->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
+      QAction* sD = synpDSSI->addAction(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">");
+      sD->setData(MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
   #endif
@@ -727,7 +730,8 @@ QMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0)
       // No VST sub-menu yet? Create it now.
       if(!synpVST)
         synpVST = new QMenu(parent);
-      synpVST->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
+      QAction* sV = synpVST->addAction(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">");
+      sV->setData(MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
   #endif
@@ -741,39 +745,41 @@ QMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0)
     // No Other sub-menu yet? Create it now.
     if(!synpOther)
       synpOther = new QMenu(parent);
-    synpOther->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
+    //synpOther->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
+    QAction* sO = synpOther->addAction(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">");
+    sO->setData(MENU_ADD_SYNTH_ID_BASE + idx);
   }
   
   if(synpMESS)
   {
-    synp->insertItem(*synthIcon, QT_TR_NOOP("MESS"), synpMESS, Track::AUDIO_SOFTSYNTH);
-    if(obj && slot)
-      QObject::connect(synpMESS, SIGNAL(activated(int)), obj,  slot);
+    synpMESS->setIcon(*synthIcon);
+    synpMESS->setTitle(QT_TR_NOOP("MESS"));
+    synp->addMenu(synpMESS);
   }
   
   #ifdef DSSI_SUPPORT
   if(synpDSSI)
   {
-    synp->insertItem(*synthIcon, QT_TR_NOOP("DSSI"), synpDSSI, Track::AUDIO_SOFTSYNTH);
-    if(obj && slot)
-      QObject::connect(synpDSSI, SIGNAL(activated(int)), obj,  slot);
+    synpDSSI->setIcon(*synthIcon);
+    synpDSSI->setTitle(QT_TR_NOOP("DSSI"));
+    synp->addMenu(synpDSSI);
   }  
   #endif
   
   #ifdef VST_SUPPORT
   if(synpVST)
   {
-    synp->insertItem(*synthIcon, QT_TR_NOOP("FST"), synpVST, Track::AUDIO_SOFTSYNTH);
-    if(obj && slot)
-      QObject::connect(synpVST, SIGNAL(activated(int)), obj,  slot);
+    synpVST->setIcon(*synthIcon);
+    synpVST->setTitle(QT_TR_NOOP("FST"));
+    synp->addMenu(synpVST);
   }  
   #endif
   
   if(synpOther)
   {
-    synp->insertItem(*synthIcon, QObject::tr("Other"), synpOther, Track::AUDIO_SOFTSYNTH);
-    if(obj && slot)
-      QObject::connect(synpOther, SIGNAL(activated(int)), obj,  slot);
+    synpOther->setIcon(*synthIcon);
+    synpOther->setTitle(QObject::tr("Other"));
+    synp->addMenu(synpOther);
   }
   
   return synp;
@@ -786,29 +792,37 @@ QMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0)
 
 void populateAddTrack(QMenu* addTrack)
       {
-      addTrack->insertItem(QIcon(*addtrack_addmiditrackIcon),
-         QT_TR_NOOP("Add Midi Track"), Track::MIDI);
-      addTrack->insertItem(QIcon(*addtrack_drumtrackIcon),
-         QT_TR_NOOP("Add Drum Track"), Track::DRUM);
-      addTrack->insertItem(QIcon(*addtrack_wavetrackIcon),
-         QT_TR_NOOP("Add Wave Track"), Track::WAVE);
-      addTrack->insertItem(QIcon(*addtrack_audiooutputIcon),
-         QT_TR_NOOP("Add Audio Output"), Track::AUDIO_OUTPUT);
-      addTrack->insertItem(QIcon(*addtrack_audiogroupIcon),
-         QT_TR_NOOP("Add Audio Group"), Track::AUDIO_GROUP);
-      addTrack->insertItem(QIcon(*addtrack_audioinputIcon),
-         QT_TR_NOOP("Add Audio Input"), Track::AUDIO_INPUT);
-      addTrack->insertItem(QIcon(*addtrack_auxsendIcon),
-         QT_TR_NOOP("Add Aux Send"), Track::AUDIO_AUX);
-         
+      QAction* midi = addTrack->addAction(QIcon(*addtrack_addmiditrackIcon),
+					  QT_TR_NOOP("Add Midi Track"));
+      midi->setData(Track::MIDI);
+      QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
+					  QT_TR_NOOP("Add Drum Track"));
+      drum->setData(Track::DRUM);
+      QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
+					  QT_TR_NOOP("Add Wave Track"));
+      wave->setData(Track::WAVE);
+      QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
+					     QT_TR_NOOP("Add Audio Output"));
+      aoutput->setData(Track::AUDIO_OUTPUT);
+      QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
+					    QT_TR_NOOP("Add Audio Group"));
+      agroup->setData(Track::AUDIO_GROUP);
+      QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
+					    QT_TR_NOOP("Add Audio Input"));
+      ainput->setData(Track::AUDIO_INPUT);
+      QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
+					  QT_TR_NOOP("Add Aux Send"));
+      aaux->setData(Track::AUDIO_AUX);
+
       // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
-      QMenu* synp = populateAddSynth(addTrack, song, SLOT(addNewTrack(int)));
+      QMenu* synp = populateAddSynth(addTrack, song, SLOT(addNewTrack(QAction *)));
+      synp->setIcon(*synthIcon);
+      synp->setTitle(QT_TR_NOOP("Add Synth"));
+
       // Add the sub-menu to the given menu.
-      addTrack->insertItem(*synthIcon, QT_TR_NOOP("Add Synth"), synp, Track::AUDIO_SOFTSYNTH);
-         
-      //addTrack->connect(addTrack, SIGNAL(activated(int)), song, SLOT(addTrack(int)));
-      addTrack->connect(addTrack, SIGNAL(activated(int)), song, SLOT(addNewTrack(int)));
-      //synp->connect(synp, SIGNAL(activated(int)), song, SLOT(addNewTrack(int)));
+      addTrack->addMenu(synp);
+      
+      QObject::connect(addTrack, SIGNAL(triggered(QAction *)), song, SLOT(addNewTrack(QAction *)));
       }
 
 //---------------------------------------------------------
