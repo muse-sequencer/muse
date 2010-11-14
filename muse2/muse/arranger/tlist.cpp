@@ -828,54 +828,59 @@ void TList::mousePressEvent(QMouseEvent* ev)
 		  p->addMenu(synp);
 
                   // Show the menu
-                  int n = p->exec(ev->globalPos(), 0)->data().toInt();
+                  QAction* act = p->exec(ev->globalPos(), 0);
 
                   // Valid click?
-                  if((n >= 0) && ((Track::TrackType)n != Track::AUDIO_SOFTSYNTH))
+                  if(act)
                   {
-                    // Synth sub-menu id?
-                    if(n >= MENU_ADD_SYNTH_ID_BASE)
+                    int n = act->data().toInt();
+                    // Valid item?
+                    if((n >= 0) && ((Track::TrackType)n != Track::AUDIO_SOFTSYNTH))
                     {
-                      n -= MENU_ADD_SYNTH_ID_BASE;
-                      //if(n < synthis.size())
-                      //  t = song->createSynthI(synthis[n]->baseName());
-                      //if((n - MENU_ADD_SYNTH_ID_BASE) < (int)synthis.size())
-                      if(n < (int)synthis.size())
+                      // Synth sub-menu id?
+                      if(n >= MENU_ADD_SYNTH_ID_BASE)
                       {
-                        //t = song->createSynthI(synp->text(n));
-                        //t = song->createSynthI(synthis[n]->name());                        
-                        t = song->createSynthI(synthis[n]->baseName(), synthis[n]->name());
-                        
-                        if(t)
+                        n -= MENU_ADD_SYNTH_ID_BASE;
+                        //if(n < synthis.size())
+                        //  t = song->createSynthI(synthis[n]->baseName());
+                        //if((n - MENU_ADD_SYNTH_ID_BASE) < (int)synthis.size())
+                        if(n < (int)synthis.size())
                         {
-                          // Add instance last in midi device list.
-                          for (int i = 0; i < MIDI_PORTS; ++i) 
+                          //t = song->createSynthI(synp->text(n));
+                          //t = song->createSynthI(synthis[n]->name());                        
+                          t = song->createSynthI(synthis[n]->baseName(), synthis[n]->name());
+                          
+                          if(t)
                           {
-                            MidiPort* port  = &midiPorts[i];
-                            MidiDevice* dev = port->device();
-                            if (dev==0) 
+                            // Add instance last in midi device list.
+                            for (int i = 0; i < MIDI_PORTS; ++i) 
                             {
-                              midiSeq->msgSetMidiDevice(port, (SynthI*)t);
-                              muse->changeConfig(true);     // save configuration file
-                              song->update();
-                              break;
-                            }
-                          }  
-                        }
+                              MidiPort* port  = &midiPorts[i];
+                              MidiDevice* dev = port->device();
+                              if (dev==0) 
+                              {
+                                midiSeq->msgSetMidiDevice(port, (SynthI*)t);
+                                muse->changeConfig(true);     // save configuration file
+                                song->update();
+                                break;
+                              }
+                            }  
+                          }
+                        }  
                       }  
-                    }  
-                    // Normal track.
-                    else
-                      t = song->addTrack((Track::TrackType)n);
-                    
-                    if(t)
-                    {
-                      song->deselectTracks();
-                      t->setSelected(true);
-
-                      emit selectionChanged();
-                      adjustScrollbar();
-                    }  
+                      // Normal track.
+                      else
+                        t = song->addTrack((Track::TrackType)n);
+                      
+                      if(t)
+                      {
+                        song->deselectTracks();
+                        t->setSelected(true);
+  
+                        emit selectionChanged();
+                        adjustScrollbar();
+                      }  
+                    }
                   }
                   
                   // Just delete p, and all its children will go too, right?
