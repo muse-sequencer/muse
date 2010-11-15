@@ -1873,7 +1873,7 @@ void MusE::quitDoc()
 //   closeEvent
 //---------------------------------------------------------
 
-void MusE::closeEvent(QCloseEvent*)
+void MusE::closeEvent(QCloseEvent* event)
       {
       song->setStop(true);
       //
@@ -1890,10 +1890,16 @@ void MusE::closeEvent(QCloseEvent*)
                tr("&Save"), tr("&Skip"), tr("&Abort"), 0, 2);
             if (n == 0) {
                   if (!save())      // dont quit if save failed
+                  {
+                        event->ignore();
                         return;
+                  }      
                   }
             else if (n == 2)
+            {
+                  event->ignore();
                   return;
+            }      
             }
       seqStop();
 

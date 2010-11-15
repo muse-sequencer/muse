@@ -1,7 +1,9 @@
 14.11.2010
         - renamed deicsonze2 files and classes with '2' suffixes
         - Applied patch by Orcan to convert populateAddSynth(). (Tim)
-        - Changed all setMargin() calls to setContentsMargins(). (setMargin() is obsoleted!)
+        - Changed all setMargin() calls to setContentsMargins(). (setMargin() is obsoleted!) (Tim)
+        - Fixed crash in MusE::closeEvent() upon close: save, skip, abort? = abort. (Tim)
+          TODO: Some other suspicious looking closeEvent()s. May need to fix...
 12.11.2010
         - Fixed arranger alignment issues - set layout margins to zero. (Tim)
           TODO: Track list items aligned to canvas tracks are still off by one lousy vertical pixel.
