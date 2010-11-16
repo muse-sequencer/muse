@@ -1,3 +1,9 @@
+16.11.2010
+        - Fixed mixer maximum and minimum sizes. (Tim)
+          Bit of a tough hack. Is there a better way? Done by sub-classing QScrollArea and catching 
+           LayoutRequest events, just before paint events when the window sizes are finally correct.
+          TODO: Still off by a few pixels when mixer first opened, because main window frameSize 
+           is not set yet, by the time LayoutRequest is caught.
 14.11.2010
         - renamed deicsonze2 files and classes with '2' suffixes
         - Applied patch by Orcan to convert populateAddSynth(). (Tim)

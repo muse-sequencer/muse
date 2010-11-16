@@ -331,7 +331,6 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       QGridLayout* egrid  = new QGridLayout(editor);
       egrid->setColStretch(0, 50);
       egrid->setRowStretch(2, 50);
-      //egrid->setContentsMargins(0, 0, 0, 0);  
       egrid->setContentsMargins(0, 0, 0, 0);  
       egrid->setSpacing(0);  
 

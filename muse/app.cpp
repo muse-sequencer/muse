@@ -860,7 +860,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       watchdogThread        = 0;
       editInstrument        = 0;
       routingPopupMenu      = 0;
-      routingPopupView      = 0;
+      //routingPopupView      = 0;
       
       appName               = QString("MusE");
 

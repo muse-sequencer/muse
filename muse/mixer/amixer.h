@@ -50,6 +50,24 @@ struct MixerConfig;
 typedef std::list<Strip*> StripList;
 
 //---------------------------------------------------------
+//   ScrollArea
+//---------------------------------------------------------
+
+class ScrollArea : public QScrollArea 
+{
+  Q_OBJECT
+  
+  signals:
+    void layoutRequest();
+  
+  protected:
+    virtual bool viewportEvent(QEvent* event);
+    
+  public:
+    ScrollArea(QWidget* parent = 0) : QScrollArea(parent) { } 
+};
+
+//---------------------------------------------------------
 //   AudioMixerApp
 //---------------------------------------------------------
 
@@ -86,15 +104,16 @@ class AudioMixerApp : public QMainWindow {
             NO_UPDATE, UPDATE_ALL, UPDATE_MIDI, STRIP_INSERTED, STRIP_REMOVED
             };
       void updateMixer(UpdateAction);
-      int computeWidth();
       
    signals:
       void closed();
+      //void layoutRequest();
 
    private slots:
       void songChanged(int);
       //void configChanged()    { songChanged(-1); }
       void configChanged();
+      void setSizing();
       void toggleRouteDialog();
       void routingDialogClosed();
       //void showTracksChanged(QAction*);
@@ -107,6 +126,9 @@ class AudioMixerApp : public QMainWindow {
       void showAuxTracksChanged(bool);
       void showSyntiTracksChanged(bool);
 
+   //protected:
+   //   virtual bool event(QEvent* event);
+   
    public:
       //AudioMixerApp(QWidget* parent);
       AudioMixerApp(QWidget* parent, MixerConfig* c);
