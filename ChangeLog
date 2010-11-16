@@ -1,4 +1,6 @@
 16.11.2010
+        - Fixed track info sizing problems. In Arranger::switchInfo() added tgrid->update(). (Tim)
+          QLayout::update() seems to be a new method, we needed to call it here.
         - Fixed mixer maximum and minimum sizes. (Tim)
           Bit of a tough hack. Is there a better way? Done by sub-classing QScrollArea and catching 
            LayoutRequest events, just before paint events when the window sizes are finally correct.

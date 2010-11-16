@@ -416,12 +416,14 @@ void Arranger::switchInfo(int n)
                   trackInfo->addWidget(w, 2);
                   w->show();
                   tgrid->activate();
+                  tgrid->update();   // muse-2 Qt4
                   }
             }
       if (trackInfo->curIdx() == n)
             return;
       trackInfo->raiseWidget(n);
       tgrid->activate();
+      tgrid->update();   // muse-2 Qt4
       }
 
 //---------------------------------------------------------
