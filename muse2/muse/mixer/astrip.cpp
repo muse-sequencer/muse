@@ -71,7 +71,8 @@ QWidget* MenuTitleItem::createWidget(QWidget *parent)
   return l;
 }
 
-/*//---------------------------------------------------------
+/*
+//---------------------------------------------------------
 //   minimumSizeHint
 //---------------------------------------------------------
 
@@ -79,7 +80,19 @@ QSize AudioStrip::minimumSizeHint () const
 {
     // We force the width of the size hint to be what we want
     //return QWidget::minimumSizeHint();
-    return QSize(66,QWidget::minimumSizeHint().height());
+    ///return QSize(66,QWidget::minimumSizeHint().height());
+}
+
+//---------------------------------------------------------
+//   sizeHint
+//---------------------------------------------------------
+
+QSize AudioStrip::sizeHint () const
+{
+    // We force the width of the size hint to be what we want
+    //return QWidget::minimumSizeHint();
+    //return QSize(66,QWidget::minimumSizeHint().height());
+    return minimumSizeHint();
 }
 */
 

@@ -11,6 +11,8 @@
 
 #include <QApplication>
 #include <QMenuBar>
+#include <QResizeEvent>
+#include <QPaintEvent>
 //Added by qt3to4:
 #include <QHBoxLayout>
 #include <QCloseEvent>
@@ -35,6 +37,106 @@ extern void populateAddTrack(QMenu* addTrack);
 
 //typedef std::list<Strip*> StripList;
 //static StripList stripList;
+
+
+/* 
+Nov 16, 2010: After making the strips variable width, we need a way to
+ set the maximum size of the main window.
+ 
+// See help Qt4 "Window Geometry"      
+// "On X11, a window does not have a frame until the window manager decorates it. 
+//  This happens asynchronously at some point in time after calling QWidget::show() 
+//   and the first paint event the window receives, or it does not happen at all. 
+// " ...you cannot make any safe assumption about the decoration frame your window will get." 
+// "X11 provides no standard or easy way to get the frame geometry once the window is decorated. 
+//  Qt solves this problem with nifty heuristics and clever code that works on a wide range of 
+//  window managers that exist today..."
+//
+            
+Sequence of events when mixer is opened, and then when a strip is added:
+
+ViewWidget::event type:68                 // Mixer opened:
+Event is QEvent::ChildAdded
+ViewWidget::event type:18  
+ViewWidget::event type:27  
+ViewWidget::event type:131 
+ScrollArea::viewportEvent type:68
+Event is QEvent::ChildAdded      
+ViewWidget::event type:21        
+ViewWidget::event type:75        
+ViewWidget::event type:70        
+ScrollArea::viewportEvent type:69
+Event is QEvent::ChildPolished   
+child width:100 frame width:100            
+ViewWidget::event type:26        
+ViewWidget::event type:68        
+Event is QEvent::ChildAdded      
+ViewWidget::event type:69        
+Event is QEvent::ChildPolished   
+child width:100 frame width:100            // Size is not correct yet
+AudioMixerApp::updateMixer other 
+ScrollArea::viewportEvent type:75
+ScrollArea::viewportEvent type:70
+ScrollArea::viewportEvent type:13
+ScrollArea::viewportEvent type:14
+ViewWidget::event type:70        
+ViewWidget::event type:13        
+ViewWidget::event type:14        
+ViewWidget::event type:17        
+ScrollArea::viewportEvent type:17
+ScrollArea::viewportEvent type:26
+ViewWidget::event type:67        
+ScrollArea::viewportEvent type:67
+ViewWidget::event type:67        
+ScrollArea::viewportEvent type:14
+ViewWidget::event type:14        
+ScrollArea::viewportEvent type:74
+ViewWidget::event type:74        
+ViewWidget::event type:76        
+ScrollArea::viewportEvent type:76                  // Layout request: 
+Event is QEvent::LayoutRequest   
+AudioMixerApp::setSizing width:75 frame width:2
+ScrollArea::viewportEvent type:14                  
+ViewWidget::event type:14                      
+ViewWidget::event type:12                          // Paint event:
+ViewWidget::paintEvent                             // By this time the size is correct.
+ScrollArea::viewportEvent type:24                  // But to avoid having to do the resizing
+ViewWidget::event type:24                          //  in every paint event, do it just after
+ScrollArea::viewportEvent type:14                  //  the layout request, as shown above.
+ViewWidget::event type:14                          // Hopefully that is a good time to do it.
+ViewWidget::event type:12                      
+ViewWidget::paintEvent                         
+ScrollArea::viewportEvent type:25              
+ViewWidget::event type:25                      
+
+ViewWidget::event type:68                          // Strip is added:
+Event is QEvent::ChildAdded
+ViewWidget::event type:69
+Event is QEvent::ChildPolished
+child width:100 frame width:100                    // Size not correct yet.
+ViewWidget::event type:70                          
+AudioMixerApp::updateMixer other
+ViewWidget::event type:67
+ViewWidget::event type:76
+ScrollArea::viewportEvent type:76
+ViewWidget::event type:14
+Event is QEvent::LayoutRequest
+AudioMixerApp::setSizing width:75 frame width:2
+AudioMixerApp::setSizing width:75 frame width:2
+ViewWidget::event type:12                          // Size is correct by now. 
+ViewWidget::paintEvent
+*/
+
+bool ScrollArea::viewportEvent(QEvent* event)
+{
+  // Let it do the layout now, before we emit.
+  QScrollArea::viewportEvent(event);
+  
+  if(event->type() == QEvent::LayoutRequest)       
+    emit layoutRequest();
+         
+  return false;       
+}
 
 //---------------------------------------------------------
 //   AudioMixer
@@ -98,7 +200,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
               
       menuView->addActions(actionItems->actions());
       
-      view = new QScrollArea();
+      ///view = new QScrollArea();
+      view = new ScrollArea();
       view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(view);
       
@@ -110,10 +213,53 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
       view->setWidget(central);
       view->setWidgetResizable(true);
       
+      connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));  
+      ///connect(this, SIGNAL(layoutRequest()), SLOT(setSizing()));  
+      
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
       song->update();  // calls update mixer
       }
+
+/*
+bool AudioMixerApp::event(QEvent* event)
+{
+  printf("AudioMixerApp::event type:%d\n", event->type());   // REMOVE Tim.
+  
+  // Let it do the layout now, before we emit.
+  QMainWindow::event(event);
+  
+  if(event->type() == QEvent::LayoutRequest)       
+    emit layoutRequest();
+         
+  return false;       
+}
+*/
+
+void AudioMixerApp::setSizing()
+{
+      int w = 0;
+      StripList::iterator si = stripList.begin();
+      for (; si != stripList.end(); ++si) 
+      {
+            //w += (*si)->frameGeometry().width();
+            //Strip* s = *si;
+            //printf("AudioMixerApp::setSizing width:%d frame width:%d\n", s->width(), s->frameWidth());  // REMOVE Tim
+            //w += s->width() + 2 * (s->frameWidth() + s->lineWidth() + s->midLineWidth());
+            //w += s->width() + 2 * s->frameWidth();
+            w += (*si)->width();
+      }
+      
+      //w += 2* style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
+      // FIXME: When mixer first opened, frameSize is not correct yet, done after main window shown.
+      w += frameSize().width() - width();
+      
+      if(w < 40)
+        w = 40;
+      setMaximumWidth(w);      
+      if(stripList.size() <= 6)
+        view->setMinimumWidth(w);
+}
 
 //---------------------------------------------------------
 //   addStrip
@@ -166,23 +312,6 @@ void AudioMixerApp::clear()
       }
 
 //---------------------------------------------------------
-//   computeWidth
-//---------------------------------------------------------
-int AudioMixerApp::computeWidth()
-{
-      int w = 0;
-      StripList::iterator si = stripList.begin();
-      for (; si != stripList.end(); ++si) {
-            //w += (*si)->width();
-            //w += (*si)->frameGeometry().width();
-            Strip* s = *si;
-            //w += s->width() + 2 * (s->frameWidth() + s->lineWidth() + s->midLineWidth());
-            w += s->width() + 2 * s->frameWidth();
-            }
-      return w;      
-}
-
-//---------------------------------------------------------
 //   updateMixer
 //---------------------------------------------------------
 
@@ -228,17 +357,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                   stripList.erase(ssi);
                   }
                   
-            // TODO: See help Qt4 "Window Geometry"      
-            // "On X11, a window does not have a frame until the window manager decorates it. 
-            //  This happens asynchronously at some point in time after calling QWidget::show() 
-            //   and the first paint event the window receives, or it does not happen at all. 
-            // " ...you cannot make any safe assumption about the decoration frame your window will get." 
-            // "X11 provides no standard or easy way to get the frame geometry once the window is decorated. 
-            //  Qt solves this problem with nifty heuristics and clever code that works on a wide range of 
-            //  window managers that exist today..."
-            //
-            // I think I may be seeing these issues here... 
-            //
+            //printf("AudioMixerApp::updateMixer STRIP_REMOVED\n");  // REMOVE Tim
+            
             //setMaximumWidth(STRIP_WIDTH * stripList.size() + __WIDTH_COMPENSATION);  
 ///            int w = computeWidth();      
 ///            setMaximumWidth(w);      
@@ -288,6 +408,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                 addStrip(*i, idx++);
             }
       
+            //printf("AudioMixerApp::updateMixer UPDATE_MIDI\n");  // REMOVE Tim
+            
             //setMaximumWidth(STRIP_WIDTH * stripList.size() + __WIDTH_COMPENSATION);  
 ///            int w = computeWidth();      
 ///            setMaximumWidth(w);      
@@ -375,6 +497,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
         for (iAudioOutput i = otl->begin(); i != otl->end(); ++i)
             addStrip(*i, idx++);
       }
+      
+      //printf("AudioMixerApp::updateMixer other\n");  // REMOVE Tim
       
       //setMaximumWidth(STRIP_WIDTH * idx + __WIDTH_COMPENSATION);     
 ///      int w = computeWidth();      

@@ -117,7 +117,7 @@ class MusE : public QMainWindow
 
       // Special 'stay-open' menu for routes.
       PopupMenu* routingPopupMenu; 
-      PopupView* routingPopupView; 
+      //PopupView* routingPopupView; 
 
       int aid1a, aid1b, aid2, aid3, autoId;
       int tr_id, bt_id, mr_id;

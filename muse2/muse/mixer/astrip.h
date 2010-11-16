@@ -92,6 +92,7 @@ class AudioStrip : public Strip {
       AudioStrip(QWidget* parent, AudioTrack*);
       ~AudioStrip();
       ///virtual QSize minimumSizeHint () const;
+      //virtual QSize sizeHint () const;
       };
 
 #endif
