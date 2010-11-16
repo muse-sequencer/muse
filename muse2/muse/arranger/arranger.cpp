@@ -209,7 +209,11 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       connect(tempo200, SIGNAL(clicked()), SLOT(setTempo200()));
 
       QVBoxLayout* box  = new QVBoxLayout(this);
+      box->setContentsMargins(0, 0, 0, 0);
       box->addWidget(hLine(this), Qt::AlignTop);
+      //QFrame* hline = hLine(this);
+      //hline->setLineWidth(0);
+      //box->addWidget(hline, Qt::AlignTop);
 
       //---------------------------------------------------
       //  Tracklist
