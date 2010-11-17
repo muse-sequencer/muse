@@ -169,10 +169,18 @@ MFileDialog::MFileDialog(const QString& dir,
             showButtons = true;
 
             spl->insertWidget(0,&buttons);
+
+	    // Qt >= 4.6 allows us to select icons from the theme
+#if QT_VERSION >= 0x040600
             buttons.globalButton->setIcon(QIcon::fromTheme("folder", QIcon(":/icons/global.xpm")));
             buttons.userButton->setIcon(QIcon::fromTheme("user-home", QIcon(":/icons/user.xpm")));
             buttons.projectButton->setIcon(QIcon::fromTheme("folder-sound", QIcon(":/icons/project.xpm")));
-	    
+#else
+            buttons.globalButton->setIcon(QIcon(":/icons/global.xpm"));
+            buttons.userButton->setIcon(QIcon(":/icons/user.xpm"));
+            buttons.projectButton->setIcon(QIcon(":/icons/project.xpm"));
+#endif	    
+
             connect(buttons.globalButton, SIGNAL(toggled(bool)), this, SLOT(globalToggled(bool)));
             connect(buttons.userButton, SIGNAL(toggled(bool)), this, SLOT(userToggled(bool)));
             connect(buttons.projectButton, SIGNAL(toggled(bool)), this, SLOT(projectToggled(bool)));
