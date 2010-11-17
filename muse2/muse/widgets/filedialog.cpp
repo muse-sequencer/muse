@@ -5,19 +5,15 @@
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <iostream>
 #include <errno.h>
-#include <qwidget.h>
-#include <q3url.h>
-#include <qpixmap.h>
-#include <qmessagebox.h>
-#include <q3buttongroup.h>
-#include <qtoolbutton.h>
-#include <qradiobutton.h>
-#include <qstringlist.h>
+
+#include <QIcon>
+#include <QMessageBox>
+#include <QPixmap>
+#include <QSplitter>
+#include <QStringList>
 
 #include "filedialog.h"
-#include "fdialogbuttons.h"
 #include "../globals.h"
 
 MFileDialog::ViewType MFileDialog::lastViewUsed = GLOBAL_VIEW;
@@ -88,12 +84,12 @@ static bool testDirCreate(QWidget* parent, const QString& path)
 void MFileDialog::globalToggled(bool flag)
       {
       if (flag) {
-            buttons->userButton->setOn(!flag);
-            buttons->projectButton->setOn(!flag);
+            buttons.userButton->setChecked(!flag);
+            buttons.projectButton->setChecked(!flag);
             if (lastGlobalDir.isEmpty())
                   lastGlobalDir = museGlobalShare + QString("/") + baseDir; // Initialize if first time
             QString dir = lastGlobalDir;
-            setDir(dir);
+            setDirectory(dir);
             lastViewUsed = GLOBAL_VIEW;
             }
       }
@@ -105,8 +101,8 @@ void MFileDialog::globalToggled(bool flag)
 void MFileDialog::userToggled(bool flag)
       {
       if (flag) {
-            buttons->globalButton->setOn(!flag);
-            buttons->projectButton->setOn(!flag);
+            buttons.globalButton->setChecked(!flag);
+            buttons.projectButton->setChecked(!flag);
 
 
             if (lastUserDir.isEmpty()) {
@@ -114,9 +110,9 @@ void MFileDialog::userToggled(bool flag)
                   }
 
             if (testDirCreate(this, lastUserDir))
-                  setDir(museUser);
+                  setDirectory(museUser);
             else
-                  setDir(lastUserDir);
+                  setDirectory(lastUserDir);
 
             lastViewUsed = USER_VIEW;
             }
@@ -129,8 +125,8 @@ void MFileDialog::userToggled(bool flag)
 void MFileDialog::projectToggled(bool flag)
       {
       if (flag) {
-            buttons->globalButton->setOn(!flag);
-            buttons->userButton->setOn(!flag);
+            buttons.globalButton->setChecked(!flag);
+            buttons.userButton->setChecked(!flag);
 
             QString s;
             if (museProject == museProjectInitPath ) {
@@ -142,9 +138,9 @@ void MFileDialog::projectToggled(bool flag)
                   s = museProject + QString("/"); // + baseDir;
 
             if (testDirCreate(this, s))
-                  setDir(museProject);
+                  setDirectory(museProject);
             else
-                  setDir(s);
+                  setDirectory(s);
             lastViewUsed = PROJECT_VIEW;
             }
       }
@@ -156,52 +152,62 @@ void MFileDialog::projectToggled(bool flag)
 
 MFileDialog::MFileDialog(const QString& dir,
    const QString& filter, QWidget* parent, bool writeFlag)
-   : Q3FileDialog(QString("."), filter, parent, 0, true)
+  : QFileDialog(parent, QString(), QString("."), filter)
       {
       showButtons = false;
       if (dir.length() > 0 && dir[0] == QChar('/')) {
-            buttons = 0;
-            setDir(dir);
+            setDirectory(dir);
             }
       else {
+            // We replace the original sidebar widget with our 3-button widget
+            QLayout* mainlayout = this->layout();
+            QSplitter* spl = (QSplitter*)mainlayout->itemAt(2)->widget();
+            QWidget* original_sidebarwidget = spl->widget(0);
+            original_sidebarwidget->setVisible(false);
+
             baseDir     = dir;
             showButtons = true;
-            buttons     = new FileDialogButtons(this, "fdialogbuttons");
-            addLeftWidget(buttons);
-            connect(buttons->globalButton, SIGNAL(toggled(bool)), SLOT(globalToggled(bool)));
-            connect(buttons->userButton, SIGNAL(toggled(bool)), SLOT(userToggled(bool)));
-            connect(buttons->projectButton, SIGNAL(toggled(bool)), SLOT(projectToggled(bool)));
-            connect(this, SIGNAL(dirEntered(const QString&)), SLOT(directoryChanged(const QString&)));
+
+            spl->insertWidget(0,&buttons);
+            buttons.globalButton->setIcon(QIcon::fromTheme("folder", QIcon(":/icons/global.xpm")));
+            buttons.userButton->setIcon(QIcon::fromTheme("user-home", QIcon(":/icons/user.xpm")));
+            buttons.projectButton->setIcon(QIcon::fromTheme("folder-sound", QIcon(":/icons/project.xpm")));
+	    
+            connect(buttons.globalButton, SIGNAL(toggled(bool)), this, SLOT(globalToggled(bool)));
+            connect(buttons.userButton, SIGNAL(toggled(bool)), this, SLOT(userToggled(bool)));
+            connect(buttons.projectButton, SIGNAL(toggled(bool)), this, SLOT(projectToggled(bool)));
+            connect(this, SIGNAL(directoryEntered(const QString&)), SLOT(directoryChanged(const QString&)));
+
             if (writeFlag) {
-                  buttons->globalButton->setEnabled(false);
+                  buttons.globalButton->setEnabled(false);
                   switch (lastViewUsed) {
                            case GLOBAL_VIEW:
                            case PROJECT_VIEW:
-                                 buttons->projectButton->setOn(true);
+                                 buttons.projectButton->setChecked(true);
                                  break;
 
                            case USER_VIEW:
-                                 buttons->userButton->setOn(true);
+                                 buttons.userButton->setChecked(true);
                                  break;
                         }
                   }
             else {
                   switch (lastViewUsed) {
                         case GLOBAL_VIEW:
-                              buttons->globalButton->setOn(true);
+                              buttons.globalButton->setChecked(true);
                               break;
 
                         case PROJECT_VIEW:
-                              buttons->projectButton->setOn(true);
+                              buttons.projectButton->setChecked(true);
                               break;
 
                         case USER_VIEW:
-                              buttons->userButton->setOn(true);
+                              buttons.userButton->setChecked(true);
                               break;
                         }
 
-                  }
-            buttons->loadAllGroup->setShown(false);
+	          }
+            buttons.loadAllGroup->setVisible(false);
             }
       }
 
@@ -211,12 +217,11 @@ MFileDialog::MFileDialog(const QString& dir,
 void MFileDialog::directoryChanged(const QString&)
       {
       ViewType currentView = GLOBAL_VIEW;
-      const QDir* ndir = dir();
-      QString newdir = ndir->absPath().latin1();
-      delete ndir; // We're owners of this one so we should delete it
-      if (buttons->projectButton->isOn())
+      QDir ndir = directory();
+      QString newdir = ndir.absPath().latin1();
+      if (buttons.projectButton->isChecked())
             currentView = PROJECT_VIEW;
-      else if (buttons->userButton->isOn())
+      else if (buttons.userButton->isChecked())
             currentView = USER_VIEW;
 
       switch (currentView) {
@@ -234,6 +239,8 @@ void MFileDialog::directoryChanged(const QString&)
             }
       }
 
+/* ORCAN - disable preview for now. It is not available in qt4. We will
+           need to implement it ourselves.
 //---------------------------------------------------------
 //   ContentsPreview
 //---------------------------------------------------------
@@ -261,6 +268,7 @@ void ContentsPreview::previewUrl(const Q3Url& url)
       if (bg)
             setBackgroundPixmap(*bg);
       }
+*/
 
 //---------------------------------------------------------
 //   getFilterExtension
@@ -299,18 +307,23 @@ QString getOpenFileName(const QString &startWith,
       {
       QString initialSelection;
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, false);
-      dlg->setFilters(filters);
+      dlg->setNameFilters(filters);
       dlg->setCaption(name);
-      if (all)
-            dlg->buttons->loadAllGroup->setShown(true);
+      if (all) {
+            dlg->buttons.loadAllGroup->setVisible(true);
+            dlg->buttons.globalButton->setVisible(false);
+      }
       if (!initialSelection.isEmpty())
-            dlg->setSelection(initialSelection);
-      dlg->setMode(Q3FileDialog::ExistingFile);
+            dlg->selectFile(initialSelection);
+      dlg->setFileMode(QFileDialog::ExistingFile);
+      QStringList files;
       QString result;
       if (dlg->exec() == QDialog::Accepted) {
-            result = dlg->selectedFile();
+            files = dlg->selectedFiles();
+	    if (!files.isEmpty())
+                  result = files[0];
             if (all) {
-                  *all = dlg->buttons->loadAllButton->isOn();
+                  *all = dlg->buttons.loadAllButton->isChecked();
                   }
             }
       delete dlg;
@@ -326,18 +339,21 @@ QString getSaveFileName(const QString &startWith,
    const QStringList& filters, QWidget* parent, const QString& name)
       {
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, true);
-      dlg->setFilters(filters);
+      dlg->setNameFilters(filters);
       dlg->setCaption(name);
-      dlg->setMode(Q3FileDialog::AnyFile);
+      dlg->setFileMode(QFileDialog::AnyFile);
+      QStringList files;
       QString result;
-      if (dlg->exec() == QDialog::Accepted) 
-        result = dlg->selectedFile();
-            
-      
+      if (dlg->exec() == QDialog::Accepted) {
+            files = dlg->selectedFiles();
+            if (!files.isEmpty())
+                  result = files[0];
+      }
+                  
       // Added by T356.
       if(!result.isEmpty())
       {
-        QString filt = dlg->selectedFilter();
+        QString filt = dlg->selectedNameFilter();
         filt = getFilterExtension(filt);
         // Do we have a valid extension?
         if(!filt.isEmpty())
@@ -359,8 +375,8 @@ QString getSaveFileName(const QString &startWith,
           //  but only if there are no errors in the list of filters. fileOpen() will act as a 'catchall'.
           //
           // Force the filter list to the first one (the preferred one), and then get the filter.
-          dlg->setSelectedFilter(0);
-          filt = dlg->selectedFilter();
+          dlg->selectNameFilter(dlg->filters().at(0));
+          filt = dlg->selectedNameFilter();
           filt = getFilterExtension(filt);
               
           // Do we have a valid extension?
@@ -402,20 +418,25 @@ QString getImageFileName(const QString& startWith,
       MFileDialog *dlg = new MFileDialog(*workingDirectory, QString::null,
          parent);
 
+      /* ORCAN - disable preview for now. It is not available in qt4. We will
+                 need to implement it ourselves.
       dlg->setContentsPreviewEnabled(true);
       ContentsPreview* preview = new ContentsPreview(dlg);
       dlg->setContentsPreview(preview, preview);
-      dlg->setPreviewMode(Q3FileDialog::Contents);
-
+      dlg->setPreviewMode(QFileDialog::Contents);
+      */
       dlg->setCaption(name);
-      dlg->setFilters(filters);
-      dlg->setMode(Q3FileDialog::ExistingFile);
+      dlg->setNameFilters(filters);
+      dlg->setFileMode(QFileDialog::ExistingFile);
+      QStringList files;
       QString result;
       if (!initialSelection.isEmpty())
-            dlg->setSelection( initialSelection);
+           dlg->selectFile( initialSelection);
       if (dlg->exec() == QDialog::Accepted) {
-            result = dlg->selectedFile();
-            }
+	   files = dlg->selectedFiles();
+	   if (!files.isEmpty())
+                result = files[0];
+      }
       delete dlg;
       return result;
       }

@@ -130,6 +130,11 @@ QT4_WRAP_CPP (widget_mocs
       action.h
       )
 
+QT4_WRAP_UI (UIC
+      fdialogbuttons.ui  
+      )
+      
+
 #QT4_WRAP_UI (widget_ui_headers
 QT4_WRAP_UI3 (widget_ui_headers
       midisync.ui  
@@ -152,7 +157,6 @@ QT4_WRAP_UI3 (widget_ui_headers
       editsysexdialogbase.ui  
       cliplisteditorbase.ui  
       mittransposebase.ui  
-      fdialogbuttons.ui  
       shortcutconfigbase.ui  
       shortcutcapturedialogbase.ui  
       aboutbox.ui  
@@ -170,6 +174,7 @@ QT4_WRAP_UI3 (widget_ui_headers
 # ADD_FILE_DEPENDENCIES(moc_midisync.cxx ${CMAKE_CURRENT_BINARY_DIR}/ui_midisync.h)
 
 add_library ( widgets STATIC 
+      ${UIC}
       ${widget_ui_headers}
       ${widget_mocs}
       utils.cpp 

@@ -6,6 +6,12 @@
            LayoutRequest events, just before paint events when the window sizes are finally correct.
           TODO: Still off by a few pixels when mixer first opened, because main window frameSize 
            is not set yet, by the time LayoutRequest is caught.
+	- Transformed file dialogs to Qt4. This was the first attempt to transform a .ui file to Qt4
+	  as well. New .ui files do not store image information. Thus I moved the 3 icons from
+	  qfiledialog.ui into their own files.
+	  TODO: Qt4 does not support file preview in file dialogs yet. The relevant code (wallpaper
+	  preview) is disabled. Now we either have to implement an image previewer, or forget about
+	  this feature. (Orcan)
 14.11.2010
         - renamed deicsonze2 files and classes with '2' suffixes
         - Applied patch by Orcan to convert populateAddSynth(). (Tim)

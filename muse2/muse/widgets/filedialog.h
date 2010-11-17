@@ -5,18 +5,33 @@
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3filedialog.h>
-//Added by qt3to4:
+#include <QFileDialog>
 #include <QPixmap>
 
-class FileDialogButtons;
+#include "ui_fdialogbuttons.h"
+
 class QStringList;
+
+//---------------------------------------------------------
+//   FileDialogButtonsWidget
+//   Wrapper around Ui::FileDialogButtons
+//---------------------------------------------------------
+
+class FileDialogButtonsWidget : public QWidget, public Ui::FileDialogButtons
+{
+     Q_OBJECT
+
+       public:
+  FileDialogButtonsWidget(QWidget *parent = 0)
+    : QWidget(parent)
+  { setupUi(this); }
+};
 
 //---------------------------------------------------------
 //   MFileDialog
 //---------------------------------------------------------
 
-class MFileDialog : public Q3FileDialog {
+class MFileDialog : public QFileDialog {
       Q_OBJECT
 
       enum ViewType { GLOBAL_VIEW, PROJECT_VIEW, USER_VIEW }; //!< The three different viewtypes
@@ -32,11 +47,13 @@ class MFileDialog : public Q3FileDialog {
       void directoryChanged(const QString& directory);
 
    public:
-      FileDialogButtons* buttons;
+      FileDialogButtonsWidget buttons;
       MFileDialog(const QString& dir, const QString& filter = QString::null,
          QWidget* parent = 0, bool writeFlag = false);
       };
 
+/* ORCAN - Disable previeww for now. It is not available in qt4. We will
+           need to implement it ourselves.
 //---------------------------------------------------------
 //   ContentsPreview
 //---------------------------------------------------------
@@ -55,6 +72,7 @@ class ContentsPreview : public QWidget, public Q3FilePreview {
             }
       ~ContentsPreview();
       };
+*/
 
 //QString getSaveFileName(const QString& startWidth, const char** filter,
 QString getSaveFileName(const QString& startWidth, const QStringList& filters,
