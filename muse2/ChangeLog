@@ -12,6 +12,7 @@
 	  TODO: Qt4 does not support file preview in file dialogs yet. The relevant code (wallpaper
 	  preview) is disabled. Now we either have to implement an image previewer, or forget about
 	  this feature. (Orcan)
+	- Only try to use theme icons in file dialogs if Qt >= 4.6 (Orcan)
 14.11.2010
         - renamed deicsonze2 files and classes with '2' suffixes
         - Applied patch by Orcan to convert populateAddSynth(). (Tim)
