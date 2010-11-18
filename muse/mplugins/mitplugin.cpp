@@ -116,7 +116,7 @@ void processMidiInputTransformPlugins(MEvent& event)
 void MusE::startMidiTransformer()
       {
       if (midiTransformerDialog == 0)
-            midiTransformerDialog = new MidiTransformerDialog(this);
+            midiTransformerDialog = new MidiTransformerDialog;
       midiTransformerDialog->show();
       }
 

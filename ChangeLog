@@ -2,6 +2,7 @@
         - Updated build part README file - read it! Tell user to specify Release build type. (Tim)
         - Added printout of build type in top level cmake. (Tim)
         - Removed duplicate LASH detection in top level cmake. (Tim)
+        - Ported the following .ui widgets to Qt4: transformbase, itransformbase (Orcan)
 17.11.2010
         - Removed a fix which cured graphic corruption for me in MusE-1. Not required now. (Tim)
         - Small change to Orcan's filedialog, re-enabled global button. (Tim)

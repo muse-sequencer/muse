@@ -9,9 +9,10 @@
 #ifndef __MIDITRANSFORM_H__
 #define __MIDITRANSFORM_H__
 
-#include "transformbase.h"
+#include "ui_transformbase.h"
 
-class Q3ListBoxItem;
+class QListWidgetItem;
+class QDialog;
 class MidiTransformation;
 class MidiTransformPrivate;
 class Event;
@@ -33,10 +34,23 @@ enum TransformOperator {
       };
 
 //---------------------------------------------------------
+//   MidiTransformDialogBaseWidget
+//   Wrapper around Ui::MidiTransformDialogBase
+//---------------------------------------------------------
+
+class MidiTransformDialogBaseWidget : public QDialog, public Ui::MidiTransformDialogBase
+{
+      Q_OBJECT
+
+   public:
+      MidiTransformDialogBaseWidget(QDialog *parent = 0, Qt::WFlags f = 0) : QDialog(parent, f) { setupUi(this); }
+};
+
+//---------------------------------------------------------
 //   MidiTransformDialog
 //---------------------------------------------------------
 
-class MidiTransformerDialog : public MidiTransformDialogBase {
+class MidiTransformerDialog : public MidiTransformDialogBaseWidget {
       Q_OBJECT
       MidiTransformPrivate* data;
 
@@ -68,7 +82,7 @@ class MidiTransformerDialog : public MidiTransformDialogBase {
       void procLenOpSel(int);
       void procPosOpSel(int);
       void funcOpSel(int);
-      void presetChanged(Q3ListBoxItem*);
+      void presetChanged(QListWidgetItem*);
       void nameChanged(const QString&);
       void commentChanged();
       void selVal1aChanged(int);
@@ -94,8 +108,7 @@ class MidiTransformerDialog : public MidiTransformDialogBase {
       void songChanged(int);
 
    public:
-      MidiTransformerDialog(QWidget* parent = 0, const char* name = 0,
-         bool modal = false, Qt::WFlags fl = 0);
+      MidiTransformerDialog(QDialog* parent = 0, Qt::WFlags fl = 0);
       ~MidiTransformerDialog();
       };
 

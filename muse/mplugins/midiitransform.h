@@ -9,11 +9,11 @@
 #ifndef __MIDIITRANSFORM_H__
 #define __MIDIITRANSFORM_H__
 
-#include "itransformbase.h"
-//Added by qt3to4:
+#include "ui_itransformbase.h"
+
 #include <QCloseEvent>
 
-class Q3ListBoxItem;
+class QButtonGroup;
 class MidiTransformation;
 class MidiInputTransformation;
 class MidiRecordEvent;
@@ -23,11 +23,25 @@ class Xml;
 #include "miditransform.h"
 
 enum InputTransformProcEventOp { KeepType, FixType };
+
+//---------------------------------------------------------
+//   MidiInputTransformDialogBaseWidget
+//   Wrapper around Ui::MidiInputTransformDialogBase
+//---------------------------------------------------------
+
+class MidiInputTransformDialogBaseWidget : public QDialog, public Ui::MidiInputTransformDialogBase
+{
+      Q_OBJECT
+
+   public:
+      MidiInputTransformDialogBaseWidget(QDialog *parent = 0, Qt::WFlags f = 0) : QDialog(parent, f) { setupUi(this); }
+};
+
 //---------------------------------------------------------
 //   MidiInputTransform
 //---------------------------------------------------------
 
-class MidiInputTransformDialog : public MidiInputTransformDialogBase {
+class MidiInputTransformDialog : public MidiInputTransformDialogBaseWidget {
       Q_OBJECT
       MidiInputTransformation* cmt;
       int cindex;                   // current index in preset list
@@ -39,6 +53,7 @@ class MidiInputTransformDialog : public MidiInputTransformDialogBase {
       virtual void closeEvent(QCloseEvent*);
       
       void updatePresetList();
+      QButtonGroup* modulGroup;
       
    signals:
       void hideWindow();
@@ -57,7 +72,7 @@ class MidiInputTransformDialog : public MidiInputTransformDialogBase {
       void procVal1OpSel(int);
       void procVal2OpSel(int);
       void funcOpSel(int);
-      void presetChanged(Q3ListBoxItem*);
+      void presetChanged(QListWidgetItem*);
       void nameChanged(const QString&);
       void commentChanged();
       void selVal1aChanged(int);
@@ -90,8 +105,7 @@ class MidiInputTransformDialog : public MidiInputTransformDialogBase {
       void songChanged(int);
 
    public:
-      MidiInputTransformDialog(QWidget* parent = 0, const char* name = 0,
-         bool modal = false, Qt::WFlags fl = 0);
+      MidiInputTransformDialog(QDialog* parent = 0, Qt::WFlags fl = 0);
       };
 
 extern void writeMidiInputTransforms(int level, Xml& xml);

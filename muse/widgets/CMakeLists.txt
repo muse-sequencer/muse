@@ -133,8 +133,10 @@ QT4_WRAP_CPP (widget_mocs
 
 QT4_WRAP_UI (UIC
       fdialogbuttons.ui  
+      itransformbase.ui  
       mittransposebase.ui  
       songinfo.ui  
+      transformbase.ui  
       velocitybase.ui  
       )
       
@@ -145,9 +147,7 @@ QT4_WRAP_UI3 (widget_ui_headers
       gensetbase.ui  
       mixdowndialogbase.ui  
       transposebase.ui  
-      transformbase.ui  
       appearancebase.ui  
-      itransformbase.ui  
       commentbase.ui  
       synthconfigbase.ui  
       gatetimebase.ui  
