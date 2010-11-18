@@ -8,17 +8,11 @@
 
 #include <stdio.h>
 #include <list>
-#include <qpushbutton.h>
-#include <q3buttongroup.h>
-#include <qlineedit.h>
-#include <qcombobox.h>
-#include <q3listbox.h>
-#include <qspinbox.h>
-#include <q3multilineedit.h>
-#include <qcheckbox.h>
-#include <qtoolbutton.h>
-//Added by qt3to4:
 #include <QCloseEvent>
+
+#include <QButtonGroup>
+#include <QDialog>
+#include <QListWidgetItem>
 
 #include "spinboxFP.h"
 #include "midi.h"
@@ -597,13 +591,18 @@ bool MidiInputTransformation::typesMatch(MidiRecordEvent& e, int selType) const
 //    procChannelOp procChannelVala procChannelValb
 //---------------------------------------------------------
 
-MidiInputTransformDialog::MidiInputTransformDialog(QWidget* parent,
-   const char* name, bool modal, Qt::WFlags fl)
-   : MidiInputTransformDialogBase(parent, name, modal, fl)
+MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WFlags fl)
+   : MidiInputTransformDialogBaseWidget(parent, fl)
       {
       cindex = 0;
       cmodul = 0;
       cmt    = 0;
+
+      modulGroup = new QButtonGroup;
+      modulGroup->addButton(modul1select,0);
+      modulGroup->addButton(modul2select,1);
+      modulGroup->addButton(modul3select,2);
+      modulGroup->addButton(modul4select,3);
 
       for (unsigned i = 0; i < sizeof(oplist)/sizeof(*oplist); ++i)
             funcOp->insertItem(oplist[i].text, i);
@@ -619,8 +618,8 @@ MidiInputTransformDialog::MidiInputTransformDialog(QWidget* parent,
       connect(procVal1Op,   SIGNAL(activated(int)), SLOT(procVal1OpSel(int)));
       connect(procVal2Op,   SIGNAL(activated(int)), SLOT(procVal2OpSel(int)));
       connect(funcOp,       SIGNAL(activated(int)), SLOT(funcOpSel(int)));
-      connect(presetList,   SIGNAL(highlighted(Q3ListBoxItem*)),
-         SLOT(presetChanged(Q3ListBoxItem*)));
+      connect(presetList,   SIGNAL(itemActivated(QListWidgetItem*)),
+         SLOT(presetChanged(QListWidgetItem*)));
       connect(nameEntry,    SIGNAL(textChanged(const QString&)),
          SLOT(nameChanged(const QString&)));
       connect(commentEntry,    SIGNAL(textChanged()), SLOT(commentChanged()));
@@ -638,7 +637,7 @@ MidiInputTransformDialog::MidiInputTransformDialog(QWidget* parent,
       connect(modul2enable, SIGNAL(toggled(bool)), SLOT(modul2enableChanged(bool)));
       connect(modul3enable, SIGNAL(toggled(bool)), SLOT(modul3enableChanged(bool)));
       connect(modul4enable, SIGNAL(toggled(bool)), SLOT(modul4enableChanged(bool)));
-      connect(modulGroup,   SIGNAL(clicked(int)),  SLOT(changeModul(int)));
+      connect(modulGroup,   SIGNAL(buttonClicked(int)),  SLOT(changeModul(int)));
 
       connect(selPortOp,   SIGNAL(activated(int)), SLOT(selPortOpSel(int)));
       connect(selPortVala, SIGNAL(valueChanged(int)), SLOT(selPortValaChanged(int)));
@@ -661,6 +660,8 @@ MidiInputTransformDialog::MidiInputTransformDialog(QWidget* parent,
       //---------------------------------------------------
 
       updatePresetList();
+      presetList->setCurrentItem(presetList->item(0));
+      presetChanged(presetList->item(0));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       }
 
@@ -687,7 +688,7 @@ void MidiInputTransformDialog::updatePresetList()
       
       modul1select->setOn(true);
       for (iMidiInputTransformation i = mtlist.begin(); i != mtlist.end(); ++i) {
-            presetList->insertItem((*i)->name);
+            presetList->addItem((*i)->name);
             if (cmt == 0)
                   cmt = *i;
             }
@@ -695,7 +696,7 @@ void MidiInputTransformDialog::updatePresetList()
             // create default "New" preset
             cmt = new MidiInputTransformation(tr("New"));
             mtlist.push_back(cmt);
-            presetList->insertItem(tr("New"));
+            presetList->addItem(tr("New"));
             presetList->setCurrentItem(0);
             }
       changeModul(0);
@@ -1189,9 +1190,11 @@ void MidiInputTransformDialog::presetNew()
                   break;
             }
       MidiInputTransformation* mt = new MidiInputTransformation(name);
-      Q3ListBoxText* lbi = new Q3ListBoxText(presetList, name);
+      QListWidgetItem* lbi      = new QListWidgetItem(name);
+      presetList->addItem(lbi);
       mtlist.push_back(mt);
       presetList->setCurrentItem(lbi);
+      presetChanged(lbi);
       }
 
 //---------------------------------------------------------
@@ -1204,7 +1207,9 @@ void MidiInputTransformDialog::presetDelete()
             iMidiInputTransformation mt = mtlist.begin();
             for (int i = 0; i < cindex; ++i, ++mt) {
                   mtlist.erase(mt);
-                  presetList->removeItem(cindex);
+                  presetList->setCurrentItem(presetList->item(cindex - 1));
+                  presetList->takeItem(cindex);
+                  presetChanged(presetList->item(cindex - 1));                  
                   break;
                   }
             }
@@ -1217,13 +1222,15 @@ void MidiInputTransformDialog::presetDelete()
 void MidiInputTransformDialog::nameChanged(const QString& s)
       {
       cmt->name = s;
-      Q3ListBoxItem* item = presetList->item(cindex);
+      QListWidgetItem* item = presetList->item(cindex);
       if (s != item->text()) {
-            disconnect(presetList,   SIGNAL(highlighted(Q3ListBoxItem*)),
-               this, SLOT(presetChanged(Q3ListBoxItem*)));
-            presetList->changeItem(s, cindex);
-            connect(presetList,   SIGNAL(highlighted(Q3ListBoxItem*)),
-               SLOT(presetChanged(Q3ListBoxItem*)));
+            disconnect(presetList,   SIGNAL(itemActivated(QListWidgetItem*)),
+               this, SLOT(presetChanged(QListWidgetItem*)));
+            presetList->insertItem(cindex, s);
+            presetList->takeItem(cindex+1);
+            presetList->setCurrentItem(presetList->item(cindex));
+            connect(presetList,   SIGNAL(itemActivated(QListWidgetItem*)),
+               SLOT(presetChanged(QListWidgetItem*)));
             }
       }
 
@@ -1565,7 +1572,7 @@ printf("change modul %d\n", k);
             iMidiInputTransformation i;
             for (i = mtlist.begin(); i != mtlist.end(); ++i, ++idx) {
                   if (*i == modules[k].transform) {
-                        presetList->setCurrentItem(idx);
+                        presetList->setCurrentItem(presetList->item(idx));
                         break;
                         }
                   }
@@ -1578,9 +1585,9 @@ printf("change modul %d\n", k);
 //   presetChanged
 //---------------------------------------------------------
 
-void MidiInputTransformDialog::presetChanged(Q3ListBoxItem* item)
+void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
       {
-      cindex = presetList->index(item);
+      cindex = presetList->row(item);
 
       //---------------------------------------------------
       //   search transformation in list and set
