@@ -9,15 +9,32 @@
 #ifndef __MRCONFIG_H__
 #define __MRCONFIG_H__
 
-#include "mrconfigbase.h"
-//Added by qt3to4:
-#include <QCloseEvent>
+#include "ui_mrconfigbase.h"
+
+class QCloseEvent;
+class QWidget;
+
+//---------------------------------------------------------
+//   MRConfigBaseWidget
+//   Wrapper around Ui::MRConfigBase
+//---------------------------------------------------------
+
+class MRConfigBaseWidget : public QWidget, public Ui::MRConfigBase
+{
+      Q_OBJECT
+
+   public:
+      MRConfigBaseWidget(QWidget *parent = 0, Qt::WFlags f = 0) : QWidget(parent, f) { setupUi(this); }
+};
+
+
+
 
 //---------------------------------------------------------
 //   MRConfig
 //---------------------------------------------------------
 
-class MRConfig : public MRConfigBase {
+class MRConfig : public MRConfigBaseWidget {
       Q_OBJECT
 
       virtual void closeEvent(QCloseEvent*);
@@ -33,7 +50,7 @@ class MRConfig : public MRConfigBase {
       void setRcPlayNote(int);
 
    public:
-      MRConfig(QWidget* parent=0, const char* name=0, Qt::WFlags fl = 0);
+      MRConfig(QWidget* parent=0, Qt::WFlags fl = 0);
       };
 
 #endif

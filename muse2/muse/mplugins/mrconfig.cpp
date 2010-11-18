@@ -9,8 +9,7 @@
 #include "pitchedit.h"
 #include "mrconfig.h"
 #include "globals.h"
-#include <qcheckbox.h>
-//Added by qt3to4:
+
 #include <QCloseEvent>
 
 //---------------------------------------------------------
@@ -18,8 +17,8 @@
 //    Midi Remote Control Config
 //---------------------------------------------------------
 
-MRConfig::MRConfig(QWidget* parent, const char* name, Qt::WFlags fl)
-   : MRConfigBase(parent, name, fl)
+MRConfig::MRConfig(QWidget* parent, Qt::WFlags fl)
+   : MRConfigBaseWidget(parent, fl)
       {
       b1->setChecked(rcEnable);
       sb1->setValue(rcStopNote);
