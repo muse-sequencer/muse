@@ -6,12 +6,8 @@
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qcheckbox.h>
-#include <qspinbox.h>
-#include <qlabel.h>
-#include <qtimer.h>
-//Added by qt3to4:
 #include <QCloseEvent>
+#include <QWidget>
 
 #include "mittranspose.h"
 #include "song.h"
@@ -26,8 +22,8 @@ MITPluginTranspose* mitPluginTranspose;
 //   MITPluginTranspose
 //---------------------------------------------------------
 
-MITPluginTranspose::MITPluginTranspose(QWidget* parent, const char* name, Qt::WFlags fl)
-   : MITTransposeBase(parent, name, fl)
+MITPluginTranspose::MITPluginTranspose(QWidget* parent, Qt::WFlags fl)
+    : MITTransposeBaseWidget(parent, fl)
       {
       on        = false;
       transpose = 0;

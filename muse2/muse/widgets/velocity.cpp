@@ -5,22 +5,21 @@
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3buttongroup.h>
-#include <qspinbox.h>
-//#include <qbutton.h>
-#include <QtGui>
-
+#include <QButtonGroup>
 #include "velocity.h"
-
-#include "song.h"
 
 //---------------------------------------------------------
 //   Velocity
 //---------------------------------------------------------
 
-Velocity::Velocity(QWidget* parent, const char* name)
-   : VelocityBase(parent, name, true)
+Velocity::Velocity(QDialog* parent)
+   : VelocityBaseWidget(parent)
       {
+      rangeGroup = new QButtonGroup;
+      rangeGroup->addButton(allEvents,0);
+      rangeGroup->addButton(selectedEvents,1);
+      rangeGroup->addButton(loopedEvents,2);
+      rangeGroup->addButton(selectedLooped,3);
       }
 
 //---------------------------------------------------------
@@ -29,10 +28,10 @@ Velocity::Velocity(QWidget* parent, const char* name)
 
 void Velocity::accept()
       {
-      _range     = rangeGroup->id(rangeGroup->selected());
+      _range     = rangeGroup->checkedId();
       _rateVal   = rate->value();
       _offsetVal = offset->value();
-      VelocityBase::accept();
+      VelocityBaseWidget::accept();
       }
 
 //---------------------------------------------------------
@@ -41,6 +40,6 @@ void Velocity::accept()
 
 void Velocity::setRange(int id)
       {
-      rangeGroup->setButton(id);
+      rangeGroup->button(id)->setChecked(true);
       }
 

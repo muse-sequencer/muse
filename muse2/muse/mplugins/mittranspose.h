@@ -10,10 +10,10 @@
 #define __MITTRANSPOSE_H__
 
 #include "mitplugin.h"
-#include "mittransposebase.h"
+#include "ui_mittransposebase.h"
 #include <list>
-//Added by qt3to4:
-#include <QCloseEvent>
+
+class QCloseEvent;
 
 struct KeyOn {
       unsigned char pitch;
@@ -34,10 +34,23 @@ typedef KeyOnList::iterator iKeyOn;
 class Xml;
 
 //---------------------------------------------------------
+//   MITTransposeBaseWidget
+//   Wrapper around Ui::MITTransposeBase
+//---------------------------------------------------------
+
+class MITTransposeBaseWidget : public QWidget, public Ui::MITTransposeBase
+{
+      Q_OBJECT
+
+   public:
+      MITTransposeBaseWidget(QWidget *parent = 0, Qt::WFlags f = 0) : QWidget(parent, f) { setupUi(this); }
+};
+
+//---------------------------------------------------------
 //   MITPluginTranspose
 //---------------------------------------------------------
 
-class MITPluginTranspose : public MITTransposeBase, public MITPlugin {
+class MITPluginTranspose : public MITTransposeBaseWidget, public MITPlugin {
       Q_OBJECT
 
       KeyOnList keyOnList;
@@ -58,7 +71,7 @@ class MITPluginTranspose : public MITTransposeBase, public MITPlugin {
       void noteReceived();
 
    public:
-      MITPluginTranspose(QWidget* parent = 0, const char* name = 0, Qt::WFlags fl = 0);
+      MITPluginTranspose(QWidget* parent = 0, Qt::WFlags fl = 0);
       virtual void process(MEvent&);
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
