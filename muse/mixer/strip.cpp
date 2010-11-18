@@ -11,9 +11,7 @@
 #include <QLayout>
 #include <QPalette>
 #include <QColor>
-//Added by qt3to4:
 #include <QVBoxLayout>
-//#include <Q3Frame>
 #include <QFrame>
 
 #include "globals.h"
@@ -34,7 +32,7 @@ void Strip::setRecordFlag(bool flag)
       {
       if (record) {
             record->blockSignals(true);
-            record->setOn(flag);
+            record->setChecked(flag);
             record->blockSignals(false);
             }
       }
@@ -60,7 +58,7 @@ void Strip::recordToggled(bool val)
                   }
             audio->msgSetRecord((AudioOutput*)track, val);
             if (!((AudioOutput*)track)->recFile())
-                  record->setOn(false);
+                  record->setChecked(false);
             return;
             }
       song->setRecordFlag(track, val);

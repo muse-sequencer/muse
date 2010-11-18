@@ -13,7 +13,6 @@
 #include <QMenuBar>
 #include <QResizeEvent>
 #include <QPaintEvent>
-//Added by qt3to4:
 #include <QHBoxLayout>
 #include <QCloseEvent>
 #include <QMenu>
@@ -280,7 +279,7 @@ void AudioMixerApp::addStrip(Track* t, int idx)
       if (si != stripList.end()
          && nsi != stripList.end()
          && (*nsi)->getTrack() == t) {
-            layout->remove(*si);
+            layout->removeWidget(*si);
             delete *si;
             stripList.erase(si);
             }
@@ -304,7 +303,7 @@ void AudioMixerApp::clear()
       {
       StripList::iterator si = stripList.begin();
       for (; si != stripList.end(); ++si) {
-            layout->remove(*si);
+            layout->removeWidget(*si);
             delete *si;
             }
       stripList.clear();
@@ -321,16 +320,16 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       
       //name = cfg->name;
       //setCaption(name);
-      setCaption(cfg->name);
+      setWindowTitle(cfg->name);
       
-      showMidiTracksId->setOn(cfg->showMidiTracks);
-      showDrumTracksId->setOn(cfg->showDrumTracks);
-      showInputTracksId->setOn(cfg->showInputTracks);
-      showOutputTracksId->setOn(cfg->showOutputTracks);
-      showWaveTracksId->setOn(cfg->showWaveTracks);
-      showGroupTracksId->setOn(cfg->showGroupTracks);
-      showAuxTracksId->setOn(cfg->showAuxTracks);
-      showSyntiTracksId->setOn(cfg->showSyntiTracks);
+      showMidiTracksId->setChecked(cfg->showMidiTracks);
+      showDrumTracksId->setChecked(cfg->showDrumTracks);
+      showInputTracksId->setChecked(cfg->showInputTracks);
+      showOutputTracksId->setChecked(cfg->showOutputTracks);
+      showWaveTracksId->setChecked(cfg->showWaveTracks);
+      showGroupTracksId->setChecked(cfg->showGroupTracks);
+      showAuxTracksId->setChecked(cfg->showAuxTracks);
+      showSyntiTracksId->setChecked(cfg->showSyntiTracks);
 
       int auxsSize = song->auxs()->size();
       if ((action == UPDATE_ALL) || (auxsSize != oldAuxsSize)) {
@@ -352,7 +351,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                   ++si;
                   if (it != tl->end())
                         continue;
-                  layout->remove(*ssi);
+                  layout->removeWidget(*ssi);
                   delete *ssi;
                   stripList.erase(ssi);
                   }
@@ -388,7 +387,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                      
                   StripList::iterator ssi = si;
                   ++si;
-                  layout->remove(*ssi);
+                  layout->removeWidget(*ssi);
                   delete *ssi;
                   stripList.erase(ssi);
             }
@@ -576,7 +575,7 @@ void AudioMixerApp::showRouteDialog(bool on)
             connect(routingDialog, SIGNAL(closed()), SLOT(routingDialogClosed()));
             }
       if (routingDialog)
-            routingDialog->setShown(on);
+            routingDialog->setVisible(on);
       //menuView->setItemChecked(routingId, on);
       routingId->setChecked(on);
       }

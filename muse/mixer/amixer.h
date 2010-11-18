@@ -11,10 +11,7 @@
 
 #include <QLayout>
 #include <QPixmap>
-//#include <q3listbox.h>
 #include <QToolTip>
-//#include <q3frame.h>
-//Added by qt3to4:
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenu>
