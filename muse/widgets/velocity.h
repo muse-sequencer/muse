@@ -8,24 +8,43 @@
 #ifndef __VELOCITY_H__
 #define __VELOCITY_H__
 
-#include "velocitybase.h"
+#include "ui_velocitybase.h"
+
+class QButtonGroup;
+
+//---------------------------------------------------------
+//   VelocityBaseWidget
+//   Wrapper around Ui::VelocityBase
+//---------------------------------------------------------
+
+class VelocityBaseWidget : public QDialog, public Ui::VelocityBase
+{
+      Q_OBJECT
+
+   public:
+      VelocityBaseWidget(QDialog *parent = 0)
+           : QDialog(parent)
+           { setupUi(this); }
+};
+
 
 //---------------------------------------------------------
 //   Velocity
 //---------------------------------------------------------
 
-class Velocity : public VelocityBase {
+class Velocity : public VelocityBaseWidget {
       int _range;
       int _rateVal;
       int _offsetVal;
 
       Q_OBJECT
+      QButtonGroup* rangeGroup;
 
    protected slots:
       void accept();
 
    public:
-      Velocity(QWidget* parent, const char* name = 0);
+      Velocity(QDialog* parent = 0);
       void setRange(int id);
       int range() const     { return _range; }
       int rateVal() const   { return _rateVal; }

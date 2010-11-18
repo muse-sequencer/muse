@@ -153,6 +153,7 @@ HEADERS = \
       ./widgets/sliderbase.h        \
       ./widgets/scldraw.h           \
       ./widgets/citem.h       \
+      ./widgets/songinfo.h       \
       ./mididev.h       \
       ./midictrl.h            \
       ./midiseq.h       \

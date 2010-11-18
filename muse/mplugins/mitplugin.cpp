@@ -6,8 +6,6 @@
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3popupmenu.h>
-
 #include "mitplugin.h"
 #include "app.h"
 #include "event.h"

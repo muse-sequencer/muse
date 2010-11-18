@@ -765,7 +765,7 @@ void DrumCanvas::cmd(int cmd)
                   break;
             case CMD_MODIFY_VELOCITY:
                   {
-                  Velocity w(this);
+                  Velocity w;
                   w.setRange(0); //TODO: Make this work! Probably put _to & _toInit in ecanvas instead
                   if (!w.exec())
                         break;

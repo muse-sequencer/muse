@@ -1055,7 +1055,7 @@ void PianoCanvas::cmd(int cmd, int quantStrength,
 
             case CMD_MODIFY_VELOCITY:
                   {
-                  Velocity w(this);
+                  Velocity w;
                   w.setRange(range);
                   if (!w.exec())
                         break;

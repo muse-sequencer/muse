@@ -3124,13 +3124,13 @@ void MusE::startWaveEditor(PartList* pl)
 void MusE::startSongInfo(bool editable)
       {
   printf("startSongInfo!!!!\n");
-        SongInfo info;
-        info.songInfoText->setText(song->getSongInfo());
+        SongInfoWidget info;
+        info.songInfoText->setPlainText(song->getSongInfo());
         info.songInfoText->setReadOnly(!editable);
         info.show();
         if( info.exec() == QDialog::Accepted) {
           if (editable)
-            song->setSongInfo(info.songInfoText->text());
+            song->setSongInfo(info.songInfoText->toPlainText());
         }
 
       }
