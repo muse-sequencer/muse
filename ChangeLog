@@ -1,3 +1,5 @@
+17.11.2010
+        - Removed a fix which cured graphic corruption for me in MusE-1. Not required now. (Tim)
 16.11.2010
         - Fixed track info sizing problems. In Arranger::switchInfo() added tgrid->update(). (Tim)
           QLayout::update() seems to be a new method, we needed to call it here.
