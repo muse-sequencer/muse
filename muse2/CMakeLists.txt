@@ -40,6 +40,19 @@ ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
 #set(CMAKE_BUILD_TYPE debug)
 #set(CMAKE_BUILD_TYPE release)
 
+# If no CMAKE_BUILD_TYPE is given on the command line,
+#  cmake either uses the cached value, or 'empty' (plain un-opt build). 
+# And yet the only way a user can reset a cached CMAKE_BUILD_TYPE
+#  is with "-DCMAKE_BUILD_TYPE=". So we cannot interfere with this.
+# We should probably not attempt to do this at all.
+# Installation instructions now updated to be more specific, give options.
+#endif (NOT DEFINED CMAKE_BUILD_TYPE)
+#if (NOT CMAKE_BUILD_TYPE)
+#    message("No CMAKE_BUILD_TYPE specified. Setting to Release.")
+#     set(CMAKE_BUILD_TYPE release)
+#endif (NOT CMAKE_BUILD_TYPE)
+
+
 # for debugging the make system uncomment next line:
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -169,24 +182,6 @@ include_directories(${SAMPLERATE_INCLUDE_DIRS})
 PKG_CHECK_MODULES(UUID REQUIRED uuid>=0.0.1)
 include_directories(${UUID_INCLUDE_DIRS})
 
-# AC_CHECK_HEADER(uuid/uuid.h, UUID_FOUND="yes", UUID_FOUND="no")
-# if test x$UUID_FOUND = xno; then
-#   AC_MSG_ERROR([Header file uuid.h, from the uuid-dev (sometimes in e2fsprogs) package, is required])
-# fi
-# 
-# AC_CHECK_LIB(uuid, uuid_generate, UUID_FOUND="yes", UUID_FOUND="no")
-# if test x$UUID_FOUND = xno; then
-#   AC_MSG_ERROR([libuuid (sometimes in e2fsprogs package) is required])
-# fi
-# UUID_LIBS="-luuid"
-# AC_SUBST(UUID_CFLAGS)
-# AC_SUBST(UUID_LIBS)
-# 
-# ## PKG_CHECK_MODULES(UUID, uuid >= 1.0,
-# ##   true,
-# ##   AC_MSG_ERROR([need libuuid >= 1.0 from e2fsprogs package])
-# ## )
-
 ##
 ## find jack >= 0.103.0
 ##
@@ -207,39 +202,6 @@ if (ENABLE_LASH)
 else (ENABLE_LASH)
       message("LASH disabled")
 endif (ENABLE_LASH)
-
-# muse_enable_lash="no"
-# AC_ARG_ENABLE(lash,
-#   [  --enable-lash           enable LASH support],[
-#   case "$enableval" in
-#     "yes")
-#       muse_enable_lash="yes"
-#       ;;
-#     "no")
-#       muse_enable_lash="no"
-#       ;;
-#     *)
-#       AC_MSG_ERROR([must use --enable-lash(=yes/no) or --disable-lash])
-#       ;;
-#   esac
-# ])
-# 
-# if test "$muse_enable_lash" = "yes"; then
-#   PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.2, LASH_FOUND="yes", LASH_FOUND="no")
-#   AC_SUBST(LASH_CFLAGS)
-#   AC_SUBST(LASH_LIBS)
-# 
-#   if test "$LASH_FOUND" = "yes"; then
-#     AC_DEFINE(HAVE_LASH, 1, [whether or not we are supporting lash])
-#     LASH_VERSION=$( pkg-config --modversion lash-1.0 )
-#     AC_DEFINE_UNQUOTED(LASH_VERSION, "$LASH_VERSION", [The version of lash we're compiling against])
-#   fi
-# else
-#   AC_MSG_WARN([LASH support is disabled])
-#   LASH_FOUND="no"
-# fi
-# AM_CONDITIONAL(HAVE_LASH, test "$LASH_FOUND" = "yes")
-
 
 ##
 ## check for liblo >= 0.23
@@ -288,17 +250,6 @@ SET (USE_SSE false)
 ##
 ## check for fluidsynth
 ##
-
-if (ENABLE_LASH)
-      PKG_CHECK_MODULES(LASH lash-1.0>=0.2)
-      if (LASH_FOUND)
-            include_directories(${LASH_INCLUDE_DIRS})
-            set(HAVE_LASH ON)
-      endif (LASH_FOUND)           
-else (ENABLE_LASH)
-      message("LASH disabled")
-endif (ENABLE_LASH)
-
 
 if ( ENABLE_FLUID )
       # Be careful with naming here since we have two shared synth libraries
@@ -423,3 +374,12 @@ summary_add("DSSI support" DSSI_SUPPORT)
 summary_add("VST support" VST_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
 summary_show()
+
+# Make the user aware of what type they're building.
+if (NOT CMAKE_BUILD_TYPE)
+    message(" Build type: CMAKE_BUILD_TYPE is empty. Plain un-optimized build.")
+else (NOT CMAKE_BUILD_TYPE)
+    message(" Build type: " ${CMAKE_BUILD_TYPE} )          
+endif (NOT CMAKE_BUILD_TYPE)
+message("")
+

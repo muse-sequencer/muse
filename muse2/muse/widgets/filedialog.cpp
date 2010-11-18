@@ -172,13 +172,13 @@ MFileDialog::MFileDialog(const QString& dir,
 
 	    // Qt >= 4.6 allows us to select icons from the theme
 #if QT_VERSION >= 0x040600
-            buttons.globalButton->setIcon(QIcon::fromTheme("folder", QIcon(":/icons/global.xpm")));
-            buttons.userButton->setIcon(QIcon::fromTheme("user-home", QIcon(":/icons/user.xpm")));
-            buttons.projectButton->setIcon(QIcon::fromTheme("folder-sound", QIcon(":/icons/project.xpm")));
+            buttons.globalButton->setIcon(QIcon::fromTheme("folder", style()->standardIcon(QStyle::SP_DirIcon)));
+            buttons.userButton->setIcon(QIcon::fromTheme("user-home", style()->standardIcon(QStyle::SP_DirHomeIcon)));
+            buttons.projectButton->setIcon(QIcon::fromTheme("folder-sound", style()->standardIcon(QStyle::SP_DirOpenIcon)));
 #else
-            buttons.globalButton->setIcon(QIcon(":/icons/global.xpm"));
-            buttons.userButton->setIcon(QIcon(":/icons/user.xpm"));
-            buttons.projectButton->setIcon(QIcon(":/icons/project.xpm"));
+            buttons.globalButton->setIcon(style()->standardIcon(QStyle::SP_DirIcon));
+            buttons.userButton->setIcon(style()->standardIcon(QStyle::SP_DirHomeIcon));
+            buttons.projectButton->setIcon(style()->standardIcon(QStyle::SP_DirOpenIcon));
 #endif	    
 
             connect(buttons.globalButton, SIGNAL(toggled(bool)), this, SLOT(globalToggled(bool)));
