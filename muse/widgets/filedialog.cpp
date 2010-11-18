@@ -319,7 +319,7 @@ QString getOpenFileName(const QString &startWith,
       dlg->setCaption(name);
       if (all) {
             dlg->buttons.loadAllGroup->setVisible(true);
-            dlg->buttons.globalButton->setVisible(false);
+            //dlg->buttons.globalButton->setVisible(false);
       }
       if (!initialSelection.isEmpty())
             dlg->selectFile(initialSelection);
