@@ -57,25 +57,36 @@ details.
       Compiling:
   =============================
 
-      - download source from http://lmuse.sourceforge.net/
+      - Download source from http://lmuse.sourceforge.net/
 
-      - command line to unpack source:
-            tar xvofz muse-x.y.z.tar.gz </code>
-        where x.y.z is the version number.
+      - Command line to unpack source:
+            tar xvofz muse-x.y.z.tar.gz 
+         where x.y.z is the version number.
+        Or just use a graphical de-compressor to unpack it somewhere.  
 
-      - to compile MusE, run the following commands from the 
-        top level directory, where the source code was unpacked : 
+      - To compile MusE, run the following commands from the 
+         top level directory where the source code was unpacked
+         (the directory where THIS README FILE is): 
         
-            mkdir build                                      # create build directory
-            cd build                                         # enter build directory
+          # Create build directory. Choose any name like 'build'.
+              mkdir build                                      
+          # Enter build directory.
+              cd build                                         
+          
+          # Create make system in the build directory.
+          # Optional <Prefix> is the location to install MusE, default /usr/local.
+          # Build type can be blank (to reset a previous cached type to 'empty'), 
+          #  debug, release, RelWithDebInfo and MinSizeRel.
+          # If no CMAKE_BUILD_TYPE is given at all, cmake uses either the previous 
+          #  cached value, or else 'empty' (plain unoptimized).
+          # ('Release' type is recommended, otherwise it builds a plain unoptimized program.)
+              cmake -DCMAKE_BUILD_TYPE=release [-DCMAKE_INSTALL_PREFIX=<prefix>] ../
+          
+          # Compile muse
+              make                                             
             
-            cmake  [-DCMAKE_INSTALL_PREFIX=<prefix> ] ../    # create make system in build directory
-                                                             # prefix is desired location to install MusE, default /usr/local
-            
-            make                                             # compile muse
-            
-      - install MusE:
-            run "make install"  (as root user)
+      - Install MusE:
+              Run "make install"  (as root user)
 
   =============================
       running MusE
