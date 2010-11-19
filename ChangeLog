@@ -4,6 +4,8 @@
         - Removed duplicate LASH detection in top level cmake. (Tim)
         - Ported the following .ui widgets to Qt4: transformbase, itransformbase, mrconfigbase (Orcan)
         - Finished remaining port work of mixer and strips. Should be all done now. (Tim)
+	- Modified icons.cpp to Use theme icons whenever possible. We now need to match muse
+	  icons with the standard theme icon names (Orcan)
 17.11.2010
         - Removed a fix which cured graphic corruption for me in MusE-1. Not required now. (Tim)
         - Small change to Orcan's filedialog, re-enabled global button. (Tim)
