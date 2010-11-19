@@ -211,14 +211,17 @@
 
 #if QT_VERSION >= 0x040600
 #define MPIXMAP(a,b) QPixmap(QIcon::fromTheme(b, QIcon(QPixmap(a))).pixmap(QPixmap(a).width(),QPixmap(a).height()))
+#define MICON(a,b) QIcon(QIcon::fromTheme(b, QIcon(QPixmap(a))))
 #else
 #define MPIXMAP(a,b) QPixmap(a)
+#define MICON(a,b) QIcon(QPixmap(a))
 #endif
 
 /* Quick API reference:
    -------------------
 
    QPixmap MPIXMAP(const char * const[] xpm, const QString & name)
+   QIcon MICON(const char * const[] xpm, const QString & name)
 
       xpm:  a valid XPM image data
       name: filename of a theme icon, without the extension; or NULL
@@ -489,7 +492,7 @@ void initIcons()
       flagIconS   = new MPIXMAP(flagS_xpm, NULL);
       lockIcon    = new MPIXMAP(lock_xpm, NULL);
       tocIcon     = new MPIXMAP(toc_xpm, NULL);
-      exitIconS   = new MPIXMAP(exitS_xpm, NULL);
+      exitIconS   = new MPIXMAP(exitS_xpm, "application-exit");
 
       undoIcon     = new MPIXMAP(undo_xpm, "edit-undo");
       redoIcon     = new MPIXMAP(redo_xpm, "edit-redo");
@@ -504,16 +507,16 @@ void initIcons()
       editmuteSIcon = new MPIXMAP(editmuteS_xpm, NULL);
       panicIcon  = new MPIXMAP(panic_xpm, NULL);
 
-      editcutIconSet       = new QIcon(QPixmap(editcutS_xpm)); // ddskrjo
-      editcopyIconSet      = new QIcon(QPixmap(editcopyS_xpm));
-      editpasteIconSet     = new QIcon(QPixmap(editpasteS_xpm));
-      editmuteIconSet      = new QIcon(QPixmap(editmuteS_xpm));
-      editpaste2TrackIconSet = new QIcon(QPixmap(editpaste2trackS_xpm));
-      editpasteCloneIconSet  = new QIcon(QPixmap(editpastecloneS_xpm));
-      editpasteClone2TrackIconSet = new QIcon(QPixmap(editpasteclone2trackS_xpm)); // ..
+      editcutIconSet       = new MICON(editcutS_xpm, "edit-cut"); // ddskrjo
+      editcopyIconSet      = new MICON(editcopyS_xpm, "edit-copy");
+      editpasteIconSet     = new MICON(editpasteS_xpm, "edit-paste");
+      editmuteIconSet      = new MICON(editmuteS_xpm, "audio-volume-muted");
+      editpaste2TrackIconSet = new MICON(editpaste2trackS_xpm, NULL);
+      editpasteCloneIconSet  = new MICON(editpastecloneS_xpm, NULL);
+      editpasteClone2TrackIconSet = new MICON(editpasteclone2trackS_xpm, NULL); // ..
 
-      exitIcon             = new MPIXMAP(exit_xpm, NULL);
-      exit1Icon            = new MPIXMAP(exit1_xpm, NULL);
+      exitIcon             = new MPIXMAP(exit_xpm, "application-exit");
+      exit1Icon            = new MPIXMAP(exit1_xpm, "application-exit");
 
       // 2 lines odd code
       newmuteIcon          = new MPIXMAP(newmutebutton_xpm, NULL);
@@ -586,7 +589,7 @@ void initIcons()
       select_inside_loopIcon        = new MPIXMAP(select_inside_loop_xpm, NULL);
       select_invert_selectionIcon   = new MPIXMAP(select_invert_selection, NULL);
       select_outside_loopIcon       = new MPIXMAP(select_outside_loop_xpm, NULL);
-      pianoIconSet = new QIcon(*edit_pianorollIcon); // ddskrjo
+      pianoIconSet                  = new MICON(edit_pianoroll_xpm, NULL); // ddskrjo
 
       audio_bounce_to_fileIcon                      = new MPIXMAP(audio_bounce_to_file_xpm, NULL);
       audio_bounce_to_trackIcon                     = new MPIXMAP(audio_bounce_to_track_xpm, NULL);
