@@ -1,5 +1,6 @@
 19.11.2010
         - Started some conversions of midieditor, pianoroll, drumedit, incl. their QGridLayouts. (Tim)
+        - More icon conversion work (Orcan)
 18.11.2010
         - Updated build part README file - read it! Tell user to specify Release build type. (Tim)
         - Added printout of build type in top level cmake. (Tim)
