@@ -209,6 +209,21 @@
 #include "xpm/stereo.xpm"
 #include "xpm/muse_icon.xpm"
 
+#if QT_VERSION >= 0x040600
+#define MPIXMAP(a,b) QPixmap(QIcon::fromTheme(b, QIcon(QPixmap(a))).pixmap(QPixmap(a).width(),QPixmap(a).height()))
+#else
+#define MPIXMAP(a,b) QPixmap(a)
+#endif
+
+/* Quick API reference:
+   -------------------
+
+   QPixmap MPIXMAP(const char * const[] xpm, const QString & name)
+
+      xpm:  a valid XPM image data
+      name: filename of a theme icon, without the extension; or NULL
+*/
+
 QPixmap* track_commentIcon;
 QPixmap* mastertrackSIcon;
 QPixmap* localoffSIcon;
@@ -408,86 +423,86 @@ QPixmap* museIcon;
 
 void initIcons()
       {
-      track_commentIcon = new QPixmap(track_comment_xpm);
-      pointerIcon  = new QPixmap(pointer_xpm);
-      pencilIcon   = new QPixmap(pencil_xpm);
-      deleteIcon   = new QPixmap(delete_xpm);
-      punchinIcon  = new QPixmap(punchin_xpm);
-      punchoutIcon = new QPixmap(punchout_xpm);
-      punchin1Icon = new QPixmap(punchin1_xpm);
-      punchout1Icon = new QPixmap(punchout1_xpm);
-      loopIcon     = new QPixmap(loop_xpm);
-      loop1Icon    = new QPixmap(loop1_xpm);
-      playIcon     = new QPixmap(play_xpm);
+      track_commentIcon = new MPIXMAP(track_comment_xpm, NULL);
+      pointerIcon  = new MPIXMAP(pointer_xpm, NULL);
+      pencilIcon   = new MPIXMAP(pencil_xpm, "pen");
+      deleteIcon   = new MPIXMAP(delete_xpm, "draw-eraser");
+      punchinIcon  = new MPIXMAP(punchin_xpm, NULL);
+      punchoutIcon = new MPIXMAP(punchout_xpm, NULL);
+      punchin1Icon = new MPIXMAP(punchin1_xpm, NULL);
+      punchout1Icon = new MPIXMAP(punchout1_xpm, NULL);
+      loopIcon     = new MPIXMAP(loop_xpm, NULL);
+      loop1Icon    = new MPIXMAP(loop1_xpm, NULL);
+      playIcon     = new MPIXMAP(play_xpm, "media-playback-start");
 
-      record1_Icon  = new QPixmap(record1_xpm);
-      record_on_Icon = new QPixmap(record_on_xpm);
-      record_off_Icon = new QPixmap(record_off_xpm);
-      recordIcon   = new QPixmap(record_xpm);
-      stopIcon     = new QPixmap(stop_xpm);
-      startIcon    = new QPixmap(start_xpm);
-      fforwardIcon = new QPixmap(fforward_xpm);
-      frewindIcon  = new QPixmap(frewind_xpm);
-      dotIcon      = new QPixmap(dot_xpm);
-      dothIcon     = new QPixmap(doth_xpm);
-      dot1Icon     = new QPixmap(dot1_xpm);
-      noteIcon     = new QPixmap(note_xpm);
-      note1Icon    = new QPixmap(note1_xpm);
-      stickIcon    = new QPixmap(stick_xpm);
-      waveIcon     = new QPixmap(wave_xpm);
-      synthIcon    = new QPixmap(synth_xpm);
-      markIcon[0]  = new QPixmap(cmark_xpm);
-      markIcon[1]  = new QPixmap(lmark_xpm);
-      markIcon[2]  = new QPixmap(rmark_xpm);
-      cutIcon      = new QPixmap(cut_xpm);
-      steprecIcon  = new QPixmap(steprec_xpm);
-      glueIcon     = new QPixmap(glue_xpm);
-      drawIcon     = new QPixmap(draw_xpm);
-      quantIcon    = new QPixmap(quant_xpm);
-      saveIcon     = new QPixmap(filesave_xpm);
-      printIcon    = new QPixmap(fileprint_xpm);
-      openIcon     = new QPixmap(fileopen_xpm);
-      saveIconS     = new QPixmap(filesaveS_xpm);
-      printIconS    = new QPixmap(fileprintS_xpm);
-      openIconS     = new QPixmap(fileopenS_xpm);
-      masterIcon   = new QPixmap(master_xpm);
-      filenewIcon  = new QPixmap(filenew_xpm);
-      filenewIconS  = new QPixmap(filenewS_xpm);
-      homeIcon     = new QPixmap(home_xpm);
-      backIcon     = new QPixmap(back_xpm);
-      forwardIcon  = new QPixmap(forward_xpm);
-      muteIcon     = new QPixmap(editmuteS_xpm);
-      upIcon       = new QPixmap(up_xpm);
-      downIcon     = new QPixmap(down_xpm);
-      boldIcon     = new QPixmap(bold_xpm);
-      italicIcon     = new QPixmap(italic_xpm);
-      underlinedIcon = new QPixmap(underlined_xpm);
-      gvIcon     = new QPixmap(gv_xpm);
-      midiinIcon = new QPixmap(midiin_xpm);
-      sysexIcon   = new QPixmap(sysex_xpm);
-      ctrlIcon    = new QPixmap(ctrl_xpm);
-      metaIcon    = new QPixmap(meta_xpm);
-      pitchIcon   = new QPixmap(pitch_xpm);
-      cafterIcon  = new QPixmap(cafter_xpm);
-      pafterIcon  = new QPixmap(pafter_xpm);
-      flagIcon    = new QPixmap(flag_xpm);
-      flagIconS   = new QPixmap(flagS_xpm);
-      lockIcon    = new QPixmap(lock_xpm);
-      tocIcon     = new QPixmap(toc_xpm);
-      exitIconS   = new QPixmap(exitS_xpm);
+      record1_Icon  = new MPIXMAP(record1_xpm, NULL);
+      record_on_Icon = new MPIXMAP(record_on_xpm, NULL);
+      record_off_Icon = new MPIXMAP(record_off_xpm, NULL);
+      recordIcon   = new MPIXMAP(record_xpm, "media-record");
+      stopIcon     = new MPIXMAP(stop_xpm, "media-playback-stop");
+      startIcon    = new MPIXMAP(start_xpm, "media-skip-backward");
+      fforwardIcon = new MPIXMAP(fforward_xpm, "media-seek-forward");
+      frewindIcon  = new MPIXMAP(frewind_xpm, "media-seek-backward");
+      dotIcon      = new MPIXMAP(dot_xpm, NULL);
+      dothIcon     = new MPIXMAP(doth_xpm, NULL);
+      dot1Icon     = new MPIXMAP(dot1_xpm, NULL);
+      noteIcon     = new MPIXMAP(note_xpm, NULL);
+      note1Icon    = new MPIXMAP(note1_xpm, NULL);
+      stickIcon    = new MPIXMAP(stick_xpm, NULL);
+      waveIcon     = new MPIXMAP(wave_xpm, NULL);
+      synthIcon    = new MPIXMAP(synth_xpm, NULL);
+      markIcon[0]  = new MPIXMAP(cmark_xpm, NULL);
+      markIcon[1]  = new MPIXMAP(lmark_xpm, NULL);
+      markIcon[2]  = new MPIXMAP(rmark_xpm, NULL);
+      cutIcon      = new MPIXMAP(cut_xpm, "edit-cut");
+      steprecIcon  = new MPIXMAP(steprec_xpm, NULL);
+      glueIcon     = new MPIXMAP(glue_xpm, NULL);
+      drawIcon     = new MPIXMAP(draw_xpm, NULL);
+      quantIcon    = new MPIXMAP(quant_xpm, NULL);
+      saveIcon     = new MPIXMAP(filesave_xpm, "document-save");
+      printIcon    = new MPIXMAP(fileprint_xpm, "document-print");
+      openIcon     = new MPIXMAP(fileopen_xpm, "document-open");
+      saveIconS     = new MPIXMAP(filesaveS_xpm, "document-save");
+      printIconS    = new MPIXMAP(fileprintS_xpm, "document-print");
+      openIconS     = new MPIXMAP(fileopenS_xpm, "document-open");
+      masterIcon   = new MPIXMAP(master_xpm, "mixer-master");
+      filenewIcon  = new MPIXMAP(filenew_xpm, "document-new");
+      filenewIconS  = new MPIXMAP(filenewS_xpm, "document-new");
+      homeIcon     = new MPIXMAP(home_xpm, "user-home");
+      backIcon     = new MPIXMAP(back_xpm, "go-previous");
+      forwardIcon  = new MPIXMAP(forward_xpm, "go-next");
+      muteIcon     = new MPIXMAP(editmuteS_xpm, "audio-volume-muted");
+      upIcon       = new MPIXMAP(up_xpm, "go-up");
+      downIcon     = new MPIXMAP(down_xpm, "go-down");
+      boldIcon     = new MPIXMAP(bold_xpm, "format-text-bold");
+      italicIcon     = new MPIXMAP(italic_xpm, "format-text-italic");
+      underlinedIcon = new MPIXMAP(underlined_xpm, "format-text-underline");
+      gvIcon     = new MPIXMAP(gv_xpm, NULL);
+      midiinIcon = new MPIXMAP(midiin_xpm, NULL);
+      sysexIcon   = new MPIXMAP(sysex_xpm, NULL);
+      ctrlIcon    = new MPIXMAP(ctrl_xpm, NULL);
+      metaIcon    = new MPIXMAP(meta_xpm, NULL);
+      pitchIcon   = new MPIXMAP(pitch_xpm, NULL);
+      cafterIcon  = new MPIXMAP(cafter_xpm, NULL);
+      pafterIcon  = new MPIXMAP(pafter_xpm, NULL);
+      flagIcon    = new MPIXMAP(flag_xpm, NULL);
+      flagIconS   = new MPIXMAP(flagS_xpm, NULL);
+      lockIcon    = new MPIXMAP(lock_xpm, NULL);
+      tocIcon     = new MPIXMAP(toc_xpm, NULL);
+      exitIconS   = new MPIXMAP(exitS_xpm, NULL);
 
-      undoIcon     = new QPixmap(undo_xpm);
-      redoIcon     = new QPixmap(redo_xpm);
-      undoIconS    = new QPixmap(undoS_xpm);
-      redoIconS    = new QPixmap(redoS_xpm);
+      undoIcon     = new MPIXMAP(undo_xpm, "edit-undo");
+      redoIcon     = new MPIXMAP(redo_xpm, "edit-redo");
+      undoIconS    = new MPIXMAP(undoS_xpm, "edit-undo");
+      redoIconS    = new MPIXMAP(redoS_xpm, "edit-redo");
 
-      speakerIcon    = new QPixmap(speaker_xpm);
-      buttondownIcon = new QPixmap(buttondown_xpm);
-      configureIcon  = new QPixmap(configure_xpm);
+      speakerIcon    = new MPIXMAP(speaker_xpm, NULL);
+      buttondownIcon = new MPIXMAP(buttondown_xpm, NULL);
+      configureIcon  = new MPIXMAP(configure_xpm, NULL);
 
-      editmuteIcon  = new QPixmap(editmute_xpm);
-      editmuteSIcon = new QPixmap(editmuteS_xpm);
-      panicIcon  = new QPixmap(panic_xpm);
+      editmuteIcon  = new MPIXMAP(editmute_xpm, NULL);
+      editmuteSIcon = new MPIXMAP(editmuteS_xpm, NULL);
+      panicIcon  = new MPIXMAP(panic_xpm, NULL);
 
       editcutIconSet       = new QIcon(QPixmap(editcutS_xpm)); // ddskrjo
       editcopyIconSet      = new QIcon(QPixmap(editcopyS_xpm));
@@ -497,21 +512,21 @@ void initIcons()
       editpasteCloneIconSet  = new QIcon(QPixmap(editpastecloneS_xpm));
       editpasteClone2TrackIconSet = new QIcon(QPixmap(editpasteclone2trackS_xpm)); // ..
 
-      exitIcon             = new QPixmap(exit_xpm);
-      exit1Icon            = new QPixmap(exit1_xpm);
+      exitIcon             = new MPIXMAP(exit_xpm, NULL);
+      exit1Icon            = new MPIXMAP(exit1_xpm, NULL);
 
       // 2 lines odd code
-      newmuteIcon          = new QPixmap(newmutebutton_xpm);
-      soloIcon             = new QPixmap(solobutton_xpm);
+      newmuteIcon          = new MPIXMAP(newmutebutton_xpm, NULL);
+      soloIcon             = new MPIXMAP(solobutton_xpm, NULL);
 
-      recEchoIconOn        = new QPixmap(rec_echo_on_xpm);
-      recEchoIconOff       = new QPixmap(rec_echo_off_xpm);
-      muteIconOn           = new QPixmap(mutebutton_on_xpm);
-      muteIconOff          = new QPixmap(mutebutton_off_xpm);
-      soloIconOn           = new QPixmap(solobutton_on_xpm);
-      soloIconOff          = new QPixmap(solobutton_off_xpm);
-      soloblksqIconOn      = new QPixmap(solobutton_on_blksq_xpm);
-      soloblksqIconOff     = new QPixmap(solobutton_off_blksq_xpm);
+      recEchoIconOn        = new MPIXMAP(rec_echo_on_xpm, NULL);
+      recEchoIconOff       = new MPIXMAP(rec_echo_off_xpm, NULL);
+      muteIconOn           = new MPIXMAP(mutebutton_on_xpm, NULL);
+      muteIconOff          = new MPIXMAP(mutebutton_off_xpm, NULL);
+      soloIconOn           = new MPIXMAP(solobutton_on_xpm, NULL);
+      soloIconOff          = new MPIXMAP(solobutton_off_xpm, NULL);
+      soloblksqIconOn      = new MPIXMAP(solobutton_on_blksq_xpm, NULL);
+      soloblksqIconOff     = new MPIXMAP(solobutton_off_blksq_xpm, NULL);
       soloIconSet1         = new QIcon(); 
       soloIconSet2         = new QIcon();
       soloIconSet1->addPixmap(*soloIconOn, QIcon::Normal, QIcon::On);
@@ -519,94 +534,94 @@ void initIcons()
       soloIconSet2->addPixmap(*soloblksqIconOn, QIcon::Normal, QIcon::On);
       soloIconSet2->addPixmap(*soloblksqIconOff, QIcon::Normal, QIcon::Off);
       
-      redLedIcon           = new QPixmap(redled_xpm);
-      darkRedLedIcon       = new QPixmap(darkredled_xpm);
-      greendotIcon         = new QPixmap(greendot_xpm);
-      //darkgreendotIcon     = new QPixmap(darkgreendot_xpm);
-      bluedotIcon          = new QPixmap(bluedot_xpm);
-      graydotIcon          = new QPixmap(graydot_xpm);
-      offIcon              = new QPixmap(off_xpm);
-      blacksquareIcon      = new QPixmap(blacksquare_xpm);
-      blacksqcheckIcon     = new QPixmap(blacksqcheck_xpm);
+      redLedIcon           = new MPIXMAP(redled_xpm, NULL);
+      darkRedLedIcon       = new MPIXMAP(darkredled_xpm, NULL);
+      greendotIcon         = new MPIXMAP(greendot_xpm, NULL);
+      //darkgreendotIcon     = new MPIXMAP(darkgreendot_xpm, NULL);
+      bluedotIcon          = new MPIXMAP(bluedot_xpm, NULL);
+      graydotIcon          = new MPIXMAP(graydot_xpm, NULL);
+      offIcon              = new MPIXMAP(off_xpm, NULL);
+      blacksquareIcon      = new MPIXMAP(blacksquare_xpm, NULL);
+      blacksqcheckIcon     = new MPIXMAP(blacksqcheck_xpm, NULL);
 
-      mastertrackSIcon     = new QPixmap(mastertrackS_xpm);
-      localoffSIcon        = new QPixmap(localoffS_xpm);
-      miditransformSIcon   = new QPixmap(miditransformS_xpm);
-      midi_plugSIcon       = new QPixmap(midi_plugS_xpm);
-      miditransposeSIcon   = new QPixmap(miditransposeS_xpm);
-      mixerSIcon           = new QPixmap(mixerS_xpm);
-      mustangSIcon         = new QPixmap(mustangS_xpm);
-      resetSIcon           = new QPixmap(resetS_xpm);
-      track_addIcon        = new QPixmap(track_add_xpm);
-      track_deleteIcon     = new QPixmap(track_delete_xpm);
-      listSIcon            = new QPixmap(listS_xpm);
-      inputpluginSIcon     = new QPixmap(inputpluginS_xpm);
-      cliplistSIcon        = new QPixmap(cliplistS_xpm);
-      mixerAudioSIcon      = new QPixmap(mixerAudioS_xpm);
-      initSIcon            = new QPixmap(initS_xpm);
+      mastertrackSIcon     = new MPIXMAP(mastertrackS_xpm, NULL);
+      localoffSIcon        = new MPIXMAP(localoffS_xpm, NULL);
+      miditransformSIcon   = new MPIXMAP(miditransformS_xpm, NULL);
+      midi_plugSIcon       = new MPIXMAP(midi_plugS_xpm, NULL);
+      miditransposeSIcon   = new MPIXMAP(miditransposeS_xpm, NULL);
+      mixerSIcon           = new MPIXMAP(mixerS_xpm, NULL);
+      mustangSIcon         = new MPIXMAP(mustangS_xpm, NULL);
+      resetSIcon           = new MPIXMAP(resetS_xpm, NULL);
+      track_addIcon        = new MPIXMAP(track_add_xpm, NULL);
+      track_deleteIcon     = new MPIXMAP(track_delete_xpm, NULL);
+      listSIcon            = new MPIXMAP(listS_xpm, NULL);
+      inputpluginSIcon     = new MPIXMAP(inputpluginS_xpm, NULL);
+      cliplistSIcon        = new MPIXMAP(cliplistS_xpm, NULL);
+      mixerAudioSIcon      = new MPIXMAP(mixerAudioS_xpm, NULL);
+      initSIcon            = new MPIXMAP(initS_xpm, NULL);
 
-      addtrack_addmiditrackIcon     = new QPixmap(addtrack_addmiditrack_xpm);
-      addtrack_audiogroupIcon       = new QPixmap(addtrack_audiogroup_xpm);
-      addtrack_audioinputIcon       = new QPixmap(addtrack_audioinput_xpm);
-      addtrack_audiooutputIcon      = new QPixmap(addtrack_audiooutput_xpm);
-      addtrack_auxsendIcon          = new QPixmap(addtrack_auxsend_xpm);
-      addtrack_drumtrackIcon        = new QPixmap(addtrack_drumtrack_xpm);
-      addtrack_wavetrackIcon        = new QPixmap(addtrack_wavetrack_xpm);
-      edit_drummsIcon               = new QPixmap(edit_drumms_xpm);
-      edit_listIcon                 = new QPixmap(edit_list_xpm);
-      edit_waveIcon                 = new QPixmap(edit_wave_xpm);
-      edit_mastertrackIcon          = new QPixmap(edit_mastertrack_xpm);
-      edit_pianorollIcon            = new QPixmap(edit_pianoroll_xpm);
-      edit_scoreIcon                = new QPixmap(edit_score_xpm);
-      edit_track_addIcon            = new QPixmap(edit_track_add_xpm);
-      edit_track_delIcon            = new QPixmap(edit_track_del_xpm);
-      mastertrack_graphicIcon       = new QPixmap(mastertrack_graphic_xpm);
-      mastertrack_listIcon          = new QPixmap(mastertrack_list_xpm);
-      midi_transformIcon            = new QPixmap(midi_transform_xpm);
-      midi_transposeIcon            = new QPixmap(midi_transpose_xpm);
-      selectIcon                    = new QPixmap(select_xpm);
-      select_allIcon                = new QPixmap(select_all_xpm);
-      select_all_parts_on_trackIcon = new QPixmap(select_all_parts_on_track_xpm);
-      select_deselect_allIcon       = new QPixmap(select_deselect_all);
-      select_inside_loopIcon        = new QPixmap(select_inside_loop_xpm);
-      select_invert_selectionIcon   = new QPixmap(select_invert_selection);
-      select_outside_loopIcon       = new QPixmap(select_outside_loop_xpm);
+      addtrack_addmiditrackIcon     = new MPIXMAP(addtrack_addmiditrack_xpm, NULL);
+      addtrack_audiogroupIcon       = new MPIXMAP(addtrack_audiogroup_xpm, NULL);
+      addtrack_audioinputIcon       = new MPIXMAP(addtrack_audioinput_xpm, NULL);
+      addtrack_audiooutputIcon      = new MPIXMAP(addtrack_audiooutput_xpm, NULL);
+      addtrack_auxsendIcon          = new MPIXMAP(addtrack_auxsend_xpm, NULL);
+      addtrack_drumtrackIcon        = new MPIXMAP(addtrack_drumtrack_xpm, NULL);
+      addtrack_wavetrackIcon        = new MPIXMAP(addtrack_wavetrack_xpm, NULL);
+      edit_drummsIcon               = new MPIXMAP(edit_drumms_xpm, NULL);
+      edit_listIcon                 = new MPIXMAP(edit_list_xpm, NULL);
+      edit_waveIcon                 = new MPIXMAP(edit_wave_xpm, NULL);
+      edit_mastertrackIcon          = new MPIXMAP(edit_mastertrack_xpm, NULL);
+      edit_pianorollIcon            = new MPIXMAP(edit_pianoroll_xpm, NULL);
+      edit_scoreIcon                = new MPIXMAP(edit_score_xpm, NULL);
+      edit_track_addIcon            = new MPIXMAP(edit_track_add_xpm, NULL);
+      edit_track_delIcon            = new MPIXMAP(edit_track_del_xpm, NULL);
+      mastertrack_graphicIcon       = new MPIXMAP(mastertrack_graphic_xpm, NULL);
+      mastertrack_listIcon          = new MPIXMAP(mastertrack_list_xpm, NULL);
+      midi_transformIcon            = new MPIXMAP(midi_transform_xpm, NULL);
+      midi_transposeIcon            = new MPIXMAP(midi_transpose_xpm, NULL);
+      selectIcon                    = new MPIXMAP(select_xpm, NULL);
+      select_allIcon                = new MPIXMAP(select_all_xpm, NULL);
+      select_all_parts_on_trackIcon = new MPIXMAP(select_all_parts_on_track_xpm, NULL);
+      select_deselect_allIcon       = new MPIXMAP(select_deselect_all, NULL);
+      select_inside_loopIcon        = new MPIXMAP(select_inside_loop_xpm, NULL);
+      select_invert_selectionIcon   = new MPIXMAP(select_invert_selection, NULL);
+      select_outside_loopIcon       = new MPIXMAP(select_outside_loop_xpm, NULL);
       pianoIconSet = new QIcon(*edit_pianorollIcon); // ddskrjo
 
-      audio_bounce_to_fileIcon                      = new QPixmap(audio_bounce_to_file_xpm);
-      audio_bounce_to_trackIcon                     = new QPixmap(audio_bounce_to_track_xpm);
-      audio_restartaudioIcon                        = new QPixmap(audio_restartaudio_xpm);
-      automation_clear_dataIcon                     = new QPixmap(automation_clear_data_xpm);
-      automation_mixerIcon                          = new QPixmap(automation_mixer_xpm);
-      automation_take_snapshotIcon                  = new QPixmap(automation_take_snapshot_xpm);
-      edit_midiIcon                                 = new QPixmap(edit_midi_xpm);
-      midi_edit_instrumentIcon                      = new QPixmap(midi_edit_instrument_xpm);
-      midi_init_instrIcon                           = new QPixmap(midi_init_instr_xpm);
-      midi_inputpluginsIcon                         = new QPixmap(midi_inputplugins_xpm);
-      midi_inputplugins_midi_input_filterIcon       = new QPixmap(midi_inputplugins_midi_input_filter_xpm);
-      midi_inputplugins_midi_input_transformIcon    = new QPixmap(midi_inputplugins_midi_input_transform_xpm);
-      midi_inputplugins_random_rhythm_generatorIcon = new QPixmap(midi_inputplugins_random_rhythm_generator_xpm);
-      midi_inputplugins_remote_controlIcon          = new QPixmap(midi_inputplugins_remote_control_xpm);
-      midi_inputplugins_transposeIcon               = new QPixmap(midi_inputplugins_transpose_xpm);
-      midi_local_offIcon                            = new QPixmap(midi_local_off_xpm);
-      midi_reset_instrIcon                          = new QPixmap(midi_reset_instr_xpm);
-      settings_appearance_settingsIcon              = new QPixmap(settings_appearance_settings_xpm);
-      settings_configureshortcutsIcon               = new QPixmap(settings_configureshortcuts_xpm);
-      settings_follow_songIcon                      = new QPixmap(settings_follow_song_xpm);
-      settings_globalsettingsIcon                   = new QPixmap(settings_globalsettings_xpm);
-      settings_metronomeIcon                        = new QPixmap(settings_metronome_xpm);
-      settings_midifileexportIcon                   = new QPixmap(settings_midifileexport_xpm);
-      settings_midiport_softsynthsIcon              = new QPixmap(settings_midiport_softsynths_xpm);
-      settings_midisyncIcon                         = new QPixmap(settings_midisync_xpm);
-      view_bigtime_windowIcon                       = new QPixmap(view_bigtime_window_xpm);
-      view_cliplistIcon                             = new QPixmap(view_cliplist_xpm);
-      view_markerIcon                               = new QPixmap(view_marker_xpm);
-      view_mixerIcon                                = new QPixmap(view_mixer_xpm);
-      view_transport_windowIcon                     = new QPixmap(view_transport_window_xpm);
+      audio_bounce_to_fileIcon                      = new MPIXMAP(audio_bounce_to_file_xpm, NULL);
+      audio_bounce_to_trackIcon                     = new MPIXMAP(audio_bounce_to_track_xpm, NULL);
+      audio_restartaudioIcon                        = new MPIXMAP(audio_restartaudio_xpm, NULL);
+      automation_clear_dataIcon                     = new MPIXMAP(automation_clear_data_xpm, NULL);
+      automation_mixerIcon                          = new MPIXMAP(automation_mixer_xpm, NULL);
+      automation_take_snapshotIcon                  = new MPIXMAP(automation_take_snapshot_xpm, NULL);
+      edit_midiIcon                                 = new MPIXMAP(edit_midi_xpm, NULL);
+      midi_edit_instrumentIcon                      = new MPIXMAP(midi_edit_instrument_xpm, NULL);
+      midi_init_instrIcon                           = new MPIXMAP(midi_init_instr_xpm, NULL);
+      midi_inputpluginsIcon                         = new MPIXMAP(midi_inputplugins_xpm, NULL);
+      midi_inputplugins_midi_input_filterIcon       = new MPIXMAP(midi_inputplugins_midi_input_filter_xpm, NULL);
+      midi_inputplugins_midi_input_transformIcon    = new MPIXMAP(midi_inputplugins_midi_input_transform_xpm, NULL);
+      midi_inputplugins_random_rhythm_generatorIcon = new MPIXMAP(midi_inputplugins_random_rhythm_generator_xpm, NULL);
+      midi_inputplugins_remote_controlIcon          = new MPIXMAP(midi_inputplugins_remote_control_xpm, NULL);
+      midi_inputplugins_transposeIcon               = new MPIXMAP(midi_inputplugins_transpose_xpm, NULL);
+      midi_local_offIcon                            = new MPIXMAP(midi_local_off_xpm, NULL);
+      midi_reset_instrIcon                          = new MPIXMAP(midi_reset_instr_xpm, NULL);
+      settings_appearance_settingsIcon              = new MPIXMAP(settings_appearance_settings_xpm, NULL);
+      settings_configureshortcutsIcon               = new MPIXMAP(settings_configureshortcuts_xpm, NULL);
+      settings_follow_songIcon                      = new MPIXMAP(settings_follow_song_xpm, NULL);
+      settings_globalsettingsIcon                   = new MPIXMAP(settings_globalsettings_xpm, NULL);
+      settings_metronomeIcon                        = new MPIXMAP(settings_metronome_xpm, NULL);
+      settings_midifileexportIcon                   = new MPIXMAP(settings_midifileexport_xpm, NULL);
+      settings_midiport_softsynthsIcon              = new MPIXMAP(settings_midiport_softsynths_xpm, NULL);
+      settings_midisyncIcon                         = new MPIXMAP(settings_midisync_xpm, NULL);
+      view_bigtime_windowIcon                       = new MPIXMAP(view_bigtime_window_xpm, NULL);
+      view_cliplistIcon                             = new MPIXMAP(view_cliplist_xpm, NULL);
+      view_markerIcon                               = new MPIXMAP(view_marker_xpm, NULL);
+      view_mixerIcon                                = new MPIXMAP(view_mixer_xpm, NULL);
+      view_transport_windowIcon                     = new MPIXMAP(view_transport_window_xpm, NULL);
 
-      monoIcon   = new QPixmap(mono_xpm);
-      stereoIcon = new QPixmap(stereo_xpm);
+      monoIcon   = new MPIXMAP(mono_xpm, NULL);
+      stereoIcon = new MPIXMAP(stereo_xpm, NULL);
 
-      museIcon = new QPixmap(muse_icon_xpm);
+      museIcon = new MPIXMAP(muse_icon_xpm, NULL);
       }
 
