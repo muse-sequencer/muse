@@ -290,17 +290,18 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       mainGrid->setRowStretch(0, 100);
       mainGrid->setColStretch(1, 100);
 
-      mainGrid->addMultiCellWidget(split1, 0, 0, 0, 2);
+      mainGrid->addWidget(split1, 0, 0,  1, 3);
       mainGrid->addWidget(ctrl,    1, 0);
       mainGrid->addWidget(hscroll, 1, 1);
       mainGrid->addWidget(corner,  1, 2, Qt::AlignBottom|Qt::AlignRight);
 //      mainGrid->addRowSpacing(1, hscroll->sizeHint().height());
+//      mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); 
 
       split2              = new Splitter(Qt::Horizontal, split1, "split2");
       split1w1            = new QWidget(split2, "split1w1");
       QWidget* split1w2   = new QWidget(split2, "split1w2");
-      Q3GridLayout* gridS1 = new Q3GridLayout(split1w1);
-      Q3GridLayout* gridS2 = new Q3GridLayout(split1w2);
+      QGridLayout* gridS1 = new QGridLayout(split1w1);
+      QGridLayout* gridS2 = new QGridLayout(split1w2);
       time                = new MTScale(&_raster, split1w2, xscale);
       canvas              = new DrumCanvas(this, split1w2, xscale, yscale);
       vscroll             = new ScrollScale(-4, 1, yscale, DRUM_MAPSIZE*TH, Qt::Vertical, split1w2);
@@ -322,8 +323,8 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       gridS2->setRowStretch(1, 100);
       gridS2->setColStretch(0, 100);
       
-      gridS2->addMultiCellWidget(time,  0, 0, 0, 1);
-      gridS2->addMultiCellWidget(hLine(split1w2), 1, 1, 0, 1);
+      gridS2->addWidget(time,  0, 0, 1, 2);
+      gridS2->addWidget(hLine(split1w2), 1, 0, 1, 2);
       gridS2->addWidget(canvas,  2, 0);
       
       gridS2->addWidget(vscroll, 2, 1);

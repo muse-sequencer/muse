@@ -243,14 +243,17 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       mainGrid->setRowStretch(0, 100);
       mainGrid->setColStretch(1, 100);
-      mainGrid->addMultiCellWidget(splitter, 0, 0, 0, 2);
+      mainGrid->addWidget(splitter, 0, 0, 1, 3);
       mainGrid->addWidget(ctrl,    1, 0);
       mainGrid->addWidget(hscroll, 1, 1);
       mainGrid->addWidget(corner,  1, 2, Qt::AlignBottom|Qt::AlignRight);
-      mainGrid->addRowSpacing(1, hscroll->sizeHint().height());
-
+      
+      //mainGrid->addRowSpacing(1, hscroll->sizeHint().height());
+      mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); 
+      
       QWidget* split1     = new QWidget(splitter, "split1");
       QGridLayout* gridS1 = new QGridLayout(split1);
+      gridS1->setContentsMargins(0, 0, 0, 0);
       time                = new MTScale(&_raster, split1, xscale);
       Piano* piano        = new Piano(split1, yscale);
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
@@ -266,8 +269,8 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       gridS1->setRowStretch(2, 100);
       gridS1->setColStretch(1, 100);
 
-      gridS1->addMultiCellWidget(time,          0, 0, 1, 2);
-      gridS1->addMultiCellWidget(hLine(split1), 1, 1, 0, 2);
+      gridS1->addWidget(time,                   0, 1, 1, 2);
+      gridS1->addWidget(hLine(split1),          1, 0, 1, 3);
       gridS1->addWidget(piano,                  2,    0);
       gridS1->addWidget(canvas,                 2,    1);
       
@@ -318,7 +321,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
 
-      setCaption(canvas->getCaption());
+      setWindowTitle(canvas->getCaption());
       
       updateHScrollRange();
       // connect to toolbar

@@ -10,12 +10,11 @@
 
 #include "sig.h"
 #include "cobject.h"
-//Added by qt3to4:
-#include <Q3GridLayout>
+//#include <QGridLayout>
 
 class PartList;
 class Xml;
-class Q3GridLayout;
+class QGridLayout;
 class QWidget;
 class QColor;
 class EventCanvas;
@@ -46,7 +45,7 @@ class MidiEditor : public TopWin  {
 
       std::list<CtrlEdit*> ctrlEditList;
       int _quant, _raster;
-      Q3GridLayout* mainGrid;
+      QGridLayout* mainGrid;
       QWidget* mainw;
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
