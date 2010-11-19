@@ -173,8 +173,8 @@ WaveEdit::WaveEdit(PartList* pl)
       mainGrid->setRowStretch(0, 100);
       mainGrid->setColStretch(0, 100);
 
-      mainGrid->addMultiCellWidget(time,   0, 0, 0, 1);
-      mainGrid->addMultiCellWidget(hLine(mainw),    1, 1, 0, 1);
+      mainGrid->addWidget(time,   0, 0, 1, 2);
+      mainGrid->addWidget(hLine(mainw),    1, 0, 1, 2);
       mainGrid->addWidget(view,    2, 0);
       mainGrid->addWidget(ymag,    2, 1);
       mainGrid->addWidget(hscroll, 3, 0);

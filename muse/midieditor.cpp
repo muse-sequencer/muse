@@ -10,11 +10,10 @@
 #include "waveedit/waveview.h"
 #include "scrollscale.h"
 #include "mtscale.h"
-#include <qlayout.h>
-#include <qrect.h>
-#include <qcolor.h>
-//Added by qt3to4:
-#include <Q3GridLayout>
+#include <QLayout>
+#include <QRect>
+#include <QColor>
+#include <QGridLayout>
 #include "xml.h"
 #include "part.h"
 #include "track.h"
@@ -37,7 +36,12 @@ MidiEditor::MidiEditor(int q, int r, PartList* pl,
       wview    = 0;
       _curDrumInstrument = -1;
       mainw    = new QWidget(this);
-      mainGrid = new Q3GridLayout(mainw);
+      
+      ///mainGrid = new QGridLayout(mainw);
+      mainGrid = new QGridLayout();
+      mainw->setLayout(mainGrid);
+      
+      mainGrid->setContentsMargins(0, 0, 0, 0);
       setCentralWidget(mainw);
       }
 

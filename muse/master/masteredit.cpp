@@ -199,7 +199,7 @@ MasterEdit::MasterEdit()
 //    mainGrid->addWidget(hLine(mainw),  7, 1);
       mainGrid->addWidget(time2,         7, 1);
       mainGrid->addWidget(hscroll,       8, 1);
-      mainGrid->addMultiCellWidget(vscroll, 0, 9, 2, 2);
+      mainGrid->addWidget(vscroll, 0, 2, 10, 1);
 //      mainGrid->addWidget(corner,  9, 2, AlignBottom | AlignRight);
 
       connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool(int)));
