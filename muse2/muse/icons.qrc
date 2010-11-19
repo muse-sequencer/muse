@@ -1,7 +1,0 @@
-<RCC version="1.0">
-    <qresource prefix="/icons">
-        <file>global.xpm</file>
-        <file>user.xpm</file>
-        <file>project.xpm</file>
-    </qresource>
-</RCC>

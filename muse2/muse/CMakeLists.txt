@@ -117,7 +117,6 @@ QT4_WRAP_CPP ( muse_moc_headers
 
 QT4_ADD_RESOURCES (muse_qrc_files 
 		  muse.qrc
-		  icons.qrc
 		  )
 
 add_executable ( muse

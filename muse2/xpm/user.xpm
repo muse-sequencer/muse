@@ -1,5 +1,5 @@
 /* XPM */
-static const char* const image1_data[] = { 
+static const char* const user_xpm[] = { 
 "34 34 296 2",
 ".a c None",
 ".# c None",
