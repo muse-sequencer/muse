@@ -216,5 +216,9 @@ extern QPixmap* stereoIcon;
 
 extern QPixmap* museIcon;
 
+extern QIcon* globalIcon;
+extern QIcon* projectIcon;
+extern QIcon* userIcon;
+
 #endif
 

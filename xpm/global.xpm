@@ -1,5 +1,5 @@
 /* XPM */
-static const char* const image0_data[] = { 
+static const char* const global_xpm[] = { 
 "34 34 176 2",
 "Qt c None",
 ".# c #000000",

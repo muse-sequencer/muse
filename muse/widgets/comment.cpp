@@ -8,15 +8,15 @@
 #include "comment.h"
 #include "song.h"
 #include "track.h"
-#include <q3multilineedit.h>
-#include <qlabel.h>
+
+#include <QWidget>
 
 //---------------------------------------------------------
 //   Comment
 //---------------------------------------------------------
 
-Comment::Comment(QWidget* parent, const char* name)
-   : CommentBase(parent, name)
+Comment::Comment(QWidget* parent)
+   : CommentBaseWidget(parent)
       {
       }
 
@@ -33,13 +33,14 @@ void Comment::textChanged()
 //   TrackComment
 //---------------------------------------------------------
 
-TrackComment::TrackComment(Track* t, QWidget* parent, const char* name)
-   : Comment(parent, name)
+TrackComment::TrackComment(Track* t, QWidget* parent)
+   : Comment(parent)
       {
       setCaption(tr("MusE: Track Comment"));
       track = t;
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       textentry->setText(track->comment());
+      textentry->moveCursor(QTextCursor::End);
       connect(textentry, SIGNAL(textChanged()), SLOT(textChanged()));
       label1->setText(tr("Track Comment:"));
       label2->setText(track->name());
@@ -69,7 +70,7 @@ void TrackComment::songChanged(int flags)
       if (track->comment() != textentry->text()) {
             disconnect(textentry, SIGNAL(textChanged()), this, SLOT(textChanged()));
             textentry->setText(track->comment());
-            textentry->setCursorPosition(1000, 1000);
+            textentry->moveCursor(QTextCursor::End);
             connect(textentry, SIGNAL(textChanged()), this, SLOT(textChanged()));
             }
       }

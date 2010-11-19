@@ -8,17 +8,30 @@
 #ifndef __COMMENT_H__
 #define __COMMENT_H__
 
-#include <qwidget.h>
-#include "commentbase.h"
+#include "ui_commentbase.h"
 
 class Xml;
 class Track;
+class QWidget;
+
+//---------------------------------------------------------
+//   CommentBaseWidget
+//   Wrapper around Ui::CommentBase
+//---------------------------------------------------------
+
+class CommentBaseWidget : public QWidget, public Ui::CommentBase
+{
+     Q_OBJECT
+
+  public:
+     CommentBaseWidget(QWidget *parent = 0) : QWidget(parent) { setupUi(this); }
+};
 
 //---------------------------------------------------------
 //   Comment
 //---------------------------------------------------------
 
-class Comment : public CommentBase {
+class Comment : public CommentBaseWidget {
       Q_OBJECT
 
    private:
@@ -28,7 +41,7 @@ class Comment : public CommentBase {
       void textChanged();
 
    public:
-      Comment(QWidget* parent, const char* name = 0);
+      Comment(QWidget* parent);
       };
 
 //---------------------------------------------------------
@@ -46,7 +59,7 @@ class TrackComment : public Comment {
       void songChanged(int);
 
    public:
-      TrackComment(Track*, QWidget*, const char* name = 0);
+      TrackComment(Track*, QWidget*);
       };
 
 #endif

@@ -209,6 +209,10 @@
 #include "xpm/stereo.xpm"
 #include "xpm/muse_icon.xpm"
 
+#include "xpm/global.xpm"
+#include "xpm/project.xpm"
+#include "xpm/user.xpm"
+
 #if QT_VERSION >= 0x040600
 #define MPIXMAP(a,b) QPixmap(QIcon::fromTheme(b, QIcon(QPixmap(a))).pixmap(QPixmap(a).width(),QPixmap(a).height()))
 #define MICON(a,b) QIcon(QIcon::fromTheme(b, QIcon(QPixmap(a))))
@@ -420,6 +424,10 @@ QPixmap* monoIcon;
 QPixmap* stereoIcon;
 QPixmap* museIcon;
 
+QIcon* globalIcon;
+QIcon* projectIcon;
+QIcon* userIcon;
+
 //---------------------------------------------------------
 //   initIcons
 //---------------------------------------------------------
@@ -622,9 +630,13 @@ void initIcons()
       view_mixerIcon                                = new MPIXMAP(view_mixer_xpm, NULL);
       view_transport_windowIcon                     = new MPIXMAP(view_transport_window_xpm, NULL);
 
-      monoIcon   = new MPIXMAP(mono_xpm, NULL);
-      stereoIcon = new MPIXMAP(stereo_xpm, NULL);
+      monoIcon                                      = new MPIXMAP(mono_xpm, NULL);
+      stereoIcon                                    = new MPIXMAP(stereo_xpm, NULL);
 
-      museIcon = new MPIXMAP(muse_icon_xpm, NULL);
+      museIcon                                      = new MPIXMAP(muse_icon_xpm, NULL);
+
+      globalIcon                                    = new MICON(global_xpm, "folder");
+      userIcon                                      = new MICON(user_xpm, "user-home");
+      projectIcon                                   = new MICON(project_xpm, "folder-sound");
       }
 
