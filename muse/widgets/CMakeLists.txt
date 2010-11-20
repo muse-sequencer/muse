@@ -135,7 +135,9 @@ QT4_WRAP_UI (UIC
       commentbase.ui  
       fdialogbuttons.ui  
       itransformbase.ui  
+      metronomebase.ui  
       mittransposebase.ui  
+      mtrackinfobase.ui  
       songinfo.ui  
       transformbase.ui  
       velocitybase.ui  
@@ -151,8 +153,6 @@ QT4_WRAP_UI3 (widget_ui_headers
       appearancebase.ui  
       synthconfigbase.ui  
       gatetimebase.ui  
-      metronomebase.ui  
-      mtrackinfobase.ui  
       wtrackinfobase.ui  
       editctrl7dialogbase.ui  
       editmetadialogbase.ui  

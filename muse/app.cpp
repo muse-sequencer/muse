@@ -4106,7 +4106,7 @@ void MusE::changeConfig(bool writeFlag)
 void MusE::configMetronome()
       {
       if (!metronomeConfig)
-            metronomeConfig = new MetronomeConfig(this, "metronome");
+          metronomeConfig = new MetronomeConfig;
 
       if(metronomeConfig->isVisible()) {
           metronomeConfig->raise();

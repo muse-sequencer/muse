@@ -8,12 +8,8 @@
 
 #include <stdio.h>
 #include "metronome.h"
-#include <QtGui>
-#include <qpushbutton.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-//Added by qt3to4:
-#include <Q3PopupMenu>
+
+#include <QMenu>
 #include "globals.h"
 #include "song.h"
 #include "track.h"
@@ -23,8 +19,8 @@
 //   MetronomeConfig
 //---------------------------------------------------------
 
-MetronomeConfig::MetronomeConfig(QWidget* parent, const char* name)
-   : MetronomeConfigBase(parent, name)
+MetronomeConfig::MetronomeConfig(QDialog* parent)
+   : MetronomeConfigBaseWidget(parent)
       {
       connect(buttonApply, SIGNAL(clicked()), SLOT(apply()));
       connect(midiClick, SIGNAL(toggled(bool)), SLOT(midiClickChanged(bool)));
@@ -64,38 +60,38 @@ void MetronomeConfig::audioBeepRoutesClicked()
       if(song->outputs()->size() == 0)
         return;
         
-      //QPopupMenu* pup = new QPopupMenu(audioBeepRoutesButton);
-      Q3PopupMenu* pup = new Q3PopupMenu(this);
-      pup->setCheckable(true);
+      QMenu* pup = new QMenu;
       
       OutputList* ol = song->outputs();
 
       int nn = 0;
       for(iAudioOutput iao = ol->begin(); iao != ol->end(); ++iao)
       {
-        int id = pup->insertItem(QT_TR_NOOP((*iao)->name()), nn);
+        QAction* action = pup->addAction(QT_TR_NOOP((*iao)->name()));
+        action->setCheckable(true);
+        action->setData(nn);
         if((*iao)->sendMetronome())
-          pup->setItemChecked(id, true);
+          action->setChecked(true);
         ++nn;  
       }  
       
-      int n = pup->exec(QCursor::pos());
-      if(n != -1) 
+      QAction* clickaction = pup->exec(QCursor::pos());
+      if (clickaction)
       {
         //QString s(pup->text(n));
         nn = 0;
         for(iAudioOutput iao = ol->begin(); iao != ol->end(); ++iao)
         {
           //if(((*iao)->name() == s) && (n == nn))
-          if(n == nn)
+          if (nn == clickaction->data())
           {
             //(*iao)->setSendMetronome();
-            audio->msgSetSendMetronome(*iao, !pup->isItemChecked(n));
+            audio->msgSetSendMetronome(*iao, clickaction->isChecked());
             //song->update(SC_ROUTE);
             break;
           }
           ++nn;
-        }  
+        }
       }
       
       delete pup;
@@ -109,7 +105,7 @@ void MetronomeConfig::audioBeepRoutesClicked()
 void MetronomeConfig::accept()
       {
       apply();
-      MetronomeConfigBase::accept();
+      MetronomeConfigBaseWidget::accept();
       }
 
 //---------------------------------------------------------
@@ -144,7 +140,7 @@ void MetronomeConfig::apply()
 
 void MetronomeConfig::reject()
       {
-      MetronomeConfigBase::reject();
+      MetronomeConfigBaseWidget::reject();
       }
 
 //---------------------------------------------------------

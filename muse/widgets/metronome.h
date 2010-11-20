@@ -9,13 +9,28 @@
 #ifndef __METRONOME_H__
 #define __METRONOME_H__
 
-#include "metronomebase.h"
+#include "ui_metronomebase.h"
+
+class QDialog;
+
+//---------------------------------------------------------
+//   MetronomeConfigBaseWidget
+//   Wrapper around Ui::MetronomeConfigBase
+//---------------------------------------------------------
+
+class MetronomeConfigBaseWidget : public QDialog, public Ui::MetronomeConfigBase
+{
+      Q_OBJECT
+
+   public:
+      MetronomeConfigBaseWidget(QDialog *parent = 0) : QDialog(parent) { setupUi(this); }
+};
 
 //---------------------------------------------------------
 //   MetronomeConfig
 //---------------------------------------------------------
 
-class MetronomeConfig : public MetronomeConfigBase {
+class MetronomeConfig : public MetronomeConfigBaseWidget {
       Q_OBJECT
 
    private slots:
@@ -29,6 +44,6 @@ class MetronomeConfig : public MetronomeConfigBase {
       void beepVolumeChanged(int);
 
    public:
-      MetronomeConfig(QWidget* parent, const char* name = 0);
+      MetronomeConfig(QDialog* parent=0);
       };
 #endif

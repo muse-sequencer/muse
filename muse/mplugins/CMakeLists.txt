@@ -40,8 +40,8 @@
 QT4_WRAP_CPP ( mplugins_mocs  mittranspose.h midiitransform.h midifilterimpl.h mrconfig.h rhythm.h )
 # QT4_WRAP_UI (  mplugins_uis transform.ui )
 
-QT4_WRAP_UI ( mplugins_UIC mrconfigbase.ui )
-QT4_WRAP_UI3 (  mplugins_uis midifilter.ui rhythmbase.ui )
+QT4_WRAP_UI ( mplugins_UIC midifilter.ui mrconfigbase.ui )
+QT4_WRAP_UI3 (  mplugins_uis rhythmbase.ui )
 
 # add_library ( mplugins SHARED 
 add_library ( mplugins STATIC 

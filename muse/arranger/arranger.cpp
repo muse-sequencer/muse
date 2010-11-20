@@ -54,7 +54,6 @@
 #include "globals.h"
 #include "tlist.h"
 #include "icons.h"
-#include "mtrackinfobase.h"
 #include "header.h"
 #include "utils.h"
 #include "alayout.h"

@@ -10,15 +10,28 @@
 #define __MIDIFILTERIMP_H__
 
 #include "globals.h"
-#include "midifilter.h"
-//Added by qt3to4:
-#include <QCloseEvent>
+#include "ui_midifilter.h"
+
+class QCloseEvent;
+
+//---------------------------------------------------------
+//   MidiFilterConfigBaseWidget
+//   Wrapper around Ui::MidiFilterConfigBase
+//---------------------------------------------------------
+
+class MidiFilterConfigBaseWidget : public QDialog, public Ui::MidiFilterConfigBase
+{
+      Q_OBJECT
+
+   public:
+      MidiFilterConfigBaseWidget(QDialog *parent = 0) : QDialog(parent) { setupUi(this); }
+};
 
 //---------------------------------------------------------
 //   MidiFilterConfig
 //---------------------------------------------------------
 
-class MidiFilterConfig : public MidiFilterConfigBase {
+class MidiFilterConfig : public MidiFilterConfigBaseWidget {
       Q_OBJECT
 
       void rChanged(bool f, int val) {
@@ -84,7 +97,7 @@ class MidiFilterConfig : public MidiFilterConfigBase {
       void setCtrl4(int);
 
    public:
-      MidiFilterConfig(QWidget* parent=0, const char* name=0);
+      MidiFilterConfig(QDialog* parent=0);
       };
 
 #endif

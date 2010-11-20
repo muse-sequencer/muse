@@ -9,15 +9,12 @@
 #include "pitchedit.h"
 #include "helper.h"
 
-#include <qstyle.h>
-#include <qapplication.h>
-
 //---------------------------------------------------------
 //   PitchEdit
 //---------------------------------------------------------
 
-PitchEdit::PitchEdit(QWidget* parent, const char* name)
-  : QSpinBox(0, 127, 1, parent, name)
+PitchEdit::PitchEdit(QWidget* parent)
+  : QSpinBox(0, 127, 1, parent)
       {
       deltaMode = false;
       }
