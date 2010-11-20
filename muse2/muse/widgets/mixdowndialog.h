@@ -8,18 +8,19 @@
 #ifndef __MIXDOWNDIALOG_H__
 #define __MIXDOWNDIALOG_H__
 
-#include "mixdowndialogbase.h"
+#include "ui_mixdowndialogbase.h"
+
+class QWidget;
 
 class SndFile;
 
-extern SndFile* getSndFile(const SndFile* sf, QWidget* parent, 
-   const char* name);
+extern SndFile* getSndFile(const SndFile* sf, QWidget* parent);
 
 //---------------------------------------------------------
 //   MixdownFileDialog
 //---------------------------------------------------------
 
-class MixdownFileDialog : public MixdownFileDialogBase {
+class MixdownFileDialog : public QDialog, public Ui::MixdownFileDialogBase {
     Q_OBJECT
       SndFile* sf;
 
@@ -29,7 +30,7 @@ class MixdownFileDialog : public MixdownFileDialogBase {
 
    public:
       MixdownFileDialog(const SndFile* f, QWidget* parent = 0,
-         const char* name = 0, bool modal = false, Qt::WFlags fl = 0);
+         Qt::WFlags fl = 0);
       SndFile* sndFile() { return sf; }
       };
 

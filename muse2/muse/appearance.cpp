@@ -5,27 +5,13 @@
 //=========================================================
 
 #include <stdio.h>
+
 #include <QAbstractButton>
-#include <qstring.h>
-#include <qcombobox.h>
-#include <qspinbox.h>
 #include <QButtonGroup>
-#include <qradiobutton.h>
-#include <qcheckbox.h>
-#include <qlabel.h>
-#include <qpixmap.h>
-#include <qcolor.h>
-#include <qcolordialog.h>
-#include <q3listbox.h>
-#include <qlineedit.h>
-#include <qtoolbutton.h>
-#include <qfontdialog.h>
-#include <qapplication.h>
-#include <qstylefactory.h>
-#include <q3listview.h>
-#include <qslider.h>
-#include <qstyle.h>
-#include <qtooltip.h>
+#include <QColor>
+#include <QFontDialog>
+#include <QStyleFactory>
+#include <QToolTip>
 
 #include "icons.h"
 #include "appearance.h"
@@ -44,17 +30,17 @@
 //   IdListViewItem
 //---------------------------------------------------------
 
-class IdListViewItem : public Q3ListViewItem {
+class IdListViewItem : public QTreeWidgetItem {
       int _id;
 
    public:
-      IdListViewItem(int id, Q3ListViewItem* parent, QString s)
-         : Q3ListViewItem(parent, s)
+      IdListViewItem(int id, QTreeWidgetItem* parent, QString s)
+         : QTreeWidgetItem(parent, QStringList(s))
             {
             _id = id;
             }
-      IdListViewItem(int id, Q3ListView* parent, QString s)
-         : Q3ListViewItem(parent, s)
+      IdListViewItem(int id, QTreeWidget* parent, QString s)
+         : QTreeWidgetItem(parent, QStringList(s))
             {
             _id = id;
             }
@@ -65,9 +51,10 @@ class IdListViewItem : public Q3ListViewItem {
 //   Appearance
 //---------------------------------------------------------
 
-Appearance::Appearance(Arranger* a, QWidget* parent, const char* name)
-   : AppearanceDialogBase(parent, name)
+Appearance::Appearance(Arranger* a, QWidget* parent)
+   : QDialog(parent)
       {
+      setupUi(this);
       arr    = a;
       color  = 0;
       config = new GlobalConfigValues;
@@ -103,6 +90,27 @@ Appearance::Appearance(Arranger* a, QWidget* parent, const char* name)
       eventButtonGroup->setEnabled(config->canvasShowPartType == 2);
       arrGrid->setChecked(config->canvasShowGrid);
       */
+      colorframe->setAutoFillBackground(true);
+      aPalette = new QButtonGroup(aPaletteBox);
+
+      // There must be an easier way to do this by a for loop. No? :
+      aPalette->addButton(palette0, 0);
+      aPalette->addButton(palette1, 1);
+      aPalette->addButton(palette2, 2);
+      aPalette->addButton(palette3, 3);
+      aPalette->addButton(palette4, 4);
+      aPalette->addButton(palette5, 5);
+      aPalette->addButton(palette6, 6);
+      aPalette->addButton(palette7, 7);
+      aPalette->addButton(palette8, 8);
+      aPalette->addButton(palette9, 9);
+      aPalette->addButton(palette10, 10);
+      aPalette->addButton(palette11, 11);
+      aPalette->addButton(palette12, 12);
+      aPalette->addButton(palette13, 13);
+      aPalette->addButton(palette14, 14);
+      aPalette->addButton(palette15, 15);
+      aPalette->setExclusive(true);
 
 	// COLORS
       IdListViewItem* id;
@@ -150,8 +158,8 @@ Appearance::Appearance(Arranger* a, QWidget* parent, const char* name)
       id = new IdListViewItem(0, itemList, "Wave Editor");
            new IdListViewItem(0x300, id, "background");
 
-      connect(itemList, SIGNAL(selectionChanged()), SLOT(colorItemSelectionChanged()));
-      connect(aPalette, SIGNAL(clicked(int)), SLOT(paletteClicked(int)));
+      connect(itemList, SIGNAL(itemSelectionChanged()), SLOT(colorItemSelectionChanged()));
+      connect(aPalette, SIGNAL(buttonClicked(int)), SLOT(paletteClicked(int)));
       connect(rslider, SIGNAL(valueChanged(int)), SLOT(rsliderChanged(int)));
       connect(gslider, SIGNAL(valueChanged(int)), SLOT(gsliderChanged(int)));
       connect(bslider, SIGNAL(valueChanged(int)), SLOT(bsliderChanged(int)));
@@ -464,7 +472,7 @@ void Appearance::clearBackground()
 
 void Appearance::colorItemSelectionChanged()
       {
-      IdListViewItem* item = (IdListViewItem*)itemList->selectedItem();
+      IdListViewItem* item = (IdListViewItem*)itemList->selectedItems()[0];
       QString txt = item->text(0);
       int id = item->id();
       if (id == 0) {
@@ -645,7 +653,8 @@ void Appearance::addToPaletteClicked()
       {
       if (!color)
             return;
-      QAbstractButton* button = (QAbstractButton*)aPalette->selected(); // ddskrjo
+      QAbstractButton* button = (QAbstractButton*)aPalette->checkedButton(); // ddskrjo
+
       int r, g, b;
       QColor c;
       if (button) {
@@ -659,9 +668,9 @@ void Appearance::addToPaletteClicked()
                   c.getRgb(&r, &g, &b);
                   if (r == 0xff && g == 0xff && b == 0xff) {
                         // found empty slot
-                        aPalette->setButton(i);
+		    aPalette->button(i)->toggle();
                         //aPalette->moveFocus(i); ddskrjo
-                        button = (QAbstractButton*)aPalette->find(i); // ddskrjo
+                        button = (QAbstractButton*)aPalette->button(i); // ddskrjo
                         break;
                         }
                   }
@@ -682,7 +691,7 @@ void Appearance::paletteClicked(int id)
       {
       if (!color)
             return;
-      QAbstractButton* button = (QAbstractButton*)aPalette->find(id); // ddskrjo
+      QAbstractButton* button = (QAbstractButton*)aPalette->button(id); // ddskrjo
       if (button) {
             QColor c = button->paletteBackgroundColor();
             int r, g, b;

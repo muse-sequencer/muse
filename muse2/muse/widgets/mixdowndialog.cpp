@@ -5,13 +5,10 @@
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include "mixdowndialog.h"
+#include <QFileDialog>
+
 #include "globals.h"
-#include <qtoolbutton.h>
-#include <qpushbutton.h>
-#include <q3filedialog.h>
-#include <qcombobox.h>
-#include <qlineedit.h>
+#include "mixdowndialog.h"
 #include "wave.h"
 
 //---------------------------------------------------------
@@ -19,10 +16,9 @@
 //    sf - old soundfile, used to preset file parameters
 //---------------------------------------------------------
 
-SndFile* getSndFile(const SndFile* sf, QWidget* parent, const char* name)
+SndFile* getSndFile(const SndFile* sf, QWidget* parent)
       {
-      MixdownFileDialog* dialog = new MixdownFileDialog(sf, parent,
-         name, true);
+      MixdownFileDialog* dialog = new MixdownFileDialog(sf, parent);
       dialog->exec();
       SndFile* sndFile = dialog->sndFile();
       delete dialog;
@@ -34,9 +30,10 @@ SndFile* getSndFile(const SndFile* sf, QWidget* parent, const char* name)
 //---------------------------------------------------------
 
 MixdownFileDialog::MixdownFileDialog(const SndFile* _sf,
-   QWidget* parent, const char* name, bool /*modal*/, Qt::WFlags fl)
-   : MixdownFileDialogBase(parent, name, true, fl)
+   QWidget* parent, Qt::WFlags fl)
+   : QDialog(parent, fl)
       {
+      setupUi(this);
       sf   = 0;
       connect(buttonPath, SIGNAL(clicked()), SLOT(fdialog()));
       if (_sf) {
@@ -100,8 +97,8 @@ void MixdownFileDialog::fdialog()
       QString oldpath;
       if (sf)
             oldpath = sf->path();
-      QString path = Q3FileDialog::getSaveFileName(
-         oldpath, tr("Wave Files (*.wav);;All Files (*)"), this, "MixdownFileDialog");
+      QString path = QFileDialog::getSaveFileName(
+         this, 0, oldpath, tr("Wave Files (*.wav);;All Files (*)"));
       if (!path.isEmpty())
             editPath->setText(path);
       }

@@ -4124,7 +4124,7 @@ void MusE::configMetronome()
 void MusE::configShortCuts()
       {
       if (!shortcutConfig)
-            shortcutConfig = new ShortcutConfig(this, "shortcutconfig");
+            shortcutConfig = new ShortcutConfig(this);
       shortcutConfig->_config_changed = false;
       if (shortcutConfig->exec())
             changeConfig(true);
@@ -4555,7 +4555,7 @@ void MusE::bounceToFile(AudioOutput* ao)
       if (checkRegionNotNull())
             return;
       
-      SndFile* sf = getSndFile(0, this, 0);
+      SndFile* sf = getSndFile(0, this);
       if (sf == 0)
             return;
             
