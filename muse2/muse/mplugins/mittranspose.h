@@ -34,23 +34,10 @@ typedef KeyOnList::iterator iKeyOn;
 class Xml;
 
 //---------------------------------------------------------
-//   MITTransposeBaseWidget
-//   Wrapper around Ui::MITTransposeBase
-//---------------------------------------------------------
-
-class MITTransposeBaseWidget : public QWidget, public Ui::MITTransposeBase
-{
-      Q_OBJECT
-
-   public:
-      MITTransposeBaseWidget(QWidget *parent = 0, Qt::WFlags f = 0) : QWidget(parent, f) { setupUi(this); }
-};
-
-//---------------------------------------------------------
 //   MITPluginTranspose
 //---------------------------------------------------------
 
-class MITPluginTranspose : public MITTransposeBaseWidget, public MITPlugin {
+class MITPluginTranspose : public QWidget, public Ui::MITTransposeBase, public MITPlugin {
       Q_OBJECT
 
       KeyOnList keyOnList;

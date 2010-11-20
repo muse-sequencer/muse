@@ -79,25 +79,13 @@ class WidgetStack : public QWidget {
 
 
 //---------------------------------------------------------
-//   MidiTrackInfoBaseWidget
-//   Wrapper around Ui::MidiTrackInfoBase
-//---------------------------------------------------------
-class MidiTrackInfoBaseWidget : public QWidget, public Ui::MidiTrackInfoBase
-{
-     Q_OBJECT
-
-  public:
-     MidiTrackInfoBaseWidget(QWidget *parent = 0) : QWidget(parent) { setupUi(this); }
-};
-
-//---------------------------------------------------------
 //   MidiTrackInfo
 //---------------------------------------------------------
 
-class MidiTrackInfo : public MidiTrackInfoBaseWidget {
+class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase {
    public:
       bool _midiDetect;
-      MidiTrackInfo(QWidget* parent) : MidiTrackInfoBaseWidget(parent) { _midiDetect = false; }
+      MidiTrackInfo(QWidget* parent) : QWidget(parent) { setupUi(this); _midiDetect = false; }
       };
 
 //---------------------------------------------------------

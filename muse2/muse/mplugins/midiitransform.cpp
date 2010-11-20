@@ -592,8 +592,9 @@ bool MidiInputTransformation::typesMatch(MidiRecordEvent& e, int selType) const
 //---------------------------------------------------------
 
 MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WFlags fl)
-   : MidiInputTransformDialogBaseWidget(parent, fl)
+   : QDialog(parent, fl)
       {
+      setupUi(this);
       cindex = 0;
       cmodul = 0;
       cmt    = 0;

@@ -16,8 +16,9 @@
 //---------------------------------------------------------
 
 Comment::Comment(QWidget* parent)
-   : CommentBaseWidget(parent)
+   : QWidget(parent)
       {
+      setupUi(this);
       }
 
 //---------------------------------------------------------

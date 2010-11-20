@@ -39,8 +39,9 @@ void MidiFilterConfig::setCtrl4(int n)
 //---------------------------------------------------------
 
 MidiFilterConfig::MidiFilterConfig(QDialog* parent)
-  : MidiFilterConfigBaseWidget(parent)
+  : QDialog(parent)
       {
+      setupUi(this);
       cb1->setCurrentItem(midiFilterCtrl1);
       cb2->setCurrentItem(midiFilterCtrl2);
       cb3->setCurrentItem(midiFilterCtrl3);

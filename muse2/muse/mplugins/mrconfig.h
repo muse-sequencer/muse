@@ -15,26 +15,10 @@ class QCloseEvent;
 class QWidget;
 
 //---------------------------------------------------------
-//   MRConfigBaseWidget
-//   Wrapper around Ui::MRConfigBase
-//---------------------------------------------------------
-
-class MRConfigBaseWidget : public QWidget, public Ui::MRConfigBase
-{
-      Q_OBJECT
-
-   public:
-      MRConfigBaseWidget(QWidget *parent = 0, Qt::WFlags f = 0) : QWidget(parent, f) { setupUi(this); }
-};
-
-
-
-
-//---------------------------------------------------------
 //   MRConfig
 //---------------------------------------------------------
 
-class MRConfig : public MRConfigBaseWidget {
+class MRConfig : public QWidget, public Ui::MRConfigBase {
       Q_OBJECT
 
       virtual void closeEvent(QCloseEvent*);

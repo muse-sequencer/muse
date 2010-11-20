@@ -15,23 +15,10 @@ class Track;
 class QWidget;
 
 //---------------------------------------------------------
-//   CommentBaseWidget
-//   Wrapper around Ui::CommentBase
-//---------------------------------------------------------
-
-class CommentBaseWidget : public QWidget, public Ui::CommentBase
-{
-     Q_OBJECT
-
-  public:
-     CommentBaseWidget(QWidget *parent = 0) : QWidget(parent) { setupUi(this); }
-};
-
-//---------------------------------------------------------
 //   Comment
 //---------------------------------------------------------
 
-class Comment : public CommentBaseWidget {
+class Comment : public QWidget, public Ui::CommentBase {
       Q_OBJECT
 
    private:

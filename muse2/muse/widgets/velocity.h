@@ -13,26 +13,10 @@
 class QButtonGroup;
 
 //---------------------------------------------------------
-//   VelocityBaseWidget
-//   Wrapper around Ui::VelocityBase
-//---------------------------------------------------------
-
-class VelocityBaseWidget : public QDialog, public Ui::VelocityBase
-{
-      Q_OBJECT
-
-   public:
-      VelocityBaseWidget(QDialog *parent = 0)
-           : QDialog(parent)
-           { setupUi(this); }
-};
-
-
-//---------------------------------------------------------
 //   Velocity
 //---------------------------------------------------------
 
-class Velocity : public VelocityBaseWidget {
+class Velocity : public QDialog, public Ui::VelocityBase {
       int _range;
       int _rateVal;
       int _offsetVal;

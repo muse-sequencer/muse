@@ -15,23 +15,10 @@
 class QCloseEvent;
 
 //---------------------------------------------------------
-//   MidiFilterConfigBaseWidget
-//   Wrapper around Ui::MidiFilterConfigBase
-//---------------------------------------------------------
-
-class MidiFilterConfigBaseWidget : public QDialog, public Ui::MidiFilterConfigBase
-{
-      Q_OBJECT
-
-   public:
-      MidiFilterConfigBaseWidget(QDialog *parent = 0) : QDialog(parent) { setupUi(this); }
-};
-
-//---------------------------------------------------------
 //   MidiFilterConfig
 //---------------------------------------------------------
 
-class MidiFilterConfig : public MidiFilterConfigBaseWidget {
+class MidiFilterConfig : public QDialog, public Ui::MidiFilterConfigBase {
       Q_OBJECT
 
       void rChanged(bool f, int val) {
