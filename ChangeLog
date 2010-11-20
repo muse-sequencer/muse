@@ -1,6 +1,8 @@
 20.11.2010
         - Remove most wrapper classes around .ui widgets. I was wrapping them too much. Some widgets
           (e.g. songinfo) still need wrappers though. (Orcan)
+        - Ported the following .ui widgets to Qt4: appearancebase, mixdowndialogbase, 
+          shortcutcapturedialogbase, shortcutconfigbase (Orcan)
 19.11.2010
         - Started some conversions of midieditor, pianoroll, drumedit, incl. their QGridLayouts. (Tim)
         - More icon conversion work (Orcan)

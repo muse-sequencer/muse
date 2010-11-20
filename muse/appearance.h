@@ -1,23 +1,25 @@
 #ifndef __APPEARANCE_H__
 #define __APPEARANCE_H__
 
-#include "appearancebase.h"
-#include <qfont.h>
+#include "ui_appearancebase.h"
+
+class QColor;
+class QDialog;
 
 class MusE;
 class Arranger;
-class QColor;
 class GlobalConfigValues;
 
 //---------------------------------------------------------
 //   Appearance Dialog
 //---------------------------------------------------------
 
-class Appearance : public AppearanceDialogBase {
+class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       Arranger* arr;
       QColor* color;
       QString currentBg;
       GlobalConfigValues* config;
+      QButtonGroup* aPalette;
 
       Q_OBJECT
       void updateFonts();
@@ -48,7 +50,7 @@ class Appearance : public AppearanceDialogBase {
       void paletteClicked(int);
 
    public:
-      Appearance(Arranger*, QWidget* parent=0, const char* name=0);
+      Appearance(Arranger*, QWidget* parent=0);
       ~Appearance();
       void resetValues();
       };

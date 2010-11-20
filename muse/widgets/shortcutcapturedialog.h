@@ -12,11 +12,11 @@
 
 #include "shortcuts.h"
 #include "filedialog.h"
-#include "shortcutcapturedialogbase.h"
-//Added by qt3to4:
-#include <QKeyEvent>
+#include "ui_shortcutcapturedialogbase.h"
 
-class ShortcutCaptureDialog : public ShortcutCaptureDialogBase
+class QKeyEvent;
+
+class ShortcutCaptureDialog : public QDialog, public Ui::ShortcutCaptureDialogBase
       {
       Q_OBJECT
       private:
@@ -29,7 +29,7 @@ class ShortcutCaptureDialog : public ShortcutCaptureDialogBase
       void cancel() { reject(); };
 
       public:
-      ShortcutCaptureDialog(QWidget* parent, const char* name = 0, int index=0);
+      ShortcutCaptureDialog(QWidget* parent, int index=0);
       ~ShortcutCaptureDialog();
       };
 

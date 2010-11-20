@@ -11,16 +11,14 @@
 //
 #include "shortcutcapturedialog.h"
 #include "shortcuts.h"
-#include <qkeysequence.h>
-#include <qlabel.h>
-#include <qevent.h>
-#include <qpushbutton.h>
-//Added by qt3to4:
-#include <QKeyEvent>
 
-ShortcutCaptureDialog::ShortcutCaptureDialog(QWidget* parent, const char* name, int index)
-   : ShortcutCaptureDialogBase(parent, name, true)
+#include <QKeyEvent>
+#include <QKeySequence>
+
+ShortcutCaptureDialog::ShortcutCaptureDialog(QWidget* parent, int index)
+   : QDialog(parent)
       {
+      setupUi(this);
       QKeySequence q = QKeySequence(shortcuts[index].key);
       oshrtLabel->setText(q);
       connect(okButton, SIGNAL( clicked() ), this, SLOT( apply() )  );
