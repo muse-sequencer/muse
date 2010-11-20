@@ -20,8 +20,9 @@
 //---------------------------------------------------------
 
 MetronomeConfig::MetronomeConfig(QDialog* parent)
-   : MetronomeConfigBaseWidget(parent)
+   : QDialog(parent)
       {
+      setupUi(this);
       connect(buttonApply, SIGNAL(clicked()), SLOT(apply()));
       connect(midiClick, SIGNAL(toggled(bool)), SLOT(midiClickChanged(bool)));
       connect(precountEnable, SIGNAL(toggled(bool)), SLOT(precountEnableChanged(bool)));
@@ -105,7 +106,7 @@ void MetronomeConfig::audioBeepRoutesClicked()
 void MetronomeConfig::accept()
       {
       apply();
-      MetronomeConfigBaseWidget::accept();
+      QDialog::accept();
       }
 
 //---------------------------------------------------------
@@ -140,7 +141,7 @@ void MetronomeConfig::apply()
 
 void MetronomeConfig::reject()
       {
-      MetronomeConfigBaseWidget::reject();
+      QDialog::reject();
       }
 
 //---------------------------------------------------------

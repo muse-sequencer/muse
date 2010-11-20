@@ -34,23 +34,10 @@ enum TransformOperator {
       };
 
 //---------------------------------------------------------
-//   MidiTransformDialogBaseWidget
-//   Wrapper around Ui::MidiTransformDialogBase
-//---------------------------------------------------------
-
-class MidiTransformDialogBaseWidget : public QDialog, public Ui::MidiTransformDialogBase
-{
-      Q_OBJECT
-
-   public:
-      MidiTransformDialogBaseWidget(QDialog *parent = 0, Qt::WFlags f = 0) : QDialog(parent, f) { setupUi(this); }
-};
-
-//---------------------------------------------------------
 //   MidiTransformDialog
 //---------------------------------------------------------
 
-class MidiTransformerDialog : public MidiTransformDialogBaseWidget {
+class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase {
       Q_OBJECT
       MidiTransformPrivate* data;
 

@@ -23,8 +23,9 @@ MITPluginTranspose* mitPluginTranspose;
 //---------------------------------------------------------
 
 MITPluginTranspose::MITPluginTranspose(QWidget* parent, Qt::WFlags fl)
-    : MITTransposeBaseWidget(parent, fl)
+    : QWidget(parent, fl)
       {
+      setupUi(this);
       on        = false;
       transpose = 0;
       trigger   = 24;

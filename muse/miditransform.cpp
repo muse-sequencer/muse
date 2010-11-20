@@ -153,8 +153,9 @@ static MidiTransformationList mtlist;
 //---------------------------------------------------------
 
 MidiTransformerDialog::MidiTransformerDialog(QDialog* parent, Qt::WFlags fl)
-   : MidiTransformDialogBaseWidget(parent, fl)
+   : QDialog(parent, fl)
       {
+      setupUi(this);
       data         = new MidiTransformPrivate;
       data->cmt    = 0;
       data->cindex = -1;

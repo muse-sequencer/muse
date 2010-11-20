@@ -14,23 +14,10 @@
 class QDialog;
 
 //---------------------------------------------------------
-//   MetronomeConfigBaseWidget
-//   Wrapper around Ui::MetronomeConfigBase
-//---------------------------------------------------------
-
-class MetronomeConfigBaseWidget : public QDialog, public Ui::MetronomeConfigBase
-{
-      Q_OBJECT
-
-   public:
-      MetronomeConfigBaseWidget(QDialog *parent = 0) : QDialog(parent) { setupUi(this); }
-};
-
-//---------------------------------------------------------
 //   MetronomeConfig
 //---------------------------------------------------------
 
-class MetronomeConfig : public MetronomeConfigBaseWidget {
+class MetronomeConfig : public QDialog, public Ui::MetronomeConfigBase {
       Q_OBJECT
 
    private slots:

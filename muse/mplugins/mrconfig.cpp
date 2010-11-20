@@ -18,8 +18,9 @@
 //---------------------------------------------------------
 
 MRConfig::MRConfig(QWidget* parent, Qt::WFlags fl)
-   : MRConfigBaseWidget(parent, fl)
+   : QWidget(parent, fl)
       {
+      setupUi(this);
       b1->setChecked(rcEnable);
       sb1->setValue(rcStopNote);
       sb2->setValue(rcRecordNote);

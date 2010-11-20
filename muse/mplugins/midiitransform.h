@@ -25,23 +25,10 @@ class Xml;
 enum InputTransformProcEventOp { KeepType, FixType };
 
 //---------------------------------------------------------
-//   MidiInputTransformDialogBaseWidget
-//   Wrapper around Ui::MidiInputTransformDialogBase
-//---------------------------------------------------------
-
-class MidiInputTransformDialogBaseWidget : public QDialog, public Ui::MidiInputTransformDialogBase
-{
-      Q_OBJECT
-
-   public:
-      MidiInputTransformDialogBaseWidget(QDialog *parent = 0, Qt::WFlags f = 0) : QDialog(parent, f) { setupUi(this); }
-};
-
-//---------------------------------------------------------
 //   MidiInputTransform
 //---------------------------------------------------------
 
-class MidiInputTransformDialog : public MidiInputTransformDialogBaseWidget {
+class MidiInputTransformDialog : public QDialog, public Ui::MidiInputTransformDialogBase {
       Q_OBJECT
       MidiInputTransformation* cmt;
       int cindex;                   // current index in preset list
