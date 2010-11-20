@@ -8,7 +8,7 @@
 #ifndef __PITCHEDIT_H__
 #define __PITCHEDIT_H__
 
-#include <qspinbox.h>
+#include <QSpinBox>
 
 //---------------------------------------------------------
 //   PitchEdit
@@ -24,7 +24,7 @@ class PitchEdit : public QSpinBox {
       virtual int mapTextToValue(bool* ok);
 
    public:
-      PitchEdit(QWidget* parent, const char* name = 0);
+      PitchEdit(QWidget* parent=0);
       void setDeltaMode(bool);
       };
 

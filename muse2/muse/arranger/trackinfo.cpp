@@ -35,7 +35,6 @@
 #include "mididev.h"
 #include "utils.h"
 #include "tlist.h"
-//#include "mtrackinfobase.h"
 #include "alayout.h"
 #include "audio.h"
 #include "mixer/amixer.h"

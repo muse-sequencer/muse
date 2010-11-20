@@ -3,7 +3,8 @@
         - More icon conversion work (Orcan)
         - Move global, user, project .xpm files into the xpm/ directory. Handle them the same way in 
           filedialog.cpp as we handle other pixmaps elsewhere. (Orcan)
-        - Ported the following .ui widgets to Qt4: commentbase (Orcan)
+        - Ported the following .ui widgets to Qt4: commentbase, metronomebase, mtrackinfobase, 
+          midifilter (Orcan)
 18.11.2010
         - Updated build part README file - read it! Tell user to specify Release build type. (Tim)
         - Added printout of build type in top level cmake. (Tim)

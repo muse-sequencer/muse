@@ -53,7 +53,7 @@ NoteInfo::NoteInfo(QWidget* parent)
       label->setIndent(3);
       addWidget(label);
       //selPitch = new PitchEdit(this, "selPitch");
-      selPitch = new PitchEdit(0, "selPitch");
+      selPitch = new PitchEdit;
       addWidget(selPitch);
 
       //label = new QLabel(tr("Velo On"), this, "Velocity On");

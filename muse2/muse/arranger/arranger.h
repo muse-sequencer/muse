@@ -19,7 +19,7 @@
 
 #include "midieditor.h"
 #include "pcanvas.h"
-#include "mtrackinfobase.h"
+#include "ui_mtrackinfobase.h"
 #include "trackautomationview.h"
 
 class QMainWindow;
@@ -77,14 +77,27 @@ class WidgetStack : public QWidget {
       QSize minimumSizeHint() const;
       };
 
+
+//---------------------------------------------------------
+//   MidiTrackInfoBaseWidget
+//   Wrapper around Ui::MidiTrackInfoBase
+//---------------------------------------------------------
+class MidiTrackInfoBaseWidget : public QWidget, public Ui::MidiTrackInfoBase
+{
+     Q_OBJECT
+
+  public:
+     MidiTrackInfoBaseWidget(QWidget *parent = 0) : QWidget(parent) { setupUi(this); }
+};
+
 //---------------------------------------------------------
 //   MidiTrackInfo
 //---------------------------------------------------------
 
-class MidiTrackInfo : public MidiTrackInfoBase {
+class MidiTrackInfo : public MidiTrackInfoBaseWidget {
    public:
       bool _midiDetect;
-      MidiTrackInfo(QWidget* parent) : MidiTrackInfoBase(parent) { _midiDetect = false; }
+      MidiTrackInfo(QWidget* parent) : MidiTrackInfoBaseWidget(parent) { _midiDetect = false; }
       };
 
 //---------------------------------------------------------

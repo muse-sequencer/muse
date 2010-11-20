@@ -12,8 +12,8 @@
 //   CtrlComboBox
 //---------------------------------------------------------
 
-CtrlComboBox::CtrlComboBox(QWidget* parent, const char* name)
-   : QComboBox(parent, name)
+CtrlComboBox::CtrlComboBox(QWidget* parent)
+   : QComboBox(parent)
       {
       const char* ctxt[] = {
             "No Ctrl",    "BankSelMSB", "Modulation",  "BreathCtrl",

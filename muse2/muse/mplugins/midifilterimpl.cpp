@@ -9,9 +9,7 @@
 #include "midifilterimpl.h"
 #include "ctrlcombo.h"
 
-#include <qpushbutton.h>
-#include <qcheckbox.h>
-//Added by qt3to4:
+#include <QDialog>
 #include <QCloseEvent>
 
 //---------------------------------------------------------
@@ -40,8 +38,8 @@ void MidiFilterConfig::setCtrl4(int n)
 //   MidiFilterConfig
 //---------------------------------------------------------
 
-MidiFilterConfig::MidiFilterConfig(QWidget* parent, const char* name)
-  : MidiFilterConfigBase(parent, name)
+MidiFilterConfig::MidiFilterConfig(QDialog* parent)
+  : MidiFilterConfigBaseWidget(parent)
       {
       cb1->setCurrentItem(midiFilterCtrl1);
       cb2->setCurrentItem(midiFilterCtrl2);

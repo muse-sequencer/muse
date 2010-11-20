@@ -9,12 +9,12 @@
 #ifndef __CTRLGRP_H__
 #define __CTRLGRP_H__
 
-#include <qcombobox.h>
+#include <QComboBox>
 
 class CtrlComboBox : public QComboBox {
       Q_OBJECT
    public:
-      CtrlComboBox(QWidget* parent, const char* name = 0);
+      CtrlComboBox(QWidget* parent);
       };
 
 
