@@ -208,6 +208,7 @@
 #include "xpm/mono.xpm"
 #include "xpm/stereo.xpm"
 #include "xpm/muse_icon.xpm"
+#include "xpm/about_muse.xpm"
 
 #include "xpm/global.xpm"
 #include "xpm/project.xpm"
@@ -423,6 +424,7 @@ QPixmap* view_transport_windowIcon;
 QPixmap* monoIcon;
 QPixmap* stereoIcon;
 QPixmap* museIcon;
+QPixmap* aboutMuseImage;
 
 QIcon* globalIcon;
 QIcon* projectIcon;
@@ -634,7 +636,7 @@ void initIcons()
       stereoIcon                                    = new MPIXMAP(stereo_xpm, NULL);
 
       museIcon                                      = new MPIXMAP(muse_icon_xpm, NULL);
-
+      aboutMuseImage                                = new MPIXMAP(about_muse_xpm, NULL);
       globalIcon                                    = new MICON(global_xpm, "folder");
       userIcon                                      = new MICON(user_xpm, "user-home");
       projectIcon                                   = new MICON(project_xpm, "folder-sound");

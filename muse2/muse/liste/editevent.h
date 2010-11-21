@@ -8,27 +8,23 @@
 #ifndef __EDIT_EVENT_H__
 #define __EDIT_EVENT_H__
 
-#include <qdialog.h>
-//Added by qt3to4:
-#include <Q3PopupMenu>
-#include <QGridLayout>
-#include <QLabel>
-
-#include "editnotedialogbase.h"
-#include "editsysexdialogbase.h"
-#include "editctrlbase.h"
+#include "ui_editnotedialogbase.h"
+#include "ui_editsysexdialogbase.h"
+#include "ui_editctrlbase.h"
 #include "event.h"
 
 class PosEdit;
 class IntLabel;
 class PitchEdit;
+class QDialog;
+class QLabel;
 class QGridLayout;
-class Q3MultiLineEdit;
+class QTextEdit;
 class QRadioButton;
 class PosEdit;
 class MidiPart;
-class Q3ListBoxItem;
-class Q3PopupMenu;
+class QListWidgetItem;
+class QMenu;
 //---------------------------------------------------------
 //   EditEventDialog
 //---------------------------------------------------------
@@ -40,7 +36,7 @@ class EditEventDialog : public QDialog {
       QGridLayout* layout1;
 
    public:
-      EditEventDialog(QWidget* parent=0, const char* name=0);
+      EditEventDialog(QWidget* parent=0);
       virtual Event event() = 0;
       };
 
@@ -48,12 +44,12 @@ class EditEventDialog : public QDialog {
 //   EditNoteDialog
 //---------------------------------------------------------
 
-class EditNoteDialog : public EditNoteDialogBase {
+class EditNoteDialog : public QDialog, public Ui::EditNoteDialogBase {
       Q_OBJECT
 
    public:
       EditNoteDialog(int tick, const Event&,
-         QWidget* parent=0, const char* name=0);
+         QWidget* parent=0);
       static Event getEvent(int tick, const Event&,
          QWidget* parent = 0);
       virtual Event event();
@@ -63,7 +59,7 @@ class EditNoteDialog : public EditNoteDialogBase {
 //   EditSysExDialog
 //---------------------------------------------------------
 
-class EditSysexDialog : public EditSysexDialogBase {
+class EditSysexDialog : public QDialog, public Ui::EditSysexDialogBase {
       Q_OBJECT
 
       unsigned char* sysex;
@@ -77,7 +73,7 @@ class EditSysexDialog : public EditSysexDialogBase {
 
    public:
       EditSysexDialog(int tick, const Event&,
-         QWidget* parent=0, const char* name=0);
+         QWidget* parent=0);
       ~EditSysexDialog();
       static Event getEvent(int tick, const Event&,
          QWidget* parent = 0);
@@ -88,19 +84,19 @@ class EditSysexDialog : public EditSysexDialogBase {
 //   EditCtrlDialog
 //---------------------------------------------------------
 
-class EditCtrlDialog : public EditCtrlBase  {
+class EditCtrlDialog : public QDialog, public Ui::EditCtrlBase  {
       Q_OBJECT
 
       int num;          // controller number
       int val;          // controller value (for prog. changes)
 
       const MidiPart* part;
-      Q3PopupMenu* pop;
+      QMenu* pop;
 
       void updatePatch();
 
    private slots:
-      void ctrlListClicked(Q3ListBoxItem*);
+      void ctrlListClicked(QListWidgetItem*);
       void newController();
       void programChanged();
       void instrPopup();
@@ -111,7 +107,7 @@ class EditCtrlDialog : public EditCtrlBase  {
 
    public:
       EditCtrlDialog(int tick, const Event&,
-         const MidiPart*, QWidget* parent=0, const char* name=0);
+         const MidiPart*, QWidget* parent=0);
       static Event getEvent(int tick, const Event&, const MidiPart*,
          QWidget* parent = 0);
       virtual Event event();
@@ -127,7 +123,7 @@ class EditMetaDialog : public EditEventDialog {
       unsigned char* meta;
       int len;
       PosEdit* epos;
-      Q3MultiLineEdit* edit;
+      QTextEdit* edit;
       IntLabel* il2;
       QRadioButton* hexButton;
       QLabel* typeLabel;
@@ -142,7 +138,7 @@ class EditMetaDialog : public EditEventDialog {
 
    public:
       EditMetaDialog(int tick, const Event&,
-         QWidget* parent=0, const char* name=0);
+         QWidget* parent=0);
       ~EditMetaDialog();
       static Event getEvent(int tick, const Event&,
          QWidget* parent = 0);
@@ -164,7 +160,7 @@ class EditCAfterDialog : public EditEventDialog {
 
    public:
       EditCAfterDialog(int tick, const Event&,
-         QWidget* parent=0, const char* name=0);
+         QWidget* parent=0);
       static Event getEvent(int tick, const Event&,
          QWidget* parent = 0);
       virtual Event event();
@@ -186,7 +182,7 @@ class EditPAfterDialog : public EditEventDialog {
 
    public:
       EditPAfterDialog(int tick, const Event&,
-         QWidget* parent=0, const char* name=0);
+         QWidget* parent=0);
       static Event getEvent(int tick, const Event&,
          QWidget* parent = 0);
       virtual Event event();

@@ -12,11 +12,11 @@
 #include "globaldefs.h"
 #include <list>
 #include <vector>
-//Added by qt3to4:
-#include <Q3PopupMenu>
+
+#include <QMenu>
 
 class MidiPort;
-class Q3PopupMenu;
+class QMenu;
 class MidiPlayEvent;
 class Xml;
 class EventList;
@@ -106,7 +106,7 @@ class MidiInstrument {
 
       virtual void reset(int, MType);
       virtual const char* getPatchName(int,int,MType,bool);
-      virtual void populatePatchPopup(Q3PopupMenu*, int, MType, bool);
+      virtual void populatePatchPopup(QMenu*, int, MType, bool);
       void read(Xml&);
       void write(int level, Xml&);
       PatchGroupList* groups()        { return &pg; }

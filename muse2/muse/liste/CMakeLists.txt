@@ -29,14 +29,15 @@ QT4_WRAP_CPP ( liste_mocs
       editevent.h
       )
 
-# QT4_WRAP_UI ( liste_ui_headers
-QT4_WRAP_UI3 ( liste_ui_headers
+QT4_WRAP_UI ( UIC
+      editctrlbase.ui
+      )
+
+#QT4_WRAP_UI3 ( liste_ui_headers
 #       ctrllistedit.ui
 #       partlistedit.ui
 #       tracklistedit.ui
-      
-      editctrlbase.ui
-      )
+#       )      
 
 add_library ( liste STATIC
 #       listedit.cpp listedit.h
@@ -48,6 +49,7 @@ add_library ( liste STATIC
       editevent.cpp editevent.h 
       ${liste_mocs}
       ${liste_ui_headers}
+      ${UIC}
       )
 
 add_dependencies(liste widgets)

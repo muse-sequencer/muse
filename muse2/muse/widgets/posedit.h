@@ -82,7 +82,7 @@ class PosEdit : public QWidget
       virtual void setEnabled(bool);
 
    public:
-      PosEdit(QWidget*,  const char* = 0);
+      PosEdit(QWidget* = 0,  const char* = 0);
       PosEdit(const Pos& time, QWidget*,  const char* = 0);
       ~PosEdit();
 
