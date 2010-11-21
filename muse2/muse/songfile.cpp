@@ -1050,7 +1050,7 @@ void MusE::readToplevels(Xml& xml)
                               }  
                               }
                         else if (tag == "cliplist") {
-                              startClipList();
+                              startClipList(true);
                               toplevels.back().cobject()->readStatus(xml);
                               }
                         else
