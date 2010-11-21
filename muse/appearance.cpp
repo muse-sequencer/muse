@@ -64,14 +64,14 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       color  = 0;
       config = new GlobalConfigValues;
 
-      QToolTip::add(fontName0, tr("Main application font, and default font for any\n controls not defined here."));
-      QToolTip::add(fontName1, tr("For small controls like mixer strips.\nAlso timescale small numbers, arranger part name overlay,\n and effects rack."));
-      QToolTip::add(fontName2, tr("Midi track info panel. Transport controls."));
-      QToolTip::add(fontName3, tr("Controller graph and S/X buttons. Large numbers for time\n and tempo scale, and time signature."));
-      QToolTip::add(fontName4, tr("Time scale markers."));
-      QToolTip::add(fontName5, tr("List editor: meta event edit dialog multi-line edit box."));
-      QToolTip::add(fontName6, tr("Mixer label font. Auto-font-sizing up to chosen font size.\nWord-breaking but only with spaces."));
-      QToolTip::add(fontSize6, tr("Maximum mixer label auto-font-sizing font size."));
+      fontName0->setToolTip(tr("Main application font, and default font for any\n controls not defined here."));
+      fontName1->setToolTip(tr("For small controls like mixer strips.\nAlso timescale small numbers, arranger part name overlay,\n and effects rack."));
+      fontName2->setToolTip(tr("Midi track info panel. Transport controls."));
+      fontName3->setToolTip(tr("Controller graph and S/X buttons. Large numbers for time\n and tempo scale, and time signature."));
+      fontName4->setToolTip(tr("Time scale markers."));
+      fontName5->setToolTip(tr("List editor: meta event edit dialog multi-line edit box."));
+      fontName6->setToolTip(tr("Mixer label font. Auto-font-sizing up to chosen font size.\nWord-breaking but only with spaces."));
+      fontSize6->setToolTip(tr("Maximum mixer label auto-font-sizing font size."));
       
       // ARRANGER
 
