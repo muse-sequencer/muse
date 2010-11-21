@@ -9,9 +9,9 @@
 #ifndef __CONF_H__
 #define __CONF_H__
 
-#include <q3groupbox.h>
-#include "configmidifilebase.h"
+#include "ui_configmidifilebase.h"
 
+class QDialog;
 class QLineEdit;
 
 //---------------------------------------------------------
@@ -19,7 +19,7 @@ class QLineEdit;
 //    config properties of exported midi files
 //---------------------------------------------------------
 
-class MidiFileConfig : public ConfigMidiFileBase {
+class MidiFileConfig : public QDialog, public Ui::ConfigMidiFileBase {
       Q_OBJECT
 
    private slots:
@@ -27,7 +27,7 @@ class MidiFileConfig : public ConfigMidiFileBase {
       void cancelClicked();
 
    public:
-      MidiFileConfig();
+      MidiFileConfig(QWidget* parent=0);
       void updateValues();
       };
 

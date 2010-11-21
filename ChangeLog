@@ -1,7 +1,8 @@
 21.11.2010
         - All menus now use QActions. Some shortcuts are left to be assigned correctly (Orcan)
         - Clean up: Remove submenu integer ids from the MusE class in favor of QActions (Orcan)
-        - Ported the following .ui widgets to Qt4: didyouknow, transposebase (Orcan)
+        - Ported the following .ui widgets to Qt4: didyouknow, transposebase, cliplist,
+          configmidifilebase (Orcan)
 20.11.2010
         - Remove most wrapper classes around .ui widgets. I was wrapping them too much. Some widgets
           (e.g. songinfo) still need wrappers though. (Orcan)

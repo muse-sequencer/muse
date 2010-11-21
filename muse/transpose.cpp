@@ -1,8 +1,8 @@
 
 #include <stdio.h>
-#include <qcombobox.h>
-#include <qspinbox.h>
-#include <qradiobutton.h>
+
+#include <QDialog>
+
 #include "transpose.h"
 #include "track.h"
 #include "song.h"
