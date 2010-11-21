@@ -1571,7 +1571,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       trackWaveAction = grp->actions()[2];
       trackAOutputAction = grp->actions()[3];
       trackAGroupAction = grp->actions()[4];
-      trackAInputAction = grp->actions()[6];
+      trackAInputAction = grp->actions()[5];
       trackAAuxAction = grp->actions()[6];
       
       transport = new Transport(this, "transport");
