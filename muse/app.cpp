@@ -867,6 +867,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       
       appName               = QString("MusE");
 
+      editSignalMapper = new QSignalMapper(this);
+      midiPluginSignalMapper = new QSignalMapper(this);
+      followSignalMapper = new QSignalMapper(this);
+
       song           = new Song("song");
       song->blockSignals(true);
       heartBeatTimer = new QTimer(this, "timer");
@@ -985,6 +989,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       ::initMidiDevices();
 
       //----Actions
+      //-------- File Actions
 
       fileNewAction = new QAction(QIcon(*filenewIcon), tr("&New"), this); 
       fileNewAction->setToolTip(tr(fileNewText));
@@ -995,21 +1000,261 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       fileOpenAction->setToolTip(tr(fileOpenText));
       fileOpenAction->setWhatsThis(tr(fileOpenText));
 
+      openRecent = new QMenu(tr("Open &Recent"));
+
       fileSaveAction = new QAction(QIcon(*saveIcon), tr("&Save"), this); 
 
       fileSaveAction->setToolTip(tr(fileSaveText));
       fileSaveAction->setWhatsThis(tr(fileSaveText));
 
-      pianoAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
-      connect(pianoAction, SIGNAL(activated()), SLOT(startPianoroll()));
+      fileSaveAsAction = new QAction(tr("Save &As"), this);
 
-//       markerAction = new QAction(tr("marker"), QIconSet(*view_markerIcon), tr("Marker"),
-//         0, this, "marker");
-//       connect(markerAction, SIGNAL(activated()), SLOT(startMarkerView()));
+      fileImportMidiAction = new QAction(tr("Import Midifile"), this);
+      fileExportMidiAction = new QAction(tr("Export Midifile"), this);
+      fileImportPartAction = new QAction(tr("Import Part"), this);
+
+      fileImportWaveAction = new QAction(tr("Import Wave File"), this);
+
+      quitAction = new QAction(tr("&Quit"), this);
+
+      //-------- Edit Actions
+      editCutAction = new QAction(QIcon(*editcutIconSet), tr("C&ut"), this);
+      editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
+      editPasteAction = new QAction(QIcon(*editpasteIconSet), tr("&Paste"), this);
+      editInsertAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert"), this);
+      editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste c&lone"), this);
+      editPaste2TrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to &track"), this);
+      editPasteC2TAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste clone to trac&k"), this);
+      editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert empty measure"), this);
+      editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
+
+
+      addTrack = new QMenu(tr("Add Track"));
+      addTrack->setIcon(QIcon(*edit_track_addIcon));
+      select = new QMenu(tr("Select"));
+      select->setIcon(QIcon(*selectIcon));
+
+      editSelectAllAction = new QAction(QIcon(*select_allIcon), tr("Select &All"), this);
+      editDeselectAllAction = new QAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"), this);
+      editInvertSelectionAction = new QAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"), this);
+      editInsideLoopAction = new QAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"), this);
+      editOutsideLoopAction = new QAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"), this);
+      editAllPartsAction = new QAction( QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"), this);
+
+      pianoAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
+      startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums"), this);
+      startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List"), this);
+      startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave"), this);
+
+      master = new QMenu(tr("Mastertrack"));
+      master->setIcon(QIcon(*edit_mastertrackIcon));
+      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic"), this);
+      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List"), this);
+
+      midiEdit = new QMenu(tr("Midi"));
+      midiEdit->setIcon(QIcon(*edit_midiIcon));
+
+      midiTransposeAction = new QAction(QIcon(*midi_transposeIcon), tr("Transpose"), this);
+
+      editSongInfoAction = new QAction(QIcon(*edit_listIcon), tr("Song info"), this);
+
+      //-------- View Actions
+      viewTransportAction = new QAction(QIcon(*view_transport_windowIcon), tr("Transport Panel"), this);
+      viewTransportAction->setCheckable(true);
+      viewBigtimeAction = new QAction(QIcon(*view_bigtime_windowIcon), tr("Bigtime window"),  this);
+      viewBigtimeAction->setCheckable(true);
+      viewMixerAAction = new QAction(QIcon(*mixerSIcon), tr("Mixer A"), this);
+      viewMixerAAction->setCheckable(true);
+      viewMixerBAction = new QAction(QIcon(*mixerSIcon), tr("Mixer B"), this);
+      viewMixerBAction->setCheckable(true);
+      viewCliplistAction = new QAction(QIcon(*cliplistSIcon), tr("Cliplist"), this);
+      viewCliplistAction->setCheckable(true);
+      viewMarkerAction = new QAction(QIcon(*view_markerIcon), tr("Marker View"),  this);
+      viewMarkerAction->setCheckable(true);
+
+      //-------- Structure Actions
+      strGlobalCutAction = new QAction(tr("Global Cut"), this);
+      strGlobalInsertAction = new QAction(tr("Global Insert"), this);
+      strGlobalSplitAction = new QAction(tr("Global Split"), this);
+      strCopyRangeAction = new QAction(tr("Copy Range"), this);
+      strCopyRangeAction->setEnabled(false);
+      strCutEventsAction = new QAction(tr("Cut Events"), this);
+      strCutEventsAction->setEnabled(false);
+
+      //-------- Midi Actions
+      menuScriptPlugins = new QMenu(tr("&Plugins"));
+      midiEditInstAction = new QAction(QIcon(*midi_edit_instrumentIcon), tr("Edit Instrument"), this);
+      midiInputPlugins = new QMenu(tr("Input Plugins"));
+      midiInputPlugins->setIcon(QIcon(*midi_inputpluginsIcon));
+      midiTrpAction = new QAction(QIcon(*midi_inputplugins_transposeIcon), tr("Transpose"), this);
+      midiInputTrfAction = new QAction(QIcon(*midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform"), this);
+      midiInputFilterAction = new QAction(QIcon(*midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter"), this);
+      midiRemoteAction = new QAction(QIcon(*midi_inputplugins_remote_controlIcon), tr("Midi Remote Control"), this);
+      midiResetInstAction = new QAction(QIcon(*midi_reset_instrIcon), tr("Reset Instr."), this);
+      midiInitInstActions = new QAction(QIcon(*midi_init_instrIcon), tr("Init Instr."), this);
+      midiLocalOffAction = new QAction(QIcon(*midi_local_offIcon), tr("local off"), this);
+
+      //-------- Audio Actions
+      audioBounce2TrackAction = new QAction(QIcon(*audio_bounce_to_trackIcon), tr("Bounce to Track"), this);
+      audioBounce2FileAction = new QAction(QIcon(*audio_bounce_to_fileIcon), tr("Bounce to File"), this);
+      audioRestartAction = new QAction(QIcon(*audio_restartaudioIcon), tr("Restart Audio"), this);
+
+      //-------- Automation Actions
+      autoMixerAction = new QAction(QIcon(*automation_mixerIcon), tr("Mixer Automation"), this);
+      autoMixerAction->setCheckable(true);
+      autoSnapshotAction = new QAction(QIcon(*automation_take_snapshotIcon), tr("Take Snapshot"), this);
+      autoClearAction = new QAction(QIcon(*automation_clear_dataIcon), tr("Clear Automation Data"), this);
+      autoClearAction->setEnabled(false);
+
+      //-------- Settings Actions
+      settingsGlobalAction = new QAction(QIcon(*settings_globalsettingsIcon), tr("Global Settings"), this);
+      settingsShortcutsAction = new QAction(QIcon(*settings_configureshortcutsIcon), tr("Configure shortcuts"), this);
+      follow = new QMenu(tr("follow song"));
+      dontFollowAction = new QAction(tr("dont follow Song"), this);
+      dontFollowAction->setCheckable(true);
+      followPageAction = new QAction(tr("follow page"), this);
+      followPageAction->setCheckable(true);
+      followPageAction->setChecked(true);
+      followCtsAction = new QAction(tr("follow continuous"), this);
+      followCtsAction->setCheckable(true);
+
+      settingsMetronomeAction = new QAction(QIcon(*settings_metronomeIcon), tr("Metronome"), this);
+      settingsMidiSyncAction = new QAction(QIcon(*settings_midisyncIcon), tr("Midi Sync"), this);
+      settingsMidiIOAction = new QAction(QIcon(*settings_midifileexportIcon), tr("Midi File Import/Export"), this);
+      settingsAppearanceAction = new QAction(QIcon(*settings_appearance_settingsIcon), tr("Appearance settings"), this);
+      settingsMidiPortAction = new QAction(QIcon(*settings_midiport_softsynthsIcon), tr("Midi Ports / Soft Synth"), this);
+
+      //-------- Help Actions
+      helpManualAction = new QAction(tr("&Manual"), this);
+      helpHomepageAction = new QAction(tr("&MusE homepage"), this);
+      helpReportAction = new QAction(tr("&Report Bug..."), this);
+      helpAboutAction = new QAction(tr("&About MusE"), this);
+
+
+      // Connections
 
       connect(fileNewAction,  SIGNAL(activated()), SLOT(loadTemplate()));
       connect(fileOpenAction, SIGNAL(activated()), SLOT(loadProject()));
+      connect(openRecent, SIGNAL(aboutToShow()), SLOT(openRecentMenu()));
+      connect(openRecent, SIGNAL(activated(int)), SLOT(selectProject(int)));
+      
       connect(fileSaveAction, SIGNAL(activated()), SLOT(save()));
+      connect(fileSaveAsAction, SIGNAL(activated()), SLOT(saveAs()));
+
+      connect(fileImportMidiAction, SIGNAL(activated()), SLOT(importMidi()));
+      connect(fileExportMidiAction, SIGNAL(activated()), SLOT(exportMidi()));
+      connect(fileImportPartAction, SIGNAL(activated()), SLOT(importPart()));
+
+      connect(fileImportWaveAction, SIGNAL(activated()), SLOT(importWave()));
+      connect(quitAction, SIGNAL(activated()), SLOT(quitDoc()));
+      
+      connect(editCutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editCopyAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editPasteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editInsertAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editPasteCloneAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editPaste2TrackAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editPasteC2TAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editInsertEMAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editDeleteSelectedAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      
+      connect(editSelectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editDeselectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editInvertSelectionAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editInsideLoopAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editOutsideLoopAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editAllPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+
+      editSignalMapper->setMapping(editCutAction, CMD_CUT);
+      editSignalMapper->setMapping(editCopyAction, CMD_COPY);
+      editSignalMapper->setMapping(editPasteAction, CMD_PASTE);
+      editSignalMapper->setMapping(editInsertAction, CMD_INSERT);
+      editSignalMapper->setMapping(editPasteCloneAction, CMD_PASTE_CLONE);
+      editSignalMapper->setMapping(editPaste2TrackAction, CMD_PASTE_TO_TRACK);
+      editSignalMapper->setMapping(editPasteC2TAction, CMD_PASTE_CLONE_TO_TRACK);
+      editSignalMapper->setMapping(editInsertEMAction, CMD_INSERTMEAS);
+      editSignalMapper->setMapping(editDeleteSelectedAction, CMD_DELETE_TRACK);
+      editSignalMapper->setMapping(editSelectAllAction, CMD_SELECT_ALL);
+      editSignalMapper->setMapping(editDeselectAllAction, CMD_SELECT_NONE);
+      editSignalMapper->setMapping(editInvertSelectionAction, CMD_SELECT_INVERT);
+      editSignalMapper->setMapping(editInsideLoopAction, CMD_SELECT_ILOOP);
+      editSignalMapper->setMapping(editOutsideLoopAction, CMD_SELECT_OLOOP);
+      editSignalMapper->setMapping(editAllPartsAction, CMD_SELECT_PARTS);
+
+      connect(editSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
+
+      connect(pianoAction, SIGNAL(activated()), SLOT(startPianoroll()));
+      connect(startDrumEditAction, SIGNAL(activated()), SLOT(startDrumEditor()));
+      connect(startListEditAction, SIGNAL(activated()), SLOT(startListEditor()));
+      connect(startWaveEditAction, SIGNAL(activated()), SLOT(startWaveEditor()));
+
+      connect(masterGraphicAction, SIGNAL(activated()), SLOT(startMasterEditor()));
+      connect(masterListAction, SIGNAL(activated()), SLOT(startLMasterEditor()));
+
+      connect(midiTransposeAction, SIGNAL(activated()), SLOT(transpose()));
+
+      connect(editSongInfoAction, SIGNAL(activated()), SLOT(startSongInfo()));
+
+      connect(viewTransportAction, SIGNAL(toggled(bool)), SLOT(toggleTransport(bool)));
+      connect(viewBigtimeAction, SIGNAL(toggled(bool)), SLOT(toggleBigTime(bool)));
+      connect(viewMixerAAction, SIGNAL(toggled(bool)),SLOT(toggleMixer1(bool)));
+      connect(viewMixerBAction, SIGNAL(toggled(bool)), SLOT(toggleMixer2(bool)));
+      connect(viewCliplistAction, SIGNAL(toggled(bool)), SLOT(startClipList(bool)));
+      connect(viewMarkerAction, SIGNAL(toggled(bool)), SLOT(toggleMarker(bool)));
+
+      connect(strGlobalCutAction, SIGNAL(activated()), SLOT(globalCut()));
+      connect(strGlobalInsertAction, SIGNAL(activated()), SLOT(globalInsert()));
+      connect(strGlobalSplitAction, SIGNAL(activated()), SLOT(globalSplit()));
+      connect(strCopyRangeAction, SIGNAL(activated()), SLOT(copyRange())); 
+      connect(strCutEventsAction, SIGNAL(activated()), SLOT(cutEvents()));
+
+      connect(midiEditInstAction, SIGNAL(activated()), SLOT(startEditInstrument()));
+      connect(midiResetInstAction, SIGNAL(activated()), SLOT(resetMidiDevices()));
+      connect(midiInitInstActions, SIGNAL(activated()), SLOT(initMidiDevices()));
+      connect(midiLocalOffAction, SIGNAL(activated()), SLOT(localOff()));
+
+      connect(midiTrpAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
+      connect(midiInputTrfAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
+      connect(midiInputFilterAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
+      connect(midiRemoteAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
+
+      midiPluginSignalMapper->setMapping(midiTrpAction, 0);
+      midiPluginSignalMapper->setMapping(midiInputTrfAction, 1);
+      midiPluginSignalMapper->setMapping(midiInputFilterAction, 2);
+      midiPluginSignalMapper->setMapping(midiRemoteAction, 3);
+
+      connect(midiPluginSignalMapper, SIGNAL(mapped(int)), this, SLOT(startMidiInputPlugin(int)));
+      
+      connect(audioBounce2TrackAction, SIGNAL(activated()), SLOT(bounceToTrack()));
+      connect(audioBounce2FileAction, SIGNAL(activated()), SLOT(bounceToFile()));
+      connect(audioRestartAction, SIGNAL(activated()), SLOT(seqRestart()));
+
+      connect(autoMixerAction, SIGNAL(activated()), SLOT(switchMixerAutomation()));
+      connect(autoSnapshotAction, SIGNAL(activated()), SLOT(takeAutomationSnapshot()));
+      connect(autoClearAction, SIGNAL(activated()), SLOT(clearAutomation()));
+
+      connect(settingsGlobalAction, SIGNAL(activated()), SLOT(configGlobalSettings()));
+      connect(settingsShortcutsAction, SIGNAL(activated()), SLOT(configShortCuts()));
+      connect(settingsMetronomeAction, SIGNAL(activated()), SLOT(configMetronome()));
+      connect(settingsMidiSyncAction, SIGNAL(activated()), SLOT(configMidiSync()));
+      connect(settingsMidiIOAction, SIGNAL(activated()), SLOT(configMidiFile()));
+      connect(settingsAppearanceAction, SIGNAL(activated()), SLOT(configAppearance()));
+      connect(settingsMidiPortAction, SIGNAL(activated()), SLOT(configMidiPorts()));
+
+      connect(dontFollowAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
+      connect(followPageAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
+      connect(followCtsAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
+
+      followSignalMapper->setMapping(dontFollowAction, CMD_FOLLOW_NO);
+      followSignalMapper->setMapping(followPageAction, CMD_FOLLOW_JUMP);
+      followSignalMapper->setMapping(followCtsAction, CMD_FOLLOW_CONTINUOUS);
+
+      connect(followSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
+
+      connect(helpManualAction, SIGNAL(activated()), SLOT(startHelpBrowser()));
+      connect(helpHomepageAction, SIGNAL(activated()), SLOT(startHomepageBrowser()));
+      connect(helpReportAction, SIGNAL(activated()), SLOT(startBugBrowser()));
+      connect(helpAboutAction, SIGNAL(activated()), SLOT(about()));
 
       //--------------------------------------------------
       //    Toolbar
@@ -1074,106 +1319,66 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup File
       //-------------------------------------------------------------
 
-      menu_file = new QMenu(this);
-      menuBar()->insertItem(tr("&File"), menu_file);
+      menu_file = menuBar()->addMenu(tr("&File"));
       menu_file->addAction(fileNewAction);
       menu_file->addAction(fileOpenAction);
-      openRecent = new QMenu(menu_file);
-      connect(openRecent, SIGNAL(aboutToShow()), this, SLOT(openRecentMenu()));
-      connect(openRecent, SIGNAL(activated(int)), this, SLOT(selectProject(int)));
-      menu_ids[CMD_OPEN_RECENT] = menu_file->insertItem(tr("Open &Recent"), openRecent, 0);
+      menu_file->addMenu(openRecent);
       menu_file->insertSeparator();
       menu_file->addAction(fileSaveAction);
-      menu_ids[CMD_SAVE_AS] = menu_file->insertItem(tr("Save &As"), this, SLOT(saveAs()), 0, -2);
+      menu_file->addAction(fileSaveAsAction);
       menu_file->insertSeparator();
-      menu_ids[CMD_IMPORT_MIDI] = menu_file->insertItem(*openIconS, tr("Import Midifile"), this, SLOT(importMidi()), 0, -2);
-      menu_ids[CMD_EXPORT_MIDI] = menu_file->insertItem(*saveIconS, tr("Export Midifile"), this, SLOT(exportMidi()), 0, -2);
-      menu_ids[CMD_IMPORT_PART]   = menu_file->insertItem(*openIconS, tr("Import Part"), this, SLOT(importPart()), 0, -2);
+      menu_file->addAction(fileImportMidiAction);
+      menu_file->addAction(fileExportMidiAction);
+      menu_file->addAction(fileImportPartAction);
       menu_file->insertSeparator();
-      menu_ids[CMD_IMPORT_AUDIO] = menu_file->insertItem(*openIconS, tr("Import Wave File"), this, SLOT(importWave()), 0, -2);
-
+      menu_file->addAction(fileImportWaveAction);
       menu_file->insertSeparator();
-      menu_ids[CMD_QUIT] = menu_file->insertItem(*exitIconS, tr("&Quit"), this, SLOT(quitDoc()), 0, -2);
+      menu_file->addAction(quitAction);
       menu_file->insertSeparator();
 
       //-------------------------------------------------------------
       //    popup Edit
       //-------------------------------------------------------------
 
-      menuEdit = new QMenu(this);
+      menuEdit = menuBar()->addMenu(tr("&Edit"));
       menuEdit->addActions(undoRedo->actions());
       menuEdit->insertSeparator();
-      menuBar()->insertItem(tr("&Edit"), menuEdit);
 
-      menuEdit->insertItem(*editcutIconSet, tr("C&ut"),   CMD_CUT);
-      menuEdit->setAccel(Qt::CTRL+Qt::Key_X, CMD_CUT);
-      menuEdit->insertItem(*editcopyIconSet, tr("&Copy"),  CMD_COPY);
-      menuEdit->setAccel(Qt::CTRL+Qt::Key_C, CMD_COPY);
-      menuEdit->insertItem(*editpasteIconSet, tr("&Paste"), CMD_PASTE);
-      menuEdit->setAccel(Qt::CTRL+Qt::Key_V, CMD_PASTE);
-      menuEdit->insertItem(*editpasteIconSet, tr("&Insert"), CMD_INSERT);
-      menuEdit->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_I, CMD_INSERT);
-      menuEdit->insertItem(*editpasteCloneIconSet, tr("Paste c&lone"), CMD_PASTE_CLONE);
-      menuEdit->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_V, CMD_PASTE_CLONE);
-      menuEdit->insertItem(*editpaste2TrackIconSet, tr("Paste to &track"), CMD_PASTE_TO_TRACK);
-      menuEdit->setAccel(Qt::CTRL+Qt::Key_B, CMD_PASTE_TO_TRACK);
-      menuEdit->insertItem(*editpasteClone2TrackIconSet, tr("Paste clone to trac&k"), CMD_PASTE_CLONE_TO_TRACK);
-      menuEdit->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_B, CMD_PASTE_CLONE_TO_TRACK);
-
-      menuEdit->insertItem(*editpasteIconSet, tr("&Insert empty measure"), CMD_INSERTMEAS);
-      menuEdit->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_X, CMD_INSERTMEAS);
+      menuEdit->addAction(editCutAction);
+      menuEdit->addAction(editCopyAction);
+      menuEdit->addAction(editPasteAction);
+      menuEdit->addAction(editInsertAction);
+      menuEdit->addAction(editPasteCloneAction);
+      menuEdit->addAction(editPaste2TrackAction);
+      menuEdit->addAction(editPasteC2TAction);
+      menuEdit->addAction(editInsertEMAction);
       menuEdit->insertSeparator();
-      menuEdit->insertItem(QIcon(*edit_track_delIcon),
-         tr("Delete Selected Tracks"), CMD_DELETE_TRACK);
+      menuEdit->addAction(editDeleteSelectedAction);
 
-      addTrack = new QMenu(this);
       // Moved below. Have to wait until synths are available...
       //populateAddTrack(addTrack);
-      
-      menuEdit->insertItem(QIcon(*edit_track_addIcon),
-         tr("Add Track"), addTrack);
-
-      select = new QMenu(this);
-      select->insertItem(QIcon(*select_allIcon),
-         tr("Select &All"),  CMD_SELECT_ALL);
-      select->insertItem(QIcon(*select_deselect_allIcon),
-         tr("&Deselect All"), CMD_SELECT_NONE);
-      menuEdit->insertSeparator();
-      select->insertItem(QIcon(*select_invert_selectionIcon),
-         tr("Invert &Selection"), CMD_SELECT_INVERT);
-      select->insertItem(QIcon(*select_inside_loopIcon),
-         tr("&Inside Loop"), CMD_SELECT_ILOOP);
-      select->insertItem(QIcon(*select_outside_loopIcon),
-         tr("&Outside Loop"), CMD_SELECT_OLOOP);
-      select->insertItem(QIcon(*select_all_parts_on_trackIcon),
-         tr("All &Parts on Track"), CMD_SELECT_PARTS);
-      menuEdit->insertItem(QIcon(*selectIcon),
-         tr("Select"), select);
+      menuEdit->addMenu(addTrack);
+      menuEdit->addMenu(select);
+      select->addAction(editSelectAllAction);
+      select->addAction(editDeselectAllAction);
+      select->addAction(editInvertSelectionAction);
+      select->addAction(editInsideLoopAction);
+      select->addAction(editOutsideLoopAction);
+      select->addAction(editAllPartsAction);
       menuEdit->insertSeparator();
 
       menuEdit->addAction(pianoAction);
-      menu_ids[CMD_OPEN_DRUMS] = menuEdit->insertItem(
-         QIcon(*edit_drummsIcon), tr("Drums"), this, SLOT(startDrumEditor()), 0);
-      menu_ids[CMD_OPEN_LIST]  = menuEdit->insertItem(
-         QIcon(*edit_listIcon), tr("List"), this, SLOT(startListEditor()), 0);
-      menu_ids[CMD_OPEN_WAVE]  = menuEdit->insertItem(
-         QIcon(*edit_waveIcon), tr("Wave"), this, SLOT(startWaveEditor()), 0);
+      menuEdit->addAction(startDrumEditAction);
+      menuEdit->addAction(startListEditAction);
+      menuEdit->addAction(startWaveEditAction);
 
-      master = new QMenu(this);
-      master->setCheckable(false);
-      menu_ids[CMD_OPEN_GRAPHIC_MASTER] = master->insertItem(
-        QIcon(*mastertrack_graphicIcon),tr("Graphic"), this, SLOT(startMasterEditor()), 0);
-      menu_ids[CMD_OPEN_LIST_MASTER] = master->insertItem(
-  QIcon(*mastertrack_listIcon),tr("List"), this, SLOT(startLMasterEditor()), 0);
-      menuEdit->insertItem(QIcon(*edit_mastertrackIcon),
-         tr("Mastertrack"), master, Qt::Key_F);
-
+      menuEdit->addMenu(master);
+      master->addAction(masterGraphicAction);
+      master->addAction(masterListAction);
       menuEdit->insertSeparator();
-      connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
-      connect(select, SIGNAL(activated(int)), SLOT(cmd(int)));
 
-      midiEdit = new QMenu(this);
-      midiEdit->setCheckable(false);
+
+      menuEdit->addMenu(midiEdit);
 #if 0  // TODO
       menu_ids[CMD_OPEN_MIDI_TRANSFORM] = midiEdit->insertItem(
          QIcon(*midi_transformIcon), tr("Midi &Transform"), this, SLOT(startMidiTransformer()), 0);
@@ -1191,180 +1396,114 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiEdit->insertItem(tr("Create Measure"),   this, SLOT(createMeasure()));
       midiEdit->insertItem(tr("Mix Track"),        this, SLOT(mixTrack()));
 #endif
-      menu_ids[CMD_TRANSPOSE] = midiEdit->insertItem(
-         QIcon(*midi_transposeIcon), tr("Transpose"), this, SLOT(transpose()), 0);
-      menuEdit->insertItem(
-         QIcon(*edit_midiIcon), tr("Midi"), midiEdit);
+      midiEdit->addAction(midiTransposeAction);
 
-      menuEdit->insertSeparator();
-      menuEdit->insertItem(
-          QIcon(*edit_listIcon), tr("Song info"), this, SLOT(startSongInfo()), 0);
+      menuEdit->addAction(editSongInfoAction);
+
       //-------------------------------------------------------------
       //    popup View
       //-------------------------------------------------------------
 
-      menuView = new QMenu(this);
+      menuView = menuBar()->addMenu(tr("View"));
       menuView->setCheckable(true);
       menuBar()->insertItem(tr("View"), menuView);
 
-      tr_id = menuView->insertItem(
-         QIcon(*view_transport_windowIcon), tr("Transport Panel"), this, SLOT(toggleTransport()), 0);
-      bt_id = menuView->insertItem(
-         QIcon(*view_bigtime_windowIcon), tr("Bigtime window"),  this, SLOT(toggleBigTime()), 0);
-      //aid1  = menuView->insertItem(
-      //   QIconSet(*mixerSIcon), tr("Mixer"), this, SLOT(toggleMixer()), 0);
-      aid1a  = menuView->insertItem(
-         QIcon(*mixerSIcon), tr("Mixer A"), this, SLOT(toggleMixer1()), 0);
-      aid1b  = menuView->insertItem(
-         QIcon(*mixerSIcon), tr("Mixer B"), this, SLOT(toggleMixer2()), 0);
-      // p3.2.24
-      aid2  = menuView->insertItem(
-         QIcon(*cliplistSIcon), tr("Cliplist"), this, SLOT(startClipList()), 0);
-      mr_id = menuView->insertItem(
-         QIcon(*view_markerIcon), tr("Marker View"),  this, SLOT(toggleMarker()), 0);
-      //markerAction->addTo(menuView);
+      menuView->addAction(viewTransportAction);
+      menuView->addAction(viewBigtimeAction);
+      menuView->addAction(viewMixerAAction);
+      menuView->addAction(viewMixerBAction);
+      menuView->addAction(viewCliplistAction);
+      menuView->addAction(viewMarkerAction);
 
       
       //-------------------------------------------------------------
       //    popup Structure
       //-------------------------------------------------------------
 
-      menuStructure = new QMenu(this);
-      menuStructure->setCheckable(false);
-      menuBar()->insertItem(tr("&Structure"), menuStructure);
-      menu_ids[CMD_GLOBAL_CUT] = menuStructure->insertItem(tr("Global Cut"),    this, SLOT(globalCut()), 0);
-      menu_ids[CMD_GLOBAL_INSERT] = menuStructure->insertItem(tr("Global Insert"), this, SLOT(globalInsert()), 0);
-      menu_ids[CMD_GLOBAL_SPLIT] = menuStructure->insertItem(tr("Global Split"),  this, SLOT(globalSplit()), 0);
-      menu_ids[CMD_COPY_RANGE] = menuStructure->insertItem(tr("Copy Range"),    this, SLOT(copyRange()), 0);
-      menuStructure->setItemEnabled(menu_ids[CMD_COPY_RANGE], false);
+      menuStructure = menuBar()->addMenu(tr("&Structure"));
+      menuStructure->addAction(strGlobalCutAction);
+      menuStructure->addAction(strGlobalInsertAction);
+      menuStructure->addAction(strGlobalSplitAction);
+      menuStructure->addAction(strCopyRangeAction);
       menuStructure->insertSeparator();
-      menu_ids[CMD_CUT_EVENTS] = menuStructure->insertItem(tr("Cut Events"),    this, SLOT(cutEvents()), 0);
-      menuStructure->setItemEnabled(menu_ids[CMD_CUT_EVENTS], false);
+      menuStructure->addAction(strCutEventsAction);
 
       //-------------------------------------------------------------
       //    popup Midi
       //-------------------------------------------------------------
 
-      midiInputPlugins = new QMenu(this);
-      midiInputPlugins->setCheckable(false);
-      mpid0 = midiInputPlugins->insertItem(
-         QIcon(*midi_inputplugins_transposeIcon), tr("Transpose"), 0);
-      mpid1 = midiInputPlugins->insertItem(
-         QIcon(*midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform"), 1);
-      mpid2 = midiInputPlugins->insertItem(
-         QIcon(*midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter"), 2);
-      mpid3 = midiInputPlugins->insertItem(
-         QIcon(*midi_inputplugins_remote_controlIcon), tr("Midi Remote Control"), 3);
-/*
-**      mpid4 = midiInputPlugins->insertItem(
-**         QIconSet(*midi_inputplugins_random_rhythm_generatorIcon), tr("Random Rhythm Generator"), 4);
-*/
-      connect(midiInputPlugins, SIGNAL(activated(int)), SLOT(startMidiInputPlugin(int)));
-
-//      midiInputPlugins->setItemEnabled(mpid4, false);
-
-      menu_functions = new QMenu(this);
-      menu_functions->setCheckable(true);
-      menuBar()->insertItem(tr("&Midi"), menu_functions);
-      menu_functions->setCaption(tr("Midi"));
-
-      menuScriptPlugins = new QMenu(this);
+      menu_functions = menuBar()->addMenu(tr("&Midi"));
       song->populateScriptMenu(menuScriptPlugins, this);
-      menu_functions->insertItem(tr("&Plugins"), menuScriptPlugins);
-      
-      menu_ids[CMD_MIDI_EDIT_INSTRUMENTS] = menu_functions->insertItem(
-         QIcon(*midi_edit_instrumentIcon), tr("Edit Instrument"), this, SLOT(startEditInstrument()), 0);
-      menu_functions->insertItem(
-         QIcon(*midi_inputpluginsIcon), tr("Input Plugins"), midiInputPlugins, Qt::Key_P);
+      menu_functions->addMenu(menuScriptPlugins);
+      menu_functions->addAction(midiEditInstAction);
+      menu_functions->addMenu(midiInputPlugins);
+      midiInputPlugins->addAction(midiTrpAction);
+      midiInputPlugins->addAction(midiInputTrfAction);
+      midiInputPlugins->addAction(midiInputFilterAction);
+      midiInputPlugins->addAction(midiRemoteAction);
+
       menu_functions->insertSeparator();
-      menu_ids[CMD_MIDI_RESET] = menu_functions->insertItem(
-         QIcon(*midi_reset_instrIcon), tr("Reset Instr."), this, SLOT(resetMidiDevices()), 0);
-      menu_ids[CMD_MIDI_INIT] = menu_functions->insertItem(
-         QIcon(*midi_init_instrIcon), tr("Init Instr."),  this, SLOT(initMidiDevices()), 0);
-      menu_ids[CMD_MIDI_LOCAL_OFF] = menu_functions->insertItem(
-         QIcon(*midi_local_offIcon), tr("local off"), this, SLOT(localOff()), 0);
+      menu_functions->addAction(midiResetInstAction);
+      menu_functions->addAction(midiInitInstActions);
+      menu_functions->addAction(midiLocalOffAction);
+      /*
+      **      mpid4 = midiInputPlugins->insertItem(
+      **         QIconSet(*midi_inputplugins_random_rhythm_generatorIcon), tr("Random Rhythm Generator"), 4);
+      */
 
       //-------------------------------------------------------------
       //    popup Audio
       //-------------------------------------------------------------
 
-      menu_audio = new QMenu(this);
-      menu_audio->setCheckable(true);
-      menuBar()->insertItem(tr("&Audio"), menu_audio);
-      menu_ids[CMD_AUDIO_BOUNCE_TO_TRACK] = menu_audio->insertItem(
-         QIcon(*audio_bounce_to_trackIcon), tr("Bounce to Track"), this, SLOT(bounceToTrack()), 0);
-      menu_ids[CMD_AUDIO_BOUNCE_TO_FILE] = menu_audio->insertItem(
-         QIcon(*audio_bounce_to_fileIcon), tr("Bounce to File"), this, SLOT(bounceToFile()), 0);
+      menu_audio = menuBar()->addMenu(tr("&Audio"));
+      menu_audio->addAction(audioBounce2TrackAction);
+      menu_audio->addAction(audioBounce2FileAction);
       menu_audio->insertSeparator();
-      menu_ids[CMD_AUDIO_RESTART] = menu_audio->insertItem(
-         QIcon(*audio_restartaudioIcon), tr("Restart Audio"), this, SLOT(seqRestart()), 0);
+      menu_audio->addAction(audioRestartAction);
+
 
       //-------------------------------------------------------------
       //    popup Automation
       //-------------------------------------------------------------
 
-      menuAutomation = new QMenu(this);
-      menuAutomation->setCheckable(true);
-      menuBar()->insertItem(tr("Automation"), menuAutomation);
-      autoId = menuAutomation->insertItem(
-         QIcon(*automation_mixerIcon), tr("Mixer Automation"), this, SLOT(switchMixerAutomation()), 0);
+      menuAutomation = menuBar()->addMenu(tr("Automation"));
+      menuAutomation->addAction(autoMixerAction);
       menuAutomation->insertSeparator();
-      menu_ids[CMD_MIXER_SNAPSHOT] = menuAutomation->insertItem(
-         QIcon(*automation_take_snapshotIcon), tr("Take Snapshot"), this, SLOT(takeAutomationSnapshot()), 0);
-      menu_ids[CMD_MIXER_AUTOMATION_CLEAR] = menuAutomation->insertItem(
-         QIcon(*automation_clear_dataIcon), tr("Clear Automation Data"), this, SLOT(clearAutomation()), 0);
-      menuAutomation->setItemEnabled(menu_ids[CMD_MIXER_AUTOMATION_CLEAR], false);
+      menuAutomation->addAction(autoSnapshotAction);
+      menuAutomation->addAction(autoClearAction);
 
       //-------------------------------------------------------------
       //    popup Settings
       //-------------------------------------------------------------
 
-      follow = new QMenu(this);
-      follow->setCheckable(false);
-      fid0 = follow->insertItem(tr("dont follow Song"), CMD_FOLLOW_NO);
-      fid1 = follow->insertItem(tr("follow page"), CMD_FOLLOW_JUMP);
-      fid2 = follow->insertItem(tr("follow continuous"), CMD_FOLLOW_CONTINUOUS);
-      follow->setItemChecked(fid1, true);
-      connect(follow, SIGNAL(activated(int)), SLOT(cmd(int)));
-
-      menuSettings = new QMenu(this);
-      menuSettings->setCheckable(false);
-      menuBar()->insertItem(tr("Settings"), menuSettings);
-      menu_ids[CMD_GLOBAL_CONFIG] = menuSettings->insertItem(
-         QIcon(*settings_globalsettingsIcon), tr("Global Settings"), this, SLOT(configGlobalSettings()),0);
-      menu_ids[CMD_CONFIG_SHORTCUTS] = menuSettings->insertItem(
-         QIcon(*settings_configureshortcutsIcon), tr("Configure shortcuts"), this, SLOT(configShortCuts()), 0);
-      menuSettings->insertItem(
-         QIcon(*settings_follow_songIcon), tr("follow song"), follow, Qt::Key_F);
-      menu_ids[CMD_CONFIG_METRONOME] = menuSettings->insertItem(
-         QIcon(*settings_metronomeIcon), tr("Metronome"), this, SLOT(configMetronome()), 0);
+      menuSettings = menuBar()->addMenu(tr("Settings"));
+      menuSettings->addAction(settingsGlobalAction);
+      menuSettings->addAction(settingsShortcutsAction);
+      menuSettings->addMenu(follow);
+      follow->addAction(dontFollowAction);
+      follow->addAction(followPageAction);
+      follow->addAction(followCtsAction);
+      menuSettings->addAction(settingsMetronomeAction);
       menuSettings->insertSeparator();
-      menu_ids[CMD_CONFIG_MIDISYNC] = menuSettings->insertItem(
-         QIcon(*settings_midisyncIcon), tr("Midi Sync"), this, SLOT(configMidiSync()), 0);
-      menu_ids[CMD_MIDI_FILE_CONFIG] = menuSettings->insertItem(
-         QIcon(*settings_midifileexportIcon), tr("Midi File Import/Export"), this, SLOT(configMidiFile()), 0);
+      menuSettings->addAction(settingsMidiSyncAction);
+      menuSettings->addAction(settingsMidiIOAction);
       menuSettings->insertSeparator();
-      menu_ids[CMD_APPEARANCE_SETTINGS] = menuSettings->insertItem(
-         QIcon(*settings_appearance_settingsIcon), tr("Appearance settings"), this, SLOT(configAppearance()), 0);
+      menuSettings->addAction(settingsAppearanceAction);
       menuSettings->insertSeparator();
-      menu_ids[CMD_CONFIG_MIDI_PORTS] = menuSettings->insertItem(
-         QIcon(*settings_midiport_softsynthsIcon), tr("Midi Ports / Soft Synth"), this, SLOT(configMidiPorts()), 0);
+      menuSettings->addAction(settingsMidiPortAction);
 
       //---------------------------------------------------
       //    popup Help
       //---------------------------------------------------
 
-      menuBar()->insertSeparator();
-      menu_help = new QMenu(this);
-      menu_help->setCheckable(false);
-      menuBar()->insertItem(tr("&Help"), menu_help);
+      menu_help = menuBar()->addMenu(tr("&Help"));
+      menu_help->addAction(helpManualAction);
+      menu_help->addAction(helpHomepageAction);
+      menu_help->insertSeparator();
+      menu_help->addAction(helpReportAction);
+      menu_help->insertSeparator();
+      menu_help->addAction(helpAboutAction);
 
-      menu_ids[CMD_OPEN_HELP] = menu_help->insertItem(tr("&Manual"), this, SLOT(startHelpBrowser()), 0);
-      menu_ids[CMD_OPEN_HOMEPAGE] = menu_help->insertItem(tr("&MusE homepage"), this, SLOT(startHomepageBrowser()), 0);
-      menu_help->insertSeparator();
-      menu_ids[CMD_OPEN_BUG] = menu_help->insertItem(tr("&Report Bug..."), this, SLOT(startBugBrowser()), 0);
-      menu_help->insertSeparator();
-      menu_help->insertItem(tr("&About MusE"), this, SLOT(about()));
       //menu_help->insertItem(tr("About&Qt"), this, SLOT(aboutQt()));
       //menu_help->insertSeparator();
       //menu_ids[CMD_START_WHATSTHIS] = menu_help->insertItem(tr("What's &This?"), this, SLOT(whatsThis()), 0);
@@ -1630,9 +1769,10 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             }
       song->dirty = false;
 
-      menuView->setItemChecked(tr_id, config.transportVisible);
-      menuView->setItemChecked(bt_id, config.bigTimeVisible);
-      menuView->setItemChecked(mr_id, config.markerVisible);
+      viewTransportAction->setChecked(config.transportVisible);
+      viewBigtimeAction->setChecked(config.bigTimeVisible);
+      viewMarkerAction->setChecked(config.markerVisible);
+
       menuAutomation->setItemChecked(autoId, automation);
 
       if (loadAll) {
@@ -1771,9 +1911,10 @@ void MusE::setConfigDefaults()
 void MusE::setFollow()
       {
       Song::FollowMode fm = song->follow();
-      follow->setItemChecked(fid0, fm == Song::NO);
-      follow->setItemChecked(fid1, fm == Song::JUMP);
-      follow->setItemChecked(fid2, fm == Song::CONTINUOUS);
+      
+      dontFollowAction->setChecked(fm == Song::NO);
+      followPageAction->setChecked(fm == Song::JUMP);
+      followCtsAction->setChecked(fm == Song::CONTINUOUS);
       }
 
 //---------------------------------------------------------
@@ -1997,10 +2138,9 @@ void MusE::closeEvent(QCloseEvent* event)
 //   toggleMarker
 //---------------------------------------------------------
 
-void MusE::toggleMarker()
+void MusE::toggleMarker(bool checked)
       {
-      //showMarker(!menuView->isItemChecked(mr_id));
-      showMarker(menuView->isItemChecked(mr_id));    // Tim - QT4
+      showMarker(checked);
       }
 
 //---------------------------------------------------------
@@ -2023,7 +2163,7 @@ void MusE::showMarker(bool flag)
             }
 
       markerView->setShown(flag);
-      menuView->setItemChecked(mr_id, flag);
+      viewMarkerAction->setChecked(flag);
       }
 
 //---------------------------------------------------------
@@ -2032,17 +2172,16 @@ void MusE::showMarker(bool flag)
 
 void MusE::markerClosed()
       {
-      menuView->setItemChecked(mr_id, false);
+      viewMarkerAction->setChecked(false);
       }
 
 //---------------------------------------------------------
 //   toggleTransport
 //---------------------------------------------------------
 
-void MusE::toggleTransport()
+void MusE::toggleTransport(bool checked)
       {
-      //showTransport(!menuView->isItemChecked(tr_id));
-      showTransport(menuView->isItemChecked(tr_id));    // Tim - QT4
+      showTransport(checked);
       }
 
 //---------------------------------------------------------
@@ -2052,7 +2191,7 @@ void MusE::toggleTransport()
 void MusE::showTransport(bool flag)
       {
       transport->setShown(flag);
-      menuView->setItemChecked(tr_id, flag);
+      viewTransportAction->setChecked(flag);
       }
 
 //---------------------------------------------------------
@@ -3166,7 +3305,7 @@ void MusE::showDidYouKnowDialog()
 //   startClipList
 //---------------------------------------------------------
 
-void MusE::startClipList()
+void MusE::startClipList(bool checked)
       {
       if (clipListEdit == 0) {
             clipListEdit = new ClipListEdit();
@@ -3174,7 +3313,7 @@ void MusE::startClipList()
             connect(clipListEdit, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
             }
       clipListEdit->show();
-      menu_audio->setItemChecked(aid2, true);
+      viewCliplistAction->setChecked(checked);
       }
 
 //---------------------------------------------------------
@@ -3224,7 +3363,9 @@ void MusE::toplevelDeleted(unsigned long tl)
                         case Toplevel::MARKER:
                               break;
                         case Toplevel::CLIPLIST:
-                              menu_audio->setItemChecked(aid2, false);
+                              // ORCAN: This needs to be verified. aid2 used to correspond to Cliplist:
+                              //menu_audio->setItemChecked(aid2, false);
+                              viewCliplistAction->setChecked(false);
                               return;
                         // the followin editors can exist in more than
                         // one instantiation:
@@ -3311,19 +3452,19 @@ void MusE::kbAccel(int key)
                   }
             }
       else if (key == shortcuts[SHRT_OPEN_TRANSPORT].key) {
-            toggleTransport();
+            toggleTransport(!viewTransportAction->isChecked());
             }
       else if (key == shortcuts[SHRT_OPEN_BIGTIME].key) {
-            toggleBigTime();
+            toggleBigTime(!viewBigtimeAction->isChecked());
             }
       //else if (key == shortcuts[SHRT_OPEN_MIXER].key) {
       //      toggleMixer();
       //      }
       else if (key == shortcuts[SHRT_OPEN_MIXER].key) {
-            toggleMixer1();
+            toggleMixer1(!viewMixerAAction->isChecked());
             }
       else if (key == shortcuts[SHRT_OPEN_MIXER2].key) {
-            toggleMixer2();
+            toggleMixer2(!viewMixerBAction->isChecked());
             }
       else if (key == shortcuts[SHRT_NEXT_MARKER].key) {
             if (markerView)
@@ -4799,83 +4940,102 @@ void MusE::updateConfiguration()
       fileOpenAction->setAccel(shortcuts[SHRT_OPEN].key);
       fileNewAction->setAccel(shortcuts[SHRT_NEW].key);
       fileSaveAction->setAccel(shortcuts[SHRT_SAVE].key);
+      fileSaveAsAction->setAccel(shortcuts[SHRT_SAVE_AS].key);
 
-      menu_file->setAccel(shortcuts[SHRT_OPEN_RECENT].key, menu_ids[CMD_OPEN_RECENT]);
+      // ORCAN: Can submenus have acceleration? Doesn't seem to work even on Muse1
+      //menu_file->setAccel(shortcuts[SHRT_OPEN_RECENT].key, menu_ids[CMD_OPEN_RECENT]);
+      fileImportMidiAction->setAccel(shortcuts[SHRT_IMPORT_MIDI].key);
+      fileExportMidiAction->setAccel(shortcuts[SHRT_EXPORT_MIDI].key);
+      fileImportPartAction->setAccel(shortcuts[SHRT_IMPORT_PART].key);
+      fileImportWaveAction->setAccel(shortcuts[SHRT_IMPORT_AUDIO].key);
+      quitAction->setAccel(shortcuts[SHRT_QUIT].key);
+      
       menu_file->setAccel(shortcuts[SHRT_LOAD_TEMPLATE].key, menu_ids[CMD_LOAD_TEMPLATE]);
-      menu_file->setAccel(shortcuts[SHRT_SAVE_AS].key, menu_ids[CMD_SAVE_AS]);
-      menu_file->setAccel(shortcuts[SHRT_IMPORT_MIDI].key, menu_ids[CMD_IMPORT_MIDI]);
-      menu_file->setAccel(shortcuts[SHRT_EXPORT_MIDI].key, menu_ids[CMD_EXPORT_MIDI]);
-      menu_file->setAccel(shortcuts[SHRT_IMPORT_PART].key, menu_ids[CMD_IMPORT_PART]);
-      menu_file->setAccel(shortcuts[SHRT_IMPORT_AUDIO].key, menu_ids[CMD_IMPORT_AUDIO]);
-      menu_file->setAccel(shortcuts[SHRT_QUIT].key, menu_ids[CMD_QUIT]);
 
+      editCutAction->setAccel(Qt::CTRL+Qt::Key_X);
+      editCopyAction->setAccel(Qt::CTRL+Qt::Key_C);
+      editPasteAction->setAccel(Qt::CTRL+Qt::Key_V);
+      editInsertAction->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_I);
+      editPasteCloneAction->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_V);
+      editPaste2TrackAction->setAccel(Qt::CTRL+Qt::Key_B);
+      editPasteC2TAction->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_B);
+      editInsertEMAction->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_X);
+
+      //editDeleteSelectedAction has no acceleration
       menuEdit->setAccel(Qt::Key_Delete, CMD_DELETE);
-      menuEdit->setAccel(shortcuts[SHRT_OPEN_DRUMS].key, menu_ids[CMD_OPEN_DRUMS]);
-      menuEdit->setAccel(shortcuts[SHRT_OPEN_LIST].key, menu_ids[CMD_OPEN_LIST]);
-      menuEdit->setAccel(shortcuts[SHRT_OPEN_WAVE].key, menu_ids[CMD_OPEN_WAVE]);
+
+      editSelectAllAction->setAccel(shortcuts[SHRT_SELECT_NONE].key);
+      editDeselectAllAction->setAccel(shortcuts[SHRT_SELECT_NONE].key);
+      editInvertSelectionAction->setAccel(shortcuts[SHRT_SELECT_INVERT].key);
+      editInsideLoopAction->setAccel(shortcuts[SHRT_SELECT_OLOOP].key);
+      editOutsideLoopAction->setAccel(shortcuts[SHRT_SELECT_OLOOP].key);
+      //editAllPartsAction has no acceleration
+
+      startDrumEditAction->setAccel(shortcuts[SHRT_OPEN_DRUMS].key);
+      startListEditAction->setAccel(shortcuts[SHRT_OPEN_LIST].key);
+      startWaveEditAction->setAccel(shortcuts[SHRT_OPEN_WAVE].key);
+
+      masterGraphicAction->setAccel(shortcuts[SHRT_OPEN_GRAPHIC_MASTER].key);
+      masterListAction->setAccel(shortcuts[SHRT_OPEN_LIST_MASTER].key);
+
+      midiTransposeAction->setAccel(shortcuts[SHRT_TRANSPOSE].key);
+      //editSongInfoAction has no acceleration
+
+      viewTransportAction->setAccel(shortcuts[SHRT_OPEN_TRANSPORT].key);
+      viewBigtimeAction->setAccel(shortcuts[SHRT_OPEN_BIGTIME].key);
+      viewMixerAAction->setAccel(shortcuts[SHRT_OPEN_MIXER].key);
+      viewMixerBAction->setAccel(shortcuts[SHRT_OPEN_MIXER2].key);
+      //viewCliplistAction has no acceleration
+      viewMarkerAction->setAccel(shortcuts[SHRT_OPEN_MARKER].key);
+
+      strGlobalCutAction->setAccel(shortcuts[SHRT_GLOBAL_CUT].key);
+      strGlobalInsertAction->setAccel(shortcuts[SHRT_GLOBAL_INSERT].key);
+      strGlobalSplitAction->setAccel(shortcuts[SHRT_GLOBAL_SPLIT].key);
+      strCopyRangeAction->setAccel(shortcuts[SHRT_COPY_RANGE].key);
+      strCutEventsAction->setAccel(shortcuts[SHRT_CUT_EVENTS].key);
+      
+      // midiEditInstAction does not have acceleration
+      midiResetInstAction->setAccel(shortcuts[SHRT_MIDI_RESET].key);
+      midiInitInstActions->setAccel(shortcuts[SHRT_MIDI_INIT].key);
+      midiLocalOffAction->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key);
+      midiTrpAction->setAccel(shortcuts[SHRT_MIDI_INPUT_TRANSPOSE].key);
+      midiInputTrfAction->setAccel(shortcuts[SHRT_MIDI_INPUT_TRANSFORM].key);
+      midiInputFilterAction->setAccel(shortcuts[SHRT_MIDI_INPUT_FILTER].key);
+      midiRemoteAction->setAccel(shortcuts[SHRT_MIDI_REMOTE_CONTROL].key);
+
+      audioBounce2TrackAction->setAccel(shortcuts[SHRT_AUDIO_BOUNCE_TO_TRACK].key);
+      audioBounce2FileAction->setAccel(shortcuts[SHRT_AUDIO_BOUNCE_TO_FILE].key);
+      audioRestartAction->setAccel(shortcuts[SHRT_AUDIO_RESTART].key);
+
+      autoMixerAction->setAccel(shortcuts[SHRT_MIXER_AUTOMATION].key);
+      autoSnapshotAction->setAccel(shortcuts[SHRT_MIXER_SNAPSHOT].key);
+      autoClearAction->setAccel(shortcuts[SHRT_MIXER_AUTOMATION_CLEAR].key);
+
+      settingsGlobalAction->setAccel(shortcuts[SHRT_GLOBAL_CONFIG].key);
+      settingsShortcutsAction->setAccel(shortcuts[SHRT_CONFIG_SHORTCUTS].key);
+      settingsMetronomeAction->setAccel(shortcuts[SHRT_CONFIG_METRONOME].key);
+      settingsMidiSyncAction->setAccel(shortcuts[SHRT_CONFIG_MIDISYNC].key);
+      // settingsMidiIOAction does not have acceleration
+      settingsAppearanceAction->setAccel(shortcuts[SHRT_APPEARANCE_SETTINGS].key);
+      settingsMidiPortAction->setAccel(shortcuts[SHRT_CONFIG_MIDI_PORTS].key);
+      
+      helpManualAction->setAccel(shortcuts[SHRT_OPEN_HELP].key);
+      
+
+
+      // Orcan: Old stuff, needs to be converted
       menuEdit->setAccel(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key, menu_ids[CMD_OPEN_MIDI_TRANSFORM]);
 
-      midiEdit->setAccel(shortcuts[SHRT_TRANSPOSE].key, menu_ids[CMD_TRANSPOSE]);
-
-      master->setAccel(shortcuts[SHRT_OPEN_GRAPHIC_MASTER].key, menu_ids[CMD_OPEN_GRAPHIC_MASTER]);
-      master->setAccel(shortcuts[SHRT_OPEN_LIST_MASTER].key, menu_ids[CMD_OPEN_LIST_MASTER]);
-
-      menuStructure->setAccel(shortcuts[SHRT_GLOBAL_CUT].key, menu_ids[CMD_GLOBAL_CUT]);
-      menuStructure->setAccel(shortcuts[SHRT_GLOBAL_INSERT].key, menu_ids[CMD_GLOBAL_INSERT]);
-      menuStructure->setAccel(shortcuts[SHRT_GLOBAL_SPLIT].key, menu_ids[CMD_GLOBAL_SPLIT]);
-      menuStructure->setAccel(shortcuts[SHRT_COPY_RANGE].key, menu_ids[CMD_COPY_RANGE]);
-      menuStructure->setAccel(shortcuts[SHRT_CUT_EVENTS].key, menu_ids[CMD_CUT_EVENTS]);
-
-      menuView->setAccel(shortcuts[SHRT_OPEN_TRANSPORT].key, tr_id);
-      menuView->setAccel(shortcuts[SHRT_OPEN_BIGTIME].key, bt_id);
-      //menuView->setAccel(shortcuts[SHRT_OPEN_MIXER].key, aid1);
-      menuView->setAccel(shortcuts[SHRT_OPEN_MIXER].key, aid1a);
-      menuView->setAccel(shortcuts[SHRT_OPEN_MIXER2].key, aid1b);
-//      menuView->setAccel(shortcuts[SHRT_OPEN_CLIPS].key, aid2);
-//      markerAction->setAccel(shortcuts[SHRT_OPEN_MARKER].key );
-      menuView->setAccel(shortcuts[SHRT_OPEN_MARKER].key, mr_id );
-
-      menuSettings->setAccel(shortcuts[SHRT_GLOBAL_CONFIG].key, menu_ids[CMD_GLOBAL_CONFIG]);
-      menuSettings->setAccel(shortcuts[SHRT_CONFIG_SHORTCUTS].key, menu_ids[CMD_CONFIG_SHORTCUTS]);
-      menuSettings->setAccel(shortcuts[SHRT_CONFIG_METRONOME].key, menu_ids[CMD_CONFIG_METRONOME]);
-      menuSettings->setAccel(shortcuts[SHRT_CONFIG_MIDISYNC].key, menu_ids[CMD_CONFIG_MIDISYNC]);
-      menuSettings->setAccel(shortcuts[SHRT_APPEARANCE_SETTINGS].key, menu_ids[CMD_APPEARANCE_SETTINGS]);
-      menuSettings->setAccel(shortcuts[SHRT_CONFIG_MIDI_PORTS].key, menu_ids[CMD_CONFIG_MIDI_PORTS]);
       menuSettings->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key, menu_ids[CMD_CONFIG_AUDIO_PORTS]);
 
-//      menu_functions->setAccel(shortcuts[SHRT_MIDI_EDIT_INSTRUMENTS].key, menu_ids[CMD_MIDI_EDIT_INSTRUMENTS]);
-      menu_functions->setAccel(shortcuts[SHRT_MIDI_RESET].key, menu_ids[CMD_MIDI_RESET]);
-      menu_functions->setAccel(shortcuts[SHRT_MIDI_INIT].key, menu_ids[CMD_MIDI_INIT]);
-      menu_functions->setAccel(shortcuts[SHRT_MIDI_LOCAL_OFF].key, menu_ids[CMD_MIDI_LOCAL_OFF]);
-
-      menu_audio->setAccel(shortcuts[SHRT_AUDIO_BOUNCE_TO_TRACK].key, menu_ids[CMD_AUDIO_BOUNCE_TO_TRACK]);
-      menu_audio->setAccel(shortcuts[SHRT_AUDIO_BOUNCE_TO_FILE].key , menu_ids[CMD_AUDIO_BOUNCE_TO_FILE]);
-      menu_audio->setAccel(shortcuts[SHRT_AUDIO_RESTART].key, menu_ids[CMD_AUDIO_RESTART]);
-
-      menuAutomation->setAccel(shortcuts[SHRT_MIXER_AUTOMATION].key, autoId);
-      menuAutomation->setAccel(shortcuts[SHRT_MIXER_SNAPSHOT].key, menu_ids[CMD_MIXER_SNAPSHOT]);
-      menuAutomation->setAccel(shortcuts[SHRT_MIXER_AUTOMATION_CLEAR].key, menu_ids[CMD_MIXER_AUTOMATION_CLEAR]);
-
-      menu_help->setAccel(menu_ids[CMD_OPEN_HELP], shortcuts[SHRT_OPEN_HELP].key);
       menu_help->setAccel(menu_ids[CMD_START_WHATSTHIS], shortcuts[SHRT_START_WHATSTHIS].key);
       pianoAction->setAccel(shortcuts[SHRT_OPEN_PIANO].key);
 
-      select->setAccel(shortcuts[SHRT_SELECT_ALL].key, CMD_SELECT_ALL);
-
-//      select->setAccel(shortcuts[SHRT_DESEL_PARTS].key, CMD_SELECT_NONE);
-      select->setAccel(shortcuts[SHRT_SELECT_NONE].key, CMD_SELECT_NONE);
-
-      select->setAccel(shortcuts[SHRT_SELECT_INVERT].key, CMD_SELECT_INVERT);
-      select->setAccel(shortcuts[SHRT_SELECT_ILOOP].key, CMD_SELECT_ILOOP);
-      select->setAccel(shortcuts[SHRT_SELECT_OLOOP].key, CMD_SELECT_OLOOP);
       select->setAccel(shortcuts[SHRT_SELECT_PRTSTRACK].key, CMD_SELECT_PARTS);
       follow->setAccel(shortcuts[SHRT_FOLLOW_JUMP].key, CMD_FOLLOW_JUMP);
       follow->setAccel(shortcuts[SHRT_FOLLOW_NO].key, CMD_FOLLOW_NO);
       follow->setAccel(shortcuts[SHRT_FOLLOW_CONTINUOUS].key, CMD_FOLLOW_CONTINUOUS);
-      midiInputPlugins->setAccel(shortcuts[SHRT_MIDI_INPUT_TRANSPOSE].key, 0);
-      midiInputPlugins->setAccel(shortcuts[SHRT_MIDI_INPUT_TRANSFORM].key, 1);
-      midiInputPlugins->setAccel(shortcuts[SHRT_MIDI_INPUT_FILTER].key, 2);
-      midiInputPlugins->setAccel(shortcuts[SHRT_MIDI_REMOTE_CONTROL].key, 3);
+
       midiInputPlugins->setAccel(shortcuts[SHRT_RANDOM_RHYTHM_GENERATOR].key, 4);
 
       addTrack->setAccel(shortcuts[SHRT_ADD_MIDI_TRACK].key, Track::MIDI);
@@ -4904,17 +5064,16 @@ void MusE::showBigtime(bool on)
             }
       if (bigtime)
             bigtime->setShown(on);
-      menuView->setItemChecked(bt_id, on);
+      viewBigtimeAction->setChecked(on);
       }
 
 //---------------------------------------------------------
 //   toggleBigTime
 //---------------------------------------------------------
 
-void MusE::toggleBigTime()
+void MusE::toggleBigTime(bool checked)
       {
-      //showBigtime(!menuView->isItemChecked(bt_id));
-      showBigtime(menuView->isItemChecked(bt_id));     // Tim - QT4
+      showBigtime(checked);
       }
 
 //---------------------------------------------------------
@@ -4923,7 +5082,7 @@ void MusE::toggleBigTime()
 
 void MusE::bigtimeClosed()
       {
-      menuView->setItemChecked(bt_id, false);
+      viewBigtimeAction->setChecked(false);
       }
 
 //---------------------------------------------------------
@@ -4959,7 +5118,7 @@ void MusE::showMixer1(bool on)
             }
       if (mixer1)
             mixer1->setShown(on);
-      menuView->setItemChecked(aid1a, on);
+      viewMixerAAction->setChecked(on);
       }
 
 //---------------------------------------------------------
@@ -4976,7 +5135,7 @@ void MusE::showMixer2(bool on)
             }
       if (mixer2)
             mixer2->setShown(on);
-      menuView->setItemChecked(aid1b, on);
+      viewMixerBAction->setChecked(on);
       }
 
 //---------------------------------------------------------
@@ -4994,20 +5153,18 @@ void MusE::toggleMixer()
 //   toggleMixer1
 //---------------------------------------------------------
 
-void MusE::toggleMixer1()
+void MusE::toggleMixer1(bool checked)
       {
-      //showMixer1(!menuView->isItemChecked(aid1a));
-      showMixer1(menuView->isItemChecked(aid1a));      // Tim - QT4
+      showMixer1(checked);
       }
 
 //---------------------------------------------------------
 //   toggleMixer2
 //---------------------------------------------------------
 
-void MusE::toggleMixer2()
+void MusE::toggleMixer2(bool checked)
       {
-      //showMixer2(!menuView->isItemChecked(aid1b));
-      showMixer2(menuView->isItemChecked(aid1b));     // Tim - QT4
+      showMixer2(checked);
       }
 
 //---------------------------------------------------------
@@ -5027,8 +5184,7 @@ void MusE::mixerClosed()
 
 void MusE::mixer1Closed()
       {
-      //aid1a->setChecked(false);
-      menuView->setItemChecked(aid1a, false);
+      viewMixerAAction->setChecked(false);
       }
 
 //---------------------------------------------------------
@@ -5037,8 +5193,7 @@ void MusE::mixer1Closed()
 
 void MusE::mixer2Closed()
       {
-      //aid1b->setChecked(false);
-      menuView->setItemChecked(aid1b, false);
+      viewMixerBAction->setChecked(false);
       }
 
 

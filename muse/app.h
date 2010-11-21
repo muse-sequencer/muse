@@ -98,7 +98,44 @@ class MusE : public QMainWindow
             CMD_LAST };
 
       int menu_ids[CMD_LAST];
-      QAction *fileSaveAction, *fileOpenAction, *pianoAction, *fileNewAction, /* *markerAction,*/ *testAction;
+
+      // File menu actions
+      QAction *fileSaveAction, *fileOpenAction, *fileNewAction, *testAction;
+      QAction *fileSaveAsAction, *fileImportMidiAction, *fileExportMidiAction, *fileImportPartAction, *fileImportWaveAction, *quitAction;
+
+      // Edit Menu actions
+      QAction *editCutAction, *editCopyAction, *editPasteAction, *editInsertAction, *editPasteCloneAction, *editPaste2TrackAction;
+      QAction *editPasteC2TAction, *editInsertEMAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
+      QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
+      QAction *pianoAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
+      QAction *masterGraphicAction, *masterListAction;
+      QAction *midiTransposeAction;
+      QAction *editSongInfoAction;
+
+      // View Menu actions
+      QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction;
+
+      // Structure Menu actions
+      QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction, *strCopyRangeAction, *strCutEventsAction;
+
+      // Midi Menu Actions
+      QAction *midiEditInstAction, *midiResetInstAction, *midiInitInstActions, *midiLocalOffAction;
+      QAction *midiTrpAction, *midiInputTrfAction, *midiInputFilterAction, *midiRemoteAction;
+
+      // Audio Menu Actions
+      QAction *audioBounce2TrackAction, *audioBounce2FileAction, *audioRestartAction;
+
+      // Automation Menu Actions
+      QAction *autoMixerAction, *autoSnapshotAction, *autoClearAction;
+
+      // Settings Menu Actions
+      QAction *settingsGlobalAction, *settingsShortcutsAction, *settingsMetronomeAction, *settingsMidiSyncAction;
+      QAction *settingsMidiIOAction, *settingsAppearanceAction, *settingsMidiPortAction;
+      QAction *dontFollowAction, *followPageAction, *followCtsAction;
+
+      // Help Menu Actions
+      QAction *helpManualAction, *helpHomepageAction, *helpReportAction, *helpAboutAction;
+
       QString appName;
 
       QFileInfo project;
@@ -175,6 +212,10 @@ class MusE : public QMainWindow
 
       virtual void focusInEvent(QFocusEvent*);
 
+      QSignalMapper *editSignalMapper;
+      QSignalMapper *midiPluginSignalMapper;
+      QSignalMapper *followSignalMapper;
+
    signals:
       void configChanged();
 
@@ -195,12 +236,12 @@ class MusE : public QMainWindow
       void importPart();
       void exportMidi();
 
-      void toggleTransport();
-      void toggleMarker();
-      void toggleBigTime();
+      void toggleTransport(bool);
+      void toggleMarker(bool);
+      void toggleBigTime(bool);
       //void toggleMixer();
-      void toggleMixer1();
-      void toggleMixer2();
+      void toggleMixer1(bool);
+      void toggleMixer2(bool);
 
       void configMidiPorts();
       void configMidiSync();
@@ -225,7 +266,7 @@ class MusE : public QMainWindow
       void startMidiTransformer();
       void writeGlobalConfiguration() const;
       void startEditInstrument();
-      void startClipList();
+      void startClipList(bool);
       
       void openRecentMenu();
       void selectProject(int id);
