@@ -30,7 +30,7 @@
 #include "gconfig.h"
 #include "xml.h"
 
-extern void populateAddTrack(QMenu* addTrack);
+extern QActionGroup* populateAddTrack(QMenu* addTrack);
 
 #define __WIDTH_COMPENSATION 4
 

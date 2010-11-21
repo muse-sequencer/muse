@@ -1264,9 +1264,9 @@ void MusE::writeConfiguration(int level, Xml& xml) const
 //      xml.intTag(level, "acceptMMC", acceptMMC);
 //      xml.intTag(level, "acceptMC", acceptMC);
 
-      xml.intTag(level, "bigtimeVisible",   menuView->isItemChecked(bt_id));
-      xml.intTag(level, "transportVisible", menuView->isItemChecked(tr_id));
-      xml.intTag(level, "markerVisible",     menuView->isItemChecked(mr_id));
+      xml.intTag(level, "bigtimeVisible",   viewBigtimeAction->isChecked());
+      xml.intTag(level, "transportVisible", viewTransportAction->isChecked());
+      xml.intTag(level, "markerVisible",    viewMarkerAction->isChecked());
       //xml.intTag(level, "mixerVisible",     menuView->isItemChecked(aid1));  // Obsolete
 
       xml.geometryTag(level, "geometryMain", this);
@@ -1277,8 +1277,8 @@ void MusE::writeConfiguration(int level, Xml& xml) const
       
       //if (audioMixer)
       //      xml.geometryTag(level, "geometryMixer", audioMixer);   // Obsolete
-      xml.intTag(level, "mixer1Visible",    menuView->isItemChecked(aid1a));
-      xml.intTag(level, "mixer2Visible",    menuView->isItemChecked(aid1b));
+      xml.intTag(level, "mixer1Visible",    viewMixerAAction->isChecked());
+      xml.intTag(level, "mixer2Visible",    viewMixerBAction->isChecked());
       if (mixer1)
             //mixer1->write(level, xml, "mixer1");
             mixer1->write(level, xml);
