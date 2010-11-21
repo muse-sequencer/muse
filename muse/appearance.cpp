@@ -200,7 +200,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
 
       openStyleSheet->setIcon(*openIcon);
       connect(openStyleSheet, SIGNAL(clicked()), SLOT(browseStyleSheet()));
-      defaultStyleSheet->setIcon(*openIcon);
+      defaultStyleSheet->setIcon(*undoIcon);
       connect(defaultStyleSheet, SIGNAL(clicked()), SLOT(setDefaultStyleSheet()));
       
       //---------------------------------------------------
