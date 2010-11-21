@@ -121,6 +121,7 @@ GlobalConfigValues config = {
       5,                            // canvasShowPartEvent
       true,                        // canvasShowGrid;
       QString(""),                  // canvasBgPixmap;
+      QString(":/style.qss"),       // default styleSheetFile
       QString(""),                  // style
       QString("sweep"),             // externalWavEditor
       false,                        // useOldStyleStopShortCut

@@ -37,6 +37,9 @@
 #include <QSplashScreen>
 #include <QObject>
 #include <QAction>
+#include <QFile>
+#include <QByteArray>
+#include <QtGlobal>
 //Added by qt3to4:
 #include <QTimerEvent>
 #include <Q3CString>
@@ -3546,6 +3549,7 @@ int main(int argc, char* argv[])
                   stimer->start(6000, true);
                   }
             }
+      
       int i;
       
       QString optstr("ahvdDmMsP:Y:py");
@@ -3591,6 +3595,21 @@ int main(int argc, char* argv[])
                   default:  usage(argv[0], "bad argument"); return -1;
                   }
             }
+      
+      if(!config.styleSheetFile.isEmpty())
+      {
+        if(debugMsg)
+          printf("loading style sheet <%s> \n", qPrintable(config.styleSheetFile));
+        QFile cf(config.styleSheetFile);
+        if (cf.open(QIODevice::ReadOnly)) {
+              QByteArray ss = cf.readAll();
+              QString sheet(QString::fromUtf8(ss.data()));
+              app.setStyleSheet(sheet);
+              cf.close();
+              }
+        else
+              printf("loading style sheet <%s> failed\n", qPrintable(config.styleSheetFile));
+      }
       
       AL::initDsp();
       
@@ -4073,11 +4092,34 @@ void MusE::configAppearance()
 //   loadTheme
 //---------------------------------------------------------
 
-void MusE::loadTheme(QString s)
+void MusE::loadTheme(const QString& s)
       {
       if (style()->name() != s)
             QApplication::setStyle(s);
       }
+
+//---------------------------------------------------------
+//   loadStyleSheetFile
+//---------------------------------------------------------
+
+void MusE::loadStyleSheetFile(const QString& s)
+{
+    if(s.isEmpty())
+    {
+      qApp->setStyleSheet(s);
+      return;
+    }
+      
+    QFile cf(s);
+    if (cf.open(QIODevice::ReadOnly)) {
+          QByteArray ss = cf.readAll();
+          QString sheet(QString::fromUtf8(ss.data()));
+          qApp->setStyleSheet(sheet);
+          cf.close();
+          }
+    else
+          printf("loading style sheet <%s> failed\n", qPrintable(s));
+}
 
 //---------------------------------------------------------
 //   configChanged
@@ -4092,8 +4134,7 @@ void MusE::changeConfig(bool writeFlag)
             writeGlobalConfiguration();
       loadTheme(config.style);
       QApplication::setFont(config.fonts[0], true);
-      // Added by Tim. p3.3.6
-      //printf("MusE::changeConfig writeFlag:%d emitting configChanged\n", writeFlag);
+      loadStyleSheetFile(config.styleSheetFile);
       
       emit configChanged();
       updateConfiguration();

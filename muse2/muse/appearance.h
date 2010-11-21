@@ -32,6 +32,8 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void configBackground();
       void clearBackground();
       void colorItemSelectionChanged();
+      void browseStyleSheet();
+      void setDefaultStyleSheet();
       void browseFont(int);
       void browseFont0();
       void browseFont1();

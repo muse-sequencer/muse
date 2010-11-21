@@ -12,6 +12,11 @@
 #include <QFontDialog>
 #include <QStyleFactory>
 #include <QToolTip>
+#include <QByteArray>
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QtGlobal>
 
 #include "icons.h"
 #include "appearance.h"
@@ -193,6 +198,11 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
             }
       */
 
+      openStyleSheet->setIcon(*openIcon);
+      connect(openStyleSheet, SIGNAL(clicked()), SLOT(browseStyleSheet()));
+      defaultStyleSheet->setIcon(*openIcon);
+      connect(defaultStyleSheet, SIGNAL(clicked()), SLOT(setDefaultStyleSheet()));
+      
       //---------------------------------------------------
 	//    Fonts
       //---------------------------------------------------
@@ -228,6 +238,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
 void Appearance::resetValues()
       {
       *config = ::config;  // init with global config values
+      styleSheetPath->setText(config->styleSheetFile);
       updateFonts();
       palette0->setPaletteBackgroundColor(config->palette[0]);
       palette1->setPaletteBackgroundColor(config->palette[1]);
@@ -372,13 +383,14 @@ void Appearance::apply()
       else      
             config->canvasBgPixmap = currentBg;
       
-      // Added by Tim. p3.3.9
+      config->styleSheetFile = styleSheetPath->text();
+      
       config->fonts[0].setFamily(fontName0->text());
       
       config->fonts[0].setPointSize(fontSize0->value());
       config->fonts[0].setItalic(italic0->isChecked());
       config->fonts[0].setBold(bold0->isChecked());
-    	QApplication::setFont(config->fonts[0], true);
+      QApplication::setFont(config->fonts[0], true);
 
       config->fonts[1].setFamily(fontName1->text());
       config->fonts[1].setPointSize(fontSize1->value());
@@ -702,6 +714,34 @@ void Appearance::paletteClicked(int id)
             updateColor();
             }
       }
+
+//---------------------------------------------------------
+//   browseStyleSheet
+//---------------------------------------------------------
+
+void Appearance::browseStyleSheet()
+{
+      QString path;
+      if(!config->styleSheetFile.isEmpty())
+      {  
+        QFileInfo info(config->styleSheetFile);
+        path = info.absolutePath();
+      }
+      
+      QString file = QFileDialog::getOpenFileName(this, tr("Select style sheet"), path, tr("Qt style sheets (*.qss)"));
+      styleSheetPath->setText(file);
+}
+
+
+//---------------------------------------------------------
+//   setDefaultStyleSheet
+//---------------------------------------------------------
+
+void Appearance::setDefaultStyleSheet()
+{
+      // Set the style sheet to the default compiled-in resource :/style.qss
+      styleSheetPath->setText(QString(":/style.qss"));
+}
 
 //---------------------------------------------------------
 //   browseFont

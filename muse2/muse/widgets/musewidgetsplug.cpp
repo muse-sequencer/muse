@@ -153,6 +153,7 @@ GlobalConfigValues config = {
       5,                            // canvasShowPartEvent
       false,                        // canvasShowGrid;
       QString(""),                  // canvasBgPixmap;
+      QString(""),                  // styleSheetFile
       QString(""),                  // style
       QString(""),                  // externalWavEditor //this line was missing 2007-01-08 (willyfoobar)
       false,                        // useOldStyleStopShortCut
