@@ -5,6 +5,8 @@
           shortcutcapturedialogbase, shortcutconfigbase, aboutbox, editsysexdialogbase,
           editnotedialogbase, editctrlbase (Orcan)
         - Converted all of editevent.cpp to Qt4 (Orcan)
+        - Load default compiled-in style-sheet resource :/style.qss in main(). (Tim)
+          Added style sheet support to Appearance settings, with reset button.
 19.11.2010
         - Started some conversions of midieditor, pianoroll, drumedit, incl. their QGridLayouts. (Tim)
         - More icon conversion work (Orcan)

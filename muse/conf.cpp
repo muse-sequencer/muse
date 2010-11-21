@@ -508,6 +508,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                         
                         if (tag == "theme")
                               config.style = xml.parse1();
+                        else if (tag == "styleSheetFile")
+                              config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
                               config.useOldStyleStopShortCut = xml.parseInt();
                         else if (tag == "moveArmedCheckBox")
@@ -1071,6 +1073,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       //xml.intTag(level, "txDeviceId", txDeviceId);
       //xml.intTag(level, "rxDeviceId", rxDeviceId);
       xml.strTag(level, "theme", config.style);
+      xml.strTag(level, "styleSheetFile", config.styleSheetFile);
       xml.strTag(level, "externalWavEditor", config.externalWavEditor);
       xml.intTag(level, "useOldStyleStopShortCut", config.useOldStyleStopShortCut);
       xml.intTag(level, "moveArmedCheckBox", config.moveArmedCheckBox);

@@ -279,7 +279,8 @@ class MusE : public QMainWindow
       void loadProjectFile(const QString&);
       void loadProjectFile(const QString&, bool songTemplate, bool loadAll);
       void toplevelDeleted(unsigned long tl);
-      void loadTheme(QString);
+      void loadTheme(const QString&);
+      void loadStyleSheetFile(const QString&);
       bool seqRestart();
       void loadTemplate();
       void showBigtime(bool);
