@@ -135,7 +135,9 @@ QT4_WRAP_CPP (widget_mocs
 QT4_WRAP_UI (UIC
       aboutbox.ui  
       appearancebase.ui 
+      cliplisteditorbase.ui  
       commentbase.ui  
+      configmidifilebase.ui
       didyouknow.ui  
       editnotedialogbase.ui  
       editsysexdialogbase.ui  
@@ -163,8 +165,6 @@ QT4_WRAP_UI3 (widget_ui_headers
       editmetadialogbase.ui  
       gatetimebase.ui  
       wtrackinfobase.ui  
-      cliplisteditorbase.ui  
-      configmidifilebase.ui
       )
 
 # add_custom_command(OUTPUT ui_midisync.h

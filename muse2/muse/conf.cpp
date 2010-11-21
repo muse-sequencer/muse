@@ -1340,9 +1340,10 @@ void MusE::configMidiFile()
 //    config properties of exported midi files
 //---------------------------------------------------------
 
-MidiFileConfig::MidiFileConfig()
-   : ConfigMidiFileBase()
+MidiFileConfig::MidiFileConfig(QWidget* parent)
+  : QDialog(parent), ConfigMidiFileBase()
       {
+      setupUi(this);
       connect(buttonOk, SIGNAL(clicked()), SLOT(okClicked()));
       connect(buttonCancel, SIGNAL(clicked()), SLOT(cancelClicked()));
       }

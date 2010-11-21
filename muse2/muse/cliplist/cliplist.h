@@ -11,14 +11,28 @@
 
 #include "../cobject.h"
 #include "event.h"
-//Added by qt3to4:
-#include <QCloseEvent>
 
-class Q3ListView;
-class Q3ListViewItem;
+#include "ui_cliplisteditorbase.h"
+
+class QCloseEvent;
+class QDialog;
+class QTreeWidgetItem;
+
 class Xml;
 class Pos;
-class ClipListEditorBase;
+
+//---------------------------------------------------------
+//   ClipListEditorBaseWidget
+//   Wrapper around Ui::ClipListEditorBase
+//---------------------------------------------------------
+
+class ClipListEditorBaseWidget : public QWidget, public Ui::ClipListEditorBase
+{
+      Q_OBJECT
+
+   public:
+      ClipListEditorBaseWidget(QWidget *parent = 0) : QWidget(parent) { setupUi(this); }
+};
 
 //---------------------------------------------------------
 //   ClipListEdit
@@ -26,7 +40,7 @@ class ClipListEditorBase;
 
 class ClipListEdit : public TopWin {
       Q_OBJECT
-      ClipListEditorBase* editor;
+      ClipListEditorBaseWidget* editor;
 
       virtual void closeEvent(QCloseEvent*);
       void updateList();
@@ -36,7 +50,7 @@ class ClipListEdit : public TopWin {
       void startChanged(const Pos&);
       void lenChanged(const Pos&);
       void clipSelectionChanged();
-      void clicked(Q3ListViewItem*);
+      void clicked(QTreeWidgetItem*, int);
 
    signals:
       void deleted(unsigned long);

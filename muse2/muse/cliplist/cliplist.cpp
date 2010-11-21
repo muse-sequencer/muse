@@ -12,15 +12,11 @@
 #include "wave.h"
 #include "xml.h"
 #include "posedit.h"
-#include "cliplisteditorbase.h"
+#include "ui_cliplisteditorbase.h"
 
-#include <q3listview.h>
-#include <qlayout.h>
-#include <q3groupbox.h>
-#include <qlabel.h>
-#include <qstyle.h>
-//Added by qt3to4:
 #include <QCloseEvent>
+#include <QDialog>
+#include <QStyle>
 
 extern int mtcType;
 enum { COL_NAME=0, COL_REFS, COL_POS, COL_LEN };
@@ -29,18 +25,18 @@ enum { COL_NAME=0, COL_REFS, COL_POS, COL_LEN };
 //   ClipItem
 //---------------------------------------------------------
 
-class ClipItem : public Q3ListViewItem {
+class ClipItem : public QTreeWidgetItem {
       SndFileR _wf;
 
       virtual QString text(int) const;
 
    public:
-      ClipItem(Q3ListView*, const SndFileR&);
+      ClipItem(QTreeWidget*, const SndFileR&);
       SndFileR* wf() { return &_wf; }
       };
 
-ClipItem::ClipItem(Q3ListView* parent, const SndFileR& w)
-   : Q3ListViewItem(parent), _wf(w)
+ClipItem::ClipItem(QTreeWidget* parent, const SndFileR& w)
+   : QTreeWidgetItem(parent), _wf(w)
       {
       }
 
@@ -108,21 +104,21 @@ ClipListEdit::ClipListEdit()
       //setAttribute(Qt::WA_DeleteOnClose);
       setCaption(tr("MusE: Clip List Editor"));
 
-      editor = new ClipListEditorBase(this, "edit");
+      editor = new ClipListEditorBaseWidget;
       setCentralWidget(editor);
 
-      editor->view->setColumnAlignment(COL_REFS, Qt::AlignRight);
-
+      //editor->view->setColumnAlignment(COL_REFS, Qt::AlignRight);
+      
       QFontMetrics fm(editor->view->font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0, this); // ddskrjo 0
       int w  = 2 + fm.width('9') * 9 + fm.width(':') * 3 + fw * 4;
-      editor->view->setColumnAlignment(COL_POS, Qt::AlignRight);
+      //editor->view->setColumnAlignment(COL_POS, Qt::AlignRight);
       editor->view->setColumnWidth(COL_POS, w);
-      editor->view->setColumnAlignment(COL_LEN, Qt::AlignRight);
+      //editor->view->setColumnAlignment(COL_LEN, Qt::AlignRight);
       editor->view->setColumnWidth(COL_LEN, w);
 
-      connect(editor->view, SIGNAL(selectionChanged()), SLOT(clipSelectionChanged()));
-      connect(editor->view, SIGNAL(clicked(Q3ListViewItem*)), SLOT(clicked(Q3ListViewItem*)));
+      connect(editor->view, SIGNAL(itemSelectionChanged()), SLOT(clipSelectionChanged()));
+      connect(editor->view, SIGNAL(itemClicked(QTreeWidgetItem*, int)), SLOT(clicked(QTreeWidgetItem*, int)));
 
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(editor->start, SIGNAL(valueChanged(const Pos&)), SLOT(startChanged(const Pos&)));
@@ -254,7 +250,7 @@ void ClipListEdit::clipSelectionChanged()
 //   clicked
 //---------------------------------------------------------
 
-void ClipListEdit::clicked(Q3ListViewItem*)
+void ClipListEdit::clicked(QTreeWidgetItem*, int)
       {
 //      printf("clicked\n");
       }
