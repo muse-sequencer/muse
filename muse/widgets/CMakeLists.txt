@@ -129,12 +129,14 @@ QT4_WRAP_CPP (widget_mocs
       vscale.h  
       action.h
       songinfo.h
+      didyouknow.h
       )
 
 QT4_WRAP_UI (UIC
       aboutbox.ui  
       appearancebase.ui 
       commentbase.ui  
+      didyouknow.ui  
       editnotedialogbase.ui  
       editsysexdialogbase.ui  
       fdialogbuttons.ui  
@@ -147,6 +149,7 @@ QT4_WRAP_UI (UIC
       shortcutconfigbase.ui  
       songinfo.ui  
       transformbase.ui  
+      transposebase.ui  
       velocitybase.ui  
       )
       
@@ -155,14 +158,12 @@ QT4_WRAP_UI (UIC
 QT4_WRAP_UI3 (widget_ui_headers
       midisync.ui  
       gensetbase.ui  
-      transposebase.ui  
       synthconfigbase.ui  
       editctrl7dialogbase.ui  
       editmetadialogbase.ui  
       gatetimebase.ui  
       wtrackinfobase.ui  
       cliplisteditorbase.ui  
-      didyouknow.ui  
       configmidifilebase.ui
       )
 

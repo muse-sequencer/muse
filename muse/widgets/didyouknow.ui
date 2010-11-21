@@ -1,102 +1,92 @@
-<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
-<class>DidYouKnow</class>
-<widget class="QDialog">
-    <property name="name">
-        <cstring>DidYouKnow</cstring>
-    </property>
-    <property name="geometry">
-        <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>494</width>
-            <height>249</height>
-        </rect>
-    </property>
-    <property name="caption">
-        <string>Did you know?</string>
-    </property>
-    <vbox>
-        <property name="name">
-            <cstring>unnamed</cstring>
-        </property>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>layout6</cstring>
-            </property>
-            <vbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QTextEdit">
-                    <property name="name">
-                        <cstring>tipText</cstring>
-                    </property>
-                    <property name="readOnly">
-                        <bool>true</bool>
-                    </property>
-                </widget>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout5</cstring>
-                    </property>
-                    <hbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QCheckBox">
-                            <property name="name">
-                                <cstring>dontShowCheckBox</cstring>
-                            </property>
-                            <property name="text">
-                                <string>Don't show on startup</string>
-                            </property>
-                        </widget>
-                        <spacer>
-                            <property name="name">
-                                <cstring>spacer7</cstring>
-                            </property>
-                            <property name="orientation">
-                                <enum>Horizontal</enum>
-                            </property>
-                            <property name="sizeType">
-                                <enum>Expanding</enum>
-                            </property>
-                            <property name="sizeHint">
-                                <size>
-                                    <width>121</width>
-                                    <height>31</height>
-                                </size>
-                            </property>
-                        </spacer>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>nextButton</cstring>
-                            </property>
-                            <property name="text">
-                                <string>Next tip</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>closeButton</cstring>
-                            </property>
-                            <property name="text">
-                                <string>Close</string>
-                            </property>
-                        </widget>
-                    </hbox>
-                </widget>
-            </vbox>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DidYouKnow</class>
+ <widget class="QDialog" name="DidYouKnow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>494</width>
+    <height>249</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Did you know?</string>
+  </property>
+  <layout class="QVBoxLayout">
+   <item>
+    <layout class="QVBoxLayout">
+     <item>
+      <widget class="QTextEdit" name="tipText">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout">
+       <item>
+        <widget class="QCheckBox" name="dontShowCheckBox">
+         <property name="text">
+          <string>Don't show on startup</string>
+         </property>
         </widget>
-    </vbox>
-</widget>
-<connections>
-    <connection>
-        <sender>closeButton</sender>
-        <signal>clicked()</signal>
-        <receiver>DidYouKnow</receiver>
-        <slot>accept()</slot>
-    </connection>
-</connections>
-<layoutdefaults spacing="6" margin="11"/>
-</UI>
+       </item>
+       <item>
+        <spacer name="spacer7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Expanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>121</width>
+           <height>31</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="nextButton">
+         <property name="text">
+          <string>Next tip</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="closeButton">
+         <property name="text">
+          <string>Close</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>closeButton</sender>
+   <signal>clicked()</signal>
+   <receiver>DidYouKnow</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

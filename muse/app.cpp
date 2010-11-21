@@ -3302,7 +3302,7 @@ void MusE::showDidYouKnowDialog()
       {
       if ((bool)config.showDidYouKnow == true) {
             printf("show did you know dialog!!!!\n");
-            DidYouKnow dyk;
+            DidYouKnowWidget dyk;
             dyk.tipText->setText("To get started with MusE why don't you try some demo songs available at http://demos.muse-sequencer.org/");
             dyk.show();
             if( dyk.exec()) {
