@@ -107,7 +107,9 @@ class MusE : public QMainWindow
       QAction *editCutAction, *editCopyAction, *editPasteAction, *editInsertAction, *editPasteCloneAction, *editPaste2TrackAction;
       QAction *editPasteC2TAction, *editInsertEMAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
       QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
-      QAction *pianoAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
+      QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
+      QAction *trackAInputAction, *trackAAuxAction;
+      QAction *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
       QAction *masterGraphicAction, *masterListAction;
       QAction *midiTransposeAction;
       QAction *editSongInfoAction;
@@ -156,13 +158,9 @@ class MusE : public QMainWindow
       PopupMenu* routingPopupMenu; 
       //PopupView* routingPopupView; 
 
-      int aid1a, aid1b, aid2, aid3, autoId;
-      int tr_id, bt_id, mr_id;
-      int cc_id;
+
       QMenu* follow;
-      int fid0, fid1, fid2;
       QMenu* midiInputPlugins;
-      int mpid0, mpid1, mpid2, mpid3, mpid4;
 
       QWidget* midiPortConfig;
       QWidget* softSynthesizerConfig;
@@ -269,7 +267,7 @@ class MusE : public QMainWindow
       void startClipList(bool);
       
       void openRecentMenu();
-      void selectProject(int id);
+      void selectProject(QAction* act);
       void cmd(int);
       void clipboardChanged();
       void selectionChanged();

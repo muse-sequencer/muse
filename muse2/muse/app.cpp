@@ -793,29 +793,38 @@ QMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0)
 //    this is also used in "mixer"
 //---------------------------------------------------------
 
-void populateAddTrack(QMenu* addTrack)
+QActionGroup* populateAddTrack(QMenu* addTrack)
       {
+      QActionGroup* grp = new QActionGroup(addTrack);
+
       QAction* midi = addTrack->addAction(QIcon(*addtrack_addmiditrackIcon),
 					  QT_TR_NOOP("Add Midi Track"));
       midi->setData(Track::MIDI);
+      grp->addAction(midi);
       QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
 					  QT_TR_NOOP("Add Drum Track"));
       drum->setData(Track::DRUM);
+      grp->addAction(drum);
       QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
 					  QT_TR_NOOP("Add Wave Track"));
       wave->setData(Track::WAVE);
+      grp->addAction(wave);
       QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
 					     QT_TR_NOOP("Add Audio Output"));
       aoutput->setData(Track::AUDIO_OUTPUT);
+      grp->addAction(aoutput);
       QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
 					    QT_TR_NOOP("Add Audio Group"));
       agroup->setData(Track::AUDIO_GROUP);
+      grp->addAction(agroup);
       QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
 					    QT_TR_NOOP("Add Audio Input"));
       ainput->setData(Track::AUDIO_INPUT);
+      grp->addAction(ainput);
       QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
 					  QT_TR_NOOP("Add Aux Send"));
       aaux->setData(Track::AUDIO_AUX);
+      grp->addAction(aaux);
 
       // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
       QMenu* synp = populateAddSynth(addTrack, song, SLOT(addNewTrack(QAction *)));
@@ -826,6 +835,8 @@ void populateAddTrack(QMenu* addTrack)
       addTrack->addMenu(synp);
       
       QObject::connect(addTrack, SIGNAL(triggered(QAction *)), song, SLOT(addNewTrack(QAction *)));
+
+      return grp;
       }
 
 //---------------------------------------------------------
@@ -1041,7 +1052,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       editOutsideLoopAction = new QAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"), this);
       editAllPartsAction = new QAction( QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"), this);
 
-      pianoAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
+      startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
       startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums"), this);
       startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List"), this);
       startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave"), this);
@@ -1136,7 +1147,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(fileNewAction,  SIGNAL(activated()), SLOT(loadTemplate()));
       connect(fileOpenAction, SIGNAL(activated()), SLOT(loadProject()));
       connect(openRecent, SIGNAL(aboutToShow()), SLOT(openRecentMenu()));
-      connect(openRecent, SIGNAL(activated(int)), SLOT(selectProject(int)));
+      connect(openRecent, SIGNAL(triggered(QAction*)), SLOT(selectProject(QAction*)));
       
       connect(fileSaveAction, SIGNAL(activated()), SLOT(save()));
       connect(fileSaveAsAction, SIGNAL(activated()), SLOT(saveAs()));
@@ -1183,7 +1194,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       connect(editSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
 
-      connect(pianoAction, SIGNAL(activated()), SLOT(startPianoroll()));
+      connect(startPianoEditAction, SIGNAL(activated()), SLOT(startPianoroll()));
       connect(startDrumEditAction, SIGNAL(activated()), SLOT(startDrumEditor()));
       connect(startListEditAction, SIGNAL(activated()), SLOT(startListEditor()));
       connect(startWaveEditAction, SIGNAL(activated()), SLOT(startWaveEditor()));
@@ -1323,18 +1334,18 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menu_file->addAction(fileNewAction);
       menu_file->addAction(fileOpenAction);
       menu_file->addMenu(openRecent);
-      menu_file->insertSeparator();
+      menu_file->addSeparator();
       menu_file->addAction(fileSaveAction);
       menu_file->addAction(fileSaveAsAction);
-      menu_file->insertSeparator();
+      menu_file->addSeparator();
       menu_file->addAction(fileImportMidiAction);
       menu_file->addAction(fileExportMidiAction);
       menu_file->addAction(fileImportPartAction);
-      menu_file->insertSeparator();
+      menu_file->addSeparator();
       menu_file->addAction(fileImportWaveAction);
-      menu_file->insertSeparator();
+      menu_file->addSeparator();
       menu_file->addAction(quitAction);
-      menu_file->insertSeparator();
+      menu_file->addSeparator();
 
       //-------------------------------------------------------------
       //    popup Edit
@@ -1342,7 +1353,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       menuEdit = menuBar()->addMenu(tr("&Edit"));
       menuEdit->addActions(undoRedo->actions());
-      menuEdit->insertSeparator();
+      menuEdit->addSeparator();
 
       menuEdit->addAction(editCutAction);
       menuEdit->addAction(editCopyAction);
@@ -1352,7 +1363,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menuEdit->addAction(editPaste2TrackAction);
       menuEdit->addAction(editPasteC2TAction);
       menuEdit->addAction(editInsertEMAction);
-      menuEdit->insertSeparator();
+      menuEdit->addSeparator();
       menuEdit->addAction(editDeleteSelectedAction);
 
       // Moved below. Have to wait until synths are available...
@@ -1365,9 +1376,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       select->addAction(editInsideLoopAction);
       select->addAction(editOutsideLoopAction);
       select->addAction(editAllPartsAction);
-      menuEdit->insertSeparator();
+      menuEdit->addSeparator();
 
-      menuEdit->addAction(pianoAction);
+      menuEdit->addAction(startPianoEditAction);
       menuEdit->addAction(startDrumEditAction);
       menuEdit->addAction(startListEditAction);
       menuEdit->addAction(startWaveEditAction);
@@ -1375,7 +1386,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menuEdit->addMenu(master);
       master->addAction(masterGraphicAction);
       master->addAction(masterListAction);
-      menuEdit->insertSeparator();
+      menuEdit->addSeparator();
 
 
       menuEdit->addMenu(midiEdit);
@@ -1406,7 +1417,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       menuView = menuBar()->addMenu(tr("View"));
       menuView->setCheckable(true);
-      menuBar()->insertItem(tr("View"), menuView);
 
       menuView->addAction(viewTransportAction);
       menuView->addAction(viewBigtimeAction);
@@ -1425,7 +1435,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menuStructure->addAction(strGlobalInsertAction);
       menuStructure->addAction(strGlobalSplitAction);
       menuStructure->addAction(strCopyRangeAction);
-      menuStructure->insertSeparator();
+      menuStructure->addSeparator();
       menuStructure->addAction(strCutEventsAction);
 
       //-------------------------------------------------------------
@@ -1442,7 +1452,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiInputPlugins->addAction(midiInputFilterAction);
       midiInputPlugins->addAction(midiRemoteAction);
 
-      menu_functions->insertSeparator();
+      menu_functions->addSeparator();
       menu_functions->addAction(midiResetInstAction);
       menu_functions->addAction(midiInitInstActions);
       menu_functions->addAction(midiLocalOffAction);
@@ -1458,7 +1468,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menu_audio = menuBar()->addMenu(tr("&Audio"));
       menu_audio->addAction(audioBounce2TrackAction);
       menu_audio->addAction(audioBounce2FileAction);
-      menu_audio->insertSeparator();
+      menu_audio->addSeparator();
       menu_audio->addAction(audioRestartAction);
 
 
@@ -1468,7 +1478,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       menuAutomation = menuBar()->addMenu(tr("Automation"));
       menuAutomation->addAction(autoMixerAction);
-      menuAutomation->insertSeparator();
+      menuAutomation->addSeparator();
       menuAutomation->addAction(autoSnapshotAction);
       menuAutomation->addAction(autoClearAction);
 
@@ -1484,12 +1494,12 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       follow->addAction(followPageAction);
       follow->addAction(followCtsAction);
       menuSettings->addAction(settingsMetronomeAction);
-      menuSettings->insertSeparator();
+      menuSettings->addSeparator();
       menuSettings->addAction(settingsMidiSyncAction);
       menuSettings->addAction(settingsMidiIOAction);
-      menuSettings->insertSeparator();
+      menuSettings->addSeparator();
       menuSettings->addAction(settingsAppearanceAction);
-      menuSettings->insertSeparator();
+      menuSettings->addSeparator();
       menuSettings->addAction(settingsMidiPortAction);
 
       //---------------------------------------------------
@@ -1499,13 +1509,13 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menu_help = menuBar()->addMenu(tr("&Help"));
       menu_help->addAction(helpManualAction);
       menu_help->addAction(helpHomepageAction);
-      menu_help->insertSeparator();
+      menu_help->addSeparator();
       menu_help->addAction(helpReportAction);
-      menu_help->insertSeparator();
+      menu_help->addSeparator();
       menu_help->addAction(helpAboutAction);
 
       //menu_help->insertItem(tr("About&Qt"), this, SLOT(aboutQt()));
-      //menu_help->insertSeparator();
+      //menu_help->addSeparator();
       //menu_ids[CMD_START_WHATSTHIS] = menu_help->insertItem(tr("What's &This?"), this, SLOT(whatsThis()), 0);
 
       //---------------------------------------------------
@@ -1554,7 +1564,15 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       initMidiSynth();
       
-      populateAddTrack(addTrack);
+      QActionGroup *grp = populateAddTrack(addTrack);
+      
+      trackMidiAction = grp->actions()[0];
+      trackDrumAction = grp->actions()[1];
+      trackWaveAction = grp->actions()[2];
+      trackAOutputAction = grp->actions()[3];
+      trackAGroupAction = grp->actions()[4];
+      trackAInputAction = grp->actions()[6];
+      trackAAuxAction = grp->actions()[6];
       
       transport = new Transport(this, "transport");
       bigtime   = 0;
@@ -1773,7 +1791,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       viewBigtimeAction->setChecked(config.bigTimeVisible);
       viewMarkerAction->setChecked(config.markerVisible);
 
-      menuAutomation->setItemChecked(autoId, automation);
+      autoMixerAction->setChecked(automation);
 
       if (loadAll) {
             showBigtime(config.bigTimeVisible);
@@ -2755,7 +2773,7 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
                         }
                   }
             if (i+1 != channel)
-                  pup->insertSeparator();
+                  pup->addSeparator();
       }
       */
       
@@ -3043,7 +3061,7 @@ PopupView* MusE::prepareRoutingPopupView(Track* track, bool dst)
                         }
                   }
             if (i+1 != channel)
-                  pup->insertSeparator();
+                  pup->addSeparator();
       }
       */
       
@@ -3332,7 +3350,8 @@ void MusE::openRecentMenu()
                   p = path;
             else
                   ++p;
-            openRecent->insertItem(QString(p), i);
+	    QAction *act = openRecent->addAction(QString(p));
+	    act->setData(i);
             }
       }
 
@@ -3340,10 +3359,11 @@ void MusE::openRecentMenu()
 //   selectProject
 //---------------------------------------------------------
 
-void MusE::selectProject(int id)
+void MusE::selectProject(QAction* act)
       {
-      if (id < 0)
+      if (!act)
             return;
+      int id = act->data().toInt();
       assert(id < PROJECT_LIST_LEN);
       QString* name = projectList[id];
       if (name == 0)
@@ -4898,7 +4918,7 @@ void MusE::switchMixerAutomation()
       song->clearRecAutomation(true);
 
 // printf("automation = %d\n", automation);
-      menuAutomation->setItemChecked(autoId, automation);
+      autoMixerAction->setChecked(automation);
       }
 
 //---------------------------------------------------------
@@ -4964,13 +4984,22 @@ void MusE::updateConfiguration()
       //editDeleteSelectedAction has no acceleration
       menuEdit->setAccel(Qt::Key_Delete, CMD_DELETE);
 
+      trackMidiAction->setAccel(shortcuts[SHRT_ADD_MIDI_TRACK].key);
+      trackDrumAction->setAccel(shortcuts[SHRT_ADD_DRUM_TRACK].key);
+      trackWaveAction->setAccel(shortcuts[SHRT_ADD_WAVE_TRACK].key);
+      trackAOutputAction->setAccel(shortcuts[SHRT_ADD_AUDIO_OUTPUT].key);
+      trackAGroupAction->setAccel(shortcuts[SHRT_ADD_AUDIO_GROUP].key);
+      trackAInputAction->setAccel(shortcuts[SHRT_ADD_AUDIO_INPUT].key);
+      trackAAuxAction->setAccel(shortcuts[SHRT_ADD_AUDIO_AUX].key);
+
       editSelectAllAction->setAccel(shortcuts[SHRT_SELECT_NONE].key);
       editDeselectAllAction->setAccel(shortcuts[SHRT_SELECT_NONE].key);
       editInvertSelectionAction->setAccel(shortcuts[SHRT_SELECT_INVERT].key);
       editInsideLoopAction->setAccel(shortcuts[SHRT_SELECT_OLOOP].key);
       editOutsideLoopAction->setAccel(shortcuts[SHRT_SELECT_OLOOP].key);
-      //editAllPartsAction has no acceleration
+      editAllPartsAction->setAccel(shortcuts[SHRT_SELECT_PRTSTRACK].key);
 
+      startPianoEditAction->setAccel(shortcuts[SHRT_OPEN_PIANO].key);
       startDrumEditAction->setAccel(shortcuts[SHRT_OPEN_DRUMS].key);
       startListEditAction->setAccel(shortcuts[SHRT_OPEN_LIST].key);
       startWaveEditAction->setAccel(shortcuts[SHRT_OPEN_WAVE].key);
@@ -4997,7 +5026,7 @@ void MusE::updateConfiguration()
       // midiEditInstAction does not have acceleration
       midiResetInstAction->setAccel(shortcuts[SHRT_MIDI_RESET].key);
       midiInitInstActions->setAccel(shortcuts[SHRT_MIDI_INIT].key);
-      midiLocalOffAction->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key);
+      midiLocalOffAction->setAccel(shortcuts[SHRT_MIDI_LOCAL_OFF].key);
       midiTrpAction->setAccel(shortcuts[SHRT_MIDI_INPUT_TRANSPOSE].key);
       midiInputTrfAction->setAccel(shortcuts[SHRT_MIDI_INPUT_TRANSFORM].key);
       midiInputFilterAction->setAccel(shortcuts[SHRT_MIDI_INPUT_FILTER].key);
@@ -5018,33 +5047,21 @@ void MusE::updateConfiguration()
       // settingsMidiIOAction does not have acceleration
       settingsAppearanceAction->setAccel(shortcuts[SHRT_APPEARANCE_SETTINGS].key);
       settingsMidiPortAction->setAccel(shortcuts[SHRT_CONFIG_MIDI_PORTS].key);
+
+
+      dontFollowAction->setAccel(shortcuts[SHRT_FOLLOW_NO].key);
+      followPageAction->setAccel(shortcuts[SHRT_FOLLOW_JUMP].key);
+      followCtsAction->setAccel(shortcuts[SHRT_FOLLOW_CONTINUOUS].key);
       
       helpManualAction->setAccel(shortcuts[SHRT_OPEN_HELP].key);
       
 
+      // Orcan: Old stuff, needs to be converted. These aren't used anywhere so I commented them out
+      //menuEdit->setAccel(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key, menu_ids[CMD_OPEN_MIDI_TRANSFORM]);
+      //menuSettings->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key, menu_ids[CMD_CONFIG_AUDIO_PORTS]);
+      //menu_help->setAccel(menu_ids[CMD_START_WHATSTHIS], shortcuts[SHRT_START_WHATSTHIS].key);
+      //midiInputPlugins->setAccel(shortcuts[SHRT_RANDOM_RHYTHM_GENERATOR].key, 4);
 
-      // Orcan: Old stuff, needs to be converted
-      menuEdit->setAccel(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key, menu_ids[CMD_OPEN_MIDI_TRANSFORM]);
-
-      menuSettings->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key, menu_ids[CMD_CONFIG_AUDIO_PORTS]);
-
-      menu_help->setAccel(menu_ids[CMD_START_WHATSTHIS], shortcuts[SHRT_START_WHATSTHIS].key);
-      pianoAction->setAccel(shortcuts[SHRT_OPEN_PIANO].key);
-
-      select->setAccel(shortcuts[SHRT_SELECT_PRTSTRACK].key, CMD_SELECT_PARTS);
-      follow->setAccel(shortcuts[SHRT_FOLLOW_JUMP].key, CMD_FOLLOW_JUMP);
-      follow->setAccel(shortcuts[SHRT_FOLLOW_NO].key, CMD_FOLLOW_NO);
-      follow->setAccel(shortcuts[SHRT_FOLLOW_CONTINUOUS].key, CMD_FOLLOW_CONTINUOUS);
-
-      midiInputPlugins->setAccel(shortcuts[SHRT_RANDOM_RHYTHM_GENERATOR].key, 4);
-
-      addTrack->setAccel(shortcuts[SHRT_ADD_MIDI_TRACK].key, Track::MIDI);
-      addTrack->setAccel(shortcuts[SHRT_ADD_DRUM_TRACK].key, Track::DRUM);
-      addTrack->setAccel(shortcuts[SHRT_ADD_WAVE_TRACK].key, Track::WAVE);
-      addTrack->setAccel(shortcuts[SHRT_ADD_AUDIO_OUTPUT].key, Track::AUDIO_OUTPUT);
-      addTrack->setAccel(shortcuts[SHRT_ADD_AUDIO_GROUP].key, Track::AUDIO_GROUP);
-      addTrack->setAccel(shortcuts[SHRT_ADD_AUDIO_INPUT].key, Track::AUDIO_INPUT);
-      addTrack->setAccel(shortcuts[SHRT_ADD_AUDIO_AUX].key, Track::AUDIO_AUX);
       }
 
 //---------------------------------------------------------
