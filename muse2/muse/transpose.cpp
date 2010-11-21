@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <qcombobox.h>
 #include <qspinbox.h>
-#include <q3buttongroup.h>
 #include <qradiobutton.h>
 #include "transpose.h"
 #include "track.h"
@@ -14,15 +13,23 @@
 //   Transpose
 //---------------------------------------------------------
 
-Transpose::Transpose(QWidget* parent, const char* name)
-   : TransposeDialogBase(parent, name)
+Transpose::Transpose(QWidget* parent)
+   : QDialog(parent)
       {
+      setupUi(this);
+      buttonGroup1 = new QButtonGroup(this);
+      buttonGroup1->addButton(time_all);
+      buttonGroup1->addButton(time_selected);
+      buttonGroup2 = new QButtonGroup(this);
+      buttonGroup2->addButton(parts_all);
+      buttonGroup2->addButton(parts_selected);
+
       if (song->lpos() != song->rpos()) {
             time_selected->setChecked(true);
             }
       else {
 //            time_all->setChecked(true);
-            ButtonGroup1->setEnabled(false);
+            ButtonBox1->setEnabled(false);
             }
 //      parts_all->setSelected(true);
       }
