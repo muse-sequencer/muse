@@ -8,7 +8,6 @@
 
 #include <stdio.h>
 
-#include <q3popupmenu.h>
 #include <qdir.h>
 #include <qfileinfo.h>
 
@@ -797,7 +796,7 @@ const char* MidiInstrument::getPatchName(int channel, int prog, MType mode, bool
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void MidiInstrument::populatePatchPopup(Q3PopupMenu* menu, int chan, MType songType, bool drum)
+void MidiInstrument::populatePatchPopup(QMenu* menu, int chan, MType songType, bool drum)
       {
       menu->clear();
       int mask = 0;
@@ -815,7 +814,7 @@ void MidiInstrument::populatePatchPopup(Q3PopupMenu* menu, int chan, MType songT
       if (pg.size() > 1) {
             for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
                   PatchGroup* pgp = *i;
-                  Q3PopupMenu* pm = new Q3PopupMenu(menu);
+                  QMenu* pm = new QMenu(menu);
                   pm->setCheckable(false);
                   pm->setFont(config.fonts[0]);
                   const PatchList& pl = pgp->patches;

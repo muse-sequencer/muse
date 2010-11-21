@@ -7,22 +7,19 @@
 
 #include <stdio.h>
 
-#include <qlayout.h>
-#include <qlabel.h>
-#include <qpushbutton.h>
-#include <q3multilineedit.h>
-#include <qmessagebox.h>
-#include <qslider.h>
-#include <qradiobutton.h>
-#include <qspinbox.h>
-#include <q3listbox.h>
-#include <q3widgetstack.h>
-#include <q3popupmenu.h>
-//Added by qt3to4:
+#include <QBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
+#include <QLabel>
+#include <QListWidget>
+#include <QMenu>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QSlider>
+#include <QSpinBox>
+#include <QTextEdit>
 #include <QVBoxLayout>
-#include <QBoxLayout>
 
 #include "song.h"
 #include "event.h"
@@ -156,28 +153,29 @@ Event EditPAfterDialog::getEvent(int tick, const Event& event, QWidget* parent)
 //   EditEventDialog
 //---------------------------------------------------------
 
-EditEventDialog::EditEventDialog(QWidget* parent, const char* name)
-   : QDialog(parent, name, true)
+EditEventDialog::EditEventDialog(QWidget* parent)
+   : QDialog(parent)
       {
-      QVBoxLayout* xlayout = new QVBoxLayout(this);
-      layout1 = new QGridLayout(this); // ddskrjo this
+      QVBoxLayout* xlayout = new QVBoxLayout;
+      layout1 = new QGridLayout; // ddskrjo this
       xlayout->addLayout(layout1);
 
       //---------------------------------------------------
       //  Ok, Cancel
       //---------------------------------------------------
 
-      QBoxLayout* w5 = new QHBoxLayout(this); // ddskrjo this
-      xlayout->addLayout(w5);
-      QPushButton* okB = new QPushButton(tr("Ok"), this);
+      QBoxLayout* w5 = new QHBoxLayout; // ddskrjo this
+      QPushButton* okB = new QPushButton(tr("Ok"));
       okB->setDefault(true);
-      QPushButton* cancelB = new QPushButton(tr("Cancel"), this);
+      QPushButton* cancelB = new QPushButton(tr("Cancel"));
       okB->setFixedWidth(80);
       cancelB->setFixedWidth(80);
       w5->addWidget(okB);
       w5->addSpacing(12);
       w5->addWidget(cancelB);
       w5->addStretch(1);
+      xlayout->addLayout(w5);
+      setLayout(xlayout);
       connect(cancelB, SIGNAL(clicked()), SLOT(reject()));
       connect(okB, SIGNAL(clicked()), SLOT(accept()));
       }
@@ -187,9 +185,10 @@ EditEventDialog::EditEventDialog(QWidget* parent, const char* name)
 //---------------------------------------------------------
 
 EditNoteDialog::EditNoteDialog(int tick, const Event& event,
-   QWidget* parent, const char* name)
-   : EditNoteDialogBase(parent, name)
+   QWidget* parent)
+   : QDialog(parent)
       {
+      setupUi(this);
       if (!event.empty()) {
             epos->setValue(tick);
             il1->setValue(event.lenTick());
@@ -226,9 +225,10 @@ Event EditNoteDialog::event()
 //---------------------------------------------------------
 
 EditSysexDialog::EditSysexDialog(int tick, const Event& event,
-   QWidget* parent, const char* name)
-   : EditSysexDialogBase(parent, name)
+   QWidget* parent)
+   : QDialog(parent)
       {
+      setupUi(this);
       sysex = 0;
       if (!event.empty()) {
             epos->setValue(tick);
@@ -280,32 +280,32 @@ void EditSysexDialog::accept()
 //---------------------------------------------------------
 
 EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
-   QWidget* parent, const char* name)
-   : EditEventDialog(parent, name)
+   QWidget* parent)
+   : EditEventDialog(parent)
       {
       meta = 0;
       setCaption(tr("MusE: Enter Meta Event"));
 
-      QLabel* l1 = new QLabel(tr("Time Position"), this);
-      epos = new PosEdit(this);
+      QLabel* l1 = new QLabel(tr("Time Position"));
+      epos = new PosEdit;
 
-      QLabel* l2 = new QLabel(tr("Meta Type"), this);
+      QLabel* l2 = new QLabel(tr("Meta Type"));
       il2 = new IntLabel(-1, 0, 127, this, -1);
       il2->setFixedWidth(100);
       il2->setFrame(true);
       il2->setDark();
-      typeLabel = new QLabel(this);
+      typeLabel = new QLabel;
       typeLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-      QHBoxLayout* typeLayout = new QHBoxLayout(this);
+      QHBoxLayout* typeLayout = new QHBoxLayout;
       typeLayout->addWidget(il2);
       typeLayout->addWidget(typeLabel);
       typeLayout->addStretch();
 
-      hexButton = new QRadioButton(tr("Enter Hex"), this, "hextoggle");
+      hexButton = new QRadioButton(tr("Enter Hex"));
       hexButton->setChecked(true);
       connect(hexButton, SIGNAL(toggled(bool)), SLOT(toggled(bool)));
 
-      edit = new Q3MultiLineEdit(this);
+      edit = new QTextEdit;
       edit->setFont(config.fonts[5]);
 
       if (!ev.empty()) {
@@ -411,20 +411,20 @@ void EditMetaDialog::accept()
 //---------------------------------------------------------
 
 EditCAfterDialog::EditCAfterDialog(int tick, const Event& event,
-   QWidget* parent, const char* name)
-   : EditEventDialog(parent, name)
+   QWidget* parent)
+   : EditEventDialog(parent)
       {
       setCaption(tr("MusE: Enter Channel Aftertouch"));
 
-      QLabel* l1 = new QLabel(tr("Time Position"), this);
-      epos = new PosEdit(this);
+      QLabel* l1 = new QLabel(tr("Time Position"));
+      epos = new PosEdit;
 
-      QLabel* l2 = new QLabel(tr("Pressure"), this);
+      QLabel* l2 = new QLabel(tr("Pressure"));
       il2  = new IntLabel(-1, 0, 127, this, -1);
       il2->setFrame(true);
       il2->setDark();
 
-      QSlider* slider = new QSlider(0, 127, 1, 0, Qt::Horizontal, this);
+      QSlider* slider = new QSlider(0, 127, 1, 0, Qt::Horizontal);
       connect(slider, SIGNAL(valueChanged(int)), il2, SLOT(setValue(int)));
       connect(il2, SIGNAL(valueChanged(int)), slider, SLOT(setValue(int)));
 
@@ -463,22 +463,22 @@ Event EditCAfterDialog::event()
 //---------------------------------------------------------
 
 EditPAfterDialog::EditPAfterDialog(int tick, const Event& event,
-   QWidget* parent, const char* name)
-   : EditEventDialog(parent, name)
+   QWidget* parent)
+   : EditEventDialog(parent)
       {
       setCaption(tr("MusE: Enter Poly Aftertouch"));
 
-      QLabel* l1 = new QLabel(tr("Time Position"), this);
-      epos = new PosEdit(this);
+      QLabel* l1 = new QLabel(tr("Time Position"));
+      epos = new PosEdit;
 
-      QLabel* l2 = new QLabel(tr("Pitch"), this);
-      pl = new PitchEdit(this);
-      QLabel* l3 = new QLabel(tr("Pressure"), this);
+      QLabel* l2 = new QLabel(tr("Pitch"));
+      pl = new PitchEdit;
+      QLabel* l3 = new QLabel(tr("Pressure"));
       il2  = new IntLabel(-1, 0, 127, this, -1);
       il2->setFrame(true);
       il2->setDark();
 
-      QSlider* slider = new QSlider(0, 127, 1, 0, Qt::Horizontal, this);
+      QSlider* slider = new QSlider(0, 127, 1, 0, Qt::Horizontal);
       connect(slider, SIGNAL(valueChanged(int)), il2, SLOT(setValue(int)));
       connect(il2, SIGNAL(valueChanged(int)), slider, SLOT(setValue(int)));
 
@@ -554,14 +554,16 @@ Event EditCtrlDialog::event()
 //    QSlider* valSlider;
 //    QSpinBox* valSpinBox;
 //    QLabel* controllerName;
-//    QListBox* ctrlList;
+//    QListWidget* ctrlList;
 //    QPushButton* buttonNewController;
 //---------------------------------------------------------
 
 EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
-   const MidiPart* p, QWidget* parent, const char* name)
-   : EditCtrlBase(parent, name), part(p)
+   const MidiPart* p, QWidget* parent)
+   : QDialog(parent), part(p)
       {
+      setupUi(this);
+      widgetStack->setAutoFillBackground(true);
       val = 0;
       num = 0;
       if (!event.empty()) {
@@ -569,7 +571,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
             val = event.dataB();
             }
 
-      pop = new Q3PopupMenu(this);
+      pop = new QMenu(this);
       pop->setCheckable(false);
 
       MidiTrack* track   = part->track();
@@ -579,7 +581,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
       MidiCtrlValListList* cll = port->controller();
 
       ctrlList->clear();
-      ctrlList->setSelectionMode(Q3ListBox::Single);
+      ctrlList->setSelectionMode(QAbstractItemView::SingleSelection);
 
       //
       // populate list of available controller
@@ -610,11 +612,11 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
       int idx = 0;
       int selectionIndex = 0;
       for (isList i = sList.begin(); i != sList.end(); ++i, ++idx) {
-            ctrlList->insertItem(*i);
+            ctrlList->addItem(*i);
             if (mc->name() == *i)
                   selectionIndex = idx;
             }
-      ctrlList->setSelected(selectionIndex, true);
+      ctrlList->item(selectionIndex)->setSelected(true);
 
       valSlider->setRange(mc->minVal(), mc->maxVal());
       valSpinBox->setRange(mc->minVal(), mc->maxVal());
@@ -625,23 +627,25 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
       {
         if(num == CTRL_PROGRAM)
         {
-          widgetStack->raiseWidget(1);
+          widgetStack->setCurrentIndex(1);
           updatePatch();
         }  
         else  
         {
-          widgetStack->raiseWidget(0);
+          widgetStack->setCurrentIndex(0);
           valSlider->setValue(val - mc->bias());
         }  
       }
       else
-        ctrlListClicked(ctrlList->selectedItem());
-      connect(ctrlList, SIGNAL(clicked(Q3ListBoxItem*)), SLOT(ctrlListClicked(Q3ListBoxItem*)));
+        ctrlListClicked(ctrlList->selectedItems()[0]);
+      connect(ctrlList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(ctrlListClicked(QListWidgetItem*)));
       connect(buttonNewController, SIGNAL(clicked()), SLOT(newController()));
       connect(hbank,   SIGNAL(valueChanged(int)), SLOT(programChanged()));
       connect(lbank,   SIGNAL(valueChanged(int)), SLOT(programChanged()));
       connect(program, SIGNAL(valueChanged(int)), SLOT(programChanged()));
       connect(patchName, SIGNAL(released()), SLOT(instrPopup()));
+      connect(buttonCancel, SIGNAL(clicked()), SLOT(reject()));
+      connect(buttonOk, SIGNAL(clicked()), SLOT(accept()));
       timePos->setValue(tick);
       
       }
@@ -651,7 +655,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
 
 void EditCtrlDialog::newController()
       {
-      Q3PopupMenu* pop = new Q3PopupMenu(this);
+      QMenu* pop = new QMenu(this);
       pop->setCheckable(this);
       //
       // populate popup with all controllers available for
@@ -665,14 +669,19 @@ void EditCtrlDialog::newController()
       
       MidiCtrlValListList* cll = port->controller();
       int channel              = track->outChannel();
+      int nn = 0;
       for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
       {
             if(cll->find(channel, ci->second->num()) == cll->end())
-              pop->insertItem(ci->second->name());
+            {
+                    QAction* act = pop->addAction(ci->second->name());
+		    act->setData(nn);
+		    ++nn;
+	    }
       }
-      int rv = pop->exec(buttonNewController->mapToGlobal(QPoint(0,0)));
-      if (rv != -1) {
-            QString s = pop->text(rv);
+      QAction* rv = pop->exec(buttonNewController->mapToGlobal(QPoint(0,0)));
+      if (rv) {
+            QString s = rv->text();
             for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
                   MidiController* mc = ci->second;
                   if (mc->name() == s) {
@@ -683,16 +692,16 @@ void EditCtrlDialog::newController()
                           //song->update(SC_MIDI_CONTROLLER_ADD);
                         }
                         for (int idx = 0; ;++idx) {
-                              QString str = ctrlList->text(idx);
+			  QString str = ctrlList->item(idx)->text();
                               if (s == str)
                               {
-                                    ctrlList->setSelected(idx, true);
+				ctrlList->item(idx)->setSelected(true);
                                     ctrlListClicked(ctrlList->item(idx));
                                     break;
                               }      
                               if (str.isNull()) {
-                                    ctrlList->insertItem(s);
-                                    ctrlList->setSelected(idx, true);
+                                    ctrlList->addItem(s);
+                                    ctrlList->item(idx)->setSelected(true);
                                     ctrlListClicked(ctrlList->item(idx));
                                     break;
                                     }
@@ -708,7 +717,7 @@ void EditCtrlDialog::newController()
 //   ctrlListClicked
 //---------------------------------------------------------
 
-void EditCtrlDialog::ctrlListClicked(Q3ListBoxItem* item)
+void EditCtrlDialog::ctrlListClicked(QListWidgetItem* item)
       {
       if (item == 0)
             return;
@@ -726,7 +735,7 @@ void EditCtrlDialog::ctrlListClicked(Q3ListBoxItem* item)
             MidiController* c   = port->midiController(num);
             if (s == c->name()) {
                   if (num == CTRL_PROGRAM) {
-                        widgetStack->raiseWidget(1);
+                        widgetStack->setCurrentIndex(1);
                         
                         val = c->initVal();
                         if(val == CTRL_VAL_UNKNOWN)
@@ -734,7 +743,7 @@ void EditCtrlDialog::ctrlListClicked(Q3ListBoxItem* item)
                         updatePatch();
                         }
                   else {
-                        widgetStack->raiseWidget(0);
+                        widgetStack->setCurrentIndex(0);
                         valSlider->setRange(c->minVal(), c->maxVal());
                         valSpinBox->setRange(c->minVal(), c->maxVal());
                         controllerName->setText(s);
@@ -814,11 +823,12 @@ void EditCtrlDialog::instrPopup()
 
       if(pop->count() == 0)
         return;
-      int rv = pop->exec(patchName->mapToGlobal(QPoint(10,5)));
-      if (rv != -1) {
-            val = rv;
+      QAction* rv = new QAction(pop->exec(patchName->mapToGlobal(QPoint(10,5))));
+      if (rv) {
+            val = rv->data().toInt();
             updatePatch();
             }
+      delete rv;
       }
 
 //---------------------------------------------------------

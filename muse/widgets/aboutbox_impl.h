@@ -1,9 +1,9 @@
 #ifndef ABOUTBOXIMPL_H
 #define ABOUTBOXIMPL_H
 
-#include "aboutbox.h"
+#include "ui_aboutbox.h"
 
-class AboutBoxImpl : public AboutBox
+class AboutBoxImpl : public QDialog, public Ui::AboutBox
 {
     Q_OBJECT
 

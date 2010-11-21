@@ -1,209 +1,198 @@
-<!DOCTYPE UI><UI version="3.0" stdsetdef="1">
-<class>EditSysexDialogBase</class>
-<widget class="QDialog">
-    <property name="name">
-        <cstring>EditSysexDialogBase</cstring>
-    </property>
-    <property name="geometry">
-        <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>433</width>
-            <height>330</height>
-        </rect>
-    </property>
-    <property name="caption">
-        <string>MusE: Enter SysEx</string>
-    </property>
-    <property name="sizeGripEnabled">
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EditSysexDialogBase</class>
+ <widget class="QDialog" name="EditSysexDialogBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>433</width>
+    <height>330</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MusE: Enter SysEx</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout">
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <property name="margin">
+    <number>11</number>
+   </property>
+   <item>
+    <layout class="QHBoxLayout">
+     <property name="spacing">
+      <number>6</number>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="TextLabel1">
+       <property name="text">
+        <string>TimePosition:</string>
+       </property>
+       <property name="wordWrap">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="PosEdit" name="epos" native="true"/>
+     </item>
+     <item>
+      <spacer name="Spacer2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QToolButton" name="saveButton">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="loadButton">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="edit"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="TextLabel2">
+     <property name="text">
+      <string>Comment:</string>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="comment"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout">
+     <property name="spacing">
+      <number>6</number>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item>
+      <spacer name="Horizontal Spacing2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonOk">
+       <property name="text">
+        <string>OK</string>
+       </property>
+       <property name="shortcut">
+        <number>0</number>
+       </property>
+       <property name="autoDefault">
         <bool>true</bool>
-    </property>
-    <vbox>
-        <property name="name">
-            <cstring>unnamed</cstring>
-        </property>
-        <property name="margin">
-            <number>11</number>
-        </property>
-        <property name="spacing">
-            <number>6</number>
-        </property>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>Layout3</cstring>
-            </property>
-            <hbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <property name="margin">
-                    <number>0</number>
-                </property>
-                <property name="spacing">
-                    <number>6</number>
-                </property>
-                <widget class="QLabel">
-                    <property name="name">
-                        <cstring>TextLabel1</cstring>
-                    </property>
-                    <property name="text">
-                        <string>TimePosition:</string>
-                    </property>
-                </widget>
-                <widget class="PosEdit">
-                    <property name="name">
-                        <cstring>epos</cstring>
-                    </property>
-                </widget>
-                <spacer>
-                    <property name="name" stdset="0">
-                        <cstring>Spacer2</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Expanding</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>20</width>
-                            <height>20</height>
-                        </size>
-                    </property>
-                </spacer>
-                <widget class="QToolButton">
-                    <property name="name">
-                        <cstring>saveButton</cstring>
-                    </property>
-                    <property name="text">
-                        <string></string>
-                    </property>
-                    <property name="pixmap">
-                        <pixmap>image0</pixmap>
-                    </property>
-                </widget>
-                <widget class="QToolButton">
-                    <property name="name">
-                        <cstring>loadButton</cstring>
-                    </property>
-                    <property name="text">
-                        <string></string>
-                    </property>
-                    <property name="pixmap">
-                        <pixmap>image1</pixmap>
-                    </property>
-                </widget>
-            </hbox>
-        </widget>
-        <widget class="QTextEdit">
-            <property name="name">
-                <cstring>edit</cstring>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>TextLabel2</cstring>
-            </property>
-            <property name="text">
-                <string>Comment:</string>
-            </property>
-        </widget>
-        <widget class="QTextEdit">
-            <property name="name">
-                <cstring>comment</cstring>
-            </property>
-        </widget>
-        <widget class="QLayoutWidget">
-            <property name="name">
-                <cstring>Layout1</cstring>
-            </property>
-            <hbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <property name="margin">
-                    <number>0</number>
-                </property>
-                <property name="spacing">
-                    <number>6</number>
-                </property>
-                <spacer>
-                    <property name="name" stdset="0">
-                        <cstring>Horizontal Spacing2</cstring>
-                    </property>
-                    <property name="orientation">
-                        <enum>Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>Expanding</enum>
-                    </property>
-                    <property name="sizeHint">
-                        <size>
-                            <width>20</width>
-                            <height>20</height>
-                        </size>
-                    </property>
-                </spacer>
-                <widget class="QPushButton">
-                    <property name="name">
-                        <cstring>buttonOk</cstring>
-                    </property>
-                    <property name="text">
-                        <string>OK</string>
-                    </property>
-                    <property name="accel">
-                        <number>0</number>
-                    </property>
-                    <property name="autoDefault">
-                        <bool>true</bool>
-                    </property>
-                    <property name="default">
-                        <bool>true</bool>
-                    </property>
-                </widget>
-                <widget class="QPushButton">
-                    <property name="name">
-                        <cstring>buttonCancel</cstring>
-                    </property>
-                    <property name="text">
-                        <string>Cancel</string>
-                    </property>
-                    <property name="accel">
-                        <number>0</number>
-                    </property>
-                    <property name="autoDefault">
-                        <bool>true</bool>
-                    </property>
-                </widget>
-            </hbox>
-        </widget>
-    </vbox>
-</widget>
-<images>
-    <image name="image0">
-        <data format="XPM.GZ" length="2285">789c8dd35d6fda301406e07b7e05aaefaae934719c9068dac5cabebab60c3668d34dbb308e03edfab11518eda6fdf71d9f7382a02dd3fa16a407bf716c07f676db65ffb8bdbbd79acdedfcdcb5ddd4deb677abc5d5d5fd97af2f7eb776b46ee37fc7b4f5ceb3d6ce60de76eddecdb50f80254245f447ae1b2731d9af5c909dd888abc686fb11398f5c9493278d63f634388e42c89fc9790879dc58f3f8a1b8b9de06eb2884fc536cc431b9d04ef3face82933869f6d3131bf18c5c24b9eca72b76e232d8c42692fd9d8a9bfd9e90adc98d258fc44e7c1b9cea281a1bf2909d46293d0cf8244ec53fc876d5df5fb9227f171bf147765aa47cbf0fe24a7c139ce955ffa2b14bc9d7e25c7cc4cee28cd77345b691737cfd65e38afb07ecacc8f87edf823b491cc9f839bb137712b212a7e277c179a28de7efe3abe0c225a6ae83d5845d1485235b71c586b7c1d6989cfb50909db596fb53b167c3cbe0b1e9c4327fcd1e6b39ef813813bf2657abbe628fad9c675fecc56f825d9a17b29e3b7125d77bb6d37cdeaa126772fef7e4aa903efc62dbe6fec076969f8772622fcf270faed24acbf977c49958937d652b3eef4cecd98a7e7f3ef3da67349e8a337142f6decaf332622f3e0eaeb35ad7dc7f2fcec40b725d5bd9df5c5cb307f3ff0ff74181853138a8f015e257a9251398825af52d9c632ee01b5cc215e61a730137f01d7e606e3133cc74adaf30f3ad593ce8ffc4f6f29ffde593f3dfc13dfcc2f797b0bf91307f77a31fd6bf6deec5a3f534fd57f01adee0eb2dbcc35d6fcebfd93fc06c9bfbfdd6fefe963cec1fc211e6f1bc9c63eaf736fa1f30fd8df67a7ff0a8ff71954f9421660427708a29f12c6770b6d6ff8c8d7fb77bd88fd6fa43e985d12e354227b4ce2096f7f5fe88528286040cbe52c8a00339147887117e5fe28dfe12ef1d52622f8c0f2157007da594ddd23fa574d518df8f7065ebfd9327fa25a58bab2871d743e554a5140cb05f3ed1b7f4fd0bbbd4388e67826d8fed5a4df0d312c737fa74871e9d88c6a746c1b5d46a8afd1e5e71f8b04f6734c5abb627a2dfef9fe7adbfc6a22669</data>
-    </image>
-    <image name="image1">
-        <data format="XPM.GZ" length="2589">789c8dd64b53db481000e03bbfc2c5dca8ad8e3492c652a5727008ef77121c87ad3d8c4663e327066cc0a4f6bf6f4f774b3c422da139f0797aba5b23c9c5878d56eff4a8b5f161ed76611743d77297f6a6b5512da7d3d5dfff7cfab5b6ae750b7f8ba4a5d7ff5a5b3f5bb45cebf86ae603402154443fc1ea869c47291b66c17114b928a7f5153b04792c4ed99091f310e4c7608debbc1fac3817976227f53a6c9d6aae47fd74d1e43f88eb79066c9deb827c2f766c2027b1aee77d64275112d3faa938153b72a1e57ad48c9de4b27e179cc63a97eb5d8aebf9af1af3bc0bb24d22f16670a6b328b5944fd793d9acc8c8908a2bb6ba0e36da64866e9eba255b53889db832bcbf086e97eda25dd2fa9db86203edcf932c92f349d878bb12b226977991737e2eaed86a145ca47843d8cbda454af9b13813b7c9ae280a478ec4155b55c1363555c2f76fc8b6b1ac4f6b5bae7721cec49fc9aed9bf605bcbebeab231f73f117bb69a0497693b4bf9fefe64975ad6cbda25f73b161b718f5c95567cd4b8a2fd73b167c38f6097392d3eaced3272576cc407e4ca59b169ccf5add8b3613fb8ca2a2d3eaf5df1fe3db161ab3ed95756d6bf37e6ef875db117d3797a63ebe7d1b3bd96f59ddade90bf890d5bd1f78df7853cdf70c3b6b1789bedade77a5f83fbd84fd62bb197e77dca2e4d9b9fdf2d765ff7b9ff17b111d3fbd4efe37e9a1fe6ec524bbd8ed88807b5b9be02b1957e7db6d3f27ef9daf23e9d898d7822b6f27e0d6bcbfb32167bf1885d69797faec4867db6f8f3783b1f541defe73fe53eed79daf73aff75cdd77d5ee6ffdebfdef1fff3bf5f1f2c9418f6cfce071c54e0a10f0370efe763f6250c61046398c014357b196fe47bb8c26c0f73b87e23dc6ff913aceee1066e6121b1843bfcfc1ee30156f0585f77933f810e7c864df842b105dbb003bbb007fb7000877004c77082712af96758fd2b563d806f183bf01dcea10b3fa0073fe10222884143022964cdfc73aabe85b9db52fb1c0c56ee61d50b68430e059cd6f3e3600a16ca62ff901f7ae02ce82e1ca9923ae4ca85bb26f53baac2ea21c7d33cbbaa8fd90738d131d58f21518367e713663fc1fe7bb86717a70fd719a6c1eaea520dd50852357eca5713d80cdd69a273d8a7da940d276a8ad3276af6fcfcd5157e5eaa39e67431b30b87f8772f64cbecd7f513c7ff3fa95bccc21d386d0fcf1a4f9b2a2fb076a496ea4edd3fbfbf6aac96d8b38d95ea68438c79233c758dd90f3c7b93bf528f6aa0ee5fc480a243b17af6fcfcfb71ed3f846c790e</data>
-    </image>
-</images>
-<connections>
-    <connection>
-        <sender>buttonOk</sender>
-        <signal>clicked()</signal>
-        <receiver>EditSysexDialogBase</receiver>
-        <slot>accept()</slot>
-    </connection>
-    <connection>
-        <sender>buttonCancel</sender>
-        <signal>clicked()</signal>
-        <receiver>EditSysexDialogBase</receiver>
-        <slot>reject()</slot>
-    </connection>
-</connections>
-<includes>
-    <include location="local" impldecl="in declaration">posedit.h</include>
-</includes>
-<layoutdefaults spacing="6" margin="11"/>
-</UI>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonCancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+       <property name="shortcut">
+        <number>0</number>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>PosEdit</class>
+   <extends>QWidget</extends>
+   <header>posedit.h</header>
+  </customwidget>
+ </customwidgets>
+ <includes>
+  <include location="local">posedit.h</include>
+ </includes>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonOk</sender>
+   <signal>clicked()</signal>
+   <receiver>EditSysexDialogBase</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>EditSysexDialogBase</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
