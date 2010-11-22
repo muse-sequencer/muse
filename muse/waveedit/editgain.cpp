@@ -10,14 +10,14 @@
 //
 //
 
-#include <qslider.h>
-#include <qpushbutton.h>
+#include <QDialog>
 
 #include "editgain.h"
 
 EditGain::EditGain(QWidget* parent, int initGainValue)
- : EditGainBase(parent, "editgain", false)
+ : QDialog(parent)
       {
+         setupUi(this);
          sliderGain->setValue(sliderGain->maxValue() - initGainValue);
          connect(buttonReset, SIGNAL(pressed()), this, SLOT(resetPressed()));
          connect(buttonApply, SIGNAL(pressed()), this, SLOT(applyPressed()));
