@@ -60,7 +60,7 @@ TopWin::TopWin(QWidget* parent, const char* name,
    Qt::WindowFlags f) : QMainWindow(parent, f)
       {
       setObjectName(QString(name));
-      setAttribute(Qt::WA_DeleteOnClose);
+      //setAttribute(Qt::WA_DeleteOnClose);
       // Allow multiple rows.  Tim.
       //setDockNestingEnabled(true);
       setIconSize(ICON_SIZE);

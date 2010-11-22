@@ -26,6 +26,7 @@
 MidiEditor::MidiEditor(int q, int r, PartList* pl,
    QWidget* parent, const char* name) : TopWin(parent, name)
       {
+      setAttribute(Qt::WA_DeleteOnClose);
       _pl = pl;
       if (_pl)
             for (iPart i = _pl->begin(); i != _pl->end(); ++i)

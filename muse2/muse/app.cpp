@@ -2179,8 +2179,7 @@ void MusE::showMarker(bool flag)
             toplevels.push_back(Toplevel(Toplevel::MARKER, (unsigned long)(markerView), markerView));
             markerView->show();
             }
-
-      markerView->setShown(flag);
+      markerView->setVisible(flag);
       viewMarkerAction->setChecked(flag);
       }
 
@@ -2208,7 +2207,7 @@ void MusE::toggleTransport(bool checked)
 
 void MusE::showTransport(bool flag)
       {
-      transport->setShown(flag);
+      transport->setVisible(flag);
       viewTransportAction->setChecked(flag);
       }
 
@@ -4597,7 +4596,7 @@ void MusE::openAudioFileManagement()
             audioFileManager = new AudioFileManager(this, "audiofilemanager", false);
             audioFileManager->show();
             }
-      audioFileManager->setShown(true);
+      audioFileManager->setVisible(true);
       }
 #endif
 //---------------------------------------------------------
@@ -5084,7 +5083,7 @@ void MusE::showBigtime(bool on)
             bigtime->move(config.geometryBigTime.topLeft());
             }
       if (bigtime)
-            bigtime->setShown(on);
+            bigtime->setVisible(on);
       viewBigtimeAction->setChecked(on);
       }
 
@@ -5120,7 +5119,7 @@ void MusE::showMixer(bool on)
             audioMixer->move(config.geometryMixer.topLeft());
             }
       if (audioMixer)
-            audioMixer->setShown(on);
+            audioMixer->setVisible(on);
       menuView->setItemChecked(aid1, on);
       }
 */
@@ -5138,7 +5137,7 @@ void MusE::showMixer1(bool on)
             mixer1->move(config.mixer1.geometry.topLeft());
             }
       if (mixer1)
-            mixer1->setShown(on);
+            mixer1->setVisible(on);
       viewMixerAAction->setChecked(on);
       }
 
@@ -5155,7 +5154,7 @@ void MusE::showMixer2(bool on)
             mixer2->move(config.mixer2.geometry.topLeft());
             }
       if (mixer2)
-            mixer2->setShown(on);
+            mixer2->setVisible(on);
       viewMixerBAction->setChecked(on);
       }
 
