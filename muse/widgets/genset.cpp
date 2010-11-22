@@ -7,14 +7,9 @@
 //=========================================================
 
 #include <stdio.h>
-#include <qpushbutton.h>
-#include <qcombobox.h>
-#include <qspinbox.h>
-#include <qlineedit.h>
-#include <q3buttongroup.h>
-#include <qcheckbox.h>
-#include <qlabel.h>
-//Added by qt3to4:
+
+#include <QDialog>
+#include <QRect>
 #include <QShowEvent>
 
 #include "genset.h"
@@ -37,9 +32,14 @@ static int dummyAudioBufSizes[] = {
 //   GlobalSettingsConfig
 //---------------------------------------------------------
 
-GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent, const char* name)
-   : GlobalSettingsDialogBase(parent, name)
+GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
+   : QDialog(parent)
       {
+      setupUi(this);
+      startSongGroup = new QButtonGroup(this);
+      startSongGroup->addButton(startLastButton, 0);
+      startSongGroup->addButton(startEmptyButton, 1);
+      startSongGroup->addButton(startSongButton, 2);
       for (unsigned i = 0; i < sizeof(rtcResolutions)/sizeof(*rtcResolutions); ++i) {
             if (rtcResolutions[i] == config.rtcTicks) {
                   rtcResolutionSelect->setCurrentItem(i);
@@ -80,7 +80,7 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent, const char* name)
       
       helpBrowser->setText(config.helpBrowser);
       startSongEntry->setText(config.startSong);
-      startSongGroup->setButton(config.startMode);
+      startSongGroup->button(config.startMode)->setChecked(true);
 
       showTransport->setChecked(config.transportVisible);
       showBigtime->setChecked(config.bigTimeVisible);
@@ -185,7 +185,7 @@ void GlobalSettingsConfig::updateSettings()
       
       helpBrowser->setText(config.helpBrowser);
       startSongEntry->setText(config.startSong);
-      startSongGroup->setButton(config.startMode);
+      startSongGroup->button(config.startMode)->setChecked(true);
 
       showTransport->setChecked(config.transportVisible);
       showBigtime->setChecked(config.bigTimeVisible);
@@ -260,7 +260,7 @@ void GlobalSettingsConfig::apply()
       config.rtcTicks    = rtcResolutions[rtcticks];
       config.helpBrowser = helpBrowser->text();
       config.startSong   = startSongEntry->text();
-      config.startMode   = startSongGroup->selectedId();
+      config.startMode   = startSongGroup->checkedId();
       int das = dummyAudioSize->currentItem();
       config.dummyAudioBufSize = dummyAudioBufSizes[das];
       config.dummyAudioSampleRate = dummyAudioRate->value();

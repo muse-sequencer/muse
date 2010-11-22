@@ -9,15 +9,15 @@
 #ifndef __GENSET_H__
 #define __GENSET_H__
 
-#include "gensetbase.h"
-//Added by qt3to4:
+#include "ui_gensetbase.h"
+
 #include <QShowEvent>
 
 //---------------------------------------------------------
 //   GlobalSettingsConfig
 //---------------------------------------------------------
 
-class GlobalSettingsConfig : public GlobalSettingsDialogBase {
+class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase {
       Q_OBJECT
 
    private slots:
@@ -33,9 +33,10 @@ class GlobalSettingsConfig : public GlobalSettingsDialogBase {
 
     protected:
       void showEvent(QShowEvent*);
+      QButtonGroup *startSongGroup;
       
    public:
-      GlobalSettingsConfig(QWidget* parent=0, const char* name=0);
+      GlobalSettingsConfig(QWidget* parent=0);
       };
 
 #endif

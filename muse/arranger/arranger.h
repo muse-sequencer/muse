@@ -36,7 +36,6 @@ class LabelCombo;
 class PosLabel;
 class QCheckBox;
 class MidiTrackInfoBase;
-class WaveTrackInfoBase;
 class TLLayout;
 class WidgetStack;
 class AudioStrip;
