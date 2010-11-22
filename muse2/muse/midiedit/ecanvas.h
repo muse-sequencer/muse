@@ -10,7 +10,6 @@
 
 #include "canvas.h"
 #include "noteinfo.h"
-//Added by qt3to4:
 #include <QEvent>
 #include <QKeyEvent>
 

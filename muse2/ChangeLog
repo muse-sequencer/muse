@@ -3,6 +3,7 @@
         - Clean up: Remove submenu integer ids from the MusE class in favor of QActions (Orcan)
         - Ported the following .ui widgets to Qt4: didyouknow, transposebase, cliplist,
           configmidifilebase (Orcan)
+        - Ported View and MidiEditor classes. Fixed TopWin constructor. Test OK all editors. (Tim) 
 20.11.2010
         - Remove most wrapper classes around .ui widgets. I was wrapping them too much. Some widgets
           (e.g. songinfo) still need wrappers though. (Orcan)

@@ -8,12 +8,11 @@
 #ifndef __VIEW_H__
 #define __VIEW_H__
 
-#include <qwidget.h>
-#include <qpixmap.h>
-#include <qmatrix.h>
-#include <qpainter.h>
-#include <qbrush.h>
-//Added by qt3to4:
+#include <QWidget>
+#include <QPixmap>
+#include <QMatrix>
+#include <QPainter>
+#include <QBrush>
 #include <QResizeEvent>
 #include <QDropEvent>
 #include <QMouseEvent>
