@@ -25,8 +25,6 @@
 //---------------------------------------------------------
 
 class View : public QWidget {
-      QPixmap pm;             // for double buffering
-      bool pmValid;
       QPixmap bgPixmap;       // background Pixmap
       QBrush brush;
       bool _virt;

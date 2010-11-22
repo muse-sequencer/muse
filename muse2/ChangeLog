@@ -6,6 +6,7 @@
            MusE::startClipList() so the main MusE instance owns it like all the others. It deletes too, now. 
           Also removed odd special Toplevel::CLIPLIST case in MusE::toplevelDeleted(). Hope it works... 
           Tested closing complex song, with all windows open. Nice to see final Finished! message (new, with -D).
+        - Eliminated double-buffer pixmap in View class (not required in Qt4). TODO: install event handler. (Tim) 
 21.11.2010
         - All menus now use QActions. Some shortcuts are left to be assigned correctly (Orcan)
         - Clean up: Remove submenu integer ids from the MusE class in favor of QActions (Orcan)

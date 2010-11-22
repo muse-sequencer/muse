@@ -35,7 +35,6 @@ View::View(QWidget* w, int xm, int ym, const char* name)
       setBackgroundRole(QPalette::NoRole);
       brush.setStyle(Qt::SolidPattern);
       brush.setColor(Qt::lightGray);
-      pmValid = false;
       }
 
 //---------------------------------------------------------
@@ -78,40 +77,13 @@ void View::setXPos(int x)
       {
       int delta  = xpos - x;         // -  -> shift left
       xpos  = x;
-      if (pm.isNull())
-            return;
-      if (!pmValid) {
-            //printf("View::setXPos !pmValid x:%d width:%d delta:%d\n", x, width(), delta);
-            redraw();
-            return;
-            }
+      
       int w = width();
       int h = height();
 
-      QRect r;
-      if (delta >= w || delta <= -w)
-            r = QRect(0, 0, w, h);
-      else if (delta < 0) {   // shift left
-            QPainter p(&pm);
-            p.drawPixmap(0, 0, pm, -delta, 0, w + delta, h); 
-            r = QRect(w + delta, 0, -delta, h);
-            }
-      else {                  // shift right
-            QPainter p(&pm);
-            p.drawPixmap(delta, 0, pm, 0, 0, w-delta, h); 
-            r = QRect(0, 0, delta, h);
-            }
-      QRect olr = overlayRect();
-      QRect olr1(olr);
-      olr1.translate(delta, 0);
-
-      r |= olr;
-      r |= olr1;
+      scroll(delta, 0);
       
-      //printf("View::setXPos x:%d w:%d delta:%d r.x:%d r.w:%d\n", x, w, delta, r.x(), r.width());
-      
-      paint(r);
-      update();
+      //update();
       }
 
 //---------------------------------------------------------
@@ -122,37 +94,13 @@ void View::setYPos(int y)
       {
       int delta  = ypos - y;         // -  -> shift up
       ypos  = y;
-      if (pm.isNull())
-            return;
-      if (!pmValid) {
-            //printf("View::setYPos !pmValid y:%d height:%d delta:%d\n", y, height(), delta);
-            
-            redraw();
-            return;
-            }
+      
       int w = width();
       int h = height();
-      QRect r;
-      if (delta >= h || delta <= -h)
-            r = QRect(0, 0, w, h);
-      else if (delta < 0) {   // shift up
-            QPainter p(&pm);
-            p.drawPixmap(0, 0, pm, 0, -delta, w, h + delta); 
-            r = QRect(0, h + delta, w, -delta);
-            }
-      else {                  // shift down
-            QPainter p(&pm);
-            p.drawPixmap(0, delta, pm, 0, 0, w, h-delta); 
-            r = QRect(0, 0, w, delta);
-            }
-      QRect olr = overlayRect();
-      QRect olr1(olr);
-      olr1.translate(0, delta);
+      
+      scroll(0, delta);
 
-      r |= olr;
-      r |= olr1;
-      paint(r);
-      update();
+      //update();
       }
 
 //---------------------------------------------------------
@@ -161,15 +109,7 @@ void View::setYPos(int y)
 
 void View::resizeEvent(QResizeEvent* ev)
       {
-      // The pixmap will be null at first. QPixmap::copy() won't give a valid pixmap if it's null. 
-      if(pm.isNull())
-        // Create a valid pixmap.
-        pm = QPixmap(ev->size().width(), ev->size().height());
-      else
-        // Copy the pixmap.
-        pm = pm.copy(QRect(0, 0, ev->size().width(), ev->size().height()));
       
-      pmValid = false;
       }
 
 //---------------------------------------------------------
@@ -178,11 +118,10 @@ void View::resizeEvent(QResizeEvent* ev)
 
 void View::paintEvent(QPaintEvent* ev)
       {
-      //printf("View::paintEvent pmValid:%d x:%d width:%d y:%d height:%d\n", pmValid, ev->rect().x(), ev->rect().width(), ev->rect().y(), ev->rect().height());
-      if (!pmValid)
-            paint(ev->rect());
-      QPainter p(this);
-      p.drawPixmap(ev->rect().topLeft(), pm, ev->rect()); 
+      //printf("View::paintEvent x:%d width:%d y:%d height:%d\n", 
+      //  ev->rect().x(), ev->rect().width(), ev->rect().y(), ev->rect().height());  
+        
+      paint(ev->rect());
       }
 
 //---------------------------------------------------------
@@ -191,9 +130,8 @@ void View::paintEvent(QPaintEvent* ev)
 
 void View::redraw()
       {
-      QRect r(0, 0, pm.width(), pm.height());
-      //printf("View::redraw() r.x:%d r.w:%d\n", r.x(), r.width());
-      paint(r);
+      //printf("View::redraw()\n");  // REMOVE Tim.
+      
       update();
       }
 
@@ -203,8 +141,7 @@ void View::redraw()
 
 void View::redraw(const QRect& r)
       {
-      //printf("View::redraw(QRect& r) r.x:%d r.w:%d\n", r.x(), r.width());
-      paint(r);
+      //printf("View::redraw(QRect& r) r.x:%d r.w:%d\n", r.x(), r.width()); 
       update(r);
       }
 
@@ -215,14 +152,11 @@ void View::redraw(const QRect& r)
 
 void View::paint(const QRect& r)
       {
-      if (pm.isNull())
-            return;
       QRect rr(r);
-      if (!pmValid) {
-            pmValid = true;
-            rr = QRect(0, 0, pm.width(), pm.height());
-            }
-      QPainter p(&pm);
+      
+      //printf("View::paint x:%d width:%d y:%d height:%d\n", r.x(), r.width(), r.y(), r.height());  
+      
+      QPainter p(this);
       if (bgPixmap.isNull())
             p.fillRect(rr, brush);
       else
@@ -310,7 +244,7 @@ void View::dropEvent(QDropEvent* ev)
       // "Sets the drop to happen at the given point. You do not normally need to use this 
       //  as it will be set internally before your widget receives the drop event."     
       // But we need to remap it here...
-      //ev->setPoint(mapDev(ev->pos())); TODO: Need to test this.
+      //ev->setPoint(mapDev(ev->pos())); 
       QDropEvent nev(mapDev(ev->pos()), ev->possibleActions(), ev->mimeData(), ev->mouseButtons(), ev->keyboardModifiers(), ev->type());     
       //viewDropEvent(ev);
       viewDropEvent(&nev);
@@ -333,6 +267,8 @@ void View::setBg(const QPixmap& bgpm)
 
 void View::pdraw(QPainter& p, const QRect& r)
       {
+      //printf("View::pdraw x:%d width:%d y:%d height:%d\n", r.x(), r.width(), r.y(), r.height());  
+      
       if (virt()) {
             setPainter(p);
             int x = r.x();
