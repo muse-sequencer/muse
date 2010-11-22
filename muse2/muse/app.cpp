@@ -3325,7 +3325,8 @@ void MusE::showDidYouKnowDialog()
 void MusE::startClipList(bool checked)
       {
       if (clipListEdit == 0) {
-            clipListEdit = new ClipListEdit();
+            //clipListEdit = new ClipListEdit();
+            clipListEdit = new ClipListEdit(this);
             toplevels.push_back(Toplevel(Toplevel::CLIPLIST, (unsigned long)(clipListEdit), clipListEdit));
             connect(clipListEdit, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
             }
@@ -3384,8 +3385,9 @@ void MusE::toplevelDeleted(unsigned long tl)
                         case Toplevel::CLIPLIST:
                               // ORCAN: This needs to be verified. aid2 used to correspond to Cliplist:
                               //menu_audio->setItemChecked(aid2, false);
-                              viewCliplistAction->setChecked(false);
-                              return;
+                              ///viewCliplistAction->setChecked(false);  // Don't think we require this any more. Tim.
+                              ///return;
+                              break;
                         // the followin editors can exist in more than
                         // one instantiation:
                         case Toplevel::PIANO_ROLL:
@@ -3918,13 +3920,13 @@ int main(int argc, char* argv[])
 #endif /* HAVE_LASH */
       QTimer::singleShot(100, muse, SLOT(showDidYouKnowDialog()));
       
-      return app.exec();
-      // p3.3.47 
-      //int rv = app.exec();
-      // FIXME: Can't do, seg fault at MarkerView::~MarkerView() 
-      //  due to already deleted undoRedo.
-      //delete muse; 
-      //return rv;
+      int rv = app.exec();
+      if(debugMsg) 
+        printf("app.exec() returned:%d\nDeleting main MusE object\n", rv);
+      delete muse; 
+      if(debugMsg) 
+        printf("Finished! Exiting main, return value:%d\n", rv);
+      return rv;
       
       }
 
