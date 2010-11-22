@@ -7,6 +7,8 @@
           Also removed odd special Toplevel::CLIPLIST case in MusE::toplevelDeleted(). Hope it works... 
           Tested closing complex song, with all windows open. Nice to see final Finished! message (new, with -D).
         - Eliminated double-buffer pixmap in View class (not required in Qt4). TODO: install event handler. (Tim) 
+        - Ported the following .ui widgets to Qt4: editgainbase, gensetbase (Orcan)
+        - Removed unused .ui widgets: wtrackinfo.ui, editctrl7dialogbase.ui, editmetadialogbase.ui (Orcan)
 21.11.2010
         - All menus now use QActions. Some shortcuts are left to be assigned correctly (Orcan)
         - Clean up: Remove submenu integer ids from the MusE class in favor of QActions (Orcan)

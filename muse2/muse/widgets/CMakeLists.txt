@@ -142,6 +142,7 @@ QT4_WRAP_UI (UIC
       editnotedialogbase.ui  
       editsysexdialogbase.ui  
       fdialogbuttons.ui  
+      gensetbase.ui  
       itransformbase.ui  
       metronomebase.ui  
       mittransposebase.ui  
@@ -159,12 +160,8 @@ QT4_WRAP_UI (UIC
 #QT4_WRAP_UI (widget_ui_headers
 QT4_WRAP_UI3 (widget_ui_headers
       midisync.ui  
-      gensetbase.ui  
       synthconfigbase.ui  
-      editctrl7dialogbase.ui  
-      editmetadialogbase.ui  
       gatetimebase.ui  
-      wtrackinfobase.ui  
       )
 
 # add_custom_command(OUTPUT ui_midisync.h
