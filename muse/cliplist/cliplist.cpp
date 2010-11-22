@@ -98,11 +98,11 @@ QString ClipItem::text(int col) const
 //   ClipListEdit
 //---------------------------------------------------------
 
-ClipListEdit::ClipListEdit()
-   : TopWin(0, "cliplist", Qt::Window)
+ClipListEdit::ClipListEdit(QWidget* parent)
+   : TopWin(parent, "cliplist", Qt::Window)
       {
       //setAttribute(Qt::WA_DeleteOnClose);
-      setCaption(tr("MusE: Clip List Editor"));
+      setWindowTitle(tr("MusE: Clip List Editor"));
 
       editor = new ClipListEditorBaseWidget;
       setCentralWidget(editor);
@@ -126,6 +126,11 @@ ClipListEdit::ClipListEdit()
 
       updateList();
       }
+
+ClipListEdit::~ClipListEdit()
+{
+
+}
 
 //---------------------------------------------------------
 //   updateList

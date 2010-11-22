@@ -1,6 +1,11 @@
-21.11.2010
+22.11.2010
         - Oops, fixed regression, marker view and cliplist crashes, removed setAttribute(Qt::WA_DeleteOnClose) 
            from TopWin constructor, and added it to individual TopWin sub-classes (only MidiEditor needs it). (Tim)
+        - Final major leak fixed: We can now delete the main MusE object just before returning from main! (Tim)
+          Now that markerview, cliplist et. al. are also being deleted (verified, dtors called), I changed 
+           MusE::startClipList() so the main MusE instance owns it like all the others. It deletes too, now. 
+          Also removed odd special Toplevel::CLIPLIST case in MusE::toplevelDeleted(). Hope it works... 
+          Tested closing complex song, with all windows open. Nice to see final Finished! message (new, with -D).
 21.11.2010
         - All menus now use QActions. Some shortcuts are left to be assigned correctly (Orcan)
         - Clean up: Remove submenu integer ids from the MusE class in favor of QActions (Orcan)

@@ -16,6 +16,7 @@
 
 class QCloseEvent;
 class QDialog;
+class QWidget;
 class QTreeWidgetItem;
 
 class Xml;
@@ -56,7 +57,8 @@ class ClipListEdit : public TopWin {
       void deleted(unsigned long);
 
    public:
-      ClipListEdit();
+      ClipListEdit(QWidget* parent);
+      ~ClipListEdit();
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
       };
