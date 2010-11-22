@@ -9,7 +9,6 @@
 #include <cmath>
 #include <stdio.h>
 #include <QPainter>
-//Added by qt3to4:
 #include <QPixmap>
 #include <QResizeEvent>
 #include <QDropEvent>
@@ -23,8 +22,9 @@
 //---------------------------------------------------------
 
 View::View(QWidget* w, int xm, int ym, const char* name)
-   : QWidget(w, name, Qt::WNoAutoErase | Qt::WResizeNoErase)
+   : QWidget(w)
       {
+      setObjectName(QString(name));
       xmag  = xm;
       ymag  = ym;
       xpos  = 0;
@@ -32,7 +32,7 @@ View::View(QWidget* w, int xm, int ym, const char* name)
       xorg  = 0;
       yorg  = 0;
       _virt = true;
-      setBackgroundMode(Qt::NoBackground);
+      setBackgroundRole(QPalette::NoRole);
       brush.setStyle(Qt::SolidPattern);
       brush.setColor(Qt::lightGray);
       pmValid = false;
@@ -92,16 +92,18 @@ void View::setXPos(int x)
       if (delta >= w || delta <= -w)
             r = QRect(0, 0, w, h);
       else if (delta < 0) {   // shift left
-          bitBlt(&pm,  0, 0, &pm,  -delta, 0, w + delta, h, true); //CopyROP, true); // ddskrjo
+            QPainter p(&pm);
+            p.drawPixmap(0, 0, pm, -delta, 0, w + delta, h); 
             r = QRect(w + delta, 0, -delta, h);
             }
       else {                  // shift right
-            bitBlt(&pm,  delta, 0, &pm,     0, 0, w-delta, h, true); //CopyROP, true); // ddskrjo
+            QPainter p(&pm);
+            p.drawPixmap(delta, 0, pm, 0, 0, w-delta, h); 
             r = QRect(0, 0, delta, h);
             }
       QRect olr = overlayRect();
       QRect olr1(olr);
-      olr1.moveBy(delta, 0);
+      olr1.translate(delta, 0);
 
       r |= olr;
       r |= olr1;
@@ -134,16 +136,18 @@ void View::setYPos(int y)
       if (delta >= h || delta <= -h)
             r = QRect(0, 0, w, h);
       else if (delta < 0) {   // shift up
-            bitBlt(&pm,  0, 0, &pm, 0, -delta, w, h + delta, true); //CopyROP, true); ddskrjo
+            QPainter p(&pm);
+            p.drawPixmap(0, 0, pm, 0, -delta, w, h + delta); 
             r = QRect(0, h + delta, w, -delta);
             }
       else {                  // shift down
-            bitBlt(&pm,  0, delta, &pm, 0, 0, w, h-delta, true); // CopyROP, true); ddskrjo
+            QPainter p(&pm);
+            p.drawPixmap(0, delta, pm, 0, 0, w, h-delta); 
             r = QRect(0, 0, w, delta);
             }
       QRect olr = overlayRect();
       QRect olr1(olr);
-      olr1.moveBy(0, delta);
+      olr1.translate(0, delta);
 
       r |= olr;
       r |= olr1;
@@ -157,7 +161,14 @@ void View::setYPos(int y)
 
 void View::resizeEvent(QResizeEvent* ev)
       {
-      pm.resize(ev->size());
+      // The pixmap will be null at first. QPixmap::copy() won't give a valid pixmap if it's null. 
+      if(pm.isNull())
+        // Create a valid pixmap.
+        pm = QPixmap(ev->size().width(), ev->size().height());
+      else
+        // Copy the pixmap.
+        pm = pm.copy(QRect(0, 0, ev->size().width(), ev->size().height()));
+      
       pmValid = false;
       }
 
@@ -170,7 +181,8 @@ void View::paintEvent(QPaintEvent* ev)
       //printf("View::paintEvent pmValid:%d x:%d width:%d y:%d height:%d\n", pmValid, ev->rect().x(), ev->rect().width(), ev->rect().y(), ev->rect().height());
       if (!pmValid)
             paint(ev->rect());
-      bitBlt(this, ev->rect().topLeft(), &pm, ev->rect(), true); // CopyROP, true); ddskrjo
+      QPainter p(this);
+      p.drawPixmap(ev->rect().topLeft(), pm, ev->rect()); 
       }
 
 //---------------------------------------------------------
@@ -220,7 +232,9 @@ void View::paint(const QRect& r)
       //printf("View::paint r.x:%d w:%d\n", rr.x(), rr.width());
       pdraw(p, rr);       // draw into pixmap
 
-      p.resetXForm();
+      p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
+      //p.resetTransform();
+      
       drawOverlay(p);
       }
 
@@ -249,7 +263,7 @@ void View::viewKeyPressEvent(QKeyEvent* event)
 void View::mousePressEvent(QMouseEvent* ev)
       {
       QMouseEvent e(ev->type(), mapDev(ev->pos()),
-         ev->globalPos(), ev->button(), ev->state());
+         ev->globalPos(), ev->button(), ev->buttons(), ev->modifiers());
       viewMousePressEvent(&e);
       }
 
@@ -260,7 +274,7 @@ void View::mousePressEvent(QMouseEvent* ev)
 void View::mouseDoubleClickEvent(QMouseEvent* ev)
       {
       QMouseEvent e(ev->type(), mapDev(ev->pos()),
-         ev->globalPos(), ev->button(), ev->state());
+         ev->globalPos(), ev->button(), ev->buttons(), ev->modifiers());
       viewMouseDoubleClickEvent(&e);
       }
 
@@ -271,7 +285,7 @@ void View::mouseDoubleClickEvent(QMouseEvent* ev)
 void View::mouseMoveEvent(QMouseEvent* ev)
       {
       QMouseEvent e(ev->type(), mapDev(ev->pos()),
-         ev->globalPos(), ev->button(), ev->state());
+         ev->globalPos(), ev->button(), ev->buttons(), ev->modifiers());
       viewMouseMoveEvent(&e);
       }
 
@@ -282,7 +296,7 @@ void View::mouseMoveEvent(QMouseEvent* ev)
 void View::mouseReleaseEvent(QMouseEvent* ev)
       {
       QMouseEvent e(ev->type(), mapDev(ev->pos()),
-         ev->globalPos(), ev->button(), ev->state());
+         ev->globalPos(), ev->button(), ev->buttons(), ev->modifiers());
       viewMouseReleaseEvent(&e);
       }
 
@@ -292,8 +306,14 @@ void View::mouseReleaseEvent(QMouseEvent* ev)
 
 void View::dropEvent(QDropEvent* ev)
       {
-      ev->setPoint(mapDev(ev->pos()));
-      viewDropEvent(ev);
+      // From Q3 support:
+      // "Sets the drop to happen at the given point. You do not normally need to use this 
+      //  as it will be set internally before your widget receives the drop event."     
+      // But we need to remap it here...
+      //ev->setPoint(mapDev(ev->pos())); TODO: Need to test this.
+      QDropEvent nev(mapDev(ev->pos()), ev->possibleActions(), ev->mimeData(), ev->mouseButtons(), ev->keyboardModifiers(), ev->type());     
+      //viewDropEvent(ev);
+      viewDropEvent(&nev);
       }
 
 //---------------------------------------------------------
@@ -360,7 +380,9 @@ void View::pdraw(QPainter& p, const QRect& r)
 
 void View::setPainter(QPainter& p)
       {
-      p.resetXForm();
+      p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
+      //p.resetTransform();
+      
       p.translate(double(-(xpos+rmapx(xorg))), double(-(ypos+rmapy(yorg))));
       double xMag = (xmag < 0) ? 1.0/(-xmag) : double(xmag);
       double yMag = (ymag < 0) ? 1.0/(-ymag) : double(ymag);

@@ -10,7 +10,7 @@
 #include "waveedit/waveview.h"
 #include "scrollscale.h"
 #include "mtscale.h"
-#include <QLayout>
+//#include <QLayout>
 #include <QRect>
 #include <QColor>
 #include <QGridLayout>
@@ -185,9 +185,9 @@ void MidiEditor::songChanged(int type)
                   
                     updateHScrollRange();
                   if (canvas)
-                        setCaption(canvas->getCaption());
+                        setWindowTitle(canvas->getCaption());
                   else if (wview)
-                        setCaption(wview->getCaption());
+                        setWindowTitle(wview->getCaption());
                   if (type & SC_SIG)
                         time->update();
                         

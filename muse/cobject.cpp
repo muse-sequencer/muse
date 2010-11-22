@@ -57,8 +57,9 @@ void TopWin::writeStatus(int level, Xml& xml) const
       }
 
 TopWin::TopWin(QWidget* parent, const char* name,
-   Qt::WFlags f) : QMainWindow(parent, name, f)
+   Qt::WindowFlags f) : QMainWindow(parent, f)
       {
+      setObjectName(QString(name));
       setAttribute(Qt::WA_DeleteOnClose);
       // Allow multiple rows.  Tim.
       //setDockNestingEnabled(true);

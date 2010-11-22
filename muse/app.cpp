@@ -3757,6 +3757,7 @@ int main(int argc, char* argv[])
                   }
             }
       
+      /*
       if(!config.styleSheetFile.isEmpty())
       {
         if(debugMsg)
@@ -3771,6 +3772,7 @@ int main(int argc, char* argv[])
         else
               printf("loading style sheet <%s> failed\n", qPrintable(config.styleSheetFile));
       }
+      */
       
       AL::initDsp();
       
@@ -4293,9 +4295,11 @@ void MusE::changeConfig(bool writeFlag)
       {
       if (writeFlag)
             writeGlobalConfiguration();
+      
+      loadStyleSheetFile(config.styleSheetFile);
       loadTheme(config.style);
       QApplication::setFont(config.fonts[0], true);
-      loadStyleSheetFile(config.styleSheetFile);
+      //loadStyleSheetFile(config.styleSheetFile);
       
       emit configChanged();
       updateConfiguration();
