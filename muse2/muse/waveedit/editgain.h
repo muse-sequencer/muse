@@ -13,9 +13,11 @@
 #ifndef EDITGAIN_H
 #define EDITGAIN_H
 
-#include "editgainbase.h"
+#include "ui_editgainbase.h"
 
-class EditGain : public EditGainBase
+class QDialog;
+
+class EditGain : public QDialog, public Ui::EditGainBase
 {
       Q_OBJECT
 public:

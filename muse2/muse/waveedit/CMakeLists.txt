@@ -24,8 +24,7 @@ QT4_WRAP_CPP ( waveedit_mocs
       editgain.h
       )
 
-# QT4_WRAP_UI (waveedit_ui_headers
-QT4_WRAP_UI3 (waveedit_ui_headers
+QT4_WRAP_UI (waveedit_ui_headers
       editgainbase.ui
       )
 
