@@ -89,6 +89,9 @@ class Track {
       Track(const Track&, bool cloneParts);
       virtual ~Track() {};
       virtual Track& operator=(const Track& t);
+      
+      static const char* _cname[];
+      
       QString comment() const         { return _comment; }
       void setComment(const QString& s) { _comment = s; }
 
@@ -117,6 +120,7 @@ class Track {
 
       TrackType type() const          { return _type; }
       void setType(TrackType t)       { _type = t; }
+      QString cname() const           { int t = type(); return QString(_cname[t]); }
 
       // routing
       RouteList* inRoutes()    { return &_inRoutes; }

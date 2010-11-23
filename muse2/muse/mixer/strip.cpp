@@ -194,7 +194,7 @@ Strip::Strip(QWidget* parent, Track* t)
       // NOTE: This was required, otherwise the strip labels have no colour in the mixer only - track info OK !
       // Not sure why...
       label = new QLabel(this);
-      
+      label->setObjectName(track->cname());
       
       // Moved by Tim. p3.3.9
       //setLabelText();
