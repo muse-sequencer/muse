@@ -50,7 +50,7 @@
 #include "dssihost.h"
 #endif
 
-extern QMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0);
+extern QMenu* populateAddSynth(QWidget* parent);
 
 static const int MIN_TRACKHEIGHT = 20;
 static const int WHEEL_DELTA = 120;

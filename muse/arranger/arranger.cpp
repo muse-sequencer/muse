@@ -209,6 +209,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
 
       QVBoxLayout* box  = new QVBoxLayout(this);
       box->setContentsMargins(0, 0, 0, 0);
+      box->setSpacing(0);
       box->addWidget(hLine(this), Qt::AlignTop);
       //QFrame* hline = hLine(this);
       //hline->setLineWidth(0);

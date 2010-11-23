@@ -9,6 +9,7 @@
         - Eliminated double-buffer pixmap in View class (not required in Qt4). TODO: install event handler. (Tim) 
         - Ported the following .ui widgets to Qt4: editgainbase, gensetbase (Orcan)
         - Removed unused .ui widgets: wtrackinfo.ui, editctrl7dialogbase.ui, editmetadialogbase.ui (Orcan)
+        - Fixed remaining alignment issues in editors, using setSpacing(0). TODO Controller panels. (Tim) 
 21.11.2010
         - All menus now use QActions. Some shortcuts are left to be assigned correctly (Orcan)
         - Clean up: Remove submenu integer ids from the MusE class in favor of QActions (Orcan)

@@ -24,11 +24,13 @@
 #include <QMessageBox>
 #include <QAction>
 #include <QWhatsThis>
+#include <QList>
+#include <QGridLayout>
 
 //Added by qt3to4:
 #include <QKeyEvent>
-#include <Q3ValueList>
-#include <Q3GridLayout>
+//#include <Q3ValueList>
+//#include <Q3GridLayout>
 #include <QResizeEvent>
 #include <QCloseEvent>
 
@@ -302,6 +304,10 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       QWidget* split1w2   = new QWidget(split2, "split1w2");
       QGridLayout* gridS1 = new QGridLayout(split1w1);
       QGridLayout* gridS2 = new QGridLayout(split1w2);
+      gridS1->setContentsMargins(0, 0, 0, 0);
+      gridS1->setSpacing(0);  
+      gridS2->setContentsMargins(0, 0, 0, 0);
+      gridS2->setSpacing(0);  
       time                = new MTScale(&_raster, split1w2, xscale);
       canvas              = new DrumCanvas(this, split1w2, xscale, yscale);
       vscroll             = new ScrollScale(-4, 1, yscale, DRUM_MAPSIZE*TH, Qt::Vertical, split1w2);
@@ -312,7 +318,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
       time->setOrigin(offset, 0);
 
-      Q3ValueList<int> mops;
+      QList<int> mops;
       mops.append(_dlistWidthInit);
       mops.append(_dcanvasWidthInit);
       split2->setSizes(mops);

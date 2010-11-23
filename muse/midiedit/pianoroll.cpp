@@ -254,6 +254,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       QWidget* split1     = new QWidget(splitter, "split1");
       QGridLayout* gridS1 = new QGridLayout(split1);
       gridS1->setContentsMargins(0, 0, 0, 0);
+      gridS1->setSpacing(0);  
       time                = new MTScale(&_raster, split1, xscale);
       Piano* piano        = new Piano(split1, yscale);
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
