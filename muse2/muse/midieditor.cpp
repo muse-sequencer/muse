@@ -43,6 +43,7 @@ MidiEditor::MidiEditor(int q, int r, PartList* pl,
       mainw->setLayout(mainGrid);
       
       mainGrid->setContentsMargins(0, 0, 0, 0);
+      mainGrid->setSpacing(0);  
       setCentralWidget(mainw);
       }
 

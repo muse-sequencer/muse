@@ -614,8 +614,9 @@ struct addSynth_cmp_str
    }
 };
 */
- // ORCAN - CHECK
-QMenu* populateAddSynth(QWidget* parent, QObject* obj = 0, const char* slot = 0)
+ 
+// ORCAN - CHECK
+QMenu* populateAddSynth(QWidget* parent)
 {
   QMenu* synp = new QMenu(parent);
   
@@ -827,7 +828,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
       grp->addAction(aaux);
 
       // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
-      QMenu* synp = populateAddSynth(addTrack, song, SLOT(addNewTrack(QAction *)));
+      QMenu* synp = populateAddSynth(addTrack);
       synp->setIcon(*synthIcon);
       synp->setTitle(QT_TR_NOOP("Add Synth"));
 
