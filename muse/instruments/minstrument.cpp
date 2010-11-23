@@ -26,6 +26,66 @@ MidiInstrument* genericMidiInstrument;
 static const char* gmdrumname = "GM-drums";
 
 //---------------------------------------------------------
+//   string2sysex
+//---------------------------------------------------------
+
+int string2sysex(const QString& s, unsigned char** data)
+      {
+      const char* src = s.toLatin1().data();
+      char buffer[2048];
+      char* dst = buffer;
+
+      if(src) {
+        while (*src) {
+          while (*src == ' ' || *src == '\n') {
+            ++src;
+          }
+          char* ep;
+          long val = strtol(src, &ep, 16);
+          if (ep == src) {
+            QMessageBox::information(0,
+                                     QString("MusE"),
+                                     QWidget::tr("Cannot convert sysex string"));
+            return 0;
+          }
+          src    = ep;
+          *dst++ = val;
+          if (dst - buffer >= 2048) {
+            QMessageBox::information(0,
+                                     QString("MusE"),
+                                     QWidget::tr("Hex String too long (2048 bytes limit)"));
+            return 0;
+          }
+        }
+      }
+      int len = dst - buffer;
+      unsigned char* b = new unsigned char[len+1];
+      memcpy(b, buffer, len);
+      b[len] = 0;
+      *data = b;
+      return len;
+      }
+
+//---------------------------------------------------------
+//   sysex2string
+//---------------------------------------------------------
+
+QString sysex2string(int len, unsigned char* data)
+      {
+      QString d;
+      QString s;
+      for (int i = 0; i < len; ++i) {
+            if ((i > 0) && ((i % 8)==0)) {
+                  d += "\n";
+                  }
+            else if (i)
+                  d += " ";
+            d += s.sprintf("%02x", data[i]);
+            }
+      return d;
+      }
+
+//---------------------------------------------------------
 //   readEventList
 //---------------------------------------------------------
 
