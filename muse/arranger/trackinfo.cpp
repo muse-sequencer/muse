@@ -1210,11 +1210,17 @@ void Arranger::genMidiTrackInfo()
       //midiTrackInfo->trackNameLabel->setAlignment(Qt::AlignCenter | Qt::TextWordWrap | Qt::TextWrapAnywhere);
       //midiTrackInfo->trackNameLabel->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
       
+      if(selected)
+        midiTrackInfo->trackNameLabel->setObjectName(selected->cname());
       QPalette pal;
       pal.setColor(midiTrackInfo->trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
       midiTrackInfo->trackNameLabel->setPalette(pal);
       midiTrackInfo->trackNameLabel->setWordWrap(true);
       midiTrackInfo->trackNameLabel->setAutoFillBackground(true);
+      midiTrackInfo->trackNameLabel->setTextFormat(Qt::PlainText);
+      midiTrackInfo->trackNameLabel->setLineWidth(2);
+      midiTrackInfo->trackNameLabel->setFrameStyle(QFrame::Sunken | QFrame::StyledPanel);
+      midiTrackInfo->trackNameLabel->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
       
       // Added by Tim. p3.3.9
       setTrackInfoLabelText();

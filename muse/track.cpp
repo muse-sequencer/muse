@@ -26,6 +26,11 @@ Track* Track::_tmpSoloChainTrack = 0;
 bool Track::_tmpSoloChainDoIns   = false;
 bool Track::_tmpSoloChainNoDec   = false;
 
+const char* Track::_cname[] = {
+      "Midi", "Drum", "Wave", "AudioOut", "AudioIn", "AudioGroup", 
+      "AudioAux", "AudioSynth"
+      };
+
 //---------------------------------------------------------
 //   addPortCtrlEvents
 //---------------------------------------------------------
