@@ -4297,10 +4297,10 @@ void MusE::changeConfig(bool writeFlag)
       if (writeFlag)
             writeGlobalConfiguration();
       
-      loadStyleSheetFile(config.styleSheetFile);
+      //loadStyleSheetFile(config.styleSheetFile);
       loadTheme(config.style);
       QApplication::setFont(config.fonts[0], true);
-      //loadStyleSheetFile(config.styleSheetFile);
+      loadStyleSheetFile(config.styleSheetFile);
       
       emit configChanged();
       updateConfiguration();
