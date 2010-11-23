@@ -14,6 +14,7 @@
 #include <vector>
 
 #include <QMenu>
+#include <QList>
 
 class MidiPort;
 class QMenu;
@@ -54,6 +55,13 @@ typedef std::vector<PatchGroup*> PatchGroupList;
 typedef PatchGroupList::iterator iPatchGroup;
 typedef PatchGroupList::const_iterator ciPatchGroup;
 
+struct SysEx {
+      QString name;
+      QString comment;
+      int dataLen;
+      unsigned char* data;
+      };
+
 //---------------------------------------------------------
 //   MidiInstrument
 //---------------------------------------------------------
@@ -61,6 +69,7 @@ typedef PatchGroupList::const_iterator ciPatchGroup;
 class MidiInstrument {
       PatchGroupList pg;
       MidiControllerList* _controller;
+      QList<SysEx*> _sysex;
       bool _dirty;
       int _nullvalue;
 
@@ -89,7 +98,10 @@ class MidiInstrument {
       bool dirty() const                     { return _dirty;      }
       void setDirty(bool v)                  { _dirty = v;         }
 
-
+      const QList<SysEx*>& sysex() const     { return _sysex; }
+      void removeSysex(SysEx* sysex)         { _sysex.removeAll(sysex); }
+      void addSysex(SysEx* sysex)            { _sysex.append(sysex); }
+      
       EventList* midiInit() const            { return _midiInit; }
       EventList* midiReset() const           { return _midiReset; }
       EventList* midiState() const           { return _midiState; }
@@ -109,6 +121,7 @@ class MidiInstrument {
       virtual void populatePatchPopup(QMenu*, int, MType, bool);
       void read(Xml&);
       void write(int level, Xml&);
+      
       PatchGroupList* groups()        { return &pg; }
       };
 

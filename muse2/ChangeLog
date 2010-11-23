@@ -1,5 +1,6 @@
 23.11.2010
         - Added Track::cname(), applied to strip labels' object names, so they may be used in style sheets. (Tim)
+        - Added struct SysEx and some friends, to minstrument.h, prep. for the instrument editor. (Tim)
 22.11.2010
         - Oops, fixed regression, marker view and cliplist crashes, removed setAttribute(Qt::WA_DeleteOnClose) 
            from TopWin constructor, and added it to individual TopWin sub-classes (only MidiEditor needs it). (Tim)
