@@ -9,8 +9,7 @@
 #define WAVE_VIEW_H
 
 #include "view.h"
-#include <qwidget.h>
-//Added by qt3to4:
+#include <QWidget>
 #include <QMouseEvent>
 #include "wave.h"
 

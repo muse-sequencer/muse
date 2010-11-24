@@ -1,3 +1,12 @@
+24.11.2010
+        - Resinstated the Midi Transformer. Was left out when both TF and iTF were removed, and then I 
+           asked for them to be put back. So yes, transformbase.ui is used now. (Tim)
+        - Completed conversion of waveedit(.cpp, h), including menus and shortcuts. Should be done. (Tim)
+        - Set undo/redo shortcuts on global undoAction/redoAction, instead of Q3Accel in each window. (Tim)
+        - Fixed some leftover setAccel()'s in app.cpp (Tim) 
+        - Fixed delete shortcut key. Set in MusE constructor. (Tim)
+        - Reinstated special Toplevel::CLIPLIST case in MusE::toplevelDeleted(). Caused problems. (Tim)
+          TODO: Still not right with the menu checkmark...
 23.11.2010
         - Added Track::cname(), applied to strip labels' object names, so they may be used in style sheets. (Tim)
         - Added struct SysEx and some friends, to minstrument.h, prep. for the instrument editor. (Tim)

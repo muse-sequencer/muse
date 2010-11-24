@@ -5,7 +5,7 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3accel.h>
+//#include <q3accel.h>
 #include <QLayout>
 #include <q3hbox.h>
 #include <QSizeGrip>
@@ -93,10 +93,10 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       undoRedo->addTo(menuEdit);
       //menuEdit->addActions(undoRedo->actions());
       
-      Q3Accel* ud = new Q3Accel(this);
-      ud->connectItem(ud->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
-      Q3Accel* rd = new Q3Accel(this);
-      rd->connectItem(rd->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
+      ///Q3Accel* ud = new Q3Accel(this);
+      ///ud->connectItem(ud->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
+      ///Q3Accel* rd = new Q3Accel(this);
+      ///rd->connectItem(rd->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
 
       menuEdit->insertSeparator();
       //menuEdit->addSeparator();

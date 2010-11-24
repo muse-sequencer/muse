@@ -21,25 +21,18 @@
 #include "icons.h"
 #include "shortcuts.h"
 
-//#include <q3toolbar.h>
+//#include <q3accel.h>
+#include <QMenu>
+#include <QSignalMapper>
 #include <QToolBar>
-#include <qtoolbutton.h>
-#include <q3accel.h>
-#include <qlayout.h>
-#include <q3hbox.h>
-#include <qsizegrip.h>
-#include <qscrollbar.h>
-#include <qlabel.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <q3buttongroup.h>
-#include <q3listbox.h>
-#include <qcombobox.h>
-#include <q3header.h>
-#include <q3popupmenu.h>
-#include <qmenubar.h>
-#include <qaction.h>
-//Added by qt3to4:
+#include <QToolButton>
+#include <QLayout>
+#include <QSizeGrip>
+#include <QScrollBar>
+#include <QLabel>
+#include <QSlider>
+#include <QMenuBar>
+#include <QAction>
 #include <QCloseEvent>
 #include <QResizeEvent>
 #include <QKeyEvent>
@@ -68,50 +61,83 @@ WaveEdit::WaveEdit(PartList* pl)
       {
       resize(_widthInit, _heightInit);
 
+      QSignalMapper* mapper = new QSignalMapper(this);
+      QAction* act;
+      
       //---------Pulldown Menu----------------------------
-      Q3PopupMenu* menuFile = new Q3PopupMenu(this);
-      Q3PopupMenu* menuEdit = new Q3PopupMenu(this);
-      menuBar()->insertItem(tr("&File"), menuFile);
-      menuBar()->insertItem(tr("&Edit"), menuEdit);
-      menuFunctions = new Q3PopupMenu(this);
-      menuBar()->insertItem(tr("Func&tions"), menuFunctions);
+      QMenu* menuFile = menuBar()->addMenu(tr("&File"));
+      QMenu* menuEdit = menuBar()->addMenu(tr("&Edit"));
+      
+      menuFunctions = menuBar()->addMenu(tr("Func&tions"));
 
-      menuGain = new Q3PopupMenu(this);
-      menuGain->insertItem(tr("200%"), CMD_GAIN_200);
-      menuGain->insertItem(tr("150%"), CMD_GAIN_150);
-      menuGain->insertItem(tr("75%"),  CMD_GAIN_75);
-      menuGain->insertItem(tr("50%"),  CMD_GAIN_50);
-      menuGain->insertItem(tr("25%"),  CMD_GAIN_25);
-      menuGain->insertItem(tr("Other"), CMD_GAIN_FREE);
-      menuFunctions->insertItem(tr("&Gain"), menuGain);
-      menuFunctions->insertSeparator();
+      menuGain = menuFunctions->addMenu(tr("&Gain"));
+      
+      act = menuGain->addAction(tr("200%"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_GAIN_200);
+      
+      act = menuGain->addAction(tr("150%"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_GAIN_150);
+      
+      act = menuGain->addAction(tr("75%"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_GAIN_75);
+      
+      act = menuGain->addAction(tr("50%"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_GAIN_50);
+      
+      act = menuGain->addAction(tr("25%"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_GAIN_25);
+      
+      act = menuGain->addAction(tr("Other"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_GAIN_FREE);
+      
+      connect(mapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
+      
+      menuFunctions->addSeparator();
 
-      menuEdit->insertItem(tr("Edit in E&xternal Editor"), CMD_EDIT_EXTERNAL);
-      menuFunctions->insertItem(tr("Mute Selection"), CMD_MUTE);
-      menuFunctions->insertItem(tr("Normalize Selection"), CMD_NORMALIZE);
-      menuFunctions->insertItem(tr("Fade In Selection"), CMD_FADE_IN);
-      menuFunctions->insertItem(tr("Fade Out Selection"), CMD_FADE_OUT);
-      menuFunctions->insertItem(tr("Reverse Selection"), CMD_REVERSE);
-
-      select = new Q3PopupMenu(this);
-      select->insertItem(QIcon(*select_allIcon), tr("Select &All"),  CMD_SELECT_ALL);
-      select->insertItem(QIcon(*select_deselect_allIcon), tr("&Deselect All"), CMD_SELECT_NONE);
-
-      menuEdit->insertItem(QIcon(*selectIcon), tr("Select"), select);
-
-      connect(menuFunctions, SIGNAL(activated(int)), SLOT(cmd(int)));
-      connect(menuFile, SIGNAL(activated(int)), SLOT(cmd(int)));
-      connect(select, SIGNAL(activated(int)), SLOT(cmd(int)));
-      connect(menuGain, SIGNAL(activated(int)), SLOT(cmd(int)));
-      connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
-
+      act = menuEdit->addAction(tr("Edit in E&xternal Editor"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_EDIT_EXTERNAL);
+      
+      act = menuFunctions->addAction(tr("Mute Selection"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_MUTE);
+      
+      act = menuFunctions->addAction(tr("Normalize Selection"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_NORMALIZE);
+      
+      act = menuFunctions->addAction(tr("Fade In Selection"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_FADE_IN);
+      
+      act = menuFunctions->addAction(tr("Fade Out Selection"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_FADE_OUT);
+      
+      act = menuFunctions->addAction(tr("Reverse Selection"));
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(act, CMD_REVERSE);
+      
+      select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
+      
+      selectAllAction = select->addAction(QIcon(*select_allIcon), tr("Select &All"));
+      connect(selectAllAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(selectAllAction, CMD_SELECT_ALL);
+      
+      selectNoneAction = select->addAction(QIcon(*select_allIcon), tr("&Deselect All"));
+      connect(selectNoneAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      mapper->setMapping(selectNoneAction, CMD_SELECT_NONE);
+      
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Wave edit tools"));          
       tools->addActions(undoRedo->actions());
 
-      Q3Accel* qa = new Q3Accel(this);
-      qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
-      qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
       //--------------------------------------------------
@@ -164,7 +190,12 @@ WaveEdit::WaveEdit(PartList* pl)
       wview   = view;   // HACK!
 
       QSizeGrip* corner    = new QSizeGrip(mainw);
-      ymag                 = new QSlider(1, 256, 256, yscale, Qt::Vertical, mainw);
+      ymag                 = new QSlider(Qt::Vertical, mainw);
+      ymag->setMinimum(1);
+      ymag->setMaximum(256);
+      ymag->setPageStep(256);
+      ymag->setValue(yscale);
+       
       time                 = new MTScale(&_raster, mainw, xscale, true);
       ymag->setFixedWidth(16);
       connect(ymag, SIGNAL(valueChanged(int)), view, SLOT(setYScale(int)));
@@ -199,7 +230,7 @@ WaveEdit::WaveEdit(PartList* pl)
       if(!parts()->empty())
       {
         WavePart* part = (WavePart*)(parts()->begin()->second);
-        solo->setOn(part->track()->solo());
+        solo->setChecked(part->track()->solo());
       }
       }
 
@@ -210,8 +241,8 @@ WaveEdit::WaveEdit(PartList* pl)
 void WaveEdit::configChanged()
       {
       view->setBg(config.waveEditBackgroundColor);
-      select->setAccel(shortcuts[SHRT_SELECT_ALL].key, CMD_SELECT_ALL);
-      select->setAccel(shortcuts[SHRT_SELECT_NONE].key, CMD_SELECT_NONE);
+      selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
+      selectNoneAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
       }
 
 //---------------------------------------------------------
@@ -381,7 +412,7 @@ void WaveEdit::songChanged1(int bits)
         {
           WavePart* part = (WavePart*)(parts()->begin()->second);
           solo->blockSignals(true);
-          solo->setOn(part->track()->solo());
+          solo->setChecked(part->track()->solo());
           solo->blockSignals(false);
         }  
         
