@@ -10,9 +10,12 @@
 #ifndef __MUSE_FLUIDSYNTHGUI_H__
 #define __MUSE_FLUIDSYNTHGUI_H__
 
-#include "fluidsynthguibase.h"
+#include "ui_fluidsynthguibase.h"
 #include "libsynti/gui.h"
 #include <list>
+
+class QDialog;
+class QTreeWidgetItem;
 
 struct FluidChannel;
 #define FS_DEBUG 0 //Turn on/off debug
@@ -147,7 +150,7 @@ struct FluidGuiSoundFont
 //   FluidSynthGui
 //---------------------------------------------------------
 
-class FluidSynthGui : public FLUIDSynthGuiBase, public MessGui
+class FluidSynthGui : public QDialog, public Ui::FLUIDSynthGuiBase, public MessGui
    {
    Q_OBJECT
    private:
@@ -190,7 +193,7 @@ class FluidSynthGui : public FLUIDSynthGuiBase, public MessGui
       void readMessage(int);
       void changeGain(int);
       void dumpInfo();
-      void channelItemClicked(Q3ListViewItem* item, const QPoint&, int col);
+      void channelItemClicked(QTableWidgetItem* item);
       void toggleReverb(bool);
       void changeReverbLevel (int);
       void changeReverbRoomSize(int val);
@@ -204,7 +207,7 @@ class FluidSynthGui : public FLUIDSynthGuiBase, public MessGui
       void changeChorusLevel(int);
 
       void popClicked();
-      void sfItemClicked(Q3ListViewItem* item, const QPoint&, int col);
+      void sfItemClicked(QTreeWidgetItem* item, int);
       /*
       void readData(int);
 

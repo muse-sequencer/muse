@@ -19,8 +19,12 @@
 #=============================================================================
 
 QT4_WRAP_CPP ( fluidsynth_mocs fluidsynthgui.h )
-# QT4_WRAP_UI (  fluidsynth_uis fluidsynthgui.ui )
-QT4_WRAP_UI3 (  fluidsynth_uis fluidsynthguibase.ui )
+
+QT4_WRAP_UI (  fluidsynth_uis fluidsynthguibase.ui )
+
+QT4_ADD_RESOURCES (fluidsynth_qrc_files
+                  fluidsynth.qrc
+                  )
 
 add_library ( fluidsynth SHARED 
       fluidsynti.cpp 
@@ -28,6 +32,7 @@ add_library ( fluidsynth SHARED
       fluidsynthgui.h
       ${fluidsynth_mocs}
       ${fluidsynth_uis}
+      ${fluidsynth_qrc_files}
       )
 
 # target_link_libraries( fluidsynth synti )
