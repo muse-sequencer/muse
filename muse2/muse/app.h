@@ -124,6 +124,9 @@ class MusE : public QMainWindow
       // Midi Menu Actions
       QAction *midiEditInstAction, *midiResetInstAction, *midiInitInstActions, *midiLocalOffAction;
       QAction *midiTrpAction, *midiInputTrfAction, *midiInputFilterAction, *midiRemoteAction;
+#ifdef BUILD_EXPERIMENTAL
+      QAction *midiRhythmAction;
+#endif
 
       // Audio Menu Actions
       QAction *audioBounce2TrackAction, *audioBounce2FileAction, *audioRestartAction;

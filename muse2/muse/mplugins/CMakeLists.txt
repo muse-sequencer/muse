@@ -37,11 +37,18 @@
 
 
 
-QT4_WRAP_CPP ( mplugins_mocs  mittranspose.h midiitransform.h midifilterimpl.h mrconfig.h rhythm.h )
-# QT4_WRAP_UI (  mplugins_uis transform.ui )
+QT4_WRAP_UI ( mplugins_uis midifilter.ui mrconfigbase.ui )
 
-QT4_WRAP_UI ( mplugins_UIC midifilter.ui mrconfigbase.ui )
-QT4_WRAP_UI3 (  mplugins_uis rhythmbase.ui )
+if ( ENABLE_EXPERIMENTAL )
+      QT4_WRAP_UI ( mplugins_experimental_uis rhythmbase.ui)
+      set ( experimental_hdrs rhythm.h )
+      set ( experimental_srcs
+            rhythm.cpp
+            ${mplugins_experimental_uis}
+            )
+endif ( ENABLE_EXPERIMENTAL )
+
+QT4_WRAP_CPP ( mplugins_mocs  mittranspose.h midiitransform.h midifilterimpl.h mrconfig.h ${experimental_hdrs} )
 
 # add_library ( mplugins SHARED 
 add_library ( mplugins STATIC 
@@ -50,11 +57,10 @@ add_library ( mplugins STATIC
       midiitransform.cpp 
       midifilterimpl.cpp 
       mrconfig.cpp 
-      rhythm.cpp 
       random.cpp random.h 
       ${mplugins_mocs}
       ${mplugins_uis}
-      ${mplugins_UIC}
+      ${experimental_srcs}
       )
 
 add_dependencies(mplugins widgets)

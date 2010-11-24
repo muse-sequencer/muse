@@ -28,6 +28,8 @@ QT4_WRAP_UI3 ( instruments_ui_headers
       editinstrumentbase.ui
       )
 
+# Note that ccontrollerbase.ui is not built. It needs to be converted to Qt4 for revival.
+
 add_library ( instruments STATIC
    minstrument.cpp
    editinstrument.cpp
