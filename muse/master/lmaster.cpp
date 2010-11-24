@@ -26,7 +26,7 @@
 #include <Q3ListView>
 #include <QMessageBox>
 #include <QStyle>
-#include <Q3Accel>
+//#include <Q3Accel>
 #include <QAction>
 //Added by qt3to4:
 #include <QCloseEvent>
@@ -105,9 +105,9 @@ LMaster::LMaster()
       edit->addWidget(tempoButton);
       edit->addWidget(timeSigButton);
       
-      Q3Accel* qa = new Q3Accel(this);
-      qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
-      qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
+      ///Q3Accel* qa = new Q3Accel(this);
+      ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
+      ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
 
       //---------------------------------------------------
       //    master

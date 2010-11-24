@@ -23,7 +23,6 @@
 #include <stdarg.h>
 
 #include <QButtonGroup>
-//#include <q3popupmenu.h>
 #include <QMenu>
 #include <QMessageBox>
 #include <QClipboard>
@@ -40,9 +39,7 @@
 #include <QFile>
 #include <QByteArray>
 #include <QtGlobal>
-//Added by qt3to4:
 #include <QTimerEvent>
-#include <Q3CString>
 #include <QFocusEvent>
 #include <QTranslator>
 #include <QKeyEvent>
@@ -110,7 +107,6 @@
 #include <alsa/asoundlib.h>
 #include "songinfo.h"
 #include "didyouknow.h"
-#include <q3textedit.h>
 
 //extern void cacheJackRouteNames();
 
@@ -1067,6 +1063,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiEdit->setIcon(QIcon(*edit_midiIcon));
 
       midiTransposeAction = new QAction(QIcon(*midi_transposeIcon), tr("Transpose"), this);
+      midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform"), this);
 
       editSongInfoAction = new QAction(QIcon(*edit_listIcon), tr("Song info"), this);
 
@@ -1204,6 +1201,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(masterListAction, SIGNAL(activated()), SLOT(startLMasterEditor()));
 
       connect(midiTransposeAction, SIGNAL(activated()), SLOT(transpose()));
+      connect(midiTransformerAction, SIGNAL(activated()), SLOT(startMidiTransformer()));
 
       connect(editSongInfoAction, SIGNAL(activated()), SLOT(startSongInfo()));
 
@@ -1268,6 +1266,15 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(helpReportAction, SIGNAL(activated()), SLOT(startBugBrowser()));
       connect(helpAboutAction, SIGNAL(activated()), SLOT(about()));
 
+      //--------------------------------------------------
+      //    Miscellaneous shortcuts
+      //--------------------------------------------------
+      
+      QShortcut* sc = new QShortcut(Qt::Key_Delete, this);
+      sc->setContext(Qt::WindowShortcut);
+      connect(sc, SIGNAL(activated()), editSignalMapper, SLOT(map()));
+      editSignalMapper->setMapping(sc, CMD_DELETE);
+      
       //--------------------------------------------------
       //    Toolbar
       //--------------------------------------------------
@@ -1392,8 +1399,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       menuEdit->addMenu(midiEdit);
 #if 0  // TODO
-      menu_ids[CMD_OPEN_MIDI_TRANSFORM] = midiEdit->insertItem(
-         QIcon(*midi_transformIcon), tr("Midi &Transform"), this, SLOT(startMidiTransformer()), 0);
       midiEdit->insertItem(tr("Modify Gate Time"), this, SLOT(modifyGateTime()));
       midiEdit->insertItem(tr("Modify Velocity"),  this, SLOT(modifyVelocity()));
       midiEdit->insertItem(tr("Crescendo"),        this, SLOT(crescendo()));
@@ -1409,6 +1414,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiEdit->insertItem(tr("Mix Track"),        this, SLOT(mixTrack()));
 #endif
       midiEdit->addAction(midiTransposeAction);
+      midiEdit->addAction(midiTransformerAction);
 
       menuEdit->addAction(editSongInfoAction);
 
@@ -3386,9 +3392,9 @@ void MusE::toplevelDeleted(unsigned long tl)
                         case Toplevel::CLIPLIST:
                               // ORCAN: This needs to be verified. aid2 used to correspond to Cliplist:
                               //menu_audio->setItemChecked(aid2, false);
-                              ///viewCliplistAction->setChecked(false);  // Don't think we require this any more. Tim.
-                              ///return;
-                              break;
+                              viewCliplistAction->setChecked(false);  
+                              return;
+                              //break;
                         // the followin editors can exist in more than
                         // one instantiation:
                         case Toplevel::PIANO_ROLL:
@@ -4084,7 +4090,8 @@ void MusE::cmd(int cmd)
 
 void MusE::clipboardChanged()
       {
-      Q3CString subtype("partlist");
+      //Q3CString subtype("partlist");
+      //QString subtype("partlist");
       QMimeSource* ms = QApplication::clipboard()->data(QClipboard::Clipboard);
       if (ms == 0)
             return;
@@ -4963,111 +4970,111 @@ void MusE::takeAutomationSnapshot()
 
 void MusE::updateConfiguration()
       {
-      fileOpenAction->setAccel(shortcuts[SHRT_OPEN].key);
-      fileNewAction->setAccel(shortcuts[SHRT_NEW].key);
-      fileSaveAction->setAccel(shortcuts[SHRT_SAVE].key);
-      fileSaveAsAction->setAccel(shortcuts[SHRT_SAVE_AS].key);
+      fileOpenAction->setShortcut(shortcuts[SHRT_OPEN].key);
+      fileNewAction->setShortcut(shortcuts[SHRT_NEW].key);
+      fileSaveAction->setShortcut(shortcuts[SHRT_SAVE].key);
+      fileSaveAsAction->setShortcut(shortcuts[SHRT_SAVE_AS].key);
 
-      // ORCAN: Can submenus have acceleration? Doesn't seem to work even on Muse1
-      //menu_file->setAccel(shortcuts[SHRT_OPEN_RECENT].key, menu_ids[CMD_OPEN_RECENT]);
-      fileImportMidiAction->setAccel(shortcuts[SHRT_IMPORT_MIDI].key);
-      fileExportMidiAction->setAccel(shortcuts[SHRT_EXPORT_MIDI].key);
-      fileImportPartAction->setAccel(shortcuts[SHRT_IMPORT_PART].key);
-      fileImportWaveAction->setAccel(shortcuts[SHRT_IMPORT_AUDIO].key);
-      quitAction->setAccel(shortcuts[SHRT_QUIT].key);
+      //menu_file->setShortcut(shortcuts[SHRT_OPEN_RECENT].key, menu_ids[CMD_OPEN_RECENT]);    // Not used.
+      fileImportMidiAction->setShortcut(shortcuts[SHRT_IMPORT_MIDI].key);
+      fileExportMidiAction->setShortcut(shortcuts[SHRT_EXPORT_MIDI].key);
+      fileImportPartAction->setShortcut(shortcuts[SHRT_IMPORT_PART].key);
+      fileImportWaveAction->setShortcut(shortcuts[SHRT_IMPORT_AUDIO].key);
+      quitAction->setShortcut(shortcuts[SHRT_QUIT].key);
       
-      menu_file->setAccel(shortcuts[SHRT_LOAD_TEMPLATE].key, menu_ids[CMD_LOAD_TEMPLATE]);
+      //menu_file->setShortcut(shortcuts[SHRT_LOAD_TEMPLATE].key, menu_ids[CMD_LOAD_TEMPLATE]);  // Not used.
 
-      editCutAction->setAccel(Qt::CTRL+Qt::Key_X);
-      editCopyAction->setAccel(Qt::CTRL+Qt::Key_C);
-      editPasteAction->setAccel(Qt::CTRL+Qt::Key_V);
-      editInsertAction->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_I);
-      editPasteCloneAction->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_V);
-      editPaste2TrackAction->setAccel(Qt::CTRL+Qt::Key_B);
-      editPasteC2TAction->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_B);
-      editInsertEMAction->setAccel(Qt::CTRL+Qt::SHIFT+Qt::Key_X);
+      undoAction->setShortcut(Qt::CTRL+Qt::Key_Z);  
+      redoAction->setShortcut(Qt::CTRL+Qt::Key_Y);
+
+      editCutAction->setShortcut(Qt::CTRL+Qt::Key_X);
+      editCopyAction->setShortcut(Qt::CTRL+Qt::Key_C);
+      editPasteAction->setShortcut(Qt::CTRL+Qt::Key_V);
+      editInsertAction->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_I);
+      editPasteCloneAction->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_V);
+      editPaste2TrackAction->setShortcut(Qt::CTRL+Qt::Key_B);
+      editPasteC2TAction->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_B);
+      editInsertEMAction->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_X);
 
       //editDeleteSelectedAction has no acceleration
-      menuEdit->setAccel(Qt::Key_Delete, CMD_DELETE);
+      
+      trackMidiAction->setShortcut(shortcuts[SHRT_ADD_MIDI_TRACK].key);
+      trackDrumAction->setShortcut(shortcuts[SHRT_ADD_DRUM_TRACK].key);
+      trackWaveAction->setShortcut(shortcuts[SHRT_ADD_WAVE_TRACK].key);
+      trackAOutputAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_OUTPUT].key);
+      trackAGroupAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_GROUP].key);
+      trackAInputAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_INPUT].key);
+      trackAAuxAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_AUX].key);
 
-      trackMidiAction->setAccel(shortcuts[SHRT_ADD_MIDI_TRACK].key);
-      trackDrumAction->setAccel(shortcuts[SHRT_ADD_DRUM_TRACK].key);
-      trackWaveAction->setAccel(shortcuts[SHRT_ADD_WAVE_TRACK].key);
-      trackAOutputAction->setAccel(shortcuts[SHRT_ADD_AUDIO_OUTPUT].key);
-      trackAGroupAction->setAccel(shortcuts[SHRT_ADD_AUDIO_GROUP].key);
-      trackAInputAction->setAccel(shortcuts[SHRT_ADD_AUDIO_INPUT].key);
-      trackAAuxAction->setAccel(shortcuts[SHRT_ADD_AUDIO_AUX].key);
+      editSelectAllAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
+      editDeselectAllAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
+      editInvertSelectionAction->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
+      editInsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
+      editOutsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
+      editAllPartsAction->setShortcut(shortcuts[SHRT_SELECT_PRTSTRACK].key);
 
-      editSelectAllAction->setAccel(shortcuts[SHRT_SELECT_NONE].key);
-      editDeselectAllAction->setAccel(shortcuts[SHRT_SELECT_NONE].key);
-      editInvertSelectionAction->setAccel(shortcuts[SHRT_SELECT_INVERT].key);
-      editInsideLoopAction->setAccel(shortcuts[SHRT_SELECT_OLOOP].key);
-      editOutsideLoopAction->setAccel(shortcuts[SHRT_SELECT_OLOOP].key);
-      editAllPartsAction->setAccel(shortcuts[SHRT_SELECT_PRTSTRACK].key);
+      startPianoEditAction->setShortcut(shortcuts[SHRT_OPEN_PIANO].key);
+      startDrumEditAction->setShortcut(shortcuts[SHRT_OPEN_DRUMS].key);
+      startListEditAction->setShortcut(shortcuts[SHRT_OPEN_LIST].key);
+      startWaveEditAction->setShortcut(shortcuts[SHRT_OPEN_WAVE].key);
 
-      startPianoEditAction->setAccel(shortcuts[SHRT_OPEN_PIANO].key);
-      startDrumEditAction->setAccel(shortcuts[SHRT_OPEN_DRUMS].key);
-      startListEditAction->setAccel(shortcuts[SHRT_OPEN_LIST].key);
-      startWaveEditAction->setAccel(shortcuts[SHRT_OPEN_WAVE].key);
+      masterGraphicAction->setShortcut(shortcuts[SHRT_OPEN_GRAPHIC_MASTER].key);
+      masterListAction->setShortcut(shortcuts[SHRT_OPEN_LIST_MASTER].key);
 
-      masterGraphicAction->setAccel(shortcuts[SHRT_OPEN_GRAPHIC_MASTER].key);
-      masterListAction->setAccel(shortcuts[SHRT_OPEN_LIST_MASTER].key);
-
-      midiTransposeAction->setAccel(shortcuts[SHRT_TRANSPOSE].key);
+      midiTransposeAction->setShortcut(shortcuts[SHRT_TRANSPOSE].key);
+      midiTransformerAction->setShortcut(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key);
       //editSongInfoAction has no acceleration
 
-      viewTransportAction->setAccel(shortcuts[SHRT_OPEN_TRANSPORT].key);
-      viewBigtimeAction->setAccel(shortcuts[SHRT_OPEN_BIGTIME].key);
-      viewMixerAAction->setAccel(shortcuts[SHRT_OPEN_MIXER].key);
-      viewMixerBAction->setAccel(shortcuts[SHRT_OPEN_MIXER2].key);
+      viewTransportAction->setShortcut(shortcuts[SHRT_OPEN_TRANSPORT].key);
+      viewBigtimeAction->setShortcut(shortcuts[SHRT_OPEN_BIGTIME].key);
+      viewMixerAAction->setShortcut(shortcuts[SHRT_OPEN_MIXER].key);
+      viewMixerBAction->setShortcut(shortcuts[SHRT_OPEN_MIXER2].key);
       //viewCliplistAction has no acceleration
-      viewMarkerAction->setAccel(shortcuts[SHRT_OPEN_MARKER].key);
+      viewMarkerAction->setShortcut(shortcuts[SHRT_OPEN_MARKER].key);
 
-      strGlobalCutAction->setAccel(shortcuts[SHRT_GLOBAL_CUT].key);
-      strGlobalInsertAction->setAccel(shortcuts[SHRT_GLOBAL_INSERT].key);
-      strGlobalSplitAction->setAccel(shortcuts[SHRT_GLOBAL_SPLIT].key);
-      strCopyRangeAction->setAccel(shortcuts[SHRT_COPY_RANGE].key);
-      strCutEventsAction->setAccel(shortcuts[SHRT_CUT_EVENTS].key);
+      strGlobalCutAction->setShortcut(shortcuts[SHRT_GLOBAL_CUT].key);
+      strGlobalInsertAction->setShortcut(shortcuts[SHRT_GLOBAL_INSERT].key);
+      strGlobalSplitAction->setShortcut(shortcuts[SHRT_GLOBAL_SPLIT].key);
+      strCopyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
+      strCutEventsAction->setShortcut(shortcuts[SHRT_CUT_EVENTS].key);
       
       // midiEditInstAction does not have acceleration
-      midiResetInstAction->setAccel(shortcuts[SHRT_MIDI_RESET].key);
-      midiInitInstActions->setAccel(shortcuts[SHRT_MIDI_INIT].key);
-      midiLocalOffAction->setAccel(shortcuts[SHRT_MIDI_LOCAL_OFF].key);
-      midiTrpAction->setAccel(shortcuts[SHRT_MIDI_INPUT_TRANSPOSE].key);
-      midiInputTrfAction->setAccel(shortcuts[SHRT_MIDI_INPUT_TRANSFORM].key);
-      midiInputFilterAction->setAccel(shortcuts[SHRT_MIDI_INPUT_FILTER].key);
-      midiRemoteAction->setAccel(shortcuts[SHRT_MIDI_REMOTE_CONTROL].key);
+      midiResetInstAction->setShortcut(shortcuts[SHRT_MIDI_RESET].key);
+      midiInitInstActions->setShortcut(shortcuts[SHRT_MIDI_INIT].key);
+      midiLocalOffAction->setShortcut(shortcuts[SHRT_MIDI_LOCAL_OFF].key);
+      midiTrpAction->setShortcut(shortcuts[SHRT_MIDI_INPUT_TRANSPOSE].key);
+      midiInputTrfAction->setShortcut(shortcuts[SHRT_MIDI_INPUT_TRANSFORM].key);
+      midiInputFilterAction->setShortcut(shortcuts[SHRT_MIDI_INPUT_FILTER].key);
+      midiRemoteAction->setShortcut(shortcuts[SHRT_MIDI_REMOTE_CONTROL].key);
 
-      audioBounce2TrackAction->setAccel(shortcuts[SHRT_AUDIO_BOUNCE_TO_TRACK].key);
-      audioBounce2FileAction->setAccel(shortcuts[SHRT_AUDIO_BOUNCE_TO_FILE].key);
-      audioRestartAction->setAccel(shortcuts[SHRT_AUDIO_RESTART].key);
+      audioBounce2TrackAction->setShortcut(shortcuts[SHRT_AUDIO_BOUNCE_TO_TRACK].key);
+      audioBounce2FileAction->setShortcut(shortcuts[SHRT_AUDIO_BOUNCE_TO_FILE].key);
+      audioRestartAction->setShortcut(shortcuts[SHRT_AUDIO_RESTART].key);
 
-      autoMixerAction->setAccel(shortcuts[SHRT_MIXER_AUTOMATION].key);
-      autoSnapshotAction->setAccel(shortcuts[SHRT_MIXER_SNAPSHOT].key);
-      autoClearAction->setAccel(shortcuts[SHRT_MIXER_AUTOMATION_CLEAR].key);
+      autoMixerAction->setShortcut(shortcuts[SHRT_MIXER_AUTOMATION].key);
+      autoSnapshotAction->setShortcut(shortcuts[SHRT_MIXER_SNAPSHOT].key);
+      autoClearAction->setShortcut(shortcuts[SHRT_MIXER_AUTOMATION_CLEAR].key);
 
-      settingsGlobalAction->setAccel(shortcuts[SHRT_GLOBAL_CONFIG].key);
-      settingsShortcutsAction->setAccel(shortcuts[SHRT_CONFIG_SHORTCUTS].key);
-      settingsMetronomeAction->setAccel(shortcuts[SHRT_CONFIG_METRONOME].key);
-      settingsMidiSyncAction->setAccel(shortcuts[SHRT_CONFIG_MIDISYNC].key);
+      settingsGlobalAction->setShortcut(shortcuts[SHRT_GLOBAL_CONFIG].key);
+      settingsShortcutsAction->setShortcut(shortcuts[SHRT_CONFIG_SHORTCUTS].key);
+      settingsMetronomeAction->setShortcut(shortcuts[SHRT_CONFIG_METRONOME].key);
+      settingsMidiSyncAction->setShortcut(shortcuts[SHRT_CONFIG_MIDISYNC].key);
       // settingsMidiIOAction does not have acceleration
-      settingsAppearanceAction->setAccel(shortcuts[SHRT_APPEARANCE_SETTINGS].key);
-      settingsMidiPortAction->setAccel(shortcuts[SHRT_CONFIG_MIDI_PORTS].key);
+      settingsAppearanceAction->setShortcut(shortcuts[SHRT_APPEARANCE_SETTINGS].key);
+      settingsMidiPortAction->setShortcut(shortcuts[SHRT_CONFIG_MIDI_PORTS].key);
 
 
-      dontFollowAction->setAccel(shortcuts[SHRT_FOLLOW_NO].key);
-      followPageAction->setAccel(shortcuts[SHRT_FOLLOW_JUMP].key);
-      followCtsAction->setAccel(shortcuts[SHRT_FOLLOW_CONTINUOUS].key);
+      dontFollowAction->setShortcut(shortcuts[SHRT_FOLLOW_NO].key);
+      followPageAction->setShortcut(shortcuts[SHRT_FOLLOW_JUMP].key);
+      followCtsAction->setShortcut(shortcuts[SHRT_FOLLOW_CONTINUOUS].key);
       
-      helpManualAction->setAccel(shortcuts[SHRT_OPEN_HELP].key);
+      helpManualAction->setShortcut(shortcuts[SHRT_OPEN_HELP].key);
       
-
       // Orcan: Old stuff, needs to be converted. These aren't used anywhere so I commented them out
-      //menuEdit->setAccel(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key, menu_ids[CMD_OPEN_MIDI_TRANSFORM]);
       //menuSettings->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key, menu_ids[CMD_CONFIG_AUDIO_PORTS]);
       //menu_help->setAccel(menu_ids[CMD_START_WHATSTHIS], shortcuts[SHRT_START_WHATSTHIS].key);
       //midiInputPlugins->setAccel(shortcuts[SHRT_RANDOM_RHYTHM_GENERATOR].key, 4);
-
+      
       }
 
 //---------------------------------------------------------

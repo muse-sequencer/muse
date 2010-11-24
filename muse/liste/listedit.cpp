@@ -22,7 +22,7 @@
 #include <q3popupmenu.h>
 #include <QMenuBar>
 //#include <qaction.h>
-#include <q3accel.h>
+//#include <q3accel.h>
 #include <Qt3Support>
 #include <QAction>
 //Added by qt3to4:
@@ -443,9 +443,9 @@ ListEdit::ListEdit(PartList* pl)
       menuBar()->insertItem(tr("&Edit"), menuEdit);
       undoRedo->addTo(menuEdit);
 
-      Q3Accel* qa = new Q3Accel(this);
-      qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
-      qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
+      ///Q3Accel* qa = new Q3Accel(this);
+      ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
+      ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
 
       menuEdit->insertSeparator();
 #if 0

@@ -6,7 +6,7 @@
 //=========================================================
 
 #include <QToolButton>
-#include <q3accel.h>
+//#include <q3accel.h>
 #include <QLayout>
 #include <q3hbox.h>
 #include <QSizeGrip>
@@ -181,8 +181,10 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       menuEdit = new Q3PopupMenu(this);
       menuBar()->insertItem(tr("&Edit"), menuEdit);
       undoRedo->addTo(menuEdit);
-      Q3Accel* qa = new Q3Accel(this);
-      qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
+      
+      ///Q3Accel* qa = new Q3Accel(this);
+      ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
+      
       menuEdit->insertSeparator();
       menuEdit->insertItem(tr("Cut"),   DrumCanvas::CMD_CUT);
       menuEdit->insertItem(tr("Copy"),  DrumCanvas::CMD_COPY);

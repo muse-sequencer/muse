@@ -8,11 +8,11 @@
 #ifndef __WAVE_EDIT_H__
 #define __WAVE_EDIT_H__
 
-#include <qwidget.h>
-//Added by qt3to4:
+#include <QMenu>
+
+#include <QWidget>
 #include <QResizeEvent>
 #include <QKeyEvent>
-#include <Q3PopupMenu>
 #include <QCloseEvent>
 #include "midieditor.h"
 
@@ -24,6 +24,7 @@ class QSlider;
 class PosLabel;
 class QResizeEvent;
 class SNode;
+class QAction;
 
 //---------------------------------------------------------
 //   WaveEdit
@@ -37,7 +38,9 @@ class WaveEdit : public MidiEditor {
       QToolButton* solo;
       PosLabel* pos1;
       PosLabel* pos2;
-
+      QAction* selectAllAction;
+      QAction* selectNoneAction;
+      
       static int _widthInit, _heightInit;
 
       Q_OBJECT
@@ -45,7 +48,7 @@ class WaveEdit : public MidiEditor {
       virtual void resizeEvent(QResizeEvent* ev);
       virtual void keyPressEvent(QKeyEvent*);
 
-      Q3PopupMenu* menuFunctions, *select, *menuGain;
+      QMenu* menuFunctions, *select, *menuGain;
 
    private slots:
       void cmd(int);

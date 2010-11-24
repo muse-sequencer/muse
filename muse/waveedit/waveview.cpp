@@ -9,11 +9,10 @@
 #include <values.h>
 #include <sys/wait.h>
 
-#include <qpainter.h>
-#include <qdir.h>
-#include <qfileinfo.h>
-#include <qmessagebox.h>
-//Added by qt3to4:
+#include <QPainter>
+#include <QDir>
+#include <QFileInfo>
+#include <QMessageBox>
 #include <QMouseEvent>
 
 #include "editgain.h"
@@ -553,7 +552,7 @@ void WaveView::cmd(int n)
       if (modifyoperation != -1) {
             if (selectionStart == selectionStop) {
                   printf("No selection. Ignoring\n"); //@!TODO: Disable menu options when no selection
-                  QMessageBox::information(this,
+                  QMessageBox::information(this, 
                      QString("MusE"),
                      QWidget::tr("No selection. Ignoring"));
 

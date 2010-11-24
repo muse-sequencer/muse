@@ -97,7 +97,7 @@ class MusE : public QMainWindow
             CMD_AUDIO_BOUNCE_TO_FILE, CMD_AUDIO_BOUNCE_TO_TRACK, CMD_AUDIO_RESTART,
             CMD_LAST };
 
-      int menu_ids[CMD_LAST];
+      //int menu_ids[CMD_LAST];
 
       // File menu actions
       QAction *fileSaveAction, *fileOpenAction, *fileNewAction, *testAction;
@@ -112,6 +112,7 @@ class MusE : public QMainWindow
       QAction *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
       QAction *masterGraphicAction, *masterListAction;
       QAction *midiTransposeAction;
+      QAction *midiTransformerAction;
       QAction *editSongInfoAction;
 
       // View Menu actions
