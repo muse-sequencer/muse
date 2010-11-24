@@ -11,26 +11,24 @@
 
 #include <unistd.h>
 #include <stdlib.h>
-#include <qapplication.h>
-#include <qpixmap.h>
-#include <qlayout.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qtoolbutton.h>
-#include <qpushbutton.h>
-#include <q3filedialog.h>
-#include <qmessagebox.h>
+
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
 
 #include "fluidgui.h"
 #include "muse/midi.h"
+#include "muse/icons.h"
 
 //---------------------------------------------------------
 //   FLUIDGui
 //---------------------------------------------------------
 
 FLUIDGui::FLUIDGui()
-   : FLUIDGuiBase(0, "fluidgui", Qt::Window), MessGui()
+   : QDialog(0, Qt::Window), MessGui()
       {
+      setupUi(this);
+      fdialogButton->setIcon(QIcon(*openIcon));
       connect(fdialogButton, SIGNAL(clicked()), SLOT(soundFontFileDialog()));
       connect(loadButton, SIGNAL(clicked()), SLOT(loadFont()));
 
@@ -74,7 +72,7 @@ void FLUIDGui::loadFont()
 
 void FLUIDGui::soundFontFileDialog()
       {
-      QString s = Q3FileDialog::getOpenFileName(QString::null, QString("*.[Ss][Ff]2"), this);
+      QString s = QFileDialog::getOpenFileName(QString::null, QString("*.[Ss][Ff]2"), this);
       if (!s.isEmpty()) {
             pathEntry->setText(s);
             }

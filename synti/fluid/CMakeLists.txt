@@ -19,8 +19,8 @@
 #=============================================================================
 
 QT4_WRAP_CPP ( fluid_mocs fluidgui.h )
-# QT4_WRAP_UI (  fluid_uis fluidgui.ui )
-QT4_WRAP_UI3 (  fluid_uis fluidguibase.ui )
+
+QT4_WRAP_UI (  fluid_uis fluidguibase.ui )
 
 add_library ( fluid SHARED 
       fluid.cpp 
