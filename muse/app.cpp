@@ -1099,6 +1099,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiInputTrfAction = new QAction(QIcon(*midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform"), this);
       midiInputFilterAction = new QAction(QIcon(*midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter"), this);
       midiRemoteAction = new QAction(QIcon(*midi_inputplugins_remote_controlIcon), tr("Midi Remote Control"), this);
+#ifdef BUILD_EXPERIMENTAL
+      midiRhythmAction = new QAction(QIcon(*midi_inputplugins_random_rhythm_generatorIcon), tr("Rhythm Generator"), this);
+#endif
       midiResetInstAction = new QAction(QIcon(*midi_reset_instrIcon), tr("Reset Instr."), this);
       midiInitInstActions = new QAction(QIcon(*midi_init_instrIcon), tr("Init Instr."), this);
       midiLocalOffAction = new QAction(QIcon(*midi_local_offIcon), tr("local off"), this);
@@ -1232,6 +1235,11 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiPluginSignalMapper->setMapping(midiInputTrfAction, 1);
       midiPluginSignalMapper->setMapping(midiInputFilterAction, 2);
       midiPluginSignalMapper->setMapping(midiRemoteAction, 3);
+
+#ifdef BUILD_EXPERIMENTAL
+      connect(midiRhythmAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
+      midiPluginSignalMapper->setMapping(midiRhythmAction, 4);
+#endif
 
       connect(midiPluginSignalMapper, SIGNAL(mapped(int)), this, SLOT(startMidiInputPlugin(int)));
       
@@ -1458,6 +1466,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiInputPlugins->addAction(midiInputTrfAction);
       midiInputPlugins->addAction(midiInputFilterAction);
       midiInputPlugins->addAction(midiRemoteAction);
+#ifdef BUILD_EXPERIMENTAL
+      midiInputPlugins->addAction(midiRhythmAction);
+#endif
 
       menu_functions->addSeparator();
       menu_functions->addAction(midiResetInstAction);
@@ -5046,6 +5057,9 @@ void MusE::updateConfiguration()
       midiInputTrfAction->setShortcut(shortcuts[SHRT_MIDI_INPUT_TRANSFORM].key);
       midiInputFilterAction->setShortcut(shortcuts[SHRT_MIDI_INPUT_FILTER].key);
       midiRemoteAction->setShortcut(shortcuts[SHRT_MIDI_REMOTE_CONTROL].key);
+#ifdef BUILD_EXPERIMENTAL
+      midiRhythmAction->setShortcut(shortcuts[SHRT_RANDOM_RHYTHM_GENERATOR].key);
+#endif
 
       audioBounce2TrackAction->setShortcut(shortcuts[SHRT_AUDIO_BOUNCE_TO_TRACK].key);
       audioBounce2FileAction->setShortcut(shortcuts[SHRT_AUDIO_BOUNCE_TO_FILE].key);
@@ -5073,7 +5087,6 @@ void MusE::updateConfiguration()
       // Orcan: Old stuff, needs to be converted. These aren't used anywhere so I commented them out
       //menuSettings->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key, menu_ids[CMD_CONFIG_AUDIO_PORTS]);
       //menu_help->setAccel(menu_ids[CMD_START_WHATSTHIS], shortcuts[SHRT_START_WHATSTHIS].key);
-      //midiInputPlugins->setAccel(shortcuts[SHRT_RANDOM_RHYTHM_GENERATOR].key, 4);
       
       }
 

@@ -15,9 +15,11 @@
 #ifndef __RHYTHM_H__
 #define __RHYTHM_H__
 
-#include "rhythmbase.h"
-//Added by qt3to4:
-#include <QCloseEvent>
+#include "ui_rhythmbase.h"
+
+#include <QMainWindow>
+
+class QCloseEvent;
 
 class tTrack;
 class tEventWin;
@@ -115,7 +117,7 @@ class tRhythm
 //   RhythmGen
 //---------------------------------------------------------
 
-class RhythmGen : public RhythmBase
+class RhythmGen : public QMainWindow, public Ui::RhythmBase
       {
       Q_OBJECT
 #if 0
@@ -185,7 +187,7 @@ class RhythmGen : public RhythmBase
    public:
 //      virtual void OnMenuCommand(int id);
 //      virtual void OnSize(int w, int h);
-      RhythmGen(QWidget* parent = 0, const char* name = 0, Qt::WFlags fo = Qt::Window);
+      RhythmGen(QWidget* parent = 0, Qt::WFlags fo = Qt::Window);
       virtual ~RhythmGen();
 //      void OnPaint();
 //      void GenRhythm();

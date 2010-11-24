@@ -13,18 +13,19 @@
 //=========================================================
 
 #include "rhythm.h"
-//Added by qt3to4:
-#include <Q3HBoxLayout>
+
 #include <QCloseEvent>
-#include <Q3VBoxLayout>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 //---------------------------------------------------------
 //   RhythmGen
 //---------------------------------------------------------
 
-RhythmGen::RhythmGen(QWidget* parent, const char* name, Qt::WFlags fo)
-   : RhythmBase(parent, name, fo)
+RhythmGen::RhythmGen(QWidget* parent, Qt::WFlags fo)
+   : QMainWindow(parent, fo)
       {
+      setupUi(this);
       }
 RhythmGen::~RhythmGen()
       {

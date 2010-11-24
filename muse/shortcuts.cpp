@@ -106,7 +106,9 @@ void initShortCuts()
       defShrt(SHRT_MIDI_INPUT_FILTER,     0, "Midi: Open midi input filter", ARRANG_SHRT, "midi_open_input_filter");
       defShrt(SHRT_MIDI_INPUT_TRANSPOSE,  0, "Midi: Midi input transpose", ARRANG_SHRT, "midi_open_input_transpose");
       defShrt(SHRT_MIDI_REMOTE_CONTROL,   0, "Midi: Midi remote control", ARRANG_SHRT, "midi_remote_control");
+#ifdef BUILD_EXPERIMENTAL
       defShrt(SHRT_RANDOM_RHYTHM_GENERATOR,0,"Midi: Random rhythm generator", ARRANG_SHRT, "midi_random_rhythm_generator");
+#endif
       defShrt(SHRT_MIDI_RESET,            0, "Midi: Reset midi", ARRANG_SHRT, "midi_reset");
       defShrt(SHRT_MIDI_INIT,             0, "Midi: Init midi", ARRANG_SHRT, "midi_init");
       defShrt(SHRT_MIDI_LOCAL_OFF,        0, "Midi: Midi local off", ARRANG_SHRT, "midi_local_off");

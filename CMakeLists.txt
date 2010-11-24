@@ -79,6 +79,7 @@ option ( ENABLE_OSC         "enable Open Sound Control (DSSI also recommended)" 
 option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface (OSC also recommended)"  ON)
 option ( ENABLE_VST         "enable VST/win support"                                         OFF)
 option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"                            ON)
+option ( ENABLE_EXPERIMENTAL "enable building experimental features"                         OFF)
 
 ##
 ## Just print a notice if this is OS X
@@ -269,6 +270,10 @@ else ( ENABLE_FLUID )
       message("Fluidsynth disabled")
 endif ( ENABLE_FLUID )
 
+if ( ENABLE_EXPERIMENTAL )
+      set(CMAKE_CXX_FLAGS -DBUILD_EXPERIMENTAL ${CMAKE_CXX_FLAGS})
+endif ( ENABLE_EXPERIMENTAL )
+
 #
 # produce config.h file
 #
@@ -373,6 +378,7 @@ summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)
 summary_add("VST support" VST_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
+summary_add("Experimental features" ENABLE_EXPERIMENTAL)
 summary_show()
 
 # Make the user aware of what type they're building.

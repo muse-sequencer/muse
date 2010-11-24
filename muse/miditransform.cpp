@@ -176,7 +176,7 @@ MidiTransformerDialog::MidiTransformerDialog(QDialog* parent, Qt::WFlags fl)
       connect(procPosOp,    SIGNAL(activated(int)), SLOT(procPosOpSel(int)));
       connect(funcOp,       SIGNAL(activated(int)), SLOT(funcOpSel(int)));
       connect(funcQuantVal, SIGNAL(valueChanged(int)), SLOT(funcQuantValSel(int)));
-      connect(presetList,   SIGNAL(highlighted(QListWidgetItem*)),
+      connect(presetList,   SIGNAL(itemClicked(QListWidgetItem*)),
          SLOT(presetChanged(QListWidgetItem*)));
       connect(nameEntry,    SIGNAL(textChanged(const QString&)),
          SLOT(nameChanged(const QString&)));

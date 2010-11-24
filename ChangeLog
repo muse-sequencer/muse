@@ -7,7 +7,10 @@
         - Fixed delete shortcut key. Set in MusE constructor. (Tim)
         - Reinstated special Toplevel::CLIPLIST case in MusE::toplevelDeleted(). Caused problems. (Tim)
           TODO: Still not right with the menu checkmark...
-        - Ported fluidsynthgui, fluidgui to Qt4 (Orcan)
+        - Ported rhythmbase, fluidsynthgui, fluidgui to Qt4 (Orcan)
+        - Removed patchbaybase from the project (Orcan)
+        - Added ENABLE_EXPERIMENTAL flag to cmake. Marked rhythmbase, s1 experimental (Orcan)
+        - Fixed a connection in miditransform (Orcan)
 23.11.2010
         - Added Track::cname(), applied to strip labels' object names, so they may be used in style sheets. (Tim)
         - Added struct SysEx and some friends, to minstrument.h, prep. for the instrument editor. (Tim)

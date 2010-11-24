@@ -15,7 +15,10 @@
 #include "mittranspose.h"
 #include "midifilterimpl.h"
 #include "mrconfig.h"
+
+#ifdef BUILD_EXPERIMENTAL
 #include "rhythm.h"
+#endif
 
 MITPluginList mitPlugins;
 
@@ -60,6 +63,7 @@ void MusE::startMidiInputPlugin(int id)
                   }
             w = midiRemoteConfig;
             }
+#ifdef BUILD_EXPERIMENTAL
       else if (id == 4) {
             if (!midiRhythmGenerator) {
                   midiRhythmGenerator = new RhythmGen();
@@ -68,6 +72,7 @@ void MusE::startMidiInputPlugin(int id)
                   }
             w = midiRhythmGenerator;
             }
+#endif
       if (w) {
             flag = !w->isVisible();
             if (flag)
