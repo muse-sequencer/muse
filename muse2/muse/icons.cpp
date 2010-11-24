@@ -214,6 +214,9 @@
 #include "xpm/project.xpm"
 #include "xpm/user.xpm"
 
+#include "xpm/sine.xpm"
+#include "xpm/saw.xpm"
+
 #if QT_VERSION >= 0x040600
 #define MPIXMAP(a,b) QPixmap(QIcon::fromTheme(b, QIcon(QPixmap(a))).pixmap(QPixmap(a).width(),QPixmap(a).height()))
 #define MICON(a,b) QIcon(QIcon::fromTheme(b, QIcon(QPixmap(a))))
@@ -430,6 +433,10 @@ QIcon* globalIcon;
 QIcon* projectIcon;
 QIcon* userIcon;
 
+
+QPixmap* sineIcon;
+QPixmap* sawIcon;
+
 //---------------------------------------------------------
 //   initIcons
 //---------------------------------------------------------
@@ -510,7 +517,7 @@ void initIcons()
       redoIconS    = new MPIXMAP(redoS_xpm, "edit-redo");
 
       speakerIcon    = new MPIXMAP(speaker_xpm, NULL);
-      buttondownIcon = new MPIXMAP(buttondown_xpm, NULL);
+      buttondownIcon = new MPIXMAP(buttondown_xpm, "arrow-down");
       configureIcon  = new MPIXMAP(configure_xpm, NULL);
 
       editmuteIcon  = new MPIXMAP(editmute_xpm, NULL);
@@ -640,5 +647,8 @@ void initIcons()
       globalIcon                                    = new MICON(global_xpm, "folder");
       userIcon                                      = new MICON(user_xpm, "user-home");
       projectIcon                                   = new MICON(project_xpm, "folder-sound");
+
+      sineIcon                                      = new MPIXMAP(sine_xpm, NULL);
+      sawIcon                                       = new MPIXMAP(saw_xpm, NULL);
       }
 

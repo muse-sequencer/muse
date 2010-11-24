@@ -9,24 +9,17 @@
 
 #include "fluidsynthgui.h"
 #include "fluidsynti.h"
-#include <qpushbutton.h>
 
-#include <iostream>
-#include <qlineedit.h>
-#include <q3filedialog.h>
-#include <qsocketnotifier.h>
-#include <qpixmap.h>
-#include <q3listview.h>
-#include <qslider.h>
-#include <qmessagebox.h>
-#include <q3popupmenu.h>
-#include <q3header.h>
-#include <qcheckbox.h>
-#include <qspinbox.h>
-#include <qcombobox.h>
+#include <QFileDialog>
+#include <QIcon>
+#include <QLabel>
+#include <QMenu>
+#include <QSocketNotifier>
+#include <QTableWidgetItem>
+#include <QTreeWidgetItem>
 
 #include "muse/midi.h"
-#include "xpm/buttondown.xpm"
+#include "icons.h"
 
 
  /*
@@ -41,15 +34,24 @@
 FluidSynthGui::FluidSynthGui()
       : MessGui()
       {
+      setWindowIcon(QIcon(":/fluidsynth0.png"));
+      setupUi(this);
+      channelListView->setRowCount(FS_MAX_NR_OF_CHANNELS);
+      channelListView->setSelectionMode(QAbstractItemView::SingleSelection);
+      QLabel *fluidLabel = new QLabel;
+      fluidLabel->setPixmap(QIcon(":/fluidsynth1.png").pixmap(124, 45));
+      FluidGrid->addWidget(fluidLabel, 2, 1, Qt::AlignHCenter);
+
+      ChorusType->setItemIcon(0, QIcon(*sineIcon));
+      ChorusType->setItemIcon(1, QIcon(*sawIcon));
+
       //Connect socketnotifier to fifo
       QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
       connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
       connect (Push, SIGNAL (clicked()), SLOT(loadClicked()));
 
       lastdir = "";
-
-      channelListView->setColumnWidthMode(FS_CHANNEL_COL,Q3ListView::Maximum);
-      channelListView->setColumnWidthMode(FS_SF_ID_COL,Q3ListView::Maximum);
+      
       ReverbFrame->setEnabled(true);
       ChorusFrame->setEnabled(true);
 
@@ -63,8 +65,8 @@ FluidSynthGui::FluidSynthGui()
 
       connect(Gain, SIGNAL(valueChanged(int)), SLOT(changeGain(int)));
       connect(dumpInfoButton	, SIGNAL(clicked()), SLOT(dumpInfo()));
-      connect(channelListView, SIGNAL(pressed(Q3ListViewItem*,const QPoint&,int)),
-         this, SLOT(channelItemClicked(Q3ListViewItem*,const QPoint&,int)));
+      connect(channelListView, SIGNAL(itemClicked(QTableWidgetItem*)),
+         this, SLOT(channelItemClicked(QTableWidgetItem*)));
 
       connect(Reverb, SIGNAL (toggled(bool)), SLOT(toggleReverb(bool)));
       connect(ReverbLevel, SIGNAL (valueChanged (int)), SLOT(changeReverbLevel(int)));
@@ -73,8 +75,8 @@ FluidSynthGui::FluidSynthGui()
       connect(ReverbWidth, SIGNAL (valueChanged (int)), SLOT(changeReverbWidth(int)));
 
       connect (Pop, SIGNAL (clicked()), SLOT(popClicked()));
-      connect(sfListView, SIGNAL(pressed(Q3ListViewItem*,const QPoint&,int)),
-         this, SLOT(sfItemClicked(Q3ListViewItem*,const QPoint&,int)));
+      connect(sfListView, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+	 this, SLOT(sfItemClicked(QTreeWidgetItem*, int)));
       connect(Chorus, SIGNAL (toggled (bool)), SLOT(toggleChorus (bool)));
       connect(ChorusNumber, SIGNAL (valueChanged (int)), SLOT(changeChorusNumber (int)));
       connect(ChorusType, SIGNAL (activated (int)), SLOT(changeChorusType (int)));
@@ -158,7 +160,7 @@ void FluidSynthGui::pushClicked()
 
 void FluidSynthGui::loadClicked()
       {
-      QString filename = Q3FileDialog::getOpenFileName(lastdir, QString("*.[Ss][Ff]2"),
+      QString filename = QFileDialog::getOpenFileName(lastdir, QString("*.[Ss][Ff]2"),
                                                       this,
                                                       "Load Soundfont dialog",
                                                       "Choose soundfont");
@@ -381,7 +383,7 @@ void FluidSynthGui::updateChannelListView()
       {
       if (FS_DEBUG)
             printf("FluidSynthGui::updateChannelListView\n");
-      channelListView->clear();
+      channelListView->clearContents();
       for (int i=0; i<FS_MAX_NR_OF_CHANNELS; i++) {
             QString chanstr, sfidstr, drumchanstr;
 
@@ -400,14 +402,15 @@ void FluidSynthGui::updateChannelListView()
                   drumchanstr = "Yes";
             else
                   drumchanstr = "No";
-            Q3ListViewItem* qlvNewItem = new Q3ListViewItem(channelListView);
-            qlvNewItem->setText(FS_CHANNEL_COL, chanstr);
-            qlvNewItem->setPixmap(FS_SF_ID_COL, buttondown_xpm);
-            qlvNewItem->setText(FS_SF_ID_COL, sfidstr);
-            qlvNewItem->setPixmap(FS_DRUM_CHANNEL_COL, buttondown_xpm);
-            qlvNewItem->setText(FS_DRUM_CHANNEL_COL, drumchanstr);
-            channelListView->insertItem(qlvNewItem);
+
+	    QTableWidgetItem* chan_ = new QTableWidgetItem(chanstr);
+	    channelListView->setItem(i, FS_CHANNEL_COL, chan_);
+	    QTableWidgetItem* sfid_ = new QTableWidgetItem(QIcon(*buttondownIcon), sfidstr);
+	    channelListView->setItem(i, FS_SF_ID_COL, sfid_);
+	    QTableWidgetItem* drum_ = new QTableWidgetItem(QIcon(*buttondownIcon), drumchanstr);
+	    channelListView->setItem(i, FS_DRUM_CHANNEL_COL, drum_);
             }
+      channelListView->resizeColumnsToContents();
       }
 
 //---------------------------------------------------------
@@ -417,13 +420,13 @@ void FluidSynthGui::updateSoundfontListView()
       {
       sfListView->clear(); //Clear the listview
       for (std::list<FluidGuiSoundFont>::iterator it = stack.begin(); it != stack.end(); it++) {
-            Q3ListViewItem* qlvNewItem = new Q3ListViewItem(sfListView);
+            QTreeWidgetItem* qlvNewItem = new QTreeWidgetItem(sfListView);
             QString qsid = QString("%1").arg(it->id);
             qlvNewItem->setText(FS_ID_COL, qsid);
             qlvNewItem->setText(FS_SFNAME_COL, QString(it->name));
-            sfListView->insertItem(qlvNewItem);
+            sfListView->addTopLevelItem(qlvNewItem);
             }
-      sfListView->sort();
+      sfListView->sortItems(1, Qt::AscendingOrder);
       }
 
 //---------------------------------------------------------
@@ -466,14 +469,16 @@ QString FluidSynthGui::getSoundFontName(int id)
 // change channel parameters like soundfont / drumchannel on/off
 //---------------------------------------------------------
 
-void FluidSynthGui::channelItemClicked(Q3ListViewItem* item, const QPoint&, int col)
+void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)  
       {
+      int col = item->column();
+
       if (col == FS_SF_ID_COL) {
-            Q3PopupMenu* popup = new Q3PopupMenu(this);
-            QPoint ppt = channelListView->itemRect(item).bottomLeft();
-            Q3ListView* listView = item->listView();
-            ppt += QPoint(listView->header()->sectionPos(col), listView->header()->height());
-            ppt  = listView->mapToGlobal(ppt);
+            QMenu* popup = new QMenu(this);
+            QPoint ppt = channelListView->visualItemRect(item).bottomLeft();
+            QTableWidget* listView = item->tableWidget();
+            ppt += QPoint(listView->horizontalHeader()->sectionPosition(col), listView->horizontalHeader()->height());
+            ppt = listView->mapToGlobal(ppt);
 
             int i = 0;
             for (std::list<FluidGuiSoundFont>::reverse_iterator it = stack.rbegin(); it != stack.rend(); it++) {
@@ -498,12 +503,15 @@ void FluidSynthGui::channelItemClicked(Q3ListViewItem* item, const QPoint&, int 
                               printf("\n");
                         }
                   printf("\n\n");*/
-                  popup->insertItem(it->name,i);
+                  QAction* act1 = popup->addAction(it->name);
+		  act1->setData(i);
                   }
             int lastindex = i+1;
-            popup->insertItem("unspecified",lastindex);
-            int index = popup->exec(ppt, 0);
-            if (index !=-1) {
+            QAction *lastaction = popup->addAction("unspecified");
+	    lastaction->setData(lastindex);
+            QAction * act = popup->exec(ppt, 0);
+            if (act) {
+	          int index = act->data().toInt();
                   byte sfid;
                   QString fontname;
                   if (index == lastindex) {
@@ -511,32 +519,37 @@ void FluidSynthGui::channelItemClicked(Q3ListViewItem* item, const QPoint&, int 
                         fontname = "unspecified";	//Actually, it's not possible to reset fluid-channels as for now,
                         } //so this is just a dummy that makes the synth block any events for the channel
                   else {
-                        sfid = getSoundFontId(popup->text(index));
+                        sfid = getSoundFontId(act->text());
                         fontname = getSoundFontName(sfid);
                         }
-                  byte channel = atoi(item->text(FS_CHANNEL_COL).latin1()) - 1;
+                  byte channel = atoi(item->text().latin1()) - 1;
                   sendChannelChange(sfid, channel);
-                  item->setText(FS_SF_ID_COL, fontname);
+                  item->setText(fontname);
                   }
             delete popup;
          }
          // Drumchannel column:
       else if (col == FS_DRUM_CHANNEL_COL) {
-            Q3PopupMenu* popup = new Q3PopupMenu(this);
-            QPoint ppt = channelListView->itemRect(item).bottomLeft();
-            Q3ListView* listView = item->listView();
-            ppt += QPoint(listView->header()->sectionPos(col), listView->header()->height());
-            ppt  = listView->mapToGlobal(ppt);
-            popup->insertItem("Yes", 1);
-            popup->insertItem("No", 0);
-            byte channel = atoi(item->text(FS_CHANNEL_COL).latin1()) - 1;
+            QMenu* popup = new QMenu(this);
+            QPoint ppt = channelListView->visualItemRect(item).bottomLeft();
+            QTableWidget* listView = item->tableWidget();
+            ppt += QPoint(listView->horizontalHeader()->sectionPosition(col), listView->horizontalHeader()->height());
+            ppt = listView->mapToGlobal(ppt);
+	    QAction * yes = popup->addAction("Yes");
+	    yes->setData(1);
+            QAction * no = popup->addAction("No");
+	    no->setData(0);
+            byte channel = atoi(item->text().latin1()) - 1;
 
-            int index = popup->exec(ppt, 0);
-            if (index != drumchannels[channel] && index !=-1) {
-                  sendDrumChannelChange(index, channel);
-                  drumchannels[channel] = index;
-                  item->setText(FS_DRUM_CHANNEL_COL, index == 0 ? "No" : "Yes" );
-                  }
+            QAction * act2 = popup->exec(ppt, 0);
+	    if (act2) {
+	          int index = act2->data().toInt();
+		  if (index != drumchannels[channel]) {
+		        sendDrumChannelChange(index, channel);
+                        drumchannels[channel] = index;
+                        item->setText(index == 0 ? "No" : "Yes" );
+                        }
+	          }
             }
       }
 
@@ -591,7 +604,7 @@ void FluidSynthGui::popClicked()
       sendSysex(data,2);
       }
 
-void FluidSynthGui::sfItemClicked(Q3ListViewItem* item, const QPoint&, int /*col*/)
+void FluidSynthGui::sfItemClicked(QTreeWidgetItem* item, int /*col*/)
       {
       if (item != 0) {
             currentlySelectedFont = atoi(item->text(FS_ID_COL));

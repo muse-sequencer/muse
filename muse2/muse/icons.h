@@ -221,5 +221,8 @@ extern QIcon* globalIcon;
 extern QIcon* projectIcon;
 extern QIcon* userIcon;
 
+extern QPixmap* sineIcon;
+extern QPixmap* sawIcon;
+
 #endif
 
