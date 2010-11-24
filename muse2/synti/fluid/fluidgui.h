@@ -9,14 +9,16 @@
 #ifndef __GUI_H__
 #define __GUI_H
 
-#include "fluidguibase.h"
+#include "ui_fluidguibase.h"
 #include "libsynti/gui.h"
+
+class QDialog;
 
 //---------------------------------------------------------
 //   FLUIDGui
 //---------------------------------------------------------
 
-class FLUIDGui : public FLUIDGuiBase, public MessGui {
+class FLUIDGui : public QDialog, public Ui::FLUIDGuiBase, public MessGui {
 
       Q_OBJECT
 

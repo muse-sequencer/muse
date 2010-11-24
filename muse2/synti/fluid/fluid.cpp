@@ -38,7 +38,7 @@
 
 class QWidget;
 
-static Mess* instantiate(int sr, QWidget*, QString *projectPathPtr, const char* name)
+static Mess* instantiate(int sr, QWidget*, QString* /* projectPathPtr */, const char* name)
       {
       ISynth* synth = new ISynth();
       synth->setSampleRate(sr);
