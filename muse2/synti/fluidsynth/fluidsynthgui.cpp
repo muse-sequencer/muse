@@ -472,6 +472,7 @@ QString FluidSynthGui::getSoundFontName(int id)
 void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)  
       {
       int col = item->column();
+      int row = item->row();
 
       if (col == FS_SF_ID_COL) {
             QMenu* popup = new QMenu(this);
@@ -522,7 +523,8 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
                         sfid = getSoundFontId(act->text());
                         fontname = getSoundFontName(sfid);
                         }
-                  byte channel = atoi(item->text().latin1()) - 1;
+                  //byte channel = atoi(item->text().latin1()) - 1;
+                  byte channel = row;
                   sendChannelChange(sfid, channel);
                   item->setText(fontname);
                   }
@@ -539,7 +541,8 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
 	    yes->setData(1);
             QAction * no = popup->addAction("No");
 	    no->setData(0);
-            byte channel = atoi(item->text().latin1()) - 1;
+            //byte channel = atoi(item->text().latin1()) - 1;
+            byte channel = row;
 
             QAction * act2 = popup->exec(ppt, 0);
 	    if (act2) {
