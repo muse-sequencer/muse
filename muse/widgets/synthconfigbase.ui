@@ -29,22 +29,10 @@
          <property name="text">
           <string>Name</string>
          </property>
-         <property name="clickable">
-          <bool>false</bool>
-         </property>
-         <property name="resizable">
-          <bool>true</bool>
-         </property>
         </column>
         <column>
          <property name="text">
           <string>Midi Port</string>
-         </property>
-         <property name="clickable">
-          <bool>false</bool>
-         </property>
-         <property name="resizable">
-          <bool>false</bool>
          </property>
         </column>
        </widget>
@@ -86,7 +74,11 @@
      </property>
      <layout class="QVBoxLayout">
       <item>
-       <widget class="QTableWidget" name="mdevView"/>
+       <widget class="QTableWidget" name="mdevView">
+        <attribute name="verticalHeaderDefaultSectionSize">
+         <number>18</number>
+        </attribute>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -142,55 +134,25 @@
          <property name="text">
           <string>File</string>
          </property>
-         <property name="clickable">
-          <bool>false</bool>
-         </property>
-         <property name="resizable">
-          <bool>true</bool>
-         </property>
         </column>
         <column>
          <property name="text">
           <string>Inst</string>
-         </property>
-         <property name="clickable">
-          <bool>false</bool>
-         </property>
-         <property name="resizable">
-          <bool>false</bool>
          </property>
         </column>
         <column>
          <property name="text">
           <string>Name</string>
          </property>
-         <property name="clickable">
-          <bool>false</bool>
-         </property>
-         <property name="resizable">
-          <bool>true</bool>
-         </property>
         </column>
         <column>
          <property name="text">
           <string>Version</string>
          </property>
-         <property name="clickable">
-          <bool>true</bool>
-         </property>
-         <property name="resizable">
-          <bool>true</bool>
-         </property>
         </column>
         <column>
          <property name="text">
           <string>Description</string>
-         </property>
-         <property name="clickable">
-          <bool>true</bool>
-         </property>
-         <property name="resizable">
-          <bool>true</bool>
          </property>
         </column>
        </widget>

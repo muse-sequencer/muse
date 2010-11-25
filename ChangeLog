@@ -1,3 +1,6 @@
+25.11.2010
+        - Fixed column widths, alignments, device renaming and jack device creation issues in synthconfigbase.
+          Somehow the last changelog entry about this didn't get committed. That's added too. (Orcan)
 24.11.2010
         - Resinstated the Midi Transformer. Was left out when both TF and iTF were removed, and then I 
            asked for them to be put back. So yes, transformbase.ui is used now. (Tim)
@@ -12,6 +15,8 @@
         - Added ENABLE_EXPERIMENTAL flag to cmake. Marked rhythmbase, s1 experimental (Orcan)
         - Fixed a connection in miditransform (Orcan)
         - Fixed crash in FluidSynthGui::channelItemClicked(): Use item->row() for the channel. Test OK. (Tim)
+        - Start porting synthconfigbase. It's mostly functional. TODO: Column widths and alignments,
+          renaming device name, port Q3WhatsThis bits (Orcan)
 23.11.2010
         - Added Track::cname(), applied to strip labels' object names, so they may be used in style sheets. (Tim)
         - Added struct SysEx and some friends, to minstrument.h, prep. for the instrument editor. (Tim)
