@@ -64,8 +64,10 @@ enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_
 //   mdevViewItemRenamed
 //---------------------------------------------------------
 
-void MPConfig::mdevViewItemRenamed(Q3ListViewItem* item, int col, const QString& s)
+void MPConfig::mdevViewItemRenamed(QTableWidgetItem* item)
 {
+  int col = item->column();
+  QString s = item->text();
   //printf("MPConfig::mdevViewItemRenamed col:%d txt:%s\n", col, s.latin1());
   if(item == 0)
     return;
@@ -73,7 +75,7 @@ void MPConfig::mdevViewItemRenamed(Q3ListViewItem* item, int col, const QString&
   {
     case DEVCOL_NAME:
     {
-      QString id = item->text(DEVCOL_NO);
+      QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
       int no = atoi(id.latin1()) - 1;
       if(no < 0 || no >= MIDI_PORTS)
         return;
@@ -102,7 +104,7 @@ void MPConfig::mdevViewItemRenamed(Q3ListViewItem* item, int col, const QString&
     }
     break;    
     default: 
-      printf("MPConfig::mdevViewItemRenamed unknown column clicked col:%d txt:%s\n", col, s.latin1());
+      //printf("MPConfig::mdevViewItemRenamed unknown column clicked col:%d txt:%s\n", col, s.latin1());
     break;
   } 
 }
@@ -111,11 +113,11 @@ void MPConfig::mdevViewItemRenamed(Q3ListViewItem* item, int col, const QString&
 //   rbClicked
 //---------------------------------------------------------
 
-void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
+void MPConfig::rbClicked(QTableWidgetItem* item)
       {
       if (item == 0)
             return;
-      QString id = item->text(DEVCOL_NO);
+      QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
       int no = atoi(id.latin1()) - 1;
       if (no < 0 || no >= MIDI_PORTS)
             return;
@@ -125,13 +127,14 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
       MidiDevice* dev     = port->device();
       int rwFlags         = dev ? dev->rwFlags() : 0;
       int openFlags       = dev ? dev->openFlags() : 0;
-      Q3ListView* listView = item->listView();
+      QTableWidget* listView = item->tableWidget();
       //printf("MPConfig::rbClicked            cpt x:%d y:%d\n", cpt.x(), cpt.y());
       //printf("MPConfig::rbClicked        new cpt x:%d y:%d\n", cpt.x(), cpt.y());
       //printf("MPConfig::rbClicked new mapped cpt x:%d y:%d\n", cpt.x(), cpt.y());
-      QPoint ppt          = listView->itemRect(item).bottomLeft();
+      QPoint ppt          = listView->visualItemRect(item).bottomLeft();
       //printf("MPConfig::rbClicked            ppt x:%d y:%d\n", ppt.x(), ppt.y());
-      ppt += QPoint(listView->header()->sectionPos(col), listView->header()->height());
+      int col = item->column();
+      ppt += QPoint(listView->horizontalHeader()->sectionPosition(col), listView->horizontalHeader()->height());
       //printf("MPConfig::rbClicked        new ppt x:%d y:%d\n", ppt.x(), ppt.y());
       ppt  = listView->mapToGlobal(ppt);
       //printf("MPConfig::rbClicked new mapped ppt x:%d y:%d\n", ppt.x(), ppt.y());
@@ -144,7 +147,7 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                   if (port->hasGui())
                   {
                         port->instrument()->showGui(!port->guiVisible());
-                        item->setPixmap(DEVCOL_GUI, port->guiVisible() ? *dotIcon : *dothIcon);
+                        item->setIcon(port->guiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
                   //break;
                   return;
@@ -156,7 +159,7 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                   openFlags ^= 0x2;
                   dev->setOpenFlags(openFlags);
                   midiSeq->msgSetMidiDevice(port, dev);       // reopen device
-                  item->setPixmap(DEVCOL_REC, openFlags & 2 ? *dotIcon : *dothIcon);
+                  item->setIcon(openFlags & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   
                   // p3.3.55
                   if(dev->deviceType() == MidiDevice::JACK_MIDI)
@@ -164,12 +167,12 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                     if(dev->openFlags() & 2)  
                     {
                       //item->setPixmap(DEVCOL_INROUTES, *buttondownIcon);
-                      item->setText(DEVCOL_INROUTES, tr("in"));
-                    }
+		      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText(tr("in"));
+		    }
                     else
                     {
                       //item->setPixmap(DEVCOL_INROUTES, *buttondownIcon);
-                      item->setText(DEVCOL_INROUTES, "");
+		      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText("");
                     }  
                   }
             
@@ -183,7 +186,7 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                   openFlags ^= 0x1;
                   dev->setOpenFlags(openFlags);
                   midiSeq->msgSetMidiDevice(port, dev);       // reopen device
-                  item->setPixmap(DEVCOL_PLAY, openFlags & 1 ? *dotIcon : *dothIcon);
+                  item->setIcon(openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   
                   // p3.3.55
                   if(dev->deviceType() == MidiDevice::JACK_MIDI)
@@ -191,12 +194,12 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                     if(dev->openFlags() & 1)  
                     {
                       //item->setPixmap(DEVCOL_OUTROUTES, *buttondownIcon);
-                      item->setText(DEVCOL_OUTROUTES, tr("out"));
+		      item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText(tr("out"));
                     }
                     else  
                     {
                       //item->setPixmap(DEVCOL_OUTROUTES, *buttondownIcon);
-                      item->setText(DEVCOL_OUTROUTES, "");
+		      item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText("");
                     }
                   }
             
@@ -375,6 +378,7 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                     //printf("MPConfig::rbClicked DEVCOL_NAME\n");
                     
                     // Did we click in the text area?
+		    /* ORCAN FIXME-->
                     if((cpt.x() - ppt.x()) > buttondownIcon->width())
                     {
                       //printf("MPConfig::rbClicked starting item rename... enabled?:%d\n", item->renameEnabled(DEVCOL_NAME));
@@ -384,7 +388,7 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                         
                       return;
                     }
-                    else
+                    else <--END OF ORCAN FIXME*/
                     // We clicked the 'down' button.
                     {
                       QMenu* pup = new QMenu(this);
@@ -602,7 +606,7 @@ void MPConfig::rbClicked(Q3ListViewItem* item, const QPoint& cpt, int col)
                     //break;
                     return;
                   QString s = act->text();
-                  item->setText(DEVCOL_INSTR, s);
+		  item->tableWidget()->item(item->row(), DEVCOL_INSTR)->setText(s);
                   for (iMidiInstrument i = midiInstruments.begin(); i
                      != midiInstruments.end(); ++i) {
                         if ((*i)->iname() == s) {
@@ -691,16 +695,32 @@ QString MPWhatsThis::text(const QPoint& pos)
 //    Midi Port Config
 //---------------------------------------------------------
 
-MPConfig::MPConfig(QWidget* parent, char* name)
-   : SynthConfigBase(parent, name)
+MPConfig::MPConfig(QWidget* parent)
+   : QDialog(parent)
       {
+      setupUi(this);
+      mdevView->setRowCount(MIDI_PORTS);
+      mdevView->setColumnCount(9);
+      
       _mptooltip = 0;
       //popup      = 0;
       instrPopup = 0;
       _showAliases = -1; // 0: Show first aliases, if available. Nah, stick with -1: none at first.
       
-      mdevView->setSorting(-1);
-      mdevView->setAllColumnsShowFocus(true);
+      //ORCAN-FIXMEmdevView->setSorting(-1);
+      //ORCAN-FIXMEmdevView->setAllColumnsShowFocus(true);
+      mdevView->setHorizontalHeaderLabels(QStringList()
+					  << tr("Port")
+					  << tr("GUI")
+					  << tr("I")
+					  << tr("O")
+					  << tr("Instrument")
+					  << tr("Device Name")
+					  << tr("In routes")
+					  << tr("Out routes")
+					  << tr("State")
+					  );
+      /* Orcan FIXME column widths
       mdevView->addColumn(tr("Port"));
       mdevView->addColumn(tr("GUI"));
       mdevView->addColumn(tr("I"));
@@ -711,8 +731,10 @@ MPConfig::MPConfig(QWidget* parent, char* name)
       mdevView->addColumn(tr("In routes"), 80);
       mdevView->addColumn(tr("Out routes"), 80);
       mdevView->addColumn(tr("State"));
+      */
       mdevView->setFocusPolicy(Qt::NoFocus);
 
+      /* Orcan FIXME
       mdevView->setColumnAlignment(DEVCOL_NO, Qt::AlignHCenter);
       mdevView->setColumnAlignment(DEVCOL_GUI, Qt::AlignCenter);
       mdevView->setColumnAlignment(DEVCOL_REC, Qt::AlignCenter);
@@ -720,24 +742,26 @@ MPConfig::MPConfig(QWidget* parent, char* name)
       mdevView->header()->setResizeEnabled(false, DEVCOL_NO);
       mdevView->header()->setResizeEnabled(false, DEVCOL_REC);
       mdevView->header()->setResizeEnabled(false, DEVCOL_GUI);
-      mdevView->setResizeMode(Q3ListView::LastColumn);
+      mdevView->setResizeMode(QTableWidget::LastColumn);
 
       instanceList->setColumnAlignment(1, Qt::AlignHCenter);
 
       new MPWhatsThis(mdevView, mdevView->header());
       _mptooltip = new MPHeaderTip(mdevView->header());
-
-      connect(mdevView, SIGNAL(pressed(Q3ListViewItem*,const QPoint&,int)),
-         this, SLOT(rbClicked(Q3ListViewItem*,const QPoint&,int)));
-      connect(mdevView, SIGNAL(itemRenamed(Q3ListViewItem*,int,const QString&)),
-         this, SLOT(mdevViewItemRenamed(Q3ListViewItem*,int,const QString&)));
+      */
+      connect(mdevView, SIGNAL(itemPressed(QTableWidgetItem*)),
+         this, SLOT(rbClicked(QTableWidgetItem*)));
+      connect(mdevView, SIGNAL(itemChanged(QTableWidgetItem*)),
+         this, SLOT(mdevViewItemRenamed(QTableWidgetItem*)));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
 
-      connect(synthList, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
-      connect(instanceList, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
+      connect(synthList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
+      connect(instanceList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
 
       connect(addInstance, SIGNAL(clicked()), SLOT(addInstanceClicked()));
+      connect(synthList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(addInstanceClicked())); 
       connect(removeInstance, SIGNAL(clicked()), SLOT(removeInstanceClicked()));
+      connect(instanceList,  SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(removeInstanceClicked()));
       songChanged(0);
       }
 
@@ -753,8 +777,8 @@ MPConfig::~MPConfig()
 
 void MPConfig::selectionChanged()
       {
-      addInstance->setEnabled(synthList->selectedItem());
-      removeInstance->setEnabled(instanceList->selectedItem());
+      addInstance->setEnabled(synthList->currentItem());
+      removeInstance->setEnabled(instanceList->currentItem());
       }
 
 //---------------------------------------------------------
@@ -769,62 +793,80 @@ void MPConfig::songChanged(int flags)
     
       // Get currently selected index...
       int no = -1;
-      Q3ListViewItem* sitem = mdevView->selectedItem();
+      QTableWidgetItem* sitem = mdevView->currentItem();
       if(sitem)
       {
-        QString id = sitem->text(DEVCOL_NO);
+	QString id = sitem->tableWidget()->item(sitem->row(), DEVCOL_NO)->text();
         no = atoi(id.latin1()) - 1;
         if(no < 0 || no >= MIDI_PORTS)
           no = -1;
       }
       
       sitem = 0;
-      mdevView->clear();
+      mdevView->clearContents();
       for (int i = MIDI_PORTS-1; i >= 0; --i) 
       {
             MidiPort* port  = &midiPorts[i];
             MidiDevice* dev = port->device();
             QString s;
             s.setNum(i+1);
-            Q3ListViewItem* item = new Q3ListViewItem(mdevView);
-            item->setText(DEVCOL_NO, s);
-            item->setText(DEVCOL_STATE, port->state());
-            if (port->instrument())
-                  item->setText(DEVCOL_INSTR,  port->instrument()->iname() );
-            else
-                  item->setText(DEVCOL_INSTR, tr("<unknown>"));
+            QTableWidgetItem* itemno = new QTableWidgetItem(s);
+	    mdevView->setItem(i, DEVCOL_NO, itemno);
+	    QTableWidgetItem* itemstate = new QTableWidgetItem(port->state());
+	    mdevView->setItem(i, DEVCOL_STATE, itemstate);
+	    QTableWidgetItem* iteminstr = new QTableWidgetItem(port->instrument() ?
+							       port->instrument()->iname() :
+							       tr("<unknown>"));
+	    mdevView->setItem(i, DEVCOL_INSTR, iteminstr);
+	    QTableWidgetItem* itemname = new QTableWidgetItem;
+	    mdevView->setItem(i, DEVCOL_NAME, itemname);
+	    QTableWidgetItem* itemgui = new QTableWidgetItem;
+	    mdevView->setItem(i, DEVCOL_GUI, itemgui);
+	    QTableWidgetItem* itemrec = new QTableWidgetItem;
+	    mdevView->setItem(i, DEVCOL_REC, itemrec);
+	    QTableWidgetItem* itemplay = new QTableWidgetItem;
+	    mdevView->setItem(i, DEVCOL_PLAY, itemplay);
+	    QTableWidgetItem* itemout = new QTableWidgetItem;
+	    mdevView->setItem(i, DEVCOL_OUTROUTES, itemout);
+	    QTableWidgetItem* itemin = new QTableWidgetItem;
+	    mdevView->setItem(i, DEVCOL_INROUTES, itemin);
+
             if (dev) {
-                  item->setText(DEVCOL_NAME, dev->name());
+	          itemname->setText(dev->name());
+
                   // Is it a Jack midi device? Allow renaming.
                   //if(dynamic_cast<MidiJackDevice*>(dev))
-                  if(dev->deviceType() == MidiDevice::JACK_MIDI)
-                    item->setRenameEnabled(DEVCOL_NAME, true);
+                  if (dev->deviceType() == MidiDevice::JACK_MIDI)
+		       itemname->setFlags(Qt::ItemIsEditable);
                     
                   if (dev->rwFlags() & 0x2)
-                        item->setPixmap(DEVCOL_REC, dev->openFlags() & 2 ? *dotIcon : *dothIcon);
+	 	       itemrec->setIcon(dev->openFlags() & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   else
-                        item->setPixmap(DEVCOL_REC, QPixmap());
+		    itemrec->setIcon(QIcon(QPixmap()));
                   if (dev->rwFlags() & 0x1)
-                        item->setPixmap(DEVCOL_PLAY, dev->openFlags() & 1 ? *dotIcon : *dothIcon);
+		       itemplay->setIcon( dev->openFlags() & 1 ? 
+									   QIcon(*dotIcon) : 
+									   QIcon(*dothIcon));
                   else
-                        item->setPixmap(DEVCOL_PLAY, QPixmap());
+		    itemplay->setIcon(QIcon(QPixmap()));
                   }
             else {
-                  item->setText(DEVCOL_NAME, tr("<none>"));
-                  item->setPixmap(DEVCOL_GUI, *dothIcon);
-                  item->setPixmap(DEVCOL_REC, QPixmap());
-                  item->setPixmap(DEVCOL_PLAY, QPixmap());
+	          itemname->setText(tr("<none>"));
+                  itemgui->setIcon(QIcon(*dothIcon));
+		  itemrec->setIcon(QIcon(QPixmap()));
+		  itemplay->setIcon(QIcon(QPixmap()));
                   }
             if (port->hasGui()) {
-                  item->setPixmap(DEVCOL_GUI, port->guiVisible() ? *dotIcon : *dothIcon);
+                  itemgui->setIcon(port->guiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
             else {
-                  item->setPixmap(DEVCOL_GUI, QPixmap());
+	      itemgui->setIcon(QIcon(QPixmap()));
                   }
             if (!(dev && dev->isSynti()))
-                  item->setPixmap(DEVCOL_INSTR, *buttondownIcon);
-            item->setPixmap(DEVCOL_NAME, *buttondownIcon);
-            
+	      iteminstr->setIcon(QIcon(*buttondownIcon));
+	    itemname->setIcon(QIcon(*buttondownIcon));
+
+
             //if(dev && dynamic_cast<MidiJackDevice*>(dev))
             if(dev && dev->deviceType() == MidiDevice::JACK_MIDI)
             {
@@ -835,27 +877,25 @@ void MPConfig::songChanged(int flags)
               if(dev->rwFlags() & 1)  
               //if(dev->openFlags() & 1)  
               {
-                item->setPixmap(DEVCOL_OUTROUTES, *buttondownIcon);
+		itemout->setIcon(QIcon(*buttondownIcon));
                 if(dev->openFlags() & 1)  
-                  item->setText(DEVCOL_OUTROUTES, tr("out"));
+		  itemout->setText(tr("out"));
               }  
               if(dev->rwFlags() & 2)  
               //if(dev->openFlags() & 2)  
               {
-                item->setPixmap(DEVCOL_INROUTES, *buttondownIcon);
+		itemin->setIcon(QIcon(*buttondownIcon));
                 if(dev->openFlags() & 2)  
-                  item->setText(DEVCOL_INROUTES, tr("in"));
+		  itemin->setText(tr("in"));
               }  
             }
             
-            mdevView->insertItem(item);
-            if(i == no)
-              sitem = item;
+            if(i == no) sitem = itemno;
       }
       if(sitem)
       {
-        mdevView->setSelected(sitem, true);
-        mdevView->ensureItemVisible(sitem);
+        mdevView->setCurrentItem(sitem);
+        //ORCAN-ChECKmdevView->ensureItemVisible(sitem);
       }
       
       QString s;
@@ -865,7 +905,7 @@ void MPConfig::songChanged(int flags)
             //s = (*i)->baseName();
             //s = (*i)->name();
 
-            Q3ListViewItem* item = new Q3ListViewItem(synthList);
+            QTreeWidgetItem* item = new QTreeWidgetItem(synthList);
             //item->setText(0, s);
             item->setText(0, QString((*i)->baseName()));
             s.setNum((*i)->instances());
@@ -879,7 +919,7 @@ void MPConfig::songChanged(int flags)
       instanceList->clear();
       SynthIList* sl = song->syntis();
       for (iSynthI si = sl->begin(); si != sl->end(); ++si) {
-            Q3ListViewItem* iitem = new Q3ListViewItem(instanceList);
+            QTreeWidgetItem* iitem = new QTreeWidgetItem(instanceList);
             iitem->setText(0, (*si)->name());
             if ((*si)->midiPort() == -1)
                   s = tr("<none>");
@@ -887,6 +927,7 @@ void MPConfig::songChanged(int flags)
                   s.setNum((*si)->midiPort() + 1);
             iitem->setText(1, s);
             }
+      mdevView->resizeColumnsToContents();
       selectionChanged();
       }
 
@@ -896,7 +937,7 @@ void MPConfig::songChanged(int flags)
 
 void MPConfig::addInstanceClicked()
       {
-      Q3ListViewItem* item = synthList->selectedItem();
+      QTreeWidgetItem* item = synthList->currentItem();
       if (item == 0)
             return;
       //SynthI *si = song->createSynthI(item->text(2));
@@ -923,7 +964,7 @@ void MPConfig::addInstanceClicked()
 
 void MPConfig::removeInstanceClicked()
       {
-      Q3ListViewItem* item = instanceList->selectedItem();
+      QTreeWidgetItem* item = instanceList->currentItem();
       if (item == 0)
             return;
       SynthIList* sl = song->syntis();
@@ -946,7 +987,7 @@ void MPConfig::removeInstanceClicked()
 void MusE::configMidiPorts()
       {
       if (!midiPortConfig)
-	midiPortConfig = new MPConfig(0, (char*) "midiPortConfig");
+	midiPortConfig = new MPConfig(0);
      if (midiPortConfig->isVisible()) {
          midiPortConfig->raise();
          midiPortConfig->setActiveWindow();
