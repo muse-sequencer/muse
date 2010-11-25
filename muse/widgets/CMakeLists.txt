@@ -151,6 +151,7 @@ QT4_WRAP_UI (UIC
       shortcutcapturedialogbase.ui  
       shortcutconfigbase.ui  
       songinfo.ui  
+      synthconfigbase.ui  
       transformbase.ui  
       transposebase.ui  
       velocitybase.ui  
@@ -160,7 +161,6 @@ QT4_WRAP_UI (UIC
 #QT4_WRAP_UI (widget_ui_headers
 QT4_WRAP_UI3 (widget_ui_headers
       midisync.ui  
-      synthconfigbase.ui  
       gatetimebase.ui  
       )
 

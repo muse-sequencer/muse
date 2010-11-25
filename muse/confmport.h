@@ -15,10 +15,10 @@
 //Added by qt3to4:
 //#include <Q3PopupMenu>
 
-#include "synthconfigbase.h"
+#include "ui_synthconfigbase.h"
 
-class Q3ListView;
-class Q3ListViewItem;
+class QTreeWidget;
+class QTableWidget;
 class QPoint;
 //class Q3PopupMenu;
 class QMenu;
@@ -32,7 +32,7 @@ class Xml;
 class MPHeaderTip { // : public QToolTip { ddskrjo
 
    public:
-    MPHeaderTip(QWidget * parent) {} // : QToolTip(parent) {} ddskrjo
+    MPHeaderTip(QWidget *) {} // : QToolTip(parent) {} ddskrjo
       virtual ~MPHeaderTip() {}
    protected:
       void maybeTip(const QPoint &);
@@ -59,7 +59,7 @@ class MPWhatsThis : public Q3WhatsThis {
 //    Midi Port Config
 //---------------------------------------------------------
 
-class MPConfig : public SynthConfigBase {
+class MPConfig : public QDialog, Ui::SynthConfigBase {
       MPHeaderTip* _mptooltip;
       //Q3PopupMenu* popup;
       QMenu* instrPopup;
@@ -69,15 +69,15 @@ class MPConfig : public SynthConfigBase {
       Q_OBJECT
 
    private slots:
-      void rbClicked(Q3ListViewItem*, const QPoint&,int);
-      void mdevViewItemRenamed(Q3ListViewItem*, int, const QString&);
+      void rbClicked(QTableWidgetItem*);
+      void mdevViewItemRenamed(QTableWidgetItem*);
       void songChanged(int);
       void selectionChanged();
       void addInstanceClicked();
       void removeInstanceClicked();
 
    public:
-      MPConfig(QWidget* parent, char* name);
+      MPConfig(QWidget* parent=0);
       ~MPConfig();
       };
 
