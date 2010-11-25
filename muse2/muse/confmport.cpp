@@ -132,9 +132,10 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
       //printf("MPConfig::rbClicked        new cpt x:%d y:%d\n", cpt.x(), cpt.y());
       //printf("MPConfig::rbClicked new mapped cpt x:%d y:%d\n", cpt.x(), cpt.y());
       QPoint ppt          = listView->visualItemRect(item).bottomLeft();
+      QPoint mousepos     = QCursor::pos();
       //printf("MPConfig::rbClicked            ppt x:%d y:%d\n", ppt.x(), ppt.y());
       int col = item->column();
-      ppt += QPoint(listView->horizontalHeader()->sectionPosition(col), listView->horizontalHeader()->height());
+      ppt += QPoint(0, listView->horizontalHeader()->height());
       //printf("MPConfig::rbClicked        new ppt x:%d y:%d\n", ppt.x(), ppt.y());
       ppt  = listView->mapToGlobal(ppt);
       //printf("MPConfig::rbClicked new mapped ppt x:%d y:%d\n", ppt.x(), ppt.y());
@@ -378,17 +379,17 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     //printf("MPConfig::rbClicked DEVCOL_NAME\n");
                     
                     // Did we click in the text area?
-		    /* ORCAN FIXME-->
-                    if((cpt.x() - ppt.x()) > buttondownIcon->width())
+                    if((mousepos.x() - ppt.x()) > buttondownIcon->width())
                     {
                       //printf("MPConfig::rbClicked starting item rename... enabled?:%d\n", item->renameEnabled(DEVCOL_NAME));
                       // Start the renaming of the cell...
-                      if(item->renameEnabled(DEVCOL_NAME))
-                        item->startRename(DEVCOL_NAME);
+		      QModelIndex current = item->tableWidget()->currentIndex();
+		      if (item->flags() & Qt::ItemIsEditable)
+			item->tableWidget()->edit(current.sibling(current.row(), DEVCOL_NAME));
                         
                       return;
                     }
-                    else <--END OF ORCAN FIXME*/
+                    else
                     // We clicked the 'down' button.
                     {
                       QMenu* pup = new QMenu(this);
@@ -530,7 +531,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       }
                       
                       n = act->data().toInt();
-                      
                       //printf("MPConfig::rbClicked n:%d\n", n);
                       
                       MidiDevice* sdev = 0;
@@ -540,6 +540,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         if(n <= 2)  // p3.3.55
                         {
                           sdev = MidiJackDevice::createJackMidiDevice(); 
+
                           if(sdev)
                           {
                             int of = 3;
@@ -571,7 +572,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         if(sdev == dev)
                           sdev = 0;
                       }    
-                      
+
                       midiSeq->msgSetMidiDevice(port, sdev);
                       muse->changeConfig(true);     // save configuration file
                       song->update();
@@ -700,51 +701,38 @@ MPConfig::MPConfig(QWidget* parent)
       {
       setupUi(this);
       mdevView->setRowCount(MIDI_PORTS);
-      mdevView->setColumnCount(9);
-      
+      mdevView->verticalHeader()->hide();
+      mdevView->setSelectionMode(QAbstractItemView::SingleSelection);
+      mdevView->setShowGrid(false);
+      mdevView->horizontalHeader()->setResizeMode(DEVCOL_NO ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setResizeMode(DEVCOL_REC ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setResizeMode(DEVCOL_PLAY ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setResizeMode(DEVCOL_GUI ,QHeaderView::Fixed);
+
       _mptooltip = 0;
       //popup      = 0;
       instrPopup = 0;
       _showAliases = -1; // 0: Show first aliases, if available. Nah, stick with -1: none at first.
       
-      //ORCAN-FIXMEmdevView->setSorting(-1);
-      //ORCAN-FIXMEmdevView->setAllColumnsShowFocus(true);
-      mdevView->setHorizontalHeaderLabels(QStringList()
-					  << tr("Port")
-					  << tr("GUI")
-					  << tr("I")
-					  << tr("O")
-					  << tr("Instrument")
-					  << tr("Device Name")
-					  << tr("In routes")
-					  << tr("Out routes")
-					  << tr("State")
-					  );
-      /* Orcan FIXME column widths
-      mdevView->addColumn(tr("Port"));
-      mdevView->addColumn(tr("GUI"));
-      mdevView->addColumn(tr("I"));
-      mdevView->addColumn(tr("O"));
-      mdevView->addColumn(tr("Instrument"), 120);
-      mdevView->addColumn(tr("Device Name"), 120);
-      //mdevView->addColumn(tr("Routing"), 80);
-      mdevView->addColumn(tr("In routes"), 80);
-      mdevView->addColumn(tr("Out routes"), 80);
-      mdevView->addColumn(tr("State"));
-      */
+      QStringList columnnames;
+      columnnames << tr("Port")
+		  << tr("GUI")
+		  << tr("I")
+		  << tr("O")
+		  << tr("Instrument")
+		  << tr("Device Name")
+		  << tr("In routes")
+		  << tr("Out routes")
+		  << tr("State");
+
+      mdevView->setColumnCount(columnnames.size());
+      mdevView->setHorizontalHeaderLabels(columnnames);
+
       mdevView->setFocusPolicy(Qt::NoFocus);
 
-      /* Orcan FIXME
-      mdevView->setColumnAlignment(DEVCOL_NO, Qt::AlignHCenter);
-      mdevView->setColumnAlignment(DEVCOL_GUI, Qt::AlignCenter);
-      mdevView->setColumnAlignment(DEVCOL_REC, Qt::AlignCenter);
-      mdevView->setColumnAlignment(DEVCOL_PLAY, Qt::AlignCenter);
-      mdevView->header()->setResizeEnabled(false, DEVCOL_NO);
-      mdevView->header()->setResizeEnabled(false, DEVCOL_REC);
-      mdevView->header()->setResizeEnabled(false, DEVCOL_GUI);
-      mdevView->setResizeMode(QTableWidget::LastColumn);
+      
 
-      instanceList->setColumnAlignment(1, Qt::AlignHCenter);
+      /* Orcan FIXME
 
       new MPWhatsThis(mdevView, mdevView->header());
       _mptooltip = new MPHeaderTip(mdevView->header());
@@ -806,12 +794,14 @@ void MPConfig::songChanged(int flags)
       mdevView->clearContents();
       for (int i = MIDI_PORTS-1; i >= 0; --i) 
       {
+            mdevView->blockSignals(true); // otherwise itemChanged() is triggered and bad things happen.
             MidiPort* port  = &midiPorts[i];
             MidiDevice* dev = port->device();
             QString s;
             s.setNum(i+1);
             QTableWidgetItem* itemno = new QTableWidgetItem(s);
 	    mdevView->setItem(i, DEVCOL_NO, itemno);
+	    itemno->setTextAlignment(Qt::AlignHCenter);
 	    QTableWidgetItem* itemstate = new QTableWidgetItem(port->state());
 	    mdevView->setItem(i, DEVCOL_STATE, itemstate);
 	    QTableWidgetItem* iteminstr = new QTableWidgetItem(port->instrument() ?
@@ -820,16 +810,22 @@ void MPConfig::songChanged(int flags)
 	    mdevView->setItem(i, DEVCOL_INSTR, iteminstr);
 	    QTableWidgetItem* itemname = new QTableWidgetItem;
 	    mdevView->setItem(i, DEVCOL_NAME, itemname);
+	    itemname->setFlags(Qt::ItemIsEnabled);
 	    QTableWidgetItem* itemgui = new QTableWidgetItem;
 	    mdevView->setItem(i, DEVCOL_GUI, itemgui);
+	    itemgui->setTextAlignment(Qt::AlignHCenter);
 	    QTableWidgetItem* itemrec = new QTableWidgetItem;
 	    mdevView->setItem(i, DEVCOL_REC, itemrec);
+	    itemrec->setTextAlignment(Qt::AlignHCenter);
 	    QTableWidgetItem* itemplay = new QTableWidgetItem;
 	    mdevView->setItem(i, DEVCOL_PLAY, itemplay);
+	    itemplay->setTextAlignment(Qt::AlignHCenter);
 	    QTableWidgetItem* itemout = new QTableWidgetItem;
 	    mdevView->setItem(i, DEVCOL_OUTROUTES, itemout);
 	    QTableWidgetItem* itemin = new QTableWidgetItem;
 	    mdevView->setItem(i, DEVCOL_INROUTES, itemin);
+	    mdevView->blockSignals(false);
+
 
             if (dev) {
 	          itemname->setText(dev->name());
@@ -837,18 +833,16 @@ void MPConfig::songChanged(int flags)
                   // Is it a Jack midi device? Allow renaming.
                   //if(dynamic_cast<MidiJackDevice*>(dev))
                   if (dev->deviceType() == MidiDevice::JACK_MIDI)
-		       itemname->setFlags(Qt::ItemIsEditable);
+                       itemname->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled);
                     
                   if (dev->rwFlags() & 0x2)
-	 	       itemrec->setIcon(dev->openFlags() & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                       itemrec->setIcon(dev->openFlags() & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   else
-		    itemrec->setIcon(QIcon(QPixmap()));
+                       itemrec->setIcon(QIcon(QPixmap()));
                   if (dev->rwFlags() & 0x1)
-		       itemplay->setIcon( dev->openFlags() & 1 ? 
-									   QIcon(*dotIcon) : 
-									   QIcon(*dothIcon));
+                       itemplay->setIcon( dev->openFlags() & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   else
-		    itemplay->setIcon(QIcon(QPixmap()));
+                       itemplay->setIcon(QIcon(QPixmap()));
                   }
             else {
 	          itemname->setText(tr("<none>"));
@@ -893,10 +887,7 @@ void MPConfig::songChanged(int flags)
             if(i == no) sitem = itemno;
       }
       if(sitem)
-      {
-        mdevView->setCurrentItem(sitem);
-        //ORCAN-ChECKmdevView->ensureItemVisible(sitem);
-      }
+         mdevView->setCurrentItem(sitem);
       
       QString s;
       synthList->clear();
@@ -910,6 +901,7 @@ void MPConfig::songChanged(int flags)
             item->setText(0, QString((*i)->baseName()));
             s.setNum((*i)->instances());
             item->setText(1, s);
+	    item->setTextAlignment(1, Qt::AlignHCenter);
             //item->setText(2, QString((*i)->baseName()));
             item->setText(2, QString((*i)->name()));
             
@@ -926,7 +918,9 @@ void MPConfig::songChanged(int flags)
             else
                   s.setNum((*si)->midiPort() + 1);
             iitem->setText(1, s);
+	    iitem->setTextAlignment(1, Qt::AlignHCenter);
             }
+      synthList->resizeColumnToContents(1);
       mdevView->resizeColumnsToContents();
       selectionChanged();
       }
