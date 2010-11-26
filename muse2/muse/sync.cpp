@@ -258,7 +258,8 @@ void MidiSyncInfo::setTime()
     if(_actDetect[i] && (t - _lastActTime[i]) >= 1.0) // Set detect indicator timeout to about 1 second.
     {
       _actDetect[i] = false;
-      _actDetectBits &= ~bitShiftLU[i];
+      //_actDetectBits &= ~bitShiftLU[i];
+      _actDetectBits &= ~(1 << i);
     }  
   }
 }
@@ -394,7 +395,8 @@ void MidiSyncInfo::trigActDetect(const int ch)
   if(ch < 0 || ch >= MIDI_CHANNELS)
     return;
     
-  _actDetectBits |= bitShiftLU[ch];
+  //_actDetectBits |= bitShiftLU[ch];
+  _actDetectBits |= (1 << ch);
   _actDetect[ch] = true;
   _actTrig[ch] = true;
 }

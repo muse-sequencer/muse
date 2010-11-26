@@ -8,73 +8,165 @@
 #include <stdio.h>
 #include <cmath>
 
-//#include <qvalidator.h>
-#include <QtGui>
+//#include <QtGui>
+//#include <QDoubleValidator>
+//#include <QLineEdit>
+
 #include "spinboxFP.h"
 
 //---------------------------------------------------------
 //   SpinBoxFP
 //---------------------------------------------------------
 
-SpinBoxFP::SpinBoxFP(QWidget* parent, const char* name)
-   : QSpinBox(parent, name)
+SpinBoxFP::SpinBoxFP(QWidget* parent)
+   //: QSpinBox(parent)
+   : QDoubleSpinBox(parent)
       {
-      _precision = 0;
-      //setValidator(new QDoubleValidator(this)); ddskrjo
+        //validator = new QDoubleValidator(this);
+        //lineEdit()->setValidator(validator = new QDoubleValidator(this));
+        //validator->setNotation(QDoubleValidator::StandardNotation);
+        
+        //_decimals = 0;
+        setDecimals(0);
+        
+        connect(this, SIGNAL(valueChanged(double)), SLOT(valueChange(double)));
       }
 
-SpinBoxFP::SpinBoxFP(int minValue, int maxValue, int step, QWidget* parent, const char* name)
-   : QSpinBox(minValue, maxValue, step, parent, name)
+SpinBoxFP::SpinBoxFP(int minValue, int maxValue, int step, QWidget* parent)
+//SpinBoxFP::SpinBoxFP(double minValue, double maxValue, double step, QWidget* parent)
+   //: QSpinBox(parent)
+   : QDoubleSpinBox(parent)
       {
-      _precision = 0;
-      //setValidator(new QDoubleValidator(this)); ddskrjo
+        //validator = new QDoubleValidator(this);
+        //lineEdit()->setValidator(validator = new QDoubleValidator(this));
+        //validator->setNotation(QDoubleValidator::StandardNotation);
+        
+        //_decimals = 0;
+        QDoubleSpinBox::setDecimals(0);
+        
+        setRange(minValue, maxValue);
+        setSingleStep(step);
+        
+        connect(this, SIGNAL(valueChanged(double)), SLOT(valueChange(double)));
       }
 
 //---------------------------------------------------------
-//   setPrecision
+//   valueChange
 //---------------------------------------------------------
 
-void SpinBoxFP::setPrecision(int val)
+void SpinBoxFP::valueChange(double)
+{
+        double div = exp10(decimals());
+        emit valueChanged(int(value() * div));
+}
+
+//---------------------------------------------------------
+//   setValue
+//---------------------------------------------------------
+
+void SpinBoxFP::setValue(int val)
       {
-      _precision = val;
-      //updateDisplay(); ddskrjo
+        double div = exp10(decimals());
+        QDoubleSpinBox::setValue(double(val) /  div );
       }
+
+//---------------------------------------------------------
+//   intValue
+//---------------------------------------------------------
+
+int SpinBoxFP::intValue()
+      {
+        double div = exp10(decimals());
+        return int(value() * div);
+      }
+
+//---------------------------------------------------------
+//   setDecimals
+//---------------------------------------------------------
+
+void SpinBoxFP::setDecimals(int val)
+      {
+      //_decimals = val;
+      
+      //updateDisplay();
+      //interpretText();  // TODO: Check - is this what we need? Will send out signals?
+      //setValue(value());    // Try this. "setValue() will emit valueChanged() if the new value is different from the old one."
+      
+      QDoubleSpinBox::setDecimals(val);
+      double step = 1.0 / exp10(val);
+      setSingleStep(step);
+      }
+
+/*
+//---------------------------------------------------------
+//   validate
+//---------------------------------------------------------
+
+QValidator::State SpinBoxFP::validate(QString& input, int& pos) const
+{
+  // Must set these dynamically as settings may have changed.
+  validator->setRange(minimum(), maximum(), _decimals);
+  
+  QValidator::State s = validator->validate(input, pos);
+  return s;
+}
 
 //---------------------------------------------------------
 //   mapValueToText
 //---------------------------------------------------------
 
-QString SpinBoxFP::mapValueToText(int value)
+QString SpinBoxFP::textFromValue(int value) const
       {
-      if (_precision) {
+      if (_decimals) {
             QString s;
-            int div = int(exp10(_precision));
+            int div = int(exp10(_decimals));
 //            printf("val %d, prec %d, div %d\n", value, _precision, div);
-            s.sprintf("%d.%0*d", value/div, _precision, value%div);
+            
+            s.sprintf("%d.%0*d", value/div, _decimals, value%div);
+            //s.sprintf("%0*f", value, _decimals);
+            
             return s;
             }
-      return textFromValue(value); // ddskrjo
+      return QSpinBox::textFromValue(value);
       }
 
 //---------------------------------------------------------
 //   mapTextToValue
 //---------------------------------------------------------
-/* ddskrjo
-int SpinBoxFP::mapTextToValue(bool* ok)
+
+int SpinBoxFP::valueFromText(const QString& text) const
       {
-      QString qs = cleanText();
-      if (_precision) {
-            const char* s = qs.latin1();
-            int a, b;
-            int n = sscanf(s, "%d.%d", &a, &b);
-            if (n != 2) {
-                  *ok = false;
-                  return 0;
+      //QString qs = cleanText();
+      if (_decimals) {
+            //const char* s = qs.latin1();
+            //const char* s = cleanText().toAscii().data();
+            
+            //int a, b;
+            bool ok;
+            double f = text.toDouble(&ok);
+            
+            //int n = sscanf(s, "%d.%d", &a, &b);
+            //int n = sscanf(s, "%f", &f);
+            
+            //if (n != 2) {
+            //if (n != 1) {
+            if (!ok) {
+            
+                  // *ok = false;
+                  //return 0;
+                  // TODO: Check - Hmm, no OK parameter. Why return 0? Let's try: 
+                  // Keep returning the current value until something valid comes in...
+                  return value();
                   }
-            int div = int(exp10(_precision));
-            return a * div + b;
+            
+            //int div = int(exp10(_decimals));
+            double div = int(exp10(_decimals));
+            
+            //return a * div + b;
+            return (f * div);
+            
             }
-      return QSpinBox::mapTextToValue(ok);
+      return QSpinBox::valueFromText(text);
       }
 
 */

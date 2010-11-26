@@ -4,8 +4,7 @@
 //    $Id: spinbox.cpp,v 1.1.2.3 2009/07/09 18:27:11 terminator356 Exp $
 //    (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
-//#include <qlineedit.h>
-//Added by qt3to4:
+
 #include <QKeyEvent>
 #include <QEvent>
 #include "spinbox.h"
@@ -14,15 +13,17 @@
 //   SpinBox
 //---------------------------------------------------------
 
-SpinBox::SpinBox(QWidget* parent, const char* name)
-   : QSpinBox(parent, name)
+SpinBox::SpinBox(QWidget* parent)
+   : QSpinBox(parent)
 {
   _clearFocus = true;
 }
 
-SpinBox::SpinBox(int minValue, int maxValue, int step, QWidget* parent, const char* name)
-   : QSpinBox(minValue, maxValue, step, parent, name)
+SpinBox::SpinBox(int minValue, int maxValue, int step, QWidget* parent)
+   : QSpinBox(parent)
 {
+  setRange(minValue, maxValue);
+  setSingleStep(step);
   _clearFocus = true;
 }
 

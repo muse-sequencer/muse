@@ -1,3 +1,10 @@
+26.11.2010
+        - Fixed midi trackinfo growing size - set output device list box and instrument button 
+           h-size policy to 'Ignore'. (Tim)
+        - Fixed trackinfo spinboxes only go to 99 - changed some trackinfo ui spinbox properties
+           (maxValue -> maximum, minValue -> minimum etc). (Tim)
+        - Fixed SpinBoxFP class. Was never right before. (Tim)
+        - Fixed transform and input transform ui files and dialogs - using the corrected SpinBoxFP. (Tim)   
 25.11.2010
         - Fixed column widths, alignments, device renaming and jack device creation issues in synthconfigbase.
           Somehow the last changelog entry about this didn't get committed. That's added too. (Orcan)

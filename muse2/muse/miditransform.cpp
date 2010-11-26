@@ -1133,6 +1133,9 @@ void MidiTransformerDialog::procEventOpSel(int val)
       TransformOperator op = val == 0 ? Keep : Fix;
       procType->setEnabled(op == Fix);
       data->cmt->procEvent = op;
+      
+      procVal1aChanged(data->cmt->procVal1a);
+      procVal1bChanged(data->cmt->procVal1b);
       }
 
 //---------------------------------------------------------
@@ -1142,6 +1145,8 @@ void MidiTransformerDialog::procEventOpSel(int val)
 void MidiTransformerDialog::procEventTypeSel(int val)
       {
       data->cmt->eventType = EventType(eventTypeTable[val]);
+      procVal1aChanged(data->cmt->procVal1a);
+      procVal1bChanged(data->cmt->procVal1b);
       }
 
 //---------------------------------------------------------
@@ -1160,7 +1165,7 @@ void MidiTransformerDialog::procVal1OpSel(int val)
             case Multiply:
             case Divide:
                   procVal1a->setEnabled(true);
-                  procVal1a->setPrecision(2);
+                  procVal1a->setDecimals(2);
                   procVal1b->setEnabled(false);
                   break;
             case Plus:
@@ -1168,18 +1173,20 @@ void MidiTransformerDialog::procVal1OpSel(int val)
             case Fix:
             case Value:
             case Flip:
-                  procVal1a->setPrecision(0);
+                  procVal1a->setDecimals(0);
                   procVal1a->setEnabled(true);
                   procVal1b->setEnabled(false);
                   break;
             case Random:
             case ScaleMap:
             case Dynamic:
-                  procVal1a->setPrecision(0);
+                  procVal1a->setDecimals(0);
                   procVal1a->setEnabled(true);
                   procVal1b->setEnabled(true);
                   break;
             }
+      procVal1aChanged(data->cmt->procVal1a);
+      procVal1bChanged(data->cmt->procVal1b);
       }
 
 //---------------------------------------------------------
@@ -1200,20 +1207,20 @@ void MidiTransformerDialog::procVal2OpSel(int val)
             case Multiply:
             case Divide:
                   procVal2a->setEnabled(true);
-                  procVal2a->setPrecision(2);
+                  procVal2a->setDecimals(2);
                   procVal2b->setEnabled(false);
                   break;
             case Plus:
             case Minus:
             case Fix:
             case Value:
-                  procVal2a->setPrecision(0);
+                  procVal2a->setDecimals(0);
                   procVal2a->setEnabled(true);
                   procVal2b->setEnabled(false);
                   break;
             case Random:
             case Dynamic:
-                  procVal2a->setPrecision(0);
+                  procVal2a->setDecimals(0);
                   procVal2a->setEnabled(true);
                   procVal2b->setEnabled(true);
                   break;
@@ -1239,12 +1246,12 @@ void MidiTransformerDialog::procLenOpSel(int val)
             case Plus:
             case Minus:
             case Fix:
-                  procLenA->setPrecision(0);
+                  procLenA->setDecimals(0);
                   procLenA->setEnabled(true);
                   break;
             case Multiply:
             case Divide:
-                  procLenA->setPrecision(2);
+                  procLenA->setDecimals(2);
                   procLenA->setEnabled(true);
                   break;
             default:
@@ -1268,12 +1275,12 @@ void MidiTransformerDialog::procPosOpSel(int val)
                   break;
             case Multiply:
             case Divide:
-                  procPosA->setPrecision(2);
+                  procPosA->setDecimals(2);
                   procPosA->setEnabled(true);
                   break;
             case Plus:
             case Minus:
-                  procPosA->setPrecision(0);
+                  procPosA->setDecimals(0);
                   procPosA->setEnabled(true);
                   break;
             default:
@@ -1483,7 +1490,10 @@ void MidiTransformerDialog::selVal1aChanged(int val)
             selVal1a->setSuffix(" - " + pitch2string(val));
             }
       else
-            selVal1a->setSuffix(QString(""));
+      {
+            if(!selVal1a->suffix().isEmpty())
+              selVal1a->setSuffix(QString(""));
+      }      
       }
 
 //---------------------------------------------------------
@@ -1498,7 +1508,10 @@ void MidiTransformerDialog::selVal1bChanged(int val)
             selVal1b->setSuffix(" - " + pitch2string(val));
             }
       else
-            selVal1b->setSuffix(QString(""));
+      {
+            if(!selVal1b->suffix().isEmpty())
+              selVal1b->setSuffix(QString(""));
+      }      
       }
 
 //---------------------------------------------------------
@@ -1562,6 +1575,19 @@ void MidiTransformerDialog::selBarBChanged(int val)
 void MidiTransformerDialog::procVal1aChanged(int val)
       {
       data->cmt->procVal1a = val;
+      
+      if((data->cmt->procEvent == Keep && data->cmt->selType == MIDITRANSFORM_NOTE) && 
+           (data->cmt->procVal1 == Fix || data->cmt->procVal1 == ScaleMap || data->cmt->procVal1 == Dynamic || 
+            data->cmt->procVal1 == Random || data->cmt->procVal1 == Flip)) 
+        {
+            procVal1a->setSuffix(" - " + pitch2string(val));
+        }
+      else
+      {
+            if(!procVal1a->suffix().isEmpty())
+              procVal1a->setSuffix(QString(""));
+      }      
+      
       }
 
 //---------------------------------------------------------
@@ -1571,6 +1597,18 @@ void MidiTransformerDialog::procVal1aChanged(int val)
 void MidiTransformerDialog::procVal1bChanged(int val)
       {
       data->cmt->procVal1b = val;
+      
+      if((data->cmt->procEvent == Keep && data->cmt->selType == MIDITRANSFORM_NOTE) && 
+           (data->cmt->procVal1 == Fix || data->cmt->procVal1 == ScaleMap || data->cmt->procVal1 == Dynamic || 
+            data->cmt->procVal1 == Random || data->cmt->procVal1 == Flip)) 
+        {
+            procVal1b->setSuffix(" - " + pitch2string(val));
+        }
+      else
+      {
+            if(!procVal1b->suffix().isEmpty())
+              procVal1b->setSuffix(QString(""));
+      }      
       }
 
 //---------------------------------------------------------

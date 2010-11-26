@@ -533,8 +533,8 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="SpinBoxFP" name="procVal1a" native="true">
-        <property name="maxValue" stdset="0">
+       <widget class="SpinBoxFP" name="procVal1a">
+         <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
        </widget>
@@ -736,22 +736,22 @@
        </widget>
       </item>
       <item row="2" column="2">
-       <widget class="SpinBoxFP" name="procVal2a" native="true">
-        <property name="maxValue" stdset="0">
+        <widget class="SpinBoxFP" name="procVal2a">
+          <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
        </widget>
       </item>
       <item row="2" column="3">
-       <widget class="SpinBoxFP" name="procPortVala" native="true">
-        <property name="maxValue" stdset="0">
+        <widget class="SpinBoxFP" name="procPortVala">
+          <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
        </widget>
       </item>
       <item row="2" column="4">
-       <widget class="SpinBoxFP" name="procChannelVala" native="true">
-        <property name="maxValue" stdset="0">
+        <widget class="SpinBoxFP" name="procChannelVala">
+          <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
        </widget>
@@ -1105,11 +1105,11 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
-  <customwidget>
-   <class>SpinBoxFP</class>
-   <extends>QWidget</extends>
-   <header location="global">spinboxFP.h</header>
-  </customwidget>
+   <customwidget>
+     <class>SpinBoxFP</class>
+     <extends>QDoubleSpinBox</extends>
+     <header>spinboxFP.h</header>
+   </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>selEventOp</tabstop>
@@ -1148,9 +1148,6 @@
   <tabstop>buttonDelete</tabstop>
   <tabstop>buttonOk</tabstop>
  </tabstops>
- <includes>
-  <include location="local">spinboxFP.h</include>
- </includes>
  <resources/>
  <connections>
   <connection>

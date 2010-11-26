@@ -13,7 +13,6 @@
 #define __SPINBOX_H__
 
 #include <QSpinBox>
-//Added by qt3to4:
 #include <QEvent>
 
 //---------------------------------------------------------
@@ -36,8 +35,8 @@ class SpinBox : public QSpinBox {
       void doubleClicked();
 
    public:
-      SpinBox(QWidget* parent=0, const char* name = 0);
-      SpinBox(int minValue, int maxValue, int step = 1, QWidget* parent=0, const char* name = 0);
+      SpinBox(QWidget* parent=0);
+      SpinBox(int minValue, int maxValue, int step = 1, QWidget* parent=0);
 };
 
 #endif
