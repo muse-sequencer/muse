@@ -27,7 +27,5 @@ extern QFrame* vLine(QWidget* parent);
 extern void dump(const unsigned char* p, int n);
 extern double curTime();
 
-extern const unsigned int bitShiftLU[32];
-
 #endif
 

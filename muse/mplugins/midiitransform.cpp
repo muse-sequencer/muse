@@ -23,6 +23,7 @@
 #include "track.h"
 #include "song.h"
 #include "xml.h"
+#include "globals.h"
 #include "gconfig.h"
 #include "comboQuant.h"
 #include "pitchedit.h"
@@ -159,7 +160,10 @@ bool applyMidiInputTransformation(MidiRecordEvent& event)
             if (modules[i].valid && modules[i].transform) {
                   int rv = modules[i].transform->apply(event);
                   if (rv == 1)
-                        printf("drop input event\n");
+                  {
+                        if(debugMsg)
+                          printf("drop input event\n");
+                  }      
                   if (rv)
                         return rv != 1;
                   }
@@ -1075,7 +1079,7 @@ void MidiInputTransformDialog::procVal1OpSel(int val)
             case Multiply:
             case Divide:
                   procVal1a->setEnabled(true);
-                  procVal1a->setPrecision(2);
+                  procVal1a->setDecimals(2);
                   procVal1b->setEnabled(false);
                   break;
             case Plus:
@@ -1083,14 +1087,14 @@ void MidiInputTransformDialog::procVal1OpSel(int val)
             case Fix:
             case Value:
             case Flip:
-                  procVal1a->setPrecision(0);
+                  procVal1a->setDecimals(0);
                   procVal1a->setEnabled(true);
                   procVal1b->setEnabled(false);
                   break;
             case Random:
             case ScaleMap:
             case Dynamic:
-                  procVal1a->setPrecision(0);
+                  procVal1a->setDecimals(0);
                   procVal1a->setEnabled(true);
                   procVal1b->setEnabled(true);
                   break;
@@ -1117,20 +1121,20 @@ void MidiInputTransformDialog::procVal2OpSel(int val)
             case Multiply:
             case Divide:
                   procVal2a->setEnabled(true);
-                  procVal2a->setPrecision(2);
+                  procVal2a->setDecimals(2);
                   procVal2b->setEnabled(false);
                   break;
             case Plus:
             case Minus:
             case Fix:
             case Value:
-                  procVal2a->setPrecision(0);
+                  procVal2a->setDecimals(0);
                   procVal2a->setEnabled(true);
                   procVal2b->setEnabled(false);
                   break;
             case Random:
             case Dynamic:
-                  procVal2a->setPrecision(0);
+                  procVal2a->setDecimals(0);
                   procVal2a->setEnabled(true);
                   procVal2b->setEnabled(true);
                   break;
@@ -1256,7 +1260,10 @@ void MidiInputTransformDialog::selVal1aChanged(int val)
             selVal1a->setSuffix(" - " + pitch2string(val));
             }
       else
-            selVal1a->setSuffix(QString(""));
+      {
+            if(!selVal1a->suffix().isEmpty())
+              selVal1a->setSuffix(QString(""));
+      }      
       }
 
 //---------------------------------------------------------
@@ -1271,7 +1278,10 @@ void MidiInputTransformDialog::selVal1bChanged(int val)
             selVal1b->setSuffix(" - " + pitch2string(val));
             }
       else
-            selVal1b->setSuffix(QString(""));
+      {
+            if(!selVal1b->suffix().isEmpty())
+              selVal1b->setSuffix(QString(""));
+      }      
       }
 
 //---------------------------------------------------------
@@ -1307,7 +1317,10 @@ void MidiInputTransformDialog::procVal1aChanged(int val)
             procVal1a->setSuffix(" - " + pitch2string(val));
         }
       else
-            procVal1a->setSuffix(QString(""));
+      {
+            if(!procVal1a->suffix().isEmpty())
+              procVal1a->setSuffix(QString(""));
+      }      
       }
 
 //---------------------------------------------------------
@@ -1325,7 +1338,10 @@ void MidiInputTransformDialog::procVal1bChanged(int val)
             procVal1b->setSuffix(" - " + pitch2string(val));
         }
       else
-            procVal1b->setSuffix(QString(""));
+      {
+            if(!procVal1b->suffix().isEmpty())
+              procVal1b->setSuffix(QString(""));
+      }      
       }
 
 //---------------------------------------------------------
@@ -1454,7 +1470,7 @@ void MidiInputTransformDialog::procPortOpSel(int val)
             case Multiply:
             case Divide:
                   procPortVala->setEnabled(true);
-                  procPortVala->setPrecision(2);
+                  procPortVala->setDecimals(2);
                   procPortValb->setEnabled(false);
                   break;
             case Plus:
@@ -1462,14 +1478,14 @@ void MidiInputTransformDialog::procPortOpSel(int val)
             case Fix:
             case Value:
             case Flip:
-                  procPortVala->setPrecision(0);
+                  procPortVala->setDecimals(0);
                   procPortVala->setEnabled(true);
                   procPortValb->setEnabled(false);
                   break;
             case Random:
             case ScaleMap:
             case Dynamic:
-                  procPortVala->setPrecision(0);
+                  procPortVala->setDecimals(0);
                   procPortVala->setEnabled(true);
                   procPortValb->setEnabled(true);
                   break;
@@ -1510,7 +1526,7 @@ void MidiInputTransformDialog::procChannelOpSel(int val)
             case Multiply:
             case Divide:
                   procChannelVala->setEnabled(true);
-                  procChannelVala->setPrecision(2);
+                  procChannelVala->setDecimals(2);
                   procChannelValb->setEnabled(false);
                   break;
             case Plus:
@@ -1518,14 +1534,14 @@ void MidiInputTransformDialog::procChannelOpSel(int val)
             case Fix:
             case Value:
             case Flip:
-                  procChannelVala->setPrecision(0);
+                  procChannelVala->setDecimals(0);
                   procChannelVala->setEnabled(true);
                   procChannelValb->setEnabled(false);
                   break;
             case Random:
             case ScaleMap:
             case Dynamic:
-                  procChannelVala->setPrecision(0);
+                  procChannelVala->setDecimals(0);
                   procChannelVala->setEnabled(true);
                   procChannelValb->setEnabled(true);
                   break;
@@ -1556,12 +1572,12 @@ void MidiInputTransformDialog::procChannelValbChanged(int val)
 
 void MidiInputTransformDialog::changeModul(int k)
       {
-printf("change modul %d\n", k);
+//printf("change modul %d\n", k);
 
       cmodul = k;       // current modul
 
       if (modules[k].transform == 0) {
-            printf("transform %d ist null\n", k);
+            //printf("transform %d ist null\n", k);
             modules[k].transform = cmt;
             }
       else {
@@ -1598,7 +1614,8 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
       iMidiInputTransformation i;
       for (i = mtlist.begin(); i != mtlist.end(); ++i) {
             if (item->text() == (*i)->name) {
-                  printf("found %s\n", (*i)->name.latin1());
+                  if(debugMsg)
+                    printf("found %s\n", (*i)->name.latin1());
                   cmt = *i;
                   if (cmodul != -1) {
                         modules[cmodul].transform = *i;

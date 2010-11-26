@@ -186,56 +186,56 @@ add_library ( widgets STATIC
       mmath.cpp mmath.h  
       scldraw.cpp scldraw.h  
       action.h  
-      scrollscale.cpp  # scrollscale.h  
-      view.cpp  # view.h  
-      nentry.cpp # nentry.h  
-      mtscale.cpp # mtscale.h  
-      sigscale.cpp # sigscale.h  
-      hitscale.cpp # hitscale.h  
-      intlabel.cpp # intlabel.h  
-      doublelabel.cpp # doublelabel.h  
-      canvas.cpp # canvas.h  
-      noteinfo.cpp # noteinfo.h  
-      dentry.cpp # dentry.h  
-      siglabel.cpp # siglabel.h  
-      ttoolbar.cpp # ttoolbar.h  
-      ttoolbutton.cpp # ttoolbutton.h  
-      tb1.cpp # tb1.h  
-      lcombo.cpp # lcombo.h  
-      swidget.cpp # swidget.h  
-      tempolabel.cpp # tempolabel.h  
-      tools.cpp # tools.h  
-      fontsel.cpp # fontsel.h  
-      ctrlcombo.cpp # ctrlcombo.h  
-      sliderbase.cpp # sliderbase.h  
-      slider.cpp # slider.h  
-      midisyncimpl.cpp # midisyncimpl.h  
-      header.cpp # header.h  
-      knob.cpp # knob.h  
-      mlabel.cpp # mlabel.h  
-      genset.cpp # genset.h  
-      mixdowndialog.cpp # mixdowndialog.h  
-      spinboxFP.cpp # spinboxFP.h  
-      spinbox.cpp # spinbox.h  
-      comboQuant.cpp # comboQuant.h  
-      bigtime.cpp # bigtime.h  
-      comment.cpp # comment.h  
-      splitter.cpp # splitter.h  
-      gatetime.cpp # gatetime.h  
-      velocity.cpp # velocity.h  
-      metronome.cpp # metronome.h  
-      posedit.cpp section.h # posedit.h 
-      pitchedit.cpp # pitchedit.h  
-      pitchlabel.cpp # pitchlabel.h  
-      poslabel.cpp # poslabel.h  
-      filedialog.cpp # filedialog.h  
-      sigedit.cpp # sigedit.h  
-      shortcutconfig.cpp # shortcutconfig.h  
-      shortcutcapturedialog.cpp #shortcutcapturedialog.h  
-      combobox.cpp # combobox.h  
-      checkbox.cpp # checkbox.h  
-      aboutbox_impl.cpp # aboutbox_impl.h  aboutbox.h
-      popupmenu.cpp # popupmenu.h  
+      scrollscale.cpp  
+      view.cpp    
+      nentry.cpp 
+      mtscale.cpp 
+      sigscale.cpp 
+      hitscale.cpp 
+      intlabel.cpp 
+      doublelabel.cpp 
+      canvas.cpp 
+      noteinfo.cpp 
+      dentry.cpp 
+      siglabel.cpp 
+      ttoolbar.cpp 
+      ttoolbutton.cpp 
+      tb1.cpp   
+      lcombo.cpp 
+      swidget.cpp 
+      tempolabel.cpp 
+      tools.cpp 
+      fontsel.cpp 
+      ctrlcombo.cpp 
+      sliderbase.cpp 
+      slider.cpp 
+      midisyncimpl.cpp 
+      header.cpp 
+      knob.cpp 
+      mlabel.cpp 
+      genset.cpp 
+      mixdowndialog.cpp 
+      spinboxFP.cpp 
+      spinbox.cpp 
+      comboQuant.cpp 
+      bigtime.cpp 
+      comment.cpp 
+      splitter.cpp  
+      gatetime.cpp 
+      velocity.cpp 
+      metronome.cpp 
+      posedit.cpp section.h 
+      pitchedit.cpp 
+      pitchlabel.cpp 
+      poslabel.cpp 
+      filedialog.cpp 
+      sigedit.cpp 
+      shortcutconfig.cpp 
+      shortcutcapturedialog.cpp 
+      combobox.cpp  
+      checkbox.cpp 
+      aboutbox_impl.cpp 
+      popupmenu.cpp 
       listitem.h  
       menutitleitem.h  
       )

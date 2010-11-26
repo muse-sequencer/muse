@@ -58,10 +58,10 @@
      <property name="whatsThis">
       <string>all midi events are sent to this output channel</string>
      </property>
-     <property name="maxValue" stdset="0">
+     <property name="maximum" stdset="0">
       <number>16</number>
      </property>
-     <property name="minValue" stdset="0">
+     <property name="minimum" stdset="0">
       <number>1</number>
      </property>
     </widget>
@@ -90,10 +90,10 @@
      <property name="suffix" stdset="0">
       <string>%</string>
      </property>
-     <property name="maxValue" stdset="0">
+     <property name="maximum" stdset="0">
       <number>200</number>
      </property>
-     <property name="minValue" stdset="0">
+     <property name="minimum" stdset="0">
       <number>25</number>
      </property>
      <property name="value" stdset="0">
@@ -104,7 +104,7 @@
    <item row="1" column="0" colspan="2">
     <widget class="QComboBox" name="iOutput">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+      <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -147,10 +147,10 @@
      <property name="specialValueText" stdset="0">
       <string>off</string>
      </property>
-     <property name="maxValue" stdset="0">
+     <property name="maximum" stdset="0">
       <number>1000</number>
      </property>
-     <property name="minValue" stdset="0">
+     <property name="minimum" stdset="0">
       <number>-1000</number>
      </property>
     </widget>
@@ -163,10 +163,10 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="maxValue" stdset="0">
+     <property name="maximum" stdset="0">
       <number>127</number>
      </property>
-     <property name="minValue" stdset="0">
+     <property name="minimum" stdset="0">
       <number>-127</number>
      </property>
      <property name="value" stdset="0">
@@ -188,10 +188,10 @@
      <property name="suffix" stdset="0">
       <string>%</string>
      </property>
-     <property name="maxValue" stdset="0">
+     <property name="maximum" stdset="0">
       <number>200</number>
      </property>
-     <property name="minValue" stdset="0">
+     <property name="minimum" stdset="0">
       <number>25</number>
      </property>
      <property name="value" stdset="0">
@@ -210,10 +210,10 @@
      <property name="specialValueText" stdset="0">
       <string>off</string>
      </property>
-     <property name="maxValue" stdset="0">
+     <property name="maximum" stdset="0">
       <number>127</number>
      </property>
-     <property name="minValue" stdset="0">
+     <property name="minimum" stdset="0">
       <number>-127</number>
      </property>
      <property name="value" stdset="0">
@@ -458,7 +458,7 @@
    <item row="11" column="0" colspan="2">
     <widget class="QPushButton" name="iPatch">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+      <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -556,10 +556,10 @@
      <property name="specialValueText" stdset="0">
       <string>off</string>
      </property>
-     <property name="maxValue" stdset="0">
+     <property name="maximum" stdset="0">
       <number>128</number>
      </property>
-     <property name="minValue" stdset="0">
+     <property name="minimum" stdset="0">
       <number>0</number>
      </property>
      <property name="value" stdset="0">
@@ -606,10 +606,10 @@
      <property name="specialValueText" stdset="0">
       <string>off</string>
      </property>
-     <property name="maxValue" stdset="0">
+     <property name="maximum" stdset="0">
       <number>128</number>
      </property>
-     <property name="minValue" stdset="0">
+     <property name="minimum" stdset="0">
       <number>0</number>
      </property>
      <property name="value" stdset="0">
@@ -656,10 +656,10 @@
      <property name="specialValueText" stdset="0">
       <string>off</string>
      </property>
-     <property name="maxValue" stdset="0">
+     <property name="maximum" stdset="0">
       <number>128</number>
      </property>
-     <property name="minValue" stdset="0">
+     <property name="minimum" stdset="0">
       <number>0</number>
      </property>
      <property name="value" stdset="0">
@@ -739,10 +739,10 @@
      <property name="specialValueText" stdset="0">
       <string>off</string>
      </property>
-     <property name="maxValue" stdset="0">
+     <property name="maximum" stdset="0">
       <number>127</number>
      </property>
-     <property name="minValue" stdset="0">
+     <property name="minimum" stdset="0">
       <number>-1</number>
      </property>
      <property name="value" stdset="0">
@@ -825,10 +825,10 @@
      <property name="specialValueText" stdset="0">
       <string>off</string>
      </property>
-     <property name="maxValue" stdset="0">
+     <property name="maximum" stdset="0">
       <number>63</number>
      </property>
-     <property name="minValue" stdset="0">
+     <property name="minimum" stdset="0">
       <number>-65</number>
      </property>
      <property name="value" stdset="0">
