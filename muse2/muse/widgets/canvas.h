@@ -14,10 +14,9 @@
 //Added by qt3to4:
 #include <QWheelEvent>
 #include <QMouseEvent>
-#include <Q3PopupMenu>
 #include <QKeyEvent>
 
-class Q3PopupMenu;
+class QMenu;
 
 //---------------------------------------------------------
 //   Canvas
@@ -75,8 +74,8 @@ class Canvas : public View {
       HScrollDir hscrollDir;
       VScrollDir vscrollDir;
       int keyState;
-      Q3PopupMenu* itemPopupMenu;
-      Q3PopupMenu* canvasPopupMenu;
+      QMenu* itemPopupMenu;
+      QMenu* canvasPopupMenu;
 
       void setCursor();
       virtual void viewKeyPressEvent(QKeyEvent* event);
@@ -118,7 +117,7 @@ class Canvas : public View {
          \param item The canvas item that is rightclicked
          \return A QPopupMenu*
          */
-      virtual Q3PopupMenu* genItemPopup(CItem* /*item*/) { return 0; }
+      virtual QMenu* genItemPopup(CItem* /*item*/) { return 0; }
 
       /*!
          \brief Pure virtual member
@@ -126,7 +125,7 @@ class Canvas : public View {
          Implementing class is responsible for creating a popup to be shown when the user rightclicks an empty region of the canvas
          \return A QPopupMenu*
          */
-      Q3PopupMenu* genCanvasPopup();
+      QMenu* genCanvasPopup();
 
       /*!
          \brief Virtual member

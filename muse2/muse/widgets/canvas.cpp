@@ -539,9 +539,9 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                   else {
                         itemPopupMenu = genItemPopup(curItem);
                         if (itemPopupMenu) {
-                              int n = itemPopupMenu->exec(QCursor::pos());
-                              if (n != -1)
-                                    itemPopup(curItem, n, start);
+                              QAction *act = itemPopupMenu->exec(QCursor::pos());
+                              if (act)
+                                    itemPopup(curItem, act->data().toInt(), start);
                               delete itemPopupMenu;
                               }
                         }
@@ -549,9 +549,9 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
             else {
                   canvasPopupMenu = genCanvasPopup();
                   if (canvasPopupMenu) {
-                        int n = canvasPopupMenu->exec(QCursor::pos(), 0);
-                        if (n != -1)
-                              canvasPopup(n);
+                        QAction *act = canvasPopupMenu->exec(QCursor::pos(), 0);
+                        if (act)
+                              canvasPopup(act->data().toInt());
                         delete canvasPopupMenu;
                         }
                   }
@@ -1370,16 +1370,17 @@ int Canvas::selectionSize()
 //   genCanvasPopup
 //---------------------------------------------------------
 
-Q3PopupMenu* Canvas::genCanvasPopup()
+QMenu* Canvas::genCanvasPopup()
       {
       if (canvasTools == 0)
             return 0;
-      Q3PopupMenu* canvasPopup = new Q3PopupMenu(this);
+      QMenu* canvasPopup = new QMenu(this);
 
       for (unsigned i = 0; i < 9; ++i) {
             if ((canvasTools & (1 << i))==0)
                   continue;
-            canvasPopup->insertItem(QIcon(**toolList[i].icon), tr(toolList[i].tip), 1<<i); // ddskrjo
+            QAction* act = canvasPopup->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));
+	    act->setData(1<<i); // ddskrjo
             }
       canvasPopup->setActiveItem(0);
       return canvasPopup;
