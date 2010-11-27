@@ -19,8 +19,8 @@
 #=============================================================================
 
 QT4_WRAP_CPP ( vam_mocs vamgui.h )
-# QT4_WRAP_UI (  vam_uis vamgui.ui )
-QT4_WRAP_UI3 (  vam_uis vamguibase.ui ) 
+
+QT4_WRAP_UI (  vam_uis vamguibase.ui ) 
 
 add_library ( vam SHARED 
       vam.cpp 

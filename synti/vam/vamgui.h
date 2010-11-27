@@ -24,11 +24,11 @@
 #ifndef __VAMGUI_H
 #define __VAMGUI_H
 
-#include "vamguibase.h"
+#include "ui_vamguibase.h"
 #include "vam.h"
 #include "libsynti/gui.h"
 
-class Q3ListBoxItem;
+class QListWidgetItem;
 class Preset;
 class QString;
 class QSignalMapper;
@@ -37,7 +37,7 @@ class QSignalMapper;
 //   VAMGui
 //---------------------------------------------------------
 
-class VAMGui : public VAMGuiBase, public MessGui {
+class VAMGui : public QWidget, public Ui::VAMGuiBase, public MessGui {
       QSignalMapper* map;
       int ctrlHi;
       int ctrlLo;
@@ -59,7 +59,7 @@ class VAMGui : public VAMGuiBase, public MessGui {
    private slots:
       void ctrlChanged(int idx);
 
-      void presetClicked(Q3ListBoxItem*);
+      void presetClicked(QListWidgetItem*);
       void setPreset();
       void loadPresetsPressed();
       void savePresetsPressed();

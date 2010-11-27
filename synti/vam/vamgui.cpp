@@ -35,21 +35,18 @@
 #include "vamgui.h"
 #include "vam.h"
 
-#include <qslider.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qsocketnotifier.h>
-#include <q3listbox.h>
-#include <qtoolbutton.h>
-#include <qlineedit.h>
-#include <q3filedialog.h>
-#include <qlcdnumber.h>
-#include <qsignalmapper.h>
-#include <qlabel.h>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QFileDialog>
+#include <QLCDNumber>
+#include <QSignalMapper>
+#include <QSlider>
+#include <QSocketNotifier>
 
 #include "muse/xml.h"
 #include "muse/midi.h"
 #include "muse/midictrl.h"
+#include "muse/icons.h"
 
 const char *vam_ctrl_names[] = {
   "DCO1_PITCHMOD", "DCO1_WAVEFORM", "DCO1_FM", "DCO1_PWM",
@@ -177,11 +174,17 @@ void Preset::writeConfiguration(Xml& xml, int level)
 //---------------------------------------------------------
 
 VAMGui::VAMGui()
-   : VAMGuiBase(0, "vamgui", Qt::Window),
+   : QWidget(0, Qt::Window),
 	MessGui()
 {
+      setupUi(this);
       QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
       connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
+
+      loadPresets->setIcon(QIcon(*openIcon));
+      savePresets->setIcon(QIcon(*saveIcon));
+      savePresetsToFile->setIcon(QIcon(*saveasIcon));
+      deletePreset->setIcon(QIcon(*deleteIcon));
 
 	dctrl[DCO1_PITCHMOD] = SynthGuiCtrl(PitchModS, LCDNumber1,  SynthGuiCtrl::SLIDER);
 	dctrl[DCO1_WAVEFORM] = SynthGuiCtrl(Waveform, 0, SynthGuiCtrl::COMBOBOX);
@@ -229,8 +232,8 @@ VAMGui::VAMGui()
 	}
 	connect(map, SIGNAL(mapped(int)), this, SLOT(ctrlChanged(int)));
 
-	connect(presetList, SIGNAL(clicked(Q3ListBoxItem*)),
-		this, SLOT(presetClicked(Q3ListBoxItem*)));
+	connect(presetList, SIGNAL(itemClicked(QListWidgetItem*)),
+		this, SLOT(presetClicked(QListWidgetItem*)));
 	// presetNameEdit
 	connect(presetSet,   SIGNAL(clicked()), this, SLOT(setPreset()));
 	connect(savePresets, SIGNAL(clicked()), this, SLOT(savePresetsPressed()));
@@ -328,7 +331,7 @@ int VAMGui::getControllerInfo(int id, const char** name, int* controller,
 //   presetClicked
 //---------------------------------------------------------
 
-void VAMGui::presetClicked(Q3ListBoxItem* item)
+void VAMGui::presetClicked(QListWidgetItem* item)
 {
 	if (item == 0)
 		return;
@@ -344,7 +347,7 @@ void VAMGui::presetClicked(Q3ListBoxItem* item)
 }
 
 //---------------------------------------------------------
-//   setPreset
+//   activatePreset
 //---------------------------------------------------------
 
 void VAMGui::activatePreset(Preset* preset)
@@ -386,7 +389,7 @@ void VAMGui::addNewPreset(const QString& name)
 	p.name = name;
 	setPreset(&p);
 	presets.push_back(p);
-	presetList->insertItem(name);
+	presetList->addItem(name);
 }
 
 //---------------------------------------------------------
@@ -394,14 +397,14 @@ void VAMGui::addNewPreset(const QString& name)
 //---------------------------------------------------------
 void VAMGui::deleteNamedPreset(const QString& name)
 {
-	Q3ListBoxItem * item = presetList->findItem(name);
+        QListWidgetItem * item = presetList->findItems(name, Qt::MatchExactly)[0];
 	if (!item) {
 		fprintf(stderr, "%s: Could not find preset!\n", __FUNCTION__);
 		return;
 	}
 	presetList->clearSelection();
-	int index = presetList->index(item);
-	presetList->removeItem(index);
+	int index = presetList->row(item);
+	presetList->takeItem(index);
 	for (iPreset i = presets.begin(); i != presets.end(); ++i) {
 		if (i->name == name) {
 			presets.erase(i);
@@ -561,7 +564,7 @@ void VAMGui::loadPresetsPressed()
                                                       this,
                                                       "Load Soundfont dialog",
                                                       "Choose soundfont");*/
-  QString fn = Q3FileDialog::getOpenFileName(s, "Presets (*.vam)", 
+  QString fn = QFileDialog::getOpenFileName(s, "Presets (*.vam)", 
                                             this,
                                             "MusE: Load VAM Presets",
                                             "Select a preset");
@@ -593,7 +596,7 @@ void VAMGui::loadPresetsPressed()
 					Preset preset;
 					preset.readConfiguration(xml);
 					presets.push_back(preset);
-					presetList->insertItem(preset.name);
+					presetList->addItem(preset.name);
 				}
 				else if(mode != 1)
 					xml.unknown("SynthPreset");
@@ -672,7 +675,7 @@ void VAMGui::savePresetsPressed()
 {
 #if 1 // TODO
 	QString s(getenv("MUSE"));
-	QString fn = Q3FileDialog::getSaveFileName(s, "Presets (*.vam)", this,
+	QString fn = QFileDialog::getSaveFileName(s, "Presets (*.vam)", this,
          tr("MusE: Save VAM Presets"));
 	if (fn.isEmpty())
 		return;
@@ -690,7 +693,7 @@ void VAMGui::savePresetsToFilePressed()
 	if (!presetFileName ) {
  
       QString s(getenv("MUSE"));
-      QString fn = Q3FileDialog::getSaveFileName(s, "Presets (*.vam)", this,
+      QString fn = QFileDialog::getSaveFileName(s, "Presets (*.vam)", this,
             tr("MusE: Save VAM Presets"));
       presetFileName = new QString(fn);
       }
@@ -706,7 +709,7 @@ void VAMGui::savePresetsToFilePressed()
 
 void VAMGui::deletePresetPressed()
 {
-	deleteNamedPreset (presetList->currentText());
+       deleteNamedPreset (presetList->currentItem()->text());
 }
 
 //---------------------------------------------------------
