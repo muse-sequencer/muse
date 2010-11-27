@@ -21,7 +21,6 @@
 #include "icons.h"
 #include "shortcuts.h"
 
-//#include <q3accel.h>
 #include <QMenu>
 #include <QSignalMapper>
 #include <QToolBar>
@@ -73,66 +72,66 @@ WaveEdit::WaveEdit(PartList* pl)
       menuGain = menuFunctions->addMenu(tr("&Gain"));
       
       act = menuGain->addAction(tr("200%"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_GAIN_200);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuGain->addAction(tr("150%"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_GAIN_150);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuGain->addAction(tr("75%"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_GAIN_75);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuGain->addAction(tr("50%"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_GAIN_50);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuGain->addAction(tr("25%"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_GAIN_25);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuGain->addAction(tr("Other"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_GAIN_FREE);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       connect(mapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
       
       menuFunctions->addSeparator();
 
       act = menuEdit->addAction(tr("Edit in E&xternal Editor"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_EDIT_EXTERNAL);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Mute Selection"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_MUTE);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Normalize Selection"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_NORMALIZE);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Fade In Selection"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_FADE_IN);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Fade Out Selection"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_FADE_OUT);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Reverse Selection"));
-      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(act, CMD_REVERSE);
+      connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
       
       selectAllAction = select->addAction(QIcon(*select_allIcon), tr("Select &All"));
-      connect(selectAllAction, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(selectAllAction, CMD_SELECT_ALL);
+      connect(selectAllAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       selectNoneAction = select->addAction(QIcon(*select_allIcon), tr("&Deselect All"));
-      connect(selectNoneAction, SIGNAL(triggered()), mapper, SLOT(map()));
       mapper->setMapping(selectNoneAction, CMD_SELECT_NONE);
+      connect(selectNoneAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Wave edit tools"));          
