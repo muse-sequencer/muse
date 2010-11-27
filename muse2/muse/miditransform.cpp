@@ -22,7 +22,7 @@
 #include "xml.h"
 #include "globals.h"
 #include "comboQuant.h"
-#include "pitchedit.h"
+//#include "pitchedit.h"
 #include "audio.h"
 #include "gconfig.h"
 #include "midictrl.h"

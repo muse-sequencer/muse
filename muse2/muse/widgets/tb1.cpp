@@ -5,20 +5,16 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <assert.h>
+//#include <assert.h>
 #include <stdio.h>
 #include <values.h>
 
-//#include <qlabel.h>
-//#include <qlayout.h>
-//#include <q3listbox.h>
-//#include <qtoolbutton.h>
-// p4.0.3
 #include <QLabel>          
 #include <QLayout>
 #include <QToolButton>
 #include <QTableWidget>    
-#include <QListWidget>      
+#include <QTableWidgetItem>
+#include <QComboBox>      
 
 #include "config.h"
 #include "lcombo.h"

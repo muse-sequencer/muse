@@ -992,7 +992,7 @@
    </customwidget>
   <customwidget>
    <class>ComboQuant</class>
-   <extends>QWidget</extends>
+   <extends>QComboBox</extends>
    <header>comboQuant.h</header>
   </customwidget>
  </customwidgets>

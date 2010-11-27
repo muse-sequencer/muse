@@ -5,7 +5,10 @@
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3listbox.h>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QHeaderView>
+
 #include "comboQuant.h"
 
 static int quantTable[] = {
@@ -24,15 +27,33 @@ static const char* quantStrings[] = {
 //   ComboQuant
 //---------------------------------------------------------
 
-ComboQuant::ComboQuant(QWidget* parent, const char* name)
-   : QComboBox(parent, name)
+ComboQuant::ComboQuant(QWidget* parent)
+   : QComboBox(parent)
       {
-      Q3ListBox* qlist = new Q3ListBox(this);
-      qlist->setMinimumWidth(95);
+      ///Q3ListBox* qlist = new Q3ListBox(this);
+      ///qlist->setMinimumWidth(95);
       //setListBox(qlist); ddskrjo
-      qlist->setColumnMode(3);
-      for (int i = 0; i < 24; i++)
-            qlist->insertItem(tr(quantStrings[i]), i);
+      ///qlist->setColumnMode(3);
+      
+      
+      qlist = new QTableWidget(8, 3);     
+      qlist->verticalHeader()->setDefaultSectionSize(22);                      
+      qlist->horizontalHeader()->setDefaultSectionSize(32);                      
+      qlist->setSelectionMode(QAbstractItemView::SingleSelection);                      
+      qlist->verticalHeader()->hide();                        
+      qlist->horizontalHeader()->hide();                      
+      
+      qlist->setMinimumWidth(96);
+      
+      setView(qlist);               
+      
+      ///for (int i = 0; i < 24; i++)
+      ///      qlist->insertItem(tr(quantStrings[i]), i);
+      for (int j = 0; j < 3; j++)                           
+        for (int i = 0; i < 8; i++)
+          qlist->setItem(i, j, new QTableWidgetItem(tr(quantStrings[i + j * 8])));
+       
+            
       connect(this, SIGNAL(activated(int)), SLOT(activated(int)));
       }
 
@@ -42,7 +63,8 @@ ComboQuant::ComboQuant(QWidget* parent, const char* name)
 
 void ComboQuant::activated(int index)
       {
-      emit valueChanged(quantTable[index]);
+      ///emit valueChanged(quantTable[index]);
+      emit valueChanged(quantTable[qlist->currentRow() + qlist->currentColumn() * 8]);
       }
 
 //---------------------------------------------------------
@@ -57,5 +79,14 @@ void ComboQuant::setValue(int val)
                   return;
                   }
             }
+            
+      for (unsigned i = 0; i < sizeof(quantTable)/sizeof(*quantTable); i++) {
+            if (val == quantTable[i]) {
+                  setCurrentIndex(i);
+                  return;
+                  }
+            }
+      printf("ComboQuant::setValue(%d) not defined\n", val);
+      setCurrentIndex(0);
       }
 

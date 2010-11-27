@@ -8,8 +8,12 @@
 #ifndef __COMBOQUANT_H__
 #define __COMBOQUANT_H__
 
-#include <qwidget.h>
-#include <qcombobox.h>
+#include <QComboBox>
+//#include <QWidget>
+//#include <QTableWidget>
+
+class QWidget;
+class QTableWidget;
 
 //---------------------------------------------------------
 //   ComboQuant
@@ -18,6 +22,8 @@
 class ComboQuant : public QComboBox {
       Q_OBJECT
 
+      QTableWidget* qlist;
+       
    private slots:
       void activated(int);
 
@@ -25,7 +31,7 @@ class ComboQuant : public QComboBox {
       void valueChanged(int);
 
    public:
-      ComboQuant(QWidget* parent = 0, const char* name = 0);
+      ComboQuant(QWidget* parent = 0);
       void setValue(int val);
       };
 
