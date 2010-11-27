@@ -9,51 +9,18 @@
 #ifndef __MIDISYNCIMPL_H__
 #define __MIDISYNCIMPL_H__
 
-#include <q3whatsthis.h>
-#include <q3listview.h>
-#include <qtooltip.h>
-//Added by qt3to4:
-#include <QCloseEvent>
-//#include <qheader.h>
-#include "midisync.h"
+#include "ui_midisync.h"
 #include "sync.h"
 
-//class QWhatsThis;
-//class QListView;
-//class QListViewItem;
-class Q3Header;
-//class MidiDevice;
+class QCloseEvent;
+class QDialog;
+class QTreeWidgetItem;
 
 //----------------------------------------------------------
-//   MSyncHeaderTip
+//   MidiSyncLViewItem
 //----------------------------------------------------------
 
-class MSyncHeaderTip /*: public QToolTip ddskrjo*/ {
-     QWidget *_parent;
-   public:
-      MSyncHeaderTip(QWidget * parent) : _parent(parent) {} // ddskrjo
-      virtual ~MSyncHeaderTip() {}
-   protected:
-      void maybeTip(const QPoint &);
-      };
-
-//---------------------------------------------------------
-//   MSyncWhatsThis
-//---------------------------------------------------------
-
-class MSyncWhatsThis : public Q3WhatsThis {
-      Q3Header* header;
-
-   protected:
-      QString text(const QPoint&);
-
-   public:
-      MSyncWhatsThis(QWidget* parent, Q3Header* h) : Q3WhatsThis(parent) {
-            header = h;
-            }
-      };
-
-class MidiSyncLViewItem : public Q3ListViewItem 
+class MidiSyncLViewItem : public QTreeWidgetItem
 {
    //MidiSyncInfo _syncInfo;
    //MidiDevice* _device;
@@ -63,8 +30,8 @@ class MidiSyncLViewItem : public Q3ListViewItem
       //int _port;
       
    public:
-      MidiSyncLViewItem(Q3ListView* parent)
-         : Q3ListViewItem(parent) { _port = -1; _inDet = _curDet = _tickDet = false; }
+      MidiSyncLViewItem(QTreeWidget* parent)
+         : QTreeWidgetItem(parent) { _port = -1; _inDet = _curDet = _tickDet = false; }
          //: QListViewItem(parent) { _device = 0; }
          
       //MidiSyncLViewItem(QListView* parent, QListViewItem* after)
@@ -112,16 +79,18 @@ class MidiSyncLViewItem : public Q3ListViewItem
 //   MSConfig
 //---------------------------------------------------------
 
-class MidiSyncConfig : public MidiSyncConfigBase {
+class MidiSyncConfig : public QDialog, public Ui::MidiSyncConfigBase {
       Q_OBJECT
-      MSyncHeaderTip* _synctooltip;
 
       bool inHeartBeat;
       bool _dirty;
       
       void updateSyncInfoLV();
       void closeEvent(QCloseEvent*);
-      
+      void setToolTips(QTreeWidgetItem *item);
+      void setWhatsThis(QTreeWidgetItem *item);
+      void addDevice(QTreeWidgetItem *item, QTreeWidget *tree);
+
    private slots:
       void heartBeat();
       void syncChanged();
@@ -130,8 +99,8 @@ class MidiSyncConfig : public MidiSyncConfigBase {
       void cancel();
       void apply();
       //void dlvClicked(QListViewItem*, const QPoint&, int);
-      void dlvClicked(int, Q3ListViewItem*, const QPoint&, int);
-      void dlvDoubleClicked(Q3ListViewItem*, const QPoint&, int);
+      void dlvClicked(QTreeWidgetItem*, int);
+      void dlvDoubleClicked(QTreeWidgetItem*, int);
       //void renameOk(QListViewItem*, int, const QString&);
       void songChanged(int);
 
@@ -139,7 +108,7 @@ class MidiSyncConfig : public MidiSyncConfigBase {
    //   void deleted(unsigned long);
 
    public:
-      MidiSyncConfig(QWidget* parent=0, const char* name=0);
+      MidiSyncConfig(QWidget* parent=0);
       //MidiSyncConfig();
       ~MidiSyncConfig();
       void show();

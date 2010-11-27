@@ -13,15 +13,11 @@
 #include <stdlib.h>
 #include <list>
 
-#include <qslider.h>
-#include <qcheckbox.h>
-#include <qsocketnotifier.h>
-#include <q3listbox.h>
-#include <qtoolbutton.h>
-#include <qlineedit.h>
-#include <q3filedialog.h>
-#include <qspinbox.h>
-#include <qsignalmapper.h>
+#include <QCheckBox>
+#include <QSignalMapper>
+#include <QSlider>
+#include <QSocketNotifier>
+#include <QSpinBox>
 
 #include "organgui.h"
 #include "muse/midi.h"
@@ -34,7 +30,7 @@
 //---------------------------------------------------------
 
 OrganGui::OrganGui()
-   : OrganGuiBase(0, "organgui", Qt::Window), MessGui()
+   : QWidget(0, Qt::Window), MessGui()
       {
       QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
       connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));

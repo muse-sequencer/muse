@@ -6,22 +6,9 @@
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
-//#include "midisyncimpl.h"
-//#include "sync.h"
-//#include "globals.h"
-
-#include <qspinbox.h>
-#include <qcombobox.h>
-#include <qcheckbox.h>
-#include <q3buttongroup.h>
-#include <qpushbutton.h>
-#include <qinputdialog.h>
-//#include <qlistview.h>
-#include <q3header.h>
-#include <qtimer.h>
-//#include <qwhatsthis.h>
-#include <qmessagebox.h>
-//Added by qt3to4:
+#include <QStringList>
+#include <QTreeWidgetItem>
+#include <QInputDialog>
 #include <QCloseEvent>
 
 #include "app.h"
@@ -43,120 +30,91 @@ enum { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_IN, DEVCOL_TICKIN, DEVCOL_MRTIN, DEVCO
 //MidiSyncInfo tmpMidiSyncPorts[MIDI_PORTS];
 
 //---------------------------------------------------------
-//   MSyncHeaderTip::maybeTip
+//   MidiSyncConfig::setToolTips
 //---------------------------------------------------------
 
-void MSyncHeaderTip::maybeTip(const QPoint &pos)
-      {
-      Q3Header* w  = (Q3Header*)_parent->parentWidget();
-      int section = w->sectionAt(pos.x());
-      if (section == -1)
-            return;
-      QRect r(w->sectionPos(section), 0, w->sectionSize(section),
-         w->height());
-      QString p;
-      switch (section) {
-            case DEVCOL_NO:       p = Q3Header::tr("Port Number"); break;
-            case DEVCOL_NAME:     p = Q3Header::tr("Name of the midi device associated with"
-                       " this port number"); break;
-            case DEVCOL_IN:       p = Q3Header::tr("Midi clock input detected"); break;
-            case DEVCOL_TICKIN:   p = Q3Header::tr("Midi tick input detected"); break;
-            case DEVCOL_MRTIN:    p = Q3Header::tr("Midi real time input detected"); break;
-            case DEVCOL_MMCIN:    p = Q3Header::tr("MMC input detected"); break;
-            case DEVCOL_MTCIN:    p = Q3Header::tr("MTC input detected"); break;
-            case DEVCOL_MTCTYPE:  p = Q3Header::tr("Detected SMPTE format"); break;
-            case DEVCOL_RID:      p = Q3Header::tr("Receive id number. 127 = Global. Double click to edit."); break;
-            case DEVCOL_RCLK:     p = Q3Header::tr("Accept midi clock input"); break;
-            case DEVCOL_RMRT:     p = Q3Header::tr("Accept midi real time input"); break;
-            case DEVCOL_RMMC:     p = Q3Header::tr("Accept MMC input"); break;
-            case DEVCOL_RMTC:     p = Q3Header::tr("Accept MTC input"); break;
-            case DEVCOL_RREWSTART: p = Q3Header::tr("Receive start rewinds before playing"); break;
-            case DEVCOL_TID:      p = Q3Header::tr("Transmit id number. 127 = Global. Double click to edit."); break;
-            case DEVCOL_TCLK:     p = Q3Header::tr("Send midi clock output"); break;
-            case DEVCOL_TMRT:     p = Q3Header::tr("Send midi realtime output"); break;
-            case DEVCOL_TMMC:     p = Q3Header::tr("Send MMC output"); break;
-            case DEVCOL_TMTC:     p = Q3Header::tr("Send MTC output"); break;
-            //case DEVCOL_TREWSTART: p = QHeader::tr("Send continue instead of start"); break;
-            default: return;
-            }
-      //tip(r, p); ddskrjo
-      }
-
-//---------------------------------------------------------
-//   MSyncWhatsThis::text
-//---------------------------------------------------------
-
-QString MSyncWhatsThis::text(const QPoint& pos)
+void MidiSyncConfig::setToolTips(QTreeWidgetItem *item)
 {
-      int n = header->cellAt(pos.x());
-      if (n == -1)
-            return QString::null;
-      switch (header->mapToLogical(n)) {
-            case DEVCOL_NO:
-                  return Q3Header::tr("Port Number");
-            case DEVCOL_NAME:
-                  return Q3Header::tr("Name of the midi device associated with this port number");
-            case DEVCOL_IN:
-                  return Q3Header::tr("Midi clock input detected.\n"
-                                     "Current port actually used is red.\nClick to force a port to be used.");
-            case DEVCOL_TICKIN:
-                  return Q3Header::tr("Midi tick input detected");
-            case DEVCOL_MRTIN:
-                  return Q3Header::tr("Midi realtime input detected, including\n start/stop/continue, and song position.");
-            case DEVCOL_MMCIN:
-                  return Q3Header::tr("MMC input detected, including stop/play/deferred play, and locate.");
-                                     //"Current port actually used is red. Click to force a port to be current.");
-            case DEVCOL_MTCIN:
-                  return Q3Header::tr("MTC input detected, including forward quarter-frame sync and full-frame locate.\n"
-                                     "Current port actually used is red. Click to force a port to be current.");
-            case DEVCOL_MTCTYPE:
-                  return Q3Header::tr("Detected SMPTE format: 24fps, 25fps, 30fps drop frame, or 30fps non-drop\n"
-                                     "Detects format of MTC quarter and full frame, and MMC locate.");
-            case DEVCOL_RID:
-                  return Q3Header::tr("Receive id number. 127 = global receive all, even if not global.");
-            case DEVCOL_RCLK:
-                  return Q3Header::tr("Accept midi clock input. Only one input is used for clock.\n"
-                                     "Auto-acquire: If two or more port realtime inputs are enabled,\n"
-                                     " the first clock detected is used, until clock is lost,\n"
-                                     " then another can take over. Best if each turns off its clock\n" 
-                                     " at stop, so MusE can re-acquire the clock from another port.\n"
-                                     "Click on detect indicator to force another.");
-            case DEVCOL_RMRT:
-                  return Q3Header::tr("Accept midi realtime input, including\n start/stop/continue, and song position.\n"
-                                     "Non-clock events (start,stop etc) are\n accepted by ALL enabled ports.\n"
-                                     "This means you may have several master\n devices connected, and muse will accept\n"
-                                     " input from them.");
-            case DEVCOL_RMMC:
-                  return Q3Header::tr("Accept MMC input, including stop/play/deferred play, and locate.");
-            case DEVCOL_RMTC:
-                  return Q3Header::tr("Accept MTC input, including forward quarter-frame sync and full-frame locate.\n"
-                                     "See 'rc' column for more help.");
-            case DEVCOL_RREWSTART:
-                  return Q3Header::tr("When start is received, rewind before playing.\n"
-                                     "Note: It may be impossible to rewind fast\n"
-                                     " enough to synchronize with the external device.");
-            case DEVCOL_TID:
-                  return Q3Header::tr("Transmit id number. 127 = global transmit to all.");
-            case DEVCOL_TCLK:
-                  return Q3Header::tr("Send midi clock output. If 'Slave to External Sync' is chosen,\n"
-                                     " muse can re-transmit clock to any other chosen ports.");
-            case DEVCOL_TMRT:
-                  return Q3Header::tr("Send midi realtime output, including start/stop/continue,\n"
-                                     " and song position. If 'Slave to external sync' is chosen,\n"
-                                     " muse can re-transmit midi realtime input messages to any\n"
-                                     " other chosen ports. This means you may have several slave\n"
-                                     " devices connected, and muse can re-send realtime messages\n"
-                                     " to any or all of them.");
-            case DEVCOL_TMMC:
-                  return Q3Header::tr("Send MMC output");
-            case DEVCOL_TMTC:
-                  return Q3Header::tr("Send MTC output");
-            //case DEVCOL_TREWSTART:
-            //      return QHeader::tr("When transport is starting, send continue instead of start.\n");
-            default:
-                  break;
-            }
-      return QString::null;
+  item->setToolTip(DEVCOL_NO, tr("Port Number"));
+  item->setToolTip(DEVCOL_NAME, tr("Name of the midi device associated with"
+				   " this port number"));
+  item->setToolTip(DEVCOL_IN, tr("Midi clock input detected"));
+  item->setToolTip(DEVCOL_TICKIN, tr("Midi tick input detected"));
+  item->setToolTip(DEVCOL_MRTIN, tr("Midi real time input detected"));
+  item->setToolTip(DEVCOL_MMCIN, tr("MMC input detected"));
+  item->setToolTip(DEVCOL_MTCIN, tr("MTC input detected"));
+  item->setToolTip(DEVCOL_MTCTYPE, tr("Detected SMPTE format"));
+  item->setToolTip(DEVCOL_RID, tr("Receive id number. 127 = Global. Double click to edit."));
+  item->setToolTip(DEVCOL_RCLK, tr("Accept midi clock input"));
+  item->setToolTip(DEVCOL_RMRT, tr("Accept midi real time input"));
+  item->setToolTip(DEVCOL_RMMC, tr("Accept MMC input"));
+  item->setToolTip(DEVCOL_RMTC, tr("Accept MTC input"));
+  item->setToolTip(DEVCOL_RREWSTART, tr("Receive start rewinds before playing"));
+  item->setToolTip(DEVCOL_TID, tr("Transmit id number. 127 = Global. Double click to edit."));
+  item->setToolTip(DEVCOL_TCLK, tr("Send midi clock output"));
+  item->setToolTip(DEVCOL_TMRT, tr("Send midi realtime output"));
+  item->setToolTip(DEVCOL_TMMC, tr("Send MMC output"));
+  item->setToolTip(DEVCOL_TMTC, tr("Send MTC output"));
+  //item->setToolTip(DEVCOL_TREWSTART, tr("Send continue instead of start"));
+}
+
+//---------------------------------------------------------
+//   MidiSyncConfig::setWhatsThis
+//---------------------------------------------------------
+
+void MidiSyncConfig::setWhatsThis(QTreeWidgetItem *item)
+{
+  item->setWhatsThis(DEVCOL_NO, tr("Port Number"));
+  item->setWhatsThis(DEVCOL_NAME, tr("Name of the midi device associated with this port number"));
+  item->setWhatsThis(DEVCOL_IN, tr("Midi clock input detected.\n"
+				   "Current port actually used is red.\nClick to force a port to be used."));
+  item->setWhatsThis(DEVCOL_TICKIN, tr("Midi tick input detected"));
+  item->setWhatsThis(DEVCOL_MRTIN, tr("Midi realtime input detected, including\n start/stop/continue, and song position."));
+  item->setWhatsThis(DEVCOL_MMCIN, tr("MMC input detected, including stop/play/deferred play, and locate."));
+                                      //"Current port actually used is red. Click to force a port to be current."));
+  item->setWhatsThis(DEVCOL_MTCIN, tr("MTC input detected, including forward quarter-frame sync and full-frame locate.\n"
+				      "Current port actually used is red. Click to force a port to be current."));
+  item->setWhatsThis(DEVCOL_MTCTYPE, tr("Detected SMPTE format: 24fps, 25fps, 30fps drop frame, or 30fps non-drop\n"
+					"Detects format of MTC quarter and full frame, and MMC locate."));
+  item->setWhatsThis(DEVCOL_RID, tr("Receive id number. 127 = global receive all, even if not global."));
+  item->setWhatsThis(DEVCOL_RCLK, tr("Accept midi clock input. Only one input is used for clock.\n"
+				     "Auto-acquire: If two or more port realtime inputs are enabled,\n"
+				     " the first clock detected is used, until clock is lost,\n"
+				     " then another can take over. Best if each turns off its clock\n" 
+				     " at stop, so MusE can re-acquire the clock from another port.\n"
+				     "Click on detect indicator to force another."));
+  item->setWhatsThis(DEVCOL_RMRT, tr("Accept midi realtime input, including\n start/stop/continue, and song position.\n"
+				     "Non-clock events (start,stop etc) are\n accepted by ALL enabled ports.\n"
+				     "This means you may have several master\n devices connected, and muse will accept\n"
+				     " input from them."));
+  item->setWhatsThis(DEVCOL_RMMC, tr("Accept MMC input, including stop/play/deferred play, and locate."));
+  item->setWhatsThis(DEVCOL_RMTC, tr("Accept MTC input, including forward quarter-frame sync and full-frame locate.\n"
+				     "See 'rc' column for more help."));
+  item->setWhatsThis(DEVCOL_RREWSTART, tr("When start is received, rewind before playing.\n"
+					  "Note: It may be impossible to rewind fast\n"
+					  " enough to synchronize with the external device."));
+  item->setWhatsThis(DEVCOL_TID, tr("Transmit id number. 127 = global transmit to all."));
+  item->setWhatsThis(DEVCOL_TCLK, tr("Send midi clock output. If 'Slave to External Sync' is chosen,\n"
+				     " muse can re-transmit clock to any other chosen ports."));
+  item->setWhatsThis(DEVCOL_TMRT, tr("Send midi realtime output, including start/stop/continue,\n"
+				     " and song position. If 'Slave to external sync' is chosen,\n"
+				     " muse can re-transmit midi realtime input messages to any\n"
+				     " other chosen ports. This means you may have several slave\n"
+				     " devices connected, and muse can re-send realtime messages\n"
+				     " to any or all of them."));
+  item->setWhatsThis(DEVCOL_TMMC, tr("Send MMC output"));
+  item->setWhatsThis(DEVCOL_TMTC, tr("Send MTC output"));
+  //      item->setWhatsThis(DEVCOL_TREWSTART, tr("When transport is starting, send continue instead of start.\n"));
+}
+
+//---------------------------------------------------------
+//   MidiSyncConfig::addDevice
+//---------------------------------------------------------
+
+void MidiSyncConfig::addDevice(QTreeWidgetItem *item, QTreeWidget *tree)
+{
+  setWhatsThis(item);
+  tree->addTopLevelItem(item);
 }
 
 /*
@@ -235,10 +193,10 @@ void MidiSyncLViewItem::copyToSyncInfo(MidiSyncInfo &sp)
 //    Midi Sync Config
 //---------------------------------------------------------
 
-MidiSyncConfig::MidiSyncConfig(QWidget* parent, const char* name)
-  : MidiSyncConfigBase(parent, name)
+MidiSyncConfig::MidiSyncConfig(QWidget* parent)
+  : QDialog(parent)
 {
-      _synctooltip = 0;
+      setupUi(this);
       
       _dirty = false;
       applyButton->setEnabled(false);
@@ -278,71 +236,34 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent, const char* name)
       
       
       
-      devicesListView->setSorting(-1);
       devicesListView->setAllColumnsShowFocus(true);
-      devicesListView->addColumn(tr("Port"));
-      devicesListView->addColumn(tr("Device Name"), 120);
-      devicesListView->addColumn(tr("c"));
-      devicesListView->addColumn(tr("k"));
-      devicesListView->addColumn(tr("r"));
-      devicesListView->addColumn(tr("m"));
-      devicesListView->addColumn(tr("t"));
-      devicesListView->addColumn(tr("type"));
-      devicesListView->addColumn(tr("rid"));  // Receive
-      devicesListView->addColumn(tr("rc")); // Receive
-      devicesListView->addColumn(tr("rr")); // Receive
-      devicesListView->addColumn(tr("rm")); // Receive
-      devicesListView->addColumn(tr("rt")); // Receive
-      devicesListView->addColumn(tr("rw")); // Receive
-      devicesListView->addColumn(tr("tid"));  // Transmit
-      devicesListView->addColumn(tr("tc")); // Transmit
-      devicesListView->addColumn(tr("tr")); // Transmit
-      devicesListView->addColumn(tr("tm")); // Transmit
-      devicesListView->addColumn(tr("tt")); // Transmit
-      //devicesListView->addColumn(tr("trs")); // Transmit
+      QStringList columnnames;
+      columnnames << tr("Port")
+		  << tr("Device Name")
+		  << tr("c")
+		  << tr("k")
+		  << tr("r")
+		  << tr("m")
+		  << tr("t")
+		  << tr("type")
+		  << tr("rid") // Receive
+		  << tr("rc") // Receive
+		  << tr("rr") // Receive
+		  << tr("rm") // Receive
+		  << tr("rt") // Receive
+		  << tr("rw") // Receive
+		  << tr("tid") // Transmit
+		  << tr("tc") // Transmit
+		  << tr("tr") // Transmit
+		  << tr("tm") // Transmit
+		  << tr("tt"); // Transmit
+	
+      devicesListView->setColumnCount(columnnames.size());
+      devicesListView->setHeaderLabels(columnnames);
+      setWhatsThis(devicesListView->headerItem());
+      setToolTips(devicesListView->headerItem());
       devicesListView->setFocusPolicy(Qt::NoFocus);
 
-      devicesListView->setColumnAlignment(DEVCOL_NO, Qt::AlignHCenter);
-      devicesListView->setColumnAlignment(DEVCOL_IN, Qt::AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_TICKIN, Qt::AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_MRTIN, Qt::AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_MMCIN, Qt::AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_MTCIN, Qt::AlignCenter);
-      //devicesListView->setColumnAlignment(DEVCOL_MTCTYPE, AlignCenter);
-      //devicesListView->setColumnAlignment(DEVCOL_RID, AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_RCLK, Qt::AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_RMRT, Qt::AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_RMMC, Qt::AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_RMTC, Qt::AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_RREWSTART, Qt::AlignCenter);
-      //devicesListView->setColumnAlignment(DEVCOL_TID, AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_TCLK, Qt::AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_TMRT, Qt::AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_TMMC, Qt::AlignCenter);
-      devicesListView->setColumnAlignment(DEVCOL_TMTC, Qt::AlignCenter);
-      //devicesListView->setColumnAlignment(DEVCOL_TREWSTART, AlignCenter);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_NO);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_IN);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_TICKIN);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_MRTIN);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_MMCIN);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_MTCIN);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_RCLK);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_RMRT);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_RMMC);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_RMTC);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_RMTC);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_RREWSTART);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_TCLK);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_TMRT);
-      devicesListView->header()->setResizeEnabled(false, DEVCOL_TMMC);
-      //devicesListView->header()->setResizeEnabled(false, DEVCOL_TREWSTART);
-      //devicesListView->setResizeMode(QListView::LastColumn);
-      devicesListView->setResizeMode(Q3ListView::NoColumn);
-
-
-      new MSyncWhatsThis(devicesListView, devicesListView->header());
-      _synctooltip = new MSyncHeaderTip(devicesListView->header());
       //MSyncHeaderTip::add(devicesListView->header(), QString("Midi sync ports"));
 
 //      updateSyncInfoLV();
@@ -351,10 +272,10 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent, const char* name)
       
     //connect(devicesListView, SIGNAL(pressed(QListViewItem*,const QPoint&,int)),
       //   this, SLOT(dlvClicked(QListViewItem*,const QPoint&,int)));
-      connect(devicesListView, SIGNAL(mouseButtonClicked(int, Q3ListViewItem*,const QPoint&, int)),
-         this, SLOT(dlvClicked(int, Q3ListViewItem*,const QPoint&, int)));
-      connect(devicesListView, SIGNAL(doubleClicked(Q3ListViewItem*,const QPoint&,int)),
-         this, SLOT(dlvDoubleClicked(Q3ListViewItem*,const QPoint&,int)));
+      connect(devicesListView, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+         this, SLOT(dlvClicked(QTreeWidgetItem*, int)));
+      connect(devicesListView, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),
+         this, SLOT(dlvDoubleClicked(QTreeWidgetItem*, int)));
       //connect(devicesListView, SIGNAL(itemRenamed(QListViewItem*, int, const QString&)),
       //   this, SLOT(renameOk(QListViewItem*, int, const QString&)));
       
@@ -379,7 +300,6 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent, const char* name)
 
 MidiSyncConfig::~MidiSyncConfig()
 {
-  delete _synctooltip;
 }
 
 //---------------------------------------------------------
@@ -447,12 +367,11 @@ void MidiSyncConfig::songChanged(int flags)
 void MidiSyncConfig::heartBeat()
 {
       //inHeartBeat = true;
-      
-      MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->firstChild();
-      while(lvi) 
-      {
-        int port = lvi->port();
-        if(port >= 0 && port < MIDI_PORTS)
+  for (int i = MIDI_PORTS-1; i >= 0; --i)
+    {
+      MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->topLevelItem(i);
+      int port = lvi->port();
+      if(port >= 0 && port < MIDI_PORTS)
         {
           bool sdet = midiPorts[port].syncInfo().MCSyncDetect();
           if(sdet)
@@ -466,7 +385,7 @@ void MidiSyncConfig::heartBeat()
             
                 lvi->_curDet = true;
                 lvi->_inDet = false;
-                lvi->setPixmap(DEVCOL_IN, *record1_Icon);
+                lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
               }  
             }
             else
@@ -477,7 +396,7 @@ void MidiSyncConfig::heartBeat()
           
               lvi->_inDet = true;
               lvi->_curDet = false;
-              lvi->setPixmap(DEVCOL_IN, *dotIcon);
+              lvi->setIcon(DEVCOL_IN, QIcon( *dotIcon));
             }  
           }
           else
@@ -489,7 +408,7 @@ void MidiSyncConfig::heartBeat()
           
               lvi->_curDet = false;
               lvi->_inDet = false;
-              lvi->setPixmap(DEVCOL_IN, *dothIcon);
+              lvi->setIcon(DEVCOL_IN, QIcon( *dothIcon));
             }  
           }
           
@@ -502,7 +421,7 @@ void MidiSyncConfig::heartBeat()
               //printf("MidiSyncConfig::heartBeat setting tick on icon\n");
           
               lvi->_tickDet = true;
-              lvi->setPixmap(DEVCOL_TICKIN, *dotIcon);
+              lvi->setIcon(DEVCOL_TICKIN, QIcon( *dotIcon));
             }  
           } 
           else
@@ -513,7 +432,7 @@ void MidiSyncConfig::heartBeat()
               //printf("MidiSyncConfig::heartBeat setting tick off icon\n");
           
               lvi->_tickDet = false;
-              lvi->setPixmap(DEVCOL_TICKIN, *dothIcon);
+              lvi->setIcon(DEVCOL_TICKIN, QIcon( *dothIcon));
             }  
           }
         
@@ -526,7 +445,7 @@ void MidiSyncConfig::heartBeat()
               //printf("MidiSyncConfig::heartBeat setting MRT on icon\n");
           
               lvi->_MRTDet = true;
-              lvi->setPixmap(DEVCOL_MRTIN, *dotIcon);
+              lvi->setIcon(DEVCOL_MRTIN, QIcon( *dotIcon));
             }  
           } 
           else
@@ -537,7 +456,7 @@ void MidiSyncConfig::heartBeat()
               //printf("MidiSyncConfig::heartBeat setting MRT off icon\n");
           
               lvi->_MRTDet = false;
-              lvi->setPixmap(DEVCOL_MRTIN, *dothIcon);
+              lvi->setIcon(DEVCOL_MRTIN, QIcon( *dothIcon));
             }  
           }
         
@@ -552,7 +471,7 @@ void MidiSyncConfig::heartBeat()
               //printf("MidiSyncConfig::heartBeat setting MMC on icon\n");
           
               lvi->_MMCDet = true;
-              lvi->setPixmap(DEVCOL_MMCIN, *dotIcon);
+              lvi->setIcon(DEVCOL_MMCIN, QIcon( *dotIcon));
             }
             // MMC locate command can contain SMPTE format type. Update now.
             if(!mtcdet && lvi->_recMTCtype != type)
@@ -586,7 +505,7 @@ void MidiSyncConfig::heartBeat()
               //printf("MidiSyncConfig::heartBeat setting MMC off icon\n");
           
               lvi->_MMCDet = false;
-              lvi->setPixmap(DEVCOL_MMCIN, *dothIcon);
+              lvi->setIcon(DEVCOL_MMCIN, QIcon( *dothIcon));
             }  
           }
           
@@ -601,7 +520,7 @@ void MidiSyncConfig::heartBeat()
             
                 lvi->_curMTCDet = true;
                 lvi->_MTCDet = false;
-                lvi->setPixmap(DEVCOL_MTCIN, *record1_Icon);
+                lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
               }  
             }
             else
@@ -612,7 +531,7 @@ void MidiSyncConfig::heartBeat()
           
               lvi->_MTCDet = true;
               lvi->_curMTCDet = false;
-              lvi->setPixmap(DEVCOL_MTCIN, *dotIcon);
+              lvi->setIcon(DEVCOL_MTCIN, QIcon( *dotIcon));
             }
             
             if(lvi->_recMTCtype != type)
@@ -647,7 +566,7 @@ void MidiSyncConfig::heartBeat()
           
               lvi->_MTCDet = false;
               lvi->_curMTCDet = false;
-              lvi->setPixmap(DEVCOL_MTCIN, *dothIcon);
+              lvi->setIcon(DEVCOL_MTCIN, QIcon( *dothIcon));
             }  
           }
         }
@@ -655,9 +574,8 @@ void MidiSyncConfig::heartBeat()
         //MidiDevice* dev = lvi->device();
         //bool sdet = dev->syncInfo().MCSyncDetect();
         //if(lvi->pixmap(DEVCOL_IN) != (sdet ? *dotIcon : *dothIcon))
-        //  lvi->setPixmap(DEVCOL_IN, sdet ? *dotIcon : *dothIcon);
+        //  lvi->setIcon(DEVCOL_IN, QIcon( sdet ? *dotIcon : *dothIcon));
         
-        lvi = (MidiSyncLViewItem*)lvi->nextSibling();
       }
             
       //inHeartBeat = false;
@@ -802,10 +720,13 @@ void MidiSyncConfig::apply()
 //      acceptMC  = acceptMCCheckbox->isChecked();
 //      acceptMMC = acceptMMCCheckbox->isChecked();
 //      acceptMTC = acceptMTCCheckbox->isChecked();
+
       
-      MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->firstChild();
-      while(lvi) 
+	  //MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->firstChild();
+	  //while(lvi) 
+      for (int i = MIDI_PORTS-1; i >= 0; --i)	    
       {
+	MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->topLevelItem(i);
         //MidiDevice* dev = lvi->device();
         // Does the device really exist?
         //if(midiDevices.find(dev) != midiDevices.end())
@@ -815,7 +736,6 @@ void MidiSyncConfig::apply()
           //midiPorts[port].syncInfo().copyParams(lvi->syncInfo());
           lvi->copyToSyncInfo(midiPorts[port].syncInfo());
         
-        lvi = (MidiSyncLViewItem*)lvi->nextSibling();
       }
   
   //muse->changeConfig(true);    // save settings
@@ -835,7 +755,7 @@ void MidiSyncConfig::apply()
 void MidiSyncConfig::updateSyncInfoLV()
       {
       devicesListView->clear();
-      for(int i = MIDI_PORTS-1; i >= 0; --i) 
+      for(int i = 0; i < MIDI_PORTS; ++i) 
       {
             MidiPort* port  = &midiPorts[i];
             MidiDevice* dev = port->device();
@@ -871,48 +791,48 @@ void MidiSyncConfig::updateSyncInfoLV()
               {
                 lvi->_curDet = true;
                 lvi->_inDet = false;
-                lvi->setPixmap(DEVCOL_IN, *record1_Icon);
+                lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
               }
               else
               {
                 lvi->_curDet = false;
                 lvi->_inDet = true;
-                lvi->setPixmap(DEVCOL_IN, *dotIcon);
+                lvi->setIcon(DEVCOL_IN, QIcon( *dotIcon));
               }
             }
             else
             {
               lvi->_curDet = false;
               lvi->_inDet = false;
-              lvi->setPixmap(DEVCOL_IN, *dothIcon);
+              lvi->setIcon(DEVCOL_IN, QIcon( *dothIcon));
             }
             
             if(portsi.tickDetect())
             {
               lvi->_tickDet = true;
-              lvi->setPixmap(DEVCOL_TICKIN, *dotIcon);
+              lvi->setIcon(DEVCOL_TICKIN, QIcon( *dotIcon));
             }
             else
             {
               lvi->_tickDet = false;
-              lvi->setPixmap(DEVCOL_TICKIN, *dothIcon);
+              lvi->setIcon(DEVCOL_TICKIN, QIcon( *dothIcon));
             }
-            
+
             if(portsi.MRTDetect())
             {
               lvi->_MRTDet = true;
-              lvi->setPixmap(DEVCOL_MRTIN, *dotIcon);
+              lvi->setIcon(DEVCOL_MRTIN, QIcon( *dotIcon));
             }
             else
             {
               lvi->_MRTDet = false;
-              lvi->setPixmap(DEVCOL_MRTIN, *dothIcon);
+              lvi->setIcon(DEVCOL_MRTIN, QIcon( *dothIcon));
             }
-            
+
             if(portsi.MMCDetect())
             {
               lvi->_MMCDet = true;
-              lvi->setPixmap(DEVCOL_MMCIN, *dotIcon);
+              lvi->setIcon(DEVCOL_MMCIN, QIcon( *dotIcon));
               // MMC locate command can have SMPTE format bits...
               if(lvi->_recMTCtype != portsi.recMTCtype())
               {
@@ -939,22 +859,22 @@ void MidiSyncConfig::updateSyncInfoLV()
             else
             {
               lvi->_MMCDet = false;
-              lvi->setPixmap(DEVCOL_MMCIN, *dothIcon);
+              lvi->setIcon(DEVCOL_MMCIN, QIcon( *dothIcon));
             }
-            
+
             if(portsi.MTCDetect())
             {
               if(i == curMidiSyncInPort)
               {
                 lvi->_curMTCDet = true;
                 lvi->_MTCDet = false;
-                lvi->setPixmap(DEVCOL_MTCIN, *record1_Icon);
+                lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
               }
               else
               {
                 lvi->_curMTCDet = false;
                 lvi->_MTCDet = true;
-                lvi->setPixmap(DEVCOL_MTCIN, *dotIcon);
+                lvi->setIcon(DEVCOL_MTCIN, QIcon( *dotIcon));
               }
                 
               if(lvi->_recMTCtype != portsi.recMTCtype())
@@ -983,36 +903,73 @@ void MidiSyncConfig::updateSyncInfoLV()
             {
               lvi->_curMTCDet = false;
               lvi->_MTCDet = false;
-              lvi->setPixmap(DEVCOL_MTCIN, *dothIcon);
+              lvi->setIcon(DEVCOL_MTCIN, QIcon( *dothIcon));
               //lvi->setText(DEVCOL_MTCTYPE, "--");
             }
-            
+
             //lvi->setText(DEVCOL_RID,    QString().setNum(si.idIn()) );
             //lvi->setRenameEnabled(DEVCOL_RID, true);
-            //lvi->setPixmap(DEVCOL_RCLK, si.MCIn() ? *dotIcon : *dothIcon);
-            //lvi->setPixmap(DEVCOL_RMMC, si.MMCIn() ? *dotIcon : *dothIcon);
-            //lvi->setPixmap(DEVCOL_RMTC, si.MTCIn() ? *dotIcon : *dothIcon);
+            //lvi->setIcon(DEVCOL_RCLK, QIcon( si.MCIn() ? *dotIcon : *dothIcon));
+            //lvi->setIcon(DEVCOL_RMMC, QIcon( si.MMCIn() ? *dotIcon : *dothIcon));
+            //lvi->setIcon(DEVCOL_RMTC, QIcon( si.MTCIn() ? *dotIcon : *dothIcon));
             lvi->setText(DEVCOL_RID,    QString().setNum(lvi->_idIn) );
-            lvi->setPixmap(DEVCOL_RCLK, lvi->_recMC ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_RMRT, lvi->_recMRT ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_RMMC, lvi->_recMMC ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_RMTC, lvi->_recMTC ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_RREWSTART, lvi->_recRewOnStart ? *dotIcon : *dothIcon);
+            lvi->setIcon(DEVCOL_RCLK, QIcon( lvi->_recMC ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_RMRT, QIcon( lvi->_recMRT ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_RMMC, QIcon( lvi->_recMMC ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_RMTC, QIcon( lvi->_recMTC ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_RREWSTART, QIcon( lvi->_recRewOnStart ? *dotIcon : *dothIcon));
             
             //lvi->setText(DEVCOL_TID,    QString().setNum(si.idOut()) );
             //lvi->setRenameEnabled(DEVCOL_TID, true);
-            //lvi->setPixmap(DEVCOL_TCLK, si.MCOut() ? *dotIcon : *dothIcon);
-            //lvi->setPixmap(DEVCOL_TMMC, si.MMCOut() ? *dotIcon : *dothIcon);
-            //lvi->setPixmap(DEVCOL_TMTC, si.MTCOut() ? *dotIcon : *dothIcon);
+            //lvi->setIcon(DEVCOL_TCLK, QIcon( si.MCOut() ? *dotIcon : *dothIcon));
+            //lvi->setIcon(DEVCOL_TMMC, QIcon( si.MMCOut() ? *dotIcon : *dothIcon));
+            //lvi->setIcon(DEVCOL_TMTC, QIcon( si.MTCOut() ? *dotIcon : *dothIcon));
             lvi->setText(DEVCOL_TID,          QString().setNum(lvi->_idOut) );
-            lvi->setPixmap(DEVCOL_TCLK,       lvi->_sendMC ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_TMRT,       lvi->_sendMRT ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_TMMC,       lvi->_sendMMC ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_TMTC,       lvi->_sendMTC ? *dotIcon : *dothIcon);
-            //lvi->setPixmap(DEVCOL_TREWSTART,  lvi->_sendContNotStart ? *dotIcon : *dothIcon);
+            lvi->setIcon(DEVCOL_TCLK, QIcon(lvi->_sendMC ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_TMRT, QIcon(lvi->_sendMRT ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_TMMC, QIcon(lvi->_sendMMC ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_TMTC, QIcon(lvi->_sendMTC ? *dotIcon : *dothIcon));
+            //lvi->setIcon(DEVCOL_TREWSTART, QIcon(  lvi->_sendContNotStart ? *dotIcon : *dothIcon));
             
-            devicesListView->insertItem(lvi);
+            addDevice(lvi, devicesListView);
       }
+	    devicesListView->resizeColumnToContents(DEVCOL_NO);
+	    //devicesListView->resizeColumnToContents(DEVCOL_NAME);
+	    devicesListView->header()->resizeSection(DEVCOL_NAME, 120);
+	    devicesListView->resizeColumnToContents(DEVCOL_IN);
+	    devicesListView->resizeColumnToContents(DEVCOL_TICKIN);
+	    devicesListView->resizeColumnToContents(DEVCOL_MRTIN);
+	    devicesListView->resizeColumnToContents(DEVCOL_MMCIN);
+	    devicesListView->resizeColumnToContents(DEVCOL_MTCIN);
+	    devicesListView->resizeColumnToContents(DEVCOL_MTCTYPE);
+	    devicesListView->resizeColumnToContents(DEVCOL_RID);	    
+	    devicesListView->resizeColumnToContents(DEVCOL_RCLK);
+	    devicesListView->resizeColumnToContents(DEVCOL_RMRT);
+	    devicesListView->resizeColumnToContents(DEVCOL_RMMC);
+	    devicesListView->resizeColumnToContents(DEVCOL_RMTC);
+	    devicesListView->resizeColumnToContents(DEVCOL_RREWSTART);
+	    devicesListView->resizeColumnToContents(DEVCOL_TID);
+	    devicesListView->resizeColumnToContents(DEVCOL_TCLK);
+	    devicesListView->resizeColumnToContents(DEVCOL_TMRT);
+	    devicesListView->resizeColumnToContents(DEVCOL_TMMC);
+	    devicesListView->resizeColumnToContents(DEVCOL_TMTC);
+
+	    devicesListView->header()->setResizeMode(DEVCOL_NO, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_IN, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_TICKIN, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_MRTIN, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_MMCIN, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_MTCIN, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_RCLK, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_RMRT, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_RMMC, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_RMTC, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_RMTC, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_RREWSTART, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_TCLK, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_TMRT, QHeaderView::Fixed);
+	    devicesListView->header()->setResizeMode(DEVCOL_TMMC, QHeaderView::Fixed);
+
       
       /*
       for(iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
@@ -1030,22 +987,21 @@ void MidiSyncConfig::updateSyncInfoLV()
             
             lvi->setText(DEVCOL_NAME, dev->name());
             
-            lvi->setPixmap(DEVCOL_IN,   si.MCSyncDetect() ? *dotIcon : *dothIcon);
+            lvi->setIcon(DEVCOL_IN, QIcon(   si.MCSyncDetect() ? *dotIcon : *dothIcon));
             
             lvi->setText(DEVCOL_RID,    QString().setNum(si.idIn()) );
-            lvi->setPixmap(DEVCOL_RCLK, si.MCIn() ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_RMMC, si.MMCIn() ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_RMTC, si.MTCIn() ? *dotIcon : *dothIcon);
+            lvi->setIcon(DEVCOL_RCLK, QIcon( si.MCIn() ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_RMMC, QIcon( si.MMCIn() ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_RMTC, QIcon( si.MTCIn() ? *dotIcon : *dothIcon));
             
             lvi->setText(DEVCOL_TID,    QString().setNum(si.idOut()) );
-            lvi->setPixmap(DEVCOL_TCLK, si.MCOut() ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_TMMC, si.MMCOut() ? *dotIcon : *dothIcon);
-            lvi->setPixmap(DEVCOL_TMTC, si.MTCOut() ? *dotIcon : *dothIcon);
+            lvi->setIcon(DEVCOL_TCLK, QIcon( si.MCOut() ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_TMMC, QIcon( si.MMCOut() ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_TMTC, QIcon( si.MTCOut() ? *dotIcon : *dothIcon));
             
             devicesListView->insertItem(lvi);
       }
       */
-
       }
 
 
@@ -1054,7 +1010,7 @@ void MidiSyncConfig::updateSyncInfoLV()
 //---------------------------------------------------------
 
 //void MidiSyncConfig::dlvClicked(QListViewItem* item, const QPoint&, int col)
-void MidiSyncConfig::dlvClicked(int /*button*/, Q3ListViewItem* item, const QPoint&, int col)
+void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
 {
       if (item == 0)
             return;
@@ -1093,12 +1049,12 @@ void MidiSyncConfig::dlvClicked(int /*button*/, Q3ListViewItem* item, const QPoi
                     if(lvi->_recMC && midiPorts[no].syncInfo().MCSyncDetect())
                     {
                       curMidiSyncInPort = no;
-                      lvi->setPixmap(DEVCOL_IN, *record1_Icon);
+                      lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
                     }  
                     if(lvi->_recMTC && midiPorts[no].syncInfo().MTCDetect())
                     {
                       curMidiSyncInPort = no;
-                      lvi->setPixmap(DEVCOL_MTCIN, *record1_Icon);
+                      lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
                     }  
                   }  
                   break;
@@ -1117,12 +1073,12 @@ void MidiSyncConfig::dlvClicked(int /*button*/, Q3ListViewItem* item, const QPoi
                     if(lvi->_recMTC && midiPorts[no].syncInfo().MTCDetect())
                     {
                       curMidiSyncInPort = no;
-                      lvi->setPixmap(DEVCOL_MTCIN, *record1_Icon);
+                      lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
                     }  
                     if(lvi->_recMC && midiPorts[no].syncInfo().MCSyncDetect())
                     {
                       curMidiSyncInPort = no;
-                      lvi->setPixmap(DEVCOL_IN, *record1_Icon);
+                      lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
                     }  
                   }  
                   break;
@@ -1132,66 +1088,66 @@ void MidiSyncConfig::dlvClicked(int /*button*/, Q3ListViewItem* item, const QPoi
                   break;
             case DEVCOL_RCLK:
                   //si.setMCIn(si.MCIn() ? false : true);
-                  //lvi->setPixmap(DEVCOL_RCLK, si.MCIn() ? *dotIcon : *dothIcon);
+                  //lvi->setIcon(DEVCOL_RCLK, QIcon( si.MCIn() ? *dotIcon : *dothIcon));
                   lvi->_recMC = (lvi->_recMC ? false : true);
-                  lvi->setPixmap(DEVCOL_RCLK, lvi->_recMC ? *dotIcon : *dothIcon);
+                  lvi->setIcon(DEVCOL_RCLK, QIcon( lvi->_recMC ? *dotIcon : *dothIcon));
                   setDirty();
                   break;
             case DEVCOL_RMRT:
                   lvi->_recMRT = (lvi->_recMRT ? false : true);
-                  lvi->setPixmap(DEVCOL_RMRT, lvi->_recMRT ? *dotIcon : *dothIcon);
+                  lvi->setIcon(DEVCOL_RMRT, QIcon( lvi->_recMRT ? *dotIcon : *dothIcon));
                   setDirty();
                   break;
             case DEVCOL_RMMC:
                   //si.setMMCIn(si.MMCIn() ? false : true);
-                  //lvi->setPixmap(DEVCOL_RMMC, si.MMCIn() ? *dotIcon : *dothIcon);
+                  //lvi->setIcon(DEVCOL_RMMC, QIcon( si.MMCIn() ? *dotIcon : *dothIcon));
                   lvi->_recMMC = (lvi->_recMMC ? false : true);
-                  lvi->setPixmap(DEVCOL_RMMC, lvi->_recMMC ? *dotIcon : *dothIcon);
+                  lvi->setIcon(DEVCOL_RMMC, QIcon( lvi->_recMMC ? *dotIcon : *dothIcon));
                   setDirty();
                   break;
             case DEVCOL_RMTC:
                   //si.setMTCIn(si.MTCIn() ? false : true);
-                  //lvi->setPixmap(DEVCOL_RMTC, si.MTCIn() ? *dotIcon : *dothIcon);
+                  //lvi->setIcon(DEVCOL_RMTC, QIcon( si.MTCIn() ? *dotIcon : *dothIcon));
                   lvi->_recMTC = (lvi->_recMTC ? false : true);
-                  lvi->setPixmap(DEVCOL_RMTC, lvi->_recMTC ? *dotIcon : *dothIcon);
+                  lvi->setIcon(DEVCOL_RMTC, QIcon( lvi->_recMTC ? *dotIcon : *dothIcon));
                   setDirty();
                   break;
             case DEVCOL_RREWSTART:
                   lvi->_recRewOnStart = (lvi->_recRewOnStart ? false : true);
-                  lvi->setPixmap(DEVCOL_RREWSTART, lvi->_recRewOnStart ? *dotIcon : *dothIcon);
+                  lvi->setIcon(DEVCOL_RREWSTART, QIcon( lvi->_recRewOnStart ? *dotIcon : *dothIcon));
                   setDirty();
                   break;
             case DEVCOL_TID:
                   break;
             case DEVCOL_TCLK:
                   //si.setMCOut(si.MCOut() ? false : true);
-                  //lvi->setPixmap(DEVCOL_TCLK, si.MCOut() ? *dotIcon : *dothIcon);
+                  //lvi->setIcon(DEVCOL_TCLK, QIcon( si.MCOut() ? *dotIcon : *dothIcon));
                   lvi->_sendMC = (lvi->_sendMC ? false : true);
-                  lvi->setPixmap(DEVCOL_TCLK, lvi->_sendMC ? *dotIcon : *dothIcon);
+                  lvi->setIcon(DEVCOL_TCLK, QIcon( lvi->_sendMC ? *dotIcon : *dothIcon));
                   setDirty();
                   break;
             case DEVCOL_TMRT:
                   lvi->_sendMRT = (lvi->_sendMRT ? false : true);
-                  lvi->setPixmap(DEVCOL_TMRT, lvi->_sendMRT ? *dotIcon : *dothIcon);
+                  lvi->setIcon(DEVCOL_TMRT, QIcon( lvi->_sendMRT ? *dotIcon : *dothIcon));
                   setDirty();
                   break;
             case DEVCOL_TMMC:
                   //si.setMMCOut(si.MMCOut() ? false : true);
-                  //lvi->setPixmap(DEVCOL_TMMC, si.MMCOut() ? *dotIcon : *dothIcon);
+                  //lvi->setIcon(DEVCOL_TMMC, QIcon( si.MMCOut() ? *dotIcon : *dothIcon));
                   lvi->_sendMMC = (lvi->_sendMMC ? false : true);
-                  lvi->setPixmap(DEVCOL_TMMC, lvi->_sendMMC ? *dotIcon : *dothIcon);
+                  lvi->setIcon(DEVCOL_TMMC, QIcon( lvi->_sendMMC ? *dotIcon : *dothIcon));
                   setDirty();
                   break;
             case DEVCOL_TMTC:
                   //si.setMTCOut(si.MTCOut() ? false : true);
-                  //lvi->setPixmap(DEVCOL_TMTC, si.MTCOut() ? *dotIcon : *dothIcon);
+                  //lvi->setIcon(DEVCOL_TMTC, QIcon( si.MTCOut() ? *dotIcon : *dothIcon));
                   lvi->_sendMTC = (lvi->_sendMTC ? false : true);
-                  lvi->setPixmap(DEVCOL_TMTC, lvi->_sendMTC ? *dotIcon : *dothIcon);
+                  lvi->setIcon(DEVCOL_TMTC, QIcon( lvi->_sendMTC ? *dotIcon : *dothIcon));
                   setDirty();
                   break;
             //case DEVCOL_TREWSTART:
             //      lvi->_sendContNotStart = (lvi->_sendContNotStart ? false : true);
-            //      lvi->setPixmap(DEVCOL_TREWSTART, lvi->_sendContNotStart ? *dotIcon : *dothIcon);
+            //      lvi->setIcon(DEVCOL_TREWSTART, QIcon( lvi->_sendContNotStart ? *dotIcon : *dothIcon));
             //      setDirty();
             //      break;
       }
@@ -1202,7 +1158,7 @@ void MidiSyncConfig::dlvClicked(int /*button*/, Q3ListViewItem* item, const QPoi
 //   dlvDoubleClicked
 //---------------------------------------------------------
 
-void MidiSyncConfig::dlvDoubleClicked(Q3ListViewItem* item, const QPoint&, int col)
+void MidiSyncConfig::dlvDoubleClicked(QTreeWidgetItem* item, int col)
 {
       if(!item)
         return;

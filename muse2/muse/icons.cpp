@@ -467,8 +467,8 @@ void initIcons()
       startIcon    = new MPIXMAP(start_xpm, "media-skip-backward");
       fforwardIcon = new MPIXMAP(fforward_xpm, "media-seek-forward");
       frewindIcon  = new MPIXMAP(frewind_xpm, "media-seek-backward");
-      dotIcon      = new MPIXMAP(dot_xpm, NULL);
-      dothIcon     = new MPIXMAP(doth_xpm, NULL);
+      dotIcon      = new MPIXMAP(dot_xpm, "dialog-ok-apply");
+      dothIcon     = new MPIXMAP(doth_xpm, "draw-circle");
       dot1Icon     = new MPIXMAP(dot1_xpm, NULL);
       noteIcon     = new MPIXMAP(note_xpm, NULL);
       note1Icon    = new MPIXMAP(note1_xpm, NULL);

@@ -1307,7 +1307,7 @@ void MusE::configMidiSync()
       {
       if (!midiSyncConfig)
         //midiSyncConfig = new MidiSyncConfig(this);
-        midiSyncConfig = new MidiSyncConfig(0, (char*) "midiSyncConfig");
+        midiSyncConfig = new MidiSyncConfig;
         
       if (midiSyncConfig->isVisible()) {
           midiSyncConfig->raise();

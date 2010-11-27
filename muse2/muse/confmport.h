@@ -10,49 +10,15 @@
 #define __CONFMPORT_H__
 
 #include <QWidget>
-#include <Q3WhatsThis>
 #include <QToolTip>
-//Added by qt3to4:
-//#include <Q3PopupMenu>
 
 #include "ui_synthconfigbase.h"
 
 class QTreeWidget;
 class QTableWidget;
 class QPoint;
-//class Q3PopupMenu;
 class QMenu;
-class Q3Header;
 class Xml;
-
-//----------------------------------------------------------
-//   MPHeaderTip
-//----------------------------------------------------------
-
-class MPHeaderTip { // : public QToolTip { ddskrjo
-
-   public:
-    MPHeaderTip(QWidget *) {} // : QToolTip(parent) {} ddskrjo
-      virtual ~MPHeaderTip() {}
-   protected:
-      void maybeTip(const QPoint &);
-      };
-
-//---------------------------------------------------------
-//   MPWhatsThis
-//---------------------------------------------------------
-
-class MPWhatsThis : public Q3WhatsThis {
-      Q3Header* header;
-
-   protected:
-      QString text(const QPoint&);
-
-   public:
-      MPWhatsThis(QWidget* parent, Q3Header* h) : Q3WhatsThis(parent) {
-            header = h;
-            }
-      };
 
 //---------------------------------------------------------
 //   MPConfig
@@ -60,12 +26,13 @@ class MPWhatsThis : public Q3WhatsThis {
 //---------------------------------------------------------
 
 class MPConfig : public QDialog, Ui::SynthConfigBase {
-      MPHeaderTip* _mptooltip;
-      //Q3PopupMenu* popup;
       QMenu* instrPopup;
-      
+      //QMenu* popup;
       int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
-      
+      void setWhatsThis(QTableWidgetItem *item, int col);
+      void setToolTip(QTableWidgetItem *item, int col);
+      void addItem(int row, int col, QTableWidgetItem *item, QTableWidget *table);
+
       Q_OBJECT
 
    private slots:

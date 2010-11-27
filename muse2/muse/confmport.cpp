@@ -9,29 +9,13 @@
 #include <list>
 #include <termios.h>
 #include <iostream>
-
-#include <q3listview.h>
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <qlineedit.h>
-#include <qcombobox.h>
-#include <qlabel.h>
-#include <QButtonGroup>
-#include <QMenu>
-//Added by qt3to4:
-#include <QPixmap>
 #include <stdio.h>
-//#include <q3popupmenu.h>
-#include <q3groupbox.h>
-#include <qradiobutton.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qsignalmapper.h>
-#include <qtooltip.h>
-#include <q3filedialog.h>
-#include <qtoolbutton.h>
-#include <qmessagebox.h>
-#include <qpoint.h>
+
+#include <QMenu>
+#include <QMessageBox>
+#include <QPixmap>
+#include <QTableWidget>
+#include <QTableWidgetItem>
 
 #include "confmport.h"
 #include "app.h"
@@ -624,72 +608,70 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
       }
 
 //---------------------------------------------------------
-//   MPHeaderTip::maybeTip
+//   MPConfig::setToolTip
 //---------------------------------------------------------
 
-void MPHeaderTip::maybeTip(const QPoint &pos)
+void MPConfig::setToolTip(QTableWidgetItem *item, int col)
       {
-#if 0 // ddskrjo
-      Q3Header* w  = (Q3Header*)parentWidget();
-      int section = w->sectionAt(pos.x());
-      if (section == -1)
-            return;
-      QRect r(w->sectionPos(section), 0, w->sectionSize(section),
-         w->height());
-      QString p;
-      switch (section) {
-            case DEVCOL_NO:     p = Q3Header::tr("Port Number"); break;
-            case DEVCOL_GUI:    p = Q3Header::tr("Enable gui"); break;
-            case DEVCOL_REC:    p = Q3Header::tr("Enable reading"); break;
-            case DEVCOL_PLAY:   p = Q3Header::tr("Enable writing"); break;
-            case DEVCOL_INSTR:  p = Q3Header::tr("Port instrument"); break;
-            case DEVCOL_NAME:   p = Q3Header::tr("Midi device name. Click to edit (Jack)"); break;
-            //case DEVCOL_ROUTES: p = Q3Header::tr("Jack midi ports"); break;
-            case DEVCOL_INROUTES:  p = Q3Header::tr("Connections from Jack Midi outputs"); break;
-            case DEVCOL_OUTROUTES: p = Q3Header::tr("Connections to Jack Midi inputs"); break;
-            case DEVCOL_STATE:  p = Q3Header::tr("Device state"); break;
+      switch (col) {
+            case DEVCOL_NO:     item->setToolTip(tr("Port Number")); break;
+            case DEVCOL_GUI:    item->setToolTip(tr("Enable gui")); break;
+            case DEVCOL_REC:    item->setToolTip(tr("Enable reading")); break;
+            case DEVCOL_PLAY:   item->setToolTip(tr("Enable writing")); break;
+            case DEVCOL_INSTR:  item->setToolTip(tr("Port instrument")); break;
+            case DEVCOL_NAME:   item->setToolTip(tr("Midi device name. Click to edit (Jack)")); break;
+            //case DEVCOL_ROUTES: item->setToolTip(tr("Jack midi ports")); break;
+            case DEVCOL_INROUTES:  item->setToolTip(tr("Connections from Jack Midi outputs")); break;
+            case DEVCOL_OUTROUTES: item->setToolTip(tr("Connections to Jack Midi inputs")); break;
+            case DEVCOL_STATE:  item->setToolTip(tr("Device state")); break;
             default: return;
             }
-      tip(r, p);
-#endif
   }
 
 //---------------------------------------------------------
-//   MPWhatsThis::text
+//   MPConfig::setWhatsThis
 //---------------------------------------------------------
 
-QString MPWhatsThis::text(const QPoint& pos)
+void MPConfig::setWhatsThis(QTableWidgetItem *item, int col)
       {
-      int n = header->cellAt(pos.x());
-      if (n == -1)
-            return QString::null;
-      switch (header->mapToLogical(n)) {
+      switch (col) {
             case DEVCOL_NO:
-                  return Q3Header::tr("Port Number");
+                  item->setWhatsThis(tr("Port Number")); break;
             case DEVCOL_GUI:
-                  return Q3Header::tr("Enable gui for device");
+                  item->setWhatsThis(tr("Enable gui for device")); break;
             case DEVCOL_REC:
-                  return Q3Header::tr("Enable reading from device");
+                  item->setWhatsThis(tr("Enable reading from device")); break;
             case DEVCOL_PLAY:
-                  return Q3Header::tr("Enable writing to device");
+                  item->setWhatsThis(tr("Enable writing to device")); break;
             case DEVCOL_NAME:
-                  return Q3Header::tr("Name of the midi device associated with"
-                       " this port number. Click to edit Jack midi name.");
+                  item->setWhatsThis(tr("Name of the midi device associated with"
+                                        " this port number. Click to edit Jack midi name.")); break;
             case DEVCOL_INSTR:
-                  return Q3Header::tr("Instrument connected to port");
+                  item->setWhatsThis(tr("Instrument connected to port")); break;
             //case DEVCOL_ROUTES:
-            //      return Q3Header::tr("Jack midi ports");
+            //      item->setWhatsThis(tr("Jack midi ports")); break;
             case DEVCOL_INROUTES:
-                  return Q3Header::tr("Connections from Jack Midi output ports");
+                  item->setWhatsThis(tr("Connections from Jack Midi output ports")); break;
             case DEVCOL_OUTROUTES:
-                  return Q3Header::tr("Connections to Jack Midi input ports");
+                  item->setWhatsThis(tr("Connections to Jack Midi input ports")); break;
             case DEVCOL_STATE:
-                  return Q3Header::tr("State: result of opening the device");
+                  item->setWhatsThis(tr("State: result of opening the device")); break;
             default:
                   break;
             }
-      return QString::null;
       }
+
+
+//---------------------------------------------------------
+//   MPConfig::addItem()
+//---------------------------------------------------------
+
+void MPConfig::addItem(int row, int col, QTableWidgetItem *item, QTableWidget *table)
+      {
+      setWhatsThis(item, col);
+      table->setItem(row, col, item);
+      }
+
 
 //---------------------------------------------------------
 //   MPConfig
@@ -704,12 +686,7 @@ MPConfig::MPConfig(QWidget* parent)
       mdevView->verticalHeader()->hide();
       mdevView->setSelectionMode(QAbstractItemView::SingleSelection);
       mdevView->setShowGrid(false);
-      mdevView->horizontalHeader()->setResizeMode(DEVCOL_NO ,QHeaderView::Fixed);
-      mdevView->horizontalHeader()->setResizeMode(DEVCOL_REC ,QHeaderView::Fixed);
-      mdevView->horizontalHeader()->setResizeMode(DEVCOL_PLAY ,QHeaderView::Fixed);
-      mdevView->horizontalHeader()->setResizeMode(DEVCOL_GUI ,QHeaderView::Fixed);
 
-      _mptooltip = 0;
       //popup      = 0;
       instrPopup = 0;
       _showAliases = -1; // 0: Show first aliases, if available. Nah, stick with -1: none at first.
@@ -727,16 +704,12 @@ MPConfig::MPConfig(QWidget* parent)
 
       mdevView->setColumnCount(columnnames.size());
       mdevView->setHorizontalHeaderLabels(columnnames);
-
+      for (int i = 0; i < columnnames.size(); ++i) {
+            setWhatsThis(mdevView->horizontalHeaderItem(i), i);
+            setToolTip(mdevView->horizontalHeaderItem(i), i);
+            }
       mdevView->setFocusPolicy(Qt::NoFocus);
 
-      
-
-      /* Orcan FIXME
-
-      new MPWhatsThis(mdevView, mdevView->header());
-      _mptooltip = new MPHeaderTip(mdevView->header());
-      */
       connect(mdevView, SIGNAL(itemPressed(QTableWidgetItem*)),
          this, SLOT(rbClicked(QTableWidgetItem*)));
       connect(mdevView, SIGNAL(itemChanged(QTableWidgetItem*)),
@@ -756,7 +729,6 @@ MPConfig::MPConfig(QWidget* parent)
   
 MPConfig::~MPConfig()
 {
-  delete _mptooltip;
 }
   
 //---------------------------------------------------------
@@ -800,30 +772,30 @@ void MPConfig::songChanged(int flags)
             QString s;
             s.setNum(i+1);
             QTableWidgetItem* itemno = new QTableWidgetItem(s);
-	    mdevView->setItem(i, DEVCOL_NO, itemno);
+	    addItem(i, DEVCOL_NO, itemno, mdevView);
 	    itemno->setTextAlignment(Qt::AlignHCenter);
 	    QTableWidgetItem* itemstate = new QTableWidgetItem(port->state());
-	    mdevView->setItem(i, DEVCOL_STATE, itemstate);
+	    addItem(i, DEVCOL_STATE, itemstate, mdevView);
 	    QTableWidgetItem* iteminstr = new QTableWidgetItem(port->instrument() ?
 							       port->instrument()->iname() :
 							       tr("<unknown>"));
-	    mdevView->setItem(i, DEVCOL_INSTR, iteminstr);
+	    addItem(i, DEVCOL_INSTR, iteminstr, mdevView);
 	    QTableWidgetItem* itemname = new QTableWidgetItem;
-	    mdevView->setItem(i, DEVCOL_NAME, itemname);
+	    addItem(i, DEVCOL_NAME, itemname, mdevView);
 	    itemname->setFlags(Qt::ItemIsEnabled);
 	    QTableWidgetItem* itemgui = new QTableWidgetItem;
-	    mdevView->setItem(i, DEVCOL_GUI, itemgui);
+	    addItem(i, DEVCOL_GUI, itemgui, mdevView);
 	    itemgui->setTextAlignment(Qt::AlignHCenter);
 	    QTableWidgetItem* itemrec = new QTableWidgetItem;
-	    mdevView->setItem(i, DEVCOL_REC, itemrec);
+	    addItem(i, DEVCOL_REC, itemrec, mdevView);
 	    itemrec->setTextAlignment(Qt::AlignHCenter);
 	    QTableWidgetItem* itemplay = new QTableWidgetItem;
-	    mdevView->setItem(i, DEVCOL_PLAY, itemplay);
+	    addItem(i, DEVCOL_PLAY, itemplay, mdevView);
 	    itemplay->setTextAlignment(Qt::AlignHCenter);
 	    QTableWidgetItem* itemout = new QTableWidgetItem;
-	    mdevView->setItem(i, DEVCOL_OUTROUTES, itemout);
+	    addItem(i, DEVCOL_OUTROUTES, itemout, mdevView);
 	    QTableWidgetItem* itemin = new QTableWidgetItem;
-	    mdevView->setItem(i, DEVCOL_INROUTES, itemin);
+	    addItem(i, DEVCOL_INROUTES, itemin, mdevView);
 	    mdevView->blockSignals(false);
 
 
@@ -922,6 +894,11 @@ void MPConfig::songChanged(int flags)
             }
       synthList->resizeColumnToContents(1);
       mdevView->resizeColumnsToContents();
+      mdevView->horizontalHeader()->setResizeMode(DEVCOL_NO ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setResizeMode(DEVCOL_REC ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setResizeMode(DEVCOL_PLAY ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setResizeMode(DEVCOL_GUI ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setStretchLastSection( true );
       selectionChanged();
       }
 
