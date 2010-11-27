@@ -25,8 +25,9 @@
 #include "xml.h"
 #include "globals.h"
 #include "gconfig.h"
-#include "comboQuant.h"
-#include "pitchedit.h"
+//#include "comboQuant.h"
+//#include "pitchedit.h"
+#include "helper.h"
 
 #define MIDITRANSFORM_NOTE        0
 #define MIDITRANSFORM_POLY        1

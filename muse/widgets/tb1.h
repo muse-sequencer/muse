@@ -8,9 +8,6 @@
 #ifndef __TB1_H__
 #define __TB1_H__
 
-//#include <qwidget.h>
-//#include <q3toolbar.h>
-
 #include <QWidget>      
 #include <QToolBar>     
 
@@ -25,8 +22,7 @@ class QTableWidget;
 //   Toolbar1
 //---------------------------------------------------------
 
-//class Toolbar1 : public Q3ToolBar {
-class Toolbar1 : public QToolBar {       // p4.0.4
+class Toolbar1 : public QToolBar {       
       QToolButton* solo;
       PosLabel* pos;
       PitchLabel* pitch;

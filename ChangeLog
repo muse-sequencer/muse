@@ -5,6 +5,8 @@
            (maxValue -> maximum, minValue -> minimum etc). (Tim)
         - Fixed SpinBoxFP class. Was never right before. (Tim)
         - Fixed transform and input transform ui files and dialogs - using the corrected SpinBoxFP. (Tim)   
+        - Converted comboQuant widget to Qt4 (found in miditransform dialog). 
+          TODO: Doesn't actually open - why? (Tim)
 25.11.2010
         - Fixed column widths, alignments, device renaming and jack device creation issues in synthconfigbase.
           Somehow the last changelog entry about this didn't get committed. That's added too. (Orcan)
