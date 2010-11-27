@@ -1,10 +1,11 @@
 27.11.2010
         - Completed porting pianoroll module including menus, shortcuts. Should be done. (Tim)
         - Ported the following .ui widgets to Qt4: organguibase, gatetime, midisync,
-          routedialogbase. (Orcan)
+          routedialogbase, vamguibase. (Orcan)
         - Fixed the whatsthis and tooltip bits of tho Midi Ports dialog. (Orcan)
         - Ported Quant Config dialog. (Orcan)
         - Ported the popup menus in the canvas. This should restore the color selection of tracks. (Orcan)
+        - Removed midiportroutebase.ui (Orcan)
 26.11.2010
         - Fixed midi trackinfo growing size - set output device list box and instrument button 
            h-size policy to 'Ignore'. (Tim)
