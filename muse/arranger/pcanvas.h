@@ -16,7 +16,6 @@
 #include <QDropEvent>
 #include <QDragLeaveEvent>
 #include <QMouseEvent>
-#include <Q3PopupMenu>
 #include <QKeyEvent>
 #include <QEvent>
 #include <QDragEnterEvent>
@@ -39,7 +38,7 @@ class NPart : public CItem {
 
 class QLineEdit;
 class MidiEditor;
-class Q3PopupMenu;
+class QMenu;
 class Xml;
 
 //---------------------------------------------------------
@@ -88,7 +87,7 @@ class PartCanvas : public Canvas {
       virtual void dragLeaveEvent(QDragLeaveEvent*);
       virtual void viewDropEvent(QDropEvent*);
 
-      virtual Q3PopupMenu* genItemPopup(CItem*);
+      virtual QMenu* genItemPopup(CItem*);
       virtual void itemPopup(CItem*, int, const QPoint&);
 
       void glueItem(CItem* item);

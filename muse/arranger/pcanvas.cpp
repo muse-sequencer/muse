@@ -67,7 +67,7 @@ const char* partColorNames[] = {
       "Piano",
       "Saxophon",
       };
-
+/*
 //---------------------------------------------------------
 //   ColorListItem
 //---------------------------------------------------------
@@ -78,7 +78,7 @@ class ColorListItem { //: public QCustomMenuItem { ddskrjo
       int fontheight;
       QString label;
       virtual QSize sizeHint() { return QSize(80, h); }
-      virtual void paint(QPainter* p, const QColorGroup&, bool /*act*/, bool /*enabled*/, int x, int y, int /*w*/, int h)
+      virtual void paint(QPainter* p, const QColorGroup&, bool act, bool enabled, int x, int y, int w, int h)
             {
             p->fillRect(x+5, y+2, h-4, h-4, QBrush(color));
             p->drawText(x+5 + h - 4 + 3, y+(fontheight * 3) / 4, label);
@@ -90,6 +90,26 @@ class ColorListItem { //: public QCustomMenuItem { ddskrjo
             }
       QString text() const { return QString("PartColor"); }
       };
+*/
+// ORCAN : colorRect does the same job as the above class.
+//         Shall we get rid of the class?
+
+//---------------------------------------------------------
+//   colorRect
+//   paints a rectangular icon with a given color
+//---------------------------------------------------------
+
+QIcon colorRect(const QColor& color, int width, int height) {
+      QPainter painter;
+      QPixmap image(width, height);
+      painter.begin(&image);
+      painter.setBrush(color);
+      QRect rectangle(0, 0, width, height);
+      painter.drawRect(rectangle);
+      painter.end();
+      QIcon icon(image);
+      return icon;
+}
 
 //---------------------------------------------------------
 //   NPart
@@ -702,18 +722,20 @@ void PartCanvas::glueItem(CItem* item)
 //   genItemPopup
 //---------------------------------------------------------
 
-Q3PopupMenu* PartCanvas::genItemPopup(CItem* item)
+QMenu* PartCanvas::genItemPopup(CItem* item)
       {
       NPart* npart = (NPart*) item;
       Track::TrackType trackType = npart->track()->type();
 
-      Q3PopupMenu* partPopup = new Q3PopupMenu(this);
+      QMenu* partPopup = new QMenu(this);
 
-      partPopup->insertItem(*editcutIconSet, tr("C&ut"), 4);
-      partPopup->setAccel(Qt::CTRL+Qt::Key_X, 4);
+      QAction *act_cut = partPopup->addAction(*editcutIconSet, tr("C&ut"));
+      act_cut->setData(4);
+      act_cut->setShortcut(Qt::CTRL+Qt::Key_X);
 
-      partPopup->insertItem(*editcopyIconSet, tr("&Copy"), 5);
-      partPopup->setAccel(Qt::CTRL+Qt::Key_C, 5);
+      QAction *act_copy = partPopup->addAction(*editcopyIconSet, tr("&Copy"));
+      act_copy->setData(5);
+      act_copy->setShortcut(Qt::CTRL+Qt::Key_C);
 
       partPopup->insertSeparator();
       int rc = npart->part()->events()->arefCount();
@@ -721,43 +743,62 @@ Q3PopupMenu* PartCanvas::genItemPopup(CItem* item)
       if(rc > 1)
         st += (QString().setNum(rc) + QString(" "));
       st += QString(tr("clones"));
-      partPopup->insertItem(st, 18);
+      QAction *act_select = partPopup->addAction(st);
+      act_select->setData(18);
       
       partPopup->insertSeparator();
-      partPopup->insertItem(tr("rename"), 0);
-      Q3PopupMenu* colorPopup = new Q3PopupMenu(this);
-      partPopup->insertItem(tr("color"), colorPopup);
+      QAction *act_rename = partPopup->addAction(tr("rename"));
+      act_rename->setData(0);
+      QMenu* colorPopup = new QMenu(tr("color"));
+      partPopup->addMenu(colorPopup);
 
       // part color selection
       const QFontMetrics& fm = colorPopup->fontMetrics();
       int h = fm.lineSpacing();
 
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            ColorListItem* item = new ColorListItem(config.partColors[i], h, fontMetrics().height(), partColorNames[i]);
-            //colorPopup->insertItem(item, 20+i); ddskrjo
+            //ColorListItem* item = new ColorListItem(config.partColors[i], h, fontMetrics().height(), partColorNames[i]); //ddskrjo
+            QAction *act_color = colorPopup->addAction(colorRect(config.partColors[i], 80, 80), partColorNames[i]);
+            act_color->setData(20+i);
             }
 
-      partPopup->insertItem(QIcon(*deleteIcon), tr("delete"), 1); // ddskrjo added QIcon to all
-      partPopup->insertItem(QIcon(*cutIcon), tr("split"),  2);
-      partPopup->insertItem(QIcon(*glueIcon), tr("glue"),   3);
-      partPopup->insertItem(tr("de-clone"), 15);
+      QAction *act_delete = partPopup->addAction(QIcon(*deleteIcon), tr("delete")); // ddskrjo added QIcon to all
+      act_delete->setData(1);
+      QAction *act_split = partPopup->addAction(QIcon(*cutIcon), tr("split"));
+      act_split->setData(2);
+      QAction *act_glue = partPopup->addAction(QIcon(*glueIcon), tr("glue"));
+      act_glue->setData(3);
+      QAction *act_declone = partPopup->addAction(tr("de-clone"));
+      act_declone->setData(15);
 
       partPopup->insertSeparator();
       switch(trackType) {
-            case Track::MIDI:
-                  partPopup->insertItem(QIcon(*pianoIconSet), tr("pianoroll"), 10);
-                  partPopup->insertItem(QIcon(*edit_listIcon), tr("list"), 12);
-                  partPopup->insertItem(tr("export"), 16);
+            case Track::MIDI: {
+                  QAction *act_pianoroll = partPopup->addAction(QIcon(*pianoIconSet), tr("pianoroll"));
+                  act_pianoroll->setData(10);
+                  QAction *act_mlist = partPopup->addAction(QIcon(*edit_listIcon), tr("list"));
+       	          act_mlist->setData(12);
+                  QAction *act_mexport = partPopup->addAction(tr("export"));
+                  act_mexport->setData(16);
+                  }
                   break;
-            case Track::DRUM:
-                  partPopup->insertItem(QIcon(*edit_listIcon), tr("list"), 12);
-                  partPopup->insertItem(QIcon(*edit_drummsIcon), tr("drums"), 13);
-                  partPopup->insertItem(tr("export"), 16);
+            case Track::DRUM: {
+                  QAction *act_dlist = partPopup->addAction(QIcon(*edit_listIcon), tr("list"));
+                  act_dlist->setData(12);
+                  QAction *act_drums = partPopup->addAction(QIcon(*edit_drummsIcon), tr("drums"));
+                  act_drums->setData(13);
+                  QAction *act_dexport = partPopup->addAction(tr("export"));
+                  act_dexport->setData(16);
+                  }
                   break;
-            case Track::WAVE:
-                  partPopup->insertItem(QIcon(*edit_waveIcon), tr("wave edit"), 14);
-                  partPopup->insertItem(tr("export"), 16);
-                  partPopup->insertItem(tr("file info"), 17);
+            case Track::WAVE: {
+                  QAction *act_wedit = partPopup->addAction(QIcon(*edit_waveIcon), tr("wave edit"));
+                  act_wedit->setData(14);
+                  QAction *act_wexport = partPopup->addAction(tr("export"));
+                  act_wexport->setData(16);
+                  QAction *act_wfinfo = partPopup->addAction(tr("file info"));
+                  act_wfinfo->setData(17);
+                  }
                   break;
             case Track::AUDIO_OUTPUT:
             case Track::AUDIO_INPUT:

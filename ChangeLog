@@ -4,6 +4,7 @@
           routedialogbase. (Orcan)
         - Fixed the whatsthis and tooltip bits of tho Midi Ports dialog. (Orcan)
         - Ported Quant Config dialog. (Orcan)
+        - Ported the popup menus in the canvas. This should restore the color selection of tracks. (Orcan)
 26.11.2010
         - Fixed midi trackinfo growing size - set output device list box and instrument button 
            h-size policy to 'Ignore'. (Tim)
