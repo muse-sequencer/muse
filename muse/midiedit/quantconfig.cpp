@@ -6,16 +6,13 @@
 //  (C) Copyright 1999/2003 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qspinbox.h>
-#include <QLayout>
-#include <qlabel.h>
-#include <qradiobutton.h>
-#include <q3groupbox.h>
-#include <q3whatsthis.h>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QSpinBox>
+#include <QVBoxLayout>
 
 #include "quantconfig.h"
-//Added by qt3to4:
-#include <QVBoxLayout>
 
 const char* wtStrengthTxt = QT_TR_NOOP("sets amount of quantization:\n"
                             "0   - no quantization\n"
@@ -31,29 +28,52 @@ QuantConfig::QuantConfig(int s, int l, bool lenFlag)
    : QDialog()
       {
       setCaption(tr("MusE: Config Quantize"));
-      QVBoxLayout* layout = new QVBoxLayout(this);
-      Q3GroupBox* gb = new Q3GroupBox(2, Qt::Horizontal, tr("Config Quantize"), this);
-      layout->addWidget(gb);
+      QVBoxLayout *mainlayout = new QVBoxLayout;
 
-      QLabel* l1 = new QLabel(tr("Strength"), gb);
-      QSpinBox* sb1 = new QSpinBox(0, 100, 1, gb);
+      QGridLayout* layout = new QGridLayout;
+      QGroupBox* gb = new QGroupBox(tr("Config Quantize"));
+
+      QLabel* l1 = new QLabel(tr("Strength"));
+      layout->addWidget(l1, 0, 0);
+      QSpinBox* sb1 = new QSpinBox;
+      sb1->setMinimum(0);
+      sb1->setMaximum(100);
+      sb1->setSingleStep(1);
       sb1->setSuffix(QString("%"));
       sb1->setValue(s);
-      QLabel* l2 = new QLabel(tr("Don´t Quantize"), gb);
-      QSpinBox* sb2 = new QSpinBox(0, 500, 1, gb);
+      layout->addWidget(sb1, 0, 1);
+
+      QLabel* l2 = new QLabel(tr("Don´t Quantize"));
+      layout->addWidget(l2, 1, 0);
+      QSpinBox* sb2 = new QSpinBox;
+      sb2->setMinimum(0);
+      sb2->setMaximum(500);
+      sb2->setSingleStep(1);
       sb2->setValue(l);
-      QLabel* l3 = new QLabel(tr("Quant Len"), gb);
-      QRadioButton* but = new QRadioButton(gb);
+      layout->addWidget(sb2, 1, 1);
+
+      QLabel* l3 = new QLabel(tr("Quant Len"));
+      layout->addWidget(l3, 2, 0);
+      QCheckBox* but = new QCheckBox;
       but->setChecked(lenFlag);
+      layout->addWidget(but, 2, 1);
+      
       connect(sb1, SIGNAL(valueChanged(int)), SIGNAL(setQuantStrength(int)));
       connect(sb2, SIGNAL(valueChanged(int)), SIGNAL(setQuantLimit(int)));
       connect(but, SIGNAL(toggled(bool)), SIGNAL(setQuantLen(bool)));
 
-      Q3WhatsThis::add(l1,  tr(wtStrengthTxt));
-      Q3WhatsThis::add(sb1, tr(wtStrengthTxt));
-      Q3WhatsThis::add(l2,  tr(wtQLimitTxt));
-      Q3WhatsThis::add(sb2, tr(wtQLimitTxt));
-      Q3WhatsThis::add(l3,  tr(wtQLenTxt));
-      Q3WhatsThis::add(but, tr(wtQLenTxt));
+      gb->setLayout(layout);
+      mainlayout->addWidget(gb);
+      setLayout(mainlayout);
+
+      l1->setWhatsThis(tr(wtStrengthTxt));
+      l1->setToolTip(tr(wtStrengthTxt));
+      sb1->setWhatsThis(tr(wtStrengthTxt));
+      l2->setWhatsThis(tr(wtQLimitTxt));
+      l2->setToolTip(tr(wtQLimitTxt));
+      sb2->setWhatsThis(tr(wtQLimitTxt));
+      l3->setWhatsThis(tr(wtQLenTxt));
+      l3->setToolTip(tr(wtQLenTxt));
+      but->setWhatsThis(tr(wtQLenTxt));
       }
 

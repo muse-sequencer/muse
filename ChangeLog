@@ -3,6 +3,7 @@
         - Ported the following .ui widgets to Qt4: organguibase, gatetime, midisync,
           routedialogbase. (Orcan)
         - Fixed the whatsthis and tooltip bits of tho Midi Ports dialog. (Orcan)
+        - Ported Quant Config dialog. (Orcan)
 26.11.2010
         - Fixed midi trackinfo growing size - set output device list box and instrument button 
            h-size policy to 'Ignore'. (Tim)
