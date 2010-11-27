@@ -5,6 +5,8 @@
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
 
+#include <stdio.h>
+
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QHeaderView>

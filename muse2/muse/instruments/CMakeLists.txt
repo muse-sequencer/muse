@@ -23,8 +23,7 @@ QT4_WRAP_CPP ( instruments_mocs
    editinstrument.h
    )
 
-# QT4_WRAP_UI ( instruments_ui_headers
-QT4_WRAP_UI3 ( instruments_ui_headers
+QT4_WRAP_UI ( instruments_ui_headers
       editinstrumentbase.ui
       )
 
