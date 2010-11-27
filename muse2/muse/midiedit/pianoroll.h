@@ -8,14 +8,9 @@
 #ifndef __PIANOROLL_H__
 #define __PIANOROLL_H__
 
-#include <QWidget>
-//#include <q3mainwindow.h>
-//#include <QMenu>
-//Added by qt3to4:
 #include <QCloseEvent>
 #include <QResizeEvent>
 #include <QLabel>
-#include <Q3PopupMenu>
 #include <QKeyEvent>
 
 #include <values.h>
@@ -34,6 +29,7 @@ class IntLabel;
 class MTScale;
 class Track;
 class QToolButton;
+class QToolBar;
 class QPushButton;
 class CtrlEdit;
 class Splitter;
@@ -45,6 +41,8 @@ class ScrollScale;
 class Part;
 class SNode;
 class QMenu;
+class QAction;
+class QWidget;
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -55,11 +53,51 @@ class PianoRoll : public MidiEditor {
       MidiPart* selPart;
       int selTick;
 
-      enum { CMD_EVENT_COLOR, CMD_CONFIG_QUANT, CMD_LAST };
-      int menu_ids[CMD_LAST];
-      Q3PopupMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *menuPlugins;
-      //QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *menuPlugins;
+      //enum { CMD_EVENT_COLOR, CMD_CONFIG_QUANT, CMD_LAST };
+      //int menu_ids[CMD_LAST];
+      //Q3PopupMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *menuPlugins;
 
+      
+      QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
+      
+      QAction* editCutAction; 
+      QAction* editCopyAction; 
+      QAction* editPasteAction; 
+      QAction* editDelEventsAction;
+      
+      QAction* selectAllAction; 
+      QAction* selectNoneAction;
+      QAction* selectInvertAction;
+      QAction* selectInsideLoopAction;
+      QAction* selectOutsideLoopAction;
+      QAction* selectPrevPartAction;
+      QAction* selectNextPartAction;
+      
+      QAction* evColorBlueAction;
+      QAction* evColorPitchAction;
+      QAction* evColorVelAction;
+      
+      QAction* funcOverQuantAction;
+      QAction* funcNoteOnQuantAction;
+      QAction* funcNoteOnOffQuantAction;
+      QAction* funcIterQuantAction;
+      QAction* funcConfigQuantAction;
+      QAction* funcGateTimeAction;
+      QAction* funcModVelAction;
+      QAction* funcCrescendoAction;
+      QAction* funcTransposeAction;
+      QAction* funcThinOutAction;
+      QAction* funcEraseEventAction;
+      QAction* funcNoteShiftAction;
+      QAction* funcMoveClockAction;
+      QAction* funcCopyMeasureAction;
+      QAction* funcEraseMeasureAction;
+      QAction* funcDelMeasureAction;
+      QAction* funcCreateMeasureAction;
+      QAction* funcSetFixedLenAction;
+      QAction* funcDelOverlapsAction;
+      
+      
       int tickOffset;
       int lenOffset;
       int pitchOffset;
@@ -78,7 +116,6 @@ class PianoRoll : public MidiEditor {
       QToolBar* tools;
       EditToolBar* tools2;
 
-      QMenu* eventColor;
       int colorMode;
 
       static int _quantInit, _rasterInit;
@@ -100,6 +137,7 @@ class PianoRoll : public MidiEditor {
 
       Q_OBJECT
       void initShortcuts();
+      void setEventColorMode(int);
       QWidget* genToolbar(QWidget* parent);
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
@@ -120,7 +158,7 @@ class PianoRoll : public MidiEditor {
       void cmd(int);
       void setSteprec(bool);
       void setTo(int val)            { _to = val; }
-      void setEventColorMode(int);
+      void eventColorModeChanged(int);
       void clipboardChanged(); // enable/disable "Paste"
       void selectionChanged(); // enable/disable "Copy" & "Paste"
       void setSpeaker(bool);
