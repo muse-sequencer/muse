@@ -6,33 +6,25 @@
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3listbox.h>
-//Added by qt3to4:
-#include <QCloseEvent>
 #include <stdio.h> 
 #include <errno.h>
-#include <qmessagebox.h>
-#include <qspinbox.h>
-#include <qcombobox.h>
-#include <qlineedit.h>
-#include <qcheckbox.h>
-#include <qdir.h>
-#include <qfileinfo.h>
-#include <q3filedialog.h>
-#include <qtoolbutton.h>
-#include <q3popupmenu.h>
-#include <qpushbutton.h>
-#include <qtabwidget.h>
-#include <qinputdialog.h>
+
+#include <QCloseEvent>
+#include <QDir>
+#include <QFileInfo>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QLineEdit>
 
 #include "editinstrument.h"
 #include "minstrument.h"
 #include "globals.h"
-#include "listitem.h"
 #include "song.h"
 #include "xml.h"
 #include "midictrl.h"
 #include "gconfig.h"
+#include "icons.h"
+
 
 enum {
       COL_NAME = 0, COL_TYPE,
@@ -43,17 +35,29 @@ enum {
 //   EditInstrument
 //---------------------------------------------------------
 
-EditInstrument::EditInstrument(QWidget* parent, const char* name, Qt::WFlags fl)
-   : EditInstrumentBase(parent, name, fl)
+EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
+   : QMainWindow(parent, fl)
       {
-      patchpopup = new Q3PopupMenu(patchButton);
+      setupUi(this);
+      fileNewAction->setIcon(QIcon(*filenewIcon));
+      fileOpenAction->setIcon(QIcon(*openIcon));
+      fileSaveAction->setIcon(QIcon(*saveIcon));
+      fileSaveAsAction->setIcon(QIcon(*saveasIcon));
+      fileExitAction->setIcon(QIcon(*exitIcon));
+      viewController->setSelectionMode(QAbstractItemView::SingleSelection);
+      toolBar->addAction(QWhatsThis::createAction(this));
+      Help->addAction(QWhatsThis::createAction(this));
+
+      patchpopup = new QMenu(patchButton);
       patchpopup->setCheckable(false);
       
       // populate instrument list
       // Populate common controller list.
       for(int i = 0; i < 128; ++i)
-        listController->insertItem(midiCtrlName(i));
-      
+	{
+	  QListWidgetItem *lci = new QListWidgetItem(midiCtrlName(i));
+	  listController->addItem(lci);
+	}
       oldMidiInstrument = 0;
       oldPatchItem = 0;
       for (iMidiInstrument i = midiInstruments.begin(); i != midiInstruments.end(); ++i) {
@@ -65,12 +69,14 @@ EditInstrument::EditInstrument(QWidget* parent, const char* name, Qt::WFlags fl)
             if((*i)->filePath().isEmpty())
               continue;
               
-            ListBoxData* item = new ListBoxData((*i)->iname());
-            item->setData((void*)*i);
-            instrumentList->insertItem(item);
+            QListWidgetItem* item = new QListWidgetItem((*i)->iname());
+            QVariant v = qVariantFromValue((void*)(*i));
+            item->setData(Qt::UserRole, v);
+            instrumentList->addItem(item);
             }
+      instrumentList->setSelectionMode(QAbstractItemView::SingleSelection);
       if(instrumentList->item(0))
-        instrumentList->setSelected(instrumentList->item(0), true);
+        instrumentList->setCurrentItem(instrumentList->item(0));
       //oldMidiInstrument = (MidiInstrument*)((ListBoxData*)instrumentList->item(0))->data();
       //oldMidiInstrument = (ListBoxData*)instrumentList->item(0);
       //oldMidiInstrument = (ListBoxData*)instrumentList->selectedItem();
@@ -81,14 +87,14 @@ EditInstrument::EditInstrument(QWidget* parent, const char* name, Qt::WFlags fl)
 //        workingInstrument.assign( *wip );
       
       
-      connect(instrumentList, SIGNAL(selectionChanged()), SLOT(instrumentChanged()));
-      connect(patchView, SIGNAL(selectionChanged()), SLOT(patchChanged()));
+      connect(instrumentList, SIGNAL(itemSelectionChanged()), SLOT(instrumentChanged()));
+      connect(patchView, SIGNAL(itemSelectionChanged()), SLOT(patchChanged()));
       
       //instrumentChanged();
       changeInstrument();
       
       //connect(listController, SIGNAL(selectionChanged()), SLOT(controllerChanged()));
-      connect(viewController, SIGNAL(selectionChanged()), SLOT(controllerChanged()));
+      connect(viewController, SIGNAL(itemSelectionChanged()), SLOT(controllerChanged()));
       
       //connect(instrumentName, SIGNAL(textChanged(const QString&)), SLOT(instrumentNameChanged(const QString&)));
       connect(instrumentName, SIGNAL(returnPressed()), SLOT(instrumentNameReturn()));
@@ -108,7 +114,7 @@ EditInstrument::EditInstrument(QWidget* parent, const char* name, Qt::WFlags fl)
       connect(deleteController, SIGNAL(clicked()), SLOT(deleteControllerClicked()));
       connect(newController, SIGNAL(clicked()), SLOT(newControllerClicked()));
       connect(addController, SIGNAL(clicked()), SLOT(addControllerClicked()));
-      connect(listController, SIGNAL(doubleClicked(Q3ListBoxItem*)), SLOT(addControllerClicked()));
+      connect(listController, SIGNAL(itemDoubleClicked(QListWidgetItem*)), SLOT(addControllerClicked()));
       connect(ctrlType,SIGNAL(activated(int)), SLOT(ctrlTypeChanged(int)));
       connect(ctrlName, SIGNAL(returnPressed()), SLOT(ctrlNameReturn()));
       connect(ctrlName, SIGNAL(lostFocus()), SLOT(ctrlNameReturn()));
@@ -159,10 +165,9 @@ void EditInstrument::fileNew()
             if (!found) {
                   //if(oldMidiInstrument)
                   //{
-                        //MidiInstrument* oi = (MidiInstrument*)old->data(Qt::UserRole).value<void*>();
                         MidiInstrument* oi = 0;
                         if(oldMidiInstrument)
-                          oi = (MidiInstrument*)oldMidiInstrument->data();
+                          oi = (MidiInstrument*)oldMidiInstrument->data(Qt::UserRole).value<void*>();
                         MidiInstrument* wip = &workingInstrument;
                         //checkDirty(oi);
                         //if(checkDirty(oi))
@@ -179,7 +184,6 @@ void EditInstrument::fileNew()
                               // Delete the list item and the instrument.
                               deleteInstrument(oldMidiInstrument);
                             
-                            instrumentList->triggerUpdate(true);
                           }  
                         }
                         //else  
@@ -198,18 +202,16 @@ void EditInstrument::fileNew()
                   midiInstruments.push_back(ni);
                   //QListWidgetItem* item = new QListWidgetItem(ni->iname());
                   //InstrumentListItem* item = new InstrumentListItem(ni->iname());
-                  ListBoxData* item = new ListBoxData(ni->iname());
+                  QListWidgetItem* item = new QListWidgetItem(ni->iname());
                   
                   //oldMidiInstrument = item;
                   workingInstrument.assign( *ni );
                   //workingInstrument.setDirty(false);
                   
                   //item->setText(ni->iname());
-                  item->setData((void*)ni);
-                  //QVariant v = qVariantFromValue((void*)(ni));
-                  //item->setData(Qt::UserRole, v);
-                  //instrumentList->addItem(item);
-                  instrumentList->insertItem(item);
+                  QVariant v = qVariantFromValue((void*)(ni));
+                  item->setData(Qt::UserRole, v);
+                  instrumentList->addItem(item);
                   
                   oldMidiInstrument = 0;
                   
@@ -337,7 +339,7 @@ bool EditInstrument::fileSave(MidiInstrument* instrument, const QString& name)
       // Assign the working instrument values to the actual current selected instrument...
       if(oldMidiInstrument)
       {
-        MidiInstrument* oi = (MidiInstrument*)oldMidiInstrument->data();
+        MidiInstrument* oi = (MidiInstrument*)oldMidiInstrument->data(Qt::UserRole).value<void*>();
         if(oi)
         {
           oi->assign(workingInstrument);
@@ -420,7 +422,7 @@ void EditInstrument::saveAs()
             // Prompt for a new instrument name if the name has not been changed, to avoid duplicates.
             if(oldMidiInstrument)
             {
-              MidiInstrument* oi = (MidiInstrument*)oldMidiInstrument->data();
+              MidiInstrument* oi = (MidiInstrument*)oldMidiInstrument->data(Qt::UserRole).value<void*>();
               if(oi)
               {
                 if(oi->iname() == workingInstrument.iname())
@@ -448,7 +450,7 @@ void EditInstrument::saveAs()
       //   path,
       //   tr("Instrument Definition (*.idf)"));
       
-      QString s = Q3FileDialog::getSaveFileName(path, tr("Instrument Definition (*.idf)"), this,
+      QString s = QFileDialog::getSaveFileName(path, tr("Instrument Definition (*.idf)"), this,
          tr("MusE: Save Instrument Definition").latin1());
       if (s.isEmpty())
             return;
@@ -481,7 +483,7 @@ void EditInstrument::fileSaveAs()
       
       MidiInstrument* oi = 0;
       if(oldMidiInstrument)
-        oi = (MidiInstrument*)oldMidiInstrument->data();
+        oi = (MidiInstrument*)oldMidiInstrument->data(Qt::UserRole).value<void*>();
         
       int res = checkDirty(&workingInstrument, true);
       switch(res)
@@ -509,7 +511,6 @@ void EditInstrument::fileSaveAs()
             
             changeInstrument();
             
-            instrumentList->triggerUpdate(true);
           }
           return;
         break;
@@ -614,7 +615,7 @@ void EditInstrument::fileSaveAs()
               workingInstrument.setIName(s);
               
               // Find the instrument in the list and set the old instrument to the item.
-              oldMidiInstrument = (ListBoxData*)instrumentList->findItem(s, Q3ListBox::ExactMatch);
+              oldMidiInstrument = instrumentList->findItems(s, Qt::MatchExactly)[0];
               
               // Mark as a built-in instrument.
               builtin = true;
@@ -645,18 +646,18 @@ void EditInstrument::fileSaveAs()
           //QListWidgetItem* item = new QListWidgetItem(ni->iname());
           //InstrumentListItem* item = new InstrumentListItem(ni->iname());
           //ListBoxData* item = new ListBoxData(ni->iname());
-          ListBoxData* item = new ListBoxData(so);
+          QListWidgetItem* item = new QListWidgetItem(so);
           
           //oldMidiInstrument = item;
           workingInstrument.assign( *ni );
           //workingInstrument.setDirty(false);
           
           //item->setText(ni->iname());
-          item->setData((void*)ni);
-          //QVariant v = qVariantFromValue((void*)(ni));
-          //item->setData(Qt::UserRole, v);
+          //item->setData((void*)ni);
+          QVariant v = qVariantFromValue((void*)(ni));
+          item->setData(Qt::UserRole, v);
           //instrumentList->addItem(item);
-          instrumentList->insertItem(item);
+          instrumentList->addItem(item);
           
           oldMidiInstrument = 0;
           
@@ -715,7 +716,7 @@ void EditInstrument::fileSaveAs()
         sfn = path;
       else  
       {
-        sfn = Q3FileDialog::getSaveFileName(path, tr("Instrument Definition (*.idf)"), this,
+        sfn = QFileDialog::getSaveFileName(path, tr("Instrument Definition (*.idf)"), this,
           tr("MusE: Save Instrument Definition").latin1());
         if (sfn.isEmpty())
               return;
@@ -760,7 +761,7 @@ void EditInstrument::closeEvent(QCloseEvent* ev)
 //        int res = checkDirty(instrument, true);
         MidiInstrument* oi = 0;
         if(oldMidiInstrument)
-          oi = (MidiInstrument*)oldMidiInstrument->data();
+          oi = (MidiInstrument*)oldMidiInstrument->data(Qt::UserRole).value<void*>();
           
         int res = checkDirty(&workingInstrument, true);
         switch(res)
@@ -788,7 +789,6 @@ void EditInstrument::closeEvent(QCloseEvent* ev)
               
               changeInstrument();
               
-              instrumentList->triggerUpdate(true);
             }  
           break;
           
@@ -809,7 +809,7 @@ void EditInstrument::closeEvent(QCloseEvent* ev)
         
 //      }
       
-      Q3MainWindow::closeEvent(ev);
+      QMainWindow::closeEvent(ev);
       }
 
 //---------------------------------------------------------
@@ -818,7 +818,8 @@ void EditInstrument::closeEvent(QCloseEvent* ev)
 
 void EditInstrument::changeInstrument()
 {
-  ListBoxData* sel = (ListBoxData*)instrumentList->selectedItem();
+  QListWidgetItem* sel = instrumentList->currentItem();
+
   if(!sel)
     return;
 
@@ -828,15 +829,24 @@ void EditInstrument::changeInstrument()
   //workingInstrument = *((MidiInstrument*)sel->data());
   
   // Assign will 'delete' any existing patches, groups, or controllers.
-  workingInstrument.assign( *((MidiInstrument*)sel->data()) );
+  workingInstrument.assign( *((MidiInstrument*)sel->data(Qt::UserRole).value<void*>()) );
   
   workingInstrument.setDirty(false);
   
   // populate patch list
-  
+  patchView->blockSignals(true);
+  for (int i = 0; i < patchView->topLevelItemCount(); ++i)
+    qDeleteAll(patchView->topLevelItem(i)->takeChildren());
   patchView->clear();
-  //listController->clear();
+  patchView->blockSignals(false);
+
+  //viewController->blockSignals(true);
+  for (int i = 0; i < viewController->topLevelItemCount(); ++i)
+    qDeleteAll(viewController->topLevelItem(i)->takeChildren());
   viewController->clear();
+  //viewController->blockSignals(false);
+  
+  //listController->clear();
   //category->clear();
   //sysexList->clear();
 
@@ -883,17 +893,18 @@ void EditInstrument::changeInstrument()
         if(pgp)
         {
           //QTreeWidgetItem* item = new QTreeWidgetItem;
-          ListViewData* item = new ListViewData(patchView);
+          QTreeWidgetItem* item = new QTreeWidgetItem(patchView);
           
           //item->setText(0, g->name);
           item->setText(0, pgp->name);
-          
           //QVariant v = QVariant::fromValue((void*)0);
           //item->setData(0, Qt::UserRole, v);
           //item->setData((void*)*g);
           //item->setData((void*)0);
           //item->setData((void*)&*g);
-          item->setData((void*)pgp);
+          //item->setData((void*)pgp);
+          QVariant v = qVariantFromValue((void*)(pgp));
+          item->setData(0, Qt::UserRole, v);
           //patchView->addTopLevelItem(item);
           
           //for (ciPatch p = g->patches.begin(); p != g->patches.end(); ++p) 
@@ -904,14 +915,18 @@ void EditInstrument::changeInstrument()
             if(patch)
             {
               //QTreeWidgetItem* sitem = new QTreeWidgetItem;
-              ListViewData* sitem = new ListViewData(item);
+              QTreeWidgetItem* sitem = new QTreeWidgetItem(item);
+              //printf("%s \n", qPrintable(patch->name));
+
               //sitem->setText(0, patch.name);
               //sitem->setText(0, p->name);
               sitem->setText(0, patch->name);
               //QVariant v = QVariant::fromValue((void*)patch);
               //sitem->setData(0, Qt::UserRole, v);
               //sitem->setData((void*)&*p);
-              sitem->setData((void*)patch);
+              //sitem->setData((void*)patch);
+              QVariant v = QVariant::fromValue((void*)patch);
+              sitem->setData(0, Qt::UserRole, v);
               //item->addChild(sitem);
             }  
           }  
@@ -921,17 +936,17 @@ void EditInstrument::changeInstrument()
   
   oldPatchItem = 0;
   
-  ListViewData* fc = (ListViewData*)patchView->firstChild();
+  QTreeWidgetItem* fc = patchView->topLevelItem(0);
   if(fc)
   {
     // This may cause a patchChanged call.
     //if(patchView->selectedItem() != fc)
     patchView->blockSignals(true);
-    patchView->setSelected(fc, true);
+    fc->setSelected(true);
     patchView->blockSignals(false);
     //else  
     //  patchChanged();
-      
+
     //patchView->firstChild()->setSelected(true);
     //patchView->triggerUpdate(true);
   }
@@ -968,8 +983,9 @@ void EditInstrument::changeInstrument()
 //  oldController = 0;
   
   //ListBoxData* ci = (ListBoxData*)listController->item(0);
-  ListViewData* ci = (ListViewData*)viewController->firstChild();
-  
+
+  QTreeWidgetItem *ci = viewController->topLevelItem(0);
+
   if(ci)
   {
     // This may cause a controllerChanged call.
@@ -981,7 +997,7 @@ void EditInstrument::changeInstrument()
     //  controllerChanged();
     
     viewController->blockSignals(true);
-    viewController->setSelected(ci, true);
+    ci->setSelected(true);
     viewController->blockSignals(false);
   }  
   
@@ -1021,7 +1037,8 @@ void EditInstrument::changeInstrument()
 
 void EditInstrument::instrumentChanged()
       {
-      ListBoxData* sel = (ListBoxData*)instrumentList->selectedItem();
+      QListWidgetItem* sel = instrumentList->currentItem();
+
       if(!sel)
         return;
            
@@ -1030,10 +1047,9 @@ void EditInstrument::instrumentChanged()
       //if (old) {
       //if(oldMidiInstrument)
       //{
-        //MidiInstrument* oi = (MidiInstrument*)old->data(Qt::UserRole).value<void*>();
         MidiInstrument* oi = 0;
         if(oldMidiInstrument)
-          oi = (MidiInstrument*)oldMidiInstrument->data();
+          oi = (MidiInstrument*)oldMidiInstrument->data(Qt::UserRole).value<void*>();
         MidiInstrument* wip = &workingInstrument;
         // Returns true if aborted.
         //checkDirty(oi);
@@ -1054,7 +1070,6 @@ void EditInstrument::instrumentChanged()
               oldMidiInstrument = 0;
             }
             
-            instrumentList->triggerUpdate(true);
           }  
         }
         //else
@@ -1081,7 +1096,8 @@ void EditInstrument::instrumentNameReturn()
 //void EditInstrument::instrumentNameChanged(const QString& s)
 {
   //instrumentNameChanged(instrumentName->text());
-  ListBoxData* item = (ListBoxData*)instrumentList->selectedItem();
+  QListWidgetItem* item = instrumentList->currentItem();
+
   if (item == 0)
         return;
   QString s = instrumentName->text();
@@ -1089,7 +1105,7 @@ void EditInstrument::instrumentNameReturn()
   if(s == item->text()) 
     return;
   
-  MidiInstrument* curins = (MidiInstrument*)item->data();
+  MidiInstrument* curins = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
   
   for(iMidiInstrument i = midiInstruments.begin(); i != midiInstruments.end(); ++i) 
   {
@@ -1120,7 +1136,6 @@ void EditInstrument::instrumentNameReturn()
         workingInstrument.setIName(s);
         workingInstrument.setDirty(true);
         //instrumentList->updateItem(item);
-        instrumentList->triggerUpdate(true);
         //instrumentList->update();
   //      }
 }
@@ -1129,14 +1144,14 @@ void EditInstrument::instrumentNameReturn()
 //   deleteInstrument
 //---------------------------------------------------------
 
-void EditInstrument::deleteInstrument(ListBoxData* item)
+void EditInstrument::deleteInstrument(QListWidgetItem* item)
 {
   if(!item)
     return;
 
   //ListBoxData* curritem = (ListBoxData*)instrumentList->selectedItem();
   
-  MidiInstrument* ins = (MidiInstrument*)item->data();
+  MidiInstrument* ins = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
   
   // Be kind to the list item, just in case we install a delete handler or something.
   //item->setData(0);
@@ -1179,10 +1194,10 @@ void EditInstrument::tabChanged(QWidget* w)
   if(oldPatchItem)
   {
     // Don't bother calling patchChanged, just update the patch or group.
-    if(oldPatchItem->parent())
-      updatePatch(&workingInstrument, (Patch*)oldPatchItem->data());
+    if(oldPatchItem->QTreeWidgetItem::parent())
+      updatePatch(&workingInstrument, (Patch*)oldPatchItem->data(0, Qt::UserRole).value<void*>());
     else
-      updatePatchGroup(&workingInstrument, (PatchGroup*)oldPatchItem->data());
+      updatePatchGroup(&workingInstrument, (PatchGroup*)oldPatchItem->data(0, Qt::UserRole).value<void*>());
   }
   
   // We're still on the same item. No need to set oldPatchItem as in patchChanged...
@@ -1190,12 +1205,12 @@ void EditInstrument::tabChanged(QWidget* w)
   // If we're switching to the Controller tab, update the default patch button text in case a patch changed...
   if(QString(w->name()) == QString("controllerTab"))
   {
-    ListViewData* sel = (ListViewData*)viewController->selectedItem();
+    QTreeWidgetItem* sel = viewController->currentItem();
         
-    if(!sel || !sel->data()) 
+    if(!sel || !sel->data(0, Qt::UserRole).value<void*>()) 
       return;
         
-    MidiController* c = (MidiController*)sel->data();
+    MidiController* c = (MidiController*)sel->data(0, Qt::UserRole).value<void*>();
     MidiController::ControllerType type = midiControllerType(c->num());
         
     // Grab the controller number from the actual values showing
@@ -1211,7 +1226,8 @@ void EditInstrument::tabChanged(QWidget* w)
 
 void EditInstrument::patchNameReturn()
 {
-  ListViewData* item = (ListViewData*)patchView->selectedItem();
+  QTreeWidgetItem* item = patchView->currentItem();
+  
   if (item == 0)
         return;
   
@@ -1225,9 +1241,9 @@ void EditInstrument::patchNameReturn()
   {
     PatchGroup* pgp = *g;
     // If the item has a parent, it's a patch item.
-    if(item->parent())
+    if(item->QTreeWidgetItem::parent())
     {
-      Patch* curp = (Patch*)item->data();
+      Patch* curp = (Patch*)item->data(0, Qt::UserRole).value<void*>();
       for(iPatch p = pgp->patches.begin(); p != pgp->patches.end(); ++p) 
       {
         if((*p) != curp && (*p)->name == s) 
@@ -1252,7 +1268,7 @@ void EditInstrument::patchNameReturn()
     else
     // The item has no parent. It's a patch group item.
     {
-      PatchGroup* curpg = (PatchGroup*)item->data();
+      PatchGroup* curpg = (PatchGroup*)item->data(0, Qt::UserRole).value<void*>();
       if(pgp != curpg && pgp->name == s) 
       {
         patchNameEdit->blockSignals(true);
@@ -1309,7 +1325,6 @@ void EditInstrument::patchNameReturn()
 //---------------------------------------------------------
 //   patchChanged
 //---------------------------------------------------------
-
 void EditInstrument::patchChanged()
     {
       //if (old && old->data(0, Qt::UserRole).value<void*>()) {
@@ -1322,16 +1337,15 @@ void EditInstrument::patchChanged()
             //Patch* p = (Patch*)old->data(0, Qt::UserRole).value<void*>();
             //updatePatch(instrument, p);
             if(oldPatchItem->parent())
-              updatePatch(&workingInstrument, (Patch*)oldPatchItem->data());
+                    updatePatch(&workingInstrument, (Patch*)oldPatchItem->data(0, Qt::UserRole).value<void*>());
             else
-              updatePatchGroup(&workingInstrument, (PatchGroup*)oldPatchItem->data());
+                    updatePatchGroup(&workingInstrument, (PatchGroup*)oldPatchItem->data(0, Qt::UserRole).value<void*>());
       }
       
-      
-      ListViewData* sel = (ListViewData*)patchView->selectedItem();
+      QTreeWidgetItem* sel = patchView->selectedItems().size() ? patchView->selectedItems()[0] : 0;
       oldPatchItem = sel;
       
-      if(!sel || !sel->data()) 
+      if(!sel || !sel->data(0, Qt::UserRole).value<void*>())
       {
         patchNameEdit->setText("");
         spinBoxHBank->setEnabled(false);
@@ -1347,7 +1361,7 @@ void EditInstrument::patchChanged()
       // If the item has a parent, it's a patch item.
       if(sel->parent())
       {
-        Patch* p = (Patch*)sel->data();
+        Patch* p = (Patch*)sel->data(0, Qt::UserRole).value<void*>();
         patchNameEdit->setText(p->name);
         spinBoxHBank->setEnabled(true);
         spinBoxLBank->setEnabled(true);
@@ -1373,7 +1387,7 @@ void EditInstrument::patchChanged()
       else
       // The item is a patch group item.
       {
-        patchNameEdit->setText( ((PatchGroup*)sel->data())->name );
+        patchNameEdit->setText( ((PatchGroup*)sel->data(0, Qt::UserRole).value<void*>())->name );
         spinBoxHBank->setEnabled(false);
         spinBoxLBank->setEnabled(false);
         spinBoxProgram->setEnabled(false);
@@ -1390,11 +1404,12 @@ void EditInstrument::patchChanged()
 
 void EditInstrument::defPatchChanged(int)
 {
-      ListViewData* item = (ListViewData*)viewController->selectedItem();
+      QTreeWidgetItem* item = viewController->currentItem();
+      
       if (!item)
             return;
         
-      MidiController* c = (MidiController*)item->data();
+      MidiController* c = (MidiController*)item->data(0, Qt::UserRole).value<void*>();
       
       int val = getDefaultPatchNumber();
       
@@ -1427,7 +1442,7 @@ void EditInstrument::patchButtonClicked()
       if (pg->size() > 1) {
             for (ciPatchGroup i = pg->begin(); i != pg->end(); ++i) {
                   PatchGroup* pgp = *i;
-                  Q3PopupMenu* pm = new Q3PopupMenu(patchpopup);
+                  QMenu* pm = new QMenu(pgp->name);
                   pm->setCheckable(false);
                   pm->setFont(config.fonts[0]);
                   const PatchList& pl = pgp->patches;
@@ -1440,11 +1455,12 @@ void EditInstrument::patchButtonClicked()
                         //    {
                               int id = ((mp->hbank & 0xff) << 16)
                                          + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
-                              pm->insertItem(mp->name, id);
+                              QAction *ac1 = pm->addAction(mp->name);
+			      ac1->setData(id);
                         //    }
                               
                         }
-                  patchpopup->insertItem(pgp->name, pm);
+                        patchpopup->addMenu(pm);
                   }
             }
       else if (pg->size() == 1 ){
@@ -1455,26 +1471,29 @@ void EditInstrument::patchButtonClicked()
                   //if (mp->typ & mask) {
                         int id = ((mp->hbank & 0xff) << 16)
                                  + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
-                        patchpopup->insertItem(mp->name, id);
+                        QAction *ac2 = patchpopup->addAction(mp->name);
+                        ac2->setData(id);
                   //      }
                   }
             }
 
       if(patchpopup->count() == 0)
         return;
-        
-      int rv = patchpopup->exec(patchButton->mapToGlobal(QPoint(10,5)));
-      
+
+      QAction* act = patchpopup->exec(patchButton->mapToGlobal(QPoint(10,5)));
+      int rv = act->data().toInt();
+
       if (rv != -1) 
       {
         //if(rv != workingInstrument.
         
         setDefaultPatchControls(rv);
         
-        ListViewData* item = (ListViewData*)viewController->selectedItem();
+        QTreeWidgetItem* item = viewController->currentItem();
+
         if(item)
         {
-          MidiController* c = (MidiController*)item->data();
+          MidiController* c = (MidiController*)item->data(0, Qt::UserRole).value<void*>();
           c->setInitVal(rv);
           
           item->setText(COL_DEF, getPatchItemText(rv));
@@ -1488,7 +1507,7 @@ void EditInstrument::patchButtonClicked()
 //   addControllerToView
 //---------------------------------------------------------
 
-ListViewData* EditInstrument::addControllerToView(MidiController* mctrl)
+QTreeWidgetItem* EditInstrument::addControllerToView(MidiController* mctrl)
 {
       QString hnum;
       QString lnum;
@@ -1566,10 +1585,13 @@ ListViewData* EditInstrument::addControllerToView(MidiController* mctrl)
                 def = "---";
                 break;
       }
-      
-      ListViewData* ci =  new ListViewData(viewController, mctrl->name(), int2ctrlType(t),
-                                            hnum, lnum, min, max, def);
-      ci->setData((void*)mctrl);
+
+      	QTreeWidgetItem* ci =  new QTreeWidgetItem(viewController, QStringList() <<  mctrl->name() << int2ctrlType(t) << hnum << lnum << min << max << def);
+	//ListViewData* ci =  new ListViewData(viewController, mctrl->name(), int2ctrlType(t),
+        //                                    hnum, lnum, min, max, def);
+      //ci->setData((void*)mctrl);
+      QVariant v = qVariantFromValue((void*)(mctrl));
+      ci->setData(0, Qt::UserRole, v);
       //setModified(true);
       
       return ci;
@@ -1594,10 +1616,11 @@ void EditInstrument::controllerChanged()
 //      }
       
     //  ListBoxData* sel = (ListBoxData*)listController->selectedItem();
-      ListViewData* sel = (ListViewData*)viewController->selectedItem();
+
+	QTreeWidgetItem* sel = viewController->selectedItems().size() ? viewController->selectedItems()[0] : 0;
 //      oldController = sel;
       
-      if(!sel || !sel->data()) 
+	if(!sel || !sel->data(0, Qt::UserRole).value<void*>()) 
       {
         ctrlName->blockSignals(true);
         ctrlName->setText("");
@@ -1606,8 +1629,7 @@ void EditInstrument::controllerChanged()
         return;
       }
       
-      //MidiController* c = (MidiController*)sel->data(Qt::UserRole).value<void*>();
-      MidiController* c = (MidiController*)sel->data();
+      MidiController* c = (MidiController*)sel->data(0, Qt::UserRole).value<void*>();
       
       ctrlName->blockSignals(true);
       ctrlName->setText(c->name());
@@ -1749,10 +1771,11 @@ void EditInstrument::controllerChanged()
 void EditInstrument::ctrlNameReturn()
 //void EditInstrument::ctrlNameChanged(const QString& s)
 {
-      ListViewData* item = (ListViewData*)viewController->selectedItem();
+      QTreeWidgetItem* item = viewController->currentItem();
+
       if (item == 0)
             return;
-      MidiController* c = (MidiController*)item->data();
+      MidiController* c = (MidiController*)item->data(0, Qt::UserRole).value<void*>();
       
       QString cName = ctrlName->text();
       
@@ -1794,12 +1817,13 @@ void EditInstrument::ctrlNameReturn()
 
 void EditInstrument::ctrlTypeChanged(int idx)
       {
-      ListViewData* item = (ListViewData*)viewController->selectedItem();
+      QTreeWidgetItem* item = viewController->currentItem();
+      
       if (item == 0)
             return;
       
       MidiController::ControllerType t = (MidiController::ControllerType)idx;
-      MidiController* c = (MidiController*)item->data();
+      MidiController* c = (MidiController*)item->data(0, Qt::UserRole).value<void*>();
       if(t == midiControllerType(c->num()))
          return;
       
@@ -2089,12 +2113,13 @@ void EditInstrument::ctrlTypeChanged(int idx)
 
 void EditInstrument::ctrlHNumChanged(int val)
       {
-      ListViewData* item = (ListViewData*)viewController->selectedItem();
+      QTreeWidgetItem* item = viewController->currentItem();
+      
       if (item == 0)
             return;
       QString s;
       s.setNum(val);
-      MidiController* c = (MidiController*)item->data();
+      MidiController* c = (MidiController*)item->data(0, Qt::UserRole).value<void*>();
       //int n = c->num() & 0xff;
       int n = c->num() & 0x7fff00ff;
       c->setNum(n | ((val & 0xff) << 8));
@@ -2108,10 +2133,11 @@ void EditInstrument::ctrlHNumChanged(int val)
 
 void EditInstrument::ctrlLNumChanged(int val)
       {
-      ListViewData* item = (ListViewData*)viewController->selectedItem();
+      QTreeWidgetItem* item = viewController->currentItem();
+      
       if (item == 0)
             return;
-      MidiController* c = (MidiController*)item->data();
+      MidiController* c = (MidiController*)item->data(0, Qt::UserRole).value<void*>();
       //int n = c->num() & 0xff00;
       int n = c->num() & ~0xff;
       c->setNum(n | (val & 0xff));
@@ -2132,7 +2158,8 @@ void EditInstrument::ctrlLNumChanged(int val)
 
 void EditInstrument::ctrlMinChanged(int val)
 {
-      ListViewData* item = (ListViewData*)viewController->selectedItem();
+      QTreeWidgetItem* item = viewController->currentItem();
+      
       if (item == 0)
             return;
         
@@ -2140,7 +2167,7 @@ void EditInstrument::ctrlMinChanged(int val)
       s.setNum(val);
       item->setText(COL_MIN, s);
       
-      MidiController* c = (MidiController*)item->data();
+      MidiController* c = (MidiController*)item->data(0, Qt::UserRole).value<void*>();
       c->setMinVal(val);
       
       int rng = 0;
@@ -2217,7 +2244,8 @@ void EditInstrument::ctrlMinChanged(int val)
 
 void EditInstrument::ctrlMaxChanged(int val)
 {
-      ListViewData* item = (ListViewData*)viewController->selectedItem();
+      QTreeWidgetItem* item = viewController->currentItem();
+      
       if (item == 0)
             return;
         
@@ -2225,7 +2253,7 @@ void EditInstrument::ctrlMaxChanged(int val)
       s.setNum(val);
       item->setText(COL_MAX, s);
       
-      MidiController* c = (MidiController*)item->data();
+      MidiController* c = (MidiController*)item->data(0, Qt::UserRole).value<void*>();
       c->setMaxVal(val);
       
       int rng = 0;
@@ -2302,11 +2330,12 @@ void EditInstrument::ctrlMaxChanged(int val)
 
 void EditInstrument::ctrlDefaultChanged(int val)
 {
-      ListViewData* item = (ListViewData*)viewController->selectedItem();
+      QTreeWidgetItem* item = viewController->currentItem();
+
       if (item == 0)
             return;
         
-      MidiController* c = (MidiController*)item->data();
+      MidiController* c = (MidiController*)item->data(0, Qt::UserRole).value<void*>();
       
       if(val == c->minVal() - 1)
       {
@@ -2396,7 +2425,8 @@ void EditInstrument::deletePatchClicked()
       //MidiInstrument* instrument = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
 //      MidiInstrument* instrument = (MidiInstrument*)item->data();
       //QTreeWidgetItem* pi = patchView->currentItem();
-      ListViewData* pi = (ListViewData*)patchView->selectedItem();
+      QTreeWidgetItem* pi = patchView->currentItem();
+
       if (pi == 0)
             return;
       
@@ -2409,11 +2439,11 @@ void EditInstrument::deletePatchClicked()
       // If the item has a parent item, it's a patch item...
       if(pi->parent())
       {
-        PatchGroup* group = (PatchGroup*)((ListViewData*)pi->parent())->data();
+        PatchGroup* group = (PatchGroup*)(pi->parent())->data(0, Qt::UserRole).value<void*>();
         
         // If there is an allocated patch in the data, delete it.
         //Patch* patch = (Patch*)pi->auxData();
-        Patch* patch = (Patch*)pi->data();
+        Patch* patch = (Patch*)pi->data(0, Qt::UserRole).value<void*>();
         if(patch)
         {
           if(group)
@@ -2439,7 +2469,7 @@ void EditInstrument::deletePatchClicked()
       {
         // Is there an allocated patch group in the data?
         //PatchGroup* group = (PatchGroup*)pi->auxData();
-        PatchGroup* group = (PatchGroup*)pi->data();
+        PatchGroup* group = (PatchGroup*)pi->data(0, Qt::UserRole).value<void*>();
         if(group)
         {
           
@@ -2500,7 +2530,7 @@ void EditInstrument::deletePatchClicked()
       patchView->blockSignals(true);
       delete pi;
       if(patchView->currentItem())
-        patchView->setSelected(patchView->currentItem(), true);
+        patchView->currentItem()->setSelected(true);
       patchView->blockSignals(false);
       
       oldPatchItem = 0;
@@ -2541,9 +2571,9 @@ void EditInstrument::newPatchClicked()
       if(oldPatchItem)
       {
         if(oldPatchItem->parent())
-          updatePatch(&workingInstrument, (Patch*)oldPatchItem->data());
+          updatePatch(&workingInstrument, (Patch*)oldPatchItem->data(0, Qt::UserRole).value<void*>());
         else  
-          updatePatchGroup(&workingInstrument, (PatchGroup*)oldPatchItem->data());
+          updatePatchGroup(&workingInstrument, (PatchGroup*)oldPatchItem->data(0, Qt::UserRole).value<void*>());
       }  
       
       //MidiInstrument* instrument = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
@@ -2579,7 +2609,8 @@ void EditInstrument::newPatchClicked()
       //
       //PatchGroup* pGroup = 0;
       //QTreeWidgetItem* pi = patchView->currentItem();
-      ListViewData* pi = (ListViewData*)patchView->selectedItem();
+      QTreeWidgetItem* pi = patchView->currentItem();
+
       if (pi == 0)
             return;
       
@@ -2593,12 +2624,12 @@ void EditInstrument::newPatchClicked()
       if(pi->parent())
       {
         // Remember the current selected patch.
-        selpatch = (Patch*)pi->data();
+        selpatch = (Patch*)pi->data(0, Qt::UserRole).value<void*>();
         
-        pi = (ListViewData*)pi->parent();
+        pi = pi->parent();
       }
       
-      PatchGroup* group = (PatchGroup*)pi->data();
+      PatchGroup* group = (PatchGroup*)pi->data(0, Qt::UserRole).value<void*>();
       if(!group)
         return;
         
@@ -2699,7 +2730,7 @@ void EditInstrument::newPatchClicked()
       //Patch* pp = &(group->patches.back());
       
       //QTreeWidgetItem* sitem = new QTreeWidgetItem;
-      ListViewData* sitem = new ListViewData(pi);
+      QTreeWidgetItem* sitem = new QTreeWidgetItem(pi);
       //sitem->setText(0, patch->name);
       sitem->setText(0, patchName);
       
@@ -2709,7 +2740,9 @@ void EditInstrument::newPatchClicked()
       //sitem->setData(0, Qt::UserRole, v);
       
       // Set the list view item's data. 
-      sitem->setData((void*)patch);
+      //sitem->setData((void*)patch);
+      QVariant v = qVariantFromValue((void*)(patch));
+      sitem->setData(0, Qt::UserRole, v);
       //sitem->setAuxData((void*)patch);
       //sitem->setData((void*)pp);
 
@@ -2725,8 +2758,8 @@ void EditInstrument::newPatchClicked()
       
       // May cause patchChanged call.
       patchView->blockSignals(true);
-      patchView->setSelected(sitem, true);
-      patchView->ensureItemVisible(sitem);
+      sitem->setSelected(true);
+      patchView->scrollToItem((QTreeWidgetItem*)sitem, QAbstractItemView::EnsureVisible);
       patchView->blockSignals(false);
       
       //oldPatchItem = (ListViewData*)patchView->selectedItem();
@@ -2762,9 +2795,9 @@ void EditInstrument::newGroupClicked()
       if(oldPatchItem)
       {
         if(oldPatchItem->parent())
-          updatePatch(&workingInstrument, (Patch*)oldPatchItem->data());
+          updatePatch(&workingInstrument, (Patch*)oldPatchItem->data(0, Qt::UserRole).value<void*>());
         else  
-          updatePatchGroup(&workingInstrument, (PatchGroup*)oldPatchItem->data());
+          updatePatchGroup(&workingInstrument, (PatchGroup*)oldPatchItem->data(0, Qt::UserRole).value<void*>());
       }  
       
       //MidiInstrument* instrument = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
@@ -2799,8 +2832,7 @@ void EditInstrument::newGroupClicked()
       pg->push_back(group);
       //PatchGroup* pgp = &(pg->back());
       
-      //QTreeWidgetItem* sitem = new QTreeWidgetItem;
-      ListViewData* sitem = new ListViewData(patchView);
+      QTreeWidgetItem* sitem = new QTreeWidgetItem(patchView);
       sitem->setText(0, groupName);
       
       patchNameEdit->setText(groupName);
@@ -2810,7 +2842,8 @@ void EditInstrument::newGroupClicked()
       //sitem->setData((void*)0);
       
       // Set the list view item's data. 
-      sitem->setData((void*)group);
+      QVariant v = qVariantFromValue((void*)(group));
+      sitem->setData(0, Qt::UserRole, v);
       //sitem->setAuxData((void*)pgp);
       
       //patchView->addTopLevelItem(sitem);
@@ -2820,7 +2853,7 @@ void EditInstrument::newGroupClicked()
       
       // May cause patchChanged call.
       patchView->blockSignals(true);
-      patchView->setSelected(sitem, true);
+      sitem->setSelected(true);
       patchView->blockSignals(false);
       
       //oldPatchItem = (ListViewData*)patchView->selectedItem();
@@ -2850,7 +2883,7 @@ void EditInstrument::deleteControllerClicked()
       //ListBoxData* item = (ListBoxData*)instrumentList->selectedItem();
       //QListWidgetItem* item2 = listController->currentItem();
 //      ListBoxData* item = (ListBoxData*)listController->selectedItem();
-      ListViewData* item = (ListViewData*)viewController->selectedItem();
+      QTreeWidgetItem* item = viewController->currentItem();
       
       //if (item == 0 || item2 == 0)
       if(!item)
@@ -2862,7 +2895,7 @@ void EditInstrument::deleteControllerClicked()
       //MidiControllerList* cl     = instrument->controller();
       //cl->removeAll(ctrl);
       
-      MidiController* ctrl = (MidiController*)item->data();
+      MidiController* ctrl = (MidiController*)item->data(0, Qt::UserRole).value<void*>();
       if(!ctrl)
         return;
         
@@ -2876,7 +2909,7 @@ void EditInstrument::deleteControllerClicked()
       viewController->blockSignals(true);
       delete item;
       if(viewController->currentItem())
-        viewController->setSelected(viewController->currentItem(), true);
+        viewController->currentItem()->setSelected(true);
 //      listController->blockSignals(false);
       viewController->blockSignals(false);
       
@@ -2926,15 +2959,15 @@ void EditInstrument::newControllerClicked()
       ctrl->setMinVal(0);
       ctrl->setMaxVal(127);
       ctrl->setInitVal(CTRL_VAL_UNKNOWN);
-      
-      ListViewData* ci = (ListViewData*)viewController->selectedItem();
+
+      QTreeWidgetItem* ci = viewController->currentItem();
       
       // To allow for quick multiple successive controller creation.
       // If there's a current controller item selected, copy initial values from it.
       bool found = false;
       if(ci)
       {
-        MidiController* selctl = (MidiController*)ci->data();
+        MidiController* selctl = (MidiController*)ci->data(0, Qt::UserRole).value<void*>();
         // Assign.
         // *ctrl = *selctl;
         
@@ -2988,13 +3021,13 @@ void EditInstrument::newControllerClicked()
       //listController->setCurrentItem(item);
       
       workingInstrument.controller()->add(ctrl);   
-      ListViewData* item = addControllerToView(ctrl);
+      QTreeWidgetItem* item = addControllerToView(ctrl);
       
 //      listController->blockSignals(true);
 //      listController->setSelected(item, true);
 //      listController->blockSignals(false);
       viewController->blockSignals(true);
-      viewController->setSelected(item, true);
+      item->setSelected(true);
       viewController->blockSignals(false);
       
       //oldController = (ListBoxData*)listController->selectedItem();
@@ -3020,12 +3053,12 @@ void EditInstrument::addControllerClicked()
     
   //QString name = midiCtrlName(lnum);
   
-  int idx = listController->currentItem();
-  if(idx == -1)
+  QListWidgetItem* idx = listController->currentItem();
+  if(idx == 0)
     return;
   
   int lnum = -1;
-  QString name = listController->currentText();
+  QString name = listController->currentItem()->text();
   for(int i = 0; i < 128; i++)
   {
     if(midiCtrlName(i) == name)
@@ -3080,10 +3113,10 @@ void EditInstrument::addControllerClicked()
   
   workingInstrument.controller()->add(ctrl);   
   
-  ListViewData* item = addControllerToView(ctrl);
+  QTreeWidgetItem* item = addControllerToView(ctrl);
   
   viewController->blockSignals(true);
-  viewController->setSelected(item, true);
+  item->setSelected(true);
   viewController->blockSignals(false);
   
   controllerChanged();
@@ -3129,6 +3162,8 @@ void EditInstrument::deleteSysexClicked()
 
 void EditInstrument::updatePatchGroup(MidiInstrument* instrument, PatchGroup* pg)
       {
+	QString a = pg->name;
+	QString b = patchNameEdit->text();
       if (pg->name != patchNameEdit->text()) {
             pg->name = patchNameEdit->text();
             instrument->setDirty(true);
@@ -3315,17 +3350,17 @@ void EditInstrument::updateInstrument(MidiInstrument* instrument)
       
 //      printf("updateInstrument: B\n");
       
-      //QTreeWidgetItem* patchItem = patchView->currentItem();
-      ListViewData* patchItem = (ListViewData*)patchView->selectedItem();
+      QTreeWidgetItem* patchItem = patchView->currentItem();
+
       if (patchItem) 
       {      
         //Patch* p = (Patch*)patchItem->data(0, Qt::UserRole).value<void*>();
         
         // If the item has a parent, it's a patch item.
         if(patchItem->parent())
-          updatePatch(instrument, (Patch*)patchItem->data());
+          updatePatch(instrument, (Patch*)patchItem->data(0, Qt::UserRole).value<void*>());
         else
-          updatePatchGroup(instrument, (PatchGroup*)patchItem->data());
+          updatePatchGroup(instrument, (PatchGroup*)patchItem->data(0, Qt::UserRole).value<void*>());
               
       }
     }

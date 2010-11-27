@@ -236,7 +236,6 @@ add_library ( widgets STATIC
       checkbox.cpp 
       aboutbox_impl.cpp 
       popupmenu.cpp 
-      listitem.h  
       menutitleitem.h  
       )
 

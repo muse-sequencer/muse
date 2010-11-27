@@ -79,9 +79,11 @@
 #include "xpm/quant.xpm"
 #include "xpm/fileprint.xpm"
 #include "xpm/filesave.xpm"
+#include "xpm/filesaveas.xpm"
 #include "xpm/fileopen.xpm"
 #include "xpm/fileprintS.xpm"
 #include "xpm/filesaveS.xpm"
+#include "xpm/filesaveasS.xpm"
 #include "xpm/fileopenS.xpm"
 #include "xpm/master.xpm"
 #include "xpm/filenew.xpm"
@@ -294,8 +296,10 @@ QPixmap* printIcon;
 QPixmap* printIconS;
 QPixmap* openIcon;
 QPixmap* saveIcon;
+QPixmap* saveasIcon;
 QPixmap* openIconS;
 QPixmap* saveIconS;
+QPixmap* saveasIconS;
 QPixmap* masterIcon;
 QPixmap* filenewIcon;
 QPixmap* filenewIconS;
@@ -480,9 +484,11 @@ void initIcons()
       drawIcon     = new MPIXMAP(draw_xpm, NULL);
       quantIcon    = new MPIXMAP(quant_xpm, NULL);
       saveIcon     = new MPIXMAP(filesave_xpm, "document-save");
+      saveasIcon     = new MPIXMAP(filesaveas_xpm, "document-save-as");
       printIcon    = new MPIXMAP(fileprint_xpm, "document-print");
       openIcon     = new MPIXMAP(fileopen_xpm, "document-open");
       saveIconS     = new MPIXMAP(filesaveS_xpm, "document-save");
+      saveasIconS     = new MPIXMAP(filesaveasS_xpm, "document-save-as");
       printIconS    = new MPIXMAP(fileprintS_xpm, "document-print");
       openIconS     = new MPIXMAP(fileopenS_xpm, "document-open");
       masterIcon   = new MPIXMAP(master_xpm, "mixer-master");

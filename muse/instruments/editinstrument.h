@@ -9,25 +9,24 @@
 #ifndef __EDITINSTRUMENT_H__
 #define __EDITINSTRUMENT_H__
 
-#include "editinstrumentbase.h"
+#include "ui_editinstrumentbase.h"
 #include "minstrument.h"
 #include "midictrl.h"
-//Added by qt3to4:
-#include <Q3PopupMenu>
-#include <QCloseEvent>
-class ListBoxData;
-class ListViewData;
+
+class QDialog;
+class QMenu;
+class QCloseEvent;
 
 //---------------------------------------------------------
 //   EditInstrument
 //---------------------------------------------------------
 
-class EditInstrument : public EditInstrumentBase {
+class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
     Q_OBJECT
 
       MidiInstrument workingInstrument;
-      ListBoxData*  oldMidiInstrument;
-      ListViewData* oldPatchItem;
+      QListWidgetItem*  oldMidiInstrument;
+      QTreeWidgetItem* oldPatchItem;
       void closeEvent(QCloseEvent*);
       int checkDirty(MidiInstrument*, bool isClose = false);
       bool fileSave(MidiInstrument*, const QString&);
@@ -36,7 +35,7 @@ class EditInstrument : public EditInstrumentBase {
       void updatePatch(MidiInstrument*, Patch*);
       void updatePatchGroup(MidiInstrument*, PatchGroup*);
       void changeInstrument();
-      ListViewData* addControllerToView(MidiController* mctrl);
+      QTreeWidgetItem* addControllerToView(MidiController* mctrl);
       QString getPatchItemText(int);
       void enableDefaultControls(bool, bool);
       void setDefaultPatchName(int);
@@ -44,8 +43,8 @@ class EditInstrument : public EditInstrumentBase {
       void setDefaultPatchNumbers(int);
       void setDefaultPatchControls(int);
       const char* getPatchName(int);
-      void deleteInstrument(ListBoxData*);
-      Q3PopupMenu* patchpopup;
+      void deleteInstrument(QListWidgetItem*);
+      QMenu* patchpopup;
       
    private slots:
       virtual void fileNew();
@@ -85,7 +84,7 @@ class EditInstrument : public EditInstrumentBase {
       void ctrlNullParamLChanged(int);
 
    public:
-      EditInstrument(QWidget* parent = 0, const char* name = 0, Qt::WFlags fl = Qt::Window);
+      EditInstrument(QWidget* parent = 0, Qt::WFlags fl = Qt::Window);
       };
 
 #endif
