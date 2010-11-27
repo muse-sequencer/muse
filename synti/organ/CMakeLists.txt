@@ -19,8 +19,8 @@
 #=============================================================================
 
 QT4_WRAP_CPP ( organ_mocs organgui.h )
-# QT4_WRAP_UI (  organ_uis organgui.ui )
-QT4_WRAP_UI3 (  organ_uis organguibase.ui )
+
+QT4_WRAP_UI (  organ_uis organguibase.ui )
 
 add_library ( organ SHARED
       organ.cpp

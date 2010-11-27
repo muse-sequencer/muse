@@ -9,12 +9,13 @@
 #ifndef __ORGANGUI_H__
 #define __ORGANGUI_H__
 
-#include "organguibase.h"
+#include "ui_organguibase.h"
 #include "organ.h"
 #include "libsynti/gui.h"
 //#include "libsynti/mpevent.h"
 #include "muse/mpevent.h"   
 
+class QWidget;
 class QSignalMapper;
 
 #define NUM_GUI_CONTROLLER 18
@@ -23,7 +24,7 @@ class QSignalMapper;
 //   OrganGui
 //---------------------------------------------------------
 
-class OrganGui : public OrganGuiBase, public MessGui {
+class OrganGui : public QWidget, public Ui::OrganGuiBase, public MessGui {
       Q_OBJECT
 
       QSignalMapper* map;

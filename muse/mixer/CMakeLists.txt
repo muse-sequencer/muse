@@ -19,8 +19,7 @@
 #=============================================================================
 
 QT4_WRAP_CPP ( mixer_mocs amixer.h strip.h astrip.h mstrip.h meter.h rack.h panknob.h auxknob.h routedialog.h )
-# QT4_WRAP_UI ( mixer_uis routedialogbase.ui )
-QT4_WRAP_UI3 (  mixer_uis routedialogbase.ui )
+QT4_WRAP_UI ( mixer_uis routedialogbase.ui )
 
 add_library ( mixer STATIC 
       ${mixer_mocs}

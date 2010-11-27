@@ -132,7 +132,7 @@ QT4_WRAP_CPP (widget_mocs
       didyouknow.h
       )
 
-QT4_WRAP_UI (UIC
+QT4_WRAP_UI (widget_ui_headers
       aboutbox.ui  
       appearancebase.ui 
       cliplisteditorbase.ui  
@@ -142,9 +142,11 @@ QT4_WRAP_UI (UIC
       editnotedialogbase.ui  
       editsysexdialogbase.ui  
       fdialogbuttons.ui  
+      gatetimebase.ui  
       gensetbase.ui  
       itransformbase.ui  
       metronomebase.ui  
+      midisync.ui  
       mittransposebase.ui  
       mixdowndialogbase.ui  
       mtrackinfobase.ui  
@@ -158,12 +160,6 @@ QT4_WRAP_UI (UIC
       )
       
 
-#QT4_WRAP_UI (widget_ui_headers
-QT4_WRAP_UI3 (widget_ui_headers
-      midisync.ui  
-      gatetimebase.ui  
-      )
-
 # add_custom_command(OUTPUT ui_midisync.h
 #      COMMAND ${QT_UIC_EXECUTABLE}
 #      ARGS -o ${CMAKE_CURRENT_BINARY_DIR}/ui_midisync.h ${CMAKE_CURRENT_SOURCE_DIR}/midisync.ui
@@ -173,7 +169,6 @@ QT4_WRAP_UI3 (widget_ui_headers
 # ADD_FILE_DEPENDENCIES(moc_midisync.cxx ${CMAKE_CURRENT_BINARY_DIR}/ui_midisync.h)
 
 add_library ( widgets STATIC 
-      ${UIC}
       ${widget_ui_headers}
       ${widget_mocs}
       utils.cpp 

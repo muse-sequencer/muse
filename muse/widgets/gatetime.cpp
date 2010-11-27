@@ -5,10 +5,8 @@
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3buttongroup.h>
-#include <qspinbox.h>
-//#include <qbutton.h>
-#include <QtGui>
+#include <QButtonGroup>
+#include <QDialog>
 
 #include "gatetime.h"
 
@@ -18,9 +16,16 @@
 //   GateTime
 //---------------------------------------------------------
 
-GateTime::GateTime(QWidget* parent, const char* name)
-   : GateTimeBase(parent, name, true)
+GateTime::GateTime(QWidget* parent)
+   : QDialog(parent)
       {
+      setupUi(this);
+      rangeGroup = new QButtonGroup(rangeBox);
+      rangeGroup->addButton(allButton, 0);
+      rangeGroup->addButton(selButton, 1);
+      rangeGroup->addButton(loopButton, 2);
+      rangeGroup->addButton(sloopButton, 3);
+      rangeGroup->setExclusive(true);
       }
 
 //---------------------------------------------------------
@@ -29,10 +34,10 @@ GateTime::GateTime(QWidget* parent, const char* name)
 
 void GateTime::accept()
       {
-      _range     = rangeGroup->id(rangeGroup->selected());
+      _range     = rangeGroup->checkedId();
       _rateVal   = rate->value();
       _offsetVal = offset->value();
-      GateTimeBase::accept();
+      QDialog::accept();
       }
 
 //---------------------------------------------------------
@@ -41,6 +46,6 @@ void GateTime::accept()
 
 void GateTime::setRange(int id)
       {
-      rangeGroup->setButton(id);
+	rangeGroup->button(id)->setChecked(true);
       }
 

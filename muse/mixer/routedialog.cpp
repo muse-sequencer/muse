@@ -6,11 +6,11 @@
 //  (C) Copyright 2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3listbox.h>
-#include <q3listview.h>
-#include <qtoolbutton.h>
-//Added by qt3to4:
 #include <QCloseEvent>
+#include <QDialog>
+#include <QListWidgetItem>
+#include <QTreeWidgetItem>
+
 #include "routedialog.h"
 #include "track.h"
 #include "song.h"
@@ -22,11 +22,12 @@
 //---------------------------------------------------------
 
 RouteDialog::RouteDialog(QWidget* parent)
-   : RouteDialogBase(parent)
+   : QDialog(parent)
       {
-      connect(routeList, SIGNAL(selectionChanged()), SLOT(routeSelectionChanged()));
-      connect(newSrcList, SIGNAL(selectionChanged()), SLOT(srcSelectionChanged()));
-      connect(newDstList, SIGNAL(selectionChanged()), SLOT(dstSelectionChanged()));
+      setupUi(this);
+      connect(routeList, SIGNAL(itemSelectionChanged()), SLOT(routeSelectionChanged()));
+      connect(newSrcList, SIGNAL(itemSelectionChanged()), SLOT(srcSelectionChanged()));
+      connect(newDstList, SIGNAL(itemSelectionChanged()), SLOT(dstSelectionChanged()));
       connect(removeButton, SIGNAL(clicked()), SLOT(removeRoute()));
       connect(connectButton, SIGNAL(clicked()), SLOT(addRoute()));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
@@ -56,24 +57,24 @@ void RouteDialog::routingChanged()
             AudioTrack* track = (AudioTrack*)(*i);
             if (track->type() == Track::AUDIO_INPUT) {
                   for (int channel = 0; channel < track->channels(); ++channel)
-                        newDstList->insertItem(Route(track, channel).name());
+                        newDstList->addItem(Route(track, channel).name());
                   const RouteList* rl = track->inRoutes();
                   for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
                         //Route dst(track->name(), true, r->channel);
                         Route dst(track->name(), true, r->channel, Route::TRACK_ROUTE);
-                        new Q3ListViewItem(routeList, r->name(), dst.name());
+                        new QTreeWidgetItem(routeList, QStringList() << r->name() << dst.name());
                         }
                   }
             else if (track->type() != Track::AUDIO_AUX)
-                  newDstList->insertItem(Route(track, -1).name());
+                  newDstList->addItem(Route(track, -1).name());
             if (track->type() == Track::AUDIO_OUTPUT) {
                   for (int channel = 0; channel < track->channels(); ++channel) {
                         Route r(track, channel);
-                        newSrcList->insertItem(r.name());
+                        newSrcList->addItem(r.name());
                         }
                   }
             else
-                  newSrcList->insertItem(Route(track, -1).name());
+                  newSrcList->addItem(Route(track, -1).name());
 
             const RouteList* rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
@@ -82,16 +83,16 @@ void RouteDialog::routingChanged()
                         Route s(src, false, r->channel);
                         src = s.name();
                         }
-                  new Q3ListViewItem(routeList, src, r->name());
+                  new QTreeWidgetItem(routeList, QStringList() << src << r->name());
                   }
             }
       if (!checkAudioDevice()) return;
       std::list<QString> sl = audioDevice->outputPorts();
       for (std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
-            newSrcList->insertItem(*i);
+            newSrcList->addItem(*i);
       sl = audioDevice->inputPorts();
       for (std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
-            newDstList->insertItem(*i);
+            newDstList->addItem(*i);
       routeSelectionChanged();   // init remove button
       srcSelectionChanged();     // init select button
       }
@@ -113,7 +114,7 @@ void RouteDialog::songChanged(int v)
 
 void RouteDialog::routeSelectionChanged()
       {
-      Q3ListViewItem* item = routeList->selectedItem();
+      QTreeWidgetItem* item = routeList->currentItem();
       removeButton->setEnabled(item != 0);
       }
 
@@ -123,7 +124,7 @@ void RouteDialog::routeSelectionChanged()
 
 void RouteDialog::removeRoute()
       {
-      Q3ListViewItem* item = routeList->selectedItem();
+      QTreeWidgetItem* item = routeList->currentItem();
       if (item == 0)
             return;
       audio->msgRemoveRoute(Route(item->text(0), false, -1), Route(item->text(1), true, -1));
@@ -138,14 +139,14 @@ void RouteDialog::removeRoute()
 
 void RouteDialog::addRoute()
       {
-      Q3ListBoxItem* srcItem = newSrcList->selectedItem();
-      Q3ListBoxItem* dstItem = newDstList->selectedItem();
+      QListWidgetItem* srcItem = newSrcList->currentItem();
+      QListWidgetItem* dstItem = newDstList->currentItem();
       if (srcItem == 0 || dstItem == 0)
             return;
       audio->msgAddRoute(Route(srcItem->text(), false, -1), Route(dstItem->text(), true, -1));
       audio->msgUpdateSoloStates();
       song->update(SC_SOLO);
-      new Q3ListViewItem(routeList, srcItem->text(), dstItem->text());
+      new QTreeWidgetItem(routeList, QStringList() << srcItem->text() << dstItem->text());
       }
 
 //---------------------------------------------------------
@@ -154,8 +155,8 @@ void RouteDialog::addRoute()
 
 void RouteDialog::srcSelectionChanged()
       {
-      Q3ListBoxItem* srcItem = newSrcList->selectedItem();
-      Q3ListBoxItem* dstItem = newDstList->selectedItem();
+      QListWidgetItem* srcItem = newSrcList->currentItem();
+      QListWidgetItem* dstItem = newDstList->currentItem();
       connectButton->setEnabled((srcItem != 0)
          && (dstItem != 0)
          && checkRoute(srcItem->text(), dstItem->text()));
@@ -167,8 +168,8 @@ void RouteDialog::srcSelectionChanged()
 
 void RouteDialog::dstSelectionChanged()
       {
-      Q3ListBoxItem* dstItem = newDstList->selectedItem();
-      Q3ListBoxItem* srcItem = newSrcList->selectedItem();
+      QListWidgetItem* dstItem = newDstList->currentItem();
+      QListWidgetItem* srcItem = newSrcList->currentItem();
       connectButton->setEnabled((srcItem != 0)
          && (dstItem != 0)
          && checkRoute(srcItem->text(), dstItem->text()));

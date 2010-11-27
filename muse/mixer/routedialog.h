@@ -9,15 +9,16 @@
 #ifndef __ROUTEDIALOG_H__
 #define __ROUTEDIALOG_H__
 
-#include "routedialogbase.h"
-//Added by qt3to4:
-#include <QCloseEvent>
+#include "ui_routedialogbase.h"
+
+class QCloseEvent;
+class QDialog;
 
 //---------------------------------------------------------
 //   RouteDialog
 //---------------------------------------------------------
 
-class RouteDialog : public RouteDialogBase {
+class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       Q_OBJECT
 
       virtual void closeEvent(QCloseEvent*);
@@ -35,7 +36,7 @@ class RouteDialog : public RouteDialogBase {
       void closed();
 
    public:
-      RouteDialog(QWidget* parent);
+      RouteDialog(QWidget* parent=0);
       };
 
 
