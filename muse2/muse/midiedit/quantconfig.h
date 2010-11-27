@@ -9,7 +9,7 @@
 #ifndef __QCONFIG_H__
 #define __QCONFIG_H__
 
-#include <qdialog.h>
+#include <QDialog>
 
 //---------------------------------------------------------
 //   QuantConfig
