@@ -451,7 +451,7 @@ void initIcons()
       {
       track_commentIcon = new MPIXMAP(track_comment_xpm, NULL);
       pointerIcon  = new MPIXMAP(pointer_xpm, NULL);
-      pencilIcon   = new MPIXMAP(pencil_xpm, "pen");
+      pencilIcon   = new MPIXMAP(pencil_xpm, NULL);
       deleteIcon   = new MPIXMAP(delete_xpm, "draw-eraser");
       punchinIcon  = new MPIXMAP(punchin_xpm, NULL);
       punchoutIcon = new MPIXMAP(punchout_xpm, NULL);

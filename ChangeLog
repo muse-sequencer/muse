@@ -1,5 +1,7 @@
 28.11.2010
         - Finished porting Marker View. (Orcan)
+        - Ported ctrlpanel. Needs some testing. I also removed usage of the Oxygen's "pen" icon
+          in place of the pencil. The pen looks bad in ctrlpanel. (Orcan)
 27.11.2010
         - Completed porting pianoroll module including menus, shortcuts. Should be done. (Tim)
         - Ported the following .ui widgets to Qt4: organguibase, gatetime, midisync,
