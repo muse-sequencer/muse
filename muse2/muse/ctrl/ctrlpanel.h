@@ -8,15 +8,13 @@
 #ifndef __CTRL_PANEL_H__
 #define __CTRL_PANEL_H__
 
-#include <qwidget.h>
-//Added by qt3to4:
-#include <Q3PopupMenu>
-#include <QLabel>
+#include <QWidget>
 
 class MidiController;
-class QLabel;
-class Q3PopupMenu;
+
+class QMenu;
 class QPushButton;
+
 class MidiEditor;
 class Knob;
 class DoubleLabel;
@@ -28,7 +26,7 @@ class MidiTrack;
 //---------------------------------------------------------
 
 class CtrlPanel: public QWidget {
-      Q3PopupMenu* pop;
+      QMenu* pop;
       QPushButton* selCtrl;
       MidiEditor* editor;
       

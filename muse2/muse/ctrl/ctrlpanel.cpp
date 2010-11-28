@@ -11,16 +11,12 @@
 #include "ctrlpanel.h"
 #include "ctrlcanvas.h"
 
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <q3popupmenu.h>
-#include <qlabel.h>
-#include <qtooltip.h>
-#include <qsizepolicy.h>
-#include <qtimer.h>
-//Added by qt3to4:
-#include <Q3HBoxLayout>
-#include <Q3VBoxLayout>
+#include <QMenu>
+#include <QPushButton>
+#include <QSizePolicy>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+
 #include <math.h>
 
 #include "globals.h"
@@ -51,27 +47,36 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       inHeartBeat = true;
       editor = e;
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-      Q3VBoxLayout* vbox = new Q3VBoxLayout(this);
-      Q3HBoxLayout* bbox = new Q3HBoxLayout(vbox);
+      QVBoxLayout* vbox = new QVBoxLayout;
+      QHBoxLayout* bbox = new QHBoxLayout;
+      bbox->setSpacing (0);
+      vbox->addLayout(bbox);
       vbox->addStretch();
-      Q3HBoxLayout* kbox = new Q3HBoxLayout(vbox);
-      Q3HBoxLayout* dbox = new Q3HBoxLayout(vbox);
+      QHBoxLayout* kbox = new QHBoxLayout;
+      QHBoxLayout* dbox = new QHBoxLayout;
+      vbox->addLayout(kbox);
+      vbox->addLayout(dbox);
       vbox->addStretch();
-      selCtrl = new QPushButton(tr("S"), this, "selCtrl");
+      vbox->setContentsMargins(0, 0, 0, 0);
+      bbox->setContentsMargins(0, 0, 0, 0);
+      kbox->setContentsMargins(0, 0, 0, 0);
+      dbox->setContentsMargins(0, 0, 0, 0);
+
+      selCtrl = new QPushButton(tr("S"));
       selCtrl->setFont(config.fonts[3]);
       selCtrl->setFixedHeight(20);
       selCtrl->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-      QToolTip::add(selCtrl, tr("select controller"));
-      pop = new Q3PopupMenu(selCtrl);
+      selCtrl->setToolTip(tr("select controller"));
+      pop = new QMenu;
 
       // destroy button
-      QPushButton* destroy = new QPushButton(tr("X"), this, "destroy");
+      QPushButton* destroy = new QPushButton(tr("X"));
       destroy->setFont(config.fonts[3]);
       destroy->setFixedHeight(20);
       destroy->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-      QToolTip::add(destroy, tr("remove panel"));
+      destroy->setToolTip(tr("remove panel"));
       // Cursor Position
       connect(selCtrl, SIGNAL(clicked()), SLOT(ctrlPopup()));
       connect(destroy, SIGNAL(clicked()), SIGNAL(destroyPanel()));
@@ -81,19 +86,19 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       _val = CTRL_VAL_UNKNOWN;
       _dnum = -1;
       
-      _knob = new Knob(this);
+      _knob = new Knob;
       _knob->setFixedWidth(25);
       _knob->setFixedHeight(25);
-      QToolTip::add(_knob, tr("manual adjust"));
+      _knob->setToolTip(tr("manual adjust"));
       _knob->setRange(0.0, 127.0, 1.0);
       _knob->setValue(0.0);
       _knob->setEnabled(false);
       _knob->hide();
       _knob->setAltFaceColor(Qt::red);
       
-      _dl = new DoubleLabel(-1.0, 0.0, +127.0, this);
+      _dl = new DoubleLabel(-1.0, 0.0, +127.0);
       _dl->setPrecision(0);
-      QToolTip::add(_dl, tr("double click on/off"));
+      _dl->setToolTip(tr("double click on/off"));
       _dl->setSpecialText(tr("off"));
       _dl->setFont(config.fonts[1]);
       _dl->setBackgroundMode(Qt::PaletteMid);
@@ -121,6 +126,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       dbox->addStretch();
       connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       inHeartBeat = false;
+      setLayout(vbox);
       }
 //---------------------------------------------------------
 //   heartBeat
@@ -531,8 +537,8 @@ void CtrlPanel::ctrlPopup()
       bool isDrum      = track->type() == Track::DRUM;
 
       pop->clear();
-      pop->insertItem(tr("Velocity"), 1);
-
+      pop->addAction(tr("Velocity"))->setData(1);
+      
       MidiCtrlValListList* cll = port->controller();
       int min = channel << 24;
       int max = min + 0x1000000;
@@ -576,19 +582,20 @@ void CtrlPanel::ctrlPopup()
             }
       for (isList i = sList.begin(); i != sList.end(); ++i) {
             if (i->used)
-                  pop->insertItem(QIcon(*greendotIcon), i->s);
+                  pop->addAction(QIcon(*greendotIcon), i->s);
             else
-                  pop->insertItem(i->s);
+                  pop->addAction(i->s);
             }
 
-      pop->insertItem(QIcon(*configureIcon), tr("add new ..."), 2);
-      int rv = pop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
+      pop->addAction(QIcon(*configureIcon), tr("add new ..."))->setData(2);
+      QAction *act = pop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
       selCtrl->setDown(false);
 
-      if (rv == -1)
+      if (!act)
             return;
 
-      QString s = pop->text(rv);
+      int rv = act->data().toInt();
+      QString s = act->text();
       if (rv == 1) {    // special case velocity
             emit controllerChanged(CTRL_VELOCITY);
             }
@@ -596,7 +603,7 @@ void CtrlPanel::ctrlPopup()
             //
             // add new controller
             //
-            Q3PopupMenu* pop1 = new Q3PopupMenu(this);
+            QMenu* pop1 = new QMenu(this);
             pop1->setCheckable(false);
             //
             // populate popup with all controllers available for
@@ -611,11 +618,11 @@ void CtrlPanel::ctrlPopup()
                   num = (num & ~0xff) + drumMap[curDrumInstrument].anote;
                 
                 if(cll->find(channel, num) == cll->end())
-                  pop1->insertItem(ci->second->name());
+                  pop1->addAction(ci->second->name());
             }
-            int rv = pop1->exec(selCtrl->mapToGlobal(QPoint(0,0)));
-            if (rv != -1) {
-                  QString s = pop1->text(rv);
+            QAction *act2 = pop1->exec(selCtrl->mapToGlobal(QPoint(0,0)));
+            if (act2) {
+                  QString s = act2->text();
                   MidiController* c;
                   for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
                         c = ci->second;
@@ -639,10 +646,8 @@ void CtrlPanel::ctrlPopup()
                         }
                   }
             }
-      else if (rv == -1)
-            return;
       else {
-            QString s = pop->text(rv);
+            QString s = act->text();
             iMidiCtrlValList i = cll->begin();
             for (; i != cll->end(); ++i) {
                   MidiCtrlValList* cl = i->second;
