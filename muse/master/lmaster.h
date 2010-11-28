@@ -8,25 +8,16 @@
 #ifndef __LMASTER_EDIT_H__
 #define __LMASTER_EDIT_H__
 
-#include <QWidget>
-#include <QLineEdit>
-//Added by qt3to4:
-#include <QMouseEvent>
-#include <Q3PopupMenu>
-#include <QCloseEvent>
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
-//#include <q3mainwindow.h>
-#include <Q3ListView>
 #include "tempo.h"
 #include "sig.h"
 
-class QToolButton;
-class Q3ListView;
-class SigEvent;
+#include <QTreeWidgetItem>
+
 class QLineEdit;
-class QMouseEvent;
+class SigEvent;
 class PosEdit;
 class SigEdit;
 
@@ -40,15 +31,13 @@ enum LMASTER_LVTYPE
 //   LMasterLViewItem
 //!  QListViewItem base class for LMasterTempoItem and LMasterSigEventItem
 //---------------------------------------------------------
-class LMasterLViewItem : public Q3ListViewItem {
+class LMasterLViewItem : public QTreeWidgetItem {
    protected:
       QString c1, c2, c3, c4;
 
    public:
-      LMasterLViewItem(Q3ListView* parent)
-         : Q3ListViewItem(parent) { }
-      LMasterLViewItem(Q3ListView* parent, Q3ListViewItem* after)
-         : Q3ListViewItem(parent, after) { }
+      LMasterLViewItem(QTreeWidget* parent)
+           : QTreeWidgetItem(QTreeWidgetItem::UserType) {parent->insertTopLevelItem(0, this);}
       virtual QString text(int column) const;
       virtual LMASTER_LVTYPE getType() = 0;
       virtual unsigned tick() = 0;
@@ -64,7 +53,7 @@ class LMasterTempoItem : public LMasterLViewItem {
       const TEvent* tempoEvent;
 
    public:
-      LMasterTempoItem(Q3ListView* parent, const TEvent* t);
+      LMasterTempoItem(QTreeWidget* parent, const TEvent* t);
       virtual LMASTER_LVTYPE getType() { return LMASTER_TEMPO; }
       const TEvent* getEvent() { return tempoEvent; }
       virtual unsigned tick() { return tempoEvent->tick; }
@@ -81,7 +70,7 @@ class LMasterSigEventItem : public LMasterLViewItem {
       const SigEvent* sigEvent;
 
    public:
-      LMasterSigEventItem(Q3ListView* parent, const SigEvent* s);
+      LMasterSigEventItem(QTreeWidget* parent, const SigEvent* s);
       virtual LMASTER_LVTYPE getType() { return LMASTER_SIGEVENT; }
       const SigEvent* getEvent() { return sigEvent; }
       virtual unsigned tick() { return sigEvent->tick; }
@@ -95,9 +84,9 @@ class LMasterSigEventItem : public LMasterLViewItem {
 //---------------------------------------------------------
 
 class LMaster : public MidiEditor {
-      Q3ListView* view;
+      QTreeWidget* view;
       QToolBar* tools;
-      Q3PopupMenu* menuEdit;
+      QMenu* menuEdit;
 
       enum { CMD_DELETE, CMD_INSERT_SIG, CMD_INSERT_TEMPO, CMD_EDIT_BEAT, CMD_EDIT_VALUE };
 
@@ -117,10 +106,10 @@ class LMaster : public MidiEditor {
       bool editingNewItem;
 
    private slots:
-      void select(Q3ListViewItem*);
-      void itemDoubleClicked(Q3ListViewItem* item);
+      void select(QTreeWidgetItem*, QTreeWidgetItem*);
+      void itemDoubleClicked(QTreeWidgetItem* item);
       void returnPressed();
-      void itemPressed(Q3ListViewItem* i, const QPoint& p, int column);
+      void itemPressed(QTreeWidgetItem* i, int column);
       void tempoButtonClicked();
       void timeSigButtonClicked();
       void cmd(int cmd);

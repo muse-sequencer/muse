@@ -8,19 +8,17 @@
 #ifndef __MASTER_H__
 #define __MASTER_H__
 
-#include <QPoint>
-//Added by qt3to4:
-#include <QMouseEvent>
-#include <QEvent>
-
 #include "view.h"
 #include "song.h"
 #include "tools.h"
 
-class ScrollScale;
+class QMouseEvent;
 class QPainter;
+class QPoint;
 class QRect;
+
 class MidiEditor;
+class ScrollScale;
 
 //---------------------------------------------------------
 //   Master

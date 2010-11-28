@@ -6,6 +6,7 @@
           TODO: Plugin controllers disabled - we need the Ctrl class. 
                 Restoring of state (that's a MusE problem I think).   
                 Fix deicsonze.cpp:3612: warning: deprecated conversion from string constant to ‘char*’
+        - Ported Mastertrack list view. (Orcan)
 27.11.2010
         - Completed porting pianoroll module including menus, shortcuts. Should be done. (Tim)
         - Ported the following .ui widgets to Qt4: organguibase, gatetime, midisync,

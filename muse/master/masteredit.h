@@ -8,15 +8,14 @@
 #ifndef __MASTER_EDIT_H__
 #define __MASTER_EDIT_H__
 
-#include <QWidget>
-//Added by qt3to4:
-#include <QCloseEvent>
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
-//#include <q3mainwindow.h>
 
+class QCloseEvent;
+class QToolBar;
 class QToolButton;
+
 class Master;
 class ScrollScale;
 class MTScale;

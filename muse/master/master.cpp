@@ -8,14 +8,10 @@
 #include <stdio.h>
 #include <values.h>
 
-#include <QLineEdit>
-#include <Q3PopupMenu>
-#include <QPainter>
-#include <Q3Header>
 #include <QCursor>
-//Added by qt3to4:
-#include <QMouseEvent>
 #include <QEvent>
+#include <QMouseEvent>
+#include <QPainter>
 
 #include "globals.h"
 #include "master.h"
