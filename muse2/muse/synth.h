@@ -9,8 +9,8 @@
 #define __SYNTH_H__
 
 #include <QFileInfo>
-//Added by qt3to4:
-#include <Q3PopupMenu>
+#include <QMenu>
+
 #include <string>
 #include <vector>
 #include <map>
@@ -132,7 +132,7 @@ class SynthIF {
       virtual void deactivate3() = 0;
       virtual const char* getPatchName(int, int, int, bool) const = 0;
       virtual const char* getPatchName(int, int, MType, bool) = 0;
-      virtual void populatePatchPopup(Q3PopupMenu*, int, MType, bool) = 0;
+      virtual void populatePatchPopup(QMenu*, int, MType, bool) = 0;
       virtual void write(int level, Xml& xml) const = 0;
       virtual float getParameter(unsigned long idx) const = 0;
       virtual void setParameter(unsigned long idx, float value) = 0;
@@ -214,7 +214,7 @@ class SynthI : public AudioTrack, public MidiDevice,
             return _sif->getPatchName(ch, prog, t, dr);
             }
             
-      virtual void populatePatchPopup(Q3PopupMenu* m, int i, MType t, bool d) {
+      virtual void populatePatchPopup(QMenu* m, int i, MType t, bool d) {
             _sif->populatePatchPopup(m, i, t, d);
             }
       
@@ -278,7 +278,7 @@ class MessSynthIF : public SynthIF {
       virtual void deactivate3();
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool);
-      virtual void populatePatchPopup(Q3PopupMenu*, int, MType, bool);
+      virtual void populatePatchPopup(QMenu*, int, MType, bool);
       virtual void write(int level, Xml& xml) const;
       virtual float getParameter(unsigned long) const { return 0.0; }
       virtual void setParameter(unsigned long, float) {}

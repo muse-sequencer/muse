@@ -8,8 +8,8 @@
 #include "audio.h"
 #include "ticksynth.h"
 #include "default_click.h"
-//Added by qt3to4:
-#include <Q3PopupMenu>
+
+#include <QMenu>
 
 // Added by Tim. p3.3.18
 //#define METRONOME_DEBUG
@@ -84,7 +84,7 @@ class MetronomeSynthIF : public SynthIF
       virtual void deactivate3() {}
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }
-      virtual void populatePatchPopup(Q3PopupMenu*, int, MType, bool) {};
+      virtual void populatePatchPopup(QMenu*, int, MType, bool) {};
       virtual void write(int, Xml&) const {}
       virtual float getParameter(unsigned long) const  { return 0.0; }
       virtual void setParameter(unsigned long, float) {}

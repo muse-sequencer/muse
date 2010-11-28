@@ -37,7 +37,7 @@
 #include <qdir.h>
 //#include <qstringlist.h>
 #include <QFileInfo>
-#include <q3popupmenu.h>
+#include <QMenu>
 //#include <qprocess.h>
 
 #include "dssihost.h"
@@ -2870,7 +2870,7 @@ const char* DssiSynthIF::getPatchName(int /*chan*/, int prog, MType /*type*/, bo
 //---------------------------------------------------------
 
 //void DssiSynthIF::populatePatchPopup(QMenu* menu, int)
-void DssiSynthIF::populatePatchPopup(Q3PopupMenu* menu, int /*ch*/, MType /*type*/, bool /*drum*/)
+void DssiSynthIF::populatePatchPopup(QMenu* menu, int /*ch*/, MType /*type*/, bool /*drum*/)
       {
       // The plugin can change the programs, patches etc.
       // So make sure we're up to date by calling queryPrograms.
@@ -2884,9 +2884,8 @@ void DssiSynthIF::populatePatchPopup(Q3PopupMenu* menu, int /*ch*/, MType /*type
             int prog = i->Program;
             int id   = (bank << 16) + prog;
             
-            //QAction* a = menu->addAction(QString(i->Name));
-            //a->setData(id);
-            menu->insertItem(QString(i->Name), id);
+            QAction *act = menu->addAction(QString(i->Name));
+            act->setData(id);
             }
       }
 

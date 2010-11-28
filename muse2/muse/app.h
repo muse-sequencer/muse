@@ -11,12 +11,11 @@
 
 #include "config.h"
 
-//#include <q3mainwindow.h>
 #include <QMainWindow>
 #include <QRect>
 //Added by qt3to4:
 #include <Qt3Support>
-//#include <Q3PopupMenu>
+
 #include <QMenu>
 #include <QFocusEvent>
 #include <QCloseEvent>
@@ -32,8 +31,6 @@ class Transport;
 class BigTime;
 class Arranger;
 class Instrument;
-class Q3ListView;
-class Q3ListViewItem;
 class QPoint;
 class QToolButton;
 class PopupMenu;

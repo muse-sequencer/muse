@@ -9,11 +9,10 @@
 #define __COMBOBOX_H__
 
 #include <qlabel.h>
-//Added by qt3to4:
-#include <Q3PopupMenu>
+
 #include <QMouseEvent>
 
-class Q3PopupMenu;
+class QMenu;
 
 //---------------------------------------------------------
 //   ComboBox
@@ -25,7 +24,7 @@ class ComboBox : public QLabel {
 
       int _id;
       int _currentItem;
-      Q3PopupMenu* list;
+      QMenu* list;
       virtual void mousePressEvent(QMouseEvent*);
 
    private slots:
@@ -38,7 +37,7 @@ class ComboBox : public QLabel {
       ComboBox(QWidget* parent, const char* name = 0);
       ~ComboBox();
       void setCurrentItem(int);
-      void insertItem(const QString& s, int id = -1, int idx=-1);
+      void insertItem(const QString& s, int id = -1);
       int id() const       { return _id; }
       void setId(int i)    { _id = i; }
       };

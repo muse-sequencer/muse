@@ -21,7 +21,6 @@
 //#include <q3toolbar.h>
 #include <QToolBar>
 //#include <QToolTip>
-#include <q3popupmenu.h>
 #include <q3hbox.h>
 #include <QStringList>
 #include <q3filedialog.h>
