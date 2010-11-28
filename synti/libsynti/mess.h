@@ -21,6 +21,12 @@ class MessP;
 //   MidiPatch
 //---------------------------------------------------------
 
+#define MP_TYPE_GM 1
+#define MP_TYPE_GS 2
+#define MP_TYPE_XG 4
+#define MP_TYPE_LBANK 8
+#define MP_TYPE_HBANK 16
+
 struct MidiPatch {
       signed char typ;                     // 1 - GM  2 - GS  4 - XG
       signed char hbank, lbank, prog;

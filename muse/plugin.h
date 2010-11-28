@@ -165,6 +165,20 @@ class Plugin {
       unsigned long controlInPorts() const  { return _controlInPorts; }
       unsigned long controlOutPorts() const { return _controlOutPorts; }
       bool inPlaceCapable() const           { return _inPlaceCapable; }
+      
+      /*
+      bool isLog(int k) const {
+            LADSPA_PortRangeHint r = plugin->PortRangeHints[pIdx[k]];
+            return LADSPA_IS_HINT_LOGARITHMIC(r.HintDescriptor);
+            }
+      bool isBool(int k) const {
+            return LADSPA_IS_HINT_TOGGLED(plugin->PortRangeHints[pIdx[k]].HintDescriptor);
+            }
+      bool isInt(int k) const {
+            LADSPA_PortRangeHint r = plugin->PortRangeHints[pIdx[k]];
+            return LADSPA_IS_HINT_INTEGER(r.HintDescriptor);
+            }
+      */      
       };
 
 typedef std::list<Plugin>::iterator iPlugin;
