@@ -41,8 +41,8 @@
 #include "stringparam.h"
 
 #include "plugin.h"
-//Added by qt3to4:
-#include <Q3PopupMenu>
+
+#include <QMenu>
 
 #define DSSI_PARAMSAVE_VERSION_MAJOR  0
 #define DSSI_PARAMSAVE_VERSION_MINOR  1
@@ -52,7 +52,6 @@ class DssiPluginIF;
 
 //class LadspaPort;
 class Port;
-class Q3Process;
 
 //---------------------------------------------------------
 //   DssiSynth
@@ -191,7 +190,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       virtual const char* getPatchName(int, int, MType, bool);
       
       //virtual void populatePatchPopup(QMenu*, int);
-      virtual void populatePatchPopup(Q3PopupMenu*, int, MType, bool);
+      virtual void populatePatchPopup(QMenu*, int, MType, bool);
       
       //virtual void write(Xml& xml) const;
       virtual void write(int level, Xml& xml) const;

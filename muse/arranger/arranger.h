@@ -15,7 +15,7 @@
 #include <q3whatsthis.h>
 //Added by qt3to4:
 #include <QWheelEvent>
-#include <Q3PopupMenu>
+#include <QMenu>
 
 #include "midieditor.h"
 #include "pcanvas.h"
@@ -117,7 +117,7 @@ class Arranger : public QWidget {
       QToolButton* ib;
       int trackInfoType;
       Splitter* split;
-      Q3PopupMenu* pop;
+      QMenu* pop;
       int songType;
       PosLabel* cursorPos;
       SpinBox* globalTempoSpinBox;

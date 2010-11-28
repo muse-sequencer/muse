@@ -14,10 +14,10 @@
 #include <sys/mman.h>
 #include <vector>
 #include <fcntl.h>
-
-#include <qdir.h>
 #include <dlfcn.h>
-#include <q3popupmenu.h>
+
+#include <QDir>
+#include <QMenu>
 
 #include "app.h"
 #include "synth.h"
@@ -818,7 +818,7 @@ const char* MessSynthIF::getPatchName(int channel, int prog, MType type, bool dr
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void MessSynthIF::populatePatchPopup(Q3PopupMenu* menu, int ch, MType, bool)
+void MessSynthIF::populatePatchPopup(QMenu* menu, int ch, MType, bool)
       {
       menu->clear();
       const MidiPatch* mp = _mess->getPatchInfo(ch, 0);
@@ -834,7 +834,8 @@ void MessSynthIF::populatePatchPopup(Q3PopupMenu* menu, int ch, MType, bool)
               itemnum = 
             }
             */  
-            menu->insertItem(QString(mp->name), id);
+            QAction *act = menu->addAction(QString(mp->name));
+            act->setData(id);
             mp = _mess->getPatchInfo(ch, mp);
             }
       }

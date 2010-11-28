@@ -746,7 +746,7 @@
       </attribute>
       <layout class="QVBoxLayout">
        <item>
-        <widget class="Q3GroupBox" name="GroupBox18">
+        <widget class="QGroupBox" name="GroupBox18">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -881,7 +881,7 @@
         </widget>
        </item>
        <item>
-        <widget class="Q3GroupBox" name="GroupBox6">
+        <widget class="QGroupBox" name="GroupBox6">
          <property name="title">
           <string>Fonts</string>
          </property>
@@ -1372,31 +1372,6 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
- <customwidgets>
-  <customwidget>
-   <class>Q3GroupBox</class>
-   <extends>QGroupBox</extends>
-   <header>Qt3Support/Q3GroupBox</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Q3Frame</class>
-   <extends>QFrame</extends>
-   <header>Qt3Support/Q3Frame</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Q3ButtonGroup</class>
-   <extends>Q3GroupBox</extends>
-   <header>Qt3Support/Q3ButtonGroup</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Q3ListView</class>
-   <extends>Q3Frame</extends>
-   <header>q3listview.h</header>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>TabWidget2</tabstop>
   <tabstop>itemList</tabstop>

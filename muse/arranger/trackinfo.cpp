@@ -5,23 +5,11 @@
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <QLayout>
-#include <QComboBox>
-#include <QToolButton>
-#include <QLabel>
 #include <QPalette>
 #include <QColor>
 #include <QMenu>
-#include <QMessageBox>
-//#include <q3hbox.h>
-#include <QCheckBox>
-#include <QPushButton>
-//#include <q3widgetstack.h>
-#include <QLineEdit>
-#include <QTimer>
-//#include <QModelIndex>
-//Added by qt3to4:
 #include <QPixmap>
+
 #include <math.h>
 #include <string.h>
 
@@ -40,7 +28,6 @@
 #include "mixer/amixer.h"
 #include "midi.h"
 #include "midictrl.h"
-#include "xpm/muse_leftside_logo.xpm"
 #include "mixer/astrip.h"
 #include "icons.h"
 #include "app.h"
@@ -359,7 +346,7 @@ void Arranger::genTrackInfo(QWidget* parent)
 
       noTrackInfo          = new QWidget(trackInfo);
       QPixmap *noInfoPix   = new QPixmap(160, 1000); //muse_leftside_logo_xpm);
-      const QPixmap *logo  = new QPixmap(muse_leftside_logo_xpm);
+      const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
       noInfoPix->fill(noTrackInfo->paletteBackgroundColor() );
       copyBlt(noInfoPix, 10, 0, logo, 0,0, logo->width(), logo->height());
       noTrackInfo->setPaletteBackgroundPixmap(*noInfoPix);
@@ -1000,8 +987,9 @@ void Arranger::instrPopup()
 
       if(pop->count() == 0)
         return;
-      int rv = pop->exec(midiTrackInfo->iPatch->mapToGlobal(QPoint(10,5)));
-      if (rv != -1) {
+      QAction *act = pop->exec(midiTrackInfo->iPatch->mapToGlobal(QPoint(10,5)));
+      if (act) {
+            int rv = act->data().toInt();
             MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, rv);
             audio->msgPlayMidiEvent(&ev);
             updateTrackInfo(-1);
@@ -1228,7 +1216,7 @@ void Arranger::genMidiTrackInfo()
 
       connect(midiTrackInfo->iPatch, SIGNAL(released()), SLOT(instrPopup()));
 
-      pop = new Q3PopupMenu(midiTrackInfo->iPatch);
+      pop = new QMenu(midiTrackInfo->iPatch);
       pop->setCheckable(false);
 
       // Removed by Tim. p3.3.9

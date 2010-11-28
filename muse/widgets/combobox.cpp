@@ -5,12 +5,12 @@
 //  (C) Copyright 2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3popupmenu.h>
-#include <qcursor.h>
-//Added by qt3to4:
+#include <QCursor>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QFrame>
 #include <QLabel>
+
 #include "combobox.h"
 
 //---------------------------------------------------------
@@ -22,7 +22,7 @@ ComboBox::ComboBox(QWidget* parent, const char* name)
       {
       _currentItem = 0;
       _id = -1;
-      list = new Q3PopupMenu(0, "comboPopup");
+      list = new QMenu(0);
       connect(list, SIGNAL(activated(int)), SLOT(activatedIntern(int)));
       setFrameStyle(QFrame::Panel | QFrame::Raised);
       setLineWidth(2);
@@ -67,8 +67,9 @@ void ComboBox::setCurrentItem(int i)
 //   insertItem
 //---------------------------------------------------------
 
-void ComboBox::insertItem(const QString& s, int id, int idx)
+void ComboBox::insertItem(const QString& s, int id)
       {
-      list->insertItem(s, id, idx);
+	QAction *act = list->addAction(s);
+	act->setData(id);
       }
 

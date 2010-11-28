@@ -218,6 +218,7 @@ extern QPixmap* stereoIcon;
 
 extern QPixmap* museIcon;
 extern QPixmap* aboutMuseImage;
+extern QPixmap* museLeftSideLogo;
 
 extern QIcon* globalIcon;
 extern QIcon* projectIcon;
