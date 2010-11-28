@@ -1,78 +1,26 @@
-//#ifndef __ALLQT_H__
-//#define __ALLQT_H__
+//=============================================================================
+//  MusE
+//  Linux Music Editor
+//  $Id:$
+//
+//  Copyright (C) 2002-2006 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
 
+#ifndef __ALLQT_H__
+#define __ALLQT_H__
 
-/*
-#include <stdio.h>
-#include <values.h>
-#include <stdarg.h>
-#include <list>
-#include <vector>
-#include <map>
-*/
-
-/*
-#include <qaction.h>
-#include <qapplication.h>
-#include <qbitmap.h>
-#include <qbuttongroup.h>
-#include <qcheckbox.h>
-#include <qcolor.h>
-#include <qcolordialog.h>
-#include <qcombobox.h>
-#include <qcursor.h>
-#include <qdatetime.h>
-#include <qdom.h>
-#include <qevent.h>
-#include <qfile.h>
-#include <qfiledialog.h>
-#include <qfileinfo.h>
-#include <qfont.h>
-#include <qfontdatabase.h>
-#include <qfontinfo.h>
-#include <qfontmetrics.h>
-#include <qiconset.h>
-#include <qiconset.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qlistbox.h>
-#include <qlistview.h>
-#include <qmainwindow.h>
-#include <qmenubar.h>
-#include <qmessagebox.h>
-#include <qnamespace.h>
-#include <qobject.h>
-#include <qobjectlist.h>
-#include <qpainter.h>
-#include <qpen.h>
-#include <qpixmap.h>
-#include <qpoint.h>
-#include <qpointarray.h>
-#include <qpopupmenu.h>
-#include <qprinter.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qrect.h>
-#include <qscrollview.h>
-#include <qsize.h>
-#include <qspinbox.h>
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qtextcodec.h>
-#include <qtextedit.h>
-#include <qtimer.h>
-#include <qtoolbutton.h>
-#include <qtooltip.h>
-#include <qtranslator.h>
-#include <qvalidator.h>
-#include <qwidget.h>
-#endif
-
-*/
-
-
-
-/*
 #include <stdio.h>
 #ifndef __APPLE__
 #include <values.h>
@@ -86,9 +34,7 @@
 #include <list>
 #include <vector>
 #include <map>
-*/
 
-/*
 #include <QtCore/qplugin.h>
 #include <QtCore/QUrl>
 #include <QtCore/QFile>
@@ -173,7 +119,5 @@
 #include <QtGui/QDesktopServices>
 #include <QtGui/QItemDelegate>
 #include <QtSvg/QSvgRenderer>
-*/
-
-//#endif
+#endif
 

@@ -361,7 +361,7 @@ set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
 # subdirs(al awl grepmidi plugins midiplugins muse share synti)
 # subdirs(al lib grepmidi plugins xpm muse share demos doc synti utils)
 #subdirs(al lib grepmidi plugins muse share demos synti )
-subdirs(al grepmidi plugins muse share synti packaging utils demos)
+subdirs(al awl grepmidi plugins muse share synti packaging utils demos)
 
 # Uninstall support
 configure_file(
