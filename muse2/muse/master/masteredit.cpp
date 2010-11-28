@@ -22,27 +22,11 @@
 #include "globals.h"
 
 #include <values.h>
-//#include <q3toolbar.h>
+
+#include <QCloseEvent>
+#include <QLabel>
 #include <QToolBar>
 #include <QToolButton>
-#include <QToolTip>
-#include <q3accel.h>
-#include <QLayout>
-#include <q3hbox.h>
-#include <QSizeGrip>
-#include <QScrollBar>
-#include <QLabel>
-#include <QPushButton>
-#include <QRadioButton>
-#include <q3buttongroup.h>
-#include <q3listbox.h>
-#include <QComboBox>
-#include <q3header.h>
-#include <q3popupmenu.h>
-#include <QMenuBar>
-#include <QAction>
-//Added by qt3to4:
-#include <QCloseEvent>
 
 int MasterEdit::_rasterInit = 0;
 

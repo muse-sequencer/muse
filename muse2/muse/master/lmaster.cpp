@@ -15,21 +15,13 @@
 #include "shortcuts.h"
 #include "debug.h"
 
-//#include <q3toolbar.h>
-#include <QToolBar>
-#include <QToolButton>
-#include <QToolTip>
-#include <QLayout>
-#include <QSizeGrip>
-#include <Q3PopupMenu>
-#include <QMenuBar>
-#include <Q3ListView>
+#include <QCloseEvent>
+#include <QMenu>
 #include <QMessageBox>
 #include <QStyle>
-//#include <Q3Accel>
-#include <QAction>
-//Added by qt3to4:
-#include <QCloseEvent>
+#include <QToolBar>
+#include <QToolButton>
+#include <QTreeWidget>
 
 #define LMASTER_BEAT_COL 0
 #define LMASTER_TIME_COL 1
@@ -74,19 +66,31 @@ LMaster::LMaster()
       setFixedWidth(400);
 
       //---------Pulldown Menu----------------------------
-      menuEdit = new Q3PopupMenu(this);
-      menuBar()->insertItem(tr("&Edit"), menuEdit);
-      undoRedo->addTo(menuEdit);
+      menuEdit = new QMenu(tr("&Edit"));
+      QSignalMapper *signalMapper = new QSignalMapper(this);
+      menuBar()->addMenu(menuEdit);
+      menuEdit->addActions(undoRedo->actions());
       menuEdit->insertSeparator();
-      menuEdit->insertItem(tr("Insert Tempo"), CMD_INSERT_TEMPO);
-      menuEdit->insertItem(tr("Insert Signature"), CMD_INSERT_SIG);
-      menuEdit->insertItem(tr("Edit Positon"), CMD_EDIT_BEAT);
-      menuEdit->insertItem(tr("Edit Value"), CMD_EDIT_VALUE);
+      QAction *tempoAction = menuEdit->addAction(tr("Insert Tempo"));
+      QAction *signAction = menuEdit->addAction(tr("Insert Signature"));
+      QAction *posAction = menuEdit->addAction(tr("Edit Positon"));
+      QAction *valAction = menuEdit->addAction(tr("Edit Value"));
+      QAction *delAction = menuEdit->addAction(tr("Delete Event"));
+      delAction->setShortcut(Qt::Key_Delete);
 
-      menuEdit->insertItem(tr("Delete Event"), CMD_DELETE);
-      menuEdit->setAccel(Qt::Key_Delete, CMD_DELETE);
+      connect(tempoAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(signAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(posAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(valAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(delAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
-      connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
+      signalMapper->setMapping(tempoAction, CMD_INSERT_TEMPO);
+      signalMapper->setMapping(signAction, CMD_INSERT_SIG);
+      signalMapper->setMapping(posAction, CMD_EDIT_BEAT);
+      signalMapper->setMapping(valAction, CMD_EDIT_VALUE);
+      signalMapper->setMapping(delAction, CMD_DELETE);
+
+      connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Master tools"));
@@ -113,14 +117,15 @@ LMaster::LMaster()
       //    master
       //---------------------------------------------------
 
-      view = new Q3ListView(mainw);
+      view = new QTreeWidget;
       view->setAllColumnsShowFocus(true);
-      view->setSelectionMode(Q3ListView::Single);
-      view->addColumn(tr("Meter"), 100);
-      view->addColumn(tr("Time"),  100);
-      view->addColumn(tr("Type"),  100);
-      view->addColumn(tr("Value"), 100);
-      view->setSorting(-1);
+      view->setSelectionMode(QAbstractItemView::SingleSelection);
+      QStringList columnnames;
+      columnnames << tr("Meter")
+                  << tr("Time")
+                  << tr("Type")
+                  << tr("Value");
+      view->setHeaderLabels(columnnames);
 
       //---------------------------------------------------
       //    Rest
@@ -135,9 +140,9 @@ LMaster::LMaster()
 //      mainGrid->addWidget(corner,  1, 1, AlignBottom | AlignRight);
       updateList();
 
-      connect(view, SIGNAL(selectionChanged(Q3ListViewItem*)), SLOT(select(Q3ListViewItem*)));
-      connect(view, SIGNAL(pressed(Q3ListViewItem*, const QPoint&, int)), SLOT(itemPressed(Q3ListViewItem*, const QPoint&, int)));
-      connect(view, SIGNAL(doubleClicked(Q3ListViewItem* )), SLOT(itemDoubleClicked(Q3ListViewItem*)));
+      connect(view, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), SLOT(select(QTreeWidgetItem*, QTreeWidgetItem*)));
+      connect(view, SIGNAL(itemPressed(QTreeWidgetItem*, int)), SLOT(itemPressed(QTreeWidgetItem*, int)));
+      connect(view, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(itemDoubleClicked(QTreeWidgetItem*)));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(tempoButton, SIGNAL(clicked()), SLOT(tempoButtonClicked()));
       connect(timeSigButton, SIGNAL(clicked()), SLOT(timeSigButtonClicked()));
@@ -178,7 +183,7 @@ void LMaster::insertTempo(const TEvent* ev)
 
 void LMaster::updateList()
       {
-      LMasterLViewItem* selected = (LMasterLViewItem*) view->selectedItem();
+      LMasterLViewItem* selected = (LMasterLViewItem*) view->currentItem();
       LMASTER_LVTYPE type = LMASTER_TEMPO;
       unsigned tick = 0;
 
@@ -224,7 +229,7 @@ void LMaster::updateList()
         LMasterLViewItem* tmp = getItemAtPos(tick, type);
         if (tmp) {
            view->clearSelection();
-           view->setSelected(tmp, true);
+           view->setCurrentItem(tmp);
            }
       }     
     }
@@ -271,7 +276,7 @@ void LMaster::writeStatus(int level, Xml& xml) const
 //   select
 //---------------------------------------------------------
 
-void LMaster::select(Q3ListViewItem* /*item*/)
+void LMaster::select(QTreeWidgetItem* /*item*/, QTreeWidgetItem* /*previous_item*/)
       {
 //      printf("select %x\n", unsigned(item));
       }
@@ -284,15 +289,15 @@ void LMaster::cmd(int cmd)
       {
       switch(cmd) {
             case CMD_DELETE: {
-                  LMasterLViewItem* l = (LMasterLViewItem*) view->selectedItem();
+                  LMasterLViewItem* l = (LMasterLViewItem*) view->currentItem();
                   if (!l)
                      return;
                   // Delete item:
                   if (l->tick() != 0) {
-                        if (l == view->lastItem())
-                              view->setSelected(l->itemAbove(), true);
+                        if (l == view->topLevelItem(view->topLevelItemCount() - 1))
+                              view->setCurrentItem(view->itemAbove(l));
                         else
-                              view->setSelected(l->itemBelow(), true);
+                              view->setCurrentItem(view->itemBelow(l));
 
                         switch (l->getType()) {
                               case LMASTER_TEMPO:
@@ -323,8 +328,8 @@ void LMaster::cmd(int cmd)
             case CMD_EDIT_BEAT:
             case CMD_EDIT_VALUE:
                   cmd == CMD_EDIT_VALUE ? editorColumn = LMASTER_VAL_COL : editorColumn = LMASTER_BEAT_COL;
-                  if (view->selectedItem() && !editedItem) {
-                        itemDoubleClicked(view->selectedItem());
+                  if (view->currentItem() && !editedItem) {
+                        itemDoubleClicked(view->currentItem());
                         }
                   break;
             }
@@ -333,7 +338,7 @@ void LMaster::cmd(int cmd)
 /*!
     \fn LMaster::itemPressed(QListViewItem* i, const QPoint& p, int column)
  */
-void LMaster::itemPressed(Q3ListViewItem* i, const QPoint& /*p*/, int column)
+void LMaster::itemPressed(QTreeWidgetItem* i, int column)
       {
       //printf("itemPressed, column: %d\n", column);
       if (editedItem) {
@@ -348,13 +353,13 @@ void LMaster::itemPressed(Q3ListViewItem* i, const QPoint& /*p*/, int column)
 //   itemDoubleClicked(QListViewItem* item)
 //!  Sets lmaster in edit mode, and opens editor for selected value
 //---------------------------------------------------------
-void LMaster::itemDoubleClicked(Q3ListViewItem* i)
+void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
       {
       //printf("itemDoubleClicked\n");
 
       if (!editedItem && editorColumn == LMASTER_VAL_COL) {
             editedItem = (LMasterLViewItem*) i;
-            QRect itemRect = view->itemRect(editedItem);
+            QRect itemRect = view->visualItemRect(editedItem);
             int x1 = view->columnWidth(LMASTER_BEAT_COL) + view->columnWidth(LMASTER_TIME_COL)
                   + view->columnWidth(LMASTER_TYPE_COL);
             itemRect.setX(x1);
@@ -372,7 +377,7 @@ void LMaster::itemDoubleClicked(Q3ListViewItem* i)
             // Edit tempo value:
             if (editedItem->getType() == LMASTER_TEMPO) {
                   if (!editor)
-                        editor = new QLineEdit(view->viewport(), "lineedit");
+                        editor = new QLineEdit(view->viewport());
                   editor->setText(editedItem->text(LMASTER_VAL_COL));
                   editor->setGeometry(itemRect);
                   editor->show();
@@ -382,7 +387,7 @@ void LMaster::itemDoubleClicked(Q3ListViewItem* i)
                   }
             else { // Edit signatur value:
                   if (!sig_editor)
-                        sig_editor = new SigEdit(view->viewport(), "sigedit");
+                        sig_editor = new SigEdit(view->viewport());
                   sig_editor->setValue(editedItem->text(LMASTER_VAL_COL));
                   sig_editor->setGeometry(itemRect);
                   sig_editor->show();
@@ -402,9 +407,9 @@ void LMaster::itemDoubleClicked(Q3ListViewItem* i)
             // Everything OK
             else {
                   if (!pos_editor)
-                        pos_editor = new PosEdit(view->viewport(), "tmpposedit");
+                        pos_editor = new PosEdit(view->viewport());
                   pos_editor->setValue(editedItem->tick());
-                  QRect itemRect = view->itemRect(editedItem);
+                  QRect itemRect = view->visualItemRect(editedItem);
                   itemRect.setX(0);
                   itemRect.setWidth(view->columnWidth(LMASTER_BEAT_COL));
                   pos_editor->setGeometry(itemRect);
@@ -479,10 +484,10 @@ void LMaster::returnPressed()
                         audio->msgAddTempo(newtick, tempo, false);
                         song->endUndo(SC_TEMPO);
                         // Select the item:
-                        Q3ListViewItem* newSelected = (Q3ListViewItem*) getItemAtPos(newtick, LMASTER_TEMPO);
+                        QTreeWidgetItem* newSelected = (QTreeWidgetItem*) getItemAtPos(newtick, LMASTER_TEMPO);
                         if (newSelected) {
                               view->clearSelection();
-                              view->setSelected(newSelected, true);
+                              view->setCurrentItem(newSelected);
                               }
                         }
                   else if (editedItem->getType() == LMASTER_SIGEVENT) {
@@ -501,10 +506,10 @@ void LMaster::returnPressed()
                         //audio->msgAddSig(newtick, z, n, true);
 
                         // Select the item:
-                        Q3ListViewItem* newSelected = (Q3ListViewItem*) getItemAtPos(newtick, LMASTER_SIGEVENT);
+                        QTreeWidgetItem* newSelected = (QTreeWidgetItem*) getItemAtPos(newtick, LMASTER_SIGEVENT);
                         if (newSelected) {
                               view->clearSelection();
-                              view->setSelected(newSelected, true);
+                              view->setCurrentItem(newSelected);
                               }
                         }
 
@@ -578,7 +583,7 @@ QString LMasterLViewItem::text(int column) const
 //   LMasterTempoItem
 //!  Initializes a LMasterTempoItem with a TEvent
 //---------------------------------------------------------
-LMasterTempoItem::LMasterTempoItem(Q3ListView* parent, const TEvent* ev)
+LMasterTempoItem::LMasterTempoItem(QTreeWidget* parent, const TEvent* ev)
       : LMasterLViewItem(parent)
       {
       tempoEvent = ev;
@@ -597,13 +602,17 @@ LMasterTempoItem::LMasterTempoItem(Q3ListView* parent, const TEvent* ev)
       c3 = "Tempo";
       double dt = (1000000.0 * 60.0)/ev->tempo;
       c4.setNum(dt, 'f', 3);
+      setText(0, c1);
+      setText(1, c2);
+      setText(2, c3);
+      setText(3, c4);
       }
 
 //---------------------------------------------------------
 //   LMasterSigEventItem
 //!  Initializes a ListView item with a SigEvent
 //---------------------------------------------------------
-LMasterSigEventItem::LMasterSigEventItem(Q3ListView* parent, const SigEvent* ev)
+LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const SigEvent* ev)
       : LMasterLViewItem(parent)
       {
       sigEvent = ev;
@@ -620,6 +629,10 @@ LMasterSigEventItem::LMasterSigEventItem(Q3ListView* parent, const SigEvent* ev)
       c2.sprintf("%03d:%02d:%03d", min, sec, msec);
       c3 = "Timesig";
       c4.sprintf("%d/%d", ev->z, ev->n);
+      setText(0, c1);
+      setText(1, c2);
+      setText(2, c3);
+      setText(3, c4);
       }
 
 //---------------------------------------------------------
@@ -637,12 +650,13 @@ void LMaster::tempoButtonClicked()
       int newTick = sigmap.bar2tick(m, b, t);
       TEvent* ev = new TEvent(lastTempo->tempo(), newTick);
       new LMasterTempoItem(view, ev);
-      Q3ListViewItem* newTempoItem = view->firstChild();
+      QTreeWidgetItem* newTempoItem = view->topLevelItem(0);
+      //LMasterTempoItem* newTempoItem = new LMasterTempoItem(view, ev);
 
       editingNewItem = true; // State
       editorColumn = LMASTER_VAL_COL; // Set that we edit editorColumn
       view->clearSelection();
-      view->setSelected(newTempoItem, true);
+      view->setCurrentItem(newTempoItem);
       itemDoubleClicked(newTempoItem);
       }
 
@@ -662,12 +676,13 @@ void LMaster::timeSigButtonClicked()
       int newTick = sigmap.bar2tick(m, b, t);
       SigEvent* ev = new SigEvent(lastSig->z(), lastSig->n(), newTick);
       new LMasterSigEventItem(view, ev);
-      Q3ListViewItem* newSigItem = view->firstChild();
+      QTreeWidgetItem* newSigItem = view->topLevelItem(0);
+      //LMasterSigEventItem* newSigItem = new LMasterSigEventItem(view, ev);
 
       editingNewItem = true; // State
       editorColumn = LMASTER_VAL_COL; // Set that we edit editorColumn
       view->clearSelection();
-      view->setSelected(newSigItem, true);
+      view->setCurrentItem(newSigItem);
       itemDoubleClicked(newSigItem);
       }
 
@@ -677,9 +692,9 @@ void LMaster::timeSigButtonClicked()
  */
 LMasterLViewItem* LMaster::getLastOfType(LMASTER_LVTYPE t)
       {
-      LMasterLViewItem* tmp = (LMasterLViewItem*) view->lastItem();
+      LMasterLViewItem* tmp = (LMasterLViewItem*) view->topLevelItem(view->topLevelItemCount() - 1);
       while (tmp->getType() != t) {
-            tmp = (LMasterLViewItem*) tmp->itemAbove();
+            tmp = (LMasterLViewItem*) view->itemAbove(tmp);
             }
       return tmp;
       }
@@ -690,11 +705,11 @@ LMasterLViewItem* LMaster::getLastOfType(LMASTER_LVTYPE t)
  */
 LMasterLViewItem* LMaster::getItemAtPos(unsigned tick, LMASTER_LVTYPE t)
       {
-      LMasterLViewItem* tmp = (LMasterLViewItem*) view->firstChild();
+      LMasterLViewItem* tmp = (LMasterLViewItem*) view->topLevelItem(0);
       while (tmp) {
             if (tmp->getType() == t && tmp->tick() == tick)
                   return tmp;
-            tmp = (LMasterLViewItem*) tmp->itemBelow();
+            tmp = (LMasterLViewItem*) view->itemBelow(tmp);
             }
 
       return 0;
