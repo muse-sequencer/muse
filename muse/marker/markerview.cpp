@@ -14,22 +14,13 @@
 #include "song.h"
 #include "posedit.h"
 
-//#include <q3toolbar.h>
+#include <QCloseEvent>
+#include <QMenu>
+#include <QHBoxLayout>
 #include <QToolBar>
 #include <QToolButton>
-#include <QToolTip>
-#include <QLayout>
-#include <QSizeGrip>
-#include <q3popupmenu.h>
-#include <QMenuBar>
-//#include <qaction.h>
-#include <q3groupbox.h>
-#include <QLineEdit>
-#include <Qt3Support>
-#include <QAction>
-//Added by qt3to4:
-#include <QCloseEvent>
-#include <Q3VBoxLayout>
+#include <QVBoxLayout>
+
 
 enum { COL_TICK = 0, COL_SMPTE, COL_LOCK, COL_NAME };
 
@@ -64,14 +55,14 @@ bool MarkerItem::lock() const
 //   MarkerItem
 //---------------------------------------------------------
 
-MarkerItem::MarkerItem(Q3ListView* parent, Marker* m)
-  : Q3ListViewItem(parent)
+MarkerItem::MarkerItem(QTreeWidget* parent, Marker* m)
+  : QTreeWidgetItem(parent)
       {
       _marker = m;
       setText(COL_NAME, m->name());
       setTick(m->tick());
       if (m->type() == Pos::FRAMES)
-            setPixmap(COL_LOCK, *lockIcon);
+            setIcon(COL_LOCK, QIcon(*lockIcon));
       setLock(m->type() == Pos::FRAMES);
       }
 
@@ -91,7 +82,7 @@ void MarkerItem::setName(const QString& s)
 
 void MarkerItem::setLock(bool lck)
       {
-      setPixmap(COL_LOCK, lck ? *lockIcon : 0);
+      setIcon(COL_LOCK, QIcon(lck ? *lockIcon : 0));
       _marker = song->setMarkerLock(_marker, lck);
       }
 
@@ -165,12 +156,14 @@ MarkerView::MarkerView(QWidget* parent)
       connect(markerDelete, SIGNAL(activated()), SLOT(deleteMarker()));
 
       //---------Pulldown Menu----------------------------
-      Q3PopupMenu* fileMenu = new Q3PopupMenu(this);
-      menuBar()->insertItem(tr("&File"), fileMenu);
-      Q3PopupMenu* editMenu = new Q3PopupMenu(this);
-      menuBar()->insertItem(tr("&Edit"), editMenu);
-      markerAdd->addTo(editMenu);
-      markerDelete->addTo(editMenu);
+      /* We probably don't need an empty menu - Orcan
+      QMenu* fileMenu = new QMenu(tr("&File"));
+      menuBar()->addMenu(fileMenu);
+      */
+      QMenu* editMenu = new QMenu(tr("&Edit"));
+      menuBar()->addMenu(editMenu);
+      editMenu->addAction(markerAdd);
+      editMenu->addAction(markerDelete);
 
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("marker-tools"));
@@ -184,44 +177,55 @@ MarkerView::MarkerView(QWidget* parent)
       //    master
       //---------------------------------------------------
 
-      QWidget* w = new QWidget(this, "main");
+      QWidget* w = new QWidget;
       setCentralWidget(w);
-      Q3VBoxLayout* vbox = new Q3VBoxLayout(w);
+      QVBoxLayout* vbox = new QVBoxLayout(w);
 
-      table = new Q3ListView(w);
+      table = new QTreeWidget(w);
       table->setAllColumnsShowFocus(true);
-      table->setSelectionMode(Q3ListView::Single);
-      table->setSorting(COL_TICK, true);
+      table->setSelectionMode(QAbstractItemView::SingleSelection);
+      
+      QStringList columnnames;
+      columnnames << tr("Bar:Beat:Tick")
+		  << tr("Hr:Mn:Sc:Fr:Sf")
+		  << tr("Lock")
+		  << tr("Text");
 
-      table->addColumn(tr("Bar:Beat:Tick"));
-      table->addColumn(tr("Hr:Mn:Sc:Fr:Sf"));
-      table->addColumn(tr("Lock"));
-      table->addColumn(tr("Text"));
-      table->setColumnWidth(3, 200);
-      table->setColumnWidthMode(3, Q3ListView::Maximum);
-      connect(table, SIGNAL(selectionChanged()),
+      table->setHeaderLabels(columnnames);
+      table->setColumnWidth(2, 40);      
+      table->header()->setStretchLastSection(true);
+
+      connect(table, SIGNAL(itemSelectionChanged()),
          SLOT(markerSelectionChanged()));
-      connect(table, SIGNAL(clicked(Q3ListViewItem*)),
-         SLOT(clicked(Q3ListViewItem*)));
+      connect(table, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+         SLOT(clicked(QTreeWidgetItem*)));
 
-      Q3GroupBox* props = new Q3GroupBox(4, Qt::Horizontal, tr("Marker Properties"), w);
+      QGroupBox* props = new QGroupBox(tr("Marker Properties"));
+      QHBoxLayout *hbox = new QHBoxLayout;
 
-      editTick = new PosEdit(props);
+      editTick = new PosEdit;
       editTick->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));
 
-      editSMPTE = new PosEdit(props);
+      editSMPTE = new PosEdit;
       editSMPTE->setSmpte(true);
       editSMPTE->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));
 
-      lock = new QToolButton(props);
+      lock = new QToolButton;
       lock->setIcon(*lockIcon);
       lock->setCheckable(true);
 
-      editName = new QLineEdit(props);
+      editName = new QLineEdit;
       editName->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,
-         QSizePolicy::Preferred));
+					  QSizePolicy::Preferred));
+
+      hbox->addWidget(editTick);
+      hbox->addWidget(editSMPTE);
+      hbox->addWidget(lock);
+      hbox->addWidget(editName);
+      props->setLayout(hbox);
+
       connect(editName, SIGNAL(textChanged(const QString&)),
          SLOT(nameChanged(const QString&)));
       connect(editTick, SIGNAL(valueChanged(const Pos&)),
@@ -329,10 +333,11 @@ void MarkerView::addMarker(int i)
 
 void MarkerView::deleteMarker()
       {
-      MarkerItem* item = (MarkerItem*)table->selectedItem();
+      MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item) {
+            table->blockSignals(true);
             song->removeMarker(item->marker());
-            
+            table->blockSignals(false);
             // Removed p3.3.43 Let Song::removeMarker emit markerChanged(MARKER_REMOVE)
             //  and handle it in MarkerView::markerChanged(int)
             //delete item;
@@ -360,12 +365,12 @@ void MarkerView::updateList()
 {
       // Added p3.3.43 Manage selected item, due to clearing of table...
       MarkerList* marker = song->marker();
-      MarkerItem* selitem     = (MarkerItem*)table->selectedItem();
+      MarkerItem* selitem     = (MarkerItem*)table->currentItem();
       Marker* selm     = selitem ? selitem->marker() : 0;
       // p3.3.44 Look for removed markers before added markers...
       if(selitem)
       {
-        MarkerItem* mitem = (MarkerItem*)table->firstChild();
+        MarkerItem* mitem = (MarkerItem*)table->topLevelItem(0);
         while(mitem) 
         {
           bool found = false;
@@ -384,7 +389,7 @@ void MarkerView::updateList()
             // If it is the current selected item, it no longer exists. Make the next item be selected.
             if(mitem == selitem)
             {
-              MarkerItem* mi = (MarkerItem*)selitem->nextSibling();
+              MarkerItem* mi = (MarkerItem*)table->itemBelow(selitem);
               if(mi)
               {
                 selitem = mi;
@@ -392,7 +397,7 @@ void MarkerView::updateList()
               }  
             }  
           }  
-          mitem = (MarkerItem*)mitem->nextSibling();
+          mitem = (MarkerItem*)table->itemBelow(mitem);
         }
       }  
       // Look for added markers...
@@ -400,7 +405,7 @@ void MarkerView::updateList()
       {
         Marker* m = &i->second;
         bool found = false;
-        MarkerItem* item = (MarkerItem*)table->firstChild();
+        MarkerItem* item = (MarkerItem*)table->topLevelItem(0);
         while(item) 
         {
           if(item->marker() == m) 
@@ -408,7 +413,7 @@ void MarkerView::updateList()
             found = true;
             break;
           }
-          item = (MarkerItem*)item->nextSibling();
+          item = (MarkerItem*)table->itemBelow(item);
         }
         // Anything new found in the marker list?
         if(!found)
@@ -429,7 +434,7 @@ void MarkerView::updateList()
             if(m == selm)
             {
               m->setCurrent(true);
-              table->setSelected(item, true);
+              table->setCurrentItem(item);
             }
             else  
             {
@@ -444,7 +449,7 @@ void MarkerView::updateList()
 
 void MarkerView::markerSelectionChanged()
       {
-      MarkerItem* item = (MarkerItem*)table->selectedItem();
+      MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item == 0) {  // never triggered
             editTick->setValue(0);
             editSMPTE->setValue(0);
@@ -470,7 +475,7 @@ void MarkerView::markerSelectionChanged()
             }
       }
 
-void MarkerView::clicked(Q3ListViewItem* i)
+void MarkerView::clicked(QTreeWidgetItem* i)
       {
       MarkerItem* item = (MarkerItem*)i;
       if (item == 0) {
@@ -487,7 +492,7 @@ void MarkerView::clicked(Q3ListViewItem* i)
 
 void MarkerView::nameChanged(const QString& s)
       {
-      MarkerItem* item = (MarkerItem*)table->selectedItem();
+      MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item)
             item->setName(s);
       }
@@ -498,12 +503,12 @@ void MarkerView::nameChanged(const QString& s)
 
 void MarkerView::tickChanged(const Pos& pos)
       {
-      MarkerItem* item = (MarkerItem*)table->selectedItem();
+      MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item) {
             item->setTick(pos.tick());
             Pos p(pos.tick(), true);
             song->setPos(0, p, true, true, false);
-            table->sort();
+            table->sortByColumn(COL_TICK, Qt::AscendingOrder);
             }
       }
 
@@ -513,7 +518,7 @@ void MarkerView::tickChanged(const Pos& pos)
 
 void MarkerView::lockChanged(bool lck)
       {
-      MarkerItem* item = (MarkerItem*)table->selectedItem();
+      MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item) {
             item->setLock(lck);
             editSMPTE->setEnabled(item->lock());
@@ -546,13 +551,13 @@ void MarkerView::markerChanged(int val)
           MarkerList* marker = song->marker();
           for (iMarker i = marker->begin(); i != marker->end(); ++i) {
                 if (i->second.current()) {
-                      MarkerItem* item = (MarkerItem*)table->firstChild();
+                      MarkerItem* item = (MarkerItem*)table->topLevelItem(0);
                       while (item) {
                             if (item->marker() == &i->second) {
-                                  table->setSelected(item, true);
+                                  table->setCurrentItem(item);
                                   return;
                                   }
-                            item = (MarkerItem*)item->nextSibling();
+                            item = (MarkerItem*)table->itemBelow(item);
                             }
                       }
                 }

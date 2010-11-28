@@ -9,27 +9,28 @@
 #define __MARKERVIEW_H__
 
 #include "cobject.h"
-//#include <q3mainwindow.h>
-#include <q3listview.h>
-//Added by qt3to4:
-#include <QCloseEvent>
 
+#include <QTreeWidgetItem>
+
+class QCloseEvent;
 class QLineEdit;
-class PosEdit;
-class QToolButton;
-class Marker;
 class QToolBar;
+class QToolButton;
+class QTreeWidget;
+
+class Marker;
+class PosEdit;
 class Pos;
 
 //---------------------------------------------------------
 //   MarkerItem
 //---------------------------------------------------------
 
-class MarkerItem : public Q3ListViewItem {
+class MarkerItem : public QTreeWidgetItem {
       Marker* _marker;
 
    public:
-      MarkerItem(Q3ListView* parent, Marker* m);
+      MarkerItem(QTreeWidget* parent, Marker* m);
       Marker* marker() const { return _marker; }
       unsigned tick() const;
       const QString name() const;
@@ -44,7 +45,7 @@ class MarkerItem : public Q3ListViewItem {
 //---------------------------------------------------------
 
 class MarkerView : public TopWin {
-      Q3ListView* table;
+      QTreeWidget* table;
       QLineEdit* editName;
       PosEdit* editSMPTE;
       PosEdit* editTick;
@@ -63,7 +64,7 @@ class MarkerView : public TopWin {
       void tickChanged(const Pos&);
       void lockChanged(bool);
       void markerChanged(int);
-      void clicked(Q3ListViewItem*);
+      void clicked(QTreeWidgetItem*);
       void updateList();
       void songChanged(int);
 

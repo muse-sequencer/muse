@@ -1,3 +1,5 @@
+28.11.2010
+        - Finished porting Marker View. (Orcan)
 27.11.2010
         - Completed porting pianoroll module including menus, shortcuts. Should be done. (Tim)
         - Ported the following .ui widgets to Qt4: organguibase, gatetime, midisync,
