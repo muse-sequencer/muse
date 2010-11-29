@@ -10,6 +10,9 @@
 
 #include <q3header.h>
 
+class QHeaderView;
+class QStandardItemModel;
+
 class Xml;
 
 //---------------------------------------------------------
@@ -27,4 +30,25 @@ class Header : public Q3Header {
       void writeStatus(int level, Xml&) const;
       void readStatus(Xml&);
       };
+
+
+// ORCAN - TODO: Once everything is ported to use the new class below, we
+// can remove the above Qt3 based class.
+
+class HeaderNew : public QHeaderView {
+      Q_OBJECT
+
+      QStandardItemModel *itemModel;
+      int columncount;
+
+   public:
+      HeaderNew(QWidget* parent=0, const char* name=0);
+      void writeStatus(int level, Xml&) const;
+      void readStatus(Xml&);
+      int addLabel ( const QString & s, int size = -1 );
+      void setToolTip(int col, const QString &text);
+      void setWhatsThis(int col, const QString &text);
+};
+
 #endif
+

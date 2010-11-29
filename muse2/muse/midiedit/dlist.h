@@ -8,16 +8,16 @@
 #ifndef __DLIST_H__
 #define __DLIST_H__
 
-#include <qlineedit.h>
-//Added by qt3to4:
-#include <QMouseEvent>
-#include <QKeyEvent>
+#include <QLineEdit>
+
 #include "view.h"
 
 #define TH  18                // normal Track-hight
 
+class QKeyEvent;
+class QMouseEvent;
 class QPainter;
-class Q3Header;
+
 class ScrollScale;
 class Device;
 class QLineEdit;
@@ -49,7 +49,7 @@ class DLineEdit: public QLineEdit
 //---------------------------------------------------------
 
 class DList : public View {
-      Q3Header* header;
+      QHeaderView* header;
       ScrollScale* scroll;
       QLineEdit* editor;
       DrumMap* editEntry;
@@ -76,7 +76,7 @@ class DList : public View {
    private slots:
       void sizeChange(int, int, int);
       void returnPressed();
-      void moved(int, int);
+      void moved(int, int, int);
 
    signals:
       void channelChanged();
@@ -91,7 +91,7 @@ class DList : public View {
    public:
       void lineEdit(int line, int section);
       void setCurDrumInstrument(int n);
-      DList(Q3Header*, QWidget* parent, int ymag);
+      DList(QHeaderView*, QWidget* parent, int ymag);
       ~DList();
       void setScroll(ScrollScale* s) { scroll = s; }
       int getSelectedInstrument();

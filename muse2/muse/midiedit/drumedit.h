@@ -8,17 +8,6 @@
 #ifndef __DRUM_EDIT_H__
 #define __DRUM_EDIT_H__
 
-#include <QWidget>
-//#include <q3mainwindow.h>
-#include <QToolTip>
-#include <q3whatsthis.h>
-//Added by qt3to4:
-#include <QResizeEvent>
-#include <QLabel>
-#include <QKeyEvent>
-#include <Q3PopupMenu>
-#include <QCloseEvent>
-
 #include <values.h>
 #include "midieditor.h"
 #include "noteinfo.h"
@@ -28,50 +17,28 @@
 #include "shortcuts.h"
 #include "event.h"
 
-class MidiPart;
+class QCloseEvent;
 class QLabel;
+class QMenu;
+class QKeyEvent;
+class QResizeEvent;
+class QWidget;
+
+class MidiPart;
 class DrumCanvas;
 class ScrollScale;
 class ScoreConfig;
-class QToolButton;
 class MTScale;
 class Splitter;
 class PartList;
 class Toolbar1;
 class CtrlCanvas;
 class Xml;
-class Q3PopupMenu;
 class DList;
 class Header;
 class CtrlEdit;
 class Part;
 class SNode;
-
-//---------------------------------------------------------
-//   DWhatsThis
-//---------------------------------------------------------
-
-class DWhatsThis : public Q3WhatsThis {
-      Header* header;
-   protected:
-      QString text(const QPoint&);
-   public:
-      DWhatsThis(QWidget* parent, Header* h) : Q3WhatsThis(parent) {
-            header = h;
-            }
-      };
-
-//----------------------------------------------------------
-//   DHeaderTip
-//----------------------------------------------------------
-
-class DHeaderTip { // : public QToolTip { ddskrjo
-   public:
-    DHeaderTip(QWidget * parent) {} // : QToolTip(parent) {} ddskrjo
-      virtual ~DHeaderTip(){}	
-   protected:
-      void maybeTip(const QPoint &);
-      };
 
 //---------------------------------------------------------
 //   DrumEdit
@@ -81,7 +48,7 @@ class DrumEdit : public MidiEditor {
       Event selEvent;
       MidiPart* selPart;
       int selTick;
-      Q3PopupMenu* menuEdit, *menuFunctions, *menuFile, *menuSelect;
+      QMenu* menuEdit, *menuFunctions, *menuFile, *menuSelect;
 
       NoteInfo* info;
       QToolButton* srec;
@@ -93,7 +60,7 @@ class DrumEdit : public MidiEditor {
       Splitter* split2;
       QWidget* split1w1;
       DList* dlist;
-      Header* header;
+      HeaderNew* header;
       QToolBar* tools;
 
       static int _quantInit, _rasterInit;
@@ -101,6 +68,13 @@ class DrumEdit : public MidiEditor {
       static int _dlistWidthInit, _dcanvasWidthInit;
 
       static int _toInit; //Used in function dialog for applying modification to selection
+
+      QAction *loadAction, *saveAction, *resetAction;
+      QAction *cutAction, *copyAction, *pasteAction, *deleteAction;
+      QAction *fixedAction, *veloAction;
+      QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
+      QAction *prevAction, *nextAction;
+
       Q_OBJECT
       void initShortcuts();
 
@@ -109,7 +83,8 @@ class DrumEdit : public MidiEditor {
       virtual void resizeEvent(QResizeEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       int _to;//TODO: Make this work
-
+      void setHeaderToolTips();
+      void setHeaderWhatsThis();
 
    private slots:
       void setRaster(int);
