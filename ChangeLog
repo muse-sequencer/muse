@@ -1,3 +1,6 @@
+29.11.2010
+        - In Mess::processEvent(), added ME_PITCHBEND case. For synths which don't override 
+           processEvent (like Vam and Deicsonze). Pitchbend should work in them now. (Tim)
 28.11.2010
         - Finished porting Marker View. (Orcan)
         - Ported ctrlpanel. Needs some testing. I also removed usage of the Oxygen's "pen" icon
