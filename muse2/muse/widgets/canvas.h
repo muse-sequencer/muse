@@ -11,7 +11,7 @@
 #include "citem.h"
 #include "view.h"
 #include "tools.h"
-//Added by qt3to4:
+
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QKeyEvent>
@@ -73,7 +73,8 @@ class Canvas : public View {
       
       HScrollDir hscrollDir;
       VScrollDir vscrollDir;
-      int keyState;
+      int button;
+      Qt::KeyboardModifiers keyState;
       QMenu* itemPopupMenu;
       QMenu* canvasPopupMenu;
 
