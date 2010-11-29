@@ -7,6 +7,7 @@
 
 #include "mess.h"
 #include "muse/midi.h"
+#include "muse/midictrl.h"
 
 static const int FIFO_SIZE = 32;
 
@@ -116,6 +117,8 @@ bool Mess::processEvent(const MidiPlayEvent& ev)
 	            return sysex(ev.len(), ev.data());
             case ME_CONTROLLER:
                   return setController(ev.channel(), ev.dataA(), ev.dataB());
+            case ME_PITCHBEND:       // Tim.
+                  return setController(ev.channel(), CTRL_PITCH, ev.dataA());
             }
       return false;
       }
