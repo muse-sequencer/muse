@@ -8,12 +8,10 @@
 #include <stdio.h>
 
 #include "canvas.h"
-#include <qapplication.h>
-#include <qpainter.h>
-#include <q3popupmenu.h>
-#include <qcursor.h>
-#include <qtimer.h>
-//Added by qt3to4:
+#include <QApplication>
+#include <QPainter>
+#include <QCursor>
+#include <QTimer>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
@@ -37,6 +35,9 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       canvasTools = 0;
       itemPopupMenu = 0;
       
+      button = Qt::NoButton;
+      keyState = 0;
+
       canScrollLeft = true;
       canScrollRight = true;
       canScrollUp = true;
@@ -339,7 +340,8 @@ void Canvas::wheelEvent(QWheelEvent* ev)
             ypixelscale = 1;
 
       int scrollstep = WHEEL_STEPSIZE * (-delta);
-      if (ev->state() == Qt::ShiftModifier)
+      ///if (ev->state() == Qt::ShiftModifier)
+      if (ev->modifiers() == Qt::ShiftModifier)
             scrollstep = scrollstep / 10;
 
       int newYpos = ypos + ypixelscale * scrollstep;
@@ -450,11 +452,17 @@ void Canvas::viewKeyPressEvent(QKeyEvent* event)
 
 void Canvas::viewMousePressEvent(QMouseEvent* event)
       {
-      keyState = event->state();
+      ///keyState = event->state();
+      keyState = event->modifiers();
+      button = event->button();
 
+      printf("viewMousePressEvent buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
+      
       // special events if right button is clicked while operations
       // like moving or drawing lasso is performed.
-      if (event->stateAfter() & Qt::RightButton) {
+      ///if (event->stateAfter() & Qt::RightButton) {
+      if (event->buttons() & Qt::RightButton & ~(event->button())) {
+            printf("viewMousePressEvent special buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
     switch (drag) {
           case DRAG_LASSO:
           drag = DRAG_OFF;
@@ -470,7 +478,9 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       }
 
       // ignore event if (another) button is already active:
-      if (keyState & (Qt::LeftButton|Qt::RightButton|Qt::MidButton)) {
+      ///if (keyState & (Qt::LeftButton|Qt::RightButton|Qt::MidButton)) {
+      if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) {
+            printf("viewMousePressEvent ignoring buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
             return;
             }
       bool shift      = keyState & Qt::ShiftModifier;
@@ -496,7 +506,8 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                   int w = rmapxDev(box.width());
                   int h = rmapyDev(box.height());
                   QRect r(x, y, w, h);
-                  r.moveBy(i->second->pos().x(), i->second->pos().y());
+                  ///r.moveBy(i->second->pos().x(), i->second->pos().y());
+                  r.translate(i->second->pos().x(), i->second->pos().y());
                   if (r.contains(start)) {
                         if(i->second->isSelected())
                         {
@@ -824,7 +835,9 @@ void Canvas::scrollTimerDone()
         //
         //scrollTimer->start( 40, TRUE ); // X ms single-shot timer
         // OK, changing the timeout from 40 to 80 helped.
-        scrollTimer->start( 80, TRUE ); // X ms single-shot timer
+        //scrollTimer->start( 80, TRUE ); // X ms single-shot timer
+        scrollTimer->setSingleShot(true);
+        scrollTimer->start(80);
       }
       else 
       {
@@ -897,7 +910,9 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
               {
                   scrollTimer= new QTimer(this);
                   connect( scrollTimer, SIGNAL(timeout()), SLOT(scrollTimerDone()) );
-                  scrollTimer->start( 0, TRUE ); // single-shot timer
+                  //scrollTimer->start( 0, TRUE ); // single-shot timer
+                  scrollTimer->setSingleShot(true); // single-shot timer
+                  scrollTimer->start(0); 
               }
             }
             else
@@ -1039,13 +1054,16 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       canScrollRight = true;
       canScrollUp = true;
       canScrollDown = true;
-      if (event->state() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) {
-            printf("ignore %x  %x\n", keyState, event->button());
+      ///if (event->state() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) {
+      if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) {
+            ///printf("ignore %x %x\n", keyState, event->button());
+            //printf("viewMouseReleaseEvent ignore buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
             return;
             }
 
       QPoint pos = event->pos();
-      bool shift = event->state() & Qt::ShiftModifier;
+      ///bool shift = event->state() & Qt::ShiftModifier;
+      bool shift = event->modifiers() & Qt::ShiftModifier;
       bool redrawFlag = false;
 
       switch (drag) {
@@ -1146,7 +1164,8 @@ void Canvas::selectLasso(bool toggle)
                   int w = rmapxDev(box.width());
                   int h = rmapyDev(box.height());
                   QRect r(x, y, w, h);
-                  r.moveBy(i->second->pos().x(), i->second->pos().y());
+                  ///r.moveBy(i->second->pos().x(), i->second->pos().y());
+                  r.translate(i->second->pos().x(), i->second->pos().y());
                   if (r.intersects(lasso)) {
                         selectItem(i->second, !(toggle && i->second->isSelected()));
                         ++n;
@@ -1220,7 +1239,7 @@ void Canvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
 
 int Canvas::getCurrentDrag()
       {
-      printf("getCurrentDrag=%d\n", drag);
+      //printf("getCurrentDrag=%d\n", drag);
       return drag;
       }
 
@@ -1250,7 +1269,8 @@ void Canvas::deleteItem(const QPoint& p)
                   int w = rmapxDev(box.width());
                   int h = rmapyDev(box.height());
                   QRect r(x, y, w, h);
-                  r.moveBy(i->second->pos().x(), i->second->pos().y());
+                  ///r.moveBy(i->second->pos().x(), i->second->pos().y());
+                  r.translate(i->second->pos().x(), i->second->pos().y());
                   if (r.contains(p)) {
                         if (deleteItem(i->second)) {
                               selectItem(i->second, false);

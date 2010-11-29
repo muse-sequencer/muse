@@ -9,8 +9,8 @@
 #define __CITEM_H__
 
 #include <map>
-#include <qpoint.h>
-#include <qrect.h>
+#include <QPoint>
+#include <QRect>
 
 #include "event.h"
 

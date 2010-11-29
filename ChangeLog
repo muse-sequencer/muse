@@ -7,6 +7,7 @@
                 Restoring of state (that's a MusE problem I think).   
                 Fix deicsonze.cpp:3612: warning: deprecated conversion from string constant to ‘char*’
         - Ported Mastertrack list view. (Orcan)
+        - Finished porting of Canvas module. Should be done. Not sure about one mouse event buttons() usage. (Tim)
 27.11.2010
         - Completed porting pianoroll module including menus, shortcuts. Should be done. (Tim)
         - Ported the following .ui widgets to Qt4: organguibase, gatetime, midisync,
