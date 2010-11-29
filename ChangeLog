@@ -1,6 +1,9 @@
 29.11.2010
         - In Mess::processEvent(), added ME_PITCHBEND case. For synths which don't override 
            processEvent (like Vam and Deicsonze). Pitchbend should work in them now. (Tim)
+        - Added a new HeaderNew (Qt4 based) class to be used instead of Header (Qt3 based). (Orcan)
+        - Ported drumedit except a Q3PopupMenu reference that needs to be ported in midiport.cpp.
+          This update restores the tooltips, adds icons to edit menu items in drumedit window. (Orcan)
 28.11.2010
         - Finished porting Marker View. (Orcan)
         - Ported ctrlpanel. Needs some testing. I also removed usage of the Oxygen's "pen" icon

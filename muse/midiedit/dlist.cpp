@@ -5,14 +5,12 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qpainter.h>
-#include <q3header.h>
-#include <qcursor.h>
-#include <q3popupmenu.h>
-#include <qlineedit.h>
-//Added by qt3to4:
-#include <QPixmap>
+#include <QCursor>
+#include <QHeaderView>
+#include <Q3PopupMenu>
 #include <QMouseEvent>
+#include <QPainter>
+#include <QPixmap>
 
 #include <stdio.h>
 
@@ -58,9 +56,10 @@ void DList::draw(QPainter& p, const QRect& rect)
                   p.fillRect(x, yy, w, TH, Qt::yellow);
 //            else
 //                  p.eraseRect(x, yy, w, TH);
-            for (int k = 0; k < header->count(); ++k) {
-                  int x   = header->sectionPos(k);
-                  int w   = header->sectionSize(k);
+            QHeaderView *h = header;
+            for (int k = 0; k < h->count(); ++k) {
+                  int x   = h->sectionPosition(k);
+                  int w   = h->sectionSize(k);
                   QRect r = p.xForm(QRect(x+2, yy, w-4, TH));
                   QString s;
                   int align = Qt::AlignVCenter | Qt::AlignHCenter;
@@ -153,7 +152,7 @@ void DList::draw(QPainter& p, const QRect& rect)
       x = 0;
       for (int i = 0; i < n; i++) {
             //x += header->sectionSize(i);
-            x += header->sectionSize(header->mapToSection(i));
+            x += header->sectionSize(header->visualIndex(i));
             p.drawLine(x, 0, x, height());
             }
       p.setWorldXForm(true);
@@ -416,7 +415,7 @@ void DList::viewMouseDoubleClickEvent(QMouseEvent* ev)
 //      int button = ev->button();
       unsigned pitch = y / TH;
 
-      int section = header->sectionAt(x);
+      int section = header->logicalIndexAt(x);
 
       if ((section == COL_NAME || section == COL_VOL || section == COL_LEN || section == COL_LV1 ||
          section == COL_LV2 || section == COL_LV3 || section == COL_LV4) && (ev->button() == Qt::LeftButton))
@@ -442,7 +441,7 @@ void DList::lineEdit(int line, int section)
                      SLOT(returnPressed()));
                   editor->setFrame(true);
                   }
-            int colx = mapx(header->sectionPos(section));
+            int colx = mapx(header->sectionPosition(section));
             int colw = rmapx(header->sectionSize(section));
             int coly = mapy(line * TH);
             int colh = rmapy(TH);
@@ -513,13 +512,13 @@ int DList::x2col(int x) const
       int col = 0;
       int w = 0;
       for (; col < header->count(); col++) {
-            w += header->cellSize(col);
+            w += header->sectionSize(col);
             if (x < w)
                   break;
             }
       if (col == header->count())
             return -1;
-      return header->mapToLogical(col);
+      return header->logicalIndex(col);
       }
 
 //---------------------------------------------------------
@@ -620,7 +619,7 @@ void DList::returnPressed()
 //   moved
 //---------------------------------------------------------
 
-void DList::moved(int, int)
+void DList::moved(int, int, int)
       {
       redraw();
       }
@@ -644,21 +643,22 @@ void DList::songChanged(int flags)
             }
       }
 
-
 //---------------------------------------------------------
 //   DList
 //---------------------------------------------------------
 
-DList::DList(Q3Header* h, QWidget* parent, int ymag)
+DList::DList(QHeaderView* h, QWidget* parent, int ymag)
    : View(parent, 1, ymag)
       {
       setBg(Qt::white);
+      if (!h){
+	h = new QHeaderView(Qt::Horizontal, parent);}
       header = h;
       scroll = 0;
-      header->setTracking(true);
-      connect(header, SIGNAL(sizeChange(int,int,int)),
+      //ORCAN- CHECK if really needed: header->setTracking(true);
+      connect(header, SIGNAL(sectionResized(int,int,int)),
          SLOT(sizeChange(int,int,int)));
-      connect(header, SIGNAL(moved(int,int)), SLOT(moved(int,int)));
+      connect(header, SIGNAL(sectionMoved(int, int,int)), SLOT(moved(int,int,int)));
       setFocusPolicy(Qt::StrongFocus);
       drag = NORMAL;
       editor = 0;

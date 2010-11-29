@@ -5,34 +5,18 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <QToolButton>
-//#include <q3accel.h>
-#include <QLayout>
-#include <q3hbox.h>
-#include <QSizeGrip>
-#include <QScrollBar>
-#include <QLabel>
-#include <QPushButton>
-#include <QRadioButton>
-#include <q3buttongroup.h>
-#include <q3listbox.h>
-#include <q3popupmenu.h>
-#include <QMenuBar>
-#include <QToolTip>
-#include <QApplication>
-#include <QClipboard>
-#include <QMessageBox>
 #include <QAction>
-#include <QWhatsThis>
-#include <QList>
-#include <QGridLayout>
-
-//Added by qt3to4:
-#include <QKeyEvent>
-//#include <Q3ValueList>
-//#include <Q3GridLayout>
-#include <QResizeEvent>
+#include <QClipboard>
 #include <QCloseEvent>
+#include <QGridLayout>
+#include <QKeyEvent>
+#include <QList>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QResizeEvent>
+#include <QSizeGrip>
+#include <QToolButton>
+#include <QWhatsThis>
 
 #include "drumedit.h"
 #include "mtscale.h"
@@ -82,65 +66,45 @@ static const int yscale = 1;
 static const int drumeditTools = PointerTool | PencilTool | RubberTool;
 
 //---------------------------------------------------------
-//   DWhatsThis::text
+//   setHeaderWhatsThis
 //---------------------------------------------------------
 
-QString DWhatsThis::text(const QPoint& pos)
+void DrumEdit::setHeaderWhatsThis()
       {
-      int section = header->sectionAt(pos.x());
-      if (section == -1)
-            return QString::null;
-      switch(section) {
-            case 0: return  Q3Header::tr("mute instrument"); break;
-            case 1: return  Q3Header::tr("sound name"); break;
-            case 2: return  Q3Header::tr("volume percent"); break;
-            case 3: return  Q3Header::tr("quantisation"); break;
-            case 4: return  Q3Header::tr("this input note triggers the sound"); break;
-            case 5: return  Q3Header::tr("note length"); break;
-            case 6: return  Q3Header::tr("this is the note which is played"); break;
-            case 7: return  Q3Header::tr("output channel (hold ctl to affect all rows)"); break;
-            case 8: return  Q3Header::tr("output port"); break;
-            case 9: return  Q3Header::tr("shift + control key: draw velocity level 1"); break;
-            case 10: return  Q3Header::tr("control key: draw velocity level 2"); break;
-            case 11: return Q3Header::tr("shift key: draw velocity level 3"); break;
-            case 12: return Q3Header::tr("draw velocity level 4"); break;
-            default: break;
-            }
-      return QString::null;
+      header->setWhatsThis(0, tr("mute instrument"));
+      header->setWhatsThis(1, tr("sound name"));
+      header->setWhatsThis(2, tr("volume percent"));
+      header->setWhatsThis(3, tr("quantisation"));
+      header->setWhatsThis(4, tr("this input note triggers the sound"));
+      header->setWhatsThis(5, tr("note length"));
+      header->setWhatsThis(6, tr("this is the note which is played"));
+      header->setWhatsThis(7, tr("output channel (hold ctl to affect all rows)"));
+      header->setWhatsThis(8, tr("output port"));
+      header->setWhatsThis(9, tr("shift + control key: draw velocity level 1"));
+      header->setWhatsThis(10, tr("control key: draw velocity level 2"));
+      header->setWhatsThis(11, tr("shift key: draw velocity level 3"));
+      header->setWhatsThis(12, tr("draw velocity level 4"));
       }
 
 //---------------------------------------------------------
-//   DHeaderTip::maybeTip
+//   setHeaderToolTips
 //---------------------------------------------------------
 
-void DHeaderTip::maybeTip(const QPoint &pos)
+void DrumEdit::setHeaderToolTips()
       {
-#if 0    // ddskrjo
-      Header* w  = (Header*)parentWidget();
-      int section = w->sectionAt(pos.x());
-      if (section == -1)
-            return;
-      QRect r(w->sectionPos(section), 0, w->sectionSize(section),
-         w->height());
-      QString p;
-      switch(section) {
-            case 0:  p = Q3Header::tr("mute instrument"); break;
-            case 1:  p = Q3Header::tr("sound name"); break;
-            case 2:  p = Q3Header::tr("volume percent"); break;
-            case 3:  p = Q3Header::tr("quantisation"); break;
-            case 4:  p = Q3Header::tr("this input note triggers the sound"); break;
-            case 5:  p = Q3Header::tr("note length"); break;
-            case 6:  p = Q3Header::tr("this is the note which is played"); break;
-            case 7:  p = Q3Header::tr("output channel (ctl: affect all rows)"); break;
-            case 8:  p = Q3Header::tr("output port"); break;
-            case 9:  p = Q3Header::tr("shift + control key: draw velocity level 1"); break;
-            case 10:  p = Q3Header::tr("control key: draw velocity level 2"); break;
-            case 11: p = Q3Header::tr("shift key: draw velocity level 3"); break;
-            case 12: p = Q3Header::tr("draw velocity level 4"); break;
-            default: return;
-            }
-      tip(r, p);
-#endif
+      header->setToolTip(0, tr("mute instrument"));
+      header->setToolTip(1, tr("sound name"));
+      header->setToolTip(2, tr("volume percent"));
+      header->setToolTip(3, tr("quantisation"));
+      header->setToolTip(4, tr("this input note triggers the sound"));
+      header->setToolTip(5, tr("note length"));
+      header->setToolTip(6, tr("this is the note which is played"));
+      header->setToolTip(7, tr("output channel (ctl: affect all rows)"));
+      header->setToolTip(8, tr("output port"));
+      header->setToolTip(9, tr("shift + control key: draw velocity level 1"));
+      header->setToolTip(10, tr("control key: draw velocity level 2"));
+      header->setToolTip(11, tr("shift key: draw velocity level 3"));
+      header->setToolTip(12, tr("draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -150,8 +114,8 @@ void DHeaderTip::maybeTip(const QPoint &pos)
 void DrumEdit::closeEvent(QCloseEvent* e)
       {
       //Store values of the horizontal splitter
-      Q3ValueList<int> sizes = split2->sizes();
-      Q3ValueList<int>::Iterator it = sizes.begin();
+      QList<int> sizes = split2->sizes();
+      QList<int>::iterator it = sizes.begin();
       _dlistWidthInit = *it; //There are only 2 values stored in the sizelist, size of dlist widget and dcanvas widget
       it++;
       _dcanvasWidthInit = *it;
@@ -170,58 +134,95 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       resize(_widthInit, _heightInit);
       selPart  = 0;
       _to = _toInit;
+      QSignalMapper *signalMapper = new QSignalMapper(this);
       //---------Pulldown Menu----------------------------
-      menuFile = new Q3PopupMenu(this);
-      menuBar()->insertItem(tr("&File"), menuFile);
+      menuFile = new QMenu(tr("&File"));
+      menuBar()->addMenu(menuFile);
 
-      menuFile->insertItem(QIcon(*openIcon), tr("Load Map"), DrumCanvas::CMD_LOAD);
-      menuFile->insertItem(QIcon(*saveIcon), tr("Save Map"), DrumCanvas::CMD_SAVE);
-      menuFile->insertItem(tr("Reset GM Map"), DrumCanvas::CMD_RESET);
+      loadAction = menuFile->addAction(QIcon(*openIcon), tr("Load Map"));
+      saveAction = menuFile->addAction(QIcon(*saveIcon), tr("Save Map"));
+      resetAction = menuFile->addAction(tr("Reset GM Map"));
 
-      menuEdit = new Q3PopupMenu(this);
-      menuBar()->insertItem(tr("&Edit"), menuEdit);
+      connect(loadAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(saveAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(resetAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+
+      signalMapper->setMapping(loadAction, DrumCanvas::CMD_LOAD);
+      signalMapper->setMapping(saveAction, DrumCanvas::CMD_SAVE);
+      signalMapper->setMapping(resetAction, DrumCanvas::CMD_RESET);
+
+      menuEdit = new QMenu(tr("&Edit"));
+      menuBar()->addMenu(menuEdit);
       undoRedo->addTo(menuEdit);
       
       ///Q3Accel* qa = new Q3Accel(this);
-      ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
+      ///qa->connectItem(qa->addAction(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
       
       menuEdit->insertSeparator();
-      menuEdit->insertItem(tr("Cut"),   DrumCanvas::CMD_CUT);
-      menuEdit->insertItem(tr("Copy"),  DrumCanvas::CMD_COPY);
-      menuEdit->insertItem(tr("Paste"), DrumCanvas::CMD_PASTE);
+      cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
+      copyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy"));
+      pasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste"));
       menuEdit->insertSeparator();
-      menuEdit->insertItem(tr("Delete Events"), DrumCanvas::CMD_DEL);
+      deleteAction = menuEdit->addAction(tr("Delete Events"));
+
+      connect(cutAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(copyAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(pasteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(deleteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+
+      signalMapper->setMapping(cutAction, DrumCanvas::CMD_CUT);
+      signalMapper->setMapping(copyAction, DrumCanvas::CMD_COPY);
+      signalMapper->setMapping(pasteAction, DrumCanvas::CMD_PASTE);
+      signalMapper->setMapping(deleteAction, DrumCanvas::CMD_DEL);
+
+      menuSelect = menuEdit->addMenu(QIcon(*selectIcon), tr("&Select"));
+
+      sallAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select All"));
+      snoneAction = menuSelect->addAction(QIcon(*select_deselect_allIcon), tr("Select None"));
+      invAction = menuSelect->addAction(QIcon(*select_invert_selectionIcon), tr("Invert"));
+      menuSelect->insertSeparator();
+      inAction = menuSelect->addAction(QIcon(*select_inside_loopIcon), tr("Inside Loop"));
+      outAction = menuSelect->addAction(QIcon(*select_outside_loopIcon), tr("Outside Loop"));
+      
+      menuSelect->insertSeparator();
+
+      prevAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Previous Part"));
+      nextAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Next Part"));
+
+      connect(sallAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(snoneAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(invAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(inAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(outAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(prevAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(nextAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+
+      signalMapper->setMapping(sallAction, DrumCanvas::CMD_SELECT_ALL);
+      signalMapper->setMapping(snoneAction, DrumCanvas::CMD_SELECT_NONE);
+      signalMapper->setMapping(invAction, DrumCanvas::CMD_SELECT_INVERT);
+      signalMapper->setMapping(inAction, DrumCanvas::CMD_SELECT_ILOOP);
+      signalMapper->setMapping(outAction, DrumCanvas::CMD_SELECT_OLOOP);
+      signalMapper->setMapping(prevAction, DrumCanvas::CMD_SELECT_PREV_PART);
+      signalMapper->setMapping(nextAction, DrumCanvas::CMD_SELECT_NEXT_PART);
 
       // Functions
-      menuFunctions = new Q3PopupMenu(this);
-      menuBar()->insertItem(tr("&Functions"), menuFunctions);
+      menuFunctions = new QMenu(tr("&Functions"));
+      menuBar()->addMenu(menuFunctions);
       menuFunctions->insertTearOffHandle();
-      menuFunctions->insertItem(tr("Set fixed length"), DrumCanvas::CMD_FIXED_LEN);
-      menuFunctions->insertItem(tr("Modify Velocity"), DrumCanvas::CMD_MODIFY_VELOCITY);
+      fixedAction = menuFunctions->addAction(tr("Set fixed length"));
+      veloAction = menuFunctions->addAction(tr("Modify Velocity"));
 
-      menuSelect = new Q3PopupMenu(this);
-      menuSelect->insertItem(tr("Select All"),   DrumCanvas::CMD_SELECT_ALL);
-      menuSelect->insertItem(tr("Select None"),  DrumCanvas::CMD_SELECT_NONE);
-      menuSelect->insertItem(tr("Invert"),       DrumCanvas::CMD_SELECT_INVERT);
-      menuSelect->insertSeparator();
-      menuSelect->insertItem(tr("Inside Loop"),  DrumCanvas::CMD_SELECT_ILOOP);
-      menuSelect->insertItem(tr("Outside Loop"), DrumCanvas::CMD_SELECT_OLOOP);
-      
-      menuSelect->insertSeparator();
+      connect(fixedAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(veloAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
-      menuSelect->insertItem(tr("Previous Part"), DrumCanvas::CMD_SELECT_PREV_PART);
-      menuSelect->insertItem(tr("Next Part"), DrumCanvas::CMD_SELECT_NEXT_PART);
-      
-      menuEdit->insertItem(tr("&Select"), menuSelect);
+      signalMapper->setMapping(fixedAction, DrumCanvas::CMD_FIXED_LEN);
+      signalMapper->setMapping(veloAction, DrumCanvas::CMD_MODIFY_VELOCITY);
 
-      Q3PopupMenu* menuScriptPlugins = new Q3PopupMenu(this);
+      QMenu* menuScriptPlugins = new QMenu(tr("&Plugins"));
       song->populateScriptMenu(menuScriptPlugins, this);
-      menuBar()->insertItem(tr("&Plugins"), menuScriptPlugins);
+      menuBar()->addMenu(menuScriptPlugins);
 
-      connect(menuFile, SIGNAL(activated(int)), SLOT(cmd(int)));
-      connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
-      connect(menuSelect, SIGNAL(activated(int)),    SLOT(cmd(int)));
-      connect(menuFunctions, SIGNAL(activated(int)), SLOT(cmd(int)));
+      connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 
       //---------------------------------------------------
       //    Toolbars
@@ -241,7 +242,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(sdm, SIGNAL(clicked()), SLOT(save()));
       tools->addWidget(sdm);
       
-      tools->addAction(QWhatsThis::createAction(this));
+      tools->addAction(QWhatsThis::createAction());
 
       tools->addSeparator();
       tools->addActions(undoRedo->actions());
@@ -282,7 +283,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       //---------------------------------------------------
 
       split1            = new Splitter(Qt::Vertical, mainw, "split1");
-      QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw, "Ctrl");
+      QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
       ctrl->setFont(config.fonts[3]);
       hscroll           = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
@@ -302,8 +303,8 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
 //      mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); 
 
       split2              = new Splitter(Qt::Horizontal, split1, "split2");
-      split1w1            = new QWidget(split2, "split1w1");
-      QWidget* split1w2   = new QWidget(split2, "split1w2");
+      split1w1            = new QWidget(split2);
+      QWidget* split1w2   = new QWidget(split2);
       QGridLayout* gridS1 = new QGridLayout(split1w1);
       QGridLayout* gridS2 = new QGridLayout(split1w2);
       gridS1->setContentsMargins(0, 0, 0, 0);
@@ -339,23 +340,24 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       //
       //  Reihenfolge in dlist.c festgeschrieben ("Dcols")
       //
-      header = new Header(split1w1, "header");
-      header->setFixedHeight(30);
+      header = new HeaderNew(split1w1, "header");
+      header->setFixedHeight(31);
       header->addLabel(tr("M"), 20);
-      header->addLabel(tr("Sound"), 100);
+      header->addLabel(tr("Sound"), 120);
       header->addLabel(tr("Vol"));
-      header->addLabel(tr("QNT"));
-      header->addLabel(tr("E-Note"));
+      header->addLabel(tr("QNT"), 30);
+      header->addLabel(tr("E-Note"), 50);
       header->addLabel(tr("Len"));
-      header->addLabel(tr("A-Note"));
+      header->addLabel(tr("A-Note"), 50);
       header->addLabel(tr("Ch"));
-      header->addLabel(tr("Port"), 60);
+      header->addLabel(tr("Port"), 70);
       header->addLabel(tr("LV1"));
       header->addLabel(tr("LV2"));
       header->addLabel(tr("LV3"));
       header->addLabel(tr("LV4"));
-      new DHeaderTip(header);
-      new DWhatsThis(header, header);
+
+      setHeaderToolTips();
+      setHeaderWhatsThis();
 
       dlist = new DList(header, split1w1, yscale);
       // p3.3.44
@@ -1153,22 +1155,25 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
 
 void DrumEdit::initShortcuts()
       {
-      menuEdit->setAccel(shortcuts[SHRT_CUT].key,             DrumCanvas::CMD_CUT);
-      menuEdit->setAccel(shortcuts[SHRT_COPY].key,            DrumCanvas::CMD_COPY);;
-      menuEdit->setAccel(shortcuts[SHRT_PASTE].key,           DrumCanvas::CMD_PASTE);
-      menuEdit->setAccel(shortcuts[SHRT_DELETE].key,          DrumCanvas::CMD_DEL);
-      menuFile->setAccel(shortcuts[SHRT_OPEN].key,            DrumCanvas::CMD_LOAD);
-      menuFile->setAccel(shortcuts[SHRT_SAVE].key,            DrumCanvas::CMD_SAVE);
-      menuFunctions->setAccel(shortcuts[SHRT_FIXED_LEN].key,  DrumCanvas::CMD_FIXED_LEN);
-      menuFunctions->setAccel(shortcuts[SHRT_MODIFY_VELOCITY].key, DrumCanvas::CMD_MODIFY_VELOCITY);
-      menuSelect->setAccel(shortcuts[SHRT_SELECT_ALL].key,    DrumCanvas::CMD_SELECT_ALL);
-      menuSelect->setAccel(shortcuts[SHRT_SELECT_NONE].key,   DrumCanvas::CMD_SELECT_NONE);
-      menuSelect->setAccel(shortcuts[SHRT_SELECT_INVERT].key, DrumCanvas::CMD_SELECT_INVERT);
-      menuSelect->setAccel(shortcuts[SHRT_SELECT_ILOOP].key,  DrumCanvas::CMD_SELECT_ILOOP);
-      menuSelect->setAccel(shortcuts[SHRT_SELECT_OLOOP].key,  DrumCanvas::CMD_SELECT_OLOOP);
+      loadAction->setAccel(shortcuts[SHRT_OPEN].key);
+      saveAction->setAccel(shortcuts[SHRT_SAVE].key);
+
+      cutAction->setAccel(shortcuts[SHRT_CUT].key);
+      copyAction->setAccel(shortcuts[SHRT_COPY].key);
+      pasteAction->setAccel(shortcuts[SHRT_PASTE].key);
+      deleteAction->setAccel(shortcuts[SHRT_DELETE].key);
+
+      fixedAction->setAccel(shortcuts[SHRT_FIXED_LEN].key);
+      veloAction->setAccel(shortcuts[SHRT_MODIFY_VELOCITY].key);
+
+      sallAction->setAccel(shortcuts[SHRT_SELECT_ALL].key);
+      snoneAction->setAccel(shortcuts[SHRT_SELECT_NONE].key);
+      invAction->setAccel(shortcuts[SHRT_SELECT_INVERT].key);
+      inAction->setAccel(shortcuts[SHRT_SELECT_ILOOP].key);
+      outAction->setAccel(shortcuts[SHRT_SELECT_OLOOP].key);
       
-      menuSelect->setAccel(shortcuts[SHRT_SELECT_PREV_PART].key, DrumCanvas::CMD_SELECT_PREV_PART);
-      menuSelect->setAccel(shortcuts[SHRT_SELECT_NEXT_PART].key, DrumCanvas::CMD_SELECT_NEXT_PART);
+      prevAction->setAccel(shortcuts[SHRT_SELECT_PREV_PART].key);
+      nextAction->setAccel(shortcuts[SHRT_SELECT_NEXT_PART].key);
       }
 
 //---------------------------------------------------------
