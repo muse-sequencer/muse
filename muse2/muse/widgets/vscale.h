@@ -8,9 +8,8 @@
 #ifndef __VSCALE_H__
 #define __VSCALE_H__
 
-#include <qwidget.h>
-//Added by qt3to4:
-#include <QPaintEvent>
+class QPaintEvent;
+class QWidget;
 
 //---------------------------------------------------------
 //   VScale
@@ -22,7 +21,7 @@ class VScale : public QWidget {
       virtual void paintEvent(QPaintEvent*);
 
    public:
-      VScale(QWidget* parent) : QWidget(parent) {}
+      VScale(QWidget* parent=0) : QWidget(parent) {setFixedWidth(18);}
       };
 
 #endif

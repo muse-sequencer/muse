@@ -8,15 +8,12 @@
 #ifndef __CTRL_EDIT_H__
 #define __CTRL_EDIT_H__
 
-#include <qwidget.h>
-//Added by qt3to4:
-#include <QLabel>
+#include <QWidget>
+
 #include "ctrlcanvas.h"
 #include "song.h"
 
 class MidiEditor;
-class QLabel;
-class QToolButton;
 class CtrlView;
 class CtrlPanel;
 class Xml;
@@ -29,6 +26,7 @@ class Xml;
 class CtrlEdit : public QWidget {
       CtrlCanvas* canvas;
       CtrlPanel* panel;
+
       Q_OBJECT
 
    private slots:

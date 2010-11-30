@@ -17,13 +17,7 @@
 #include "instruments/minstrument.h"
 #include "gconfig.h"
 
-#include <qlayout.h>
-#include <qpainter.h>
-#include <qtoolbutton.h>
-#include <q3popupmenu.h>
-#include <qlabel.h>
-//Added by qt3to4:
-#include <Q3HBoxLayout>
+#include <QHBoxLayout>
 
 //---------------------------------------------------------
 //   setTool
@@ -39,12 +33,13 @@ void CtrlEdit::setTool(int t)
 //---------------------------------------------------------
 
 CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
-   bool expand, const char* name) : QWidget(parent, name)
+   bool expand, const char* name) : QWidget(parent)
       {
-      Q3HBoxLayout* hbox = new Q3HBoxLayout(this);
-      panel             = new CtrlPanel(this, e, "panel");
-      canvas            = new CtrlCanvas(e, this, xmag, "ctrlcanvas", panel);
-      QWidget* vscale   = new VScale(this);
+      setObjectName(name);
+      QHBoxLayout* hbox = new QHBoxLayout;
+      panel             = new CtrlPanel(0, e, "panel");
+      canvas            = new CtrlCanvas(e, 0, xmag, "ctrlcanvas", panel);
+      QWidget* vscale   = new VScale;
 
       canvas->setOrigin(-(config.division/4), 0);
 
@@ -54,6 +49,7 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       hbox->addWidget(panel,  expand ? 100 : 0, Qt::AlignRight);
       hbox->addWidget(canvas, 100);
       hbox->addWidget(vscale, 0);
+      setLayout(hbox);
 
       connect(panel, SIGNAL(destroyPanel()), SLOT(destroy()));
       connect(panel, SIGNAL(controllerChanged(int)), canvas, SLOT(setController(int)));
