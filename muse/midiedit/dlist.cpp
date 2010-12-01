@@ -7,7 +7,7 @@
 
 #include <QCursor>
 #include <QHeaderView>
-#include <Q3PopupMenu>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPixmap>
@@ -164,10 +164,11 @@ void DList::draw(QPainter& p, const QRect& rect)
 
 void DList::devicesPopupMenu(DrumMap* t, int x, int y, bool changeAll)
       {
-      Q3PopupMenu* p = midiPortsPopup(this);
-      int n = p->exec(mapToGlobal(QPoint(x, y)), 0);
+      QMenu* p = midiPortsPopup();
+      QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
       bool doemit = false;
-      if (n != -1) {
+      if (act) {
+            int n = act->data().toInt();
             if (!changeAll)
             {
                 if(n != t->port)

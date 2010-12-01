@@ -8,7 +8,8 @@
 
 //#include "config.h"
 
-#include <q3popupmenu.h>
+#include <QMenu>
+
 #include "mididev.h"
 #include "midiport.h"
 #include "midictrl.h"
@@ -258,17 +259,18 @@ int MidiPort::portno() const
 //---------------------------------------------------------
 
 //QPopupMenu* midiPortsPopup(QWidget* parent)
-Q3PopupMenu* midiPortsPopup(QWidget* parent, int checkPort)
+QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       {
-      Q3PopupMenu* p = new Q3PopupMenu(parent);
+      QMenu* p = new QMenu(parent);
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &midiPorts[i];
             QString name;
             name.sprintf("%d:%s", port->portno()+1, port->portname().latin1());
-            p->insertItem(name, i);
+	    QAction *act = p->addAction(name);
+	    act->setData(i);
             
             if(i == checkPort)
-              p->setItemChecked(i, true);
+              act->setChecked(true);
           }  
       return p;
       }

@@ -12,8 +12,6 @@
 #include "globaldefs.h"
 #include "sync.h"
 #include "route.h"
-//Added by qt3to4:
-#include <Q3PopupMenu>
 
 class MidiDevice;
 class MidiInstrument;
@@ -122,9 +120,9 @@ class MidiPort {
 extern MidiPort midiPorts[MIDI_PORTS];
 extern void initMidiPorts();
 
-class Q3PopupMenu;
+class QMenu;
 class QWidget;
 //extern QPopupMenu* midiPortsPopup(QWidget*);
-extern Q3PopupMenu* midiPortsPopup(QWidget*, int checkPort = -1);
+extern QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1);
 #endif
 

@@ -11,7 +11,7 @@
 
 #include <qpainter.h>
 #include <qlineedit.h>
-#include <q3popupmenu.h>
+#include <QMenu>
 #include <qmessagebox.h>
 #include <qscrollbar.h>
 #include <qtimer.h>
@@ -531,9 +531,10 @@ void TList::portsPopupMenu(Track* t, int x, int y)
                   else   
                     port = track->outPort();
                     
-                  Q3PopupMenu* p = midiPortsPopup(0, port);
-                  int n = p->exec(mapToGlobal(QPoint(x, y)), 0);
-                  if (n != -1) {
+                  QMenu* p = midiPortsPopup(0, port);
+                  QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
+                  if (act) {
+                        int n = act->data().toInt();
                         // Changed by T356.
                         //track->setOutPort(n);
                         //audio->msgSetTrackOutPort(track, n);
