@@ -11,12 +11,14 @@
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
-//Added by qt3to4:
-#include <Q3PopupMenu>
-#include <QKeyEvent>
-#include <QCloseEvent>
-#include <QActionGroup>
-#include <Qt3Support>
+
+class QAction;
+class QActionGroup;
+class QCloseEvent;
+class QKeyEvent;
+class QTreeWidget;
+class QTreeWidgetItem;
+
 
 class Event;
 class MidiTrack;
@@ -24,18 +26,14 @@ class PartList;
 class MidiPart;
 class MidiPart;
 class Xml;
-class QActionGroup;
-class QAction;
-class Q3ListView;
-class Q3ListViewItem;
 
 //---------------------------------------------------------
 //   ListEdit
 //---------------------------------------------------------
 
 class ListEdit : public MidiEditor {
-      Q3ListView* liste;
-      Q3PopupMenu* menuEdit;
+      QTreeWidget* liste;
+      QMenu* menuEdit;
       QActionGroup* insertItems;
       QToolBar* listTools;
       MidiTrack* curTrack;
@@ -60,7 +58,7 @@ class ListEdit : public MidiEditor {
       void editInsertPAfter();
       void editEvent(Event&, MidiPart*);
       void selectionChanged();
-      void doubleClicked(Q3ListViewItem*);
+      void doubleClicked(QTreeWidgetItem*);
       void cmd(int cmd);
       void configChanged();
 

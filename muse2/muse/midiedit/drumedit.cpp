@@ -153,7 +153,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
 
       menuEdit = new QMenu(tr("&Edit"));
       menuBar()->addMenu(menuEdit);
-      undoRedo->addTo(menuEdit);
+      menuEdit->addActions(undoRedo->actions());
       
       ///Q3Accel* qa = new Q3Accel(this);
       ///qa->connectItem(qa->addAction(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));

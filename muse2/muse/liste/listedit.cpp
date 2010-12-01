@@ -5,30 +5,11 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-//#include <q3toolbar.h>
-#include <QToolBar>
-#include <QToolTip>
-#include <QToolButton>
-#include <QLayout>
-#include <q3hbox.h>
-#include <QScrollBar>
-#include <QLabel>
-#include <QPushButton>
-#include <QRadioButton>
-#include <QButtonGroup>
-#include <q3listbox.h>
-#include <q3listview.h>
-#include <q3header.h>
-#include <q3popupmenu.h>
-#include <QMenuBar>
-//#include <qaction.h>
-//#include <q3accel.h>
-#include <Qt3Support>
 #include <QAction>
-//Added by qt3to4:
-#include <QKeyEvent>
 #include <QActionGroup>
 #include <QCloseEvent>
+#include <QKeyEvent>
+#include <QToolBar>
 
 #include "listedit.h"
 #include "mtscale.h"
@@ -49,54 +30,59 @@
 //   EventListItem
 //---------------------------------------------------------
 
-class EventListItem : public Q3ListViewItem {
+class EventListItem : public QTreeWidgetItem {
    public:
       Event event;
       MidiPart* part;
 
-      EventListItem(Q3ListView* parent, Event ev, MidiPart* p)
-         : Q3ListViewItem(parent) {
+      EventListItem(QTreeWidget* parent, Event ev, MidiPart* p)
+         : QTreeWidgetItem(parent) {
             event = ev;
             part  = p;
             }
       virtual QString text(int col) const;
-      virtual int compare(Q3ListViewItem* i, int col, bool ascend) const 
-      {
-          EventListItem* eli = (EventListItem*)i;
+
+
+      virtual bool operator< ( const QTreeWidgetItem & other ) const
+        {
+          int col = other.treeWidget()->sortColumn();
+          EventListItem* eli = (EventListItem*) &other;
           switch(col)
           {
             case 0:
-                  return event.tick() - eli->event.tick();
+                  return event.tick() < eli->event.tick();
                   break;
             case 1:
-                  return part->tick() + event.tick() - (eli->part->tick() + eli->event.tick());
+                  return part->tick() + event.tick() < (eli->part->tick() + eli->event.tick());
                   break;
             case 2:
-                  return key(col, ascend).localeAwareCompare(i->key(col, ascend));
+                  return text(col).localeAwareCompare(other.text(col)) < 0;
                   break;   
             case 3:
-                  return part->track()->outChannel() - eli->part->track()->outChannel();
+                  return part->track()->outChannel() < eli->part->track()->outChannel();
                   break;
             case 4:
-                  return event.dataA() - eli->event.dataA();
+                  return event.dataA() < eli->event.dataA();
                   break;
             case 5:
-                  return event.dataB() - eli->event.dataB();
+                  return event.dataB() < eli->event.dataB();
                   break;
             case 6:
-                  return event.dataC() - eli->event.dataC();
+                  return event.dataC() < eli->event.dataC();
                   break;
             case 7:
-                  return event.lenTick() - eli->event.lenTick();
+                  return event.lenTick() < eli->event.lenTick();
                   break;
             case 8:
-                  return key(col, ascend).localeAwareCompare(i->key(col, ascend));
+                  return text(col).localeAwareCompare(other.text(col)) < 0;
                   break;
             default:
-                  return 0;
+                  break;
             }
+          return 0;
           }
       };
+
 /*---------------------------------------------------------
  *    midi_meta_name
  *---------------------------------------------------------*/
@@ -197,21 +183,23 @@ void ListEdit::songChanged(int type)
                   close(false);
                   return;
                   }
+            liste->setSortingEnabled(false);
             if (type == SC_SELECTION) {
                   bool update = false;
-                  Q3ListViewItem* ci = 0;
-                  for (Q3ListViewItem* i = liste->firstChild(); i; i = i->nextSibling()) {
+                  QTreeWidgetItem* ci = 0;
+                  for (int row = 0; row < liste->topLevelItemCount(); ++row) {
+                        QTreeWidgetItem* i = liste->topLevelItem(row);
                         if (i->isSelected() ^ ((EventListItem*)i)->event.selected()) {
                                     i->setSelected(((EventListItem*)i)->event.selected());
-                              if (i->isSelected())
-                                    ci = i;
+                                    if (i->isSelected())
+                                          ci = i;
                               update = true;
                               }
                         }
                   if (update) {
                         if (ci)
                               liste->setCurrentItem(ci);
-                        liste->triggerUpdate();
+                        //liste->update();
                         }
                   }
             else {
@@ -225,11 +213,13 @@ void ListEdit::songChanged(int type)
                         EventList* el = part->events();
                         for (iEvent i = el->begin(); i != el->end(); ++i) {
                               EventListItem* item = new EventListItem(liste, i->second, part);
+                              for (int col = 0; col < liste->columnCount(); ++col)
+                                    item->setText(col, item->text(col));
                               item->setSelected(i->second.selected());
                               if (item->event.tick() == (unsigned) selectedTick) { //prevent compiler warning: comparison of signed/unsigned)
                                     liste->setCurrentItem(item);
                                     item->setSelected(true);
-                                    liste->ensureItemVisible(item);
+                                    liste->scrollToItem(item, QAbstractItemView::EnsureVisible);
                                     }
                               }
                         }
@@ -251,6 +241,7 @@ void ListEdit::songChanged(int type)
               }      
             }
           }  
+      liste->setSortingEnabled(true);
       }
 
 //---------------------------------------------------------
@@ -439,9 +430,11 @@ ListEdit::ListEdit(PartList* pl)
 
       //---------Pulldown Menu----------------------------
       
-      menuEdit = new Q3PopupMenu(this);
-      menuBar()->insertItem(tr("&Edit"), menuEdit);
-      undoRedo->addTo(menuEdit);
+      menuEdit = new QMenu(tr("&Edit"));
+      QSignalMapper *editSignalMapper = new QSignalMapper(this);
+    
+      menuBar()->addMenu(menuEdit);
+      menuEdit->addActions(undoRedo->actions());
 
       ///Q3Accel* qa = new Q3Accel(this);
       ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
@@ -449,21 +442,29 @@ ListEdit::ListEdit(PartList* pl)
 
       menuEdit->insertSeparator();
 #if 0
-      menuEdit->insertItem(tr("Cut"),   EList::CMD_CUT);
-      menuEdit->setAccel(Qt::CTRL+Qt::Key_X, EList::CMD_CUT);
-      menuEdit->insertItem(tr("Copy"),  EList::CMD_COPY);
-      menuEdit->setAccel(Qt::CTRL+Qt::Key_C, EList::CMD_COPY);
-      menuEdit->insertItem(tr("Paste"), EList::CMD_PASTE);
-      menuEdit->setAccel(Qt::CTRL+Qt::Key_V, EList::CMD_PASTE);
+      QAction *cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
+      connect(cutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      editSignalMapper->setMapping(cutAction, EList::CMD_CUT);
+      cutAction->setShortcut(Qt::CTRL+Qt::Key_X);
+      QAction *copyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy"));
+      connect(copyAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      editSignalMapper->setMapping(cutAction, EList::CMD_COPY);
+      copyAction->setShortcut(Qt::CTRL+Qt::Key_C);
+      QAction *pasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste"));
+      connect(pasteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      editSignalMapper->setMapping(cutAction, EList::CMD_PASTE);
+      pasteAction->setShortcut(Qt::CTRL+Qt::Key_V);
       menuEdit->insertSeparator();
 #endif
-      menuEdit->insertItem(tr("Delete Events"), CMD_DELETE);
-      menuEdit->setAccel(Qt::Key_Delete, CMD_DELETE);
+      QAction *deleteAction = menuEdit->addAction(tr("Delete Events"));
+      connect(deleteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      editSignalMapper->setMapping(deleteAction, CMD_DELETE);
+      deleteAction->setShortcut(Qt::Key_Delete);
       menuEdit->insertSeparator();
 
-      insertItems->addTo(menuEdit);
+      menuEdit->addActions(insertItems->actions());
 
-      connect(menuEdit, SIGNAL(activated(int)), SLOT(cmd(int)));
+      connect(editSignalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 
       //---------ToolBar----------------------------------
       
@@ -479,28 +480,42 @@ ListEdit::ListEdit(PartList* pl)
       //---------------------------------------------------
       //
 
-      liste = new Q3ListView(mainw);
+      liste = new QTreeWidget(mainw);
       QFontMetrics fm(liste->font());
       int n = fm.width('9');
       int b = 24;
       int c = fm.width(QString("Val B"));
       int sortIndW = n * 3;
       liste->setAllColumnsShowFocus(true);
-      liste->setSorting(0);
-      liste->setSelectionMode(Q3ListView::Extended);
-      liste->setShowSortIndicator(true);
-      liste->addColumn(tr("Tick"),  n * 6 + b);
-      liste->addColumn(tr("Bar"),   fm.width(QString("9999.99.999")) + b);
-      liste->addColumn(tr("Type"),  fm.width(QString("Program")) + b);
-      liste->addColumn(tr("Ch"),    n * 2 + b + sortIndW);
-      liste->addColumn(tr("Val A"), c + b + sortIndW);
-      liste->addColumn(tr("Val B"), c + b + sortIndW);
-      liste->addColumn(tr("Val C"), c + b + sortIndW);
-      liste->addColumn(tr("Len"),   n * 4 + b + sortIndW);
-      liste->addColumn(tr("Comment"), fm.width(QString("MainVolume")) + 70);
-      liste->setResizeMode(Q3ListView::LastColumn);
-      connect(liste, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
-      connect(liste, SIGNAL(doubleClicked(Q3ListViewItem*)), SLOT(doubleClicked(Q3ListViewItem*)));
+      liste->sortByColumn(0, Qt::AscendingOrder);
+
+      liste->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+      QStringList columnnames;
+      columnnames << tr("Tick")
+		  << tr("Bar")
+		  << tr("Type")
+		  << tr("Ch")
+		  << tr("Val A")
+		  << tr("Val B")
+		  << tr("Val C")
+		  << tr("Len")
+		  << tr("Comment");
+
+      liste->setHeaderLabels(columnnames);
+
+      liste->setColumnWidth(0, n * 6 + b);
+      liste->setColumnWidth(1, fm.width(QString("9999.99.999")) + b);
+      liste->setColumnWidth(2, fm.width(QString("Program")) + b);
+      liste->setColumnWidth(3, n * 2 + b + sortIndW);
+      liste->setColumnWidth(4, c + b + sortIndW);
+      liste->setColumnWidth(5, c + b + sortIndW);
+      liste->setColumnWidth(6, c + b + sortIndW);
+      liste->setColumnWidth(7, n * 4 + b + sortIndW);
+      liste->setColumnWidth(8, fm.width(QString("MainVolume")) + 70);
+
+      connect(liste, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
+      connect(liste, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(doubleClicked(QTreeWidgetItem*)));
       //---------------------------------------------------
       //    Rest
       //---------------------------------------------------
@@ -792,7 +807,8 @@ void ListEdit::writeStatus(int level, Xml& xml) const
 void ListEdit::selectionChanged()
       {
       bool update = false;
-      for (Q3ListViewItem* i = liste->firstChild(); i; i = i->nextSibling()) {
+      for (int row = 0; row < liste->topLevelItemCount(); ++row) {
+            QTreeWidgetItem* i = liste->topLevelItem(row);
             if (i->isSelected() ^ ((EventListItem*)i)->event.selected()) {
                   ((EventListItem*)i)->event.setSelected(i->isSelected());
                   update = true;
@@ -806,9 +822,10 @@ void ListEdit::selectionChanged()
 //   doubleClicked
 //---------------------------------------------------------
 
-void ListEdit::doubleClicked(Q3ListViewItem* item)
+void ListEdit::doubleClicked(QTreeWidgetItem* item)
       {
       EventListItem* ev = (EventListItem*) item;
+      selectedTick = ev->event.tick();
       editEvent(ev->event, ev->part);
       }
 
@@ -821,8 +838,9 @@ void ListEdit::cmd(int cmd)
       switch(cmd) {
             case CMD_DELETE:
                   bool found = false;
-                  for (Q3ListViewItem* i = liste->firstChild(); i; i = i->nextSibling()) 
+                  for (int row = 0; row < liste->topLevelItemCount(); ++row) 
                   {
+		    QTreeWidgetItem* i = liste->topLevelItem(row);
                     EventListItem *item = (EventListItem *) i;
                     if (i->isSelected() || item->event.selected()) 
                     {
@@ -835,7 +853,8 @@ void ListEdit::cmd(int cmd)
                   song->startUndo();
                   
                   EventListItem *deletedEvent=NULL;
-                  for (Q3ListViewItem* i = liste->firstChild(); i; i = i->nextSibling()) {
+                  for (int row = 0; row < liste->topLevelItemCount(); ++row) {
+                        QTreeWidgetItem* i = liste->topLevelItem(row);
                         EventListItem *item = (EventListItem *) i;
 
                         if (i->isSelected() || item->event.selected()) {
@@ -848,13 +867,15 @@ void ListEdit::cmd(int cmd)
                   
                   unsigned int nextTick=0;
                   // find biggest tick
-                  for (Q3ListViewItem* i = liste->firstChild(); i; i = i->nextSibling()) {
+                  for (int row = 0; row < liste->topLevelItemCount(); ++row) {
+                        QTreeWidgetItem* i = liste->topLevelItem(row);
                         EventListItem *item = (EventListItem *) i;
                         if (item->event.tick() > nextTick && item != deletedEvent)
                             nextTick=item->event.tick();
                   }
                   // check if there's a tick that is "just" bigger than the deleted
-                  for (Q3ListViewItem* i = liste->firstChild(); i; i = i->nextSibling()) {
+                  for (int row = 0; row < liste->topLevelItemCount(); ++row) {
+                        QTreeWidgetItem* i = liste->topLevelItem(row);
                         EventListItem *item = (EventListItem *) i;
                         if (item->event.tick() >= deletedEvent->event.tick() && 
                             item->event.tick() < nextTick &&

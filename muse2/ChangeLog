@@ -1,3 +1,6 @@
+01.12.2010
+        - Ported listedit. (Orcan)
+        - I missed to port one action call in drumedit. Now it's (hopefully) done. (Orcan)
 30.11.2010
         - Ported vscale and ctrledit. (Orcan)
 29.11.2010
