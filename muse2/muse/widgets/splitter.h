@@ -8,7 +8,7 @@
 #ifndef __SPLITTER_H__
 #define __SPLITTER_H__
 
-#include <qsplitter.h>
+#include <QSplitter>
 
 class Xml;
 

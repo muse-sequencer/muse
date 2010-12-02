@@ -7,17 +7,18 @@
 
 #include "splitter.h"
 #include "xml.h"
-#include <qstringlist.h>
-//Added by qt3to4:
-#include <Q3ValueList>
+
+#include <QList>
+#include <QStringList>
 
 //---------------------------------------------------------
 //   Splitter
 //---------------------------------------------------------
 
 Splitter::Splitter(Qt::Orientation o, QWidget* parent, const char* name)
-   : QSplitter(o, parent, name)
+   : QSplitter(o, parent)
       {
+      setObjectName(name);
       setOpaqueResize(true);
       }
 
@@ -27,10 +28,10 @@ Splitter::Splitter(Qt::Orientation o, QWidget* parent, const char* name)
 
 void Splitter::writeStatus(int level, Xml& xml)
       {
-      Q3ValueList<int> vl = sizes();
+      QList<int> vl = sizes();
       //xml.nput(level++, "<%s>", name());
       xml.nput(level++, "<%s>", Xml::xmlString(name()).latin1());
-      Q3ValueListIterator<int> ivl = vl.begin();
+      QList<int>::iterator ivl = vl.begin();
       for (; ivl != vl.end(); ++ivl) {
             xml.nput("%d ", *ivl);
             }
@@ -44,7 +45,7 @@ void Splitter::writeStatus(int level, Xml& xml)
 
 void Splitter::readStatus(Xml& xml)
       {
-      Q3ValueList<int> vl;
+      QList<int> vl;
 
       for (;;) {
             Xml::Token token = xml.parse();
