@@ -7,15 +7,14 @@
 
 #include <stdio.h>
 #include <cmath>
-#include <qslider.h>
-#include <qscrollbar.h>
-#include <qlayout.h>
-#include <qtoolbutton.h>
-#include <qtooltip.h>
-#include <qlabel.h>
-//Added by qt3to4:
-#include <Q3BoxLayout>
+
+#include <QBoxLayout>
+#include <QLabel>
 #include <QResizeEvent>
+#include <QScrollBar>
+#include <QSlider>
+#include <QToolButton>
+#include <QToolTip>
 
 // #include "globals.h"
 #include "scrollscale.h"
@@ -240,24 +239,25 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 		delta/=2;
 	}
 
-	scale  = new QSlider ( 0, 1024, 1, cur, o, this );
-	scroll = new QScrollBar ( o, this );
+	scale  = new QSlider ( 0, 1024, 1, cur, o);
+	scroll = new QScrollBar ( o );
 	setScale ( cur );
 
 	if ( o == Qt::Horizontal )
 	{
-		box = new Q3BoxLayout ( this, Q3BoxLayout::LeftToRight );
+                box = new QBoxLayout ( QBoxLayout::LeftToRight);
 		scale->setMaximumWidth ( 70 );
 		scroll->setMinimumWidth ( 50 );
 	}
 	else
 	{
-		box = new Q3BoxLayout ( this, Q3BoxLayout::Down );
+                box = new QBoxLayout ( QBoxLayout::TopToBottom);
 		scroll->setMinimumHeight ( 50 );
 		scale->setMaximumHeight ( 70 );
 	}
 	box->addWidget ( scroll, 10 );
 	box->addWidget ( scale, 5 );
+	setLayout(box);
 	connect ( scale, SIGNAL ( valueChanged ( int ) ), SLOT ( setScale ( int ) ) );
 	connect ( scale, SIGNAL ( valueChanged ( int ) ), SIGNAL ( lscaleChanged ( int ) ) );
 	connect ( scroll, SIGNAL ( valueChanged ( int ) ), SIGNAL ( scrollChanged ( int ) ) );
@@ -276,11 +276,11 @@ void ScrollScale::setPageButtons ( bool flag )
 	{
 		if ( up == 0 )
 		{
-			up = new QToolButton ( this );
+			up = new QToolButton;
 			up->setPixmap ( * ( upIcon ) );
-			down = new QToolButton ( this );
+			down = new QToolButton;
 			down->setPixmap ( * ( downIcon ) );
-			pageNo = new QLabel ( this );
+			pageNo = new QLabel;
 			QString s;
 			s.setNum ( _page+1 );
 			pageNo->setText ( s );

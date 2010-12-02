@@ -8,18 +8,13 @@
 #ifndef __SCROLLSCALE_H__
 #define __SCROLLSCALE_H__
 
-#include <qwidget.h>
-#include <qslider.h>
-//Added by qt3to4:
-#include <QResizeEvent>
-#include <Q3BoxLayout>
-#include <QLabel>
+#include <QWidget>
 
-// class QSlider;
-class QScrollBar;
-class Q3BoxLayout;
-class QToolButton;
+class QBoxLayout;
 class QLabel;
+class QResizeEvent;
+class QScrollBar;
+class QToolButton;
 
 //---------------------------------------------------------
 //   ScrollScale
@@ -31,7 +26,7 @@ class ScrollScale : public QWidget {
       int minVal, maxVal;
       int scaleVal, scaleMin, scaleMax;
       bool showMagFlag;
-      Q3BoxLayout* box;
+      QBoxLayout* box;
       bool noScale;
       bool pageButtons;
       int _page;

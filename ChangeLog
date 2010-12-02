@@ -4,6 +4,7 @@
           old Header class. We can probably remove it soon. (Orcan)
         - Ported help.cpp as is. But maybe we should use QDesktopServices to open user's default browser
           instead of the browser specified in a config option. (Orcan)
+        - Ported scrollscale and splitter (Orcan)
 01.12.2010
         - Ported listedit. (Orcan)
         - I missed to port one action call in drumedit. Now it's (hopefully) done. (Orcan)
