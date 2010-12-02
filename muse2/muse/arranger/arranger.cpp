@@ -8,33 +8,17 @@
 #include "config.h"
 
 #include <stdio.h>
-
 #include <values.h>
-#include <QLayout>
-//#include <qcombobox.h>
-#include <QToolButton>
-#include <QButtonGroup>
-#include <QLabel>
-//#include <q3accel.h>
+
 #include <QComboBox>
-//#include <q3whatsthis.h>
-//#include <q3toolbar.h>
-#include <QToolBar>
-//#include <QToolTip>
-#include <q3hbox.h>
-#include <QStringList>
-#include <q3filedialog.h>
-#include <QCheckBox>
-#include <QPushButton>
-//#include <q3mainwindow.h>
-#include <QMainWindow>
-#include <q3widgetstack.h>
-#include <QScrollBar>
-//Added by qt3to4:
-#include <QKeyEvent>
-#include <Q3ValueList>
 #include <QGridLayout>
-#include <QPixmap>
+#include <QKeyEvent>
+#include <QLabel>
+#include <QList>
+#include <QMainWindow>
+#include <QScrollBar>
+#include <QToolBar>
+#include <QToolButton>
 #include <QVBoxLayout>
 #include <QWheelEvent>
 
@@ -64,27 +48,40 @@
 #include "gconfig.h"
 #include "mixer/astrip.h"
 #include "spinbox.h"
+
 //---------------------------------------------------------
-//   TWhatsThis::text
+//   Arranger::setHeaderToolTips
 //---------------------------------------------------------
 
-QString TWhatsThis::text(const QPoint& pos)
+void Arranger::setHeaderToolTips()
       {
-      int section = header->sectionAt(pos.x());
-      if (section == -1)
-            return QString::null;
-      switch(section) {
-            case COL_RECORD:   return Q3Header::tr("Enable recording. Click to toggle."); break;
-            case COL_MUTE:     return Q3Header::tr("Mute indicator. Click to toggle.\nRight-click to toggle track on/off.\nMute is designed for rapid, repeated action.\nOn/Off is not!"); break;
-            case COL_SOLO:     return Q3Header::tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed,\n indicated by a dark square."); break;
-            case COL_CLASS:    return Q3Header::tr("Track type. Right-click to change\n midi and drum track types."); break;
-            case COL_NAME:     return Q3Header::tr("Track name. Double-click to edit.\nRight-click for more options."); break;
-            case COL_OCHANNEL: return Q3Header::tr("Midi/drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."); break;
-            case COL_OPORT:    return Q3Header::tr("Midi/drum track: Output port.\nSynth track: Assigned midi port.\nLeft-click to change.\nRight-click to show GUI."); break;
-            case COL_TIMELOCK: return Q3Header::tr("Time lock"); break;
-            default: break;
-            }
-      return QString::null;
+      header->setToolTip(COL_RECORD,     tr("Enable Recording"));
+      header->setToolTip(COL_MUTE,       tr("Mute/Off Indicator"));
+      header->setToolTip(COL_SOLO,       tr("Solo Indicator"));
+      header->setToolTip(COL_CLASS,      tr("Track Type"));
+      header->setToolTip(COL_NAME,       tr("Track Name"));
+      header->setToolTip(COL_OCHANNEL,   tr("Midi output channel number or audio channels"));
+      header->setToolTip(COL_OPORT,      tr("Midi output port or synth midi port"));
+      header->setToolTip(COL_TIMELOCK,   tr("Time Lock"));
+      //header->setToolTip(COL_AUTOMATION, tr("Automation parameter selection"));
+      }
+
+
+
+//---------------------------------------------------------
+//   Arranger::setHeaderWhatsThis
+//---------------------------------------------------------
+
+void Arranger::setHeaderWhatsThis()
+      {
+      header->setWhatsThis(COL_RECORD,   tr("Enable recording. Click to toggle."));
+      header->setWhatsThis(COL_MUTE,     tr("Mute indicator. Click to toggle.\nRight-click to toggle track on/off.\nMute is designed for rapid, repeated action.\nOn/Off is not!"));
+      header->setWhatsThis(COL_SOLO,     tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed,\n indicated by a dark square."));
+      header->setWhatsThis(COL_CLASS,    tr("Track type. Right-click to change\n midi and drum track types."));
+      header->setWhatsThis(COL_NAME,     tr("Track name. Double-click to edit.\nRight-click for more options."));
+      header->setWhatsThis(COL_OCHANNEL, tr("Midi/drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."));
+      header->setWhatsThis(COL_OPORT,    tr("Midi/drum track: Output port.\nSynth track: Assigned midi port.\nLeft-click to change.\nRight-click to show GUI."));
+      header->setWhatsThis(COL_TIMELOCK, tr("Time lock"));
       }
 
 //---------------------------------------------------------
@@ -150,7 +147,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       lenEntry = new SpinBox(1, 10000, 1);
       lenEntry->setValue(song->len());
       lenEntry->setToolTip(tr("song length - bars"));
-      Q3WhatsThis::add(lenEntry, tr("song length - bars"));
+      lenEntry->setWhatsThis(tr("song length - bars"));
       toolbar->addWidget(lenEntry);
       connect(lenEntry, SIGNAL(valueChanged(int)), SLOT(songlenChanged(int)));
 
@@ -252,44 +249,41 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       ib->setOn(showTrackinfoFlag);
       connect(ib, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
 
-      header = new Header(tracklist, "header");
+      header = new HeaderNew(tracklist);
       
       header->setFixedHeight(30);
 
       QFontMetrics fm1(header->font());
       int fw = 8;
 
-      header->addLabel(tr("R"), fm1.width('R')+fw);
-      header->addLabel(tr("M"), fm1.width('M')+fw);
-      header->addLabel(tr("S"), fm1.width('S')+fw);
-      header->addLabel(tr("C"), fm1.width('C')+fw);
-      header->addLabel(tr("Track"), 100);
-      //header->addLabel(tr("O-Port"), 60);
-      header->addLabel(tr("Port"), 60);
-      header->addLabel(tr("Ch"), 30);
-      header->addLabel(tr("T"), fm1.width('T')+fw);
-      //header->addLabel(tr("Automation"),30);
-      header->setResizeEnabled(false, COL_RECORD);
-      header->setResizeEnabled(false, COL_MUTE);
-      header->setResizeEnabled(false, COL_SOLO);
-      header->setResizeEnabled(false, COL_CLASS);
-      header->setResizeEnabled(false, COL_OCHANNEL);
-      header->setResizeEnabled(false, COL_TIMELOCK);
-      //header->setResizeEnabled(true, COL_AUTOMATION);
-      header->setResizeEnabled(true, COL_NAME);
-      header->setResizeEnabled(true, COL_OPORT);
+      header->setColumnLabel(tr("R"), COL_RECORD, fm1.width('R')+fw);
+      header->setColumnLabel(tr("M"), COL_MUTE, fm1.width('M')+fw);
+      header->setColumnLabel(tr("S"), COL_SOLO, fm1.width('S')+fw);
+      header->setColumnLabel(tr("C"), COL_CLASS, fm1.width('C')+fw);
+      header->setColumnLabel(tr("Track"), COL_NAME, 100);
+      header->setColumnLabel(tr("Port"), COL_OPORT, 60);
+      header->setColumnLabel(tr("Ch"), COL_OCHANNEL, 30);
+      header->setColumnLabel(tr("T"), COL_TIMELOCK, fm1.width('T')+fw);
+      //header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 30);
+      header->setResizeMode(COL_RECORD, QHeaderView::Fixed);
+      header->setResizeMode(COL_MUTE, QHeaderView::Fixed);
+      header->setResizeMode(COL_SOLO, QHeaderView::Fixed);
+      header->setResizeMode(COL_CLASS, QHeaderView::Fixed);
+      header->setResizeMode(COL_NAME, QHeaderView::Interactive);
+      header->setResizeMode(COL_OPORT, QHeaderView::Interactive);
+      header->setResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
+      header->setResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
+      //header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
 
-      header->setTracking(true);
-
-      new THeaderTip(header);
-      new TWhatsThis(header, header);
-
+      setHeaderToolTips();
+      setHeaderWhatsThis();
+      header->setMovable (true );
       list = new TList(header, tracklist, "tracklist");
 
       connect(list, SIGNAL(selectionChanged()), SLOT(trackSelectionChanged()));
-      connect(header, SIGNAL(sizeChange(int,int,int)), list, SLOT(redraw()));
-      connect(header, SIGNAL(moved(int,int)), list, SLOT(redraw()));
-      connect(header, SIGNAL(moved(int,int)), this, SLOT(headerMoved()));
+      connect(header, SIGNAL(sectionResized(int,int,int)), list, SLOT(redraw()));
+      connect(header, SIGNAL(sectionMoved(int,int,int)), list, SLOT(redraw()));
+      connect(header, SIGNAL(sectionMoved(int,int,int)), this, SLOT(headerMoved()));
 
       //  tracklist:
       //
@@ -327,7 +321,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       
       list->setScroll(vscroll);
 
-      Q3ValueList<int> vallist;
+      QList<int> vallist;
       vallist.append(tgrid->maximumSize().width());
       split->setSizes(vallist);
 
@@ -417,7 +411,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
 
 void Arranger::headerMoved()
       {
-      header->setStretchEnabled(true, COL_NAME);
+      //header->setResizeMode(COL_NAME, QHeaderView::Stretch);
       }
 
 //---------------------------------------------------------

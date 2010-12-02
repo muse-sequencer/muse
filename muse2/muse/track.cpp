@@ -6,9 +6,6 @@
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-//#include <qt.h>
-#include <qstring.h>
-
 #include "track.h"
 #include "event.h"
 #include "mididev.h"

@@ -65,25 +65,42 @@ static const int xscale = -10;
 static const int yscale = 1;
 static const int drumeditTools = PointerTool | PencilTool | RubberTool;
 
+enum DrumColumn {
+  COL_MUTE = 0,
+  COL_NAME,
+  COL_VOLUME,
+  COL_QUANT,
+  COL_INPUTTRIGGER,
+  COL_NOTELENGTH,
+  COL_NOTE,
+  COL_OUTCHANNEL,
+  COL_OUTPORT,
+  COL_LEVEL1,
+  COL_LEVEL2,
+  COL_LEVEL3,
+  COL_LEVEL4,
+  COL_NONE = -1
+};
+
 //---------------------------------------------------------
 //   setHeaderWhatsThis
 //---------------------------------------------------------
 
 void DrumEdit::setHeaderWhatsThis()
       {
-      header->setWhatsThis(0, tr("mute instrument"));
-      header->setWhatsThis(1, tr("sound name"));
-      header->setWhatsThis(2, tr("volume percent"));
-      header->setWhatsThis(3, tr("quantisation"));
-      header->setWhatsThis(4, tr("this input note triggers the sound"));
-      header->setWhatsThis(5, tr("note length"));
-      header->setWhatsThis(6, tr("this is the note which is played"));
-      header->setWhatsThis(7, tr("output channel (hold ctl to affect all rows)"));
-      header->setWhatsThis(8, tr("output port"));
-      header->setWhatsThis(9, tr("shift + control key: draw velocity level 1"));
-      header->setWhatsThis(10, tr("control key: draw velocity level 2"));
-      header->setWhatsThis(11, tr("shift key: draw velocity level 3"));
-      header->setWhatsThis(12, tr("draw velocity level 4"));
+      header->setWhatsThis(COL_MUTE, tr("mute instrument"));
+      header->setWhatsThis(COL_NAME, tr("sound name"));
+      header->setWhatsThis(COL_VOLUME, tr("volume percent"));
+      header->setWhatsThis(COL_QUANT, tr("quantisation"));
+      header->setWhatsThis(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
+      header->setWhatsThis(COL_NOTELENGTH, tr("note length"));
+      header->setWhatsThis(COL_NOTE, tr("this is the note which is played"));
+      header->setWhatsThis(COL_OUTCHANNEL, tr("output channel (hold ctl to affect all rows)"));
+      header->setWhatsThis(COL_OUTPORT, tr("output port"));
+      header->setWhatsThis(COL_LEVEL1, tr("shift + control key: draw velocity level 1"));
+      header->setWhatsThis(COL_LEVEL2, tr("control key: draw velocity level 2"));
+      header->setWhatsThis(COL_LEVEL3, tr("shift key: draw velocity level 3"));
+      header->setWhatsThis(COL_LEVEL4, tr("draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -92,19 +109,19 @@ void DrumEdit::setHeaderWhatsThis()
 
 void DrumEdit::setHeaderToolTips()
       {
-      header->setToolTip(0, tr("mute instrument"));
-      header->setToolTip(1, tr("sound name"));
-      header->setToolTip(2, tr("volume percent"));
-      header->setToolTip(3, tr("quantisation"));
-      header->setToolTip(4, tr("this input note triggers the sound"));
-      header->setToolTip(5, tr("note length"));
-      header->setToolTip(6, tr("this is the note which is played"));
-      header->setToolTip(7, tr("output channel (ctl: affect all rows)"));
-      header->setToolTip(8, tr("output port"));
-      header->setToolTip(9, tr("shift + control key: draw velocity level 1"));
-      header->setToolTip(10, tr("control key: draw velocity level 2"));
-      header->setToolTip(11, tr("shift key: draw velocity level 3"));
-      header->setToolTip(12, tr("draw velocity level 4"));
+      header->setToolTip(COL_MUTE, tr("mute instrument"));
+      header->setToolTip(COL_NAME, tr("sound name"));
+      header->setToolTip(COL_VOLUME, tr("volume percent"));
+      header->setToolTip(COL_QUANT, tr("quantisation"));
+      header->setToolTip(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
+      header->setToolTip(COL_NOTELENGTH, tr("note length"));
+      header->setToolTip(COL_NOTE, tr("this is the note which is played"));
+      header->setToolTip(COL_OUTCHANNEL, tr("output channel (ctl: affect all rows)"));
+      header->setToolTip(COL_OUTPORT, tr("output port"));
+      header->setToolTip(COL_LEVEL1, tr("shift + control key: draw velocity level 1"));
+      header->setToolTip(COL_LEVEL2, tr("control key: draw velocity level 2"));
+      header->setToolTip(COL_LEVEL3, tr("shift key: draw velocity level 3"));
+      header->setToolTip(COL_LEVEL4, tr("draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -342,19 +359,19 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       //
       header = new HeaderNew(split1w1, "header");
       header->setFixedHeight(31);
-      header->addLabel(tr("M"), 20);
-      header->addLabel(tr("Sound"), 120);
-      header->addLabel(tr("Vol"));
-      header->addLabel(tr("QNT"), 30);
-      header->addLabel(tr("E-Note"), 50);
-      header->addLabel(tr("Len"));
-      header->addLabel(tr("A-Note"), 50);
-      header->addLabel(tr("Ch"));
-      header->addLabel(tr("Port"), 70);
-      header->addLabel(tr("LV1"));
-      header->addLabel(tr("LV2"));
-      header->addLabel(tr("LV3"));
-      header->addLabel(tr("LV4"));
+      header->setColumnLabel(tr("M"), COL_MUTE, 20);
+      header->setColumnLabel(tr("Sound"), COL_NAME, 120);
+      header->setColumnLabel(tr("Vol"), COL_VOLUME);
+      header->setColumnLabel(tr("QNT"), COL_QUANT, 30);
+      header->setColumnLabel(tr("E-Note"), COL_INPUTTRIGGER, 50);
+      header->setColumnLabel(tr("Len"), COL_NOTELENGTH);
+      header->setColumnLabel(tr("A-Note"), COL_NOTE, 50);
+      header->setColumnLabel(tr("Ch"), COL_OUTCHANNEL);
+      header->setColumnLabel(tr("Port"), COL_OUTPORT, 70);
+      header->setColumnLabel(tr("LV1"), COL_LEVEL1);
+      header->setColumnLabel(tr("LV2"), COL_LEVEL2);
+      header->setColumnLabel(tr("LV3"), COL_LEVEL3);
+      header->setColumnLabel(tr("LV4"), COL_LEVEL4);
 
       setHeaderToolTips();
       setHeaderWhatsThis();

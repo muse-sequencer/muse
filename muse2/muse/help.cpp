@@ -8,8 +8,9 @@
 
 #include <unistd.h>
 #include <stdlib.h>
-#include <qmessagebox.h>
-#include <q3process.h>
+
+#include <QMessageBox>
+#include <QProcess>
 
 #include "app.h"
 #include "globals.h"
@@ -98,11 +99,12 @@ void MusE::launchBrowser(QString &whereTo)
       QString exe = QString("/bin/sh");
       if(QFile::exists(exe))
             {
-            Q3Process helper(this);
-            helper.addArgument(exe);
-            helper.addArgument("-c");
-            helper.addArgument(config.helpBrowser + " " + whereTo);
-            helper.start();
+            // Orcan: Shall we use this instead? Opens the default browser of the user:
+            // QDesktopServices::openUrl(QUrl(whereTo));
+            QStringList arguments;
+            arguments << "-c" << config.helpBrowser << whereTo;
+            QProcess helper;
+            helper.start(exe, arguments);
             }
       else
             {

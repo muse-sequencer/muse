@@ -9,19 +9,15 @@
 
 #include <cmath>
 
-#include <qpainter.h>
-#include <qlineedit.h>
-#include <QMenu>
-#include <qmessagebox.h>
-#include <qscrollbar.h>
-#include <qtimer.h>
-#include <qfileinfo.h>
-//Added by qt3to4:
 #include <QKeyEvent>
+#include <QLineEdit>
+#include <QMenu>
+#include <QMessageBox>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPaintEvent>
 #include <QPixmap>
 #include <QResizeEvent>
-#include <QMouseEvent>
-#include <QPaintEvent>
 #include <QWheelEvent>
 
 #include "globals.h"
@@ -56,41 +52,10 @@ static const int MIN_TRACKHEIGHT = 20;
 static const int WHEEL_DELTA = 120;
 
 //---------------------------------------------------------
-//   THeaderTip::maybeTip
-//---------------------------------------------------------
-
-void THeaderTip::maybeTip(const QPoint &pos)
-      {
-#if 0 //ddskrjo
-      Header* w  = (Header*)parentWidget();
-      int section = w->sectionAt(pos.x());
-      if (section == -1)
-            return;
-      QRect r(w->sectionPos(section), 0, w->sectionSize(section),
-         w->height());
-      QString p;
-      switch (section) {
-            case COL_RECORD:   p = Q3Header::tr("Enable Recording"); break;
-            case COL_MUTE:     p = Q3Header::tr("Mute/Off Indicator"); break;
-            case COL_SOLO:     p = Q3Header::tr("Solo Indicator"); break;
-            case COL_CLASS:    p = Q3Header::tr("Track Type"); break;
-            case COL_NAME:     p = Q3Header::tr("Track Name"); break;
-            case COL_OCHANNEL: p = Q3Header::tr("Midi output channel number or audio channels"); break;
-            //case COL_OPORT:    p = QHeader::tr("Output Port"); break;
-            case COL_OPORT:    p = Q3Header::tr("Midi output port or synth midi port"); break;
-            case COL_TIMELOCK: p = Q3Header::tr("Time Lock"); break;
-//            case COL_AUTOMATION: p = QHeader::tr("Automation parameter selection"); break;
-            default: return;
-            }
-      tip(r, p);
-#endif
-      }
-
-//---------------------------------------------------------
 //   TList
 //---------------------------------------------------------
 
-TList::TList(Header* hdr, QWidget* parent, const char* name)
+TList::TList(HeaderNew* hdr, QWidget* parent, const char* name)
    : QWidget(parent, name, Qt::WNoAutoErase | Qt::WResizeNoErase)
       {
       ypos = 0;
@@ -250,7 +215,7 @@ void TList::paint(const QRect& r)
 
             int x = 0;
             for (int index = 0; index < header->count(); ++index) {
-                  int section = header->mapToSection(index);
+                  int section = header->visualIndex(index);
                   int w   = header->sectionSize(section);
                   QRect r = p.xForm(QRect(x+2, yy, w-4, trackHeight));
 
@@ -398,7 +363,7 @@ void TList::paint(const QRect& r)
       int xpos = 0;
       p.setPen(Qt::gray);
       for (int index = 0; index < n; index++) {
-            int section = header->mapToSection(index);
+            int section = header->visualIndex(index);
             xpos += header->sectionSize(section);
             p.drawLine(xpos, 0, xpos, height());
             }
@@ -474,14 +439,14 @@ Track* TList::y2Track(int y) const
 void TList::mouseDoubleClickEvent(QMouseEvent* ev)
       {
       int x       = ev->x();
-      int section = header->sectionAt(x);
+      int section = header->logicalIndexAt(x);
       if (section == -1)
             return;
 
       Track* t = y2Track(ev->y() + ypos);
 
       if (t) {
-            int colx = header->sectionPos(section);
+            int colx = header->sectionPosition(section);
             int colw = header->sectionSize(section);
             int coly = t->y() - ypos;
             int colh = t->height();
@@ -489,7 +454,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
             if (section == COL_NAME) {
                   editTrack = t;
                   if (editor == 0) {
-                        editor = new QLineEdit(this);
+		    editor = new QLineEdit(this);
                         /*connect(editor, SIGNAL(returnPressed()),
                            SLOT(returnPressed()));*/
                         editor->setFrame(true);
@@ -615,12 +580,12 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
       {
         SynthI* synth = (SynthI*)t;
   
-        Q3PopupMenu* p = new Q3PopupMenu(this);
-        p->setCheckable(true);
-        p->insertItem(tr("Show Gui"), 0);
+        QMenu* p = new QMenu;
+        QAction* act = p->addAction(tr("Show Gui"));
+        act->setCheckable(true);
         printf("synth hasgui %d, gui visible %d\n",synth->hasGui(), synth->guiVisible());
-        p->setItemEnabled(0, synth->hasGui());
-        p->setItemChecked(0, synth->guiVisible());
+        act->setEnabled(synth->hasGui());
+        act->setChecked(synth->guiVisible());
   
         #ifndef OSC_SUPPORT
         #ifdef DSSI_SUPPORT
@@ -633,8 +598,8 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
         #endif
         #endif
         
-        int n = p->exec(mapToGlobal(QPoint(x, y)), 0);
-        if (n == 0) {
+        act = p->exec(mapToGlobal(QPoint(x, y)), 0);
+        if (act) {
               bool show = !synth->guiVisible();
               audio->msgShowInstrumentGui(synth, show);
               }
@@ -648,26 +613,26 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
       int oPort      = ((MidiTrack*)t)->outPort();
       MidiPort* port = &midiPorts[oPort];
 
-      Q3PopupMenu* p = new Q3PopupMenu(this);
-      p->setCheckable(true);
-      p->insertItem(tr("Show Gui"), 0);
-
-      p->setItemEnabled(0, port->hasGui());
-      p->setItemChecked(0, port->guiVisible());
+      QMenu* p = new QMenu;
+      QAction* act = p->addAction(tr("Show Gui"));
+      act->setCheckable(true);
+      printf("synth hasgui %d, gui visible %d\n",port->hasGui(), port->guiVisible());
+      act->setEnabled(port->hasGui());
+      act->setChecked(port->guiVisible());
 
       #ifndef OSC_SUPPORT
       #ifdef DSSI_SUPPORT
       MidiDevice* dev = port->device();
       if(dev && dev->isSynti() && (dynamic_cast<DssiSynthIF*>(((SynthI*)dev)->sif())))
       {
-        p->setItemChecked(0, false);
-        p->setItemEnabled(0, false);
+        act->setChecked(false);
+        act->setEnabled(false);
       }  
       #endif
       #endif
       
-      int n = p->exec(mapToGlobal(QPoint(x, y)), 0);
-      if (n == 0) {
+      act = p->exec(mapToGlobal(QPoint(x, y)), 0);
+      if (act) {
             bool show = !port->guiVisible();
             audio->msgShowInstrumentGui(port->instrument(), show);
             }
@@ -690,8 +655,9 @@ void TList::tracklistChanged()
 
 void TList::keyPressEvent(QKeyEvent* e)
       {
-      if (editMode) {
+	if (editMode && ( e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
             // First time we get a keypress event when lineedit is open is on the return key:
+            // -- Not true for Qt4. Modifier keys also send key events - Orcan
             returnPressed();
             return;
             }
@@ -793,10 +759,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
       Track* t    = y2Track(y + ypos);
 
-      TrackColumn col = TrackColumn(header->sectionAt(x));
+      TrackColumn col = TrackColumn(header->logicalIndexAt(x));
       if (t == 0) {
             if (button == Qt::RightButton) {
-                  QMenu* p = new QMenu(this);
+                  QMenu* p = new QMenu;
                   p->clear();
                   QAction* midi = p->addAction(*addtrack_addmiditrackIcon,
 					       tr("Add Midi Track"));
@@ -826,7 +792,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 		  synp->setTitle(QT_TR_NOOP("Add Synth"));
 
                   // Add the 'Add Synth' sub-menu to the menu.
-		  p->addMenu(synp);
+                  p->addMenu(synp);
 
                   // Show the menu
                   QAction* act = p->exec(ev->globalPos(), 0);
@@ -1007,12 +973,13 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         }
                   else if (button == Qt::RightButton) {
                         mode = NORMAL;
-                        Q3PopupMenu* p = new Q3PopupMenu(this);
+                        QMenu* p = new QMenu;
                         p->clear();
-                        p->insertItem(QIcon(*automation_clear_dataIcon), tr("Delete Track"), 0); // ddskrjo
-                        p->insertItem(QIcon(*track_commentIcon), tr("Track Comment"), 1);
-                        int n = p->exec(ev->globalPos(), 0);
-                        if (n != -1) {
+                        p->addAction(QIcon(*automation_clear_dataIcon), tr("Delete Track"))->setData(0); // ddskrjo
+                        p->addAction(QIcon(*track_commentIcon), tr("Track Comment"))->setData(1);
+                        QAction* act = p->exec(ev->globalPos(), 0);
+                        if (act) {
+                              int n = act->data().toInt();
                               switch (n) {
                                     case 0:     // delete track
                                           song->removeTrack0(t);
@@ -1208,7 +1175,7 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
                   break;
             case RESIZE:
                   {
-                    if(sTrack >= 0 && sTrack < song->tracks()->size())
+                    if(sTrack >= 0 && (unsigned) sTrack < song->tracks()->size())
                     {
                       Track* t = song->tracks()->index(sTrack);
                       if(t)
@@ -1262,7 +1229,7 @@ void TList::wheelEvent(QWheelEvent* ev)
             emit redirectWheelEvent(ev);
             return;
             }
-      TrackColumn col = TrackColumn(header->sectionAt(x));
+      TrackColumn col = TrackColumn(header->logicalIndexAt(x));
       int delta       = ev->delta() / WHEEL_DELTA;
       ev->accept();
 
@@ -1463,15 +1430,16 @@ void TList::resizeEvent(QResizeEvent* ev)
 
 void TList::classesPopupMenu(Track* t, int x, int y)
       {
-      Q3PopupMenu p(this);
+      QMenu p;
       p.clear();
-      p.insertItem(QIcon(*addtrack_addmiditrackIcon), tr("Midi"), Track::MIDI);
-      p.insertItem(QIcon(*addtrack_drumtrackIcon), tr("Drum"), Track::DRUM);
-      int n = p.exec(mapToGlobal(QPoint(x, y)), 0);
+      p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(Track::MIDI);
+      p.addAction(QIcon(*addtrack_drumtrackIcon), tr("Drum"))->setData(Track::DRUM);
+      QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
 
-      if (n == -1)
+      if (!act)
             return;
 
+      int n = act->data().toInt();
       if (Track::TrackType(n) == Track::MIDI && t->type() == Track::DRUM) {
             //
             //    Drum -> Midi

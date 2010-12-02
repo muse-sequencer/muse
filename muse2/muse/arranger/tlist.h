@@ -8,25 +8,20 @@
 #ifndef __TLIST_H__
 #define __TLIST_H__
 
-#include <qtooltip.h>
-#include <q3whatsthis.h>
-#include <q3header.h>
-//Added by qt3to4:
-#include <QPixmap>
-#include <QResizeEvent>
-#include <QWheelEvent>
-#include <QMouseEvent>
-#include <QKeyEvent>
-#include <QPaintEvent>
 #include "track.h"
 
-class QPainter;
-class ScrollScale;
-class QScrollBar;
+class QKeyEvent;
 class QLineEdit;
+class QMouseEvent;
+class QPaintEvent;
+class QResizeEvent;
+class QScrollBar;
+class QWheelEvent;
+
+class ScrollScale;
 class Track;
 class Xml;
-class Header;
+class HeaderNew;
 
 enum TrackColumn {
       COL_RECORD = 0,
@@ -40,19 +35,6 @@ enum TrackColumn {
       COL_NONE = -1
       };
 //      COL_AUTOMATION, -- not enabled
-
-//----------------------------------------------------------
-//   THeaderTip
-//----------------------------------------------------------
-
-class THeaderTip { //: public QToolTip { ddskrjo
-
-   public:
-    THeaderTip(QWidget * parent) {} //: QToolTip(parent) {} ddskrjo
-      virtual ~THeaderTip() {}
-   protected:
-      void maybeTip(const QPoint &);
-      };
 
 //---------------------------------------------------------
 //   TList
@@ -70,7 +52,7 @@ class TList : public QWidget {
 
       bool resizeFlag;        // true if resize cursor is shown
 
-      Header* header;
+      HeaderNew* header;
       QScrollBar* scroll;
       QLineEdit* editor;
       Track* editTrack;
@@ -101,6 +83,7 @@ class TList : public QWidget {
       Track* y2Track(int) const;
       void classesPopupMenu(Track*, int x, int y);
       TrackList getRecEnabledTracks();
+      void setHeaderToolTips();
 
    private slots:
       void returnPressed();
@@ -120,7 +103,7 @@ class TList : public QWidget {
       void selectTrackBelow();
 
    public:
-      TList(Header*, QWidget* parent, const char* name);
+      TList(HeaderNew*, QWidget* parent, const char* name);
       void setScroll(QScrollBar* s) { scroll = s; }
       Track* track() const { return editTrack; }
       void writeStatus(int level, Xml&, const char* name) const;
