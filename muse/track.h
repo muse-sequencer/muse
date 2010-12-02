@@ -9,7 +9,8 @@
 #ifndef __TRACK_H__
 #define __TRACK_H__
 
-#include <qstring.h>
+#include <QString>
+
 #include <vector>
 #include <algorithm>
 

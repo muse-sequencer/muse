@@ -10,52 +10,33 @@
 
 #include <vector>
 
-#include <QWidget>
-#include <q3header.h>
-#include <q3whatsthis.h>
-//Added by qt3to4:
-#include <QWheelEvent>
-#include <QMenu>
-
 #include "midieditor.h"
 #include "pcanvas.h"
 #include "ui_mtrackinfobase.h"
 #include "trackautomationview.h"
 
+class QAction;
+class QCheckBox;
 class QMainWindow;
+class QMenu;
+class QScrollBar;
 class QToolButton;
-class Header;
+class QWheelEvent;
+
+class HeaderNew;
 class TList;
 class ScrollScale;
-class QScrollBar;
 class MTScale;
 class Track;
 class Xml;
 class Splitter;
 class LabelCombo;
 class PosLabel;
-class QCheckBox;
 class MidiTrackInfoBase;
 class TLLayout;
 class WidgetStack;
 class AudioStrip;
 class SpinBox;
-class QAction;
-//class QModelIndex;
-
-//---------------------------------------------------------
-//   TWhatsThis
-//---------------------------------------------------------
-
-class TWhatsThis : public Q3WhatsThis {
-      Header* header;
-   protected:
-      QString text(const QPoint&);
-   public:
-      TWhatsThis(QWidget* parent, Header* h) : Q3WhatsThis(parent) {
-            header = h;
-            }
-      };
 
 //---------------------------------------------------------
 //   WidgetStack
@@ -99,7 +80,7 @@ class Arranger : public QWidget {
       ScrollScale* hscroll;
       QScrollBar* vscroll;
       TList* list;
-      Header* header;
+      HeaderNew* header;
       MTScale* time;
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
@@ -130,6 +111,8 @@ class Arranger : public QWidget {
       void genWaveTrackInfo();
       void updateMidiTrackInfo(int flags);
       void switchInfo(int);
+      void setHeaderToolTips();
+      void setHeaderWhatsThis();
 
    private slots:
       void _setRaster(int);

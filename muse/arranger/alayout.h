@@ -9,12 +9,12 @@
 #define __ALAYOUT_H__
 
 #include <QLayout>
-//#include <Q3PtrList>
 #include <QList>
 
-class QScrollBar;
-class WidgetStack;
 class QLayoutItem;
+class QScrollBar;
+
+class WidgetStack;
 
 //---------------------------------------------------------
 //   TLLayout
@@ -25,7 +25,6 @@ class TLLayout : public QLayout
       {
       Q_OBJECT
 
-      //Q3PtrList<QLayoutItem> ilist;
       QList<QLayoutItem*> ilist;
       QLayoutItem* li[6];
       QScrollBar* sb;

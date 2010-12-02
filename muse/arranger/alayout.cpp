@@ -6,12 +6,9 @@
 //=========================================================
 
 #include "alayout.h"
-#include <QScrollBar>
-#include <QList>
-//Added by qt3to4:
-//#include <Q3PtrList>
-
 #include "arranger.h"
+
+#include <QScrollBar>
 
 //---------------------------------------------------------
 //   wadd
@@ -35,10 +32,10 @@ void TLLayout::wadd(int idx, QWidget* w)
 class TLLayoutIterator // : public QGLayoutIterator ddskrjo
       {
       int idx;
-      Q3PtrList<QLayoutItem> *list;
+      QList<QLayoutItem*> list;
 
    public:
-      TLLayoutIterator(Q3PtrList<QLayoutItem> *l) : idx(0), list(l) {}
+      TLLayoutIterator(QList<QLayoutItem*> l) : idx(0), list(l) {}
       QLayoutItem *current()     { return idx < int(list->count()) ? list->at(idx) : 0; }
       QLayoutItem *next()        { idx++; return current(); }
       QLayoutItem *takeCurrent() { return list->take( idx ); }

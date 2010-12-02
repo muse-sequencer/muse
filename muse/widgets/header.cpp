@@ -11,7 +11,7 @@
 
 
 #include <QStandardItemModel>
-
+/*
 //---------------------------------------------------------
 //   readStatus
 //---------------------------------------------------------
@@ -62,7 +62,7 @@ void Header::writeStatus(int level, Xml& xml) const
       //xml.put("</%s>", name());
       xml.put("</%s>", Xml::xmlString(name()).latin1());
       }
-
+*/
 
 
 //---------------------------------------------------------
@@ -117,7 +117,7 @@ void HeaderNew::writeStatus(int level, Xml& xml) const
       }
 
 //---------------------------------------------------------
-//   writeStatus
+//   HeaderNew
 //---------------------------------------------------------
 
 HeaderNew::HeaderNew(QWidget* parent, const char* name)
@@ -126,23 +126,20 @@ HeaderNew::HeaderNew(QWidget* parent, const char* name)
       setObjectName(name);
       itemModel = new QStandardItemModel;
       setModel(itemModel);
-      columncount = 0;
       //setResizeMode(QHeaderView::ResizeToContents);
       setDefaultSectionSize(30);
       }
 
 //---------------------------------------------------------
-//   addLabel
+//   setColumnLabel
 //---------------------------------------------------------
 
-int HeaderNew::addLabel(const QString & text, int size )
+void HeaderNew::setColumnLabel(const QString & text, int col, int width )
       {
       QStandardItem *sitem = new QStandardItem(text );
-      itemModel->setHorizontalHeaderItem(columncount, sitem);
-      if (size > -1)
-            resizeSection(columncount, size);
-
-      return columncount++;
+      itemModel->setHorizontalHeaderItem(col, sitem);
+      if (width > -1)
+            resizeSection(col, width);
       }
 
 //---------------------------------------------------------
