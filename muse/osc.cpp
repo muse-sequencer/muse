@@ -34,14 +34,14 @@
 #include <errno.h>
 //#include <dssi.h>
 //#include <alsa/asoundlib.h>
-//#include <qt.h>
-#include <qdir.h>
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qfileinfo.h>
-//#include <qpopupmenu.h>
-#include <q3process.h>
-#include <qtimer.h>
+
+#include <QDir>
+#include <QFileInfo>
+#include <QString>
+#include <QStringList>
+#include <QProcess>
+#include <QTimer>
+
 #include <lo/lo.h>
 
 #ifdef DSSI_SUPPORT
@@ -482,7 +482,7 @@ OscIF::~OscIF()
   //      kill(guiPid, SIGHUP);
   if(_oscGuiQProc)
   {
-    if(_oscGuiQProc->isRunning())
+    if(_oscGuiQProc->state())
     {
       #ifdef OSC_DEBUG 
       printf("OscIF::~OscIF terminating _oscGuiQProc\n");
@@ -493,7 +493,7 @@ OscIF::~OscIF()
       //  it terminates the process the hard way. The timeout should be chosen depending on the time the 
       //  process needs to do all its cleanup: use a higher value if the process is likely to do a lot of 
       //  computation or I/O on cleanup."           
-      _oscGuiQProc->tryTerminate();
+      _oscGuiQProc->terminate();
       QTimer::singleShot( 5000, _oscGuiQProc, SLOT( kill() ) );          
     }  
     //delete _oscGuiQProc;
@@ -688,7 +688,7 @@ int OscIF::oscExiting(lo_arg**)
       
       if(_oscGuiQProc)
       {
-        if(_oscGuiQProc->isRunning())
+        if(_oscGuiQProc->state())
         {
           #ifdef OSC_DEBUG 
           printf("OscIF::oscExiting terminating _oscGuiQProc\n");
@@ -699,7 +699,7 @@ int OscIF::oscExiting(lo_arg**)
           //  it terminates the process the hard way. The timeout should be chosen depending on the time the 
           //  process needs to do all its cleanup: use a higher value if the process is likely to do a lot of 
           //  computation or I/O on cleanup."           
-          _oscGuiQProc->tryTerminate();
+          _oscGuiQProc->terminate();
           QTimer::singleShot( 5000, _oscGuiQProc, SLOT( kill() ) );          
         }  
         //delete _oscGuiQProc;
@@ -827,7 +827,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                        const QString& label, const QString& filePath, const QString& dirPath)
 {
       // Are we already running? We don't want to allow another process do we...
-      if((_oscGuiQProc != 0) && (_oscGuiQProc->isRunning()))
+      if((_oscGuiQProc != 0) && (_oscGuiQProc->state()))
         return true;
         
       if(!url)
@@ -949,8 +949,16 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                         {
                               // No QProcess created yet? Do it now. Only once per SynthIF instance. Exists until parent destroyed.
                               if(_oscGuiQProc == 0)
-                                _oscGuiQProc = new Q3Process(muse);                        
+                                _oscGuiQProc = new QProcess(muse);                        
                               
+			      QString program(fi.filePath());
+			      QStringList arguments;
+			      arguments << oscUrl
+					<< filePath
+					<< name
+					<< QString("channel-1");
+
+			      /* Leave out Qt3 stuff for reference - Orcan:
                               // Don't forget this, he he...
                               _oscGuiQProc->clearArguments();
                               
@@ -963,12 +971,14 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                               //_oscGuiQProc->addArgument(synth->name());
                               _oscGuiQProc->addArgument(name);
                               _oscGuiQProc->addArgument(QString("channel-1"));
-                              
+                              */
                               #ifdef OSC_DEBUG 
                               fprintf(stderr, "OscIF::oscInitGui starting QProcess\n");
                               #endif
+			      _oscGuiQProc->start(program, arguments);
+			      
                                 
-                              if(_oscGuiQProc->start() == TRUE)
+                              if(_oscGuiQProc->state())
                               {
                                 #ifdef OSC_DEBUG 
                                 fprintf(stderr, "OscIF::oscInitGui started QProcess\n");
@@ -1051,7 +1061,7 @@ void OscIF::oscShowGui(bool v)
             return;
       
       //if(guiPid == -1)
-      if((_oscGuiQProc == 0) || (!_oscGuiQProc->isRunning()))
+      if((_oscGuiQProc == 0) || (!_oscGuiQProc->state()))
       {
         // We need an indicator that update was called - update must have been called to get new path etc...
         // If the process is not running this path is invalid, right?

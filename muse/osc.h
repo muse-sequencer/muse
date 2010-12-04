@@ -29,7 +29,8 @@
 class DssiSynthIF;
 #endif
 
-class Q3Process;
+class QProcess;
+class QString;
 class PluginI;
 class OscIF;
 
@@ -126,7 +127,7 @@ class OscIF
 class OscIF
 {
    protected:
-      Q3Process* _oscGuiQProc;
+      QProcess* _oscGuiQProc;
       void* _uiOscTarget;
       char* _uiOscPath;
       char* _uiOscSampleRatePath;

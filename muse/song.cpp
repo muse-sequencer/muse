@@ -9,17 +9,13 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
-#include <qapplication.h>
-#include <qmessagebox.h>
-//#include <q3popupmenu.h>
+
+#include <QAction>
+#include <QDir>
 #include <QMenu>
-#include <qdir.h>
-#include <qaction.h>
-#include <qcursor.h>
-#include <qpoint.h>
-//#include <qbutton.h>
-//Added by qt3to4:
-#include <Q3TextStream>
+#include <QMessageBox>
+#include <QPoint>
+#include <QTextStream>
 
 #include "app.h"
 #include "driver/jackmidi.h"
@@ -2340,7 +2336,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
 //   execAutomationCtlPopup
 //---------------------------------------------------------
 
-int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int acid)
+int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& /*menupos*/, int acid)
 {
   //enum { HEADER, SEP1, PREV_EVENT, NEXT_EVENT, SEP2, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS };
   enum { HEADER, PREV_EVENT, NEXT_EVENT, SEP2, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS };
@@ -2458,7 +2454,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
 //   execMidiAutomationCtlPopup
 //---------------------------------------------------------
 
-int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPoint& menupos, int ctlnum)
+int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPoint& /*menupos*/, int ctlnum)
 {
   if(!track && !part)
     return -1;
@@ -3579,7 +3575,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
                       
                         QFile file(tmp);
                         if ( file.open( QIODevice::ReadOnly ) ) {
-                            Q3TextStream stream( &file );
+                            QTextStream stream( &file );
                             QString line;
                             while ( !stream.atEnd() ) {
                                 line = stream.readLine(); // line of text excluding '\n'

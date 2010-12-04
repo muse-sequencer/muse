@@ -21,7 +21,7 @@ class QWheelEvent;
 class ScrollScale;
 class Track;
 class Xml;
-class HeaderNew;
+class Header;
 
 enum TrackColumn {
       COL_RECORD = 0,
@@ -52,7 +52,7 @@ class TList : public QWidget {
 
       bool resizeFlag;        // true if resize cursor is shown
 
-      HeaderNew* header;
+      Header* header;
       QScrollBar* scroll;
       QLineEdit* editor;
       Track* editTrack;
@@ -103,7 +103,7 @@ class TList : public QWidget {
       void selectTrackBelow();
 
    public:
-      TList(HeaderNew*, QWidget* parent, const char* name);
+      TList(Header*, QWidget* parent, const char* name);
       void setScroll(QScrollBar* s) { scroll = s; }
       Track* track() const { return editTrack; }
       void writeStatus(int level, Xml&, const char* name) const;

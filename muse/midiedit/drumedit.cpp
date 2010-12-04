@@ -357,7 +357,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       //
       //  Reihenfolge in dlist.c festgeschrieben ("Dcols")
       //
-      header = new HeaderNew(split1w1, "header");
+      header = new Header(split1w1, "header");
       header->setFixedHeight(31);
       header->setColumnLabel(tr("M"), COL_MUTE, 20);
       header->setColumnLabel(tr("Sound"), COL_NAME, 120);

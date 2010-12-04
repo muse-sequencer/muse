@@ -60,7 +60,7 @@ class DrumEdit : public MidiEditor {
       Splitter* split2;
       QWidget* split1w1;
       DList* dlist;
-      HeaderNew* header;
+      Header* header;
       QToolBar* tools;
 
       static int _quantInit, _rasterInit;

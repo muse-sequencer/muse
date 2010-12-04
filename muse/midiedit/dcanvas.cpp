@@ -9,10 +9,8 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QDrag>
-
-//Added by qt3to4:
 #include <QDragLeaveEvent>
-#include <Q3PointArray>
+#include <QPolygon>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
@@ -484,7 +482,7 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
       int x = 0, y = 0;
         x = mapx(item->pos().x());
         y = mapy(item->pos().y());
-      Q3PointArray pa(4);
+      QPolygon pa(4);
       pa.setPoint(0, x - CARET2, y);
       pa.setPoint(1, x,          y - CARET2);
       pa.setPoint(2, x + CARET2, y);
@@ -542,7 +540,7 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
       //  return;
       //if(!item->isMoving()) 
       //  return;
-      Q3PointArray pa(4);
+      QPolygon pa(4);
       QPoint pt = map(item->mp());
       int x = pt.x();
       int y = pt.y();

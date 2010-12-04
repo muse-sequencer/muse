@@ -249,7 +249,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       ib->setOn(showTrackinfoFlag);
       connect(ib, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
 
-      header = new HeaderNew(tracklist);
+      header = new Header(tracklist);
       
       header->setFixedHeight(30);
 

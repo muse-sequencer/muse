@@ -55,7 +55,7 @@ static const int WHEEL_DELTA = 120;
 //   TList
 //---------------------------------------------------------
 
-TList::TList(HeaderNew* hdr, QWidget* parent, const char* name)
+TList::TList(Header* hdr, QWidget* parent, const char* name)
    : QWidget(parent, name, Qt::WNoAutoErase | Qt::WResizeNoErase)
       {
       ypos = 0;

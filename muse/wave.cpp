@@ -9,11 +9,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
-#include <qfileinfo.h>
 #include <cmath>
-#include <qdatetime.h>
-#include <qmessagebox.h>
-#include <q3progressdialog.h>
+
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QProgressDialog>
 
 #include "xml.h"
 #include "song.h"
@@ -156,13 +156,12 @@ void SndFile::readCache(const QString& path, bool showProgress)
       //---------------------------------------------------
       //  create cache
       //---------------------------------------------------
-
-      Q3ProgressDialog* progress = 0;
+      QProgressDialog* progress = 0;
       if (showProgress) {
             QString label(QWidget::tr("create peakfile for "));
             label += basename();
-            progress = new Q3ProgressDialog(label,
-               QString::null, csize, 0, 0, true);
+            progress = new QProgressDialog(label,
+               QString::null, 0, csize, 0);
             progress->setMinimumDuration(0);
             progress->show();
             }
@@ -176,7 +175,7 @@ void SndFile::readCache(const QString& path, bool showProgress)
         interval = 1;
       for (int i = 0; i < csize; i++) {
             if (showProgress && ((i % interval) == 0))
-                  progress->setProgress(i);
+                  progress->setValue(i);
             seek(i * cacheMag, 0);
             read(channels(), fp, cacheMag);
             for (unsigned ch = 0; ch < channels(); ++ch) {
@@ -199,7 +198,7 @@ void SndFile::readCache(const QString& path, bool showProgress)
                   }
             }
       if (showProgress)
-            progress->setProgress(csize);
+            progress->setValue(csize);
       writeCache(path);
       if (showProgress)
             delete progress;

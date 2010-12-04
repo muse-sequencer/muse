@@ -8,41 +8,19 @@
 #ifndef __HEADER_H__
 #define __HEADER_H__
 
-#include <q3header.h>
+#include <QHeaderView>
 
-class QHeaderView;
 class QStandardItemModel;
 
 class Xml;
 
-/*
-//---------------------------------------------------------
-//   Header
-//---------------------------------------------------------
-
-class Header : public Q3Header {
-      Q_OBJECT
-
-   public:
-      Header(QWidget* parent=0, const char* name=0)
-         : Q3Header(parent, name) {}
-      Header(int sections, QWidget* parent=0, const char* name=0)
-         : Q3Header(sections, parent, name) {}
-      void writeStatus(int level, Xml&) const;
-      void readStatus(Xml&);
-      };
-*/
-
-// ORCAN - TODO: Once everything is ported to use the new class below, we
-// can remove the above Qt3 based class.
-
-class HeaderNew : public QHeaderView {
+class Header : public QHeaderView {
       Q_OBJECT
 
       QStandardItemModel *itemModel;
 
    public:
-      HeaderNew(QWidget* parent=0, const char* name=0);
+      Header(QWidget* parent=0, const char* name=0);
       void writeStatus(int level, Xml&) const;
       void readStatus(Xml&);
       void setColumnLabel( const QString & s, int col, int width = -1 );
