@@ -104,7 +104,8 @@ extern const QStringList drum_map_file_pattern;
 extern const QStringList drum_map_file_save_pattern;
 extern const QStringList audio_file_pattern;
 
-extern Qt::ButtonState globalKeyState;
+///extern Qt::ButtonState globalKeyState;
+extern Qt::KeyboardModifiers globalKeyState;
 
 extern int midiInputPorts;          //!< receive from all devices
 extern int midiInputChannel;        //!< receive all channel

@@ -881,11 +881,7 @@ void DrumEdit::cmd(int cmd)
 
 void DrumEdit::clipboardChanged()
       {
-      QMimeSource* ms = QApplication::clipboard()->data(QClipboard::Clipboard);
-      if (ms && ms->format(0)) {
-            bool flag = strcmp(ms->format(0), "text/eventlist;charset=UTF-8") == 0;
-            menuEdit->setItemEnabled(DrumCanvas::CMD_PASTE, flag);
-            }
+      pasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-eventlist")));
       }
 
 //---------------------------------------------------------
@@ -895,9 +891,9 @@ void DrumEdit::clipboardChanged()
 void DrumEdit::selectionChanged()
       {
       bool flag = canvas->selectionSize() > 0;
-      menuEdit->setItemEnabled(DrumCanvas::CMD_CUT, flag);
-      menuEdit->setItemEnabled(DrumCanvas::CMD_COPY, flag);
-      menuEdit->setItemEnabled(DrumCanvas::CMD_DEL, flag);
+      cutAction->setEnabled(flag);
+      copyAction->setEnabled(flag);
+      deleteAction->setEnabled(flag);
       }
 
 //---------------------------------------------------------

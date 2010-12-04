@@ -5,14 +5,11 @@
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qapplication.h>
-#include <qclipboard.h>
-#include <qpainter.h>
-#include <q3dragobject.h>
-#include <qmessagebox.h>
-//Added by qt3to4:
+#include <QApplication>
+#include <QClipboard>
+#include <QPainter>
+#include <QDrag>
 #include <QDragLeaveEvent>
-#include <Q3CString>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
@@ -22,12 +19,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <dirent.h>
+//#include <sys/stat.h>
+//#include <sys/types.h>
+//#include <sys/mman.h>
+//#include <fcntl.h>
+//#include <dirent.h>
 
 #include "xml.h"
 #include "prcanvas.h"
@@ -145,7 +141,7 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       QRect r = item->bbox();
       if(!virt())
         r.moveCenter(map(item->pos()));
-      r = r.intersect(rect);
+      r = r.intersected(rect);
       if(!r.isValid())
         return;
       p.setPen(Qt::black);
@@ -226,7 +222,7 @@ void PianoCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
       //if(!item->isMoving()) 
       //  return;
       QRect mr = QRect(item->mp().x(), item->mp().y() - item->height()/2, item->width(), item->height());
-      mr = mr.intersect(rect);
+      mr = mr.intersected(rect);
       if(!mr.isValid())
         return;
       p.setPen(Qt::black);
@@ -804,7 +800,8 @@ void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
             p.drawLine(x, y, x, y2);
             int z, n;
             sigmap.timesig(x, z, n);
-            int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
+            ///int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
+            int q = p.combinedTransform().map(QPoint(raster, 0)).x() - p.combinedTransform().map(QPoint(0, 0)).x();
             int qq = raster;
             if (q < 8)        // grid too dense
                   qq *= 2;
@@ -1265,18 +1262,18 @@ void PianoCanvas::midiNote(int pitch, int velo)
       if (_midiin && _steprec && curPart
          && !audio->isPlaying() && velo && pos[0] >= start_tick
          && pos[0] < end_tick
-         && !(globalKeyState & Qt::AltButton)) {
+         && !(globalKeyState & Qt::AltModifier)) {
             unsigned int len   = editor->quant();//prevent compiler warning: comparison singed/unsigned
             unsigned tick      = pos[0]; //CDW
             unsigned starttick = tick;
-            if (globalKeyState & Qt::ShiftButton)
+            if (globalKeyState & Qt::ShiftModifier)
                   tick -= editor->rasterStep(tick);
 
             //
             // extend len of last note?
             //
             EventList* events = curPart->events();
-            if (globalKeyState & Qt::ControlButton) {
+            if (globalKeyState & Qt::ControlModifier) {
                   for (iEvent i = events->begin(); i != events->end(); ++i) {
                         Event ev = i->second;
                         if (!ev.isNote())
@@ -1307,7 +1304,7 @@ void PianoCanvas::midiNote(int pitch, int velo)
                         // Indicate do undo, and do not do port controller values and clone parts. 
                         //audio->msgDeleteEvent(ev, curPart);
                         audio->msgDeleteEvent(ev, curPart, true, false, false);
-                        if (globalKeyState & Qt::ShiftButton)
+                        if (globalKeyState & Qt::ShiftModifier)
                               tick += editor->rasterStep(tick);
                         return;
                         }
@@ -1328,6 +1325,7 @@ void PianoCanvas::midiNote(int pitch, int velo)
             }
       }
 
+/*
 //---------------------------------------------------------
 //   getTextDrag
 //---------------------------------------------------------
@@ -1390,6 +1388,7 @@ Q3TextDrag* PianoCanvas::getTextDrag(QWidget* parent)
       fclose(tmp);
       return drag;
       }
+*/
 
 //---------------------------------------------------------
 //   copy
@@ -1398,13 +1397,16 @@ Q3TextDrag* PianoCanvas::getTextDrag(QWidget* parent)
 
 void PianoCanvas::copy()
       {
-      Q3TextDrag* drag = getTextDrag(0);
+      //QDrag* drag = getTextDrag();
+      QMimeData* drag = getTextDrag();
+      
       if (drag)
-            QApplication::clipboard()->setData(drag, QClipboard::Clipboard);
+            QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
       }
 
+/*
 //---------------------------------------------------------
-//   paste
+//   pasteAt
 //---------------------------------------------------------
 
 void PianoCanvas::pasteAt(const QString& pt, int pos)
@@ -1440,13 +1442,11 @@ void PianoCanvas::pasteAt(const QString& pt, int pos)
                                             Part* newPart = curPart->clone();
                                             newPart->setLenTick(newPart->lenTick()+diff);
                                             // Indicate no undo, and do port controller values but not clone parts. 
-                                            //audio->msgChangePart(curPart, newPart,false);
                                             audio->msgChangePart(curPart, newPart, false, true, false);
                                             modified=modified|SC_PART_MODIFIED;
                                             curPart = newPart; // reassign
                                             }
                                     // Indicate no undo, and do not do port controller values and clone parts. 
-                                    //audio->msgAddEvent(e, curPart, false);
                                     audio->msgAddEvent(e, curPart, false, false, false);
                                     }
                               song->endUndo(modified);
@@ -1463,6 +1463,8 @@ void PianoCanvas::pasteAt(const QString& pt, int pos)
                   }
             }
       }
+*/
+
 //---------------------------------------------------------
 //   paste
 //    paste events
@@ -1470,6 +1472,7 @@ void PianoCanvas::pasteAt(const QString& pt, int pos)
 
 void PianoCanvas::paste()
       {
+/*      
       //Q3CString subtype("eventlist"); ddskrjo
       QString subtype("eventlist");
       QMimeSource* ms = QApplication::clipboard()->data(QClipboard::Clipboard);
@@ -1479,6 +1482,13 @@ void PianoCanvas::paste()
             return;
             }
       pasteAt(pt, song->cpos());
+*/
+      QString stype("x-muse-eventlist");
+      
+      //QString s = QApplication::clipboard()->text(stype, QClipboard::Selection);
+      QString s = QApplication::clipboard()->text(stype, QClipboard::Clipboard);  // TODO CHECK Tim.
+      
+      pasteAt(s, song->cpos());
       }
 
 //---------------------------------------------------------
@@ -1487,14 +1497,24 @@ void PianoCanvas::paste()
 
 void PianoCanvas::startDrag(CItem* /* item*/, bool copymode)
       {
-      Q3TextDrag* drag = getTextDrag(this);
-      if (drag) {
-//            QApplication::clipboard()->setData(drag, QClipboard::Clipboard);
+      QMimeData* md = getTextDrag();
+      //QDrag* drag = getTextDrag();
+      
+      if (md) {
+//            QApplication::clipboard()->setData(drag, QClipboard::Clipboard);   // This line NOT enabled in muse-1 
+            //QApplication::clipboard()->setMimeData(md);                // TODO CHECK Tim.
+            //QApplication::clipboard()->setMimeData(drag->mimeData());  // 
 
+            // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object. 
+            //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can 
+            //  clean up after the drag and drop operation has been completed. "
+            QDrag* drag = new QDrag(this);
+            drag->setMimeData(md);
+            
             if (copymode)
-                  drag->dragCopy();
+                  drag->exec(Qt::CopyAction);
             else
-                  drag->dragMove();
+                  drag->exec(Qt::MoveAction);
             }
       }
 
@@ -1504,7 +1524,8 @@ void PianoCanvas::startDrag(CItem* /* item*/, bool copymode)
 
 void PianoCanvas::dragEnterEvent(QDragEnterEvent* event)
       {
-      event->accept(Q3TextDrag::canDecode(event));
+      ///event->accept(Q3TextDrag::canDecode(event));
+      event->acceptProposedAction();  // TODO CHECK Tim.
       }
 
 //---------------------------------------------------------
@@ -1513,7 +1534,8 @@ void PianoCanvas::dragEnterEvent(QDragEnterEvent* event)
 
 void PianoCanvas::dragMoveEvent(QDragMoveEvent*)
       {
-//      printf("drag move %x\n", this);
+      //printf("drag move %x\n", this);
+      //event->acceptProposedAction();  
       }
 
 //---------------------------------------------------------
@@ -1522,9 +1544,11 @@ void PianoCanvas::dragMoveEvent(QDragMoveEvent*)
 
 void PianoCanvas::dragLeaveEvent(QDragLeaveEvent*)
       {
-//      printf("drag leave\n");
+      //printf("drag leave\n");
+      //event->acceptProposedAction();  
       }
 
+/*
 //---------------------------------------------------------
 //   dropEvent
 //---------------------------------------------------------
@@ -1533,19 +1557,31 @@ void PianoCanvas::viewDropEvent(QDropEvent* event)
       {
       QString text;
       if (event->source() == this) {
-            printf("local DROP\n");
+            printf("local DROP\n");   // REMOVE Tim  
+            //event->acceptProposedAction();     
+            //event->ignore();                     // TODO CHECK Tim.
             return;
             }
-      if (Q3TextDrag::decode(event, text)) {
+      ///if (Q3TextDrag::decode(event, text)) {
+      //if (event->mimeData()->hasText()) {
+      if (event->mimeData()->hasFormat("text/x-muse-eventlist")) {
+            
+            //text = event->mimeData()->text();
+            text = QString(event->mimeData()->data("text/x-muse-eventlist"));
+            
             int x = editor->rasterVal(event->pos().x());
             if (x < 0)
                   x = 0;
             pasteAt(text, x);
+            //event->accept();  // TODO
             }
       else {
             printf("cannot decode drop\n");
+            //event->acceptProposedAction();     
+            //event->ignore();                     // TODO CHECK Tim.
             }
       }
+*/
 
 //---------------------------------------------------------
 //   itemPressed
@@ -1614,7 +1650,7 @@ void PianoCanvas::itemMoved(const CItem* item, const QPoint& pos)
 
 void PianoCanvas::curPartChanged()
       {
-      editor->setCaption(getCaption());
+      editor->setWindowTitle(getCaption());
       }
 
 //---------------------------------------------------------

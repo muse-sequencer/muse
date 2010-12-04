@@ -19,10 +19,12 @@
 #include <qpoint.h>
 #include <qlineedit.h>
 #include <qmessagebox.h>
-#include <q3dragobject.h>
-#include <q3popupmenu.h>
-#include <q3url.h>
 #include <qmenudata.h>
+
+#include <QByteArray>
+#include <QMimeData>
+#include <QDrag>
+
 //Added by qt3to4:
 #include <QDragLeaveEvent>
 #include <QMouseEvent>
@@ -31,7 +33,6 @@
 #include <QEvent>
 #include <QDropEvent>
 #include <QDragMoveEvent>
-#include <Q3CString>
 
 #include "widgets/tools.h"
 #include "pcanvas.h"
@@ -753,8 +754,8 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       partPopup->addMenu(colorPopup);
 
       // part color selection
-      const QFontMetrics& fm = colorPopup->fontMetrics();
-      int h = fm.lineSpacing();
+      //const QFontMetrics& fm = colorPopup->fontMetrics();
+      //int h = fm.lineSpacing();
 
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
             //ColorListItem* item = new ColorListItem(config.partColors[i], h, fontMetrics().height(), partColorNames[i]); //ddskrjo
@@ -1837,19 +1838,22 @@ void PartCanvas::copy(PartList* pl)
       char* fbuf  = (char*)mmap(0, n+1, PROT_READ|PROT_WRITE,
          MAP_PRIVATE, fileno(tmp), 0);
       fbuf[n] = 0;
-      Q3TextDrag* drag = new Q3TextDrag(QString(fbuf));
-      // Changed by T356. Support mixed .mpt files.
-      //drag->setSubtype(QCString(isWave ? "wavepartlist" : "midipartlist"));
+      
+      QByteArray data(fbuf);
+      QMimeData* md = new QMimeData();
+      
+      
       if(midi && wave)
-        drag->setSubtype(Q3CString("mixedpartlist"));
+        md->setData("text/x-muse-mixedpartlist", data);   // By T356. Support mixed .mpt files.
       else
       if(midi)
-        drag->setSubtype(Q3CString("midipartlist"));
+        md->setData("text/x-muse-midipartlist", data);
       else
       if(wave)
-        drag->setSubtype(Q3CString("wavepartlist"));
+        md->setData("text/x-muse-wavepartlist", data);
         
-      QApplication::clipboard()->setData(drag, QClipboard::Clipboard);
+      QApplication::clipboard()->setMimeData(md, QClipboard::Clipboard);
+      
       munmap(fbuf, n);
       fclose(tmp);
       }
@@ -2382,53 +2386,56 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
       }
 
       QClipboard* cb  = QApplication::clipboard();
-      QMimeSource* ms = cb->data(QClipboard::Clipboard);
-
-      bool midiPart = false;
-      bool wavePart = false;
-
-      // If we want to paste to a selected track...
-      if(toTrack)
+      const QMimeData* md = cb->mimeData(QClipboard::Clipboard);
+      
+      QString pfx("text/");
+      QString mdpl("x-muse-midipartlist");
+      QString wvpl("x-muse-wavepartlist");  
+      QString mxpl("x-muse-mixedpartlist");
+      QString txt;
+        
+      if(md->hasFormat(pfx + mdpl))
       {
-        for (int i = 0; const char* format = ms->format(i); ++i) {
-              format = ms->format(i);
-              if (strcmp(format, "text/midipartlist") == 0) {
-                    if (!track->isMidiTrack()) {
-                          QMessageBox::critical(this, QString("MusE"),
-                                tr("Can only paste to midi/drum track"));
-                          return;
-                          }
-                    midiPart = true;
-                    }
-              else if (strcmp(format, "text/wavepartlist") == 0) {
-                    if (track->type() != Track::WAVE) {
-                          QMessageBox::critical(this, QString("MusE"),
-                          tr("Can only paste to wave track"));
-                          return;
-                          }
-                    wavePart = true;
-                    }
-              // Added by T356. Support mixed .mpt files.
-              else if (strcmp(format, "text/mixedpartlist") == 0) {
-                    if (!track->isMidiTrack() && track->type() != Track::WAVE) {
-                          QMessageBox::critical(this, QString("MusE"),
-                          tr("Can only paste to midi or wave track"));
-                          return;
-                          }
-                    midiPart = true;
-                    wavePart = true;
-                    }
-              }
-  
-        if (!(midiPart || wavePart)) {
-              QMessageBox::critical(this, QString("MusE"),
-                tr("Cannot paste: wrong data type"));
-              return;
-              }
-      }      
-            
-      QString subtype = 0;
-      QString txt = cb->text(subtype);
+        // If we want to paste to a selected track...
+        if(toTrack && !track->isMidiTrack()) 
+        {
+          QMessageBox::critical(this, QString("MusE"),
+            tr("Can only paste to midi/drum track"));
+          return;
+        }
+        txt = cb->text(mdpl, QClipboard::Clipboard);  
+      }
+      else
+      if(md->hasFormat(pfx + wvpl))
+      {
+        // If we want to paste to a selected track...
+        if(toTrack && track->type() != Track::WAVE) 
+        {
+          QMessageBox::critical(this, QString("MusE"),
+            tr("Can only paste to wave track"));
+          return;
+        }
+        txt = cb->text(wvpl, QClipboard::Clipboard);  
+      }  
+      else
+      if(md->hasFormat(pfx + mxpl))
+      {
+        // If we want to paste to a selected track...
+        if(toTrack && !track->isMidiTrack() && track->type() != Track::WAVE) 
+        {
+          QMessageBox::critical(this, QString("MusE"),
+            tr("Can only paste to midi or wave track"));
+          return;
+        }
+        txt = cb->text(mxpl, QClipboard::Clipboard);  
+      }
+      else
+      {
+        QMessageBox::critical(this, QString("MusE"),
+          tr("Cannot paste: wrong data type"));
+        return;
+      }
+      
       int endPos=0;
       int startPos=song->vcpos();
       if (!txt.isEmpty())
@@ -2439,7 +2446,6 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
         song->setPos(0, p);
         if (!doInsert)
           song->endUndo(SC_PART_INSERTED);
-
       }
 
       if (doInsert) {
@@ -2524,12 +2530,23 @@ void PartCanvas::startDrag(CItem* item, DragType t)
       char* fbuf  = (char*)mmap(0, n, PROT_READ|PROT_WRITE,
          MAP_PRIVATE, fileno(tmp), 0);
       fbuf[n] = 0;
-      Q3TextDrag* drag = new Q3TextDrag(QString(fbuf), this);
-      drag->setSubtype("partlist");
+      
+      QByteArray data(fbuf);
+      QMimeData* md = new QMimeData();
+      
+      md->setData("text/x-muse-partlist", data);
+      
+      // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object. 
+      //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can 
+      //  clean up after the drag and drop operation has been completed. "
+      QDrag* drag = new QDrag(this);
+      drag->setMimeData(md);
+      
       if (t == MOVE_COPY || t == MOVE_CLONE)
-            drag->dragCopy();
+            drag->exec(Qt::CopyAction);
       else
-            drag->dragMove();
+            drag->exec(Qt::MoveAction);
+            
       munmap(fbuf, n);
       fclose(tmp);
       }
@@ -2540,7 +2557,8 @@ void PartCanvas::startDrag(CItem* item, DragType t)
 
 void PartCanvas::dragEnterEvent(QDragEnterEvent* event)
       {
-      event->accept(Q3TextDrag::canDecode(event));
+      ///event->accept(Q3TextDrag::canDecode(event));
+      event->acceptProposedAction();  // TODO CHECK Tim.
       }
 
 //---------------------------------------------------------
@@ -2550,6 +2568,7 @@ void PartCanvas::dragEnterEvent(QDragEnterEvent* event)
 void PartCanvas::dragMoveEvent(QDragMoveEvent*)
       {
 //      printf("drag move %x\n", this);
+      //event->acceptProposedAction();  
       }
 
 //---------------------------------------------------------
@@ -2559,6 +2578,7 @@ void PartCanvas::dragMoveEvent(QDragMoveEvent*)
 void PartCanvas::dragLeaveEvent(QDragLeaveEvent*)
       {
 //      printf("drag leave\n");
+      //event->acceptProposedAction();  
       }
 
 //---------------------------------------------------------
@@ -2569,30 +2589,26 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       {
       //printf("void PartCanvas::viewDropEvent(QDropEvent* event)\n");
       if (event->source() == this) {
-            printf("no local DROP\n");
+            printf("local DROP\n");    // REMOVE Tim  
+            //event->ignore();                     // TODO CHECK Tim.
             return;
             }
       int type = 0;     // 0 = unknown, 1 = partlist, 2 = uri-list
       QString text;
-      for (int i = 0; ; ++i) {
-            const char* p= event->format(i);
-            if (p == 0)
-                  break;
-            if (strncmp(p, "text/partlist", 13) == 0) {
-                  type = 1;
-                  break;
-                  }
-            else if (strcmp(p, "text/uri-list") == 0) {
-                  type = 2;
-                  break;
-                  }
-            else {
-                  if (debugMsg)
-                        printf("unknown drop format <%s>\n", p);
-                  }
-            }
-      if (type == 0)
-            return;
+      
+      if(event->mimeData()->hasFormat("text/partlist")) 
+        type = 1;
+      else 
+      //if(event->mimeData()->hasFormat("text/uri-list")) 
+      if(event->mimeData()->hasUrls()) 
+        type = 2;
+      else 
+      {
+        if(debugMsg && event->mimeData()->formats().size() != 0)
+          printf("Drop with unknown format. First format:<%s>\n", event->mimeData()->formats()[0].toLatin1().data());
+        //event->ignore();                     // TODO CHECK Tim.
+        return;  
+      }
       
       // Make a backup of the current clone list, to retain any 'copy' items,
       //  so that pasting works properly after.
@@ -2601,66 +2617,70 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       //  current non-original parts.
       cloneList.clear();
       
-      if (Q3TextDrag::decode(event, text)) {
-            if (type == 1) {
-                  int x = sigmap.raster(event->pos().x(), *_raster);
-                  if (x < 0)
-                        x = 0;
-                  unsigned trackNo = y2pitch(event->pos().y());
-                  Track* track = 0;
-                  if (trackNo < tracks->size())
-                        track = tracks->index(trackNo);
-                  if (track) {
-                        song->startUndo();
-                        pasteAt(text, track, x);
-                        song->endUndo(SC_PART_INSERTED);
-                      }
-                  }
-            else if (type == 2) {
-                  text = text.stripWhiteSpace();
-                  if (text.endsWith(".wav",false) || text.endsWith(".ogg",false) || text.endsWith(".mpt", false) )
-                      {
-                      int x = sigmap.raster(event->pos().x(), *_raster);
-                      if (x < 0)
-                            x = 0;
-                      unsigned trackNo = y2pitch(event->pos().y());
-                      Track* track = 0;
-                      if (trackNo < tracks->size())
-                            track = tracks->index(trackNo);
-                      if (track)
-                          {
-                          Q3Url url(text);
-                          QString newPath = url.path();
-                          if (track->type() == Track::WAVE && (text.endsWith(".wav", false) || (text.endsWith(".ogg", false))))
-                              {
-                              unsigned tick = x;
-                              muse->importWaveToTrack(newPath, tick, track);
-                              }
-                           // Changed by T356. Support mixed .mpt files.
-                           //else if ((track->type() == Track::MIDI || track->type() == Track::DRUM) && text.endsWith(".mpt", false))
-                           else if ((track->isMidiTrack() || track->type() == Track::WAVE) && text.endsWith(".mpt", false))
-                              {
-                              unsigned tick = x;
-                              muse->importPartToTrack(newPath, tick, track);
-                              }
-                          }
-                      }
-                  else if(text.endsWith(".med",false))
-                      {
-                      Q3Url url(text);
-                      emit dropSongFile(url.path());
-                      }
-                  else if(text.endsWith(".mid",false))
-                      {
-                      Q3Url url(text);
-                      emit dropMidiFile(url.path());
-                      }
-                  else
-                      {
-                      printf("dropped... something...  no hable...\n");
-                      }
-                  }
+      if (type == 1) 
+      {
+            text = QString(event->mimeData()->data("text/partlist"));
+            
+            int x = sigmap.raster(event->pos().x(), *_raster);
+            if (x < 0)
+                  x = 0;
+            unsigned trackNo = y2pitch(event->pos().y());
+            Track* track = 0;
+            if (trackNo < tracks->size())
+                  track = tracks->index(trackNo);
+            if (track) {
+                  song->startUndo();
+                  pasteAt(text, track, x);
+                  song->endUndo(SC_PART_INSERTED);
+                }
+      }
+      else if (type == 2) 
+      {
+            // Multiple urls not supported here. Grab the first one.
+            text = event->mimeData()->urls()[0].path();
+            
+            if (text.endsWith(".wav",Qt::CaseInsensitive) || 
+                text.endsWith(".ogg",Qt::CaseInsensitive) || 
+                text.endsWith(".mpt", Qt::CaseInsensitive) )
+            {
+                int x = sigmap.raster(event->pos().x(), *_raster);
+                if (x < 0)
+                      x = 0;
+                unsigned trackNo = y2pitch(event->pos().y());
+                Track* track = 0;
+                if (trackNo < tracks->size())
+                      track = tracks->index(trackNo);
+                if (track)
+                    {
+                    if (track->type() == Track::WAVE && 
+                        (text.endsWith(".wav", Qt::CaseInsensitive) || 
+                          (text.endsWith(".ogg", Qt::CaseInsensitive))))
+                        {
+                        unsigned tick = x;
+                        muse->importWaveToTrack(text, tick, track);
+                        }
+                      // Changed by T356. Support mixed .mpt files.
+                      else if ((track->isMidiTrack() || track->type() == Track::WAVE) && text.endsWith(".mpt", Qt::CaseInsensitive))
+                        {
+                        unsigned tick = x;
+                        muse->importPartToTrack(text, tick, track);
+                        }
+                    }
             }
+            else if(text.endsWith(".med",Qt::CaseInsensitive))
+            {
+                emit dropSongFile(text);
+            }                        
+            else if(text.endsWith(".mid",Qt::CaseInsensitive))
+            {
+                emit dropMidiFile(text);
+            }
+            else
+            {
+                printf("dropped... something...  no hable...\n");
+            }
+      }
+            
       // Restore backup of the clone list, to retain any 'copy' items,
       //  so that pasting works properly after.
       cloneList.clear();
@@ -2766,7 +2786,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 //   drawAudioTrack
 //---------------------------------------------------------
 
-void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, AudioTrack *t)
+void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* /* t */)
 {
       p.setPen(QPen(Qt::black, 2, Qt::SolidLine));
       p.setBrush(Qt::gray);
@@ -2860,7 +2880,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
 }
 
 
-void PartCanvas::controllerChanged(Track *t)
+void PartCanvas::controllerChanged(Track* /* t */)
 {
   redraw();
 }

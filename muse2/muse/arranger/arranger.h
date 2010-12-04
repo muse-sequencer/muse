@@ -204,6 +204,7 @@ class Arranger : public QWidget {
       Track* curTrack() const { return selected; }
       void cmd(int);
       bool isSingleSelection() { return canvas->isSingleSelection(); }
+      int selectionSize() { return canvas->selectionSize(); }
       void setGlobalTempo(int);
       void clear();
       
