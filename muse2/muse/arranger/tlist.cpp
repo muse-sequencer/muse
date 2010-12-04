@@ -655,11 +655,23 @@ void TList::tracklistChanged()
 
 void TList::keyPressEvent(QKeyEvent* e)
       {
-	if (editMode && ( e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
+      if (editMode)
+            {
             // First time we get a keypress event when lineedit is open is on the return key:
             // -- Not true for Qt4. Modifier keys also send key events - Orcan
-            returnPressed();
-            return;
+            if ( e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) 
+                  {
+                  returnPressed();
+                  return;
+                  }
+            else if ( e->key() == Qt::Key_Escape )
+                  {
+                  editor->hide();
+                  editTrack = 0;
+                  editMode = false;
+                  setFocus();
+                  return;           
+                  }
             }
       emit keyPressExt(e); //redirect keypress events to main app
       e->ignore();

@@ -14,8 +14,6 @@
 #include <cmath>
 #include "scldiv.h"
 #include "mmath.h"
-//Added by qt3to4:
-#include <Q3MemArray>
 
 //	ScaleDiv - A class for building  scale divisions
 //
@@ -278,7 +276,7 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
     double val, mval;
     double firstTick, lastTick;
     double minStep;
-    Q3MemArray<double> buffer;
+    QVector<double> buffer;
     bool rv = TRUE;
 
     // parameter range check
@@ -286,9 +284,9 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
     maxMinSteps = qwtMax(0, maxMinSteps);
     step = qwtAbs(step);
 
-    // detach arrays
-    d_majMarks.duplicate(0,0);
-    d_minMarks.duplicate(0,0);
+    // reset vectors
+    d_minMarks.resize(0);
+    d_majMarks.resize(0);
 
     if (d_lBound == d_hBound) return TRUE;
 
@@ -307,11 +305,9 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
     lastTick = floor( (d_hBound + step_eps * d_majStep) / d_majStep) * d_majStep;
 
     nMaj = qwtMin(10000, int(rint((lastTick - firstTick) / d_majStep)) + 1);
-
-    if ((rv = d_majMarks.resize(nMaj)))
-       qwtLinSpace(d_majMarks.data(), d_majMarks.size(), firstTick, lastTick);
-    else
-       return FALSE;
+    
+    d_majMarks.resize(nMaj);
+    qwtLinSpace(d_majMarks.data(), d_majMarks.size(), firstTick, lastTick);
 
     //
     // Set up minor divisions
@@ -339,7 +335,7 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
        i0 = 0;
 
     // resize buffer to the maximum possible number of minor ticks
-    rv = buffer.resize(nMin * (nMaj + 1));
+    buffer.resize(nMin * (nMaj + 1));
 
     // calculate minor ticks
     if (rv)
@@ -362,7 +358,9 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
 		}
 	    }
 	}
-	d_minMarks.duplicate(buffer.data(), minSize);
+        //d_minMarks.duplicate(buffer.data(), minSize);
+        d_minMarks.resize(minSize);
+        qCopy(buffer.data(), buffer.data() + minSize, d_minMarks.begin());
     }
 
     return rv;
@@ -395,7 +393,7 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
     int rv = TRUE;
     double width;
 
-    Q3MemArray<double> buffer;
+    QVector<double> buffer;
 
 
     // Parameter range check
@@ -407,9 +405,9 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
     limRange(d_hBound, LOG_MIN, LOG_MAX);
     limRange(d_lBound, LOG_MIN, LOG_MAX);
 
-    // detach arrays
-    d_majMarks.duplicate(0,0);
-    d_minMarks.duplicate(0,0);
+    // reset vectors
+    d_minMarks.resize(0);
+    d_majMarks.resize(0);
 
     if (d_lBound == d_hBound) return TRUE;
 
@@ -447,10 +445,8 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
 
     nMaj = qwtMin(10000, int(rint(qwtAbs(lLast - lFirst) / d_majStep)) + 1);
 
-    if (d_majMarks.resize(nMaj))
-       qwtLogSpace(d_majMarks.data(), d_majMarks.size(), firstTick, lastTick);
-    else
-       return FALSE;
+    d_majMarks.resize(nMaj);
+    qwtLogSpace(d_majMarks.data(), d_majMarks.size(), firstTick, lastTick);
 
 
     //
@@ -519,7 +515,10 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
 	}
 
 	// copy values into the minMarks array
-	d_minMarks.duplicate(buffer.data(), minSize);
+	//d_minMarks.duplicate(buffer.data(), minSize);
+        d_minMarks.resize(minSize);
+        qCopy(buffer.data(), buffer.data() + minSize, d_minMarks.begin());
+
 
     }
     else				// major step > one decade
@@ -569,7 +568,10 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
 		}
 	    }
 	}
-	d_minMarks.duplicate(buffer.data(), minSize);
+	//d_minMarks.duplicate(buffer.data(), minSize);
+        d_minMarks.resize(minSize);
+        qCopy(buffer.data(), buffer.data() + minSize, d_minMarks.begin());
+
     }
 
     return rv;
@@ -633,9 +635,10 @@ int ScaleDiv::operator!=(const ScaleDiv &s) const
 
 void ScaleDiv::reset()
       {
-      // detach arrays
-      d_majMarks.duplicate(0,0);
-      d_minMarks.duplicate(0,0);
+      // reset vectors
+      d_minMarks.resize(0);
+      d_majMarks.resize(0);
+
 
       d_lBound = 0.0;
       d_hBound = 0.0;

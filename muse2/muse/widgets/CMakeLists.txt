@@ -96,7 +96,6 @@ QT4_WRAP_CPP (widget_mocs
       tempolabel.h  
       tools.h  
       popupmenu.h  
-      fontsel.h  
       ctrlcombo.h  
       sliderbase.h  
       slider.h  
@@ -200,7 +199,6 @@ add_library ( widgets STATIC
       swidget.cpp 
       tempolabel.cpp 
       tools.cpp 
-      fontsel.cpp 
       ctrlcombo.cpp 
       sliderbase.cpp 
       slider.cpp 

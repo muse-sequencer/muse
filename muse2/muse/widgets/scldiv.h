@@ -14,8 +14,7 @@
 #ifndef __SCLDIV_H__
 #define __SCLDIV_H__
 
-#include <qglobal.h>
-#include <q3memarray.h>
+#include <QVector>
 
 class ScaleDiv
       {
@@ -24,8 +23,8 @@ class ScaleDiv
       double d_majStep;
       bool d_log;
 
-      Q3MemArray<double> d_majMarks;
-      Q3MemArray<double> d_minMarks;
+      QVector<double> d_majMarks;
+      QVector<double> d_minMarks;
 
       void copy(const ScaleDiv &s);
 
