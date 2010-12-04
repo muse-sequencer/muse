@@ -7,11 +7,10 @@
 
 #include "header.h"
 #include "xml.h"
-#include <qstringlist.h>
 
-
+#include <QStringList>
 #include <QStandardItemModel>
-/*
+
 //---------------------------------------------------------
 //   readStatus
 //---------------------------------------------------------
@@ -58,69 +57,16 @@ void Header::writeStatus(int level, Xml& xml) const
       xml.nput(level, "<%s> ", Xml::xmlString(name()).latin1());
       int n = count() - 1;
       for (int i = n; i >= 0; --i)
-            xml.nput("%d ", mapToSection(i));
-      //xml.put("</%s>", name());
-      xml.put("</%s>", Xml::xmlString(name()).latin1());
-      }
-*/
-
-
-//---------------------------------------------------------
-//   readStatus
-//---------------------------------------------------------
-
-void HeaderNew::readStatus(Xml& xml)
-      {
-      for (;;) {
-            Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        return;
-                  case Xml::Text:
-                        {
-                        QStringList l = QStringList::split(QString(" "), tag);
-                        int index = count();
-                        for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-                              int section = (*it).toInt();
-                              moveSection(section, index);
-                              --index;
-                              }
-                        }
-                        break;
-                  case Xml::TagStart:
-                        xml.unknown("Header");
-                        break;
-                  case Xml::TagEnd:
-                        if (tag == name())
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
-//   writeStatus
-//---------------------------------------------------------
-
-void HeaderNew::writeStatus(int level, Xml& xml) const
-      {
-      //xml.nput(level, "<%s> ", name());
-      xml.nput(level, "<%s> ", Xml::xmlString(name()).latin1());
-      int n = count() - 1;
-      for (int i = n; i >= 0; --i)
             xml.nput("%d ", visualIndex(i));
       //xml.put("</%s>", name());
       xml.put("</%s>", Xml::xmlString(name()).latin1());
       }
 
 //---------------------------------------------------------
-//   HeaderNew
+//   Header
 //---------------------------------------------------------
 
-HeaderNew::HeaderNew(QWidget* parent, const char* name)
+Header::Header(QWidget* parent, const char* name)
   : QHeaderView(Qt::Horizontal, parent) 
       {
       setObjectName(name);
@@ -134,7 +80,7 @@ HeaderNew::HeaderNew(QWidget* parent, const char* name)
 //   setColumnLabel
 //---------------------------------------------------------
 
-void HeaderNew::setColumnLabel(const QString & text, int col, int width )
+void Header::setColumnLabel(const QString & text, int col, int width )
       {
       QStandardItem *sitem = new QStandardItem(text );
       itemModel->setHorizontalHeaderItem(col, sitem);
@@ -146,7 +92,7 @@ void HeaderNew::setColumnLabel(const QString & text, int col, int width )
 //   setToolTip
 //---------------------------------------------------------
 
-void HeaderNew::setToolTip(int col, const QString &text)
+void Header::setToolTip(int col, const QString &text)
       {
       QStandardItem *item = itemModel->horizontalHeaderItem(col);
       item->setToolTip(text);
@@ -156,7 +102,7 @@ void HeaderNew::setToolTip(int col, const QString &text)
 //   setWhatsThis
 //---------------------------------------------------------
 
-void HeaderNew::setWhatsThis(int col, const QString &text)
+void Header::setWhatsThis(int col, const QString &text)
       {
       QStandardItem *item = itemModel->horizontalHeaderItem(col);
       item->setWhatsThis(text);

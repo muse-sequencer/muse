@@ -4,6 +4,8 @@
         - Fixed arranger menu cut/copy enabling. Was never right before. Test OK cut and copy. (Tim)
         - Completed port of MidiInstrument. Fixed its populatePatchPopup(), which fixes midi trackinfo 
            instrument selection not updating h-bank, l-bank, and prog spinboxes. (Tim)
+        - Some cleanups: Remove the old Header class. Rename HeaderNew to Header. (Orcan)
+        - Ported: osc, wave, dcanvas. (Orcan)
 02.12.2010
         - Ported alayout, tlist, arranger (Orcan)
         - Minor tweak in the HeaderNew API to set column widths easier. Also commented out the

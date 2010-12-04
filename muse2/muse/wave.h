@@ -9,11 +9,11 @@
 #ifndef __WAVE_H__
 #define __WAVE_H__
 
-#include <qstring.h>
 #include <list>
-#include <qfileinfo.h>
 #include <sndfile.h>
 
+class QFileInfo;
+class QString;
 class Xml;
 
 //---------------------------------------------------------

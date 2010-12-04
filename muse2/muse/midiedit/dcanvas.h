@@ -10,13 +10,15 @@
 
 #include "ecanvas.h"
 #include "song.h"
-#include <QResizeEvent>
-#include <QDragEnterEvent>
-#include <QDropEvent>
-#include <QDragMoveEvent>
-#include <QDragLeaveEvent>
 
 #define TH 18
+
+
+class QResizeEvent;
+class QDragEnterEvent;
+class QDropEvent;
+class QDragMoveEvent;
+class QDragLeaveEvent;
 
 class MidiEditor;
 

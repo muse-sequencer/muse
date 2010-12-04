@@ -23,7 +23,7 @@ class QScrollBar;
 class QToolButton;
 class QWheelEvent;
 
-class HeaderNew;
+class Header;
 class TList;
 class ScrollScale;
 class MTScale;
@@ -80,7 +80,7 @@ class Arranger : public QWidget {
       ScrollScale* hscroll;
       QScrollBar* vscroll;
       TList* list;
-      HeaderNew* header;
+      Header* header;
       MTScale* time;
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
