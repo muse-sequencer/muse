@@ -1135,23 +1135,7 @@ void PianoRoll::setEventColorMode(int mode)
 
 void PianoRoll::clipboardChanged()
       {
-      const QMimeData* ms = QApplication::clipboard()->mimeData(QClipboard::Clipboard);
-      bool flag = false;
-      if (ms) {
-            /*
-            for (int i = 0;; ++i) {
-                  if (ms->format(i) == 0)
-                        break;
-//                  printf("clipboard changed %s\n", ms->format(i));
-                  flag = strcmp(ms->format(i), "text/eventlist;charset=UTF-8") == 0;
-                  if (flag)
-                        break;
-                  }
-            */      
-            
-            flag = ms->hasFormat("text/eventlist;charset=UTF-8");      
-            }
-      editPasteAction->setEnabled(flag);
+      editPasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-eventlist")));
       }
 
 //---------------------------------------------------------

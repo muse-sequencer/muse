@@ -11,10 +11,11 @@
 #include <qpalette.h>
 #include <qpainter.h>
 #include <q3popupmenu.h>
-#include <q3dragobject.h>
 #include <qmessagebox.h>
-#include <q3url.h>
-//Added by qt3to4:
+
+#include <QByteArray>
+#include <QMimeData>
+#include <QDrag>
 #include <QDropEvent>
 #include <QMouseEvent>
 #include <QDragEnterEvent>
@@ -379,9 +380,16 @@ void EffectRack::startDrag(int idx)
       
       QString xmlconf;
       xml.dump(xmlconf);
-      Q3TextDrag *drag = new Q3TextDrag(xmlconf, this);
-      drag->setSubtype("x-muse-plugin");
-      drag->drag();
+      
+      QByteArray data(xmlconf.toLatin1().data());
+      QMimeData* md = new QMimeData();
+      
+      md->setData("text/x-muse-plugin", data);
+      
+      QDrag* drag = new QDrag(this);
+      drag->setMimeData(md);
+      
+      drag->exec(Qt::CopyAction);
       }
 
 void EffectRack::contentsDropEvent(QDropEvent * /*event*/)// prevent of compiler warning: unsued variable
@@ -395,7 +403,8 @@ void EffectRack::dropEvent(QDropEvent *event)
       int idx = index(i);
       
       Pipeline* pipe = track->efxPipe();
-      if (pipe) {
+      if (pipe) 
+      {
             if ((*pipe)[idx] != NULL) {
                 QWidget *sw = event->source();
                 if(sw)
@@ -413,58 +422,57 @@ void EffectRack::dropEvent(QDropEvent *event)
                       return; 
                   }
                 }
-                if(!QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
-                      tr("&Yes"), tr("&No"),
-                      QString::null, 0, 1 ))
+                if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
+                      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
                       {
-                      audio->msgAddPlugin(track, idx, 0);
-                      song->update(SC_RACK);
+                        audio->msgAddPlugin(track, idx, 0);
+                        song->update(SC_RACK);
                       }
                 else {
                       return;
                       }
                 }
-            if(Q3TextDrag::decode(event, text))
-                {
-                text = text.stripWhiteSpace();
-                // Changed by T356.
-                //if (text.endsWith(".pre", false))
-                if (text.endsWith(".pre", false) || text.endsWith(".pre.gz", false) || text.endsWith(".pre.bz2", false))
-                    {
-                    Q3Url url(text);
-                    QString newPath = url.path();
-      
-                    //bool popenFlag = false;
-                    bool popenFlag;
-                    FILE* fp = fileOpen(this, newPath, ".pre", "r", popenFlag, false, false);
-              
-                    if (fp) {
-                        Xml xml(fp);
-                        initPlugin(xml, idx);
-                        
-                        // Added by T356.
-                        if (popenFlag)
-                              pclose(fp);
-                        else
-                              fclose(fp);
-                        }
-                    }
-                else if (event->provides("text/x-muse-plugin"))
-                      {
-                        QString outxml;
-                        Q3TextDrag::decode(event, outxml);
-                        Xml xml(outxml);
-                        initPlugin(xml, idx);
-                      }
-                }
-           }
+            
+            if(event->mimeData()->hasFormat("text/x-muse-plugin"))
+            {
+              QString outxml;
+              Xml xml(event->mimeData()->data("text/x-muse-plugin").data());
+              initPlugin(xml, idx);
+            }
+            else
+            if (event->mimeData()->hasUrls()) 
+            {
+              // Multiple urls not supported here. Grab the first one.
+              text = event->mimeData()->urls()[0].path();
+               
+              if (text.endsWith(".pre", Qt::CaseInsensitive) || 
+                  text.endsWith(".pre.gz", Qt::CaseInsensitive) || 
+                  text.endsWith(".pre.bz2", Qt::CaseInsensitive))
+              {
+                  //bool popenFlag = false;
+                  bool popenFlag;
+                  FILE* fp = fileOpen(this, text, ".pre", "r", popenFlag, false, false);
+                  if (fp) 
+                  {
+                      Xml xml(fp);
+                      initPlugin(xml, idx);
+                      
+                      // Added by T356.
+                      if (popenFlag)
+                            pclose(fp);
+                      else
+                            fclose(fp);
+                  }
+              }
+            }
+      }
       }
 
 void EffectRack::dragEnterEvent(QDragEnterEvent *event)
       {
-      event->accept(Q3TextDrag::canDecode(event));
+      ///event->accept(Q3TextDrag::canDecode(event));
+      event->acceptProposedAction();  // TODO CHECK Tim.
       }
-
 
 void EffectRack::contentsDragEnterEvent(QDragEnterEvent * /*event*/)// prevent of compiler warning: unused parameter
       {

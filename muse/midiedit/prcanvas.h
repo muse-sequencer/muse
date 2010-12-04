@@ -10,7 +10,6 @@
 
 #include "ecanvas.h"
 #include "pianoroll.h"
-//Added by qt3to4:
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QMouseEvent>
@@ -31,7 +30,6 @@ class NEvent : public CItem {
 
 class ScrollScale;
 class PianoRoll;
-class Q3TextDrag;
 class QRect;
 
 //---------------------------------------------------------
@@ -59,7 +57,6 @@ class PianoCanvas : public EventCanvas {
       virtual void dragEnterEvent(QDragEnterEvent* event);
       virtual void dragMoveEvent(QDragMoveEvent*);
       virtual void dragLeaveEvent(QDragLeaveEvent*);
-      virtual void viewDropEvent(QDropEvent* event);
       virtual void addItem(Part*, Event&);
 
       int y2pitch(int) const;
@@ -68,8 +65,6 @@ class PianoCanvas : public EventCanvas {
       void quantize(int, int, bool);
       void copy();
       void paste();
-      void pasteAt(const QString& pt, int pos);
-      Q3TextDrag* getTextDrag(QWidget*);
       virtual void itemPressed(const CItem*);
       virtual void itemReleased(const CItem*, const QPoint&);
       virtual void itemMoved(const CItem*, const QPoint&);

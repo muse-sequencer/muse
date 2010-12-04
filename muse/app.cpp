@@ -3546,15 +3546,19 @@ class MuseApplication : public QApplication {
             bool flag = QApplication::notify(receiver, event);
             if (event->type() == QEvent::KeyPress) {
                   QKeyEvent* ke = (QKeyEvent*)event;
-                  globalKeyState = ke->stateAfter();
+                  ///globalKeyState = ke->stateAfter();
+                  globalKeyState = ke->modifiers();
                   bool accepted = ke->isAccepted();
                   if (!accepted) {
                         int key = ke->key();
-                        if (ke->state() & Qt::ShiftModifier)
+                        ///if (ke->state() & Qt::ShiftModifier)
+                        if (globalKeyState & Qt::ShiftModifier)
                               key += Qt::SHIFT;
-                        if (ke->state() & Qt::AltModifier)
+                        ///if (ke->state() & Qt::AltModifier)
+                        if (globalKeyState & Qt::AltModifier)
                               key += Qt::ALT;
-                        if (ke->state() & Qt::ControlModifier)
+                        ///if (ke->state() & Qt::ControlModifier)
+                        if (globalKeyState & Qt::ControlModifier)
                               key+= Qt::CTRL;
                         muse->kbAccel(key);
                         return true;
@@ -3562,7 +3566,8 @@ class MuseApplication : public QApplication {
                   }
             if (event->type() == QEvent::KeyRelease) {
                   QKeyEvent* ke = (QKeyEvent*)event;
-                  globalKeyState = ke->stateAfter();
+                  ///globalKeyState = ke->stateAfter();
+                  globalKeyState = ke->modifiers();
                   }
 
             return flag;
@@ -3892,8 +3897,8 @@ int main(int argc, char* argv[])
       initIcons();
 
       initMetronome();
-      //QApplication::clipboard()->setSelectionMode(false); ddskrjo
-
+      
+      //QApplication::clipboard()->setSelectionMode(false); ddskrjo obsolete even in Qt3
       
       QApplication::addLibraryPath(museGlobalLib + "/qtplugins");
       if (debugMsg) {
@@ -4101,6 +4106,7 @@ void MusE::cmd(int cmd)
 
 void MusE::clipboardChanged()
       {
+/*      
       //Q3CString subtype("partlist");
       //QString subtype("partlist");
       QMimeSource* ms = QApplication::clipboard()->data(QClipboard::Clipboard);
@@ -4117,11 +4123,25 @@ void MusE::clipboardChanged()
                   break;
                   }
             }
-      menuEdit->setItemEnabled(CMD_PASTE, flag);
-      menuEdit->setItemEnabled(CMD_INSERT, flag);
-      menuEdit->setItemEnabled(CMD_PASTE_CLONE, flag);
-      menuEdit->setItemEnabled(CMD_PASTE_TO_TRACK, flag);
-      menuEdit->setItemEnabled(CMD_PASTE_CLONE_TO_TRACK, flag);
+*/
+      
+      bool flag = false;
+      if(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-midipartlist")) ||
+         QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-wavepartlist")) ||
+         QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-mixedpartlist")))
+        flag = true;
+      
+      //bool flag = false;
+      //if(!QApplication::clipboard()->text(QString("x-muse-midipartlist"), QClipboard::Clipboard).isEmpty() ||
+      //   !QApplication::clipboard()->text(QString("x-muse-wavepartlist"), QClipboard::Clipboard).isEmpty() ||      
+      //   !QApplication::clipboard()->text(QString("x-muse-mixedpartlist"), QClipboard::Clipboard).isEmpty())       
+      //  flag = true;
+        
+      editPasteAction->setEnabled(flag);
+      editInsertAction->setEnabled(flag);
+      editPasteCloneAction->setEnabled(flag);
+      editPaste2TrackAction->setEnabled(flag);
+      editPasteC2TAction->setEnabled(flag);
       }
 
 //---------------------------------------------------------
@@ -4130,9 +4150,10 @@ void MusE::clipboardChanged()
 
 void MusE::selectionChanged()
       {
-      bool flag = arranger->isSingleSelection();
-      menuEdit->setItemEnabled(CMD_CUT, flag);
-      //menuEdit->setItemEnabled(CMD_COPY, flag); // Now possible
+      //bool flag = arranger->isSingleSelection();  // -- Hmm, why only single? 
+      bool flag = arranger->selectionSize() > 0;    // -- Test OK cut and copy. For muse2. Tim.
+      editCutAction->setEnabled(flag);
+      editCopyAction->setEnabled(flag);
       }
 
 //---------------------------------------------------------

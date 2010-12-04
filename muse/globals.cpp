@@ -289,7 +289,8 @@ const QStringList audio_file_pattern =
       QString("Binary (*.bin);;") +
       QString("All Files (*)")) );
 
-Qt::ButtonState globalKeyState;
+///Qt::ButtonState globalKeyState;
+Qt::KeyboardModifiers globalKeyState;
 
 // Midi Filter Parameter
 int midiInputPorts   = 0;    // receive from all devices

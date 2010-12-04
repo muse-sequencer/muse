@@ -1,3 +1,7 @@
+03.12.2010
+        - Ported all copy/paste/drag/drop coding. Including pianoroll, drumedit, pcanvas, prcanvas, dcanvas, 
+           and effect rack. Test OK cut, copy, paste, also drag n drop various files to arranger and rack. (Tim)
+        - Fixed arranger menu cut/copy enabling. Was never right before. Test OK cut and copy. (Tim)
 02.12.2010
         - Ported alayout, tlist, arranger (Orcan)
         - Minor tweak in the HeaderNew API to set column widths easier. Also commented out the

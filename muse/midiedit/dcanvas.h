@@ -10,7 +10,6 @@
 
 #include "ecanvas.h"
 #include "song.h"
-//Added by qt3to4:
 #include <QResizeEvent>
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -33,7 +32,6 @@ class DEvent : public CItem {
 
 class ScrollScale;
 class PianoRoll;
-class Q3TextDrag;
 
 //---------------------------------------------------------
 //   DrumCanvas
@@ -56,15 +54,12 @@ class DrumCanvas : public EventCanvas {
 
       int y2pitch(int y) const;
       int pitch2y(int pitch) const;
-      Q3TextDrag* getTextDrag(QWidget* parent);
       void copy();
-      int pasteAt(const QString& pt, int pos);
       void paste();
       void startDrag(CItem*, bool copymode);
       void dragEnterEvent(QDragEnterEvent* event);
       void dragMoveEvent(QDragMoveEvent*);
       void dragLeaveEvent(QDragLeaveEvent*);
-      void viewDropEvent(QDropEvent* event);
       virtual void addItem(Part*, Event&);
       virtual void resizeEvent(QResizeEvent*);
       virtual void curPartChanged();

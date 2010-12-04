@@ -10,6 +10,7 @@
 #define __RACK_H__
 
 #include <q3listbox.h>
+#include <QDragLeaveEvent>
 //Added by qt3to4:
 #include <QMouseEvent>
 #include <QDropEvent>
