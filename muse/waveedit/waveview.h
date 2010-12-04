@@ -55,6 +55,7 @@ class WaveView : public View {
       virtual void viewMousePressEvent(QMouseEvent*);
       virtual void viewMouseMoveEvent(QMouseEvent*);
       virtual void viewMouseReleaseEvent(QMouseEvent*);
+      virtual void wheelEvent(QWheelEvent*);
 
       bool getUniqueTmpfileName(QString& newFilename); //!< Generates unique filename for temporary SndFile
       WaveSelectionList getSelection(unsigned startpos, unsigned stoppos);
@@ -84,6 +85,7 @@ class WaveView : public View {
    signals:
       void followEvent(int);
       void timeChanged(unsigned);
+      void mouseWheelMoved(int);
 
    public:
       WaveView(MidiEditor*, QWidget* parent, int xscale, int yscale);

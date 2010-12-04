@@ -378,6 +378,15 @@ void WaveView::viewMousePressEvent(QMouseEvent* event)
       viewMouseMoveEvent(event);
       }
 
+
+//---------------------------------------------------------
+//   wheelEvent
+//---------------------------------------------------------
+void WaveView::wheelEvent(QWheelEvent* event)
+      {
+      emit mouseWheelMoved(event->delta() / 10);
+      }
+
 //---------------------------------------------------------
 //   viewMouseReleaseEvent
 //---------------------------------------------------------

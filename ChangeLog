@@ -1,3 +1,9 @@
+04.12.2010
+        - Fix: Escape button does not exit track renaming editor. (Orcan)
+        - Fix: Midi ports config table items are editable when they are not supposed to. (Orcan)
+        - Ported scldiv. Things seem to work as before. Maybe needs more testing. (Orcan)
+        - Removed fontsel, and synthwizardbase from the project. (Orcan)
+        - Feature: In waveedit, the mousewheel controls the vertical slider. (Orcan)
 03.12.2010
         - Ported all copy/paste/drag/drop coding. Including pianoroll, drumedit, pcanvas, prcanvas, dcanvas, 
            and effect rack. Test OK cut, copy, paste, also drag n drop various files to arranger and rack. (Tim)

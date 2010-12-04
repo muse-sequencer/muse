@@ -64,7 +64,8 @@ WaveEdit::WaveEdit(PartList* pl)
       QAction* act;
       
       //---------Pulldown Menu----------------------------
-      QMenu* menuFile = menuBar()->addMenu(tr("&File"));
+      // We probably don't need an empty menu - Orcan
+      //QMenu* menuFile = menuBar()->addMenu(tr("&File"));
       QMenu* menuEdit = menuBar()->addMenu(tr("&Edit"));
       
       menuFunctions = menuBar()->addMenu(tr("Func&tions"));
@@ -197,6 +198,7 @@ WaveEdit::WaveEdit(PartList* pl)
        
       time                 = new MTScale(&_raster, mainw, xscale, true);
       ymag->setFixedWidth(16);
+      connect(view, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
       connect(ymag, SIGNAL(valueChanged(int)), view, SLOT(setYScale(int)));
       time->setOrigin(0, 0);
 
@@ -447,4 +449,12 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
             }
       }
 
+//---------------------------------------------------------
+//   moveVerticalSlider
+//---------------------------------------------------------
+
+void WaveEdit::moveVerticalSlider(int val)
+      {
+      ymag->setValue(ymag->value() + val);
+      }
 

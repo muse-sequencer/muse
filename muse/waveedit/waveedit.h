@@ -55,6 +55,7 @@ class WaveEdit : public MidiEditor {
       void setTime(unsigned t);
       void songChanged1(int);
       void soloChanged(bool flag);
+      void moveVerticalSlider(int val);
 
    public slots:
       void configChanged();

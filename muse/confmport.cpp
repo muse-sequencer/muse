@@ -771,31 +771,39 @@ void MPConfig::songChanged(int flags)
             MidiDevice* dev = port->device();
             QString s;
             s.setNum(i+1);
-            QTableWidgetItem* itemno = new QTableWidgetItem(s);
+	    QTableWidgetItem* itemno = new QTableWidgetItem(s);
 	    addItem(i, DEVCOL_NO, itemno, mdevView);
 	    itemno->setTextAlignment(Qt::AlignHCenter);
+	    itemno->setFlags(Qt::ItemIsEnabled);
 	    QTableWidgetItem* itemstate = new QTableWidgetItem(port->state());
 	    addItem(i, DEVCOL_STATE, itemstate, mdevView);
+	    itemstate->setFlags(Qt::ItemIsEnabled);
 	    QTableWidgetItem* iteminstr = new QTableWidgetItem(port->instrument() ?
 							       port->instrument()->iname() :
 							       tr("<unknown>"));
 	    addItem(i, DEVCOL_INSTR, iteminstr, mdevView);
+	    iteminstr->setFlags(Qt::ItemIsEnabled);
 	    QTableWidgetItem* itemname = new QTableWidgetItem;
 	    addItem(i, DEVCOL_NAME, itemname, mdevView);
 	    itemname->setFlags(Qt::ItemIsEnabled);
 	    QTableWidgetItem* itemgui = new QTableWidgetItem;
 	    addItem(i, DEVCOL_GUI, itemgui, mdevView);
 	    itemgui->setTextAlignment(Qt::AlignHCenter);
+	    itemgui->setFlags(Qt::ItemIsEnabled);
 	    QTableWidgetItem* itemrec = new QTableWidgetItem;
 	    addItem(i, DEVCOL_REC, itemrec, mdevView);
 	    itemrec->setTextAlignment(Qt::AlignHCenter);
+	    itemrec->setFlags(Qt::ItemIsEnabled);
 	    QTableWidgetItem* itemplay = new QTableWidgetItem;
 	    addItem(i, DEVCOL_PLAY, itemplay, mdevView);
 	    itemplay->setTextAlignment(Qt::AlignHCenter);
+	    itemplay->setFlags(Qt::ItemIsEnabled);
 	    QTableWidgetItem* itemout = new QTableWidgetItem;
 	    addItem(i, DEVCOL_OUTROUTES, itemout, mdevView);
+	    itemout->setFlags(Qt::ItemIsEnabled);
 	    QTableWidgetItem* itemin = new QTableWidgetItem;
 	    addItem(i, DEVCOL_INROUTES, itemin, mdevView);
+	    itemin->setFlags(Qt::ItemIsEnabled);
 	    mdevView->blockSignals(false);
 
 
