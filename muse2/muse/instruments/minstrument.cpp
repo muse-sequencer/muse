@@ -8,8 +8,9 @@
 
 #include <stdio.h>
 
-#include <qdir.h>
-#include <qfileinfo.h>
+#include <QDir>
+#include <QFileInfo>
+#include <QAction>
 
 #include "minstrument.h"
 #include "midiport.h"
@@ -186,7 +187,7 @@ static void loadIDF(QFileInfo* fi)
       if (f == 0)
             return;
       if (debugMsg)
-            printf("READ IDF %s\n", fi->filePath().latin1());
+            printf("READ IDF %s\n", fi->filePath().toLatin1().data());
       Xml xml(f);
       
       bool skipmode = true;
@@ -245,7 +246,7 @@ void initMidiInstruments()
       genericMidiInstrument = new MidiInstrument(QWidget::tr("generic midi"));
       midiInstruments.push_back(genericMidiInstrument);
       if (debugMsg)
-        printf("load user instrument definitions from <%s>\n", museUserInstruments.latin1());
+        printf("load user instrument definitions from <%s>\n", museUserInstruments.toLatin1().data());
       QDir usrInstrumentsDir(museUserInstruments, QString("*.idf"));
       if (usrInstrumentsDir.exists()) {
             QFileInfoList list = usrInstrumentsDir.entryInfoList();
@@ -264,7 +265,7 @@ void initMidiInstruments()
       //}
       
       if (debugMsg)
-        printf("load instrument definitions from <%s>\n", museInstruments.latin1());
+        printf("load instrument definitions from <%s>\n", museInstruments.toLatin1().data());
       QDir instrumentsDir(museInstruments, QString("*.idf"));
       if (instrumentsDir.exists()) {
             QFileInfoList list = instrumentsDir.entryInfoList();
@@ -275,7 +276,7 @@ void initMidiInstruments()
                   }
             }
       else
-        printf("Instrument directory not found: %s\n", museInstruments.latin1());
+        printf("Instrument directory not found: %s\n", museInstruments.toLatin1().data());
         
       }
 
@@ -613,7 +614,7 @@ void Patch::write(int level, Xml& xml)
             //      s += QString(" mode=\"%d\"").arg(typ);
             //s += QString(" hbank=\"%1\" lbank=\"%2\" prog=\"%3\"").arg(hbank).arg(lbank).arg(prog);
             //xml.tagE(s);
-            xml.nput(level, "<Patch name=\"%s\"", Xml::xmlString(name).latin1());
+            xml.nput(level, "<Patch name=\"%s\"", Xml::xmlString(name).toLatin1().data());
             if(typ != -1)
               xml.nput(" mode=\"%d\"", typ);
             
@@ -715,7 +716,7 @@ void MidiInstrument::read(Xml& xml)
                         else if (tag == "InitScript") {
                               if (_initScript)
                                     delete _initScript;
-                              const char* istr = xml.parse1().latin1();
+                              const char* istr = xml.parse1().toLatin1().data();
                               int len = strlen(istr) +1;
                               if (len > 1) {
                                     _initScript = new char[len];
@@ -753,14 +754,14 @@ void MidiInstrument::write(int level, Xml& xml)
       xml.tag(level, "muse version=\"1.0\"");
       //xml.stag(QString("MidiInstrument name=\"%1\"").arg(Xml::xmlString(iname())));
       level++;
-      //xml.tag(level, "MidiInstrument name=\"%s\"", Xml::xmlString(iname()).latin1());
-      xml.nput(level, "<MidiInstrument name=\"%s\"", Xml::xmlString(iname()).latin1());
+      //xml.tag(level, "MidiInstrument name=\"%s\"", Xml::xmlString(iname()).toLatin1().data());
+      xml.nput(level, "<MidiInstrument name=\"%s\"", Xml::xmlString(iname()).toLatin1().data());
       
       if(_nullvalue != -1)
       {
         QString nv; 
         nv.setNum(_nullvalue);
-        xml.nput(" nullparam=\"%s\"", nv.latin1());
+        xml.nput(" nullparam=\"%s\"", nv.toLatin1().data());
       }  
       xml.put(">");
 
@@ -776,8 +777,8 @@ void MidiInstrument::write(int level, Xml& xml)
             PatchGroup* pgp = *g;
             const PatchList& pl = pgp->patches;
             //xml.stag(QString("PatchGroup name=\"%1\"").arg(Xml::xmlString(g->name)));
-            //xml.tag(level, "PatchGroup name=\"%s\"", Xml::xmlString(g->name).latin1());
-            xml.tag(level, "PatchGroup name=\"%s\"", Xml::xmlString(pgp->name).latin1());
+            //xml.tag(level, "PatchGroup name=\"%s\"", Xml::xmlString(g->name).toLatin1().data());
+            xml.tag(level, "PatchGroup name=\"%s\"", Xml::xmlString(pgp->name).toLatin1().data());
             level++;
             //for (iPatch p = g->patches.begin(); p != g->patches.end(); ++p)
             for (ciPatch p = pl.begin(); p != pl.end(); ++p)
@@ -846,7 +847,7 @@ const char* MidiInstrument::getPatchName(int channel, int prog, MType mode, bool
                     
                     && (hbank == mp->hbank || !hb || mp->hbank == -1)
                     && (lbank == mp->lbank || !lb || mp->lbank == -1))
-                        return mp->name.latin1();
+                        return mp->name.toLatin1().data();
                   }
             }
       return "<unknown>";
@@ -874,8 +875,7 @@ void MidiInstrument::populatePatchPopup(QMenu* menu, int chan, MType songType, b
       if (pg.size() > 1) {
             for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
                   PatchGroup* pgp = *i;
-                  QMenu* pm = new QMenu(menu);
-                  pm->setCheckable(false);
+                  QMenu* pm = menu->addMenu(pgp->name);
                   pm->setFont(config.fonts[0]);
                   const PatchList& pl = pgp->patches;
                   for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
@@ -886,11 +886,12 @@ void MidiInstrument::populatePatchPopup(QMenu* menu, int chan, MType songType, b
                             {
                               int id = ((mp->hbank & 0xff) << 16)
                                          + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
-                              pm->insertItem(mp->name, id);
+                              QAction* act = pm->addAction(mp->name);
+                              //act->setCheckable(true);
+                              act->setData(id);
                             }
                               
                         }
-                  menu->insertItem(pgp->name, pm);
                   }
             }
       else if (pg.size() == 1 ){
@@ -901,7 +902,9 @@ void MidiInstrument::populatePatchPopup(QMenu* menu, int chan, MType songType, b
                   if (mp->typ & mask) {
                         int id = ((mp->hbank & 0xff) << 16)
                                  + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
-                        menu->insertItem(mp->name, id);
+                        QAction* act = menu->addAction(mp->name);
+                        //act->setCheckable(true);
+                        act->setData(id);
                         }
                   }
             }
