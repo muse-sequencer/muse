@@ -1,3 +1,5 @@
+05.12.2010
+        - Completed porting of dlist module (the drum list). Test OK. (Tim)
 04.12.2010
         - Fix: Escape button does not exit track renaming editor. (Orcan)
         - Fix: Midi ports config table items are editable when they are not supposed to. (Orcan)

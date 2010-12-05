@@ -60,12 +60,14 @@ void DList::draw(QPainter& p, const QRect& rect)
             for (int k = 0; k < h->count(); ++k) {
                   int x   = h->sectionPosition(k);
                   int w   = h->sectionSize(k);
-                  QRect r = p.xForm(QRect(x+2, yy, w-4, TH));
+                  ///QRect r = p.xForm(QRect(x+2, yy, w-4, TH));
+                  QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, TH));
                   QString s;
                   int align = Qt::AlignVCenter | Qt::AlignHCenter;
 
                   p.save();
-                  p.setWorldXForm(false);
+                  ///p.setWorldXForm(false);    
+                  p.setWorldMatrixEnabled(false);
                   switch (k) {
                         case COL_VOL:
                               s.setNum(dm->vol);
@@ -113,7 +115,7 @@ void DList::draw(QPainter& p, const QRect& rect)
                               s.setNum(dm->channel+1);
                               break;
                         case COL_PORT:
-                              s.sprintf("%d:%s", dm->port+1, midiPorts[dm->port].portname().latin1());
+                              s.sprintf("%d:%s", dm->port+1, midiPorts[dm->port].portname().toLatin1().constData());
                               align = Qt::AlignVCenter | Qt::AlignLeft;
                               break;
                         }
@@ -147,7 +149,8 @@ void DList::draw(QPainter& p, const QRect& rect)
       //    vertical Lines
       //---------------------------------------------------
 
-      p.setWorldXForm(false);
+      ///p.setWorldXForm(false);
+      p.setWorldMatrixEnabled(false);
       int n = header->count();
       x = 0;
       for (int i = 0; i < n; i++) {
@@ -155,7 +158,8 @@ void DList::draw(QPainter& p, const QRect& rect)
             x += header->sectionSize(header->visualIndex(i));
             p.drawLine(x, 0, x, height());
             }
-      p.setWorldXForm(true);
+      ///p.setWorldXForm(true);
+      p.setWorldMatrixEnabled(true);
       }
 
 //---------------------------------------------------------
@@ -216,7 +220,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       int x      = ev->x();
       int y      = ev->y();
       int button = ev->button();
-      bool shift = ev->state() & Qt::ShiftButton;
+      ///bool shift = ev->state() & Qt::ShiftButton;
+      bool shift = ev->modifiers() & Qt::ShiftModifier;
       unsigned pitch = y / TH;
       DrumMap* dm = &drumMap[pitch];
 
@@ -254,7 +259,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   break;
             case COL_PORT:
                   if (button == Qt::RightButton) {
-                        bool changeAll = ev->state() & Qt::ControlButton;
+                        ///bool changeAll = ev->state() & Qt::ControlButton;
+                        bool changeAll = ev->modifiers() & Qt::ControlModifier;
                         devicesPopupMenu(dm, mapx(x), mapy(pitch * TH), changeAll);
                         }
                   break;
@@ -319,7 +325,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   else if (val > 127)
                         val = 127;
                   
-                  if (ev->state() & Qt::ControlButton) {
+                  ///if (ev->state() & Qt::ControlButton) {
+                  if (ev->state() & Qt::ControlModifier) {
                         audio->msgIdle(true);
                         // Delete all port controller events.
                         //audio->msgChangeAllPortDrumCtrlEvents(false);
@@ -491,19 +498,6 @@ void DList::lineEdit(int line, int section)
      }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 //---------------------------------------------------------
 //   x2col
 //---------------------------------------------------------
@@ -556,7 +550,8 @@ void DList::returnPressed()
       int val = -1;
       if (selectedColumn != COL_NAME) 
       {
-            val = atoi(editor->text().ascii());
+            ///val = atoi(editor->text().ascii());
+            val = atoi(editor->text().toAscii().constData());
             if (selectedColumn != COL_LEN) 
             {
               if(selectedColumn == COL_VOL)
@@ -582,7 +577,8 @@ void DList::returnPressed()
                   break;
 
             case COL_LEN:
-                  editEntry->len = atoi(editor->text().ascii());
+                  ///editEntry->len = atoi(editor->text().ascii());
+                  editEntry->len = atoi(editor->text().toAscii().constData());
                   break;
 
             case COL_VOL:
@@ -664,7 +660,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag)
       drag = NORMAL;
       editor = 0;
       editEntry = 0;
-      // always select an drum instrument
+      // always select a drum instrument
       currentlySelected = &drumMap[0];
       selectedColumn = -1;
       }
@@ -725,7 +721,8 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
             editor->setFocus();
       int x = ev->x();
       int y = ev->y();
-      bool shift = ev->state() & Qt::ShiftButton;
+      ///bool shift = ev->state() & Qt::ShiftButton;
+      bool shift = ev->modifiers() & Qt::ShiftModifier;
       unsigned pitch = y / TH;
 
       DCols col = DCols(x2col(x));
