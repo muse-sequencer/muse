@@ -262,13 +262,13 @@ void EventCanvas::keyPress(QKeyEvent* event)
       {
       int key = event->key();
       ///if (event->state() & Qt::ShiftButton)
-      if (event->modifiers() & Qt::ShiftButton)
+      if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
             key += Qt::SHIFT;
       ///if (event->state() & Qt::AltButton)
-      if (event->modifiers() & Qt::AltButton)
+      if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
             key += Qt::ALT;
       ///if (event->state() & Qt::ControlButton)
-      if (event->modifiers() & Qt::ControlButton)
+      if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
             key+= Qt::CTRL;
 
       //

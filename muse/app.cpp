@@ -1278,7 +1278,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    Miscellaneous shortcuts
       //--------------------------------------------------
       
-      QShortcut* sc = new QShortcut(Qt::Key_Delete, this);
+      QShortcut* sc = new QShortcut(shortcuts[SHRT_DELETE].key, this);
       sc->setContext(Qt::WindowShortcut);
       connect(sc, SIGNAL(activated()), editSignalMapper, SLOT(map()));
       editSignalMapper->setMapping(sc, CMD_DELETE);
@@ -3552,13 +3552,16 @@ class MuseApplication : public QApplication {
                   if (!accepted) {
                         int key = ke->key();
                         ///if (ke->state() & Qt::ShiftModifier)
-                        if (globalKeyState & Qt::ShiftModifier)
+                        //if (globalKeyState & Qt::ShiftModifier)
+                        if (((QInputEvent*)ke)->modifiers() & Qt::ShiftModifier)
                               key += Qt::SHIFT;
                         ///if (ke->state() & Qt::AltModifier)
-                        if (globalKeyState & Qt::AltModifier)
+                        //if (globalKeyState & Qt::AltModifier)
+                        if (((QInputEvent*)ke)->modifiers() & Qt::AltModifier)
                               key += Qt::ALT;
                         ///if (ke->state() & Qt::ControlModifier)
-                        if (globalKeyState & Qt::ControlModifier)
+                        //if (globalKeyState & Qt::ControlModifier)
+                        if (((QInputEvent*)ke)->modifiers() & Qt::ControlModifier)
                               key+= Qt::CTRL;
                         muse->kbAccel(key);
                         return true;
@@ -5016,17 +5019,17 @@ void MusE::updateConfiguration()
       
       //menu_file->setShortcut(shortcuts[SHRT_LOAD_TEMPLATE].key, menu_ids[CMD_LOAD_TEMPLATE]);  // Not used.
 
-      undoAction->setShortcut(Qt::CTRL+Qt::Key_Z);  
-      redoAction->setShortcut(Qt::CTRL+Qt::Key_Y);
+      undoAction->setShortcut(shortcuts[SHRT_UNDO].key);  
+      redoAction->setShortcut(shortcuts[SHRT_REDO].key);
 
-      editCutAction->setShortcut(Qt::CTRL+Qt::Key_X);
-      editCopyAction->setShortcut(Qt::CTRL+Qt::Key_C);
-      editPasteAction->setShortcut(Qt::CTRL+Qt::Key_V);
-      editInsertAction->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_I);
-      editPasteCloneAction->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_V);
-      editPaste2TrackAction->setShortcut(Qt::CTRL+Qt::Key_B);
-      editPasteC2TAction->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_B);
-      editInsertEMAction->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_X);
+      editCutAction->setShortcut(shortcuts[SHRT_CUT].key);
+      editCopyAction->setShortcut(shortcuts[SHRT_COPY].key);
+      editPasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+      editInsertAction->setShortcut(shortcuts[SHRT_INSERT].key);
+      editPasteCloneAction->setShortcut(shortcuts[SHRT_PASTE_CLONE].key);
+      editPaste2TrackAction->setShortcut(shortcuts[SHRT_PASTE_TO_TRACK].key);
+      editPasteC2TAction->setShortcut(shortcuts[SHRT_PASTE_CLONE_TO_TRACK].key);
+      editInsertEMAction->setShortcut(shortcuts[SHRT_INSERTMEAS].key);
 
       //editDeleteSelectedAction has no acceleration
       

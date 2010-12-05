@@ -155,7 +155,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)
 //   rasterChanged
 //---------------------------------------------------------
 
-void Toolbar1::_rasterChanged(int i)
+void Toolbar1::_rasterChanged(int /*i*/)
 //void Toolbar1::_rasterChanged(int r, int c)
       {
       emit rasterChanged(rasterTable[rlist->currentRow() + rlist->currentColumn() * 10]);
@@ -166,7 +166,7 @@ void Toolbar1::_rasterChanged(int i)
 //   quantChanged
 //---------------------------------------------------------
 
-void Toolbar1::_quantChanged(int i)
+void Toolbar1::_quantChanged(int /*i*/)
 //void Toolbar1::_quantChanged(int r, int c)
       {
       emit quantChanged(quantTable[qlist->currentRow() + qlist->currentColumn() * 8]);
