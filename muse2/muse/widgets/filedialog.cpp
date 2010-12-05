@@ -29,7 +29,7 @@ QString MFileDialog::lastGlobalDir = "";
 static bool createDir(const QString& s)
       {
       QString sl("/");
-      QStringList l = QStringList::split(sl, s);
+      QStringList l = s.split(sl, QString::SkipEmptyParts);
       QString path(sl);
       QDir dir;
       for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
@@ -37,7 +37,7 @@ static bool createDir(const QString& s)
             if (!QDir(path + sl + *it).exists()) {
                   if (!dir.mkdir(*it)) {
                         printf("mkdir failed: %s %s\n",
-                           path.latin1(), (*it).latin1());
+                           path.toLatin1().data(), (*it).toLatin1().data());
                         return true;
                         }
                   }
@@ -53,30 +53,27 @@ static bool createDir(const QString& s)
 //---------------------------------------------------------
 
 static bool testDirCreate(QWidget* parent, const QString& path)
-      {
+{
       QDir dir(path);
-      if (!dir.exists()) {
-            int n = QMessageBox::information(parent,
-               QWidget::tr("MusE: get file name"),
-               QWidget::tr("the directory\n") + path
-                  + QWidget::tr("\ndoes not exist\ncreate?"),
-               QWidget::tr("&Create"),
-               QWidget::tr("Cancel"),
-               QString::null,  1, 1);
-            if (n == 0) {
-                  if (createDir(path)) {
-                        QMessageBox::critical(parent,
-                           QWidget::tr("MusE: create directory"),
-                           QWidget::tr("creating dir failed")
-                           );
-                        return true;
-                        }
-                  return false;
-                  }
+      if (!dir.exists()) 
+      {
+        if(QMessageBox::information(parent,
+            QWidget::tr("MusE: get file name"),
+            QWidget::tr("The directory\n") + path
+              + QWidget::tr("\ndoes not exist.\nCreate it?"),
+            QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) != QMessageBox::Ok)
+          return true;
+        
+          if (createDir(path)) 
+          {
+            QMessageBox::critical(parent,
+                QWidget::tr("MusE: create directory"),
+                QWidget::tr("creating dir failed"));
             return true;
-            }
-      return false;
+          }
       }
+      return false;
+}
 
 //---------------------------------------------------------
 //   globalToggled
@@ -227,7 +224,8 @@ void MFileDialog::directoryChanged(const QString&)
       {
       ViewType currentView = GLOBAL_VIEW;
       QDir ndir = directory();
-      QString newdir = ndir.absPath().latin1();
+      ///QString newdir = ndir.absolutePath().latin1();
+      QString newdir = ndir.absolutePath();
       if (buttons.projectButton->isChecked())
             currentView = PROJECT_VIEW;
       else if (buttons.userButton->isChecked())
@@ -289,7 +287,7 @@ QString getFilterExtension(const QString &filter)
   // Return the first extension found. Must contain at least one * character.
   //
   
-  int pos = filter.find('*');
+  int pos = filter.indexOf('*');
   if(pos == -1)
     return QString(); 
   
@@ -314,10 +312,10 @@ QString getOpenFileName(const QString &startWith,
    //const char** filters, QWidget* parent, const QString& name, bool* all)
    const QStringList& filters, QWidget* parent, const QString& name, bool* all)
       {
-      QString initialSelection;
+      QString initialSelection;  // FIXME Tim.
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, false);
       dlg->setNameFilters(filters);
-      dlg->setCaption(name);
+      dlg->setWindowTitle(name);
       if (all) {
             dlg->buttons.loadAllGroup->setVisible(true);
             //dlg->buttons.globalButton->setVisible(false);
@@ -349,7 +347,7 @@ QString getSaveFileName(const QString &startWith,
       {
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, true);
       dlg->setNameFilters(filters);
-      dlg->setCaption(name);
+      dlg->setWindowTitle(name);
       dlg->setFileMode(QFileDialog::AnyFile);
       QStringList files;
       QString result;
@@ -384,7 +382,7 @@ QString getSaveFileName(const QString &startWith,
           //  but only if there are no errors in the list of filters. fileOpen() will act as a 'catchall'.
           //
           // Force the filter list to the first one (the preferred one), and then get the filter.
-          dlg->selectNameFilter(dlg->filters().at(0));
+          dlg->selectNameFilter(dlg->nameFilters().at(0));
           filt = dlg->selectedNameFilter();
           filt = getFilterExtension(filt);
               
@@ -413,7 +411,7 @@ QString getImageFileName(const QString& startWith,
    const QStringList& filters, QWidget* parent, const QString& name)
       {
       QString initialSelection;
-	QString* workingDirectory = new QString(QDir::currentDirPath());
+	QString* workingDirectory = new QString(QDir::currentPath());
       if (!startWith.isEmpty() ) {
             QFileInfo fi(startWith);
             if (fi.exists() && fi.isDir()) {
@@ -434,7 +432,7 @@ QString getImageFileName(const QString& startWith,
       dlg->setContentsPreview(preview, preview);
       dlg->setPreviewMode(QFileDialog::Contents);
       */
-      dlg->setCaption(name);
+      dlg->setWindowTitle(name);
       dlg->setNameFilters(filters);
       dlg->setFileMode(QFileDialog::ExistingFile);
       QStringList files;
@@ -473,32 +471,39 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
       QString zip;
 
       popenFlag = false;
-      if (info.extension(true) == "") {
+      if (info.completeSuffix() == "") {
             name += ext;
             info.setFile(name);
             }
-      else if (info.extension(false) == "gz") {
+      else if (info.suffix() == "gz") {
             popenFlag = true;
             zip = QString("gzip");
             }
-      else if (info.extension(false) == "bz2") {
+      else if (info.suffix() == "bz2") {
             popenFlag = true;
             zip = QString("bzip2");
             }
 
       if (strcmp(mode,"w") == 0 && overwriteWarning && info.exists()) {
-            QString s(QWidget::tr("File\n") + name + QWidget::tr("\nexists"));
+            QString s(QWidget::tr("File\n") + name + QWidget::tr("\nexists. Overwrite?"));
+            /*
             int rv = QMessageBox::warning(parent,
                QWidget::tr("MusE: write"),
                s,
-               QWidget::tr("Overwrite"),
-               QWidget::tr("Quit"), QString::null, 0, 1);
+               QMessageBox::Save | QMessageBox::Cancel, QMessageBox::Save);
             switch(rv) {
                   case 0:  // overwrite
                         break;
                   case 1:  // quit
                         return 0;
                   }
+            */      
+            if(QMessageBox::warning(parent,
+               QWidget::tr("MusE: write"), s,
+               QMessageBox::Save | QMessageBox::Cancel, QMessageBox::Save)
+               != QMessageBox::Save)
+              return 0;
+                  
             }
       FILE* fp = 0;
       if (popenFlag) {
@@ -507,10 +512,10 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
             else
                   zip += QString(" > ");
             zip += name;
-            fp  = popen(zip.ascii(), mode);
+            fp  = popen(zip.toAscii().data(), mode);
             }
       else {
-            fp = fopen(name.ascii(), mode);
+            fp = fopen(name.toAscii().data(), mode);
             }
       if (fp == 0 && !noError) {
             QString s(QWidget::tr("Open File\n") + name + QWidget::tr("\nfailed: ")

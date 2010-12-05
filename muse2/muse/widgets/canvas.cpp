@@ -341,7 +341,7 @@ void Canvas::wheelEvent(QWheelEvent* ev)
 
       int scrollstep = WHEEL_STEPSIZE * (-delta);
       ///if (ev->state() == Qt::ShiftModifier)
-      if (ev->modifiers() == Qt::ShiftModifier)
+      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
             scrollstep = scrollstep / 10;
 
       int newYpos = ypos + ypixelscale * scrollstep;
@@ -453,7 +453,7 @@ void Canvas::viewKeyPressEvent(QKeyEvent* event)
 void Canvas::viewMousePressEvent(QMouseEvent* event)
       {
       ///keyState = event->state();
-      keyState = event->modifiers();
+      keyState = ((QInputEvent*)event)->modifiers();
       button = event->button();
 
       //printf("viewMousePressEvent buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
@@ -1063,7 +1063,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
 
       QPoint pos = event->pos();
       ///bool shift = event->state() & Qt::ShiftModifier;
-      bool shift = event->modifiers() & Qt::ShiftModifier;
+      bool shift = ((QInputEvent*)event)->modifiers() & Qt::ShiftModifier;
       bool redrawFlag = false;
 
       switch (drag) {

@@ -152,6 +152,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       selPart  = 0;
       _to = _toInit;
       QSignalMapper *signalMapper = new QSignalMapper(this);
+      
       //---------Pulldown Menu----------------------------
       menuFile = new QMenu(tr("&File"));
       menuBar()->addMenu(menuFile);
@@ -172,14 +173,11 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       menuBar()->addMenu(menuEdit);
       menuEdit->addActions(undoRedo->actions());
       
-      ///Q3Accel* qa = new Q3Accel(this);
-      ///qa->connectItem(qa->addAction(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
-      
-      menuEdit->insertSeparator();
+      menuEdit->addSeparator();
       cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
       copyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy"));
       pasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste"));
-      menuEdit->insertSeparator();
+      menuEdit->addSeparator();
       deleteAction = menuEdit->addAction(tr("Delete Events"));
 
       connect(cutAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
@@ -197,11 +195,11 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       sallAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select All"));
       snoneAction = menuSelect->addAction(QIcon(*select_deselect_allIcon), tr("Select None"));
       invAction = menuSelect->addAction(QIcon(*select_invert_selectionIcon), tr("Invert"));
-      menuSelect->insertSeparator();
+      menuSelect->addSeparator();
       inAction = menuSelect->addAction(QIcon(*select_inside_loopIcon), tr("Inside Loop"));
       outAction = menuSelect->addAction(QIcon(*select_outside_loopIcon), tr("Outside Loop"));
       
-      menuSelect->insertSeparator();
+      menuSelect->addSeparator();
 
       prevAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Previous Part"));
       nextAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Next Part"));
@@ -225,7 +223,9 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       // Functions
       menuFunctions = new QMenu(tr("&Functions"));
       menuBar()->addMenu(menuFunctions);
-      menuFunctions->insertTearOffHandle();
+      
+      menuFunctions->setTearOffEnabled(true);
+      
       fixedAction = menuFunctions->addAction(tr("Set fixed length"));
       veloAction = menuFunctions->addAction(tr("Modify Velocity"));
 
@@ -301,6 +301,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
 
       split1            = new Splitter(Qt::Vertical, mainw, "split1");
       QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
+      ctrl->setObjectName("Ctrl");
       ctrl->setFont(config.fonts[3]);
       hscroll           = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
@@ -652,24 +653,24 @@ void DrumEdit::readStatus(Xml& xml)
                         if (tag == "steprec") {
                               int val = xml.parseInt();
                               canvas->setSteprec(val);
-                              srec->setOn(val);
+                              srec->setChecked(val);
                               }
                         else if (tag == "midiin") {
                               int val = xml.parseInt();
                               canvas->setMidiin(val);
-                              midiin->setOn(val);
+                              midiin->setChecked(val);
                               }
                         else if (tag == "ctrledit") {
                               CtrlEdit* ctrl = addCtrl();
                               ctrl->readStatus(xml);
                               }
-                        else if (tag == split1->name())
+                        else if (tag == split1->objectName())
                               split1->readStatus(xml);
-                        else if (tag == split2->name())
+                        else if (tag == split2->objectName())
                               split2->readStatus(xml);
                         else if (tag == "midieditor")
                               MidiEditor::readStatus(xml);
-                        else if (tag == header->name())
+                        else if (tag == header->objectName())
                               header->readStatus(xml);
                         else if (tag == "xmag")
                               hscroll->setMag(xml.parseInt());
@@ -844,7 +845,7 @@ void DrumEdit::reset()
 {
   if(QMessageBox::warning(this, tr("Drum map"),
       tr("Reset the drum map with GM defaults?"),
-      QMessageBox::Ok | QMessageBox::Default, QMessageBox::Cancel | QMessageBox::Escape, Qt::NoButton) == QMessageBox::Ok)
+      QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
   {    
     resetGMDrumMap();
     dlist->redraw();
@@ -923,7 +924,8 @@ CtrlEdit* DrumEdit::addCtrl()
 
       if(split1w1)
       {
-        split2->setCollapsible(split1w1, false);
+        ///split2->setCollapsible(split1w1, false);
+        split2->setCollapsible(split2->indexOf(split1w1), false);
         split1w1->setMinimumWidth(CTRL_PANEL_FIXED_WIDTH);
       }
       ctrlEdit->setCanvasWidth(canvas->width());
@@ -952,7 +954,8 @@ void DrumEdit::removeCtrl(CtrlEdit* ctrl)
         if(ctrlEditList.empty())
         {
           split1w1->setMinimumWidth(0);
-          split2->setCollapsible(split1w1, true);
+          ///split2->setCollapsible(split1w1, true);
+          split2->setCollapsible(split2->indexOf(split1w1), true);
         }  
       }
       }
@@ -1022,11 +1025,11 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
       int val;
       int key = event->key();
 
-      if (event->state() & Qt::ShiftButton)
+      if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
             key += Qt::SHIFT;
-      if (event->state() & Qt::AltButton)
+      if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
             key += Qt::ALT;
-      if (event->state() & Qt::ControlButton)
+      if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
             key+= Qt::CTRL;
 
       if (key == Qt::Key_Escape) {
@@ -1168,25 +1171,25 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
 
 void DrumEdit::initShortcuts()
       {
-      loadAction->setAccel(shortcuts[SHRT_OPEN].key);
-      saveAction->setAccel(shortcuts[SHRT_SAVE].key);
+      loadAction->setShortcut(shortcuts[SHRT_OPEN].key);
+      saveAction->setShortcut(shortcuts[SHRT_SAVE].key);
 
-      cutAction->setAccel(shortcuts[SHRT_CUT].key);
-      copyAction->setAccel(shortcuts[SHRT_COPY].key);
-      pasteAction->setAccel(shortcuts[SHRT_PASTE].key);
-      deleteAction->setAccel(shortcuts[SHRT_DELETE].key);
+      cutAction->setShortcut(shortcuts[SHRT_CUT].key);
+      copyAction->setShortcut(shortcuts[SHRT_COPY].key);
+      pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+      deleteAction->setShortcut(shortcuts[SHRT_DELETE].key);
 
-      fixedAction->setAccel(shortcuts[SHRT_FIXED_LEN].key);
-      veloAction->setAccel(shortcuts[SHRT_MODIFY_VELOCITY].key);
+      fixedAction->setShortcut(shortcuts[SHRT_FIXED_LEN].key);
+      veloAction->setShortcut(shortcuts[SHRT_MODIFY_VELOCITY].key);
 
-      sallAction->setAccel(shortcuts[SHRT_SELECT_ALL].key);
-      snoneAction->setAccel(shortcuts[SHRT_SELECT_NONE].key);
-      invAction->setAccel(shortcuts[SHRT_SELECT_INVERT].key);
-      inAction->setAccel(shortcuts[SHRT_SELECT_ILOOP].key);
-      outAction->setAccel(shortcuts[SHRT_SELECT_OLOOP].key);
+      sallAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
+      snoneAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
+      invAction->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
+      inAction->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
+      outAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
       
-      prevAction->setAccel(shortcuts[SHRT_SELECT_PREV_PART].key);
-      nextAction->setAccel(shortcuts[SHRT_SELECT_NEXT_PART].key);
+      prevAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
+      nextAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
       }
 
 //---------------------------------------------------------
@@ -1196,7 +1199,7 @@ void DrumEdit::execDeliveredScript(int id)
 {
       //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
       QString scriptfile = song->getScriptPath(id, true);
-      song->executeScript(scriptfile.latin1(), parts(), quant(), true); 
+      song->executeScript(scriptfile.toLatin1().data(), parts(), quant(), true); 
 }
 
 //---------------------------------------------------------
@@ -1205,6 +1208,6 @@ void DrumEdit::execDeliveredScript(int id)
 void DrumEdit::execUserScript(int id)
 {
       QString scriptfile = song->getScriptPath(id, false);
-      song->executeScript(scriptfile.latin1(), parts(), quant(), true);
+      song->executeScript(scriptfile.toLatin1().data(), parts(), quant(), true);
 }
 

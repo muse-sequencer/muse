@@ -94,24 +94,20 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       
       editCutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("C&ut"));
       mapper->setMapping(editCutAction, PianoCanvas::CMD_CUT);
-      editCutAction->setShortcut(QKeySequence::Cut);
       connect(editCutAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       editCopyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("&Copy"));
       mapper->setMapping(editCopyAction, PianoCanvas::CMD_COPY);
-      editCopyAction->setShortcut(QKeySequence::Copy);
       connect(editCopyAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       editPasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
       mapper->setMapping(editPasteAction, PianoCanvas::CMD_PASTE);
-      editPasteAction->setShortcut(QKeySequence::Paste);
       connect(editPasteAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       menuEdit->addSeparator();
       
       editDelEventsAction = menuEdit->addAction(tr("Delete &Events"));
       mapper->setMapping(editDelEventsAction, PianoCanvas::CMD_DEL);
-      editDelEventsAction->setShortcut(QKeySequence::Delete);
       connect(editDelEventsAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       menuEdit->addSeparator();
@@ -863,7 +859,7 @@ void PianoRoll::readStatus(Xml& xml)
                               CtrlEdit* ctrl = addCtrl();
                               ctrl->readStatus(xml);
                               }
-                        else if (tag == splitter->name())
+                        else if (tag == splitter->objectName())
                               splitter->readStatus(xml);
                         else if (tag == "quantStrength")
                               _quantStrength = xml.parseInt();
@@ -938,13 +934,13 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
       int key = event->key();
 
       //if (event->state() & Qt::ShiftButton)
-      if (event->state() & Qt::ShiftModifier)
+      if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
             key += Qt::SHIFT;
       //if (event->state() & Qt::AltButton)
-      if (event->state() & Qt::AltModifier)
+      if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
             key += Qt::ALT;
       //if (event->state() & Qt::ControlButton)
-      if (event->state() & Qt::ControlModifier)
+      if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
             key+= Qt::CTRL;
 
       if (key == Qt::Key_Escape) {
@@ -1178,6 +1174,11 @@ void PianoRoll::resizeEvent(QResizeEvent* ev)
 
 void PianoRoll::initShortcuts()
       {
+      editCutAction->setShortcut(shortcuts[SHRT_CUT].key);
+      editCopyAction->setShortcut(shortcuts[SHRT_COPY].key);
+      editPasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+      editDelEventsAction->setShortcut(shortcuts[SHRT_DELETE].key);
+      
       selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key); 
       selectNoneAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
       selectInvertAction->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);

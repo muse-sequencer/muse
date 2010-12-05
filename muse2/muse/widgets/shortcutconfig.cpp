@@ -11,6 +11,7 @@
 //
 #include <QCloseEvent>
 #include <QKeySequence>
+#include <QString>
 
 #include "shortcutconfig.h"
 #include "shortcutcapturedialog.h"
@@ -35,10 +36,15 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
 
    //Fill up category listview:
    SCListViewItem* newItem;
+   SCListViewItem* selItem = 0;
    for (int i=0; i < SHRT_NUM_OF_CATEGORIES; i++) {
          newItem = new SCListViewItem(cgListView, i);
          newItem->setText(SHRT_CATEGORY_COL, shortcut_category[i].name);
+         if(shortcut_category[i].id_flag == current_category)
+           selItem = newItem;
          }
+   if(selItem)
+     cgListView->setCurrentItem(selItem);  // Tim
    updateSCListView();
    }
 
@@ -46,10 +52,16 @@ void ShortcutConfig::updateSCListView(int category)
       {
       scListView->clear();
       SCListViewItem* newItem;
+      //QString catpre;
       for (int i=0; i < SHRT_NUM_OF_ELEMENTS; i++) {
             if (shortcuts[i].type & category) {
                   newItem = new SCListViewItem(scListView, i);
                   newItem->setText(SHRT_DESCR_COL, tr(shortcuts[i].descr));
+                  //if(category == ALL_SHRT)
+                  //  catpre = QString(shortcut_category[shortcuts[i].type].name) + QString(": ");
+                  //else 
+                  //  catpre.clear();  
+                  //newItem->setText(SHRT_DESCR_COL, catpre + tr(shortcuts[i].descr));  // Tim
                   QKeySequence key = QKeySequence(shortcuts[i].key);
                   newItem->setText(SHRT_SHRTCUT_COL, key);
                   }

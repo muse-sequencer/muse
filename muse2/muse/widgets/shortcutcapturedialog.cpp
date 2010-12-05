@@ -14,6 +14,7 @@
 
 #include <QKeyEvent>
 #include <QKeySequence>
+#include <QInputEvent>
 
 ShortcutCaptureDialog::ShortcutCaptureDialog(QWidget* parent, int index)
    : QDialog(parent)
@@ -39,14 +40,14 @@ void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
       bool shift, alt, ctrl, conflict = false, realkey = false;
       QString msgString = "";
       int temp_key;
-      shift = e->state() & Qt::ShiftModifier;
-      ctrl  = e->state() & Qt::ControlModifier;
-      alt   = e->state() & Qt::AltModifier;
+      shift = ((QInputEvent*)e)->modifiers() & Qt::ShiftModifier;
+      ctrl  = ((QInputEvent*)e)->modifiers() & Qt::ControlModifier;
+      alt   = ((QInputEvent*)e)->modifiers() & Qt::AltModifier;
       //printf("Key total: %d, alt: %d, ctrl: %d shift: %d\n",e->key(), alt, ctrl, shift);
       temp_key = e->key();
-      temp_key += (shift ? Qt::SHIFT : 0);
-      temp_key += (ctrl  ? Qt::CTRL  : 0);
-      temp_key += (alt   ? Qt::ALT   : 0);
+      temp_key += (shift ? (int)Qt::SHIFT : 0);    // (int) Tim
+      temp_key += (ctrl  ? (int)Qt::CTRL  : 0);    //
+      temp_key += (alt   ? (int)Qt::ALT   : 0);    //
       //printf("Final key assembled: %d\n",temp_key);
 
       // Check if this is a "real" key that completes a valid shortcut:
