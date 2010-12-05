@@ -15,7 +15,6 @@
 
 #include "song.h"
 #include "globals.h"
-#include "spinbox.h"
 #include "config.h"
 #include "gconfig.h"
 #include "arranger.h"

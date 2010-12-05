@@ -126,6 +126,8 @@ LMaster::LMaster()
                   << tr("Type")
                   << tr("Value");
       view->setHeaderLabels(columnnames);
+      view->setColumnWidth(2,80);
+      view->header()->setStretchLastSection(true);
 
       //---------------------------------------------------
       //    Rest
