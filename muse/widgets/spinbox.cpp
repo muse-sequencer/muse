@@ -5,8 +5,10 @@
 //    (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <QKeyEvent>
 #include <QEvent>
+#include <QKeyEvent>
+#include <QMouseEvent>
+
 #include "spinbox.h"
 
 //---------------------------------------------------------
@@ -25,7 +27,51 @@ SpinBox::SpinBox(int minValue, int maxValue, int step, QWidget* parent)
   setRange(minValue, maxValue);
   setSingleStep(step);
   _clearFocus = true;
+  upEnabled = StepUpEnabled;
+  downEnabled = StepDownEnabled;
 }
+
+QAbstractSpinBox::StepEnabled SpinBox::stepEnabled() const
+{
+  return upEnabled | downEnabled;
+}
+
+void SpinBox::setStepEnabled(bool up, bool down)
+{
+  upEnabled = up ? StepUpEnabled : StepNone;
+  downEnabled = down ? StepDownEnabled : StepNone;
+}
+
+int SpinBox::arrowWidth() const
+{
+  QStyleOptionSpinBox styleOpt;
+  styleOpt.initFrom(this);
+  QRect upArrowRect = QApplication::style()->subControlRect(QStyle::CC_SpinBox, &styleOpt, QStyle::SC_SpinBoxUp, this);
+  return upArrowRect.width();
+}
+
+void SpinBox::setEditor(QLineEdit* ed)
+{
+  setLineEdit(ed);
+}
+
+void SpinBox::mousePressEvent ( QMouseEvent * event )
+{
+  // FIXME: I couldn't find a way to access the arrow buttons directly. Hence I am using a QRect::contains method.
+  // Unfortunately this is not 100% accurate with the Oxygen style; one needs to push to the right hand side of the 
+  // buttons. But it works perfect with the QtCurve style - Orcan
+  QStyleOptionSpinBox styleOpt;
+  styleOpt.initFrom(this);
+  QRect upArrowRect = QApplication::style()->subControlRect(QStyle::CC_SpinBox, &styleOpt, QStyle::SC_SpinBoxUp, this);
+  QRect downArrowRect = QApplication::style()->subControlRect(QStyle::CC_SpinBox, &styleOpt, QStyle::SC_SpinBoxDown, this);
+ 
+  if (upArrowRect.contains(event->pos()))
+    emit(stepUpPressed());
+  else if (downArrowRect.contains(event->pos()))
+    emit(stepDownPressed());
+  QSpinBox::mousePressEvent(event);
+}
+
 
 bool SpinBox::eventFilter(QObject* o, QEvent* ev)
 {

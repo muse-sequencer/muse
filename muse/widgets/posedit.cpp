@@ -25,6 +25,7 @@
 
 #include "posedit.h"
 #include "sig.h"
+#include "spinbox.h"
 
 extern int mtcType;
 
@@ -51,13 +52,13 @@ class QNumberSection
 //   PosEditor
 //---------------------------------------------------------
 
-class PosEditor : public QWidget
+class PosEditor : public QLineEdit
       {
       PosEdit* cw;
       bool frm;
       QPixmap *pm;
       int focusSec;
-      Q3ValueList<QNumberSection> sections;
+      QList<QNumberSection> sections;
       QString sep;
       int offset;
 
@@ -69,7 +70,7 @@ class PosEditor : public QWidget
       void resizeEvent(QResizeEvent*);
       void paintEvent(QPaintEvent*);
       void mousePressEvent(QMouseEvent *e);
-
+      void keyPressEvent(QKeyEvent * event );
       void applyFocusSelection() {}
 
    public:
@@ -87,7 +88,6 @@ class PosEditor : public QWidget
       void appendSection(const QNumberSection& sec);
       void clearSections();
       void setSectionSelection(int sec, int selstart, int selend);
-      bool eventFilter(QObject *o, QEvent *e);
       };
 
 //---------------------------------------------------------
@@ -104,7 +104,7 @@ int PosEditor::section(const QPoint& pt)
       int y = 0;
       int w = width();
       int h = height();
-      for (unsigned int i = 0; i < sections.count(); ++i) {
+      for (int i = 0; i < sections.count(); ++i) {
             QString s = cw->sectionFormattedText(i);
             QRect bb = p.boundingRect(x, y, w, h, Qt::AlignVCenter|Qt::AlignLeft, s);
             int nx = bb.x() + bb.width();
@@ -125,8 +125,9 @@ int PosEditor::section(const QPoint& pt)
 //---------------------------------------------------------
 
 PosEditor::PosEditor(PosEdit* parent, const char* name)
-   : QWidget(parent, name), sep(".")
+   : QLineEdit(parent), sep(".")
       {
+      setObjectName(name);
       cw       = parent;
       frm      = true;
       focusSec = 0;
@@ -153,7 +154,6 @@ void PosEditor::init()
       setBackgroundMode(Qt::PaletteBase);
       setFocusSection(-1);
       setKeyCompression(true);
-      installEventFilter(this);
       setFocusPolicy(Qt::WheelFocus);
       }
 
@@ -210,7 +210,7 @@ void PosEditor::paintEvent(QPaintEvent *)
       int h = height();
       p.fillRect(0, 0, w, h, bg);
 
-      for (unsigned int i = 0; i < sections.count(); ++i) {
+      for (int i = 0; i < sections.count(); ++i) {
             QRect bb;
             QString s = cw->sectionFormattedText(i);
 
@@ -249,60 +249,45 @@ void PosEditor::mousePressEvent(QMouseEvent *e)
       }
 
 //---------------------------------------------------------
-//   eventFilter
+//   keyPressEvent
 //---------------------------------------------------------
 
-bool PosEditor::eventFilter(QObject *o, QEvent *e)
+void PosEditor::keyPressEvent(QKeyEvent *e)
       {
-      if (o != this)
-            return false;
-      if (e->type() != QEvent::KeyPress )
-            return false;
-
-      QKeyEvent *ke = (QKeyEvent*)e;
-      switch (ke->key()) {
+      switch (e->key()) {
             case Qt::Key_Right:
                   if (unsigned(focusSec) <= sections.count()) {
                         if (cw->setFocusSection(focusSec+1))
                               repaint(rect(), false);
                         }
-                  return true;
             case Qt::Key_Left:
                   if (focusSec > 0 ) {
                         if (cw->setFocusSection(focusSec-1))
                               repaint(rect(), false);
                         }
-                  return true;
             case Qt::Key_Up:
                   cw->stepUp();
-                  return true;
             case Qt::Key_Down:
                   cw->stepDown();
-                  return true;
             case Qt::Key_Backspace:
             case Qt::Key_Delete:
                   cw->removeLastNumber(focusSec);
-                  return true;
             case Qt::Key_Return:
                   cw->enterPressed();
-                  return true;
             default:
-                  QString txt = ke->text();
+                  QString txt = e->text();
                   if (!txt.isEmpty() && !sep.isEmpty() && txt[0] == sep[0]) {
                         // do the same thing as KEY_RIGHT when the user presses the separator key
                         if (unsigned(focusSec) < sections.count()) {
                               if (cw->setFocusSection(focusSec+1))
                                     repaint(rect(), false);
                               }
-                        return true;
                         }
                   int num = txt[0].digitValue();
                   if (num != -1) {
                         cw->addNumber(focusSec, num);
-                        return true;
                         }
             }
-      return false;
       }
 
 void PosEditor::appendSection(const QNumberSection& sec)
@@ -347,8 +332,9 @@ bool PosEditor::setFocusSection(int idx)
 //---------------------------------------------------------
 
 PosEdit::PosEdit(QWidget* parent, const char* name)
-   : QWidget(parent, name)
+   : QWidget(parent)
       {
+      setObjectName(name);
       init();
       updateButtons();
       }
@@ -372,8 +358,8 @@ PosEdit::~PosEdit()
 void PosEdit::init()
       {
       ed       = new PosEditor(this, "pos editor");
-      controls = new Q3SpinWidget(this, "pos edit controls");
-      controls->setEditWidget(ed);
+      controls = new SpinBox(this);
+      controls->setEditor(ed);
       setFocusProxy(ed);
       connect(controls, SIGNAL(stepUpPressed()), SLOT(stepUp()));
       connect(controls, SIGNAL(stepDownPressed()), SLOT(stepDown()));
@@ -776,7 +762,7 @@ void PosEdit::addNumber(int secNo, int num)
 
       QString txt = sectionText(secNo);
 
-      if (txt.length() == sec[secNo].len) {
+      if ((unsigned) txt.length() == sec[secNo].len) {
             if (!outOfRange(secNo, num - voff)) {
                   accepted = true;
                   sec[secNo].val = num - voff;
@@ -791,7 +777,7 @@ void PosEdit::addNumber(int secNo, int num)
                   accepted = true;
                   sec[secNo].val = temp;
                   }
-            if (adv && (txt.length() == sec[secNo].len)) {
+            if (adv && ((unsigned) txt.length() == sec[secNo].len)) {
                   setFocusSection(ed->focusSection() + 1);
                   }
             }
@@ -834,7 +820,7 @@ QSize PosEdit::sizeHint() const
       QFontMetrics fm(font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0, this); // ddskrjo 0
       int h  = fm.height() + fw * 2;
-      int w  = 4 + controls->upRect().width() + fw * 4;
+      int w  = 4 + controls->arrowWidth() + fw * 4;
       if (_smpte)
             w += fm.width('9') * 10 + fm.width(ed->separator()) * 3;
       else
@@ -852,9 +838,8 @@ void PosEdit::updateButtons()
       bool downEnabled = isEnabled() && (pos() > minValue());
 
       //printf("PosEdit::updateButtons smpte:%d upEnabled:%d downEnabled:%d\n", smpte(), upEnabled, downEnabled);
-      
-      controls->setUpEnabled(upEnabled);
-      controls->setDownEnabled(downEnabled);
+
+      controls->setStepEnabled(upEnabled, downEnabled);
       }
 
 //---------------------------------------------------------

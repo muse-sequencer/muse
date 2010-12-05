@@ -9,14 +9,14 @@
 #define __SIGEDIT_H__
 
 #include <QWidget>
-#include <QString>
-//Added by qt3to4:
-#include <QResizeEvent>
-#include <QTimerEvent>
-#include <QEvent>
+
+#include "section.h"
+
+class QResizeEvent;
+class QTimerEvent;
 
 class SigEditor;
-class Q3SpinWidget;
+class SpinBox;
 
 struct Sig {
       int z;
@@ -25,8 +25,6 @@ struct Sig {
       Sig(int _z, int _n) : z(_z), n(_n) {}
       bool isValid() const;
       };
-
-#include "section.h"
 
 //---------------------------------------------------------
 //   SigEdit
@@ -46,7 +44,7 @@ class SigEdit : public QWidget
       bool typing;
       bool changed;
       SigEditor *ed;
-      Q3SpinWidget* controls;
+      SpinBox* controls;
 
    private slots:
       void stepUp();

@@ -8,18 +8,16 @@
 #ifndef __POSEDIT_H__
 #define __POSEDIT_H__
 
-#include <qwidget.h>
-#include <qstring.h>
-//Added by qt3to4:
-#include <QResizeEvent>
-#include <QEvent>
-#include <QTimerEvent>
+#include <QWidget>
+
 #include "pos.h"
+#include "section.h"
+
+class QResizeEvent;
+class QTimerEvent;
 
 class PosEditor;
-class Q3SpinWidget;
-
-#include "section.h"
+class SpinBox;
 
 //---------------------------------------------------------
 //   PosEdit
@@ -48,7 +46,7 @@ class PosEdit : public QWidget
       Pos max;
       bool changed;
       PosEditor *ed;
-      Q3SpinWidget* controls;
+      SpinBox* controls;
 
    private slots:
       void stepUp();

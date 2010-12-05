@@ -5,26 +5,24 @@
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include "sigedit.h"
-
 #include <stdio.h>
-#include <q3rangecontrol.h>
-#include <QApplication>
+#include <values.h>
+
+#include <QEvent>
+#include <QKeyEvent>
+#include <QList>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPaintEvent>
 #include <QPixmap>
-#include <q3valuelist.h>
+#include <QResizeEvent>
 #include <QString>
 #include <QStyle>
-//Added by qt3to4:
 #include <QTimerEvent>
-#include <QPaintEvent>
-#include <QResizeEvent>
-#include <QMouseEvent>
-#include <QKeyEvent>
-#include <QEvent>
-#include <values.h>
-#include <QPainter>
-#include <QTimer>
+
 #include "sig.h"
+#include "sigedit.h"
+#include "spinbox.h"
 
 extern int mtcType;
 
@@ -74,13 +72,13 @@ class NumberSection
 //   SigEditor
 //---------------------------------------------------------
 
-class SigEditor : public QWidget
+class SigEditor : public QLineEdit
       {
       SigEdit* cw;
       bool frm;
       QPixmap *pm;
       int focusSec;
-      Q3ValueList<NumberSection> sections;
+      QList<NumberSection> sections;
       int offset;
 
       int section(const QPoint&);
@@ -91,6 +89,7 @@ class SigEditor : public QWidget
       void resizeEvent(QResizeEvent*);
       void paintEvent(QPaintEvent*);
       void mousePressEvent(QMouseEvent *e);
+      void keyPressEvent(QKeyEvent * event );
       void applyFocusSelection() {}
 
    public:
@@ -106,7 +105,6 @@ class SigEditor : public QWidget
       void appendSection(const NumberSection& sec);
       void clearSections();
       void setSectionSelection(int sec, int selstart, int selend);
-      bool eventFilter(QObject *o, QEvent *e);
       };
 
 //---------------------------------------------------------
@@ -123,7 +121,7 @@ int SigEditor::section(const QPoint& pt)
       int y = 0;
       int w = width();
       int h = height();
-      for (unsigned int i = 0; i < sections.count(); ++i) {
+      for (int i = 0; i < sections.count(); ++i) {
             QString s = cw->sectionFormattedText(i);
             QRect bb = p.boundingRect(x, y, w, h, Qt::AlignVCenter|Qt::AlignLeft, s);
             int nx = bb.x() + bb.width();
@@ -144,8 +142,9 @@ int SigEditor::section(const QPoint& pt)
 //---------------------------------------------------------
 
 SigEditor::SigEditor(SigEdit* parent, const char* name)
-   : QWidget(parent, name)
+   : QLineEdit(parent)
       {
+      setObjectName(name);
       cw       = parent;
       frm      = true;
       focusSec = 0;
@@ -172,7 +171,6 @@ void SigEditor::init()
       setBackgroundMode(Qt::PaletteBase);
       setFocusSection(-1);
       setKeyCompression(true);
-      installEventFilter(this);
       setFocusPolicy(Qt::WheelFocus);
       }
 
@@ -199,13 +197,13 @@ bool SigEditor::event(QEvent *e)
                         break;
                   }
             }
-      return QWidget::event(e);
+      return QLineEdit::event(e);
       }
 
 void SigEditor::resizeEvent(QResizeEvent *e)
       {
       pm->resize(e->size());
-      QWidget::resizeEvent(e);
+      QLineEdit::resizeEvent(e);
       }
 
 //---------------------------------------------------------
@@ -229,7 +227,7 @@ void SigEditor::paintEvent(QPaintEvent *)
       int h = height();
       p.fillRect(0, 0, w, h, bg);
 
-      for (unsigned int i = 0; i < sections.count(); ++i) {
+      for (int i = 0; i < sections.count(); ++i) {
             QRect bb;
             QString s = cw->sectionFormattedText(i);
 
@@ -268,64 +266,49 @@ void SigEditor::mousePressEvent(QMouseEvent *e)
       }
 
 //---------------------------------------------------------
-//   eventFilter
+//   keyPressEvent
 //---------------------------------------------------------
 
-bool SigEditor::eventFilter(QObject *o, QEvent *e)
+void SigEditor::keyPressEvent(QKeyEvent * e )
       {
-      if (o != this)
-            return false;
-      if (e->type() != QEvent::KeyPress )
-            return false;
-
-      QKeyEvent *ke = (QKeyEvent*)e;
-      switch (ke->key()) {
+      switch (e->key()) {
             case Qt::Key_Right:
                   if (unsigned(focusSec) <= sections.count()) {
                         if (cw->setFocusSection(focusSec+1))
                               repaint(rect(), false);
                         }
-                  return true;
             case Qt::Key_Left:
                   if (focusSec > 0 ) {
                         if (cw->setFocusSection(focusSec-1))
                               repaint(rect(), false);
                         }
-                  return true;
             case Qt::Key_Up:
                   cw->stepUp();
-                  return true;
             case Qt::Key_Down:
                   cw->stepDown();
-                  return true;
             case Qt::Key_Backspace:
             case Qt::Key_Delete:
                   cw->removeLastNumber(focusSec);
-                  return true;
             case Qt::Key_Enter:
             case Qt::Key_Return:
                   cw->enterPressed();
-                  return true;
             default:
-                  QString txt = ke->text();
+                  QString txt = e->text();
                   if (!txt.isEmpty() && txt[0] == '/') {
                         // do the same thing as KEY_RIGHT when the user presses the separator key
                         if (focusSec < (signed)(sections.count())) {
                               if (cw->setFocusSection(focusSec+1))
                                     repaint(rect(), false);
                               }
-                        return true;
                         }
                   int num = txt[0].digitValue();
                   
-                  //printf("SigEditor::eventFilter num:%d\n", num);
+                  //printf("SigEditor::keyPressEvent num:%d\n", num);
                   
                   if (num != -1) {
                         cw->addNumber(focusSec, num);
-                        return true;
                         }
             }
-      return false;
       }
 
 void SigEditor::appendSection(const NumberSection& sec)
@@ -370,8 +353,9 @@ bool SigEditor::setFocusSection(int idx)
 //---------------------------------------------------------
 
 SigEdit::SigEdit(QWidget* parent, const char* name)
-   : QWidget(parent, name)
+   : QWidget(parent)
       {
+      setObjectName(name);
       init();
       updateButtons();
       }
@@ -387,8 +371,8 @@ SigEdit::~SigEdit()
 void SigEdit::init()
       {
       ed       = new SigEditor(this, "pos editor");
-      controls = new Q3SpinWidget(this, "pos edit controls");
-      controls->setEditWidget(ed);
+      controls = new SpinBox(this);
+      controls->setEditor(ed);
       setFocusProxy(ed);
       connect(controls, SIGNAL(stepUpPressed()), SLOT(stepUp()));
       connect(controls, SIGNAL(stepDownPressed()), SLOT(stepDown()));
@@ -641,7 +625,7 @@ void SigEdit::addNumber(int secNo, int num)
 
       //printf("SigEdit::addNumber secNo:%d num:%d voff:%d txt:%s\n", secNo, num, voff, txt.latin1());
       
-      if (txt.length() == sec[secNo].len) {
+      if ((unsigned) txt.length() == sec[secNo].len) {
             //printf("SigEdit::addNumber txt.length() == sec[secNo].len (%d)\n", sec[secNo].len);
       
             if (!outOfRange(secNo, num - voff)) {
@@ -668,7 +652,7 @@ void SigEdit::addNumber(int secNo, int num)
                   accepted = true;
                   sec[secNo].val = temp;
                   }
-            if (adv && (txt.length() == sec[secNo].len)) {
+            if (adv && ((unsigned) txt.length() == sec[secNo].len)) {
                   setFocusSection(ed->focusSection() + 1);
                   }
             }
@@ -711,7 +695,8 @@ QSize SigEdit::sizeHint() const
       QFontMetrics fm(font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo
       int h  = fm.height() + fw * 2;
-      int w  = 2 + controls->upRect().width() + fw * 4;
+
+      int w  = 2 + controls->arrowWidth() + fw * 4;
       w     += fm.width('9') * 5 + fm.width('/');
       return QSize(w, h).expandedTo(QApplication::globalStrut());
       }
@@ -740,8 +725,7 @@ void SigEdit::updateButtons()
                   case 128: upEnabled = false; break;
                   }
             }
-      controls->setUpEnabled(isEnabled() && upEnabled);
-      controls->setDownEnabled(isEnabled() && downEnabled);
+      controls->setStepEnabled(isEnabled() & upEnabled, isEnabled() & downEnabled);
       }
 
 //---------------------------------------------------------
