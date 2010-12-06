@@ -12,13 +12,9 @@
 #include <list>
 #include <vector>
 
-#include <q3mainwindow.h>
-#include <qstring.h>
-#include <qwidget.h>
-//#include <qwidgetfactory.h>
-#include <qdialog.h>
-#include <qfileinfo.h>
-#include <qcombobox.h>
+#include <QDialog>
+#include <QUiLoader>
+
 
 #include "ladspa.h"
 #include "globals.h"
@@ -38,27 +34,28 @@
 #include <dssi.h>
 #endif
 
-class Xml;
-class QWidget;
-// class QLabel;
-class Slider;
-class Q3ListView;
-class Q3ScrollView;
+class QComboBox;
+class QFileInfo;
+class QScrollArea;
 class QToolButton;
+
+class Xml;
+class Slider;
 class DoubleLabel;
 class AudioTrack;
 class MidiController;
 
 //---------------------------------------------------------
-//   PluginWidgetFactory
+//   PluginLoader
 //---------------------------------------------------------
-#if 0
-class PluginWidgetFactory : public QWidgetFactory
+
+class PluginLoader : public QUiLoader
 {
-  public:
-    virtual QWidget* createWidget(const QString& className, QWidget* parent, const char* name) const; 
+   public:
+      virtual QWidget* createWidget(const QString & className, QWidget * parent = 0, const QString & name = QString()); 
+      PluginLoader(QObject * parent = 0) : QUiLoader(parent) {}
 };
-#endif
+
 //---------------------------------------------------------
 //   Plugin
 //---------------------------------------------------------
@@ -308,7 +305,7 @@ class PluginIBase
 //   PluginGui
 //---------------------------------------------------------
 
-class PluginGui : public Q3MainWindow {
+class PluginGui : public QMainWindow {
       Q_OBJECT
 
       //PluginI* plugin;        // plugin instance
@@ -318,9 +315,9 @@ class PluginGui : public Q3MainWindow {
       int nobj;               // number of widgets in gw
       GuiWidgets* gw;
 
-      QToolButton* onOff;
+      QAction* onOff;
       QWidget* mw;            // main widget
-      Q3ScrollView* view;
+      QScrollArea* view;
 
       void updateControls();
 

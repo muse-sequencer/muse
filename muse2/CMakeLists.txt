@@ -140,6 +140,9 @@ if (NOT QT4_FOUND)
       )
 endif (NOT QT4_FOUND)
 
+# Needed for plugins factory:
+SET(QT_USE_QTUITOOLS TRUE)
+
 include(${QT_USE_FILE})
 
 # set (MUSE_QT_WRAP_CPP QT4_WRAP_CPP)

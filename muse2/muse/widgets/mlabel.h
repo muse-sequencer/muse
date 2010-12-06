@@ -30,10 +30,10 @@ class MLabel : public QLabel {
 
    public:
       MLabel(const QString& txt, QWidget* parent, const char* name = 0)
-         : QLabel(txt, parent, name) {};
+         : QLabel(txt, parent) {setObjectName(name);};
 
       MLabel(QWidget* parent, const char* name = 0)
-         : QLabel(parent, name) {};
+         : QLabel(parent) {setObjectName(name);};
       };
 #endif
 

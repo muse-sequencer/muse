@@ -21,7 +21,7 @@ class TransparentToolButton : public QToolButton {
 
    public:
       TransparentToolButton(QWidget* parent, const char* name = 0)
-         : QToolButton(parent, name) {}
+         : QToolButton(parent) {setObjectName(name);}
       };
 
 #endif

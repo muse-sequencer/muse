@@ -158,7 +158,7 @@ void SliderBase::setUpdateTime(int t)
 void SliderBase::mousePressEvent(QMouseEvent *e)
       {
       QPoint p = e->pos();
-      const Qt::ButtonState button = e->button();
+      const Qt::MouseButton button = e->button();
       d_timerTick = 0;
 
       getScrollMode(p, button, d_scrollMode, d_direction);

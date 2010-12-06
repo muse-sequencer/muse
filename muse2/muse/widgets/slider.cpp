@@ -567,7 +567,7 @@ double Slider::getValue( const QPoint &p)
 //  Called by SliderBase
 //
 //------------------------------------------------------------
-void Slider::getScrollMode( QPoint &p, const Qt::ButtonState &button, int &scrollMode, int &direction )
+void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction )
 {
     if(cursorHoming() && button == Qt::LeftButton)
     {
