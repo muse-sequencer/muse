@@ -65,7 +65,7 @@ class SliderBase : public QWidget, public DoubleRange
   void mouseReleaseEvent(QMouseEvent *e);
   void mouseMoveEvent(QMouseEvent *e);
   virtual double getValue(const QPoint & p) = 0;
-  virtual void getScrollMode( QPoint &p, const Qt::ButtonState &button, 
+  virtual void getScrollMode( QPoint &p, const Qt::MouseButton &button, 
            int &scrollMode, int &direction) = 0;
 
  public slots:

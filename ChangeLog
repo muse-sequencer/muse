@@ -3,6 +3,9 @@
         - Ported sigedit and posedit. Used SpinBox in place of Q3SpinWidget. TODO: Needs some work on
           locating the arrows of the SpinBox accurately. Maybe we need to implement another SpinBox
           from scratch? (Orcan)
+        - Ported plugin.cpp. Both internal and LADSPA plugins tested okay. (Orcan)
+        - Trivial conversion of Qt3 support methods to Qt4 in some widgets: slider, sliderbase, knob,
+          ttoolbutton, mlabel. (Orcan)
 04.12.2010
         - Fix: Escape button does not exit track renaming editor. (Orcan)
         - Fix: Midi ports config table items are editable when they are not supposed to. (Orcan)

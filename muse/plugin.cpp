@@ -6,41 +6,31 @@
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qdir.h>
-//Added by qt3to4:
-#include <QBoxLayout>
-#include <QGridLayout>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <Qt3Support>
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <cmath>
 #include <math.h>
 
-#include <qwidget.h>
-#include <QLayout>
-#include <qlabel.h>
-#include <qsignalmapper.h>
-#include <qpushbutton.h>
-#include <q3scrollview.h>
-#include <q3listview.h>
-//#include <q3toolbar.h>
-#include <QToolBar>
-#include <qtoolbutton.h>
-#include <q3whatsthis.h>
-#include <qcheckbox.h>
-#include <qtooltip.h>
-//#include <qwidgetfactory.h>
-#include <qfile.h>
-#include <qobject.h>
-#include <qcombobox.h>
 #include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDir>
+#include <QFile>
+#include <QGridLayout>
 #include <QGroupBox>
-#include <qradiobutton.h>
-#include <qmessagebox.h>
-#include <qtimer.h>
+#include <QHBoxLayout>
+#include <QMainWindow>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QSignalMapper>
+#include <QSizePolicy>
+#include <QScrollArea>
+#include <QToolBar>
+#include <QToolButton>
+#include <QVBoxLayout>
+#include <QWhatsThis>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -257,8 +247,9 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctl
   *min = ctlmn;
   *max = ctlmx;
   
-  float fbias = (fmin + fmax) / 2.0;
-  float normbias = fbias / frng;
+  // Orcan: commented out next 2 lines to suppress compiler warning:
+  //float fbias = (fmin + fmax) / 2.0;
+  //float normbias = fbias / frng;
   float normdef = fdef / frng;
   fdef = normdef * fctlrng;
   
@@ -2801,8 +2792,11 @@ Plugin* PluginDialog::getPlugin(QWidget* parent)
       return 0;
       }
 
-const char* presetOpenText = "<img source=\"fileopen\"> "
-      "Click this button to load a saved <em>preset</em>.";
+// TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt 
+// Resource System in Qt documentation - ORCAN
+//const char* presetOpenText = "<img source=\"fileopen\"> "
+//      "Click this button to load a saved <em>preset</em>.";
+const char* presetOpenText = "Click this button to load a saved <em>preset</em>.";
 const char* presetSaveText = "Click this button to save curent parameter "
       "settings as a <em>preset</em>.  You will be prompted for a file name.";
 const char* presetBypassText = "Click this button to bypass effect unit";
@@ -2814,40 +2808,38 @@ const char* presetBypassText = "Click this button to bypass effect unit";
 //PluginGui::PluginGui(PluginI* p)
 // p3.3.43
 PluginGui::PluginGui(PluginIBase* p)
-   : Q3MainWindow(0)
+   : QMainWindow(0)
       {
       gw     = 0;
       params = 0;
       plugin = p;
       setCaption(plugin->name());
 
-      QToolBar* tools = new QToolBar(tr("File Buttons"), this);
-      QToolButton* fileOpen = new QToolButton(
-         QIcon(*openIconS), // ddskrjo
-         tr("Load Preset"),
-     QString::null, this, SLOT(load()),
-     tools, "load preset" );
+      QToolBar* tools = addToolBar(tr("File Buttons"));
 
-      QToolButton* fileSave = new QToolButton(
-         QIcon(*saveIconS), // ddskrjo
-         tr("Save Preset"),
-     QString::null,
-     this, SLOT(save()),
-     tools, "save preset");
+      QAction* fileOpen = new QAction(QIcon(*openIconS), tr("Load Preset"), this);
+      connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));
+      tools->addAction(fileOpen);
+      
+      QAction* fileSave = new QAction(QIcon(*saveIconS), tr("Save Preset"), this);
+      connect(fileSave, SIGNAL(triggered()), this, SLOT(save()));
+      tools->addAction(fileSave);
 
-      Q3WhatsThis::whatsThisButton(tools);
+      tools->addAction(QWhatsThis::createAction(this));
 
-      onOff = new QToolButton(tools, "bypass");
-      onOff->setIconSet(*exitIconS);
-      onOff->setToggleButton(true);
-      onOff->setOn(plugin->on());
-      QToolTip::add(onOff, tr("bypass plugin"));
+      onOff = new QAction(QIcon(*exitIconS), tr("bypass plugin"), this);
+      onOff->setCheckable(true);
+      onOff->setChecked(plugin->on());
+      onOff->setToolTip(tr("bypass plugin"));
       connect(onOff, SIGNAL(toggled(bool)), SLOT(bypassToggled(bool)));
+      tools->addAction(onOff);
 
-      Q3WhatsThis::add(fileOpen, tr(presetOpenText));
-      Q3WhatsThis::add(onOff, tr(presetBypassText));
-      Q3MimeSourceFactory::defaultFactory()->setPixmap(QString("fileopen"), *openIcon );
-      Q3WhatsThis::add(fileSave, tr(presetSaveText));
+      // TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt 
+      // Resource System in Qt documentation - ORCAN
+      //Q3MimeSourceFactory::defaultFactory()->setPixmap(QString("fileopen"), *openIcon );
+      fileOpen->setWhatsThis(tr(presetOpenText));
+      onOff->setWhatsThis(tr(presetBypassText));
+      fileSave->setWhatsThis(tr(presetSaveText));
 
       QString id;
       //id.setNum(plugin->plugin()->id());
@@ -2858,17 +2850,20 @@ PluginGui::PluginGui(PluginIBase* p)
             //
             // construct GUI from *.ui file
             //
-#if 0 // ddskrjo
-            mw = QWidgetFactory::create(uifile.name(), 0, this);
+            PluginLoader loader;
+            QFile file(uifile.name());
+            file.open(QFile::ReadOnly);
+            mw = loader.load(&file, this);
+            file.close();
             setCentralWidget(mw);
 
-            const QObjectList* l = mw->children();
+            QObjectList l = mw->children();
             QObject *obj;
 
             nobj = 0;
-            QObjectListIt it(*l);
-            while ((obj = it.current()) != 0) {
-                  ++it;
+            QList<QObject*>::iterator it;
+            for (it = l.begin(); it != l.end(); ++it) {
+                  obj = *it;
                   const char* name = obj->name();
                   if (*name !='P')
                         continue;
@@ -2878,7 +2873,7 @@ PluginGui::PluginGui(PluginIBase* p)
                         continue;
                   ++nobj;
                   }
-            it.toFirst();
+            it = l.begin();
             gw   = new GuiWidgets[nobj];
             nobj = 0;
             QSignalMapper* mapper = new QSignalMapper(this, "pluginGuiMapper");
@@ -2889,8 +2884,8 @@ PluginGui::PluginGui(PluginIBase* p)
             connect(mapperPressed, SIGNAL(mapped(int)), SLOT(guiParamPressed(int)));
             connect(mapperReleased, SIGNAL(mapped(int)), SLOT(guiParamReleased(int)));
             
-            while ((obj = it.current()) != 0) {
-                  ++it;
+            for (it = l.begin(); it != l.end(); ++it) {
+                  obj = *it;
                   const char* name = obj->name();
                   if (*name !='P')
                         continue;
@@ -2951,21 +2946,21 @@ PluginGui::PluginGui(PluginIBase* p)
                   ++nobj;
                   }
               updateValues(); // otherwise the GUI won't have valid data
-#endif
             }
       else {
             //mw = new QWidget(this);
             //setCentralWidget(mw);
             // p3.4.43
-            view = new Q3ScrollView(this);
+            view = new QScrollArea;
+            view->setWidgetResizable(true);
             setCentralWidget(view);
-            mw = new QWidget(view);
-            view->setResizePolicy(Q3ScrollView::AutoOneFit);
             //view->setVScrollBarMode(QScrollView::AlwaysOff);
-            view->addChild(mw);
             
-            QGridLayout* grid = new QGridLayout(mw);
+            mw = new QWidget;
+            QGridLayout* grid = new QGridLayout;
             grid->setSpacing(2);
+
+            mw->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
             int n  = plugin->parameters();
             params = new GuiParam[n];
@@ -3021,9 +3016,9 @@ PluginGui::PluginGui(PluginIBase* p)
                         params[i].actuator = cb;
                         }
                   else {
-                        label           = new QLabel(QString(plugin->paramName(i)), mw);
+                        label           = new QLabel(QString(plugin->paramName(i)), 0);
                         params[i].type  = GuiParam::GUI_SLIDER;
-                        params[i].label = new DoubleLabel(val, lower, upper, mw);
+                        params[i].label = new DoubleLabel(val, lower, upper, 0);
                         params[i].label->setFrame(true);
                         params[i].label->setPrecision(2);
                         params[i].label->setId(i);
@@ -3031,7 +3026,7 @@ PluginGui::PluginGui(PluginIBase* p)
                         //params[i].label->setContentsMargins(2, 2, 2, 2);
                         //params[i].label->setFixedHeight(h);
 
-                        Slider* s = new Slider(mw, "param", Qt::Horizontal,
+                        Slider* s = new Slider(0, "param", Qt::Horizontal,
                            Slider::None); //, style);
                            
                         s->setCursorHoming(true);
@@ -3074,8 +3069,10 @@ PluginGui::PluginGui(PluginIBase* p)
                   }
             // p3.3.43
             resize(280, height());
-            
+
             grid->setColStretch(2, 10);
+            mw->setLayout(grid);
+            view->setWidget(mw);
             }
       connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       }
@@ -3853,15 +3850,14 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
 }
 
 //---------------------------------------------------------
-//   PluginWidgetFactory
+//   PluginLoader
 //---------------------------------------------------------
-#if 0 // ddskrjo
-QWidget* PluginWidgetFactory::createWidget(const QString& className, QWidget* parent, const char* name) const
+QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent, const QString & name)
 {
-  if(className == "DoubleLabel")
+  if(className == QString("DoubleLabel"))
     return new DoubleLabel(parent, name); 
-  if(className == "Slider")
-    return new Slider(parent, name); 
-  return 0;  
+  if(className == QString("Slider"))
+    return new Slider(parent, name, Qt::Horizontal); 
+
+  return QUiLoader::createWidget(className, parent, name);
 };
-#endif

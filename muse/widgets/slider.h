@@ -63,7 +63,7 @@ class Slider : public SliderBase, public ScaleIf
   protected:
   virtual void drawSlider (QPainter *p, const QRect &r);
   double getValue(const QPoint &p);
-  void getScrollMode( QPoint &p, const Qt::ButtonState &button, int &scrollMode, int &direction);
+  void getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction);
   void resizeEvent(QResizeEvent *e);
   void paintEvent (QPaintEvent *e);
   void valueChange();

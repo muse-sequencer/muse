@@ -216,7 +216,7 @@ double Knob::getValue(const QPoint &p)
 //.u  Description
 //  Called by QwtSliderBase
 //------------------------------------------------------------
-void Knob::getScrollMode( QPoint &p, const Qt::ButtonState &/*button*/, int &scrollMode, int &direction)// prevent compiler warning : unsused parameter 
+void Knob::getScrollMode( QPoint &p, const Qt::MouseButton &/*button*/, int &scrollMode, int &direction)// prevent compiler warning : unsused parameter 
 {
     int dx, dy, r;
     double arc;

@@ -52,9 +52,9 @@ class Knob : public SliderBase, public ScaleIf
       void paintEvent(QPaintEvent *);
       void resizeEvent(QResizeEvent *e);
       double getValue(const QPoint &p);
-      void getScrollMode( QPoint &p, const Qt::ButtonState &button, int &scrollMode, int &direction );
-      void scaleChange()             { repaint(false); }
-      void fontChange(const QFont &) { repaint(false); }
+      void getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction );
+      void scaleChange()             { repaint(); }
+      void fontChange(const QFont &) { repaint(); }
 
    public:
       Knob(QWidget* parent = 0, const char *name = 0);
