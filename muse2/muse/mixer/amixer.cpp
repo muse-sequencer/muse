@@ -677,7 +677,7 @@ void AudioMixerApp::write(int level, Xml& xml)
 //void AudioMixerApp::write(int level, Xml& xml, const char* name)
       {
       //xml.stag(QString(name));
-      //xml.tag(level++, name.latin1());
+      //xml.tag(level++, name.toLatin1());
       xml.tag(level++, "Mixer");
       
       xml.strTag(level, "name", cfg->name);
@@ -695,7 +695,7 @@ void AudioMixerApp::write(int level, Xml& xml)
       xml.intTag(level, "showSyntiTracks",  cfg->showSyntiTracks);
       
       //xml.etag(name);
-      //xml.etag(level, name.latin1());
+      //xml.etag(level, name.toLatin1());
       xml.etag(level, "Mixer");
       }
 

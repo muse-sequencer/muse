@@ -147,7 +147,8 @@ void ScrollScale::setRange ( int min, int max )
 		scroll->setValue ( min );
 	if ( scroll->value() > max )
 		scroll->setValue ( max );
-	scroll->setSteps ( 20, i );
+        scroll->setSingleStep(20);
+        scroll->setPageStep(i);
 }
 
 //---------------------------------------------------------
@@ -170,8 +171,8 @@ void ScrollScale::setPosNoLimit ( unsigned pos )
 {
   //printf ( "ScrollScale::setPosNoLimit pos:%d scaleVal:%d offset ticks:%d\n", pos, scaleVal, pos2offset ( pos ) );
 
-  if((int)pos > scroll->maxValue())
-    scroll->setMaxValue(pos);
+  if((int)pos > scroll->maximum())
+    scroll->setMaximum(pos);
   scroll->setValue(pos);
 }
 
@@ -239,7 +240,12 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 		delta/=2;
 	}
 
-	scale  = new QSlider ( 0, 1024, 1, cur, o);
+	scale  = new QSlider (o);
+        scale->setMinimum(0);
+        scale->setMaximum(1024);
+	scale->setPageStep(1);
+	scale->setValue(cur);	
+
 	scroll = new QScrollBar ( o );
 	setScale ( cur );
 
@@ -277,16 +283,16 @@ void ScrollScale::setPageButtons ( bool flag )
 		if ( up == 0 )
 		{
 			up = new QToolButton;
-			up->setPixmap ( * ( upIcon ) );
+			up->setIcon ( QIcon(*upIcon) );
 			down = new QToolButton;
-			down->setPixmap ( * ( downIcon ) );
+			down->setIcon ( QIcon(*downIcon) );
 			pageNo = new QLabel;
 			QString s;
 			s.setNum ( _page+1 );
 			pageNo->setText ( s );
-			QToolTip::add ( down, tr ( "next page" ) );
-			QToolTip::add ( up, tr ( "previous page" ) );
-			QToolTip::add ( pageNo, tr ( "current page number" ) );
+                        down->setToolTip(tr ( "next page" ) );
+                        up->setToolTip(tr ( "previous page" ) );
+                        pageNo->setToolTip(tr ( "current page number" ) );
 			box->insertWidget ( 1, up );
 			box->insertWidget ( 2, down );
 			box->insertSpacing ( 3, 5 );

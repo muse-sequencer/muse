@@ -591,7 +591,7 @@ static void* fontLoadThread(void* t)
       QString temp = QString(filename);
       QString name = temp.right(temp.length() - temp.findRev('/',-1) - 1);
       name = name.left(name.length()-4); //Strip off ".sf2"
-      font.name = name.latin1();
+      font.name = name.toLatin1().constData();
       fptr->stack.push_front(font);
       fptr->currentlyLoadedFonts++;
 

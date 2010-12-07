@@ -199,10 +199,10 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
             xml.tag(level++, "Route");
             
             //xml.strTag(level, "srcNode", r->name());
-            xml.tag(level, "source type=\"%d\" name=\"%s\"/", r->type, r->name().latin1());
+            xml.tag(level, "source type=\"%d\" name=\"%s\"/", r->type, r->name().toLatin1().constData());
             
             //xml.strTag(level, "dstNode", name());
-            xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, name().latin1());
+            xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, name().toLatin1().constData());
             
             xml.etag(level--, "Route");
           }
@@ -230,31 +230,31 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
           /*
           //xml.strTag(level, "srcNode", name());
           if(r->channel != -1)  
-            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, r->channel, name().latin1());
-            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::MIDI_DEVICE_ROUTE, r->channel, name().latin1());
-            xml.tag(level, "source devtype=\"%d\" channel=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, r->channel, name().latin1());
+            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, r->channel, name().toLatin1().constData());
+            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::MIDI_DEVICE_ROUTE, r->channel, name().toLatin1().constData());
+            xml.tag(level, "source devtype=\"%d\" channel=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, r->channel, name().toLatin1().constData());
           else  
-            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, name().latin1());
-            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::MIDI_DEVICE_ROUTE, name().latin1());
+            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, name().toLatin1().constData());
+            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::MIDI_DEVICE_ROUTE, name().toLatin1().constData());
           */  
-            //xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, name().latin1());
-            xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, Xml::xmlString(name()).latin1());
+            //xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, name().toLatin1().constData());
+            xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, Xml::xmlString(name()).toLatin1().constData());
           
           /*
           //xml.strTag(level, "dstNode", r->name());
           if(r->channel != -1)  
           {
             if(r->type == Route::MIDI_DEVICE_ROUTE)  
-              xml.tag(level, "dest devtype=\"%d\" channel=\"%d\" name=\"%s\"/", r->device->deviceType(), r->channel, r->name().latin1());
+              xml.tag(level, "dest devtype=\"%d\" channel=\"%d\" name=\"%s\"/", r->device->deviceType(), r->channel, r->name().toLatin1().constData());
             else  
-              xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->channel, r->name().latin1());
+              xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->channel, r->name().toLatin1().constData());
           }
           else  
           {
             if(r->type == Route::MIDI_DEVICE_ROUTE)  
-              xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", r->device->deviceType(), r->name().latin1());
+              xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", r->device->deviceType(), r->name().toLatin1().constData());
             else  
-              xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().latin1());
+              xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().toLatin1().constData());
           }
           */
           

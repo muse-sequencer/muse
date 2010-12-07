@@ -304,7 +304,7 @@ void WaveEventBase::readAudio(WavePart* part, unsigned offset, float** buffer, i
 
   #ifdef WAVEEVENT_DEBUG_PRC
   printf("WaveEventBase::readAudio %s processing converter... inFrames:%ld inSize:%ld outFrames:%ld outSize:%ld rn:%d", 
-    f.name().latin1(), inFrames, inSize, outFrames, outSize, rn);
+    f.name().toLatin1(), inFrames, inSize, outFrames, outSize, rn);
   #endif
   
   //int srcerr = src_process(src_state, &srcdata);
@@ -343,14 +343,14 @@ void WaveEventBase::readAudio(WavePart* part, unsigned offset, float** buffer, i
   {
     if(srcdata.output_frames_gen != outFrames)
       printf("WaveEventBase::readAudio %s output_frames_gen:%ld != outFrames:%ld outSize:%ld inFrames:%ld srcdata.input_frames_used:%ld inSize:%ld rn:%d\n", 
-        f.name().latin1(), srcdata.output_frames_gen, outFrames, outSize, inFrames, srcdata.input_frames_used, inSize, rn); 
+        f.name().toLatin1(), srcdata.output_frames_gen, outFrames, outSize, inFrames, srcdata.input_frames_used, inSize, rn); 
   }
   
   if(inFrames != (long)rn)
   {
     if(debugMsg)
       printf("WaveEventBase::readAudio %s rn:%zd != inFrames:%ld output_frames_gen:%ld outFrames:%ld outSize:%ld srcdata.input_frames_used:%ld inSize:%ld\n", 
-        f.name().latin1(), rn, inFrames, srcdata.output_frames_gen, outFrames, outSize, srcdata.input_frames_used, inSize);
+        f.name().toLatin1(), rn, inFrames, srcdata.output_frames_gen, outFrames, outSize, srcdata.input_frames_used, inSize);
     
     // We've reached the end of the file. Convert the number of frames read.
     //rn = (double)rn * srcratio + 1; 

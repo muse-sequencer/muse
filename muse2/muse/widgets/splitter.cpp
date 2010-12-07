@@ -30,13 +30,13 @@ void Splitter::writeStatus(int level, Xml& xml)
       {
       QList<int> vl = sizes();
       //xml.nput(level++, "<%s>", name());
-      xml.nput(level++, "<%s>", Xml::xmlString(name()).latin1());
+      xml.nput(level++, "<%s>", Xml::xmlString(name()).toLatin1().constData());
       QList<int>::iterator ivl = vl.begin();
       for (; ivl != vl.end(); ++ivl) {
             xml.nput("%d ", *ivl);
             }
       //xml.nput("</%s>\n", name());
-      xml.nput("</%s>\n", Xml::xmlString(name()).latin1());
+      xml.nput("</%s>\n", Xml::xmlString(name()).toLatin1().constData());
       }
 
 //---------------------------------------------------------

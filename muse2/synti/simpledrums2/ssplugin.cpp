@@ -34,7 +34,7 @@ static void loadPluginLib(QFileInfo* fi)
       {
       SS_TRACE_IN
       if (SS_DEBUG_LADSPA) {
-            printf("loadPluginLib: %s\n", fi->fileName().toLatin1().data());
+            printf("loadPluginLib: %s\n", fi->fileName().toLatin1().constData());
             }
       void* handle = dlopen(fi->filePath().toAscii().data(), RTLD_NOW);
       if (handle == 0) {
@@ -158,7 +158,7 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
             }
 
       /*if (SS_DEBUG_LADSPA) {
-            printf("Label: %s\tLib: %s\tPortCount: %d\n", this->label().toLatin1().data(), this->lib().toLatin1().data(), plugin->PortCount);
+            printf("Label: %s\tLib: %s\tPortCount: %d\n", this->label().toLatin1().constData(), this->lib().toLatin1().constData(), plugin->PortCount);
             printf("LADSPA_PORT_CONTROL|LADSPA_PORT_INPUT: %d\t", pIdx.size());
             printf("Input ports: %d\t", iIdx.size());
             printf("Output ports: %d\n\n", oIdx.size());
@@ -181,7 +181,7 @@ LadspaPlugin::~LadspaPlugin()
             stop();
             }
       if (handle) {
-         SS_DBG_LADSPA2("Cleaning up ", this->label().toLatin1().data());
+         SS_DBG_LADSPA2("Cleaning up ", this->label().toLatin1().constData());
          plugin->cleanup(handle);
          }
 
@@ -205,7 +205,7 @@ bool LadspaPlugin::instantiate()
       handle = plugin->instantiate(plugin, SS_samplerate);
       success = (handle != NULL);
       if (success)
-            SS_DBG_LADSPA2("Plugin instantiated", label().toLatin1().data());
+            SS_DBG_LADSPA2("Plugin instantiated", label().toLatin1().constData());
       return success;
       }
 
@@ -254,9 +254,9 @@ void LadspaPlugin::stop()
       {
       SS_TRACE_IN
       if (handle) {
-            SS_DBG_LADSPA2("Trying to stop plugin", label().toLatin1().data());
+            SS_DBG_LADSPA2("Trying to stop plugin", label().toLatin1().constData());
             if (plugin->deactivate) {
-                  SS_DBG_LADSPA2("Deactivating ", label().toLatin1().data());
+                  SS_DBG_LADSPA2("Deactivating ", label().toLatin1().constData());
                   plugin->deactivate(handle);
                   active = false;
                   }
@@ -354,7 +354,7 @@ Plugin* PluginList::find(const QString& file, const QString& name)
                   return *i;
                   }
             }
-      printf("Plugin <%s> not found\n", name.toLatin1().data());
+      printf("Plugin <%s> not found\n", name.toLatin1().constData());
       SS_TRACE_OUT
       return 0;
       }

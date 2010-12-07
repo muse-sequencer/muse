@@ -118,7 +118,7 @@ QString bitmap2String(int bm)
                         }
                   }
             }
-//printf(" -> <%s>\n", s.latin1());
+//printf(" -> <%s>\n", s.toLatin1());
       return s;
       }
 
@@ -168,7 +168,7 @@ QString u32bitmap2String(unsigned int bm)
                         }
                   }
             }
-//printf(" -> <%s>\n", s.latin1());
+//printf(" -> <%s>\n", s.toLatin1());
       return s;
       }
 
@@ -180,7 +180,7 @@ int string2bitmap(const QString& str)
       {
       int val = 0;
       QString ss = str.simplified();
-      const char* s = ss.latin1();
+      const char* s = ss.toLatin1();
 //printf("string2bitmap <%s>\n", s);
 
       if (s == 0)
@@ -189,7 +189,7 @@ int string2bitmap(const QString& str)
             return 0xffff;
       if (strcmp(s, "none") == 0)
             return 0;
-// printf("str2bitmap: <%s> ", str.latin1);
+// printf("str2bitmap: <%s> ", str.toLatin1);
       int tval   = 0;
       bool range = false;
       int sval   = 0;
@@ -238,7 +238,7 @@ unsigned int string2u32bitmap(const QString& str)
       //int val = 0;
       unsigned int val = 0;
       QString ss = str.simplified();
-      const char* s = ss.latin1();
+      const char* s = ss.toLatin1();
 //printf("string2bitmap <%s>\n", s);
 
       if (s == 0)
@@ -248,7 +248,7 @@ unsigned int string2u32bitmap(const QString& str)
             return 0xffffffff;
       if (strcmp(s, "none") == 0)
             return 0;
-// printf("str2bitmap: <%s> ", str.latin1);
+// printf("str2bitmap: <%s> ", str.toLatin1);
       int tval   = 0;
       //unsigned int tval   = 0;
       bool range = false;

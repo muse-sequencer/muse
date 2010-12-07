@@ -1199,7 +1199,7 @@ void DrumEdit::execDeliveredScript(int id)
 {
       //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
       QString scriptfile = song->getScriptPath(id, true);
-      song->executeScript(scriptfile.toLatin1().data(), parts(), quant(), true); 
+      song->executeScript(scriptfile.toLatin1().constData(), parts(), quant(), true); 
 }
 
 //---------------------------------------------------------
@@ -1208,6 +1208,6 @@ void DrumEdit::execDeliveredScript(int id)
 void DrumEdit::execUserScript(int id)
 {
       QString scriptfile = song->getScriptPath(id, false);
-      song->executeScript(scriptfile.toLatin1().data(), parts(), quant(), true);
+      song->executeScript(scriptfile.toLatin1().constData(), parts(), quant(), true);
 }
 

@@ -123,7 +123,7 @@ static Synth* findSynth(const QString& sclass, const QString& label)
                   
                   return *i;
          }
-      printf("synthi class:%s label:%s not found\n", sclass.latin1(), label.latin1());
+      printf("synthi class:%s label:%s not found\n", sclass.toLatin1().constData(), label.toLatin1().constData());
       return 0;
       }
 
@@ -151,7 +151,7 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label)
                   }
             }
       else
-            printf("createSynthInstance: synthi class:%s label:%s not found\n", sclass.latin1(), label.latin1());
+            printf("createSynthInstance: synthi class:%s label:%s not found\n", sclass.toLatin1().constData(), label.toLatin1().constData());
       return si;
       }
 
@@ -183,7 +183,8 @@ void* MessSynth::instantiate(const QString& instanceName)
       //QString instanceName = baseName() + "-" + n;
       
       doSetuid();
-      const char* path = info.filePath().latin1();
+      QByteArray ba = info.filePath().toLatin1();
+      const char* path = ba.constData();
 
       // load Synti dll
       void* handle = dlopen(path, RTLD_NOW);
@@ -214,7 +215,7 @@ void* MessSynth::instantiate(const QString& instanceName)
             undoSetuid();
             return 0;
             }
-      Mess* mess = _descr->instantiate(sampleRate, muse, &museProject, instanceName.latin1());
+      Mess* mess = _descr->instantiate(sampleRate, muse, &museProject, instanceName.toLatin1().constData());
       undoSetuid();
       return mess;
       }
@@ -497,7 +498,7 @@ void initMidiSynth()
 
       QDir pluginDir(s, QString("*.so")); // ddskrjo
       if (debugMsg)
-            printf("searching for software synthesizer in <%s>\n", s.latin1());
+            printf("searching for software synthesizer in <%s>\n", s.toLatin1().constData());
       if (pluginDir.exists()) {
             QFileInfoList list = pluginDir.entryInfoList();
             QFileInfoListIterator it=list.begin();
@@ -506,10 +507,11 @@ void initMidiSynth()
                   fi = &*it;
             
                   //doSetuid();
-                  const char* path = fi->filePath().latin1();
+                  QByteArray ba = fi->filePath().toLatin1();
+                  const char* path = ba.constData();
             
                   // load Synti dll
-                  //printf("initMidiSynth: dlopen file:%s name:%s desc:%s\n", fi->filePath().latin1(), QString(descr->name), QString(descr->description), QString(""), QString(descr->version)));
+                  //printf("initMidiSynth: dlopen file:%s name:%s desc:%s\n", fi->filePath().toLatin1().constData(), QString(descr->name), QString(descr->description), QString(""), QString(descr->version)));
                   void* handle = dlopen(path, RTLD_NOW);
                   if (handle == 0) {
                         fprintf(stderr, "initMidiSynth: MESS dlopen(%s) failed: %s\n", path, dlerror());
@@ -547,7 +549,7 @@ void initMidiSynth()
                         ++it;
                         continue;
                         }
-                  //Mess* mess = descr->instantiate(sampleRate, muse, &museProject, instanceName.latin1());
+                  //Mess* mess = descr->instantiate(sampleRate, muse, &museProject, instanceName.toLatin1().constData());
                   //undoSetuid();
                   
             
@@ -572,7 +574,7 @@ void initMidiSynth()
 //SynthI* Song::createSynthI(const QString& sclass)
 SynthI* Song::createSynthI(const QString& sclass, const QString& label)
       {
-      //printf("Song::createSynthI calling ::createSynthI class:%s\n", sclass.latin1());
+      //printf("Song::createSynthI calling ::createSynthI class:%s\n", sclass.toLatin1().constData());
       
       //SynthI* si = ::createSynthI(sclass);
       //SynthI* si = ::createSynthI(sclass, label);

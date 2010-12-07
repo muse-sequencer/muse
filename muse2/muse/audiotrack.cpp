@@ -713,7 +713,7 @@ void AudioTrack::setVolume(double val)
       iCtrlList cl = _controller.find(AC_VOLUME);
       if (cl == _controller.end()) {
             printf("no volume controller %s %zd\n",
-               name().latin1(), _controller.size());
+               name().toLatin1().constData(), _controller.size());
             return;
             }
       cl->second->setCurVal(val);
@@ -1574,7 +1574,7 @@ bool AudioTrack::setRecordFlag1(bool f)
                   QFile fil;
                   for (;;++recFileNumber) {
                      sprintf(buffer, "%s/rec%d.wav",
-                        museProject.latin1(),
+                        museProject.toLatin1().constData(),
                         recFileNumber);
                      fil.setName(QString(buffer));
                      if (!fil.exists())
@@ -1594,7 +1594,7 @@ bool AudioTrack::setRecordFlag1(bool f)
                   }
             if (debugMsg)
                   printf("AudioNode::setRecordFlag1: create internal file %s\n",
-                     _recFile->path().latin1());
+                     _recFile->path().toLatin1().constData());
             }
       else {
             if (_recFile) {
@@ -1609,9 +1609,9 @@ bool AudioTrack::setRecordFlag1(bool f)
               delete _recFile;
               setRecFile(0);
               
-              remove(s.latin1());
+              remove(s.toLatin1().constData());
               if(debugMsg)
-                printf("AudioNode::setRecordFlag1: remove file %s\n", s.latin1());
+                printf("AudioNode::setRecordFlag1: remove file %s\n", s.toLatin1().constData());
               //_recFile = 0;
                   }
             }
@@ -1621,7 +1621,7 @@ double AudioTrack::auxSend(int idx) const
       {
       if (unsigned(idx) >= _auxSend.size()) {
             printf("%s auxSend: bad index: %d >= %zd\n",
-               name().latin1(), idx, _auxSend.size());
+               name().toLatin1().constData(), idx, _auxSend.size());
             return 0.0;
             }
       return _auxSend[idx];
@@ -1631,7 +1631,7 @@ void AudioTrack::setAuxSend(int idx, double v)
       {
       if (unsigned(idx) >= _auxSend.size()) {
             printf("%s setAuxSend: bad index: %d >= %zd\n",
-               name().latin1(), idx, _auxSend.size());
+               name().toLatin1().constData(), idx, _auxSend.size());
             return;
             }
       _auxSend[idx] = v;

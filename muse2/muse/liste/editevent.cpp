@@ -270,7 +270,8 @@ Event EditSysexDialog::event()
 void EditSysexDialog::accept()
       {
       QString qsrc = edit->text();
-      const char* src = qsrc.latin1();
+      QByteArray ba = qsrc.toLatin1();
+      const char* src = ba.constData();
 
       sysex = (unsigned char*)hex2string(this, src, len);
       if (sysex)
@@ -352,7 +353,8 @@ void EditMetaDialog::typeChanged(int val)
 void EditMetaDialog::toggled(bool flag)
       {
       QString qsrc    = edit->text();
-      const char* src = qsrc.latin1();
+      QByteArray ba = qsrc.toLatin1();
+      const char* src = ba.constData();
       edit->clear();
 
       QString dst;
@@ -396,7 +398,8 @@ Event EditMetaDialog::event()
 void EditMetaDialog::accept()
       {
       QString qsrc = edit->text();
-      const char* src = qsrc.latin1();
+      QByteArray ba = qsrc.toLatin1();
+      const char* src = ba.constData();
       if (!hexButton->isChecked()) {
             meta = (unsigned char*)strdup(src);
             len  = strlen(src);
@@ -775,7 +778,7 @@ void EditCtrlDialog::ctrlListClicked(QListWidgetItem* item)
                   }
             }
       if (i == cll->end())
-            printf("controller %s not found!\n", s.latin1());
+            printf("controller %s not found!\n", s.toLatin1().constData());
       }
 
 //---------------------------------------------------------

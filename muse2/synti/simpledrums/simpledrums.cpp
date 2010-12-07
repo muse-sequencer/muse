@@ -139,36 +139,36 @@ SimpleSynth::SimpleSynth(int sr)
             QString c6 = "Channel " + QString::number(ch + 1) + " fx send 2";
             QString c7 = "Channel " + QString::number(ch + 1) + " fx send 3";
             QString c8 = "Channel " + QString::number(ch + 1) + " fx send 4";
-            controllers[i].name = c1.latin1();
+            controllers[i].name = c1.toLatin1();
             controllers[i].num  = CTRL_NRPN14_OFFSET+i;
             controllers[i].min  = 0;
             controllers[i].max  = 127;
 
-            controllers[i+1].name = c2.latin1();
+            controllers[i+1].name = c2.toLatin1();
             controllers[i+1].num  = CTRL_NRPN14_OFFSET+i+1;
             controllers[i+1].min  = 0;
             controllers[i+1].max  = 127;
 
-            controllers[i+2].name = c3.latin1();
+            controllers[i+2].name = c3.toLatin1();
             controllers[i+2].num  = CTRL_NRPN14_OFFSET+i+2;
             controllers[i+2].min  = 0;
             controllers[i+2].max  = 1;
 
-            controllers[i+3].name = c4.latin1();
+            controllers[i+3].name = c4.toLatin1();
             controllers[i+3].num  = CTRL_NRPN14_OFFSET+i+3;
             controllers[i+3].min  = 0;
             controllers[i+3].max  = 1;
 
-            controllers[i+4].name = c5.latin1();
+            controllers[i+4].name = c5.toLatin1();
             controllers[i+4].num  = CTRL_NRPN14_OFFSET+i+4;
 
-            controllers[i+5].name = c6.latin1();
+            controllers[i+5].name = c6.toLatin1();
             controllers[i+5].num  = CTRL_NRPN14_OFFSET+i+5;
 
-            controllers[i+6].name = c7.latin1();
+            controllers[i+6].name = c7.toLatin1();
             controllers[i+6].num  = CTRL_NRPN14_OFFSET+i+6;
 
-            controllers[i+7].name = c8.latin1();
+            controllers[i+7].name = c8.toLatin1();
             controllers[i+7].num  = CTRL_NRPN14_OFFSET+i+7;
 
             controllers[i+4].min = controllers[i+5].min = controllers[i+6].min = controllers[i+7].min = 0;
@@ -180,12 +180,12 @@ SimpleSynth::SimpleSynth(int sr)
       for (int sfx=0; sfx<SS_NR_OF_SENDEFFECTS; sfx++) {
             QString c1 = "Sendfx " + QString::number(sfx) + " ret gain";
             QString c2 = "Sendfx " + QString::number(sfx) + " on/off";
-            controllers[i].name = c1.latin1();
+            controllers[i].name = c1.toLatin1();
             controllers[i].num  = CTRL_NRPN14_OFFSET+i;
             controllers[i].min  = 0;
             controllers[i].max  = 127;
 
-            controllers[i+1].name = c2.latin1();
+            controllers[i+1].name = c2.toLatin1();
             controllers[i+1].num  = CTRL_NRPN14_OFFSET+i+1;
             controllers[i+1].min  = 0;
             controllers[i+1].max  = 1;
@@ -532,7 +532,7 @@ bool SimpleSynth::sysex(int /*len*/, const unsigned char* data)
                   QString lib = (const char*) (data + 2);
                   QString label = (const char*) (data + lib.length() + 3);
                   if (SS_DEBUG_MIDI) {
-                        printf("Sysex cmd load effect: %d %s %s\n", fxid, lib.latin1(), label.latin1());
+                        printf("Sysex cmd load effect: %d %s %s\n", fxid, lib.toLatin1(), label.toLatin1());
                         }
                   initSendEffect(fxid, lib, label);
                   break;
@@ -1561,7 +1561,7 @@ bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
             sendEffects[id].outputs = plugin->outports();
 
             if (plugin->instantiate()) {
-                  SS_DBG2("Plugin instantiated", name.latin1());
+                  SS_DBG2("Plugin instantiated", name.toLatin1());
                   SS_DBG_I("Parameters", plugin->parameter());
                   SS_DBG_I("No of inputs", plugin->inports());
                   SS_DBG_I("No of outputs",plugin->outports());
@@ -1646,7 +1646,7 @@ void SimpleSynth::cleanupPlugin(int id)
       SS_TRACE_IN
       LadspaPlugin* plugin = sendEffects[id].plugin;
       plugin->stop();
-      SS_DBG2("Stopped fx", plugin->label().latin1());
+      SS_DBG2("Stopped fx", plugin->label().toLatin1());
       sendEffects[id].nrofparameters = 0;
       sendEffects[id].state = SS_SENDFX_OFF;
       sendEffects[id].plugin = 0;

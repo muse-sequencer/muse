@@ -74,7 +74,7 @@ void MEvent::dump() const
       printf("time:%d port:%d chan:%d ", _time, _port, _channel+1);
       if (_type == 0x90) {   // NoteOn
             QString s = pitch2string(_a);
-            printf("NoteOn %s(0x%x) %d\n", s.latin1(), _a, _b);
+            printf("NoteOn %s(0x%x) %d\n", s.toLatin1().constData(), _a, _b);
            }
       else if (_type == 0xf0) {
             printf("SysEx len %d 0x%0x ...\n", len(), data()[0]);

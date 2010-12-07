@@ -167,24 +167,25 @@ void CtrlList::read(Xml& xml)
                               //_id = xml.s2().toInt();
                               _id = loc.toInt(xml.s2(), &ok);
                               if(!ok)
-                                printf("CtrlList::read failed reading _id string: %s\n", xml.s2().latin1());
+                                printf("CtrlList::read failed reading _id string: %s\n", xml.s2().toLatin1().constData());
                         }
                         else if (tag == "cur")
                         {
                               //_curVal = xml.s2().toDouble();
                               _curVal = loc.toDouble(xml.s2(), &ok);
                               if(!ok)
-                                printf("CtrlList::read failed reading _curVal string: %s\n", xml.s2().latin1());
+                                printf("CtrlList::read failed reading _curVal string: %s\n", xml.s2().toLatin1().constData());
                         }        
                         else
-                              printf("unknown tag %s\n", tag.latin1());
+                              printf("unknown tag %s\n", tag.toLatin1().constData());
                         break;
                   case Xml::Text:
                         {
                         // Changed by Tim. Users in some locales reported corrupt reading,
                         //  because of the way floating point is represented (2,3456 not 2.3456).
                         /*
-                        const char* s = tag.latin1();
+                        QByteArray ba = tag.toLatin1();
+                        const char* s = ba;.constData();
                         int frame;
                         double val;
 
@@ -206,7 +207,7 @@ void CtrlList::read(Xml& xml)
                            */   
                           
                           // Added by Tim. p3.3.6
-                          //printf("CtrlList::read tag:%s\n", tag.latin1());
+                          //printf("CtrlList::read tag:%s\n", tag.toLatin1().constData());
                           
                           int len = tag.length();
                           int frame;
@@ -235,7 +236,7 @@ void CtrlList::read(Xml& xml)
                                 frame = loc.toInt(fs, &ok);
                                 if(!ok)
                                 {
-                                  printf("CtrlList::read failed reading frame string: %s\n", fs.latin1());
+                                  printf("CtrlList::read failed reading frame string: %s\n", fs.toLatin1().constData());
                                   break;
                                 }
                                   
@@ -257,12 +258,12 @@ void CtrlList::read(Xml& xml)
                                 val = loc.toDouble(vs, &ok);
                                 if(!ok)
                                 {
-                                  printf("CtrlList::read failed reading value string: %s\n", vs.latin1());
+                                  printf("CtrlList::read failed reading value string: %s\n", vs.toLatin1().constData());
                                   break;
                                 }
                                   
                                 // Added by Tim. p3.3.6
-                                //printf("CtrlList::read i:%d len:%d fs:%s frame %d: vs:%s val %f \n", i, len, fs.latin1(), frame, vs.latin1(), val);
+                                //printf("CtrlList::read i:%d len:%d fs:%s frame %d: vs:%s val %f \n", i, len, fs.toLatin1().constData(), frame, vs.toLatin1().constData(), val);
                                 
                                 add(frame, val);
                                 

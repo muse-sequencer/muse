@@ -1148,9 +1148,9 @@ static int addSyntiPorts(AudioTrack* t, PopupMenu* lb, int id,
               {
                 char buffer[128];
                 if(tchans == 2)
-                  snprintf(buffer, 128, "%s %d,%d", chpup->tr("Channel").latin1(), ch+1, ch+2);
+                  snprintf(buffer, 128, "%s %d,%d", chpup->tr("Channel").toLatin1().constData(), ch+1, ch+2);
                 else  
-                  snprintf(buffer, 128, "%s %d", chpup->tr("Channel").latin1(), ch+1);
+                  snprintf(buffer, 128, "%s %d", chpup->tr("Channel").toLatin1().constData(), ch+1);
                 act = chpup->addAction(QString(buffer));
                 act->setData(id);
                 act->setCheckable(true);
@@ -1281,7 +1281,7 @@ static int addMultiChannelPorts(AudioTrack* t, PopupMenu* pup, int id, RouteMenu
     if(chans > 1)
     {
       char buffer[128];
-      snprintf(buffer, 128, "%s %d", pup->tr("Channel").latin1(), ch+1);
+      snprintf(buffer, 128, "%s %d", pup->tr("Channel").toLatin1().constData(), ch+1);
       chpup->setTitle(QString(buffer));
       pup->addMenu(chpup);
     }  
@@ -1362,7 +1362,7 @@ static int addMultiChannelPorts(AudioTrack* t, PopupMenu* pup, int id, RouteMenu
       if(chans > 2)
       {
         char buffer[128];
-        snprintf(buffer, 128, "%s %d,%d", pup->tr("Channel").latin1(), ch+1, ch+2);
+        snprintf(buffer, 128, "%s %d,%d", pup->tr("Channel").toLatin1().constData(), ch+1, ch+2);
         chpup->setTitle(QString(buffer));
         pup->addMenu(chpup);
       }  
@@ -1419,7 +1419,7 @@ static int nonSyntiTrackAddSyntis(AudioTrack* t, PopupMenu* lb, int id, RouteMen
               for(int ch = 0; ch < chans; ++ch)
               {
                 char buffer[128];
-                snprintf(buffer, 128, "%s %d", chpup->tr("Channel").latin1(), ch+1);
+                snprintf(buffer, 128, "%s %d", chpup->tr("Channel").toLatin1().constData(), ch+1);
                 act = chpup->addAction(QString(buffer));
                 act->setData(id);
                 act->setCheckable(true);
@@ -1473,7 +1473,7 @@ static int nonSyntiTrackAddSyntis(AudioTrack* t, PopupMenu* lb, int id, RouteMen
                 for(int ch = 0; ch < chans; ++ch)
                 {
                   char buffer[128];
-                  snprintf(buffer, 128, "%s %d,%d", chpup->tr("Channel").latin1(), ch+1, ch+2);
+                  snprintf(buffer, 128, "%s %d,%d", chpup->tr("Channel").toLatin1().constData(), ch+1, ch+2);
                   act = chpup->addAction(QString(buffer));
                   act->setData(id);
                   act->setCheckable(true);
@@ -1558,7 +1558,7 @@ void AudioStrip::iRoutePressed()
           for(int i = 0; i < channel; ++i) 
           {
             char buffer[128];
-            snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+            snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
             MenuTitleItem* titel = new MenuTitleItem(QString(buffer), pup);
             pup->addAction(titel); 
   
@@ -1811,7 +1811,7 @@ void AudioStrip::oRoutePressed()
           for(int i = 0; i < channel; ++i) 
           {
             char buffer[128];
-            snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+            snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
             MenuTitleItem* titel = new MenuTitleItem(QString(buffer), pup);
             pup->addAction(titel); 
   

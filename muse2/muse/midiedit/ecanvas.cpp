@@ -454,7 +454,7 @@ QMimeData* EventCanvas::getTextDrag()
 
 void EventCanvas::pasteAt(const QString& pt, int pos)
       {
-      const char* p = pt.latin1();
+      const char* p = pt.toLatin1();
       Xml xml(p);
       for (;;) {
             Xml::Token token = xml.parse();

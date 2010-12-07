@@ -889,8 +889,8 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   Track* track = npart->track();
                   Part* dpart  = track->newPart(spart, false);
                   // Added by Tim. p3.3.6
-                  //printf("PartCanvas::itemPopup: #1 spart %s %p next:%s %p prev:%s %p\n", spart->name().latin1(), spart, spart->nextClone()->name().latin1(), spart->nextClone(), spart->prevClone()->name().latin1(), spart->prevClone()); 
-                  //printf("PartCanvas::itemPopup: #1 dpart %s %p next:%s %p prev:%s %p\n", dpart->name().latin1(), dpart, dpart->nextClone()->name().latin1(), dpart->nextClone(), dpart->prevClone()->name().latin1(), dpart->prevClone()); 
+                  //printf("PartCanvas::itemPopup: #1 spart %s %p next:%s %p prev:%s %p\n", spart->name().toLatin1().constData(), spart, spart->nextClone()->name().toLatin1().constData(), spart->nextClone(), spart->prevClone()->name().toLatin1().constData(), spart->prevClone()); 
+                  //printf("PartCanvas::itemPopup: #1 dpart %s %p next:%s %p prev:%s %p\n", dpart->name().toLatin1().constData(), dpart, dpart->nextClone()->name().toLatin1().constData(), dpart->nextClone(), dpart->prevClone()->name().toLatin1().constData(), dpart->prevClone()); 
 
                   EventList* se = spart->events();
                   EventList* de = dpart->events();
@@ -904,8 +904,8 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   //audio->msgChangePart(spart, dpart, false);
                   audio->msgChangePart(spart, dpart, false, true, false);
                   // Added by Tim. p3.3.6
-                  //printf("PartCanvas::itemPopup: #2 spart %s %p next:%s %p prev:%s %p\n", spart->name().latin1(), spart, spart->nextClone()->name().latin1(), spart->nextClone(), spart->prevClone()->name().latin1(), spart->prevClone()); 
-                  //printf("PartCanvas::itemPopup: #2 dpart %s %p next:%s %p prev:%s %p\n", dpart->name().latin1(), dpart, dpart->nextClone()->name().latin1(), dpart->nextClone(), dpart->prevClone()->name().latin1(), dpart->prevClone()); 
+                  //printf("PartCanvas::itemPopup: #2 spart %s %p next:%s %p prev:%s %p\n", spart->name().toLatin1().constData(), spart, spart->nextClone()->name().toLatin1().constData(), spart->nextClone(), spart->prevClone()->name().toLatin1().constData(), spart->prevClone()); 
+                  //printf("PartCanvas::itemPopup: #2 dpart %s %p next:%s %p prev:%s %p\n", dpart->name().toLatin1().constData(), dpart, dpart->nextClone()->name().toLatin1().constData(), dpart->nextClone(), dpart->prevClone()->name().toLatin1().constData(), dpart->prevClone()); 
 
                   song->endUndo(SC_PART_MODIFIED);
                   break; // Has to be break here, right?
@@ -961,7 +961,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                       for(int i = 0; i < j; ++i)
                       {
                         // Added by Tim. p3.3.6
-                        //printf("PartCanvas::itemPopup i:%d %s %p events %p refs:%d arefs:%d\n", i, p->name().latin1(), p, part->cevents(), part->cevents()->refCount(), j); 
+                        //printf("PartCanvas::itemPopup i:%d %s %p events %p refs:%d arefs:%d\n", i, p->name().toLatin1().constData(), p, part->cevents(), part->cevents()->refCount(), j); 
                         
                         p->setSelected(true);
                         p = p->nextClone();
@@ -1436,7 +1436,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       //printf("part start tick %d part start pixel %d\n", part->tick(), r.x());
 
       // Added by Tim. p3.3.6
-      //printf("PartCanvas::drawItem %s evRefs:%d pTick:%d pLen:%d bb.x:%d bb.w:%d rect.x:%d rect.w:%d r.x:%d r.w:%d\n", part->name().latin1(), part->events()->arefCount(), pTick, part->lenTick(), item->bbox().x(), item->bbox().width(), rect.x(), rect.width(), r.x(), r.width());
+      //printf("PartCanvas::drawItem %s evRefs:%d pTick:%d pLen:%d bb.x:%d bb.w:%d rect.x:%d rect.w:%d r.x:%d r.w:%d\n", part->name().toLatin1().constData(), part->events()->arefCount(), pTick, part->lenTick(), item->bbox().x(), item->bbox().width(), rect.x(), rect.width(), r.x(), r.width());
   
       // Must be reasonable about very low negative x values! With long songs > 15min
       //  and with high horizontal magnification, 'ghost' drawings appeared,
@@ -1623,7 +1623,7 @@ void PartCanvas::drawWavePart(QPainter& p,
                   continue;
             unsigned channels = f.channels();
             if (channels == 0) {
-                  printf("drawWavePart: channels==0! %s\n", f.name().latin1());
+                  printf("drawWavePart: channels==0! %s\n", f.name().toLatin1().constData());
                   continue;
                   }
 
@@ -1865,7 +1865,8 @@ void PartCanvas::copy(PartList* pl)
 int PartCanvas::pasteAt(const QString& pt, Track* track, int pos, bool clone, bool toTrack)
       {
       //printf("int PartCanvas::pasteAt(const QString& pt, Track* track, int pos)\n");
-      const char* ptxt = pt.latin1();
+      QByteArray ba = pt.toLatin1();
+      const char* ptxt = ba.constData();
       Xml xml(ptxt);
       bool firstPart=true;
       int  posOffset=0;
@@ -2069,7 +2070,7 @@ Part* PartCanvas::readPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 {
                                   //printf("readClone: warning: event not in part: %d - %d -%d, discarded\n",
                                   printf("readClone: warning: event at tick:%d not in part:%s, discarded\n",
-                                    tick, npart->name().latin1());
+                                    tick, npart->name().toLatin1().constData());
                                 }
                                 else 
                                 {
@@ -2108,7 +2109,7 @@ Part* PartCanvas::readPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                         }      
                         else if (tag == "uuid")
                         {
-                          uuid_parse(xml.s2().latin1(), uuid);
+                          uuid_parse(xml.s2().toLatin1().constData(), uuid);
                           if(!uuid_is_null(uuid))
                           {
                             uuidvalid = true;
@@ -2277,7 +2278,7 @@ Part* PartCanvas::readClone(Xml& xml, Track* track, bool toTrack)
                                 {
                                   //printf("readClone: warning: event not in part: %d - %d -%d, discarded\n",
                                   printf("readClone: warning: event at tick:%d not in part:%s, discarded\n",
-                                    tick, npart->name().latin1());
+                                    tick, npart->name().toLatin1().constData());
                                 }
                                 else 
                                 {
@@ -2311,7 +2312,7 @@ Part* PartCanvas::readClone(Xml& xml, Track* track, bool toTrack)
                         }      
                         else if (tag == "uuid")
                         {
-                          uuid_parse(xml.s2().latin1(), uuid);
+                          uuid_parse(xml.s2().toLatin1().constData(), uuid);
                           if(!uuid_is_null(uuid))
                           {
                             uuidvalid = true;
@@ -2605,7 +2606,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       else 
       {
         if(debugMsg && event->mimeData()->formats().size() != 0)
-          printf("Drop with unknown format. First format:<%s>\n", event->mimeData()->formats()[0].toLatin1().data());
+          printf("Drop with unknown format. First format:<%s>\n", event->mimeData()->formats()[0].toLatin1().constData());
         //event->ignore();                     // TODO CHECK Tim.
         return;  
       }
@@ -2874,7 +2875,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
        }
 //       if (height >100) {
 //          p.drawText(tempomap.frame2tick(0)+1000,40,"FOOO");
-//          printf("drawText %s\n", cl->name().latin1());
+//          printf("drawText %s\n", cl->name().toLatin1().constData());
 //        }
      }
 }

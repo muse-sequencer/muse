@@ -427,7 +427,7 @@ void MusE::importController(int channel, MidiPort* mport, int n)
             }
       if (ctrl == 0) {
             printf("controller 0x%x not defined for instrument %s, channel %d\n",
-               n, instr->iname().latin1(), channel);
+               n, instr->iname().toLatin1().constData(), channel);
 // TODO: register default Controller
 //      MidiController* MidiPort::midiController(int num) const
             }
@@ -524,7 +524,7 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, Track* track)
         }
         else 
         {
-          printf("Unknown tag: %s\n", tag.latin1());
+          printf("Unknown tag: %s\n", tag.toLatin1().constData());
         }
         fclose(fp);
       }      

@@ -136,7 +136,7 @@ int Track::y() const
                   return yy;
             yy += (*it)->height();
             }
-      printf("Track::y(%s): track not in tracklist\n", name().latin1());
+      printf("Track::y(%s): track not in tracklist\n", name().toLatin1().constData());
       return -1;
       }
 
@@ -353,7 +353,7 @@ void Track::clearRecAutomation(bool clearList)
 void Track::dump() const
       {
       printf("Track <%s>: typ %d, parts %zd sel %d\n",
-         _name.latin1(), _type, _parts.size(), _selected);
+         _name.toLatin1().constData(), _type, _parts.size(), _selected);
       }
 
 //---------------------------------------------------------
@@ -757,7 +757,7 @@ void Track::writeRouting(int level, Xml& xml) const
             
             // p3.3.38 New routing scheme.
             ///xml.strTag(level, "srcNode", r->name());
-            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", r->type, r->name().latin1());
+            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", r->type, r->name().toLatin1().constData());
             s = QT_TR_NOOP("source");
             if(r->type != Route::TRACK_ROUTE)
               s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
@@ -768,12 +768,12 @@ void Track::writeRouting(int level, Xml& xml) const
             ///xml.strTag(level, "dstNode", dst.name());
             
             //if(r->channel != -1)
-            //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().latin1());
+            //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().toLatin1().constData());
             //else  
-            //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, name().latin1());
+            //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, name().toLatin1().constData());
 
-            //xml.tag(level, "dest name=\"%s\"/", name().latin1());
-            xml.tag(level, "dest name=\"%s\"/", Xml::xmlString(name()).latin1());
+            //xml.tag(level, "dest name=\"%s\"/", name().toLatin1().constData());
+            xml.tag(level, "dest name=\"%s\"/", Xml::xmlString(name()).toLatin1().constData());
             
             xml.etag(level--, "Route");
           }
@@ -819,34 +819,34 @@ void Track::writeRouting(int level, Xml& xml) const
           // thisChannel is the 'starting' channel of this source if feeding a regular track.
           //if(r->type == Route::TRACK_ROUTE && r->track->isSynti() && r->channel != -1)
           //if(isSynti() && r->thisChannel != -1)
-            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().latin1());
-          //  xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->thisChannel, name().latin1());
+            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().toLatin1().constData());
+          //  xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->thisChannel, name().toLatin1().constData());
           //else
           
           //if(r->channel != -1)
-          //  xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().latin1());
+          //  xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().toLatin1().constData());
           //else  
-          //  xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, name().latin1());
-          //xml.tag(level, "source name=\"%s\"/", name().latin1());
-          xml.tag(level, "source name=\"%s\"/", Xml::xmlString(name()).latin1());
+          //  xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, name().toLatin1().constData());
+          //xml.tag(level, "source name=\"%s\"/", name().toLatin1().constData());
+          xml.tag(level, "source name=\"%s\"/", Xml::xmlString(name()).toLatin1().constData());
           
           ///xml.strTag(level, "dstNode", r->name());
           //if(r->channel != -1)
-          //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->channel, r->name().latin1());
+          //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->channel, r->name().toLatin1().constData());
           //else  
-          //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().latin1());
+          //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().toLatin1().constData());
           
           // Allow for a regular mono or stereo track to feed a multi-channel synti. 
           // Channel is the 'starting' channel of the destination.
           //if(r->type == Route::TRACK_ROUTE && r->track->isSynti() && r->channel != -1)
           
           //if(r->type == Route::TRACK_ROUTE && r->track->type() == Track::AUDIO_SOFTSYNTH && r->remoteChannel != -1)
-          //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->remoteChannel, r->name().latin1());
+          //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->remoteChannel, r->name().toLatin1().constData());
           //else  
           //if(r->type == Route::MIDI_DEVICE_ROUTE)
-          //  xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", r->device->deviceType(), r->name().latin1());
+          //  xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", r->device->deviceType(), r->name().toLatin1().constData());
           //else  
-          //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().latin1());
+          //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().toLatin1().constData());
           
           s = QT_TR_NOOP("dest");
           

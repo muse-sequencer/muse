@@ -32,7 +32,8 @@ static const char* gmdrumname = "GM-drums";
 
 int string2sysex(const QString& s, unsigned char** data)
       {
-      const char* src = s.toLatin1().data();
+      QByteArray ba = s.toLatin1();
+      const char* src = ba.constData();
       char buffer[2048];
       char* dst = buffer;
 
@@ -130,7 +131,7 @@ static void loadIDF(QFileInfo* fi)
 /*      
       QFile qf(fi->filePath());
       if (!qf.open(IO_ReadOnly)) {
-            printf("cannot open file %s\n", fi->fileName().latin1());
+            printf("cannot open file %s\n", fi->fileName().toLatin1());
             return;
             }
       if (debugMsg)
@@ -144,7 +145,7 @@ static void loadIDF(QFileInfo* fi)
             ln.setNum(line);
             error = err + " at line: " + ln + " col: " + col;
             printf("error reading file <%s>:\n   %s\n",
-               fi->filePath().latin1(), error.latin1());
+               fi->filePath().toLatin1(), error.toLatin1());
             return;
             }
       QDomNode node = doc.documentElement();
@@ -177,7 +178,7 @@ static void loadIDF(QFileInfo* fi)
                         }
                   }
             else
-                  printf("MusE:laodIDF: %s not supported\n", e.tagName().latin1());
+                  printf("MusE:laodIDF: %s not supported\n", e.tagName().toLatin1());
             node = node.nextSibling();
             }
       qf.close();
@@ -187,7 +188,7 @@ static void loadIDF(QFileInfo* fi)
       if (f == 0)
             return;
       if (debugMsg)
-            printf("READ IDF %s\n", fi->filePath().toLatin1().data());
+            printf("READ IDF %s\n", fi->filePath().toLatin1().constData());
       Xml xml(f);
       
       bool skipmode = true;
@@ -246,7 +247,7 @@ void initMidiInstruments()
       genericMidiInstrument = new MidiInstrument(QWidget::tr("generic midi"));
       midiInstruments.push_back(genericMidiInstrument);
       if (debugMsg)
-        printf("load user instrument definitions from <%s>\n", museUserInstruments.toLatin1().data());
+        printf("load user instrument definitions from <%s>\n", museUserInstruments.toLatin1().constData());
       QDir usrInstrumentsDir(museUserInstruments, QString("*.idf"));
       if (usrInstrumentsDir.exists()) {
             QFileInfoList list = usrInstrumentsDir.entryInfoList();
@@ -259,13 +260,13 @@ void initMidiInstruments()
       //else
       //{
       //  if(usrInstrumentsDir.mkdir(museUserInstruments))
-      //    printf("Created user instrument directory: %s\n", museUserInstruments.latin1());
+      //    printf("Created user instrument directory: %s\n", museUserInstruments.toLatin1());
       //  else
-      //    printf("Unable to create user instrument directory: %s\n", museUserInstruments.latin1());
+      //    printf("Unable to create user instrument directory: %s\n", museUserInstruments.toLatin1());
       //}
       
       if (debugMsg)
-        printf("load instrument definitions from <%s>\n", museInstruments.toLatin1().data());
+        printf("load instrument definitions from <%s>\n", museInstruments.toLatin1().constData());
       QDir instrumentsDir(museInstruments, QString("*.idf"));
       if (instrumentsDir.exists()) {
             QFileInfoList list = instrumentsDir.entryInfoList();
@@ -276,7 +277,7 @@ void initMidiInstruments()
                   }
             }
       else
-        printf("Instrument directory not found: %s\n", museInstruments.toLatin1().data());
+        printf("Instrument directory not found: %s\n", museInstruments.toLatin1().constData());
         
       }
 
@@ -614,7 +615,7 @@ void Patch::write(int level, Xml& xml)
             //      s += QString(" mode=\"%d\"").arg(typ);
             //s += QString(" hbank=\"%1\" lbank=\"%2\" prog=\"%3\"").arg(hbank).arg(lbank).arg(prog);
             //xml.tagE(s);
-            xml.nput(level, "<Patch name=\"%s\"", Xml::xmlString(name).toLatin1().data());
+            xml.nput(level, "<Patch name=\"%s\"", Xml::xmlString(name).toLatin1().constData());
             if(typ != -1)
               xml.nput(" mode=\"%d\"", typ);
             
@@ -716,7 +717,8 @@ void MidiInstrument::read(Xml& xml)
                         else if (tag == "InitScript") {
                               if (_initScript)
                                     delete _initScript;
-                              const char* istr = xml.parse1().toLatin1().data();
+			      QByteArray ba = xml.parse1().toLatin1();
+                              const char* istr = ba.constData();
                               int len = strlen(istr) +1;
                               if (len > 1) {
                                     _initScript = new char[len];
@@ -754,14 +756,14 @@ void MidiInstrument::write(int level, Xml& xml)
       xml.tag(level, "muse version=\"1.0\"");
       //xml.stag(QString("MidiInstrument name=\"%1\"").arg(Xml::xmlString(iname())));
       level++;
-      //xml.tag(level, "MidiInstrument name=\"%s\"", Xml::xmlString(iname()).toLatin1().data());
-      xml.nput(level, "<MidiInstrument name=\"%s\"", Xml::xmlString(iname()).toLatin1().data());
+      //xml.tag(level, "MidiInstrument name=\"%s\"", Xml::xmlString(iname()).toLatin1().constData());
+      xml.nput(level, "<MidiInstrument name=\"%s\"", Xml::xmlString(iname()).toLatin1().constData());
       
       if(_nullvalue != -1)
       {
         QString nv; 
         nv.setNum(_nullvalue);
-        xml.nput(" nullparam=\"%s\"", nv.toLatin1().data());
+        xml.nput(" nullparam=\"%s\"", nv.toLatin1().constData());
       }  
       xml.put(">");
 
@@ -777,8 +779,8 @@ void MidiInstrument::write(int level, Xml& xml)
             PatchGroup* pgp = *g;
             const PatchList& pl = pgp->patches;
             //xml.stag(QString("PatchGroup name=\"%1\"").arg(Xml::xmlString(g->name)));
-            //xml.tag(level, "PatchGroup name=\"%s\"", Xml::xmlString(g->name).toLatin1().data());
-            xml.tag(level, "PatchGroup name=\"%s\"", Xml::xmlString(pgp->name).toLatin1().data());
+            //xml.tag(level, "PatchGroup name=\"%s\"", Xml::xmlString(g->name).toLatin1().constData());
+            xml.tag(level, "PatchGroup name=\"%s\"", Xml::xmlString(pgp->name).toLatin1().constData());
             level++;
             //for (iPatch p = g->patches.begin(); p != g->patches.end(); ++p)
             for (ciPatch p = pl.begin(); p != pl.end(); ++p)
@@ -847,7 +849,7 @@ const char* MidiInstrument::getPatchName(int channel, int prog, MType mode, bool
                     
                     && (hbank == mp->hbank || !hb || mp->hbank == -1)
                     && (lbank == mp->lbank || !lb || mp->lbank == -1))
-                        return mp->name.toLatin1().data();
+                        return mp->name.toLatin1().constData();
                   }
             }
       return "<unknown>";

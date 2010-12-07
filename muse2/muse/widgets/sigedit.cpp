@@ -414,7 +414,7 @@ void SigEdit::setValue(const Sig& sig)
 void SigEdit::setValue(const QString& s)
       {
       int z, n;
-      sscanf(s.latin1(), "%d/%d", &z, &n);
+      sscanf(s.toLatin1(), "%d/%d", &z, &n);
       Sig sig(z, n);
       setValue(sig);
       }
@@ -624,7 +624,7 @@ void SigEdit::addNumber(int secNo, int num)
 
       QString txt = sectionText(secNo);
 
-      //printf("SigEdit::addNumber secNo:%d num:%d voff:%d txt:%s\n", secNo, num, voff, txt.latin1());
+      //printf("SigEdit::addNumber secNo:%d num:%d voff:%d txt:%s\n", secNo, num, voff, txt.toLatin1());
       
       if ((unsigned) txt.length() == sec[secNo].len) {
             //printf("SigEdit::addNumber txt.length() == sec[secNo].len (%d)\n", sec[secNo].len);
@@ -643,7 +643,7 @@ void SigEdit::addNumber(int secNo, int num)
             int temp = txt.toInt() - voff;
             if (outOfRange(secNo, temp))
             {
-                  //printf("SigEdit::addNumber not accepted secNo:%d txt:%s temp:%d\n", secNo, txt.latin1(), temp);
+                  //printf("SigEdit::addNumber not accepted secNo:%d txt:%s temp:%d\n", secNo, txt.toLatin1(), temp);
                   
                   txt = sectionText(secNo);
             }

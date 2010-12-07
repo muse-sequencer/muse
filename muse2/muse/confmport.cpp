@@ -52,7 +52,7 @@ void MPConfig::mdevViewItemRenamed(QTableWidgetItem* item)
 {
   int col = item->column();
   QString s = item->text();
-  //printf("MPConfig::mdevViewItemRenamed col:%d txt:%s\n", col, s.latin1());
+  //printf("MPConfig::mdevViewItemRenamed col:%d txt:%s\n", col, s.toLatin1().constData());
   if(item == 0)
     return;
   switch(col)
@@ -60,7 +60,7 @@ void MPConfig::mdevViewItemRenamed(QTableWidgetItem* item)
     case DEVCOL_NAME:
     {
       QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
-      int no = atoi(id.latin1()) - 1;
+      int no = atoi(id.toLatin1().constData()) - 1;
       if(no < 0 || no >= MIDI_PORTS)
         return;
 
@@ -88,7 +88,7 @@ void MPConfig::mdevViewItemRenamed(QTableWidgetItem* item)
     }
     break;    
     default: 
-      //printf("MPConfig::mdevViewItemRenamed unknown column clicked col:%d txt:%s\n", col, s.latin1());
+      //printf("MPConfig::mdevViewItemRenamed unknown column clicked col:%d txt:%s\n", col, s.toLatin1().constData());
     break;
   } 
 }
@@ -102,7 +102,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
       if (item == 0)
             return;
       QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
-      int no = atoi(id.latin1()) - 1;
+      int no = atoi(id.toLatin1().constData()) - 1;
       if (no < 0 || no >= MIDI_PORTS)
             return;
 
@@ -234,7 +234,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     //for (int i = 0; i < channel; ++i) 
                     //{
                       //char buffer[128];
-                      //snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+                      //snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
                       //MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
                       //pup->insertItem(titel);
   
@@ -404,8 +404,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         //if(devALSA)
                         if((*i)->deviceType() == MidiDevice::ALSA_MIDI)
                         {
-                          //mapALSA.insert( std::pair<std::string, int> (std::string(devALSA->name().lower().latin1()), ii) );
-                          mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().latin1()), aix) );
+                          //mapALSA.insert( std::pair<std::string, int> (std::string(devALSA->name().lower().toLatin1().constData()), ii) );
+                          mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), aix) );
                           ++aix;
                         }  
                         else
@@ -413,18 +413,18 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         {  
                           //devJACK = dynamic_cast<MidiJackDevice*>(*i);
                           //if(devJACK)
-                            //mapJACK.insert( std::pair<std::string, int> (std::string(devJACK->name().lower().latin1()), ii) );
-                          mapJACK.insert( std::pair<std::string, int> (std::string((*i)->name().latin1()), jix) );
+                            //mapJACK.insert( std::pair<std::string, int> (std::string(devJACK->name().lower().toLatin1().constData()), ii) );
+                          mapJACK.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), jix) );
                           ++jix;
                         }
                         else
                         if((*i)->deviceType() == MidiDevice::SYNTH_MIDI)
                         {
-                          mapSYNTH.insert( std::pair<std::string, int> (std::string((*i)->name().latin1()), six) );
+                          mapSYNTH.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), six) );
                           ++six;  
                         }
                         else
-                          printf("MPConfig::rbClicked unknown midi device: %s\n", (*i)->name().latin1());
+                          printf("MPConfig::rbClicked unknown midi device: %s\n", (*i)->name().toLatin1().constData());
                       }
                       
                       //int sz = midiDevices.size();
@@ -757,7 +757,7 @@ void MPConfig::songChanged(int flags)
       if(sitem)
       {
 	QString id = sitem->tableWidget()->item(sitem->row(), DEVCOL_NO)->text();
-        no = atoi(id.latin1()) - 1;
+        no = atoi(id.toLatin1().constData()) - 1;
         if(no < 0 || no >= MIDI_PORTS)
           no = -1;
       }

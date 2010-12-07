@@ -142,7 +142,7 @@ void FluidSynthGui::pushClicked()
       const QString& fns = Filename->text();
       if (fns.isEmpty())
             return;
-      const char * fn = fns.latin1();
+      const char * fn = fns.toLatin1();
 
       int datalen = strlen(fn) + 3;
       unsigned char data [datalen];
@@ -183,7 +183,7 @@ void FluidSynthGui::sendLastdir(QString dir)
       int l = strlen(dir)+2;
       byte data[l];
       data[0] = FS_LASTDIR_CHANGE;
-      memcpy(data+1, dir.latin1(), strlen(dir)+1);
+      memcpy(data+1, dir.toLatin1(), strlen(dir)+1);
       sendSysex(data,l);
       }
 
@@ -198,7 +198,7 @@ void FluidSynthGui::sendLoadFont(QString filename)
       byte data[l];
       data[0] = FS_PUSH_FONT;
       data[1] = FS_UNSPECIFIED_ID;
-      memcpy(data+2, filename.latin1(), filename.length()+1);
+      memcpy(data+2, filename.toLatin1(), filename.length()+1);
       sendSysex(data,l);
       }
 
@@ -484,7 +484,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
             int i = 0;
             for (std::list<FluidGuiSoundFont>::reverse_iterator it = stack.rbegin(); it != stack.rend(); it++) {
                   i++;
-                  /*byte* d = (byte*) it->name.latin1();
+                  /*byte* d = (byte*) it->name.toLatin1();
                   for (int i=0; i<96; i++) {
                         if (i%16 == 0)
                               printf("%x:",(i+d));
@@ -523,7 +523,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
                         sfid = getSoundFontId(act->text());
                         fontname = getSoundFontName(sfid);
                         }
-                  //byte channel = atoi(item->text().latin1()) - 1;
+                  //byte channel = atoi(item->text().toLatin1()) - 1;
                   byte channel = row;
                   sendChannelChange(sfid, channel);
                   item->setText(fontname);
@@ -541,7 +541,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
 	    yes->setData(1);
             QAction * no = popup->addAction("No");
 	    no->setData(0);
-            //byte channel = atoi(item->text().latin1()) - 1;
+            //byte channel = atoi(item->text().toLatin1()) - 1;
             byte channel = row;
 
             QAction * act2 = popup->exec(ppt, 0);
@@ -816,9 +816,9 @@ int main(int argc, char* argv[])
   museGlobalShare = getenv("MUSE");
   if (museGlobalShare == 0) {
     museGlobalShare = "/usr/muse";
-    if (access(museGlobalShare.latin1(), R_OK) != 0) {
+    if (access(museGlobalShare.toLatin1(), R_OK) != 0) {
       museGlobalShare = "/usr/local/muse";
-      if (access(museGlobalShare.latin1(), R_OK) != 0)
+      if (access(museGlobalShare.toLatin1(), R_OK) != 0)
         museGlobalShare = museUser;
     }
   }*/

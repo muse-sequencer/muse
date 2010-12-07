@@ -598,10 +598,10 @@ void DeicsOnzeGui::loadConfiguration(QString fileName) {
 	  _deicsOnze->readConfiguration(node.firstChild());
 	}
 	else printf("unsupported *.dco file version %s\n",
-		    version.toLatin1().data());
+		    version.toLatin1().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().data());
+		  e.tagName().toLatin1().constData());
       node = node.nextSibling();
     }
   }
@@ -1681,7 +1681,7 @@ void DeicsOnzeGui::processEvent(const MidiPlayEvent& ev) {
       setSet();
       /*}
 	  else printf("Wrong set version : %s\n",
-		      version.toLatin1().data());
+		      version.toLatin1().constData());
 	}
 	node = node.nextSibling();
       }
@@ -1791,10 +1791,10 @@ void DeicsOnzeGui::loadSetDialog() {
 	  updatePresetName("INITVOICE", false);
 	}
 	else printf("unsupported *.dei file version %s\n",
-		    version.toLatin1().data());
+		    version.toLatin1().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().data());
+		  e.tagName().toLatin1().constData());
       node = node.nextSibling();
     }
   }
@@ -2026,10 +2026,10 @@ void DeicsOnzeGui::loadCategoryDialog() {
 	  setSet();
 	}
 	else printf("unsupported *.dec file version %s\n",
-		    version.toLatin1().data());
+		    version.toLatin1().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().data());
+		  e.tagName().toLatin1().constData());
       node = node.nextSibling();
     }
   }
@@ -2193,10 +2193,10 @@ void DeicsOnzeGui::loadSubcategoryDialog() {
 	  setCategory(cat);
 	}
 	else printf("unsupported *.des file version %s\n",
-		    version.toLatin1().data());
+		    version.toLatin1().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().data());
+		  e.tagName().toLatin1().constData());
       node = node.nextSibling();
     }
   }
@@ -2364,10 +2364,10 @@ void DeicsOnzeGui::loadPresetDialog() {
 	  setSubcategory(sub->_subcategory);
 	}
 	else printf("unsupported *.dep file version %s\n",
-		    version.toLatin1().data());
+		    version.toLatin1().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().data());
+		  e.tagName().toLatin1().constData());
       node = node.nextSibling();
     }
   }

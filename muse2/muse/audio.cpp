@@ -190,7 +190,7 @@ bool Audio::start()
                       //printf("reconnecting output %s\n", (*i)->name().ascii());
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(x,0);
-                      //printf("name=%s\n",(*i)->name().latin1());
+                      //printf("name=%s\n",(*i)->name().toLatin1());
                       (*i)->setName((*i)->name()); // restore jack connection
                       }
                //audioDevice->start();
@@ -602,7 +602,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           float data[frames * channels];
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
-          //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().latin1());
+          //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1());
       
           // p3.3.38
           //track->copyData(samplePos, channels, frames, buffer);

@@ -628,7 +628,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         else {
                               drag = DRAG_NEW;
                               setCursor();
-                              curItem = newItem(start, event->state());
+                              curItem = newItem(start, event->modifiers());
                               if (curItem)
                                     items.add(curItem);
                               else {
@@ -1124,7 +1124,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_LASSO:
                   if (!shift)
                         deselectAll();
-                  lasso = lasso.normalize();
+                  lasso = lasso.normalized();
                   selectLasso(shift);
                   updateSelection();
                   redrawFlag = true;
@@ -1395,14 +1395,17 @@ QMenu* Canvas::genCanvasPopup()
       if (canvasTools == 0)
             return 0;
       QMenu* canvasPopup = new QMenu(this);
+      QAction* act0 = 0;
 
       for (unsigned i = 0; i < 9; ++i) {
             if ((canvasTools & (1 << i))==0)
                   continue;
             QAction* act = canvasPopup->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));
 	    act->setData(1<<i); // ddskrjo
+            if (!act0)
+                  act0 = act;
             }
-      canvasPopup->setActiveItem(0);
+      canvasPopup->setActiveAction(act0);
       return canvasPopup;
       }
 

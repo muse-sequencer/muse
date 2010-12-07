@@ -512,7 +512,7 @@ void SimpleSynthGui::processEvent(const MidiPlayEvent& ev)
                               QString filename = (const char*) (data+2);
                               sampleNameLineEdit[ch]->setText(filename.section('/',-1,-1));
                               if (SS_DEBUG_MIDI) {
-                                    printf("SimpleSynthGui - sample %s loaded OK on channel: %d\n", filename.latin1(), ch);
+                                    printf("SimpleSynthGui - sample %s loaded OK on channel: %d\n", filename.toLatin1(), ch);
                                     }
                               if (!onOff[ch]->isChecked()) {
                                     onOff[ch]->blockSignals(true);
@@ -708,7 +708,7 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
             lastDir = filename.left(filename.findRev("/"));
 
             if (SS_DEBUG)
-                  printf("lastDir = %s\n", lastDir.latin1());
+                  printf("lastDir = %s\n", lastDir.toLatin1());
 
             int l = filename.length() + 4;
             byte d[l];
@@ -716,7 +716,7 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
             d[0] = SS_SYSEX_LOAD_SAMPLE;
             d[1] = (byte) channel;
             d[2] = (byte) filename.length();
-            memcpy(d+3, filename.latin1(), filename.length()+1);
+            memcpy(d+3, filename.toLatin1(), filename.length()+1);
             sendSysex(d, l);
             }
       }
@@ -753,8 +753,8 @@ void SimpleSynthGui::loadEffectInvoked(int fxid, QString lib, QString label)
       byte d[l];
       d[0] = SS_SYSEX_LOAD_SENDEFFECT;
       d[1] = (byte) fxid;
-      memcpy (d+2, lib.latin1(), lib.length()+1);
-      memcpy (d+3+lib.length(), label.latin1(), label.length()+1);
+      memcpy (d+2, lib.toLatin1(), lib.length()+1);
+      memcpy (d+3+lib.length(), label.toLatin1(), label.length()+1);
       sendSysex(d, l);
       }
 

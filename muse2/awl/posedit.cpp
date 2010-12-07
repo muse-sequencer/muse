@@ -281,7 +281,7 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
 
 void PosEdit::fixup(QString& input) const
       {
-      printf("fixup <%s>\n", input.toLatin1().data());
+      printf("fixup <%s>\n", input.toLatin1().constData());
       }
 
 //---------------------------------------------------------

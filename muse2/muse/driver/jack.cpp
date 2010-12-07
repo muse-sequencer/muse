@@ -789,7 +789,7 @@ void JackAudioDevice::connectJackMidiPorts()
     QString name(namep);
     
     if(JACK_DEBUG)
-      printf("JackAudioDevice::graphChanged %s\n", name.latin1());
+      printf("JackAudioDevice::graphChanged %s\n", name.toLatin1());
       
     for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd)
     {
@@ -805,14 +805,14 @@ void JackAudioDevice::connectJackMidiPorts()
       if(!mjd->clientJackPort() || (mjd->clientJackPort() != port))
         continue;
       
-      jack_port_t* devport = jack_port_by_name(_client, mjd->name().latin1());
+      jack_port_t* devport = jack_port_by_name(_client, mjd->name().toLatin1());
       if(!devport)
         continue;
       
       int ofl = mjd->openFlags();
     
       if(JACK_DEBUG)
-        printf("JackAudioDevice::graphChanged found MidiJackDevice:%s\n", mjd->name().latin1());
+        printf("JackAudioDevice::graphChanged found MidiJackDevice:%s\n", mjd->name().toLatin1());
       
       // Note docs say it can't be both input and output. src, dest
       // If Jack port can receive data from us and we actually want to...
@@ -919,7 +919,7 @@ void JackAudioDevice::graphChanged()
                               if (irl->channel != channel)
                                     continue;
                               QString name = irl->name();
-                              const char* portName = name.latin1();
+                              const char* portName = name.toLatin1();
                               //printf("portname=%s\n", portName);
                               bool found = false;
                               const char** pn = ports;
@@ -956,7 +956,7 @@ void JackAudioDevice::graphChanged()
                                     if (irl->channel != channel)
                                           continue;
                                     QString name = irl->name();
-                                    const char* portName = name.latin1();
+                                    const char* portName = name.toLatin1();
                                     if (strcmp(*pn, portName) == 0) {
                                           found = true;
                                           break;
@@ -1004,7 +1004,7 @@ void JackAudioDevice::graphChanged()
                               if (irl->channel != channel)
                                     continue;
                               QString name = irl->name();
-                              const char* portName = name.latin1();
+                              const char* portName = name.toLatin1();
                               bool found = false;
                               const char** pn = ports;
                               while (pn && *pn) {
@@ -1040,7 +1040,7 @@ void JackAudioDevice::graphChanged()
                                     if (irl->channel != channel)
                                           continue;
                                     QString name = irl->name();
-                                    const char* portName = name.latin1();
+                                    const char* portName = name.toLatin1();
                                     if (strcmp(*pn, portName) == 0) {
                                           found = true;
                                           break;
@@ -1114,7 +1114,7 @@ void JackAudioDevice::graphChanged()
                                   //      continue;
                                   QString name = irl->name();
                                   //name += QString(JACK_MIDI_OUT_PORT_SUFFIX);    // p3.3.55
-                                  const char* portName = name.latin1();
+                                  const char* portName = name.toLatin1();
                                   bool found = false;
                                   const char** pn = ports;
                                   while (pn && *pn) {
@@ -1154,7 +1154,7 @@ void JackAudioDevice::graphChanged()
                                         //if (irl->channel != channel)
                                         //      continue;
                                         QString name = irl->name();
-                                        const char* portName = name.latin1();
+                                        const char* portName = name.toLatin1();
                                         if (strcmp(*pn, portName) == 0) {
                                               found = true;
                                               break;
@@ -1210,7 +1210,7 @@ void JackAudioDevice::graphChanged()
                                   //if (irl->channel != channel)
                                   //      continue;
                                   QString name = irl->name();
-                                  const char* portName = name.latin1();
+                                  const char* portName = name.toLatin1();
                                   bool found = false;
                                   const char** pn = ports;
                                   while (pn && *pn) {
@@ -1250,7 +1250,7 @@ void JackAudioDevice::graphChanged()
                                         //if (irl->channel != channel)
                                         //      continue;
                                         QString name = irl->name();
-                                        const char* portName = name.latin1();
+                                        const char* portName = name.toLatin1();
                                         if (strcmp(*pn, portName) == 0) {
                                               found = true;
                                               break;
@@ -1743,7 +1743,7 @@ QString JackAudioDevice::portName(void* port)
             return "";
       
       QString s(jack_port_name((jack_port_t*)port));
- //printf("Jack::portName %p %s\n", port, s.latin1());
+ //printf("Jack::portName %p %s\n", port, s.toLatin1());
       return s;
       }
 
@@ -2130,14 +2130,14 @@ void JackAudioDevice::scanMidiPorts()
     // Only Jack midi devices.
     if(dynamic_cast<MidiJackDevice*>(*imd) == 0)
       continue;
-    if(names.find(std::string((*imd)->name().latin1())) == names.end())
+    if(names.find(std::string((*imd)->name().toLatin1())) == names.end())
       to_del.push_back(*imd);
   }
   
   for(std::list<MidiDevice*>::iterator imd = to_del.begin(); imd != to_del.end(); ++imd)
   {
     if(debugMsg)
-      printf(" removing port device:%s\n", (*imd)->name().latin1());
+      printf(" removing port device:%s\n", (*imd)->name().toLatin1());
     midiDevices.remove(*imd);
     // This will close (and unregister) the client port.
     delete (*imd);
@@ -2198,7 +2198,7 @@ void JackAudioDevice::scanMidiPorts()
     //portList.append(jp);
     
     if(debugMsg)
-      printf(" adding port device:%s\n", qname.latin1());
+      printf(" adding port device:%s\n", qname.toLatin1());
     
     MidiJackDevice* dev = new MidiJackDevice(0, qname);
     dev->setrwFlags(flags);

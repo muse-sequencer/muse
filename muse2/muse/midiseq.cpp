@@ -392,13 +392,13 @@ void MidiSeq::updatePollFd()
                //&& (dev->syncInfo().MCIn()))) {
                && (midiPorts[port].syncInfo().MCIn()))) {
                   if(dev->selectRfd() < 0){
-                    //fprintf(stderr, "WARNING: read-file-descriptor for {%s} is negative\n", name.latin1());
+                    //fprintf(stderr, "WARNING: read-file-descriptor for {%s} is negative\n", name.toLatin1());
                   }
                   addPollFd(dev->selectRfd(), POLLIN, ::midiRead, this, dev);
                   }
             if (dev->bytesToWrite()){
                   if(dev->selectWfd() < 0){
-                    //fprintf(stderr, "WARNING: write-file-descriptor for {%s} is negative\n", name.latin1());
+                    //fprintf(stderr, "WARNING: write-file-descriptor for {%s} is negative\n", name.toLatin1());
                   }
                   addPollFd(dev->selectWfd(), POLLOUT, ::midiWrite, this, dev);
             }      

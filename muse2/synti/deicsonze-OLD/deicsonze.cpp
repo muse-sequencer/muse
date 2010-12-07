@@ -648,10 +648,10 @@ void DeicsOnze::loadSutulaPresets()
                                QString(INSTALL_NAME));   
     presetPath += "/presets/deicsonze/ARCH_ALIN";
 
-    file = fopen (presetPath.latin1(), "rt");
+    file = fopen (presetPath.toLatin1(), "rt");
     if (file == NULL) {
 	printf("can't open ");
-	printf("%s",presetPath.latin1());
+	printf("%s",presetPath.toLatin1());
 	printf("\n");
         return;
     }

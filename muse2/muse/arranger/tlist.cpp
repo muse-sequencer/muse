@@ -304,7 +304,7 @@ void TList::paint(const QRect& r)
                               QString s;
                               if (track->isMidiTrack()) {
                                     int outport = ((MidiTrack*)track)->outPort();
-                                    s.sprintf("%d:%s", outport+1, midiPorts[outport].portname().latin1());
+                                    s.sprintf("%d:%s", outport+1, midiPorts[outport].portname().toLatin1().constData());
                                     }
                               // Added by Tim. p3.3.9
                               
@@ -316,7 +316,7 @@ void TList::paint(const QRect& r)
                                 {
                                   int outport = md->midiPort();
                                   if((outport >= 0) && (outport < MIDI_PORTS))
-                                    s.sprintf("%d:%s", outport+1, midiPorts[outport].portname().latin1());
+                                    s.sprintf("%d:%s", outport+1, midiPorts[outport].portname().toLatin1().constData());
                                   else
                                     s = tr("<none>");
                                 }  

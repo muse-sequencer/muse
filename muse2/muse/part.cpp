@@ -86,7 +86,7 @@ void chainCloneInternal(Part* p)
       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
       {
         // Added by Tim. p3.3.6
-        //printf("chainCloneInternal track %p %s part %p %s evlist %p\n", (*imt), (*imt)->name().latin1(), ip->second, ip->second->name().latin1(), ip->second->cevents());
+        //printf("chainCloneInternal track %p %s part %p %s evlist %p\n", (*imt), (*imt)->name().toLatin1().constData(), ip->second, ip->second->name().toLatin1().constData(), ip->second->cevents());
     
         if(ip->second != p && ip->second->cevents() == p->cevents())
         {
@@ -232,7 +232,7 @@ void replaceClone(Part* p1, Part* p2)
   p1->setNextClone(p1);
   p1->setPrevClone(p1);
   // Added by Tim. p3.3.6
-  //printf("replaceClone p1: %s %p arefs:%d p2: %s %p arefs:%d\n", p1->name().latin1(), p1, ); 
+  //printf("replaceClone p1: %s %p arefs:%d p2: %s %p arefs:%d\n", p1->name().toLatin1().constData(), p1, ); 
                         
 }
 
@@ -279,7 +279,7 @@ void chainTrackParts(Track* t, bool incRefCount)
       p->events()->incARef(1);
       
     // Added by Tim. p3.3.6
-    //printf("chainTrackParts track %p %s part %p %s evlist %p\n", t, t->name().latin1(), p, p->name().latin1(), p->cevents());
+    //printf("chainTrackParts track %p %s part %p %s evlist %p\n", t, t->name().toLatin1().constData(), p, p->name().toLatin1().constData(), p->cevents());
     
     Part* p1 = 0;
     
@@ -297,7 +297,7 @@ void chainTrackParts(Track* t, bool incRefCount)
         for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
         {
           // Added by Tim. p3.3.6
-          //printf("chainTrackParts track %p %s part %p %s evlist %p\n", mt, mt->name().latin1(), ip->second, ip->second->name().latin1(), ip->second->cevents());
+          //printf("chainTrackParts track %p %s part %p %s evlist %p\n", mt, mt->name().toLatin1().constData(), ip->second, ip->second->name().toLatin1().constData(), ip->second->cevents());
       
           if(ip->second != p && ip->second->cevents() == p->cevents())
           {
@@ -359,9 +359,9 @@ void chainCheckErr(Part* p)
 {
   // At all times these must be true...
   if(p->nextClone()->prevClone() != p)
-    printf("chainCheckErr: Next clone:%s %p prev clone:%s %p != %s %p\n", p->nextClone()->name().latin1(), p->nextClone(), p->nextClone()->prevClone()->name().latin1(), p->nextClone()->prevClone(), p->name().latin1(), p); 
+    printf("chainCheckErr: Next clone:%s %p prev clone:%s %p != %s %p\n", p->nextClone()->name().toLatin1().constData(), p->nextClone(), p->nextClone()->prevClone()->name().toLatin1().constData(), p->nextClone()->prevClone(), p->name().toLatin1().constData(), p); 
   if(p->prevClone()->nextClone() != p)
-    printf("chainCheckErr: Prev clone:%s %p next clone:%s %p != %s %p\n", p->prevClone()->name().latin1(), p->prevClone(), p->prevClone()->nextClone()->name().latin1(), p->prevClone()->nextClone(), p->name().latin1(), p); 
+    printf("chainCheckErr: Prev clone:%s %p next clone:%s %p != %s %p\n", p->prevClone()->name().toLatin1().constData(), p->prevClone(), p->prevClone()->nextClone()->name().toLatin1().constData(), p->prevClone()->nextClone(), p->name().toLatin1().constData(), p); 
 }
 
 //---------------------------------------------------------
@@ -382,7 +382,7 @@ void addPortCtrlEvents(Event& event, Part* part, bool doClones)
     while(1)
     {
       // Added by Tim. p3.3.6
-      //printf("addPortCtrlEvents i:%d %s %p events %p refs:%d arefs:%d\n", i, p->name().latin1(), p, part->cevents(), part->cevents()->refCount(), j); 
+      //printf("addPortCtrlEvents i:%d %s %p events %p refs:%d arefs:%d\n", i, p->name().toLatin1().constData(), p, part->cevents(), part->cevents()->refCount(), j); 
       
       Track* t = p->track();
       if(t && t->isMidiTrack())
@@ -395,7 +395,7 @@ void addPortCtrlEvents(Event& event, Part* part, bool doClones)
         //{
           //const Event& ev = ie->second;
           // Added by Tim. p3.3.6
-          //printf("addPortCtrlEvents %s len:%d end:%d etick:%d\n", p->name().latin1(), p->lenTick(), p->endTick(), event.tick()); 
+          //printf("addPortCtrlEvents %s len:%d end:%d etick:%d\n", p->name().toLatin1().constData(), p->lenTick(), p->endTick(), event.tick()); 
           
           // Do not add events which are past the end of the part.
           if(event.tick() >= len)
@@ -457,7 +457,7 @@ void addPortCtrlEvents(Part* part, bool doClones)
     while(1)
     {
       // Added by Tim. p3.3.6
-      //printf("addPortCtrlEvents i:%d %s %p events %p refs:%d arefs:%d\n", i, p->name().latin1(), p, part->cevents(), part->cevents()->refCount(), j); 
+      //printf("addPortCtrlEvents i:%d %s %p events %p refs:%d arefs:%d\n", i, p->name().toLatin1().constData(), p, part->cevents(), part->cevents()->refCount(), j); 
       
       Track* t = p->track();
       if(t && t->isMidiTrack())
@@ -918,9 +918,9 @@ void Part::replaceClone(const Part* p)
 void Part::chainCheckErr()
 {
   if(_nextClone->prevClone() != this)
-    printf("Part::chainCheckErr Error! Next clone:%s %x prev clone:%s %x != this:%s %x\n", _nextClone->name().latin1(), _nextClone, _nextClone->prevClone()->name().latin1(), _nextClone->prevClone(), name().latin1(), this); 
+    printf("Part::chainCheckErr Error! Next clone:%s %x prev clone:%s %x != this:%s %x\n", _nextClone->name().toLatin1().constData(), _nextClone, _nextClone->prevClone()->name().toLatin1().constData(), _nextClone->prevClone(), name().toLatin1().constData(), this); 
   if(_prevClone->nextClone() != this)
-    printf("Part::chainCheckErr Error! Prev clone:%s %x next clone:%s %x != this:%s %x\n", _prevClone->name().latin1(), _prevClone, _prevClone->nextClone()->name().latin1(), _prevClone->nextClone(), name().latin1(), this); 
+    printf("Part::chainCheckErr Error! Prev clone:%s %x next clone:%s %x != this:%s %x\n", _prevClone->name().toLatin1().constData(), _prevClone, _prevClone->nextClone()->name().toLatin1().constData(), _prevClone->nextClone(), name().toLatin1().constData(), this); 
 }
 */
 
@@ -1395,7 +1395,7 @@ void Part::dump(int n) const
       {
       for (int i = 0; i < n; ++i)
             putchar(' ');
-      printf("Part: <%s> ", _name.latin1());
+      printf("Part: <%s> ", _name.toLatin1().constData());
       for (int i = 0; i < n; ++i)
             putchar(' ');
       PosLen::dump();

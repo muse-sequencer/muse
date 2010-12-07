@@ -1239,10 +1239,10 @@ void DeicsOnze2::loadSet(QString fileName) {
 	  _gui->writeEvent(evSysexUpdateGuiSet);
 	}
 	else printf("unsupported *.dei file version %s\n",
-		    version.toLatin1().data());
+		    version.toLatin1().constData());
       }
       else printf("DeicsOnze2: %s not supported\n",
-		  e.tagName().toLatin1().data());
+		  e.tagName().toLatin1().constData());
       node = node.nextSibling();
     }
   }
@@ -1277,10 +1277,10 @@ void DeicsOnze2::loadSutulaPresets()
 
     QString presetPath("/home/a-lin/sources/svnMusEDev/lmuse/muse/synti/deicsonze2/ARCH_ALIN");
 
-    file = fopen (presetPath.toLatin1().data(), "rt");
+    file = fopen (presetPath.toLatin1().constData(), "rt");
     if (file == NULL) {
 	printf("can't open ");
-	printf(presetPath.toLatin1().data());
+	printf(presetPath.toLatin1().constData());
 	printf("\n");
     }
     else
@@ -2116,7 +2116,7 @@ void DeicsOnze2::readConfiguration(QDomNode qdn) {
       unsigned char *dataInitSetPath = 
 	new unsigned char[1+MAXSTRLENGTHINITSETPATH];
       dataInitSetPath[0]=SYSEX_INITSETPATH;
-      strncpy((char*)&dataInitSetPath[1], _initSetPath.toLatin1().data(), 
+      strncpy((char*)&dataInitSetPath[1], _initSetPath.toLatin1().constData(), 
 	      MAXSTRLENGTHINITSETPATH);
       MidiPlayEvent
 	evInitSetPath(0, ME_SYSEX, (const unsigned char*)dataInitSetPath,
@@ -2140,7 +2140,7 @@ void DeicsOnze2::readConfiguration(QDomNode qdn) {
 	new unsigned char[1+MAXSTRLENGTHBACKGROUNDPIXPATH];
       dataBackgroundPixPath[0]=SYSEX_BACKGROUNDPIXPATH;
       strncpy((char*)&dataBackgroundPixPath[1],
-	      _backgroundPixPath.toLatin1().data(), 
+	      _backgroundPixPath.toLatin1().constData(), 
 	      MAXSTRLENGTHBACKGROUNDPIXPATH);
       MidiPlayEvent
 	evBackgroundPixPath(0, ME_SYSEX,
@@ -2203,10 +2203,10 @@ void DeicsOnze2::loadConfiguration(QString fileName) {
 	  readConfiguration(node.firstChild());
 	}
 	else printf("unsupported *.dco file version %s\n",
-		    version.toLatin1().data());
+		    version.toLatin1().constData());
       }
       else printf("DeicsOnze2: %s not supported\n",
-		  e.tagName().toLatin1().data());
+		  e.tagName().toLatin1().constData());
       node = node.nextSibling();
     }
   }
@@ -2318,10 +2318,10 @@ void DeicsOnze2::getInitData(int* length, const unsigned char** data) {
     buffer[NUM_BLUE_EDITBACKGROUND]=(unsigned char)_gui->ebColor->Qt::blue();
     buffer[NUM_ISINITSET]=(unsigned char)_isInitSet;
     strncpy((char*)&buffer[NUM_INITSETPATH],
-	    _initSetPath.toLatin1().data(), MAXSTRLENGTHINITSETPATH);
+	    _initSetPath.toLatin1().constData(), MAXSTRLENGTHINITSETPATH);
     buffer[NUM_ISBACKGROUNDPIX]=(unsigned char)_isBackgroundPix;
     strncpy((char*)&buffer[NUM_BACKGROUNDPIXPATH],
-	    _backgroundPixPath.toLatin1().data(),
+	    _backgroundPixPath.toLatin1().constData(),
 	    MAXSTRLENGTHBACKGROUNDPIXPATH);
   }
   //FX
@@ -2332,11 +2332,11 @@ void DeicsOnze2::getInitData(int* length, const unsigned char** data) {
     (_pluginIReverb?(unsigned char)_pluginIReverb->plugin()->parameter() : 0);
   strncpy((char*)&buffer[NUM_REVERB_LIB],
 	  (_pluginIReverb?
-	   _pluginIReverb->plugin()->lib().toLatin1().data() : "\0"),
+	   _pluginIReverb->plugin()->lib().toLatin1().constData() : "\0"),
 	  MAXSTRLENGTHFXLIB);
   strncpy((char*)&buffer[NUM_REVERB_LABEL],
 	  (_pluginIReverb?
-	   _pluginIReverb->plugin()->label().toLatin1().data() : "\0"),
+	   _pluginIReverb->plugin()->label().toLatin1().constData() : "\0"),
 	  MAXSTRLENGTHFXLABEL);
   //chorus
   buffer[NUM_IS_CHORUS_ON]=(unsigned char)_global.isChorusActivated;
@@ -2345,11 +2345,11 @@ void DeicsOnze2::getInitData(int* length, const unsigned char** data) {
     (_pluginIChorus?(unsigned char)_pluginIChorus->plugin()->parameter() : 0);
   strncpy((char*)&buffer[NUM_CHORUS_LIB],
 	  (_pluginIChorus?
-	   _pluginIChorus->plugin()->lib().toLatin1().data() : "\0"),
+	   _pluginIChorus->plugin()->lib().toLatin1().constData() : "\0"),
 	  MAXSTRLENGTHFXLIB);
   strncpy((char*)&buffer[NUM_CHORUS_LABEL],
 	  (_pluginIChorus?
-	   _pluginIChorus->plugin()->label().toLatin1().data() : "\0"),
+	   _pluginIChorus->plugin()->label().toLatin1().constData() : "\0"),
 	  MAXSTRLENGTHFXLABEL);
   //delay
   buffer[NUM_IS_DELAY_ON]=(unsigned char)_global.isDelayActivated;
@@ -2726,7 +2726,7 @@ void DeicsOnze2::parseInitData(int length, const unsigned char* data) {
 	  //setSet();
 	}
 	else printf("Wrong set version : %s\n",
-		    version.toLatin1().data());
+		    version.toLatin1().constData());
       }
       node = node.nextSibling();
     }

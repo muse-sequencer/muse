@@ -92,9 +92,9 @@ bool SndFile::openRead()
             }
       QString p = path();
       sfinfo.format = 0;
-      sf = sf_open(p.latin1(), SFM_READ, &sfinfo);
+      sf = sf_open(p.toLatin1().constData(), SFM_READ, &sfinfo);
       sfinfo.format = 0;
-      sfUI = sf_open(p.latin1(), SFM_READ, &sfinfo);
+      sfUI = sf_open(p.toLatin1().constData(), SFM_READ, &sfinfo);
       if (sf == 0 || sfUI == 0)
             return true;
             
@@ -117,9 +117,9 @@ void SndFile::update()
       // force recreation of wca data
       QString cacheName = finfo->dirPath(true) +
          QString("/") + finfo->baseName(true) + QString(".wca");
-      ::remove(cacheName.latin1());
+      ::remove(cacheName.toLatin1().constData());
       if (openRead()) {
-            printf("SndFile::update openRead(%s) failed: %s\n", path().latin1(), strerror().latin1());
+            printf("SndFile::update openRead(%s) failed: %s\n", path().toLatin1().constData(), strerror().toLatin1().constData());
             }
       }
 
@@ -130,7 +130,7 @@ void SndFile::update()
 void SndFile::readCache(const QString& path, bool showProgress)
       {
 //      printf("readCache %s for %d samples channel %d\n",
-//         path.latin1(), samples(), channels());
+//         path.toLatin1().constData(), samples(), channels());
 
       if (cache) {
             for (unsigned i = 0; i < channels(); ++i)
@@ -146,7 +146,7 @@ void SndFile::readCache(const QString& path, bool showProgress)
       for (unsigned ch = 0; ch < channels(); ++ch)
             cache[ch] = new SampleV[csize];
 
-      FILE* cfile = fopen(path.latin1(), "r");
+      FILE* cfile = fopen(path.toLatin1().constData(), "r");
       if (cfile) {
             for (unsigned ch = 0; ch < channels(); ++ch)
                   fread(cache[ch], csize * sizeof(SampleV), 1, cfile);
@@ -211,7 +211,7 @@ void SndFile::readCache(const QString& path, bool showProgress)
 
 void SndFile::writeCache(const QString& path)
       {
-      FILE* cfile = fopen(path.latin1(), "w");
+      FILE* cfile = fopen(path.toLatin1().constData(), "w");
       if (cfile == 0)
             return;
       for (unsigned ch = 0; ch < channels(); ++ch)
@@ -341,7 +341,7 @@ bool SndFile::openWrite()
             return false;
             }
   QString p = path();
-      sf = sf_open(p.latin1(), SFM_RDWR, &sfinfo);
+      sf = sf_open(p.toLatin1().constData(), SFM_RDWR, &sfinfo);
       sfUI = 0;
       if (sf) {
             openFlag  = true;
@@ -630,14 +630,14 @@ SndFile* getWave(const QString& inName, bool readOnlyFlag)
                         }
                   }
             }
-// printf("=====%s %s\n", inName.latin1(), name.latin1());
+// printf("=====%s %s\n", inName.toLatin1().constData(), name.toLatin1().constData());
 
       // only open one instance of wave file
       SndFile* f = SndFile::sndFiles.search(name);
       if (f == 0) {
             if (!QFile::exists(name)) {
                   fprintf(stderr, "wave file <%s> not found\n",
-                     name.latin1());
+                     name.toLatin1().constData());
                   return 0;
                   }
             f = new SndFile(name);
@@ -659,9 +659,9 @@ SndFile* getWave(const QString& inName, bool readOnlyFlag)
             }
             if (error) {
                   fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
-                     name.latin1(),
+                     name.toLatin1().constData(),
                      readOnlyFlag ? "writing" : "reading",
-                     f->strerror().latin1());
+                     f->strerror().toLatin1().constData());
                      QMessageBox::critical(NULL, "MusE import error.", 
                                       "MusE failed to import the file.\n"
                                       "Possibly this wasn't a sound file?\n"
@@ -709,24 +709,24 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
       // put in the tmpfile, and when redo is eventually called the data is switched again (causing the muted data to be written to the "original"
       // file. The data is merely switched.
 
-      //printf("Applying undofile: orig=%s tmpfile=%s startframe=%d endframe=%d\n", original.latin1(), tmpfile.latin1(), startframe, endframe);
+      //printf("Applying undofile: orig=%s tmpfile=%s startframe=%d endframe=%d\n", original.toLatin1().constData(), tmpfile.toLatin1().constData(), startframe, endframe);
       SndFile* orig = sndFiles.search(original);
       SndFile tmp  = SndFile(tmpfile);
       if (!orig) {
-            printf("Internal error: could not find original file: %s in filelist - Aborting\n", original.latin1());
+            printf("Internal error: could not find original file: %s in filelist - Aborting\n", original.toLatin1().constData());
             return;
             }
 
       if (!orig->isOpen()) {
             if (orig->openRead()) {
-                  printf("Cannot open original file %s for reading - cannot undo! Aborting\n", original.latin1());
+                  printf("Cannot open original file %s for reading - cannot undo! Aborting\n", original.toLatin1().constData());
                   return;
                   }
             }
 
       if (!tmp.isOpen()) {
             if (tmp.openRead()) {
-                  printf("Could not open temporary file %s for writing - cannot undo! Aborting\n", tmpfile.latin1());
+                  printf("Could not open temporary file %s for writing - cannot undo! Aborting\n", tmpfile.toLatin1().constData());
                   return;
                   }
             }
@@ -876,7 +876,7 @@ ClipBase::ClipBase(const SndFileR& file, int start, int l)
       {
       refCount = 0;
       for (int i = 1; true; ++i) {
-            _name.sprintf("%s.%d", f.basename().latin1(), i);
+            _name.sprintf("%s.%d", f.basename().toLatin1().constData(), i);
             ciClip ic = waveClips->begin();
             for (; ic != waveClips->end(); ++ic) {
                   if ((*ic)->name() == _name)
@@ -1002,7 +1002,7 @@ Clip ClipList::search(const QString& name) const
             if ((*i)->name() == name)
                   return Clip(*i);
       fprintf(stderr, "ClipList: clip <%s> not found\n",
-         name.latin1());
+         name.toLatin1().constData());
       return Clip();
       }
 
@@ -1046,7 +1046,7 @@ void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
       SndFile* f = track->recFile();
       if (f == 0) {
             printf("cmdAddRecordedWave: no snd file for track <%s>\n",
-               track->name().latin1());
+               track->name().toLatin1().constData());
             return;
             }
       
@@ -1071,9 +1071,9 @@ void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
         delete f;
         // The function which calls this function already does this immediately after. But do it here anyway.
         track->setRecFile(0);
-        remove(s.latin1());
+        remove(s.toLatin1().constData());
         if(debugMsg)
-          printf("Song::cmdAddRecordedWave: remove file %s\n", s.latin1());
+          printf("Song::cmdAddRecordedWave: remove file %s\n", s.toLatin1().constData());
         return;
       }
       // Round the start down using the Arranger part snap raster value. 
@@ -1121,8 +1121,8 @@ void Song::cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigne
       {
       char* original_charstr = new char[original.length() + 1];
       char* tmpfile_charstr = new char[tmpfile.length() + 1];
-      strcpy(original_charstr, original.latin1());
-      strcpy(tmpfile_charstr, tmpfile.latin1());
+      strcpy(original_charstr, original.toLatin1().constData());
+      strcpy(tmpfile_charstr, tmpfile.toLatin1().constData());
       song->undoOp(UndoOp::ModifyClip, original_charstr, tmpfile_charstr, sx, ex);
       }
 

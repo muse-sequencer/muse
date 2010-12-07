@@ -18,8 +18,9 @@
 //---------------------------------------------------------
 
 LabelCombo::LabelCombo(const QString& txt, QWidget* parent,
-   const char* name) : QWidget(parent, name)
+   const char* name) : QWidget(parent)
       {
+      setObjectName(name);
 //      setFixedHeight(20);
       QHBoxLayout* layout = new QHBoxLayout(this);
       QLabel* label = new QLabel(txt, this);
