@@ -442,7 +442,8 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     for (int i = 0; i < n; i++)
                                           timesig_n *= 2;
                                     int ltick  = CALC_TICK(tick);//(tick * config.division + div/2) / div;
-                                    sigmap.add(ltick, timesig_z, timesig_n);
+                                    ///sigmap.add(ltick, timesig_z, timesig_n);
+                                    AL::sigmap.add(ltick, AL::TimeSignature(timesig_z, timesig_n));
                                     }
                                     break;
                               case 0x59:  // Key Signature
@@ -1405,7 +1406,8 @@ void Audio::processMidi()
             bool isMeasure = false;
             while (midiClick < nextTickPos) {
                   if (isPlaying()) {
-                        sigmap.tickValues(midiClick, &bar, &beat, &tick);
+                        ///sigmap.tickValues(midiClick, &bar, &beat, &tick);
+                        AL::sigmap.tickValues(midiClick, &bar, &beat, &tick);
                         isMeasure = beat == 0;
                         }
                   else if (state == PRECOUNT) {
@@ -1455,7 +1457,8 @@ void Audio::processMidi()
                         }
 
                   if (isPlaying())
-                        midiClick = sigmap.bar2tick(bar, beat+1, 0);
+                        ///midiClick = sigmap.bar2tick(bar, beat+1, 0);
+                        midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
                   else if (state == PRECOUNT) {
                         midiClick += ticksBeat;
                         if (clickno)

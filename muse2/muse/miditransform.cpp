@@ -703,7 +703,7 @@ void MidiTransformerDialog::processEvent(Event& event, MidiPart* part, MidiPart*
             case Quantize:
                   {
                   int tick = event.tick();
-                  int rt = sigmap.raster(tick, data->cmt->quantVal) - tick;
+                  int rt = AL::sigmap.raster(tick, data->cmt->quantVal) - tick;
                   if (tick != rt) {
                         // Indicate do clone parts. 
                         removePortCtrlEvents(event, part, true);
@@ -854,7 +854,7 @@ bool MidiTransformerDialog::isSelected(Event& event, MidiPart*)
             }
       int bar, beat;
       unsigned tick;
-      sigmap.tickValues(event.tick(), &bar, &beat, &tick);
+      AL::sigmap.tickValues(event.tick(), &bar, &beat, &tick);
       int beat1 = cmt->selRangeA / 1000;
       unsigned tick1 = cmt->selRangeA % 1000;
       int beat2 = cmt->selRangeB / 1000;

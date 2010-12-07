@@ -16,7 +16,6 @@
 #define TIMER4    50
 
 #include "globals.h"
-//Added by qt3to4:
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QLabel>
@@ -26,12 +25,20 @@
 //    edit Signature Values  (4/4)
 //---------------------------------------------------------
 
-SigLabel::SigLabel(int a, int b, QWidget* parent) : QLabel(parent)
+SigLabel::SigLabel(int z, int n, QWidget* parent) : QLabel(parent)
       {
       z = n = 0;
       setFocusPolicy(Qt::NoFocus);
       setAlignment(Qt::AlignCenter);
-      setValue(a, b);
+      setValue(z, n);
+      }
+
+SigLabel::SigLabel(const AL::TimeSignature& sig, QWidget* parent) : QLabel(parent)
+      {
+      z = n = 0;
+      setFocusPolicy(Qt::NoFocus);
+      setAlignment(Qt::AlignCenter);
+      setValue(sig.z, sig.n);
       }
 
 //---------------------------------------------------------
@@ -58,7 +65,7 @@ void SigLabel::mousePressEvent(QMouseEvent* event)
             }
       if ((zz != z) || (nn != n)) {
             setValue(zz, nn);
-            emit valueChanged(zz, nn);
+            emit valueChanged(AL::TimeSignature(zz, nn));
             }
       }
 
@@ -122,7 +129,7 @@ void SigLabel::wheelEvent(QWheelEvent* event)
       incValue(zaehler, inc, zz, nn);
       if ((zz != z) || (nn != n)) {
             setValue(zz, nn);
-            emit valueChanged(zz, nn);
+            emit valueChanged(AL::TimeSignature(zz, nn));
             }
       }
 

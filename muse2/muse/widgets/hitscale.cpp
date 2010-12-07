@@ -70,7 +70,7 @@ void HitScale::viewMouseReleaseEvent(QMouseEvent*)
 
 void HitScale::viewMouseMoveEvent(QMouseEvent* event)
       {
-      int x = sigmap.raster(event->x(), *raster);
+      int x = AL::sigmap.raster(event->x(), *raster);
       emit timeChanged(x);
       int i;
       switch (button) {

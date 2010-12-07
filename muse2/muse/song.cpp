@@ -39,7 +39,8 @@
 #include "midictrl.h"
 #include "menutitleitem.h"
 #include "midi.h"
-#include "sig.h"
+///#include "sig.h"
+#include "al/sig.h"
 #include <sys/wait.h>
 
 extern void clearMidiTransforms();
@@ -127,6 +128,13 @@ void Song::setSig(int z, int n)
       {
       if (_masterFlag) {
             audio->msgAddSig(pos[0].tick(), z, n);
+            }
+      }
+
+void Song::setSig(const AL::TimeSignature& sig)
+      {
+      if (_masterFlag) {
+            audio->msgAddSig(pos[0].tick(), sig.z, sig.n);
             }
       }
 
@@ -739,9 +747,9 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             //startTick = roundDownBar(startTick);
             //endTick   = roundUpBar(endTick);
             // Round the start down using the Arranger part snap raster value. 
-            startTick = sigmap.raster1(startTick, recRaster());
+            startTick = AL::sigmap.raster1(startTick, recRaster());
             // Round the end up using the Arranger part snap raster value. 
-            endTick   = sigmap.raster2(endTick, recRaster());
+            endTick   = AL::sigmap.raster2(endTick, recRaster());
             
             part->setTick(startTick);
             part->setLenTick(endTick - startTick);
@@ -776,7 +784,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             // Added by Tim. p3.3.8
             
             // Round the end up (again) using the Arranger part snap raster value. 
-            endTick   = sigmap.raster2(endTick, recRaster());
+            endTick   = AL::sigmap.raster2(endTick, recRaster());
             
             // Remove all of the part's port controller values. Indicate do not do clone parts.
             removePortCtrlEvents(part, false);
@@ -1375,7 +1383,7 @@ void Song::setChannelMute(int channel, bool val)
 
 void Song::initLen()
       {
-      _len = sigmap.bar2tick(40, 0, 0);    // default song len
+      _len = AL::sigmap.bar2tick(40, 0, 0);    // default song len
       for (iTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
             MidiTrack* track = dynamic_cast<MidiTrack*>(*t);
             if (track == 0)
@@ -1407,9 +1415,9 @@ int Song::roundUpBar(int t) const
       {
       int bar, beat;
       unsigned tick;
-      sigmap.tickValues(t, &bar, &beat, &tick);
+      AL::sigmap.tickValues(t, &bar, &beat, &tick);
       if (beat || tick)
-            return sigmap.bar2tick(bar+1, 0, 0);
+            return AL::sigmap.bar2tick(bar+1, 0, 0);
       return t;
       }
 
@@ -1421,9 +1429,9 @@ int Song::roundUpBeat(int t) const
       {
       int bar, beat;
       unsigned tick;
-      sigmap.tickValues(t, &bar, &beat, &tick);
+      AL::sigmap.tickValues(t, &bar, &beat, &tick);
       if (tick)
-            return sigmap.bar2tick(bar, beat+1, 0);
+            return AL::sigmap.bar2tick(bar, beat+1, 0);
       return t;
       }
 
@@ -1435,8 +1443,8 @@ int Song::roundDownBar(int t) const
       {
       int bar, beat;
       unsigned tick;
-      sigmap.tickValues(t, &bar, &beat, &tick);
-      return sigmap.bar2tick(bar, 0, 0);
+      AL::sigmap.tickValues(t, &bar, &beat, &tick);
+      return AL::sigmap.bar2tick(bar, 0, 0);
       }
 
 //---------------------------------------------------------
@@ -1446,7 +1454,7 @@ int Song::roundDownBar(int t) const
 void Song::dumpMaster()
       {
       tempomap.dump();
-      sigmap.dump();
+      AL::sigmap.dump();
       }
 
 //---------------------------------------------------------
@@ -1850,13 +1858,13 @@ void Song::processMsg(AudioMsg* msg)
 
             case SEQM_ADD_SIG:
                   undoOp(UndoOp::AddSig, msg->a, msg->b, msg->c);
-                  sigmap.add(msg->a, msg->b, msg->c);
+                  AL::sigmap.add(msg->a, AL::TimeSignature(msg->b, msg->c));
                   updateFlags = SC_SIG;
                   break;
 
             case SEQM_REMOVE_SIG:
                   undoOp(UndoOp::DeleteSig, msg->a, msg->b, msg->c);
-                  sigmap.del(msg->a);
+                  AL::sigmap.del(msg->a);
                   updateFlags = SC_SIG;
                   break;
 
@@ -2010,7 +2018,7 @@ void Song::clear(bool signal)
       while (loop);
       
       tempomap.clear();
-      sigmap.clear();
+      AL::sigmap.clear();
       undoList->clearDelete();
       redoList->clear();
       _markerList->clear();
@@ -2095,7 +2103,7 @@ void Song::cleanupForQuit()
       _synthIs.clearDelete();    // each ~SynthI() -> deactivate3() -> ~SynthIF()
 
       tempomap.clear();
-      sigmap.clear();
+      AL::sigmap.clear();
       
       if(debugMsg)
         printf("deleting undoList, clearing redoList\n");
@@ -3518,10 +3526,10 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             MidiPart *part = (MidiPart*)(i->second);
             int partStart = part->endTick()-part->lenTick();
             int z, n;
-            sigmap.timesig(0, z, n);
+            AL::sigmap.timesig(0, z, n);
             fprintf(fp, "TIMESIG %d %d\n", z, n);
             fprintf(fp, "PART %d %d\n", partStart, part->lenTick());
-            fprintf(fp, "BEATLEN %d\n", sigmap.ticksBeat(0));
+            fprintf(fp, "BEATLEN %d\n", AL::sigmap.ticksBeat(0));
             fprintf(fp, "QUANTLEN %d\n", quant);
 
             //for (iCItem i = items.begin(); i != items.end(); ++i) {

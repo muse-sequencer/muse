@@ -1076,7 +1076,7 @@ void Audio::startRolling()
             state = PRECOUNT;
             int z, n;
             if (precountFromMastertrackFlag)
-                  sigmap.timesig(playTickPos, z, n);
+                  AL::sigmap.timesig(playTickPos, z, n);
             else {
                   z = precountSigZ;
                   n = precountSigN;
@@ -1092,10 +1092,10 @@ void Audio::startRolling()
             //
             int bar, beat;
             unsigned tick;
-            sigmap.tickValues(curTickPos, &bar, &beat, &tick);
+            AL::sigmap.tickValues(curTickPos, &bar, &beat, &tick);
             if (tick)
                   beat += 1;
-            midiClick = sigmap.bar2tick(bar, beat, 0);
+            midiClick = AL::sigmap.bar2tick(bar, beat, 0);
             }
 
       // reenable sustain 

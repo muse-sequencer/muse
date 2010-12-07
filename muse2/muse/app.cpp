@@ -49,6 +49,9 @@
 #include <QCloseEvent>
 
 #include "app.h"
+#include "master/lmaster.h"
+#include "master/masteredit.h"
+#include "marker/markerview.h"
 #include "popupmenu.h"
 #include "transport.h"
 #include "bigtime.h"
@@ -58,8 +61,6 @@
 #include "midi.h"
 #include "conf.h"
 #include "listedit.h"
-#include "master/masteredit.h"
-#include "master/lmaster.h"
 #include "drumedit.h"
 #include "ttoolbar.h"
 #include "amixer.h"
@@ -74,7 +75,6 @@
 #include "midictrl.h"
 #include "filedialog.h"
 #include "plugin.h"
-#include "marker/markerview.h"
 #include "transpose.h"
 #include "appearance.h"
 #include "gatetime.h"

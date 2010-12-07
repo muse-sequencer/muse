@@ -240,7 +240,8 @@ bool MusE::importMidi(const QString name, bool merge)
             song->initLen();
 
             int z, n;
-            sigmap.timesig(0, z, n);
+            ///sigmap.timesig(0, z, n);
+            AL::sigmap.timesig(0, z, n);
 
             int tempo = tempomap.tempo(0);
             transport->setTimesig(z, n);
@@ -300,7 +301,8 @@ void MusE::processTrack(MidiTrack* track)
         
         int bar2, beat;
         unsigned tick;
-        sigmap.tickValues(len, &bar2, &beat, &tick);
+        ///sigmap.tickValues(len, &bar2, &beat, &tick);
+        AL::sigmap.tickValues(len, &bar2, &beat, &tick);
         
         int lastOff = 0;
         int st = -1;      // start tick current part
@@ -308,7 +310,8 @@ void MusE::processTrack(MidiTrack* track)
         int x2 = 0;       // end tick current measure
   
         for (int bar = 0; bar < bar2; ++bar, x1 = x2) {
-              x2 = sigmap.bar2tick(bar+1, 0, 0);
+              ///x2 = sigmap.bar2tick(bar+1, 0, 0);
+              x2 = AL::sigmap.bar2tick(bar+1, 0, 0);
               if (lastOff > x2) {
                     // this measure is busy!
                     continue;

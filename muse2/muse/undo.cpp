@@ -6,6 +6,9 @@
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
+///#include "sig.h"
+#include "al/sig.h"  // Tim.
+
 #include "undo.h"
 #include "song.h"
 #include "globals.h"
@@ -420,11 +423,13 @@ void Song::doUndo2()
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::AddSig:
-                        sigmap.del(i->a);
+                        ///sigmap.del(i->a);
+                        AL::sigmap.del(i->a);
                         updateFlags |= SC_SIG;
                         break;
                   case UndoOp::DeleteSig:
-                        sigmap.add(i->a, i->b, i->c);
+                        ///sigmap.add(i->a, i->b, i->c);
+                        AL::sigmap.add(i->a, AL::TimeSignature(i->b, i->c));
                         updateFlags |= SC_SIG;
                         break;
                   case UndoOp::ModifyClip:
@@ -646,11 +651,13 @@ void Song::doRedo2()
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::AddSig:
-                        sigmap.add(i->a, i->b, i->c);
+                        ///sigmap.add(i->a, i->b, i->c);
+                        AL::sigmap.add(i->a, AL::TimeSignature(i->b, i->c));
                         updateFlags |= SC_SIG;
                         break;
                   case UndoOp::DeleteSig:
-                        sigmap.del(i->a);
+                        ///sigmap.del(i->a);
+                        AL::sigmap.del(i->a);
                         updateFlags |= SC_SIG;
                         break;
                   case UndoOp::ModifyClip:

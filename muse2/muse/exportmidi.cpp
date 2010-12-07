@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <qstring.h>
 
+#include "al/sig.h"  // Tim.
+
 #include "app.h"
 #include "midifile.h"
 #include "midi.h"
@@ -222,13 +224,16 @@ void MusE::exportMidi()
                   //---------------------------------------------------
                   //    Write Signatures
                   //
-                  const SigList* sl = &sigmap;
-                  for (ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
-                        SigEvent* event = e->second;
+                  ///const SigList* sl = &sigmap;
+                  const AL::SigList* sl = &AL::sigmap;
+                  ///for (ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
+                  for (AL::ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
+                        ///SigEvent* event = e->second;
+                        AL::SigEvent* event = e->second;
                         int sz = (config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
                         unsigned char data[sz];
-                        data[0] = event->z;
-                        switch(event->n) {
+                        data[0] = event->sig.z;
+                        switch(event->sig.n) {
                               case 1:  data[1] = 0; break;
                               case 2:  data[1] = 1; break;
                               case 4:  data[1] = 2; break;
@@ -237,7 +242,7 @@ void MusE::exportMidi()
                               case 32: data[1] = 5; break;
                               case 64: data[1] = 6; break;
                               default:
-                                    fprintf(stderr, "falsche Signatur; nenner %d\n", event->n);
+                                    fprintf(stderr, "falsche Signatur; nenner %d\n", event->sig.n);
                                     break;
                               }
                         // By T356. In muse the metronome pulse is fixed at 24 (once per quarter-note).

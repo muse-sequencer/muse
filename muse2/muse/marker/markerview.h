@@ -18,8 +18,12 @@ class QToolBar;
 class QToolButton;
 class QTreeWidget;
 
+namespace Awl {
+      class PosEdit;
+      };
+
 class Marker;
-class PosEdit;
+///class PosEdit;
 class Pos;
 
 //---------------------------------------------------------
@@ -47,8 +51,10 @@ class MarkerItem : public QTreeWidgetItem {
 class MarkerView : public TopWin {
       QTreeWidget* table;
       QLineEdit* editName;
-      PosEdit* editSMPTE;
-      PosEdit* editTick;
+      ///PosEdit* editSMPTE;
+      ///PosEdit* editTick;
+      Awl::PosEdit* editSMPTE;
+      Awl::PosEdit* editTick;
       QToolButton* lock;
       QToolBar* tools;
 

@@ -26,12 +26,13 @@
 #include <qstyle.h>
 
 #include "app.h"
+#include "transport.h"
 #include "icons.h"
 #include "globals.h"
 #include "drumedit.h"
 #include "pianoroll.h"
 #include "master/masteredit.h"
-#include "transport.h"
+///#include "transport.h"
 #include "bigtime.h"
 #include "arranger.h"
 #include "conf.h"

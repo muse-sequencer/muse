@@ -1,3 +1,8 @@
+06.12.2010
+        - Built Awl::posedit and Awl::sigedit, and replaced /widget versions and all usages. (Tim)
+          TODO: Awl::sigedit has no returnPressed signal, for lmaster. 
+          TODO: Transport position posedits jump to sub-ticks sections - can't auto-inc other sections.
+        - Reverted class SpinBox to previous revision. Test OK. (Tim)
 05.12.2010
         - Completed porting of dlist module (the drum list). Test OK. (Tim)
         - Ported sigedit and posedit. Used SpinBox in place of Q3SpinWidget. TODO: Needs some work on

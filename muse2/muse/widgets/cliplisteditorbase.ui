@@ -111,7 +111,7 @@
               </widget>
             </item>
             <item>
-              <widget class="PosEdit" name="start">
+              <widget class="Awl::PosEdit" name="start">
                 <property name="smpte">
                   <bool>true</bool>
                 </property>
@@ -128,7 +128,7 @@
               </widget>
             </item>
             <item>
-              <widget class="PosEdit" name="len">
+              <widget class="Awl::PosEdit" name="len">
                 <property name="smpte">
                   <bool>true</bool>
                 </property>
@@ -156,8 +156,13 @@
     </layout>
   </widget>
   <layoutdefault spacing="6" margin="11"/>
+  <customwidgets>
+    <customwidget>
+      <class>Awl::PosEdit</class>
+      <extends>QWidget</extends>
+      <header>awl/posedit.h</header>
+      <container>0</container>
+    </customwidget>
+  </customwidgets>
   <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
-  <includes>
-    <include location="local">posedit.h</include>
-  </includes>
 </ui>

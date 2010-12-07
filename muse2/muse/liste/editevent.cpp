@@ -21,6 +21,8 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 
+#include "awl/posedit.h"
+
 #include "song.h"
 #include "event.h"
 #include "midictrl.h"
@@ -28,7 +30,7 @@
 #include "pitchedit.h"
 #include "intlabel.h"
 #include "globals.h"
-#include "posedit.h"
+///#include "posedit.h"
 #include "gconfig.h"
 #include "midiport.h"
 #include "midiedit/drummap.h"
@@ -287,7 +289,8 @@ EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
       setCaption(tr("MusE: Enter Meta Event"));
 
       QLabel* l1 = new QLabel(tr("Time Position"));
-      epos = new PosEdit;
+      ///epos = new PosEdit;
+      epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Meta Type"));
       il2 = new IntLabel(-1, 0, 127, this, -1);
@@ -417,7 +420,8 @@ EditCAfterDialog::EditCAfterDialog(int tick, const Event& event,
       setCaption(tr("MusE: Enter Channel Aftertouch"));
 
       QLabel* l1 = new QLabel(tr("Time Position"));
-      epos = new PosEdit;
+      ///epos = new PosEdit;
+      epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Pressure"));
       il2  = new IntLabel(-1, 0, 127, this, -1);
@@ -469,7 +473,8 @@ EditPAfterDialog::EditPAfterDialog(int tick, const Event& event,
       setCaption(tr("MusE: Enter Poly Aftertouch"));
 
       QLabel* l1 = new QLabel(tr("Time Position"));
-      epos = new PosEdit;
+      ///epos = new PosEdit;
+      epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Pitch"));
       pl = new PitchEdit;

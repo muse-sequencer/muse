@@ -12,14 +12,24 @@
 #include "noteinfo.h"
 #include "cobject.h"
 #include "tempo.h"
-#include "sig.h"
+///#include "sig.h"
+//#include "al/sig.h"
 
 #include <QTreeWidgetItem>
 
+namespace AL {
+      class SigEvent;
+      };
+using AL::SigEvent;
+
+namespace Awl {
+      class PosEdit;
+      class SigEdit;
+      };
+using Awl::PosEdit;
+using Awl::SigEdit;
+
 class QLineEdit;
-class SigEvent;
-class PosEdit;
-class SigEdit;
 
 enum LMASTER_LVTYPE
    {
@@ -74,8 +84,8 @@ class LMasterSigEventItem : public LMasterLViewItem {
       virtual LMASTER_LVTYPE getType() { return LMASTER_SIGEVENT; }
       const SigEvent* getEvent() { return sigEvent; }
       virtual unsigned tick() { return sigEvent->tick; }
-      int z() { return sigEvent->z; }
-      int n() { return sigEvent->n; }
+      int z() { return sigEvent->sig.z; }
+      int n() { return sigEvent->sig.n; }
       };
 
 

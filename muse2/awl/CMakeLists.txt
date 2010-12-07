@@ -4,7 +4,7 @@
 #  $Id:$
 #
 #  Copyright (C) 2002-2006 by Werner Schweer and others
-#
+#                                                                                                                                                                                                             
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License version 2.
 #
@@ -36,11 +36,11 @@ set(mocs
       aslider knob panknob slider volknob volslider floatentry
       volentry panentry midivolentry midipanentry midipanknob
       mslider midimslider midimeter combobox checkbox 
-      # posedit
+      posedit
       pitchedit 
       # poslabel 
       pitchlabel tempolabel 
-      # sigedit 
+      sigedit 
       # tcanvas
       tempoedit drawbar
       )

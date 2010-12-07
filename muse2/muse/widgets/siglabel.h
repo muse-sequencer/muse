@@ -8,8 +8,9 @@
 #ifndef __SIGLABEL_H__
 #define __SIGLABEL_H__
 
-#include <qlabel.h>
-//Added by qt3to4:
+#include <al/sig.h>
+
+#include <QLabel>
 #include <QWheelEvent>
 #include <QMouseEvent>
 
@@ -26,16 +27,19 @@ class SigLabel : public QLabel {
 
    protected:
       int z, n;
-
+      
    signals:
-      void valueChanged(int, int);
+      void valueChanged(const AL::TimeSignature&);
 
    public slots:
       virtual void setValue(int, int);
+      virtual void setValue(const AL::TimeSignature& sig) { setValue(sig.z, sig.n); }
 
    public:
       SigLabel(int z, int n, QWidget*);
+      SigLabel(const AL::TimeSignature&, QWidget*);
       void value(int& a, int& b) const { a = z; b = n; }
+      AL::TimeSignature value() const { return AL::TimeSignature(z, n); }
       void setFrame(bool);
       };
 #endif

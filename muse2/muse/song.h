@@ -20,7 +20,8 @@
 #include "pos.h"
 #include "globaldefs.h"
 #include "tempo.h"
-#include "sig.h"
+///#include "sig.h"
+#include "al/sig.h"
 #include "undo.h"
 #include "track.h"
 
@@ -370,6 +371,7 @@ class Song : public QObject {
 
       void setTempo(int t);
       void setSig(int a, int b);
+      void setSig(const AL::TimeSignature&);
       void setTempo(double tempo)  { setTempo(int(60000000.0/tempo)); }
 
       void setMasterFlag(bool flag);

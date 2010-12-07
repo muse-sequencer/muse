@@ -5,13 +5,16 @@
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
+#include "awl/posedit.h"
+#include "awl/sigedit.h"
+
 #include "lmaster.h"
 #include "xml.h"
 #include "song.h"
 #include "globals.h"
 #include "audio.h"
-#include "posedit.h"
-#include "sigedit.h"
+///#include "posedit.h"
+///#include "sigedit.h"
 #include "shortcuts.h"
 #include "debug.h"
 
@@ -165,7 +168,7 @@ LMaster::~LMaster()
 //   insertSig
 //---------------------------------------------------------
 
-void LMaster::insertSig(const SigEvent* ev)
+void LMaster::insertSig(const AL::SigEvent* ev)
       {
       new LMasterSigEventItem(view, ev);
       }
@@ -196,10 +199,10 @@ void LMaster::updateList()
       
       view->clear();
       const TempoList* t = &tempomap;
-      const SigList* s   = &sigmap;
+      const AL::SigList* s   = &AL::sigmap;
 
       criTEvent it   = t->rbegin();
-      criSigEvent is = s->rbegin();
+      AL::criSigEvent is = s->rbegin();
       for (;;) {
             if (it == t->rend()) {
                   while(is != s->rend()) {
@@ -409,7 +412,8 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
             // Everything OK
             else {
                   if (!pos_editor)
-                        pos_editor = new PosEdit(view->viewport());
+                        ///pos_editor = new PosEdit(view->viewport());
+                        pos_editor = new Awl::PosEdit(view->viewport());
                   pos_editor->setValue(editedItem->tick());
                   QRect itemRect = view->visualItemRect(editedItem);
                   itemRect.setX(0);
@@ -524,7 +528,8 @@ void LMaster::returnPressed()
       //
       else if (editedItem->getType() == LMASTER_SIGEVENT && editorColumn == LMASTER_VAL_COL) 
       {
-            Sig newSig = sig_editor->sig();
+            ///Sig newSig = sig_editor->sig();
+            AL::TimeSignature newSig = sig_editor->sig();
             
             sig_editor->hide();
             
@@ -593,7 +598,7 @@ LMasterTempoItem::LMasterTempoItem(QTreeWidget* parent, const TEvent* ev)
       //QString c1, c2, c3, c4;
       int bar, beat;
       unsigned tick;
-      sigmap.tickValues(t, &bar, &beat, &tick);
+      AL::sigmap.tickValues(t, &bar, &beat, &tick);
       c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
 
       double time = double(ev->frame) / double(sampleRate);
@@ -614,14 +619,14 @@ LMasterTempoItem::LMasterTempoItem(QTreeWidget* parent, const TEvent* ev)
 //   LMasterSigEventItem
 //!  Initializes a ListView item with a SigEvent
 //---------------------------------------------------------
-LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const SigEvent* ev)
+LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const AL::SigEvent* ev)
       : LMasterLViewItem(parent)
       {
       sigEvent = ev;
       unsigned t = ev->tick;
       int bar, beat;
       unsigned tick;
-      sigmap.tickValues(t, &bar, &beat, &tick);
+      AL::sigmap.tickValues(t, &bar, &beat, &tick);
       c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
 
       double time = double(tempomap.tick2frame(t)) / double (sampleRate);
@@ -630,7 +635,7 @@ LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const SigEvent* ev
       int msec = int((time - (min*60 + sec)) * 1000.0);
       c2.sprintf("%03d:%02d:%03d", min, sec, msec);
       c3 = "Timesig";
-      c4.sprintf("%d/%d", ev->z, ev->n);
+      c4.sprintf("%d/%d", ev->sig.z, ev->sig.n);
       setText(0, c1);
       setText(1, c2);
       setText(2, c3);
@@ -649,7 +654,7 @@ void LMaster::tempoButtonClicked()
       Pos p = Pos(beatString);
       p.mbt(&m, &b, &t);
       m++; //Next bar
-      int newTick = sigmap.bar2tick(m, b, t);
+      int newTick = AL::sigmap.bar2tick(m, b, t);
       TEvent* ev = new TEvent(lastTempo->tempo(), newTick);
       new LMasterTempoItem(view, ev);
       QTreeWidgetItem* newTempoItem = view->topLevelItem(0);
@@ -675,8 +680,8 @@ void LMaster::timeSigButtonClicked()
       Pos p = Pos(beatString);
       p.mbt(&m, &b, &t);
       m++;
-      int newTick = sigmap.bar2tick(m, b, t);
-      SigEvent* ev = new SigEvent(lastSig->z(), lastSig->n(), newTick);
+      int newTick = AL::sigmap.bar2tick(m, b, t);
+      AL::SigEvent* ev = new AL::SigEvent(AL::TimeSignature(lastSig->z(), lastSig->n()), newTick);
       new LMasterSigEventItem(view, ev);
       QTreeWidgetItem* newSigItem = view->topLevelItem(0);
       //LMasterSigEventItem* newSigItem = new LMasterSigEventItem(view, ev);

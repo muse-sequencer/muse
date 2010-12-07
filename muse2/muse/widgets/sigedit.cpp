@@ -20,7 +20,8 @@
 #include <QStyle>
 #include <QTimerEvent>
 
-#include "sig.h"
+///#include "sig.h"
+#include "al/sig.h"
 #include "sigedit.h"
 #include "spinbox.h"
 
