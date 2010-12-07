@@ -393,7 +393,7 @@ bool Song::addEvent(Event& event, Part* part)
       {
         // This can be normal for some (redundant) operations.
         if(debugMsg)
-          printf("Song::addEvent event already found in part:%s size:%zd\n", part->name().latin1(), part->events()->size());
+          printf("Song::addEvent event already found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events()->size());
         return false;
       }
       
@@ -412,7 +412,7 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
       if (i == part->events()->end()) {
             // This can be normal for some (redundant) operations.
             if(debugMsg)
-              printf("Song::changeEvent event not found in part:%s size:%zd\n", part->name().latin1(), part->events()->size());
+              printf("Song::changeEvent event not found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events()->size());
             // abort();
             // Removed by T356. Allow it to add the new event. 
             // (And remove the old one from the midi port controller!)
@@ -514,7 +514,7 @@ void Song::deleteEvent(Event& event, Part* part)
       if (ev == part->events()->end()) {
             // This can be normal for some (redundant) operations.
             if(debugMsg)
-              printf("Song::deleteEvent event not found in part:%s size:%zd\n", part->name().latin1(), part->events()->size());
+              printf("Song::deleteEvent event not found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events()->size());
             return;
             }
       part->events()->erase(ev);
@@ -2922,7 +2922,7 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
 //    for (int i = 0; i < channel; ++i) 
 //    {
 //          char buffer[128];
-//          snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+//          snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
 //          MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
 //          pup->insertItem(titel);
 
@@ -2998,12 +2998,12 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
             // disconnect
             if(dst)
             {
-              //printf("Song::chooseMidiRoutes removing route src track name: %s dst device name: %s\n", track->name().latin1(), md->name().latin1());
+              //printf("Song::chooseMidiRoutes removing route src track name: %s dst device name: %s\n", track->name().toLatin1().constData(), md->name().toLatin1().constData());
               audio->msgRemoveRoute(bRoute, aRoute);
             }
             else
             {
-              //printf("Song::chooseMidiRoutes removing route src device name: %s dst track name: %s\n", md->name().latin1(), track->name().latin1());
+              //printf("Song::chooseMidiRoutes removing route src device name: %s dst track name: %s\n", md->name().toLatin1().constData(), track->name().toLatin1().constData());
               audio->msgRemoveRoute(aRoute, bRoute);
             }
           }
@@ -3012,12 +3012,12 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
             // connect
             if(dst)
             {
-              //printf("Song::chooseMidiRoutes adding route src track name: %s dst device name: %s\n", track->name().latin1(), md->name().latin1());
+              //printf("Song::chooseMidiRoutes adding route src track name: %s dst device name: %s\n", track->name().toLatin1().constData(), md->name().toLatin1().constData());
               audio->msgAddRoute(bRoute, aRoute);
             }
             else
             {
-              //printf("Song::chooseMidiRoutes adding route src device name: %s dst track name: %s\n", md->name().latin1(), track->name().latin1());
+              //printf("Song::chooseMidiRoutes adding route src device name: %s dst track name: %s\n", md->name().toLatin1().constData(), track->name().toLatin1().constData());
               audio->msgAddRoute(aRoute, bRoute);
             }  
           }
@@ -3214,14 +3214,14 @@ void Song::insertTrack2(Track* track, int idx)
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //printf("Song::insertTrack2 %s in route port:%d\n", track->name().latin1(), r->midiPort);   // p3.3.50
+                  //printf("Song::insertTrack2 %s in route port:%d\n", track->name().toLatin1().constData(), r->midiPort);   // p3.3.50
                   Route src(track, r->channel);
                   midiPorts[r->midiPort].outRoutes()->push_back(src);
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //printf("Song::insertTrack2 %s out route port:%d\n", track->name().latin1(), r->midiPort);  // p3.3.50
+                  //printf("Song::insertTrack2 %s out route port:%d\n", track->name().toLatin1().constData(), r->midiPort);  // p3.3.50
                   Route src(track, r->channel);
                   midiPorts[r->midiPort].inRoutes()->push_back(src);
             }      
@@ -3332,7 +3332,7 @@ void Song::removeTrack1(Track* track)
 
 void Song::removeTrack2(Track* track)
 {
-      //printf("Song::removeTrack2 track:%s\n", track->name().latin1());  // p3.3.50
+      //printf("Song::removeTrack2 track:%s\n", track->name().toLatin1().constData());  // p3.3.50
                   
       switch(track->type()) {
             case Track::MIDI:
@@ -3415,7 +3415,7 @@ void Song::removeTrack2(Track* track)
             {
                   //if(r->track == track)  
                   //  r->track->outRoutes()->removeRoute(*r);
-                  //printf("Song::removeTrack2 %s audio out track:%s\n", track->name().latin1(), r->track->name().latin1());  // p3.3.50
+                  //printf("Song::removeTrack2 %s audio out track:%s\n", track->name().toLatin1().constData(), r->track->name().toLatin1().constData());  // p3.3.50
                   // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
@@ -3429,7 +3429,7 @@ void Song::removeTrack2(Track* track)
             {
                   //if(r->track == track)  
                   //  r->track->inRoutes()->removeRoute(*r);
-                  //printf("Song::removeTrack2 %s audio in track:%s\n", track->name().latin1(), r->track->name().latin1());  // p3.3.50
+                  //printf("Song::removeTrack2 %s audio in track:%s\n", track->name().toLatin1().constData(), r->track->name().toLatin1().constData());  // p3.3.50
                   // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
@@ -3441,14 +3441,14 @@ void Song::removeTrack2(Track* track)
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //printf("Song::removeTrack2 %s in route port:%d\n", track->name().latin1(), r->midiPort);   // p3.3.50
+                  //printf("Song::removeTrack2 %s in route port:%d\n", track->name().toLatin1().constData(), r->midiPort);   // p3.3.50
                   Route src(track, r->channel);
                   midiPorts[r->midiPort].outRoutes()->removeRoute(src);
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //printf("Song::removeTrack2 %s out route port:%d\n", track->name().latin1(), r->midiPort);  // p3.3.50
+                  //printf("Song::removeTrack2 %s out route port:%d\n", track->name().toLatin1().constData(), r->midiPort);  // p3.3.50
                   Route src(track, r->channel);
                   midiPorts[r->midiPort].inRoutes()->removeRoute(src);
             }      
@@ -3460,7 +3460,7 @@ void Song::removeTrack2(Track* track)
             {
                   //if(r->track == track)   
                   //  r->track->outRoutes()->removeRoute(*r);
-                  //printf("Song::removeTrack2 %s in route track:%s\n", track->name().latin1(), r->track->name().latin1());  // p3.3.50
+                  //printf("Song::removeTrack2 %s in route track:%s\n", track->name().toLatin1().constData(), r->track->name().toLatin1().constData());  // p3.3.50
                   // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
@@ -3471,7 +3471,7 @@ void Song::removeTrack2(Track* track)
             {
                   //if(r->track == track)  
                   //  r->track->inRoutes()->removeRoute(*r);
-                  //printf("Song::removeTrack2 %s out route track:%s\n", track->name().latin1(), r->track->name().latin1());  // p3.3.50
+                  //printf("Song::removeTrack2 %s out route track:%s\n", track->name().toLatin1().constData(), r->track->name().toLatin1().constData());  // p3.3.50
                   // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;

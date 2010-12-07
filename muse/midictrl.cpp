@@ -333,9 +333,9 @@ void MidiController::write(int level, Xml& xml) const
       else
             sl.setNum(l);
 
-      xml.nput(level, "<Controller name=\"%s\"", Xml::xmlString(_name).latin1());
+      xml.nput(level, "<Controller name=\"%s\"", Xml::xmlString(_name).toLatin1().constData());
       if(t != Controller7)
-        xml.nput(" type=\"%s\"", type.latin1());
+        xml.nput(" type=\"%s\"", type.toLatin1().constData());
       
       int mn = 0;
       int mx = 0; 
@@ -344,18 +344,18 @@ void MidiController::write(int level, Xml& xml) const
             case RPN:
             case NRPN:
                   xml.nput(" h=\"%d\"", h);
-                  xml.nput(" l=\"%s\"", sl.latin1());
+                  xml.nput(" l=\"%s\"", sl.toLatin1().constData());
                   mx = 127;
                   break;
             case Controller7:
-                  xml.nput(" l=\"%s\"", sl.latin1());
+                  xml.nput(" l=\"%s\"", sl.toLatin1().constData());
                   mx = 127;
                   break;
             case Controller14:
             case RPN14:
             case NRPN14:
                   xml.nput(" h=\"%d\"", h);
-                  xml.nput(" l=\"%s\"", sl.latin1());
+                  xml.nput(" l=\"%s\"", sl.toLatin1().constData());
                   mx = 16383;
                   break;
             case Pitch:

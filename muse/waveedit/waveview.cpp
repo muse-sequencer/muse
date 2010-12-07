@@ -620,7 +620,7 @@ WaveSelectionList WaveView::getSelection(unsigned startpos, unsigned stoppos)
                         tmp_sx < (int)event_startpos ? sx = event_startpos : sx = tmp_sx;
                         tmp_ex > (int)event_length   ? ex = event_length   : ex = tmp_ex;
 
-                        //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().latin1());
+                        //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLatin1().constData());
                         WaveEventSelection s;
                         s.file = file;
                         s.startframe = sx;
@@ -849,7 +849,7 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
       // Forkaborkabork
       int pid = fork();
       if (pid == 0) {
-            if (execlp(config.externalWavEditor.latin1(), config.externalWavEditor.latin1(), exttmpFileName.latin1(), NULL) == -1) {
+            if (execlp(config.externalWavEditor.toLatin1().constData(), config.externalWavEditor.toLatin1().constData(), exttmpFileName.toLatin1().constData(), NULL) == -1) {
                   perror("Failed to launch external editor");
                   // Get out of here
                   

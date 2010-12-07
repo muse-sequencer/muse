@@ -341,7 +341,7 @@ bool DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       
       // Added by T356. 
       if(((int)newEvent.endTick() - (int)part->lenTick()) > 0)  
-        printf("DrumCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().latin1());
+        printf("DrumCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().toLatin1().constData());
       
       if (dtype == MOVE_COPY || dtype == MOVE_CLONE) {
             // Indicate no undo, and do not do port controller values and clone parts. 
@@ -896,7 +896,8 @@ void DrumCanvas::copy()
 
 int DrumCanvas::pasteAt(const QString& pt, int pos)
       {
-      const char* p = pt.latin1();
+      QByteArray ba = pt.toLatin1();
+      const char* p = ba.constData();
       Xml xml(p);
 
       // Added by T356. 

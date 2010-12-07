@@ -296,14 +296,14 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
 static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
       {
       //void* handle = dlopen(fi.filePath().toAscii().data(), RTLD_NOW);
-      void* handle = dlopen(fi.filePath().latin1(), RTLD_NOW);
-      //void* handle = dlopen(fi.absFilePath().latin1(), RTLD_NOW);
+      void* handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
+      //void* handle = dlopen(fi.absFilePath().toLatin1().constData(), RTLD_NOW);
       
       if (handle == 0) {
             fprintf(stderr, "scanDSSILib: dlopen(%s) failed: %s\n",
               //fi.filePath().toAscii().data(), dlerror());
-              fi.filePath().latin1(), dlerror());
-              //fi.absFilePath().latin1(), dlerror());
+              fi.filePath().toLatin1().constData(), dlerror());
+              //fi.absFilePath().toLatin1().constData(), dlerror());
               
             return;
             }
@@ -321,7 +321,7 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
                 "Are you sure this is a DSSI plugin file?\n",
                 //fi.filePath().toAscii().data(),
                 fi.filePath().ascii(),
-                //fi.absFilePath().latin1(),
+                //fi.absFilePath().toLatin1().constData(),
                 
                 txt);
             dlclose(handle);
@@ -364,7 +364,7 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
               Synth* s = *is;
               //#ifdef DSSI_DEBUG 
               //  fprintf(stderr, "scanDSSILib: name:%s listname:%s lib:%s listlib:%s\n", 
-              //          label.latin1(), s->name().latin1(), fi.baseName(true).latin1(), s->baseName().latin1());
+              //          label.toLatin1().constData(), s->name().toLatin1().constData(), fi.baseName(true).toLatin1().constData(), s->baseName().toLatin1().constData());
               //#endif
 
               if(s->name() == label && s->baseName() == fi.completeBaseName())
@@ -378,7 +378,7 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
             if(debugMsg)
             {
               fprintf(stderr, "scanDSSILib: name:%s listname:%s lib:%s listlib:%s\n", 
-                      label.latin1(), s->name().latin1(), fi.completeBaseName().latin1(), s->baseName().latin1());
+                      label.toLatin1().constData(), s->name().toLatin1().constData(), fi.completeBaseName().toLatin1().constData(), s->baseName().toLatin1().constData());
               int ai = 0, ao = 0, ci = 0, co = 0;
               for(unsigned long pt = 0; pt < descr->LADSPA_Plugin->PortCount; ++pt)
               {
@@ -420,7 +420,7 @@ static void scanDSSIDir(QString& s) // ddskrjo removed const for argument
 {
       if(debugMsg)
         //printf("scan DSSI plugin dir <%s>\n", s.toAscii().data());
-        printf("scanDSSIDir: scan DSSI plugin dir <%s>\n", s.latin1());
+        printf("scanDSSIDir: scan DSSI plugin dir <%s>\n", s.toLatin1().constData());
 
 #ifdef __APPLE__
       QDir pluginDir(s, QString("*.dylib"), QDir::Unsorted, QDir::Files);
@@ -440,7 +440,7 @@ static void scanDSSIDir(QString& s) // ddskrjo removed const for argument
       for(unsigned int i = 0; i < list.count(); ++i) 
       {
         if(debugMsg)
-          printf("scanDSSIDir: found %s\n", (s + QString("/") + list[i]).latin1());
+          printf("scanDSSIDir: found %s\n", (s + QString("/") + list[i]).toLatin1().constData());
 
         QFileInfo fi(s + QString("/") + list[i]);
         scanDSSILib(fi);
@@ -463,7 +463,7 @@ void initDSSI()
       
       const char* p = dssiPath;
       //QString pth = QString(dssiPath) + QString(":") + QString(ladspaPath);
-      //const char* p = pth.latin1();
+      //const char* p = pth.toLatin1().constData();
       while (*p != '\0') {
             const char* pe = p;
             while (*pe != ':' && *pe != '\0')
@@ -566,15 +566,15 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
       if (_instances == 0) 
       {
         //handle = dlopen(info.filePath().toAscii().data(), RTLD_NOW);
-        handle = dlopen(info.filePath().latin1(), RTLD_NOW);
-        //handle = dlopen(info.absFilePath().latin1(), RTLD_NOW);
+        handle = dlopen(info.filePath().toLatin1().constData(), RTLD_NOW);
+        //handle = dlopen(info.absFilePath().toLatin1().constData(), RTLD_NOW);
         
         if (handle == 0) 
         {
               fprintf(stderr, "DssiSynth::createSIF dlopen(%s) failed: %s\n",
                 //info.filePath().toAscii().data(), dlerror());
-                info.filePath().latin1(), dlerror());
-                //info.absFilePath().latin1(), dlerror());
+                info.filePath().toLatin1().constData(), dlerror());
+                //info.absFilePath().toLatin1().constData(), dlerror());
                 
               return 0;
         }
@@ -587,8 +587,8 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
                   "library file \"%s\": %s.\n"
                   "Are you sure this is a DSSI plugin file?\n",
                   //info.filePath().toAscii().data(),
-                  info.filePath().latin1(),
-                  //info.absFilePath().latin1(),
+                  info.filePath().toLatin1().constData(),
+                  //info.absFilePath().toLatin1().constData(),
                   
                   txt ? txt : "?");
               dlclose(handle);
@@ -681,7 +681,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
       if (dssi == 0) 
       {
         //fprintf(stderr, "cannot found DSSI synti %s\n", _name.toAscii().data());
-        fprintf(stderr, "cannot find DSSI synti %s\n", _name.latin1());
+        fprintf(stderr, "cannot find DSSI synti %s\n", _name.toLatin1().constData());
         dlclose(handle);
         handle = 0;
         df     = 0;
@@ -698,8 +698,8 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
 
 //      static char oscUrl[1024];
       //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toAscii().data());
-      //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().latin1());
-//      snprintf(oscUrl, 1024, "%s/%s/%s", url, info.baseName().latin1(), synti->name().latin1());
+      //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toLatin1().constData());
+//      snprintf(oscUrl, 1024, "%s/%s/%s", url, info.baseName().toLatin1().constData(), synti->name().toLatin1().constData());
       //QString guiPath(info.path() + "/" + info.baseName());
       QString guiPath(info.dirPath() + "/" + info.baseName());
       QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
@@ -1019,7 +1019,7 @@ bool DssiSynthIF::init(DssiSynth* s)
       if(dssi->configure) 
       {
         char *rv = dssi->configure(handle, DSSI_PROJECT_DIRECTORY_KEY,
-            museProject.latin1()); //song->projectPath()
+            museProject.toLatin1().constData()); //song->projectPath()
         
         if(rv)
         {
@@ -2252,8 +2252,8 @@ bool DssiSynthIF::initGui()
       //
       static char oscUrl[1024];
       //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toAscii().data());
-      //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().latin1());
-      snprintf(oscUrl, 1024, "%s/%s/%s", url, synth->info.baseName().latin1(), synti->name().latin1());
+      //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toLatin1().constData());
+      snprintf(oscUrl, 1024, "%s/%s/%s", url, synth->info.baseName().toLatin1().constData(), synti->name().toLatin1().constData());
 
       //QString guiPath(info.path() + "/" + info.baseName());
       QString guiPath(synth->info.dirPath() + "/" + synth->info.baseName());
@@ -2277,7 +2277,7 @@ bool DssiSynthIF::initGui()
                   struct stat buf;
                   
                   //if (stat(gui.toAscii().data(), &buf)) {
-                  if (stat(gui.latin1(), &buf)) {
+                  if (stat(gui.toLatin1().constData(), &buf)) {
                   
                         perror("stat failed");
                         continue;
@@ -2287,15 +2287,15 @@ bool DssiSynthIF::initGui()
                   fprintf(stderr, "DssiSynthIF::initGui  %s %s %s %s\n",
                       //fi.filePath().toAscii().data(),
                       //fi.fileName().toAscii().data(),
-                      fi.filePath().latin1(),
-                      //fi.fileName().latin1(),
+                      fi.filePath().toLatin1().constData(),
+                      //fi.fileName().toLatin1().constData(),
                       
                       oscUrl,
                       
-                      synth->info.filePath().latin1(),
+                      synth->info.filePath().toLatin1().constData(),
                       
                       //name().toAscii().data(),
-                      synth->name().latin1());
+                      synth->name().toLatin1().constData());
                   #endif
                       
                   if ((S_ISREG(buf.st_mode) || S_ISLNK(buf.st_mode)) &&
@@ -2338,26 +2338,26 @@ bool DssiSynthIF::initGui()
                                 // execlp(
                                         // fi.filePath().toAscii().data(),
                                         // fi.fileName().toAscii().data(),
-                                //        fi.filePath().latin1(),
-                                //        fi.fileName().latin1(),
+                                //        fi.filePath().toLatin1().constData(),
+                                //        fi.fileName().toLatin1().constData(),
                                         
                                 //        oscUrl,
                                         
                                         // info.filePath().toAscii().data(),
                                         // name().toAscii().data(),
-                                //        synth->info.filePath().latin1(),
-                                //        synth->name().latin1(),
+                                //        synth->info.filePath().toLatin1().constData(),
+                                //        synth->name().toLatin1().constData(),
                                         
                                 //        "channel 1", (void*)0);
                                         
                                 fprintf(stderr, "exec %s %s %s %s failed: %s\n",
                                         // fi.filePath().toAscii().data(),
                                         // fi.fileName().toAscii().data(),
-                                        fi.filePath().latin1(),
-                                        fi.fileName().latin1(),
+                                        fi.filePath().toLatin1().constData(),
+                                        fi.fileName().toLatin1().constData(),
                                         oscUrl,
                                         //  name().toAscii().data(),
-                                        synth->name().latin1(),
+                                        synth->name().toLatin1().constData(),
                                         strerror(errno));
                                         
                                 // It's Ok, Keep going. So nothing happens. So what. The timeout in showGui will just leave.
@@ -2377,7 +2377,7 @@ bool DssiSynthIF::initGui()
       else {
             printf("%s: no dir for dssi gui found: %s\n",
                //name().toAscii().data(), guiPath.toAscii().data());
-               synth->name().latin1(), guiPath.latin1());
+               synth->name().toLatin1().constData(), guiPath.toLatin1().constData());
             
             //synth->_hasGui = false;
             }
@@ -2426,7 +2426,7 @@ void DssiSynthIF::guiHeartBeat()
 int DssiSynthIF::oscUpdate()
 {
       // Send project directory.
-      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, museProject.latin1());  // song->projectPath()
+      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // song->projectPath()
       
       // Send current string configuration parameters.
       //StringParamMap& map = synti->_stringParamMap;
@@ -2771,7 +2771,7 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
       // we don't bother remembering these at all. 
 
       #ifdef DSSI_DEBUG 
-      printf("DssiSynthIF::oscConfigure synth name:%s key:%s value:%s\n", synti->name().latin1(), key, value);
+      printf("DssiSynthIF::oscConfigure synth name:%s key:%s value:%s\n", synti->name().toLatin1().constData(), key, value);
       #endif
       
       // Add or modify the configuration map item.
@@ -2781,7 +2781,7 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
          strlen(DSSI_RESERVED_CONFIGURE_PREFIX))) {
             fprintf(stderr, "MusE: OSC: UI for plugin '%s' attempted to use reserved configure key \"%s\", ignoring\n",
                //synti->name().toAscii().data(), key);
-               synti->name().latin1(), key);
+               synti->name().toLatin1().constData(), key);
                
             return 0;
             }
@@ -2793,7 +2793,7 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
       if (message) {
             printf("MusE: on configure '%s' '%s', plugin '%s' returned error '%s'\n",
                //key, value, synti->name().toAscii().data(), message);
-               key, value, synti->name().latin1(), message);
+               key, value, synti->name().toLatin1().constData(), message);
             
             free(message);
             }

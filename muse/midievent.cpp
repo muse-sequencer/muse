@@ -137,7 +137,7 @@ void MidiEventBase::read(Xml& xml)
                         break;
                   case Xml::Text:
                         {
-                        const char*s     = tag.latin1();
+                        const char*s     = tag.toLatin1();
                         edata.data       = new unsigned char[dataLen];
                         edata.dataLen    = dataLen;
                         unsigned char* d = edata.data;

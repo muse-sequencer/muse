@@ -265,7 +265,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &midiPorts[i];
             QString name;
-            name.sprintf("%d:%s", port->portno()+1, port->portname().latin1());
+            name.sprintf("%d:%s", port->portno()+1, port->portname().toLatin1().constData());
 	    QAction *act = p->addAction(name);
 	    act->setData(i);
             

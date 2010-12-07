@@ -374,7 +374,7 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 {
                                   //printf("readClone: warning: event not in part: %d - %d -%d, discarded\n",
                                   printf("readClone: warning: event at tick:%d not in part:%s, discarded\n",
-                                    tick, npart->name().latin1());
+                                    tick, npart->name().toLatin1().constData());
                                 }
                                 else 
                                 {
@@ -419,7 +419,7 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                         }      
                         else if (tag == "uuid")
                         {
-                          uuid_parse(xml.s2().latin1(), uuid);
+                          uuid_parse(xml.s2().toLatin1().constData(), uuid);
                           if(!uuid_is_null(uuid))
                           {
                             uuidvalid = true;
@@ -672,7 +672,7 @@ void Part::read(Xml& xml, int, bool toTrack)    // int newPartOffset
                               {
                                     //printf("Part::read: warning: event not in part: %d - %d -%d, discarded\n",
                                     printf("Part::read: warning: event at tick:%d not in part:%s, discarded\n",
-                                       tick, name().latin1());
+                                       tick, name().toLatin1().constData());
                               }
                               else {
                                     _events->add(e);
@@ -738,7 +738,7 @@ void Part::read(Xml& xml, int, bool toTrack)    // int newPartOffset
                               id = xml.s2().toInt();
                         else if (tag == "uuid")
                               {
-                                uuid_parse(xml.s2().latin1(), uuid);
+                                uuid_parse(xml.s2().toLatin1().constData(), uuid);
                                 if(!uuid_is_null(uuid))
                                   uuidvalid = true;
                               }  
@@ -896,8 +896,8 @@ void Song::writeFont(int level, Xml& xml, const char* name,
    const QFont& font) const
       {
       xml.nput(level, "<%s family=\"%s\" size=\"%d\"",
-         //name, font.family().latin1(), font.pointSize());
-         name, Xml::xmlString(font.family()).latin1(), font.pointSize());
+         //name, font.family().toLatin1().constData(), font.pointSize());
+         name, Xml::xmlString(font.family()).toLatin1().constData(), font.pointSize());
       if (font.weight() != QFont::Normal)
             xml.nput(" weight=\"%d\"", font.weight());
       if (font.italic())
@@ -958,7 +958,7 @@ Part* MusE::readPart(Xml& xml)
                   case Xml::Text:
                         {
                         int trackIdx, partIdx;
-                        sscanf(tag.latin1(), "%d:%d", &trackIdx, &partIdx);
+                        sscanf(tag.toLatin1().constData(), "%d:%d", &trackIdx, &partIdx);
                         Track* track = song->tracks()->index(trackIdx);
                         if (track)
                               part = track->parts()->find(partIdx);

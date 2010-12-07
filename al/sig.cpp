@@ -484,7 +484,7 @@ void SigList::read(QDomNode node)
                   insert(std::pair<const unsigned, SigEvent*> (tick, t));
                   }
             else
-                  printf("MusE:SigList: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:SigList: unknown tag %s\n", e.tagName().toLatin1().constData());
             node = node.nextSibling();
             }
       normalize();
@@ -569,7 +569,7 @@ int SigEvent::read(QDomNode node)
             else if (e.tagName() == "denom")
                   sig.n = e.text().toInt();
             else
-                  printf("MusE:SigEvent: unknown tag %s\n", e.tagName().toLatin1().data());
+                  printf("MusE:SigEvent: unknown tag %s\n", e.tagName().toLatin1().constData());
             node = node.nextSibling();
             }
       return at;

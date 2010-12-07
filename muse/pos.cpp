@@ -53,7 +53,7 @@ Pos::Pos(unsigned t, bool ticks)
 Pos::Pos(const QString& s)
       {
       int m, b, t;
-      sscanf(s.latin1(), "%04d.%02d.%03d", &m, &b, &t);
+      sscanf(s.toLatin1(), "%04d.%02d.%03d", &m, &b, &t);
       _tick = AL::sigmap.bar2tick(m, b, t);
       _type = TICKS;
       sn    = -1;

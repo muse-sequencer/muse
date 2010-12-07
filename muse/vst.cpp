@@ -270,14 +270,14 @@ long vstHostCallback(AEffect* effect,
 static void scanVstDir(const QString& s)
       {
       if (debugMsg)
-            printf("scan vst plugin dir <%s>\n", s.latin1());
+            printf("scan vst plugin dir <%s>\n", s.toLatin1());
       QDir pluginDir(s, QString("*.dll"), QDir::Files);
       if (pluginDir.exists()) {
             const QFileInfoList* list = pluginDir.entryInfoList();
             QFileInfoListIterator it(*list);
             QFileInfo* fi;
             while((fi = it.current())) {
-                  char* path = strdup(fi->filePath().latin1());
+                  char* path = strdup(fi->filePath().toLatin1());
                   FSTInfo* info = fst_get_info(path);
                   if (info) {
                         if (info->numInputs == 0 && info->numOutputs)
@@ -422,7 +422,7 @@ void* VstSynth::instantiate()
       n.setNum(_instances);
       QString instanceName = baseName() + "-" + n;
       doSetuid();
-      const char* path = info.filePath().latin1();
+      const char* path = info.filePath().toLatin1();
 
       fstHandle = fst_load(path);
       if (fstHandle == 0) {

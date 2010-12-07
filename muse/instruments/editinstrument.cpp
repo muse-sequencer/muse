@@ -269,8 +269,8 @@ void EditInstrument::fileSave()
       
       //QFile f(instrument->filePath());
       //if (!f.open(QIODevice::WriteOnly)) {
-      //FILE* f = fopen(instrument->filePath().latin1(), "w");
-      FILE* f = fopen(workingInstrument.filePath().latin1(), "w");
+      //FILE* f = fopen(instrument->filePath().toLatin1().constData(), "w");
+      FILE* f = fopen(workingInstrument.filePath().toLatin1().constData(), "w");
       if(f == 0)
       {
         //fileSaveAs();
@@ -321,7 +321,7 @@ bool EditInstrument::fileSave(MidiInstrument* instrument, const QString& name)
       if(f == 0)
       {
         //if(debugMsg)
-        //  printf("READ IDF %s\n", fi->filePath().latin1());
+        //  printf("READ IDF %s\n", fi->filePath().toLatin1().constData());
         QString s("Creating file failed: ");
         s += QString(strerror(errno));
         QMessageBox::critical(this,
@@ -398,10 +398,10 @@ void EditInstrument::saveAs()
             Qt::NoButton) == QMessageBox::Ok)
         {
           if(QDir().mkdir(museUserInstruments))
-            printf("Created user instrument directory: %s\n", museUserInstruments.latin1());
+            printf("Created user instrument directory: %s\n", museUserInstruments.toLatin1().constData());
           else
           {
-            printf("Unable to create user instrument directory: %s\n", museUserInstruments.latin1());
+            printf("Unable to create user instrument directory: %s\n", museUserInstruments.toLatin1().constData());
             QMessageBox::critical(this, tr("MusE:"), tr("Unable to create user instrument directory\n") + museUserInstruments);
             //return;
             path = museUser;
@@ -437,7 +437,7 @@ void EditInstrument::saveAs()
                     //    QMessageBox::Ok,
                     //    QMessageBox::NoButton,
                     //    QMessageBox::NoButton);
-                    printf("EditInstrument::saveAs Error: Instrument name %s already used!\n", workingInstrument.iname().latin1());
+                    printf("EditInstrument::saveAs Error: Instrument name %s already used!\n", workingInstrument.iname().toLatin1().constData());
                     return;    
                   }  
                 }
@@ -451,7 +451,7 @@ void EditInstrument::saveAs()
       //   tr("Instrument Definition (*.idf)"));
       
       QString s = QFileDialog::getSaveFileName(path, tr("Instrument Definition (*.idf)"), this,
-         tr("MusE: Save Instrument Definition").latin1());
+         tr("MusE: Save Instrument Definition").toLatin1().constData());
       if (s.isEmpty())
             return;
       //instrument->setFilePath(s);
@@ -690,10 +690,10 @@ void EditInstrument::fileSaveAs()
             Qt::NoButton) == QMessageBox::Ok)
         {
           if(QDir().mkdir(museUserInstruments))
-            printf("Created user instrument directory: %s\n", museUserInstruments.latin1());
+            printf("Created user instrument directory: %s\n", museUserInstruments.toLatin1().constData());
           else
           {
-            printf("Unable to create user instrument directory: %s\n", museUserInstruments.latin1());
+            printf("Unable to create user instrument directory: %s\n", museUserInstruments.toLatin1().constData());
             QMessageBox::critical(this, tr("MusE:"), tr("Unable to create user instrument directory\n") + museUserInstruments);
             //return;
             path = museUser;
@@ -717,7 +717,7 @@ void EditInstrument::fileSaveAs()
       else  
       {
         sfn = QFileDialog::getSaveFileName(path, tr("Instrument Definition (*.idf)"), this,
-          tr("MusE: Save Instrument Definition").latin1());
+          tr("MusE: Save Instrument Definition").toLatin1().constData());
         if (sfn.isEmpty())
               return;
         //instrument->setFilePath(s);
@@ -1042,7 +1042,7 @@ void EditInstrument::instrumentChanged()
       if(!sel)
         return;
            
-      //printf("instrument changed: %s\n", sel->text().latin1());
+      //printf("instrument changed: %s\n", sel->text().toLatin1().constData());
       
       //if (old) {
       //if(oldMidiInstrument)
@@ -2478,7 +2478,7 @@ void EditInstrument::deletePatchClicked()
           for(iPatchGroup ipg = pg->begin(); ipg != pg->end(); ++ipg)
           {
             
-            //printf("deletePatchClicked: working patch group name:%s ad:%X group name:%s ad:%X\n", (*ipg)->name.latin1(), (unsigned int)(*ipg), group->name.latin1(), (unsigned int) group);
+            //printf("deletePatchClicked: working patch group name:%s ad:%X group name:%s ad:%X\n", (*ipg)->name.toLatin1().constData(), (unsigned int)(*ipg), group->name.toLatin1().constData(), (unsigned int) group);
             
             //if(&*ipg == group)
             if(*ipg == group)
@@ -3069,7 +3069,7 @@ void EditInstrument::addControllerClicked()
   }
   if(lnum == -1)
   {
-    printf("Add controller: Controller not found: %s\n", name.latin1());
+    printf("Add controller: Controller not found: %s\n", name.toLatin1().constData());
     return;
   }
   
@@ -3304,7 +3304,7 @@ void EditInstrument::updateController(MidiInstrument* instrument, MidiController
       if (ctrlName->text() != oc->name()) {
             oc->setName(ctrlName->text());
             
-            printf("updateController: name changed, setting dirty. name:%s c->name:%s\n", ctrlName->text().latin1(), oc->name().latin1());
+            printf("updateController: name changed, setting dirty. name:%s c->name:%s\n", ctrlName->text().toLatin1().constData(), oc->name().toLatin1().constData());
             
             instrument->setDirty(true);
             }
@@ -3396,7 +3396,7 @@ int EditInstrument::checkDirty(MidiInstrument* i, bool isClose)
             else {
                   //QFile f(i->filePath());
                   //if (!f.open(QIODevice::WriteOnly))
-                  FILE* f = fopen(i->filePath().latin1(), "w");
+                  FILE* f = fopen(i->filePath().toLatin1().constData(), "w");
                   if(f == 0)
                         //fileSaveAs();
                         saveAs();
@@ -3568,7 +3568,7 @@ const char* EditInstrument::getPatchName(int prog)
                     //&& (lbank == mp->lbank || !lb || mp->lbank == -1))
                     && (hbank == mp->hbank || mp->hbank == -1)
                     && (lbank == mp->lbank || mp->lbank == -1))
-                        return mp->name.latin1();
+                        return mp->name.toLatin1().constData();
                   }
             }
       return "---";

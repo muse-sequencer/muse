@@ -120,7 +120,7 @@ off_t AudioConverter::readAudio(SndFileR& f, unsigned offset, float** buffer, in
   // Added by Tim. p3.3.17
   //#ifdef AUDIOCONVERT_DEBUG_PRC
   //printf("AudioConverter::process %s audConv:%p sfCurFrame:%ld offset:%u channel:%d fchan:%d n:%d\n", 
-  //        f.name().latin1(), this, sfCurFrame, offset, channel, f.channels(), n);
+  //        f.name().toLatin1(), this, sfCurFrame, offset, channel, f.channels(), n);
   //#endif
   
   off_t frame     = offset;  // _spos is added before the call.
@@ -321,7 +321,7 @@ off_t SRCAudioConverter::process(SndFileR& f, float** buffer, int channel, int n
   // Added by Tim. p3.3.17
   //#ifdef AUDIOCONVERT_DEBUG_PRC
   //printf("AudioConverter::process %s audConv:%p sfCurFrame:%ld offset:%u channel:%d fchan:%d n:%d\n", 
-  //        f.name().latin1(), this, sfCurFrame, offset, channel, f.channels(), n);
+  //        f.name().toLatin1(), this, sfCurFrame, offset, channel, f.channels(), n);
   //#endif
   
 //  off_t frame     = offset;  // _spos is added before the call.
@@ -408,7 +408,7 @@ off_t SRCAudioConverter::process(SndFileR& f, float** buffer, int channel, int n
     #ifdef AUDIOCONVERT_DEBUG
     if(srcdata.output_frames_gen != outFrames)
       printf("SRCAudioConverter::process %s output_frames_gen:%ld != outFrames:%ld inFrames:%ld srcdata.input_frames_used:%ld rn:%d\n", 
-        f.name().latin1(), srcdata.output_frames_gen, outFrames, inFrames, srcdata.input_frames_used, rn); 
+        f.name().toLatin1(), srcdata.output_frames_gen, outFrames, inFrames, srcdata.input_frames_used, rn); 
     #endif
     
     // If the number of frames read by the soundfile equals the input frames, go back.
@@ -440,7 +440,7 @@ off_t SRCAudioConverter::process(SndFileR& f, float** buffer, int channel, int n
           break;
           
         #ifdef AUDIOCONVERT_DEBUG
-        printf("SRCAudioConverter::process %s attempt:%d totalOutFrames:%ld != n:%d try again\n", f.name().latin1(), attempt, totalOutFrames, n);
+        printf("SRCAudioConverter::process %s attempt:%d totalOutFrames:%ld != n:%d try again\n", f.name().toLatin1(), attempt, totalOutFrames, n);
         #endif
         
         // SRC didn't give us the number of frames we requested. 
@@ -461,7 +461,7 @@ off_t SRCAudioConverter::process(SndFileR& f, float** buffer, int channel, int n
       _sfCurFrame += rn;
       #ifdef AUDIOCONVERT_DEBUG
       printf("SRCAudioConverter::process %s rn:%zd != inFrames:%ld output_frames_gen:%ld outFrames:%ld srcdata.input_frames_used:%ld\n", 
-        f.name().latin1(), rn, inFrames, srcdata.output_frames_gen, outFrames, srcdata.input_frames_used);
+        f.name().toLatin1(), rn, inFrames, srcdata.output_frames_gen, outFrames, srcdata.input_frames_used);
       #endif
       
       // We've reached the end of the file. Convert the number of frames read.
@@ -478,7 +478,7 @@ off_t SRCAudioConverter::process(SndFileR& f, float** buffer, int channel, int n
   if(totalOutFrames != n)
   {
     #ifdef AUDIOCONVERT_DEBUG
-    printf("SRCAudioConverter::process %s totalOutFrames:%ld != n:%d\n", f.name().latin1(), totalOutFrames, n);
+    printf("SRCAudioConverter::process %s totalOutFrames:%ld != n:%d\n", f.name().toLatin1(), totalOutFrames, n);
     #endif
           
     // Let's zero the rest of it.
@@ -617,7 +617,7 @@ off_t RubberBandAudioConverter::process(SndFileR& f, float** buffer, int channel
   // Added by Tim. p3.3.17
   //#ifdef AUDIOCONVERT_DEBUG_PRC
   //printf("AudioConverter::process %s audConv:%p sfCurFrame:%ld offset:%u channel:%d fchan:%d n:%d\n", 
-  //        f.name().latin1(), this, sfCurFrame, offset, channel, f.channels(), n);
+  //        f.name().toLatin1(), this, sfCurFrame, offset, channel, f.channels(), n);
   //#endif
   
 //  off_t frame     = offset;  // _spos is added before the call.
@@ -741,7 +741,7 @@ off_t RubberBandAudioConverter::process(SndFileR& f, float** buffer, int channel
     #ifdef AUDIOCONVERT_DEBUG
     if(srcdata.output_frames_gen != outFrames)
       printf("RubberBandAudioConverter::process %s output_frames_gen:%ld != outFrames:%ld inFrames:%ld srcdata.input_frames_used:%ld rn:%d\n", 
-        f.name().latin1(), srcdata.output_frames_gen, outFrames, inFrames, srcdata.input_frames_used, rn); 
+        f.name().toLatin1(), srcdata.output_frames_gen, outFrames, inFrames, srcdata.input_frames_used, rn); 
     #endif
     
     // If the number of frames read by the soundfile equals the input frames, go back.
@@ -773,7 +773,7 @@ off_t RubberBandAudioConverter::process(SndFileR& f, float** buffer, int channel
           break;
           
         #ifdef AUDIOCONVERT_DEBUG
-        printf("RubberBandAudioConverter::process %s attempt:%d totalOutFrames:%ld != n:%d try again\n", f.name().latin1(), attempt, totalOutFrames, n);
+        printf("RubberBandAudioConverter::process %s attempt:%d totalOutFrames:%ld != n:%d try again\n", f.name().toLatin1(), attempt, totalOutFrames, n);
         #endif
         
         // We didn't get the number of frames we requested. 
@@ -794,7 +794,7 @@ off_t RubberBandAudioConverter::process(SndFileR& f, float** buffer, int channel
       _sfCurFrame += rn;
       #ifdef AUDIOCONVERT_DEBUG
       printf("RubberBandAudioConverter::process %s rn:%zd != inFrames:%ld output_frames_gen:%ld outFrames:%ld srcdata.input_frames_used:%ld\n", 
-        f.name().latin1(), rn, inFrames, srcdata.output_frames_gen, outFrames, srcdata.input_frames_used);
+        f.name().toLatin1(), rn, inFrames, srcdata.output_frames_gen, outFrames, srcdata.input_frames_used);
       #endif
       
       // We've reached the end of the file. Convert the number of frames read.
@@ -811,7 +811,7 @@ off_t RubberBandAudioConverter::process(SndFileR& f, float** buffer, int channel
   if(totalOutFrames != n)
   {
     #ifdef AUDIOCONVERT_DEBUG
-    printf("RubberBandAudioConverter::process %s totalOutFrames:%ld != n:%d\n", f.name().latin1(), totalOutFrames, n);
+    printf("RubberBandAudioConverter::process %s totalOutFrames:%ld != n:%d\n", f.name().toLatin1(), totalOutFrames, n);
     #endif
           
     // Let's zero the rest of it.

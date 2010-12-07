@@ -55,7 +55,7 @@ void FLUIDGui::loadFont()
             QMessageBox::critical(this, tr("FLUID: open Soundfile"), s);
             return;
             }
-      const char* path = pathEntry->text().latin1();
+      const char* path = pathEntry->text().toLatin1();
       int len     = strlen(path) + 1 + 3;
       unsigned char buffer[len];
       int k       = 0;

@@ -102,7 +102,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       _dl->setToolTip(tr("double click on/off"));
       _dl->setSpecialText(tr("off"));
       _dl->setFont(config.fonts[1]);
-      _dl->setBackgroundMode(Qt::PaletteMid);
+      _dl->setBackgroundRole(QPalette::Mid);
       _dl->setFrame(true);
       _dl->setFixedWidth(36);
       _dl->setFixedHeight(15);
@@ -659,7 +659,7 @@ void CtrlPanel::ctrlPopup()
                         }
                   }
             if (i == cll->end()) {
-                  printf("CtrlPanel: controller %s not found!", s.latin1());
+                  printf("CtrlPanel: controller %s not found!", s.toLatin1().constData());
                   }
             }
       }

@@ -156,7 +156,8 @@ void MusE::exportMidi()
                   //
                   MarkerList* ml = song->marker();
                   for (ciMarker m = ml->begin(); m != ml->end(); ++m) {
-                        const char* name = m->second.name().latin1();
+                        QByteArray ba = m->second.name().toLatin1();
+                        const char* name = ba.constData();
                         int len = strlen(name);
                         MidiPlayEvent ev(m->first, port, ME_META, (unsigned char*)name, len);
                         ev.setA(0x6);
@@ -166,7 +167,8 @@ void MusE::exportMidi()
                   //---------------------------------------------------
                   //    Write Copyright
                   //
-                  const char* copyright = config.copyright.latin1();
+                  QByteArray ba = config.copyright.toLatin1();
+                  const char* copyright = ba.constData();
                   if (copyright && *copyright) {
                         int len = strlen(copyright);
                         MidiPlayEvent ev(0, port, ME_META, (unsigned char*)copyright, len);
@@ -180,7 +182,7 @@ void MusE::exportMidi()
                   QString comment = track->comment();
                   if (!comment.isEmpty()) {
                         int len = comment.length();
-                        MidiPlayEvent ev(0, port, ME_META, (const unsigned char*)(comment.latin1()), len);
+                        MidiPlayEvent ev(0, port, ME_META, (const unsigned char*)(comment.toLatin1().constData()), len);
                         ev.setA(0x1);
                         l->add(ev);
                         }
@@ -265,7 +267,8 @@ void MusE::exportMidi()
             //-----------------------------------
 
             if (!track->name().isEmpty()) {
-                  const char* name = track->name().latin1();
+                  QByteArray ba = track->name().toLatin1();
+                  const char* name = ba.constData();
                   int len = strlen(name);
                   MidiPlayEvent ev(0, port, ME_META, (unsigned char*)name, len+1);
                   ev.setA(0x3);    // Meta Sequence/Track Name
@@ -277,7 +280,8 @@ void MusE::exportMidi()
             //-----------------------------------
 
             if (!track->comment().isEmpty()) {
-                  const char* comment = track->comment().latin1();
+                  QByteArray ba = track->comment().toLatin1();
+                  const char* comment = ba.constData();
                   int len = strlen(comment);
                   MidiPlayEvent ev(0, port, ME_META, (unsigned char*)comment, len+1);
                   ev.setA(0xf);    // Meta Text

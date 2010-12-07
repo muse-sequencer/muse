@@ -163,7 +163,7 @@ void Arranger::midiTrackInfoHeartBeat()
         {
           //const char* n = "<unknown>";
           const QString n(tr("<unknown>"));
-          //if(strcmp(midiTrackInfo->iPatch->text().latin1(), n) != 0)
+          //if(strcmp(midiTrackInfo->iPatch->text().toLatin1().constData(), n) != 0)
           if(midiTrackInfo->iPatch->text() != n)
           {
             //printf("Arranger::midiTrackInfoHeartBeat setting patch <unknown>\n");
@@ -181,7 +181,7 @@ void Arranger::midiTrackInfoHeartBeat()
               midiTrackInfo->iPatch->setText("???");
           }
           else
-          if(strcmp(midiTrackInfo->iPatch->text().latin1(), name) != 0)
+          if(strcmp(midiTrackInfo->iPatch->text().toLatin1().constData(), name) != 0)
           {
             //printf("Arranger::midiTrackInfoHeartBeat setting patch name\n");
           
@@ -203,7 +203,7 @@ void Arranger::midiTrackInfoHeartBeat()
             //{
                   MidiInstrument* instr = mp->instrument();
                   const char* name = instr->getPatchName(outChannel, program, song->mtype(), track->type() == Track::DRUM);
-                  if(strcmp(midiTrackInfo->iPatch->text().latin1(), name) != 0)
+                  if(strcmp(midiTrackInfo->iPatch->text().toLatin1().constData(), name) != 0)
                     midiTrackInfo->iPatch->setText(QString(name));
 
                   int hb = ((program >> 16) & 0xff) + 1;
@@ -1289,7 +1289,7 @@ void Arranger::updateMidiTrackInfo(int flags)
   
         for (int i = 0; i < MIDI_PORTS; ++i) {
               QString name;
-              name.sprintf("%d:%s", i+1, midiPorts[i].portname().latin1());
+              name.sprintf("%d:%s", i+1, midiPorts[i].portname().toLatin1().constData());
               midiTrackInfo->iOutput->insertItem(name, i);
               if (i == outPort)
                     midiTrackInfo->iOutput->setCurrentItem(i);

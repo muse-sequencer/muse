@@ -701,14 +701,14 @@ int Plugin::incReferences(int val)
   if(_handle == 0) 
   {
     //_references = 0;
-    _handle = dlopen(fi.filePath().latin1(), RTLD_NOW);
-    //handle = dlopen(fi.absFilePath().latin1(), RTLD_NOW);
+    _handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
+    //handle = dlopen(fi.absFilePath().toLatin1().constData(), RTLD_NOW);
     
     if(_handle == 0) 
     {
       fprintf(stderr, "Plugin::incReferences dlopen(%s) failed: %s\n",
-              fi.filePath().latin1(), dlerror());
-              //fi.absFilePath().latin1(), dlerror());
+              fi.filePath().toLatin1().constData(), dlerror());
+              //fi.absFilePath().toLatin1().constData(), dlerror());
       return 0;
     }
     
@@ -835,7 +835,7 @@ int Plugin::incReferences(int val)
     dlclose(_handle);
     _handle = 0;
     _references = 0;
-    fprintf(stderr, "Plugin::incReferences Error: %s no plugin!\n", fi.filePath().latin1()); 
+    fprintf(stderr, "Plugin::incReferences Error: %s no plugin!\n", fi.filePath().toLatin1().constData()); 
     return 0;
   }
         
@@ -964,7 +964,7 @@ static void loadPluginLib(QFileInfo* fi)
         //bool inPlaceBroken = LADSPA_IS_INPLACE_BROKEN(properties);
         //plugins.add(fi, descr, !inPlaceBroken);
         if(debugMsg)
-          fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s\n", fi->filePath().latin1(), descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label);
+          fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s\n", fi->filePath().toLatin1().constData(), descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label);
       
         plugins.add(fi, descr->LADSPA_Plugin, true);
       }
@@ -1009,7 +1009,7 @@ static void loadPluginLib(QFileInfo* fi)
       //bool inPlaceBroken = LADSPA_IS_INPLACE_BROKEN(properties);
       //plugins.add(fi, ladspa, descr, !inPlaceBroken);
       if(debugMsg)
-        fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s\n", fi->filePath().latin1(), descr->Name, descr->Label);
+        fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s\n", fi->filePath().toLatin1().constData(), descr->Name, descr->Label);
       plugins.add(fi, descr);
     }
   }  
@@ -1024,7 +1024,7 @@ static void loadPluginLib(QFileInfo* fi)
 static void loadPluginDir(const QString& s)
       {
       if (debugMsg)
-            printf("scan ladspa plugin dir <%s>\n", s.latin1());
+            printf("scan ladspa plugin dir <%s>\n", s.toLatin1().constData());
       QDir pluginDir(s, QString("*.so")); // ddskrjo
       if (pluginDir.exists()) {
             QFileInfoList list = pluginDir.entryInfoList();
@@ -1852,7 +1852,7 @@ bool PluginI::setControl(const QString& s, double val)
                   }
             }
       printf("PluginI:setControl(%s, %f) controller not found\n",
-         s.latin1(), val);
+         s.toLatin1().constData(), val);
       return true;
       }
 
@@ -1863,16 +1863,16 @@ bool PluginI::setControl(const QString& s, double val)
 void PluginI::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\" channel=\"%d\"",
-         //_plugin->lib().latin1(), _plugin->label().latin1(), instances * _plugin->inports());
+         //_plugin->lib().toLatin1().constData(), _plugin->label().toLatin1().constData(), instances * _plugin->inports());
          // p3.3.41
-         //_plugin->lib().latin1(), _plugin->label().latin1(), channel);
-         Xml::xmlString(_plugin->lib()).latin1(), Xml::xmlString(_plugin->label()).latin1(), channel);
+         //_plugin->lib().toLatin1().constData(), _plugin->label().toLatin1().constData(), channel);
+         Xml::xmlString(_plugin->lib()).toLatin1().constData(), Xml::xmlString(_plugin->label()).toLatin1().constData(), channel);
          
       for (int i = 0; i < controlPorts; ++i) {
             int idx = controls[i].idx;
             QString s("control name=\"%1\" val=\"%2\" /");
-            //xml.tag(level, s.arg(_plugin->portName(idx)).arg(controls[i].tmpVal).latin1());
-            xml.tag(level, s.arg(Xml::xmlString(_plugin->portName(idx)).latin1()).arg(controls[i].tmpVal).latin1());
+            //xml.tag(level, s.arg(_plugin->portName(idx)).arg(controls[i].tmpVal).toLatin1().constData());
+            xml.tag(level, s.arg(Xml::xmlString(_plugin->portName(idx)).toLatin1().constData()).arg(controls[i].tmpVal).toLatin1().constData());
             }
       if (_on == false)
             xml.intTag(level, "on", _on);
@@ -1998,7 +1998,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               if (readPreset) {
                                     if (s != plugin()->lib()) {
                                           printf("Error: Wrong preset type %s. Type must be a %s\n",
-                                             s.latin1(), plugin()->lib().latin1());
+                                             s.toLatin1().constData(), plugin()->lib().toLatin1().constData());
                                           return true;
                                           }
                                     }
@@ -2329,7 +2329,7 @@ int PluginI::oscConfigure(const char *key, const char *value)
       //const char *value = (const char *)&argv[1]->s;
 
       #ifdef PLUGIN_DEBUGIN 
-      printf("PluginI::oscConfigure effect plugin name:%s label:%s key:%s value:%s\n", _name.latin1(), _label.latin1(), key, value);
+      printf("PluginI::oscConfigure effect plugin name:%s label:%s key:%s value:%s\n", _name.toLatin1().constData(), _label.toLatin1().constData(), key, value);
       #endif
       
       #ifdef DSSI_SUPPORT
@@ -2360,7 +2360,7 @@ int PluginI::oscUpdate()
 {
       #ifdef DSSI_SUPPORT
       // Send project directory.
-      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, museProject.latin1());  // song->projectPath()
+      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // song->projectPath()
       #endif
       
       /*

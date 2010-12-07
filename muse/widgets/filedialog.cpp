@@ -37,7 +37,7 @@ static bool createDir(const QString& s)
             if (!QDir(path + sl + *it).exists()) {
                   if (!dir.mkdir(*it)) {
                         printf("mkdir failed: %s %s\n",
-                           path.toLatin1().data(), (*it).toLatin1().data());
+                           path.toLatin1().constData(), (*it).toLatin1().constData());
                         return true;
                         }
                   }
@@ -224,7 +224,7 @@ void MFileDialog::directoryChanged(const QString&)
       {
       ViewType currentView = GLOBAL_VIEW;
       QDir ndir = directory();
-      ///QString newdir = ndir.absolutePath().latin1();
+      ///QString newdir = ndir.absolutePath().toLatin1();
       QString newdir = ndir.absolutePath();
       if (buttons.projectButton->isChecked())
             currentView = PROJECT_VIEW;

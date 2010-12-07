@@ -641,7 +641,7 @@ QMenu* populateAddSynth(QWidget* parent)
     synMESS = dynamic_cast<MessSynth*>(*i);
     if(synMESS)
     {
-      mapMESS.insert( std::pair<std::string, int> (std::string(synMESS->description().lower().latin1()), ii) );
+      mapMESS.insert( std::pair<std::string, int> (std::string(synMESS->description().lower().toLatin1().constData()), ii) );
     }
     else
     {
@@ -650,7 +650,7 @@ QMenu* populateAddSynth(QWidget* parent)
       synDSSI = dynamic_cast<DssiSynth*>(*i);
       if(synDSSI)
       {
-        mapDSSI.insert( std::pair<std::string, int> (std::string(synDSSI->description().lower().latin1()), ii) );
+        mapDSSI.insert( std::pair<std::string, int> (std::string(synDSSI->description().lower().toLatin1().constData()), ii) );
       }
       else
       #endif                      
@@ -660,13 +660,13 @@ QMenu* populateAddSynth(QWidget* parent)
         synVST = dynamic_cast<VstSynth*>(*i);
         if(synVST)
         {
-          mapVST.insert( std::pair<std::string, int> (std::string(synVST->description().lower().latin1()), ii) );
+          mapVST.insert( std::pair<std::string, int> (std::string(synVST->description().lower().toLatin1().constData()), ii) );
         }
         else
         #endif                      
         
         {
-          mapOther.insert( std::pair<std::string, int> (std::string((*i)->description().lower().latin1()), ii) );
+          mapOther.insert( std::pair<std::string, int> (std::string((*i)->description().lower().toLatin1().constData()), ii) );
         }
       }
     }
@@ -1551,7 +1551,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       QString prjPath(getenv("HOME"));
       prjPath += QString("/.musePrj");
-      FILE* f = fopen(prjPath.latin1(), "r");
+      FILE* f = fopen(prjPath.toLatin1().constData(), "r");
       if (f == 0) {
             perror("open projectfile");
             for (int i = 0; i < PROJECT_LIST_LEN; ++i)
@@ -1609,7 +1609,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
                   name = projectList[0] ? *projectList[0] : QString("untitled");
             else
                   name = argv[0];
-            printf("starting with selected song %s\n", config.startSong.latin1());
+            printf("starting with selected song %s\n", config.startSong.toLatin1().constData());
             }
       else if (config.startMode == 1) {
             printf("starting with default template\n");
@@ -1617,7 +1617,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
             useTemplate = true;
             }
       else if (config.startMode == 2) {
-            printf("starting with pre configured song %s\n", config.startSong.latin1());
+            printf("starting with pre configured song %s\n", config.startSong.toLatin1().constData());
             name = config.startSong;
       }
       song->blockSignals(false);
@@ -1738,7 +1738,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             project.setFile("untitled");
             }
       else {
-            printf("Setting project path to %s\n", fi.dirPath(true).latin1());
+            printf("Setting project path to %s\n", fi.dirPath(true).toLatin1().constData());
             museProject = fi.dirPath(true);
             project.setFile(name);
             }
@@ -2001,13 +2001,13 @@ bool MusE::save(const QString& name, bool overwriteWarn)
       //cacheJackRouteNames();
       
       if (QFile::exists(name)) {
-            backupCommand.sprintf("cp \"%s\" \"%s.backup\"", name.latin1(), name.latin1());
+            backupCommand.sprintf("cp \"%s\" \"%s.backup\"", name.toLatin1().constData(), name.toLatin1().constData());
             }
       else if (QFile::exists(name + QString(".med"))) {
-            backupCommand.sprintf("cp \"%s.med\" \"%s.med.backup\"", name.latin1(), name.latin1());
+            backupCommand.sprintf("cp \"%s.med\" \"%s.med.backup\"", name.toLatin1().constData(), name.toLatin1().constData());
             }
       if (!backupCommand.isEmpty())
-            system(backupCommand.latin1());
+            system(backupCommand.toLatin1().constData());
 
       bool popenFlag;
       FILE* f = fileOpen(this, name, QString(".med"), "w", popenFlag, false, overwriteWarn);
@@ -2022,7 +2022,7 @@ bool MusE::save(const QString& name, bool overwriteWarn)
             QMessageBox::critical(this,
                tr("MusE: Write File failed"), s);
             popenFlag? pclose(f) : fclose(f);
-            unlink(name.latin1());
+            unlink(name.toLatin1().constData());
             return false;
             }
       else {
@@ -2086,10 +2086,10 @@ void MusE::closeEvent(QCloseEvent* event)
       // save "Open Recent" list
       QString prjPath(getenv("HOME"));
       prjPath += "/.musePrj";
-      FILE* f = fopen(prjPath.latin1(), "w");
+      FILE* f = fopen(prjPath.toLatin1().constData(), "w");
       if (f) {
             for (int i = 0; i < PROJECT_LIST_LEN; ++i) {
-                  fprintf(f, "%s\n", projectList[i] ? projectList[i]->latin1() : "");
+                  fprintf(f, "%s\n", projectList[i] ? projectList[i]->toLatin1().constData() : "");
                   }
             fclose(f);
             }
@@ -2415,7 +2415,7 @@ void MusE::routingPopupMenuActivated(Track* track, int n)
             {  
               QString s(pup->text(n));
               
-              //printf("AudioStrip::routingPopupMenuActivated audio text:%s\n", s.latin1());
+              //printf("AudioStrip::routingPopupMenuActivated audio text:%s\n", s.toLatin1().constData());
               
               if(track->type() == Track::AUDIO_OUTPUT)
               {
@@ -2764,7 +2764,7 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
       for (int i = 0; i < channel; ++i) 
       {
             char buffer[128];
-            snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+            snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
             MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
             pup->insertItem(titel);
   
@@ -3052,7 +3052,7 @@ PopupView* MusE::prepareRoutingPopupView(Track* track, bool dst)
       for (int i = 0; i < channel; ++i) 
       {
             char buffer[128];
-            snprintf(buffer, 128, "%s %d", tr("Channel").latin1(), i+1);
+            snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
             MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
             pup->insertItem(titel);
   
@@ -3354,7 +3354,7 @@ void MusE::openRecentMenu()
       for (int i = 0; i < PROJECT_LIST_LEN; ++i) {
             if (projectList[i] == 0)
                   break;
-            const char* path = projectList[i]->latin1();
+            const char* path = projectList[i]->toLatin1().constData();
             const char* p = strrchr(path, '/');
             if (p == 0)
                   p = path;
@@ -3749,7 +3749,7 @@ int main(int argc, char* argv[])
 //      while ((i = getopt(argc, argv, "ahvdDmMsP:py")) != EOF) {
 //#endif
       
-      while ((i = getopt(argc, argv, optstr.latin1())) != EOF) {
+      while ((i = getopt(argc, argv, optstr.toLatin1().constData())) != EOF) {
       char c = (char)i;
             switch (c) {
                   case 'v': printVersion(argv[0]); return 0;
@@ -3850,11 +3850,11 @@ int main(int argc, char* argv[])
       ++argc;
 
       if (debugMsg) {
-            printf("global lib:       <%s>\n", museGlobalLib.latin1());
-            printf("global share:     <%s>\n", museGlobalShare.latin1());
-            printf("muse home:        <%s>\n", museUser.latin1());
-            printf("project dir:      <%s>\n", museProject.latin1());
-            printf("user instruments: <%s>\n", museUserInstruments.latin1());
+            printf("global lib:       <%s>\n", museGlobalLib.toLatin1().constData());
+            printf("global share:     <%s>\n", museGlobalShare.toLatin1().constData());
+            printf("muse home:        <%s>\n", museUser.toLatin1().constData());
+            printf("project dir:      <%s>\n", museProject.toLatin1().constData());
+            printf("user instruments: <%s>\n", museUserInstruments.toLatin1().constData());
             }
 
       static QTranslator translator(0);
@@ -3866,7 +3866,7 @@ int main(int argc, char* argv[])
                   QString lp(museGlobalShare);
                   lp += QString("/locale");
                   if (translator.load(loc, lp) == false) {
-                        printf("no locale <%s>/<%s>\n", loc.latin1(), lp.latin1());
+                        printf("no locale <%s>/<%s>\n", loc.toLatin1().constData(), lp.toLatin1().constData());
                         }
                   }
             app.installTranslator(&translator);
@@ -3901,7 +3901,7 @@ int main(int argc, char* argv[])
             QStringList::Iterator it = list.begin();
             printf("QtLibraryPath:\n");
             while(it != list.end()) {
-                  printf("  <%s>\n", (*it).latin1());
+                  printf("  <%s>\n", (*it).toLatin1().constData());
                   ++it;
                   }
             }

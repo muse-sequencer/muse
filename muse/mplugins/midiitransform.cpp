@@ -900,7 +900,7 @@ void readMidiInputTransform(Xml& xml)
                   case Xml::TagEnd:
                         if (xml.s1() == "midiInputTransform") {
 // printf("midi Input transform <%s> apply %d\n",
-//   trans.name.latin1(), apply);
+//   trans.name.toLatin1().constData(), apply);
                               
                               // By T356. A previous bug caused some .med files to grow very large
                               //  with duplicate transforms. Here we can eliminate those duplicates.
@@ -1616,7 +1616,7 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
       for (i = mtlist.begin(); i != mtlist.end(); ++i) {
             if (item->text() == (*i)->name) {
                   if(debugMsg)
-                    printf("found %s\n", (*i)->name.latin1());
+                    printf("found %s\n", (*i)->name.toLatin1().constData());
                   cmt = *i;
                   if (cmodul != -1) {
                         modules[cmodul].transform = *i;

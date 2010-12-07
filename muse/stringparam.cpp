@@ -89,7 +89,7 @@ void StringParamMap::read(Xml& xml, const QString& name)
             if(tag == name) 
             {
               // Add or modify the item.
-              set(n.latin1(), value.latin1());
+              set(n.toLatin1(), value.toLatin1());
               return;
             }
       default:

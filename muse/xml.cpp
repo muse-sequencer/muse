@@ -197,7 +197,7 @@ Xml::Token Xml::parse()
       nextc();
       if (c == EOF) {
             printf("unexpected EOF reading *.med file at level %d, line %d, <%s><%s><%s>\n",
-               level, _line, _tag.latin1(), _s1.latin1(), _s2.latin1());
+               level, _line, _tag.toLatin1().constData(), _s1.toLatin1().constData(), _s2.toLatin1().constData());
             return level == 0 ? End : Error;
             }
 
@@ -485,7 +485,7 @@ double Xml::parseDouble()
 void Xml::unknown(const char* s)
       {
       printf("%s: unknown tag <%s> at line %d\n",
-         s, _s1.latin1(), _line+1);
+         s, _s1.toLatin1().constData(), _line+1);
       parse1();
       }
 
@@ -598,14 +598,14 @@ void Xml::floatTag(int level, const char* name, float val)
       {
       putLevel(level);
       QString s("<%1>%2</%3>\n");
-      fprintf(f, "%s", s.arg(name).arg(val).arg(name).latin1());
+      fprintf(f, "%s", s.arg(name).arg(val).arg(name).toLatin1().constData());
       }
 
 void Xml::doubleTag(int level, const char* name, double val)
       {
       putLevel(level);
       QString s("<%1>%2</%3>\n");
-      fprintf(f, "%s", s.arg(name).arg(val).arg(name).latin1());
+      fprintf(f, "%s", s.arg(name).arg(val).arg(name).toLatin1().constData());
       }
 
 void Xml::strTag(int level, const char* name, const char* val)
@@ -665,7 +665,7 @@ void Xml::qrectTag(int level, const char* name, const QRect& r)
 
 void Xml::strTag(int level, const char* name, const QString& val)
       {
-      strTag(level, name, val.latin1());
+      strTag(level, name, val.toLatin1().constData());
       }
 
 //---------------------------------------------------------

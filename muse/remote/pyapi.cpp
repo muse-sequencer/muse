@@ -113,7 +113,7 @@ PyObject* getTrackNames(PyObject*, PyObject*)
       PyObject* res = Py_BuildValue("[]");
       for (ciTrack t = tracks->begin(); t != tracks->end(); ++t) {
             Track* track = *t;
-            PyObject* ptrackname = Py_BuildValue("s", track->name().latin1());
+            PyObject* ptrackname = Py_BuildValue("s", track->name().toLatin1());
             PyList_Append(res, ptrackname);
             Py_DECREF(ptrackname);
             }
@@ -697,7 +697,7 @@ PyObject* getSelectedTrack(PyObject*, PyObject*)
       for (ciTrack t = tracks->begin(); t != tracks->end(); ++t) {
             Track* track = *t;
             if (track->selected())
-                  return Py_BuildValue("s", track->name().latin1());
+                  return Py_BuildValue("s", track->name().toLatin1());
             }
 
       Py_INCREF(Py_None);
@@ -746,8 +746,8 @@ PyObject* getTrackEffects(PyObject*, PyObject* args)
       const Pipeline* pipeline = track->efxPipe();
       for (int i = 0; i < PipelineDepth; i++) {
             QString name = pipeline->name(i);
-            printf("fx %d name: %s\n", i, name.latin1());
-            PyObject* pyname = Py_BuildValue("s", name.latin1());
+            printf("fx %d name: %s\n", i, name.toLatin1());
+            PyObject* pyname = Py_BuildValue("s", name.toLatin1());
             PyList_Append(pyfxnames, pyname);
             Py_DECREF(pyname);
             }
@@ -897,7 +897,7 @@ PyObject* getOutputRoute(PyObject*, PyObject* args)
                  // for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
                  //       if (ir->type == 0 && ir->track == track) {
                  //             s += "*";
-                 //             PyList_Append(routes, Py_BuildValue("s", s.latin1()));
+                 //             PyList_Append(routes, Py_BuildValue("s", s.toLatin1()));
                  //             break;
                  //             }
                  //       }

@@ -26,9 +26,9 @@ void MusE::startHelpBrowser()
       {
       QString lang(getenv("LANG"));
       QString museHelp = museGlobalShare + QString("/html/index_") + lang + QString(".html");
-      if (access(museHelp.latin1(), R_OK) != 0) {
+      if (access(museHelp.toLatin1(), R_OK) != 0) {
     	      museHelp = museGlobalShare + QString("/html/index.html");
-            if (access(museHelp.latin1(), R_OK) != 0) {
+            if (access(museHelp.toLatin1(), R_OK) != 0) {
                   QString info(tr("no help found at: "));
                   info += museHelp;
                   QMessageBox::critical(this, tr("MusE: Open Help"), info);
@@ -84,7 +84,7 @@ void MusE::launchBrowser(QString &whereTo)
       {
       char testStr[40];
       strcpy(testStr, "which ");
-      strcat(testStr, config.helpBrowser.latin1());
+      strcat(testStr, config.helpBrowser.toLatin1());
       if (config.helpBrowser == "" || system(testStr))
           {
           QMessageBox::information( this, "Unable to launch help",

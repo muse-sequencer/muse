@@ -298,7 +298,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     srcTotalOutChans = 1;
   
   #ifdef NODE_DEBUG
-  printf("MusE: AudioTrack::copyData name:%s processed:%d\n", name().latin1(), processed());
+  printf("MusE: AudioTrack::copyData name:%s processed:%d\n", name().toLatin1().constData(), processed());
   #endif
   
   // Special consideration for metronome: It is not part of the track list,
@@ -385,7 +385,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     if(off() || !getData(pos, srcTotalOutChans, nframes, buffer) || (isMute() && !_prefader)) 
     {
       #ifdef NODE_DEBUG
-      printf("MusE: AudioTrack::copyData name:%s dstChannels:%d zeroing buffers\n", name().latin1(), dstChannels);
+      printf("MusE: AudioTrack::copyData name:%s dstChannels:%d zeroing buffers\n", name().toLatin1().constData(), dstChannels);
       #endif
       
       // No data was available. Zero the supplied buffers.
@@ -430,7 +430,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     //---------------------------------------------------
 
     // p3.3.41
-    //fprintf(stderr, "AudioTrack::copyData %s efx apply srcChans:%d\n", name().latin1(), srcChans);
+    //fprintf(stderr, "AudioTrack::copyData %s efx apply srcChans:%d\n", name().toLatin1().constData(), srcChans);
     _efxPipe->apply(srcChans, nframes, buffer);
 
     //---------------------------------------------------
@@ -707,7 +707,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   
   //Added by Tim. p3.3.16
   #ifdef NODE_DEBUG
-  printf("MusE: AudioTrack::addData name:%s processed:%d\n", name().latin1(), processed());
+  printf("MusE: AudioTrack::addData name:%s processed:%d\n", name().toLatin1().constData(), processed());
   #endif
   
   if (off())
@@ -842,7 +842,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
 
     // p3.3.41
     //fprintf(stderr, "AudioTrack::addData %s efx apply srcChans:%d nframes:%ld %e %e %e %e\n", 
-    //        name().latin1(), srcChans, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
+    //        name().toLatin1().constData(), srcChans, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
     _efxPipe->apply(srcChans, nframes, buffer);
     // p3.3.41
     //fprintf(stderr, "AudioTrack::addData after efx: %e %e %e %e\n", 
@@ -1167,7 +1167,7 @@ void AudioTrack::readRecfile(Xml& xml)
                                     recFile()->setFormat(format, channels, sampleRate);
                                     if (recFile()->openWrite()) {
                                           fprintf(stderr, "create wave file(%s) failed: %s\n",
-                                             path.latin1(), recFile()->strerror().latin1());
+                                             path.toLatin1().constData(), recFile()->strerror().toLatin1().constData());
                                           delete _recFile;
                                           _recFile = 0;
                                           }
@@ -1237,7 +1237,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       RouteList* rl = inRoutes();
       
       #ifdef NODE_DEBUG
-      printf("AudioTrack::getData name:%s inRoutes:%d\n", name().latin1(), rl->size());
+      printf("AudioTrack::getData name:%s inRoutes:%d\n", name().toLatin1().constData(), rl->size());
       #endif
       
       iRoute ir = rl->begin();
@@ -1248,7 +1248,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
         return false;
         
       #ifdef NODE_DEBUG
-      printf("    calling copyData on %s...\n", ir->track->name().latin1());
+      printf("    calling copyData on %s...\n", ir->track->name().toLatin1().constData());
       #endif
       
       // p3.3.38
@@ -1260,12 +1260,12 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
                                          nframes, buffer);
       
       // p3.3.41
-      //fprintf(stderr, "AudioTrack::getData %s data: nframes:%ld %e %e %e %e\n", name().latin1(), nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
+      //fprintf(stderr, "AudioTrack::getData %s data: nframes:%ld %e %e %e %e\n", name().toLatin1().constData(), nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
       
       ++ir;
       for (; ir != rl->end(); ++ir) {
             #ifdef NODE_DEBUG
-            printf("    calling addData on %s...\n", ir->track->name().latin1());
+            printf("    calling addData on %s...\n", ir->track->name().toLatin1().constData());
             #endif
               
             if(ir->track->isMidiTrack())
@@ -1320,7 +1320,7 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
                       
                       // p3.3.41
                       //fprintf(stderr, "AudioInput::getData %s Jack port %p efx apply channels:%d nframes:%ld %e %e %e %e\n", 
-                      //        name().latin1(), jackPort, channels, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
+                      //        name().toLatin1().constData(), jackPort, channels, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
                   }
             } 
             else 
@@ -1337,7 +1337,7 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
                   
                   // p3.3.41
                   //fprintf(stderr, "AudioInput::getData %s No Jack port efx apply channels:%d nframes:%ld %e %e %e %e\n", 
-                  //        name().latin1(), channels, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
+                  //        name().toLatin1().constData(), channels, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
             }
       }
       return true;
@@ -1353,7 +1353,7 @@ void AudioInput::setName(const QString& s)
       if (!checkAudioDevice()) return;
       for (int i = 0; i < channels(); ++i) {
             char buffer[128];
-            snprintf(buffer, 128, "%s-%d", _name.latin1(), i);
+            snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
             if (jackPorts[i])
                   audioDevice->setPortName(jackPorts[i], buffer);
             else {
@@ -1563,7 +1563,7 @@ void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
 {
       //Added by Tim. p3.3.16
       #ifdef NODE_DEBUG
-      printf("MusE: AudioOutput::process name:%s processed:%d\n", name().latin1(), processed());
+      printf("MusE: AudioOutput::process name:%s processed:%d\n", name().toLatin1().constData(), processed());
       #endif
       
       for (int i = 0; i < _channels; ++i) {
@@ -1637,7 +1637,7 @@ void AudioOutput::setName(const QString& s)
       if (!checkAudioDevice()) return;
       for (int i = 0; i < channels(); ++i) {
             char buffer[128];
-            snprintf(buffer, 128, "%s-%d", _name.latin1(), i);
+            snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
             if (jackPorts[i]) {
                   audioDevice->setPortName(jackPorts[i], buffer);
                   }

@@ -275,7 +275,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
               else
                     x2 = xp+200;
               
-              //printf("MTScale::pdraw marker %s xp:%d y:%d h:%d r.x:%d r.w:%d\n", m->second.name().latin1(), xp, height(), y, r.x(), r.width());
+              //printf("MTScale::pdraw marker %s xp:%d y:%d h:%d r.x:%d r.w:%d\n", m->second.name().toLatin1(), xp, height(), y, r.x(), r.width());
   
               // Must be reasonable about very low negative x values! With long songs > 15min
               //  and with high horizontal magnification, 'ghost' drawings appeared,

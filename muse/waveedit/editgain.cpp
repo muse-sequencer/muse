@@ -18,7 +18,7 @@ EditGain::EditGain(QWidget* parent, int initGainValue)
  : QDialog(parent)
       {
          setupUi(this);
-         sliderGain->setValue(sliderGain->maxValue() - initGainValue);
+         sliderGain->setValue(sliderGain->maximum() - initGainValue);
          connect(buttonReset, SIGNAL(pressed()), this, SLOT(resetPressed()));
          connect(buttonApply, SIGNAL(pressed()), this, SLOT(applyPressed()));
          connect(buttonCancel,SIGNAL(pressed()), this, SLOT(cancelPressed()));
@@ -70,7 +70,7 @@ void EditGain::cancelPressed()
  */
 void EditGain::gainChanged(int value)
       {
-      gain = sliderGain->maxValue() - value;
+      gain = sliderGain->maximum() - value;
       if (sliderGain->value() != 100) {
             buttonReset->setEnabled(true);
             buttonApply->setEnabled(true);

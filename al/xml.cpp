@@ -242,10 +242,10 @@ void readProperties(QObject* o, QDomNode node)
 
       QDomElement e = node.toElement();
       QString tag(e.tagName());
-      int idx = meta->indexOfProperty(tag.toLatin1().data());
+      int idx = meta->indexOfProperty(tag.toLatin1().constData());
       if (idx == -1) {
             printf("MusE:%s: unknown tag %s\n",
-               meta->className(), tag.toLatin1().data());
+               meta->className(), tag.toLatin1().constData());
             return;
             }
       QMetaProperty p = meta->property(idx);
@@ -326,9 +326,9 @@ void domError(QDomNode node)
             s += k;
             }
       fprintf(stderr, "%s: Unknown Node <%s>, type %d\n",
-         s.toLatin1().data(), tag.toLatin1().data(), node.nodeType());
+         s.toLatin1().constData(), tag.toLatin1().constData(), node.nodeType());
       if (node.isText()) {
-            fprintf(stderr, "  text node <%s>\n", node.toText().data().toLatin1().data());
+            fprintf(stderr, "  text node <%s>\n", node.toText().data().toLatin1().constData());
             }
       }
 
@@ -353,9 +353,9 @@ void domNotImplemented(QDomNode node)
             s += k;
             }
       fprintf(stderr, "%s: Node not implemented: <%s>, type %d\n",
-         s.toLatin1().data(), tag.toLatin1().data(), node.nodeType());
+         s.toLatin1().constData(), tag.toLatin1().constData(), node.nodeType());
       if (node.isText()) {
-            fprintf(stderr, "  text node <%s>\n", node.toText().data().toLatin1().data());
+            fprintf(stderr, "  text node <%s>\n", node.toText().data().toLatin1().constData());
             }
       }
 }

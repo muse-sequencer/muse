@@ -45,10 +45,10 @@ void UndoOp::dump()
       switch(type) {
             case AddTrack:
             case DeleteTrack:
-                  printf("%d %s\n", trackno, oTrack->name().latin1());
+                  printf("%d %s\n", trackno, oTrack->name().toLatin1().constData());
                   break;
             case ModifyTrack:
-                  printf("%d <%s>-<%s>\n", trackno, oTrack->name().latin1(), nTrack->name().latin1());
+                  printf("%d <%s>-<%s>\n", trackno, oTrack->name().toLatin1().constData(), nTrack->name().toLatin1().constData());
                   break;
             case AddPart:
             case DeletePart:
@@ -221,7 +221,7 @@ void Song::doUndo2()
                   case UndoOp::ModifyTrack:
                         {
                         // Added by Tim. p3.3.6
-                        //printf("Song::doUndo2 ModifyTrack #1 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().latin1(), i->nTrack, i->nTrack->name().latin1());
+                        //printf("Song::doUndo2 ModifyTrack #1 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
                         
                         // Unchain the track parts, but don't touch the ref counts.
                         unchainTrackParts(i->nTrack, false);
@@ -233,7 +233,7 @@ void Song::doUndo2()
                         *(i->nTrack) = *(i->oTrack);
                         
                         // Added by Tim. p3.3.6
-                        //printf("Song::doUndo2 ModifyTrack #2 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().latin1(), i->nTrack, i->nTrack->name().latin1());
+                        //printf("Song::doUndo2 ModifyTrack #2 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
                         
                         // Prevent delete i->oTrack from crashing.
                         switch(i->oTrack->type())
@@ -265,7 +265,7 @@ void Song::doUndo2()
                         chainTrackParts(i->nTrack, false);
 
                         // Added by Tim. p3.3.6
-                        //printf("Song::doUndo2 ModifyTrack #3 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().latin1(), i->nTrack, i->nTrack->name().latin1());
+                        //printf("Song::doUndo2 ModifyTrack #3 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
                         
                         // Connect and register ports.
                         switch(i->nTrack->type())
@@ -686,7 +686,7 @@ void Song::undoOp(UndoOp::UndoType type, int n, Track* oldTrack, Track* newTrack
       i.oTrack  = oldTrack;
       i.nTrack  = newTrack;
       // Added by Tim. p3.3.6
-      //printf("Song::undoOp ModifyTrack oTrack %p %s nTrack %p %s\n", i.oTrack, i.oTrack->name().latin1(), i.nTrack, i.nTrack->name().latin1());
+      //printf("Song::undoOp ModifyTrack oTrack %p %s nTrack %p %s\n", i.oTrack, i.oTrack->name().toLatin1().constData(), i.nTrack, i.nTrack->name().toLatin1().constData());
                         
       addUndo(i);
       }

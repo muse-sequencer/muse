@@ -146,7 +146,7 @@ void EffectRack::choosePlugin(QListWidgetItem* it, bool replace)
             PluginI* plugi = new PluginI();
             if (plugi->initPluginInstance(plugin, track->channels())) {
                   printf("cannot instantiate plugin <%s>\n",
-                      plugin->name().latin1());
+                      plugin->name().toLatin1().constData());
                   delete plugi;
                   return;
                   }
@@ -396,7 +396,7 @@ void EffectRack::startDrag(int idx)
       QString xmlconf;
       xml.dump(xmlconf);
       
-      QByteArray data(xmlconf.toLatin1().data());
+      QByteArray data(xmlconf.toLatin1().constData());
       QMimeData* md = new QMimeData();
       
       md->setData("text/x-muse-plugin", data);
@@ -510,7 +510,7 @@ void EffectRack::mousePressEvent(QMouseEvent *event)
 
 void EffectRack::mouseMoveEvent(QMouseEvent *event)
       {
-      if (event->state() & Qt::LeftButton) {
+      if (event->buttons() & Qt::LeftButton) {
             Pipeline* pipe = track->efxPipe();
             if(!pipe)
               return;

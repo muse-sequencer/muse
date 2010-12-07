@@ -445,7 +445,7 @@ void VAMGui::setPreset(Preset* preset)
 	putchar(0x7c);    // mess
 	putchar(0x2);     // vam
 	putchar(0x3);     // setPreset
-	const char* name = preset->name.latin1();
+	const char* name = preset->name.toLatin1();
 	while (*name)
 		putchar(*name++ & 0x7f);
 	putchar(0);
@@ -603,7 +603,7 @@ void VAMGui::loadPresetsPressed()
 				break;
 			case Xml::Attribut:
 				if(mode == 1 && tag == "iname") {
-//					fprintf(stderr, "%s\n", xml.s2().latin1());
+//					fprintf(stderr, "%s\n", xml.s2().toLatin1());
 					if(xml.s2() != "vam-1.0")
 						return;
 					else mode = 2;

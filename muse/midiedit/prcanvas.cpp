@@ -507,7 +507,7 @@ bool PianoCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       
       // Added by T356. 
       if(((int)newEvent.endTick() - (int)part->lenTick()) > 0)  
-        printf("PianoCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().latin1());
+        printf("PianoCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().toLatin1().constData());
       
       if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
             // Indicate no undo, and do not do port controller values and clone parts. 
@@ -1411,7 +1411,8 @@ void PianoCanvas::copy()
 
 void PianoCanvas::pasteAt(const QString& pt, int pos)
       {
-      const char* p = pt.latin1();
+      QByteArray ba = pt.toLatin1();
+      const char* p = ba.constData();
       Xml xml(p);
       for (;;) {
             Xml::Token token = xml.parse();

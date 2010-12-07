@@ -271,18 +271,18 @@ static void readConfigMidiPort(Xml& xml)
                               MidiDevice* dev = midiDevices.find(device);
                               
                               //if(debugMsg && !dev)
-                              //  fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.latin1());
+                              //  fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.toLatin1().constData());
                                 
                               if(!dev && type == MidiDevice::JACK_MIDI)
                               {
                                 if(debugMsg)
-                                  fprintf(stderr, "readConfigMidiPort: creating jack midi device %s\n", device.latin1());
+                                  fprintf(stderr, "readConfigMidiPort: creating jack midi device %s\n", device.toLatin1().constData());
                                 //dev = MidiJackDevice::createJackMidiDevice(device, openFlags);
                                 dev = MidiJackDevice::createJackMidiDevice(device);  // p3.3.55
                               }
                               
                               if(debugMsg && !dev)
-                                fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.latin1());
+                                fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.toLatin1().constData());
                               
                               MidiPort* mp = &midiPorts[idx];
                               mp->syncInfo().copyParams(tmpSi);
@@ -367,7 +367,7 @@ static void readConfigMidiSyncInfo(Xml& xml)
                             si.setMTCOut(sendMTC);
                           }
                           else
-                            fprintf(stderr, "Read configuration: Sync device: %s not found\n", device.latin1());
+                            fprintf(stderr, "Read configuration: Sync device: %s not found\n", device.toLatin1().constData());
                             
                           return;
                         }
@@ -732,7 +732,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               xml.parseInt();
                         else if (tag == "mtcoffset") {
                               QString qs(xml.parse1());
-                              const char* str = qs.latin1();
+                              QByteArray ba = qs.toLatin1();
+                              const char* str = ba.constData();
                               int h, m, s, f, sf;
                               sscanf(str, "%d:%d:%d:%d:%d", &h, &m, &s, &f, &sf);
                               mtcOffset = MTC(h, m, s, f, sf);
@@ -805,7 +806,7 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               xml.unknown("configuration");
                         break;
                   case Xml::Text:
-                        printf("text <%s>\n", xml.s1().latin1());
+                        printf("text <%s>\n", xml.s1().toLatin1().constData());
                         break;
                   case Xml::Attribut:
                         if (readOnlySequencer)
@@ -869,10 +870,10 @@ static void probeMachineSpecificConfiguration()
 
 bool readConfiguration()
       {
-      FILE* f = fopen(configName.latin1(), "r");
+      FILE* f = fopen(configName.toLatin1().constData(), "r");
       if (f == 0) {
             if (debugMsg || debugMode)
-                  fprintf(stderr, "NO Config File <%s> found\n", configName.latin1());
+                  fprintf(stderr, "NO Config File <%s> found\n", configName.toLatin1().constData());
 
             // if the config file does not exist launch probeMachineSpecificConfiguration
             probeMachineSpecificConfiguration();
@@ -1018,10 +1019,10 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
 
 void MusE::writeGlobalConfiguration() const
       {
-      FILE* f = fopen(configName.latin1(), "w");
+      FILE* f = fopen(configName.toLatin1().constData(), "w");
       if (f == 0) {
             printf("save configuration to <%s> failed: %s\n",
-               configName.latin1(), strerror(errno));
+               configName.toLatin1().constData(), strerror(errno));
             return;
             }
       Xml xml(f);
@@ -1428,7 +1429,7 @@ void MixerConfig::write(int level, Xml& xml)
 //void MixerConfig::write(int level, Xml& xml, const char* name)
       {
       //xml.stag(QString(name));
-      //xml.tag(level++, name.latin1());
+      //xml.tag(level++, name.toLatin1().constData());
       xml.tag(level++, "Mixer");
       //xml.tag(level++, name);
       
@@ -1447,7 +1448,7 @@ void MixerConfig::write(int level, Xml& xml)
       xml.intTag(level, "showSyntiTracks",  showSyntiTracks);
       
       //xml.etag(name);
-      //xml.etag(level, name.latin1());
+      //xml.etag(level, name.toLatin1().constData());
       xml.etag(level, "Mixer");
       //xml.etag(level, name);
       }
@@ -1489,7 +1490,7 @@ void MixerConfig::read(Xml& xml)
                         else if (tag == "showSyntiTracks")
                               showSyntiTracks = xml.parseInt();
                         else
-                              //xml.unknown(name.latin1());
+                              //xml.unknown(name.toLatin1().constData());
                               xml.unknown("Mixer");
                         break;
                   case Xml::TagEnd:
