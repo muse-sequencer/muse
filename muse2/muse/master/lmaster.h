@@ -115,6 +115,8 @@ class LMaster : public MidiEditor {
       int editorColumn;
       bool editingNewItem;
 
+      QAction *tempoAction, *signAction, *posAction, *valAction, *delAction;
+
    private slots:
       void select(QTreeWidgetItem*, QTreeWidgetItem*);
       void itemDoubleClicked(QTreeWidgetItem* item);

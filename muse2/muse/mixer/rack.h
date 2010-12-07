@@ -9,13 +9,14 @@
 #ifndef __RACK_H__
 #define __RACK_H__
 
-#include <q3listbox.h>
-#include <QDragLeaveEvent>
-//Added by qt3to4:
-#include <QMouseEvent>
-#include <QDropEvent>
-#include <QDragEnterEvent>
 #include "xml.h"
+
+#include <QListWidget>
+
+class QDragEnterEvent;
+class QDragLeaveEvent;
+class QDropEvent;
+class QMouseEvent;
 
 class AudioTrack;
 
@@ -23,7 +24,7 @@ class AudioTrack;
 //   EffectRack
 //---------------------------------------------------------
 
-class EffectRack : public Q3ListBox {
+class EffectRack : public QListWidget {
       AudioTrack* track;
       Q_OBJECT
 
@@ -34,19 +35,21 @@ class EffectRack : public Q3ListBox {
       void initPlugin(Xml xml, int idx);
       QPoint dragPos;
       void savePreset(int idx);
+      void choosePlugin(QListWidgetItem* item, bool replace = false);
 
    private slots:
-      void menuRequested(Q3ListBoxItem*, const QPoint&);
-      void doubleClicked(Q3ListBoxItem*);
+      void menuRequested(QListWidgetItem*);
+      void doubleClicked(QListWidgetItem*);
       void songChanged(int);
+      void updateContents();
 
    protected:
       void dropEvent(QDropEvent *event);
       void dragEnterEvent(QDragEnterEvent *event);
       void contentsDropEvent(QDropEvent *event);
       void contentsDragEnterEvent(QDragEnterEvent *event);
-      void contentsMousePressEvent(QMouseEvent *event);
-      void contentsMouseMoveEvent(QMouseEvent *event);
+      void mousePressEvent(QMouseEvent *event);
+      void mouseMoveEvent(QMouseEvent *event);
    
    public:
       EffectRack(QWidget*, AudioTrack* t);

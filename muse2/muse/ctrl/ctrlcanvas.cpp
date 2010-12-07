@@ -8,15 +8,9 @@
 #include <stdio.h>
 #include <values.h>
 
-#include <qlayout.h>
-#include <qpainter.h>
-#include <qtoolbutton.h>
-#include <q3popupmenu.h>
-#include <qlabel.h>
-#include <qcursor.h>
-//Added by qt3to4:
+#include <QPainter>
+#include <QCursor>
 #include <QMouseEvent>
-#include <QEvent>
 
 #include "globals.h"
 #include "ctrledit.h"
@@ -611,7 +605,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
       {
       start = event->pos();
       Tool activeTool = tool;
-      bool shift = event->state() & Qt::ShiftButton;
+      bool shift = event->modifiers() & Qt::ShiftModifier;
 
       int xpos = start.x();
       int ypos = start.y();
@@ -905,7 +899,7 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
 
 void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
       {
-      bool shift = event->state() & Qt::ShiftButton;
+      bool shift = event->modifiers() & Qt::ShiftModifier;
 
       switch (drag) {
             case DRAG_RESIZE:
@@ -920,7 +914,7 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_LASSO:
                   if (!shift)
                         deselectAll();
-                  lasso = lasso.normalize();
+                  lasso = lasso.normalized();
                   for (iCEvent i = items.begin(); i != items.end(); ++i) {
 #if 0
                         if ((*i)->intersects(lasso)) {
@@ -1231,7 +1225,7 @@ void CtrlCanvas::setTool(int t)
                   drawLineMode = false;
                   break;
             default:
-                  setCursor(QCursor(Qt::arrowCursor));
+                  setCursor(QCursor(Qt::ArrowCursor));
                   break;
             }
       }
@@ -1483,7 +1477,7 @@ QRect CtrlCanvas::overlayRect() const
       {
       QFontMetrics fm(config.fonts[3]);
       QRect r(fm.boundingRect(_controller ? _controller->name() : QString("")));
-      r.moveBy(2, 2);   // top/left margin
+      r.translate(2, 2);   // top/left margin
       return r;
       }
 

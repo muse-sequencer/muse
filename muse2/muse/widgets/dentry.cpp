@@ -27,8 +27,9 @@
 //    lineedit double values
 //---------------------------------------------------------
 
-Dentry::Dentry(QWidget* parent, const char* name) : QLineEdit(parent, name)
+Dentry::Dentry(QWidget* parent, const char* name) : QLineEdit(parent)
       {
+      setObjectName(name);
       _slider = 0;      
       _id = -1;
       drawFrame = false;
@@ -37,7 +38,7 @@ Dentry::Dentry(QWidget* parent, const char* name) : QLineEdit(parent, name)
       connect(timer, SIGNAL(timeout()), SLOT(repeat()));
       val = 0.01;
       connect(this, SIGNAL(returnPressed()), SLOT(endEdit()));
-      setCursor(QCursor(Qt::arrowCursor));
+      setCursor(QCursor(Qt::ArrowCursor));
       evx = 1.0;
       }
 
@@ -67,7 +68,7 @@ void Dentry::setFrame(bool flag)
 
 void Dentry::endEdit()
       {
-      if (edited()) {
+      if (isModified()) {
             if (setSValue(text())) {
                   setString(val);
                   return;

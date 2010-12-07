@@ -28,7 +28,7 @@
 SigScale::SigScale(int* r, QWidget* parent, int xs)
    : View(parent, xs, 1)
       {
-      QToolTip::add(this, tr("signature scale"));
+      setToolTip(tr("signature scale"));
       raster = r;
       pos[0] = song->cpos();
       pos[1] = song->lpos();

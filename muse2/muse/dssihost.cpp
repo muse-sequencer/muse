@@ -367,7 +367,7 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
               //          label.latin1(), s->name().latin1(), fi.baseName(true).latin1(), s->baseName().latin1());
               //#endif
 
-              if(s->name() == label && s->baseName() == fi.baseName(true))
+              if(s->name() == label && s->baseName() == fi.completeBaseName())
                 break;
             }
             if(is != synthis.end())
@@ -378,7 +378,7 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
             if(debugMsg)
             {
               fprintf(stderr, "scanDSSILib: name:%s listname:%s lib:%s listlib:%s\n", 
-                      label.latin1(), s->name().latin1(), fi.baseName(true).latin1(), s->baseName().latin1());
+                      label.latin1(), s->name().latin1(), fi.completeBaseName().latin1(), s->baseName().latin1());
               int ai = 0, ao = 0, ci = 0, co = 0;
               for(unsigned long pt = 0; pt < descr->LADSPA_Plugin->PortCount; ++pt)
               {
@@ -548,7 +548,7 @@ DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d) : // ddskrjo remov
   _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(descr->Properties);
   
   // Blacklist vst plugins in-place configurable for now. 
-  if ((_inports != _outports) || (fi.baseName(true) == QString("dssi-vst") && !config.vstInPlace))
+  if ((_inports != _outports) || (fi.completeBaseName() == QString("dssi-vst") && !config.vstInPlace))
         _inPlaceCapable = false;
 }
 
@@ -673,7 +673,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
           
           _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(descr->Properties);
           // Blacklist vst plugins in-place configurable for now. 
-          if((_inports != _outports) || (info.baseName(true) == QString("dssi-vst") && !config.vstInPlace))
+          if((_inports != _outports) || (info.completeBaseName() == QString("dssi-vst") && !config.vstInPlace))
             _inPlaceCapable = false;
         }  
       }  

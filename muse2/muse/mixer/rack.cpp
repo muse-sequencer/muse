@@ -6,19 +6,17 @@
 //  (C) Copyright 2000-2003 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qapplication.h>
-#include <qtooltip.h>
-#include <qpalette.h>
-#include <qpainter.h>
-#include <q3popupmenu.h>
-#include <qmessagebox.h>
-
 #include <QByteArray>
-#include <QMimeData>
 #include <QDrag>
-#include <QDropEvent>
-#include <QMouseEvent>
 #include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMenu>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPalette>
+
 #include <errno.h>
 
 #include "xml.h"
@@ -35,16 +33,14 @@
 //   class RackSlot
 //---------------------------------------------------------
 
-class RackSlot : public Q3ListBoxItem {
+class RackSlot : public QListWidgetItem {
       int idx;
       AudioTrack* node;
 
-      virtual void paint(QPainter*);
-      virtual int height(const Q3ListBox*) const { return 18; }
-
    public:
-      RackSlot(Q3ListBox* lb, AudioTrack* t, int);
+      RackSlot(QListWidget* lb, AudioTrack* t, int i);
       ~RackSlot();
+      void setBackgroundColor(const QBrush& brush) {setBackground(brush);};
       };
 
 RackSlot::~RackSlot()
@@ -56,31 +52,12 @@ RackSlot::~RackSlot()
 //   RackSlot
 //---------------------------------------------------------
 
-RackSlot::RackSlot(Q3ListBox* b, AudioTrack* t, int i)
-   : Q3ListBoxItem(b)
+RackSlot::RackSlot(QListWidget* b, AudioTrack* t, int i)
+   : QListWidgetItem(b)
       {
       node = t;
       idx  = i;
-      }
-
-//---------------------------------------------------------
-//   paint
-//---------------------------------------------------------
-
-void RackSlot::paint(QPainter* painter)
-      {
-      if (node == 0)
-            return;
-      painter->save();
-      if (node == 0 || !node->efxPipe()->isOn(idx)) {
-            const QColorGroup& g = listBox()->colorGroup();
-            painter->fillRect(0,0,listBox()->width(),height(listBox()), g.dark());
-            painter->setPen(g.light());
-            }
-      QFontMetrics fm = painter->fontMetrics();
-      QString s(node->efxPipe()->name(idx));
-      painter->drawText(3, fm.ascent() + fm.leading()/2, s);
-      painter->restore();
+      setSizeHint(QSize(10,17));
       }
 
 //---------------------------------------------------------
@@ -88,25 +65,40 @@ void RackSlot::paint(QPainter* painter)
 //---------------------------------------------------------
 
 EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
-   : Q3ListBox(parent, "Rack")
+   : QListWidget(parent)
       {
+      setObjectName("Rack");
       setAttribute(Qt::WA_DeleteOnClose);
       track = t;
       setFont(config.fonts[1]);
 
-      setHScrollBarMode(AlwaysOff);
-      setVScrollBarMode(AlwaysOff);
-      setSelectionMode(Single);
-      setMaximumHeight(18 * PipelineDepth);
+      setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      setSelectionMode(QAbstractItemView::SingleSelection);
+      setMaximumHeight(19 * PipelineDepth);
       for (int i = 0; i < PipelineDepth; ++i)
             new RackSlot(this, track, i);
-      connect(this, SIGNAL(contextMenuRequested(Q3ListBoxItem*, const QPoint&)),
-         this, SLOT(menuRequested(Q3ListBoxItem*, const QPoint&)));
-      connect(this, SIGNAL(doubleClicked(Q3ListBoxItem*)),
-         this, SLOT(doubleClicked(Q3ListBoxItem*)));
+      updateContents();
+
+      connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+         this, SLOT(doubleClicked(QListWidgetItem*)));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      QToolTip::add(this, tr("effect rack"));
+
+      setToolTip(tr("effect rack"));
+      setSpacing(0);
+      QPalette qpal;
+      qpal.setColor(QPalette::Base, QColor(palette().midlight().color()));
+      setPalette(qpal);
+
       setAcceptDrops(true);
+      }
+
+void EffectRack::updateContents()
+      {
+	for (int i = 0; i < PipelineDepth; ++i) {
+              item(i)->setText(track->efxPipe()->name(i));
+              item(i)->setBackground(track->efxPipe()->isOn(i) ? palette().mid() : palette().dark());
+	}
       }
 
 //---------------------------------------------------------
@@ -124,9 +116,8 @@ EffectRack::~EffectRack()
 void EffectRack::songChanged(int typ)
       {
       if (typ & (SC_ROUTE | SC_RACK)) {
-            for (int i = 0; i < PipelineDepth; ++i)
-                  updateItem(i);
-            }
+            updateContents();
+       	    }
       }
 
 //---------------------------------------------------------
@@ -135,7 +126,7 @@ void EffectRack::songChanged(int typ)
 
 QSize EffectRack::minimumSizeHint() const
       {
-      return QSize(10, 18 * PipelineDepth);
+      return QSize(10, 19 * PipelineDepth);
       }
 
 //---------------------------------------------------------
@@ -147,16 +138,36 @@ QSize EffectRack::sizeHint() const
       return minimumSizeHint();
       }
 
+
+void EffectRack::choosePlugin(QListWidgetItem* it, bool replace)
+      {
+      Plugin* plugin = PluginDialog::getPlugin(this);
+      if (plugin) {
+            PluginI* plugi = new PluginI();
+            if (plugi->initPluginInstance(plugin, track->channels())) {
+                  printf("cannot instantiate plugin <%s>\n",
+                      plugin->name().latin1());
+                  delete plugi;
+                  return;
+                  }
+            int idx = row(it);
+	    if (replace)
+                  audio->msgAddPlugin(track, idx, 0);
+            audio->msgAddPlugin(track, idx, plugi);
+            updateContents();
+            }
+      }
+
 //---------------------------------------------------------
 //   menuRequested
 //---------------------------------------------------------
 
-void EffectRack::menuRequested(Q3ListBoxItem* it, const QPoint& pt)
+void EffectRack::menuRequested(QListWidgetItem* it)
       {
       if (it == 0 || track == 0)
             return;
       RackSlot* curitem = (RackSlot*)it;
-      int idx = index(curitem);
+      int idx = row(curitem);
       QString name;
       bool mute;
       Pipeline* pipe = track->efxPipe();
@@ -167,78 +178,75 @@ void EffectRack::menuRequested(Q3ListBoxItem* it, const QPoint& pt)
 
       //enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SAVE };
       enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SHOW_NATIVE, SAVE };
-      Q3PopupMenu* menu = new Q3PopupMenu;
-      menu->insertItem(QIcon(*upIcon), tr("move up"),   UP, UP);
-      menu->insertItem(QIcon(*downIcon), tr("move down"), DOWN, DOWN);
-      menu->insertItem(tr("remove"),    REMOVE, REMOVE);
-      menu->insertItem(tr("bypass"),    BYPASS, BYPASS);
-      menu->insertItem(tr("show gui"),  SHOW, SHOW);
-      menu->insertItem(tr("show native gui"),  SHOW_NATIVE, SHOW_NATIVE);
+      QMenu* menu = new QMenu;
+      QAction* newAction = menu->addAction(tr("new"));
+      QAction* changeAction = menu->addAction(tr("change"));
+      QAction* upAction = menu->addAction(QIcon(*upIcon), tr("move up"));//,   UP, UP);
+      QAction* downAction = menu->addAction(QIcon(*downIcon), tr("move down"));//, DOWN, DOWN);
+      QAction* removeAction = menu->addAction(tr("remove"));//,    REMOVE, REMOVE);
+      QAction* bypassAction = menu->addAction(tr("bypass"));//,    BYPASS, BYPASS);
+      QAction* showGuiAction = menu->addAction(tr("show gui"));//,  SHOW, SHOW);
+      QAction* showNativeGuiAction = menu->addAction(tr("show native gui"));//,  SHOW_NATIVE, SHOW_NATIVE);
+      QAction* saveAction = menu->addAction(tr("save preset"));
 
-      menu->setItemChecked(BYPASS, !pipe->isOn(idx));
-      menu->setItemChecked(SHOW, pipe->guiVisible(idx));
-      menu->setItemChecked(SHOW_NATIVE, pipe->nativeGuiVisible(idx));
+      newAction->setData(NEW);
+      changeAction->setData(CHANGE);
+      upAction->setData(UP);
+      downAction->setData(DOWN);
+      removeAction->setData(REMOVE);
+      bypassAction->setData(BYPASS);
+      showGuiAction->setData(SHOW);
+      showNativeGuiAction->setData(SHOW_NATIVE);
+      saveAction->setData(SAVE);
+
+      bypassAction->setCheckable(true);
+      showGuiAction->setCheckable(true);
+      showNativeGuiAction->setCheckable(true);
+
+      bypassAction->setChecked(!pipe->isOn(idx));
+      showGuiAction->setChecked(pipe->guiVisible(idx));
+      showNativeGuiAction->setChecked(pipe->nativeGuiVisible(idx));
 
       if (pipe->empty(idx)) {
-            menu->insertItem(tr("new"), NEW, NEW);
-            menu->setItemEnabled(UP, false);
-            menu->setItemEnabled(DOWN, false);
-            menu->setItemEnabled(REMOVE, false);
-            menu->setItemEnabled(BYPASS, false);
-            menu->setItemEnabled(SHOW, false);
-            menu->setItemEnabled(SHOW_NATIVE, false);
-            menu->setItemEnabled(SAVE, false);
+            menu->removeAction(changeAction);
+            menu->removeAction(saveAction);
+            upAction->setEnabled(false);
+            downAction->setEnabled(false);
+            removeAction->setEnabled(false);
+            bypassAction->setEnabled(false);
+            showGuiAction->setEnabled(false);
+            showNativeGuiAction->setEnabled(false);
             }
       else {
-            menu->insertItem(tr("change"), CHANGE, CHANGE);
-            menu->insertItem(tr("save preset"),  SAVE, SAVE);
+            menu->removeAction(newAction);
             if (idx == 0)
-                  menu->setItemEnabled(UP, false);
+                  upAction->setEnabled(true);
             if (idx == (PipelineDepth-1))
-                  menu->setItemEnabled(DOWN, false);
+                  downAction->setEnabled(false);
             if(!pipe->isDssiPlugin(idx))
-                  menu->setItemEnabled(SHOW_NATIVE, false);
+                  showNativeGuiAction->setEnabled(false);
             }
 
       #ifndef OSC_SUPPORT
-      menu->setItemEnabled(SHOW_NATIVE, false);
+      showNativeGuiAction->setEnabled(false);
       #endif
-      
-      int sel = menu->exec(pt, 1);
-      delete menu;
-      if (sel == -1)
-            return;
 
+      QPoint pt = QCursor::pos();
+      QAction* act = menu->exec(pt, 0);
+
+      //delete menu;
+      if (!act)
+            return;
+      int sel = act->data().toInt();
       switch(sel) {
             case NEW:
                   {
-                  Plugin* plugin = PluginDialog::getPlugin(this);
-                  if (plugin) {
-                        PluginI* plugi = new PluginI();
-                        if (plugi->initPluginInstance(plugin, track->channels())) {
-                              printf("cannot instantiate plugin <%s>\n",
-                                 plugin->name().latin1());
-                              delete plugi;
-                              break;
-                              }
-                        audio->msgAddPlugin(track, idx, plugi);
-                        }
+                  choosePlugin(it);
                   break;
                   }
             case CHANGE:
                   {
-                  Plugin* plugin = PluginDialog::getPlugin(this);
-                  if (plugin) {
-                        PluginI* plugi = new PluginI();
-                        if (plugi->initPluginInstance(plugin, track->channels())) {
-                              printf("cannot instantiate plugin <%s>\n",
-                                 plugin->name().latin1());
-                              delete plugi;
-                              break;
-                              }
-                        audio->msgAddPlugin(track, idx, 0);
-                        audio->msgAddPlugin(track, idx, plugi);
-                        }
+                  choosePlugin(it, true);
                   break;
                   }
             case REMOVE:
@@ -264,13 +272,13 @@ void EffectRack::menuRequested(Q3ListBoxItem* it, const QPoint& pt)
                   }
             case UP:
                   if (idx > 0) {
-                        setCurrentItem(idx-1);
+                        setCurrentItem(item(idx-1));
                         pipe->move(idx, true);
                         }
                   break;
             case DOWN:
                   if (idx < (PipelineDepth-1)) {
-                        setCurrentItem(idx+1);
+                        setCurrentItem(item(idx+1));
                         pipe->move(idx, false);
                         }
                   break;
@@ -278,6 +286,7 @@ void EffectRack::menuRequested(Q3ListBoxItem* it, const QPoint& pt)
                   savePreset(idx);
                   break;
             }
+      updateContents();
       song->update(SC_RACK);
       }
 
@@ -286,13 +295,19 @@ void EffectRack::menuRequested(Q3ListBoxItem* it, const QPoint& pt)
 //    toggle gui
 //---------------------------------------------------------
 
-void EffectRack::doubleClicked(Q3ListBoxItem* it)
+void EffectRack::doubleClicked(QListWidgetItem* it)
       {
       if (it == 0 || track == 0)
             return;
+
       RackSlot* item = (RackSlot*)it;
-      int idx        = index(item);
+      int idx        = row(item);
       Pipeline* pipe = track->efxPipe();
+
+      if (pipe->name(idx) == QString("empty")) {
+            choosePlugin(it);
+            return;
+            }
       if (pipe) {
             bool flag = !pipe->guiVisible(idx);
             pipe->showGui(idx, flag);
@@ -399,8 +414,9 @@ void EffectRack::contentsDropEvent(QDropEvent * /*event*/)// prevent of compiler
 void EffectRack::dropEvent(QDropEvent *event)
       {
       QString text;
-      Q3ListBoxItem *i = itemAt( contentsToViewport(event->pos()) );
-      int idx = index(i);
+      //orcan-check//QListWidgetItem *i = itemAt( contentsToViewport(event->pos()) );
+      QListWidgetItem *i = itemAt( event->pos() );
+      int idx = row(i);
       
       Pipeline* pipe = track->efxPipe();
       if (pipe) 
@@ -409,14 +425,15 @@ void EffectRack::dropEvent(QDropEvent *event)
                 QWidget *sw = event->source();
                 if(sw)
                 {
-                  if(strcmp(sw->className(), "EffectRack") == 0) 
+                  if(strcmp(sw->metaObject()->className(), "EffectRack") == 0) 
                   { 
                     EffectRack *ser = (EffectRack*)sw;
                     Pipeline* spipe = ser->getTrack()->efxPipe();
                     if(!spipe)
                       return;
-                    Q3ListBoxItem *i = ser->itemAt(contentsToViewport(ser->getDragPos()));
-                    int idx0 = ser->index(i);
+                    //orcan-check//QListWidgetItem *i = ser->itemAt(contentsToViewport(ser->getDragPos()));
+                    QListWidgetItem *i = ser->itemAt(ser->getDragPos());
+                    int idx0 = ser->row(i);
                     if (!(*spipe)[idx0] || 
                         (idx == idx0 && (ser == this || ser->getTrack()->name() == track->name())))
                       return; 
@@ -478,33 +495,40 @@ void EffectRack::contentsDragEnterEvent(QDragEnterEvent * /*event*/)// prevent o
       {
       }
 
-void EffectRack::contentsMousePressEvent(QMouseEvent *event)
+void EffectRack::mousePressEvent(QMouseEvent *event)
       {
       if(event->button() & Qt::LeftButton) {
           dragPos = event->pos();
       }
-      Q3ListBox::contentsMousePressEvent(event);  
+      else if(event->button() & Qt::RightButton) {
+          menuRequested(itemAt(event->pos()));
+          return;
+      }
+      
+      QListWidget::mousePressEvent(event);  
       }
 
-void EffectRack::contentsMouseMoveEvent(QMouseEvent *event)
+void EffectRack::mouseMoveEvent(QMouseEvent *event)
       {
       if (event->state() & Qt::LeftButton) {
             Pipeline* pipe = track->efxPipe();
             if(!pipe)
               return;
-            Q3ListBoxItem *i = itemAt(contentsToViewport(dragPos));
-            int idx0 = index(i);
+            //orcan-check//QListWidgetItem *i = itemAt(contentsToViewport(dragPos));
+            QListWidgetItem *i = itemAt(dragPos);
+            int idx0 = row(i);
             if (!(*pipe)[idx0])
               return; 
             
             int distance = (dragPos-event->pos()).manhattanLength();
             if (distance > QApplication::startDragDistance()) {
-                  Q3ListBoxItem *i = itemAt( contentsToViewport(event->pos()) );
-                  int idx = index(i);
+                  //orcan-check//QListWidgetItem *i = itemAt( contentsToViewport(event->pos()) );
+                  QListWidgetItem *i = itemAt( event->pos() );
+                  int idx = row(i);
                   startDrag(idx);
                   }
             }
-      Q3ListBox::contentsMouseMoveEvent(event);  
+      QListWidget::mouseMoveEvent(event);  
       }
 
 

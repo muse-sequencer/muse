@@ -65,7 +65,7 @@ void MasterEdit::songChanged(int type)
             }
       if (type & SC_MASTER) {
             enableButton->blockSignals(true);
-            enableButton->setOn(song->masterFlag());
+            enableButton->setChecked(song->masterFlag());
             enableButton->blockSignals(false);
             }
       }
@@ -77,7 +77,7 @@ void MasterEdit::songChanged(int type)
 MasterEdit::MasterEdit()
    : MidiEditor(0, _rasterInit, 0)
       {
-      setCaption(tr("MusE: Mastertrack"));
+      setWindowTitle(tr("MusE: Mastertrack"));
       _raster = 0;      // measure
       setMinimumSize(400, 300);
       resize(500, 350);
@@ -99,7 +99,7 @@ MasterEdit::MasterEdit()
       enableButton->setCheckable(true);
       enableButton->setText(tr("Enable"));
       enableButton->setToolTip(tr("Enable usage of master track"));
-      enableButton->setOn(song->masterFlag());
+      enableButton->setChecked(song->masterFlag());
       enableMaster->addWidget(enableButton);
       connect(enableButton, SIGNAL(toggled(bool)), song, SLOT(setMasterFlag(bool)));
 
@@ -171,7 +171,7 @@ MasterEdit::MasterEdit()
 //      QSizeGrip* corner   = new QSizeGrip(mainw);
 
       mainGrid->setRowStretch(5, 100);
-      mainGrid->setColStretch(1, 100);
+      mainGrid->setColumnStretch(1, 100);
 
       mainGrid->addWidget(hLine(mainw),  0, 1);
       mainGrid->addWidget(time1,         1, 1);

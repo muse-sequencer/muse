@@ -250,7 +250,7 @@ void Toolbar1::setQuant(int val)
 void Toolbar1::setSolo(bool flag)
       {
       solo->blockSignals(true);
-      solo->setOn(flag);
+      solo->setChecked(flag);
       solo->blockSignals(false);
       }
 

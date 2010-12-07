@@ -1297,9 +1297,9 @@ bool OscDssiIF::oscInitGui()
   if(!_oscSynthIF)
     return false;
     
-  return OscIF::oscInitGui(QT_TR_NOOP("dssi_synth"), _oscSynthIF->dssiSynth()->baseName(false), 
+  return OscIF::oscInitGui(QT_TR_NOOP("dssi_synth"), _oscSynthIF->dssiSynth()->baseName(), 
                            _oscSynthIF->dssiSynth()->name(), _oscSynthIF->dssiSynthI()->name(), 
-                           _oscSynthIF->dssiSynth()->filePath(), _oscSynthIF->dssiSynth()->dirPath(false));
+                           _oscSynthIF->dssiSynth()->filePath(), _oscSynthIF->dssiSynth()->path());
 }
       
 #endif   // DSSI_SUPPORT

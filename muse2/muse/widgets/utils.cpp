@@ -179,7 +179,7 @@ QString u32bitmap2String(unsigned int bm)
 int string2bitmap(const QString& str)
       {
       int val = 0;
-      QString ss = str.simplifyWhiteSpace();
+      QString ss = str.simplified();
       const char* s = ss.latin1();
 //printf("string2bitmap <%s>\n", s);
 
@@ -237,7 +237,7 @@ unsigned int string2u32bitmap(const QString& str)
       {
       //int val = 0;
       unsigned int val = 0;
-      QString ss = str.simplifyWhiteSpace();
+      QString ss = str.simplified();
       const char* s = ss.latin1();
 //printf("string2bitmap <%s>\n", s);
 

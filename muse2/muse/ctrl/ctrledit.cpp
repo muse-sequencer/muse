@@ -36,6 +36,7 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
    bool expand, const char* name) : QWidget(parent)
       {
       setObjectName(name);
+      setAttribute(Qt::WA_DeleteOnClose);
       QHBoxLayout* hbox = new QHBoxLayout;
       panel             = new CtrlPanel(0, e, "panel");
       canvas            = new CtrlCanvas(e, 0, xmag, "ctrlcanvas", panel);
@@ -117,7 +118,7 @@ void CtrlEdit::readStatus(Xml& xml)
 void CtrlEdit::destroy()
       {
       emit destroyedCtrl(this);
-      close(true);      // close and destroy widget
+      close();      // close and destroy widget
       }
 
 //---------------------------------------------------------

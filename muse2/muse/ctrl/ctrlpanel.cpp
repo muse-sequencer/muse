@@ -42,8 +42,9 @@
 //---------------------------------------------------------
 
 CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
-   : QWidget(parent, name)
+   : QWidget(parent)
       {
+      setObjectName(name);
       inHeartBeat = true;
       editor = e;
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -604,7 +605,7 @@ void CtrlPanel::ctrlPopup()
             // add new controller
             //
             QMenu* pop1 = new QMenu(this);
-            pop1->setCheckable(false);
+            //pop1->setCheckable(false); // Qt4 doc says not needed.
             //
             // populate popup with all controllers available for
             // current instrument

@@ -15,16 +15,16 @@
 #include "tools.h"
 #include "midictrl.h"
 #include "event.h"
-//Added by qt3to4:
-#include <QMouseEvent>
-#include <QEvent>
+
+class QMouseEvent;
+class QEvent;
+class QWidget;
 
 class Event;
 class MidiPart;
 class PartList;
 class MidiTrack;
 class MidiEditor;
-class QWidget;
 class CtrlPanel;
 
 //---------------------------------------------------------
