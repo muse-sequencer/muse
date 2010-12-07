@@ -114,12 +114,12 @@ QT4_WRAP_CPP (widget_mocs
       gatetime.h  
       velocity.h  
       metronome.h  
-      posedit.h  
+      # posedit.h  
       pitchedit.h  
       pitchlabel.h  
       poslabel.h  
       filedialog.h  
-      sigedit.h  
+      # sigedit.h  
       shortcutconfig.h  
       shortcutcapturedialog.h  
       combobox.h  
@@ -217,12 +217,13 @@ add_library ( widgets STATIC
       gatetime.cpp 
       velocity.cpp 
       metronome.cpp 
-      posedit.cpp section.h 
+      # posedit.cpp 
+      section.h 
       pitchedit.cpp 
       pitchlabel.cpp 
       poslabel.cpp 
       filedialog.cpp 
-      sigedit.cpp 
+      # sigedit.cpp 
       shortcutconfig.cpp 
       shortcutcapturedialog.cpp 
       combobox.cpp  

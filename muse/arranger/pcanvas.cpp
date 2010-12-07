@@ -555,7 +555,7 @@ QPoint PartCanvas::raster(const QPoint& p) const
       int x = p.x();
       if (x < 0)
             x = 0;
-      x = sigmap.raster(x, *_raster);
+      x = AL::sigmap.raster(x, *_raster);
       if (x < 0)
             x = 0;
       return QPoint(x, y);
@@ -609,11 +609,11 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap)
       int pos = p->tick() + i->width();
       int snappedpos = p->tick();
       if (!noSnap) {
-            snappedpos = sigmap.raster(pos, *_raster);
+            snappedpos = AL::sigmap.raster(pos, *_raster);
             }
       unsigned int newwidth = snappedpos - p->tick();
       if (newwidth == 0)
-            newwidth = sigmap.rasterStep(p->tick(), *_raster);
+            newwidth = AL::sigmap.rasterStep(p->tick(), *_raster);
 
       song->cmdResizePart(t, p, newwidth);
       }
@@ -628,7 +628,7 @@ CItem* PartCanvas::newItem(const QPoint& pos, int)
       int x = pos.x();
       if (x < 0)
             x = 0;
-      x = sigmap.raster(x, *_raster);
+      x = AL::sigmap.raster(x, *_raster);
       unsigned trackIndex = y2pitch(pos.y());
       if (trackIndex >= tracks->size())
             return 0;
@@ -673,9 +673,9 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
 
       int len = i->width();
       if (!noSnap)
-            len = sigmap.raster(len, *_raster);
+            len = AL::sigmap.raster(len, *_raster);
       if (len == 0)
-            len = sigmap.rasterStep(p->tick(), *_raster);
+            len = AL::sigmap.rasterStep(p->tick(), *_raster);
       p->setLenTick(len);
       p->setSelected(true);
       audio->msgAddPart(p);
@@ -704,7 +704,7 @@ void PartCanvas::splitItem(CItem* item, const QPoint& pt)
       int x = pt.x();
       if (x < 0)
             x = 0;
-      song->cmdSplitPart(t, p, sigmap.raster(x, *_raster));
+      song->cmdSplitPart(t, p, AL::sigmap.raster(x, *_raster));
       }
 
 //---------------------------------------------------------
@@ -1051,7 +1051,7 @@ void PartCanvas::mouseMove(const QPoint& pos)
       int x = pos.x();
       if (x < 0)
             x = 0;
-      emit timeChanged(sigmap.raster(x, *_raster));
+      emit timeChanged(AL::sigmap.raster(x, *_raster));
       }
 
 //---------------------------------------------------------
@@ -1102,7 +1102,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_POS_DEC].key) {
-            int frames = pos[0] - sigmap.rasterStep(pos[0], *_raster);
+            int frames = pos[0] - AL::sigmap.rasterStep(pos[0], *_raster);
             if (frames < 0)
                   frames = 0;
             Pos p(frames,true);
@@ -1110,7 +1110,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC].key) {
-            Pos p(pos[0] + sigmap.rasterStep(pos[0], *_raster), true);
+            Pos p(pos[0] + AL::sigmap.rasterStep(pos[0], *_raster), true);
             song->setPos(0, p, true, true, true); //CDW
             return;
             }
@@ -1758,7 +1758,7 @@ void PartCanvas::cmd(int cmd)
             case CMD_INSERT_EMPTYMEAS:
                   song->startUndo();
                   int startPos=song->vcpos();
-                  int oneMeas=sigmap.ticksMeasure(startPos);
+                  int oneMeas=AL::sigmap.ticksMeasure(startPos);
                   movePartsTotheRight(startPos,oneMeas);
                   song->endUndo(SC_PART_INSERTED);
                   break;
@@ -2621,7 +2621,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       {
             text = QString(event->mimeData()->data("text/partlist"));
             
-            int x = sigmap.raster(event->pos().x(), *_raster);
+            int x = AL::sigmap.raster(event->pos().x(), *_raster);
             if (x < 0)
                   x = 0;
             unsigned trackNo = y2pitch(event->pos().y());
@@ -2643,7 +2643,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
                 text.endsWith(".ogg",Qt::CaseInsensitive) || 
                 text.endsWith(".mpt", Qt::CaseInsensitive) )
             {
-                int x = sigmap.raster(event->pos().x(), *_raster);
+                int x = AL::sigmap.raster(event->pos().x(), *_raster);
                 if (x < 0)
                       x = 0;
                 unsigned trackNo = y2pitch(event->pos().y());
@@ -2712,9 +2712,9 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
           int bar, beat;
           unsigned tick;
 
-          sigmap.tickValues(x, &bar, &beat, &tick);
+          AL::sigmap.tickValues(x, &bar, &beat, &tick);
           for (;;) {
-            int xt = sigmap.bar2tick(bar++, 0, 0);
+            int xt = AL::sigmap.bar2tick(bar++, 0, 0);
             if (xt >= x + w)
                   break;
             if (!((bar-1) % 4))

@@ -8,7 +8,8 @@
 #ifndef __MIDIEDITOR_H__
 #define __MIDIEDITOR_H__
 
-#include "sig.h"
+///#include "sig.h"
+#include "al/sig.h"
 #include "cobject.h"
 //#include <QGridLayout>
 
@@ -66,10 +67,14 @@ class MidiEditor : public TopWin  {
       ~MidiEditor();
 
       int quantVal(int v) const;
-      int rasterStep(unsigned tick) const   { return sigmap.rasterStep(tick, _raster); }
-      unsigned rasterVal(unsigned v)  const { return sigmap.raster(v, _raster);  }
-      unsigned rasterVal1(unsigned v) const { return sigmap.raster1(v, _raster); }
-      unsigned rasterVal2(unsigned v) const { return sigmap.raster2(v, _raster); }
+      ///int rasterStep(unsigned tick) const   { return sigmap.rasterStep(tick, _raster); }
+      ///unsigned rasterVal(unsigned v)  const { return sigmap.raster(v, _raster);  }
+      ///unsigned rasterVal1(unsigned v) const { return sigmap.raster1(v, _raster); }
+      ///unsigned rasterVal2(unsigned v) const { return sigmap.raster2(v, _raster); }
+      int rasterStep(unsigned tick) const   { return AL::sigmap.rasterStep(tick, _raster); }
+      unsigned rasterVal(unsigned v)  const { return AL::sigmap.raster(v, _raster);  }
+      unsigned rasterVal1(unsigned v) const { return AL::sigmap.raster1(v, _raster); }
+      unsigned rasterVal2(unsigned v) const { return AL::sigmap.raster2(v, _raster); }
       int quant() const            { return _quant; }
       void setQuant(int val)       { _quant = val; }
       int raster() const           { return _raster; }

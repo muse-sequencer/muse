@@ -22,6 +22,7 @@
 #define __SIGEDIT_H__
 
 #include "al/sig.h"
+//#include "sig.h"
 
 namespace AL {
       class TimeSignature;
@@ -54,6 +55,7 @@ class SigEdit : public QAbstractSpinBox
 
    public slots:
       void setValue(const AL::TimeSignature&);
+      void setValue(const QString& s);
 
    public:
       SigEdit(QWidget* parent = 0);

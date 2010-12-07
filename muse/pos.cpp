@@ -12,7 +12,8 @@
 #include "xml.h"
 #include "tempo.h"
 #include "globals.h"
-#include "sig.h"
+///#include "sig.h"
+#include "al/sig.h"
 
 extern int mtcType;
 
@@ -53,14 +54,14 @@ Pos::Pos(const QString& s)
       {
       int m, b, t;
       sscanf(s.latin1(), "%04d.%02d.%03d", &m, &b, &t);
-      _tick = sigmap.bar2tick(m, b, t);
+      _tick = AL::sigmap.bar2tick(m, b, t);
       _type = TICKS;
       sn    = -1;
       }
 
 Pos::Pos(int measure, int beat, int tick)
       {
-      _tick = sigmap.bar2tick(measure, beat, tick);
+      _tick = AL::sigmap.bar2tick(measure, beat, tick);
       _type = TICKS;
       sn    = -1;
       }
@@ -516,7 +517,7 @@ void PosLen::setPos(const Pos& pos)
 
 void Pos::mbt(int* bar, int* beat, int* tk) const
       {
-      sigmap.tickValues(tick(), bar, beat, (unsigned*)tk);
+      AL::sigmap.tickValues(tick(), bar, beat, (unsigned*)tk);
       }
 
 //---------------------------------------------------------

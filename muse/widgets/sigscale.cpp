@@ -13,6 +13,8 @@
 #include <QEvent>
 #include <QMouseEvent>
 
+#include "al/sig.h"  // Tim.
+
 #include "globals.h"
 #include "midieditor.h"
 #include "sigscale.h"
@@ -76,7 +78,7 @@ void SigScale::viewMouseReleaseEvent(QMouseEvent*)
 
 void SigScale::viewMouseMoveEvent(QMouseEvent* event)
       {
-      int x = sigmap.raster(event->x(), *raster);
+      int x = AL::sigmap.raster(event->x(), *raster);
       emit timeChanged(x);
       int i;
       switch (button) {
@@ -118,8 +120,10 @@ void SigScale::pdraw(QPainter& p, const QRect& r)
       if (x < 0)
             x = 0;
       p.setFont(config.fonts[3]);
-      for (ciSigEvent si = sigmap.begin(); si != sigmap.end(); ++si) {
-            SigEvent* e = si->second;
+      ///for (ciSigEvent si = sigmap.begin(); si != sigmap.end(); ++si) {
+      for (AL::ciSigEvent si = AL::sigmap.begin(); si != AL::sigmap.end(); ++si) {
+            ///SigEvent* e = si->second;
+            AL::SigEvent* e = si->second;
             int xp = mapx(e->tick);
             if (xp > x+w)
                   break;
@@ -128,7 +132,7 @@ void SigScale::pdraw(QPainter& p, const QRect& r)
             p.drawLine(xp, 0, xp, h/2);
             p.drawLine(xp, h/2, xp+5, h/2);
             QString s;
-            s.sprintf("%d/%d", e->z, e->n);
+            s.sprintf("%d/%d", e->sig.z, e->sig.n);
             p.drawText(xp+8, h-6, s);
             }
 

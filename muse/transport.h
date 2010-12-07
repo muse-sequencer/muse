@@ -9,12 +9,19 @@
 #ifndef __TRANSPORT_H__
 #define __TRANSPORT_H__
 
+#include "al/sig.h"
+
 #include <QMouseEvent>
 #include <QLabel>
 
+namespace Awl {
+      class PosEdit;
+      };
+
+using Awl::PosEdit;
+
 class QToolButton;
 class QHBoxLayout;
-class PosEdit;
 class QSlider;
 class DoubleLabel;
 class SigLabel;
@@ -41,7 +48,7 @@ class TempoSig : public QWidget {
 
    signals:
       void tempoChanged(int);
-      void sigChanged(int, int);
+      void sigChanged(const AL::TimeSignature&);
 
    public:
       TempoSig(QWidget* parent=0);
@@ -73,6 +80,7 @@ class Transport : public QWidget
       PosEdit* tl2;           // right mark
       PosEdit* time1;         // tick time
       PosEdit* time2;         // SMPTE
+      
       QSlider* slider;
       TempoSig* tempo;
       QHBoxLayout* tb;

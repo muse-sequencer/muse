@@ -13,10 +13,7 @@
 #define __SPINBOX_H__
 
 #include <QSpinBox>
-
-class QEvent;
-class QLineEdit;
-class QMouseEvent;
+#include <QEvent>
 
 //---------------------------------------------------------
 //   SpinBox
@@ -26,29 +23,20 @@ class SpinBox : public QSpinBox {
       Q_OBJECT
 
       bool _clearFocus; 
-      StepEnabled upEnabled;
-      StepEnabled downEnabled;
 
    protected:
       bool eventFilter(QObject* obj, QEvent* ev);
-      virtual void mousePressEvent ( QMouseEvent * event );
-      virtual StepEnabled stepEnabled() const;      
-
+      
    public slots:
       virtual void stepUp();
       virtual void stepDown();
    
    signals:
       void doubleClicked();
-      void stepDownPressed();
-      void stepUpPressed();
 
    public:
       SpinBox(QWidget* parent=0);
       SpinBox(int minValue, int maxValue, int step = 1, QWidget* parent=0);
-      void setStepEnabled(bool up, bool down);
-      int arrowWidth() const;
-      void setEditor(QLineEdit* ed);
 };
 
 #endif

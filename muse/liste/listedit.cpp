@@ -261,7 +261,7 @@ QString EventListItem::text(int col) const
                   int t = event.tick() + part->tick();
                   int bar, beat;
                   unsigned tick;
-                  sigmap.tickValues(t, &bar, &beat, &tick);
+                  AL::sigmap.tickValues(t, &bar, &beat, &tick);
                   s.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
                   }
                   break;

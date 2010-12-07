@@ -22,10 +22,13 @@
 #include "awl.h"
 #include "posedit.h"
 #include "al/sig.h"
+//#include "sig.h"
+
+//#include "sync.h"  // Tim.
 
 namespace Awl {
 
-      using AL::mtcType;
+      ///using AL::mtcType;
       using AL::sigmap;
 
 //---------------------------------------------------------
@@ -239,8 +242,11 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
             int bar, beat;
             unsigned tick;
             AL::sigmap.tickValues(_pos.tick(), &bar, &beat, &tick);
+            //sigmap.tickValues(_pos.tick(), &bar, &beat, &tick);
             unsigned tb = AL::sigmap.ticksBeat(_pos.tick());
+            //unsigned tb = sigmap.ticksBeat(_pos.tick());
             unsigned tm = AL::sigmap.ticksMeasure(_pos.tick());
+            //unsigned tm = sigmap.ticksMeasure(_pos.tick());
             int bm = tm / tb;
 
             switch (segment) {
@@ -386,7 +392,9 @@ void PosEdit::stepBy(int steps)
             _pos.mbt(&bar, &beat, &tick);
 
             int tb = AL::sigmap.ticksBeat(_pos.tick());
+            //int tb = sigmap.ticksBeat(_pos.tick());
             unsigned tm = AL::sigmap.ticksMeasure(_pos.tick());
+            //unsigned tm = sigmap.ticksMeasure(_pos.tick());
             int bm = tm / tb;
 
             switch(segment) {

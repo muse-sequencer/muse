@@ -22,6 +22,7 @@
 #include "awl.h"
 #include "sigedit.h"
 #include "al/sig.h"
+//#include "sig.h"
 
 namespace Awl {
 
@@ -97,6 +98,14 @@ void SigEdit::setValue(const AL::TimeSignature& s)
       {
       _sig = s;
       updateValue();
+      }
+
+void SigEdit::setValue(const QString& s)
+      {
+      int z = 4, n = 4;
+      sscanf(s.latin1(), "%d/%d", &z, &n);
+      AL::TimeSignature sig(z, n);
+      setValue(sig);
       }
 
 //---------------------------------------------------------

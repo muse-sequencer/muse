@@ -13,7 +13,8 @@
 #include <QLabel>
 
 #include "poslabel.h"
-#include "sig.h"
+///#include "sig.h"
+#include "al/sig.h"
 #include "tempo.h"
 #include "globals.h"
 
@@ -89,7 +90,7 @@ void PosLabel::updateValue()
       else {
             int bar, beat;
             unsigned tick;
-            sigmap.tickValues(_tickValue, &bar, &beat, &tick);
+            AL::sigmap.tickValues(_tickValue, &bar, &beat, &tick);
             //s.sprintf("%04d.%02d.%03ud", bar+1, beat+1, tick);
             s.sprintf("%04d.%02d.%03u", bar+1, beat+1, tick);
             }

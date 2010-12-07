@@ -21,13 +21,15 @@
 #include <QVBoxLayout>
 #include <QBoxLayout>
 
+#include "awl/posedit.h"
+
 #include "song.h"
 #include "transport.h"
 #include "doublelabel.h"
 #include "siglabel.h"
 #include "globals.h"
 #include "icons.h"
-#include "posedit.h"
+///#include "posedit.h"
 #include "sync.h"
 #include "shortcuts.h"
 #include "gconfig.h"
@@ -151,7 +153,8 @@ TempoSig::TempoSig(QWidget* parent)
       l3->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
 
       connect(l1, SIGNAL(valueChanged(double,int)), SLOT(setTempo(double)));
-      connect(l2, SIGNAL(valueChanged(int,int)), SIGNAL(sigChanged(int,int)));
+      ///connect(l2, SIGNAL(valueChanged(int,int)), SIGNAL(sigChanged(int,int)));
+      connect(l2, SIGNAL(valueChanged(const AL::TimeSignature&)), SIGNAL(sigChanged(const AL::TimeSignature&)));
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
       this->setLayout(vb1);
@@ -314,7 +317,8 @@ Transport::Transport(QWidget*, const char* name)
       marken->setSpacing(0);
       marken->setContentsMargins(0, 0, 0, 0);
 
-      tl1 = new PosEdit(0);
+      ///tl1 = new PosEdit(0);
+      tl1 = new Awl::PosEdit(0);
       tl1->setMinimumSize(105,0);
       tl1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       marken->addWidget(tl1);
@@ -324,7 +328,8 @@ Transport::Transport(QWidget*, const char* name)
       l5->setAlignment(Qt::AlignCenter);
       marken->addWidget(l5);
 
-      tl2 = new PosEdit(0);
+      ///tl2 = new PosEdit(0);
+      tl2 = new Awl::PosEdit(0);
       tl2->setMinimumSize(105,0);
       tl2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       marken->addWidget(tl2);
@@ -347,8 +352,10 @@ Transport::Transport(QWidget*, const char* name)
       QHBoxLayout *hbox1 = new QHBoxLayout;
       hbox1->setContentsMargins(0, 0, 0, 0);
       
-      time1 = new PosEdit(0);
-      time2 = new PosEdit(0);
+      ///time1 = new PosEdit(0);
+      time1 = new Awl::PosEdit(0);
+      ///time2 = new PosEdit(0);
+      time2 = new Awl::PosEdit(0);
       time2->setSmpte(true);
       time1->setMinimumSize(105,0);
       time2->setMinimumSize(105,0);
@@ -474,7 +481,8 @@ Transport::Transport(QWidget*, const char* name)
       connect(slider,SIGNAL(valueChanged(int)),  SLOT(cposChanged(int)));
       connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
       connect(tempo, SIGNAL(tempoChanged(int)), song, SLOT(setTempo(int)));
-      connect(tempo, SIGNAL(sigChanged(int, int)), song, SLOT(setSig(int, int)));
+      ///connect(tempo, SIGNAL(sigChanged(int, int)), song, SLOT(setSig(int, int)));
+      connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), song, SLOT(setSig(const AL::TimeSignature&)));
       connect(song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
       connect(song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
@@ -548,7 +556,8 @@ void Transport::setPos(int idx, unsigned v, bool)
                         setTempo(tempomap.tempo(v));
                   {
                   int z, n;
-                  sigmap.timesig(v, z, n);
+                  ///sigmap.timesig(v, z, n);
+                  AL::sigmap.timesig(v, z, n);
                   setTimesig(z, n);
                   }
                   break;
@@ -688,7 +697,8 @@ void Transport::songChanged(int flags)
             }
       if (flags & SC_SIG) {
             int z, n;
-            sigmap.timesig(cpos, z, n);
+            ///sigmap.timesig(cpos, z, n);
+            AL::sigmap.timesig(cpos, z, n);
             setTimesig(z, n);
             }
       if (flags & SC_MASTER)

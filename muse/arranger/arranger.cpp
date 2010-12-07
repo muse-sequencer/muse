@@ -311,7 +311,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       //    Editor
       //---------------------------------------------------
 
-      int offset = sigmap.ticksMeasure(0);
+      int offset = AL::sigmap.ticksMeasure(0);
       hscroll = new ScrollScale(-1000, -10, xscale, song->len(), Qt::Horizontal, editor, -offset);
       ib->setFixedHeight(hscroll->sizeHint().height());
 
@@ -394,9 +394,9 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
 //{
 //      int s = 0, e = song->len();
       // Show one more measure.
-//      e += sigmap.ticksMeasure(e);  
+//      e += AL::sigmap.ticksMeasure(e);  
       // Show another quarter measure due to imprecise drawing at canvas end point.
-//      e += sigmap.ticksMeasure(e) / 4;
+//      e += AL::sigmap.ticksMeasure(e) / 4;
       // Compensate for the fixed vscroll width. 
 //      e += canvas->rmapxDev(-vscroll->width()); 
 //      int s1, e1;
@@ -477,7 +477,7 @@ void Arranger::configChanged()
 
 void Arranger::songlenChanged(int n)
       {
-      int newLen = sigmap.bar2tick(n, 0, 0);
+      int newLen = AL::sigmap.bar2tick(n, 0, 0);
       song->setLen(newLen);
       }
 //---------------------------------------------------------
@@ -490,14 +490,14 @@ void Arranger::songChanged(int type)
       if(type != SC_MIDI_CONTROLLER)
       {
         unsigned endTick = song->len();
-        int offset  = sigmap.ticksMeasure(endTick);
+        int offset  = AL::sigmap.ticksMeasure(endTick);
         hscroll->setRange(-offset, endTick + offset);  //DEBUG
         canvas->setOrigin(-offset, 0);
         time->setOrigin(-offset, 0);
   
         int bar, beat;
         unsigned tick;
-        sigmap.tickValues(endTick, &bar, &beat, &tick);
+        AL::sigmap.tickValues(endTick, &bar, &beat, &tick);
         if (tick || beat)
               ++bar;
         lenEntry->blockSignals(true);

@@ -54,7 +54,7 @@
     </widget>
    </item>
    <item row="0" column="4">
-    <widget class="PosEdit" name="timePos" native="true"/>
+    <widget class="Awl::PosEdit" name="timePos"/>
    </item>
    <item row="1" column="3" rowspan="2" colspan="2">
     <widget class="QStackedWidget" name="widgetStack">
@@ -800,14 +800,12 @@
  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
  <customwidgets>
   <customwidget>
-   <class>PosEdit</class>
+   <class>Awl::PosEdit</class>
    <extends>QWidget</extends>
-   <header location="global">posedit.h</header>
+   <header>awl/posedit.h</header>
+   <container>0</container>
   </customwidget>
  </customwidgets>
- <includes>
-  <include location="local">../widgets/posedit.h</include>
- </includes>
  <resources/>
  <connections>
   <connection>

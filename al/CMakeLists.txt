@@ -6,7 +6,7 @@
 include(${PROJECT_SOURCE_DIR}/pch.txt)
 
 set (al_src
-   al.cpp dsp.cpp xml.cpp
+   al.cpp sig.cpp xml.cpp dsp.cpp 
    )
 
 if (USE_SSE)
@@ -19,7 +19,7 @@ add_library(al STATIC
    )
 
 set_source_files_properties(
-   al.cpp dsp.cpp xml.cpp
+   al.cpp sig.cpp xml.cpp dsp.cpp 
    dspXMM.cpp
    PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all.h"
    )

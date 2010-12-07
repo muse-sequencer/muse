@@ -5,6 +5,8 @@
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
+#include "al/sig.h"  // Tim.
+
 #include "marker.h"
 #include "markerview.h"
 #include "xml.h"
@@ -12,7 +14,8 @@
 #include "sync.h"
 #include "icons.h"
 #include "song.h"
-#include "posedit.h"
+///#include "posedit.h"
+#include "awl/posedit.h"
 
 #include <QCloseEvent>
 #include <QMenu>
@@ -97,7 +100,8 @@ void MarkerItem::setTick(unsigned v)
       QString s;
       int bar, beat;
       unsigned tick;
-      sigmap.tickValues(v, &bar, &beat, &tick);
+      ///sigmap.tickValues(v, &bar, &beat, &tick);
+      AL::sigmap.tickValues(v, &bar, &beat, &tick);
       s.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
       setText(COL_TICK, s);
 
@@ -203,11 +207,13 @@ MarkerView::MarkerView(QWidget* parent)
       QGroupBox* props = new QGroupBox(tr("Marker Properties"));
       QHBoxLayout *hbox = new QHBoxLayout;
 
-      editTick = new PosEdit;
+      ///editTick = new PosEdit;
+      editTick = new Awl::PosEdit;
       editTick->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));
 
-      editSMPTE = new PosEdit;
+      ///editSMPTE = new PosEdit;
+      editSMPTE = new Awl::PosEdit;
       editSMPTE->setSmpte(true);
       editSMPTE->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));

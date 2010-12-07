@@ -254,9 +254,9 @@ void WaveEdit::updateHScrollRange()
       int s, e;
       wview->range(&s, &e);
       // Show one more measure.
-      e += sigmap.ticksMeasure(e);  
+      e += AL::sigmap.ticksMeasure(e);  
       // Show another quarter measure due to imprecise drawing at canvas end point.
-      e += sigmap.ticksMeasure(e) / 4;
+      e += AL::sigmap.ticksMeasure(e) / 4;
       // Compensate for the vscroll width. 
       //e += wview->rmapxDev(-vscroll->width()); 
       int s1, e1;

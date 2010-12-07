@@ -10,7 +10,12 @@
 //#include <q3toolbar.h>
 #include <QToolBar>
 
-class PosEdit;
+namespace Awl {
+      class PosEdit;
+      //class PitchEdit;
+      };
+
+///class PosEdit;
 class QSpinBox;
 class PitchEdit;
 //class QMainWindow;
@@ -22,7 +27,8 @@ class Pos;
 //---------------------------------------------------------
 
 class NoteInfo : public QToolBar {
-      PosEdit* selTime;
+      ///PosEdit* selTime;
+      Awl::PosEdit* selTime;
       QSpinBox* selLen;
       PitchEdit* selPitch;
       QSpinBox* selVelOn;

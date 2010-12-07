@@ -24,7 +24,8 @@
 #include "globals.h"
 #include "event.h"
 #include "audio.h"
-#include "sig.h"
+///#include "sig.h"
+#include "al/sig.h"
 
 //#define WAVE_DEBUG
 //#define WAVE_DEBUG_PRC
@@ -1076,9 +1077,9 @@ void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
         return;
       }
       // Round the start down using the Arranger part snap raster value. 
-      unsigned startTick = sigmap.raster1(s.tick(), song->recRaster());
+      unsigned startTick = AL::sigmap.raster1(s.tick(), song->recRaster());
       // Round the end up using the Arranger part snap raster value. 
-      unsigned endTick   = sigmap.raster2(e.tick(), song->recRaster());
+      unsigned endTick   = AL::sigmap.raster2(e.tick(), song->recRaster());
 
       f->update();
 

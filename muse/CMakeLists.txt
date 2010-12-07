@@ -323,6 +323,7 @@ target_link_libraries(muse
       cliplist instruments widgets 
       synti       
       al      
+      awl
       
       ${QT_LIBRARIES}
       QtSvg

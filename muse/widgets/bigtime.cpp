@@ -207,7 +207,7 @@ bool BigTime::setString(unsigned v)
       unsigned absFrame = tempomap.tick2frame(v);
       int bar, beat;
       unsigned tick;
-      sigmap.tickValues(v, &bar, &beat, &tick);
+      AL::sigmap.tickValues(v, &bar, &beat, &tick);
       double time = double(absFrame)/double(sampleRate);
       //int hour    = int(time) / 3600;
       //int min     = (int(time) / 60) % 60;

@@ -372,7 +372,7 @@ static void timebase_callback(jack_transport_state_t /* state */,
       */
       //
       int z, n;
-      sigmap.timesig(p.tick(), z, n);
+      AL::sigmap.timesig(p.tick(), z, n);
       pos->beats_per_bar = z;
       pos->beat_type = n;
       //pos->ticks_per_beat = config.division;

@@ -10,9 +10,13 @@
 #include "noteinfo.h"
 #include <QLayout>
 #include <QLabel>
+
+#include "awl/posedit.h"
+//#include "awl/pitchedit.h"
+
 #include "song.h"
 #include "globals.h"
-#include "posedit.h"
+///#include "posedit.h"
 #include "pitchedit.h"
 
 //---------------------------------------------------
@@ -32,8 +36,12 @@ NoteInfo::NoteInfo(QWidget* parent)
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
+      
       //selTime = new PosEdit(this, "Start");
-      selTime = new PosEdit(0, "Start");
+      ///selTime = new PosEdit(0, "Start");
+      selTime = new Awl::PosEdit;
+      selTime->setObjectName("Start");
+      
       addWidget(selTime);
 
       //label = new QLabel(tr("Len"), this, "Len");

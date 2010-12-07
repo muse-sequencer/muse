@@ -790,16 +790,16 @@ void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
       {
       int bar1, bar2, beat;
       unsigned tick;
-      sigmap.tickValues(x, &bar1, &beat, &tick);
-      sigmap.tickValues(x+w, &bar2, &beat, &tick);
+      AL::sigmap.tickValues(x, &bar1, &beat, &tick);
+      AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
       ++bar2;
       int y2 = y + h;
       for (int bar = bar1; bar < bar2; ++bar) {
-            unsigned x = sigmap.bar2tick(bar, 0, 0);
+            unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
             p.setPen(Qt::black);
             p.drawLine(x, y, x, y2);
             int z, n;
-            sigmap.timesig(x, z, n);
+            AL::sigmap.timesig(x, z, n);
             ///int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
             int q = p.combinedTransform().map(QPoint(raster, 0)).x() - p.combinedTransform().map(QPoint(0, 0)).x();
             int qq = raster;
@@ -816,7 +816,7 @@ void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
             p.setPen(Qt::lightGray);
             if (raster>=4) {
                         int xx = x + qq;
-                        int xxx = sigmap.bar2tick(bar, z, 0);
+                        int xxx = AL::sigmap.bar2tick(bar, z, 0);
                         while (xx <= xxx) {
                                p.drawLine(xx, y, xx, y2);
                                xx += qq;
@@ -829,7 +829,7 @@ void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
             // }
             p.setPen(Qt::gray);
             for (int beat = 1; beat < z; beat++) {
-                        int xx = sigmap.bar2tick(bar, beat, 0);
+                        int xx = AL::sigmap.bar2tick(bar, beat, 0);
                         p.drawLine(xx, y, xx, y2);
                         }
 
@@ -1231,12 +1231,12 @@ void PianoCanvas::quantize(int strength, int limit, bool quantLen)
             int tick2 = tick + len;
 
             // quant start position
-            int diff  = sigmap.raster(tick, editor->quant()) - tick;
+            int diff  = AL::sigmap.raster(tick, editor->quant()) - tick;
             if (abs(diff) > limit)
                   tick += ((diff * strength) / 100);
 
             // quant len
-            diff = sigmap.raster(tick2, editor->quant()) - tick2;
+            diff = AL::sigmap.raster(tick2, editor->quant()) - tick2;
             if (quantLen && (abs(diff) > limit))
                   len += ((diff * strength) / 100);
 
