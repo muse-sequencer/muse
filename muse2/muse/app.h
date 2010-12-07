@@ -10,29 +10,25 @@
 #define __APP_H__
 
 #include "config.h"
-
-#include <QMainWindow>
-#include <QRect>
-//Added by qt3to4:
-#include <Qt3Support>
-
-#include <QMenu>
-#include <QFocusEvent>
-#include <QCloseEvent>
 #include "cobject.h"
 #include "tools.h"
-#include <qfileinfo.h>
+
+class QCloseEvent;
+class QFileInfo;
+class QFocusEvent;
+class QMainWindow;
+class QMenu;
+class QPoint;
+class QRect;
+class QToolBar;
+class QToolButton;
 
 class Part;
 class PartList;
-class QToolBar;
-class QMenu;
 class Transport;
 class BigTime;
 class Arranger;
 class Instrument;
-class QPoint;
-class QToolButton;
 class PopupMenu;
 class PopupView;
 class Track;

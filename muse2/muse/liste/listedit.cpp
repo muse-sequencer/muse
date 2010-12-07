@@ -521,7 +521,7 @@ ListEdit::ListEdit(PartList* pl)
       //---------------------------------------------------
 
       mainGrid->setRowStretch(1, 100);
-      mainGrid->setColStretch(0, 100);
+      mainGrid->setColumnStretch(0, 100);
       mainGrid->addWidget(liste, 1, 0, 2, 1);
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       songChanged(-1);

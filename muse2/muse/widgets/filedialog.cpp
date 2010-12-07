@@ -418,8 +418,8 @@ QString getImageFileName(const QString& startWith,
                   *workingDirectory = startWith;
                   }
             else if (fi.exists() && fi.isFile()) {
-                  *workingDirectory = fi.dirPath(TRUE);
-                  initialSelection = fi.absFilePath();
+                  *workingDirectory = fi.absolutePath();
+                  initialSelection = fi.absoluteFilePath();
                   }
             }
       MFileDialog *dlg = new MFileDialog(*workingDirectory, QString::null,

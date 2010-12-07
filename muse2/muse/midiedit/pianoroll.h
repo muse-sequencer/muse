@@ -25,7 +25,6 @@ class TimeLabel;
 class PitchLabel;
 class QLabel;
 class PianoCanvas;
-class IntLabel;
 class MTScale;
 class Track;
 class QToolButton;

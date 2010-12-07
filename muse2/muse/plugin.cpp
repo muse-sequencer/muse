@@ -3070,7 +3070,7 @@ PluginGui::PluginGui(PluginIBase* p)
             // p3.3.43
             resize(280, height());
 
-            grid->setColStretch(2, 10);
+            grid->setColumnStretch(2, 10);
             mw->setLayout(grid);
             view->setWidget(mw);
             }

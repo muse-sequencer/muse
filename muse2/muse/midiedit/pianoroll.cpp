@@ -333,7 +333,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       QSizeGrip* corner = new QSizeGrip(mainw);
 
       mainGrid->setRowStretch(0, 100);
-      mainGrid->setColStretch(1, 100);
+      mainGrid->setColumnStretch(1, 100);
       mainGrid->addWidget(splitter, 0, 0, 1, 3);
       mainGrid->addWidget(ctrl,    1, 0);
       mainGrid->addWidget(hscroll, 1, 1);
@@ -359,7 +359,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       time->setOrigin(offset, 0);
 
       gridS1->setRowStretch(2, 100);
-      gridS1->setColStretch(1, 100);
+      gridS1->setColumnStretch(1, 100);
 
       gridS1->addWidget(time,                   0, 1, 1, 2);
       gridS1->addWidget(hLine(split1),          1, 0, 1, 3);

@@ -311,7 +311,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       corner->setFixedHeight(hscroll->sizeHint().height());
 
       mainGrid->setRowStretch(0, 100);
-      mainGrid->setColStretch(1, 100);
+      mainGrid->setColumnStretch(1, 100);
 
       mainGrid->addWidget(split1, 0, 0,  1, 3);
       mainGrid->addWidget(ctrl,    1, 0);
@@ -348,7 +348,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       //split2->setResizeMode(split1w1, QSplitter::KeepSize);
 
       gridS2->setRowStretch(1, 100);
-      gridS2->setColStretch(0, 100);
+      gridS2->setColumnStretch(0, 100);
       
       gridS2->addWidget(time,  0, 0, 1, 2);
       gridS2->addWidget(hLine(split1w2), 1, 0, 1, 2);
@@ -386,7 +386,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(dlist, SIGNAL(mapChanged(int, int)), canvas, SLOT(mapChanged(int, int)));
 
       gridS1->setRowStretch(1, 100);
-      gridS1->setColStretch(0, 100);
+      gridS1->setColumnStretch(0, 100);
       gridS1->addWidget(header, 0, 0);
       gridS1->addWidget(dlist, 1, 0);
       

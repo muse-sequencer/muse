@@ -133,9 +133,11 @@ void Nentry::setFocusPolicy(Qt::FocusPolicy policy)
 void Nentry::setDark()
       {
       const QPalette& oldpalette = edit->palette();
-      QColorGroup cg1 = oldpalette.active();
-      cg1.setColor(QColorGroup::Base, cg1.background());
-      QPalette newpalette(cg1, cg1, cg1);
+ 
+      const QColor& newcolor = oldpalette.color(QPalette::Window);
+      QPalette newpalette(oldpalette);
+      newpalette.setColor(QPalette::Base, newcolor);
+
       edit->setPalette(newpalette);
       }
 

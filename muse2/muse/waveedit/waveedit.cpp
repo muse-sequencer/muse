@@ -203,7 +203,7 @@ WaveEdit::WaveEdit(PartList* pl)
       time->setOrigin(0, 0);
 
       mainGrid->setRowStretch(0, 100);
-      mainGrid->setColStretch(0, 100);
+      mainGrid->setColumnStretch(0, 100);
 
       mainGrid->addWidget(time,   0, 0, 1, 2);
       mainGrid->addWidget(hLine(mainw),    1, 0, 1, 2);
@@ -214,7 +214,7 @@ WaveEdit::WaveEdit(PartList* pl)
 
       connect(hscroll, SIGNAL(scrollChanged(int)), view, SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  view, SLOT(setXMag(int)));
-      setCaption(view->getCaption());
+      setWindowTitle(view->getCaption());
       connect(view, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
 
       connect(hscroll, SIGNAL(scrollChanged(int)), time,  SLOT(setXPos(int)));

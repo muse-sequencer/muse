@@ -98,8 +98,8 @@ class Plugin {
       unsigned long id() const                     { return _uniqueID; }
       QString maker() const                        { return _maker; }
       QString copyright() const                    { return _copyright; }
-      QString lib(bool complete = true) /*const*/      { return fi.baseName(complete); } // ddskrjo const
-      QString dirPath(bool complete = true) const  { return fi.dirPath(complete); }
+      QString lib(bool complete = true) /*const*/  { return complete ? fi.completeBaseName() : fi.baseName(); } // ddskrjo const
+      QString dirPath(bool complete = true) const  { return complete ? fi.absolutePath() : fi.path(); }
       QString filePath() const                     { return fi.filePath(); }
       int references() const                       { return _references; }
       int incReferences(int);
