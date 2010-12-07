@@ -129,7 +129,7 @@ void Master::leaveEvent(QEvent*)
 void Master::pdraw(QPainter& p, const QRect& rect)
       {
       View::pdraw(p, rect);   // calls draw()
-      p.resetXForm();
+      p.resetTransform();
 
       int x = rect.x();
       int y = rect.y();
@@ -312,7 +312,7 @@ void Master::setTool(int t)
                   setCursor(QCursor(*pencilIcon, 4, 15));
                   break;
             default:
-                  setCursor(QCursor(Qt::arrowCursor));
+                  setCursor(QCursor(Qt::ArrowCursor));
                   break;
             }
       }

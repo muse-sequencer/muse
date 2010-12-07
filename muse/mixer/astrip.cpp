@@ -702,7 +702,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //    plugin rack
       //---------------------------------------------------
 
-      EffectRack* rack = new EffectRack(this, t);
+      rack = new EffectRack(this, t);
       rack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
       grid->addWidget(rack, _curGridRow++, 0, 1, 2);
 

@@ -25,6 +25,7 @@ class QButton;
 class TransparentToolButton;
 class AudioTrack;
 class DoubleLabel;
+class EffectRack;
 
 //---------------------------------------------------------
 //   AudioStrip
@@ -36,6 +37,7 @@ class AudioStrip : public Strip {
       int channel;
       Slider* slider;
       DoubleLabel* sl;
+      EffectRack* rack;
 
       Knob* pan;
       DoubleLabel* panl;

@@ -56,9 +56,11 @@ class Synth {
 
       int instances() const                            { return _instances; }
       virtual void incInstances(int val)               { _instances += val; }
-      QString baseName(bool complete = true) /*const*/ { return info.baseName(complete); } // ddskrjo
+      QString completeBaseName()             /*const*/ { return info.completeBaseName(); } // ddskrjo
+      QString baseName()                     /*const*/ { return info.baseName(); } // ddskrjo
       QString name() const                             { return _name; }
-      QString dirPath(bool complete = true) const      { return info.dirPath(complete); }
+      QString absolutePath() const                     { return info.absolutePath(); }
+      QString path() const                             { return info.path(); }
       QString filePath() const                         { return info.filePath(); }
       QString description() const                      { return _description; }
       QString version() const                          { return _version; }

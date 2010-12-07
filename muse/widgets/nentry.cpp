@@ -94,7 +94,7 @@ Nentry::Nentry(QWidget* parent, const QString& txt,
 
       connect(timer, SIGNAL(timeout()), SLOT(repeat()));
       connect(edit, SIGNAL(returnPressed()), SLOT(endEdit()));
-      edit->setCursor(QCursor(Qt::arrowCursor));
+      edit->setCursor(QCursor(Qt::ArrowCursor));
 //      edit->setFont(font3);
       val = 0;
       layout = new QHBoxLayout(this);
@@ -172,12 +172,12 @@ void Nentry::setFrame(bool flag)
 
 void Nentry::endEdit()
       {
-      if (edit->edited()) {
+      if (edit->isModified()) {
             if (setSValue(edit->text())) {
                   setString(val, false);
                   return;
                   }
-            edit->setEdited(false);
+            edit->setModified(false);
             }
       if (focusW)
             focusW->setFocus();
@@ -342,8 +342,8 @@ void Nentry::setValue(int v)
 
 bool Nentry::keyPress(QKeyEvent* event)
       {
-      bool shift = event->state() & Qt::ShiftModifier;
-      bool ctrl  = event->state() & Qt::ControlModifier;
+      bool shift = event->modifiers() & Qt::ShiftModifier;
+      bool ctrl  = event->modifiers() & Qt::ControlModifier;
       int key    = event->key();
 
       if (shift) {
@@ -375,7 +375,7 @@ bool Nentry::keyPress(QKeyEvent* event)
                   }
             return true;
             }
-      if (event->state())
+      if (event->modifiers())
             return true;
       switch (key) {
             case Qt::Key_Up:   incValue(0); return true;

@@ -32,7 +32,7 @@ MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
    : View(parent, xs, 1)
       {
       waveMode = _mode;
-      QToolTip::add(this, tr("bar scale"));
+      setToolTip(tr("bar scale"));
       barLocator = false;
       raster = r;
       if (waveMode) {
@@ -144,7 +144,7 @@ void MTScale::viewMouseReleaseEvent(QMouseEvent*)
 
 void MTScale::viewMouseMoveEvent(QMouseEvent* event)
       {
-      if (event->state() & Qt::ShiftModifier )
+      if (event->modifiers() & Qt::ShiftModifier )
             setCursor(QCursor(Qt::PointingHandCursor));
       else
             setCursor(QCursor(Qt::ArrowCursor));
@@ -173,7 +173,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
             }
       Pos p(x, true);
       
-      if(i== 0 && (event->state() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker 
+      if(i== 0 && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker 
             Marker *alreadyExists = song->getMarkerAt(x);
             if (!alreadyExists) {
                   song->addMarker(QString(""), x, false);         
@@ -182,7 +182,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
                   //emit addMarker(x);
                   }
             }
-      else if (i== 2 && (event->state() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker 
+      else if (i== 2 && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker 
             Marker *toRemove = song->getMarkerAt(x);
             if (toRemove)
               song->removeMarker(toRemove);

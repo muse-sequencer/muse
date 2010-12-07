@@ -23,7 +23,7 @@
 //---------------------------------------------------------
 
 Meter::Meter(QWidget* parent, MeterType type)
-   : QFrame(parent, Qt::WNoAutoErase)
+   : QFrame(parent) //Qt::WNoAutoErase
       {
       mtype = type;
       overflow    = false;
@@ -138,9 +138,10 @@ void Meter::drawVU(int w, int h)
       int fw = frameWidth();
       w -= 2*fw;
       h -= 2*fw;
-      bgPm.resize(w, h);
-      fgPm.resize(w, h);
-      
+
+      bgPm = QPixmap(QSize(w, h));
+      fgPm = QPixmap(QSize(w, h));
+
       QPainter p1(&fgPm);
       QPainter p2(&bgPm);
       

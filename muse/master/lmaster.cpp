@@ -64,7 +64,7 @@ LMaster::LMaster()
       sig_editor = 0;
       editedItem = 0;
       editingNewItem = false;
-      setCaption(tr("MusE: Mastertrack"));
+      setWindowTitle(tr("MusE: Mastertrack"));
       setMinimumHeight(100);
       setFixedWidth(400);
 
@@ -73,12 +73,12 @@ LMaster::LMaster()
       QSignalMapper *signalMapper = new QSignalMapper(this);
       menuBar()->addMenu(menuEdit);
       menuEdit->addActions(undoRedo->actions());
-      menuEdit->insertSeparator();
-      QAction *tempoAction = menuEdit->addAction(tr("Insert Tempo"));
-      QAction *signAction = menuEdit->addAction(tr("Insert Signature"));
-      QAction *posAction = menuEdit->addAction(tr("Edit Positon"));
-      QAction *valAction = menuEdit->addAction(tr("Edit Value"));
-      QAction *delAction = menuEdit->addAction(tr("Delete Event"));
+      menuEdit->addSeparator();
+      tempoAction = menuEdit->addAction(tr("Insert Tempo"));
+      signAction = menuEdit->addAction(tr("Insert Signature"));
+      posAction = menuEdit->addAction(tr("Edit Positon"));
+      valAction = menuEdit->addAction(tr("Edit Value"));
+      delAction = menuEdit->addAction(tr("Delete Event"));
       delAction->setShortcut(Qt::Key_Delete);
 
       connect(tempoAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
@@ -139,7 +139,7 @@ LMaster::LMaster()
 //      QSizeGrip* corner = new QSizeGrip(mainw);
 
       mainGrid->setRowStretch(0, 100);
-      mainGrid->setColStretch(0, 100);
+      mainGrid->setColumnStretch(0, 100);
 
       mainGrid->addWidget(view,  0, 0);
 //      mainGrid->addWidget(corner,  1, 1, AlignBottom | AlignRight);
@@ -737,8 +737,8 @@ void LMaster::configChanged()
  */
 void LMaster::initShortcuts()
       {
-      menuEdit->setAccel(shortcuts[SHRT_LM_INS_TEMPO].key, CMD_INSERT_TEMPO);
-      menuEdit->setAccel(shortcuts[SHRT_LM_INS_SIG].key, CMD_INSERT_SIG);
-      menuEdit->setAccel(shortcuts[SHRT_LM_EDIT_BEAT].key, CMD_EDIT_BEAT);
-      menuEdit->setAccel(shortcuts[SHRT_LM_EDIT_VALUE].key, CMD_EDIT_VALUE);
+      tempoAction->setShortcut(shortcuts[SHRT_LM_INS_TEMPO].key);
+      signAction->setShortcut(shortcuts[SHRT_LM_INS_SIG].key);
+      posAction->setShortcut(shortcuts[SHRT_LM_EDIT_BEAT].key);
+      valAction->setShortcut(shortcuts[SHRT_LM_EDIT_VALUE].key);
       }
