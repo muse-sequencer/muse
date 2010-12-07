@@ -27,16 +27,17 @@ extern int mtcType;
 //---------------------------------------------------------
 
 BigTime::BigTime(QWidget* parent)
-   : QWidget(parent, 0, Qt::Window | Qt::WindowStaysOnTopHint)  // Possibly also Qt::X11BypassWindowManagerHint
+   : QWidget(parent, Qt::Window | Qt::WindowStaysOnTopHint)  // Possibly also Qt::X11BypassWindowManagerHint
       {
       
       tickmode = true;
-      dwin = new QWidget(this, "bigtime-dwin", Qt::WindowStaysOnTopHint);  // Possibly also Qt::X11BypassWindowManagerHint
+      dwin = new QWidget(this, Qt::WindowStaysOnTopHint);  // Possibly also Qt::X11BypassWindowManagerHint
+      dwin->setObjectName("bigtime-dwin");
       dwin->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       fmtButton = new QCheckBox(QString(""), this);
       fmtButton->resize(18,18);
       fmtButton->setChecked(true);
-      QToolTip::add(fmtButton, tr("format display"));
+      fmtButton->setToolTip(tr("format display"));
       barLabel   = new QLabel(dwin);
       beatLabel  = new QLabel(dwin);
       tickLabel  = new QLabel(dwin);
@@ -52,16 +53,16 @@ BigTime::BigTime(QWidget* parent)
       sep5       = new QLabel(QString(":"), dwin);
       absTickLabel = new QLabel(dwin);
       absFrameLabel = new QLabel(dwin);
-      QToolTip::add(barLabel, tr("bar"));
-      QToolTip::add(beatLabel, tr("beat"));
-      QToolTip::add(tickLabel, tr("tick"));
-      //QToolTip::add(hourLabel, tr("hour"));
-      QToolTip::add(minLabel, tr("minute"));
-      QToolTip::add(secLabel, tr("second"));
-      QToolTip::add(frameLabel, tr("frame"));
-      QToolTip::add(subFrameLabel, tr("subframe"));
-      QToolTip::add(absTickLabel, tr("tick"));
-      QToolTip::add(absFrameLabel, tr("frame"));
+      barLabel->setToolTip(tr("bar"));
+      beatLabel->setToolTip(tr("beat"));
+      tickLabel->setToolTip(tr("tick"));
+      //hourLabel->setToolTip(tr("hour"));
+      minLabel->setToolTip(tr("minute"));
+      secLabel->setToolTip(tr("second"));
+      frameLabel->setToolTip(tr("frame"));
+      subFrameLabel->setToolTip(tr("subframe"));
+      absTickLabel->setToolTip(tr("tick"));
+      absFrameLabel->setToolTip(tr("frame"));
       fmtButtonToggled(true);
       connect(fmtButton, SIGNAL(toggled(bool)), SLOT(fmtButtonToggled(bool)));
       //oldbar = oldbeat = oldtick = oldhour = oldmin = oldsec = oldframe = -1;
@@ -75,7 +76,7 @@ BigTime::BigTime(QWidget* parent)
       f.setPixelSize(10);
       
       dwin->setFont(f);
-      setCaption(tr("MusE: Bigtime"));
+      setWindowTitle(tr("MusE: Bigtime"));
       }
 
 
@@ -386,9 +387,8 @@ void BigTime::resizeEvent(QResizeEvent *ev)
 
 void BigTime::setFgColor(QColor c)
       {
-        QColorGroup cg = palette().active();
-        cg.setColor(QColorGroup::Foreground, c);
-        QPalette newpalette(cg, cg, cg);
+        QPalette newpalette(palette());
+        newpalette.setColor(QPalette::Foreground, c);
         setPalette(newpalette);
 
         barLabel->setPalette(newpalette);
@@ -415,9 +415,8 @@ void BigTime::setFgColor(QColor c)
 
 void BigTime::setBgColor(QColor c)
       {
-        QColorGroup cg = palette().active();
-        cg.setColor(QColorGroup::Background, c);
-        QPalette newpalette(cg, cg, cg);
+        QPalette newpalette(palette()); 
+        newpalette.setColor(QPalette::Window, c);
         setPalette(newpalette);
 
         barLabel->setPalette(newpalette);
@@ -437,6 +436,6 @@ void BigTime::setBgColor(QColor c)
         sep4->setPalette(newpalette);
         sep5->setPalette(newpalette);
 
-	setBackgroundColor(c);
+        setPalette(newpalette);
       }
 

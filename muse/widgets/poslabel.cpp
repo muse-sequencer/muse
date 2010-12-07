@@ -25,8 +25,9 @@ extern int mtcType;
 //---------------------------------------------------------
 
 PosLabel::PosLabel(QWidget* parent, const char* name)
-  : QLabel(parent, name)
+  : QLabel(parent)
       {
+      setObjectName(name);
       _tickValue = 0;
       _sampleValue = 0;
       _smpte = false;

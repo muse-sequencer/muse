@@ -337,7 +337,7 @@ void MidiSyncConfig::songChanged(int flags)
       useJackTransportCheckbox->blockSignals(false);
       extSyncCheckbox->blockSignals(false);
       
-      mtcSyncType->setCurrentItem(mtcType);
+      mtcSyncType->setCurrentIndex(mtcType);
 
       mtcOffH->blockSignals(true);
       mtcOffM->blockSignals(true);
@@ -632,7 +632,7 @@ void MidiSyncConfig::cancel()
       if(applyButton->isEnabled())
         applyButton->setEnabled(false);
       
-      close(false);
+      close();
       }
 
 //---------------------------------------------------------
@@ -695,7 +695,7 @@ void MidiSyncConfig::apply()
 
       syncSendFirstClockDelay = syncDelaySpinBox->value();
       
-      mtcType     = mtcSyncType->currentItem();
+      mtcType     = mtcSyncType->currentIndex();
       //extSyncFlag.setValue(syncMode->id(syncMode->selected()));
       //extSyncFlag.blockSignals(true);
       extSyncFlag.setValue(extSyncCheckbox->isChecked());
@@ -1176,7 +1176,7 @@ void MidiSyncConfig::dlvDoubleClicked(QTreeWidgetItem* item, int col)
       {
         //int val = lvi->syncInfo().idIn();
         int val = lvi->_idIn;
-        int newval = QInputDialog::getInteger("Muse: Sync info" , "Enter new id number (127 = all):", val, 0, 127, 1, &ok, this);
+        int newval = QInputDialog::getInteger(this, "Muse: Sync info" , "Enter new id number (127 = all):", val, 0, 127, 1, &ok);
         if(ok)
         {
           //lvi->syncInfo().setIdIn(newval);
@@ -1189,7 +1189,7 @@ void MidiSyncConfig::dlvDoubleClicked(QTreeWidgetItem* item, int col)
       {
         //int val = lvi->syncInfo().idOut();
         int val = lvi->_idOut;
-        int newval = QInputDialog::getInteger("Muse: Sync info" , "Enter new id number (127 = global):", val, 0, 127, 1, &ok, this);
+        int newval = QInputDialog::getInteger(this, "Muse: Sync info" , "Enter new id number (127 = global):", val, 0, 127, 1, &ok);
         if(ok)
         {
           //lvi->syncInfo().setIdOut(newval);

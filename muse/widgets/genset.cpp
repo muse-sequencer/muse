@@ -42,25 +42,25 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       startSongGroup->addButton(startSongButton, 2);
       for (unsigned i = 0; i < sizeof(rtcResolutions)/sizeof(*rtcResolutions); ++i) {
             if (rtcResolutions[i] == config.rtcTicks) {
-                  rtcResolutionSelect->setCurrentItem(i);
+                  rtcResolutionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
             if (divisions[i] == config.division) {
-                  midiDivisionSelect->setCurrentItem(i);
+                  midiDivisionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
             if (divisions[i] == config.guiDivision) {
-                  guiDivisionSelect->setCurrentItem(i);
+                  guiDivisionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(dummyAudioBufSizes)/sizeof(*dummyAudioBufSizes); ++i) {
             if (dummyAudioBufSizes[i] == config.dummyAudioBufSize) {
-                  dummyAudioSize->setCurrentItem(i);
+                  dummyAudioSize->setCurrentIndex(i);
                   break;
                   }
             }
@@ -147,25 +147,25 @@ void GlobalSettingsConfig::updateSettings()
 {
       for (unsigned i = 0; i < sizeof(rtcResolutions)/sizeof(*rtcResolutions); ++i) {
             if (rtcResolutions[i] == config.rtcTicks) {
-                  rtcResolutionSelect->setCurrentItem(i);
+                  rtcResolutionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
             if (divisions[i] == config.division) {
-                  midiDivisionSelect->setCurrentItem(i);
+                  midiDivisionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
             if (divisions[i] == config.guiDivision) {
-                  guiDivisionSelect->setCurrentItem(i);
+                  guiDivisionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(dummyAudioBufSizes)/sizeof(*dummyAudioBufSizes); ++i) {
             if (dummyAudioBufSizes[i] == config.dummyAudioBufSize) {
-                  dummyAudioSize->setCurrentItem(i);
+                  dummyAudioSize->setCurrentIndex(i);
                   break;
                   }
             }
@@ -249,7 +249,7 @@ void GlobalSettingsConfig::showEvent(QShowEvent* e)
 
 void GlobalSettingsConfig::apply()
       {
-      int rtcticks       = rtcResolutionSelect->currentItem();
+      int rtcticks       = rtcResolutionSelect->currentIndex();
       config.guiRefresh  = guiRefreshSelect->value();
       config.minSlider   = minSliderSelect->value();
       config.minMeter    = minMeterSelect->value();
@@ -261,13 +261,13 @@ void GlobalSettingsConfig::apply()
       config.helpBrowser = helpBrowser->text();
       config.startSong   = startSongEntry->text();
       config.startMode   = startSongGroup->checkedId();
-      int das = dummyAudioSize->currentItem();
+      int das = dummyAudioSize->currentIndex();
       config.dummyAudioBufSize = dummyAudioBufSizes[das];
       config.dummyAudioSampleRate = dummyAudioRate->value();
 
-      int div            = midiDivisionSelect->currentItem();
+      int div            = midiDivisionSelect->currentIndex();
       config.division    = divisions[div];
-      div                = guiDivisionSelect->currentItem();
+      div                = guiDivisionSelect->currentIndex();
       config.guiDivision = divisions[div];
       
       config.transportVisible = showTransport->isChecked();

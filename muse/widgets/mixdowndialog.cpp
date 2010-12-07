@@ -45,8 +45,8 @@ MixdownFileDialog::MixdownFileDialog(const SndFile* _sf,
                   case 6:  channels = 2; break;
                   }
             editPath->setText(_sf->path());
-            comboChannel->setCurrentItem(channels);
-            comboFormat->setCurrentItem(format);
+            comboChannel->setCurrentIndex(channels);
+            comboFormat->setCurrentIndex(format);
             }
       }
 
@@ -57,8 +57,8 @@ MixdownFileDialog::MixdownFileDialog(const SndFile* _sf,
 void MixdownFileDialog::accept()
       {
       QString oldpath;
-      unsigned channel = comboChannel->currentItem();
-      unsigned format  = comboFormat->currentItem();
+      unsigned channel = comboChannel->currentIndex();
+      unsigned format  = comboFormat->currentIndex();
       switch (channel) {
             case 0: channel = 2; break;
             case 1: channel = 1; break;
