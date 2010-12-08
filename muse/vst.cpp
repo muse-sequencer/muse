@@ -422,7 +422,8 @@ void* VstSynth::instantiate()
       n.setNum(_instances);
       QString instanceName = baseName() + "-" + n;
       doSetuid();
-      const char* path = info.filePath().toLatin1();
+      QByteArray ba = info.filePath().toLatin1();
+      const char* path = ba.constData();
 
       fstHandle = fst_load(path);
       if (fstHandle == 0) {

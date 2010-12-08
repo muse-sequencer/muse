@@ -3354,7 +3354,8 @@ void MusE::openRecentMenu()
       for (int i = 0; i < PROJECT_LIST_LEN; ++i) {
             if (projectList[i] == 0)
                   break;
-            const char* path = projectList[i]->toLatin1().constData();
+            QByteArray ba = projectList[i]->toLatin1();
+            const char* path = ba.constData();
             const char* p = strrchr(path, '/');
             if (p == 0)
                   p = path;
