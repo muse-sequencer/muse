@@ -18,8 +18,9 @@
 //---------------------------------------------------------
 
 PitchLabel::PitchLabel(QWidget* parent, const char* name)
-  : QLabel(parent, name)
+  : QLabel(parent)
       {
+      setObjectName(name);
       _pitchMode = true;
       _value = -1;
       setFrameStyle(WinPanel | Sunken);

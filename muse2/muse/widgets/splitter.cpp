@@ -30,13 +30,13 @@ void Splitter::writeStatus(int level, Xml& xml)
       {
       QList<int> vl = sizes();
       //xml.nput(level++, "<%s>", name());
-      xml.nput(level++, "<%s>", Xml::xmlString(name()).toLatin1().constData());
+      xml.nput(level++, "<%s>", Xml::xmlString(objectName()).toLatin1().constData());
       QList<int>::iterator ivl = vl.begin();
       for (; ivl != vl.end(); ++ivl) {
             xml.nput("%d ", *ivl);
             }
       //xml.nput("</%s>\n", name());
-      xml.nput("</%s>\n", Xml::xmlString(name()).toLatin1().constData());
+      xml.nput("</%s>\n", Xml::xmlString(objectName()).toLatin1().constData());
       }
 
 //---------------------------------------------------------
@@ -59,7 +59,8 @@ void Splitter::readStatus(Xml& xml)
                         break;
                   case Xml::Text:
                         {
-                        QStringList sl = QStringList::split(' ', tag);
+                        //QStringList sl = QStringList::split(' ', tag);
+                        QStringList sl = tag.split(QString(" "), QString::SkipEmptyParts);
                         for (QStringList::Iterator it = sl.begin(); it != sl.end(); ++it) {
                               int val = (*it).toInt();
                               vl.append(val);
@@ -67,7 +68,7 @@ void Splitter::readStatus(Xml& xml)
                         }
                         break;
                   case Xml::TagEnd:
-                        if (tag == name()) {
+                        if (tag == objectName()) {
                               setSizes(vl);
                               return;
                               }

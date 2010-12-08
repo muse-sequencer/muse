@@ -286,7 +286,9 @@ class MusE : public QMainWindow
       void hideMidiInputTransform();
       void hideMidiFilterConfig();
       void hideMidiRemoteConfig();
+#ifdef BUILD_EXPERIMENTAL
       void hideMidiRhythmGenerator();
+#endif
       void globalCut();
       void globalInsert();
       void globalSplit();

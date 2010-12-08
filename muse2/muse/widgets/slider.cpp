@@ -175,7 +175,7 @@ void Slider::scaleChange()
 //------------------------------------------------------------
 void Slider::fontChange(const QFont & /*oldFont*/)
 {
-    repaint(FALSE);
+    repaint();
 }
 
 //------------------------------------------------------------
@@ -249,10 +249,10 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         pal, TRUE, 1);
   else
   {
-      p->setPen(pal.dark());
+      p->setPen(pal.dark().color());
       p->drawLine(markerPos -1 , cr.y() + lineDist, markerPos -1,
       cr.y() + cr.height() - lineDist - 1);
-      p->setPen(pal.light());
+      p->setPen(pal.light().color());
       p->drawLine(markerPos, cr.y() + lineDist, markerPos,
       cr.y() + cr.height() - lineDist - 1);
   }
@@ -285,10 +285,10 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         pal, TRUE, 1);
   else {
     
-    p->setPen(pal.dark());
+    p->setPen(pal.dark().color());
     p->drawLine(cr.x() + lineDist, markerPos - 1 ,
           cr.x() + cr.width() -  lineDist - 1, markerPos - 1);
-    p->setPen(pal.light());
+    p->setPen(pal.light().color());
     p->drawLine(cr.x() + lineDist, markerPos,
           cr.x() + cr.width() -  lineDist - 1 , markerPos);
       }
@@ -338,13 +338,13 @@ void Slider::drawHsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
      p->fillRect(rBound.x(),rSlot.y(),
            rPos - rBound.left(),ws,brBack);
 
-  p->setPen(pal.dark());
+  p->setPen(pal.dark().color());
   if (rSlot.x() < rThumb.left())
      p->drawLine(rSlot.x(), rSlot.bottom(), rSlot.x(), rSlot.top());
   if (rSlot.x() < rThumb.left() - 1)
   {
       p->drawLine(rSlot.x(), rSlot.top(), rThumb.left() - 1, rSlot.top());
-      p->setPen(pal.light());
+      p->setPen(pal.light().color());
       p->drawLine(rSlot.x() + 1, rSlot.bottom(),
       rThumb.left() - 1, rSlot.bottom());
   
@@ -365,17 +365,17 @@ void Slider::drawHsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
   if (lPos <= rBound.right())
      p->fillRect(lPos, rSlot.y() , rBound.right() - lPos + 1, ws ,brBack);
 
-  p->setPen(pal.dark());
+  p->setPen(pal.dark().color());
   if (rSlot.right() > rThumb.right())
   {
       p->drawLine(rThumb.right() + 1, rSlot.top(), rSlot.right(), rSlot.top());
-      p->setPen(pal.light());
+      p->setPen(pal.light().color());
       p->drawLine(rSlot.right(), rSlot.bottom(), rSlot.right(), rSlot.top() + 1);
   }
 
   if (rSlot.right() > rThumb.right() + 1)
   {
-      p->setPen(pal.light());
+      p->setPen(pal.light().color());
       p->drawLine(rThumb.right() + 1, rSlot.bottom(),
       rSlot.right() -1, rSlot.bottom());
       p->fillRect(rThumb.right() + 1, rSlot.y() + 1,
@@ -434,7 +434,7 @@ void Slider::drawVsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
      p->fillRect(rSlot.x(),rBound.y(), ws,
            hPos - rBound.top(),brBack);
 
-  p->setPen(pal.dark());
+  p->setPen(pal.dark().color());
   if (rSlot.top() < rThumb.top())
      p->drawLine(rSlot.left(), rSlot.top(), rSlot.right(), rSlot.top());
 
@@ -442,7 +442,7 @@ void Slider::drawVsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
   if (rSlot.top() < rThumb.top() - 1)
   {
       p->drawLine(rSlot.left(), rThumb.top() - 1, rSlot.left(), rSlot.top());
-      p->setPen(pal.light());
+      p->setPen(pal.light().color());
       p->drawLine(rSlot.right(), rSlot.top() + 1, rSlot.right(),
       rThumb.top() - 1);
   
@@ -465,17 +465,17 @@ void Slider::drawVsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
   if (lPos <= rBound.bottom())
      p->fillRect(rSlot.left(), lPos, ws, rBound.bottom() - lPos + 1, brBack);
 
-  p->setPen(pal.dark());
+  p->setPen(pal.dark().color());
   if (rSlot.bottom() > rThumb.bottom())
   {
       p->drawLine(rSlot.left(), rThumb.bottom() + 1, rSlot.left(), rSlot.bottom());
-      p->setPen(pal.light());
+      p->setPen(pal.light().color());
       p->drawLine(rSlot.left() * 1, rSlot.bottom(), rSlot.right(), rSlot.bottom());
   }
 
   if (rSlot.bottom() > rThumb.bottom() + 1)
   {
-      p->setPen(pal.light());
+      p->setPen(pal.light().color());
       p->drawLine(rSlot.right(), rThumb.bottom() + 1, rSlot.right(),
       rSlot.bottom());
       p->fillRect(rSlot.left() + 1, rThumb.bottom() + 1,
@@ -797,7 +797,7 @@ void Slider::rangeChange()
     if (!hasUserScale())
        d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor);
     SliderBase::rangeChange();
-    repaint(FALSE);
+    repaint();
 }
 
 //------------------------------------------------------------

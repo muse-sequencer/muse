@@ -30,6 +30,7 @@ void MusE::startMidiInputPlugin(int id)
       {
       bool flag = false;
       QWidget* w = 0;
+      QAction* act;
       if (id == 0) {
             if (!mitPluginTranspose) {
                   mitPluginTranspose = new MITPluginTranspose();
@@ -38,6 +39,7 @@ void MusE::startMidiInputPlugin(int id)
                      SLOT(hideMitPluginTranspose()));
                   }
             w = mitPluginTranspose;
+            act = midiTrpAction;
             }
       else if (id == 1) {
             if (!midiInputTransform) {
@@ -46,6 +48,7 @@ void MusE::startMidiInputPlugin(int id)
                      SLOT(hideMidiInputTransform()));
                   }
             w = midiInputTransform;
+            act = midiInputTrfAction;
             }
       else if (id == 2) {
             if (!midiFilterConfig) {
@@ -54,6 +57,7 @@ void MusE::startMidiInputPlugin(int id)
                      SLOT(hideMidiFilterConfig()));
                   }
             w = midiFilterConfig;
+            act = midiInputFilterAction;
             }
       else if (id == 3) {
             if (!midiRemoteConfig) {
@@ -62,6 +66,7 @@ void MusE::startMidiInputPlugin(int id)
                      SLOT(hideMidiRemoteConfig()));
                   }
             w = midiRemoteConfig;
+            act = midiRemoteAction;
             }
 #ifdef BUILD_EXPERIMENTAL
       else if (id == 4) {
@@ -71,6 +76,7 @@ void MusE::startMidiInputPlugin(int id)
                      SLOT(hideMidiRhythmGenerator()));
                   }
             w = midiRhythmGenerator;
+            act = midiRhythmAction;
             }
 #endif
       if (w) {
@@ -80,29 +86,31 @@ void MusE::startMidiInputPlugin(int id)
             else
                   w->hide();
             }
-      midiInputPlugins->setItemChecked(id, flag);
+      act->setChecked(flag);
       }
 
 void MusE::hideMitPluginTranspose()
       {
-      midiInputPlugins->setItemChecked(0, false);
+      midiTrpAction->setChecked(false);
       }
 void MusE::hideMidiInputTransform()
       {
-      midiInputPlugins->setItemChecked(1, false);
+      midiInputTrfAction->setChecked(false);
       }
 void MusE::hideMidiFilterConfig()
       {
-      midiInputPlugins->setItemChecked(2, false);
+      midiInputFilterAction->setChecked(false);
       }
 void MusE::hideMidiRemoteConfig()
       {
-      midiInputPlugins->setItemChecked(3, false);
+      midiRemoteAction->setChecked(false);
       }
+#ifdef BUILD_EXPERIMENTAL
 void MusE::hideMidiRhythmGenerator()
       {
-      midiInputPlugins->setItemChecked(4, false);
+      midiRhythmAction->setChecked(false);
       }
+#endif
 
 //---------------------------------------------------------
 //   processMidiInputTransformPlugins

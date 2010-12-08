@@ -269,7 +269,7 @@ Event EditSysexDialog::event()
 
 void EditSysexDialog::accept()
       {
-      QString qsrc = edit->text();
+      QString qsrc = edit->toPlainText();
       QByteArray ba = qsrc.toLatin1();
       const char* src = ba.constData();
 
@@ -332,9 +332,11 @@ EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
       
       //layout1->addWidget(il2, 1, 1, AlignLeft);
       layout1->addLayout(typeLayout, 1, 1);
-      
-      layout1->addMultiCellWidget(hexButton, 2, 2, 0, 1);
-      layout1->addMultiCellWidget(edit, 3, 3, 0, 1);
+
+      //layout1->addMultiCellWidget(hexButton, 2, 2, 0, 1);
+      //layout1->addMultiCellWidget(edit, 3, 3, 0, 1);
+      layout1->addWidget(hexButton, 2, 0, 1, 2);
+      layout1->addWidget(edit, 3, 0, 1, 2);
       }
 
 //---------------------------------------------------------
@@ -352,7 +354,7 @@ void EditMetaDialog::typeChanged(int val)
 
 void EditMetaDialog::toggled(bool flag)
       {
-      QString qsrc    = edit->text();
+      QString qsrc    = edit->toPlainText();
       QByteArray ba = qsrc.toLatin1();
       const char* src = ba.constData();
       edit->clear();
@@ -397,7 +399,7 @@ Event EditMetaDialog::event()
 
 void EditMetaDialog::accept()
       {
-      QString qsrc = edit->text();
+      QString qsrc = edit->toPlainText();
       QByteArray ba = qsrc.toLatin1();
       const char* src = ba.constData();
       if (!hexButton->isChecked()) {
@@ -420,7 +422,7 @@ EditCAfterDialog::EditCAfterDialog(int tick, const Event& event,
    QWidget* parent)
    : EditEventDialog(parent)
       {
-      setCaption(tr("MusE: Enter Channel Aftertouch"));
+      setWindowTitle(tr("MusE: Enter Channel Aftertouch"));
 
       QLabel* l1 = new QLabel(tr("Time Position"));
       ///epos = new PosEdit;
@@ -431,7 +433,12 @@ EditCAfterDialog::EditCAfterDialog(int tick, const Event& event,
       il2->setFrame(true);
       il2->setDark();
 
-      QSlider* slider = new QSlider(0, 127, 1, 0, Qt::Horizontal);
+      QSlider* slider = new QSlider(Qt::Horizontal);
+      slider->setMinimum(0);
+      slider->setMaximum(127);
+      slider->setPageStep(1);
+      slider->setValue(0);
+
       connect(slider, SIGNAL(valueChanged(int)), il2, SLOT(setValue(int)));
       connect(il2, SIGNAL(valueChanged(int)), slider, SLOT(setValue(int)));
 
@@ -450,7 +457,8 @@ EditCAfterDialog::EditCAfterDialog(int tick, const Event& event,
       layout1->addWidget(epos,  0, 1, Qt::AlignLeft);
       layout1->addWidget(l2,   1, 0);
       layout1->addWidget(il2,  1, 1, Qt::AlignLeft);
-      layout1->addMultiCellWidget(slider, 2, 2, 0, 1);
+      //layout1->addMultiCellWidget(slider, 2, 2, 0, 1);
+      layout1->addWidget(slider, 2, 0, 1, 2);
       }
 
 //---------------------------------------------------------
@@ -473,7 +481,7 @@ EditPAfterDialog::EditPAfterDialog(int tick, const Event& event,
    QWidget* parent)
    : EditEventDialog(parent)
       {
-      setCaption(tr("MusE: Enter Poly Aftertouch"));
+      setWindowTitle(tr("MusE: Enter Poly Aftertouch"));
 
       QLabel* l1 = new QLabel(tr("Time Position"));
       ///epos = new PosEdit;
@@ -486,7 +494,12 @@ EditPAfterDialog::EditPAfterDialog(int tick, const Event& event,
       il2->setFrame(true);
       il2->setDark();
 
-      QSlider* slider = new QSlider(0, 127, 1, 0, Qt::Horizontal);
+      QSlider* slider = new QSlider(Qt::Horizontal);
+      slider->setMinimum(0);
+      slider->setMaximum(127);
+      slider->setPageStep(1);
+      slider->setValue(0);
+
       connect(slider, SIGNAL(valueChanged(int)), il2, SLOT(setValue(int)));
       connect(il2, SIGNAL(valueChanged(int)), slider, SLOT(setValue(int)));
 
@@ -509,7 +522,8 @@ EditPAfterDialog::EditPAfterDialog(int tick, const Event& event,
       layout1->addWidget(pl,  1, 1, Qt::AlignLeft);
       layout1->addWidget(l3,  2, 0);
       layout1->addWidget(il2, 2, 1, Qt::AlignLeft);
-      layout1->addMultiCellWidget(slider, 3, 3, 0, 1);
+      //layout1->addMultiCellWidget(slider, 3, 3, 0, 1);
+      layout1->addWidget(slider, 3, 0, 1, 2);
       }
 
 //---------------------------------------------------------
@@ -580,7 +594,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
             }
 
       pop = new QMenu(this);
-      pop->setCheckable(false);
+      //pop->setCheckable(false);//not necessary in Qt4
 
       MidiTrack* track   = part->track();
       int portn          = track->outPort();
@@ -664,7 +678,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
 void EditCtrlDialog::newController()
       {
       QMenu* pop = new QMenu(this);
-      pop->setCheckable(this);
+      //pop->setCheckable(this);//not necessary in Qt4
       //
       // populate popup with all controllers available for
       // current instrument
@@ -829,7 +843,7 @@ void EditCtrlDialog::instrPopup()
       MidiInstrument* instr = midiPorts[port].instrument();
       instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
 
-      if(pop->count() == 0)
+      if(pop->actions().count() == 0)
         return;
       QAction* rv = new QAction(pop->exec(patchName->mapToGlobal(QPoint(10,5))));
       if (rv) {

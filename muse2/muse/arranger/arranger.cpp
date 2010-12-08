@@ -90,8 +90,9 @@ void Arranger::setHeaderWhatsThis()
 //---------------------------------------------------------
 
 Arranger::Arranger(QMainWindow* parent, const char* name)
-   : QWidget(parent, name)
+   : QWidget(parent)
       {
+      setObjectName(name);
       _raster  = 0;      // measure
       selected = 0;
       // Since program covers 3 controls at once, it is in 'midi controller' units rather than 'gui control' units.

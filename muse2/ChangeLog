@@ -1,3 +1,5 @@
+08.12.2010:
+        - Ported many more Qt3 methods to Qt4. (Orcan)
 07.12.2010:
         - Ported rack. TODO: Drag and drop needs a hand. It's not working. (Orcan)
         - Converted various Qt3 support methods to Qt4 in many files. (Orcan)

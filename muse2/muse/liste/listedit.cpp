@@ -180,7 +180,7 @@ void ListEdit::songChanged(int type)
                   genPartlist();
             // close window if editor has no parts anymore
             if (parts()->empty()) {
-                  close(false);
+                  close();
                   return;
                   }
             liste->setSortingEnabled(false);
@@ -440,7 +440,7 @@ ListEdit::ListEdit(PartList* pl)
       ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
       ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
 
-      menuEdit->insertSeparator();
+      menuEdit->addSeparator();
 #if 0
       QAction *cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
       connect(cutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -460,7 +460,7 @@ ListEdit::ListEdit(PartList* pl)
       connect(deleteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       editSignalMapper->setMapping(deleteAction, CMD_DELETE);
       deleteAction->setShortcut(Qt::Key_Delete);
-      menuEdit->insertSeparator();
+      menuEdit->addSeparator();
 
       menuEdit->addActions(insertItems->actions());
 
@@ -906,12 +906,12 @@ void ListEdit::configChanged()
 
 void ListEdit::initShortcuts()
       {
-      insertNote->setAccel(shortcuts[SHRT_LE_INS_NOTES].key);
-      insertSysEx->setAccel(shortcuts[SHRT_LE_INS_SYSEX].key);
-      insertCtrl->setAccel(shortcuts[SHRT_LE_INS_CTRL].key);
-      insertMeta->setAccel(shortcuts[SHRT_LE_INS_META].key);
-      insertCAfter->setAccel(shortcuts[SHRT_LE_INS_CHAN_AFTERTOUCH].key);
-      insertPAfter->setAccel(shortcuts[SHRT_LE_INS_POLY_AFTERTOUCH].key);
+      insertNote->setShortcut(shortcuts[SHRT_LE_INS_NOTES].key);
+      insertSysEx->setShortcut(shortcuts[SHRT_LE_INS_SYSEX].key);
+      insertCtrl->setShortcut(shortcuts[SHRT_LE_INS_CTRL].key);
+      insertMeta->setShortcut(shortcuts[SHRT_LE_INS_META].key);
+      insertCAfter->setShortcut(shortcuts[SHRT_LE_INS_CHAN_AFTERTOUCH].key);
+      insertPAfter->setShortcut(shortcuts[SHRT_LE_INS_POLY_AFTERTOUCH].key);
       }
 
 //---------------------------------------------------------

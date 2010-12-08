@@ -306,7 +306,7 @@ float *VAM::wave_tbl(int wave)
 bool VAM::init(const char* name)
       {
       gui = new VAMGui;
-      gui->setCaption(QString(name));
+      gui->setWindowTitle(QString(name));
       gui->show();
 
       if (useCount == 0) {

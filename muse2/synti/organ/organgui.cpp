@@ -84,7 +84,7 @@ void OrganGui::ctrlChanged(int idx)
             QSlider* slider = (QSlider*)(ctrl->editor);
             val = slider->value();
             // By T356. Apply auto-bias center value.
-            if(slider->minValue() < 0)
+            if(slider->minimum() < 0)
               val += 8192;
             }
       else if (ctrl->type == SynthGuiCtrl::SWITCH) {
@@ -106,8 +106,8 @@ int OrganGui::getControllerMinMax(int id, int* min, int* max) const
       //int val = 0;
       if (ctrl->type == SynthGuiCtrl::SLIDER) {
             QSlider* slider = (QSlider*)(ctrl->editor);
-            *max = slider->maxValue();
-            *min = slider->minValue();
+            *max = slider->maximum();
+            *min = slider->minimum();
             //val = (slider->value() * 16383 + max/2) / max;
             
             //val = 16383 + 1/2 
@@ -140,12 +140,12 @@ void OrganGui::setParam(int param, int val)
       ctrl->editor->blockSignals(true);
       if (ctrl->type == SynthGuiCtrl::SLIDER) {
             QSlider* slider = (QSlider*)(ctrl->editor);
-//             int max = slider->maxValue();
+//             int max = slider->maximum();
 //             if(val < 0) val = (val * max + 8191) / 16383 - 1;
 //             else val = (val * max + 8191) / 16383;
             
             // By T356. Apply auto-bias center value.
-            if(slider->minValue() < 0)
+            if(slider->minimum() < 0)
               val -= 8192;
             
             #ifdef ORGANGUI_DEBUG

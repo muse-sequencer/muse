@@ -587,7 +587,7 @@ bool ISynth::init(const char* name)
             }
 
       gui = new FLUIDGui;
-      gui->setCaption(QString(name));
+      gui->setWindowTitle(QString(name));
       gui->show();
       return false;
       }

@@ -151,7 +151,7 @@ MarkerView::MarkerView(QWidget* parent)
       {
       //setAttribute(Qt::WA_DeleteOnClose);
       
-      setCaption(tr("MusE: Marker"));
+      setWindowTitle(tr("MusE: Marker"));
 
       QAction* markerAdd = new QAction(QIcon(*flagIcon), tr("add marker"), this);
       connect(markerAdd, SIGNAL(activated()), SLOT(addMarker()));
@@ -460,7 +460,7 @@ void MarkerView::markerSelectionChanged()
             editTick->setValue(0);
             editSMPTE->setValue(0);
             editName->setText(QString(""));
-            lock->setOn(false);
+            lock->setChecked(false);
             editSMPTE->setEnabled(false);
             editTick->setEnabled(false);
             lock->setEnabled(false);
@@ -471,7 +471,7 @@ void MarkerView::markerSelectionChanged()
             editSMPTE->setValue(item->tick());
             editName->setText(item->name());
             editName->setEnabled(true);
-            lock->setOn(item->lock());
+            lock->setChecked(item->lock());
             lock->setEnabled(true);
             
             //printf("MarkerView::markerSelectionChanged item->lock:%d\n", item->lock());

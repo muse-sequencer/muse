@@ -18,8 +18,9 @@
 //---------------------------------------------------------
 
 ComboBox::ComboBox(QWidget* parent, const char* name)
-   : QLabel(parent, name)
+   : QLabel(parent)
       {
+      setObjectName(name);
       _currentItem = 0;
       _id = -1;
       list = new QMenu(0);

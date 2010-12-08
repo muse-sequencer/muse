@@ -342,7 +342,8 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       //mainGrid->addRowSpacing(1, hscroll->sizeHint().height());
       mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); 
       
-      QWidget* split1     = new QWidget(splitter, "split1");
+      QWidget* split1     = new QWidget(splitter);
+      split1->setObjectName("split1");
       QGridLayout* gridS1 = new QGridLayout(split1);
       gridS1->setContentsMargins(0, 0, 0, 0);
       gridS1->setSpacing(0);  

@@ -158,7 +158,7 @@ void MetronomeConfig::midiClickChanged(bool flag)
       midiPort->setEnabled(flag);
       }
 
-void MetronomeConfig::precountEnableChanged(bool flag)
+void MetronomeConfig::precountEnableChanged(bool /*flag*/)
       {
       /*
       precountBars->setEnabled(flag);
@@ -168,7 +168,7 @@ void MetronomeConfig::precountEnableChanged(bool flag)
       */
       }
 
-void MetronomeConfig::precountFromMastertrackChanged(bool flag)
+void MetronomeConfig::precountFromMastertrackChanged(bool /*flag*/)
       {
     /*
       precountSigZ->setEnabled(!flag);

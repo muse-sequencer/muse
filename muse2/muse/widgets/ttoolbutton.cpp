@@ -5,9 +5,9 @@
 //  (C) Copyright 2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qpainter.h>
-//Added by qt3to4:
+#include <QPainter>
 #include <QPixmap>
+#include <QStyle>
 
 #include "ttoolbutton.h"
 #include "gconfig.h"
@@ -22,8 +22,8 @@ void TransparentToolButton::drawButton(QPainter* p)
       int w = width();
       int h = height();
       QIcon::Mode mode = isEnabled() ? QIcon::Normal : QIcon::Disabled;
-      QIcon::State state = isOn() ? QIcon::On : QIcon::Off;
-      const QPixmap pm(iconSet().pixmap(QIcon::Automatic, mode, state));
+      QIcon::State state = isChecked() ? QIcon::On : QIcon::Off;
+      const QPixmap pm(icon().pixmap(style()->pixelMetric(QStyle::PM_SmallIconSize), mode, state));
       p->drawPixmap(QPoint((w - pm.width())/2, (h - pm.height())/2), pm);
       }
 

@@ -122,11 +122,11 @@ void Knob::drawKnob(QPainter* p, const QRect& r)
     pn.setWidth(d_borderWidth);
 
 
-    pn.setColor(pal.light());
+    pn.setColor(pal.color(QPalette::Light));
     p->setPen(pn);
     p->drawArc(aRect, 45*16,180*16);
 
-    pn.setColor(pal.dark());
+    pn.setColor(pal.color(QPalette::Dark));
     p->setPen(pn);
     p->drawArc(aRect, 225*16,180*16);
 
@@ -154,7 +154,7 @@ void Knob::valueChange()
       {
       recalcAngle();
       d_newVal++;
-      repaint(kRect, FALSE);
+      repaint(kRect);
       SliderBase::valueChange();
       }
 
@@ -265,7 +265,7 @@ void Knob::rangeChange()
     }
     recalcAngle();
     resize(size());
-    repaint(FALSE);
+    repaint();
 }
 
 //---------------------------------------------------------
@@ -415,7 +415,7 @@ void Knob::setKnobWidth(int w)
 {
     d_knobWidth = qwtMax(w,5);
     resize(size());
-    repaint(FALSE);
+    repaint();
 }
 
 //------------------------------------------------------------
@@ -434,7 +434,7 @@ void Knob::setBorderWidth(int bw)
 {
     d_borderWidth = qwtMax(bw, 0);
     resize(size());
-    repaint(FALSE);
+    repaint();
 }
 
 //------------------------------------------------------------
@@ -478,7 +478,7 @@ void Knob::setFaceColor(const QColor c)
   d_faceColor = c; 
   if(!_faceColSel)
     //update(FALSE);
-    repaint(FALSE);
+    repaint();
 }
 
 //------------------------------------------------------------
@@ -489,7 +489,7 @@ void Knob::setAltFaceColor(const QColor c)
   d_altFaceColor = c; 
   if(_faceColSel)
     //update(FALSE);
-    repaint(FALSE);
+    repaint();
 }
 
 //------------------------------------------------------------
@@ -503,7 +503,7 @@ void Knob::selectFaceColor(bool alt)
   else
     d_curFaceColor = d_faceColor; 
   //update(FALSE);
-  repaint(FALSE);
+  repaint();
 }
 
 //------------------------------------------------------------
@@ -513,6 +513,6 @@ void Knob::setMarkerColor(const QColor c)
 { 
   d_markerColor = c; 
   //update(FALSE);
-  repaint(FALSE);
+  repaint();
 }
 

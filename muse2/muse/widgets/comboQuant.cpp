@@ -63,7 +63,7 @@ ComboQuant::ComboQuant(QWidget* parent)
 //   activated
 //---------------------------------------------------------
 
-void ComboQuant::activated(int index)
+void ComboQuant::activated(int /*index*/)
       {
       ///emit valueChanged(quantTable[index]);
       emit valueChanged(quantTable[qlist->currentRow() + qlist->currentColumn() * 8]);
@@ -77,7 +77,7 @@ void ComboQuant::setValue(int val)
       {
       for (int i = 0; i < 24; i++) {
             if (val == quantTable[i]) {
-                  setCurrentItem(i);
+                  setCurrentIndex(i);
                   return;
                   }
             }

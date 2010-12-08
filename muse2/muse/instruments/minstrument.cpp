@@ -184,7 +184,7 @@ static void loadIDF(QFileInfo* fi)
       qf.close();
 */      
       
-      FILE* f = fopen(fi->filePath().ascii(), "r");
+      FILE* f = fopen(fi->filePath().toAscii().constData(), "r");
       if (f == 0)
             return;
       if (debugMsg)
@@ -270,7 +270,7 @@ void initMidiInstruments()
       QDir instrumentsDir(museInstruments, QString("*.idf"));
       if (instrumentsDir.exists()) {
             QFileInfoList list = instrumentsDir.entryInfoList();
-            QFileInfoListIterator it=list.begin(); // ddskrjo
+            QFileInfoList::iterator it=list.begin(); // ddskrjo
             while(it!=list.end()) {
                   loadIDF(&*it);
                   ++it;

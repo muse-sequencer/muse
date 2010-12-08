@@ -239,9 +239,19 @@ void AudioStrip::songChanged(int val)
             autoType->blockSignals(true);
             autoType->setCurrentItem(track->automationType());
             if(track->automationType() == AUTO_TOUCH || track->automationType() == AUTO_WRITE)
-              autoType->setPaletteBackgroundColor(Qt::red);
+                  {
+                  //autoType->setPaletteBackgroundColor(Qt::red);
+                  QPalette palette;
+                  palette.setColor(autoType->backgroundRole(), QColor(Qt::red));
+                  autoType->setPalette(palette);
+                  }
             else  
-              autoType->setPaletteBackgroundColor(qApp->palette().active().background());
+                  {
+                  //autoType->setPaletteBackgroundColor(qApp->palette().active().background());
+                  QPalette palette;
+                  palette.setColor(autoType->backgroundRole(), qApp->palette().color(QPalette::Active, QPalette::Background));
+                  autoType->setPalette(palette);
+                  }
       
             autoType->blockSignals(false);
             }
@@ -945,12 +955,21 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //autoType->setCurrentIndex(t->automationType());
       
       if(t->automationType() == AUTO_TOUCH || t->automationType() == AUTO_WRITE)
-        // FIXME:
-        autoType->setPaletteBackgroundColor(Qt::red);
+            {
+            // FIXME:
+            //autoType->setPaletteBackgroundColor(Qt::red);
+	    QPalette palette;
+	    palette.setColor(autoType->backgroundRole(), QColor(Qt::red));
+	    autoType->setPalette(palette);
+            }
       else  
-        // FIXME:
-        autoType->setPaletteBackgroundColor(qApp->palette().active().background());
-      
+            {
+            // FIXME:
+            //autoType->setPaletteBackgroundColor(qApp->palette().active().background());
+            QPalette palette;
+            palette.setColor(autoType->backgroundRole(), qApp->palette().color(QPalette::Active, QPalette::Background));
+            autoType->setPalette(palette);
+            }
       autoType->setToolTip(tr("automation type"));
       connect(autoType, SIGNAL(activated(int,int)), SLOT(setAutomationType(int,int)));
       grid->addWidget(autoType, _curGridRow++, 0, 1, 2);

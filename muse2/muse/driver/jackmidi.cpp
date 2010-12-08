@@ -713,7 +713,7 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
 
             //s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
             s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
-            xml.tag(level, s);
+            xml.tag(level, s.toLatin1().constData());
             
             //xml.strTag(level, "dstNode", name());
             //xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::JACK_MIDI_ROUTE, name().toLatin1().constData());
@@ -735,7 +735,7 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
             s += QString(QT_TR_NOOP(" channel=\"%1\"")).arg(r->channel);
           
           //xml.tag(level++, "Route");
-          xml.tag(level++, s);
+          xml.tag(level++, s.toLatin1().constData());
           
           /*
           //xml.strTag(level, "srcNode", name());
@@ -777,7 +777,7 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
 
           //s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
           s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
-          xml.tag(level, s);
+          xml.tag(level, s.toLatin1().constData());
           
           
           xml.etag(level--, "Route");
