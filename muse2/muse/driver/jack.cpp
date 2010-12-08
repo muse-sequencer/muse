@@ -919,7 +919,8 @@ void JackAudioDevice::graphChanged()
                               if (irl->channel != channel)
                                     continue;
                               QString name = irl->name();
-                              const char* portName = name.toLatin1();
+                              QByteArray ba = name.toLatin1();
+                              const char* portName = ba.constData();
                               //printf("portname=%s\n", portName);
                               bool found = false;
                               const char** pn = ports;
@@ -956,7 +957,8 @@ void JackAudioDevice::graphChanged()
                                     if (irl->channel != channel)
                                           continue;
                                     QString name = irl->name();
-                                    const char* portName = name.toLatin1();
+				    QByteArray ba = name.toLatin1();
+                                    const char* portName = ba.constData();
                                     if (strcmp(*pn, portName) == 0) {
                                           found = true;
                                           break;
@@ -1004,7 +1006,8 @@ void JackAudioDevice::graphChanged()
                               if (irl->channel != channel)
                                     continue;
                               QString name = irl->name();
-                              const char* portName = name.toLatin1();
+                              QByteArray ba = name.toLatin1();
+                              const char* portName = ba.constData();
                               bool found = false;
                               const char** pn = ports;
                               while (pn && *pn) {
@@ -1040,7 +1043,8 @@ void JackAudioDevice::graphChanged()
                                     if (irl->channel != channel)
                                           continue;
                                     QString name = irl->name();
-                                    const char* portName = name.toLatin1();
+                                    QByteArray ba = name.toLatin1();
+                                    const char* portName = ba.constData();
                                     if (strcmp(*pn, portName) == 0) {
                                           found = true;
                                           break;
@@ -1114,7 +1118,8 @@ void JackAudioDevice::graphChanged()
                                   //      continue;
                                   QString name = irl->name();
                                   //name += QString(JACK_MIDI_OUT_PORT_SUFFIX);    // p3.3.55
-                                  const char* portName = name.toLatin1();
+                                  QByteArray ba = name.toLatin1();
+                                  const char* portName = ba.constData();
                                   bool found = false;
                                   const char** pn = ports;
                                   while (pn && *pn) {
@@ -1154,7 +1159,8 @@ void JackAudioDevice::graphChanged()
                                         //if (irl->channel != channel)
                                         //      continue;
                                         QString name = irl->name();
-                                        const char* portName = name.toLatin1();
+                                        QByteArray ba = name.toLatin1();
+                                        const char* portName = ba.constData();
                                         if (strcmp(*pn, portName) == 0) {
                                               found = true;
                                               break;
@@ -1210,7 +1216,8 @@ void JackAudioDevice::graphChanged()
                                   //if (irl->channel != channel)
                                   //      continue;
                                   QString name = irl->name();
-                                  const char* portName = name.toLatin1();
+                                  QByteArray ba = name.toLatin1();
+                                  const char* portName = ba.constData();
                                   bool found = false;
                                   const char** pn = ports;
                                   while (pn && *pn) {
@@ -1250,7 +1257,8 @@ void JackAudioDevice::graphChanged()
                                         //if (irl->channel != channel)
                                         //      continue;
                                         QString name = irl->name();
-                                        const char* portName = name.toLatin1();
+                                        QByteArray ba = name.toLatin1();
+                                        const char* portName = ba.constData();
                                         if (strcmp(*pn, portName) == 0) {
                                               found = true;
                                               break;

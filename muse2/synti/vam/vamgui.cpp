@@ -445,7 +445,8 @@ void VAMGui::setPreset(Preset* preset)
 	putchar(0x7c);    // mess
 	putchar(0x2);     // vam
 	putchar(0x3);     // setPreset
-	const char* name = preset->name.toLatin1();
+        QByteArray ba = preset->name.toLatin1();
+	const char* name = ba.constData();
 	while (*name)
 		putchar(*name++ & 0x7f);
 	putchar(0);

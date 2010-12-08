@@ -180,7 +180,8 @@ int string2bitmap(const QString& str)
       {
       int val = 0;
       QString ss = str.simplified();
-      const char* s = ss.toLatin1();
+      QByteArray ba = ss.toLatin1();
+      const char* s = ba.constData();
 //printf("string2bitmap <%s>\n", s);
 
       if (s == 0)
@@ -238,7 +239,8 @@ unsigned int string2u32bitmap(const QString& str)
       //int val = 0;
       unsigned int val = 0;
       QString ss = str.simplified();
-      const char* s = ss.toLatin1();
+      QByteArray ba = ss.toLatin1();
+      const char* s = ba.constData();
 //printf("string2bitmap <%s>\n", s);
 
       if (s == 0)
