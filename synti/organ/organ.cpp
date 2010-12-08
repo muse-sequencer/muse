@@ -159,7 +159,7 @@ static inline float table_pos (float* table, unsigned long freq_256, unsigned *a
 bool Organ::init(const char* name)
       {
       gui = new OrganGui;
-      gui->setCaption(QString(name));
+      gui->setWindowTitle(QString(name));
       gui->show();
 
       for (int i = 0; i < NUM_CONTROLLER; ++i)
@@ -682,7 +682,7 @@ void Organ::setGeometry(int x, int y, int w, int h)
 //    construct a new synthesizer instance
 //---------------------------------------------------------
 
-static Mess* instantiate(int sr, QWidget*, QString* projectPathPtr, const char* name)
+static Mess* instantiate(int sr, QWidget*, QString* /*projectPathPtr*/, const char* name)
       {
       Organ* synth = new Organ(sr);
       if (synth->init(name)) {

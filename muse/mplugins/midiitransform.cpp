@@ -611,7 +611,7 @@ MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WFlags f
       modulGroup->addButton(modul4select,3);
 
       for (unsigned i = 0; i < sizeof(oplist)/sizeof(*oplist); ++i)
-            funcOp->insertItem(oplist[i].text, i);
+            funcOp->insertItem(i, oplist[i].text);
 
       connect(buttonNew,    SIGNAL(clicked()),      SLOT(presetNew()));
       connect(buttonDelete, SIGNAL(clicked()),      SLOT(presetDelete()));
@@ -692,7 +692,7 @@ void MidiInputTransformDialog::updatePresetList()
       cmt = 0;
       presetList->clear();
       
-      modul1select->setOn(true);
+      modul1select->setChecked(true);
       for (iMidiInputTransformation i = mtlist.begin(); i != mtlist.end(); ++i) {
             presetList->addItem((*i)->name);
             if (cmt == 0)
@@ -967,7 +967,7 @@ void MidiInputTransformDialog::accept()
 
 void MidiInputTransformDialog::reject()
       {
-      close(false);
+      close();
       }
 
 //---------------------------------------------------------
@@ -1246,7 +1246,7 @@ void MidiInputTransformDialog::nameChanged(const QString& s)
 
 void MidiInputTransformDialog::commentChanged()
       {
-      cmt->comment = commentEntry->text();
+      cmt->comment = commentEntry->toPlainText();
       }
 
 //---------------------------------------------------------
@@ -1631,33 +1631,33 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
       nameEntry->setText(cmt->name);
       commentEntry->setText(cmt->comment);
 
-      selEventOp->setCurrentItem(cmt->selEventOp);
+      selEventOp->setCurrentIndex(cmt->selEventOp);
       selEventOpSel(cmt->selEventOp);
 
       for (unsigned i = 0; i < sizeof(selTypeTable)/sizeof(*selTypeTable); ++i) {
             if (selTypeTable[i] == cmt->selType) {
-                  selType->setCurrentItem(i);
+                  selType->setCurrentIndex(i);
                   break;
                   }
             }
 
-      selVal1Op->setCurrentItem(cmt->selVal1);
+      selVal1Op->setCurrentIndex(cmt->selVal1);
       selVal1OpSel(cmt->selVal1);
 
-      selVal2Op->setCurrentItem(cmt->selVal2);
+      selVal2Op->setCurrentIndex(cmt->selVal2);
       selVal2OpSel(cmt->selVal2);
 
-      selPortOp->setCurrentItem(cmt->selPort);
+      selPortOp->setCurrentIndex(cmt->selPort);
       selPortOpSel(cmt->selPort);
 
-      selChannelOp->setCurrentItem(cmt->selChannel);
+      selChannelOp->setCurrentIndex(cmt->selChannel);
       selChannelOpSel(cmt->selChannel);
 
       {
       unsigned i;
       for (i = 0; i < sizeof(oplist)/sizeof(*oplist); ++i) {
             if (oplist[i].id == cmt->funcOp) {
-                  funcOp->setCurrentItem(i);
+                  funcOp->setCurrentIndex(i);
                   break;
                   }
             }
@@ -1668,20 +1668,20 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
 
       for (unsigned i = 0; i < sizeof(procTypeTable)/sizeof(*procTypeTable); ++i) {
             if (procTypeTable[i] == cmt->eventType) {
-                  procType->setCurrentItem(i);
+                  procType->setCurrentIndex(i);
                   break;
                   }
             }
 
-      procEventOp->setCurrentItem(cmt->procEvent);
+      procEventOp->setCurrentIndex(cmt->procEvent);
       procEventOpSel(cmt->procEvent);
 
-      procVal1Op->setCurrentItem(cmt->procVal1);
+      procVal1Op->setCurrentIndex(cmt->procVal1);
       procVal1OpSel(cmt->procVal1);
 
       for (unsigned i = 0; i < sizeof(procVal2Map)/sizeof(*procVal2Map); ++i) {
             if (procVal2Map[i] == cmt->procVal2) {
-                  procVal2Op->setCurrentItem(i);
+                  procVal2Op->setCurrentIndex(i);
                   break;
                   }
             }
@@ -1712,10 +1712,10 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
       procChannelVala->setValue(cmt->procChannela);
       procChannelValb->setValue(cmt->procChannelb);
       
-      procPortOp->setCurrentItem(cmt->procPort);
+      procPortOp->setCurrentIndex(cmt->procPort);
       procPortOpSel(cmt->procPort);
       
-      procChannelOp->setCurrentItem(cmt->procChannel);
+      procChannelOp->setCurrentIndex(cmt->procChannel);
       procChannelOpSel(cmt->procChannel);
       
       }

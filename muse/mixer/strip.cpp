@@ -218,7 +218,8 @@ Strip::Strip(QWidget* parent, Track* t)
       // MusE-2 Tested: TextWrapAnywhere actually works, but in fact it takes precedence 
       //  over word wrap, so I found it is not really desirable. Maybe with a user setting...
       //label->setAlignment(Qt::AlignCenter | Qt::TextWordWrap | Qt::TextWrapAnywhere);
-      label->setAlignment(Qt::AlignCenter | Qt::TextWordWrap);
+      // changed by Orcan: We can't use Qt::TextWordWrap in alignment in Qt4.
+      label->setAlignment(Qt::AlignCenter);
       label->setWordWrap(true);
       label->setAutoFillBackground(true);
       label->setLineWidth(2);

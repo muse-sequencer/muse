@@ -51,6 +51,6 @@ CtrlComboBox::CtrlComboBox(QWidget* parent)
             "PolyModeOn"
             };
       for (unsigned int i = 0; i < sizeof(ctxt)/sizeof(*ctxt); ++i)
-            insertItem(QString(ctxt[i]));
+             insertItem(i, QString(ctxt[i]));
       }
 

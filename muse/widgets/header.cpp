@@ -26,7 +26,8 @@ void Header::readStatus(Xml& xml)
                         return;
                   case Xml::Text:
                         {
-                        QStringList l = QStringList::split(QString(" "), tag);
+                        //QStringList l = QStringList::split(QString(" "), tag);
+                        QStringList l = tag.split(QString(" "), QString::SkipEmptyParts);
                         int index = count();
                         for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
                               int section = (*it).toInt();
@@ -39,7 +40,7 @@ void Header::readStatus(Xml& xml)
                         xml.unknown("Header");
                         break;
                   case Xml::TagEnd:
-                        if (tag == name())
+                        if (tag ==objectName())
                               return;
                   default:
                         break;
@@ -54,12 +55,12 @@ void Header::readStatus(Xml& xml)
 void Header::writeStatus(int level, Xml& xml) const
       {
       //xml.nput(level, "<%s> ", name());
-      xml.nput(level, "<%s> ", Xml::xmlString(name()).toLatin1().constData());
+      xml.nput(level, "<%s> ", Xml::xmlString(objectName()).toLatin1().constData());
       int n = count() - 1;
       for (int i = n; i >= 0; --i)
             xml.nput("%d ", visualIndex(i));
       //xml.put("</%s>", name());
-      xml.put("</%s>", Xml::xmlString(name()).toLatin1().constData());
+      xml.put("</%s>", Xml::xmlString(objectName()).toLatin1().constData());
       }
 
 //---------------------------------------------------------

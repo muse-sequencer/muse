@@ -27,7 +27,7 @@ Comment::Comment(QWidget* parent)
 
 void Comment::textChanged()
       {
-      setText(textentry->text());
+      setText(textentry->toPlainText());
       }
 
 //---------------------------------------------------------
@@ -37,7 +37,8 @@ void Comment::textChanged()
 TrackComment::TrackComment(Track* t, QWidget* parent)
    : Comment(parent)
       {
-      setCaption(tr("MusE: Track Comment"));
+      setAttribute(Qt::WA_DeleteOnClose);
+      setWindowTitle(tr("MusE: Track Comment"));
       track = t;
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       textentry->setText(track->comment());
@@ -64,11 +65,11 @@ void TrackComment::songChanged(int flags)
                   break;
             }
       if (it == tl->end()) {
-            close(true);
+            close();
             return;
             }
       label2->setText(track->name());
-      if (track->comment() != textentry->text()) {
+      if (track->comment() != textentry->toPlainText()) {
             disconnect(textentry, SIGNAL(textChanged()), this, SLOT(textChanged()));
             textentry->setText(track->comment());
             textentry->moveCursor(QTextCursor::End);

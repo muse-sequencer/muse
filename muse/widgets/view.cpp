@@ -78,8 +78,8 @@ void View::setXPos(int x)
       int delta  = xpos - x;         // -  -> shift left
       xpos  = x;
       
-      int w = width();
-      int h = height();
+      //int w = width();
+      //int h = height();
 
       scroll(delta, 0);
       
@@ -95,8 +95,8 @@ void View::setYPos(int y)
       int delta  = ypos - y;         // -  -> shift up
       ypos  = y;
       
-      int w = width();
-      int h = height();
+      //int w = width();
+      //int h = height();
       
       scroll(0, delta);
 
@@ -107,7 +107,7 @@ void View::setYPos(int y)
 //   resizeEvent
 //---------------------------------------------------------
 
-void View::resizeEvent(QResizeEvent* ev)
+void View::resizeEvent(QResizeEvent* /*ev*/)
       {
       
       }

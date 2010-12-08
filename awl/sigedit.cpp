@@ -103,7 +103,7 @@ void SigEdit::setValue(const AL::TimeSignature& s)
 void SigEdit::setValue(const QString& s)
       {
       int z = 4, n = 4;
-      sscanf(s.latin1(), "%d/%d", &z, &n);
+      sscanf(s.toLatin1().constData(), "%d/%d", &z, &n);
       AL::TimeSignature sig(z, n);
       setValue(sig);
       }

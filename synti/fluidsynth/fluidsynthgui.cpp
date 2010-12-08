@@ -160,12 +160,13 @@ void FluidSynthGui::pushClicked()
 
 void FluidSynthGui::loadClicked()
       {
-      QString filename = QFileDialog::getOpenFileName(lastdir, QString("*.[Ss][Ff]2"),
-                                                      this,
-                                                      "Load Soundfont dialog",
-                                                      "Choose soundfont");
+	QString filename = QFileDialog::getOpenFileName(this, 
+                                                      tr("Choose soundfont"), 
+                                                      lastdir, 
+                                                      QString("*.[Ss][Ff]2"));
+
       if (filename != QString::null) {
-            int lastslash = filename.findRev('/');
+            int lastslash = filename.lastIndexOf('/');
             lastdir = filename.left(lastslash);
 
             sendLastdir(lastdir);
@@ -180,10 +181,10 @@ void FluidSynthGui::loadClicked()
 
 void FluidSynthGui::sendLastdir(QString dir)
       {
-      int l = strlen(dir)+2;
+      int l = dir.length()+2;
       byte data[l];
       data[0] = FS_LASTDIR_CHANGE;
-      memcpy(data+1, dir.toLatin1(), strlen(dir)+1);
+      memcpy(data+1, dir.toLatin1(), dir.length()+1);
       sendSysex(data,l);
       }
 
@@ -341,7 +342,7 @@ void FluidSynthGui::processEvent(const MidiPlayEvent& ev)
                               }
                         case FS_CHORUS_TYPE: {
                               ChorusType->blockSignals(true);
-                              ChorusType->setCurrentItem(val);
+                              ChorusType->setCurrentIndex(val);
                               ChorusType->blockSignals(false);
                               break;
                               }
@@ -610,7 +611,7 @@ void FluidSynthGui::popClicked()
 void FluidSynthGui::sfItemClicked(QTreeWidgetItem* item, int /*col*/)
       {
       if (item != 0) {
-            currentlySelectedFont = atoi(item->text(FS_ID_COL));
+            currentlySelectedFont = atoi(item->text(FS_ID_COL).toLatin1().constData());
             Pop->setEnabled(true);
             }
       else {

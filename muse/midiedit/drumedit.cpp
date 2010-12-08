@@ -415,7 +415,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(canvas, SIGNAL(followEvent(int)), SLOT(follow(int)));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
-      setCaption(canvas->getCaption());
+      setWindowTitle(canvas->getCaption());
       
       updateHScrollRange();
       

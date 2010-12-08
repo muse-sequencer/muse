@@ -14,8 +14,9 @@
 //---------------------------------------------------------
 
 CheckBox::CheckBox(QWidget* parent, int i, const char* name)
-   : QCheckBox(parent, name)
+   : QCheckBox(parent)
       {
+      setObjectName(name);
       _id = i;
       connect(this, SIGNAL(toggled(bool)), SLOT(hasToggled(bool)));
       }

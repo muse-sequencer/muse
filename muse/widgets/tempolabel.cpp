@@ -16,8 +16,9 @@
 //---------------------------------------------------------
 
 TempoLabel::TempoLabel(QWidget* parent, const char* name)
-   : QLabel(parent, name)
+   : QLabel(parent)
       {
+      setObjectName(name);
       setFrameStyle(WinPanel | Sunken);
       setLineWidth(2);
       setMidLineWidth(3);

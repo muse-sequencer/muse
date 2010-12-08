@@ -89,7 +89,7 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
             a->setToolTip(tr(t->tip));
             a->setWhatsThis(tr(t->ltip));
             if (first) {
-                  a->setOn(true);
+                  a->setChecked(true);
                   first = false;
                   }
             ++n;

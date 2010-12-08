@@ -420,7 +420,7 @@ QString Xml::parse(const QString& tag)
 
 QString Xml::parse1()
       {
-      return parse(_s1.simplifyWhiteSpace());
+      return parse(_s1.simplified());
       }
 
 //---------------------------------------------------------
@@ -429,7 +429,7 @@ QString Xml::parse1()
 
 int Xml::parseInt()
       {
-      QString s(parse1().simplifyWhiteSpace());
+      QString s(parse1().simplified());
       bool ok;
       int base = 10;
       if (s.startsWith("0x") || s.startsWith("0X")) {
@@ -447,7 +447,7 @@ int Xml::parseInt()
 
 unsigned int Xml::parseUInt()
       {
-      QString s(parse1().simplifyWhiteSpace());
+      QString s(parse1().simplified());
       bool ok;
       int base = 10;
       if (s.startsWith("0x") || s.startsWith("0X")) {
@@ -464,7 +464,7 @@ unsigned int Xml::parseUInt()
 
 float Xml::parseFloat()
       {
-      QString s(parse1().simplifyWhiteSpace());
+      QString s(parse1().simplified());
       return s.toFloat();
       }
 
@@ -474,7 +474,7 @@ float Xml::parseFloat()
 
 double Xml::parseDouble()
       {
-      QString s(parse1().simplifyWhiteSpace());
+      QString s(parse1().simplified());
       return s.toDouble();
       }
 

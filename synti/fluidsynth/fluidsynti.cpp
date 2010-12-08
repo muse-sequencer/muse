@@ -112,7 +112,7 @@ bool FluidSynth::init(const char* name)
 
       gui = new FluidSynthGui();
       gui->show();
-      gui->setCaption(name);
+      gui->setWindowTitle(name);
 
       lastdir= "";
       currentlyLoadedFonts = 0;
@@ -363,10 +363,11 @@ void FluidSynth::parseInitData(int n, const byte* d)
       for (int i=0; i<nr_of_fonts; i++) {
             fonts[i].filename = (char*)(chptr);
             chptr+=(strlen(fonts[i].filename.c_str())+1);
+	    QByteArray ba = projPathPtr->toAscii();
 
             if (QFileInfo(fonts[i].filename.c_str()).isRelative()) {
                 printf("path is relative, we append full path!\n");
-                fonts[i].filename = projPathPtr->ascii() + std::string("/")+ fonts[i].filename;
+                fonts[i].filename = ba.constData() + std::string("/")+ fonts[i].filename;
                 }
             std::cout << "SOUNDFONT FILENAME + PATH " << fonts[i].filename << std::endl;
             }
@@ -589,7 +590,7 @@ static void* fontLoadThread(void* t)
 
       //Strip off the filename
       QString temp = QString(filename);
-      QString name = temp.right(temp.length() - temp.findRev('/',-1) - 1);
+      QString name = temp.right(temp.length() - temp.lastIndexOf('/',-1) - 1);
       name = name.left(name.length()-4); //Strip off ".sf2"
       font.name = name.toLatin1().constData();
       fptr->stack.push_front(font);

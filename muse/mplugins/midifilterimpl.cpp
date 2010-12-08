@@ -42,10 +42,10 @@ MidiFilterConfig::MidiFilterConfig(QDialog* parent)
   : QDialog(parent)
       {
       setupUi(this);
-      cb1->setCurrentItem(midiFilterCtrl1);
-      cb2->setCurrentItem(midiFilterCtrl2);
-      cb3->setCurrentItem(midiFilterCtrl3);
-      cb4->setCurrentItem(midiFilterCtrl4);
+      cb1->setCurrentIndex(midiFilterCtrl1);
+      cb2->setCurrentIndex(midiFilterCtrl2);
+      cb3->setCurrentIndex(midiFilterCtrl3);
+      cb4->setCurrentIndex(midiFilterCtrl4);
 
       rf1->setChecked(midiRecordType & 1);
       rf2->setChecked(midiRecordType & 2);
@@ -77,22 +77,22 @@ MidiFilterConfig::MidiFilterConfig(QDialog* parent)
       connect(tf6, SIGNAL(toggled(bool)), SLOT(thruChanged6(bool)));
       connect(tf7, SIGNAL(toggled(bool)), SLOT(thruChanged7(bool)));
 
-      cf1->setOn(midiInputChannel  & 1);
-      cf2->setOn(midiInputChannel  & 2);
-      cf3->setOn(midiInputChannel  & 4);
-      cf4->setOn(midiInputChannel  & 8);
-      cf5->setOn(midiInputChannel  & 0x10);
-      cf6->setOn(midiInputChannel  & 0x20);
-      cf7->setOn(midiInputChannel  & 0x40);
-      cf8->setOn(midiInputChannel  & 0x80);
-      cf9->setOn(midiInputChannel  & 0x100);
-      cf10->setOn(midiInputChannel & 0x200);
-      cf11->setOn(midiInputChannel & 0x400);
-      cf12->setOn(midiInputChannel & 0x800);
-      cf13->setOn(midiInputChannel & 0x1000);
-      cf14->setOn(midiInputChannel & 0x2000);
-      cf15->setOn(midiInputChannel & 0x4000);
-      cf16->setOn(midiInputChannel & 0x8000);
+      cf1->setChecked(midiInputChannel  & 1);
+      cf2->setChecked(midiInputChannel  & 2);
+      cf3->setChecked(midiInputChannel  & 4);
+      cf4->setChecked(midiInputChannel  & 8);
+      cf5->setChecked(midiInputChannel  & 0x10);
+      cf6->setChecked(midiInputChannel  & 0x20);
+      cf7->setChecked(midiInputChannel  & 0x40);
+      cf8->setChecked(midiInputChannel  & 0x80);
+      cf9->setChecked(midiInputChannel  & 0x100);
+      cf10->setChecked(midiInputChannel & 0x200);
+      cf11->setChecked(midiInputChannel & 0x400);
+      cf12->setChecked(midiInputChannel & 0x800);
+      cf13->setChecked(midiInputChannel & 0x1000);
+      cf14->setChecked(midiInputChannel & 0x2000);
+      cf15->setChecked(midiInputChannel & 0x4000);
+      cf16->setChecked(midiInputChannel & 0x8000);
 
       connect(cb1, SIGNAL(activated(int)), SLOT(setCtrl1(int)));
       connect(cb2, SIGNAL(activated(int)), SLOT(setCtrl2(int)));

@@ -49,7 +49,7 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
       Help->addAction(QWhatsThis::createAction(this));
 
       patchpopup = new QMenu(patchButton);
-      patchpopup->setCheckable(false);
+      //patchpopup->setCheckable(false);// Qt4 doc says this is unnecessary.
       
       // populate instrument list
       // Populate common controller list.
@@ -260,7 +260,7 @@ void EditInstrument::fileSave()
       
       // Do not allow a direct overwrite of a 'built-in' muse instrument.
       QFileInfo qfi(workingInstrument.filePath());
-      if(qfi.dirPath(true) == museInstruments)
+      if(qfi.absolutePath() == museInstruments)
       {
         //fileSaveAs();
         saveAs();
@@ -317,7 +317,7 @@ bool EditInstrument::fileSave(MidiInstrument* instrument, const QString& name)
       //      }
       //Xml xml(&f);
       
-      FILE* f = fopen(name.ascii(), "w");
+      FILE* f = fopen(name.toAscii().constData(), "w");
       if(f == 0)
       {
         //if(debugMsg)
@@ -429,7 +429,7 @@ void EditInstrument::saveAs()
                 {
                   // Prompt only if it's a user instrument, to avoid duplicates in the user instrument dir.
                   // This will still allow a user instrument to override a built-in instrument with the same name.
-                  if(fi.dirPath(true) != museInstruments)
+                  if(fi.absolutePath() != museInstruments)
                   {
                     //QMessageBox::critical(this,
                     //    tr("MusE: Bad instrument name"),
@@ -450,8 +450,8 @@ void EditInstrument::saveAs()
       //   path,
       //   tr("Instrument Definition (*.idf)"));
       
-      QString s = QFileDialog::getSaveFileName(path, tr("Instrument Definition (*.idf)"), this,
-         tr("MusE: Save Instrument Definition").toLatin1().constData());
+      QString s = QFileDialog::getSaveFileName(this, tr("MusE: Save Instrument Definition").toLatin1().constData(), 
+         path, tr("Instrument Definition (*.idf)"));
       if (s.isEmpty())
             return;
       //instrument->setFilePath(s);
@@ -553,7 +553,7 @@ void EditInstrument::fileSaveAs()
           {
             // Allow override of built-in instrument names.
             QFileInfo fi((*imi)->filePath());
-            if(fi.dirPath(true) == museInstruments)
+            if(fi.absolutePath() == museInstruments)
               break;
             found = true;
             break;
@@ -563,8 +563,8 @@ void EditInstrument::fileSaveAs()
           continue;  
         
         bool ok;
-        s = QInputDialog::getText(tr("MusE: Save instrument as"), tr("Enter a new unique instrument name:"), 
-                                  QLineEdit::Normal, s, &ok, this);
+        s = QInputDialog::getText(this, tr("MusE: Save instrument as"), tr("Enter a new unique instrument name:"), 
+                                  QLineEdit::Normal, s, &ok);
         if(!ok) 
           return;
         if(s.isEmpty())
@@ -587,7 +587,7 @@ void EditInstrument::fileSaveAs()
               QFileInfo fi((*imi)->filePath());
               // Allow override of built-in and user instruments:
               // If it's a user instrument, not a built-in instrument...
-              if(fi.dirPath(true) == museUserInstruments)
+              if(fi.absolutePath() == museUserInstruments)
               {
                 // No choice really but to overwrite the destination instrument file!
                 // Can not have two user files containing the same instrument name.
@@ -716,8 +716,8 @@ void EditInstrument::fileSaveAs()
         sfn = path;
       else  
       {
-        sfn = QFileDialog::getSaveFileName(path, tr("Instrument Definition (*.idf)"), this,
-          tr("MusE: Save Instrument Definition").toLatin1().constData());
+        sfn = QFileDialog::getSaveFileName(this, tr("MusE: Save Instrument Definition").toLatin1().constData(),
+           path, tr("Instrument Definition (*.idf)"));
         if (sfn.isEmpty())
               return;
         //instrument->setFilePath(s);
@@ -1188,7 +1188,7 @@ void EditInstrument::tabChanged(QWidget* w)
     return;
     
   // If we're switching to the Patches tab, just ignore.
-  if(QString(w->name()) == QString("patchesTab"))
+  if(QString(w->objectName()) == QString("patchesTab"))
     return;
     
   if(oldPatchItem)
@@ -1203,7 +1203,7 @@ void EditInstrument::tabChanged(QWidget* w)
   // We're still on the same item. No need to set oldPatchItem as in patchChanged...
   
   // If we're switching to the Controller tab, update the default patch button text in case a patch changed...
-  if(QString(w->name()) == QString("controllerTab"))
+  if(QString(w->objectName()) == QString("controllerTab"))
   {
     QTreeWidgetItem* sel = viewController->currentItem();
         
@@ -1443,7 +1443,7 @@ void EditInstrument::patchButtonClicked()
             for (ciPatchGroup i = pg->begin(); i != pg->end(); ++i) {
                   PatchGroup* pgp = *i;
                   QMenu* pm = new QMenu(pgp->name);
-                  pm->setCheckable(false);
+                  //pm->setCheckable(false);//Qt4 doc says this is unnecessary
                   pm->setFont(config.fonts[0]);
                   const PatchList& pl = pgp->patches;
                   for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
@@ -1477,7 +1477,7 @@ void EditInstrument::patchButtonClicked()
                   }
             }
 
-      if(patchpopup->count() == 0)
+      if(patchpopup->actions().count() == 0)
         return;
 
       QAction* act = patchpopup->exec(patchButton->mapToGlobal(QPoint(10,5)));
@@ -1646,7 +1646,7 @@ void EditInstrument::controllerChanged()
       
       //ctrlType->setCurrentIndex(type);
       ctrlType->blockSignals(true);
-      ctrlType->setCurrentItem(type);
+      ctrlType->setCurrentIndex(type);
       ctrlType->blockSignals(false);
       
       //ctrlTypeChanged(type);
@@ -1750,7 +1750,7 @@ void EditInstrument::controllerChanged()
         spinBoxDefault->setRange(c->minVal() - 1, c->maxVal());
         if(c->initVal() == CTRL_VAL_UNKNOWN)
           //spinBoxDefault->setValue(c->minVal() - 1);
-          spinBoxDefault->setValue(spinBoxDefault->minValue());
+          spinBoxDefault->setValue(spinBoxDefault->minimum());
         else  
           spinBoxDefault->setValue(c->initVal());
       }
@@ -1854,7 +1854,7 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   spinBoxMax->setValue(127);
                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
                   
-                  spinBoxDefault->setValue(spinBoxDefault->minValue());
+                  spinBoxDefault->setValue(spinBoxDefault->minimum());
                   lnum = spinBoxLCtrlNo->value();
                   //rng = 127;
                   //min = -128;
@@ -1885,7 +1885,7 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   spinBoxMin->setValue(0);
                   spinBoxMax->setValue(127);
                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
-                  spinBoxDefault->setValue(spinBoxDefault->minValue());
+                  spinBoxDefault->setValue(spinBoxDefault->minimum());
                   
                   hnum = spinBoxHCtrlNo->value();
                   lnum = spinBoxLCtrlNo->value();
@@ -1920,7 +1920,7 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   spinBoxMin->setValue(0);
                   spinBoxMax->setValue(16383);
                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
-                  spinBoxDefault->setValue(spinBoxDefault->minValue());
+                  spinBoxDefault->setValue(spinBoxDefault->minimum());
                   
                   hnum = spinBoxHCtrlNo->value();
                   lnum = spinBoxLCtrlNo->value();
@@ -1953,7 +1953,7 @@ void EditInstrument::ctrlTypeChanged(int idx)
                   spinBoxMin->setValue(-8192);
                   spinBoxMax->setValue(8191);
                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
-                  spinBoxDefault->setValue(spinBoxDefault->minValue());
+                  spinBoxDefault->setValue(spinBoxDefault->minimum());
                   
                   //rng = 8191;
                   //min = -8192;
@@ -2024,7 +2024,7 @@ void EditInstrument::ctrlTypeChanged(int idx)
       {
         c->setMinVal(spinBoxMin->value());
         c->setMaxVal(spinBoxMax->value());
-        if(spinBoxDefault->value() == spinBoxDefault->minValue())
+        if(spinBoxDefault->value() == spinBoxDefault->minimum())
           c->setInitVal(CTRL_VAL_UNKNOWN);
         else  
           c->setInitVal(spinBoxDefault->value());
@@ -2081,7 +2081,7 @@ void EditInstrument::ctrlTypeChanged(int idx)
         spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
         int inval = c->initVal();
         if(inval == CTRL_VAL_UNKNOWN)
-          spinBoxDefault->setValue(spinBoxDefault->minValue());
+          spinBoxDefault->setValue(spinBoxDefault->minimum());
         else  
         {
           if(inval < c->minVal())
@@ -2217,7 +2217,7 @@ void EditInstrument::ctrlMinChanged(int val)
       
       int inval = c->initVal();
       if(inval == CTRL_VAL_UNKNOWN)
-        spinBoxDefault->setValue(spinBoxDefault->minValue());
+        spinBoxDefault->setValue(spinBoxDefault->minimum());
       else  
       {
         if(inval < c->minVal())
@@ -2303,7 +2303,7 @@ void EditInstrument::ctrlMaxChanged(int val)
       
       int inval = c->initVal();
       if(inval == CTRL_VAL_UNKNOWN)
-        spinBoxDefault->setValue(spinBoxDefault->minValue());
+        spinBoxDefault->setValue(spinBoxDefault->minimum());
       else  
       {
         if(inval < c->minVal())

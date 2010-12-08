@@ -225,7 +225,7 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
           s = QT_TR_NOOP("Route");
           if(r->channel != -1)
             s += QString(QT_TR_NOOP(" channel=\"%1\"")).arg(r->channel);
-          xml.tag(level++, s);
+          xml.tag(level++, s.toLatin1().constData());
           
           /*
           //xml.strTag(level, "srcNode", name());
@@ -266,7 +266,7 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
             s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
           //s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
           s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
-          xml.tag(level, s);
+          xml.tag(level, s.toLatin1().constData());
           
           xml.etag(level--, "Route");
         }

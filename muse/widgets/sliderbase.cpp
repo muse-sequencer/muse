@@ -39,8 +39,9 @@
 //------------------------------------------------------------
 
 SliderBase::SliderBase(QWidget *parent, const char *name)
-: QWidget(parent, name)
+: QWidget(parent)
       {
+      setObjectName(name);
       _id           = -1;
       _cursorHoming    = false;
       _ignoreMouseMove = false;
@@ -92,7 +93,7 @@ void SliderBase::wheelEvent(QWheelEvent *e)
       e->accept();
 
       float inc = (maxValue() - minValue()) / 40;
-      if (e->state() == Qt::ShiftModifier)
+      if (e->modifiers() == Qt::ShiftModifier)
             inc = inc / 10;
 
       if(inc < step())
@@ -233,7 +234,7 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
     int ms = 0;
     /*double inc = step(); */ // prevent compiler warning: unused variable 
     _ignoreMouseMove = false;
-    const Qt::ButtonState button = e->button();
+    const Qt::MouseButton button = e->button();
     
     switch(d_scrollMode)
     {

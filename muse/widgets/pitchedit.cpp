@@ -14,8 +14,11 @@
 //---------------------------------------------------------
 
 PitchEdit::PitchEdit(QWidget* parent)
-  : QSpinBox(0, 127, 1, parent)
+  : QSpinBox(parent)
       {
+      setMinimum(0);
+      setMaximum(127);
+      setSingleStep(1);
       deltaMode = false;
       }
 

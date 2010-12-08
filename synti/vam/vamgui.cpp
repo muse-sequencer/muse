@@ -162,7 +162,7 @@ void Preset::readConfiguration(Xml& xml)
 void Preset::writeConfiguration(Xml& xml, int level)
 {
 	//xml.tag(level++, "preset name=\"%s\"", name.ascii());
-        xml.tag(level++, "preset name=\"%s\"", Xml::xmlString(name).ascii());
+        xml.tag(level++, "preset name=\"%s\"", Xml::xmlString(name).toAscii().constData());
 	for (int i = 0; i < NUM_CONTROLLER; ++i) {
 		xml.tag(level, "control idx=\"%d\" val=\"%d\" /", i, ctrl[i]);
 	}
@@ -265,14 +265,14 @@ void VAMGui::ctrlChanged(int idx)
 	int val = 0;
 	if (ctrl->type == SynthGuiCtrl::SLIDER) {
     		QSlider* slider = (QSlider*)(ctrl->editor);
-		int max = slider->maxValue();
+		int max = slider->maximum();
 		val = (slider->value() * 16383 + max/2) / max;
 	      }
 	else if (ctrl->type == SynthGuiCtrl::COMBOBOX) {
-		val = ((QComboBox*)(ctrl->editor))->currentItem();
+		val = ((QComboBox*)(ctrl->editor))->currentIndex();
 	      }
 	else if (ctrl->type == SynthGuiCtrl::SWITCH) {
-		val = ((QCheckBox*)(ctrl->editor))->isOn();
+		val = ((QCheckBox*)(ctrl->editor))->isChecked();
 	      }
       sendController(0, idx + CTRL_RPN14_OFFSET, val);
       }
@@ -283,14 +283,14 @@ int VAMGui::getController(int idx)
       int val = 0;
       if (ctrl->type == SynthGuiCtrl::SLIDER) {
             QSlider* slider = (QSlider*)(ctrl->editor);
-        int max = slider->maxValue();
+        int max = slider->maximum();
         val = (slider->value() * 16383 + max/2) / max;
             }
       else if (ctrl->type == SynthGuiCtrl::COMBOBOX) {
-        val = ((QComboBox*)(ctrl->editor))->currentItem();
+        val = ((QComboBox*)(ctrl->editor))->currentIndex();
             }
       else if (ctrl->type == SynthGuiCtrl::SWITCH) {
-        val = ((QCheckBox*)(ctrl->editor))->isOn();
+        val = ((QCheckBox*)(ctrl->editor))->isChecked();
             }
       return val;
       }
@@ -308,19 +308,19 @@ int VAMGui::getControllerInfo(int id, const char** name, int* controller,
       //int val = 0;
       if (ctrl->type == SynthGuiCtrl::SLIDER) {
             QSlider* slider = (QSlider*)(ctrl->editor);
-            *max = 16383; //slider->maxValue();
-            *min = slider->minValue();
+            *max = 16383; //slider->maximum();
+            *min = slider->minimum();
             //val = (slider->value() * 16383 + max/2) / max;
             
             //val = 16383 + 1/2 
             }
       else if (ctrl->type == SynthGuiCtrl::COMBOBOX) {
-            //val = ((QComboBox*)(ctrl->editor))->currentItem();
+            //val = ((QComboBox*)(ctrl->editor))->currentIndex();
             *min = 0;
             *max = ((QComboBox*)(ctrl->editor))->count();
             }
       else if (ctrl->type == SynthGuiCtrl::SWITCH) {
-            //val = ((QCheckBox*)(ctrl->editor))->isOn();
+            //val = ((QCheckBox*)(ctrl->editor))->isChecked();
             *min=0;
             *max=1;
             }
@@ -425,14 +425,14 @@ void VAMGui::setPreset(Preset* preset)
 		SynthGuiCtrl* ctrl = &dctrl[i];
 		if (ctrl->type == SynthGuiCtrl::SLIDER) {
 			QSlider* slider = (QSlider*)(ctrl->editor);
-			int max = slider->maxValue();
+			int max = slider->maximum();
 			val = (slider->value() * 16383 + max/2) / max;
 		}
 		else if (ctrl->type == SynthGuiCtrl::COMBOBOX) {
-			val = ((QComboBox*)(ctrl->editor))->currentItem();
+			val = ((QComboBox*)(ctrl->editor))->currentIndex();
 		}
 		else if (ctrl->type == SynthGuiCtrl::SWITCH) {
-			val = ((QCheckBox*)(ctrl->editor))->isOn();
+			val = ((QCheckBox*)(ctrl->editor))->isChecked();
 		}
 
 		preset->ctrl[i] = val;
@@ -474,7 +474,7 @@ void VAMGui::setParam(int param, int val)
 	ctrl->editor->blockSignals(true);
 	if (ctrl->type == SynthGuiCtrl::SLIDER) {
 		QSlider* slider = (QSlider*)(ctrl->editor);
-		int max = slider->maxValue();
+		int max = slider->maximum();
 		if(val < 0) val = (val * max + 8191) / 16383 - 1;
 		else val = (val * max + 8191) / 16383;
 		
@@ -483,7 +483,7 @@ void VAMGui::setParam(int param, int val)
 			((QLCDNumber*)(ctrl->label))->display(val);
 	      }
 	else if (ctrl->type == SynthGuiCtrl::COMBOBOX) {
-		((QComboBox*)(ctrl->editor))->setCurrentItem(val);
+		((QComboBox*)(ctrl->editor))->setCurrentIndex(val);
 	      }
 	else if (ctrl->type == SynthGuiCtrl::SWITCH) {
 		((QCheckBox*)(ctrl->editor))->setChecked(val);
@@ -565,14 +565,13 @@ void VAMGui::loadPresetsPressed()
                                                       this,
                                                       "Load Soundfont dialog",
                                                       "Choose soundfont");*/
-  QString fn = QFileDialog::getOpenFileName(s, "Presets (*.vam)", 
-                                            this,
-                                            "MusE: Load VAM Presets",
-                                            "Select a preset");
+        QString fn = QFileDialog::getOpenFileName(this, tr("MusE: Load VAM Presets"), 
+                                                  s, "Presets (*.vam)");
+
 	if (fn.isEmpty())
 		return;
 	bool popenFlag=false;
-	FILE* f = fopen(fn.ascii(),"r");//fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
+	FILE* f = fopen(fn.toAscii().constData(),"r");//fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
 	if (f == 0)
 		return;
 	presets.clear();
@@ -647,8 +646,8 @@ void VAMGui::doSavePresets(const QString& fn, bool showWarning)
     printf("empty name\n");
     return;
     } 
-  printf("fn=%s\n",fn.ascii());
-	FILE* f = fopen(fn.ascii(),"w");//fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, showWarning);
+  printf("fn=%s\n",fn.toAscii().constData());
+  FILE* f = fopen(fn.toAscii().constData(),"w");//fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, showWarning);
 	if (f == 0)
 		return;
 	Xml xml(f);
@@ -676,8 +675,8 @@ void VAMGui::savePresetsPressed()
 {
 #if 1 // TODO
 	QString s(getenv("MUSE"));
-	QString fn = QFileDialog::getSaveFileName(s, "Presets (*.vam)", this,
-         tr("MusE: Save VAM Presets"));
+	QString fn = QFileDialog::getSaveFileName(this, tr("MusE: Save VAM Presets"), 
+                                                  s, "Presets (*.vam)");
 	if (fn.isEmpty())
 		return;
 	doSavePresets (fn, true);
@@ -694,8 +693,8 @@ void VAMGui::savePresetsToFilePressed()
 	if (!presetFileName ) {
  
       QString s(getenv("MUSE"));
-      QString fn = QFileDialog::getSaveFileName(s, "Presets (*.vam)", this,
-            tr("MusE: Save VAM Presets"));
+      QString fn = QFileDialog::getSaveFileName(this, tr("MusE: Save VAM Presets"), 
+                                                s, "Presets (*.vam)");
       presetFileName = new QString(fn);
       }
   if (*presetFileName == QString(""))
