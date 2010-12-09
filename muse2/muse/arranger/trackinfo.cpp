@@ -347,8 +347,12 @@ void Arranger::genTrackInfo(QWidget* parent)
       QPixmap *noInfoPix   = new QPixmap(160, 1000); //muse_leftside_logo_xpm);
       const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
       noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
-      /* Orcan - fixme */
-      copyBlt(noInfoPix, 10, 0, logo, 0,0, logo->width(), logo->height());
+      // Orcan - check
+      //copyBlt(noInfoPix, 10, 0, logo, 0,0, logo->width(), logo->height());
+      QPainter p;
+      p.begin(noInfoPix);
+      p.drawImage(10, 0, logo->toImage(), 0,0, logo->width(), logo->height());
+
       //noTrackInfo->setPaletteBackgroundPixmap(*noInfoPix);
       QPalette palette;
       palette.setBrush(noTrackInfo->backgroundRole(), QBrush(*noInfoPix));

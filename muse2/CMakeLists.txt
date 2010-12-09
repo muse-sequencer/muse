@@ -94,31 +94,6 @@ else (APPLE)
 endif (APPLE)
 
 ##
-##  look for Qt3
-##
-
-# set(QT_MT_REQUIRED TRUE)
-# 
-#  find_package(Qt3)
-# # IF(EXISTS "${CMAKE_ROOT}/Modules/FindQt3.cmake")
-# #      include ( "${CMAKE_ROOT}/Modules/FindQt3.cmake" )
-# # else (EXISTS "${CMAKE_ROOT}/Modules/FindQt3.cmake")
-# #       message(FATAL_ERROR "Fatal error: cmake module FindQt3 required.\n")
-# #endif (EXISTS "${CMAKE_ROOT}/Modules/FindQt3.cmake")
-# 
-# if (NOT QT_FOUND)
-#       message(FATAL_ERROR "Fatal error: QT (version >= 3.2.0) required.\n"
-#       # "Cmake tries to detect QT4 by searching for 'qmake' in your PATH\n"
-#       # "If you have QT4 installed, make sure qmake is found in your PATH."
-#       )
-# endif (NOT QT_FOUND)
-# 
-# set (MUSE_QT_WRAP_CPP QT_WRAP_CPP)
-# set (MUSE_QT_WRAP_UI QT_WRAP_UI)
-
-# include(${QT_USE_FILE})
-
-##
 ##  look for Qt4
 ##
 
@@ -127,9 +102,6 @@ set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
 set(QT_USE_QTNSPLUGIN TRUE)
 set(QT_USE_QTSVG TRUE)
-
-## QT3 Compatibility support required, for now. 
-set(QT_USE_QT3SUPPORT TRUE)
 
 find_package(Qt4)
 
