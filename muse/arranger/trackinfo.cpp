@@ -58,10 +58,10 @@ void Arranger::midiTrackInfoHeartBeat()
       MidiPort* mp = &midiPorts[outPort];
       
       // Set record echo.
-      if(midiTrackInfo->recEchoButton->isOn() != track->recEcho())
+      if(midiTrackInfo->recEchoButton->isChecked() != track->recEcho())
       {
         midiTrackInfo->recEchoButton->blockSignals(true);
-        midiTrackInfo->recEchoButton->setOn(track->recEcho());
+        midiTrackInfo->recEchoButton->setChecked(track->recEcho());
         midiTrackInfo->recEchoButton->blockSignals(false);
       }
       
@@ -346,9 +346,13 @@ void Arranger::genTrackInfo(QWidget* parent)
       noTrackInfo          = new QWidget(trackInfo);
       QPixmap *noInfoPix   = new QPixmap(160, 1000); //muse_leftside_logo_xpm);
       const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
-      noInfoPix->fill(noTrackInfo->paletteBackgroundColor() );
+      noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
+      /* Orcan - fixme */
       copyBlt(noInfoPix, 10, 0, logo, 0,0, logo->width(), logo->height());
-      noTrackInfo->setPaletteBackgroundPixmap(*noInfoPix);
+      //noTrackInfo->setPaletteBackgroundPixmap(*noInfoPix);
+      QPalette palette;
+      palette.setBrush(noTrackInfo->backgroundRole(), QBrush(*noInfoPix));
+      noTrackInfo->setPalette(palette);
       noTrackInfo->setGeometry(0, 0, 65, 200);
       noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
 
@@ -984,7 +988,7 @@ void Arranger::instrPopup()
       MidiInstrument* instr = midiPorts[port].instrument();
       instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
 
-      if(pop->count() == 0)
+      if(pop->actions().count() == 0)
         return;
       QAction *act = pop->exec(midiTrackInfo->iPatch->mapToGlobal(QPoint(10,5)));
       if (act) {
@@ -1185,13 +1189,14 @@ void Arranger::genMidiTrackInfo()
       midiTrackInfo->iChanDetectLabel->setPixmap(*darkRedLedIcon);
       
       QIcon recEchoIconSet;
-      recEchoIconSet.setPixmap(*recEchoIconOn, QIcon::Automatic, QIcon::Normal, QIcon::On);
-      recEchoIconSet.setPixmap(*recEchoIconOff, QIcon::Automatic, QIcon::Normal, QIcon::Off);
-      midiTrackInfo->recEchoButton->setIconSet(recEchoIconSet);
+      recEchoIconSet.addPixmap(*recEchoIconOn, QIcon::Normal, QIcon::On);
+      recEchoIconSet.addPixmap(*recEchoIconOff, QIcon::Normal, QIcon::Off);
+      midiTrackInfo->recEchoButton->setIcon(recEchoIconSet);
       
       
       // MusE-2: AlignCenter and WordBreak are set in the ui(3) file, but not supported by QLabel. Turn them on here.
-      midiTrackInfo->trackNameLabel->setAlignment(Qt::AlignCenter | Qt::TextWordWrap);
+      midiTrackInfo->trackNameLabel->setAlignment(Qt::AlignCenter);
+      //Qt::TextWordWrap is not available for alignment in Qt4 - Orcan
       // MusE-2 Tested: TextWrapAnywhere actually works, but in fact it takes precedence 
       //  over word wrap, so I found it is not really desirable. Maybe with a user setting...
       //midiTrackInfo->trackNameLabel->setAlignment(Qt::AlignCenter | Qt::TextWordWrap | Qt::TextWrapAnywhere);
@@ -1216,7 +1221,7 @@ void Arranger::genMidiTrackInfo()
       connect(midiTrackInfo->iPatch, SIGNAL(released()), SLOT(instrPopup()));
 
       pop = new QMenu(midiTrackInfo->iPatch);
-      pop->setCheckable(false);
+      //pop->setCheckable(false); // not needed in Qt4
 
       // Removed by Tim. p3.3.9
       //connect(midiTrackInfo->iName, SIGNAL(returnPressed()), SLOT(iNameChanged()));
@@ -1290,9 +1295,9 @@ void Arranger::updateMidiTrackInfo(int flags)
         for (int i = 0; i < MIDI_PORTS; ++i) {
               QString name;
               name.sprintf("%d:%s", i+1, midiPorts[i].portname().toLatin1().constData());
-              midiTrackInfo->iOutput->insertItem(name, i);
+              midiTrackInfo->iOutput->insertItem(i, name);
               if (i == outPort)
-                    midiTrackInfo->iOutput->setCurrentItem(i);
+                    midiTrackInfo->iOutput->setCurrentIndex(i);
               }
         //midiTrackInfo->iInput->setText(bitmap2String(inPort));
         ///midiTrackInfo->iInput->setText(u32bitmap2String(inPort));
@@ -1309,10 +1314,10 @@ void Arranger::updateMidiTrackInfo(int flags)
         ///midiTrackInfo->iInputChannel->setText(bitmap2String(inChannel));
         
         // Set record echo.
-        if(midiTrackInfo->recEchoButton->isOn() != track->recEcho())
+        if(midiTrackInfo->recEchoButton->isChecked() != track->recEcho())
         {
           midiTrackInfo->recEchoButton->blockSignals(true);
-          midiTrackInfo->recEchoButton->setOn(track->recEcho());
+          midiTrackInfo->recEchoButton->setChecked(track->recEcho());
           midiTrackInfo->recEchoButton->blockSignals(false);
         }
         

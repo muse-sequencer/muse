@@ -526,7 +526,7 @@ void Piano::viewMouseMoveEvent(QMouseEvent* event)
 void Piano::viewMousePressEvent(QMouseEvent* event)
       {
       button = event->button();
-      shift  = event->state() & Qt::ShiftButton;
+      shift  = event->modifiers() & Qt::ShiftModifier;
       if (keyDown != -1) {
             emit keyReleased(keyDown, shift);
             keyDown = -1;
@@ -548,7 +548,7 @@ void Piano::viewMousePressEvent(QMouseEvent* event)
 void Piano::viewMouseReleaseEvent(QMouseEvent* event)
       {
       button = Qt::NoButton;
-      shift = event->state() & Qt::ShiftButton;
+      shift = event->modifiers() & Qt::ShiftModifier;
       if (keyDown != -1) {
             emit keyReleased(keyDown, shift);
             keyDown = -1;

@@ -969,7 +969,7 @@ void MusE::configMidiPorts()
 	midiPortConfig = new MPConfig(0);
      if (midiPortConfig->isVisible()) {
          midiPortConfig->raise();
-         midiPortConfig->setActiveWindow();
+         midiPortConfig->activateWindow();
          }
       else
             midiPortConfig->show();

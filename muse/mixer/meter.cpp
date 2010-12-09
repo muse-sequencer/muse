@@ -116,6 +116,7 @@ void Meter::paintEvent(QPaintEvent*)
       else
         yv = val == 0 ? h : int(((maxScale - val) * h)/range);
       
+      // ORCAN - FIXME */
       bitBlt(this, fw, fw,    &bgPm, 0, 0,  -1, yv, true); //   CopyROP, true); ddskrjo
       bitBlt(this, fw, fw+yv, &fgPm, 0, yv, -1, h-yv, true); //CopyROP, true); ddskrjo
 

@@ -17,6 +17,7 @@ Transpose::Transpose(QWidget* parent)
    : QDialog(parent)
       {
       setupUi(this);
+      setAttribute(Qt::WA_DeleteOnClose);
       buttonGroup1 = new QButtonGroup(this);
       buttonGroup1->addButton(time_all);
       buttonGroup1->addButton(time_selected);
@@ -94,6 +95,6 @@ void Transpose::accept()
                   }
             }
       song->endUndo(SC_EVENT_MODIFIED);
-      close(true);
+      close();
       }
 

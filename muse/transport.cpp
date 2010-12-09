@@ -52,9 +52,9 @@ static QToolButton* newButton(const QString& s, const QString& tt,
       QToolButton* button = new QToolButton(parent);
       button->setFixedHeight(height);
       button->setText(s);
-      button->setToggleButton(toggle);
+      button->setCheckable(toggle);
       button->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
-      QToolTip::add(button, tt);
+      button->setToolTip(tt);
       return button;
       }
 
@@ -63,9 +63,9 @@ static QToolButton* newButton(const QPixmap* pm, const QString& tt,
       {
       QToolButton* button = new QToolButton(parent);
       button->setFixedHeight(25);
-      button->setPixmap(*pm);
-      button->setToggleButton(toggle);
-      QToolTip::add(button, tt);
+      button->setIcon(QIcon(*pm));
+      button->setCheckable(toggle);
+      button->setToolTip(tt);
       return button;
       }
 
@@ -80,7 +80,7 @@ Handle::Handle(QWidget* r, QWidget* parent)
       {
       rootWin = r;
       setFixedWidth(20);
-      setCursor(Qt::pointingHandCursor);
+      setCursor(Qt::PointingHandCursor);
       QPalette palette;
       palette.setColor(this->backgroundRole(), config.transportHandleColor);
       this->setPalette(palette);
@@ -143,10 +143,10 @@ TempoSig::TempoSig(QWidget* parent)
       l3->setFont(config.fonts[2]);
       vb1->addWidget(l3);
 
-      l1->setBackgroundMode(Qt::PaletteLight);
+      l1->setBackgroundRole(QPalette::Light);
       l1->setAlignment(Qt::AlignCenter);
       l1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-      l2->setBackgroundMode(Qt::PaletteLight);
+      l2->setBackgroundRole(QPalette::Light);
       l2->setAlignment(Qt::AlignCenter);
       l2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       l3->setAlignment(Qt::AlignCenter);
@@ -212,7 +212,7 @@ void TempoSig::setTimesig(int a, int b)
 void Transport::setRecord(bool flag)
       {
       buttons[5]->blockSignals(true);
-      buttons[5]->setOn(flag);
+      buttons[5]->setChecked(flag);
       buttons[5]->blockSignals(false);
       }
 
@@ -224,9 +224,10 @@ Transport::Transport(QWidget*, const char* name)
   // : QWidget(0, name, WStyle_Customize | WType_TopLevel | WStyle_Tool
   //| WStyle_NoBorder | WStyle_StaysOnTop)
    //: QWidget(0, name, Qt::WStyle_Customize | Qt::Window | Qt::WStyle_NoBorder | Qt::WStyle_StaysOnTop)
-  : QWidget(0, name, Qt::Window | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
+  : QWidget(0, Qt::Window | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
       {
-      setCaption(QString("Muse: Transport"));
+      setObjectName(name);
+      setWindowTitle(QString("Muse: Transport"));
       setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 
       QHBoxLayout* hbox = new QHBoxLayout;
@@ -242,9 +243,9 @@ Transport::Transport(QWidget*, const char* name)
       QVBoxLayout *box1 = new QVBoxLayout;
       recMode     = new QComboBox;
       recMode->setFocusPolicy(Qt::NoFocus);
-      recMode->insertItem(tr("Overdub"), Song::REC_OVERDUP);
-      recMode->insertItem(tr("Replace"), Song::REC_REPLACE);
-      recMode->setCurrentItem(song->recMode());
+      recMode->insertItem(Song::REC_OVERDUP, tr("Overdub"));
+      recMode->insertItem(Song::REC_REPLACE, tr("Replace"));
+      recMode->setCurrentIndex(song->recMode());
 
       box1->addWidget(recMode);
 
@@ -256,10 +257,10 @@ Transport::Transport(QWidget*, const char* name)
 
       cycleMode = new QComboBox;
       cycleMode->setFocusPolicy(Qt::NoFocus);
-      cycleMode->insertItem(tr("Normal"),  Song::CYCLE_NORMAL);
-      cycleMode->insertItem(tr("Mix"),     Song::CYCLE_MIX);
-      cycleMode->insertItem(tr("Replace"), Song::CYCLE_REPLACE);
-      cycleMode->setCurrentItem(song->cycleMode());
+      cycleMode->insertItem(Song::CYCLE_NORMAL,  tr("Normal"));
+      cycleMode->insertItem(Song::CYCLE_MIX,     tr("Mix"));
+      cycleMode->insertItem(Song::CYCLE_REPLACE, tr("Replace"));
+      cycleMode->setCurrentIndex(song->cycleMode());
 
       box1->addWidget(cycleMode);
 
@@ -281,15 +282,15 @@ Transport::Transport(QWidget*, const char* name)
 
       QToolButton* b1 = newButton(punchinIcon, tr("punchin"), true);
       QToolButton* b2 = newButton(loopIcon, tr("loop"), true);
-      b2->setAccel(shortcuts[SHRT_TOGGLE_LOOP].key);
+      b2->setShortcut(shortcuts[SHRT_TOGGLE_LOOP].key);
 
       QToolButton* b3 = newButton(punchoutIcon, tr("punchout"), true);
       button2->addWidget(b1);
       button2->addWidget(b2);
       button2->addWidget(b3);
-      QToolTip::add(b1, tr("Punch In"));
-      QToolTip::add(b2, tr("Loop"));
-      QToolTip::add(b3, tr("Punch Out"));
+      b1->setToolTip(tr("Punch In"));
+      b2->setToolTip(tr("Loop"));
+      b3->setToolTip(tr("Punch Out"));
       b1->setWhatsThis(tr("Punch In"));
       b2->setWhatsThis(tr("Loop"));
       b3->setWhatsThis(tr("Punch Out"));
@@ -298,13 +299,13 @@ Transport::Transport(QWidget*, const char* name)
       connect(b2, SIGNAL(toggled(bool)), song, SLOT(setLoop(bool)));
       connect(b3, SIGNAL(toggled(bool)), song, SLOT(setPunchout(bool)));
 
-      b1->setOn(song->punchin());
-      b2->setOn(song->loop());
-      b3->setOn(song->punchout());
+      b1->setChecked(song->punchin());
+      b2->setChecked(song->loop());
+      b3->setChecked(song->punchout());
 
-      connect(song, SIGNAL(punchinChanged(bool)),  b1, SLOT(setOn(bool)));
-      connect(song, SIGNAL(punchoutChanged(bool)), b3, SLOT(setOn(bool)));
-      connect(song, SIGNAL(loopChanged(bool)),     b2, SLOT(setOn(bool)));
+      connect(song, SIGNAL(punchinChanged(bool)),  b1, SLOT(setChecked(bool)));
+      connect(song, SIGNAL(punchoutChanged(bool)), b3, SLOT(setChecked(bool)));
+      connect(song, SIGNAL(loopChanged(bool)),     b2, SLOT(setChecked(bool)));
 
       hbox->addLayout(button2);
 
@@ -366,7 +367,13 @@ Transport::Transport(QWidget*, const char* name)
       hbox1->addWidget(time2);
       box4->addLayout(hbox1);
 
-      slider = new QSlider(0, 200000, 1000, 0, Qt::Horizontal);
+      slider = new QSlider;
+      slider->setMinimum(0);
+      slider->setMaximum(0);
+      slider->setPageStep(1000);
+      slider->setValue(0);
+      slider->setOrientation(Qt::Horizontal);
+
       box4->addWidget(slider);
 
       tb = new QHBoxLayout;
@@ -384,7 +391,7 @@ Transport::Transport(QWidget*, const char* name)
       buttons[2]->setWhatsThis(tr(fforwardTransportText));
 
       buttons[3] = newButton(stopIcon, tr("stop"), true);
-      buttons[3]->setOn(true);     // set STOP
+      buttons[3]->setChecked(true);     // set STOP
       buttons[3]->setWhatsThis(tr(stopTransportText));
 
       buttons[4] = newButton(playIcon, tr("play"), true);
@@ -421,16 +428,16 @@ Transport::Transport(QWidget*, const char* name)
       quantizeButton = newButton(tr("AC"), tr("quantize during record"), true,19);
 
       clickButton    = newButton(tr("Click"), tr("metronom click on/off"), true,19);
-      clickButton->setAccel(shortcuts[SHRT_TOGGLE_METRO].key);
+      clickButton->setShortcut(shortcuts[SHRT_TOGGLE_METRO].key);
 
       syncButton     = newButton(tr("Sync"), tr("external sync on/off"), true,19);
 
       jackTransportButton     = newButton(tr("Jack"), tr("Jack transport sync on/off"), true,19);
 
-      quantizeButton->setOn(song->quantize());
-      clickButton->setOn(song->click());
-      syncButton->setOn(extSyncFlag.value());
-      jackTransportButton->setOn(useJackTransport.value());
+      quantizeButton->setChecked(song->quantize());
+      clickButton->setChecked(song->click());
+      syncButton->setChecked(extSyncFlag.value());
+      jackTransportButton->setChecked(useJackTransport.value());
 
       button1->addWidget(quantizeButton);
       button1->addWidget(clickButton);
@@ -503,8 +510,11 @@ void Transport::configChanged()
       l3->setFont(config.fonts[2]);
       l5->setFont(config.fonts[2]);
       l6->setFont(config.fonts[2]);
-      lefthandle->setBackgroundColor(config.transportHandleColor);
-      righthandle->setBackgroundColor(config.transportHandleColor);
+
+      QPalette pal;
+      pal.setColor(lefthandle->backgroundRole(), config.transportHandleColor);
+      lefthandle->setPalette(pal);
+      righthandle->setPalette(pal);
       }
 
 //---------------------------------------------------------
@@ -526,8 +536,10 @@ void Transport::setTempo(int t)
 
 void Transport::setHandleColor(QColor c)
       {
-        lefthandle->setBackgroundColor(c);
-        righthandle->setBackgroundColor(c);
+	QPalette pal;
+	pal.setColor(lefthandle->backgroundRole(), c);
+	lefthandle->setPalette(pal);
+	righthandle->setPalette(pal);
       }
 
 //---------------------------------------------------------
@@ -614,8 +626,8 @@ void Transport::setPlay(bool f)
       {
       buttons[3]->blockSignals(true);
       buttons[4]->blockSignals(true);
-      buttons[3]->setOn(!f);
-      buttons[4]->setOn(f);
+      buttons[3]->setChecked(!f);
+      buttons[4]->setChecked(f);
       buttons[3]->blockSignals(false);
       buttons[4]->blockSignals(false);
       }
@@ -626,7 +638,7 @@ void Transport::setPlay(bool f)
 
 void Transport::setMasterFlag(bool f)
       {
-      masterButton->setOn(f);
+      masterButton->setChecked(f);
       }
 
 //---------------------------------------------------------
@@ -636,7 +648,7 @@ void Transport::setMasterFlag(bool f)
 void Transport::setClickFlag(bool f)
       {
       clickButton->blockSignals(true);
-      clickButton->setOn(f);
+      clickButton->setChecked(f);
       clickButton->blockSignals(false);
       }
 
@@ -646,7 +658,7 @@ void Transport::setClickFlag(bool f)
 
 void Transport::setQuantizeFlag(bool f)
       {
-      quantizeButton->setOn(f);
+      quantizeButton->setChecked(f);
       }
 
 //---------------------------------------------------------
@@ -655,7 +667,7 @@ void Transport::setQuantizeFlag(bool f)
 
 void Transport::setSyncFlag(bool f)
       {
-      syncButton->setOn(f);
+      syncButton->setChecked(f);
       }
 
 //---------------------------------------------------------
@@ -702,7 +714,7 @@ void Transport::songChanged(int flags)
             setTimesig(z, n);
             }
       if (flags & SC_MASTER)
-            masterButton->setOn(song->masterFlag());
+            masterButton->setChecked(song->masterFlag());
       }
 
 //---------------------------------------------------------
@@ -711,7 +723,7 @@ void Transport::songChanged(int flags)
 
 void Transport::syncChanged(bool flag)
       {
-      syncButton->setOn(flag);
+      syncButton->setChecked(flag);
       buttons[0]->setEnabled(!flag);      // goto start
       buttons[1]->setEnabled(!flag);      // rewind
       buttons[2]->setEnabled(!flag);      // forward
@@ -720,7 +732,7 @@ void Transport::syncChanged(bool flag)
       slider->setEnabled(!flag);
       masterButton->setEnabled(!flag);
       if (flag) {
-            masterButton->setOn(false);
+            masterButton->setChecked(false);
             song->setMasterFlag(false);
             tempo->setTempo(0);         // slave mode: show "extern"
             }
@@ -735,7 +747,7 @@ void Transport::syncChanged(bool flag)
 
 void Transport::jackSyncChanged(bool flag)
       {
-      jackTransportButton->setOn(flag);
+      jackTransportButton->setChecked(flag);
       }
 //---------------------------------------------------------
 //   stopToggled
@@ -747,7 +759,7 @@ void Transport::stopToggled(bool val)
             song->setStop(true);
       else {
             buttons[3]->blockSignals(true);
-            buttons[3]->setOn(true);
+            buttons[3]->setChecked(true);
             buttons[3]->blockSignals(false);
             }
       }
@@ -762,7 +774,7 @@ void Transport::playToggled(bool val)
             song->setPlay(true);
       else {
             buttons[4]->blockSignals(true);
-            buttons[4]->setOn(true);
+            buttons[4]->setChecked(true);
             buttons[4]->blockSignals(false);
             }
       }

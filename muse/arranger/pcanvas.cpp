@@ -225,7 +225,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
             }
       QPoint cpos = event->pos();
       curItem     = items.find(cpos);
-      bool shift  = event->state() & Qt::ShiftButton;
+      bool shift  = event->modifiers() & Qt::ShiftModifier;
       if (curItem) {
             if (event->button() == Qt::LeftButton && shift) {
                   editPart = (NPart*)curItem;
@@ -738,7 +738,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       act_copy->setData(5);
       act_copy->setShortcut(Qt::CTRL+Qt::Key_C);
 
-      partPopup->insertSeparator();
+      partPopup->addSeparator();
       int rc = npart->part()->events()->arefCount();
       QString st = QString(tr("s&elect "));
       if(rc > 1)
@@ -747,7 +747,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       QAction *act_select = partPopup->addAction(st);
       act_select->setData(18);
       
-      partPopup->insertSeparator();
+      partPopup->addSeparator();
       QAction *act_rename = partPopup->addAction(tr("rename"));
       act_rename->setData(0);
       QMenu* colorPopup = new QMenu(tr("color"));
@@ -772,7 +772,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       QAction *act_declone = partPopup->addAction(tr("de-clone"));
       act_declone->setData(15);
 
-      partPopup->insertSeparator();
+      partPopup->addSeparator();
       switch(trackType) {
             case Track::MIDI: {
                   QAction *act_pianoroll = partPopup->addAction(QIcon(*pianoIconSet), tr("pianoroll"));
@@ -809,10 +809,10 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   break;
             }
 
-      partPopup->setItemEnabled(18, rc > 1);
-      partPopup->setItemEnabled(1, true);
-      partPopup->setItemEnabled(4, true);
-      partPopup->setItemEnabled(15, rc > 1);
+      act_select->setEnabled( rc > 1);
+      act_delete->setEnabled( true);
+      act_cut->setEnabled( true);
+      act_declone->setEnabled( rc > 1);
       
       return partPopup;
       }
@@ -1006,7 +1006,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
 
 void PartCanvas::mousePress(QMouseEvent* event)
       {
-    if (event->state() & Qt::ShiftButton) {
+    if (event->modifiers() & Qt::ShiftModifier) {
             return;
             }
       QPoint pt = event->pos();
@@ -1083,11 +1083,11 @@ void PartCanvas::keyPress(QKeyEvent* event)
             return;
             }
 
-      if (event->state() &  Qt::ShiftButton)
+      if (event->modifiers() &  Qt::ShiftModifier)
             key +=  Qt::SHIFT;
-      if (event->state() &  Qt::AltButton)
+      if (event->modifiers() &  Qt::AltModifier)
             key +=  Qt::ALT;
-      if (event->state() &  Qt::ControlButton)
+      if (event->modifiers() &  Qt::ControlModifier)
             key +=  Qt::CTRL;
 
       if (key == shortcuts[SHRT_DELETE].key) {
@@ -1567,7 +1567,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             rr.setX(rr.x() + 3);
             p.save();
             p.setFont(config.fonts[1]);
-            p.setWorldXForm(false);
+            p.setWorldMatrixEnabled(false);
             p.drawText(rr, Qt::AlignVCenter|Qt::AlignLeft, part->name());
             p.restore();
             }
@@ -1596,11 +1596,11 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
 void PartCanvas::drawWavePart(QPainter& p,
    const QRect& bb, WavePart* wp, const QRect& _pr)
       {
-      QRect rr = p.worldMatrix().map(bb);
-      QRect pr = p.worldMatrix().map(_pr);
+      QRect rr = p.worldMatrix().mapRect(bb);
+      QRect pr = p.worldMatrix().mapRect(_pr);
 
       p.save();
-      p.resetXForm();
+      p.resetTransform();
 
       int x2 = 1;
       int x1  = rr.x() > pr.x() ? rr.x() : pr.x();

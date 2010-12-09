@@ -701,7 +701,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
       //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toLatin1().constData());
 //      snprintf(oscUrl, 1024, "%s/%s/%s", url, info.baseName().toLatin1().constData(), synti->name().toLatin1().constData());
       //QString guiPath(info.path() + "/" + info.baseName());
-      QString guiPath(info.dirPath() + "/" + info.baseName());
+      QString guiPath(info.path() + "/" + info.baseName());
       QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
       _hasGui = guiDir.exists();
       

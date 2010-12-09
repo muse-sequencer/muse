@@ -117,7 +117,7 @@ void TLLayout::setGeometry(const QRect &rect)
             range = 0;
       sb->setShown(range != 0);
       if (range)
-            sb->setMaxValue(range);
+            sb->setMaximum(range);
 
       if (widget) {
             QSize r(s0.width(), y2);

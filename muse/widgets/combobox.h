@@ -28,7 +28,7 @@ class ComboBox : public QLabel {
       virtual void mousePressEvent(QMouseEvent*);
 
    private slots:
-      void activatedIntern(int);
+      void activatedIntern(QAction*);
 
    signals:
       void activated(int val, int id);

@@ -859,7 +859,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
             int naux = song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
                   QString s("<auxSend idx=%1>%2</auxSend>\n");
-                  xml.nput(level, s.arg(idx).arg(_auxSend[idx]));
+                  xml.nput(level, s.arg(idx).arg(_auxSend[idx]).toAscii().constData());
                   }
             }
       for (ciPluginI ip = _efxPipe->begin(); ip != _efxPipe->end(); ++ip) {
@@ -869,11 +869,11 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
       for (ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl) {
             const CtrlList* cl = icl->second;
             QString s("controller id=\"%1\" cur=\"%2\"");
-            xml.tag(level++, s.arg(cl->id()).arg(cl->curVal()));
+            xml.tag(level++, s.arg(cl->id()).arg(cl->curVal()).toAscii().constData());
             int i = 0;
             for (ciCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
                   QString s("%1 %2, ");
-                  xml.nput(level, s.arg(ic->second.frame).arg(ic->second.val));
+                  xml.nput(level, s.arg(ic->second.frame).arg(ic->second.val).toAscii().constData());
                   ++i;
                   if (i >= 4) {
                         xml.put(level, "");
@@ -1576,7 +1576,7 @@ bool AudioTrack::setRecordFlag1(bool f)
                      sprintf(buffer, "%s/rec%d.wav",
                         museProject.toLatin1().constData(),
                         recFileNumber);
-                     fil.setName(QString(buffer));
+                     fil.setFileName(QString(buffer));
                      if (!fil.exists())
                         break;
                         }

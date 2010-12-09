@@ -173,7 +173,7 @@ void MidiEditor::songChanged(int type)
                   genPartlist();
                   // close window if editor has no parts anymore
                   if (parts()->empty()) {
-                        close(false);
+                        close();
                         return;
                         }
                   }

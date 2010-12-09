@@ -322,8 +322,8 @@ bool MusE::seqStart()
             }
       
       if (!audio->start()) {
-          QMessageBox::critical( muse, tr(QString("Failed to start audio!")),
-              tr(QString("Was not able to start audio, check if jack is running.\n")));
+          QMessageBox::critical( muse, tr("Failed to start audio!"),
+              tr("Was not able to start audio, check if jack is running.\n"));
           return false;
           }
 
@@ -641,7 +641,7 @@ QMenu* populateAddSynth(QWidget* parent)
     synMESS = dynamic_cast<MessSynth*>(*i);
     if(synMESS)
     {
-      mapMESS.insert( std::pair<std::string, int> (std::string(synMESS->description().lower().toLatin1().constData()), ii) );
+      mapMESS.insert( std::pair<std::string, int> (std::string(synMESS->description().toLower().toLatin1().constData()), ii) );
     }
     else
     {
@@ -650,7 +650,7 @@ QMenu* populateAddSynth(QWidget* parent)
       synDSSI = dynamic_cast<DssiSynth*>(*i);
       if(synDSSI)
       {
-        mapDSSI.insert( std::pair<std::string, int> (std::string(synDSSI->description().lower().toLatin1().constData()), ii) );
+        mapDSSI.insert( std::pair<std::string, int> (std::string(synDSSI->description().toLower().toLatin1().constData()), ii) );
       }
       else
       #endif                      
@@ -660,13 +660,13 @@ QMenu* populateAddSynth(QWidget* parent)
         synVST = dynamic_cast<VstSynth*>(*i);
         if(synVST)
         {
-          mapVST.insert( std::pair<std::string, int> (std::string(synVST->description().lower().toLatin1().constData()), ii) );
+          mapVST.insert( std::pair<std::string, int> (std::string(synVST->description().toLower().toLatin1().constData()), ii) );
         }
         else
         #endif                      
         
         {
-          mapOther.insert( std::pair<std::string, int> (std::string((*i)->description().lower().toLatin1().constData()), ii) );
+          mapOther.insert( std::pair<std::string, int> (std::string((*i)->description().toLower().toLatin1().constData()), ii) );
         }
       }
     }
@@ -873,7 +873,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       song           = new Song("song");
       song->blockSignals(true);
-      heartBeatTimer = new QTimer(this, "timer");
+      heartBeatTimer = new QTimer(this);
+      heartBeatTimer->setObjectName("timer");
       connect(heartBeatTimer, SIGNAL(timeout()), song, SLOT(beat()));
 
 #ifdef ENABLE_PYTHON
@@ -936,7 +937,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       punchoutAction->setWhatsThis(tr(infoPunchoutButton));
       connect(punchoutAction, SIGNAL(toggled(bool)), song, SLOT(setPunchout(bool)));
 
-      transportAction->addSeparator();
+      QAction *tseparator = new QAction(this);
+      tseparator->setSeparator(true);
+      transportAction->addAction(tseparator);
 
       startAction = new QAction(QIcon(*startIcon),
          tr("Start"), transportAction);
@@ -961,7 +964,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       stopAction->setCheckable(true);
 
       stopAction->setWhatsThis(tr(infoStopButton));
-      stopAction->setOn(true);
+      stopAction->setChecked(true);
       connect(stopAction, SIGNAL(toggled(bool)), song, SLOT(setStop(bool)));
 
       playAction = new QAction(QIcon(*playIcon),
@@ -969,7 +972,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       playAction->setCheckable(true);
 
       playAction->setWhatsThis(tr(infoPlayButton));
-      playAction->setOn(false);
+      playAction->setChecked(false);
       connect(playAction, SIGNAL(toggled(bool)), song, SLOT(setPlay(bool)));
 
       recordAction = new QAction(QIcon(*recordIcon),
@@ -1423,7 +1426,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //-------------------------------------------------------------
 
       menuView = menuBar()->addMenu(tr("View"));
-      menuView->setCheckable(true);
+      //menuView->setCheckable(true);// not necessary with Qt4
 
       menuView->addAction(viewTransportAction);
       menuView->addAction(viewBigtimeAction);
@@ -1738,16 +1741,16 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             project.setFile("untitled");
             }
       else {
-            printf("Setting project path to %s\n", fi.dirPath(true).toLatin1().constData());
-            museProject = fi.dirPath(true);
+            printf("Setting project path to %s\n", fi.absolutePath().toLatin1().constData());
+            museProject = fi.absolutePath();
             project.setFile(name);
             }
       // Changed by T356. 01/19/2010. We want the complete extension here. 
-      //QString ex = fi.extension(false).lower();
+      //QString ex = fi.extension(false).toLower();
       //if (ex.length() == 3)
       //      ex += ".";
       //ex = ex.left(4);
-      QString ex = fi.extension(true).lower();
+      QString ex = fi.completeSuffix().toLower();
       QString mex = ex.section('.', -1, -1);  
       if((mex == "gz") || (mex == "bz2"))
         mex = ex.section('.', -2, -2);  
@@ -1792,8 +1795,8 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             setUntitledProject();
             }
       if (!songTemplate) {
-            addProject(project.absFilePath());
-            setCaption(QString("MusE: Song: ") + project.baseName(true));
+            addProject(project.absoluteFilePath());
+            setWindowTitle(QString("MusE: Song: ") + project.completeBaseName());
             }
       song->dirty = false;
 
@@ -1839,9 +1842,9 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             }
 
       transport->setMasterFlag(song->masterFlag());
-      punchinAction->setOn(song->punchin());
-      punchoutAction->setOn(song->punchout());
-      loopAction->setOn(song->loop());
+      punchinAction->setChecked(song->punchin());
+      punchoutAction->setChecked(song->punchout());
+      loopAction->setChecked(song->loop());
       song->update();
       song->updatePos();
       clipboardChanged(); // enable/disable "Paste"
@@ -1886,9 +1889,9 @@ void MusE::setUntitledProject()
       {
       setConfigDefaults();
       QString name("untitled");
-      museProject = QFileInfo(name).dirPath(true);
+      museProject = QFileInfo(name).absolutePath();
       project.setFile(name);
-      setCaption(tr("MusE: Song: ") + project.baseName(true));
+      setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
       }
 
 //---------------------------------------------------------
@@ -1955,7 +1958,7 @@ void MusE::loadProject()
       QString fn = getOpenFileName(QString(""), med_file_pattern, this,
          tr("MusE: load project"), &loadAll);
       if (!fn.isEmpty()) {
-            museProject = QFileInfo(fn).dirPath(true);
+            museProject = QFileInfo(fn).absolutePath();
             loadProjectFile(fn, false, loadAll);
             }
       }
@@ -1969,7 +1972,7 @@ void MusE::loadTemplate()
       QString fn = getOpenFileName(QString("templates"), med_file_pattern, this,
          tr("MusE: load template"), 0);
       if (!fn.isEmpty()) {
-            // museProject = QFileInfo(fn).dirPath(true);
+            // museProject = QFileInfo(fn).absolutePath();
             loadProjectFile(fn, true, true);
             setUntitledProject();
             }
@@ -1981,7 +1984,7 @@ void MusE::loadTemplate()
 
 bool MusE::save()
       {
-      if (project.baseName(true) == "untitled")
+      if (project.completeBaseName() == "untitled")
             return saveAs();
       else
             return save(project.filePath(), false);
@@ -2038,7 +2041,7 @@ bool MusE::save(const QString& name, bool overwriteWarn)
 
 void MusE::quitDoc()
       {
-      close(true);
+      close();
       }
 
 //---------------------------------------------------------
@@ -2129,7 +2132,7 @@ void MusE::closeEvent(QCloseEvent* event)
             QFileInfo f(filename);
             QDir d = f.dir();
             d.remove(filename);
-            d.remove(f.baseName(true) + ".wca");
+            d.remove(f.completeBaseName() + ".wca");
             }
       
       // Added by Tim. p3.3.14
@@ -3107,11 +3110,11 @@ bool MusE::saveAs()
       bool ok = false;
       if (!name.isEmpty()) {
             QString tempOldProj = museProject;
-            museProject = QFileInfo(name).dirPath(true);
+            museProject = QFileInfo(name).absolutePath();
             ok = save(name, true);
             if (ok) {
                   project.setFile(name);
-                  setCaption(tr("MusE: Song: ") + project.baseName(true));
+                  setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
                   addProject(name);
                   }
             else
@@ -3727,7 +3730,8 @@ int main(int argc, char* argv[])
                   muse_splash->show();
                   QTimer* stimer = new QTimer(0);
                   muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
-                  stimer->start(6000, true);
+		  stimer->setSingleShot(true);
+                  stimer->start(6000);
                   }
             }
       
@@ -3859,10 +3863,10 @@ int main(int argc, char* argv[])
             }
 
       static QTranslator translator(0);
-      QString locale(QTextCodec::locale());
+      QString locale(QApplication::keyboardInputLocale().name());
       if (locale != "C") {
             QString loc("muse_");
-            loc += QString(QTextCodec::locale());
+            loc += QString(QApplication::keyboardInputLocale().name());
             if (translator.load(loc, QString(".")) == false) {
                   QString lp(museGlobalShare);
                   lp += QString("/locale");
@@ -3909,7 +3913,7 @@ int main(int argc, char* argv[])
 
       muse = new MusE(argc, &argv[optind]);
       app.setMuse(muse);
-      muse->setIcon(*museIcon);
+      muse->setWindowIcon(*museIcon);
       
       // Added by Tim. p3.3.22
       if (!debugMode) {
@@ -4282,7 +4286,7 @@ void MusE::configAppearance()
       appearance->resetValues();
       if(appearance->isVisible()) {
           appearance->raise();
-          appearance->setActiveWindow();
+          appearance->activateWindow();
           }
       else
           appearance->show();
@@ -4294,7 +4298,7 @@ void MusE::configAppearance()
 
 void MusE::loadTheme(const QString& s)
       {
-      if (style()->name() != s)
+      if (style()->objectName() != s)
             QApplication::setStyle(s);
       }
 
@@ -4335,7 +4339,7 @@ void MusE::changeConfig(bool writeFlag)
       
       //loadStyleSheetFile(config.styleSheetFile);
       loadTheme(config.style);
-      QApplication::setFont(config.fonts[0], true);
+      QApplication::setFont(config.fonts[0]);
       loadStyleSheetFile(config.styleSheetFile);
       
       emit configChanged();
@@ -4353,7 +4357,7 @@ void MusE::configMetronome()
 
       if(metronomeConfig->isVisible()) {
           metronomeConfig->raise();
-          metronomeConfig->setActiveWindow();
+          metronomeConfig->activateWindow();
           }
       else
           metronomeConfig->show();
@@ -4829,12 +4833,12 @@ MusE::lash_idle_cb ()
     {
           /* save file */
           QString ss = QString(lash_event_get_string(event)) + QString("/lash-project-muse.med");
-          int ok = save (ss.ascii(), false);
+          int ok = save (ss.toAscii(), false);
           if (ok) {
-            project.setFile(ss.ascii());
-            setCaption(tr("MusE: Song: ") + project.baseName(true));
-            addProject(ss.ascii());
-            museProject = QFileInfo(ss.ascii()).dirPath(true);
+            project.setFile(ss.toAscii());
+            setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
+            addProject(ss.toAscii());
+            museProject = QFileInfo(ss.toAscii()).absolutePath();
           }
           lash_send_event (lash_client, event);
     }
@@ -4844,7 +4848,7 @@ MusE::lash_idle_cb ()
     {
           /* load file */
           QString sr = QString(lash_event_get_string(event)) + QString("/lash-project-muse.med");
-          loadProjectFile(sr.ascii(), false, true);
+          loadProjectFile(sr.toAscii(), false, true);
           lash_send_event (lash_client, event);
     }
           break;
@@ -4919,7 +4923,7 @@ again:
                   case Toplevel::MASTER:
                   case Toplevel::WAVE:
                   case Toplevel::LMASTER:
-                        ((QWidget*)(obj))->close(true);
+                        ((QWidget*)(obj))->close();
                         goto again;
                   }
             }
@@ -4940,7 +4944,7 @@ void MusE::startEditInstrument()
       }
       else
       {
-        if(editInstrument->isShown())
+        if(! editInstrument->isHidden())
           editInstrument->hide();
         else      
           editInstrument->show();
@@ -5296,13 +5300,13 @@ void MusE::setUsedTool(int tool)
 void MusE::execDeliveredScript(int id)
 {
       //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
-      song->executeScript(song->getScriptPath(id, true), song->getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
+      song->executeScript(song->getScriptPath(id, true).toLatin1().constData(), song->getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
 //---------------------------------------------------------
 //   execUserScript
 //---------------------------------------------------------
 void MusE::execUserScript(int id)
 {
-      song->executeScript(song->getScriptPath(id, false), song->getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
+      song->executeScript(song->getScriptPath(id, false).toLatin1().constData(), song->getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
 

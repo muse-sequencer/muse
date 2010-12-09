@@ -72,8 +72,9 @@ class RoutingMenuItem : public QCustomMenuItem
 //---------------------------------------------------------
 
 Song::Song(const char* name)
-   :QObject(0, name)
+   :QObject(0)
       {
+      setObjectName(name);
       _recRaster     = 0; // Set to measure, the same as Arranger intial value. Arranger snap combo will set this.
       noteFifoSize   = 0;
       noteFifoWindex = 0;
@@ -1003,7 +1004,7 @@ void Song::setLoop(bool f)
       {
       if (loopFlag != f) {
             loopFlag = f;
-            loopAction->setOn(loopFlag);
+            loopAction->setChecked(loopFlag);
             emit loopChanged(loopFlag);
             }
       }
@@ -1084,7 +1085,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
             if (audio->isPlaying() && f)
                   f = false;
             recordFlag = f;
-            recordAction->setOn(recordFlag);
+            recordAction->setChecked(recordFlag);
             emit recordChanged(recordFlag);
             }
       }
@@ -1098,7 +1099,7 @@ void Song::setPunchin(bool f)
       {
       if (punchinFlag != f) {
             punchinFlag = f;
-            punchinAction->setOn(punchinFlag);
+            punchinAction->setChecked(punchinFlag);
             emit punchinChanged(punchinFlag);
             }
       }
@@ -1112,7 +1113,7 @@ void Song::setPunchout(bool f)
       {
       if (punchoutFlag != f) {
             punchoutFlag = f;
-            punchoutAction->setOn(punchoutFlag);
+            punchoutAction->setChecked(punchoutFlag);
             emit punchoutChanged(punchoutFlag);
             }
       }
@@ -1171,7 +1172,7 @@ void Song::setPlay(bool f)
       }
       // only allow the user to set the button "on"
       if (!f)
-            playAction->setOn(true);
+            playAction->setChecked(true);
       else
             audio->msgPlay(true);
       }
@@ -1185,7 +1186,7 @@ void Song::setStop(bool f)
       }
       // only allow the user to set the button "on"
       if (!f)
-            stopAction->setOn(true);
+            stopAction->setChecked(true);
       else
             audio->msgPlay(false);
       }
@@ -1197,8 +1198,8 @@ void Song::setStopPlay(bool f)
 
       emit playChanged(f);   // signal transport window
 
-      playAction->setOn(f);
-      stopAction->setOn(!f);
+      playAction->setChecked(f);
+      stopAction->setChecked(!f);
 
       stopAction->blockSignals(false);
       playAction->blockSignals(false);
@@ -2201,8 +2202,8 @@ void Song::seqSignal(int fd)
 
                         {
                         // give the user a sensible explanation
-                        int btn = QMessageBox::critical( muse, tr(QString("Jack shutdown!")),
-                            tr(QString("Jack has detected a performance problem which has lead to\n"
+                        int btn = QMessageBox::critical( muse, tr("Jack shutdown!"),
+                            tr("Jack has detected a performance problem which has lead to\n"
                             "MusE being disconnected.\n"
                             "This could happen due to a number of reasons:\n"
                             "- a performance issue with your particular setup.\n"
@@ -2216,7 +2217,7 @@ void Song::seqSignal(int fd)
                             " homepage which is available through the help menu)\n"
                             "\n"
                             "To proceed check the status of Jack and try to restart it and then .\n"
-                            "click on the Restart button.")), "restart", "cancel");
+                            "click on the Restart button."), "restart", "cancel");
                         if (btn == 0) {
                               printf("restarting!\n");
                               muse->seqRestart();
@@ -2344,7 +2345,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
 //   execAutomationCtlPopup
 //---------------------------------------------------------
 
-int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& /*menupos*/, int acid)
+int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int acid)
 {
   //enum { HEADER, SEP1, PREV_EVENT, NEXT_EVENT, SEP2, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS };
   enum { HEADER, PREV_EVENT, NEXT_EVENT, SEP2, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS };
@@ -2390,37 +2391,47 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& /*menupos*/, i
   
   //menu->insertSeparator(SEP1);
   
-  menu->insertItem(tr("previous event"), PREV_EVENT, PREV_EVENT);
-  menu->setItemEnabled(PREV_EVENT, canSeekPrev);
+  QAction* prevEvent = menu->addAction(tr("previous event"));
+  prevEvent->setData(PREV_EVENT);
+  prevEvent->setEnabled(canSeekPrev);
 
-  menu->insertItem(tr("next event"), NEXT_EVENT, NEXT_EVENT);
-  menu->setItemEnabled(NEXT_EVENT, canSeekNext);
+  QAction* nextEvent = menu->addAction(tr("next event"));
+  nextEvent->setData(NEXT_EVENT);
+  nextEvent->setEnabled(canSeekNext);
 
-  menu->insertSeparator(SEP2);
+  //menu->insertSeparator(SEP2);
+  menu->addSeparator();
 
+  QAction* addEvent = new QAction(this);
+  menu->addAction(addEvent);
   if(isEvent)
-    menu->insertItem(tr("set event"), ADD_EVENT, ADD_EVENT);
+    addEvent->setText(tr("set event"));
   else  
-    menu->insertItem(tr("add event"), ADD_EVENT, ADD_EVENT);
-  menu->setItemEnabled(ADD_EVENT, canAdd);
-  menu->insertItem(tr("erase event"), CLEAR_EVENT, CLEAR_EVENT);
-  menu->setItemEnabled(CLEAR_EVENT, isEvent);
+    addEvent->setText(tr("add event"));
+  addEvent->setData(ADD_EVENT);
+  addEvent->setEnabled(canAdd);
 
-  menu->insertItem(tr("erase range"), CLEAR_RANGE, CLEAR_RANGE);
-  menu->setItemEnabled(CLEAR_RANGE, canEraseRange);
+  QAction* eraseEventAction = menu->addAction(tr("erase event"));
+  eraseEventAction->setData(CLEAR_EVENT);
+  menu->setEnabled(isEvent);
 
-  menu->insertItem(tr("clear automation"), CLEAR_ALL_EVENTS, CLEAR_ALL_EVENTS);
-  menu->setItemEnabled(CLEAR_ALL_EVENTS, (bool)count);
+  QAction* eraseRangeAction = menu->addAction(tr("erase range"));
+  eraseRangeAction->setData(CLEAR_RANGE);
+  eraseRangeAction->setEnabled(canEraseRange);
 
-  // ORCAN - FIXME
-  /*
-  int sel = menu->exec(menupos, 1);
-  delete menu;
-  if (sel == -1)
+  QAction* clearAction = menu->addAction(tr("clear automation"));
+  clearAction->setData(CLEAR_ALL_EVENTS);
+  clearAction->setEnabled((bool)count);
+
+  QAction* act = menu->exec(menupos);
+  //delete menu;
+  if (!act)
     return -1;
   
   if(!track)
     return -1;
+
+  int sel = act->data().toInt();
   switch(sel)
   {
     case ADD_EVENT:
@@ -2454,7 +2465,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& /*menupos*/, i
     break;      
   }
   return sel;
-  */
+
   return 0;
 }
 
@@ -2462,7 +2473,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& /*menupos*/, i
 //   execMidiAutomationCtlPopup
 //---------------------------------------------------------
 
-int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPoint& /*menupos*/, int ctlnum)
+int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPoint& menupos, int ctlnum)
 {
   if(!track && !part)
     return -1;
@@ -2570,15 +2581,19 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
 
 //  menu->insertSeparator(SEP2);
 
+  QAction* addEvent = new QAction(this);
+  menu->addAction(addEvent);
   if(isEvent)
-    menu->insertItem(tr("set event"), ADD_EVENT, ADD_EVENT);
-  else  
-    menu->insertItem(tr("add event"), ADD_EVENT, ADD_EVENT);
-  //menu->setItemEnabled(ADD_EVENT, canAdd);
-  menu->setItemEnabled(ADD_EVENT, true);
-  
-  menu->insertItem(tr("erase event"), CLEAR_EVENT, CLEAR_EVENT);
-  menu->setItemEnabled(CLEAR_EVENT, isEvent);
+    addEvent->setText(tr("set event"));
+  else
+    addEvent->setText(tr("add event"));
+  addEvent->setData(ADD_EVENT);
+  //addEvent->setEnabled(canAdd);
+  addEvent->setEnabled(true);
+
+  QAction* eraseEventAction = menu->addAction(tr("erase event"));
+  eraseEventAction->setData(CLEAR_EVENT);
+  menu->setEnabled(isEvent);
 
 //  menu->insertItem(tr("erase range"), CLEAR_RANGE, CLEAR_RANGE);
 //  menu->setItemEnabled(CLEAR_RANGE, canEraseRange);
@@ -2587,16 +2602,15 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
 //  menu->setItemEnabled(CLEAR_ALL_EVENTS, (bool)count);
 
 
-// ORCAN - FIXME
-/*
-  int sel = menu->exec(menupos, 1);
-  delete menu;
-  if (sel == -1)
+  QAction* act = menu->exec(menupos);
+  //delete menu;
+  if (!act)
     return -1;
-  
+
   //if(!part)
   //  return -1;
   
+  int sel = act->data().toInt();
   switch(sel)
   {
     case ADD_EVENT:
@@ -2676,7 +2690,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   }
   
   return sel;
-*/
+
   return 0;
 }
 
@@ -3589,7 +3603,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
                                 line = stream.readLine(); // line of text excluding '\n'
                                 if (line.startsWith("NOTE"))
                                 {
-                                    QStringList sl = QStringList::split(" ",line);
+                                    QStringList sl = line.split(" ");
 
                                       Event e(Note);
                                       int tick = sl[1].toInt();
@@ -3606,7 +3620,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
                                 }
                                 if (line.startsWith("CONTROLLER"))
                                 {
-                                      QStringList sl = QStringList::split(" ",line);
+                                      QStringList sl = line.split(" ");
 
                                       Event e(Controller);
                                       int tick = sl[1].toInt();
@@ -3665,16 +3679,16 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
                   for (QStringList::Iterator it = deliveredScriptNames.begin(); it != deliveredScriptNames.end(); it++, id++) {
                         //menuPlugins->insertItem(*it, this, SLOT(execDeliveredScript(int)), 0, id);
                         //menuPlugins->insertItem(*it, this, slot_deliveredscripts, 0, id);
-                        menuPlugins->insertItem(*it, receiver, SLOT(execDeliveredScript(int)), 0, id);
+                        menuPlugins->addAction(*it, receiver, SLOT(execDeliveredScript(int))); //id
                         }
-                  menuPlugins->insertSeparator();
+                  menuPlugins->addSeparator();
                   }
             if (userScriptNames.size() > 0) {
                   for (QStringList::Iterator it = userScriptNames.begin(); it != userScriptNames.end(); it++, id++) {
                         //menuPlugins->insertItem(*it, this, slot_userscripts, 0, id);
-                        menuPlugins->insertItem(*it, receiver, SLOT(execUserScript(int)), 0, id);
+                        menuPlugins->addAction(*it, receiver, SLOT(execUserScript(int))); //id
                         }
-                  menuPlugins->insertSeparator();
+                  menuPlugins->addSeparator();
                   }
             }
       return; 
