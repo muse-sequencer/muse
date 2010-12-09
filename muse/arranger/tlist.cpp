@@ -109,8 +109,11 @@ void TList::paintEvent(QPaintEvent* ev)
       {
       if (!pmValid)
             paint(ev->rect());
-      /* Orcan - fixme */
-      bitBlt(this, ev->rect().topLeft(), &pm, ev->rect(), true); //CopyROP, true); ddskrjo
+      // Orcan - check
+      //bitBlt(this, ev->rect().topLeft(), &pm, ev->rect(), true); //CopyROP, true); ddskrjo
+      QPainter p;
+      p.begin(this);
+      p.drawImage(ev->rect().topLeft(), pm.toImage(), ev->rect());
       }
 
 //---------------------------------------------------------
@@ -1399,7 +1402,9 @@ void TList::setYPos(int y)
       int h = height();
       QRect r;
       //printf("TList::setYPos y:%d delta:%d w:%d h:%d\n", y, delta, w, h);
-      
+      QPainter p;
+      p.begin(&pm);
+
       if (delta >= h || delta <= -h)
       {
             //printf("TList::setYPos delta >= h || delta <= -h\n");
@@ -1407,14 +1412,16 @@ void TList::setYPos(int y)
       }      
       else if (delta < 0) {   // shift up
             //printf("TList::setYPos delta < 0 : shift up\n");
-	/* Orcan - fixme */
-            bitBlt(&pm,  0, 0, &pm, 0, -delta, w, h + delta, true); //CopyROP, true); ddskrjo
+            // Orcan - check
+            //bitBlt(&pm,  0, 0, &pm, 0, -delta, w, h + delta, true); //CopyROP, true); ddskrjo
+            p.drawImage(0, 0, pm.toImage(), 0, -delta, w, h + delta);
             r = QRect(0, h + delta, w, -delta);
             }
       else {                  // shift down
             //printf("TList::setYPos delta !< 0 : shift down\n");
-	/* Orcan - fixme */
-            bitBlt(&pm,  0, delta, &pm, 0, 0, w, h-delta, true); //CopyROP, true); ddskrjo
+            // Orcan - check
+            //bitBlt(&pm,  0, delta, &pm, 0, 0, w, h-delta, true); //CopyROP, true); ddskrjo
+            p.drawImage(0, delta, pm.toImage(), 0, 0, w, h-delta);
             // NOTE: June 2 2010: On my machine with an old NV V8200 + prop drivers (curr 96.43.11),
             //  this is a problem. There is severe graphical corruption.
             // Not just here but several other windows (ex. ladspa browser), 

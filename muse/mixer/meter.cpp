@@ -116,9 +116,14 @@ void Meter::paintEvent(QPaintEvent*)
       else
         yv = val == 0 ? h : int(((maxScale - val) * h)/range);
       
-      // ORCAN - FIXME */
-      bitBlt(this, fw, fw,    &bgPm, 0, 0,  -1, yv, true); //   CopyROP, true); ddskrjo
-      bitBlt(this, fw, fw+yv, &fgPm, 0, yv, -1, h-yv, true); //CopyROP, true); ddskrjo
+      // Orcan - check
+      //void bitBlt ( QImage * dst, int dx, int dy, const QImage * src, int sx = 0, int sy = 0, int sw = -1, int sh = -1, Qt::ImageConversionFlags flags = Qt::AutoColor )
+
+      //bitBlt(this, fw, fw,    &bgPm, 0, 0,  -1, yv, true); //   CopyROP, true); ddskrjo
+      //bitBlt(this, fw, fw+yv, &fgPm, 0, yv, -1, h-yv, true); //CopyROP, true); ddskrjo
+
+      p.drawImage(fw, fw,    bgPm.toImage(), 0, 0,   -1, yv  );
+      p.drawImage(fw, fw+yv, fgPm.toImage(), 0, yv,  -1, h-yv);
 
       int ymax;
       if(mtype == DBMeter) 

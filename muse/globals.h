@@ -11,8 +11,6 @@
 
 #include <sys/types.h>
 
-#include <Qt3Support>
-
 #include "value.h"
 #include "mtc.h"
 #include "route.h"
