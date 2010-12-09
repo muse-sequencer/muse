@@ -104,7 +104,7 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
       if(config.useDenormalBias) {
             // add denormal bias to outdata
             for (int i = 0; i < channels(); ++i)
-                  for (int j = 0; j < samples; ++j)
+                  for (unsigned int j = 0; j < samples; ++j)
                   {
                       bp[i][j] +=denormalBias;
                       

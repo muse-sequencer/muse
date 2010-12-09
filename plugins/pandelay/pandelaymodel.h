@@ -42,6 +42,9 @@
 #define MINDELAYTIME 0.01 //in second
 #define MAXDELAYTIME 2.0 //in second
 
+#ifdef NBRPARAM
+#undef NBRPARAM
+#endif
 #define NBRPARAM 5
 
 class PanDelayModel {

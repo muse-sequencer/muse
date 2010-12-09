@@ -6,6 +6,8 @@
           This also fixes the Transport position boxes' sections jumping to last section. 
           TODO: There's still trouble editing with KB in Bar-Beat-Tick mode, the bar and beat being '1' based.
           TODO: Fix SigEdit (the time Signature Editor boxes).
+        - Fix some build and compiler warnings. (Orcan)
+        - Fix the max slider value in the transport. This was a typo I made during conversion. (Orcan)
 08.12.2010:
         - Ported many more Qt3 methods to Qt4. (Orcan)
         - Turned off Qt3Support. Muse2 is now a pure Qt4 application. (Orcan)

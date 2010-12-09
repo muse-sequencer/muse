@@ -909,7 +909,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
             QStringList list = guiDir.entryList();
             
             //for (int i = 0; i < list.size(); ++i) {
-            for (unsigned int i = 0; i < list.count(); ++i) 
+            for (int i = 0; i < list.count(); ++i) 
             {
                 
                 //QFileInfo fi = list.at(i);

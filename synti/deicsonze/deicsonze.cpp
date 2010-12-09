@@ -3609,7 +3609,7 @@ const char* DeicsOnze::getPatchName(int ch, int val, int) const {
     if (lbank == 127)       // drum HACK
       lbank = 128;
     int prog =   val & 0x7f;
-    char* tempName="INITVOICE";
+    const char* tempName="INITVOICE";
     p_preset=_set->findPreset(hbank, lbank, prog);
     if (p_preset) tempName=const_cast<char *>(p_preset->name.c_str());
     return tempName;

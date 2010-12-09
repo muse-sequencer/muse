@@ -147,5 +147,5 @@ struct FS_Helper //Only used to pass parameters when calling the loading thread
       int id;
       };
 
-static void* fontLoadThread(void* t);
+// static void* fontLoadThread(void* t); // moved to the implementation file -Orcan
 #endif /* __MUSE_FLUIDSYNTI_H__ */
