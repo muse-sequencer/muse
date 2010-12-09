@@ -95,8 +95,8 @@ class PartCanvas : public Canvas {
 
       void copy(PartList*);
       void paste(bool clone = false, bool toTrack = true, bool doInsert=false);
-      int pasteAt(const QString&, Track*, int, bool clone = false, bool toTrack = true);
-      void movePartsTotheRight(int startTick, int length);
+      int pasteAt(const QString&, Track*, unsigned int, bool clone = false, bool toTrack = true);
+      void movePartsTotheRight(unsigned int startTick, int length);
       //Part* readClone(Xml&, Track*, bool toTrack = true);
       void drawWavePart(QPainter&, const QRect&, WavePart*, const QRect&);
       Track* y2Track(int) const;

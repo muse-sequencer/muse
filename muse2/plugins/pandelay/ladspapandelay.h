@@ -33,6 +33,9 @@
 #include "pandelaymodel.h"
 #include "../../muse/ladspa.h"
 
+#ifdef NBRPARAM
+#undef NBRPARAM
+#endif
 #define NBRPARAM 6
 
 class LADSPAPanDelay : public PanDelayModel {

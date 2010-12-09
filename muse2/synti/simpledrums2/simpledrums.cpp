@@ -1329,7 +1329,7 @@ static void* loadSampleThread(void* p)
 
 
 //static Mess* instantiate(int sr, const char* name)
-static Mess* instantiate(int sr, QWidget*, QString* projectPathPtr, const char* name)
+static Mess* instantiate(int sr, QWidget*, QString* /*projectPathPtr*/, const char* name)
       {
       printf("SimpleSynth sampleRate %d\n", sr);
       SimpleSynth* synth = new SimpleSynth(sr);

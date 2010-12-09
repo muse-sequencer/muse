@@ -370,7 +370,7 @@ Transport::Transport(QWidget* parent, const char* name)
 
       slider = new QSlider;
       slider->setMinimum(0);
-      slider->setMaximum(0);
+      slider->setMaximum(200000);
       slider->setPageStep(1000);
       slider->setValue(0);
       slider->setOrientation(Qt::Horizontal);
@@ -567,7 +567,7 @@ void Transport::setPos(int idx, unsigned v, bool)
             case 0:
                   time1->setValue(v);
                   time2->setValue(v);
-                  if(slider->value() != v)
+                  if((unsigned) slider->value() != v)
                   {
                     slider->blockSignals(true);
                     slider->setValue(v);

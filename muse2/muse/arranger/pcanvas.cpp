@@ -1862,7 +1862,7 @@ void PartCanvas::copy(PartList* pl)
 //   pasteAt
 //---------------------------------------------------------
 
-int PartCanvas::pasteAt(const QString& pt, Track* track, int pos, bool clone, bool toTrack)
+int PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool clone, bool toTrack)
       {
       //printf("int PartCanvas::pasteAt(const QString& pt, Track* track, int pos)\n");
       QByteArray ba = pt.toLatin1();
@@ -1871,7 +1871,7 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, int pos, bool clone, bo
       bool firstPart=true;
       int  posOffset=0;
       //int  finalPos=0;
-      int  finalPos = pos;
+      unsigned int  finalPos = pos;
       int  notDone = 0;
       int  done = 0;
       bool end = false;
@@ -2438,7 +2438,7 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
       }
       
       int endPos=0;
-      int startPos=song->vcpos();
+      unsigned int startPos=song->vcpos();
       if (!txt.isEmpty())
       {
         song->startUndo();
@@ -2459,7 +2459,7 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
 //---------------------------------------------------------
 //   movePartsToTheRight
 //---------------------------------------------------------
-void PartCanvas::movePartsTotheRight(int startTicks, int length)
+void PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
 {
         // all parts that start after the pasted parts will be moved the entire length of the pasted parts
         for (iCItem i = items.begin(); i != items.end(); ++i) {

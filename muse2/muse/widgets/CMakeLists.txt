@@ -88,7 +88,7 @@ QT4_WRAP_CPP (widget_mocs
       noteinfo.h  
       dentry.h  
       siglabel.h  
-      ttoolbar.h  
+      # ttoolbar.h  
       ttoolbutton.h  
       tb1.h  
       lcombo.h  

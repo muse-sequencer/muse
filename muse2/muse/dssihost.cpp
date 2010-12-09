@@ -437,7 +437,7 @@ static void scanDSSIDir(QString& s) // ddskrjo removed const for argument
             //}
       
       QStringList list = pluginDir.entryList();
-      for(unsigned int i = 0; i < list.count(); ++i) 
+      for(int i = 0; i < list.count(); ++i) 
       {
         if(debugMsg)
           printf("scanDSSIDir: found %s\n", (s + QString("/") + list[i]).toLatin1().constData());
@@ -2552,7 +2552,7 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   if(port >= synth->rpIdx.size())
   {
     //fprintf(stderr, "DssiSynthIF::oscControl: port number:%d is out of range of number of ports:%d\n", port, controlPorts);
-    fprintf(stderr, "DssiSynthIF::oscControl: port number:%ld is out of range of index list size:%d\n", port, synth->rpIdx.size());
+    fprintf(stderr, "DssiSynthIF::oscControl: port number:%ld is out of range of index list size:%zd\n", port, synth->rpIdx.size());
     return 0;
   }
   

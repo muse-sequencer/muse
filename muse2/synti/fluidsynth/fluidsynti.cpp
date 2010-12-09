@@ -56,6 +56,7 @@ FluidCtrl FluidSynth::fluidCtrl[] = {
     };
 
 static int NUM_CONTROLLER = sizeof(FluidSynth::fluidCtrl)/sizeof(*(FluidSynth::fluidCtrl));
+static void* fontLoadThread(void* t);
 
 QString *projPathPtr;
 //

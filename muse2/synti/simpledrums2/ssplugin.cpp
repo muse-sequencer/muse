@@ -95,13 +95,13 @@ void SS_initPlugins()
       SS_TRACE_IN
       //loadPluginDir(museGlobalLib + QString("/plugins"));
 
-      char* ladspaPath = getenv("LADSPA_PATH");
+      const char* ladspaPath = getenv("LADSPA_PATH");
       if (ladspaPath == 0)
             ladspaPath = "/usr/lib/ladspa:/usr/local/lib/ladspa";
 
-      char* p = ladspaPath;
+      const char* p = ladspaPath;
       while (*p != '\0') {
-            char* pe = p;
+            const char* pe = p;
             while (*pe != ':' && *pe != '\0')
                   pe++;
 
