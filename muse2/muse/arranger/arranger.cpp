@@ -260,7 +260,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       ib->setChecked(showTrackinfoFlag);
       connect(ib, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
 
-      header = new Header(tracklist);
+      header = new Header(tracklist, "header");
       
       header->setFixedHeight(30);
 

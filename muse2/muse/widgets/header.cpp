@@ -28,9 +28,9 @@ void Header::readStatus(Xml& xml)
                         {
                         //QStringList l = QStringList::split(QString(" "), tag);
                         QStringList l = tag.split(QString(" "), QString::SkipEmptyParts);
-                        int index = count();
+                        int index = count() -1;
                         for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-                              int section = (*it).toInt();
+                              int section = visualIndex((*it).toInt());
                               moveSection(section, index);
                               --index;
                               }
@@ -58,7 +58,7 @@ void Header::writeStatus(int level, Xml& xml) const
       xml.nput(level, "<%s> ", Xml::xmlString(objectName()).toLatin1().constData());
       int n = count() - 1;
       for (int i = n; i >= 0; --i)
-            xml.nput("%d ", visualIndex(i));
+            xml.nput("%d ", logicalIndex(i));
       //xml.put("</%s>", name());
       xml.put("</%s>", Xml::xmlString(objectName()).toLatin1().constData());
       }

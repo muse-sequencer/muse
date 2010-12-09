@@ -222,7 +222,7 @@ void TList::paint(const QRect& r)
 
             int x = 0;
             for (int index = 0; index < header->count(); ++index) {
-                  int section = header->visualIndex(index);
+                  int section = header->logicalIndex(index);
                   int w   = header->sectionSize(section);
                   //QRect r = p.xForm(QRect(x+2, yy, w-4, trackHeight));
                   QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, trackHeight));
@@ -371,7 +371,7 @@ void TList::paint(const QRect& r)
       int xpos = 0;
       p.setPen(Qt::gray);
       for (int index = 0; index < n; index++) {
-            int section = header->visualIndex(index);
+            int section = header->logicalIndex(index);
             xpos += header->sectionSize(section);
             p.drawLine(xpos, 0, xpos, height());
             }
