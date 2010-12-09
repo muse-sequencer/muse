@@ -8,22 +8,8 @@
 
 #include <sndfile.h>
 #include <errno.h>
-#include <q3listview.h>
 #include <qlayout.h>
-#include <qpushbutton.h>
-#include <qlineedit.h>
-#include <qcombobox.h>
-#include <qlabel.h>
-#include <QButtonGroup>
 #include <stdio.h>
-#include <q3popupmenu.h>
-#include <q3groupbox.h>
-#include <qradiobutton.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qsignalmapper.h>
-#include <qtooltip.h>
-#include <qstyle.h>
 
 #include "app.h"
 #include "transport.h"
@@ -1313,7 +1299,7 @@ void MusE::configMidiSync()
         
       if (midiSyncConfig->isVisible()) {
           midiSyncConfig->raise();
-          midiSyncConfig->setActiveWindow();
+          midiSyncConfig->activateWindow();
           }
       else
             midiSyncConfig->show();
@@ -1331,7 +1317,7 @@ void MusE::configMidiFile()
 
       if (midiFileConfig->isVisible()) {
           midiFileConfig->raise();
-          midiFileConfig->setActiveWindow();
+          midiFileConfig->activateWindow();
           }
       else
           midiFileConfig->show();
@@ -1362,8 +1348,8 @@ void MidiFileConfig::updateValues()
             case 192:  divisionIdx = 1; break;
             case 384:  divisionIdx = 2; break;
             }
-      divisionCombo->setCurrentItem(divisionIdx);
-      formatCombo->setCurrentItem(config.smfFormat);
+      divisionCombo->setCurrentIndex(divisionIdx);
+      formatCombo->setCurrentIndex(config.smfFormat);
       extendedFormat->setChecked(config.extendedMidi);
       copyrightEdit->setText(config.copyright);
       optNoteOffs->setChecked(config.expOptimNoteOffs);
@@ -1377,13 +1363,13 @@ void MidiFileConfig::updateValues()
 
 void MidiFileConfig::okClicked()
       {
-      int divisionIdx = divisionCombo->currentItem();
+      int divisionIdx = divisionCombo->currentIndex();
 
       int divisions[3] = { 96, 192, 384 };
       if (divisionIdx >= 0 && divisionIdx < 3)
             config.midiDivision = divisions[divisionIdx];
       config.extendedMidi = extendedFormat->isChecked();
-      config.smfFormat    = formatCombo->currentItem();
+      config.smfFormat    = formatCombo->currentIndex();
       config.copyright    = copyrightEdit->text();
       config.expOptimNoteOffs = optNoteOffs->isChecked();
       config.exp2ByteTimeSigs = twoByteTimeSigs->isChecked();
@@ -1413,7 +1399,7 @@ void MusE::configGlobalSettings()
 
       if (globalSettingsConfig->isVisible()) {
           globalSettingsConfig->raise();
-          globalSettingsConfig->setActiveWindow();
+          globalSettingsConfig->activateWindow();
           }
       else
           globalSettingsConfig->show();

@@ -100,7 +100,7 @@ bool SndFile::openRead()
             
       writeFlag = false;
       openFlag  = true;
-      QString cacheName = finfo->dirPath(true) + QString("/") + finfo->baseName(true) + QString(".wca");
+      QString cacheName = finfo->absolutePath() + QString("/") + finfo->completeBaseName() + QString(".wca");
       readCache(cacheName, true);
       return false;
       }
@@ -115,8 +115,8 @@ void SndFile::update()
       close();
 
       // force recreation of wca data
-      QString cacheName = finfo->dirPath(true) +
-         QString("/") + finfo->baseName(true) + QString(".wca");
+      QString cacheName = finfo->absolutePath() +
+         QString("/") + finfo->completeBaseName() + QString(".wca");
       ::remove(cacheName.toLatin1().constData());
       if (openRead()) {
             printf("SndFile::update openRead(%s) failed: %s\n", path().toLatin1().constData(), strerror().toLatin1().constData());
@@ -346,8 +346,8 @@ bool SndFile::openWrite()
       if (sf) {
             openFlag  = true;
             writeFlag = true;
-            QString cacheName = finfo->dirPath(true) +
-               QString("/") + finfo->baseName(true) + QString(".wca");
+            QString cacheName = finfo->absolutePath() +
+               QString("/") + finfo->completeBaseName() + QString(".wca");
             readCache(cacheName, true);
             }
       return sf == 0;
@@ -382,7 +382,7 @@ void SndFile::remove()
 
 QString SndFile::basename() const
       {
-      return finfo->baseName(true);
+      return finfo->completeBaseName();
       }
 
 QString SndFile::path() const
@@ -392,7 +392,7 @@ QString SndFile::path() const
 
 QString SndFile::dirPath() const
       {
-      return finfo->dirPath(true);
+      return finfo->absolutePath();
       }
 
 QString SndFile::name() const
@@ -648,7 +648,7 @@ SndFile* getWave(const QString& inName, bool readOnlyFlag)
                   error = f->openWrite();
                   // if peak cache is older than wave file we reaquire the cache
                   QFileInfo wavinfo(name);
-                  QString cacheName = wavinfo.dirPath(true) + QString("/") + wavinfo.baseName(true) + QString(".wca");
+                  QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
                   QFileInfo wcainfo(cacheName);
                   if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
                         //printf("wcafile is older or does not exist!\n");
@@ -681,7 +681,7 @@ SndFile* getWave(const QString& inName, bool readOnlyFlag)
             else {
                   // if peak cache is older than wave file we reaquire the cache
                   QFileInfo wavinfo(name);
-                  QString cacheName = wavinfo.dirPath(true) + QString("/") + wavinfo.baseName(true) + QString(".wca");
+                  QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
                   QFileInfo wcainfo(cacheName);
                   if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
                         //printf("wcafile is older or does not exist!\n");
@@ -859,7 +859,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, Track* track)
       event.setLenFrame(samples);
       part->addEvent(event);
 
-      part->setName(QFileInfo(name).baseName(true));
+      part->setName(QFileInfo(name).completeBaseName());
       audio->msgAddPart(part);
       unsigned endTick = part->tick() + part->lenTick();
       if (song->len() < endTick)

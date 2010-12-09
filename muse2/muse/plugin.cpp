@@ -651,7 +651,7 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi)
   //  EnsembleLite (EnsLite VST) has the flag set, but it is a vst synth and is not involved here!
   // Yet many (all?) ladspa vst effect plugins exhibit this problem.  
   // Changed by Tim. p3.3.14
-  if ((_inports != _outports) || (fi.baseName(true) == QString("dssi-vst") && !config.vstInPlace))
+  if ((_inports != _outports) || (fi.completeBaseName() == QString("dssi-vst") && !config.vstInPlace))
         _inPlaceCapable = false;
 }
 
@@ -825,7 +825,7 @@ int Plugin::incReferences(int val)
       _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(plugin->Properties);
       
       // Blacklist vst plugins in-place configurable for now. 
-      if ((_inports != _outports) || (fi.baseName(true) == QString("dssi-vst") && !config.vstInPlace))
+      if ((_inports != _outports) || (fi.completeBaseName() == QString("dssi-vst") && !config.vstInPlace))
             _inPlaceCapable = false;
     }
   }      
@@ -927,10 +927,10 @@ double Plugin::defaultValue(unsigned long port) const
 
 static void loadPluginLib(QFileInfo* fi)
 {
-  void* handle = dlopen(fi->filePath().ascii(), RTLD_NOW);
+  void* handle = dlopen(fi->filePath().toAscii().constData(), RTLD_NOW);
   if (handle == 0) {
         fprintf(stderr, "dlopen(%s) failed: %s\n",
-          fi->filePath().ascii(), dlerror());
+           fi->filePath().toAscii().constData(), dlerror());
         return;
         }
 
@@ -953,7 +953,7 @@ static void loadPluginLib(QFileInfo* fi)
         !descr->run_multiple_synths_adding) 
       {
         // Make sure it doesn't already exist.
-        if(plugins.find(fi->baseName(true), QString(descr->LADSPA_Plugin->Label)) != 0)
+        if(plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
           continue;
         
         #ifdef PLUGIN_DEBUGIN 
@@ -983,7 +983,7 @@ static void loadPluginLib(QFileInfo* fi)
               "Unable to find ladspa_descriptor() function in plugin "
               "library file \"%s\": %s.\n"
               "Are you sure this is a LADSPA plugin file?\n",
-              fi->filePath().ascii(),
+              fi->filePath().toAscii().constData(),
               txt);
       }
       dlclose(handle);
@@ -998,7 +998,7 @@ static void loadPluginLib(QFileInfo* fi)
             break;
       
       // Make sure it doesn't already exist.
-      if(plugins.find(fi->baseName(true), QString(descr->Label)) != 0)
+      if(plugins.find(fi->completeBaseName(), QString(descr->Label)) != 0)
         continue;
       
       #ifdef PLUGIN_DEBUGIN 
@@ -1028,7 +1028,7 @@ static void loadPluginDir(const QString& s)
       QDir pluginDir(s, QString("*.so")); // ddskrjo
       if (pluginDir.exists()) {
             QFileInfoList list = pluginDir.entryInfoList();
-            QFileInfoListIterator it=list.begin();
+	    QFileInfoList::iterator it=list.begin();
             while(it != list.end()) {
                   loadPluginLib(&*it);
                   ++it;
@@ -2527,7 +2527,7 @@ int PluginI::oscControl(unsigned long port, float value)
 PluginDialog::PluginDialog(QWidget* parent)
   : QDialog(parent)
       {
-      setCaption(tr("MusE: select plugin"));
+      setWindowTitle(tr("MusE: select plugin"));
       QVBoxLayout* layout = new QVBoxLayout(this);
 
       pList  = new QTreeWidget(this);
@@ -2813,7 +2813,7 @@ PluginGui::PluginGui(PluginIBase* p)
       gw     = 0;
       params = 0;
       plugin = p;
-      setCaption(plugin->name());
+      setWindowTitle(plugin->name());
 
       QToolBar* tools = addToolBar(tr("File Buttons"));
 
@@ -2851,7 +2851,7 @@ PluginGui::PluginGui(PluginIBase* p)
             // construct GUI from *.ui file
             //
             PluginLoader loader;
-            QFile file(uifile.name());
+            QFile file(uifile.fileName());
             file.open(QFile::ReadOnly);
             mw = loader.load(&file, this);
             file.close();
@@ -2864,7 +2864,8 @@ PluginGui::PluginGui(PluginIBase* p)
             QList<QObject*>::iterator it;
             for (it = l.begin(); it != l.end(); ++it) {
                   obj = *it;
-                  const char* name = obj->name();
+                  QByteArray ba = obj->objectName().toLatin1();
+                  const char* name = ba.constData();
                   if (*name !='P')
                         continue;
                   int parameter = -1;
@@ -2876,17 +2877,18 @@ PluginGui::PluginGui(PluginIBase* p)
             it = l.begin();
             gw   = new GuiWidgets[nobj];
             nobj = 0;
-            QSignalMapper* mapper = new QSignalMapper(this, "pluginGuiMapper");
+            QSignalMapper* mapper = new QSignalMapper(this);
             connect(mapper, SIGNAL(mapped(int)), SLOT(guiParamChanged(int)));
             
-            QSignalMapper* mapperPressed = new QSignalMapper(this, "pluginGuiMapperPressed");
-            QSignalMapper* mapperReleased = new QSignalMapper(this, "pluginGuiMapperReleased");
+            QSignalMapper* mapperPressed = new QSignalMapper(this);
+            QSignalMapper* mapperReleased = new QSignalMapper(this);
             connect(mapperPressed, SIGNAL(mapped(int)), SLOT(guiParamPressed(int)));
             connect(mapperReleased, SIGNAL(mapped(int)), SLOT(guiParamReleased(int)));
             
             for (it = l.begin(); it != l.end(); ++it) {
                   obj = *it;
-                  const char* name = obj->name();
+                  QByteArray ba = obj->objectName().toLatin1();
+                  const char* name = ba.constData();
                   if (*name !='P')
                         continue;
                   int parameter = -1;
@@ -2902,7 +2904,7 @@ PluginGui::PluginGui(PluginIBase* p)
                   gw[nobj].param  = parameter;
                   gw[nobj].type   = -1;
 
-                  if (strcmp(obj->className(), "Slider") == 0) {
+                  if (strcmp(obj->metaObject()->className(), "Slider") == 0) {
                         gw[nobj].type = GuiWidgets::SLIDER;
                         ((Slider*)obj)->setId(nobj);
                         ((Slider*)obj)->setCursorHoming(true);
@@ -2916,7 +2918,7 @@ PluginGui::PluginGui(PluginIBase* p)
                         connect(obj, SIGNAL(sliderReleased(int)), SLOT(guiSliderReleased(int)));
                         connect(obj, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(guiSliderRightClicked(const QPoint &, int)));
                         }
-                  else if (strcmp(obj->className(), "DoubleLabel") == 0) {
+                  else if (strcmp(obj->metaObject()->className(), "DoubleLabel") == 0) {
                         gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
                         ((DoubleLabel*)obj)->setId(nobj);
                         for(int i = 0; i < nobj; i++)
@@ -2929,18 +2931,18 @@ PluginGui::PluginGui(PluginIBase* p)
                         }
                         connect(obj, SIGNAL(valueChanged(double,int)), mapper, SLOT(map()));
                         }
-                  else if (strcmp(obj->className(), "QCheckBox") == 0) {
+                  else if (strcmp(obj->metaObject()->className(), "QCheckBox") == 0) {
                         gw[nobj].type = GuiWidgets::QCHECKBOX;
                         connect(obj, SIGNAL(toggled(bool)), mapper, SLOT(map()));
                         connect(obj, SIGNAL(pressed()), mapperPressed, SLOT(map()));
                         connect(obj, SIGNAL(released()), mapperReleased, SLOT(map()));
                         }
-                  else if (strcmp(obj->className(), "QComboBox") == 0) {
+                  else if (strcmp(obj->metaObject()->className(), "QComboBox") == 0) {
                         gw[nobj].type = GuiWidgets::QCOMBOBOX;
                         connect(obj, SIGNAL(activated(int)), mapper, SLOT(map()));
                         }
                   else {
-                        printf("unknown widget class %s\n", obj->className());
+                        printf("unknown widget class %s\n", obj->metaObject()->className());
                         continue;
                         }
                   ++nobj;
@@ -3052,7 +3054,8 @@ PluginGui::PluginGui(PluginIBase* p)
                         grid->addWidget(params[i].actuator, i, 2);
                         }
                   else if (params[i].type == GuiParam::GUI_SWITCH) {
-                        grid->addMultiCellWidget(params[i].actuator, i, i, 0, 2);
+                        //grid->addMultiCellWidget(params[i].actuator, i, i, 0, 2);
+                        grid->addWidget(params[i].actuator, i, 0, 1, 3);
                         }
                   if (params[i].type == GuiParam::GUI_SLIDER) {
                         connect(params[i].actuator, SIGNAL(sliderMoved(double,int)), SLOT(sliderChanged(double,int)));
@@ -3405,7 +3408,7 @@ void PluginGui::bypassToggled(bool val)
 void PluginGui::setOn(bool val)
       {
       onOff->blockSignals(true);
-      onOff->setOn(val);
+      onOff->setChecked(val);
       onOff->blockSignals(false);
       }
 
@@ -3453,7 +3456,7 @@ void PluginGui::updateValues()
                               ((QCheckBox*)widget)->setChecked(int(val));
                               break;
                         case GuiWidgets::QCOMBOBOX:
-                              ((QComboBox*)widget)->setCurrentItem(int(val));
+                              ((QComboBox*)widget)->setCurrentIndex(int(val));
                               break;
                         }
                   }
@@ -3569,12 +3572,12 @@ void PluginGui::updateControls()
                               if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
                               { 
                                 int n = (int) plugin->track()->pluginCtrlVal(genACnum(plugin->id(), param));
-                                if(((QComboBox*)widget)->currentItem() != n)
+                                if(((QComboBox*)widget)->currentIndex() != n)
                                 {
                                   //printf("PluginGui::updateControls combobox\n");
                               
                                   ((QComboBox*)widget)->blockSignals(true);
-                                  ((QComboBox*)widget)->setCurrentItem(n);
+                                  ((QComboBox*)widget)->setCurrentIndex(n);
                                   ((QComboBox*)widget)->blockSignals(false);
                                 } 
                               }
@@ -3614,7 +3617,7 @@ void PluginGui::guiParamChanged(int idx)
                   val = double(((QCheckBox*)w)->isChecked());
                   break;
             case GuiWidgets::QCOMBOBOX:
-                  val = double(((QComboBox*)w)->currentItem());
+                  val = double(((QComboBox*)w)->currentIndex());
                   break;
             }
 
@@ -3634,7 +3637,7 @@ void PluginGui::guiParamChanged(int idx)
                         ((QCheckBox*)widget)->setChecked(int(val));
                         break;
                   case GuiWidgets::QCOMBOBOX:
-                        ((QComboBox*)widget)->setCurrentItem(int(val));
+                        ((QComboBox*)widget)->setCurrentIndex(int(val));
                         break;
                   }
             }
@@ -3700,7 +3703,7 @@ void PluginGui::guiParamPressed(int idx)
                     track->startAutoRecord(id, val);
                   break;
             case GuiWidgets::QCOMBOBOX:
-                    double val = (double)((ComboBox*)w)->currentItem();
+                    double val = (double)((ComboBox*)w)->currentIndex();
                     track->startAutoRecord(id, val);
                   break;
             }
@@ -3745,7 +3748,7 @@ void PluginGui::guiParamReleased(int idx)
                     track->stopAutoRecord(id, param);
                   break;
             case GuiWidgets::QCOMBOBOX:
-                    double val = (double)((ComboBox*)w)->currentItem();
+                    double val = (double)((ComboBox*)w)->currentIndex();
                     track->stopAutoRecord(id, param);
                   break;
             }
@@ -3802,7 +3805,7 @@ void PluginGui::guiSliderPressed(int idx)
                         ((QCheckBox*)widget)->setChecked(int(val));
                         break;
                   case GuiWidgets::QCOMBOBOX:
-                        ((QComboBox*)widget)->setCurrentItem(int(val));
+                        ((QComboBox*)widget)->setCurrentIndex(int(val));
                         break;
                   }
             }
@@ -3855,9 +3858,9 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
 QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent, const QString & name)
 {
   if(className == QString("DoubleLabel"))
-    return new DoubleLabel(parent, name); 
+    return new DoubleLabel(parent, name.toLatin1().constData()); 
   if(className == QString("Slider"))
-    return new Slider(parent, name, Qt::Horizontal); 
+    return new Slider(parent, name.toLatin1().constData(), Qt::Horizontal); 
 
   return QUiLoader::createWidget(className, parent, name);
 };

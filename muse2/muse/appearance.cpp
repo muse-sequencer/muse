@@ -207,13 +207,13 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
 	//    Fonts
       //---------------------------------------------------
 
-      fontBrowse0->setPixmap(*openIcon);
-      fontBrowse1->setPixmap(*openIcon);
-      fontBrowse2->setPixmap(*openIcon);
-      fontBrowse3->setPixmap(*openIcon);
-      fontBrowse4->setPixmap(*openIcon);
-      fontBrowse5->setPixmap(*openIcon);
-      fontBrowse6->setPixmap(*openIcon);
+      fontBrowse0->setIcon(QIcon(*openIcon));
+      fontBrowse1->setIcon(QIcon(*openIcon));
+      fontBrowse2->setIcon(QIcon(*openIcon));
+      fontBrowse3->setIcon(QIcon(*openIcon));
+      fontBrowse4->setIcon(QIcon(*openIcon));
+      fontBrowse5->setIcon(QIcon(*openIcon));
+      fontBrowse6->setIcon(QIcon(*openIcon));
       connect(fontBrowse0, SIGNAL(clicked()), SLOT(browseFont0()));
       connect(fontBrowse1, SIGNAL(clicked()), SLOT(browseFont1()));
       connect(fontBrowse2, SIGNAL(clicked()), SLOT(browseFont2()));
@@ -240,22 +240,41 @@ void Appearance::resetValues()
       *config = ::config;  // init with global config values
       styleSheetPath->setText(config->styleSheetFile);
       updateFonts();
-      palette0->setPaletteBackgroundColor(config->palette[0]);
-      palette1->setPaletteBackgroundColor(config->palette[1]);
-      palette2->setPaletteBackgroundColor(config->palette[2]);
-      palette3->setPaletteBackgroundColor(config->palette[3]);
-      palette4->setPaletteBackgroundColor(config->palette[4]);
-      palette5->setPaletteBackgroundColor(config->palette[5]);
-      palette6->setPaletteBackgroundColor(config->palette[6]);
-      palette7->setPaletteBackgroundColor(config->palette[7]);
-      palette8->setPaletteBackgroundColor(config->palette[8]);
-      palette9->setPaletteBackgroundColor(config->palette[9]);
-      palette10->setPaletteBackgroundColor(config->palette[10]);
-      palette11->setPaletteBackgroundColor(config->palette[11]);
-      palette12->setPaletteBackgroundColor(config->palette[12]);
-      palette13->setPaletteBackgroundColor(config->palette[13]);
-      palette14->setPaletteBackgroundColor(config->palette[14]);
-      palette15->setPaletteBackgroundColor(config->palette[15]);
+
+      QPalette pal;
+      
+      pal.setColor(palette0->backgroundRole(), config->palette[0]);
+      palette0->setPalette(pal);
+      pal.setColor(palette1->backgroundRole(), config->palette[1]);
+      palette1->setPalette(pal);
+      pal.setColor(palette2->backgroundRole(), config->palette[2]);
+      palette2->setPalette(pal);
+      pal.setColor(palette3->backgroundRole(), config->palette[3]);
+      palette3->setPalette(pal);
+      pal.setColor(palette4->backgroundRole(), config->palette[4]);
+      palette4->setPalette(pal);
+      pal.setColor(palette5->backgroundRole(), config->palette[5]);
+      palette5->setPalette(pal);
+      pal.setColor(palette6->backgroundRole(), config->palette[6]);
+      palette6->setPalette(pal);
+      pal.setColor(palette7->backgroundRole(), config->palette[7]);
+      palette7->setPalette(pal);
+      pal.setColor(palette8->backgroundRole(), config->palette[8]);
+      palette8->setPalette(pal);
+      pal.setColor(palette9->backgroundRole(), config->palette[9]);
+      palette9->setPalette(pal);
+      pal.setColor(palette10->backgroundRole(), config->palette[10]);
+      palette10->setPalette(pal);
+      pal.setColor(palette11->backgroundRole(), config->palette[11]);
+      palette11->setPalette(pal);
+      pal.setColor(palette12->backgroundRole(), config->palette[12]);
+      palette12->setPalette(pal);
+      pal.setColor(palette13->backgroundRole(), config->palette[13]);
+      palette13->setPalette(pal);
+      pal.setColor(palette14->backgroundRole(), config->palette[14]);
+      palette14->setPalette(pal);
+      pal.setColor(palette15->backgroundRole(), config->palette[15]);
+      palette15->setPalette(pal);
       
       currentBg = ::config.canvasBgPixmap;
       if (currentBg.isEmpty())
@@ -278,15 +297,15 @@ void Appearance::resetValues()
       arrGrid->setChecked(config->canvasShowGrid);
 
       themeComboBox->clear();
-      QString cs = muse->style()->name();
+      QString cs = muse->style()->objectName();
       //printf("Appearance::resetValues style:%s\n", cs.toAscii().data());  // REMOVE Tim
       //printf("Appearance::resetValues App styleSheet:%s\n", qApp->styleSheet().toAscii().data());  // REMOVE Tim
-      cs = cs.lower();
+      cs = cs.toLower();
 
-      themeComboBox->insertStringList(QStyleFactory::keys());
+      themeComboBox->insertItems(0, QStyleFactory::keys());
       for (int i = 0; i < themeComboBox->count(); ++i) {
-            if (themeComboBox->text(i).lower() == cs) {
-                  themeComboBox->setCurrentItem(i);
+            if (themeComboBox->itemText(i).toLower() == cs) {
+                  themeComboBox->setCurrentIndex(i);
                   }
             }
 
@@ -392,7 +411,7 @@ void Appearance::apply()
       config->fonts[0].setPointSize(fontSize0->value());
       config->fonts[0].setItalic(italic0->isChecked());
       config->fonts[0].setBold(bold0->isChecked());
-      QApplication::setFont(config->fonts[0], true);
+      QApplication::setFont(config->fonts[0]);
 
       config->fonts[1].setFamily(fontName1->text());
       config->fonts[1].setPointSize(fontSize1->value());
@@ -442,7 +461,7 @@ void Appearance::apply()
 void Appearance::ok()
       {
       apply();
-      close(false);
+      close();
       }
 
 //---------------------------------------------------------
@@ -451,7 +470,7 @@ void Appearance::ok()
 
 void Appearance::cancel()
       {
-      close(false);
+      close();
       }
 
 //---------------------------------------------------------
@@ -555,7 +574,9 @@ void Appearance::updateColor()
       vval->setEnabled(color);
       if (color == 0)
             return;
-      colorframe->setBackgroundColor(*color);
+      QPalette pal;
+      pal.setColor(colorframe->backgroundRole(), *color);
+      colorframe->setPalette(pal);
       color->getRgb(&r, &g, &b);
       color->getHsv(&h, &s, &v);
 
@@ -692,7 +713,9 @@ void Appearance::addToPaletteClicked()
       if (button) {
             int id = aPalette->id(button);
             config->palette[id] = *color;
-            button->setPaletteBackgroundColor(*color);
+	    QPalette pal;
+	    pal.setColor(button->backgroundRole(), *color);
+	    button->setPalette(pal);
             button->update();   //??
             }
       }
@@ -707,7 +730,7 @@ void Appearance::paletteClicked(int id)
             return;
       QAbstractButton* button = (QAbstractButton*)aPalette->button(id); // ddskrjo
       if (button) {
-            QColor c = button->paletteBackgroundColor();
+	QColor c = button->palette().color(QPalette::Window);
             int r, g, b;
             c.getRgb(&r, &g, &b);
             if (r == 0xff && g == 0xff && b == 0xff)

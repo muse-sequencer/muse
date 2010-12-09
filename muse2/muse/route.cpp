@@ -1360,7 +1360,7 @@ void Route::read(Xml& xml)
                           else
                           if(rtype == JACK_ROUTE) 
                           {
-                            void* jport = audioDevice->findPort(s);
+                            void* jport = audioDevice->findPort(s.toLatin1().constData());
                             if(jport == 0)
                               printf("Route::read(): jack port <%s> not found\n", s.toLatin1().constData());
                             else

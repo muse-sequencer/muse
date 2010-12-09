@@ -27,7 +27,7 @@ const char* wtQLenTxt   = QT_TR_NOOP("quantize also note len as default");
 QuantConfig::QuantConfig(int s, int l, bool lenFlag)
    : QDialog()
       {
-      setCaption(tr("MusE: Config Quantize"));
+      setWindowTitle(tr("MusE: Config Quantize"));
       QVBoxLayout *mainlayout = new QVBoxLayout;
 
       QGridLayout* layout = new QGridLayout;

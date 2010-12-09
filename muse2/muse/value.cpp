@@ -11,12 +11,14 @@
 
 
 IValue::IValue(QObject* parent, const char* name)
-   : QObject(parent, name)
+   : QObject(parent)
       {
+      setObjectName(name);
       }
 BValue::BValue(QObject* parent, const char* name)
-   : QObject(parent, name)
+   : QObject(parent)
       {
+      setObjectName(name);
       }
 
 //---------------------------------------------------------
@@ -25,7 +27,7 @@ BValue::BValue(QObject* parent, const char* name)
 
 void BValue::save(int level, Xml& xml)
       {
-      xml.intTag(level, name(), val);
+      xml.intTag(level, objectName().toLatin1().constData(), val);
       }
 
 //---------------------------------------------------------
@@ -34,7 +36,7 @@ void BValue::save(int level, Xml& xml)
 
 void IValue::save(int level, Xml& xml)
       {
-      xml.intTag(level, name(), val);
+      xml.intTag(level, objectName().toLatin1().constData(), val);
       }
 
 //---------------------------------------------------------

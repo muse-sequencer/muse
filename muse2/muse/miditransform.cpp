@@ -1383,49 +1383,49 @@ void MidiTransformerDialog::presetChanged(QListWidgetItem* item)
       nameEntry->setText(data->cmt->name);
       commentEntry->setText(data->cmt->comment);
 
-      selEventOp->setCurrentItem(data->cmt->selEventOp);
+      selEventOp->setCurrentIndex(data->cmt->selEventOp);
       selEventOpSel(data->cmt->selEventOp);
 
       for (unsigned i = 0; i < sizeof(eventTypeTable)/sizeof(*eventTypeTable); ++i) {
             if (eventTypeTable[i] == data->cmt->selType) {
-                  selType->setCurrentItem(i);
+                  selType->setCurrentIndex(i);
                   break;
                   }
             }
 
-      selVal1Op->setCurrentItem(data->cmt->selVal1);
+      selVal1Op->setCurrentIndex(data->cmt->selVal1);
       selVal1OpSel(data->cmt->selVal1);
 
-      selVal2Op->setCurrentItem(data->cmt->selVal2);
+      selVal2Op->setCurrentIndex(data->cmt->selVal2);
       selVal2OpSel(data->cmt->selVal2);
 
-      selLenOp->setCurrentItem(data->cmt->selLen);
+      selLenOp->setCurrentIndex(data->cmt->selLen);
       selLenOpSel(data->cmt->selLen);
 
-      selRangeOp->setCurrentItem(data->cmt->selRange);
+      selRangeOp->setCurrentIndex(data->cmt->selRange);
       selRangeOpSel(data->cmt->selRange);
 
-      funcOp->setCurrentItem(data->cmt->funcOp);
+      funcOp->setCurrentIndex(data->cmt->funcOp);
       funcOpSel(data->cmt->funcOp);
 
       // TransformOperator procEvent: Keep, Fix
-      procEventOp->setCurrentItem(data->cmt->procEvent == Fix);
+      procEventOp->setCurrentIndex(data->cmt->procEvent == Fix);
 
       procEventOpSel(data->cmt->procEvent);
 
-      procVal1Op->setCurrentItem(data->cmt->procVal1);
+      procVal1Op->setCurrentIndex(data->cmt->procVal1);
       procVal1OpSel(data->cmt->procVal1);
 
       for (unsigned i = 0; i < sizeof(procVal2Map)/sizeof(*procVal2Map); ++i) {
             if (procVal2Map[i] == data->cmt->procVal2) {
-                  procVal2Op->setCurrentItem(i);
+                  procVal2Op->setCurrentIndex(i);
                   break;
                   }
             }
-      procLenOp->setCurrentItem(data->cmt->procLen);
+      procLenOp->setCurrentIndex(data->cmt->procLen);
       procLenOpSel(data->cmt->procLen);
 
-      procPosOp->setCurrentItem(data->cmt->procPos);
+      procPosOp->setCurrentIndex(data->cmt->procPos);
       procPosOpSel(data->cmt->procPos);
 
       selVal1aChanged(data->cmt->selVal1a);
@@ -1475,7 +1475,7 @@ void MidiTransformerDialog::nameChanged(const QString& s)
 
 void MidiTransformerDialog::commentChanged()
       {
-      data->cmt->comment = commentEntry->text();
+      data->cmt->comment = commentEntry->toPlainText();
       }
 
 //-----------------------------op----------------------------

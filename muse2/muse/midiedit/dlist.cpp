@@ -326,7 +326,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                         val = 127;
                   
                   ///if (ev->state() & Qt::ControlButton) {
-                  if (ev->state() & Qt::ControlModifier) {
+                  if (ev->modifiers() & Qt::ControlModifier) {
                         audio->msgIdle(true);
                         // Delete all port controller events.
                         //audio->msgChangeAllPortDrumCtrlEvents(false);
@@ -690,7 +690,7 @@ void DList::viewMouseMoveEvent(QMouseEvent* ev)
                   if (delta <= 2)
                         return;
                   drag = DRAG;
-                  setCursor(QCursor(Qt::sizeVerCursor));
+                  setCursor(QCursor(Qt::SizeVerCursor));
                   redraw();
                   break;
             case NORMAL:
@@ -710,7 +710,7 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
       if (drag == DRAG) {
             int y = ev->y();
             unsigned dPitch = y / TH;
-            setCursor(QCursor(Qt::arrowCursor));
+            setCursor(QCursor(Qt::ArrowCursor));
             currentlySelected = &drumMap[int(dPitch)];
             emit curDrumInstrumentChanged(dPitch);
             emit mapChanged(sPitch, dPitch); //Track pitch change done in canvas

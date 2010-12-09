@@ -753,7 +753,7 @@ void Track::writeRouting(int level, Xml& xml) const
             
             ///Route dst(name(), true, r->channel);
             //xml.tag(level++, "Route");
-            xml.tag(level++, s);
+            xml.tag(level++, s.toAscii().constData());
             
             // p3.3.38 New routing scheme.
             ///xml.strTag(level, "srcNode", r->name());
@@ -763,7 +763,7 @@ void Track::writeRouting(int level, Xml& xml) const
               s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
             //s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
             s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
-            xml.tag(level, s);
+            xml.tag(level, s.toAscii().constData());
             
             ///xml.strTag(level, "dstNode", dst.name());
             
@@ -810,7 +810,7 @@ void Track::writeRouting(int level, Xml& xml) const
             s += QString(QT_TR_NOOP(" remch=\"%1\"")).arg(r->remoteChannel);
           
           //xml.tag(level++, "Route");
-          xml.tag(level++, s);
+          xml.tag(level++, s.toAscii().constData());
           
           ///xml.strTag(level, "srcNode", src);
           //if(r->channel != -1)
@@ -862,7 +862,7 @@ void Track::writeRouting(int level, Xml& xml) const
           else  
             s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
             
-          xml.tag(level, s);
+          xml.tag(level, s.toAscii().constData());
           
           xml.etag(level--, "Route");
         }

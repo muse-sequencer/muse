@@ -106,11 +106,11 @@ const char* midi_file_pattern[] = {
       };
 */      
 const QStringList midi_file_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2);;") +
       QString("Midi (*.mid *.MID *.mid.gz *.mid.bz2);;") +
       QString("Karaoke (*.kar *.KAR *.kar.gz *.kar.bz2);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 
 //FIXME: By T356 01/19/2010
 // If saving as a compressed file (gz or bz2),
@@ -147,10 +147,10 @@ const char* midi_file_save_pattern[] = {
       };
 */
 const QStringList midi_file_save_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("Midi (*.mid);;") +
       QString("Karaoke (*.kar);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 
 /*
 const char* med_file_pattern[] = {
@@ -170,18 +170,18 @@ const char* med_file_save_pattern[] = {
       };
 */      
 const QStringList med_file_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("med Files (*.med *.med.gz *.med.bz2);;") +
       QString("Uncompressed med Files (*.med);;") +
       QString("gzip compressed med Files (*.med.gz);;") +
       QString("bzip2 compressed med Files (*.med.bz2);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 const QStringList med_file_save_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("Uncompressed med Files (*.med);;") +
       QString("gzip compressed med Files (*.med.gz);;") +
       QString("bzip2 compressed med Files (*.med.bz2);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 
 /*
 const char* image_file_pattern[] = {
@@ -194,12 +194,12 @@ const char* image_file_pattern[] = {
       };
 */      
 const QStringList image_file_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("(*.jpg *.gif *.png);;") +
       QString("(*.jpg);;") +
       QString("(*.gif);;") +
       QString("(*.png);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 
 // Not used.
 /*
@@ -226,16 +226,16 @@ const char* part_file_save_pattern[] = {
       };
 */
 const QStringList part_file_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("part Files (*.mpt *.mpt.gz *.mpt.bz2);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 
 const QStringList part_file_save_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("part Files (*.mpt);;") +
       QString("gzip compressed part Files (*.mpt.gz);;") +
       QString("bzip2 compressed part Files (*.mpt.bz2);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 
 /*
 const char* plug_file_pattern[] = {
@@ -260,34 +260,34 @@ const char* preset_file_save_pattern[] = {
       };
 */
 const QStringList preset_file_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("Presets (*.pre *.pre.gz *.pre.bz2);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 
 const QStringList preset_file_save_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("Presets (*.pre);;") +
       QString("gzip compressed presets (*.pre.gz);;") +
       QString("bzip2 compressed presets (*.pre.bz2);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 
 const QStringList drum_map_file_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("Presets (*.map *.map.gz *.map.bz2);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 const QStringList drum_map_file_save_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("Presets (*.map);;") +
       QString("gzip compressed presets (*.map.gz);;") +
       QString("bzip2 compressed presets (*.map.bz2);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 
 const QStringList audio_file_pattern =  
-      QStringList::split(";;", QT_TR_NOOP(
+      QT_TR_NOOP(
       QString("Wave/Binary (*.wav *.ogg *.bin);;") +
       QString("Wave (*.wav *.ogg);;") +
       QString("Binary (*.bin);;") +
-      QString("All Files (*)")) );
+      QString("All Files (*)")).split(";;");
 
 ///Qt::ButtonState globalKeyState;
 Qt::KeyboardModifiers globalKeyState;

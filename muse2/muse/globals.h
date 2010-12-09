@@ -10,13 +10,9 @@
 #define GLOBALS_H
 
 #include <sys/types.h>
-//#include <qstring.h>
-//#include <qfont.h>
-//#include <qnamespace.h>
-//Added by qt3to4:
-#include <QActionGroup>
+
 #include <Qt3Support>
-//#include <qaction.h>
+
 #include "value.h"
 #include "mtc.h"
 #include "route.h"

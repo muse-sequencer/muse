@@ -56,8 +56,9 @@ static const int WHEEL_DELTA = 120;
 //---------------------------------------------------------
 
 TList::TList(Header* hdr, QWidget* parent, const char* name)
-   : QWidget(parent, name, Qt::WNoAutoErase | Qt::WResizeNoErase)
+   : QWidget(parent) // Qt::WNoAutoErase | Qt::WResizeNoErase are no longer needed according to Qt4 doc
       {
+      setObjectName(name);
       ypos = 0;
       editMode = false;
       setFocusPolicy(Qt::StrongFocus);
@@ -69,7 +70,8 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       editor    = 0;
       mode      = NORMAL;
 
-      setBackgroundMode(Qt::NoBackground);
+      //setBackgroundMode(Qt::NoBackground); // ORCAN - FIXME
+      //setAttribute(Qt::WA_OpaquePaintEvent);
       resizeFlag = false;
 
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
@@ -107,6 +109,7 @@ void TList::paintEvent(QPaintEvent* ev)
       {
       if (!pmValid)
             paint(ev->rect());
+      /* Orcan - fixme */
       bitBlt(this, ev->rect().topLeft(), &pm, ev->rect(), true); //CopyROP, true); ddskrjo
       }
 
@@ -180,6 +183,7 @@ void TList::paint(const QRect& r)
             QColor bg;
             if (track->selected()) {
                   bg = config.selectTrackBg;
+                  //p.setPen(palette().active().text());
                   p.setPen(config.selectTrackFg);
                   }
             else {
@@ -209,7 +213,7 @@ void TList::paint(const QRect& r)
                               bg = config.synthTrackBg;
                               break;
                         }
-                  p.setPen(palette().active().text());
+                  p.setPen(palette().color(QPalette::Active, QPalette::Text));
                   }
             p.fillRect(x1, yy, w, trackHeight, bg);
 
@@ -217,7 +221,8 @@ void TList::paint(const QRect& r)
             for (int index = 0; index < header->count(); ++index) {
                   int section = header->visualIndex(index);
                   int w   = header->sectionSize(section);
-                  QRect r = p.xForm(QRect(x+2, yy, w-4, trackHeight));
+                  //QRect r = p.xForm(QRect(x+2, yy, w-4, trackHeight));
+                  QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, trackHeight));
 
                   switch (section) {
                         case COL_RECORD:
@@ -411,7 +416,7 @@ void TList::adjustScrollbar()
       TrackList* l = song->tracks();
       for (iTrack it = l->begin(); it != l->end(); ++it)
             h += (*it)->height();
-      scroll->setMaxValue(h +30);
+      scroll->setMaximum(h +30);
       redraw();
       }
 
@@ -767,7 +772,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
       int x       = ev->x();
       int y       = ev->y();
       int button  = ev->button();
-      bool shift  = ev->state() & Qt::ShiftModifier;
+      bool shift  = ev->modifiers() & Qt::ShiftModifier;
 
       Track* t    = y2Track(y + ypos);
 
@@ -948,7 +953,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
             case COL_MUTE:
                   // p3.3.29
-                  if ((button == Qt::RightButton) || (ev->state() & Qt::ControlModifier))
+                  if ((button == Qt::RightButton) || (ev->modifiers() & Qt::ControlModifier))
                     t->setOff(!t->off());
                   else
                   {
@@ -1129,7 +1134,7 @@ void TList::selectTrackBelow()
 
 void TList::mouseMoveEvent(QMouseEvent* ev)
       {
-      if (ev->state() == 0) {
+      if (ev->modifiers() == 0) {
             int y = ev->y();
             int ty = -ypos;
             TrackList* tracks = song->tracks();
@@ -1147,14 +1152,14 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
                         else {
                               if (!resizeFlag) {
                                     resizeFlag = true;
-                                    setCursor(QCursor(Qt::splitVCursor));
+                                    setCursor(QCursor(Qt::SplitVCursor));
                                     }
                               break;
                               }
                         }
                   }
             if (it == tracks->end() && resizeFlag) {
-                  setCursor(QCursor(Qt::arrowCursor));
+                  setCursor(QCursor(Qt::ArrowCursor));
                   resizeFlag = false;
                   }
             return;
@@ -1175,7 +1180,7 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
                         mode = DRAG;
                         dragHeight = t->height();
                         sTrack     = song->tracks()->index(t);
-                        setCursor(QCursor(Qt::sizeVerCursor));
+                        setCursor(QCursor(Qt::SizeVerCursor));
                         redraw();
                         }
                   }
@@ -1220,7 +1225,7 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
             }
       if (mode != NORMAL) {
             mode = NORMAL;
-            setCursor(QCursor(Qt::arrowCursor));
+            setCursor(QCursor(Qt::ArrowCursor));
             redraw();
             }
       if (editTrack)
@@ -1254,7 +1259,7 @@ void TList::wheelEvent(QWheelEvent* ev)
                   break;
             case COL_MUTE:
                   // p3.3.29
-                  if (ev->state() & Qt::ControlModifier)
+                  if (ev->modifiers() & Qt::ControlModifier)
                     t->setOff(!t->off());
                   else
                   {
@@ -1361,7 +1366,7 @@ void TList::readStatus(Xml& xml, const char* name)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (tag == header->name())
+                        if (tag == header->objectName())
                               header->readStatus(xml);
                         else
                               xml.unknown("Tlist");
@@ -1402,13 +1407,14 @@ void TList::setYPos(int y)
       }      
       else if (delta < 0) {   // shift up
             //printf("TList::setYPos delta < 0 : shift up\n");
+	/* Orcan - fixme */
             bitBlt(&pm,  0, 0, &pm, 0, -delta, w, h + delta, true); //CopyROP, true); ddskrjo
             r = QRect(0, h + delta, w, -delta);
             }
       else {                  // shift down
             //printf("TList::setYPos delta !< 0 : shift down\n");
+	/* Orcan - fixme */
             bitBlt(&pm,  0, delta, &pm, 0, 0, w, h-delta, true); //CopyROP, true); ddskrjo
-            
             // NOTE: June 2 2010: On my machine with an old NV V8200 + prop drivers (curr 96.43.11),
             //  this is a problem. There is severe graphical corruption.
             // Not just here but several other windows (ex. ladspa browser), 
@@ -1432,7 +1438,9 @@ void TList::setYPos(int y)
 
 void TList::resizeEvent(QResizeEvent* ev)
       {
-      pm.resize(ev->size());
+      //pm.resize(ev->size()); // Qt3 way
+      //pm = pm.copy(QRect(QPoint(0, 0), ev->size())); // orcan - didn't work. Let's try:
+      pm = QPixmap(ev->size()); // Works, but is this efficient?
       pmValid = false;
       }
 

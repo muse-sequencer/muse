@@ -225,29 +225,39 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       //split->setHandleWidth(10);
 
       QWidget* tracklist = new QWidget(split);
-      split->setResizeMode(tracklist, QSplitter::KeepSize);
-      tracklist->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding, 0, 100));
+
+      split->setStretchFactor(split->indexOf(tracklist), 0);
+      //tracklist->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding, 0, 100));
+      QSizePolicy tpolicy = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+      tpolicy.setHorizontalStretch(0);
+      tpolicy.setVerticalStretch(100);
+      tracklist->setSizePolicy(tpolicy);
 
       QWidget* editor = new QWidget(split);
-      split->setResizeMode(editor, QSplitter::Stretch);
-      editor->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding,
+      split->setStretchFactor(split->indexOf(editor), 1);
+      //editor->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding,
         // Changed by T356. Was causing "large int implicitly truncated" warning. These are UCHAR values...
         //1000, 100));
         //232, 100)); // 232 is what it was being truncated to, but what is the right value?...
-        255, 100));
+        //255, 100));
+      QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      epolicy.setHorizontalStretch(255);
+      epolicy.setVerticalStretch(100);
+      editor->setSizePolicy(epolicy);
 
       //---------------------------------------------------
       //    Track Info
       //---------------------------------------------------
 
-      infoScroll = new QScrollBar(Qt::Vertical, tracklist, "infoScrollBar");
+      infoScroll = new QScrollBar(Qt::Vertical, tracklist);
+      infoScroll->setObjectName("infoScrollBar");
       genTrackInfo(tracklist);
 
       // Track-Info Button
       ib  = new QToolButton(tracklist);
       ib->setText(tr("TrackInfo"));
       ib->setCheckable(true);
-      ib->setOn(showTrackinfoFlag);
+      ib->setChecked(showTrackinfoFlag);
       connect(ib, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
 
       header = new Header(tracklist);
@@ -318,8 +328,15 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
 
       // Changed p3.3.43 Too small steps for me...
       //vscroll = new QScrollBar(1, 20*20, 1, 5, 0, Vertical, editor);
-      vscroll = new QScrollBar(1, 20*20, 5, 25, 0, Qt::Vertical, editor);
-      
+      //vscroll = new QScrollBar(1, 20*20, 5, 25, 0, Qt::Vertical, editor);
+      vscroll = new QScrollBar(editor);
+      vscroll->setMinimum(1);
+      vscroll->setMaximum(20*20);
+      vscroll->setSingleStep(5);
+      vscroll->setPageStep(25);
+      vscroll->setValue(0);
+      vscroll->setOrientation(Qt::Vertical);      
+
       list->setScroll(vscroll);
 
       QList<int> vallist;
@@ -348,8 +365,11 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       connect(this, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
       connect(list, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
       
-      egrid->addMultiCellWidget(time,           0, 0, 0, 1);
-      egrid->addMultiCellWidget(hLine(editor),  1, 1, 0, 1);
+      //egrid->addMultiCellWidget(time,           0, 0, 0, 1);
+      //egrid->addMultiCellWidget(hLine(editor),  1, 1, 0, 1);
+      egrid->addWidget(time, 0, 0, 1, 2);
+      egrid->addWidget(hLine(editor), 1, 0, 1, 2);
+
       egrid->addWidget(canvas,  2, 0);
       egrid->addWidget(vscroll, 2, 1);
       egrid->addWidget(hscroll, 3, 0, Qt::AlignBottom);
@@ -583,7 +603,7 @@ void Arranger::setMode(int mode)
 void Arranger::writeStatus(int level, Xml& xml)
       {
       xml.tag(level++, "arranger");
-      xml.intTag(level, "info", ib->isOn());
+      xml.intTag(level, "info", ib->isChecked());
       split->writeStatus(level, xml);
       list->writeStatus(level, xml, "list");
 
@@ -609,7 +629,7 @@ void Arranger::readStatus(Xml& xml)
                   case Xml::TagStart:
                         if (tag == "info")
                               showTrackinfoFlag = xml.parseInt();
-                        else if (tag == split->name())
+                        else if (tag == split->objectName())
                               split->readStatus(xml);
                         else if (tag == "list")
                               list->readStatus(xml, "list");
@@ -626,7 +646,7 @@ void Arranger::readStatus(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "arranger") {
-                              ib->setOn(showTrackinfoFlag);
+                              ib->setChecked(showTrackinfoFlag);
                               return;
                               }
                   default:
@@ -891,8 +911,9 @@ void Arranger::trackInfoScroll(int y)
 //---------------------------------------------------------
 
 WidgetStack::WidgetStack(QWidget* parent, const char* name)
-   : QWidget(parent, name)
+   : QWidget(parent)
       {
+      setObjectName(name);
       top = -1;
       }
 

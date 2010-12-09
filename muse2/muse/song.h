@@ -9,14 +9,6 @@
 #ifndef __SONG_H__
 #define __SONG_H__
 
-#include <qstring.h>
-#include <qobject.h>
-#include <qfont.h>
-//Added by qt3to4:
-//#include <Q3PopupMenu>
-#include <QMenu>
-#include <QEvent>
-
 #include "pos.h"
 #include "globaldefs.h"
 #include "tempo.h"
@@ -24,6 +16,12 @@
 #include "al/sig.h"
 #include "undo.h"
 #include "track.h"
+
+class QFont;
+class QMenu;
+class QButton;
+class QString;
+class QStringList;
 
 class SynthI;
 struct MidiMsg;
@@ -40,8 +38,6 @@ class EventList;
 class MarkerList;
 class Marker;
 class SNode;
-class QMenu;
-class QButton;
 
 class MidiPort;
 class MidiDevice;
