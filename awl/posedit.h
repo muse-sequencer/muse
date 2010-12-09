@@ -41,6 +41,8 @@ class PosEdit : public QAbstractSpinBox
       Pos _pos;
       bool initialized;
 
+      QIntValidator* validator;
+      
       virtual void paintEvent(QPaintEvent* event);
       virtual void stepBy(int steps);
       virtual StepEnabled stepEnabled() const;
@@ -49,9 +51,16 @@ class PosEdit : public QAbstractSpinBox
       void updateValue();
       int curSegment() const;
       virtual bool event(QEvent*);
+      void finishEdit();
 
    signals:
       void valueChanged(const Pos&);
+      
+      // Choose these three carefully, watch out for focusing recursion. 
+      void returnPressed();
+      void lostFocus();      
+      // This is emitted when focus lost or return pressed (same as QAbstractSpinBox). 
+      void editingFinished();
 
    public slots:
       void setValue(const Pos& time);
@@ -66,7 +75,7 @@ class PosEdit : public QAbstractSpinBox
       Pos pos() const { return _pos; }
       void setSmpte(bool);
       bool smpte() const { return _smpte; }
-      void* operator new(size_t);
+      // void* operator new(size_t);          // What was this for? Tim.
       };
 }
 

@@ -25,6 +25,7 @@
 //#include "sig.h"
 
 //#include "sync.h"  // Tim.
+extern int mtcType;
 
 namespace Awl {
 
@@ -38,17 +39,25 @@ namespace Awl {
 PosEdit::PosEdit(QWidget* parent)
    : QAbstractSpinBox(parent)
       {
+      validator = new QIntValidator(this);
+      
       initialized = false;
       setReadOnly(false);
       setSmpte(false);
+      
+      //connect(this, SIGNAL(editingFinished()), SLOT(finishEdit()));
+      //connect(this, SIGNAL(returnPressed()), SLOT(enterPressed()));
       }
 
+// What was this for? Tim.
+/*
 void* PosEdit::operator new(size_t n)
       {
       void* p = new char[n];
       memset(p, 0, n);
       return p;
       }
+*/
 
 PosEdit::~PosEdit()
       {
@@ -73,11 +82,35 @@ QSize PosEdit::sizeHint() const
 //---------------------------------------------------------
 
 bool PosEdit::event(QEvent* event)
+{
+      if (event->type() == QEvent::KeyPress) 
       {
-      if (event->type() == QEvent::KeyPress) {
             QKeyEvent* ke = static_cast<QKeyEvent*>(event);
+            if (ke->key() == Qt::Key_Return) 
+            {
+              //printf("key press event Return\n");   // REMOVE Tim.
+              //enterPressed();
+              finishEdit();
+              emit returnPressed();
+              emit editingFinished();
+              return true;
+            }
+            
+            if (ke->key() == Qt::Key_Escape) 
+            {
+              //printf("key press event Escape\n");   // REMOVE Tim.
+              if(lineEdit())
+                lineEdit()->undo(); 
+              // "By default, isAccepted() is set to true, but don't rely on this as subclasses may 
+              //   choose to clear it in their constructor."
+              // Just to be sure. Otherwise escape will close a midi editor for example, which is annoying.
+              ke->setAccepted(true);
+              return true;
+            }
+            
             int segment = curSegment();
-            if (ke->key() == Qt::Key_Backtab) {
+            if (ke->key() == Qt::Key_Backtab) 
+            {
                   if (_smpte) {
                         if (segment == 3) {
                               lineEdit()->setSelection(7, 2);
@@ -102,8 +135,9 @@ bool PosEdit::event(QEvent* event)
                               return true;
                               }
                         }
-                  }
-            if (ke->key() == Qt::Key_Tab) {
+            }
+            if (ke->key() == Qt::Key_Tab) 
+            {
                   if (_smpte) {
                         if (segment == 0) {
                               lineEdit()->setSelection(4, 2);
@@ -128,21 +162,32 @@ bool PosEdit::event(QEvent* event)
                               return true;
                               }
                         }
-                  }
             }
-      else if (event->type() == QEvent::FocusIn) {
-            QFocusEvent* fe = static_cast<QFocusEvent*>(event);
-            QAbstractSpinBox::focusInEvent(fe);
-            int segment = curSegment();
-            switch(segment) {
-                  case 0:  lineEdit()->setSelection(0,4); break;
-                  case 1:  lineEdit()->setSelection(5,2); break;
-                  case 2:  lineEdit()->setSelection(8,3); break;
-                  }
-            return true;
-            }
-      return QAbstractSpinBox::event(event);
       }
+      else if (event->type() == QEvent::FocusIn) 
+      {
+          QFocusEvent* fe = static_cast<QFocusEvent*>(event);
+          QAbstractSpinBox::focusInEvent(fe);
+          int segment = curSegment();
+          switch(segment) {
+                case 0:  lineEdit()->setSelection(0,4); break;
+                case 1:  lineEdit()->setSelection(5,2); break;
+                case 2:  lineEdit()->setSelection(8,3); break;
+                }
+          return true;
+      }
+      else if (event->type() == QEvent::FocusOut) 
+      {
+          QFocusEvent* fe = static_cast<QFocusEvent*>(event);
+          QAbstractSpinBox::focusOutEvent(fe);
+          finishEdit();
+          emit lostFocus();        
+          emit editingFinished();  
+          return true;
+      }
+      
+      return QAbstractSpinBox::event(event);
+}
 
 //---------------------------------------------------------
 //   setSmpte
@@ -152,9 +197,11 @@ void PosEdit::setSmpte(bool f)
       {
       _smpte = f;
       if (_smpte)
-            lineEdit()->setInputMask("999:99:99:99");
+            //lineEdit()->setInputMask("999:99:99:99");
+            lineEdit()->setInputMask("999:99:99:99;0");
       else
-            lineEdit()->setInputMask("9999.99.999");
+            //lineEdit()->setInputMask("9999.99.999");
+            lineEdit()->setInputMask("9999.99.999;0");
       updateValue();
       }
 
@@ -164,6 +211,8 @@ void PosEdit::setSmpte(bool f)
 
 void PosEdit::setValue(const Pos& time)
       {
+      if(_pos == time)
+        return;
       _pos = time;
       updateValue();
       }
@@ -227,8 +276,27 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
                   case 2:
                         if (frame == 0)
                               en &= ~QAbstractSpinBox::StepDownEnabled;
-                        else if (frame == 23)
+                        else
+                        {
+                          int nf = 23;    // 24 frames sec
+                          switch(mtcType) {
+                                //case 0:     // 24 frames sec
+                                //      nf = 23;
+                                //      break;
+                                case 1:
+                                      nf = 24;  // 25 frames sec
+                                      break;
+                                case 2:     // 30 drop frame
+                                case 3:     // 30 non drop frame
+                                      nf = 29;
+                                      break;
+                                default:
+                                      break;      
+                                }
+                          //if (frame == 23)
+                          if (frame >= nf)
                               en &= ~QAbstractSpinBox::StepUpEnabled;
+                        }      
                         break;
                   case 3:
                         if (subframe == 0)
@@ -281,19 +349,119 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
 
 void PosEdit::fixup(QString& input) const
       {
-      printf("fixup <%s>\n", input.toLatin1().constData());
+      printf("fixup <%s>\n", input.toLatin1().constData()); // REMOVE Tim.
       }
 
 //---------------------------------------------------------
 //   validate
 //---------------------------------------------------------
 
-QValidator::State PosEdit::validate(QString&,int&) const
+QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
+{
+      //printf("validate string:%s int:%d\n", s.toLatin1().data(), i);  // REMOVE Tim.
+      //printf("validate string:%s\n", s.toLatin1().data());  // REMOVE Tim.
+      
+      QStringList sl = s.split(_smpte ? ':' : '.');
+      QValidator::State state;
+      QValidator::State rv = QValidator::Acceptable;
+      // "By default, the pos parameter is not used by this [QIntValidator] validator."
+      int dpos = 0;    
+      
+      if (_smpte) 
       {
-      // TODO
-//      printf("validate\n");
-      return QValidator::Acceptable;
+        if(sl.size() != 4)
+        {
+          printf("validate smpte string:%s sections:%d != 4\n", s.toLatin1().data(), sl.size());  
+          return QValidator::Invalid;
+        }  
+        
+        validator->setRange(0, 999);
+        state = validator->validate(sl[0], dpos);
+        if(state == QValidator::Invalid)
+          return state;
+        if(state == QValidator::Intermediate)
+          rv = state;
+          
+        validator->setRange(0, 59);
+        state = validator->validate(sl[1], dpos);
+        if(state == QValidator::Invalid)
+          return state;
+        if(state == QValidator::Intermediate)
+          rv = state;
+          
+        int nf = 23;      // 24 frames sec
+        switch(mtcType) {
+              //case 0:     // 24 frames sec
+              //      nf = 23;
+              //      break;
+              case 1:
+                    nf = 24;  // 25 frames sec
+                    break;
+              case 2:     // 30 drop frame
+              case 3:     // 30 non drop frame
+                    nf = 29;
+                    break;
+              default:
+                    break;      
+              }
+        validator->setRange(0, nf);
+        state = validator->validate(sl[2], dpos);
+        if(state == QValidator::Invalid)
+          return state;
+        if(state == QValidator::Intermediate)
+          rv = state;
+          
+        validator->setRange(0, 99);
+        state = validator->validate(sl[3], dpos);
+        if(state == QValidator::Invalid)
+          return state;
+        if(state == QValidator::Intermediate)
+          rv = state;
       }
+      else
+      {
+        if(sl.size() != 3)
+        {
+          printf("validate bbt string:%s sections:%d != 3\n", s.toLatin1().data(), sl.size());  
+          return QValidator::Invalid;
+        }
+          
+        int tb = AL::sigmap.ticksBeat(_pos.tick());
+        unsigned tm = AL::sigmap.ticksMeasure(_pos.tick());
+        int bm = tm / tb;
+
+        validator->setRange(1, 9999);
+        //printf("validate substring 0:%s\n", sl[0].toLatin1().data());  // REMOVE Tim.
+        // Special hack because validator says 0000 is intermediate.
+        if(sl[0] == "0000")
+          return QValidator::Invalid;
+        state = validator->validate(sl[0], dpos);
+        if(state == QValidator::Invalid)
+          return state;
+        if(state == QValidator::Intermediate)
+          rv = state;
+          
+        validator->setRange(1, bm);
+        //printf("validate substring 1:%s\n", sl[1].toLatin1().data());  // REMOVE Tim.
+        // Special hack because validator says 00 is intermediate.
+        if(sl[1] == "00")
+          return QValidator::Invalid;
+        state = validator->validate(sl[1], dpos);
+        if(state == QValidator::Invalid)
+          return state;
+        if(state == QValidator::Intermediate)
+          rv = state;
+          
+        validator->setRange(0, tb-1);
+        //printf("validate substring 2:%s\n", sl[2].toLatin1().data());  // REMOVE Tim.
+        state = validator->validate(sl[2], dpos);
+        if(state == QValidator::Invalid)
+          return state;
+        if(state == QValidator::Intermediate)
+          rv = state;
+      }
+      return rv;
+}
 
 //---------------------------------------------------------
 //   curSegment
@@ -361,13 +529,32 @@ void PosEdit::stepBy(int steps)
                         selLen = 2;
                         break;
                   case 2:
-                        frame += steps;
-                        if (frame < 0)
-                              frame = 0;
-                        if (frame > 24)         //TD frame type?
-                              frame = 24;
-                        selPos = 7;
-                        selLen = 2;
+                        {
+                          int nf = 23;      // 24 frames sec
+                          switch(mtcType) {
+                                //case 0:     // 24 frames sec
+                                //      nf = 23;
+                                //      break;
+                                case 1:
+                                      nf = 24;    // 25 frames sec
+                                      break;
+                                case 2:     // 30 drop frame
+                                case 3:     // 30 non drop frame
+                                      nf = 29;
+                                      break;
+                                default:
+                                      break;      
+                                }
+                          frame += steps;
+                          if (frame < 0)
+                                frame = 0;
+                          //if (frame > 24)         //TD frame type?
+                          //      frame = 24;
+                          if (frame > nf)         
+                                frame = nf;
+                          selPos = 7;
+                          selLen = 2;
+                        }
                         break;
                   case 3:
                         subframe += steps;
@@ -439,11 +626,67 @@ void PosEdit::stepBy(int steps)
       lineEdit()->setSelection(selPos, selLen);
       }
 
-      void PosEdit::paintEvent(QPaintEvent* event) {
-            if (!initialized)
-                  updateValue();
-            initialized = true;
-            QAbstractSpinBox::paintEvent(event);
-            }
+//---------------------------------------------------------
+//   paintEvent
+//---------------------------------------------------------
+
+void PosEdit::paintEvent(QPaintEvent* event) 
+{
+  if (!initialized)
+        updateValue();
+  initialized = true;
+  QAbstractSpinBox::paintEvent(event);
 }
+
+//---------------------------------------------------------
+//   finishEdit
+//---------------------------------------------------------
+
+void PosEdit::finishEdit()
+{
+      // If our validator did its job correctly, the entire line edit text should be valid now...
+      
+      bool changed = false;
+      QStringList sl = text().split(_smpte ? ':' : '.');
+      if (_smpte) 
+      {
+        if(sl.size() != 4)
+        {
+          printf("finishEdit smpte string:%s sections:%d != 4\n", text().toLatin1().data(), sl.size());  
+          return;
+        }  
+        
+        Pos newPos(sl[0].toInt(), sl[1].toInt(), sl[2].toInt(), sl[3].toInt());
+        if (!(newPos == _pos)) 
+        {
+          changed = true;
+          _pos = newPos;
+        }
+      }
+      else
+      {
+        if(sl.size() != 3)
+        {
+          printf("finishEdit bbt string:%s sections:%d != 3\n", text().toLatin1().data(), sl.size());  
+          return;
+        }
+          
+        Pos newPos(sl[0].toInt() - 1, sl[1].toInt() - 1, sl[2].toInt());
+        if (!(newPos == _pos)) 
+        {
+          changed = true;
+          _pos = newPos;
+        }
+      }
+  
+  if (changed) 
+  {
+    //updateValue();
+    emit valueChanged(_pos);
+  }
+}
+
+
+} // namespace Awl
+
 

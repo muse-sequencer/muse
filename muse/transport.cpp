@@ -220,11 +220,12 @@ void Transport::setRecord(bool flag)
 //   Transport
 //---------------------------------------------------------
 
-Transport::Transport(QWidget*, const char* name)
+Transport::Transport(QWidget* parent, const char* name)
   // : QWidget(0, name, WStyle_Customize | WType_TopLevel | WStyle_Tool
   //| WStyle_NoBorder | WStyle_StaysOnTop)
    //: QWidget(0, name, Qt::WStyle_Customize | Qt::Window | Qt::WStyle_NoBorder | Qt::WStyle_StaysOnTop)
-  : QWidget(0, Qt::Window | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
+  //: QWidget(0, name, Qt::Window | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
+  : QWidget(parent, Qt::Window | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
       {
       setObjectName(name);
       setWindowTitle(QString("Muse: Transport"));
@@ -500,6 +501,11 @@ Transport::Transport(QWidget*, const char* name)
       hbox->addWidget(righthandle);
       }
 
+Transport::~Transport()
+{
+  //printf("Transport::~Transport\n");  
+}
+
 //---------------------------------------------------------
 //   configChanged
 //---------------------------------------------------------
@@ -561,9 +567,12 @@ void Transport::setPos(int idx, unsigned v, bool)
             case 0:
                   time1->setValue(v);
                   time2->setValue(v);
-                  slider->blockSignals(true);
-                  slider->setValue(v);
-                  slider->blockSignals(false);
+                  if(slider->value() != v)
+                  {
+                    slider->blockSignals(true);
+                    slider->setValue(v);
+                    slider->blockSignals(false);
+                  }  
                   if (song->masterFlag())
                         setTempo(tempomap.tempo(v));
                   {

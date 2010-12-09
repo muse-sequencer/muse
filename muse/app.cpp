@@ -1630,6 +1630,13 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       song->update();
       }
 
+MusE::~MusE()
+{
+  //printf("MusE::~MusE\n"); 
+  //if(transport)
+  //  delete transport;  
+}
+
 //---------------------------------------------------------
 //   setHeartBeat
 //---------------------------------------------------------

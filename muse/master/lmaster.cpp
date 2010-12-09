@@ -430,6 +430,7 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
 //   returnPressed()
 //!  called when editor is closed
 //---------------------------------------------------------
+
 void LMaster::returnPressed()
       {
       if (!editedItem)
@@ -556,6 +557,7 @@ void LMaster::returnPressed()
       editedItem = 0;
       editorColumn = -1;
       editingNewItem = false;
+      
       }
 
 

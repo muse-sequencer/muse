@@ -1,6 +1,11 @@
 09.12.2010:
         - Fix: column orders mess up in the main window, and they do not save properly in
           the .med files. (Orcan)
+        - Made MusE the owner of transport object so it's now deleted when MusE object is deleted. (Tim)
+        - Improved PosEdit class, supports undo/redo levels, focus-out + return pressed updating. (Tim)
+          This also fixes the Transport position boxes' sections jumping to last section. 
+          TODO: There's still trouble editing with KB in Bar-Beat-Tick mode, the bar and beat being '1' based.
+          TODO: Fix SigEdit (the time Signature Editor boxes).
 08.12.2010:
         - Ported many more Qt3 methods to Qt4. (Orcan)
         - Turned off Qt3Support. Muse2 is now a pure Qt4 application. (Orcan)

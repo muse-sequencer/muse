@@ -334,6 +334,7 @@ class MusE : public QMainWindow
 
    public:
       MusE(int argc, char** argv);
+      ~MusE();
       Arranger* arranger;
       QRect configGeometryMain;
       bool importMidi(const QString name, bool merge);

@@ -243,7 +243,9 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
           #endif
           
           //const char* sub = strstr(p, instance->name().toLatin1().constData());
-          const char* sub = strstr(p, instance->label().toLatin1().constData());
+          ///const char* sub = strstr(p, instance->label().toLatin1().constData());
+          QByteArray ba = instance->label().toLatin1();
+          const char* sub = strstr(p, ba.constData());
           if(sub == NULL) 
             continue;
             
