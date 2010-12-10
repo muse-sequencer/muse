@@ -3,6 +3,12 @@
         - Restored the scripts menu and fixed scripts handling. Tested OK. (Orcan)
         - Added left, right, up, down to shortcuts dialog. Test OK. (Tim)
         - Fixed ctrl canvas not lining up in drumedit and pianoroll. (Orcan)
+        - Fix: Save project file dialog should have a "Save" button instead of "Open". (Orcan)
+        - Fix: Crash when Ok is clicked in the plugin selection dialog with no plugins
+          selected. Well, I fixed the crash, then I also disabled the Ok button until
+          a plugin is selected. (Orcan)
+        - Feature: Middle mouse button click on a plugin in the rack will (un)byass the 
+          plugin. (Orcan)
 09.12.2010:
         - Fix: column orders mess up in the main window, and they do not save properly in
           the .med files. (Orcan)
