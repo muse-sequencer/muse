@@ -3516,7 +3516,6 @@ void Song::removeTrack3(Track* /*track*/)//prevent of compiler warning: unused p
       */
       }
 
-
 //---------------------------------------------------------
 //   executeScript
 //---------------------------------------------------------
@@ -3534,9 +3533,12 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
       //
       song->startUndo(); // undo this entire block
       for (iPart i = parts->begin(); i != parts->end(); i++) {
-            const char* tmp = tmpnam(NULL);
+            //const char* tmp = tmpnam(NULL);
+            char tmp[16] = "muse-tmp-XXXXXX";
+            int fd = mkstemp(tmp);
             printf("script input filename=%s\n",tmp);
-            FILE *fp = fopen(tmp, "w");
+            //FILE *fp = fopen(tmp, "w");
+            FILE *fp = fdopen(fd , "w");
             MidiPart *part = (MidiPart*)(i->second);
             int partStart = part->endTick()-part->lenTick();
             int z, n;
@@ -3645,14 +3647,15 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
       endUndo(SC_EVENT_REMOVED);
 }
 
-#define SCRIPTSSUFFIX "/share/muse/scripts/"
+
 #define USERSCRIPTSSUFFIX "/.muse/scripts/"
 void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
 {
       //
       // List scripts
       // 
-      QString distScripts = QString(INSTPREFIX) + QString(SCRIPTSSUFFIX);
+      QString distScripts = QString(INSTPREFIX) + "/" + SHAREINSTPREFIX + "/" 
+                            + INSTALL_NAME + "/scripts";
       QString home = "";
       if (getenv("HOME") != NULL)
             home = QString(getenv("HOME"));
@@ -3671,6 +3674,9 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
             userScriptNames = dir.entryList();
             }
 
+      QSignalMapper* distSignalMapper = new QSignalMapper(this);
+      QSignalMapper* userSignalMapper = new QSignalMapper(this);
+
       if (deliveredScriptNames.size() > 0 || userScriptNames.size() > 0) {
             //menuPlugins = new QPopupMenu(this);
             //menuBar()->insertItem(tr("&Plugins"), menuPlugins);
@@ -3679,17 +3685,23 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
                   for (QStringList::Iterator it = deliveredScriptNames.begin(); it != deliveredScriptNames.end(); it++, id++) {
                         //menuPlugins->insertItem(*it, this, SLOT(execDeliveredScript(int)), 0, id);
                         //menuPlugins->insertItem(*it, this, slot_deliveredscripts, 0, id);
-                        menuPlugins->addAction(*it, receiver, SLOT(execDeliveredScript(int))); //id
+                        QAction* act = menuPlugins->addAction(*it);
+                        connect(act, SIGNAL(triggered()), distSignalMapper, SLOT(map()));
+                        distSignalMapper->setMapping(act, id);
                         }
                   menuPlugins->addSeparator();
                   }
             if (userScriptNames.size() > 0) {
                   for (QStringList::Iterator it = userScriptNames.begin(); it != userScriptNames.end(); it++, id++) {
                         //menuPlugins->insertItem(*it, this, slot_userscripts, 0, id);
-                        menuPlugins->addAction(*it, receiver, SLOT(execUserScript(int))); //id
+                        QAction* act = menuPlugins->addAction(*it);
+                        connect(act, SIGNAL(triggered()), userSignalMapper, SLOT(map()));
+                        userSignalMapper->setMapping(act, id);
                         }
                   menuPlugins->addSeparator();
                   }
+            connect(distSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execDeliveredScript(int)));
+            connect(userSignalMapper, SIGNAL(mapped(int)), receiver, SLOT(execUserScript(int)));
             }
       return; 
 }
@@ -3700,7 +3712,8 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
 QString Song::getScriptPath(int id, bool isdelivered)
 {
       if (isdelivered) {
-            QString path = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
+            QString path = QString(INSTPREFIX) + "/" + SHAREINSTPREFIX + "/" + INSTALL_NAME 
+                           + "/scripts/" + deliveredScriptNames[id];
             return path;
             }
 

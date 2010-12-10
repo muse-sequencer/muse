@@ -119,15 +119,12 @@
 #include "xpm/flagS.xpm"
 #include "xpm/lock.xpm"
 #include "xpm/toc.xpm"
-#include "xpm/piano.xpm"
+// #include "xpm/piano.xpm" // not used -Orcan
 // #include "xpm/pianoS.xpm"
 #include "xpm/exitS.xpm"
 
 #include "xpm/undo.xpm"
 #include "xpm/redo.xpm"
-#include "xpm/editcut.xpm"
-#include "xpm/editcopy.xpm"
-#include "xpm/editpaste.xpm"
 #include "xpm/undoS.xpm"
 #include "xpm/redoS.xpm"
 #include "xpm/editcutS.xpm"
@@ -135,13 +132,18 @@
 #include "xpm/editpasteS.xpm"
 #include "xpm/editmute.xpm"
 #include "xpm/editmuteS.xpm"
-#include "xpm/editpasteclone.xpm"
 #include "xpm/editpastecloneS.xpm"
-#include "xpm/editpaste2track.xpm"
 #include "xpm/editpaste2trackS.xpm"
-#include "xpm/editpasteclone2track.xpm"
 #include "xpm/editpasteclone2trackS.xpm"
 
+/* Not used - Orcan
+#include "xpm/editcut.xpm"
+#include "xpm/editcopy.xpm"
+#include "xpm/editpaste.xpm"
+#include "xpm/editpasteclone.xpm"
+#include "xpm/editpaste2track.xpm"
+#include "xpm/editpasteclone2track.xpm"
+*/
 #include "xpm/speaker.xpm"
 #include "xpm/buttondown.xpm"
 #include "xpm/configure.xpm"
@@ -361,6 +363,16 @@ QIcon* editpaste2TrackIconSet;
 QIcon* editpasteCloneIconSet;
 QIcon* editpasteClone2TrackIconSet;
 
+/* Not used - Orcan
+QIcon* pianoIcon;
+QIcon* editcutIcon;
+QIcon* editcopyIcon;
+QIcon* editpasteIcon;
+QIcon* editpasteCloneIcon;
+QIcon* editpaste2TrackIcon;
+QIcon* editpasteClone2TrackIcon;
+*/
+
 QPixmap* redLedIcon;
 QPixmap* darkRedLedIcon;
 QPixmap* greendotIcon;
@@ -539,7 +551,15 @@ void initIcons()
       editpaste2TrackIconSet = new MICON(editpaste2trackS_xpm, NULL);
       editpasteCloneIconSet  = new MICON(editpastecloneS_xpm, NULL);
       editpasteClone2TrackIconSet = new MICON(editpasteclone2trackS_xpm, NULL); // ..
-
+      /* Not used - Orcan
+      pianoIcon                 = new MICON(piano_xpm, NULL);
+      editcutIcon               = new MICON(editcut_xpm, "edit-cut");
+      editcopyIcon              = new MICON(editcopy_xpm, "edit-copy");
+      editpasteIcon             = new MICON(editpaste_xpm, "edit-paste");
+      editpasteCloneIcon        = new MICON(editpasteclone_xpm, NULL);
+      editpaste2TrackIcon       = new MICON(editpaste2track_xpm, NULL);
+      editpasteClone2TrackIcon  = new MICON(editpasteclone2track_xpm, NULL);
+      */
       exitIcon             = new MPIXMAP(exit_xpm, "application-exit");
       exit1Icon            = new MPIXMAP(exit1_xpm, "application-exit");
 

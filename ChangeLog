@@ -1,3 +1,6 @@
+10.12.2010:
+        - More compiler and build warnings fixes. (Orcan)
+        - Restored the scripts menu and fixed scripts handling. Tested OK. (Orcan)
 09.12.2010:
         - Fix: column orders mess up in the main window, and they do not save properly in
           the .med files. (Orcan)
