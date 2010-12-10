@@ -928,7 +928,11 @@ CtrlEdit* DrumEdit::addCtrl()
         split2->setCollapsible(split2->indexOf(split1w1), false);
         split1w1->setMinimumWidth(CTRL_PANEL_FIXED_WIDTH);
       }
-      ctrlEdit->setCanvasWidth(canvas->width());
+
+      int dw = vscroll->width() - 18;// 18 is the fixed width of the CtlEdit VScale widget.
+      if(dw < 1)
+        dw = 1;
+      ctrlEdit->setCanvasWidth(canvas->width() + dw);
       
       ctrlEdit->show();
       ctrlEditList.push_back(ctrlEdit);

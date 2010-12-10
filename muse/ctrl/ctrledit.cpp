@@ -42,6 +42,9 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       canvas            = new CtrlCanvas(e, 0, xmag, "ctrlcanvas", panel);
       QWidget* vscale   = new VScale;
 
+      hbox->setContentsMargins(0, 0, 0, 0);
+      hbox->setSpacing (0);
+
       canvas->setOrigin(-(config.division/4), 0);
 
       canvas->setMinimumHeight(50);
