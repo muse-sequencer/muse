@@ -18,11 +18,12 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-# FIXME: Won't work
-#install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/scripts DoNothing RemoveShortEvents DoubleSpeed ConstantLength SwingQuantize1 )
+file(GLOB script_files DoNothing 
+                       RemoveShortEvents 
+                       DoubleSpeed 
+                       ConstantLength 
+                       SwingQuantize1
+    )
+install (PROGRAMS ${script_files}
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/scripts)
 
-install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/scripts DoNothing )
-install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/scripts RemoveShortEvents )
-install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/scripts DoubleSpeed )
-install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/scripts ConstantLength )
-install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/scripts SwingQuantize1 )

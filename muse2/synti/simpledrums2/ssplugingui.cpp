@@ -483,7 +483,7 @@ void SS_PluginFront::setParameterValue(int param, int val)
       }
 
 SS_PluginGui::SS_PluginGui(QWidget* parent)
-      : QDialog(parent, false)
+      : QDialog(parent)
       {
       setWindowTitle("SimpleDrums LADSPA sendeffects");
       for (int i=0; i<SS_NR_OF_SENDEFFECTS; i++) {

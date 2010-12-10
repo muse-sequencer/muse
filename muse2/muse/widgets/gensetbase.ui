@@ -889,7 +889,7 @@ Shorter periods are desirable.</string>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tab2">
       <attribute name="title">
        <string>Midi</string>
       </attribute>
@@ -1088,7 +1088,7 @@ Shorter periods are desirable.</string>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tab3">
       <attribute name="title">
        <string>GUI</string>
       </attribute>

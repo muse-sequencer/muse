@@ -112,6 +112,16 @@ extern QIcon* editpaste2TrackIconSet;
 extern QIcon* editpasteCloneIconSet;
 extern QIcon* editpasteClone2TrackIconSet;
 
+/* Not used
+extern QIcon* pianoIcon;
+extern QIcon* editcutIcon;
+extern QIcon* editcopyIcon;
+extern QIcon* editpasteIcon;
+extern QIcon* editpasteCloneIcon;
+extern QIcon* editpaste2TrackIcon;
+extern QIcon* editpasteClone2TrackIcon;
+*/
+
 extern QPixmap* exitIcon;
 extern QPixmap* exit1Icon;
 extern QPixmap* record1_Icon;
