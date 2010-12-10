@@ -504,7 +504,7 @@ void EffectRack::mousePressEvent(QMouseEvent *event)
           menuRequested(itemAt(event->pos()));
           return;
       }
-      else if(event->button() & Qt::MiddleButton) {
+      else if(event->button() & Qt::MidButton) {
           int idx = row(itemAt(event->pos()));
           bool flag = !track->efxPipe()->isOn(idx);
           track->efxPipe()->setOn(idx, flag);

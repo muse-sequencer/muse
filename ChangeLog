@@ -9,6 +9,8 @@
           a plugin is selected. (Orcan)
         - Feature: Middle mouse button click on a plugin in the rack will (un)byass the 
           plugin. (Orcan)
+        - Actually, use Qt:MidButton instead of instead of Qt:MiddleButton in rack.cpp.
+          The latter is Qt >= 4.7 only.
 09.12.2010:
         - Fix: column orders mess up in the main window, and they do not save properly in
           the .med files. (Orcan)
