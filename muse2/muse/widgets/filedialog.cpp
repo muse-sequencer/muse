@@ -185,6 +185,7 @@ MFileDialog::MFileDialog(const QString& dir,
             connect(this, SIGNAL(directoryEntered(const QString&)), SLOT(directoryChanged(const QString&)));
 
             if (writeFlag) {
+                  setAcceptMode(QFileDialog::AcceptSave);
                   buttons.globalButton->setEnabled(false);
                   switch (lastViewUsed) {
                            case GLOBAL_VIEW:

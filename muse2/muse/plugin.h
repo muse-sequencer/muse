@@ -523,6 +523,7 @@ class PluginDialog : public QDialog {
       QRadioButton* onlyM;
       QRadioButton* onlyS;
       QRadioButton* onlySM;
+      QPushButton *okB;
 
       Q_OBJECT
 
@@ -531,14 +532,19 @@ class PluginDialog : public QDialog {
       static Plugin* getPlugin(QWidget* parent);
       Plugin* value();
       void accept();
-public slots:
-    void fillPlugs(QAbstractButton*);
-    void fillPlugs(int i);
-    void fillPlugs(const QString& sortValue);
-  private:
-    QComboBox *sortBox;
-    static int selectedPlugType;
-    static QStringList sortItems;
+
+   public slots:
+      void fillPlugs(QAbstractButton*);
+      void fillPlugs(int i);
+      void fillPlugs(const QString& sortValue);
+
+   private slots:
+      void enableOkB();
+
+   private:
+      QComboBox *sortBox;
+      static int selectedPlugType;
+      static QStringList sortItems;
       };
 
 extern void initPlugins();

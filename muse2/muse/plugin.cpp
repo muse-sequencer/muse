@@ -2574,10 +2574,11 @@ PluginDialog::PluginDialog(QWidget* parent)
       QBoxLayout* w5 = new QHBoxLayout;
       layout->addLayout(w5);
 
-      QPushButton* okB     = new QPushButton(tr("Ok"), this);
+      okB     = new QPushButton(tr("Ok"), this);
       okB->setDefault(true);
       QPushButton* cancelB = new QPushButton(tr("Cancel"), this);
       okB->setFixedWidth(80);
+      okB->setEnabled(false);
       cancelB->setFixedWidth(80);
       w5->addWidget(okB);
       w5->addSpacing(12);
@@ -2646,6 +2647,7 @@ PluginDialog::PluginDialog(QWidget* parent)
             fillPlugs(selectedPlugType);
 
       connect(pList,   SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(accept()));
+      connect(pList,   SIGNAL(itemClicked(QTreeWidgetItem*,int)), SLOT(enableOkB()));
       connect(cancelB, SIGNAL(clicked()), SLOT(reject()));
       connect(okB,     SIGNAL(clicked()), SLOT(accept()));
       connect(plugSel, SIGNAL(buttonClicked(QAbstractButton*)), SLOT(fillPlugs(QAbstractButton*)));
@@ -2654,12 +2656,21 @@ PluginDialog::PluginDialog(QWidget* parent)
       }
 
 //---------------------------------------------------------
+//   enableOkB
+//---------------------------------------------------------
+
+void PluginDialog::enableOkB()
+      {
+	okB->setEnabled(true);
+      }
+
+//---------------------------------------------------------
 //   value
 //---------------------------------------------------------
 
 Plugin* PluginDialog::value()
       {
-      QTreeWidgetItem* item = pList->selectedItems().at(0);
+      QTreeWidgetItem* item = pList->currentItem();
       if (item)
         return plugins.find(item->text(0), item->text(1));
       printf("plugin not found\n");
