@@ -53,7 +53,8 @@ void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
       // Check if this is a "real" key that completes a valid shortcut:
       int k = e->key();
       if (k < 256 || k == Qt::Key_Enter || k == Qt::Key_Return || (k >= Qt::Key_F1 && k <= Qt::Key_F12) || k == Qt::Key_Home || k == Qt::Key_PageUp
-          || k == Qt::Key_PageDown || k == Qt::Key_End || k == Qt::Key_Insert || k == Qt::Key_Delete) {
+          || k == Qt::Key_PageDown || k == Qt::Key_End || k == Qt::Key_Insert || k == Qt::Key_Delete 
+          || k == Qt::Key_Up || k == Qt::Key_Down || k == Qt::Key_Left || k == Qt::Key_Right) {
             key = temp_key;
             realkey = true;
             QKeySequence q = QKeySequence(key);
