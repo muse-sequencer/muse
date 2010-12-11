@@ -94,8 +94,8 @@ QString bitmap2String(int bm)
             int first = 0;
             bool needSpace = false;
             bm &= 0xffff;
-            //for (int i = 0; i < 17; ++i) {
-            for (int i = 0; i < 16; ++i) {
+            for (int i = 0; i < 17; ++i) {
+            //for (int i = 0; i < 16; ++i) {
                   if ((1 << i) & bm) {
                         if (!range) {
                               range = true;
