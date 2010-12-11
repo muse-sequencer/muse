@@ -65,7 +65,7 @@ void MPConfig::mdevViewItemRenamed(QTableWidgetItem* item)
       int no = atoi(id.toLatin1().constData()) - 1;
       if(no < 0 || no >= MIDI_PORTS)
         return;
-      midiPorts[no].setDefaultInChannels(string2bitmap(s));
+      midiPorts[no].setDefaultInChannels(((1 << MIDI_CHANNELS) - 1) & string2bitmap(s));
       song->update();
     }
     break;    
@@ -75,7 +75,7 @@ void MPConfig::mdevViewItemRenamed(QTableWidgetItem* item)
       int no = atoi(id.toLatin1().constData()) - 1;
       if(no < 0 || no >= MIDI_PORTS)
         return;
-      midiPorts[no].setDefaultOutChannels(string2bitmap(s));
+      midiPorts[no].setDefaultOutChannels(((1 << MIDI_CHANNELS) - 1) & string2bitmap(s));
       song->update();
     }
     break;    
