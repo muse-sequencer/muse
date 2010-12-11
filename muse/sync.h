@@ -120,6 +120,7 @@ class MidiSyncInfo
     bool actDetect(const int ch) const;
     void trigActDetect(const int ch);
     
+    bool isDefault() const;
     void read(Xml& xml);
     //void write(int level, Xml& xml, MidiDevice* md);
     void write(int level, Xml& xml);

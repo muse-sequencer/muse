@@ -36,6 +36,9 @@ class MidiPort {
       MidiSyncInfo _syncInfo;
       // p3.3.50 Just a flag to say the port was found in the song file, even if it has no device right now.
       bool _foundInSongFile;
+      // When creating a new midi track, add these global default channel routes to/from this port. Ignored if 0.
+      int _defaultInChannels;    // These are bit-wise channel masks.
+      int _defaultOutChannels;   //
       
       RouteList _inRoutes, _outRoutes;
       
@@ -84,6 +87,10 @@ class MidiPort {
       int nullSendValue();
       void setNullSendValue(int v);
 
+      int defaultInChannels() const { return _defaultInChannels; }
+      int defaultOutChannels() const { return _defaultOutChannels; }
+      void setDefaultInChannels(int c) { _defaultInChannels = c; }
+      void setDefaultOutChannels(int c) { _defaultOutChannels = c; }
       RouteList* inRoutes()    { return &_inRoutes; }
       RouteList* outRoutes()   { return &_outRoutes; }
       bool noInRoute() const   { return _inRoutes.empty();  }

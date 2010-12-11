@@ -37,7 +37,8 @@ void initMidiPorts()
       {
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &midiPorts[i];
-            port->setInstrument(genericMidiInstrument);
+            ///port->setInstrument(genericMidiInstrument);
+            port->setInstrument(registerMidiInstrument("GM")); // Changed by Tim. 
             port->syncInfo().setPort(i);
             }
       }
@@ -49,6 +50,8 @@ void initMidiPorts()
 MidiPort::MidiPort()
    : _state("not configured")
       {
+      _defaultInChannels  = 0;
+      _defaultOutChannels = 0;
       _device     = 0;
       _instrument = 0;
       _controller = new MidiCtrlValListList();
