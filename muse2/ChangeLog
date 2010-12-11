@@ -1,3 +1,12 @@
+11.12.2010:
+      * Feature: Added default midi track in/out channels to midi ports list. (Tim)
+        - For now, the boxes use the old text channel strings ("1 3 5", "1-5", "all, "none" etc.)
+      * Changed: Experimental: Mid ports now default to 'GM' instrument. (Tim)
+        - Was stopping new users from seeing instrument patches etc.
+        - TODO: Overhaul instrument type, instrument sysexes, and song type.
+      * Changed: Audio groups and inputs no longer default connect to first audio out. (Tim)
+        - Find it tedious, once a song grows with groups and inputs, to keep disconnecting them from output.
+        - TODO: Add a better audio default routing system.
 10.12.2010:
         - More compiler and build warnings fixes. (Orcan)
         - Restored the scripts menu and fixed scripts handling. Tested OK. (Orcan)

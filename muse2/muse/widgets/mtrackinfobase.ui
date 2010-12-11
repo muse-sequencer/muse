@@ -330,7 +330,7 @@
         <string>input routing</string>
        </property>
        <property name="text">
-        <string>iR</string>
+        <string>Inputs</string>
        </property>
       </widget>
      </item>
@@ -389,17 +389,11 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="maximumSize">
-        <size>
-         <width>14</width>
-         <height>32767</height>
-        </size>
-       </property>
        <property name="toolTip">
-        <string>Echo</string>
+        <string>Midi thru</string>
        </property>
        <property name="whatsThis">
-        <string>Echo recording events to output.</string>
+         <string>Pass input events through ('thru') to output.</string>
        </property>
        <property name="checkable">
         <bool>true</bool>

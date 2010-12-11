@@ -1192,10 +1192,12 @@ void Arranger::genMidiTrackInfo()
       //midiTrackInfo->iChanDetectLabel->setPixmap(*darkgreendotIcon);
       midiTrackInfo->iChanDetectLabel->setPixmap(*darkRedLedIcon);
       
-      QIcon recEchoIconSet;
-      recEchoIconSet.addPixmap(*recEchoIconOn, QIcon::Normal, QIcon::On);
-      recEchoIconSet.addPixmap(*recEchoIconOff, QIcon::Normal, QIcon::Off);
-      midiTrackInfo->recEchoButton->setIcon(recEchoIconSet);
+      //QIcon recEchoIconSet;
+      //recEchoIconSet.addPixmap(*recEchoIconOn, QIcon::Normal, QIcon::On);
+      //recEchoIconSet.addPixmap(*recEchoIconOff, QIcon::Normal, QIcon::Off);
+      //midiTrackInfo->recEchoButton->setIcon(recEchoIconSet);
+      midiTrackInfo->recEchoButton->setIcon(QIcon(*edit_midiIcon));
+      midiTrackInfo->recEchoButton->setIconSize(edit_midiIcon->size());  
       
       
       // MusE-2: AlignCenter and WordBreak are set in the ui(3) file, but not supported by QLabel. Turn them on here.
@@ -1258,6 +1260,7 @@ void Arranger::genMidiTrackInfo()
       
       // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
       midiTrackInfo->oRButton->setEnabled(false);
+      midiTrackInfo->oRButton->setVisible(false);
       connect(midiTrackInfo->oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
       
       connect(heartBeatTimer, SIGNAL(timeout()), SLOT(midiTrackInfoHeartBeat()));

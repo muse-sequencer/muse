@@ -402,6 +402,16 @@ void MidiSyncInfo::trigActDetect(const int ch)
 }
     
 //---------------------------------------------------------
+//   isDefault
+//---------------------------------------------------------
+
+bool MidiSyncInfo::isDefault() const
+{
+  return(_idOut == 127 && _idIn == 127 && !_sendMC && !_sendMRT && !_sendMMC && !_sendMTC && 
+     /* !_sendContNotStart && */ !_recMC && !_recMRT && !_recMMC && !_recMTC && _recRewOnStart);
+}
+
+//---------------------------------------------------------
 //   read
 //---------------------------------------------------------
 
@@ -462,8 +472,10 @@ void MidiSyncInfo::write(int level, Xml& xml)
   //  return;
   
   // All defaults? Nothing to write.
-  if(_idOut == 127 && _idIn == 127 && !_sendMC && !_sendMRT && !_sendMMC && !_sendMTC && 
-     /* !_sendContNotStart && */ !_recMC && !_recMRT && !_recMMC && !_recMTC && _recRewOnStart)
+  //if(_idOut == 127 && _idIn == 127 && !_sendMC && !_sendMRT && !_sendMMC && !_sendMTC && 
+  //   /* !_sendContNotStart && */ !_recMC && !_recMRT && !_recMMC && !_recMTC && _recRewOnStart)
+  //  return;
+  if(isDefault())  
     return;
   
   xml.tag(level++, "midiSyncInfo");

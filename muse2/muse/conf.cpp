@@ -200,9 +200,20 @@ static void readConfigMidiPort(Xml& xml)
       {
       int idx = 0;
       QString device;
-      QString instrument;
+      
+      //QString instrument;
+      // Changed by Tim. 
+      //QString instrument("generic midi"); 
+      // Let's be bold. New users have been confused by generic midi not enabling any patches and controllers.
+      // I had said this may cause HW problems by sending out GM sysEx when really the HW might not be GM.
+      // But this really needs to be done, one way or another. 
+      // FIXME: TODO: Make this user-configurable!
+      QString instrument("GM"); 
+      
       int openFlags = 1;
       bool thruFlag = false;
+      int dic = 0;
+      int doc = 0;
       MidiSyncInfo tmpSi;
       int type = MidiDevice::ALSA_MIDI;
 
@@ -224,13 +235,18 @@ static void readConfigMidiPort(Xml& xml)
                               }
                         else if (tag == "openFlags")
                               openFlags = xml.parseInt();
+                        else if (tag == "defaultInChans")
+                              dic = xml.parseInt(); 
+                        else if (tag == "defaultOutChans")
+                              doc = xml.parseInt(); 
                         else if (tag == "midiSyncInfo")
                               tmpSi.read(xml);
                         else if (tag == "instrument") {
                               instrument = xml.parse1();
-                              midiPorts[idx].setInstrument(
-                                 registerMidiInstrument(instrument)
-                                 );
+                              // Moved by Tim.
+                              //midiPorts[idx].setInstrument(
+                              //   registerMidiInstrument(instrument)
+                              //   );
                               }
                         else if (tag == "midithru")
                               thruFlag = xml.parseInt(); // obsolete
@@ -271,6 +287,11 @@ static void readConfigMidiPort(Xml& xml)
                                 fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.toLatin1().constData());
                               
                               MidiPort* mp = &midiPorts[idx];
+                              
+                              mp->setInstrument(registerMidiInstrument(instrument));  // By Tim.
+                              mp->setDefaultInChannels(dic);
+                              mp->setDefaultOutChannels(doc);
+                              
                               mp->syncInfo().copyParams(tmpSi);
                               // p3.3.50 Indicate the port was found in the song file, even if no device is assigned to it.
                               mp->setFoundInSongFile(true);
@@ -946,20 +967,42 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
             //
             for (int i = 0; i < MIDI_PORTS; ++i) {
                   bool used = false;
-                  MidiTrackList* tl = song->midis();
-                  for (iMidiTrack it = tl->begin(); it != tl->end(); ++it) {
-                        MidiTrack* t = *it;
-                        if (t->outPort() == i) {
-                              used = true;
-                              break;
-                              }
-                        }
                   MidiPort* mport = &midiPorts[i];
+                  // Route check by Tim. Port can now be used for routing even if no device.
+                  // Also, check for other non-defaults and save port, to preserve settings even if no device.
+                  if(!mport->noInRoute() || !mport->noOutRoute() || 
+                     mport->defaultInChannels() || mport->defaultOutChannels() ||
+                     (!mport->instrument()->iname().isEmpty() && mport->instrument()->iname() != "GM") ||
+                     !mport->syncInfo().isDefault()) 
+                    used = true;  
+                  else  
+                  {
+                    MidiTrackList* tl = song->midis();
+                    for (iMidiTrack it = tl->begin(); it != tl->end(); ++it) 
+                    {
+                      MidiTrack* t = *it;
+                      if (t->outPort() == i) 
+                      {
+                        used = true;
+                        break;
+                      }
+                    }
+                  }  
+                  
                   MidiDevice* dev = mport->device();
                   if (!used && !dev)
                         continue;
                   xml.tag(level++, "midiport idx=\"%d\"", i);
-                  xml.strTag(level, "instrument", mport->instrument()->iname());
+                  
+                  if(mport->defaultInChannels())
+                    xml.intTag(level, "defaultInChans", mport->defaultInChannels());
+                  if(mport->defaultOutChannels())
+                    xml.intTag(level, "defaultOutChans", mport->defaultOutChannels());
+                  
+                  if(!mport->instrument()->iname().isEmpty() &&                      // Tim.
+                     (mport->instrument()->iname() != "GM"))                         // FIXME: TODO: Make this user configurable.
+                    xml.strTag(level, "instrument", mport->instrument()->iname());
+                    
                   if (dev) {
                         xml.strTag(level, "name",   dev->name());
                         

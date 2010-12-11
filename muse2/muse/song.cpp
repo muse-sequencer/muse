@@ -254,6 +254,52 @@ Track* Song::addTrack(int t)
       msgInsertTrack(track, -1, true);
       insertTrack3(track, -1);
 
+      // Add default track <-> midiport routes. 
+      if(track->isMidiTrack()) 
+      {
+        MidiTrack* mt = (MidiTrack*)track;
+        int c, cbi, ch;
+        bool defOutFound = false;                /// TODO: Remove this when multiple out routes supported.
+        for(int i = 0; i < MIDI_PORTS; ++i)
+        {
+          MidiPort* mp = &midiPorts[i];
+          
+          c = mp->defaultInChannels();
+          if(c)
+          {
+            audio->msgAddRoute(Route(i, c), Route(track, c));
+            updateFlags |= SC_ROUTE;
+          }
+          
+          if(!defOutFound)                       ///
+          {
+            c = mp->defaultOutChannels();
+            if(c)
+            {
+              
+        /// TODO: Switch when multiple out routes supported.
+        #if 0
+              audio->msgAddRoute(Route(track, c), Route(i, c));
+              updateFlags |= SC_ROUTE;
+        #else 
+              for(ch = 0; ch < MIDI_CHANNELS; ++ch)   
+              {
+                cbi = 1 << ch;
+                if(c & cbi)
+                {
+                  defOutFound = true;
+                  mt->setOutPort(i);
+                  mt->setOutChannel(ch);
+                  updateFlags |= SC_ROUTE;
+                  break;               
+                }
+              }
+        #endif
+            }
+          }  
+        }
+      }
+                  
       //
       //  add default route to master
       //
@@ -261,14 +307,15 @@ Track* Song::addTrack(int t)
       if (!ol->empty()) {
             AudioOutput* ao = ol->front();
             switch(type) {
-                  case Track::MIDI:
-                  case Track::DRUM:
-                  case Track::AUDIO_OUTPUT:
-                        break;
+                  //case Track::MIDI:
+                  //case Track::DRUM:
+                  //case Track::AUDIO_OUTPUT:
+                  //      break;
+                  
                   case Track::WAVE:
-                  case Track::AUDIO_GROUP:
+                  //case Track::AUDIO_GROUP:  // Removed by Tim.
                   case Track::AUDIO_AUX:
-                  case Track::AUDIO_INPUT:
+                  //case Track::AUDIO_INPUT:  // Removed by Tim.
                   // p3.3.38
                   //case Track::AUDIO_SOFTSYNTH:
                         audio->msgAddRoute(Route((AudioTrack*)track, -1), Route(ao, -1));
@@ -278,6 +325,8 @@ Track* Song::addTrack(int t)
                   case Track::AUDIO_SOFTSYNTH:
                         audio->msgAddRoute(Route((AudioTrack*)track, 0, ((AudioTrack*)track)->channels()), Route(ao, 0, ((AudioTrack*)track)->channels()));
                         updateFlags |= SC_ROUTE;
+                        break;
+                  default:
                         break;
                   }
             }

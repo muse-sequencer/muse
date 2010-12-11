@@ -36,13 +36,15 @@
 #include "driver/jackmidi.h"
 #include "audiodev.h"
 #include "menutitleitem.h"
+#include "utils.h"
 
 extern std::vector<Synth*> synthis;
 
 enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
        //DEVCOL_STATE };
        //DEVCOL_ROUTES, DEVCOL_STATE };
-       DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_STATE };  // p3.3.55
+       //DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_STATE };  // p3.3.55
+       DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };  
 
 //---------------------------------------------------------
 //   mdevViewItemRenamed
@@ -57,6 +59,26 @@ void MPConfig::mdevViewItemRenamed(QTableWidgetItem* item)
     return;
   switch(col)
   {
+    case DEVCOL_DEF_IN_CHANS:
+    {
+      QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
+      int no = atoi(id.toLatin1().constData()) - 1;
+      if(no < 0 || no >= MIDI_PORTS)
+        return;
+      midiPorts[no].setDefaultInChannels(string2bitmap(s));
+      song->update();
+    }
+    break;    
+    case DEVCOL_DEF_OUT_CHANS:
+    {
+      QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
+      int no = atoi(id.toLatin1().constData()) - 1;
+      if(no < 0 || no >= MIDI_PORTS)
+        return;
+      midiPorts[no].setDefaultOutChannels(string2bitmap(s));
+      song->update();
+    }
+    break;    
     case DEVCOL_NAME:
     {
       QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
@@ -358,6 +380,13 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   //break;
                   return;
                   
+            case DEVCOL_DEF_IN_CHANS:
+            case DEVCOL_DEF_OUT_CHANS:
+                  {
+                  }
+                  //break;
+                  return;
+                  
             case DEVCOL_NAME:
                   {
                     //printf("MPConfig::rbClicked DEVCOL_NAME\n");
@@ -623,6 +652,8 @@ void MPConfig::setToolTip(QTableWidgetItem *item, int col)
             //case DEVCOL_ROUTES: item->setToolTip(tr("Jack midi ports")); break;
             case DEVCOL_INROUTES:  item->setToolTip(tr("Connections from Jack Midi outputs")); break;
             case DEVCOL_OUTROUTES: item->setToolTip(tr("Connections to Jack Midi inputs")); break;
+            case DEVCOL_DEF_IN_CHANS:   item->setToolTip(tr("Connect these to new midi tracks")); break;
+            case DEVCOL_DEF_OUT_CHANS:  item->setToolTip(tr("Connect new midi tracks to this (first listed only)")); break;
             case DEVCOL_STATE:  item->setToolTip(tr("Device state")); break;
             default: return;
             }
@@ -654,6 +685,18 @@ void MPConfig::setWhatsThis(QTableWidgetItem *item, int col)
                   item->setWhatsThis(tr("Connections from Jack Midi output ports")); break;
             case DEVCOL_OUTROUTES:
                   item->setWhatsThis(tr("Connections to Jack Midi input ports")); break;
+            case DEVCOL_DEF_IN_CHANS:
+                  item->setWhatsThis(tr("Connect these channels, on this port, to new midi tracks.\n"
+                                        "Example:\n"
+                                        " 1 2 3    channel 1 2 and 3\n"
+                                        " 1-3      same\n"
+                                        " 1-3 5    channel 1 2 3 and 5\n"
+                                        " all      all channels\n"
+                                        " none     no channels")); break;
+            case DEVCOL_DEF_OUT_CHANS:
+                  item->setWhatsThis(tr("Connect new midi tracks to these channels, on this port.\n"
+                                        "See default in channels.\n"
+                                        "NOTE: Currently only one output port and channel supported (first found)")); break;
             case DEVCOL_STATE:
                   item->setWhatsThis(tr("State: result of opening the device")); break;
             default:
@@ -700,6 +743,8 @@ MPConfig::MPConfig(QWidget* parent)
 		  << tr("Device Name")
 		  << tr("In routes")
 		  << tr("Out routes")
+                  << tr("Def in ch")
+                  << tr("Def out ch")
 		  << tr("State");
 
       mdevView->setColumnCount(columnnames.size());
@@ -804,6 +849,12 @@ void MPConfig::songChanged(int flags)
 	    QTableWidgetItem* itemin = new QTableWidgetItem;
 	    addItem(i, DEVCOL_INROUTES, itemin, mdevView);
 	    itemin->setFlags(Qt::ItemIsEnabled);
+            QTableWidgetItem* itemdefin = new QTableWidgetItem(bitmap2String(port->defaultInChannels()));
+            addItem(i, DEVCOL_DEF_IN_CHANS, itemdefin, mdevView);
+            itemdefin->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled);
+            QTableWidgetItem* itemdefout = new QTableWidgetItem(bitmap2String(port->defaultOutChannels()));
+            addItem(i, DEVCOL_DEF_OUT_CHANS, itemdefout, mdevView);
+            itemdefout->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled);
 	    mdevView->blockSignals(false);
 
 
