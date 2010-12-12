@@ -1444,19 +1444,222 @@ Right-click to show GUI.</source>
     <name>DeicsOnzeGui</name>
     <message>
         <source>Delete preset</source>
-        <translation type="obsolete">Ta bort preset</translation>
+        <translation type="unfinished">Ta bort preset</translation>
     </message>
     <message>
         <source>Do you really want to delete %1 ?</source>
-        <translation type="obsolete">Vill du verkligen ta bort %1 ?</translation>
+        <translation type="unfinished">Vill du verkligen ta bort %1 ?</translation>
     </message>
     <message>
         <source>&amp;Yes</source>
-        <translation type="obsolete">&amp;Ja</translation>
+        <translation type="unfinished">&amp;Ja</translation>
     </message>
     <message>
         <source>&amp;No</source>
-        <translation type="obsolete">&amp;Nej</translation>
+        <translation type="unfinished">&amp;Nej</translation>
+    </message>
+    <message>
+        <source>Save configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Critical Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot open file %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parsing error for file %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load category dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load set dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save set dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save subcategory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New preset</source>
+        <translation type="unfinished">Ny preset</translation>
+    </message>
+    <message>
+        <source>Load preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No more category supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not add more categories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No category selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must first select a category.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace or add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is supposed to be affected to the hbank number %2, but there is already one on this slot.
+ Do you want to replace it or to add it in the next free slot ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Replace</source>
+        <translation type="unfinished">&amp;Ersätt</translation>
+    </message>
+    <message>
+        <source>&amp;Add</source>
+        <translation type="unfinished">&amp;Lägg till</translation>
+    </message>
+    <message>
+        <source>Download error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is no more free category slot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save category dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No more subcategory supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not add more subcategories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No subcategory selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must first select a subcategory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load subcategory dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is supposed to be affected to the lbank number %2, but there is already one on this slot.
+ Do you want to replace it or to add it in the next free slot ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is no more free subcategory slot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save subcategory dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No more preset supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can not add more presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No preset selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must first select a preset.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load preset dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is supposed to be affected to the prog number %2, but there is already one on this slot.
+ Do you want to replace it or to add it in the next free slot ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is no more free preset slot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save preset dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse set dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse image dialog</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1475,11 +1678,11 @@ Right-click to show GUI.</source>
     </message>
     <message>
         <source>Subcategory</source>
-        <translation type="obsolete">Underkategori</translation>
+        <translation type="unfinished">Underkategori</translation>
     </message>
     <message>
         <source>Category</source>
-        <translation type="obsolete">Kategori</translation>
+        <translation type="unfinished">Kategori</translation>
     </message>
     <message>
         <source>Delete</source>
@@ -1507,11 +1710,11 @@ Right-click to show GUI.</source>
     </message>
     <message>
         <source>Pitch Bend Range</source>
-        <translation type="obsolete">Pitchbend område</translation>
+        <translation type="unfinished">Pitchbend område</translation>
     </message>
     <message>
         <source>Speed</source>
-        <translation type="obsolete">Hastighet</translation>
+        <translation type="unfinished">Hastighet</translation>
     </message>
     <message>
         <source>Square</source>
@@ -1519,39 +1722,949 @@ Right-click to show GUI.</source>
     </message>
     <message>
         <source>LFO Waveform</source>
-        <translation type="obsolete">LFO Vågform</translation>
+        <translation type="unfinished">LFO Vågform</translation>
     </message>
     <message>
         <source>Amplitude Modulation Sensitivity</source>
-        <translation type="obsolete">Amplitudmodulationskänslighet</translation>
+        <translation type="unfinished">Amplitudmodulationskänslighet</translation>
     </message>
     <message>
         <source>Pitch Modulation Sensitivity</source>
-        <translation type="obsolete">Pitchmodulationskänslighet</translation>
+        <translation type="unfinished">Pitchmodulationskänslighet</translation>
     </message>
     <message>
         <source>Pitch Modulation Depth</source>
-        <translation type="obsolete">Pitchmodulationsdjup</translation>
+        <translation type="unfinished">Pitchmodulationsdjup</translation>
     </message>
     <message>
         <source>LFO Speed</source>
-        <translation type="obsolete">LFO Hastighet</translation>
+        <translation type="unfinished">LFO Hastighet</translation>
     </message>
     <message>
         <source>Transpose</source>
-        <translation type="obsolete">Transponera</translation>
+        <translation type="unfinished">Transponera</translation>
     </message>
     <message>
         <source>Modulation Matrix</source>
-        <translation type="obsolete">Modulationsmatris</translation>
+        <translation type="unfinished">Modulationsmatris</translation>
     </message>
     <message>
         <source>Frequency 1</source>
-        <translation type="obsolete">Frekvens 1</translation>
+        <translation type="unfinished">Frekvens 1</translation>
     </message>
     <message>
         <source>Volume</source>
-        <translation type="obsolete">Volym</translation>
+        <translation type="unfinished">Volym</translation>
+    </message>
+    <message>
+        <source>DeicsOnze</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Program numerous</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>INITVOICE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LBank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bank numerous</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NONE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HBank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DeicsOnze v0.5.5 Copyright (c) 2004-2006 Nil Geisweiller. Published under GPL licence.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Global</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pitch Envelope</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PL3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PL2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PL1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PR1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PR2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PR3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pitch modulation depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LFO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LFO Sync</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pitch modulation sensitivity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LFO Delay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LFO delay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LFO speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Amplitude modulation depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Amplitude modulation sensitivity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AMS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PMD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AMD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PMS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Algorithm 1&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by &lt;i&gt;Op 2&lt;/i&gt; modulated by &lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
+&lt;b&gt;Algorithm 2&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by &lt;i&gt;Op 2&lt;/i&gt; modulated by both &lt;i&gt;Op 3&lt;/i&gt; and &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
+&lt;b&gt;Algorithm 3&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by both &lt;i&gt;Op 4&lt;/i&gt; and &lt;i&gt;Op 2&lt;/i&gt; modulated by &lt;i&gt;Op 3&lt;/i&gt;&lt;br&gt;
+&lt;b&gt;Algorithm 4&lt;/b&gt; : &lt;i&gt;Op 1&lt;/i&gt; modulated by both &lt;i&gt;Op 2&lt;/i&gt; and &lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
+&lt;b&gt;Algorithm 5&lt;/b&gt; : (&lt;i&gt;Op 1&lt;/i&gt; modulated by &lt;i&gt;Op 2&lt;/i&gt;) add to (&lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;) &lt;br&gt;
+&lt;b&gt;Algorithm 6&lt;/b&gt; : addition of the three &lt;i&gt;Op 1, 2, 3&lt;/i&gt; all modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
+&lt;b&gt;Algorithm 7&lt;/b&gt; : addition of the three &lt;i&gt;Op 1, 2, 3&lt;/i&gt; with &lt;i&gt;Op 3&lt;/i&gt; modulated by &lt;i&gt;Op 4&lt;/i&gt;&lt;br&gt;
+&lt;b&gt;Algorithm 8&lt;/b&gt; : addition of the four &lt;i&gt;Op 1, 2, 3, 4&lt;/i&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Op4 Feedback</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Feedback level of the operator 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Op &amp;1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scaling 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LS1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RS1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rate Scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attack Rate of the operator 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Level Scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Amplitude Envelope 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RR1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D1R1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D1L1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D2R1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Release Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message utf8="true">
+        <source>2° Decay Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message utf8="true">
+        <source>1° Decay Level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message utf8="true">
+        <source>1° Decay Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attack Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AR1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detune, OSCWave, EGShift 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DET1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detune</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EG Shift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>96dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>48dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>24dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>12dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wave form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wave form 1 = &lt;i&gt;sin(&lt;b&gt;t&lt;/b&gt;)&lt;/i&gt;&lt;br&gt;
+Wave form 2 = &lt;i&gt;sin(&lt;b&gt;t&lt;/b&gt;)*abs(sin(&lt;b&gt;t&lt;/b&gt;))&lt;/i&gt;&lt;br&gt;
+Wave form 3 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(&lt;b&gt;t&lt;/b&gt;) else 0&lt;/i&gt;&lt;br&gt;
+Wave form 4 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(&lt;b&gt;t&lt;/b&gt;)*abs(sin(&lt;b&gt;t&lt;/b&gt;)) else 0&lt;/i&gt;&lt;br&gt;
+Wave form 5 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t&lt;/b&gt;) else 0&lt;/i&gt;&lt;br&gt;
+Wave form 6 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t&lt;/b&gt;)*abs(sin(2*&lt;b&gt;t&lt;/b&gt;)) else 0&lt;/i&gt;&lt;br&gt;
+Wave form 7 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then abs(sin(2*&lt;b&gt;t&lt;/b&gt;)) else 0&lt;/i&gt;&lt;br&gt;
+Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t&lt;/b&gt;)*sin(2*&lt;b&gt;t&lt;/b&gt;) else 0&lt;/i&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sensitivity 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>KVS1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Amplitude Modulation Enable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AME1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyboard Velocity Sensitivity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Key Velocity Sensitivity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EBS1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EG Bias Sensitivity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Eg Bias Sensitivity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coarse 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coarse Ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fine 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fine Ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Freq 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fixed Frequency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle Fix Frequency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FIX</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OUT 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output Volume</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Op &amp;2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Amplitude Envelope 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D1R2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D1L2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D2R2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RR2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AR2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coarse 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fine 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Freq 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scaling 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LS2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RS2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OUT 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detune, OSCWave, EGShift 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DET2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sensitivity 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EBS2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>KVS2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AME2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Op &amp;3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Amplitude Envelope 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D1R3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D1L3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D2R3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RR3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AR3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scaling 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LS3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RS3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OUT 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coarse 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fine 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Freq 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detune, OSCWave, EGShift 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DET3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sensitivity 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EBS3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>KVS3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AME3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Op &amp;4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>amplitude Envelope 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AR4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D1R4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D1L4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D2R4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RR4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coarse 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fine 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Freq 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scaling 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LS4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RS4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OUT 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detune, OSCWave, EGShift 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DET4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sensitivity 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EBS4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>KVS4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AME4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Func</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delay Pan Depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delay Pan LFO Freq</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delay Ch Send Level </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel Chorus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delay Feedback</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delay On/Off, Return Level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On</source>
+        <translation type="unfinished">På</translation>
+    </message>
+    <message>
+        <source>Delay Beat Ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delay BPM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Foot Control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pitch</source>
+        <translation type="unfinished">Tonhöjd</translation>
+    </message>
+    <message>
+        <source>Amplitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Modulation Wheel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Breath Control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pitch Bias</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Envelope Bias</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>After Touch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phony Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>POLY</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MONO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Potamento</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Portamento Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FINGER</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FULL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Portamento Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C&amp;horus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Chorus Parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel send level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On/Off and Return level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select LADSPA plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Change plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Reverb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reverb Parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Config</source>
+        <translation type="unfinished">&amp;Inställningar</translation>
+    </message>
+    <message>
+        <source>Font Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Middle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ultra low</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filter</source>
+        <translation type="unfinished">Filter</translation>
+    </message>
+    <message>
+        <source>Save Mode (into the song)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save only the used presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save the entire set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save the configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Configuration File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save as default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Colors</source>
+        <translation type="unfinished">Färger</translation>
+    </message>
+    <message>
+        <source>Text</source>
+        <translation type="unfinished">Text</translation>
+    </message>
+    <message>
+        <source>Background</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit Background</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Red</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set Path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image in the background :</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load the set at the initialization :</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set Brightness, Detune, Attack and Release of the current channel to default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Res. Ctrl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cut all notes off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Panic!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of Voices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of voices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable</source>
+        <translation type="unfinished">Aktivera</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation type="unfinished">Kanal</translation>
+    </message>
+    <message>
+        <source>Vol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel Ctrl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Release</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Brightness</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Modulation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pan</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2962,65 +4075,73 @@ Message:</source>
     <name>FLUIDGui</name>
     <message>
         <source>FLUID: open Soundfile</source>
-        <translation type="obsolete">FLUID: öppna ljudbank</translation>
+        <translation type="unfinished">FLUID: öppna ljudbank</translation>
     </message>
 </context>
 <context>
     <name>FLUIDGuiBase</name>
     <message>
         <source>Load</source>
-        <translation type="obsolete">Ladda</translation>
+        <translation type="unfinished">Ladda</translation>
+    </message>
+    <message>
+        <source>Form1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Soundfont</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>FLUIDSynthGuiBase</name>
     <message>
         <source>Gain</source>
-        <translation type="obsolete">Förstärkning</translation>
+        <translation type="unfinished">Förstärkning</translation>
     </message>
     <message>
         <source>Room Size</source>
-        <translation type="obsolete">Rumsstorlek</translation>
+        <translation type="unfinished">Rumsstorlek</translation>
     </message>
     <message>
         <source>Damping</source>
-        <translation type="obsolete">Dämpning</translation>
+        <translation type="unfinished">Dämpning</translation>
     </message>
     <message>
         <source>Level</source>
-        <translation type="obsolete">Nivå</translation>
+        <translation type="unfinished">Nivå</translation>
     </message>
     <message>
         <source>Width</source>
-        <translation type="obsolete">Bredd</translation>
+        <translation type="unfinished">Bredd</translation>
     </message>
     <message>
         <source>Speed</source>
-        <translation type="obsolete">Hastighet</translation>
+        <translation type="unfinished">Hastighet</translation>
     </message>
     <message>
         <source>Depth</source>
-        <translation type="obsolete">Djup</translation>
+        <translation type="unfinished">Djup</translation>
     </message>
     <message>
         <source>Number</source>
-        <translation type="obsolete">Nummer</translation>
+        <translation type="unfinished">Nummer</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="obsolete">Typ</translation>
+        <translation type="unfinished">Typ</translation>
     </message>
     <message>
         <source>Sine</source>
-        <translation type="obsolete">Sinus</translation>
+        <translation type="unfinished">Sinus</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation type="obsolete">Triangel</translation>
+        <translation type="unfinished">Triangel</translation>
     </message>
     <message>
         <source>Load</source>
-        <translation type="obsolete">Ladda</translation>
+        <translation type="unfinished">Ladda</translation>
     </message>
     <message>
         <source>Save</source>
@@ -3028,11 +4149,51 @@ Message:</source>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="obsolete">Ta bort</translation>
+        <translation type="unfinished">Ta bort</translation>
     </message>
     <message>
         <source>Fontname</source>
-        <translation type="obsolete">Fontnamn</translation>
+        <translation type="unfinished">Fontnamn</translation>
+    </message>
+    <message>
+        <source>FLUID Synth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dump Info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Chnl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Soundfont</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drum Chnl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reverb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CHANNEL SETUP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Chorus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LOADED SOUNDFONTS</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3071,6 +4232,13 @@ Songdata</source>
     <message>
         <source>Songdata +
 Configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FluidSynthGui</name>
+    <message>
+        <source>Choose soundfont</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6783,7 +7951,91 @@ Do you still want to import it?</source>
     </message>
     <message>
         <source>Velocity</source>
-        <translation type="obsolete">Hastighet</translation>
+        <translation type="unfinished">Hastighet</translation>
+    </message>
+    <message>
+        <source>MusE: Organ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drawbars</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>16&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>4&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2 2/3&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>5 1/3&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>8&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Envelope Hi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Release</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sustain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Decay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>cB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Envelope Lo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O-1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Oscillator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Brass</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flute</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -8107,39 +9359,62 @@ i MusEs lista över definierade controllers</translation>
     <name>SS_PluginChooserBase</name>
     <message>
         <source>SimpleDrums - Ladspa Plugin Chooser</source>
-        <translation type="obsolete">SimpleDrums - Ladspa pluginväljare</translation>
+        <translation type="unfinished">SimpleDrums - Ladspa pluginväljare</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="obsolete">Namn</translation>
+        <translation type="unfinished">Namn</translation>
     </message>
     <message>
         <source>Label</source>
-        <translation type="obsolete">Etikett</translation>
+        <translation type="unfinished">Etikett</translation>
     </message>
     <message>
         <source>Inports</source>
-        <translation type="obsolete">Inporta</translation>
+        <translation type="unfinished">Inporta</translation>
     </message>
     <message>
         <source>Outports</source>
-        <translation type="obsolete">Utportar</translation>
+        <translation type="unfinished">Utportar</translation>
     </message>
     <message>
         <source>Creator</source>
-        <translation type="obsolete">Upphovsman</translation>
+        <translation type="unfinished">Upphovsman</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="obsolete">&amp;Avbryt</translation>
+        <translation type="unfinished">&amp;Avbryt</translation>
     </message>
     <message>
         <source>Alt+C</source>
-        <translation type="obsolete">Alt+A</translation>
+        <translation type="unfinished">Alt+A</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation type="obsolete">&amp;Ok</translation>
+        <translation type="unfinished">&amp;Ok</translation>
+    </message>
+    <message>
+        <source>Alt+O</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SS_PluginFront</name>
+    <message>
+        <source>Clear and unload effect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load effect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle display of effect parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Turn effect on/off</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -8404,14 +9679,25 @@ i MusEs lista över definierade controllers</translation>
     </message>
 </context>
 <context>
+    <name>SimpleDrumsGuiBase</name>
+    <message>
+        <source>DrumSynth 0.1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SimpleSynthGui</name>
     <message>
         <source>&amp;Load setup</source>
-        <translation type="obsolete">&amp;Ladda setup</translation>
+        <translation type="unfinished">&amp;Ladda setup</translation>
     </message>
     <message>
         <source>&amp;Save setup</source>
-        <translation type="obsolete">&amp;Spara setup</translation>
+        <translation type="unfinished">&amp;Spara setup</translation>
+    </message>
+    <message>
+        <source>Load sample dialog</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -8925,70 +10211,154 @@ ljudfilerna skall hamna.</translation>
     <name>VAMGui</name>
     <message>
         <source>MusE: Save VAM Presets</source>
-        <translation type="obsolete">MusE: Spara VAM presets</translation>
+        <translation type="unfinished">MusE: Spara VAM presets</translation>
+    </message>
+    <message>
+        <source>MusE: Load VAM Presets</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>VAMGuiBase</name>
     <message>
         <source>Virtual Analogue for MusE</source>
-        <translation type="obsolete">Virtual Analogue för MusE</translation>
+        <translation type="unfinished">Virtual Analogue för MusE</translation>
     </message>
     <message>
         <source>Waveform</source>
-        <translation type="obsolete">Vågform</translation>
+        <translation type="unfinished">Vågform</translation>
     </message>
     <message>
         <source>Sine</source>
-        <translation type="obsolete">Sinus</translation>
+        <translation type="unfinished">Sinus</translation>
     </message>
     <message>
         <source>Pulse</source>
-        <translation type="obsolete">Puls</translation>
+        <translation type="unfinished">Puls</translation>
     </message>
     <message>
         <source>Saw</source>
-        <translation type="obsolete">Sågtand</translation>
+        <translation type="unfinished">Sågtand</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation type="obsolete">Triangel</translation>
+        <translation type="unfinished">Triangel</translation>
     </message>
     <message>
         <source>Filter</source>
-        <translation type="obsolete">Filter</translation>
+        <translation type="unfinished">Filter</translation>
     </message>
     <message>
         <source>Invert</source>
-        <translation type="obsolete">Invertera</translation>
+        <translation type="unfinished">Invertera</translation>
     </message>
     <message>
         <source>Presets</source>
-        <translation type="obsolete">Preset</translation>
+        <translation type="unfinished">Preset</translation>
     </message>
     <message>
         <source>load preset list</source>
-        <translation type="obsolete">öppna presetlista</translation>
+        <translation type="unfinished">öppna presetlista</translation>
     </message>
     <message>
         <source>save preset list</source>
-        <translation type="obsolete">spara presetlista</translation>
+        <translation type="unfinished">spara presetlista</translation>
     </message>
     <message>
         <source>save preset list to a new file</source>
-        <translation type="obsolete">spara presetlista till ny fil</translation>
+        <translation type="unfinished">spara presetlista till ny fil</translation>
     </message>
     <message>
         <source>delete preset</source>
-        <translation type="obsolete">ta bort preset</translation>
+        <translation type="unfinished">ta bort preset</translation>
     </message>
     <message>
         <source>Pitch</source>
-        <translation type="obsolete">Tonhöjd</translation>
+        <translation type="unfinished">Tonhöjd</translation>
     </message>
     <message>
         <source>On</source>
-        <translation type="obsolete">På</translation>
+        <translation type="unfinished">På</translation>
+    </message>
+    <message>
+        <source>LFO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Freq</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EnvMod</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Decay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sustain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Release</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cutoff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resonance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>KeyTrack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DCO 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detune</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PWM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DCO 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message utf8="true">
+        <source>VAM 1.0beta3
+Virtual Analog for MusE
+Released under GPL.
+Copyright(C) 2002
+Jotsif Lindman Hörnlund 
+( jotsif@linux.nu )
+Copyright(C) 2005
+Robert Jonsson 
+(rj@spamatica.se)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9222,7 +10592,231 @@ Saknat data tystas</translation>
     </message>
     <message>
         <source>Damping</source>
-        <translation type="obsolete">Dämpning</translation>
+        <translation type="unfinished">Dämpning</translation>
+    </message>
+    <message>
+        <source>FreeVerb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Room Size</source>
+        <translation type="unfinished">Rumsstorlek</translation>
+    </message>
+    <message>
+        <source>Wet Level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tap-Reverberator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Decay [ms]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dry Level [dB]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wet Level [dB]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preset:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AfterBurn</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AfterBurn (Long)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ambience</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ambience (Thick)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ambience (Thick) - HD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cathedral</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cathedral - HD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drum Chamber</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Garage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Garage (Bright)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gymnasium</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gymnasium (Bright)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gymnasium (Bright) - HD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hall (Small)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hall (Medium)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hall (Large)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hall (Large) - HD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plate (Small)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plate (Medium)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plate (Large)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plate (Large) - HD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pulse Chamber</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pulse Chamber (Reverse)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resonator (96 ms)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resonator (152 ms)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resonator (208 ms)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Room (Small)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Room (Medium)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Room (Large)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Room (Large) - HD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Slap Chamber</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Slap Chamber - HD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Slap Chamber (Bright)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Slap Chamber (Bright) HD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smooth Hall (Small)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smooth Hall (Medium)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smooth Hall (Large)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smooth Hall (Large) - HD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vocal Plate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vocal Plate - HD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warble Chamber</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warehoouse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warehouse - HD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comb Filters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Allpass Filters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bandpass Filters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enhanced Stereo</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
