@@ -240,7 +240,6 @@ add_library ( widgets STATIC
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
-#add_dependencies(widgets translations)
 
 # AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
 # EXEC_PROGRAM( svnversion

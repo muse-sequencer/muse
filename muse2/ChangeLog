@@ -6,6 +6,8 @@
         - Added a -l flag to the muse executable to override the locale detection, mostly for testing
           purposes. (Orcan)
         - Updated the Russian translation thanks to Alex, alex54m -> mail.ru
+        - When updating the .ts files, by adding proper dependencies, make sure all targets are 
+          scanned. Otherwise .ts files may miss some strings. (Orcan)
 11.12.2010:
       * Feature: Added default midi track in/out channels to midi ports list. (Tim)
         - For now, the boxes use the old text channel strings ("1 3 5", "1-5", "all, "none" etc.)

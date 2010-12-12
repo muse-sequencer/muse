@@ -269,7 +269,6 @@ add_executable ( muse
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
-add_dependencies(muse translations)
 
 # AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
 # EXEC_PROGRAM( svnversion

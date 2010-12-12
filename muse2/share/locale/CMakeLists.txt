@@ -26,8 +26,38 @@ else (UPDATE_TRANSLATIONS)
       qt4_add_translation(QM_FILES ${TRANSLATIONS_FILES})
 endif (UPDATE_TRANSLATIONS)
 
-add_custom_target (translations DEPENDS ${QM_FILES})
-#add_dependencies(translations muse)
+add_custom_target (translations ALL DEPENDS ${QM_FILES})
+
+# If we are updating the translations, make sure that these targets
+# are scanned first
+if (UPDATE_TRANSLATIONS)
+      add_dependencies(translations
+            muse
+            arranger
+            cliplist
+            ctrl
+            driver
+            instruments
+            liste
+            marker
+            master
+            midiedit
+            mixer
+            mplugins
+            remote
+            waveedit
+            widgets
+            awl
+            deicsonze
+            fluid
+            fluidsynth
+            libsynti
+            organ
+            s1
+            simpledrums2
+            vam
+            )
+endif (UPDATE_TRANSLATIONS)
 
 #install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/locale .*\\.qm )
 install(FILES ${QM_FILES} DESTINATION
