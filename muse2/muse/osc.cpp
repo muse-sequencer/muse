@@ -861,7 +861,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
         //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toAscii().data());
         //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().ascii());
         //snprintf(oscUrl, 1024, "%s/%s/%s", url, synth->info.baseName().ascii(), synti->name().ascii());
-        typ = QT_TR_NOOP("dssi_synth");
+        typ = QT_TRANSLATE_NOOP("@default", "dssi_synth");
         baseName = _oscSynthIF->dssiSynth()->baseName(false);
         label = _oscSynthIF->dssiSynthI()->name();
         name = _oscSynthIF->dssiSynth()->name();
@@ -873,7 +873,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       #endif
       if(_oscPluginI)
       {
-        typ = QT_TR_NOOP("ladspa_efx");
+        typ = QT_TRANSLATE_NOOP("@default", "ladspa_efx");
         baseName = _oscPluginI->plugin()->lib(false);
         //name = _oscPluginI->name();
         name = _oscPluginI->plugin()->label();
@@ -891,8 +891,8 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       
       //snprintf(oscUrl, 1024, "%s/%s/%s", url, baseName.ascii(), name.ascii());
       //snprintf(oscUrl, 1024, "%s%s/%s/%s", url, typ.toLatin1().constData(), baseName.toLatin1().constData(), name.toLatin1().constData());
-      //oscUrl = QString("%1%2/%3/%4").arg(QString(QT_TR_NOOP(url))).arg(typ).arg(baseName).arg(name);
-      oscUrl = QString("%1%2/%3/%4").arg(QString(QT_TR_NOOP(url))).arg(typ).arg(baseName).arg(label);
+      //oscUrl = QString("%1%2/%3/%4").arg(QString(QT_TRANSLATE_NOOP("@default", url))).arg(typ).arg(baseName).arg(name);
+      oscUrl = QString("%1%2/%3/%4").arg(QString(QT_TRANSLATE_NOOP("@default", url))).arg(typ).arg(baseName).arg(label);
       
       //QString guiPath(info.path() + "/" + info.baseName());
       //QString guiPath(synth->info.dirPath() + "/" + synth->info.baseName());
@@ -1302,7 +1302,7 @@ bool OscDssiIF::oscInitGui()
   if(!_oscSynthIF)
     return false;
     
-  return OscIF::oscInitGui(QT_TR_NOOP("dssi_synth"), _oscSynthIF->dssiSynth()->baseName(), 
+  return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "dssi_synth"), _oscSynthIF->dssiSynth()->baseName(), 
                            _oscSynthIF->dssiSynth()->name(), _oscSynthIF->dssiSynthI()->name(), 
                            _oscSynthIF->dssiSynth()->filePath(), _oscSynthIF->dssiSynth()->path());
 }
@@ -1388,7 +1388,7 @@ bool OscEffectIF::oscInitGui()
   if(!_oscPluginI)
     return false;
     
-  return OscIF::oscInitGui(QT_TR_NOOP("ladspa_efx"), _oscPluginI->plugin()->lib(false), 
+  return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "ladspa_efx"), _oscPluginI->plugin()->lib(false), 
                            _oscPluginI->plugin()->label(), _oscPluginI->label(), 
                            _oscPluginI->plugin()->filePath(), _oscPluginI->plugin()->dirPath(false));
 }

@@ -809,7 +809,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   // Create a sub-menu and fill it with found synth types. Make p the owner.
                   QMenu* synp = populateAddSynth(p);
 		  synp->setIcon(*synthIcon);
-		  synp->setTitle(QT_TR_NOOP("Add Synth"));
+		  synp->setTitle(QT_TRANSLATE_NOOP("@default", "Add Synth"));
 
                   // Add the 'Add Synth' sub-menu to the menu.
                   p->addMenu(synp);

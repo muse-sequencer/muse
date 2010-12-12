@@ -20,8 +20,7 @@
 
 include(${PROJECT_SOURCE_DIR}/pch.txt)
 
-add_library(synti
-      ${PROJECT_BINARY_DIR}/all-pic.h.pch
+file (GLOB SOURCE_FILES
       mess.cpp
       # mess2.cpp
       gui.cpp
@@ -31,6 +30,13 @@ add_library(synti
       # Removed. Causing conflicts with /muse/mpevent
       ## mpevent.cpp
       )
+
+add_library(synti
+      ${PROJECT_BINARY_DIR}/all-pic.h.pch
+      ${SOURCE_FILES}
+      )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
 #
 # -fPIC is necessary for 64 bit systems

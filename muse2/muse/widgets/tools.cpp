@@ -23,38 +23,38 @@
 #include "icons.h"
 #include "action.h"
 
-const char* infoPointer = QT_TR_NOOP("select Pointer Tool:\n"
+const char* infoPointer = QT_TRANSLATE_NOOP("@default", "select Pointer Tool:\n"
       "with the pointer tool you can:\n"
       "  select parts\n"
       "  move parts\n"
       "  copy parts");
-const char* infoPencil = QT_TR_NOOP("select Pencil Tool:\n"
+const char* infoPencil = QT_TRANSLATE_NOOP("@default", "select Pencil Tool:\n"
       "with the pencil tool you can:\n"
       "  create new parts\n"
       "  modify length of parts");
-const char* infoDel = QT_TR_NOOP("select Delete Tool:\n"
+const char* infoDel = QT_TRANSLATE_NOOP("@default", "select Delete Tool:\n"
       "with the delete tool you can delete parts");
-const char* infoCut = QT_TR_NOOP("select Cut Tool:\n"
+const char* infoCut = QT_TRANSLATE_NOOP("@default", "select Cut Tool:\n"
       "with the cut tool you can split a part");
-const char* infoGlue = QT_TR_NOOP("select Glue Tool:\n"
+const char* infoGlue = QT_TRANSLATE_NOOP("@default", "select Glue Tool:\n"
       "with the glue tool you can glue two parts");
-const char* infoScore = QT_TR_NOOP("select Score Tool:\n");
-const char* infoQuant = QT_TR_NOOP("select Quantize Tool:\n"
+const char* infoScore = QT_TRANSLATE_NOOP("@default", "select Score Tool:\n");
+const char* infoQuant = QT_TRANSLATE_NOOP("@default", "select Quantize Tool:\n"
       "insert display quantize event");
-const char* infoDraw = QT_TR_NOOP("select Drawing Tool");
-const char* infoMute = QT_TR_NOOP("select Muting Tool:\n"
+const char* infoDraw = QT_TRANSLATE_NOOP("@default", "select Drawing Tool");
+const char* infoMute = QT_TRANSLATE_NOOP("@default", "select Muting Tool:\n"
       "click on part to mute/unmute");
 
 ToolB toolList[] = {
-      {&pointerIcon,  QT_TR_NOOP("pointer"),     infoPointer },
-      {&pencilIcon,   QT_TR_NOOP("pencil"),      infoPencil  },
-      {&deleteIcon,   QT_TR_NOOP("eraser"),      infoDel     },
-      {&cutIcon,      QT_TR_NOOP("cutter"),      infoCut     },
-      {&note1Icon,    QT_TR_NOOP("score"),       infoScore   },
-      {&glueIcon,     QT_TR_NOOP("glue"),        infoGlue    },
-      {&quantIcon,    QT_TR_NOOP("quantize"),    infoQuant   },
-      {&drawIcon,     QT_TR_NOOP("draw"),        infoDraw    },
-      {&editmuteIcon, QT_TR_NOOP("mute parts"),  infoMute    },
+      {&pointerIcon,  QT_TRANSLATE_NOOP("@default", "pointer"),     infoPointer },
+      {&pencilIcon,   QT_TRANSLATE_NOOP("@default", "pencil"),      infoPencil  },
+      {&deleteIcon,   QT_TRANSLATE_NOOP("@default", "eraser"),      infoDel     },
+      {&cutIcon,      QT_TRANSLATE_NOOP("@default", "cutter"),      infoCut     },
+      {&note1Icon,    QT_TRANSLATE_NOOP("@default", "score"),       infoScore   },
+      {&glueIcon,     QT_TRANSLATE_NOOP("@default", "glue"),        infoGlue    },
+      {&quantIcon,    QT_TRANSLATE_NOOP("@default", "quantize"),    infoQuant   },
+      {&drawIcon,     QT_TRANSLATE_NOOP("@default", "draw"),        infoDraw    },
+      {&editmuteIcon, QT_TRANSLATE_NOOP("@default", "mute parts"),  infoMute    },
       };
 
 //---------------------------------------------------------

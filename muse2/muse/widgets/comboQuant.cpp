@@ -20,9 +20,9 @@ static int quantTable[] = {
       };
 
 static const char* quantStrings[] = {
-      QT_TR_NOOP("Off"), "64T", "32T", "16T", "8T", "4T", "2T", "1T",
-      QT_TR_NOOP("Off"), "64",  "32",  "16",  "8",  "4",  "2",  "1",
-      QT_TR_NOOP("Off"), "64.", "32.", "16.", "8.", "4.", "2.", "1."
+      QT_TRANSLATE_NOOP("@default", "Off"), "64T", "32T", "16T", "8T", "4T", "2T", "1T",
+      QT_TRANSLATE_NOOP("@default", "Off"), "64",  "32",  "16",  "8",  "4",  "2",  "1",
+      QT_TRANSLATE_NOOP("@default", "Off"), "64.", "32.", "16.", "8.", "4.", "2.", "1."
       };
 
 //---------------------------------------------------------

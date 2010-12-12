@@ -29,17 +29,15 @@ QT4_WRAP_CPP ( liste_mocs
       editevent.h
       )
 
-QT4_WRAP_UI ( UIC
+file (GLOB UI_FILES
       editctrlbase.ui
       )
 
-#QT4_WRAP_UI3 ( liste_ui_headers
-#       ctrllistedit.ui
-#       partlistedit.ui
-#       tracklistedit.ui
-#       )      
+QT4_WRAP_UI ( UIC
+      ${UI_FILES}
+      )
 
-add_library ( liste STATIC
+file (GLOB SOURCE_FILES
 #       listedit.cpp listedit.h
 #       ctrllistedit.cpp ctrllistedit.h
 #       partlistedit.cpp partlistedit.h
@@ -47,10 +45,16 @@ add_library ( liste STATIC
 #       ieventdialog.cpp ieventdialog.h
       listedit.cpp listedit.h 
       editevent.cpp editevent.h 
+      )
+
+add_library ( liste STATIC
+      ${SOURCE_FILES}
       ${liste_mocs}
       ${liste_ui_headers}
       ${UIC}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
 add_dependencies(liste widgets)
 

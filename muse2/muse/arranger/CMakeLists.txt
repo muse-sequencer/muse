@@ -25,20 +25,21 @@ QT4_WRAP_CPP (arranger_mocs
       alayout.h
       )
 
-#QT4_WRAP_UI (arranger_ui_headers
-# QT4_WRAP_UI3 (arranger_ui_headers
-#       )
-
-add_library ( arranger STATIC
+file (GLOB SOURCE_FILES
       arranger.cpp arranger.h 
       pcanvas.cpp pcanvas.h 
       tlist.cpp tlist.h 
       alayout.cpp alayout.h 
       trackinfo.cpp trackautomationview.h
-      
+      )
+
+add_library ( arranger STATIC
+      ${SOURCE_FILES}
       ${arranger_mocs}
       # ${arranger_ui_headers}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
 add_dependencies(arranger mixer)
 

@@ -20,20 +20,27 @@
 
 QT4_WRAP_CPP ( fluidsynth_mocs fluidsynthgui.h )
 
-QT4_WRAP_UI (  fluidsynth_uis fluidsynthguibase.ui )
+file (GLOB UI_FILES fluidsynthguibase.ui )
+QT4_WRAP_UI ( fluidsynth_uis ${UI_FILES} )
 
 QT4_ADD_RESOURCES (fluidsynth_qrc_files
                   fluidsynth.qrc
                   )
 
-add_library ( fluidsynth SHARED 
+file (GLOB SOURCE_FILES
       fluidsynti.cpp 
       fluidsynthgui.cpp
       fluidsynthgui.h
+      )
+
+add_library ( fluidsynth SHARED 
+      ${SOURCE_FILES}
       ${fluidsynth_mocs}
       ${fluidsynth_uis}
       ${fluidsynth_qrc_files}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
 # target_link_libraries( fluidsynth synti )
 

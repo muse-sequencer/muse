@@ -20,15 +20,22 @@
 
 QT4_WRAP_CPP ( fluid_mocs fluidgui.h )
 
-QT4_WRAP_UI (  fluid_uis fluidguibase.ui )
+file (GLOB UI_FILES fluidguibase.ui )
+QT4_WRAP_UI (  fluid_uis ${UI_FILES} )
 
-add_library ( fluid SHARED 
+file (GLOB SOURCE_FILES
       fluid.cpp 
       fluidgui.cpp
       fluidgui.h
+      )
+
+add_library ( fluid SHARED 
+      ${SOURCE_FILES}
       ${fluid_mocs}
       ${fluid_uis}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
 # target_link_libraries( fluid synti )
 

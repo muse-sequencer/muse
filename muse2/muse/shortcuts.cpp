@@ -18,7 +18,7 @@ ShortCut shortcuts[SHRT_NUM_OF_ELEMENTS];
 void defShrt(int shrt, int key, const char* descr, int type, const char* xml)
 {
       shortcuts[shrt].key   = key;
-      shortcuts[shrt].descr = QT_TR_NOOP(descr);
+      shortcuts[shrt].descr = QT_TRANSLATE_NOOP("@default", descr);
       shortcuts[shrt].type  = type;
       shortcuts[shrt].xml   = xml;
 }

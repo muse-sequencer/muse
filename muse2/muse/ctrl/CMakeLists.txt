@@ -29,12 +29,11 @@ QT4_WRAP_CPP (ctrl_mocs
       ctrlpanel.h
       )
 
-#QT4_WRAP_UI (ctrl_ui_headers
-# QT4_WRAP_UI3 (ctrl_ui_headers
-#       configmidictrl.ui
-#       definemidictrl.ui
-#       ctrldialog.ui
-#       )
+file (GLOB SOURCE_FILES
+      ctrledit.cpp ctrledit.h 
+      ctrlcanvas.cpp ctrlcanvas.h 
+      ctrlpanel.cpp ctrlpanel.h
+      )
 
 add_library ( ctrl STATIC
 #       configmidictrl.cpp
@@ -43,12 +42,13 @@ add_library ( ctrl STATIC
 #       ctrleditor.cpp
 #       ctrledit.cpp
       
-      ctrledit.cpp ctrledit.h 
-      ctrlcanvas.cpp ctrlcanvas.h 
-      ctrlpanel.cpp ctrlpanel.h
+      ${SOURCE_FILES}
       ${ctrl_mocs}
       # ${ctrl_ui_headers}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+
 set_target_properties( ctrl
   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
   )

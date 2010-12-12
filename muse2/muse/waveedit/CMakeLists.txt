@@ -24,17 +24,27 @@ QT4_WRAP_CPP ( waveedit_mocs
       editgain.h
       )
 
-QT4_WRAP_UI (waveedit_ui_headers
+file (GLOB UI_FILES
       editgainbase.ui
       )
 
-add_library ( waveedit STATIC
-      ${waveedit_ui_headers}
-      ${waveedit_mocs}
+QT4_WRAP_UI (waveedit_ui_headers
+      ${UI_FILES}
+      )
+
+file (GLOB SOURCE_FILES
       waveedit.cpp
       waveview.cpp
       editgain.cpp
       )
+
+add_library ( waveedit STATIC
+      ${SOURCE_FILES}
+      ${waveedit_ui_headers}
+      ${waveedit_mocs}
+      )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
 set_target_properties( waveedit
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"

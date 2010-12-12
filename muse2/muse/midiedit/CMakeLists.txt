@@ -42,19 +42,9 @@ QT4_WRAP_CPP ( midiedit_mocs
       ecanvas.h
       )
 
-# QT4_WRAP_UI ( midiedit_ui_headers
-# QT4_WRAP_UI3 ( midiedit_ui_headers
-#       midicmd.ui
-#       gatetime.ui
-#       velocity.ui
-#       quantconfig.ui
-#       )
-
-add_library ( midiedit STATIC
+file (GLOB SOURCE_FILES
 #      midicmd.h
 #      gatetime.h
-      # ${midiedit_ui_headers}
-      ${midiedit_mocs}
 #       midicmd.cpp
 #       gatetime.cpp
 #       velocity.cpp
@@ -85,6 +75,14 @@ add_library ( midiedit STATIC
       dcanvas.cpp # dcanvas.h 
       ecanvas.cpp # ecanvas.h
       )
+
+add_library ( midiedit STATIC
+      ${SOURCE_FILES}
+      # ${midiedit_ui_headers}
+      ${midiedit_mocs}
+      )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
 add_dependencies(midiedit widgets)
 

@@ -20,15 +20,22 @@
 
 QT4_WRAP_CPP ( vam_mocs vamgui.h )
 
-QT4_WRAP_UI (  vam_uis vamguibase.ui ) 
+file (GLOB UI_FILES vamguibase.ui ) 
+QT4_WRAP_UI ( vam_uis ${UI_FILES} )
 
-add_library ( vam SHARED 
+file (GLOB SOURCE_FILES
       vam.cpp 
       vamgui.cpp
       vamgui.h
+      )
+
+add_library ( vam SHARED 
+      ${SOURCE_FILES}
       ${vam_mocs}
       ${vam_uis}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
 # target_link_libraries( vam synti )
 

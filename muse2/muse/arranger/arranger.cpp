@@ -122,7 +122,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       toolbar->addWidget(cursorPos);
 
       const char* rastval[] = {
-            QT_TR_NOOP("Off"), QT_TR_NOOP("Bar"), "1/2", "1/4", "1/8", "1/16"
+            QT_TRANSLATE_NOOP("@default", "Off"), QT_TRANSLATE_NOOP("@default", "Bar"), "1/2", "1/4", "1/8", "1/16"
             };
       label = new QLabel(tr("Snap"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);

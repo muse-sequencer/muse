@@ -131,7 +131,7 @@ QT4_WRAP_CPP (widget_mocs
       didyouknow.h
       )
 
-QT4_WRAP_UI (widget_ui_headers
+file (GLOB UI_FILES
       aboutbox.ui  
       appearancebase.ui 
       cliplisteditorbase.ui  
@@ -157,7 +157,8 @@ QT4_WRAP_UI (widget_ui_headers
       transposebase.ui  
       velocitybase.ui  
       )
-      
+
+QT4_WRAP_UI (widget_ui_headers ${UI_FILES})      
 
 # add_custom_command(OUTPUT ui_midisync.h
 #      COMMAND ${QT_UIC_EXECUTABLE}
@@ -167,9 +168,7 @@ QT4_WRAP_UI (widget_ui_headers
 
 # ADD_FILE_DEPENDENCIES(moc_midisync.cxx ${CMAKE_CURRENT_BINARY_DIR}/ui_midisync.h)
 
-add_library ( widgets STATIC 
-      ${widget_ui_headers}
-      ${widget_mocs}
+file (GLOB SOURCE_FILES
       utils.cpp 
       citem.cpp
       vscale.cpp
@@ -232,6 +231,16 @@ add_library ( widgets STATIC
       popupmenu.cpp 
       menutitleitem.h  
       )
+
+add_library ( widgets STATIC 
+      ${widget_ui_headers}
+      ${widget_mocs}
+      ${SOURCE_FILES}
+      )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
+
+#add_dependencies(widgets translations)
 
 # AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
 # EXEC_PROGRAM( svnversion

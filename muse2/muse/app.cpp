@@ -105,27 +105,28 @@
 static pthread_t watchdogThread;
 //ErrorHandler *error;
 static const char* fileOpenText =
-      QT_TR_NOOP("Click this button to open a <em>new song</em>.<br>"
+      QT_TRANSLATE_NOOP("@default", "Click this button to open a <em>new song</em>.<br>"
       "You can also select the <b>Open command</b> from the File menu.");
 static const char* fileSaveText =
-      QT_TR_NOOP("Click this button to save the song you are "
+      QT_TRANSLATE_NOOP("@default", "Click this button to save the song you are "
       "editing.  You will be prompted for a file name.\n"
       "You can also select the Save command from the File menu.");
-static const char* fileNewText        = QT_TR_NOOP("Create New Song");
+static const char* fileNewText        = QT_TRANSLATE_NOOP("@default", "Create New Song");
 
-static const char* infoLoopButton     = QT_TR_NOOP("loop between left mark and right mark");
-static const char* infoPunchinButton  = QT_TR_NOOP("record starts at left mark");
-static const char* infoPunchoutButton = QT_TR_NOOP("record stops at right mark");
-static const char* infoStartButton    = QT_TR_NOOP("rewind to start position");
-static const char* infoRewindButton   = QT_TR_NOOP("rewind current position");
-static const char* infoForwardButton  = QT_TR_NOOP("move current position");
-static const char* infoStopButton     = QT_TR_NOOP("stop sequencer");
-static const char* infoPlayButton     = QT_TR_NOOP("start sequencer play");
-static const char* infoRecordButton   = QT_TR_NOOP("to record press record and then play");
-static const char* infoPanicButton    = QT_TR_NOOP("send note off to all midi channels");
+static const char* infoLoopButton     = QT_TRANSLATE_NOOP("@default", "loop between left mark and right mark");
+static const char* infoPunchinButton  = QT_TRANSLATE_NOOP("@default", "record starts at left mark");
+static const char* infoPunchoutButton = QT_TRANSLATE_NOOP("@default", "record stops at right mark");
+static const char* infoStartButton    = QT_TRANSLATE_NOOP("@default", "rewind to start position");
+static const char* infoRewindButton   = QT_TRANSLATE_NOOP("@default", "rewind current position");
+static const char* infoForwardButton  = QT_TRANSLATE_NOOP("@default", "move current position");
+static const char* infoStopButton     = QT_TRANSLATE_NOOP("@default", "stop sequencer");
+static const char* infoPlayButton     = QT_TRANSLATE_NOOP("@default", "start sequencer play");
+static const char* infoRecordButton   = QT_TRANSLATE_NOOP("@default", "to record press record and then play");
+static const char* infoPanicButton    = QT_TRANSLATE_NOOP("@default", "send note off to all midi channels");
 
 #define PROJECT_LIST_LEN  6
 static QString* projectList[PROJECT_LIST_LEN];
+static QString locale_override;
 
 extern void initIcons();
 extern void initMidiSynth();
@@ -686,7 +687,7 @@ QMenu* populateAddSynth(QWidget* parent)
       // No MESS sub-menu yet? Create it now.
       if(!synpMESS)
         synpMESS = new QMenu(parent);
-      QAction* sM = synpMESS->addAction(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">");
+      QAction* sM = synpMESS->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
       sM->setData(MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -703,8 +704,8 @@ QMenu* populateAddSynth(QWidget* parent)
       // No DSSI sub-menu yet? Create it now.
       if(!synpDSSI)
         synpDSSI = new QMenu(parent);
-      //synpDSSI->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
-      QAction* sD = synpDSSI->addAction(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">");
+      //synpDSSI->insertItem(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
+      QAction* sD = synpDSSI->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
       sD->setData(MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -722,7 +723,7 @@ QMenu* populateAddSynth(QWidget* parent)
       // No VST sub-menu yet? Create it now.
       if(!synpVST)
         synpVST = new QMenu(parent);
-      QAction* sV = synpVST->addAction(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">");
+      QAction* sV = synpVST->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
       sV->setData(MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -737,15 +738,15 @@ QMenu* populateAddSynth(QWidget* parent)
     // No Other sub-menu yet? Create it now.
     if(!synpOther)
       synpOther = new QMenu(parent);
-    //synpOther->insertItem(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
-    QAction* sO = synpOther->addAction(QT_TR_NOOP(s->description()) + " <" + QT_TR_NOOP(s->name()) + ">");
+    //synpOther->insertItem(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
+    QAction* sO = synpOther->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
     sO->setData(MENU_ADD_SYNTH_ID_BASE + idx);
   }
   
   if(synpMESS)
   {
     synpMESS->setIcon(*synthIcon);
-    synpMESS->setTitle(QT_TR_NOOP("MESS"));
+    synpMESS->setTitle(QT_TRANSLATE_NOOP("@default", "MESS"));
     synp->addMenu(synpMESS);
   }
   
@@ -753,7 +754,7 @@ QMenu* populateAddSynth(QWidget* parent)
   if(synpDSSI)
   {
     synpDSSI->setIcon(*synthIcon);
-    synpDSSI->setTitle(QT_TR_NOOP("DSSI"));
+    synpDSSI->setTitle(QT_TRANSLATE_NOOP("@default", "DSSI"));
     synp->addMenu(synpDSSI);
   }  
   #endif
@@ -762,7 +763,7 @@ QMenu* populateAddSynth(QWidget* parent)
   if(synpVST)
   {
     synpVST->setIcon(*synthIcon);
-    synpVST->setTitle(QT_TR_NOOP("FST"));
+    synpVST->setTitle(QT_TRANSLATE_NOOP("@default", "FST"));
     synp->addMenu(synpVST);
   }  
   #endif
@@ -787,38 +788,38 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
       QActionGroup* grp = new QActionGroup(addTrack);
 
       QAction* midi = addTrack->addAction(QIcon(*addtrack_addmiditrackIcon),
-					  QT_TR_NOOP("Add Midi Track"));
+					  QT_TRANSLATE_NOOP("@default", "Add Midi Track"));
       midi->setData(Track::MIDI);
       grp->addAction(midi);
       QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
-					  QT_TR_NOOP("Add Drum Track"));
+					  QT_TRANSLATE_NOOP("@default", "Add Drum Track"));
       drum->setData(Track::DRUM);
       grp->addAction(drum);
       QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
-					  QT_TR_NOOP("Add Wave Track"));
+					  QT_TRANSLATE_NOOP("@default", "Add Wave Track"));
       wave->setData(Track::WAVE);
       grp->addAction(wave);
       QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
-					     QT_TR_NOOP("Add Audio Output"));
+					     QT_TRANSLATE_NOOP("@default", "Add Audio Output"));
       aoutput->setData(Track::AUDIO_OUTPUT);
       grp->addAction(aoutput);
       QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
-					    QT_TR_NOOP("Add Audio Group"));
+					    QT_TRANSLATE_NOOP("@default", "Add Audio Group"));
       agroup->setData(Track::AUDIO_GROUP);
       grp->addAction(agroup);
       QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
-					    QT_TR_NOOP("Add Audio Input"));
+					    QT_TRANSLATE_NOOP("@default", "Add Audio Input"));
       ainput->setData(Track::AUDIO_INPUT);
       grp->addAction(ainput);
       QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
-					  QT_TR_NOOP("Add Aux Send"));
+					  QT_TRANSLATE_NOOP("@default", "Add Aux Send"));
       aaux->setData(Track::AUDIO_AUX);
       grp->addAction(aaux);
 
       // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
       QMenu* synp = populateAddSynth(addTrack);
       synp->setIcon(*synthIcon);
-      synp->setTitle(QT_TR_NOOP("Add Synth"));
+      synp->setTitle(QT_TRANSLATE_NOOP("@default", "Add Synth"));
 
       // Add the sub-menu to the given menu.
       addTrack->addMenu(synp);
@@ -2717,7 +2718,7 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
         for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
         {
           //QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
-          //subp->insertItem(QT_TR_NOOP(QString("Channel %1").arg(ch+1)), i * MIDI_CHANNELS + ch);
+          //subp->insertItem(QT_TRANSLATE_NOOP("@default", QString("Channel %1").arg(ch+1)), i * MIDI_CHANNELS + ch);
           gid = i * MIDI_CHANNELS + ch;
           
           //printf("MusE::prepareRoutingPopupMenu inserting gid:%d\n", gid);
@@ -2977,7 +2978,7 @@ PopupView* MusE::prepareRoutingPopupView(Track* track, bool dst)
         //QMenu* m = menu->addMenu(track->name());
         //QPopupMenu* subp = new QPopupMenu(parent);
         //PopupMenu* subp = new PopupMenu(this);
-        QStandardItem* subp = new QStandardItem(QT_TR_NOOP(md->name()));
+        QStandardItem* subp = new QStandardItem(QT_TRANSLATE_NOOP("@default", md->name()));
 ///        connect(subp, SIGNAL(activated(int)), pup, SIGNAL(activated(int)));
         //connect(subp, SIGNAL(aboutToHide()), pup, SIGNAL(aboutToHide()));
         
@@ -2997,7 +2998,7 @@ PopupView* MusE::prepareRoutingPopupView(Track* track, bool dst)
         for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
         {
           //QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
-          //subp->insertItem(QT_TR_NOOP(QString("Channel %1").arg(ch+1)), i * MIDI_CHANNELS + ch);
+          //subp->insertItem(QT_TRANSLATE_NOOP("@default", QString("Channel %1").arg(ch+1)), i * MIDI_CHANNELS + ch);
           gid = i * MIDI_CHANNELS + ch;
           
           //printf("MusE::prepareRoutingPopupMenu inserting gid:%d\n", gid);
@@ -3046,7 +3047,7 @@ PopupView* MusE::prepareRoutingPopupView(Track* track, bool dst)
         Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
         gRoutingMenuMap.insert( pRouteMenuMap(gid, togRoute) );
         
-///        pup->insertItem(QT_TR_NOOP(md->name()), subp);
+///        pup->insertItem(QT_TRANSLATE_NOOP("@default", md->name()), subp);
         pup->model()->appendRow(subp);
         pup->updateView();
       }
@@ -3620,6 +3621,7 @@ static void usage(const char* prog, const char* txt)
 #ifdef HAVE_LASH
       fprintf(stderr, "   -L       don't use LASH\n");
 #endif
+      fprintf(stderr, "   -l xx    force locale given by language/country code (de, sv_SE, ...)");
       fprintf(stderr, "useful environment variables:\n");
       fprintf(stderr, "   MUSE             override library and shared directories location\n");
       fprintf(stderr, "   MUSEHOME         override user home directory (HOME/)\n");
@@ -3744,7 +3746,7 @@ int main(int argc, char* argv[])
       
       int i;
       
-      QString optstr("ahvdDmMsP:Y:py");
+      QString optstr("ahvdDmMsP:Y:l:py");
 #ifdef VST_SUPPORT
       optstr += QString("V");
 #endif
@@ -3783,6 +3785,7 @@ int main(int argc, char* argv[])
                   case 'I': loadDSSI = false; break;
                   case 'L': useLASH = false; break;
                   case 'y': usePythonBridge = true; break;
+                  case 'l': locale_override = QString(optarg); break;
                   case 'h': usage(argv[0], argv[1]); return -1;
                   default:  usage(argv[0], "bad argument"); return -1;
                   }
@@ -3871,9 +3874,11 @@ int main(int argc, char* argv[])
 
       static QTranslator translator(0);
       QString locale(QApplication::keyboardInputLocale().name());
+      if (locale_override.length())
+            locale = locale_override;
       if (locale != "C") {
             QString loc("muse_");
-            loc += QString(QApplication::keyboardInputLocale().name());
+            loc += locale;
             if (translator.load(loc, QString(".")) == false) {
                   QString lp(museGlobalShare);
                   lp += QString("/locale");

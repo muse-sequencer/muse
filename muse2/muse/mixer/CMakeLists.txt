@@ -19,11 +19,11 @@
 #=============================================================================
 
 QT4_WRAP_CPP ( mixer_mocs amixer.h strip.h astrip.h mstrip.h meter.h rack.h panknob.h auxknob.h routedialog.h )
-QT4_WRAP_UI ( mixer_uis routedialogbase.ui )
 
-add_library ( mixer STATIC 
-      ${mixer_mocs}
-      ${mixer_uis}
+file (GLOB UI_FILES routedialogbase.ui )
+QT4_WRAP_UI ( mixer_uis ${UI_FILES} )
+
+file (GLOB SOURCE_FILES
       amixer.cpp  
       meter.cpp 
       rack.cpp 
@@ -32,6 +32,14 @@ add_library ( mixer STATIC
       routedialog.cpp 
       strip.cpp astrip.cpp mstrip.cpp
       )
+
+add_library ( mixer STATIC 
+      ${SOURCE_FILES}
+      ${mixer_mocs}
+      ${mixer_uis}
+      )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
 set_target_properties ( mixer
    PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"

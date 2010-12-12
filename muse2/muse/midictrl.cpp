@@ -155,7 +155,7 @@ QString midiCtrlName(int ctrl)
 //---------------------------------------------------------
 
 MidiController::MidiController()
-   : _name(QString(QT_TR_NOOP("Velocity")))
+   : _name(QString(QT_TRANSLATE_NOOP("@default", "Velocity")))
       {
       _num     = CTRL_VELOCITY;
       _minVal  = 0;

@@ -54,6 +54,10 @@ set(awl_src
       awl.cpp utils.cpp  ${mocCPP} ${moc_headers}
       )
 
+# TODO: Better filtering
+file (GLOB SOURCE_FILES *.cpp *.h )
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+
 add_library (
       awl
       STATIC

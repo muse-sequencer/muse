@@ -49,16 +49,18 @@ QT4_WRAP_CPP ( marker_mocs
         markerview.h
       )
 
-# QT4_WRAP_UI ( marker_ui_headers
-# QT4_WRAP_UI3 ( marker_ui_headers
-#       )
-
-add_library ( marker STATIC
-        # ${marker_ui_headers}
-        ${marker_mocs}
+file (GLOB SOURCE_FILES
         marker.cpp marker.h 
         markerview.cpp # markerview.h
+        )
+
+add_library ( marker STATIC
+        ${SOURCE_FILES}
+        # ${marker_ui_headers}
+        ${marker_mocs}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
 set_target_properties( marker
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"

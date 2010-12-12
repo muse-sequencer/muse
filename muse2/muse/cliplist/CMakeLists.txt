@@ -22,16 +22,19 @@ QT4_WRAP_CPP (cliplist_mocs
         cliplist.h
       )
 
-#QT4_WRAP_UI (cliplist_ui_headers
-# QT4_WRAP_UI3 (cliplist_ui_headers
-#       )
-
-add_library ( cliplist STATIC
+file (GLOB SOURCE_FILES
       cliplist.cpp 
       cliplist.h
+      )
+
+add_library ( cliplist STATIC
+      ${SOURCE_FILES}
       ${cliplist_mocs}
       # ${cliplist_ui_headers}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+
 set_target_properties( cliplist
   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
   )

@@ -36,8 +36,8 @@
 # set ( CMAKE_LDD_FLAGS -module -avoid-version )
 
 
-
-QT4_WRAP_UI ( mplugins_uis midifilter.ui mrconfigbase.ui )
+file (GLOB UI_FILES midifilter.ui mrconfigbase.ui )
+QT4_WRAP_UI ( mplugins_uis ${UI_FILES} )
 
 if ( ENABLE_EXPERIMENTAL )
       QT4_WRAP_UI ( mplugins_experimental_uis rhythmbase.ui)
@@ -50,18 +50,24 @@ endif ( ENABLE_EXPERIMENTAL )
 
 QT4_WRAP_CPP ( mplugins_mocs  mittranspose.h midiitransform.h midifilterimpl.h mrconfig.h ${experimental_hdrs} )
 
-# add_library ( mplugins SHARED 
-add_library ( mplugins STATIC 
+file (GLOB SOURCE_FILES
       mitplugin.cpp mitplugin.h 
       mittranspose.cpp 
       midiitransform.cpp 
       midifilterimpl.cpp 
       mrconfig.cpp 
       random.cpp random.h 
+      )
+
+# add_library ( mplugins SHARED 
+add_library ( mplugins STATIC 
+      ${SOURCE_FILES}
       ${mplugins_mocs}
       ${mplugins_uis}
       ${experimental_srcs}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
 add_dependencies(mplugins widgets)
 

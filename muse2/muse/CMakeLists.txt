@@ -38,23 +38,6 @@ endif (ENABLE_PYTHON)
 
 subdirs (${SubDirs})
 
-#QT4_WRAP_UI  (muse_ui_headers
-# QT4_WRAP_UI3  (muse_ui_headers
-#       preferences.ui
-#       exportmididialog.ui
-#       configmidifile.ui
-#       transport.ui
-#       aboutbox.ui
-#       transpose.ui
-#       projectpropsdialog.ui
-#       projectdialog.ui
-#       templatedialog.ui
-#       importmidi.ui
-#       routedialog.ui
-#       configtrack.ui
-#       midiportinfo.ui
-#       miditrackinfo.ui
-#       )
 
 QT4_WRAP_CPP ( muse_moc_headers
 #       projectpropsdialog.h
@@ -119,12 +102,7 @@ QT4_ADD_RESOURCES (muse_qrc_files
 		  muse.qrc
 		  )
 
-add_executable ( muse
-      ${muse_qrc_files}
-      ${muse_moc_headers}
-      # ${muse_ui_headers}
-      ${PROJECT_BINARY_DIR}/all.h.pch
-
+file (GLOB SOURCE_FILES
 #       ticksynth.cpp
 #       vst.cpp
 #       dssihost.cpp
@@ -280,6 +258,18 @@ add_executable ( muse
       fastlog.h 
       default_click.h
       )
+
+add_executable ( muse
+      ${muse_qrc_files}
+      ${muse_moc_headers}
+      # ${muse_ui_headers}
+      ${PROJECT_BINARY_DIR}/all.h.pch
+      ${SOURCE_FILES}
+      )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+
+add_dependencies(muse translations)
 
 # AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
 # EXEC_PROGRAM( svnversion

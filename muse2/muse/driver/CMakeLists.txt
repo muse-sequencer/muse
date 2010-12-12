@@ -18,12 +18,19 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-add_library ( driver STATIC
+file (GLOB SOURCE_FILES
        audiodev.h alsamidi.cpp alsamidi.h jack.cpp jackaudio.h 
        dummyaudio.cpp alsatimer.cpp alsatimer.h timerdev.h rtctimer.cpp rtctimer.h 
        jackmidi.cpp jackmidi.h
+       )
+
+add_library ( driver STATIC
        # ${PROJECT_BINARY_DIR}/all.h.pch
-      )
+       ${SOURCE_FILES}
+       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+
 set_target_properties( driver
   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
   )

@@ -23,20 +23,30 @@ QT4_WRAP_CPP ( instruments_mocs
    editinstrument.h
    )
 
-QT4_WRAP_UI ( instruments_ui_headers
+file (GLOB UI_FILES
       editinstrumentbase.ui
+      )
+
+QT4_WRAP_UI ( instruments_ui_headers
+      ${UI_FILES}
       )
 
 # Note that ccontrollerbase.ui is not built. It needs to be converted to Qt4 for revival.
 
-add_library ( instruments STATIC
+file (GLOB SOURCE_FILES
    minstrument.cpp
    editinstrument.cpp
    minstrument.h
    editinstrument.h
+   )
+
+add_library ( instruments STATIC
+   ${SOURCE_FILES}
    ${instruments_mocs}
    ${instruments_ui_headers}
    )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
 set_target_properties( instruments
    PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"

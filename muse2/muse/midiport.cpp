@@ -285,7 +285,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
 const QString& MidiPort::portname() const
       {
       //static const QString none("<none>");
-      static const QString none(QT_TR_NOOP("<none>"));
+      static const QString none(QT_TRANSLATE_NOOP("@default", "<none>"));
       if (_device)
             return _device->name();
       else
@@ -1015,15 +1015,15 @@ void MidiPort::writeRouting(int level, Xml& xml) const
         {
           //xml.tag(level++, "Route");
           
-          s = QT_TR_NOOP("Route");
+          s = QT_TRANSLATE_NOOP("@default", "Route");
           if(r->channel != -1 && r->channel != 0)  
-            s += QString(QT_TR_NOOP(" channelMask=\"%1\"")).arg(r->channel);  // Use new channel mask.
+            s += QString(QT_TRANSLATE_NOOP("@default", " channelMask=\"%1\"")).arg(r->channel);  // Use new channel mask.
           xml.tag(level++, s.toLatin1().constData());
           
           xml.tag(level, "source mport=\"%d\"/", portno());
           
-          s = QT_TR_NOOP("dest");
-          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
+          s = QT_TRANSLATE_NOOP("@default", "dest");
+          s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(Xml::xmlString(r->name()));
           xml.tag(level, s.toLatin1().constData());
           
           xml.etag(level--, "Route");

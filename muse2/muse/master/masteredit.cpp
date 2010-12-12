@@ -119,7 +119,7 @@ MasterEdit::MasterEdit()
       info->addWidget(tempo);
 
       const char* rastval[] = {
-            QT_TR_NOOP("Off"), "Bar", "1/2", "1/4", "1/8", "1/16"
+            QT_TRANSLATE_NOOP("@default", "Off"), "Bar", "1/2", "1/4", "1/8", "1/16"
             };
       rasterLabel = new LabelCombo(tr("Snap"), 0);
       rasterLabel->setFocusPolicy(Qt::NoFocus);
