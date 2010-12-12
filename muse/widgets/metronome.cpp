@@ -68,7 +68,7 @@ void MetronomeConfig::audioBeepRoutesClicked()
       int nn = 0;
       for(iAudioOutput iao = ol->begin(); iao != ol->end(); ++iao)
       {
-        QAction* action = pup->addAction(QT_TR_NOOP((*iao)->name()));
+        QAction* action = pup->addAction(QT_TRANSLATE_NOOP("@default", (*iao)->name()));
         action->setCheckable(true);
         action->setData(nn);
         if((*iao)->sendMetronome())

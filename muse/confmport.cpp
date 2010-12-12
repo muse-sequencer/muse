@@ -410,11 +410,11 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       QAction* act;
                       
                       // Could do it this way...
-                      //act = pup->addAction(tr("Create") + QT_TR_NOOP(" Jack") + tr(" input"));
-                      //act = pup->addAction(tr("Create") + QT_TR_NOOP(" Jack") + tr(" output"));
-                      //act = pup->addAction(tr("Create") + QT_TR_NOOP(" Jack") + tr(" combo"));
+                      //act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" input"));
+                      //act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" output"));
+                      //act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" combo"));
                       // ... or keep it simple and let the user click on the green lights instead.
-                      act = pup->addAction(tr("Create") + QT_TR_NOOP(" Jack") + tr(" device"));
+                      act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" device"));
                       act->setData(0);
                       
                       typedef std::map<std::string, int > asmap;
@@ -460,7 +460,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       //if(!mapALSA.empty())
                       {
                         pup->addSeparator();
-                        pup->addAction(new MenuTitleItem(QT_TR_NOOP("ALSA:"), pup));
+                        pup->addAction(new MenuTitleItem(QT_TRANSLATE_NOOP("@default", "ALSA:"), pup));
                         
                         for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
                         {
@@ -475,7 +475,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                             if(md->deviceType() != MidiDevice::ALSA_MIDI)  
                               continue;
                               
-                            act = pup->addAction(QT_TR_NOOP(md->name()));
+                            act = pup->addAction(QT_TRANSLATE_NOOP("@default", md->name()));
                             act->setData(idx);
                             act->setCheckable(true);
                             act->setChecked(md == dev);
@@ -486,7 +486,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       if(!mapSYNTH.empty())
                       {
                         pup->addSeparator();
-                        pup->addAction(new MenuTitleItem(QT_TR_NOOP("SYNTH:"), pup));
+                        pup->addAction(new MenuTitleItem(QT_TRANSLATE_NOOP("@default", "SYNTH:"), pup));
                         
                         for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
                         {
@@ -501,7 +501,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                             if(md->deviceType() != MidiDevice::SYNTH_MIDI)  
                               continue;
                               
-                            act = pup->addAction(QT_TR_NOOP(md->name()));
+                            act = pup->addAction(QT_TRANSLATE_NOOP("@default", md->name()));
                             act->setData(idx);
                             act->setCheckable(true);
                             act->setChecked(md == dev);
@@ -512,7 +512,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       //if(!mapJACK.empty())
                       {
                         pup->addSeparator();
-                        pup->addAction(new MenuTitleItem(QT_TR_NOOP("JACK:"), pup));
+                        pup->addAction(new MenuTitleItem(QT_TRANSLATE_NOOP("@default", "JACK:"), pup));
                         
                         for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
                         {
@@ -527,7 +527,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                             if(md->deviceType() != MidiDevice::JACK_MIDI)  
                               continue;
                               
-                            act = pup->addAction(QT_TR_NOOP(md->name()));
+                            act = pup->addAction(QT_TRANSLATE_NOOP("@default", md->name()));
                             act->setData(idx);
                             act->setCheckable(true);
                             act->setChecked(md == dev);

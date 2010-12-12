@@ -35,12 +35,12 @@
 #include "gconfig.h"
 #include "app.h"
 
-static const char* recordTransportText   = QT_TR_NOOP("Click this button to enable recording");
-static const char* stopTransportText     = QT_TR_NOOP("Click this button to stop playback");
-static const char* playTransportText     = QT_TR_NOOP("Click this button to start playback");
-static const char* startTransportText    = QT_TR_NOOP("Click this button to rewind to start position");
-static const char* frewindTransportText  = QT_TR_NOOP("Click this button to rewind");
-static const char* fforwardTransportText = QT_TR_NOOP("Click this button to forward current play position");
+static const char* recordTransportText   = QT_TRANSLATE_NOOP("@default", "Click this button to enable recording");
+static const char* stopTransportText     = QT_TRANSLATE_NOOP("@default", "Click this button to stop playback");
+static const char* playTransportText     = QT_TRANSLATE_NOOP("@default", "Click this button to start playback");
+static const char* startTransportText    = QT_TRANSLATE_NOOP("@default", "Click this button to rewind to start position");
+static const char* frewindTransportText  = QT_TRANSLATE_NOOP("@default", "Click this button to rewind");
+static const char* fforwardTransportText = QT_TRANSLATE_NOOP("@default", "Click this button to forward current play position");
 
 //---------------------------------------------------------
 //   toolButton

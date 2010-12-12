@@ -2949,7 +2949,7 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
       for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
       {
         //QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
-        //subp->insertItem(QT_TR_NOOP(QString("Channel %1").arg(ch+1)), i * MIDI_CHANNELS + ch);
+        //subp->insertItem(QT_TRANSLATE_NOOP("@default", QString("Channel %1").arg(ch+1)), i * MIDI_CHANNELS + ch);
         gid = i * MIDI_CHANNELS + ch;
         
         //printf("MidiStrip::iRoutePressed inserting gid:%d\n", gid);
@@ -2972,7 +2972,7 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
           }
         }
       }
-      pup->insertItem(QT_TR_NOOP(md->name()), subp);
+      pup->insertItem(QT_TRANSLATE_NOOP("@default", md->name()), subp);
     }
         
 //    QPopupMenu* pup = new QPopupMenu(iR);
@@ -3039,7 +3039,7 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
           }  
           
           //QString s(pup->text(n));
-          //QT_TR_NOOP(md->name())
+          //QT_TRANSLATE_NOOP("@default", md->name())
           
           //Route srcRoute(s, false, -1);
           Route aRoute(md, ch);

@@ -222,9 +222,9 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
         {
           //xml.tag(level++, "Route");
           
-          s = QT_TR_NOOP("Route");
+          s = QT_TRANSLATE_NOOP("@default", "Route");
           if(r->channel != -1)
-            s += QString(QT_TR_NOOP(" channel=\"%1\"")).arg(r->channel);
+            s += QString(QT_TRANSLATE_NOOP("@default", " channel=\"%1\"")).arg(r->channel);
           xml.tag(level++, s.toLatin1().constData());
           
           /*
@@ -258,14 +258,14 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
           }
           */
           
-          s = QT_TR_NOOP("dest");
+          s = QT_TRANSLATE_NOOP("@default", "dest");
           if(r->type == Route::MIDI_DEVICE_ROUTE)
-            s += QString(QT_TR_NOOP(" devtype=\"%1\"")).arg(r->device->deviceType());
+            s += QString(QT_TRANSLATE_NOOP("@default", " devtype=\"%1\"")).arg(r->device->deviceType());
           else
           if(r->type != Route::TRACK_ROUTE)
-            s += QString(QT_TR_NOOP(" type=\"%1\"")).arg(r->type);
-          //s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(r->name());
-          s += QString(QT_TR_NOOP(" name=\"%1\"/")).arg(Xml::xmlString(r->name()));
+            s += QString(QT_TRANSLATE_NOOP("@default", " type=\"%1\"")).arg(r->type);
+          //s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(r->name());
+          s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(Xml::xmlString(r->name()));
           xml.tag(level, s.toLatin1().constData());
           
           xml.etag(level--, "Route");

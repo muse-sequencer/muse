@@ -80,6 +80,8 @@ option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface (OSC also re
 option ( ENABLE_VST         "enable VST/win support"                                         OFF)
 option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"                            ON)
 option ( ENABLE_EXPERIMENTAL "enable building experimental features"                         OFF)
+option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files 
+         (WARNING: This will modify the .ts files in the source tree!!)"                     OFF)
 
 ##
 ## Just print a notice if this is OS X

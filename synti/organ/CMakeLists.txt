@@ -20,19 +20,25 @@
 
 QT4_WRAP_CPP ( organ_mocs organgui.h )
 
-QT4_WRAP_UI (  organ_uis organguibase.ui )
+file (GLOB UI_FILES organguibase.ui )
+QT4_WRAP_UI ( organ_uis ${UI_FILES} )
 
-add_library ( organ SHARED
+file (GLOB SOURCE_FILES
       organ.cpp
       organgui.cpp
       # reverb.cpp
       # routing.cpp
       # organgui.h
-      ${PROJECT_SOURCE_DIR}/muse/xml.cpp
+      )
 
+add_library ( organ SHARED
+      ${PROJECT_SOURCE_DIR}/muse/xml.cpp
+      ${SOURCE_FILES}
       ${organ_mocs}
       ${organ_uis}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
 # - tell cmake to name target organ.so instead of
 #   liborgan.so

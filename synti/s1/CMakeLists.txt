@@ -18,7 +18,10 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-add_library ( s1 SHARED s1.cpp )
+file (GLOB SOURCE_FILES s1.cpp )
+add_library ( s1 SHARED ${SOURCE_FILES} )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
 # target_link_libraries( s1 synti )
 

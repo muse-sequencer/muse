@@ -57,16 +57,16 @@ PluginList plugins;
 
 /*
 static const char* preset_file_pattern[] = {
-      QT_TR_NOOP("Presets (*.pre *.pre.gz *.pre.bz2)"),
-      QT_TR_NOOP("All Files (*)"),
+      QT_TRANSLATE_NOOP("@default", "Presets (*.pre *.pre.gz *.pre.bz2)"),
+      QT_TRANSLATE_NOOP("@default", "All Files (*)"),
       0
       };
 
 static const char* preset_file_save_pattern[] = {
-      QT_TR_NOOP("Presets (*.pre)"),
-      QT_TR_NOOP("gzip compressed presets (*.pre.gz)"),
-      QT_TR_NOOP("bzip2 compressed presets (*.pre.bz2)"),
-      QT_TR_NOOP("All Files (*)"),
+      QT_TRANSLATE_NOOP("@default", "Presets (*.pre)"),
+      QT_TRANSLATE_NOOP("@default", "gzip compressed presets (*.pre.gz)"),
+      QT_TRANSLATE_NOOP("@default", "bzip2 compressed presets (*.pre.bz2)"),
+      QT_TRANSLATE_NOOP("@default", "All Files (*)"),
       0
       };
 */

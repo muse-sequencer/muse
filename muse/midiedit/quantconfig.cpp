@@ -14,11 +14,11 @@
 
 #include "quantconfig.h"
 
-const char* wtStrengthTxt = QT_TR_NOOP("sets amount of quantization:\n"
+const char* wtStrengthTxt = QT_TRANSLATE_NOOP("@default", "sets amount of quantization:\n"
                             "0   - no quantization\n"
                             "100 - full quantization");
-const char* wtQLimitTxt = QT_TR_NOOP("don't quantize notes above this tick limit");
-const char* wtQLenTxt   = QT_TR_NOOP("quantize also note len as default");
+const char* wtQLimitTxt = QT_TRANSLATE_NOOP("@default", "don't quantize notes above this tick limit");
+const char* wtQLenTxt   = QT_TRANSLATE_NOOP("@default", "quantize also note len as default");
 
 //---------------------------------------------------------
 //   QuantConfig

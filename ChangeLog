@@ -1,3 +1,11 @@
+12.12.2010:
+        - Integrated the translation system into cmake. Added a -DUPDATE_TRANSLATIONS flag to cmake
+          which will update the .ts files in the source tree with the newest strings. I used this to
+          update the existing translations. Also I removed the .qm files from the SVN, as they will
+          be now installed from the build tree. (Orcan)
+        - Added a -l flag to the muse executable to override the locale detection, mostly for testing
+          purposes. (Orcan)
+        - Updated the Russian translation thanks to Alex, alex54m -> mail.ru
 11.12.2010:
       * Feature: Added default midi track in/out channels to midi ports list. (Tim)
         - For now, the boxes use the old text channel strings ("1 3 5", "1-5", "all, "none" etc.)

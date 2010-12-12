@@ -19,9 +19,11 @@
 #=============================================================================
 
 QT4_WRAP_CPP ( simpledrums_mocs simpledrumsgui.h ssplugingui.h )
-QT4_WRAP_UI (  simpledrums_uis simpledrumsguibase.ui sspluginchooserbase.ui )
 
-add_library ( simpledrums SHARED
+file (GLOB UI_FILES simpledrumsguibase.ui sspluginchooserbase.ui )
+QT4_WRAP_UI ( simpledrums_uis ${UI_FILES} )
+
+file (GLOB SOURCE_FILES
       simpledrums.cpp
       simpledrumsgui.cpp
       simpledrums.h
@@ -29,9 +31,15 @@ add_library ( simpledrums SHARED
       ssplugingui.cpp
       ssplugin.h
       common.h
+      )
+
+add_library ( simpledrums SHARED
+      ${SOURCE_FILES}
       ${simpledrums_mocs}
       ${simpledrums_uis}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
 # - tell cmake to name target simpledrums.so instead of
 #   libsimpledrums.so

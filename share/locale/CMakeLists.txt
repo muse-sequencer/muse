@@ -18,4 +18,17 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/locale .*\\.qm )
+file (GLOB TRANSLATIONS_FILES *.ts)
+
+if (UPDATE_TRANSLATIONS)
+      qt4_create_translation(QM_FILES ${FILES_TO_TRANSLATE} ${TRANSLATIONS_FILES})
+else (UPDATE_TRANSLATIONS)
+      qt4_add_translation(QM_FILES ${TRANSLATIONS_FILES})
+endif (UPDATE_TRANSLATIONS)
+
+add_custom_target (translations DEPENDS ${QM_FILES})
+#add_dependencies(translations muse)
+
+#install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/locale .*\\.qm )
+install(FILES ${QM_FILES} DESTINATION
+      ${CMAKE_INSTALL_PREFIX}/${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/locale)

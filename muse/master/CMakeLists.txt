@@ -47,18 +47,21 @@ QT4_WRAP_CPP ( master_mocs
         tscale.h
       )
 
-# QT4_WRAP_UI ( master_ui_headers
-# QT4_WRAP_UI3 ( master_ui_headers
-#       )
 
-add_library ( master STATIC
-        # ${master_ui_headers}
-        ${master_mocs}
+file (GLOB SOURCE_FILES
         lmaster.cpp # lmaster.h 
         masteredit.cpp # masteredit.h 
         master.cpp # master.h 
         tscale.cpp # tscale.h
+        )
+
+add_library ( master STATIC
+        ${SOURCE_FILES}
+        # ${master_ui_headers}
+        ${master_mocs}
       )
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
 set_target_properties( master
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
