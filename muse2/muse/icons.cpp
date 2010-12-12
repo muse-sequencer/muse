@@ -28,6 +28,7 @@
 #include "xpm/midi_inputplugins_random_rhythm_generator.xpm"
 #include "xpm/midi_local_off.xpm"
 #include "xpm/midi_reset_instr.xpm"
+#include "xpm/midi_connector_red_border.xpm"
 #include "xpm/settings_appearance_settings.xpm"
 #include "xpm/settings_configureshortcuts.xpm"
 #include "xpm/settings_follow_song.xpm"
@@ -246,6 +247,7 @@ QPixmap* localoffSIcon;
 QPixmap* miditransformSIcon;
 QPixmap* midi_plugSIcon;
 QPixmap* miditransposeSIcon;
+QPixmap* midiConnectorRedBorderIcon;
 QPixmap* mixerSIcon;
 QPixmap* mustangSIcon;
 QPixmap* resetSIcon;
@@ -597,6 +599,7 @@ void initIcons()
       miditransformSIcon   = new MPIXMAP(miditransformS_xpm, NULL);
       midi_plugSIcon       = new MPIXMAP(midi_plugS_xpm, NULL);
       miditransposeSIcon   = new MPIXMAP(miditransposeS_xpm, NULL);
+      midiConnectorRedBorderIcon = new MPIXMAP(midi_connector_red_border_xpm, NULL);      
       mixerSIcon           = new MPIXMAP(mixerS_xpm, NULL);
       mustangSIcon         = new MPIXMAP(mustangS_xpm, NULL);
       resetSIcon           = new MPIXMAP(resetS_xpm, NULL);

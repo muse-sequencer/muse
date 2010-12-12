@@ -154,6 +154,7 @@ extern QPixmap* localoffSIcon;
 extern QPixmap* miditransformSIcon;
 extern QPixmap* midi_plugSIcon;
 extern QPixmap* miditransposeSIcon;
+extern QPixmap* midiConnectorRedBorderIcon;
 extern QPixmap* mixerSIcon;
 extern QPixmap* mustangSIcon;
 extern QPixmap* resetSIcon;
