@@ -3590,6 +3590,33 @@ class MuseApplication : public QApplication {
       };
 
 //---------------------------------------------------------
+//   localeList
+//---------------------------------------------------------
+
+static QString localeList()
+      {
+      // Find out what translations are available:
+      QStringList deliveredLocaleListFiltered;
+      QString distLocale = QString(INSTPREFIX) + "/" + SHAREINSTPREFIX + "/"
+                           + INSTALL_NAME + "/locale";
+      QFileInfo distLocaleFi(distLocale);
+      if (distLocaleFi.isDir()) {
+            QDir dir = QDir(distLocale);
+            QStringList deliveredLocaleList = dir.entryList();
+            for(QStringList::iterator it = deliveredLocaleList.begin(); it != deliveredLocaleList.end(); ++it) {
+                  QString item = *it;
+                  if (item.endsWith(".qm")) {
+                        int inipos = item.indexOf("muse_") + 5;
+                        int finpos = item.lastIndexOf(".qm");
+                        deliveredLocaleListFiltered << item.mid(inipos, finpos - inipos);
+                        }
+                  }
+            return deliveredLocaleListFiltered.join(",");
+            }
+      return QString("No translations found!");
+      }
+
+//---------------------------------------------------------
 //   usage
 //---------------------------------------------------------
 
@@ -3621,7 +3648,7 @@ static void usage(const char* prog, const char* txt)
 #ifdef HAVE_LASH
       fprintf(stderr, "   -L       don't use LASH\n");
 #endif
-      fprintf(stderr, "   -l xx    force locale given by language/country code (de, sv_SE, ...)");
+      fprintf(stderr, "   -l  xx   force locale to the given language/country code (xx = %s)\n", localeList().toLatin1().constData());
       fprintf(stderr, "useful environment variables:\n");
       fprintf(stderr, "   MUSE             override library and shared directories location\n");
       fprintf(stderr, "   MUSEHOME         override user home directory (HOME/)\n");
