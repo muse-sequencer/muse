@@ -1,3 +1,5 @@
+13.12.2010:
+        - List the available locales in the --help output. (Orcan)
 12.12.2010:
         - Integrated the translation system into cmake. Added a -DUPDATE_TRANSLATIONS flag to cmake
           which will update the .ts files in the source tree with the newest strings. I used this to
