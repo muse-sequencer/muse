@@ -100,8 +100,12 @@ QString midiMetaName(int meta)
 QString nameSysex(unsigned int len, const unsigned char* buf)
       {
       QString s;
+      if(len == 0)
+        return s;
       switch(buf[0]) {
             case 0x00:
+                  if(len < 3)
+                    return s;
                   if (buf[1] == 0 && buf[2] == 0x41)
                         s = "Microsoft";
                   break;

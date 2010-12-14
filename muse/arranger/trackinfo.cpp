@@ -33,7 +33,6 @@
 #include "route.h"
 #include "popupmenu.h"
 
-
 //---------------------------------------------------------
 //   midiTrackInfoHeartBeat
 //---------------------------------------------------------
@@ -174,14 +173,15 @@ void Arranger::midiTrackInfoHeartBeat()
         else
         {
           MidiInstrument* instr = mp->instrument();
-          const char* name = instr->getPatchName(outChannel, nprogram, song->mtype(), track->type() == Track::DRUM);
-          if(!name)
+          QString name = instr->getPatchName(outChannel, nprogram, song->mtype(), track->type() == Track::DRUM);
+          if(name.isEmpty())
           {
-            if(midiTrackInfo->iPatch->text() != ("???"))
-              midiTrackInfo->iPatch->setText("???");
+            const QString n("???");
+            if(midiTrackInfo->iPatch->text() != n)
+              midiTrackInfo->iPatch->setText(n);
           }
           else
-          if(strcmp(midiTrackInfo->iPatch->text().toLatin1().constData(), name) != 0)
+          if(midiTrackInfo->iPatch->text() != name)
           {
             //printf("Arranger::midiTrackInfoHeartBeat setting patch name\n");
           
@@ -202,9 +202,9 @@ void Arranger::midiTrackInfoHeartBeat()
             //else 
             //{
                   MidiInstrument* instr = mp->instrument();
-                  const char* name = instr->getPatchName(outChannel, program, song->mtype(), track->type() == Track::DRUM);
-                  if(strcmp(midiTrackInfo->iPatch->text().toLatin1().constData(), name) != 0)
-                    midiTrackInfo->iPatch->setText(QString(name));
+                  QString name = instr->getPatchName(outChannel, program, song->mtype(), track->type() == Track::DRUM);
+                  if(midiTrackInfo->iPatch->text() != name)
+                    midiTrackInfo->iPatch->setText(name);
 
                   int hb = ((program >> 16) & 0xff) + 1;
                   if (hb == 0x100)
@@ -714,8 +714,7 @@ void Arranger::iProgHBankChanged()
       audio->msgPlayMidiEvent(&ev);
       
       MidiInstrument* instr = mp->instrument();
-      const char* name = instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM);
-      midiTrackInfo->iPatch->setText(QString(name));
+      midiTrackInfo->iPatch->setText(instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM));
 //      updateTrackInfo();
       }
 
@@ -791,8 +790,7 @@ void Arranger::iProgLBankChanged()
       audio->msgPlayMidiEvent(&ev);
       
       MidiInstrument* instr = mp->instrument();
-      const char* name = instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM);
-      midiTrackInfo->iPatch->setText(QString(name));
+      midiTrackInfo->iPatch->setText(instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM));
 //      updateTrackInfo();
       }
 
@@ -868,8 +866,7 @@ void Arranger::iProgramChanged()
         audio->msgPlayMidiEvent(&ev);
         
         MidiInstrument* instr = mp->instrument();
-        const char* name = instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM);
-        midiTrackInfo->iPatch->setText(QString(name));
+        midiTrackInfo->iPatch->setText(instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM));
       }
         
 //      updateTrackInfo();
@@ -1363,8 +1360,7 @@ void Arranger::updateMidiTrackInfo(int flags)
           else
           {
             MidiInstrument* instr = mp->instrument();
-            const char* name = instr->getPatchName(outChannel, nprogram, song->mtype(), track->type() == Track::DRUM);
-            midiTrackInfo->iPatch->setText(QString(name));
+            midiTrackInfo->iPatch->setText(instr->getPatchName(outChannel, nprogram, song->mtype(), track->type() == Track::DRUM));
           }         
         }
         else
@@ -1380,8 +1376,7 @@ void Arranger::updateMidiTrackInfo(int flags)
               //else 
               //{
                     MidiInstrument* instr = mp->instrument();
-                    const char* name = instr->getPatchName(outChannel, program, song->mtype(), track->type() == Track::DRUM);
-                    midiTrackInfo->iPatch->setText(QString(name));
+                    midiTrackInfo->iPatch->setText(instr->getPatchName(outChannel, program, song->mtype(), track->type() == Track::DRUM));
 
                     int hb = ((program >> 16) & 0xff) + 1;
                     if (hb == 0x100)

@@ -86,6 +86,8 @@ char* hex2string(QWidget* parent, const char* src, int& len)
                   }
             }
       len = dst - buffer;
+      if(len == 0)
+        return 0;
       char* b = new char[len+1];
       memcpy(b, buffer, len);
       b[len] = 0;
@@ -805,8 +807,7 @@ void EditCtrlDialog::updatePatch()
       int port              = track->outPort();
       int channel           = track->outChannel();
       MidiInstrument* instr = midiPorts[port].instrument();
-      const char* name = instr->getPatchName(channel, val, song->mtype(), track->type() == Track::DRUM);
-      patchName->setText(QString(name));
+      patchName->setText(instr->getPatchName(channel, val, song->mtype(), track->type() == Track::DRUM));
 
       int hb = ((val >> 16) & 0xff) + 1;
       if (hb == 0x100)
