@@ -48,7 +48,7 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
       toolBar->addAction(QWhatsThis::createAction(this));
       Help->addAction(QWhatsThis::createAction(this));
 
-      patchpopup = new QMenu(patchButton);
+      ///patchpopup = new QMenu(patchButton);
       //patchpopup->setCheckable(false);// Qt4 doc says this is unnecessary.
       
       // populate instrument list
@@ -1435,14 +1435,16 @@ void EditInstrument::patchButtonClicked()
       //int port    = track->outPort();
       //MidiInstrument* instr = midiPorts[port].instrument();
       
-      patchpopup->clear();
+      //patchpopup->clear();
 
+      QMenu* patchpopup = new QMenu;
+      
       PatchGroupList* pg = workingInstrument.groups();
       
       if (pg->size() > 1) {
             for (ciPatchGroup i = pg->begin(); i != pg->end(); ++i) {
                   PatchGroup* pgp = *i;
-                  QMenu* pm = new QMenu(pgp->name);
+                  QMenu* pm = patchpopup->addMenu(pgp->name);
                   //pm->setCheckable(false);//Qt4 doc says this is unnecessary
                   pm->setFont(config.fonts[0]);
                   const PatchList& pl = pgp->patches;
@@ -1460,7 +1462,6 @@ void EditInstrument::patchButtonClicked()
                         //    }
                               
                         }
-                        patchpopup->addMenu(pm);
                   }
             }
       else if (pg->size() == 1 ){
@@ -1478,10 +1479,20 @@ void EditInstrument::patchButtonClicked()
             }
 
       if(patchpopup->actions().count() == 0)
+      {
+        delete patchpopup;
         return;
-
+      }
+      
       QAction* act = patchpopup->exec(patchButton->mapToGlobal(QPoint(10,5)));
+      if(!act)
+      {
+        delete patchpopup;
+        return;
+      }
+      
       int rv = act->data().toInt();
+      delete patchpopup;
 
       if (rv != -1) 
       {

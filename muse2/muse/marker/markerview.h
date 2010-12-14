@@ -57,7 +57,7 @@ class MarkerView : public TopWin {
       Awl::PosEdit* editTick;
       QToolButton* lock;
       QToolBar* tools;
-
+      
       Q_OBJECT
       virtual void closeEvent(QCloseEvent*);
 
@@ -73,7 +73,7 @@ class MarkerView : public TopWin {
       void clicked(QTreeWidgetItem*);
       void updateList();
       void songChanged(int);
-
+      
    signals:
       void deleted(unsigned long);
       void closed();

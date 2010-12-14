@@ -1851,6 +1851,7 @@ void DeicsOnzeGui::categoryPopupMenu(const QPoint&) {
   categoryMenu->addAction(tr("Delete set"),
 			  this, SLOT(deleteSetDialog()));;
   categoryMenu->exec(QCursor::pos());
+  delete categoryMenu; // Tim.
 }
 void DeicsOnzeGui::subcategoryPopupMenu(const QPoint&) {
   QTreeWidgetItem* sub = subcategoryListView->currentItem();
@@ -1877,6 +1878,7 @@ void DeicsOnzeGui::subcategoryPopupMenu(const QPoint&) {
     loadItem->setEnabled(false);	
   }	
   subcategoryMenu->exec(QCursor::pos());
+  delete subcategoryMenu; // Tim.
 }
 void DeicsOnzeGui::presetPopupMenu(const QPoint&) {
   QTreeWidgetItem* pre = presetListView->currentItem();
@@ -1899,6 +1901,7 @@ void DeicsOnzeGui::presetPopupMenu(const QPoint&) {
     loadItem->setEnabled(false);	
   }	
   presetMenu->exec(QCursor::pos());
+  delete presetMenu;   // Tim.
 }
 
 //-----------------------------------------------------------

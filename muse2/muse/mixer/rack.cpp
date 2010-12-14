@@ -236,8 +236,14 @@ void EffectRack::menuRequested(QListWidgetItem* it)
 
       //delete menu;
       if (!act)
-            return;
+      {
+        delete menu;
+        return;
+      }      
+      
       int sel = act->data().toInt();
+      delete menu;
+      
       switch(sel) {
             case NEW:
                   {

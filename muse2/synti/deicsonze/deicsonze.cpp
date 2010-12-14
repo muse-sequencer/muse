@@ -160,6 +160,14 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _reverbFilter = new LowFilter();
   _delayFilter = new LowFilter();
   
+  // Moved here from below due to crash - _preset not initialized when loadConfiguration called. Tim.
+  _initialPreset = new 
+    Preset(new Subcategory(new Category(NULL, "NONE", 0), "NONE", 0), 0);
+  for(int c = 0; c < NBRCHANNELS; c++) {
+    _preset[c]=_initialPreset;
+    setPreset(c);
+  }
+  
   //Load configuration
   QString defaultConf = 
     (QString(getenv("HOME")) + QString("/." DEICSONZESTR ".dco"));
@@ -176,12 +184,14 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   
   //loadSutulaPresets();
   
-  _initialPreset = new 
-    Preset(new Subcategory(new Category(NULL, "NONE", 0), "NONE", 0), 0);
-  for(int c = 0; c < NBRCHANNELS; c++) {
-    _preset[c]=_initialPreset;
-    setPreset(c);
-  }
+  // Moved above due to crash - _preset not initialized when loadConfiguration called. Tim.
+  //_initialPreset = new 
+  //  Preset(new Subcategory(new Category(NULL, "NONE", 0), "NONE", 0), 0);
+  //for(int c = 0; c < NBRCHANNELS; c++) {
+  //  _preset[c]=_initialPreset;
+  //  setPreset(c);
+  //}
+  
   //update display gui
   //update mastervol
   unsigned char dataMasterVol[2];

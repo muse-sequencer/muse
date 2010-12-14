@@ -69,9 +69,8 @@ LMaster::LMaster()
       setFixedWidth(400);
 
       //---------Pulldown Menu----------------------------
-      menuEdit = new QMenu(tr("&Edit"));
+      menuEdit = menuBar()->addMenu(tr("&Edit"));
       QSignalMapper *signalMapper = new QSignalMapper(this);
-      menuBar()->addMenu(menuEdit);
       menuEdit->addActions(undoRedo->actions());
       menuEdit->addSeparator();
       tempoAction = menuEdit->addAction(tr("Insert Tempo"));

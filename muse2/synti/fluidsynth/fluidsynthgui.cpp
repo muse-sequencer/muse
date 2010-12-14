@@ -554,6 +554,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
                         item->setText(index == 0 ? "No" : "Yes" );
                         }
 	          }
+            delete popup;
             }
       }
 

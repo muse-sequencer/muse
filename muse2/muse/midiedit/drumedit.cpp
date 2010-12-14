@@ -154,8 +154,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       QSignalMapper *signalMapper = new QSignalMapper(this);
       
       //---------Pulldown Menu----------------------------
-      menuFile = new QMenu(tr("&File"));
-      menuBar()->addMenu(menuFile);
+      menuFile = menuBar()->addMenu(tr("&File"));
 
       loadAction = menuFile->addAction(QIcon(*openIcon), tr("Load Map"));
       saveAction = menuFile->addAction(QIcon(*saveIcon), tr("Save Map"));
@@ -169,8 +168,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       signalMapper->setMapping(saveAction, DrumCanvas::CMD_SAVE);
       signalMapper->setMapping(resetAction, DrumCanvas::CMD_RESET);
 
-      menuEdit = new QMenu(tr("&Edit"));
-      menuBar()->addMenu(menuEdit);
+      menuEdit = menuBar()->addMenu(tr("&Edit"));
       menuEdit->addActions(undoRedo->actions());
       
       menuEdit->addSeparator();
@@ -221,8 +219,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       signalMapper->setMapping(nextAction, DrumCanvas::CMD_SELECT_NEXT_PART);
 
       // Functions
-      menuFunctions = new QMenu(tr("&Functions"));
-      menuBar()->addMenu(menuFunctions);
+      menuFunctions = menuBar()->addMenu(tr("&Functions"));
       
       menuFunctions->setTearOffEnabled(true);
       
@@ -235,9 +232,8 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       signalMapper->setMapping(fixedAction, DrumCanvas::CMD_FIXED_LEN);
       signalMapper->setMapping(veloAction, DrumCanvas::CMD_MODIFY_VELOCITY);
 
-      QMenu* menuScriptPlugins = new QMenu(tr("&Plugins"));
+      QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Plugins"));
       song->populateScriptMenu(menuScriptPlugins, this);
-      menuBar()->addMenu(menuScriptPlugins);
 
       connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 

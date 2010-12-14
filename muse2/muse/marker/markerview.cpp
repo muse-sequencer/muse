@@ -164,8 +164,8 @@ MarkerView::MarkerView(QWidget* parent)
       QMenu* fileMenu = new QMenu(tr("&File"));
       menuBar()->addMenu(fileMenu);
       */
-      QMenu* editMenu = new QMenu(tr("&Edit"));
-      menuBar()->addMenu(editMenu);
+      QMenu* editMenu = menuBar()->addMenu(tr("&Edit"));
+      
       editMenu->addAction(markerAdd);
       editMenu->addAction(markerDelete);
 
@@ -274,7 +274,7 @@ MarkerView::MarkerView(QWidget* parent)
 
 MarkerView::~MarkerView()
       {
-      //printf("MarkerView::~MarkerView() before undoRedo->removeFrom(tools)\n");
+      //printf("MarkerView::~MarkerView() before undoRedo->removeFrom(tools)\n");  
       
       // undoRedo->removeFrom(tools);   // p4.0.6 Removed
       }

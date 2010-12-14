@@ -983,7 +983,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(recordAction, SIGNAL(toggled(bool)), song, SLOT(setRecord(bool)));
 
       panicAction = new QAction(QIcon(*panicIcon),
-         tr("Panic"), 0);
+         tr("Panic"), this);
 
       panicAction->setWhatsThis(tr(infoPanicButton));
       connect(panicAction, SIGNAL(activated()), song, SLOT(panic()));
@@ -1004,7 +1004,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       fileOpenAction->setToolTip(tr(fileOpenText));
       fileOpenAction->setWhatsThis(tr(fileOpenText));
 
-      openRecent = new QMenu(tr("Open &Recent"));
+      openRecent = new QMenu(tr("Open &Recent"), this);
 
       fileSaveAction = new QAction(QIcon(*saveIcon), tr("&Save"), this); 
 
@@ -1033,9 +1033,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
 
 
-      addTrack = new QMenu(tr("Add Track"));
+      addTrack = new QMenu(tr("Add Track"), this);
       addTrack->setIcon(QIcon(*edit_track_addIcon));
-      select = new QMenu(tr("Select"));
+      select = new QMenu(tr("Select"), this);
       select->setIcon(QIcon(*selectIcon));
 
       editSelectAllAction = new QAction(QIcon(*select_allIcon), tr("Select &All"), this);
@@ -1050,12 +1050,12 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List"), this);
       startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave"), this);
 
-      master = new QMenu(tr("Mastertrack"));
+      master = new QMenu(tr("Mastertrack"), this);
       master->setIcon(QIcon(*edit_mastertrackIcon));
       masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic"), this);
       masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List"), this);
 
-      midiEdit = new QMenu(tr("Midi"));
+      midiEdit = new QMenu(tr("Midi"), this);
       midiEdit->setIcon(QIcon(*edit_midiIcon));
 
       midiTransposeAction = new QAction(QIcon(*midi_transposeIcon), tr("Transpose"), this);
@@ -1087,9 +1087,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       strCutEventsAction->setEnabled(false);
 
       //-------- Midi Actions
-      menuScriptPlugins = new QMenu(tr("&Plugins"));
+      menuScriptPlugins = new QMenu(tr("&Plugins"), this);
       midiEditInstAction = new QAction(QIcon(*midi_edit_instrumentIcon), tr("Edit Instrument"), this);
-      midiInputPlugins = new QMenu(tr("Input Plugins"));
+      midiInputPlugins = new QMenu(tr("Input Plugins"), this);
       midiInputPlugins->setIcon(QIcon(*midi_inputpluginsIcon));
       midiTrpAction = new QAction(QIcon(*midi_inputplugins_transposeIcon), tr("Transpose"), this);
       midiInputTrfAction = new QAction(QIcon(*midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform"), this);
@@ -1117,7 +1117,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //-------- Settings Actions
       settingsGlobalAction = new QAction(QIcon(*settings_globalsettingsIcon), tr("Global Settings"), this);
       settingsShortcutsAction = new QAction(QIcon(*settings_configureshortcutsIcon), tr("Configure shortcuts"), this);
-      follow = new QMenu(tr("follow song"));
+      follow = new QMenu(tr("follow song"), this);
       dontFollowAction = new QAction(tr("dont follow Song"), this);
       dontFollowAction->setCheckable(true);
       followPageAction = new QAction(tr("follow page"), this);

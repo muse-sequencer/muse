@@ -69,7 +69,8 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       selCtrl->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
       selCtrl->setToolTip(tr("select controller"));
-      pop = new QMenu;
+      
+      ///pop = new QMenu;
 
       // destroy button
       QPushButton* destroy = new QPushButton(tr("X"));
@@ -537,7 +538,8 @@ void CtrlPanel::ctrlPopup()
       int curDrumInstrument = editor->curDrumInstrument();
       bool isDrum      = track->type() == Track::DRUM;
 
-      pop->clear();
+      QMenu* pop = new QMenu;
+      //pop->clear();
       pop->addAction(tr("Velocity"))->setData(1);
       
       MidiCtrlValListList* cll = port->controller();
@@ -593,10 +595,15 @@ void CtrlPanel::ctrlPopup()
       selCtrl->setDown(false);
 
       if (!act)
-            return;
-
+      {
+        delete pop;
+        return;
+      }
+      
       int rv = act->data().toInt();
       QString s = act->text();
+      delete pop;
+      
       if (rv == 1) {    // special case velocity
             emit controllerChanged(CTRL_VELOCITY);
             }
@@ -646,9 +653,10 @@ void CtrlPanel::ctrlPopup()
                               }
                         }
                   }
+            delete pop1;   
             }
       else {
-            QString s = act->text();
+            ///QString s = act->text();
             iMidiCtrlValList i = cll->begin();
             for (; i != cll->end(); ++i) {
                   MidiCtrlValList* cl = i->second;
