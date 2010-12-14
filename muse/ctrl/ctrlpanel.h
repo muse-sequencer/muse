@@ -26,7 +26,7 @@ class MidiTrack;
 //---------------------------------------------------------
 
 class CtrlPanel: public QWidget {
-      QMenu* pop;
+      ///QMenu* pop;
       QPushButton* selCtrl;
       MidiEditor* editor;
       

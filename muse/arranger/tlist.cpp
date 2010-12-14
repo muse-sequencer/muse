@@ -591,23 +591,23 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
         QMenu* p = new QMenu;
         QAction* act = p->addAction(tr("Show Gui"));
         act->setCheckable(true);
-        printf("synth hasgui %d, gui visible %d\n",synth->hasGui(), synth->guiVisible());
+        //printf("synth hasgui %d, gui visible %d\n",synth->hasGui(), synth->guiVisible());
         act->setEnabled(synth->hasGui());
         act->setChecked(synth->guiVisible());
   
+        // If it has a gui but we don't have OSC, disable the action.
         #ifndef OSC_SUPPORT
         #ifdef DSSI_SUPPORT
         if(dynamic_cast<DssiSynthIF*>(synth->sif()))
         {
-            printf("entering this wierd if statement\n");
-          p->setItemChecked(0, false);
-          p->setItemEnabled(0, false);
+          act->setChecked(false);
+          act->setEnabled(false);
         }  
         #endif
         #endif
         
-        act = p->exec(mapToGlobal(QPoint(x, y)), 0);
-        if (act) {
+        QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), 0);
+        if (ract == act) {
               bool show = !synth->guiVisible();
               audio->msgShowInstrumentGui(synth, show);
               }
@@ -624,10 +624,11 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
       QMenu* p = new QMenu;
       QAction* act = p->addAction(tr("Show Gui"));
       act->setCheckable(true);
-      printf("synth hasgui %d, gui visible %d\n",port->hasGui(), port->guiVisible());
+      //printf("synth hasgui %d, gui visible %d\n",port->hasGui(), port->guiVisible());
       act->setEnabled(port->hasGui());
       act->setChecked(port->guiVisible());
 
+      // If it has a gui but we don't have OSC, disable the action.
       #ifndef OSC_SUPPORT
       #ifdef DSSI_SUPPORT
       MidiDevice* dev = port->device();
@@ -639,8 +640,8 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
       #endif
       #endif
       
-      act = p->exec(mapToGlobal(QPoint(x, y)), 0);
-      if (act) {
+      QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), 0);
+      if (ract == act) {
             bool show = !port->guiVisible();
             audio->msgShowInstrumentGui(port->instrument(), show);
             }
@@ -783,7 +784,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
       if (t == 0) {
             if (button == Qt::RightButton) {
                   QMenu* p = new QMenu;
-                  p->clear();
+                  //p->clear();
                   QAction* midi = p->addAction(*addtrack_addmiditrackIcon,
 					       tr("Add Midi Track"));
 		  midi->setData(Track::MIDI);
@@ -994,7 +995,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   else if (button == Qt::RightButton) {
                         mode = NORMAL;
                         QMenu* p = new QMenu;
-                        p->clear();
+                        //p->clear();
                         p->addAction(QIcon(*automation_clear_dataIcon), tr("Delete Track"))->setData(0); // ddskrjo
                         p->addAction(QIcon(*track_commentIcon), tr("Track Comment"))->setData(1);
                         QAction* act = p->exec(ev->globalPos(), 0);

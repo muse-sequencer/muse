@@ -990,17 +990,28 @@ void Arranger::instrPopup()
       int channel = track->outChannel();
       int port    = track->outPort();
       MidiInstrument* instr = midiPorts[port].instrument();
-      instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
+      QMenu* pup = new QMenu;
+      ///instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
+      instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM);
 
-      if(pop->actions().count() == 0)
+      ///if(pop->actions().count() == 0)
+      ///  return;
+      if(pup->actions().count() == 0)
+      {
+        delete pup;
         return;
-      QAction *act = pop->exec(midiTrackInfo->iPatch->mapToGlobal(QPoint(10,5)));
+      }  
+      
+      ///QAction *act = pop->exec(midiTrackInfo->iPatch->mapToGlobal(QPoint(10,5)));
+      QAction *act = pup->exec(midiTrackInfo->iPatch->mapToGlobal(QPoint(10,5)));
       if (act) {
             int rv = act->data().toInt();
             MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, rv);
             audio->msgPlayMidiEvent(&ev);
             updateTrackInfo(-1);
             }
+            
+      delete pup;      
       }
 
 //---------------------------------------------------------
@@ -1228,7 +1239,7 @@ void Arranger::genMidiTrackInfo()
 
       connect(midiTrackInfo->iPatch, SIGNAL(released()), SLOT(instrPopup()));
 
-      pop = new QMenu(midiTrackInfo->iPatch);
+      ///pop = new QMenu(midiTrackInfo->iPatch);
       //pop->setCheckable(false); // not needed in Qt4
 
       // Removed by Tim. p3.3.9

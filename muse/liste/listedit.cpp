@@ -430,15 +430,10 @@ ListEdit::ListEdit(PartList* pl)
 
       //---------Pulldown Menu----------------------------
       
-      menuEdit = new QMenu(tr("&Edit"));
       QSignalMapper *editSignalMapper = new QSignalMapper(this);
     
-      menuBar()->addMenu(menuEdit);
+      menuEdit = menuBar()->addMenu(tr("&Edit"));
       menuEdit->addActions(undoRedo->actions());
-
-      ///Q3Accel* qa = new Q3Accel(this);
-      ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
-      ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
 
       menuEdit->addSeparator();
 #if 0

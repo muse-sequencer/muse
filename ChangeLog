@@ -1,5 +1,9 @@
 13.12.2010:
         - List the available locales in the --help output. (Orcan)
+        - Fixed audio/midi control right-click automation popups were greyed out due to typo. (Tim)
+        - Fixed some QMenu usages without parent and/or delete. (Tim)
+        - DeicsOnze: Fixed: Crash in ctor, _preset not init. by time loadConfiguration called. Re-arranged. 
+          And 3 popup QMenu usages without delete. Test OK. (Tim)
 12.12.2010:
         - Integrated the translation system into cmake. Added a -DUPDATE_TRANSLATIONS flag to cmake
           which will update the .ts files in the source tree with the newest strings. I used this to

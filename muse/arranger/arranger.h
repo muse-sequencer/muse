@@ -98,7 +98,7 @@ class Arranger : public QWidget {
       QToolButton* ib;
       int trackInfoType;
       Splitter* split;
-      QMenu* pop;
+      ///QMenu* pop;
       int songType;
       PosLabel* cursorPos;
       SpinBox* globalTempoSpinBox;

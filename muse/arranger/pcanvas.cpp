@@ -750,8 +750,8 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       partPopup->addSeparator();
       QAction *act_rename = partPopup->addAction(tr("rename"));
       act_rename->setData(0);
-      QMenu* colorPopup = new QMenu(tr("color"));
-      partPopup->addMenu(colorPopup);
+      
+      QMenu* colorPopup = partPopup->addMenu(tr("color"));
 
       // part color selection
       //const QFontMetrics& fm = colorPopup->fontMetrics();

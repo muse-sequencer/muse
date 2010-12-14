@@ -94,7 +94,7 @@ class EditCtrlDialog : public QDialog, public Ui::EditCtrlBase  {
       int val;          // controller value (for prog. changes)
 
       const MidiPart* part;
-      QMenu* pop;
+      ///QMenu* pop;
 
       void updatePatch();
 

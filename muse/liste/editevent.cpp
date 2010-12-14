@@ -593,7 +593,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
             val = event.dataB();
             }
 
-      pop = new QMenu(this);
+      ///pop = new QMenu(this);
       //pop->setCheckable(false);//not necessary in Qt4
 
       MidiTrack* track   = part->track();
@@ -677,8 +677,8 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
 
 void EditCtrlDialog::newController()
       {
-      QMenu* pop = new QMenu(this);
-      //pop->setCheckable(this);//not necessary in Qt4
+      QMenu* pup = new QMenu(this);
+      //pup->setCheckable(this);//not necessary in Qt4
       //
       // populate popup with all controllers available for
       // current instrument
@@ -696,12 +696,12 @@ void EditCtrlDialog::newController()
       {
             if(cll->find(channel, ci->second->num()) == cll->end())
             {
-                    QAction* act = pop->addAction(ci->second->name());
+                    QAction* act = pup->addAction(ci->second->name());
 		    act->setData(nn);
 		    ++nn;
 	    }
       }
-      QAction* rv = pop->exec(buttonNewController->mapToGlobal(QPoint(0,0)));
+      QAction* rv = pup->exec(buttonNewController->mapToGlobal(QPoint(0,0)));
       if (rv) {
             QString s = rv->text();
             for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
@@ -733,7 +733,7 @@ void EditCtrlDialog::newController()
                         }
                   }
             }
-      delete pop;
+      delete pup;
       }
 //---------------------------------------------------------
 //   ctrlListClicked
@@ -841,16 +841,27 @@ void EditCtrlDialog::instrPopup()
       int channel = track->outChannel();
       int port    = track->outPort();
       MidiInstrument* instr = midiPorts[port].instrument();
-      instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
+      
+      ///instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
+      QMenu* pup = new QMenu(this);
+      instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM);
 
-      if(pop->actions().count() == 0)
+      ///if(pop->actions().count() == 0)
+      ///  return;
+      if(pup->actions().count() == 0)
+      {
+        delete pup;
         return;
-      QAction* rv = new QAction(pop->exec(patchName->mapToGlobal(QPoint(10,5))));
+      }  
+      
+      ///QAction* rv = pop->exec(patchName->mapToGlobal(QPoint(10,5)));
+      QAction* rv = pup->exec(patchName->mapToGlobal(QPoint(10,5)));
       if (rv) {
             val = rv->data().toInt();
             updatePatch();
             }
-      delete rv;
+            
+      delete pup;      
       }
 
 //---------------------------------------------------------

@@ -2437,6 +2437,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   //menu->setItemEnabled(HEADER, false);
   //MenuTitleItem* title = new MenuTitleItem(tr("Automation:")); ddskrjo
   //menu->insertItem(title, HEADER, HEADER); ddskrjo
+  menu->addAction(new MenuTitleItem(tr("Automation:"), menu));
   
   //menu->insertSeparator(SEP1);
   
@@ -2451,7 +2452,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   //menu->insertSeparator(SEP2);
   menu->addSeparator();
 
-  QAction* addEvent = new QAction(this);
+  QAction* addEvent = new QAction(menu);
   menu->addAction(addEvent);
   if(isEvent)
     addEvent->setText(tr("set event"));
@@ -2462,7 +2463,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
 
   QAction* eraseEventAction = menu->addAction(tr("erase event"));
   eraseEventAction->setData(CLEAR_EVENT);
-  menu->setEnabled(isEvent);
+  eraseEventAction->setEnabled(isEvent);
 
   QAction* eraseRangeAction = menu->addAction(tr("erase range"));
   eraseRangeAction->setData(CLEAR_RANGE);
@@ -2474,13 +2475,18 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
 
   QAction* act = menu->exec(menupos);
   //delete menu;
-  if (!act)
+  if (!act || !track)
+  {
+    delete menu;
     return -1;
+  }
   
-  if(!track)
-    return -1;
+  //if(!track)
+  //  return -1;
 
   int sel = act->data().toInt();
+  delete menu;
+  
   switch(sel)
   {
     case ADD_EVENT:
@@ -2513,9 +2519,8 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
           return -1;
     break;      
   }
+  
   return sel;
-
-  return 0;
 }
 
 //---------------------------------------------------------
@@ -2630,7 +2635,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
 
 //  menu->insertSeparator(SEP2);
 
-  QAction* addEvent = new QAction(this);
+  QAction* addEvent = new QAction(menu);
   menu->addAction(addEvent);
   if(isEvent)
     addEvent->setText(tr("set event"));
@@ -2642,7 +2647,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
 
   QAction* eraseEventAction = menu->addAction(tr("erase event"));
   eraseEventAction->setData(CLEAR_EVENT);
-  menu->setEnabled(isEvent);
+  eraseEventAction->setEnabled(isEvent);
 
 //  menu->insertItem(tr("erase range"), CLEAR_RANGE, CLEAR_RANGE);
 //  menu->setItemEnabled(CLEAR_RANGE, canEraseRange);
@@ -2654,12 +2659,17 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   QAction* act = menu->exec(menupos);
   //delete menu;
   if (!act)
+  {
+    delete menu;
     return -1;
-
+  }
+  
   //if(!part)
   //  return -1;
   
   int sel = act->data().toInt();
+  delete menu;
+  
   switch(sel)
   {
     case ADD_EVENT:
@@ -2739,8 +2749,6 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   }
   
   return sel;
-
-  return 0;
 }
 
 //---------------------------------------------------------

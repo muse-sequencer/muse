@@ -44,7 +44,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void setDefaultPatchControls(int);
       const char* getPatchName(int);
       void deleteInstrument(QListWidgetItem*);
-      QMenu* patchpopup;
+      ///QMenu* patchpopup;
       
    private slots:
       virtual void fileNew();
