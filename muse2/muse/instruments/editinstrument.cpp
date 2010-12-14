@@ -3478,9 +3478,8 @@ void EditInstrument::enableDefaultControls(bool enVal, bool enPatch)
 
 void EditInstrument::setDefaultPatchName(int val)
 {
-  const char* patchname = getPatchName(val);
   patchButton->blockSignals(true);
-  patchButton->setText(QString(patchname));
+  patchButton->setText(getPatchName(val));
   patchButton->blockSignals(false);
 }
 
@@ -3553,7 +3552,7 @@ void EditInstrument::setDefaultPatchControls(int val)
 //   getPatchName
 //---------------------------------------------------------
 
-const char* EditInstrument::getPatchName(int prog)
+QString EditInstrument::getPatchName(int prog)
 {
       int pr = prog & 0xff;
       if(prog == CTRL_VAL_UNKNOWN || pr == 0xff)
@@ -3579,7 +3578,7 @@ const char* EditInstrument::getPatchName(int prog)
                     //&& (lbank == mp->lbank || !lb || mp->lbank == -1))
                     && (hbank == mp->hbank || mp->hbank == -1)
                     && (lbank == mp->lbank || mp->lbank == -1))
-                        return mp->name.toLatin1().constData();
+                        return mp->name;
                   }
             }
       return "---";

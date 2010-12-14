@@ -212,7 +212,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       Synth* synth() const          { return synthesizer; }
       virtual bool isSynti() const  { return true; }
 
-      virtual const char* getPatchName(int ch, int prog, MType t, bool dr) {
+      //virtual const char* getPatchName(int ch, int prog, MType t, bool dr) {
+      virtual QString getPatchName(int ch, int prog, MType t, bool dr) {
             return _sif->getPatchName(ch, prog, t, dr);
             }
             

@@ -1,3 +1,6 @@
+14.12.2010:
+        - Fixed corruption on track info instrument patch button due to latin1() conversions. (Tim)
+          Changed MidiInstrument::getPatchName() and EditInstrument::getPatchName() to return QString.
 13.12.2010:
         - List the available locales in the --help output. (Orcan)
         - Fixed audio/midi control right-click automation popups were greyed out due to typo. (Tim)

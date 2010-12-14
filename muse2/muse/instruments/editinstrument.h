@@ -42,7 +42,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       int getDefaultPatchNumber();
       void setDefaultPatchNumbers(int);
       void setDefaultPatchControls(int);
-      const char* getPatchName(int);
+      QString getPatchName(int);
       void deleteInstrument(QListWidgetItem*);
       ///QMenu* patchpopup;
       
