@@ -68,5 +68,5 @@ install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ fluidsyn
 # FIXME: Won't work
 # install_files ( /${MusE_INSTALL_NAME}/synthi TODO README.txt )
 
-install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/synthi TODO )
-install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/synthi README.txt )
+install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/synthi/fluidsynth TODO )
+install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/synthi/fluidsynth README.txt )

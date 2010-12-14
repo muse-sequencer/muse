@@ -713,7 +713,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/sawUp.png</iconset>
+              <iconset>:/pics/sawUp.png</iconset>
              </property>
             </item>
             <item>
@@ -721,7 +721,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/square.png</iconset>
+              <iconset>:/pics/square.png</iconset>
              </property>
             </item>
             <item>
@@ -729,7 +729,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/triangl.png</iconset>
+              <iconset>:/pics/triangl.png</iconset>
              </property>
             </item>
             <item>
@@ -737,7 +737,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/SHold.png</iconset>
+              <iconset>:/pics/SHold.png</iconset>
              </property>
             </item>
            </widget>
@@ -932,7 +932,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/algo1.png</iconset>
+              <iconset>:/pics/algo1.png</iconset>
              </property>
             </item>
             <item>
@@ -940,7 +940,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/algo3.png</iconset>
+              <iconset>:/pics/algo3.png</iconset>
              </property>
             </item>
             <item>
@@ -948,7 +948,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/algo3.png</iconset>
+              <iconset>:/pics/algo3.png</iconset>
              </property>
             </item>
             <item>
@@ -956,7 +956,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/algo4.png</iconset>
+              <iconset>:/pics/algo4.png</iconset>
              </property>
             </item>
             <item>
@@ -964,7 +964,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/algo5.png</iconset>
+              <iconset>:/pics/algo5.png</iconset>
              </property>
             </item>
             <item>
@@ -972,7 +972,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/algo6.png</iconset>
+              <iconset>:/pics/algo6.png</iconset>
              </property>
             </item>
             <item>
@@ -980,7 +980,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/algo7.png</iconset>
+              <iconset>:/pics/algo7.png</iconset>
              </property>
             </item>
             <item>
@@ -988,7 +988,7 @@
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/algo8.png</iconset>
+              <iconset>:/pics/algo8.png</iconset>
              </property>
             </item>
            </widget>
@@ -1575,7 +1575,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave1.png</iconset>
+              <iconset>:/pics/wave1.png</iconset>
              </property>
             </item>
             <item>
@@ -1583,7 +1583,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave2.png</iconset>
+              <iconset>:/pics/wave2.png</iconset>
              </property>
             </item>
             <item>
@@ -1591,7 +1591,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave3.png</iconset>
+              <iconset>:/pics/wave3.png</iconset>
              </property>
             </item>
             <item>
@@ -1599,7 +1599,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave4.png</iconset>
+              <iconset>:/pics/wave4.png</iconset>
              </property>
             </item>
             <item>
@@ -1607,7 +1607,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave5.png</iconset>
+              <iconset>:/pics/wave5.png</iconset>
              </property>
             </item>
             <item>
@@ -1615,7 +1615,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave6.png</iconset>
+              <iconset>:/pics/wave6.png</iconset>
              </property>
             </item>
             <item>
@@ -1623,7 +1623,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave7.png</iconset>
+              <iconset>:/pics/wave7.png</iconset>
              </property>
             </item>
             <item>
@@ -1631,7 +1631,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave8.png</iconset>
+              <iconset>:/pics/wave8.png</iconset>
              </property>
             </item>
            </widget>
@@ -2560,7 +2560,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave1.png</iconset>
+              <iconset>:/pics/wave1.png</iconset>
              </property>
             </item>
             <item>
@@ -2568,7 +2568,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave2.png</iconset>
+              <iconset>:/pics/wave2.png</iconset>
              </property>
             </item>
             <item>
@@ -2576,7 +2576,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave3.png</iconset>
+              <iconset>:/pics/wave3.png</iconset>
              </property>
             </item>
             <item>
@@ -2584,7 +2584,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave4.png</iconset>
+              <iconset>:/pics/wave4.png</iconset>
              </property>
             </item>
             <item>
@@ -2592,7 +2592,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave5.png</iconset>
+              <iconset>:/pics/wave5.png</iconset>
              </property>
             </item>
             <item>
@@ -2600,7 +2600,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave6.png</iconset>
+              <iconset>:/pics/wave6.png</iconset>
              </property>
             </item>
             <item>
@@ -2608,7 +2608,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave7.png</iconset>
+              <iconset>:/pics/wave7.png</iconset>
              </property>
             </item>
             <item>
@@ -2616,7 +2616,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave8.png</iconset>
+              <iconset>:/pics/wave8.png</iconset>
              </property>
             </item>
            </widget>
@@ -3374,7 +3374,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave1.png</iconset>
+              <iconset>:/pics/wave1.png</iconset>
              </property>
             </item>
             <item>
@@ -3382,7 +3382,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave2.png</iconset>
+              <iconset>:/pics/wave2.png</iconset>
              </property>
             </item>
             <item>
@@ -3390,7 +3390,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave3.png</iconset>
+              <iconset>:/pics/wave3.png</iconset>
              </property>
             </item>
             <item>
@@ -3398,7 +3398,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave4.png</iconset>
+              <iconset>:/pics/wave4.png</iconset>
              </property>
             </item>
             <item>
@@ -3406,7 +3406,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave5.png</iconset>
+              <iconset>:/pics/wave5.png</iconset>
              </property>
             </item>
             <item>
@@ -3414,7 +3414,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave6.png</iconset>
+              <iconset>:/pics/wave6.png</iconset>
              </property>
             </item>
             <item>
@@ -3422,7 +3422,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave7.png</iconset>
+              <iconset>:/pics/wave7.png</iconset>
              </property>
             </item>
             <item>
@@ -3430,7 +3430,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave8.png</iconset>
+              <iconset>:/pics/wave8.png</iconset>
              </property>
             </item>
            </widget>
@@ -4182,7 +4182,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave1.png</iconset>
+              <iconset>:/pics/wave1.png</iconset>
              </property>
             </item>
             <item>
@@ -4190,7 +4190,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave2.png</iconset>
+              <iconset>:/pics/wave2.png</iconset>
              </property>
             </item>
             <item>
@@ -4198,7 +4198,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave3.png</iconset>
+              <iconset>:/pics/wave3.png</iconset>
              </property>
             </item>
             <item>
@@ -4206,7 +4206,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave4.png</iconset>
+              <iconset>:/pics/wave4.png</iconset>
              </property>
             </item>
             <item>
@@ -4214,7 +4214,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave5.png</iconset>
+              <iconset>:/pics/wave5.png</iconset>
              </property>
             </item>
             <item>
@@ -4222,7 +4222,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave6.png</iconset>
+              <iconset>:/pics/wave6.png</iconset>
              </property>
             </item>
             <item>
@@ -4230,7 +4230,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave7.png</iconset>
+              <iconset>:/pics/wave7.png</iconset>
              </property>
             </item>
             <item>
@@ -4238,7 +4238,7 @@ Wave form 8 = &lt;i>if &lt;b>t&lt;/b>&amp;#060 pi then sin(2*&lt;b>t&lt;/b>)*sin
               <string/>
              </property>
              <property name="icon" >
-              <iconset>pics/wave8.png</iconset>
+              <iconset>:/pics/wave8.png</iconset>
              </property>
             </item>
            </widget>

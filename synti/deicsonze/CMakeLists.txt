@@ -25,6 +25,10 @@ QT4_WRAP_CPP ( deicsonze_mocs deicsonzegui.h )
 file (GLOB UI_FILES deicsonzegui.ui )
 QT4_WRAP_UI ( deicsonze_uis ${UI_FILES} )
 
+QT4_ADD_RESOURCES (deicsonze_qrc_files
+                  deicsonze.qrc
+                  )
+
 file (GLOB SOURCE_FILES
       deicsonze.cpp
       deicsonzepreset.cpp
@@ -40,6 +44,7 @@ add_library ( deicsonze SHARED
       ${PROJECT_BINARY_DIR}/all-pic.h.pch
       ${deicsonze_mocs}
       ${deicsonze_uis}
+      ${deicsonze_qrc_files}
       )
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")

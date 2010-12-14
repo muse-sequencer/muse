@@ -4,6 +4,7 @@
         - Fixed some QMenu usages without parent and/or delete. (Tim)
         - DeicsOnze: Fixed: Crash in ctor, _preset not init. by time loadConfiguration called. Re-arranged. 
           And 3 popup QMenu usages without delete. Test OK. (Tim)
+        - Deicsonze: Fixed all missing icons throughout. Added qrc file, changed ui file. Looks nice now. (Tim) 
 12.12.2010:
         - Integrated the translation system into cmake. Added a -DUPDATE_TRANSLATIONS flag to cmake
           which will update the .ts files in the source tree with the newest strings. I used this to
