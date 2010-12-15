@@ -7,14 +7,10 @@
 
 #include <values.h>
 
-#include <qpainter.h>
-#include <qtooltip.h>
-//Added by qt3to4:
-#include <QEvent>
 #include <QMouseEvent>
+#include <QPainter>
 
 #include "al/sig.h"  // Tim.
-
 #include "globals.h"
 #include "midieditor.h"
 #include "sigscale.h"

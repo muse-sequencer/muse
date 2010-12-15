@@ -9,7 +9,6 @@
 #ifndef __EVENT_H__
 #define __EVENT_H__
 
-#include <qstring.h>
 #include <map>
 //#include <samplerate.h>
 #include <sys/types.h>
@@ -19,6 +18,8 @@
 #include "evdata.h"
 
 enum EventType { Note, Controller, Sysex, PAfter, CAfter, Meta, Wave };
+
+class QString;
 
 class Xml;
 class EventBase;

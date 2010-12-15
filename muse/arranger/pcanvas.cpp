@@ -13,26 +13,12 @@
 #include <uuid/uuid.h>
 #include <math.h>
 
-#include <qapplication.h>
-#include <qclipboard.h>
-#include <qpainter.h>
-#include <qpoint.h>
-#include <qlineedit.h>
-#include <qmessagebox.h>
-#include <qmenudata.h>
-
-#include <QByteArray>
-#include <QMimeData>
-#include <QDrag>
-
-//Added by qt3to4:
-#include <QDragLeaveEvent>
-#include <QMouseEvent>
-#include <QDragEnterEvent>
-#include <QKeyEvent>
-#include <QEvent>
-#include <QDropEvent>
-#include <QDragMoveEvent>
+#include <QClipboard>
+#include <QLineEdit>
+#include <QMenu>
+#include <QMessageBox>
+#include <QPainter>
+#include <QUrl>
 
 #include "widgets/tools.h"
 #include "pcanvas.h"

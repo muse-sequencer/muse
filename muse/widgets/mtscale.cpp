@@ -7,19 +7,11 @@
 
 #include <values.h>
 
-#include <qpainter.h>
-#include <qtooltip.h>
-#include <qcursor.h>
-//Added by qt3to4:
-#include <QPixmap>
 #include <QMouseEvent>
-#include <QEvent>
+#include <QPainter>
+
 #include "mtscale.h"
-#include "midieditor.h"
-#include "globals.h"
 #include "song.h"
-#include "../marker/marker.h"
-#include "../marker/markerview.h"
 #include "icons.h"
 #include "gconfig.h"
 

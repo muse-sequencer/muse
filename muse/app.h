@@ -13,13 +13,17 @@
 #include "cobject.h"
 #include "tools.h"
 
+#include <QFileInfo>
+
 class QCloseEvent;
-class QFileInfo;
 class QFocusEvent;
 class QMainWindow;
 class QMenu;
 class QPoint;
 class QRect;
+class QScrollArea;
+class QSignalMapper;
+class QString;
 class QToolBar;
 class QToolButton;
 

@@ -8,7 +8,6 @@
 
 #include <sndfile.h>
 #include <errno.h>
-#include <qlayout.h>
 #include <stdio.h>
 
 #include "app.h"

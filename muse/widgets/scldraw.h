@@ -14,15 +14,12 @@
 #ifndef __SCLDRAW_H__
 #define __SCLDRAW_H__
 
-#include <qglobal.h>
-#include <qstring.h>
 #include "dimap.h"
 #include "scldiv.h"
-#include <qfont.h>
-#include <qrect.h>
-#include <qcolor.h>
 
 class QPainter;
+class QRect;
+
 class AutoScale;
 
 class ScaleDraw : public DiMap {

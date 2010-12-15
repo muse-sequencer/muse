@@ -15,6 +15,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QPoint>
+#include <QSignalMapper>
 #include <QTextStream>
 
 #include "app.h"

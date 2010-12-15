@@ -15,8 +15,8 @@
 
 #include <cmath>
 #include <list>
-#include <qmessagebox.h>
-#include <stdio.h>
+
+#include <QMessageBox>
 
 #include "libsynti/mono.h"
 

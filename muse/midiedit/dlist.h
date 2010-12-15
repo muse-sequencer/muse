@@ -8,13 +8,14 @@
 #ifndef __DLIST_H__
 #define __DLIST_H__
 
+#include <QKeyEvent>
 #include <QLineEdit>
 
 #include "view.h"
 
 #define TH  18                // normal Track-hight
 
-class QKeyEvent;
+class QHeaderView;
 class QMouseEvent;
 class QPainter;
 

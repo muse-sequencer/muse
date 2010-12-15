@@ -5,15 +5,12 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include "config.h"
-
-#include "noteinfo.h"
-#include <QLayout>
 #include <QLabel>
 
+#include "config.h"
+#include "noteinfo.h"
 #include "awl/posedit.h"
 //#include "awl/pitchedit.h"
-
 #include "song.h"
 #include "globals.h"
 ///#include "posedit.h"

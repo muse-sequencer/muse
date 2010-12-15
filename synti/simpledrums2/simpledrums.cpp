@@ -15,7 +15,7 @@
 //#include "libsynti/mpevent.h"
 #include "muse/mpevent.h"   
 #include "simpledrums.h"
-// #include <qstring.h>
+
 #include <samplerate.h>
 
 const char* SimpleSynth::synth_state_descr[] =

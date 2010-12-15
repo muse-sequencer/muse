@@ -21,6 +21,8 @@
 #ifndef __SIG_H__
 #define __SIG_H__
 
+#include <map>
+
 #include "../muse/xml.h"
 class Xml;
 

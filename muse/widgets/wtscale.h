@@ -9,11 +9,6 @@
 #define __MTSCALE_H__
 
 #include "view.h"
-//Added by qt3to4:
-#include <QMouseEvent>
-#include <QEvent>
-
-class QPainter;
 
 //---------------------------------------------------------
 //   WTScale

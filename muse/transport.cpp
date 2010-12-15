@@ -6,20 +6,13 @@
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qlabel.h>
-#include <qslider.h>
-#include <qpushbutton.h>
-#include <QFrame>
-#include <qtooltip.h>
-#include <qlayout.h>
-#include <qtoolbutton.h>
-#include <qcombobox.h>
-#include <qaction.h>
-#include <QHBoxLayout>
-#include <QPixmap>
+#include <QAction>
+#include <QComboBox>
 #include <QMouseEvent>
+#include <QSlider>
+#include <QToolButton>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QBoxLayout>
 
 #include "awl/posedit.h"
 

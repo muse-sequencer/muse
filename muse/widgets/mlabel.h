@@ -8,9 +8,7 @@
 #ifndef __MLABEL_H__
 #define __MLABEL_H__
 
-#include <qlabel.h>
-//Added by qt3to4:
-#include <QMouseEvent>
+#include <QLabel>
 
 //---------------------------------------------------------
 //   MLabel

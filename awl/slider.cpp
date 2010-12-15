@@ -20,6 +20,9 @@
 
 #include "slider.h"
 
+#include <QMouseEvent>
+#include <QPainter>
+
 namespace Awl {
 
 //---------------------------------------------------------

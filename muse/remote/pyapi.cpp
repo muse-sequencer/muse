@@ -9,9 +9,7 @@
 #include <string>
 #include <pthread.h>
 
-#include <qobject.h>
-#include <qapplication.h>
-#include <qevent.h>
+#include <QApplication>
 
 #include "pyapi.h"
 #include "song.h"

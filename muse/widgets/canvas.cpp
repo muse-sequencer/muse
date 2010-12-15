@@ -8,7 +8,9 @@
 #include <stdio.h>
 
 #include "canvas.h"
+
 #include <QApplication>
+#include <QMenu>
 #include <QPainter>
 #include <QCursor>
 #include <QTimer>

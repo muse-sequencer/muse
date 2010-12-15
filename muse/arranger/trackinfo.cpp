@@ -5,10 +5,10 @@
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <QPalette>
-#include <QColor>
 #include <QMenu>
-#include <QPixmap>
+#include <QPainter>
+#include <QScrollBar>
+#include <QTimer>
 
 #include <math.h>
 #include <string.h>

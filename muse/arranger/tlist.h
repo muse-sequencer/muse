@@ -10,6 +10,8 @@
 
 #include "track.h"
 
+#include <QWidget>
+
 class QKeyEvent;
 class QLineEdit;
 class QMouseEvent;

@@ -9,13 +9,14 @@
 #ifndef __MIDIDEV_H__
 #define __MIDIDEV_H__
 
-#include <qstring.h>
 #include <list>
 
 #include "mpevent.h"
 //#include "sync.h"
 #include "route.h"
 #include "globaldefs.h"
+
+#include <QString>
 
 //class RouteList;
 class Xml;

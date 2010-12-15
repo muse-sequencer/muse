@@ -7,8 +7,8 @@
 //=========================================================
 
 #include "globals.h"
-#include <qpixmap.h>
-#include <qicon.h>
+
+#include <QIcon>
 
 #include "xpm/track_comment.xpm"
 #include "xpm/audio_bounce_to_file.xpm"

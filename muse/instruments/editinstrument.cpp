@@ -11,10 +11,12 @@
 
 #include <QCloseEvent>
 #include <QDir>
+#include <QFileDialog>
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QLineEdit>
+#include <QWhatsThis>
 
 #include "editinstrument.h"
 #include "minstrument.h"

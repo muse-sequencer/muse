@@ -7,10 +7,10 @@
 
 #include <stdlib.h>
 #include <cmath>
+
 #include <QApplication>
 #include <QStyle>
-//Added by qt3to4:
-#include <QLabel>
+
 
 #include "poslabel.h"
 ///#include "sig.h"

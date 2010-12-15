@@ -23,8 +23,13 @@
 #include "posedit.h"
 #include "al/sig.h"
 //#include "sig.h"
-
 //#include "sync.h"  // Tim.
+
+#include <QApplication>
+#include <QKeyEvent>
+#include <QLineEdit>
+#include <QStyle>
+
 extern int mtcType;
 
 namespace Awl {

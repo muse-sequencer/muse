@@ -10,11 +10,12 @@
 #define __XML_H__
 
 #include <stdio.h>
-#include <qstring.h>
+
+#include <QString>
 
 class QColor;
-class QWidget;
 class QRect;
+class QWidget;
 
 //---------------------------------------------------------
 //   Xml

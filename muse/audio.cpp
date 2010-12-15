@@ -9,7 +9,7 @@
 #include <cmath>
 #include <errno.h>
 
-#include <qsocketnotifier.h>
+#include <QSocketNotifier>
 
 #include "app.h"
 #include "song.h"

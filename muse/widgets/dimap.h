@@ -14,7 +14,7 @@
 #ifndef __DIMAP_H__
 #define __DIMAP_H__
 
-#include <qglobal.h>
+#include <QtGlobal>
 
 class DiMap
       {

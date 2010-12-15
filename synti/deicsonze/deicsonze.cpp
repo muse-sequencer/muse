@@ -32,6 +32,9 @@
 
 // #include <stdio.h>
 
+#include <QDomDocument>
+#include <QTemporaryFile>
+
 #include "muse/midi.h"
 #include "libsynti/mess.h"
 #include "deicsonze.h"

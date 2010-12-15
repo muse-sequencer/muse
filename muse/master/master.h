@@ -16,6 +16,7 @@ class QMouseEvent;
 class QPainter;
 class QPoint;
 class QRect;
+class QToolBar;
 
 class MidiEditor;
 class ScrollScale;

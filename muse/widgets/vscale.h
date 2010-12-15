@@ -8,8 +8,9 @@
 #ifndef __VSCALE_H__
 #define __VSCALE_H__
 
+#include <QWidget>
+
 class QPaintEvent;
-class QWidget;
 
 //---------------------------------------------------------
 //   VScale

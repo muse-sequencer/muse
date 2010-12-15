@@ -16,6 +16,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPalette>
+#include <QUrl>
 
 #include <errno.h>
 

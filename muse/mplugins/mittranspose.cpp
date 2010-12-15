@@ -7,7 +7,7 @@
 //=========================================================
 
 #include <QCloseEvent>
-#include <QWidget>
+#include <QTimer>
 
 #include "mittranspose.h"
 #include "song.h"

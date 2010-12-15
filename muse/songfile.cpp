@@ -7,7 +7,6 @@
 //=========================================================
 
 #include <assert.h>
-#include <qmessagebox.h>
 #include <uuid/uuid.h>
 
 #include "app.h"

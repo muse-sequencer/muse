@@ -1,10 +1,9 @@
 #include "trackautomationview.h"
 #include "math.h"
-#include <qpainter.h>
-#include <qbitmap.h>
-#include <qimage.h>
-//Added by qt3to4:
+
+#include <QPainter>
 #include <QPaintEvent>
+
 #include "track.h"
 
 TrackAutomationView::TrackAutomationView(QWidget *parent, Track *t) : QWidget(parent)

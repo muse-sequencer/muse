@@ -20,6 +20,8 @@
 
 #include "drawbar.h"
 
+#include <QPainter>
+
 namespace Awl {
 
 #if 0

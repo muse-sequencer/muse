@@ -18,7 +18,6 @@
 #include <unistd.h>
 
 class QString;
-class QFont;
 class QAction;
 class QActionGroup;
 class QStringList;

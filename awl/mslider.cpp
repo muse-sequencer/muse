@@ -19,8 +19,10 @@
 //=============================================================================
 
 #include "fastlog.h"
-
 #include "mslider.h"
+
+#include <QMouseEvent>
+#include <QPainter>
 
 namespace Awl {
 

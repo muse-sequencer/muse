@@ -8,8 +8,10 @@
 
 #include <values.h>
 #include <stdlib.h>
-#include <qmessagebox.h>
 #include <map>
+
+#include <QMessageBox>
+
 #include "track.h"
 #include "event.h"
 #include "song.h"

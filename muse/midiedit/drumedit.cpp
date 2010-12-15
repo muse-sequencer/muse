@@ -11,9 +11,12 @@
 #include <QGridLayout>
 #include <QKeyEvent>
 #include <QList>
+#include <QMenu>
+#include <QMenuBar>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QResizeEvent>
+#include <QSignalMapper>
 #include <QSizeGrip>
 #include <QToolButton>
 #include <QWhatsThis>

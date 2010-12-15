@@ -5,7 +5,7 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qaction.h>
+#include <QAction>
 #include "globals.h"
 
 //---------------------------------------------------------

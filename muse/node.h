@@ -10,7 +10,6 @@
 #define __AUDIONODE_H__
 
 #include <list>
-#include <qstring.h>
 
 #ifndef i386
 #include <pthread.h>

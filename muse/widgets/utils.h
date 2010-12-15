@@ -1,5 +1,3 @@
-//Added by qt3to4:
-#include <QFrame>
 //=========================================================
 //  MusE
 //  Linux Music Editor
@@ -11,9 +9,9 @@
 #define __UTILS_H__
 
 class QFrame;
+class QString;
 class QWidget;
 
-#include <qstring.h>
 
 extern QString bitmap2String(int bm);
 extern int string2bitmap(const QString& str);

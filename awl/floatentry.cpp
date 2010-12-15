@@ -21,6 +21,10 @@
 #include "floatentry.h"
 #include "fastlog.h"
 
+#include <QLineEdit>
+#include <QMouseEvent>
+#include <QTimer>
+
 #define TIMER1    400
 #define TIMER2    200
 #define TIMEC     7

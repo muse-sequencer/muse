@@ -7,12 +7,13 @@
  *
  */
 
-#include "fluidsynti.h"
-#include "muse/midi.h"
-
 #include <list>
 #include <iostream>
-#include <qfileinfo.h>
+
+#include <QFileInfo>
+
+#include "fluidsynti.h"
+#include "muse/midi.h"
 
 FluidCtrl FluidSynth::fluidCtrl[] = {
       //{ "Expression", CTRL_EXPRESSION, 0, 127 },

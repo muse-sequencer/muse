@@ -18,7 +18,11 @@
 #include "awl/posedit.h"
 
 #include <QCloseEvent>
+#include <QGroupBox>
+#include <QHeaderView>
+#include <QLineEdit>
 #include <QMenu>
+#include <QMenuBar>
 #include <QHBoxLayout>
 #include <QToolBar>
 #include <QToolButton>

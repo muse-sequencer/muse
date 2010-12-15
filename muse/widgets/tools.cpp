@@ -7,17 +7,7 @@
 
 #include <stdio.h>
 #include "tools.h"
-//#include <qpixmap.h>
-//#include <q3buttongroup.h>
-//#include <qtoolbutton.h>
-//#include <qtooltip.h>
-//#include <q3whatsthis.h>
-//#include <q3mainwindow.h>
 
-#include <QPixmap>
-#include <QToolButton>
-
-//Added by qt3to4:
 #include <QActionGroup>
 
 #include "icons.h"

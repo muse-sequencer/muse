@@ -30,6 +30,7 @@
 #ifndef __DEICSONZEPRESET_H
 #define __DEICSONZEPRESET_H
 
+#include <vector>
 #include <string>
 #include "al/xml.h"
 

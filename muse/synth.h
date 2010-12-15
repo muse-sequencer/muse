@@ -8,9 +8,6 @@
 #ifndef __SYNTH_H__
 #define __SYNTH_H__
 
-#include <QFileInfo>
-#include <QMenu>
-
 #include <string>
 #include <vector>
 #include <map>
@@ -22,6 +19,10 @@
 #include "midiport.h"
 #include "track.h"
 #include "stringparam.h"
+
+#include <QFileInfo>
+
+class QMenu;
 
 //class MidiEvent;
 class MidiPlayEvent;

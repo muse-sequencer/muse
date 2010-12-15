@@ -9,7 +9,8 @@
 #include <assert.h>
 #include <errno.h>
 #include <values.h>
-#include <qmessagebox.h>
+
+#include <QMessageBox>
 
 #include "app.h"
 #include "song.h"

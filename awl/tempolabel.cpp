@@ -20,6 +20,8 @@
 
 #include "tempolabel.h"
 
+#include <QApplication>
+
 namespace Awl {
 
 //---------------------------------------------------------

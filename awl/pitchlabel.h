@@ -21,6 +21,8 @@
 #ifndef __AWLPITCHLABEL_H__
 #define __AWLPITCHLABEL_H__
 
+#include <QLabel>
+
 namespace Awl {
 
 //---------------------------------------------------------

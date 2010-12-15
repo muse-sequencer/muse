@@ -1,14 +1,10 @@
 #include <stdio.h>
-#include <qpalette.h>
-#include <qlabel.h>
-#include <qcolor.h>
-#include <qlayout.h>
-//Added by qt3to4:
-#include <QCloseEvent>
-#include <QResizeEvent>
 #include <values.h>
 
-#include <qtooltip.h>
+#include <QCheckBox>
+#include <QLabel>
+#include <QResizeEvent>
+
 #include "globals.h"
 #include "bigtime.h"
 #include "song.h"

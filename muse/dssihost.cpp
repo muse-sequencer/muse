@@ -34,11 +34,10 @@
 #include <sys/stat.h>
 //#include <dssi.h>
 //#include <alsa/asoundlib.h>
-#include <qdir.h>
-//#include <qstringlist.h>
+
+#include <QDir>
 #include <QFileInfo>
 #include <QMenu>
-//#include <qprocess.h>
 
 #include "dssihost.h"
 #include "synth.h"

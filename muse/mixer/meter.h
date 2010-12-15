@@ -9,12 +9,10 @@
 #ifndef __METER_H__
 #define __METER_H__
 
-//#include <q3frame.h>
 #include <QFrame>
-#include <qpixmap.h>
-//Added by qt3to4:
-#include <QResizeEvent>
-#include <QMouseEvent>
+
+class QResizeEvent;
+class QMouseEvent;
 
 class Meter : public QFrame {
    public:

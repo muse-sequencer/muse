@@ -12,7 +12,6 @@
 #include <stdarg.h>
 #include <pthread.h>
 #include <sys/poll.h>
-#include <qmessagebox.h>
 
 #include "config.h"
 #include "audio.h"

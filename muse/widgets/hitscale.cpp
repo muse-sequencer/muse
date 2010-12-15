@@ -7,10 +7,9 @@
 
 #include "hitscale.h"
 #include "midieditor.h"
-#include <qpainter.h>
-//Added by qt3to4:
-#include <QEvent>
+
 #include <QMouseEvent>
+#include <QPainter>
 
 #include "song.h"
 

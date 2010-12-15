@@ -8,15 +8,15 @@
 #ifndef __TB1_H__
 #define __TB1_H__
 
-#include <QWidget>      
 #include <QToolBar>     
+
+class QToolButton;
+class QTableWidget;
 
 class PosLabel;
 class PitchLabel;
 class Track;
 class LabelCombo;
-class QToolButton;
-class QTableWidget;
 
 //---------------------------------------------------------
 //   Toolbar1

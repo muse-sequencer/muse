@@ -9,35 +9,28 @@
 #ifndef __AMIXER_H__
 #define __AMIXER_H__
 
-#include <QLayout>
-#include <QPixmap>
-#include <QToolTip>
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QMenu>
-#include <QCloseEvent>
-#include <QAction>
+#include <QScrollArea>
 
 #include "cobject.h"
 #include "synth.h"
 #include "node.h"
 #include "routedialog.h"
 
-class Xml;
-class QWidget;
 class QHBoxLayout;
-class QScrollArea;
+class QLabel;
+class QMenu;
+class QToolButton;
+class QWidget;
+
+class Xml;
 class AudioTrack;
 class Meter;
 class Track;
-class QLabel;
 class Slider;
-class QToolButton;
 class Knob;
 class DoubleLabel;
 class ComboBox;
 class RouteDialog;
-class QMenu;
 class Strip;
 
 struct MixerConfig;

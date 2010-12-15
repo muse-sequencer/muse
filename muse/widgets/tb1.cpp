@@ -9,12 +9,9 @@
 #include <stdio.h>
 #include <values.h>
 
-#include <QLabel>          
-#include <QLayout>
-#include <QToolButton>
+#include <QHeaderView>
 #include <QTableWidget>    
-#include <QTableWidgetItem>
-#include <QComboBox>      
+#include <QToolButton>
 
 #include "config.h"
 #include "lcombo.h"

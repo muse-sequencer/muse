@@ -8,7 +8,7 @@
 #ifndef __SCROLLSCALE_H__
 #define __SCROLLSCALE_H__
 
-#include <QWidget>
+#include <QSlider>
 
 class QBoxLayout;
 class QLabel;

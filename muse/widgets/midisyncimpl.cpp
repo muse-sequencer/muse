@@ -6,10 +6,12 @@
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <QStringList>
-#include <QTreeWidgetItem>
-#include <QInputDialog>
 #include <QCloseEvent>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QStringList>
+#include <QTimer>
+#include <QTreeWidgetItem>
 
 #include "app.h"
 #include "song.h"

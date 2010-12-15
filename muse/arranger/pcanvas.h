@@ -11,14 +11,15 @@
 #include "song.h"
 #include "canvas.h"
 #include "trackautomationview.h"
-//Added by qt3to4:
-#include <QDragMoveEvent>
-#include <QDropEvent>
-#include <QDragLeaveEvent>
-#include <QMouseEvent>
-#include <QKeyEvent>
-#include <QEvent>
-#include <QDragEnterEvent>
+
+class QDragMoveEvent;
+class QDropEvent;
+class QDragLeaveEvent;
+class QMouseEvent;
+class QKeyEvent;
+class QEvent;
+class QDragEnterEvent;
+
 #define beats     4
 
 //---------------------------------------------------------

@@ -8,9 +8,7 @@
 #ifndef __COMBOBOX_H__
 #define __COMBOBOX_H__
 
-#include <qlabel.h>
-
-#include <QMouseEvent>
+#include <QLabel>
 
 class QMenu;
 

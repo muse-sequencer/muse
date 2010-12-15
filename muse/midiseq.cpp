@@ -8,8 +8,8 @@
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qmessagebox.h>
-#include <qobject.h>
+#include <QMessageBox>
+
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>

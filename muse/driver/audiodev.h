@@ -9,8 +9,9 @@
 #ifndef __AUDIODEV_H__
 #define __AUDIODEV_H__
 
-#include <qstring.h>
 #include <list>
+
+class QString;
 
 class MidiPlayEvent;
 

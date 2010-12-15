@@ -13,9 +13,6 @@
 #include <list>
 #include <vector>
 
-#include <QMenu>
-#include <QList>
-
 class MidiPort;
 class QMenu;
 class MidiPlayEvent;

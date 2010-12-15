@@ -6,7 +6,7 @@
 #ifndef PYAPI_H
 #define PYAPI_H
 
-#include <qevent.h>
+#include <QEvent>
 
 class QPybridgeEvent : public QEvent
 {

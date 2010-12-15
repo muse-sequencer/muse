@@ -24,6 +24,8 @@
 ///#include "al/pos.h"
 #include "pos.h"
 
+#include <QAbstractSpinBox>
+
 namespace Awl {
 
       ///using AL::Pos;

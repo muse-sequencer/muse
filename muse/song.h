@@ -9,6 +9,9 @@
 #ifndef __SONG_H__
 #define __SONG_H__
 
+#include <QObject>
+#include <QStringList>
+
 #include "pos.h"
 #include "globaldefs.h"
 #include "tempo.h"
@@ -17,11 +20,9 @@
 #include "undo.h"
 #include "track.h"
 
+class QAction;
 class QFont;
 class QMenu;
-class QButton;
-class QString;
-class QStringList;
 
 class SynthI;
 struct MidiMsg;

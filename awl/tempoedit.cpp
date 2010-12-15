@@ -18,7 +18,12 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
+#include <cmath>
+
 #include "tempoedit.h"
+
+#include <QApplication>
+#include <QStyle>
 
 namespace Awl {
 

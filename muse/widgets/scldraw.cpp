@@ -12,11 +12,11 @@
 //=========================================================
 
 #include <cmath>
-#include "scldraw.h"
-#include <qpainter.h>
-#include <qfontmetrics.h>
-#include <qrect.h>
+
+#include <QPainter>
+
 #include "mmath.h"
+#include "scldraw.h"
 
 
 int const ScaleDraw::minLen = 10;

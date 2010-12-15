@@ -8,7 +8,7 @@
 #ifndef __HELPER_H__
 #define __HELPER_H__
 
-#include <qstring.h>
+#include <QString>
 
 extern QString pitch2string(int v);
 

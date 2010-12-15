@@ -14,7 +14,6 @@
 #ifndef __SCALE_IF_H__
 #define __SCALE_IF_H__
 
-#include <qglobal.h>
 #include "scldraw.h"
 
 //---------------------------------------------------------

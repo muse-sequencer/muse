@@ -8,9 +8,11 @@
 
 #include <stdio.h>
 
+#include <QAction>
 #include <QDir>
 #include <QFileInfo>
-#include <QAction>
+#include <QMenu>
+#include <QMessageBox>
 
 #include "minstrument.h"
 #include "midiport.h"

@@ -13,6 +13,8 @@
 #include <vector>
 
 #include <QDialog>
+#include <QFileInfo>
+#include <QMainWindow>
 #include <QUiLoader>
 
 
@@ -34,10 +36,13 @@
 #include <dssi.h>
 #endif
 
+class QAbstractButton;
 class QComboBox;
-class QFileInfo;
+class QRadioButton;
 class QScrollArea;
 class QToolButton;
+class QToolButton;
+class QTreeWidget;
 
 class Xml;
 class Slider;

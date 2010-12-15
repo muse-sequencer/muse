@@ -8,9 +8,7 @@
 #ifndef __SWIDGET_H__
 #define __SWIDGET_H__
 
-#include <qwidget.h>
-//Added by qt3to4:
-#include <QResizeEvent>
+#include <QWidget>
 
 //---------------------------------------------------------
 //   SWidget

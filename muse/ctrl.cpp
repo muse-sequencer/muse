@@ -9,8 +9,9 @@
 //=========================================================
 
 
-#include <qlocale.h>
+#include <QLocale>
 //#include <stdlib.h>
+
 #include "globals.h"
 #include "ctrl.h"
 #include "xml.h"

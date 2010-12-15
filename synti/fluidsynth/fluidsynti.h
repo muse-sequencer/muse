@@ -11,9 +11,9 @@
 #define __MUSE_FLUIDSYNTI_H__
 
 #include <fluidsynth.h>
-#include <qstring.h>
 #include <pthread.h>
 #include <string>
+
 #include "fluidsynthgui.h"
 #include "libsynti/mess.h"
 #include "muse/debug.h"

@@ -11,13 +11,13 @@
 
 #include <map>
 
-#include <qstring.h>
-#include <qcolor.h>
 // Added by T356.
 #include <uuid/uuid.h>
 
 #include "event.h"
 #include "audioconvert.h"
+
+class QString;
 
 class Track;
 class MidiTrack;

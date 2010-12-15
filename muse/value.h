@@ -9,7 +9,7 @@
 #ifndef __VALUE_H__
 #define __VALUE_H__
 
-#include <qobject.h>
+#include <QObject>
 
 class Xml;
 

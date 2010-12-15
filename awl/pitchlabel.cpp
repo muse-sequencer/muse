@@ -22,6 +22,9 @@
 #include "pitchlabel.h"
 #include "utils.h"
 
+#include <QApplication>
+#include <QStyle>
+
 namespace Awl {
 
 //---------------------------------------------------------
