@@ -25,7 +25,9 @@
 
 #include <values.h>
 
+#include <QActionGroup>
 #include <QCloseEvent>
+#include <QGridLayout>
 #include <QLabel>
 #include <QToolBar>
 #include <QToolButton>

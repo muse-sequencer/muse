@@ -21,6 +21,10 @@
 #include "xml.h"
 #include "al.h"
 
+#include <QDomElement>
+#include <QMetaProperty>
+#include <QWidget>
+
 namespace AL {
 
 //---------------------------------------------------------

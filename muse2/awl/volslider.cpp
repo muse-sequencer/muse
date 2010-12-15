@@ -21,6 +21,8 @@
 #include "fastlog.h"
 #include "volslider.h"
 
+#include <QMouseEvent>
+
 namespace Awl {
 
 //---------------------------------------------------------

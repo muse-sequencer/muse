@@ -21,6 +21,8 @@
 #ifndef __AWLTEMPOLABEL_H__
 #define __AWLTEMPOLABEL_H__
 
+#include <QLabel>
+
 namespace Awl {
 
 //---------------------------------------------------------

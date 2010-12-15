@@ -1,9 +1,7 @@
 #include <cmath>
 #include "mmath.h"
-#include <qdrawutil.h>
+
 #include <QPainter>
-#include <QCursor>
-#include <QPaintEvent>
 #include <QResizeEvent>
 
 #include "slider.h"

@@ -9,9 +9,11 @@
 #define __MARKER_H__
 
 #include <map>
-#include <qstring.h>
+
 #include "xml.h"
 #include "pos.h"
+
+class QString;
 
 //---------------------------------------------------------
 //   Marker

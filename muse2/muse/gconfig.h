@@ -9,13 +9,13 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include <qcolor.h>
-#include <qfont.h>
-#include <qstring.h>
-#include <qrect.h>
-
 #define NUM_PARTCOLORS 17
 #define NUM_FONTS 7
+
+#include <QColor>
+#include <QFont>
+#include <QRect>
+#include <QString>
 
 class Xml;
 

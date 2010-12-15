@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <cmath>
 
+#include <QDateTime>
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QProgressDialog>

@@ -8,14 +8,12 @@
 #ifndef __TOOLS_H__
 #define __TOOLS_H__
 
-//#include <q3toolbar.h>
 #include <QToolBar>
-//Added by qt3to4:
-#include <QPixmap>
+
+class Action;
 
 class QAction;
-class Action;
-//class QMainWindow;
+class QPixmap;
 class QWidget;
 
 enum Tool { PointerTool=1, PencilTool=2, RubberTool=4, CutTool=8,

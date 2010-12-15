@@ -15,6 +15,7 @@
 #include <QPushButton>
 #include <QSizePolicy>
 #include <QHBoxLayout>
+#include <QTimer>
 #include <QVBoxLayout>
 
 #include <math.h>

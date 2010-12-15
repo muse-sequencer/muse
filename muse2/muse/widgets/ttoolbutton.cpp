@@ -6,7 +6,6 @@
 //=========================================================
 
 #include <QPainter>
-#include <QPixmap>
 #include <QStyle>
 
 #include "ttoolbutton.h"

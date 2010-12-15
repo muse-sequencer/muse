@@ -12,8 +12,9 @@
 #include <list>
 #include <sndfile.h>
 
+#include <QString>
+
 class QFileInfo;
-class QString;
 class Xml;
 
 //---------------------------------------------------------

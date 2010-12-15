@@ -8,15 +8,9 @@
 #ifndef __DENTRY_H__
 #define __DENTRY_H__
 
-#include <qlineedit.h>
-//Added by qt3to4:
-#include <QMouseEvent>
-#include <QContextMenuEvent>
-#include <QWheelEvent>
+#include <QLineEdit>
 
 #include "sliderbase.h"
-
-class QTimer;
 
 //---------------------------------------------------------
 //   Dentry

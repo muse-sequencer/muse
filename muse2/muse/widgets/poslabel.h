@@ -8,7 +8,6 @@
 #ifndef __POSLABEL_H__
 #define __POSLABEL_H__
 
-//#include <qlabel.h>
 #include <QLabel>
 
 //---------------------------------------------------------

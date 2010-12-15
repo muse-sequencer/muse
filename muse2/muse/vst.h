@@ -10,7 +10,7 @@
 
 #include "synth.h"
 
-#include <QMenu>
+class QMenu;
 
 struct _FSTHandle;
 struct _FST;

@@ -10,9 +10,11 @@
 #define __UNDO_H__
 
 #include <list>
-#include <qstring.h>
+
 #include "event.h"
 #include "marker/marker.h"
+
+class QString;
 
 class Track;
 class TEvent;

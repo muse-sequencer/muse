@@ -8,10 +8,6 @@
 #include <stdio.h>
 
 #include "intlabel.h"
-#include <qvalidator.h>
-#include <qpalette.h>
-#include <stdio.h>
-
 #include "utils.h"
 
 //---------------------------------------------------------

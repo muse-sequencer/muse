@@ -5,22 +5,14 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <QLayout>
-#include <qlabel.h>
-//Added by qt3to4:
+#include <QApplication>
 #include <QHBoxLayout>
-#include <QContextMenuEvent>
-#include <QWheelEvent>
-#include <QFrame>
+#include <QLabel>
+#include <QLineEdit>
 #include <QMouseEvent>
-#include <QKeyEvent>
+#include <QTimer>
+
 #include "nentry.h"
-#include <stdio.h>
-#include <qtimer.h>
-#include <qevent.h>
-#include "globals.h"
-#include <qapplication.h>
-#include <qcursor.h>
 
 #define TIMER1    400
 #define TIMER2    200

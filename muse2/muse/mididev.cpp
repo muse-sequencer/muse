@@ -8,7 +8,7 @@
 
 #include <config.h>
 
-#include <qmessagebox.h>
+#include <QMessageBox>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>

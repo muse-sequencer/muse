@@ -31,6 +31,8 @@
 #include <iostream>
 #include <algorithm>
 
+#include <QDomElement>
+
 //-----------------------------------------------------------
 // Constructor destructor
 //-----------------------------------------------------------

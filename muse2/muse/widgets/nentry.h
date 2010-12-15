@@ -9,20 +9,11 @@
 #define __NENTRY_H__
 
 #include <QFrame>
-#include <qlineedit.h>
-#include <qstring.h>
-//Added by qt3to4:
-#include <QWheelEvent>
-#include <QEvent>
-#include <QHBoxLayout>
-#include <QMouseEvent>
-#include <QLabel>
-#include <QContextMenuEvent>
-#include <QKeyEvent>
 
-class QTimer;
 class QHBoxLayout;
 class QLabel;
+class QLineEdit;
+class QTimer;
 
 class NentryFilter : public QObject {
       Q_OBJECT

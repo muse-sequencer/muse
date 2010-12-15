@@ -8,11 +8,10 @@
 
 #include <stdio.h>
 #include <cmath>
-#include <qpainter.h>
-//Added by qt3to4:
-#include <QResizeEvent>
+
 #include <QMouseEvent>
-#include <QFrame>
+#include <QPainter>
+#include <QResizeEvent>
 
 #include "meter.h"
 #include "gconfig.h"

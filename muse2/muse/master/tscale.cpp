@@ -9,9 +9,9 @@
 #include "tscale.h"
 #include "globals.h"
 #include "gconfig.h"
-//Added by qt3to4:
+
 #include <QMouseEvent>
-#include <QEvent>
+#include <QPainter>
 
 //---------------------------------------------------------
 //   TScale

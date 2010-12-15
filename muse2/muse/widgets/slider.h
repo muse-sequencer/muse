@@ -17,8 +17,6 @@
 #include "sclif.h"
 #include "sliderbase.h"
 #include "scldraw.h"
-#include <QResizeEvent>
-#include <QPaintEvent>
 
 //---------------------------------------------------------
 //   Slider

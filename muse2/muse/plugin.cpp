@@ -20,6 +20,7 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QPushButton>
@@ -27,8 +28,10 @@
 #include <QSignalMapper>
 #include <QSizePolicy>
 #include <QScrollArea>
+#include <QTimer>
 #include <QToolBar>
 #include <QToolButton>
+#include <QTreeWidget>
 #include <QVBoxLayout>
 #include <QWhatsThis>
 

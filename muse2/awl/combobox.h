@@ -21,6 +21,8 @@
 #ifndef __AWLCOMBOBOX_H__
 #define __AWLCOMBOBOX_H__
 
+#include <QComboBox>
+
 namespace Awl {
 
 //---------------------------------------------------------

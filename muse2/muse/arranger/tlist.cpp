@@ -18,6 +18,7 @@
 #include <QPaintEvent>
 #include <QPixmap>
 #include <QResizeEvent>
+#include <QScrollBar>
 #include <QWheelEvent>
 
 #include "globals.h"

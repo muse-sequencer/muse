@@ -6,17 +6,15 @@
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
+#include <QCloseEvent>
+
 #include "cliplist.h"
 #include "song.h"
 #include "globals.h"
 #include "wave.h"
 #include "xml.h"
-#include "posedit.h"
 #include "ui_cliplisteditorbase.h"
 
-#include <QCloseEvent>
-#include <QDialog>
-#include <QStyle>
 
 extern int mtcType;
 enum { COL_NAME=0, COL_REFS, COL_POS, COL_LEN };

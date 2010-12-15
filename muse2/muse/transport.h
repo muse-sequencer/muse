@@ -11,8 +11,7 @@
 
 #include "al/sig.h"
 
-#include <QMouseEvent>
-#include <QLabel>
+#include <QWidget>
 
 namespace Awl {
       class PosEdit;
@@ -20,14 +19,15 @@ namespace Awl {
 
 using Awl::PosEdit;
 
-class QToolButton;
+class QComboBox;
 class QHBoxLayout;
+class QLabel;
 class QSlider;
+class QToolButton;
+
 class DoubleLabel;
 class SigLabel;
-class QComboBox;
 class Pos;
-class QLabel;
 
 //---------------------------------------------------------
 //    TempoSig

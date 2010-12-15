@@ -21,6 +21,9 @@
 #include "fastlog.h"
 #include "aslider.h"
 
+#include <QKeyEvent>
+#include <QWheelEvent>
+
 namespace Awl {
 
 //---------------------------------------------------------

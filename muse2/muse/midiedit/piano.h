@@ -9,12 +9,11 @@
 #define __PIANO_H__
 
 #include "view.h"
-//Added by qt3to4:
-#include <QMouseEvent>
-#include <QEvent>
-#include <QPixmap>
 
+class QEvent;
+class QMouseEvent;
 class QPainter;
+class QPixmap;
 
 #define KH  13
 

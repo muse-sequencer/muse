@@ -8,7 +8,7 @@
 #ifndef __TTOOLBUTTON_H__
 #define __TTOOLBUTTON_H__
 
-#include <qtoolbutton.h>
+#include <QToolButton>
 
 //---------------------------------------------------------
 //   TransparentToolButton

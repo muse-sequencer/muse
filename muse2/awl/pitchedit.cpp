@@ -18,8 +18,12 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
+#include <stdio.h>
+
 #include "pitchedit.h"
 #include "utils.h"
+
+#include <QKeyEvent>
 
 namespace Awl {
 

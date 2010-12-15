@@ -7,8 +7,7 @@
 
 #include <QApplication>
 #include <QStyle>
-//Added by qt3to4:
-#include <QLabel>
+
 #include "pitchedit.h"
 #include "pitchlabel.h"
 #include "helper.h"

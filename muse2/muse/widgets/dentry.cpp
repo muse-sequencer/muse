@@ -5,14 +5,12 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include "dentry.h"
 #include <stdio.h>
-#include <qtimer.h>
-#include <qcursor.h>
-//Added by qt3to4:
-#include <QWheelEvent>
-#include <QMouseEvent>
+
 #include <QContextMenuEvent>
+#include <QTimer>
+
+#include "dentry.h"
 #include "globals.h"
 
 #define TIMER1    400

@@ -15,14 +15,9 @@
 #define __SLIDERBASE_H__
 
 #include "drange.h"
-#include <QFrame>
-#include <QPixmap>
-#include <QDateTime>
-//#include <qbutton.h>
-#include <QtGui>
-#include <QWheelEvent>
-#include <QMouseEvent>
-#include <QTimerEvent>
+
+#include <QTime>
+#include <QWidget>
 
 //---------------------------------------------------------
 //   SliderBase

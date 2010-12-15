@@ -9,7 +9,11 @@
 #include <QActionGroup>
 #include <QCloseEvent>
 #include <QKeyEvent>
+#include <QMenu>
+#include <QMenuBar>
+#include <QSignalMapper>
 #include <QToolBar>
+#include <QTreeWidgetItem>
 
 #include "listedit.h"
 #include "mtscale.h"

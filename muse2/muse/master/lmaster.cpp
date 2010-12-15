@@ -19,8 +19,13 @@
 #include "debug.h"
 
 #include <QCloseEvent>
+#include <QGridLayout>
+#include <QHeaderView>
+#include <QLineEdit>
 #include <QMenu>
+#include <QMenuBar>
 #include <QMessageBox>
+#include <QSignalMapper>
 #include <QStyle>
 #include <QToolBar>
 #include <QToolButton>

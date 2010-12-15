@@ -7,7 +7,6 @@
 #ifndef __NOTE_INFO_H__
 #define __NOTE_INFO_H__
 
-//#include <q3toolbar.h>
 #include <QToolBar>
 
 namespace Awl {
@@ -15,11 +14,10 @@ namespace Awl {
       //class PitchEdit;
       };
 
-///class PosEdit;
 class QSpinBox;
+
+///class PosEdit;
 class PitchEdit;
-//class QMainWindow;
-class QWidget;
 class Pos;
 
 //---------------------------------------------------------

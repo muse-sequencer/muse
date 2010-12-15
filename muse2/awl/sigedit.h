@@ -24,6 +24,8 @@
 #include "al/sig.h"
 //#include "sig.h"
 
+#include <QAbstractSpinBox>
+
 namespace AL {
       class TimeSignature;
       };

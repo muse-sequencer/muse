@@ -8,9 +8,8 @@
 #ifndef __CHECKBOX_H__
 #define __CHECKBOX_H__
 
-#include <qcheckbox.h>
-//Added by qt3to4:
-#include <QMouseEvent>
+#include <QCheckBox>
+
 
 //---------------------------------------------------------
 //   CheckBox

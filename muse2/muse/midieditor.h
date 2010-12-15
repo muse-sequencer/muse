@@ -11,13 +11,12 @@
 ///#include "sig.h"
 #include "al/sig.h"
 #include "cobject.h"
-//#include <QGridLayout>
+
+class QGridLayout;
+class QWidget;
 
 class PartList;
 class Xml;
-class QGridLayout;
-class QWidget;
-class QColor;
 class EventCanvas;
 class ScrollScale;
 class CtrlEdit;

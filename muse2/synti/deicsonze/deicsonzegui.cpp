@@ -27,6 +27,15 @@
 // 02111-1307, USA or point your web browser to http://www.gnu.org.
 //===========================================================================
 
+#include <QDir>
+#include <QDomDocument>
+#include <QFileDialog>
+#include <QMenu>
+#include <QMessageBox>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QSocketNotifier>
+
 #include "muse/midi.h"
 #include "muse/midictrl.h"
 #include "config.h"

@@ -6,7 +6,7 @@
 //  (C) Copyright 2003-2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <qwidget.h>
+#include <QWidget>
 
 #include "song.h"
 #include "route.h"

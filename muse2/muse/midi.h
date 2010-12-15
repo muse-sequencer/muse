@@ -12,7 +12,8 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <qstring.h>
+
+class QString;
 
 enum {
       ME_NOTEOFF     = 0x80,

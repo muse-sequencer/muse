@@ -5,8 +5,8 @@
 //  (C) Copyright 1999-2010 Werner Schweer (ws@seh.de)
 //=========================================================
 
-//#include <qt.h>
-#include <qstring.h>
+#include <QString>
+
 #include <stdio.h>
 
 #include <jack/jack.h>

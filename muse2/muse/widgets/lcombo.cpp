@@ -7,11 +7,9 @@
 
 #include "lcombo.h"
 
-#include <QLayout>
-#include <QFrame>
-#include <qlabel.h>
-//Added by qt3to4:
 #include <QHBoxLayout>
+#include <QLabel>
+
 
 //---------------------------------------------------------
 //   LabelCombo

@@ -1,13 +1,11 @@
 #ifndef __BIGTIME_H__
 #define __BIGTIME_H__
 
-#include <qwidget.h>
-#include <qlabel.h>
+#include <QWidget>
 
-#include <qcheckbox.h>
-//Added by qt3to4:
-#include <QResizeEvent>
-#include <QCloseEvent>
+class QCheckBox;
+class QLabel;
+
 class MusE;
 
 //---------------------------------------------------------

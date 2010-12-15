@@ -7,8 +7,7 @@
 
 #include <QApplication>
 #include <QStyle>
-//Added by qt3to4:
-#include <QLabel>
+
 #include "tempolabel.h"
 
 //---------------------------------------------------------

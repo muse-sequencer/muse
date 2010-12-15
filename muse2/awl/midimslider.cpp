@@ -21,6 +21,9 @@
 #include "fastlog.h"
 #include "midimslider.h"
 
+#include <QPainter>
+#include <QPaintEvent>
+
 namespace Awl {
 
 //---------------------------------------------------------

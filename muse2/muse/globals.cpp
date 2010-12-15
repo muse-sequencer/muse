@@ -7,13 +7,12 @@
 //=========================================================
 
 #include <stdio.h>
-#include <qpixmap.h>
-//Added by qt3to4:
-#include <QActionGroup>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <qobject.h>
+
+#include <QActionGroup>
+
 #include "globals.h"
 #include "config.h"
 

@@ -6,7 +6,6 @@
 //=========================================================
 
 #include <QFileDialog>
-#include <QPixmap>
 
 #include "ui_fdialogbuttons.h"
 

@@ -21,6 +21,8 @@
 #ifndef __AWLTEMPOEDIT_H__
 #define __AWLTEMPOEDIT_H__
 
+#include <QDoubleSpinBox>
+
 namespace Awl {
 
 //---------------------------------------------------------

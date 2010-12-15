@@ -9,9 +9,10 @@
 #ifndef __MIDICTRL_H__
 #define __MIDICTRL_H__
 
-#include <qstring.h>
 #include <list>
 #include <map>
+
+#include <QString>
 
 const int CTRL_HBANK = 0x00;
 const int CTRL_LBANK = 0x20;

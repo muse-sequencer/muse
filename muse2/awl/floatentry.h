@@ -21,6 +21,12 @@
 #ifndef __FLOATLABEL_H__
 #define __FLOATLABEL_H__
 
+#include <QLineEdit>
+
+class QMouseEvent;
+class QTimer;
+class QWheelEvent;
+
 namespace Awl {
 
 //---------------------------------------------------------

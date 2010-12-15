@@ -14,10 +14,6 @@
 
 #include "rhythm.h"
 
-#include <QCloseEvent>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-
 //---------------------------------------------------------
 //   RhythmGen
 //---------------------------------------------------------
@@ -54,21 +50,21 @@ void RhythmGen::closeEvent(QCloseEvent* ev)
 ****************************************************************************/
 #include "rhythm.h"
 
-#include <qvariant.h>
-#include <qcheckbox.h>
-//#include <q3frame.h>
+#include <QCloseEvent>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QVariant>
+#include <QCheckBox>
 #include <QFrame>
-#include <qlabel.h>
-#include <qlcdnumber.h>
-#include <q3listbox.h>
-#include <qpushbutton.h>
-#include <qslider.h>
-#include <qtoolbutton.h>
-#include <qlayout.h>
-#include <qtooltip.h>
-#include <q3whatsthis.h>
-#include <qimage.h>
-#include <qpixmap.h>
+#include <QLabel>
+#include <QLCDNumber>
+#include <QPushButton>
+#include <QSlider>
+#include <QToolButton>
+#include <QLayout>
+#include <QToolTip>
+#include <QImage>
+#include <QPixmap>
 
 static const char* const image0_data[] = {
 "16 16 56 1",

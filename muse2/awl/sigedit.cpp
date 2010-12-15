@@ -24,6 +24,9 @@
 #include "al/sig.h"
 //#include "sig.h"
 
+#include <QKeyEvent>
+#include <QLineEdit>
+
 namespace Awl {
 
       using AL::sigmap;

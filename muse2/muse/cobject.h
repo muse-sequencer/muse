@@ -11,7 +11,6 @@
 
 #include "config.h"
 
-//#include <q3mainwindow.h>
 #include <QMainWindow>
 #include <list>
 

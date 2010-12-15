@@ -8,10 +8,11 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <qstring.h>
-#include <qcolor.h>
-#include <qwidget.h>
-#include <qrect.h>
+
+#include <QString>
+#include <QColor>
+#include <QWidget>
+#include <QRect>
 
 #include "xml.h"
 

@@ -21,6 +21,11 @@
 #ifndef __AWLASLIDER_H__
 #define __AWLASLIDER_H__
 
+#include <QWidget>
+
+class QKeyEvent;
+class QWheelEvent;
+
 namespace Awl {
 
 //---------------------------------------------------------

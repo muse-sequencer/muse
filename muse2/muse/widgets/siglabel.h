@@ -11,8 +11,9 @@
 #include <al/sig.h>
 
 #include <QLabel>
-#include <QWheelEvent>
-#include <QMouseEvent>
+
+class QWheelEvent;
+class QMouseEvent;
 
 //---------------------------------------------------------
 //   SigLabel

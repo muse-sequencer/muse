@@ -22,6 +22,7 @@ class QLabel;
 class QMenu;
 class QKeyEvent;
 class QResizeEvent;
+class QToolButton;
 class QWidget;
 
 class MidiPart;

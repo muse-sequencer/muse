@@ -5,16 +5,9 @@
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <stdio.h>
+#include <cmath>
 
 #include "doublelabel.h"
-#include <qvalidator.h>
-#include <qpalette.h>
-#include <stdio.h>
-#include <values.h>
-#include <math.h>
-
-#include "utils.h"
 
 //---------------------------------------------------------
 //   DoubleLabel

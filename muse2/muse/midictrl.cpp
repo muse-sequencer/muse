@@ -9,7 +9,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include <qobject.h>
 #include "midictrl.h"
 #include "xml.h"
 #include "globals.h"

@@ -7,7 +7,7 @@
 //=========================================================
 
 #include <stdio.h>
-#include <qstring.h>
+#include <QString>
 
 #include "al/sig.h"  // Tim.
 

@@ -5,23 +5,17 @@
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <q3rangecontrol.h>
-#include <qapplication.h>
-#include <qpixmap.h>
-#include <qapplication.h>
-#include <q3valuelist.h>
-#include <qstring.h>
-#include <qstyle.h>
-//Added by qt3to4:
-#include <QTimerEvent>
-#include <QKeyEvent>
-#include <QResizeEvent>
-#include <QMouseEvent>
-#include <QEvent>
-#include <QPaintEvent>
 #include <values.h>
-#include <qpainter.h>
-#include <qtimer.h>
+
+#include <QApplication>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QResizeEvent>
+#include <QString>
+#include <QStyle>
+#include <QTimerEvent>
 
 #include "posedit.h"
 #include "sig.h"

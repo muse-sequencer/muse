@@ -5,10 +5,12 @@
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
 //=========================================================
 
+#include <errno.h>
 #include <values.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+
 #include <QKeyEvent>
 #include <QDropEvent>
 #include <QEvent>

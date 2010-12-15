@@ -7,10 +7,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "utils.h"
 #include <math.h>
-#include <QFrame>
 #include <sys/time.h>
+
+#include <QFrame>
+
+#include "utils.h"
 
 //---------------------------------------------------------
 //   curTime

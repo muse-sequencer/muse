@@ -14,7 +14,9 @@
 
 #ifdef VST_SUPPORT
 
-#include <qdir.h>
+#include <QDir>
+#include <QMenu>
+
 #include <cmath>
 #include <fst.h>
 #include <vst/aeffectx.h>

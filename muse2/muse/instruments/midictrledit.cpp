@@ -19,14 +19,6 @@
 #include "filedialog.h"
 #include "globals.h"
 
-#include <q3listview.h>
-#include <qlineedit.h>
-#include <q3listbox.h>
-#include <qcombobox.h>
-#include <qspinbox.h>
-#include <qpushbutton.h>
-#include <qtoolbutton.h>
-
 MidiControllerEditDialog* midiControllerEditDialog;
 
 static MidiController predefinedMidiController[] = {

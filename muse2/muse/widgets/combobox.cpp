@@ -5,11 +5,7 @@
 //  (C) Copyright 2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <QCursor>
 #include <QMenu>
-#include <QMouseEvent>
-#include <QFrame>
-#include <QLabel>
 
 #include "combobox.h"
 

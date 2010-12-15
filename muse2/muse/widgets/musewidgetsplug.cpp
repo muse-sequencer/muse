@@ -11,10 +11,8 @@
 // #include <qwidgetplugin.h>
 #include <QtCore/QtPlugin>                             // p4.0.2
 #include <QtDesigner/QDesignerCustomWidgetInterface>   //
-
-//Added by qt3to4:
 #include <QPixmap>
-#include "posedit.h"
+
 #include "poslabel.h"
 #include "pitchedit.h"
 #include "pitchlabel.h"

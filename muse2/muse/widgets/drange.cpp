@@ -12,6 +12,9 @@
 //=========================================================
 
 #include <cmath>
+
+#include <QtGlobal>
+
 #include "mmath.h"
 #include "drange.h"
 

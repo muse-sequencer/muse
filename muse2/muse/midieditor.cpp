@@ -10,14 +10,14 @@
 #include "waveedit/waveview.h"
 #include "scrollscale.h"
 #include "mtscale.h"
-//#include <QLayout>
-#include <QRect>
-#include <QColor>
-#include <QGridLayout>
 #include "xml.h"
 #include "part.h"
 #include "track.h"
 #include "song.h"
+
+#include <QRect>
+#include <QColor>
+#include <QGridLayout>
 
 //---------------------------------------------------------
 //   MidiEditor

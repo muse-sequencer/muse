@@ -7,12 +7,9 @@
 
 #include <values.h>
 
-#include <qpainter.h>
-#include <qtooltip.h>
-//Added by qt3to4:
-#include <QPixmap>
-#include <QMouseEvent>
-#include <QEvent>
+#include <QPainter>
+#include <QRect>
+#include <QToolTip>
 
 #include "wtscale.h"
 #include "midieditor.h"

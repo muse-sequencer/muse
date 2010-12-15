@@ -21,6 +21,10 @@
 #ifndef __AWLPITCHEDIT_H__
 #define __AWLPITCHEDIT_H__
 
+#include <QSpinBox>
+
+class QKeyEvent;
+
 namespace Awl {
 
 //---------------------------------------------------------

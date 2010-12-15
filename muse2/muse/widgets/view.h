@@ -9,15 +9,14 @@
 #define __VIEW_H__
 
 #include <QWidget>
-#include <QPixmap>
-#include <QMatrix>
-#include <QPainter>
-#include <QBrush>
-#include <QResizeEvent>
-#include <QDropEvent>
-#include <QMouseEvent>
-#include <QKeyEvent>
-#include <QPaintEvent>
+
+class QDropEvent;
+class QKeyEvent;
+class QMouseEvent;
+class QPaintEvent;
+class QPainter;
+class QPixmap;
+class QResizeEvent;
 
 //---------------------------------------------------------
 //   View

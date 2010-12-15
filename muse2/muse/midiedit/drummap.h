@@ -9,7 +9,7 @@
 #ifndef __DRUMMAP_H__
 #define __DRUMMAP_H__
 
-#include <qstring.h>
+class QString;
 
 class Xml;
 
