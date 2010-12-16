@@ -66,7 +66,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       setMouseTracking(true);
       header    = hdr;
 
-      scroll    = 0;
+      _scroll    = 0;
       editTrack = 0;
       editor    = 0;
       mode      = NORMAL;
@@ -108,13 +108,7 @@ static void drawCenteredPixmap(QPainter& p, const QPixmap* pm, const QRect& r)
 
 void TList::paintEvent(QPaintEvent* ev)
       {
-      if (!pmValid)
-            paint(ev->rect());
-      // Orcan - check
-      //bitBlt(this, ev->rect().topLeft(), &pm, ev->rect(), true); //CopyROP, true); ddskrjo
-      QPainter p;
-      p.begin(this);
-      p.drawImage(ev->rect().topLeft(), pm.toImage(), ev->rect());
+      paint(ev->rect());
       }
 
 //---------------------------------------------------------
@@ -123,7 +117,6 @@ void TList::paintEvent(QPaintEvent* ev)
 
 void TList::redraw()
       {
-      paint(QRect(0, 0, pm.width(), pm.height()));
       update();
       }
 
@@ -133,7 +126,6 @@ void TList::redraw()
 
 void TList::redraw(const QRect& r)
       {
-      paint(r);
       update(r);
       }
 
@@ -146,11 +138,7 @@ void TList::paint(const QRect& r)
       if (!isVisible())
             return;
       QRect rect(r);
-      if (!pmValid) {
-            pmValid = true;
-            rect = QRect(0, 0, pm.width(), pm.height());
-            }
-      QPainter p(&pm);
+      QPainter p(this);
 
       if (bgPixmap.isNull())
             p.fillRect(rect, config.trackBg);
@@ -420,7 +408,7 @@ void TList::adjustScrollbar()
       TrackList* l = song->tracks();
       for (iTrack it = l->begin(); it != l->end(); ++it)
             h += (*it)->height();
-      scroll->setMaximum(h +30);
+      _scroll->setMaximum(h +30);
       redraw();
       }
 
@@ -1393,6 +1381,7 @@ void TList::setYPos(int y)
       {
       int delta  = ypos - y;         // -  -> shift up
       ypos  = y;
+/*      
       if (pm.isNull())
             return;
       if (!pmValid) {
@@ -1406,6 +1395,7 @@ void TList::setYPos(int y)
       //printf("TList::setYPos y:%d delta:%d w:%d h:%d\n", y, delta, w, h);
       QPainter p;
       p.begin(&pm);
+      p.begin(this);
 
       if (delta >= h || delta <= -h)
       {
@@ -1424,21 +1414,15 @@ void TList::setYPos(int y)
             // Orcan - check
             //bitBlt(&pm,  0, delta, &pm, 0, 0, w, h-delta, true); //CopyROP, true); ddskrjo
             p.drawImage(0, delta, pm.toImage(), 0, 0, w, h-delta);
-            // NOTE: June 2 2010: On my machine with an old NV V8200 + prop drivers (curr 96.43.11),
-            //  this is a problem. There is severe graphical corruption.
-            // Not just here but several other windows (ex. ladspa browser), 
-            //  and I believe (?) other QT3 apps. QT4 apps don't do it. 
-            // Neither does it happen when xorg drivers used. 
-            //
-            // FIXME: This change cures it for me, but we shouldn't leave this in - shouldn't need to do this...
-            //
-            //r = QRect(0, 0, w, delta);
-            // Changed p3.3.43
-            r = QRect(0, 0, w, h);
-            
+            r = QRect(0, 0, w, delta);
             }
       paint(r);
       update();
+      
+*/
+
+      scroll(0, delta);
+      
       }
 
 //---------------------------------------------------------
@@ -1447,10 +1431,7 @@ void TList::setYPos(int y)
 
 void TList::resizeEvent(QResizeEvent* ev)
       {
-      //pm.resize(ev->size()); // Qt3 way
-      //pm = pm.copy(QRect(QPoint(0, 0), ev->size())); // orcan - didn't work. Let's try:
-      pm = QPixmap(ev->size()); // Works, but is this efficient?
-      pmValid = false;
+      
       }
 
 //---------------------------------------------------------

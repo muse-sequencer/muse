@@ -1,6 +1,7 @@
 15.12.2010:
         - Major cleanup in the #includes. Emptied all.ha nnd moved its contents to individual files.
           The build is roughly 20% faster now. (Orcan)
+        - Fixed track list drawing - removed double buffer pixmap. Test OK. (Tim)  
 14.12.2010:
         - Fixed corruption on track info instrument patch button due to latin1() conversions. (Tim)
           Changed MidiInstrument::getPatchName() and EditInstrument::getPatchName() to return QString.
