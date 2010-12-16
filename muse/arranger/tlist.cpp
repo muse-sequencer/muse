@@ -765,7 +765,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
       int x       = ev->x();
       int y       = ev->y();
       int button  = ev->button();
-      bool shift  = ev->modifiers() & Qt::ShiftModifier;
+      bool shift  = ((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier;
 
       Track* t    = y2Track(y + ypos);
 
@@ -946,7 +946,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
             case COL_MUTE:
                   // p3.3.29
-                  if ((button == Qt::RightButton) || (ev->modifiers() & Qt::ControlModifier))
+                  if ((button == Qt::RightButton) || (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier))
                     t->setOff(!t->off());
                   else
                   {
@@ -1127,7 +1127,7 @@ void TList::selectTrackBelow()
 
 void TList::mouseMoveEvent(QMouseEvent* ev)
       {
-      if (ev->modifiers() == 0) {
+      if ((((QInputEvent*)ev)->modifiers() | ev->buttons()) == 0) {
             int y = ev->y();
             int ty = -ypos;
             TrackList* tracks = song->tracks();
@@ -1252,7 +1252,7 @@ void TList::wheelEvent(QWheelEvent* ev)
                   break;
             case COL_MUTE:
                   // p3.3.29
-                  if (ev->modifiers() & Qt::ControlModifier)
+                  if (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier)
                     t->setOff(!t->off());
                   else
                   {
