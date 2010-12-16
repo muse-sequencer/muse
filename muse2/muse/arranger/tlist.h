@@ -48,14 +48,11 @@ class TList : public QWidget {
       int ypos;
       bool editMode;
 
-      QPixmap pm;             // for double buffering
-      bool pmValid;
       QPixmap bgPixmap;       // background Pixmap
-
       bool resizeFlag;        // true if resize cursor is shown
 
       Header* header;
-      QScrollBar* scroll;
+      QScrollBar* _scroll;
       QLineEdit* editor;
       Track* editTrack;
 
@@ -106,7 +103,7 @@ class TList : public QWidget {
 
    public:
       TList(Header*, QWidget* parent, const char* name);
-      void setScroll(QScrollBar* s) { scroll = s; }
+      void setScroll(QScrollBar* s) { _scroll = s; }
       Track* track() const { return editTrack; }
       void writeStatus(int level, Xml&, const char* name) const;
       void readStatus(Xml&, const char* name);
