@@ -13,6 +13,7 @@
 
 class QResizeEvent;
 class QMouseEvent;
+class QPainter;
 
 class Meter : public QFrame {
    public:
@@ -25,10 +26,7 @@ class Meter : public QFrame {
       double minScale, maxScale;
       int yellowScale, redScale;
 
-      QPixmap bgPm;
-      QPixmap fgPm;  // for double buffering
-      
-      void drawVU(int w, int h);
+      void drawVU(QPainter& p, int, int, int);
 
       Q_OBJECT
       void paintEvent(QPaintEvent*);
@@ -37,7 +35,6 @@ class Meter : public QFrame {
 
    public slots:
       void resetPeaks();
-      //void setVal(int, int, bool);
       void setVal(double, double, bool);
 
    signals:

@@ -1,5 +1,6 @@
 16.12.2010:
         - Fixed track list track moving/resizing - added ev->buttons() check to mouseMoveEvent(). (Tim)
+        - Fixed meter drawing (speed) - removed double buffer pixmap. Test OK. (Tim)
 15.12.2010:
         - Major cleanup in the #includes. Emptied all.ha nnd moved its contents to individual files.
           The build is roughly 20% faster now. (Orcan)
