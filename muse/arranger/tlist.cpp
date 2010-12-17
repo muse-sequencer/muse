@@ -1381,48 +1381,8 @@ void TList::setYPos(int y)
       {
       int delta  = ypos - y;         // -  -> shift up
       ypos  = y;
-/*      
-      if (pm.isNull())
-            return;
-      if (!pmValid) {
-            //printf("TList::setYPos y:%d delta:%d pmValid is false - redrawing...\n", y, delta);
-            redraw();
-            return;
-            }
-      int w = width();
-      int h = height();
-      QRect r;
-      //printf("TList::setYPos y:%d delta:%d w:%d h:%d\n", y, delta, w, h);
-      QPainter p;
-      p.begin(&pm);
-      p.begin(this);
-
-      if (delta >= h || delta <= -h)
-      {
-            //printf("TList::setYPos delta >= h || delta <= -h\n");
-            r = QRect(0, 0, w, h);
-      }      
-      else if (delta < 0) {   // shift up
-            //printf("TList::setYPos delta < 0 : shift up\n");
-            // Orcan - check
-            //bitBlt(&pm,  0, 0, &pm, 0, -delta, w, h + delta, true); //CopyROP, true); ddskrjo
-            p.drawImage(0, 0, pm.toImage(), 0, -delta, w, h + delta);
-            r = QRect(0, h + delta, w, -delta);
-            }
-      else {                  // shift down
-            //printf("TList::setYPos delta !< 0 : shift down\n");
-            // Orcan - check
-            //bitBlt(&pm,  0, delta, &pm, 0, 0, w, h-delta, true); //CopyROP, true); ddskrjo
-            p.drawImage(0, delta, pm.toImage(), 0, 0, w, h-delta);
-            r = QRect(0, 0, w, delta);
-            }
-      paint(r);
-      update();
-      
-*/
 
       scroll(0, delta);
-      
       }
 
 //---------------------------------------------------------
