@@ -40,7 +40,6 @@ Meter::Meter(QWidget* parent, MeterType type)
 //   setVal
 //---------------------------------------------------------
 
-//void Meter::setVal(int v, int max, bool ovl)
 void Meter::setVal(double v, double max, bool ovl)
       {
       overflow = ovl;
@@ -93,7 +92,6 @@ void Meter::setRange(double min, double max)
       {
       minScale = min;
       maxScale = max;
-      drawVU(width(), height());
       update();
       }
 
@@ -101,84 +99,104 @@ void Meter::setRange(double min, double max)
 //   paintEvent
 //---------------------------------------------------------
 
-void Meter::paintEvent(QPaintEvent*)
+void Meter::paintEvent(QPaintEvent* /*ev*/)
       {
-      QPainter p;
-      p.begin(this);
+      // TODO: Could make better use of event rectangle, for speed.
+      
+      QPainter p(this);
+      
       double range = maxScale - minScale;
 
       int fw = frameWidth();
-      int h  = height() - 2* fw;
+      int w = width() - 2*fw;
+      int h  = height() - 2*fw;
       int yv;
+      
       if(mtype == DBMeter) 
         yv = val == 0 ? h : int(((maxScale - (fast_log10(val) * 20.0)) * h)/range);
       else
         yv = val == 0 ? h : int(((maxScale - val) * h)/range);
       
-      // Orcan - check
-      //void bitBlt ( QImage * dst, int dx, int dy, const QImage * src, int sx = 0, int sy = 0, int sw = -1, int sh = -1, Qt::ImageConversionFlags flags = Qt::AutoColor )
-
-      //bitBlt(this, fw, fw,    &bgPm, 0, 0,  -1, yv, true); //   CopyROP, true); ddskrjo
-      //bitBlt(this, fw, fw+yv, &fgPm, 0, yv, -1, h-yv, true); //CopyROP, true); ddskrjo
-
-      p.drawImage(fw, fw,    bgPm.toImage(), 0, 0,   -1, yv  );
-      p.drawImage(fw, fw+yv, fgPm.toImage(), 0, yv,  -1, h-yv);
-
+      if(yv > h) yv = h;
+      
+      // Draw the red, green, and yellow sections.
+      drawVU(p, w, h, yv);
+      
+      // Draw the peak white line.
       int ymax;
       if(mtype == DBMeter) 
         ymax = maxVal == 0 ? 0 : int(((maxScale - (fast_log10(maxVal) * 20.0)) * h)/range);
       else
         ymax = maxVal == 0 ? 0 : int(((maxScale - maxVal) * h)/range);
       p.setPen(Qt::white);
-      p.drawLine(0, ymax, width()-2*fw, ymax);
+      p.drawLine(0, ymax, w, ymax);
       }
 
 //---------------------------------------------------------
 //   drawVU
 //---------------------------------------------------------
 
-void Meter::drawVU(int w, int h)
+void Meter::drawVU(QPainter& p, int w, int h, int yv)
+{
+      if(mtype == DBMeter) 
       {
-      double range = maxScale - minScale;
-      int fw = frameWidth();
-      w -= 2*fw;
-      h -= 2*fw;
-
-      bgPm = QPixmap(QSize(w, h));
-      fgPm = QPixmap(QSize(w, h));
-
-      QPainter p1(&fgPm);
-      QPainter p2(&bgPm);
-      
-      if(mtype == LinMeter)
-      {
-        p1.fillRect(0, 0, w, h, QBrush(0x00ff00));  // green
-        p2.fillRect(0, 0, w, h, QBrush(0x007000));  // green
+        double range = maxScale - minScale;
+        int y1 = int((maxScale - redScale) * h / range);
+        int y2 = int((maxScale - yellowScale) * h / range);
+        
+        if(yv < y1)
+        {
+          // Red section:
+          p.fillRect(0, 0,  w, yv,        QBrush(0x8e0000));     // dark red  
+          p.fillRect(0, yv, w, y1-yv,     QBrush(0xff0000));     // light red
+          
+          // Yellow section:
+          p.fillRect(0, y1, w, y2-y1,     QBrush(0xffff00));     // light yellow
+          
+          // Green section:
+          p.fillRect(0, y2, w, h-y2,      QBrush(0x00ff00));     // light green
+        }
+        else
+        if(yv < y2)
+        {
+          // Red section:
+          p.fillRect(0, 0,  w, y1,        QBrush(0x8e0000));     // dark red  
+          
+          // Yellow section:
+          p.fillRect(0, y1, w, yv-y1,     QBrush(0x8e8e00));     // dark yellow
+          p.fillRect(0, yv, w, y2-yv,     QBrush(0xffff00));     // light yellow
+          
+          // Green section:
+          p.fillRect(0, y2, w, h-y2,      QBrush(0x00ff00));     // light green
+        }
+        else
+        //if(yv <= y3)   
+        {
+          // Red section:
+          p.fillRect(0, 0,  w, y1,        QBrush(0x8e0000));     // dark red  
+          
+          // Yellow section:
+          p.fillRect(0, y1, w, y2-y1,     QBrush(0x8e8e00));     // dark yellow
+          
+          // Green section:
+          p.fillRect(0, y2, w, yv-y2,     QBrush(0x007000));     // dark green
+          p.fillRect(0, yv, w, h-yv,      QBrush(0x00ff00));     // light green
+        }
       }  
       else
       {
-        int y1 = int((maxScale - redScale) * h / range);
-        int y2 = int((maxScale - yellowScale) * h / range);
-        int y3 = h;
-        p1.fillRect(0, 0,  w, y1,    QBrush(0xff0000));  // red
-        p1.fillRect(0, y1, w, y2-y1, QBrush(0xffff00));  // yellow
-        p1.fillRect(0, y2, w, y3-y2, QBrush(0x00ff00));  // green
-  
-        p2.fillRect(0, 0,  w, y1,    QBrush(0x8e0000));  // red
-        p2.fillRect(0, y1, w, y2-y1, QBrush(0x8e8e00));  // yellow
-        p2.fillRect(0, y2, w, y3-y2, QBrush(0x007000));  // green
+        p.fillRect(0, 0,  w, yv,   QBrush(0x007000));   // dark green
+        p.fillRect(0, yv, w, h-yv, QBrush(0x00ff00));   // light green
       }
-    }
+}
 
 //---------------------------------------------------------
 //   resizeEvent
 //---------------------------------------------------------
 
-void Meter::resizeEvent(QResizeEvent* ev)
-      {
-      int h  = ev->size().height();
-      int w  = ev->size().width();
-      drawVU(w, h);
+void Meter::resizeEvent(QResizeEvent* /*ev*/)
+    {
+    
     }
 
 //---------------------------------------------------------
