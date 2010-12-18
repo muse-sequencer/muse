@@ -3554,8 +3554,11 @@ class MuseApplication : public QApplication {
             }
 
       bool notify(QObject* receiver, QEvent* event) {
+            //if (event->type() == QEvent::KeyPress)
+            //  printf("notify key press before app::notify accepted:%d\n", event->isAccepted());  
             bool flag = QApplication::notify(receiver, event);
             if (event->type() == QEvent::KeyPress) {
+              //printf("notify key press after app::notify accepted:%d\n", event->isAccepted());   
                   QKeyEvent* ke = (QKeyEvent*)event;
                   ///globalKeyState = ke->stateAfter();
                   globalKeyState = ke->modifiers();
@@ -5155,6 +5158,19 @@ void MusE::updateConfiguration()
       //menuSettings->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key, menu_ids[CMD_CONFIG_AUDIO_PORTS]);
       //menu_help->setAccel(menu_ids[CMD_START_WHATSTHIS], shortcuts[SHRT_START_WHATSTHIS].key);
       
+      // Just in case, but no, app kb handler takes care of these.
+      /*
+      loopAction->setShortcut(shortcuts[].key);
+      punchinAction->setShortcut(shortcuts[].key);
+      punchoutAction->setShortcut(shortcuts[].key);
+      startAction->setShortcut(shortcuts[].key);
+      rewindAction->setShortcut(shortcuts[].key);
+      forwardAction->setShortcut(shortcuts[].key);
+      stopAction->setShortcut(shortcuts[].key);
+      playAction->setShortcut(shortcuts[].key);
+      recordAction->setShortcut(shortcuts[].key);
+      panicAction->setShortcut(shortcuts[].key);
+      */
       }
 
 //---------------------------------------------------------

@@ -38,6 +38,7 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
       pos[0]  = 0;
       pos[1]  = 0;
       pos[2]  = 0;
+      setFocusPolicy(Qt::StrongFocus);  // Tim.
       setMouseTracking(true);
       connect(song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
       connect(song, SIGNAL(songChanged(int)), this, SLOT(redraw()));
