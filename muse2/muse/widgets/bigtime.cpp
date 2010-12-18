@@ -323,9 +323,9 @@ void BigTime::resizeEvent(QResizeEvent *ev)
 	else if (fs > 256)
             nfs = 256;
         
-        if(debugMsg)  
-          printf("resize BigTime: Font name:%s CurSize:%d NewSize:%d, NewWidth:%d\n", 
-            f.family().toLatin1().constData(), fs, nfs, ev->size().width()); 
+        //if(debugMsg)  
+        //  printf("resize BigTime: Font name:%s CurSize:%d NewSize:%d, NewWidth:%d\n", 
+        //    f.family().toLatin1().constData(), fs, nfs, ev->size().width()); 
 	
         f.setPixelSize(nfs);
 	
