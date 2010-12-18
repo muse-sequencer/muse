@@ -313,19 +313,22 @@ void BigTime::resizeEvent(QResizeEvent *ev)
 	int fs     = f.pixelSize();
 	int hspace = 20;
 	//int tw     = fm.width(QString("00:00:00:00"));
-  int tw     = fm.width(QString("000:00:00:00"));
+        int tw     = fm.width(QString("000:00:00:00"));
   
-	fs         = ((ev->size().width() - hspace*2)*fs) / tw;
-// printf("resize BigTime %d -> %d, w %d\n", fs, nfs, ev->size().width());
-
+	int nfs         = ((ev->size().width() - hspace*2)*fs) / tw;
+ 
 	// set min/max
-	if (fs < 10)
-            fs = 10;
+	if (nfs < 10)
+            nfs = 10;
 	else if (fs > 256)
-            fs = 256;
-	f.setPixelSize(fs);
+            nfs = 256;
+        
+        if(debugMsg)  
+          printf("resize BigTime: Font name:%s CurSize:%d NewSize:%d, NewWidth:%d\n", 
+            f.family().toLatin1().constData(), fs, nfs, ev->size().width()); 
 	
-  
+        f.setPixelSize(nfs);
+	
   dwin->setFont(f);
   int digitWidth = dwin->fontMetrics().width(QString("0"));
 	int vspace = (ev->size().height() - (fs*2)) / 3;
