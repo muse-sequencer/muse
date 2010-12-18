@@ -28,7 +28,6 @@
 #include "gconfig.h"
 #include "plugin.h"
 #include "filedialog.h"
-#include "config.h"
 
 //---------------------------------------------------------
 //   class RackSlot
@@ -85,7 +84,6 @@ EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
          this, SLOT(doubleClicked(QListWidgetItem*)));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
 
-      setToolTip(tr("effect rack"));
       setSpacing(0);
       QPalette qpal;
       qpal.setColor(QPalette::Base, QColor(palette().midlight().color()));
@@ -97,8 +95,10 @@ EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
 void EffectRack::updateContents()
       {
 	for (int i = 0; i < PipelineDepth; ++i) {
-              item(i)->setText(track->efxPipe()->name(i));
+              QString name = track->efxPipe()->name(i);
+              item(i)->setText(name);
               item(i)->setBackground(track->efxPipe()->isOn(i) ? palette().mid() : palette().dark());
+              item(i)->setToolTip(name == QString("empty") ? tr("effect rack") : name );
 	}
       }
 
@@ -414,15 +414,22 @@ void EffectRack::startDrag(int idx)
       drag->exec(Qt::CopyAction);
       }
 
-void EffectRack::contentsDropEvent(QDropEvent * /*event*/)// prevent of compiler warning: unsued variable
+Qt::DropActions EffectRack::supportedDropActions () const
       {
+      return Qt::CopyAction;
+      }
+
+QStringList EffectRack::mimeTypes() const
+      {
+      return QStringList("text/x-muse-plugin");
       }
 
 void EffectRack::dropEvent(QDropEvent *event)
       {
       QString text;
-      //orcan-check//QListWidgetItem *i = itemAt( contentsToViewport(event->pos()) );
       QListWidgetItem *i = itemAt( event->pos() );
+      if (!i)
+            return;
       int idx = row(i);
       
       Pipeline* pipe = track->efxPipe();
@@ -438,7 +445,7 @@ void EffectRack::dropEvent(QDropEvent *event)
                     Pipeline* spipe = ser->getTrack()->efxPipe();
                     if(!spipe)
                       return;
-                    //orcan-check//QListWidgetItem *i = ser->itemAt(contentsToViewport(ser->getDragPos()));
+
                     QListWidgetItem *i = ser->itemAt(ser->getDragPos());
                     int idx0 = ser->row(i);
                     if (!(*spipe)[idx0] || 
@@ -498,10 +505,6 @@ void EffectRack::dragEnterEvent(QDragEnterEvent *event)
       event->acceptProposedAction();  // TODO CHECK Tim.
       }
 
-void EffectRack::contentsDragEnterEvent(QDragEnterEvent * /*event*/)// prevent of compiler warning: unused parameter
-      {
-      }
-
 void EffectRack::mousePressEvent(QMouseEvent *event)
       {
       if(event->button() & Qt::LeftButton) {
@@ -527,7 +530,7 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
             Pipeline* pipe = track->efxPipe();
             if(!pipe)
               return;
-            //orcan-check//QListWidgetItem *i = itemAt(contentsToViewport(dragPos));
+
             QListWidgetItem *i = itemAt(dragPos);
             int idx0 = row(i);
             if (!(*pipe)[idx0])
@@ -535,7 +538,6 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
             
             int distance = (dragPos-event->pos()).manhattanLength();
             if (distance > QApplication::startDragDistance()) {
-                  //orcan-check//QListWidgetItem *i = itemAt( contentsToViewport(event->pos()) );
                   QListWidgetItem *i = itemAt( event->pos() );
                   int idx = row(i);
                   startDrag(idx);
