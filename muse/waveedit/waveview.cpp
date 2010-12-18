@@ -44,6 +44,8 @@ WaveView::WaveView(MidiEditor* pr, QWidget* parent, int xscale, int yscale)
       selectionStop  = 0;
       lastGainvalue = 100;
 
+      setFocusPolicy(Qt::StrongFocus); // Tim.
+      
       setMouseTracking(true);
       setBg(QColor(192, 208, 255));
 

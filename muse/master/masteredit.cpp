@@ -192,6 +192,8 @@ MasterEdit::MasterEdit()
       mainGrid->addWidget(vscroll, 0, 2, 10, 1);
 //      mainGrid->addWidget(corner,  9, 2, AlignBottom | AlignRight);
 
+      canvas->setFocus(); // Tim.
+
       connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool(int)));
       connect(vscroll, SIGNAL(scrollChanged(int)),   canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)), canvas, SLOT(setYMag(int)));

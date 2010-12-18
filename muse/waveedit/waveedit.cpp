@@ -212,6 +212,8 @@ WaveEdit::WaveEdit(PartList* pl)
       mainGrid->addWidget(hscroll, 3, 0);
       mainGrid->addWidget(corner,  3, 1, Qt::AlignBottom | Qt::AlignRight);
 
+      view->setFocus();  // Tim.
+      
       connect(hscroll, SIGNAL(scrollChanged(int)), view, SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  view, SLOT(setXMag(int)));
       setWindowTitle(view->getCaption());

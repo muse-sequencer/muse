@@ -1138,6 +1138,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
       //
       if (!curItem) {
           if (items.size()==0) {
+              event->ignore();  // give global accelerators a chance
               return;
           }
           for (iCItem i = items.begin(); i != items.end(); ++i) {
