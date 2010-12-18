@@ -320,7 +320,7 @@ void BigTime::resizeEvent(QResizeEvent *ev)
 	// set min/max
 	if (nfs < 10)
             nfs = 10;
-	else if (fs > 256)
+	else if (nfs > 256)
             nfs = 256;
         
         //if(debugMsg)  
