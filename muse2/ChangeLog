@@ -1,3 +1,7 @@
+17.12.2010:
+        - Fixed crash with song loaded then File->New. Marker view had non-existent items from cleared marker list. (Tim)
+        - Some memory leak cleanups. Delete midiInstruments and midiDevices. (Tim)
+          TODO: Many more leaks to fix. 
 16.12.2010:
         - Fixed track list track moving/resizing - added ev->buttons() check to mouseMoveEvent(). (Tim)
         - Fixed meter drawing (speed) - removed double buffer pixmap. Test OK. (Tim)

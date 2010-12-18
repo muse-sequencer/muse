@@ -1842,7 +1842,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                 mixer2->move(config.mixer2.geometry.topLeft());
             }
             
-            showMarker(config.markerVisible);
+            //showMarker(config.markerVisible);  // Moved below. Tim.
             resize(config.geometryMain.size());
             move(config.geometryMain.topLeft());
 
@@ -1864,30 +1864,34 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       // p3.3.53 Try this AFTER the song update above which does a mixer update... Tested OK - mixers resize properly now.
       if (loadAll) 
       {
-            if(mixer1)
-            {
-              if(mixer1->geometry().size() != config.mixer1.geometry.size())
-              {
-                //printf("MusE::loadProjectFile1 resizing mixer1 x:%d y:%d w:%d h:%d\n", config.mixer1.geometry.x(), 
-                //                                                                       config.mixer1.geometry.y(), 
-                //                                                                       config.mixer1.geometry.width(), 
-                //                                                                       config.mixer1.geometry.height()
-                //                                                                       );  
-                mixer1->resize(config.mixer1.geometry.size());
-              }
-            }  
-            if(mixer2)
-            {
-              if(mixer2->geometry().size() != config.mixer2.geometry.size())
-              {
-                //printf("MusE::loadProjectFile1 resizing mixer2 x:%d y:%d w:%d h:%d\n", config.mixer2.geometry.x(), 
-                //                                                                       config.mixer2.geometry.y(), 
-                //                                                                       config.mixer2.geometry.width(), 
-                //                                                                       config.mixer2.geometry.height()
-                //                                                                       );  
-                mixer2->resize(config.mixer2.geometry.size());
-              }
-            }  
+        if(mixer1)
+        {
+          if(mixer1->geometry().size() != config.mixer1.geometry.size())
+          {
+            //printf("MusE::loadProjectFile1 resizing mixer1 x:%d y:%d w:%d h:%d\n", config.mixer1.geometry.x(), 
+            //                                                                       config.mixer1.geometry.y(), 
+            //                                                                       config.mixer1.geometry.width(), 
+            //                                                                       config.mixer1.geometry.height()
+            //                                                                       );  
+            mixer1->resize(config.mixer1.geometry.size());
+          }
+        }  
+        if(mixer2)
+        {
+          if(mixer2->geometry().size() != config.mixer2.geometry.size())
+          {
+            //printf("MusE::loadProjectFile1 resizing mixer2 x:%d y:%d w:%d h:%d\n", config.mixer2.geometry.x(), 
+            //                                                                       config.mixer2.geometry.y(), 
+            //                                                                       config.mixer2.geometry.width(), 
+            //                                                                       config.mixer2.geometry.height()
+            //                                                                       );  
+            mixer2->resize(config.mixer2.geometry.size());
+          }
+        }  
+        
+        // Moved here from above due to crash with a song loaded and then File->New.
+        // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
+        showMarker(config.markerVisible); 
       }
       
       }

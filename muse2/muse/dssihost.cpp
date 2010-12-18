@@ -332,9 +332,13 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
       }
       else
       {
-        const DSSI_Descriptor* descr;
+        //const DSSI_Descriptor* descr;
         for (int i = 0;; ++i) 
         {
+          const DSSI_Descriptor* descr;
+          
+          // CRAPPY PLUGIN ALERT: 
+          // Out of many plugins, with several, Valgrind says something in here is allocated with new. 
           descr = dssi(i);
           if (descr == 0)
                 break;
@@ -594,14 +598,15 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
               handle = 0;
               return 0;
               }
-        for (int i = 0;; ++i) {
-              dssi = df(i);
-              if (dssi == 0)
-                    break;
-              QString label(dssi->LADSPA_Plugin->Label);
-              if (label == _name)
-                    break;
-              }
+        for (int i = 0;; ++i) 
+        {
+          dssi = df(i);
+          if (dssi == 0)
+            break;
+          QString label(dssi->LADSPA_Plugin->Label);
+          if (label == _name)
+            break;
+        }
 
         if(dssi != 0)
         {

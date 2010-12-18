@@ -430,7 +430,11 @@ void MarkerView::updateList()
           selm = m;
       }
             
+      // Block signals added. Triggers itemSelectionChanged() causing crash. Tim. 
+      table->blockSignals(true);
       table->clear();
+      table->blockSignals(false);
+      
       //MarkerList* marker = song->marker();
       for (iMarker i = marker->begin(); i != marker->end(); ++i) 
       {
