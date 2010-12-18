@@ -9,8 +9,6 @@
 #ifndef __RACK_H__
 #define __RACK_H__
 
-#include "xml.h"
-
 #include <QListWidget>
 
 class QDragEnterEvent;
@@ -19,6 +17,7 @@ class QDropEvent;
 class QMouseEvent;
 
 class AudioTrack;
+class Xml;
 
 //---------------------------------------------------------
 //   EffectRack
@@ -46,10 +45,11 @@ class EffectRack : public QListWidget {
    protected:
       void dropEvent(QDropEvent *event);
       void dragEnterEvent(QDragEnterEvent *event);
-      void contentsDropEvent(QDropEvent *event);
-      void contentsDragEnterEvent(QDragEnterEvent *event);
       void mousePressEvent(QMouseEvent *event);
       void mouseMoveEvent(QMouseEvent *event);
+
+      QStringList mimeTypes() const;
+      Qt::DropActions supportedDropActions () const;
    
    public:
       EffectRack(QWidget*, AudioTrack* t);

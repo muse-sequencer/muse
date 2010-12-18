@@ -2,6 +2,8 @@
         - Fixed transport shortcuts not working in some windows or situations. (Tim)
           Added event->ignore to PartCanvas::keyPress. Added setFocusPolicy() to WaveView, Master.
           Added (canvas or view)->setFocus() to WaveEdit, MasterEdit. Test OK.
+        - Fixed rack drag'n drop. Added individual tooltips for effects since the astrip might
+          be too narrow. (Orcan)
 17.12.2010:
         - Fixed crash with song loaded then File->New. Marker view had non-existent items from cleared marker list. (Tim)
         - Some memory leak cleanups. Delete midiInstruments and midiDevices. (Tim)
