@@ -167,10 +167,14 @@ MidiJackDevice::~MidiJackDevice()
   //if(_client_jackport)
   //  audioDevice->unregisterPort(_client_jackport);
   // p3.3.55
-  if(_in_client_jackport)
-    audioDevice->unregisterPort(_in_client_jackport);
-  if(_out_client_jackport)
-    audioDevice->unregisterPort(_out_client_jackport);
+  
+  if(audioDevice)
+  { 
+    if(_in_client_jackport)
+      audioDevice->unregisterPort(_in_client_jackport);
+    if(_out_client_jackport)
+      audioDevice->unregisterPort(_out_client_jackport);
+  }  
     
     //close();
 }

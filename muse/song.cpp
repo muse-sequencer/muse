@@ -2175,10 +2175,10 @@ void Song::cleanupForQuit()
         // Remove the controllers and the values.
         midiPorts[i].controller()->clearDelete(true);
         
-      // Can't do this here. Jack isn't running.
-      /*
+      // Can't do this here. Jack isn't running. Fixed. Test OK so far.
+      #if 1
       if(debugMsg)
-        printf("deleting midi devices\n");
+        printf("deleting midi devices except synths\n");
       for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd)
       {
         // Since Syntis are midi devices, there's no need to delete them below.
@@ -2187,10 +2187,10 @@ void Song::cleanupForQuit()
         delete (*imd);
       }
       midiDevices.clear();     // midi devices
-      */
+      #endif
       
       if(debugMsg)
-        printf("deleting synths\n");
+        printf("deleting global available synths\n");
       // Delete all synths.
       std::vector<Synth*>::iterator is;
       for(is = synthis.begin(); is != synthis.end(); ++is)
@@ -2201,6 +2201,19 @@ void Song::cleanupForQuit()
           delete s;
       }
       synthis.clear();
+      
+      if(debugMsg)
+        printf("deleting midi instruments\n");
+      for(iMidiInstrument imi = midiInstruments.begin(); imi != midiInstruments.end(); ++imi)
+      {
+        // Since Syntis are midi instruments, there's no need to delete them below.
+        // Tricky, must cast as SynthI*.
+        SynthI* s = dynamic_cast <SynthI*> (*imi);
+        if(s)
+          continue;
+        delete (*imi);
+      }
+      midiInstruments.clear();     // midi devices
       
       // Nothing required for ladspa plugin list, and rack instances of them
       //  are handled by ~AudioTrack.
