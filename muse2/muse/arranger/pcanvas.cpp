@@ -1458,7 +1458,16 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       else {
             bool clone = part->events()->arefCount() > 1;
             p.setPen(QPen(Qt::black, 2, clone ? Qt::DashLine : Qt::SolidLine));
-            p.setBrush(config.partColors[i]);
+            
+            //p.setBrush(config.partColors[i]);
+            QColor c(config.partColors[i]);
+            c.setAlpha(config.globalAlphaBlend);
+            p.setBrush(c);
+            //p.setBrush(QColor(config.partColors[i].red(), 
+            //                  config.partColors[i].green(), 
+            //                  config.partColors[i].blue(),
+            //                  127));   
+                       
             p.drawRect(r);
             }
       

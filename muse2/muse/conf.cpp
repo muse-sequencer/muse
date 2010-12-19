@@ -537,6 +537,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.fonts[5].fromString(xml.parse1());
                         else if (tag == "font6")
                               config.fonts[6].fromString(xml.parse1());
+                        else if (tag == "globalAlphaBlend")
+                              config.globalAlphaBlend = xml.parseInt();
                         else if (tag == "palette0")
                               config.palette[0] = readColor(xml);
                         else if (tag == "palette1")
@@ -571,6 +573,44 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.palette[15] = readColor(xml);
                         else if (tag == "palette16")
                               config.palette[16] = readColor(xml);
+                        else if (tag == "partColor0")
+                              config.partColors[0] = readColor(xml);
+                        else if (tag == "partColor1")
+                              config.partColors[1] = readColor(xml);
+                        else if (tag == "partColor2")
+                              config.partColors[2] = readColor(xml);
+                        else if (tag == "partColor3")
+                              config.partColors[3] = readColor(xml);
+                        else if (tag == "partColor4")
+                              config.partColors[4] = readColor(xml);
+                        else if (tag == "partColor5")
+                              config.partColors[5] = readColor(xml);
+                        else if (tag == "partColor6")
+                              config.partColors[6] = readColor(xml);
+                        else if (tag == "partColor7")
+                              config.partColors[7] = readColor(xml);
+                        else if (tag == "partColor8")
+                              config.partColors[8] = readColor(xml);
+                        else if (tag == "partColor9")
+                              config.partColors[9] = readColor(xml);
+                        else if (tag == "partColor10")
+                              config.partColors[10] = readColor(xml);
+                        else if (tag == "partColor11")
+                              config.partColors[11] = readColor(xml);
+                        else if (tag == "partColor12")
+                              config.partColors[12] = readColor(xml);
+                        else if (tag == "partColor13")
+                              config.partColors[13] = readColor(xml);
+                        else if (tag == "partColor14")
+                              config.partColors[14] = readColor(xml);
+                        else if (tag == "partColor15")
+                              config.partColors[15] = readColor(xml);
+                        else if (tag == "partColor16")
+                              config.partColors[16] = readColor(xml);
+                        else if (tag == "partColor17")
+                              config.partColors[17] = readColor(xml);
+                        else if (tag == "partCanvasBg")
+                              config.partCanvasBg = readColor(xml);
                         else if (tag == "trackBg")
                               config.trackBg = readColor(xml);
                         else if (tag == "selectTrackBg")
@@ -683,6 +723,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.bigTimeBackgroundColor = readColor(xml);
                         else if (tag == "transportHandleColor")
                               config.transportHandleColor = readColor(xml);
+                        else if (tag == "waveEditBackgroundColor")
+                              config.waveEditBackgroundColor = readColor(xml);
                         else if (tag == "txDeviceId")
                                 //txDeviceId = xml.parseInt();
                                 xml.parseInt();
@@ -1114,12 +1156,22 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
             sprintf(buffer, "font%d", i);
             xml.strTag(level, buffer, config.fonts[i].toString());
             }
+            
+      xml.intTag(level, "globalAlphaBlend", config.globalAlphaBlend);
+      
       for (int i = 0; i < 16; ++i) {
             char buffer[32];
             sprintf(buffer, "palette%d", i);
             xml.colorTag(level, buffer, config.palette[i]);
             }
 
+      for (int i = 0; i < NUM_PARTCOLORS; ++i) {
+            char buffer[32];
+            sprintf(buffer, "partColor%d", i);
+            xml.colorTag(level, buffer, config.partColors[i]);
+            }
+
+      xml.colorTag(level, "partCanvasBg",  config.partCanvasBg);
       xml.colorTag(level, "trackBg",       config.trackBg);
       xml.colorTag(level, "selectTrackBg", config.selectTrackBg);
       xml.colorTag(level, "selectTrackFg", config.selectTrackFg);
@@ -1210,6 +1262,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.colorTag(level, "transportHandleColor",  config.transportHandleColor);
       xml.colorTag(level, "bigtimeForegroundcolor", config.bigTimeForegroundColor);
       xml.colorTag(level, "bigtimeBackgroundcolor", config.bigTimeBackgroundColor);
+      xml.colorTag(level, "waveEditBackgroundColor", config.waveEditBackgroundColor);
 
       writeSeqConfiguration(level, xml, false);
 
