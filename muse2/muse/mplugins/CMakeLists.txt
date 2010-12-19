@@ -59,8 +59,7 @@ file (GLOB SOURCE_FILES
       random.cpp random.h 
       )
 
-# add_library ( mplugins SHARED 
-add_library ( mplugins STATIC 
+add_library ( mplugins SHARED
       ${SOURCE_FILES}
       ${mplugins_mocs}
       ${mplugins_uis}
@@ -69,12 +68,15 @@ add_library ( mplugins STATIC
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
+install(TARGETS mplugins DESTINATION ${MUSE_MODULES_DIR})
+
 add_dependencies(mplugins widgets)
 
-#target_link_libraries( mplugins
-#   # midiplugin
-#   ${QT_LIBRARIES}
-#   )
+target_link_libraries( mplugins
+   # midiplugin
+   ${QT_LIBRARIES}
+   widgets
+   )
 
 # - tell cmake to name target transform.so instead of 
 #   libtransform.so
@@ -82,7 +84,8 @@ add_dependencies(mplugins widgets)
 #
 set_target_properties ( mplugins
    # PROPERTIES PREFIX ""
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+              OUTPUT_NAME muse_mplugins
    )
 
 # install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/midiplugins/ transform )

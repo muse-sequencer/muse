@@ -60,14 +60,22 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
 add_library (
       awl
-      STATIC
+      SHARED
       ${awl_src}
       ${PROJECT_BINARY_DIR}/all.h.pch
       )
 
+target_link_libraries ( awl
+      ${QT_LIBRARIES}
+      al
+      )
+
 set_target_properties( awl
    PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all.h"
+              OUTPUT_NAME muse_awl
    )
+
+install(TARGETS awl DESTINATION ${MUSE_MODULES_DIR})
 
 # IF (APPLE)
 #    message("Not yet able to build awlplugin under OS X.")

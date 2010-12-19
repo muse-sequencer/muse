@@ -33,7 +33,7 @@ file (GLOB SOURCE_FILES
       strip.cpp astrip.cpp mstrip.cpp
       )
 
-add_library ( mixer STATIC 
+add_library ( mixer SHARED
       ${SOURCE_FILES}
       ${mixer_mocs}
       ${mixer_uis}
@@ -41,7 +41,15 @@ add_library ( mixer STATIC
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
+target_link_libraries ( mixer
+      ${QT_LIBRARIES}
+      widgets
+      )
+
+install(TARGETS mixer DESTINATION ${MUSE_MODULES_DIR})
+
 set_target_properties ( mixer
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+              OUTPUT_NAME muse_mixer
    )
 

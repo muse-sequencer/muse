@@ -27,7 +27,7 @@ file (GLOB SOURCE_FILES
       cliplist.h
       )
 
-add_library ( cliplist STATIC
+add_library ( cliplist SHARED
       ${SOURCE_FILES}
       ${cliplist_mocs}
       # ${cliplist_ui_headers}
@@ -35,7 +35,15 @@ add_library ( cliplist STATIC
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
+target_link_libraries ( cliplist
+      ${QT_LIBRARIES}
+      awl
+      )
+
+install(TARGETS cliplist DESTINATION ${MUSE_MODULES_DIR})
+
 set_target_properties( cliplist
-  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+             OUTPUT_NAME muse_cliplist
   )
 

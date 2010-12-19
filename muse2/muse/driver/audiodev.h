@@ -14,6 +14,7 @@
 class QString;
 
 class MidiPlayEvent;
+class Pos;
 
 //---------------------------------------------------------
 //   AudioDevice

@@ -33,17 +33,26 @@ file (GLOB SOURCE_FILES
       trackinfo.cpp trackautomationview.h
       )
 
-add_library ( arranger STATIC
+add_library ( arranger SHARED
       ${SOURCE_FILES}
       ${arranger_mocs}
       # ${arranger_ui_headers}
       )
 
+target_link_libraries ( arranger
+      ${QT_LIBRARIES}
+      awl
+      widgets
+      )
+
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+
+install(TARGETS arranger DESTINATION ${MUSE_MODULES_DIR})
 
 add_dependencies(arranger mixer)
 
 set_target_properties( arranger
-  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+             OUTPUT_NAME muse_arranger
   )
 

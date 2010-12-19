@@ -38,7 +38,7 @@ file (GLOB SOURCE_FILES
       editgain.cpp
       )
 
-add_library ( waveedit STATIC
+add_library ( waveedit SHARED
       ${SOURCE_FILES}
       ${waveedit_ui_headers}
       ${waveedit_mocs}
@@ -46,6 +46,15 @@ add_library ( waveedit STATIC
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
+install(TARGETS waveedit DESTINATION ${MUSE_MODULES_DIR})
+
+target_link_libraries( waveedit
+   ${QT_LIBRARIES}
+   widgets
+   )
+
+
 set_target_properties( waveedit
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+                 OUTPUT_NAME muse_waveedit
       )

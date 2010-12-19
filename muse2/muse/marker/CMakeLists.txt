@@ -54,7 +54,7 @@ file (GLOB SOURCE_FILES
         markerview.cpp # markerview.h
         )
 
-add_library ( marker STATIC
+add_library ( marker SHARED
         ${SOURCE_FILES}
         # ${marker_ui_headers}
         ${marker_mocs}
@@ -62,7 +62,16 @@ add_library ( marker STATIC
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
+install(TARGETS marker DESTINATION ${MUSE_MODULES_DIR})
+
+target_link_libraries ( marker
+      ${QT_LIBRARIES}
+      awl
+      icons
+      )
+
 set_target_properties( marker
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+                 OUTPUT_NAME muse_marker
       )
 

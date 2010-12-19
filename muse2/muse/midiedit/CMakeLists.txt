@@ -76,7 +76,7 @@ file (GLOB SOURCE_FILES
       ecanvas.cpp # ecanvas.h
       )
 
-add_library ( midiedit STATIC
+add_library ( midiedit SHARED
       ${SOURCE_FILES}
       # ${midiedit_ui_headers}
       ${midiedit_mocs}
@@ -84,9 +84,17 @@ add_library ( midiedit STATIC
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
-add_dependencies(midiedit widgets)
+install(TARGETS midiedit DESTINATION ${MUSE_MODULES_DIR})
+
+target_link_libraries ( midiedit
+      ${QT_LIBRARIES}
+      al
+      icons
+      widgets
+      )
 
 set_target_properties( midiedit
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+                 OUTPUT_NAME muse_midiedit
       )
 
