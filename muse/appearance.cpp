@@ -591,7 +591,10 @@ void Appearance::updateColor()
             return;
       QPalette pal;
       QColor cfc(*color);
-      cfc.setAlpha(globalAlphaVal->value());
+      
+      // Oops can't do this - affects all colour items. Need to filter.
+      ///cfc.setAlpha(globalAlphaVal->value());  
+      
       pal.setColor(colorframe->backgroundRole(), cfc);
       colorframe->setPalette(pal);
       color->getRgb(&r, &g, &b);
