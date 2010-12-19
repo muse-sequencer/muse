@@ -55,7 +55,7 @@ file (GLOB SOURCE_FILES
         tscale.cpp # tscale.h
         )
 
-add_library ( master STATIC
+add_library ( master SHARED
         ${SOURCE_FILES}
         # ${master_ui_headers}
         ${master_mocs}
@@ -63,7 +63,17 @@ add_library ( master STATIC
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
+install(TARGETS master DESTINATION ${MUSE_MODULES_DIR})
+
+target_link_libraries ( master
+      ${QT_LIBRARIES}
+      al
+      awl
+      widgets
+      )
+
 set_target_properties( master
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+                 OUTPUT_NAME muse_master
       )
 

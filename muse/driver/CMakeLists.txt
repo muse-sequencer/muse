@@ -24,14 +24,26 @@ file (GLOB SOURCE_FILES
        jackmidi.cpp jackmidi.h
        )
 
-add_library ( driver STATIC
+add_library ( driver SHARED
        # ${PROJECT_BINARY_DIR}/all.h.pch
        ${SOURCE_FILES}
        )
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
+install(TARGETS driver DESTINATION ${MUSE_MODULES_DIR})
+
+target_link_libraries ( driver
+      ${ALSA_LIBRARIES}
+      ${JACK_LIBRARIES}
+      ${QT_LIBRARIES}
+      mplugins
+      )
+
+
+
 set_target_properties( driver
-  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+             OUTPUT_NAME muse_driver
   )
 

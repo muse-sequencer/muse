@@ -232,13 +232,20 @@ file (GLOB SOURCE_FILES
       menutitleitem.h  
       )
 
-add_library ( widgets STATIC 
+add_library ( widgets SHARED 
       ${widget_ui_headers}
       ${widget_mocs}
       ${SOURCE_FILES}
       )
 
+target_link_libraries ( widgets
+      ${QT_LIBRARIES}
+      icons
+      )
+
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
+
+install(TARGETS widgets DESTINATION ${MUSE_MODULES_DIR})
 
 
 # AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
@@ -248,7 +255,8 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE 
 
 set_target_properties( widgets
    # PROPERTIES COMPILE_FLAGS "-DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
+   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti -fPIC"
+              OUTPUT_NAME muse_widgets
    )
 
 

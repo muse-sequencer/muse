@@ -31,17 +31,20 @@ file (GLOB SOURCE_FILES
       ## mpevent.cpp
       )
 
-add_library(synti
+add_library(synti SHARED
       ${PROJECT_BINARY_DIR}/all-pic.h.pch
       ${SOURCE_FILES}
       )
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
+install(TARGETS synti DESTINATION ${MUSE_MODULES_DIR})
+
 #
 # -fPIC is necessary for 64 bit systems
 #
 set_target_properties( synti
    PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all-pic.h"
+              OUTPUT_NAME muse_synti
    )
 

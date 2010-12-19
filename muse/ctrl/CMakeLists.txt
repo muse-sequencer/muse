@@ -35,7 +35,7 @@ file (GLOB SOURCE_FILES
       ctrlpanel.cpp ctrlpanel.h
       )
 
-add_library ( ctrl STATIC
+add_library ( ctrl SHARED
 #       configmidictrl.cpp
 #       definemidictrl.cpp
 #       ctrldialog.cpp
@@ -49,7 +49,15 @@ add_library ( ctrl STATIC
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
 
+target_link_libraries ( ctrl
+      ${QT_LIBRARIES}
+      widgets
+      )
+
+install(TARGETS ctrl DESTINATION ${MUSE_MODULES_DIR})
+
 set_target_properties( ctrl
-  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+             OUTPUT_NAME muse_ctrl
   )
 

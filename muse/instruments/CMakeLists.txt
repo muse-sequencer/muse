@@ -40,7 +40,7 @@ file (GLOB SOURCE_FILES
    editinstrument.h
    )
 
-add_library ( instruments STATIC
+add_library ( instruments SHARED
    ${SOURCE_FILES}
    ${instruments_mocs}
    ${instruments_ui_headers}
@@ -48,7 +48,15 @@ add_library ( instruments STATIC
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
+install(TARGETS instruments DESTINATION ${MUSE_MODULES_DIR})
+
+target_link_libraries ( instruments
+      ${QT_LIBRARIES}
+      icons
+      )
+
 set_target_properties( instruments
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+              OUTPUT_NAME muse_instruments
    )
 

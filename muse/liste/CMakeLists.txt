@@ -47,7 +47,7 @@ file (GLOB SOURCE_FILES
       editevent.cpp editevent.h 
       )
 
-add_library ( liste STATIC
+add_library ( liste SHARED
       ${SOURCE_FILES}
       ${liste_mocs}
       ${liste_ui_headers}
@@ -56,10 +56,19 @@ add_library ( liste STATIC
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
 
+install(TARGETS liste DESTINATION ${MUSE_MODULES_DIR})
+
+target_link_libraries ( liste
+      ${QT_LIBRARIES}
+      awl
+      widgets
+      )
+
 add_dependencies(liste widgets)
 
 set_target_properties( liste
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
+   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+              OUTPUT_NAME muse_liste
    )
 
 

@@ -6,90 +6,48 @@
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include "config.h"
-
-#include <string>
-#include <map>
-#include <assert.h>
-#include <getopt.h>
-#include <errno.h>
-#include <sys/mman.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <time.h>
-#include <signal.h>
-#include <stdarg.h>
-
-#include <QAction>
-#include <QActionGroup>
-#include <QApplication>
-#include <QByteArray>
 #include <QClipboard>
-#include <QCloseEvent>
-#include <QFile>
-#include <QFocusEvent>
-#include <QKeyEvent>
-#include <QMenu>
 #include <QMessageBox>
-#include <QPixmap>
 #include <QShortcut>
 #include <QSignalMapper>
-#include <QSplashScreen>
-#include <QTextCodec>
 #include <QTimer>
-#include <QTimerEvent>
-#include <QTranslator>
 #include <QWhatsThis>
 
 #include "app.h"
 #include "master/lmaster.h"
-#include "master/masteredit.h"
-#include "marker/markerview.h"
-#include "popupmenu.h"
-#include "transport.h"
-#include "bigtime.h"
-#include "arranger.h"
-#include "pianoroll.h"
-#include "xml.h"
-#include "midi.h"
-#include "conf.h"
-#include "listedit.h"
-#include "drumedit.h"
-#include "ttoolbar.h"
-#include "amixer.h"
-#include "cliplist/cliplist.h"
-#include "midiport.h"
-#include "audiodev.h"
-#include "mididev.h"
-#include "waveedit.h"
-#include "icons.h"
-#include "minstrument.h"
-#include "mixdowndialog.h"
-#include "midictrl.h"
-#include "filedialog.h"
-#include "plugin.h"
-#include "transpose.h"
-#include "appearance.h"
-#include "gatetime.h"
-#include "metronome.h"
-#include "debug.h"
-#include "event.h"
-#include "audio.h"
-#include "midiseq.h"
-#include "audioprefetch.h"
-#include "wave.h"
-#include "shortcutconfig.h"
-#include "gconfig.h"
-#include "driver/jackaudio.h"
-#include "track.h"
-#include "ticksynth.h"
-#include "instruments/editinstrument.h"
-#include "synth.h"
-#include "remote/pyapi.h"
 #include "al/dsp.h"
+#include "amixer.h"
+#include "appearance.h"
+#include "arranger.h"
+#include "audio.h"
+#include "audiodev.h"
+#include "audioprefetch.h"
+#include "bigtime.h"
+#include "cliplist/cliplist.h"
+#include "conf.h"
+#include "debug.h"
+#include "didyouknow.h"
+#include "drumedit.h"
+#include "filedialog.h"
+#include "gatetime.h"
+#include "gconfig.h"
 #include "gui.h"
+#include "icons.h"
+#include "instruments/editinstrument.h"
+#include "listedit.h"
+#include "marker/markerview.h"
+#include "master/masteredit.h"
+#include "metronome.h"
+#include "midiseq.h"
+#include "mixdowndialog.h"
+#include "pianoroll.h"
+#include "popupmenu.h"
+#include "shortcutconfig.h"
+#include "songinfo.h"
+#include "ticksynth.h"
+#include "transport.h"
+#include "transpose.h"
+#include "waveedit.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -98,10 +56,6 @@
 #ifdef VST_SUPPORT
 #include "vst.h"
 #endif
-
-#include <alsa/asoundlib.h>
-#include "songinfo.h"
-#include "didyouknow.h"
 
 //extern void cacheJackRouteNames();
 
@@ -129,19 +83,11 @@ static const char* infoPanicButton    = QT_TRANSLATE_NOOP("@default", "send note
 
 #define PROJECT_LIST_LEN  6
 static QString* projectList[PROJECT_LIST_LEN];
-static QString locale_override;
 
-extern void initIcons();
 extern void initMidiSynth();
-extern bool initJackAudio();
 extern void exitJackAudio();
-extern bool initDummyAudio();
 extern void exitDummyAudio();
-extern void initVST_fst_init();
-extern void initVST();
-extern void initDSSI();
 // p3.3.39
-extern void initOSC();
 extern void exitOSC();
 
 #ifdef HAVE_LASH
@@ -160,33 +106,6 @@ pthread_t splashThread;
 //  QString script("test.py");
 // // pyscript->runPythonScript(script);
 // }
-
-//---------------------------------------------------------
-//   getCapabilities
-//---------------------------------------------------------
-
-static void getCapabilities()
-      {
-#ifdef RTCAP
-#ifdef __linux__
-      const char* napp = getenv("GIVERTCAP");
-      if (napp == 0)
-            napp = "givertcap";
-      int pid = fork();
-      if (pid == 0) {
-            if (execlp(napp, napp, 0) == -1)
-                  perror("exec givertcap failed");
-            }
-      else if (pid == -1) {
-            perror("fork givertcap failed");
-            }
-      else {
-            waitpid(pid, 0, 0);
-            }
-#endif // __linux__
-#endif
-      }
-
 
 //---------------------------------------------------------
 //   sleep function
@@ -3140,15 +3059,6 @@ bool MusE::saveAs()
       }
 
 //---------------------------------------------------------
-//   printVersion
-//---------------------------------------------------------
-
-static void printVersion(const char* prog)
-      {
-      fprintf(stderr, "%s: Linux Music Editor; Version %s, (svn revision %s)\n", prog, VERSION, SVNVERSION);
-      }
-
-//---------------------------------------------------------
 //   startEditor
 //---------------------------------------------------------
 
@@ -3531,141 +3441,6 @@ void MusE::kbAccel(int key)
       }
 
 //---------------------------------------------------------
-//   MuseApplication
-//---------------------------------------------------------
-
-class MuseApplication : public QApplication {
-      MusE* muse;
-
-   public:
-      MuseApplication(int& argc, char** argv)
-         : QApplication(argc, argv)
-            {
-            muse = 0;
-            }
-
-
-      void setMuse(MusE* m) {
-            muse = m;
-#ifdef HAVE_LASH
-            if(useLASH)
-              startTimer (300);
-#endif
-            }
-
-      bool notify(QObject* receiver, QEvent* event) {
-            //if (event->type() == QEvent::KeyPress)
-            //  printf("notify key press before app::notify accepted:%d\n", event->isAccepted());  
-            bool flag = QApplication::notify(receiver, event);
-            if (event->type() == QEvent::KeyPress) {
-              //printf("notify key press after app::notify accepted:%d\n", event->isAccepted());   
-                  QKeyEvent* ke = (QKeyEvent*)event;
-                  ///globalKeyState = ke->stateAfter();
-                  globalKeyState = ke->modifiers();
-                  bool accepted = ke->isAccepted();
-                  if (!accepted) {
-                        int key = ke->key();
-                        ///if (ke->state() & Qt::ShiftModifier)
-                        //if (globalKeyState & Qt::ShiftModifier)
-                        if (((QInputEvent*)ke)->modifiers() & Qt::ShiftModifier)
-                              key += Qt::SHIFT;
-                        ///if (ke->state() & Qt::AltModifier)
-                        //if (globalKeyState & Qt::AltModifier)
-                        if (((QInputEvent*)ke)->modifiers() & Qt::AltModifier)
-                              key += Qt::ALT;
-                        ///if (ke->state() & Qt::ControlModifier)
-                        //if (globalKeyState & Qt::ControlModifier)
-                        if (((QInputEvent*)ke)->modifiers() & Qt::ControlModifier)
-                              key+= Qt::CTRL;
-                        muse->kbAccel(key);
-                        return true;
-                        }
-                  }
-            if (event->type() == QEvent::KeyRelease) {
-                  QKeyEvent* ke = (QKeyEvent*)event;
-                  ///globalKeyState = ke->stateAfter();
-                  globalKeyState = ke->modifiers();
-                  }
-
-            return flag;
-            }
-
-#ifdef HAVE_LASH
-     virtual void timerEvent (QTimerEvent * /* e */) {
-            if(useLASH)
-              muse->lash_idle_cb ();
-            }
-#endif /* HAVE_LASH */
-
-      };
-
-//---------------------------------------------------------
-//   localeList
-//---------------------------------------------------------
-
-static QString localeList()
-      {
-      // Find out what translations are available:
-      QStringList deliveredLocaleListFiltered;
-      QString distLocale = QString(INSTPREFIX) + "/" + SHAREINSTPREFIX + "/"
-                           + INSTALL_NAME + "/locale";
-      QFileInfo distLocaleFi(distLocale);
-      if (distLocaleFi.isDir()) {
-            QDir dir = QDir(distLocale);
-            QStringList deliveredLocaleList = dir.entryList();
-            for(QStringList::iterator it = deliveredLocaleList.begin(); it != deliveredLocaleList.end(); ++it) {
-                  QString item = *it;
-                  if (item.endsWith(".qm")) {
-                        int inipos = item.indexOf("muse_") + 5;
-                        int finpos = item.lastIndexOf(".qm");
-                        deliveredLocaleListFiltered << item.mid(inipos, finpos - inipos);
-                        }
-                  }
-            return deliveredLocaleListFiltered.join(",");
-            }
-      return QString("No translations found!");
-      }
-
-//---------------------------------------------------------
-//   usage
-//---------------------------------------------------------
-
-static void usage(const char* prog, const char* txt)
-      {
-     fprintf(stderr, "%s: %s\nusage: %s flags midifile\n   Flags:\n",
-         prog, txt, prog);
-      fprintf(stderr, "   -h       this help\n");
-      fprintf(stderr, "   -v       print version\n");
-      fprintf(stderr, "   -d       debug mode: no threads, no RT\n");
-      fprintf(stderr, "   -D       debug mode: enable some debug messages\n");
-      fprintf(stderr, "   -m       debug mode: trace midi Input\n");
-      fprintf(stderr, "   -M       debug mode: trace midi Output\n");
-      fprintf(stderr, "   -s       debug mode: trace sync\n");
-      fprintf(stderr, "   -a       no audio\n");
-      //fprintf(stderr, "   -P  n    set real time priority to n (default: 50)\n");
-      fprintf(stderr, "   -P  n    set audio driver real time priority to n (Dummy only, default 40. Else fixed by Jack.)\n");
-      fprintf(stderr, "   -Y  n    force midi real time priority to n (default: audio driver prio +2)\n");
-      fprintf(stderr, "   -p       don't load LADSPA plugins\n");
-#ifdef ENABLE_PYTHON
-      fprintf(stderr, "   -y       enable Python control support\n");
-#endif
-#ifdef VST_SUPPORT
-      fprintf(stderr, "   -V       don't load VST plugins\n");
-#endif
-#ifdef DSSI_SUPPORT
-      fprintf(stderr, "   -I       don't load DSSI plugins\n");
-#endif
-#ifdef HAVE_LASH
-      fprintf(stderr, "   -L       don't use LASH\n");
-#endif
-      fprintf(stderr, "   -l  xx   force locale to the given language/country code (xx = %s)\n", localeList().toLatin1().constData());
-      fprintf(stderr, "useful environment variables:\n");
-      fprintf(stderr, "   MUSE             override library and shared directories location\n");
-      fprintf(stderr, "   MUSEHOME         override user home directory (HOME/)\n");
-      fprintf(stderr, "   MUSEINSTRUMENTS  override user instrument directory (MUSEHOME/muse_instruments)\n");
-      }
-
-//---------------------------------------------------------
 //   catchSignal
 //    only for debugging
 //---------------------------------------------------------
@@ -3689,318 +3464,6 @@ static void catchSignal(int sig)
             }
       }
 #endif
-
-//---------------------------------------------------------
-//   main
-//---------------------------------------------------------
-
-int main(int argc, char* argv[])
-      {
-      
-//      error = ErrorHandler::create(argv[0]);
-      ruid = getuid();
-      euid = geteuid();
-      undoSetuid();
-      getCapabilities();
-      int noAudio = false;
-
-      const char* mu = getenv("MUSEHOME");
-      if(mu)
-        museUser = QString(mu);
-      if(museUser.isEmpty())
-        museUser = QString(getenv("HOME"));
-            
-      QString museGlobal;
-      const char* p = getenv("MUSE");
-      if (p)
-            museGlobal = p;
-
-      if (museGlobal.isEmpty()) {
-            //QString museGlobal(INSTPREFIX);
-            //QString museGlobalLibDir(INSTLIBDIR); 
-            //QString museGlobalLibDir(LIBINSTPREFIX); // This has no prefix.
-            //museGlobalLib   =  museGlobalLibDir + "/muse";
-            //museGlobalShare =  museGlobal + "/share/muse";
-            
-            // p4.0.7
-            museGlobalLib   =  QString(INSTPREFIX) + QString("/") +
-                               QString(LIBINSTPREFIX) + QString("/") + 
-                               QString(INSTALL_NAME);   
-            //museGlobalShare =  museGlobal + QString("/share/") + QString(INSTALL_NAME);   
-            museGlobalShare =  QString(INSTPREFIX) + QString("/") +                                             
-                               QString(SHAREINSTPREFIX) + QString("/") +  // This has no prefix. Default is "share", set in top cmake script.
-                               QString(INSTALL_NAME);   
-            }
-      else {
-            //museGlobalLib   = museGlobal + "/lib";
-            //museGlobalShare = museGlobal + "/share";
-            museGlobalLib   = museGlobal + QString("/") + QString(LIBINSTPREFIX);    // p4.0.7
-            museGlobalShare = museGlobal + QString("/") + QString(SHAREINSTPREFIX);
-            }
-      museProject = museProjectInitPath; //getcwd(0, 0);
-      configName  = QString(getenv("HOME")) + QString("/.MusE");
-
-      museInstruments = museGlobalShare + QString("/instruments");
-      
-      const char* ins = getenv("MUSEINSTRUMENTS");
-      if(ins)
-        museUserInstruments = QString(ins);
-      if(museUserInstruments.isEmpty())
-        museUserInstruments = museUser + QString("/muse_instruments");
-
-#ifdef HAVE_LASH
-      lash_args_t * lash_args = 0;
-      if(useLASH)
-        lash_args = lash_extract_args (&argc, &argv);
-#endif
-
-      srand(time(0));   // initialize random number generator
-//      signal(SIGCHLD, catchSignal);  // interferes with initVST()
-      initMidiController();
-      QApplication::setColorSpec(QApplication::ManyColor);
-      MuseApplication app(argc, argv);
-
-      initShortCuts();
-      readConfiguration();
-
-      if (config.useDenormalBias)
-          printf("Denormal protection enabled.\n");
-      // SHOW MUSE SPLASH SCREEN
-      if (config.showSplashScreen) {
-            QPixmap splsh(museGlobalShare + "/splash.png");
-
-            if (!splsh.isNull()) {
-                  QSplashScreen* muse_splash = new QSplashScreen(splsh,
-                     Qt::WindowStaysOnTopHint);           
-                  muse_splash->setAttribute(Qt::WA_DeleteOnClose);  // Possibly also Qt::X11BypassWindowManagerHint
-                  muse_splash->show();
-                  QTimer* stimer = new QTimer(0);
-                  muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
-		  stimer->setSingleShot(true);
-                  stimer->start(6000);
-                  }
-            }
-      
-      int i;
-      
-      QString optstr("ahvdDmMsP:Y:l:py");
-#ifdef VST_SUPPORT
-      optstr += QString("V");
-#endif
-#ifdef DSSI_SUPPORT
-      optstr += QString("I");
-#endif
-#ifdef HAVE_LASH
-      optstr += QString("L");
-#endif
-
-//#ifdef VST_SUPPORT
-//      while ((i = getopt(argc, argv, "ahvdDmMsVP:py")) != EOF) {
-//#else
-//      while ((i = getopt(argc, argv, "ahvdDmMsP:py")) != EOF) {
-//#endif
-      
-      while ((i = getopt(argc, argv, optstr.toLatin1().constData())) != EOF) {
-      char c = (char)i;
-            switch (c) {
-                  case 'v': printVersion(argv[0]); return 0;
-                  case 'd':
-                        debugMode = true;
-                        realTimeScheduling = false;
-                        break;
-                  case 'a':
-                        noAudio = true;
-                        break;
-                  case 'D': debugMsg = true; break;
-                  case 'm': midiInputTrace = true; break;
-                  case 'M': midiOutputTrace = true; break;
-                  case 's': debugSync = true; break;
-                  case 'P': realTimePriority = atoi(optarg); break;
-                  case 'Y': midiRTPrioOverride = atoi(optarg); break;
-                  case 'p': loadPlugins = false; break;
-                  case 'V': loadVST = false; break;
-                  case 'I': loadDSSI = false; break;
-                  case 'L': useLASH = false; break;
-                  case 'y': usePythonBridge = true; break;
-                  case 'l': locale_override = QString(optarg); break;
-                  case 'h': usage(argv[0], argv[1]); return -1;
-                  default:  usage(argv[0], "bad argument"); return -1;
-                  }
-            }
-      
-      /*
-      if(!config.styleSheetFile.isEmpty())
-      {
-        if(debugMsg)
-          printf("loading style sheet <%s> \n", qPrintable(config.styleSheetFile));
-        QFile cf(config.styleSheetFile);
-        if (cf.open(QIODevice::ReadOnly)) {
-              QByteArray ss = cf.readAll();
-              QString sheet(QString::fromUtf8(ss.data()));
-              app.setStyleSheet(sheet);
-              cf.close();
-              }
-        else
-              printf("loading style sheet <%s> failed\n", qPrintable(config.styleSheetFile));
-      }
-      */
-      
-      AL::initDsp();
-      
-      if (debugMsg)
-            printf("Start euid: %d ruid: %d, Now euid %d\n",
-               euid, ruid, geteuid());
-      if (debugMode) {
-            initDummyAudio();
-            realTimeScheduling = false;
-            }
-      else if (noAudio) {
-            initDummyAudio();
-            realTimeScheduling = true;
-            //if (debugMode) {              // ??
-            //          realTimeScheduling = false;
-            //          }
-            }
-      else if (initJackAudio()) {
-            if (!debugMode)
-                  {
-                  QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find a <b>Jack audio server</b>.<br><br>"
-                                                                  "<i>MusE will continue without audio support (-a switch)!</i><br><br>"
-                                                                  "If this was not intended check that Jack was started. "
-                                                                  "If Jack <i>was</i> started check that it was\n"
-                                                                  "started as the same user as MusE.\n");
-
-                  initDummyAudio();
-                  noAudio = true;
-                  realTimeScheduling = true;
-                  if (debugMode) {
-                            realTimeScheduling = false;
-                            }
-                  }
-            else
-                  {
-                  fprintf(stderr, "fatal error: no JACK audio server found\n");
-                  fprintf(stderr, "no audio functions available\n");
-                  fprintf(stderr, "*** experimental mode -- no play possible ***\n");
-                  initDummyAudio();
-                  //realTimeScheduling = audioDevice->isRealtime();
-                  }
-            realTimeScheduling = true;
-            }
-      else
-            realTimeScheduling = audioDevice->isRealtime();
-
-      useJackTransport.setValue(true);
-      // setup the prefetch fifo length now that the segmentSize is known
-      // Changed by Tim. p3.3.17
-      // Changed to 4 *, JUST FOR TEST!!!
-      fifoLength = 131072/segmentSize;
-      //fifoLength = (131072/segmentSize) * 4;
-      
-      
-      argc -= optind;
-      ++argc;
-
-      if (debugMsg) {
-            printf("global lib:       <%s>\n", museGlobalLib.toLatin1().constData());
-            printf("global share:     <%s>\n", museGlobalShare.toLatin1().constData());
-            printf("muse home:        <%s>\n", museUser.toLatin1().constData());
-            printf("project dir:      <%s>\n", museProject.toLatin1().constData());
-            printf("user instruments: <%s>\n", museUserInstruments.toLatin1().constData());
-            }
-
-      static QTranslator translator(0);
-      QString locale(QApplication::keyboardInputLocale().name());
-      if (locale_override.length())
-            locale = locale_override;
-      if (locale != "C") {
-            QString loc("muse_");
-            loc += locale;
-            if (translator.load(loc, QString(".")) == false) {
-                  QString lp(museGlobalShare);
-                  lp += QString("/locale");
-                  if (translator.load(loc, lp) == false) {
-                        printf("no locale <%s>/<%s>\n", loc.toLatin1().constData(), lp.toLatin1().constData());
-                        }
-                  }
-            app.installTranslator(&translator);
-            }
-
-      if (locale == "de") {
-            printf("locale de\n");
-            hIsB = false;
-            }
-
-      if (loadPlugins)
-            initPlugins();
-
-      if (loadVST)
-            initVST();
-
-      if(loadDSSI)
-        initDSSI();
-      
-      // p3.3.39
-      initOSC();
-      
-      initIcons();
-
-      initMetronome();
-      
-      //QApplication::clipboard()->setSelectionMode(false); ddskrjo obsolete even in Qt3
-      
-      QApplication::addLibraryPath(museGlobalLib + "/qtplugins");
-      if (debugMsg) {
-            QStringList list = app.libraryPaths();
-            QStringList::Iterator it = list.begin();
-            printf("QtLibraryPath:\n");
-            while(it != list.end()) {
-                  printf("  <%s>\n", (*it).toLatin1().constData());
-                  ++it;
-                  }
-            }
-
-      muse = new MusE(argc, &argv[optind]);
-      app.setMuse(muse);
-      muse->setWindowIcon(*museIcon);
-      
-      // Added by Tim. p3.3.22
-      if (!debugMode) {
-            if (mlockall(MCL_CURRENT | MCL_FUTURE))
-                  perror("WARNING: Cannot lock memory:");
-            }
-      
-      muse->show();
-      muse->seqStart();
-
-#ifdef HAVE_LASH
-      {
-        if(useLASH)
-        {
-          int lash_flags = LASH_Config_File;
-          const char *muse_name = PACKAGE_NAME;
-          lash_client = lash_init (lash_args, muse_name, lash_flags, LASH_PROTOCOL(2,0));
-          lash_alsa_client_id (lash_client, snd_seq_client_id (alsaSeq));
-          if (!noAudio) {
-                // p3.3.38
-                //char *jack_name = ((JackAudioDevice*)audioDevice)->getJackName();
-                const char *jack_name = audioDevice->clientName();
-                lash_jack_client_name (lash_client, jack_name);
-          }      
-        }
-      }
-#endif /* HAVE_LASH */
-      QTimer::singleShot(100, muse, SLOT(showDidYouKnowDialog()));
-      
-      int rv = app.exec();
-      if(debugMsg) 
-        printf("app.exec() returned:%d\nDeleting main MusE object\n", rv);
-      delete muse; 
-      if(debugMsg) 
-        printf("Finished! Exiting main, return value:%d\n", rv);
-      return rv;
-      
-      }
 
 #if 0
 //---------------------------------------------------------

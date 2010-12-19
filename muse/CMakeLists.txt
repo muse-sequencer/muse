@@ -194,7 +194,7 @@ file (GLOB SOURCE_FILES
 #       trackinfo.cpp
       
       ticksynth.h ticksynth.cpp 
-      vst.h vst.cpp 
+      vst.h vst.cpp
       dssihost.h dssihost.cpp 
       osc.cpp osc.h 
       stringparam.cpp stringparam.h 
@@ -220,7 +220,6 @@ file (GLOB SOURCE_FILES
       exportmidi.cpp 
       midifile.h midifile.cpp 
       xml.cpp xml.h 
-      icons.cpp icons.h 
       event.cpp event.h eventbase.h evdata.h 
       eventlist.cpp 
       midievent.h midievent.cpp 
@@ -259,7 +258,19 @@ file (GLOB SOURCE_FILES
       default_click.h
       )
 
+file (GLOB MAIN_SOURCE_FILES
+      main.cpp
+      )
+
+file (GLOB ICONS_SOURCE_FILES
+      icons.cpp icons.h
+      )
+
 add_executable ( muse
+      ${MAIN_SOURCE_FILES}
+      )
+
+add_library ( core SHARED
       ${muse_qrc_files}
       ${muse_moc_headers}
       # ${muse_ui_headers}
@@ -267,8 +278,11 @@ add_executable ( muse
       ${SOURCE_FILES}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+add_library ( icons SHARED
+      ${ICONS_SOURCE_FILES}
+      )
 
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${MAIN_SOURCE_FILES} ${SOURCE_FILES} CACHE INTERNAL "")
 
 # AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
 # EXEC_PROGRAM( svnversion
@@ -285,39 +299,35 @@ include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/instruments ${CMAKE_CURRENT_BINARY_DIR}/remote
       )
 
-set_target_properties( muse
+set_target_properties( core
       # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${PYREM_CPP_FLAGS} -DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h "
       # PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h "
-      PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
-      OUTPUT_NAME muse2
+      PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+                 OUTPUT_NAME muse_core
       )
 
-target_link_libraries(muse
-#       midiedit
-#       master
-#       instruments
-#       marker
-#       liste
-#       synti
-#       waveedit
-#       widgets
-#       al
-#       awl
-#       ctrl
+set_target_properties( muse
+      PROPERTIES OUTPUT_NAME muse2
+      )
+
+set_target_properties( icons
+      PROPERTIES OUTPUT_NAME muse_icons
+      )
+
+target_link_libraries(core
       
       midiedit ctrl 
       liste mixer driver marker 
       master waveedit mplugins arranger 
       cliplist instruments widgets 
+      icons
       synti       
       al      
       awl
       
       ${QT_LIBRARIES}
       QtSvg
-      ${ALSA_LIBRARIES}
-      ${JACK_LIBRARIES}
       ${SNDFILE_LIBRARIES}
       ${SAMPLERATE_LIBRARIES}
       ${UUID_LIBRARIES}
@@ -326,13 +336,23 @@ target_link_libraries(muse
       dl
       )
 
+target_link_libraries(muse
+      midiedit
+      core
+      )	
+
+target_link_libraries(icons
+      ${QT_LIBRARIES}
+      )	
+
 if(HAVE_LASH)
-      target_link_libraries(muse ${LASH_LIBRARIES})
+      target_link_libraries(core ${LASH_LIBRARIES})
 endif(HAVE_LASH)
 
 if(OSC_SUPPORT)
-      target_link_libraries(muse ${LIBLO_LIBRARIES})
+      target_link_libraries(core ${LIBLO_LIBRARIES})
 endif(OSC_SUPPORT)
 
 install ( TARGETS muse RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/ )
+install(TARGETS core icons DESTINATION ${MUSE_MODULES_DIR})
 
