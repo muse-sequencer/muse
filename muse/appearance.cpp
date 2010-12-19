@@ -73,6 +73,8 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       fontName6->setToolTip(tr("Mixer label font. Auto-font-sizing up to chosen font size.\nWord-breaking but only with spaces."));
       fontSize6->setToolTip(tr("Maximum mixer label auto-font-sizing font size."));
       
+      globalAlphaSlider->setToolTip(tr("Global opaqueness (inverse of transparency)."));
+      
       // ARRANGER
 
       /*
@@ -165,6 +167,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
 
       connect(itemList, SIGNAL(itemSelectionChanged()), SLOT(colorItemSelectionChanged()));
       connect(aPalette, SIGNAL(buttonClicked(int)), SLOT(paletteClicked(int)));
+      connect(globalAlphaSlider, SIGNAL(valueChanged(int)), SLOT(asliderChanged(int)));
       connect(rslider, SIGNAL(valueChanged(int)), SLOT(rsliderChanged(int)));
       connect(gslider, SIGNAL(valueChanged(int)), SLOT(gsliderChanged(int)));
       connect(bslider, SIGNAL(valueChanged(int)), SLOT(bsliderChanged(int)));
@@ -172,6 +175,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(sslider, SIGNAL(valueChanged(int)), SLOT(ssliderChanged(int)));
       connect(vslider, SIGNAL(valueChanged(int)), SLOT(vsliderChanged(int)));
 
+      connect(globalAlphaVal, SIGNAL(valueChanged(int)), SLOT(aValChanged(int)));
       connect(rval, SIGNAL(valueChanged(int)), SLOT(rsliderChanged(int)));
       connect(gval, SIGNAL(valueChanged(int)), SLOT(gsliderChanged(int)));
       connect(bval, SIGNAL(valueChanged(int)), SLOT(bsliderChanged(int)));
@@ -309,6 +313,13 @@ void Appearance::resetValues()
                   }
             }
 
+      globalAlphaSlider->blockSignals(true);
+      globalAlphaVal->blockSignals(true);
+      globalAlphaSlider->setValue(config->globalAlphaBlend);
+      globalAlphaVal->setValue(config->globalAlphaBlend);
+      globalAlphaSlider->blockSignals(false);
+      globalAlphaVal->blockSignals(false);
+      
       updateColor();
       
       }
@@ -449,6 +460,8 @@ void Appearance::apply()
 
       config->canvasShowGrid = arrGrid->isChecked();
       
+      config->globalAlphaBlend = globalAlphaVal->value();
+      
       // set colors...
       ::config = *config;
       muse->changeConfig(true);
@@ -560,12 +573,14 @@ void Appearance::colorItemSelectionChanged()
 void Appearance::updateColor()
       {
       int r, g, b, h, s, v;
+      //globalAlphaSlider->setEnabled(color);
       rslider->setEnabled(color);
       gslider->setEnabled(color);
       bslider->setEnabled(color);
       hslider->setEnabled(color);
       sslider->setEnabled(color);
       vslider->setEnabled(color);
+      //globalAlphaVal->setEnabled(color);
       rval->setEnabled(color);
       gval->setEnabled(color);
       bval->setEnabled(color);
@@ -575,10 +590,14 @@ void Appearance::updateColor()
       if (color == 0)
             return;
       QPalette pal;
-      pal.setColor(colorframe->backgroundRole(), *color);
+      QColor cfc(*color);
+      cfc.setAlpha(globalAlphaVal->value());
+      pal.setColor(colorframe->backgroundRole(), cfc);
       colorframe->setPalette(pal);
       color->getRgb(&r, &g, &b);
       color->getHsv(&h, &s, &v);
+      //a = color->alpha();
+      //a = config->globalAlphaBlend;
 
       rslider->blockSignals(true);
       gslider->blockSignals(true);
@@ -618,6 +637,22 @@ void Appearance::updateColor()
       hval->blockSignals(false);
       sval->blockSignals(false);
       vval->blockSignals(false);
+      }
+
+void Appearance::asliderChanged(int val)
+      {
+      globalAlphaVal->blockSignals(true);
+      globalAlphaVal->setValue(val);
+      globalAlphaVal->blockSignals(false);
+      updateColor();
+      }
+
+void Appearance::aValChanged(int val)
+      {
+      globalAlphaSlider->blockSignals(true);
+      globalAlphaSlider->setValue(val);
+      globalAlphaSlider->blockSignals(false);
+      updateColor();
       }
 
 void Appearance::rsliderChanged(int val)

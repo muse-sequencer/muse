@@ -48,6 +48,7 @@ struct MixerConfig {
 //---------------------------------------------------------
 
 struct GlobalConfigValues {
+      int globalAlphaBlend;
       QColor palette[16];
       QColor partColors[NUM_PARTCOLORS];
 	QColor transportHandleColor;

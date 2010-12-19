@@ -1,3 +1,8 @@
+19.12.2010:
+        - Fixed not saving part colours and part canvas background appearance settings. (Tim)
+        *Feature: Added 'global opaqueness' (transparency) appearance setting. (Tim)
+          Currently only affects part colours. 
+          TODO: Fix the darn black rectangle drawing. Apply the opaqueness to some other things.
 18.12.2010:
         - Fixed transport shortcuts not working in some windows or situations. (Tim)
           Added event->ignore to PartCanvas::keyPress. Added setFocusPolicy() to WaveView, Master.

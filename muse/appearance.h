@@ -42,6 +42,8 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void browseFont4();
       void browseFont5();
       void browseFont6();
+      void asliderChanged(int);
+      void aValChanged(int);
       void rsliderChanged(int);
       void gsliderChanged(int);
       void bsliderChanged(int);
