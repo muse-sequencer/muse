@@ -39,7 +39,7 @@ static const char* valu[] = {
       };
 
 GlobalConfigValues config = {
-      128,                        // globalAlphaBlend    
+      150,                        // globalAlphaBlend    
       {
         QColor(0xff, 0xff, 0xff),   // palette
         QColor(0xff, 0xff, 0xff),
