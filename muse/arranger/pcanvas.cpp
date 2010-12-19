@@ -1451,13 +1451,19 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       else if (part->selected()) {
             bool clone = part->events()->arefCount() > 1;
             //p.setPen(config.partColors[i]);
-            p.setPen(QPen(config.partColors[i], 2, clone ? Qt::DashLine : Qt::SolidLine));
+            //p.setPen(QPen(config.partColors[i], 2, clone ? Qt::DashLine : Qt::SolidLine));
+            QPen pen(config.partColors[i], 2, clone ? Qt::DashLine : Qt::SolidLine);
+            pen.setCosmetic(true);
+            p.setPen(pen);
             p.setBrush(Qt::black);
             p.drawRect(r);
             }
       else {
             bool clone = part->events()->arefCount() > 1;
-            p.setPen(QPen(Qt::black, 2, clone ? Qt::DashLine : Qt::SolidLine));
+            //p.setPen(QPen(Qt::black, 0, clone ? Qt::DashLine : Qt::SolidLine));
+            QPen pen(Qt::black, 2, clone ? Qt::DashLine : Qt::SolidLine);
+            pen.setCosmetic(true);
+            p.setPen(pen);
             
             //p.setBrush(config.partColors[i]);
             QColor c(config.partColors[i]);
