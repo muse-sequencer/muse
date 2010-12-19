@@ -1455,7 +1455,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             QPen pen(config.partColors[i], 2, clone ? Qt::DashLine : Qt::SolidLine);
             pen.setCosmetic(true);
             p.setPen(pen);
-            p.setBrush(Qt::black);
+            //p.setBrush(Qt::black);
+            QColor c(Qt::black);
+            // Hm, put some kind of lower limit? If so do that globally to the adjustment.
+            c.setAlpha(config.globalAlphaBlend);  
+            p.setBrush(c);
             p.drawRect(r);
             }
       else {
