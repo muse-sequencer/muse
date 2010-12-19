@@ -31,7 +31,7 @@ details.
       - gcc >= 4.x.x
 
       - libsndfile >= 1.0.1
-        http://www.zip.com.au/~erikd/libsndfile/
+        http://www.mega-nerd.com/libsndfile/
 
       - libsamplerate
 

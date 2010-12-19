@@ -6,6 +6,7 @@
         - Fixed arranger part drawing borders. Used QPen::setCosmetic(true) when drawing. (Tim)
         - Individual parts are now built as shared libraries. (Orcan)
         - Moved main() and first degree relatives into main.cpp (Orcan)
+        - Fixed bad link in README. Updated German README. (Orcan)
 18.12.2010:
         - Fixed transport shortcuts not working in some windows or situations. (Tim)
           Added event->ignore to PartCanvas::keyPress. Added setFocusPolicy() to WaveView, Master.

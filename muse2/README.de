@@ -21,19 +21,22 @@ Für Einzelheiten siehe COPYING.
       Voraussetzungen
   =============================
 
-      - qt 3.2.0 oder neuer
+      - CMake >= 2.4
+        http:/www.cmake.org/HTML/Download.html
+
+      - qt 4.2.0 oder neuer
         ftp://ftp.trolltech.com/qt/source
-        Bitte mit "-thread" option compilieren.
+        MsE kompiliert nicht mit alter versionen
 
-      - libsndfile 1.0.1 (aktuell ist 1.0.4)
-        http://www.zip.com.au/~erikd/libsndfile/
+      - libsndfile >= 1.0.1
+        http://www.mega-nerd.com/libsndfile/
 
-      - JACK
+      - JACK >= 0.103
         http://jackit.sourceforge.net/
         download:
 	  http://jackit.sourceforge.net/download/
 
-      - fluidsynth-1.0.3 (the synti formerly known as "iiwusynth") von
+      - fluidsynth-1.0.3 (die synti früher bekannt als "iiwusynth") von
         http://savannah.nongnu.org/download/fluid
 
       - Linux Kernel mit rtc (RealTimeClock) Treiber (device /dev/rtc)
@@ -42,9 +45,7 @@ Für Einzelheiten siehe COPYING.
       - ALSA von http://www.alsa-project.org/
         Version 0.9.x oder neuer
 
-      - gcc 3.x.x
-        (es muß der gleiche Compiler wie der zum compilieren der
-        QT-Libraries verwendet werden)
+      - gcc >= 4.x.x
 
       - natürlich: eine Soundkarte und/oder irgendwelche Midi Geräte
 
@@ -54,13 +55,13 @@ Für Einzelheiten siehe COPYING.
 
       - download source von http://lmuse.sourceforge.net/
       - untar source:
-            tar xvofj muse-current-tar.bz2 </code>
+            tar xvofj muse-current-tar.bz2
       - konfigurieren:
-            run "configure"
+            cmake -DCMAKE_BUILD_TYPE=release [-DCMAKE_INSTALL_PREFIX=<prefix>] ../
       - kompilieren:
-            run "make all"
-      - installieren
-            als root, run "make install"
+            make
+      - installieren (als root)
+            make install
       - Test
 
 ====================================================================
