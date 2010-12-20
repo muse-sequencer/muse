@@ -1,3 +1,5 @@
+20.12.2010:
+        - Fixed arranger grid h-line drawing, track, and part drawing alignment, border issues. (Tim)
 19.12.2010:
         - Fixed not saving part colours and part canvas background appearance settings. (Tim)
         *Feature: Added 'global opaqueness' (transparency) appearance setting. (Tim)

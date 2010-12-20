@@ -330,7 +330,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       //vscroll = new QScrollBar(1, 20*20, 1, 5, 0, Vertical, editor);
       //vscroll = new QScrollBar(1, 20*20, 5, 25, 0, Qt::Vertical, editor);
       vscroll = new QScrollBar(editor);
-      vscroll->setMinimum(1);
+      ///vscroll->setMinimum(1);
+      vscroll->setMinimum(0);      // Tim.
       vscroll->setMaximum(20*20);
       vscroll->setSingleStep(5);
       vscroll->setPageStep(25);
