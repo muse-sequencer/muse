@@ -18,41 +18,75 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-QT4_WRAP_CPP ( vam_mocs vamgui.h )
-
-file (GLOB UI_FILES vamguibase.ui ) 
-QT4_WRAP_UI ( vam_uis ${UI_FILES} )
-
-file (GLOB SOURCE_FILES
-      vam.cpp 
-      vamgui.cpp
+##
+## Expand Qt macros in source files
+##
+QT4_WRAP_CPP ( vam_mocs
       vamgui.h
       )
 
+##
+## UI files
+##
+file (GLOB vam_ui_files
+      vamguibase.ui
+      ) 
+QT4_WRAP_UI ( vam_uis ${vam_ui_files} )
+
+##
+## List of source files to compile
+##
+file (GLOB vam_source_files
+      vam.cpp 
+      vamgui.cpp
+      )
+
+##
+## Define target
+##
 add_library ( vam SHARED 
-      ${SOURCE_FILES}
+      ${vam_source_files}
       ${vam_mocs}
       ${vam_uis}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${vam_source_files}
+      ${vam_ui_files}
+      CACHE INTERNAL ""
+      )
 
-# target_link_libraries( vam synti )
-
+##
+## Compilation flags and target name
+##
 # - tell cmake to name target vam.so instead of 
 #   libvam.so
 # - use precompiled header files
 #
 set_target_properties ( vam 
-   PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
-   )
+      PROPERTIES PREFIX ""
+      COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      )
 
+##
+## Linkage
+##
 target_link_libraries(vam
       # al
       synti
       ${QT_LIBRARIES}
       )
 
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ vam )
-
+##
+## Install location
+##
+install( TARGETS vam
+      DESTINATION ${MusE_SYNTHI_DIR}
+      )
+install( FILES ChangeLog COPYING README TODO
+      DESTINATION ${MusE_DOC_DIR}/vam
+      )

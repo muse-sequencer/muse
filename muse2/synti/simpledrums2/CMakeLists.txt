@@ -18,43 +18,78 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-QT4_WRAP_CPP ( simpledrums_mocs simpledrumsgui.h ssplugingui.h )
-
-file (GLOB UI_FILES simpledrumsguibase.ui sspluginchooserbase.ui )
-QT4_WRAP_UI ( simpledrums_uis ${UI_FILES} )
-
-file (GLOB SOURCE_FILES
-      simpledrums.cpp
-      simpledrumsgui.cpp
-      simpledrums.h
-      ssplugin.cpp
-      ssplugingui.cpp
-      ssplugin.h
-      common.h
+##
+## Expand Qt macros in source files
+##
+QT4_WRAP_CPP ( simpledrums_mocs
+      simpledrumsgui.h
+      ssplugingui.h
       )
 
+##
+## UI files
+##
+file (GLOB simpledrums_ui_files 
+      simpledrumsguibase.ui
+      sspluginchooserbase.ui
+      )
+QT4_WRAP_UI ( simpledrums_uis ${simpledrums_ui_files} )
+
+##
+## List of source files to compile
+##
+file (GLOB simpledrums_source_files
+      simpledrums.cpp
+      simpledrumsgui.cpp
+      ssplugin.cpp
+      ssplugingui.cpp
+      )
+
+##
+## Define target
+##
 add_library ( simpledrums SHARED
-      ${SOURCE_FILES}
+      ${simpledrums_source_files}
       ${simpledrums_mocs}
       ${simpledrums_uis}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE} 
+      ${simpledrums_source_files}
+      ${simpledrums_ui_files}
+      CACHE INTERNAL ""
+      )
 
+##
+## Compilation flags and target name
+##
 # - tell cmake to name target simpledrums.so instead of
 #   libsimpledrums.so
 # - use precompiled header files
 #
 set_target_properties ( simpledrums
-   PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-O6 -fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
-   )
+      PROPERTIES PREFIX ""
+      COMPILE_FLAGS "-O6 -fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      )
 
+##
+## Linkage
+##
 target_link_libraries(simpledrums
       synti
-#      awl
       ${QT_LIBRARIES}
       )
 
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ simpledrums )
-
+##
+## Install location
+##
+install( TARGETS simpledrums 
+      DESTINATION ${MusE_SYNTHI_DIR}
+      )
+install( FILES COPYING README ReleaseNotes.txt
+      DESTINATION ${MusE_DOC_DIR}/simpledrums
+      )

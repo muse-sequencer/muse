@@ -18,12 +18,15 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-file(GLOB script_files DoNothing 
-                       RemoveShortEvents 
-                       DoubleSpeed 
-                       ConstantLength 
-                       SwingQuantize1
-    )
+file(GLOB script_files
+      DoNothing 
+      RemoveShortEvents 
+      DoubleSpeed 
+      ConstantLength 
+      SwingQuantize1
+      )
+
 install (PROGRAMS ${script_files}
-         DESTINATION ${CMAKE_INSTALL_PREFIX}/${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/scripts)
+      DESTINATION ${MusE_SHARE_DIR}/scripts
+      )
 

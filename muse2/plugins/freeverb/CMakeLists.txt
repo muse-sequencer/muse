@@ -18,10 +18,24 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-add_library ( freeverb SHARED
-      freeverb.cpp revmodel.cpp
+##
+## List of source files to compile
+##
+file (GLOB freeverb_source_files
+      freeverb.cpp
+      revmodel.cpp
       )
 
+##
+## Define target
+##
+add_library ( freeverb SHARED
+      ${freeverb_source_files}
+      )
+
+##
+## Compilation flags and target name
+##
 # tell cmake to name the target freeverb.so instead of
 # libfreeverb.so
 #
@@ -30,4 +44,13 @@ set_target_properties (freeverb
       COMPILE_FLAGS "-O2"
       )
 
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins freeverb)
+##
+## Install location
+##
+install( TARGETS freeverb
+      DESTINATION ${MusE_PLUGINS_DIR}
+      )
+install( FILES readme.txt
+      DESTINATION ${MusE_DOC_DIR}/freeverb
+      )
+

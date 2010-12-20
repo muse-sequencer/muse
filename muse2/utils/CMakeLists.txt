@@ -18,5 +18,8 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/utils/ muse-find-unused-wavs)
-install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/utils/ muse-song-convert.py)
+install( FILES
+      muse-find-unused-wavs
+      muse-song-convert.py
+      DESTINATION ${MusE_SHARE_DIR}/utils/
+      )

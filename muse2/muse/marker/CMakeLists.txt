@@ -1,77 +1,76 @@
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
 #
+#  Copyright (C) 2002-2006 by Werner Schweer and others
 #
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2.
 #
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#=============================================================================
 
-# MACRO(WRAP_CPP outfiles )
-#    FOREACH(it ${ARGN})
-#       SET(${outfiles} ${${outfiles}} ${it}.cpp)
-#       ENDFOREACH(it)
-#    ENDMACRO(WRAP_CPP)
-# 
-# MACRO(WRAP_H outfiles )
-#    FOREACH(it ${ARGN})
-#       SET(${outfiles} ${${outfiles}} ${it}.h)
-#       ENDFOREACH(it)
-#    ENDMACRO(WRAP_H)
-# 
-# MACRO(WRAP_UI outfiles )
-#    FOREACH(it ${ARGN})
-#       SET(${outfiles} ${${outfiles}} ${it}.ui)
-#       ENDFOREACH(it)
-#    ENDMACRO(WRAP_UI)
-# 
-# set(mocs
-#       markerview
-#       )
-# 
-# WRAP_H(mocH ${mocs})
-# WRAP_CPP(mocCPP ${mocs})
-# 
-# QT4_WRAP_CPP (moc_headers ${mocH})
-# 
-# set (uics
-#    )
-# 
-# WRAP_UI(uiUI ${uics})
-# QT4_WRAP_UI (ui_headers ${uiUI})
-# 
-# set ( marker_src ${mocCPP} ${moc_headers})
-# 
-# add_library ( marker STATIC ${marker_src})
-# set_target_properties( marker
-#    PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-#    )
-
-
-
+##
+## Expand Qt macros in source files
+##
 QT4_WRAP_CPP ( marker_mocs
-        markerview.h
+      markerview.h
       )
 
-file (GLOB SOURCE_FILES
-        marker.cpp marker.h 
-        markerview.cpp # markerview.h
-        )
+##
+## List of source files to compile
+##
+file (GLOB marker_source_files
+      marker.cpp
+      markerview.cpp
+      )
 
+##
+## Define target
+##
 add_library ( marker SHARED
-        ${SOURCE_FILES}
-        # ${marker_ui_headers}
-        ${marker_mocs}
+      ${marker_source_files}
+      # ${marker_ui_headers}
+      ${marker_mocs}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${marker_source_files}
+      CACHE INTERNAL ""
+      )
 
-install(TARGETS marker DESTINATION ${MUSE_MODULES_DIR})
+##
+## Compilation flags and target name
+##
+set_target_properties( marker
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      OUTPUT_NAME muse_marker
+      )
 
+##
+## Linkage
+##
 target_link_libraries ( marker
       ${QT_LIBRARIES}
       awl
       icons
       )
 
-set_target_properties( marker
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
-                 OUTPUT_NAME muse_marker
+##
+## Install location
+##
+install(TARGETS marker
+      DESTINATION ${MusE_MODULES_DIR}
       )
-

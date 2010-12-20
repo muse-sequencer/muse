@@ -18,74 +18,76 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+##
+## Expand Qt macros in source files
+##
 QT4_WRAP_CPP ( midiedit_mocs
-#       midicmd.h
-#       gatetime.h
-#       velocity.h
-#       quantconfig.h
-#       dcanvas.h
-#       drumedit.h
-#       ecanvas.h
-#       midieditor.h
-#       pianoroll.h
-#       prcanvas.h
-#       miditracker.h
-#       trackpattern.h
-      
-      pianoroll.h 
+      # gatetime.h
+      # midicmd.h
+      # midieditor.h
+      # miditracker.h
+      # trackpattern.h
+      # velocity.h
+      dcanvas.h 
+      dlist.h 
+      drumedit.h 
+      ecanvas.h
       piano.h 
+      pianoroll.h 
       prcanvas.h 
       quantconfig.h 
-      drumedit.h 
-      dlist.h 
-      dcanvas.h 
-      ecanvas.h
       )
 
-file (GLOB SOURCE_FILES
-#      midicmd.h
-#      gatetime.h
-#       midicmd.cpp
-#       gatetime.cpp
-#       velocity.cpp
-#       quantconfig.cpp
-#       citem.h
-#       cmd.h
-#       drummap.h
-#       midicmd.h
-#       citem.cpp
-#       dcanvas.cpp
-#       drumedit.cpp
-#       drummap.cpp
-#       ecanvas.cpp
-#       midieditor.cpp
-#       pianoroll.cpp
-#       prcanvas.cpp
-#       miditracker.cpp
-#       trackpattern.cpp
-      
-      drummap.cpp drummap.h 
-      cmd.h 
-      pianoroll.cpp # pianoroll.h 
-      piano.cpp # piano.h 
-      prcanvas.cpp # prcanvas.h 
-      quantconfig.cpp # quantconfig.h 
-      drumedit.cpp # drumedit.h 
-      dlist.cpp # dlist.h 
-      dcanvas.cpp # dcanvas.h 
-      ecanvas.cpp # ecanvas.h
+##
+## List of source files to compile
+##
+file (GLOB midiedit_source_files
+      # citem.cpp
+      # gatetime.cpp
+      # midicmd.cpp
+      # midieditor.cpp
+      # miditracker.cpp
+      # trackpattern.cpp
+      # velocity.cpp
+      dcanvas.cpp
+      dlist.cpp
+      drumedit.cpp
+      drummap.cpp
+      ecanvas.cpp
+      piano.cpp
+      pianoroll.cpp
+      prcanvas.cpp
+      quantconfig.cpp
       )
 
+##
+## Define target
+##
 add_library ( midiedit SHARED
-      ${SOURCE_FILES}
-      # ${midiedit_ui_headers}
+      ${midiedit_source_files}
       ${midiedit_mocs}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${midiedit_source_files}
+      CACHE INTERNAL ""
+      )
 
-install(TARGETS midiedit DESTINATION ${MUSE_MODULES_DIR})
+##
+## Compilation flags and target name
+##
+set_target_properties( midiedit
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      OUTPUT_NAME muse_midiedit
+      )
 
+##
+## Linkage
+##
 target_link_libraries ( midiedit
       ${QT_LIBRARIES}
       al
@@ -93,8 +95,9 @@ target_link_libraries ( midiedit
       widgets
       )
 
-set_target_properties( midiedit
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
-                 OUTPUT_NAME muse_midiedit
+##
+## Install location
+##
+install(TARGETS midiedit
+      DESTINATION ${MusE_MODULES_DIR}
       )
-

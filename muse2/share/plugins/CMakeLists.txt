@@ -18,8 +18,15 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-file (GLOB UI_FILES *.ui)
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${UI_FILES} CACHE INTERNAL "")
+file (GLOB plugins_ui_files *.ui)
 
-install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/plugins .*\\.ui )
+set (FILES_TO_TRANSLATE 
+      ${FILES_TO_TRANSLATE}
+      ${plugins_ui_files}
+      CACHE INTERNAL ""
+      )
+
+install( FILES ${plugins_ui_files}
+      DESTINATION ${MusE_SHARE_DIR}/plugins
+      )
 

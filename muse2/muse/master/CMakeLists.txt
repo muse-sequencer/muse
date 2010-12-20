@@ -1,70 +1,71 @@
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
 #
+#  Copyright (C) 2002-2006 by Werner Schweer and others
 #
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2.
 #
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#=============================================================================
 
-# MACRO(WRAP_CPP outfiles )
-#    FOREACH(it ${ARGN})
-#       SET(${outfiles} ${${outfiles}} ${it}.cpp)
-#       ENDFOREACH(it)
-#    ENDMACRO(WRAP_CPP)
-# 
-# MACRO(WRAP_H outfiles )
-#    FOREACH(it ${ARGN})
-#       SET(${outfiles} ${${outfiles}} ${it}.h)
-#       ENDFOREACH(it)
-#    ENDMACRO(WRAP_H)
-# 
-# MACRO(WRAP_UI outfiles )
-#    FOREACH(it ${ARGN})
-#       SET(${outfiles} ${${outfiles}} ${it}.ui)
-#       ENDFOREACH(it)
-#    ENDMACRO(WRAP_UI)
-# 
-# set( mocs master masteredit )
-# 
-# WRAP_H(mocH ${mocs})
-# WRAP_CPP(mocCPP ${mocs})
-# 
-# QT4_WRAP_CPP (moc_headers ${mocH})
-# 
-# set ( master_src ${mocCPP} ${moc_headers})
-# 
-# add_library ( master STATIC ${master_src})
-# set_target_properties( master
-#    PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-#    )
-# 
-# 
-
-
-
-
+##
+## Expand Qt macros in source files
+##
 QT4_WRAP_CPP ( master_mocs
-        lmaster.h 
-        masteredit.h 
-        master.h 
-        tscale.h
+      lmaster.h 
+      masteredit.h 
+      master.h 
+      tscale.h
       )
 
-
-file (GLOB SOURCE_FILES
-        lmaster.cpp # lmaster.h 
-        masteredit.cpp # masteredit.h 
-        master.cpp # master.h 
-        tscale.cpp # tscale.h
+##
+## List of source files to compile
+##
+file (GLOB master_source_files
+        lmaster.cpp
+        masteredit.cpp
+        master.cpp
+        tscale.cpp
         )
 
+##
+## Define target
+##
 add_library ( master SHARED
-        ${SOURCE_FILES}
-        # ${master_ui_headers}
-        ${master_mocs}
+      ${master_source_files}
+      ${master_mocs}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${master_source_files}
+      CACHE INTERNAL ""
+      )
 
-install(TARGETS master DESTINATION ${MUSE_MODULES_DIR})
+##
+## Compilation flags and target name
+##
+set_target_properties( master
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      OUTPUT_NAME muse_master
+      )
 
+##
+## Linkage
+##
 target_link_libraries ( master
       ${QT_LIBRARIES}
       al
@@ -72,8 +73,9 @@ target_link_libraries ( master
       widgets
       )
 
-set_target_properties( master
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
-                 OUTPUT_NAME muse_master
+##
+## Install location
+##
+install(TARGETS master
+      DESTINATION ${MusE_MODULES_DIR}
       )
-

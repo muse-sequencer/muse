@@ -18,21 +18,46 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-file (GLOB SOURCE_FILES
-       audiodev.h alsamidi.cpp alsamidi.h jack.cpp jackaudio.h 
-       dummyaudio.cpp alsatimer.cpp alsatimer.h timerdev.h rtctimer.cpp rtctimer.h 
-       jackmidi.cpp jackmidi.h
+##
+## List of source files to compile
+##
+file (GLOB driver_source_files
+       alsamidi.cpp
+       alsatimer.cpp
+       dummyaudio.cpp
+       jack.cpp
+       jackmidi.cpp
+       rtctimer.cpp
        )
 
+##
+## Define target
+##
 add_library ( driver SHARED
        # ${PROJECT_BINARY_DIR}/all.h.pch
-       ${SOURCE_FILES}
+       ${driver_source_files}
        )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${driver_source_files}
+      CACHE INTERNAL ""
+      )
 
-install(TARGETS driver DESTINATION ${MUSE_MODULES_DIR})
+##
+## Compilation flags and target name
+##
+set_target_properties( driver
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      OUTPUT_NAME muse_driver
+      )
 
+##
+## Linkage
+##
 target_link_libraries ( driver
       ${ALSA_LIBRARIES}
       ${JACK_LIBRARIES}
@@ -40,10 +65,9 @@ target_link_libraries ( driver
       mplugins
       )
 
-
-
-set_target_properties( driver
-  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
-             OUTPUT_NAME muse_driver
-  )
-
+##
+## Install location
+##
+install(TARGETS driver
+      DESTINATION ${MusE_MODULES_DIR}
+      )

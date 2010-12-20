@@ -18,41 +18,66 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+#
+# Expand Qt macros
+#
 QT4_WRAP_CPP (arranger_mocs
+      alayout.h
       arranger.h 
       pcanvas.h 
       tlist.h 
-      alayout.h
       )
 
-file (GLOB SOURCE_FILES
-      arranger.cpp arranger.h 
-      pcanvas.cpp pcanvas.h 
-      tlist.cpp tlist.h 
-      alayout.cpp alayout.h 
-      trackinfo.cpp trackautomationview.h
+#
+# List of source files to compile
+#
+file (GLOB arranger_source_files
+      alayout.cpp
+      arranger.cpp
+      pcanvas.cpp
+      tlist.cpp
+      trackinfo.cpp
       )
 
+#
+# Define target
+#
 add_library ( arranger SHARED
-      ${SOURCE_FILES}
+      ${arranger_source_files}
       ${arranger_mocs}
-      # ${arranger_ui_headers}
       )
 
+#
+# Append to the list of translations
+#
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${arranger_source_files}
+      CACHE INTERNAL ""
+      )
+
+#
+# Compilation flags and target name
+#
+set_target_properties( arranger
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      OUTPUT_NAME muse_arranger
+      )
+
+#
+# Linkage
+#
 target_link_libraries ( arranger
       ${QT_LIBRARIES}
       awl
+      mixer
       widgets
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
-
-install(TARGETS arranger DESTINATION ${MUSE_MODULES_DIR})
-
-add_dependencies(arranger mixer)
-
-set_target_properties( arranger
-  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
-             OUTPUT_NAME muse_arranger
-  )
+#
+# Install location
+#
+install(TARGETS arranger
+      DESTINATION ${MusE_MODULES_DIR}
+      )
 

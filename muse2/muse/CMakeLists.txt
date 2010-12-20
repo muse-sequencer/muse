@@ -25,306 +25,212 @@ include_directories(
       )
 
 set (SubDirs 
-     widgets master midiedit mixer arranger 
-     liste driver waveedit ctrl cliplist 
-     instruments marker mplugins      
-    )
+      arranger 
+      cliplist 
+      ctrl
+      driver
+      instruments
+      liste
+      marker
+      master
+      midiedit
+      mixer
+      mplugins      
+      waveedit
+      widgets
+      )
 
 if (ENABLE_PYTHON)
-set ( PYREM_CPP_FLAGS "-DENABLE_PYTHON" )
-set ( PYLIBS ${PYTHON_LIB} remote) 
-set ( SubDirs ${SubDirs} remote )
+      set ( PYREM_CPP_FLAGS "-DENABLE_PYTHON" )
+      set ( PYLIBS ${PYTHON_LIB} remote) 
+      set ( SubDirs ${SubDirs} remote )
 endif (ENABLE_PYTHON)
 
 subdirs (${SubDirs})
 
-
+##
+## Expand Qt macros in source files
+##
 QT4_WRAP_CPP ( muse_moc_headers
-#       projectpropsdialog.h
-# 	projectdialog.h
-#       templatedialog.h
-#       preferences.h
-#       plugingui.h
-#       midiplugin.h
-#       muse.h
-#       song.h
-#       transport.h
-#       conf.h
-#       editor.h
-# 	cobject.h
-#       transpose.h
-#       track.h
-#       miditrackbase.h
-#       midisynti.h
-#       miditrack.h
-#       wavetrack.h
-#       audiotrack.h
-#       audiooutput.h
-#       audioinput.h
-#       audiogroup.h
-#       synth.h
-#       exportmidi.h
-#       importmidi.h
-#       midiinport.h
-#       midioutport.h
-#       astrip.h
-#       midirack.h
-#       mixer.h
-#       mstrip.h
-#       rack.h
-#       routedialog.h
-#       strip.h
-#       arranger.h
-#       canvas.h
-#       configtrack.h
-#       partdrag.h
-#       tllineedit.h
-#       tlswidget.h
-#       tlwidget.h
-#       trackdrag.h
-#       trackinfo.h
-      
-      plugin.h 
       app.h 
-      song.h 
-      transport.h 
+      appearance.h
+      cobject.h 
       conf.h 
       confmport.h 
       midieditor.h 
-      cobject.h 
-      value.h 
-      transpose.h 
       miditransform.h 
-      appearance.h
+      plugin.h 
+      song.h 
+      transport.h 
+      transpose.h 
+      value.h 
       )
 
+##
+## Resource files
+##
 QT4_ADD_RESOURCES (muse_qrc_files 
 		  muse.qrc
 		  )
 
-file (GLOB SOURCE_FILES
-#       ticksynth.cpp
-#       vst.cpp
-#       dssihost.cpp
-#       synth.cpp
-#       plugin.cpp
-#       ladspaplugin.cpp
-#       auxplugin.cpp
-#       pipeline.cpp
-# 	mtc.cpp
-#       thread.cpp
-#       audio.cpp
-# 	audioprefetch.cpp
-#       audiowriteback.cpp
-#       globals.cpp
-#       sync.cpp
-# 	part.cpp
-#       undo.cpp
-#       songfile.cpp
-#       midi.cpp
-#       importmidi.cpp
-#       importmidi.h
-#       midifile.cpp
-#       icons.cpp
-#       event.cpp
-#       eventlist.cpp
-#       midieventbase.cpp
-#       waveevent.cpp
-#       midievent.cpp
-# 	wave.cpp
-#       seqmsg.cpp
-# 	help.cpp
-# 	midictrl.cpp
-#       fifo.cpp
-#       helper.cpp
-#       route.cpp
-#       shortcuts.cpp
-#       ctrl.cpp
-#       gconfig.cpp
-#       midirc.cpp
-#       midififo.cpp
-#       midioutport.cpp
-#       midiinport.cpp
-#       midiout.cpp
-# 
-#       projectpropsdialog.cpp
-# 	projectdialog.cpp
-#       templatedialog.cpp
-#       preferences.cpp
-#       plugingui.cpp
-#       midiplugin.cpp
-#       muse.cpp
-#       song.cpp
-#       songpart.cpp
-#       songtrack.cpp
-#       transport.cpp
-#       conf.cpp
-#       editor.cpp
-# 	cobject.cpp
-#       transpose.cpp
-#       track.cpp
-#       miditrackbase.cpp
-#       midisynti.cpp
-#       miditrack.cpp
-#       wavetrack.cpp
-#       audiotrack.cpp
-#       audiooutput.cpp
-#       audioinput.cpp
-#       audiogroup.cpp
-#       exportmidi.cpp
-#       revision.cpp
-#       jack.cpp dummyaudio.cpp
-#       astrip.cpp
-#       midirack.cpp
-#       mixer.cpp
-#       mstrip.cpp
-#       rack.cpp
-#       routedialog.cpp
-#       strip.cpp
-# 
-#       arranger.cpp
-#       canvas.cpp
-#       configtrack.cpp
-#       partdrag.cpp
-#       tllineedit.cpp
-#       tlswidget.cpp
-#       tlwidget.cpp
-#       tlwlayout.cpp
-#       trackdrag.cpp
-#       trackinfo.cpp
-      
-      ticksynth.h ticksynth.cpp 
-      vst.h vst.cpp
-      dssihost.h dssihost.cpp 
-      osc.cpp osc.h 
-      stringparam.cpp stringparam.h 
-      synth.h synth.cpp  
-      plugin.cpp plugin.h 
-      mtc.cpp mtc.h 
-      thread.cpp thread.h 
-      audio.cpp audio.h 
-      audioprefetch.cpp audioprefetch.h 
-      audioconvert.cpp audioconvert.h 
-      globals.cpp globals.h 
-      sync.cpp sync.h 
-      midiport.cpp midiport.h 
-      part.cpp part.h 
-      tempo.cpp tempo.h 
-      pos.cpp pos.h 
-      sig.cpp sig.h 
-      key.cpp key.h 
-      undo.cpp undo.h 
-      songfile.cpp 
-      midi.cpp midi.h 
-      importmidi.cpp 
-      exportmidi.cpp 
-      midifile.h midifile.cpp 
-      xml.cpp xml.h 
-      event.cpp event.h eventbase.h evdata.h 
+file (GLOB core_source_files
+      app.cpp
+      appearance.cpp
+      audio.cpp
+      audioconvert.cpp
+      audioprefetch.cpp
+      audiotrack.cpp
+      cobject.cpp
+      conf.cpp
+      confmport.cpp
+      ctrl.cpp
+      dssihost.cpp 
+      event.cpp
       eventlist.cpp 
-      midievent.h midievent.cpp 
-      waveevent.h waveevent.cpp 
-      mpevent.cpp mpevent.h 
-      track.cpp track.h 
-      audiotrack.cpp wavetrack.cpp 
-      wave.cpp wave.h 
-      seqmsg.cpp 
-      device.h 
-      globaldefs.h 
-      ladspa.h 
-      app.cpp app.h 
-      song.cpp song.h 
-      transport.cpp transport.h 
-      conf.cpp conf.h 
-      confmport.cpp confmport.h 
+      exportmidi.cpp 
+      gconfig.cpp 
+      globals.cpp
       help.cpp 
-      midieditor.cpp midieditor.h 
-      cobject.cpp cobject.h 
-      value.cpp value.h 
-      midictrl.cpp midictrl.h 
-      transpose.cpp transpose.h 
-      miditransform.cpp miditransform.h 
-      appearance.cpp appearance.h 
-      node.cpp node.h 
-      midiseq.cpp midiseq.h 
-      helper.cpp helper.h 
-      debug.h memory.h memory.cpp 
-      mididev.h mididev.cpp 
-      route.h route.cpp
-      shortcuts.h shortcuts.cpp 
-      ctrl.cpp ctrl.h 
-      gconfig.h gconfig.cpp 
-      fastlog.h 
-      default_click.h
+      helper.cpp
+      importmidi.cpp 
+      key.cpp
+      memory.cpp 
+      midi.cpp
+      midictrl.cpp
+      mididev.cpp 
+      midieditor.cpp
+      midievent.cpp 
+      midifile.cpp 
+      midiport.cpp
+      midiseq.cpp
+      miditransform.cpp
+      mpevent.cpp
+      mtc.cpp
+      node.cpp
+      osc.cpp
+      part.cpp
+      plugin.cpp
+      pos.cpp
+      route.cpp
+      seqmsg.cpp 
+      shortcuts.cpp 
+      sig.cpp
+      song.cpp
+      songfile.cpp 
+      stringparam.cpp
+      sync.cpp
+      synth.cpp  
+      tempo.cpp
+      thread.cpp
+      ticksynth.cpp 
+      track.cpp
+      transport.cpp
+      transpose.cpp
+      undo.cpp
+      value.cpp
+      vst.cpp
+      wave.cpp
+      waveevent.cpp 
+      wavetrack.cpp 
+      xml.cpp
       )
-
-file (GLOB MAIN_SOURCE_FILES
+file (GLOB main_source_files
       main.cpp
       )
-
-file (GLOB ICONS_SOURCE_FILES
-      icons.cpp icons.h
+file (GLOB icons_source_files
+      icons.cpp
       )
 
-add_executable ( muse
-      ${MAIN_SOURCE_FILES}
-      )
-
+##
+## Define target
+##
 add_library ( core SHARED
       ${muse_qrc_files}
       ${muse_moc_headers}
-      # ${muse_ui_headers}
-      ${PROJECT_BINARY_DIR}/all.h.pch
-      ${SOURCE_FILES}
+      ${core_source_files}
       )
-
+add_executable ( muse
+      ${main_source_files}
+      )
 add_library ( icons SHARED
-      ${ICONS_SOURCE_FILES}
+      ${icons_source_files}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${MAIN_SOURCE_FILES} ${SOURCE_FILES} CACHE INTERNAL "")
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${main_source_files}
+      ${core_source_files}
+      CACHE INTERNAL ""
+      )
 
-# AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
-# EXEC_PROGRAM( svnversion
-#      ARGS ${PROJECT_SOURCE_DIR}
-#      OUTPUT_VARIABLE SVNVER )
-
-# add_definitions ( -DINSTLIBDIR=${LIBRARY_OUTPUT_DIRECTORY} )
-include_directories (midiedit arranger liste widgets mixer driver waveedit mplugins instruments remote)
+##
+## Directories that will be passed to the compiler with -I flag
+##
+include_directories (
+      arranger
+      driver
+      instruments
+      liste
+      midiedit
+      mixer
+      mplugins
+      remote
+      waveedit
+      widgets
+      )
 
 # Make sure to include the uic generated headers paths.
 include_directories(
-      ${CMAKE_CURRENT_BINARY_DIR}/midiedit ${CMAKE_CURRENT_BINARY_DIR}/arranger ${CMAKE_CURRENT_BINARY_DIR}/liste ${CMAKE_CURRENT_BINARY_DIR}/widgets 
-      ${CMAKE_CURRENT_BINARY_DIR}/mixer ${CMAKE_CURRENT_BINARY_DIR}/driver ${CMAKE_CURRENT_BINARY_DIR}/waveedit ${CMAKE_CURRENT_BINARY_DIR}/mplugins 
-      ${CMAKE_CURRENT_BINARY_DIR}/instruments ${CMAKE_CURRENT_BINARY_DIR}/remote
+      ${CMAKE_CURRENT_BINARY_DIR}/arranger
+      ${CMAKE_CURRENT_BINARY_DIR}/driver
+      ${CMAKE_CURRENT_BINARY_DIR}/instruments
+      ${CMAKE_CURRENT_BINARY_DIR}/liste
+      ${CMAKE_CURRENT_BINARY_DIR}/midiedit
+      ${CMAKE_CURRENT_BINARY_DIR}/mixer
+      ${CMAKE_CURRENT_BINARY_DIR}/mplugins 
+      ${CMAKE_CURRENT_BINARY_DIR}/remote
+      ${CMAKE_CURRENT_BINARY_DIR}/waveedit
+      ${CMAKE_CURRENT_BINARY_DIR}/widgets 
       )
 
+##
+## Compilation flags and target name
+##
 set_target_properties( core
       # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${PYREM_CPP_FLAGS} -DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h "
-      # PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h "
+      # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${PYREM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
+      # PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -include ${PROJECT_BINARY_DIR}/all.h "
       PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h -fPIC"
-                 OUTPUT_NAME muse_core
+      OUTPUT_NAME muse_core
       )
-
 set_target_properties( muse
       PROPERTIES OUTPUT_NAME muse2
       )
-
 set_target_properties( icons
       PROPERTIES OUTPUT_NAME muse_icons
       )
 
+##
+## Linkage
+##
 target_link_libraries(core
-      
-      midiedit ctrl 
-      liste mixer driver marker 
-      master waveedit mplugins arranger 
-      cliplist instruments widgets 
-      icons
-      synti       
       al      
+      arranger 
       awl
+      cliplist
+      ctrl
+      driver
+      icons
+      instruments
+      liste
+      marker
+      master
+      midiedit
+      mixer
+      mplugins
+      synti       
+      waveedit
+      widgets 
       
       ${QT_LIBRARIES}
       QtSvg
@@ -336,6 +242,14 @@ target_link_libraries(core
       dl
       )
 
+if(HAVE_LASH)
+      target_link_libraries(core ${LASH_LIBRARIES})
+endif(HAVE_LASH)
+
+if(OSC_SUPPORT)
+      target_link_libraries(core ${LIBLO_LIBRARIES})
+endif(OSC_SUPPORT)
+
 target_link_libraries(muse
       midiedit
       core
@@ -345,14 +259,14 @@ target_link_libraries(icons
       ${QT_LIBRARIES}
       )	
 
-if(HAVE_LASH)
-      target_link_libraries(core ${LASH_LIBRARIES})
-endif(HAVE_LASH)
-
-if(OSC_SUPPORT)
-      target_link_libraries(core ${LIBLO_LIBRARIES})
-endif(OSC_SUPPORT)
-
-install ( TARGETS muse RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/ )
-install(TARGETS core icons DESTINATION ${MUSE_MODULES_DIR})
+##
+## Install location
+##
+install( TARGETS muse 
+      RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/
+      )
+install(TARGETS core icons
+      DESTINATION
+      ${MusE_MODULES_DIR}
+      )
 

@@ -121,13 +121,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _saveConfig = true;
   _isInitSet = true; //false if an initial bank must be download
   
-  ///_initSetPath = INSTPREFIX "/share/muse-" VERSION "/presets/deicsonze/SutulaBank.dei";
-  //"/usr/local/share/muse-1.0pre1/presets/deicsonze/SutulaBank.dei";
-  
-  // Tim.
-  QString sharePath(QString(INSTPREFIX) + QString("/") +                                             
-                            QString(SHAREINSTPREFIX) + QString("/") +  // This has no prefix. Default is "share", set in top cmake script.
-                            QString(INSTALL_NAME));   
+  QString sharePath(SHAREDIR);
   _initSetPath = sharePath + QString("/presets/deicsonze/SutulaBank.dei");
   
   
@@ -135,7 +129,6 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   //INSTPREFIX + "/share/" + PACKAGEVERSION + "/presets/deicsonze/ARCH_ALIN";
   _isBackgroundPix = true; //false if an initial bank must be download
   
-  ///_backgroundPixPath = INSTPREFIX "/share/muse-" VERSION "/wallpapers/paper2.jpg";
   //"/usr/local/share/muse-1.0pre1/wallpapers/abstractdeicsonze1.jpg";
   _backgroundPixPath = sharePath + QString("/wallpapers/paper2.jpg");    // Tim.
   

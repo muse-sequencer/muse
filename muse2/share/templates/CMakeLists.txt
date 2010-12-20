@@ -18,13 +18,9 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/templates .*\\.med
-#    audio.med
-#    # empty.med 
-#    default.med
-#    midiGM.med
-#    monorecord.med
-#    synti.med 
-#    # ns5r.med
-   )
+file (GLOB templates_files *.med)
+
+install( FILES ${templates_files}
+      DESTINATION ${MusE_SHARE_DIR}/templates
+      )
 

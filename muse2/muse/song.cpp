@@ -3725,8 +3725,7 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
       //
       // List scripts
       // 
-      QString distScripts = QString(INSTPREFIX) + "/" + SHAREINSTPREFIX + "/" 
-                            + INSTALL_NAME + "/scripts";
+      QString distScripts = QString(SHAREDIR) + "/scripts";
       QString home = "";
       if (getenv("HOME") != NULL)
             home = QString(getenv("HOME"));
@@ -3783,8 +3782,7 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
 QString Song::getScriptPath(int id, bool isdelivered)
 {
       if (isdelivered) {
-            QString path = QString(INSTPREFIX) + "/" + SHAREINSTPREFIX + "/" + INSTALL_NAME 
-                           + "/scripts/" + deliveredScriptNames[id];
+            QString path = QString(SHAREDIR) + "/scripts/" + deliveredScriptNames[id];
             return path;
             }
 

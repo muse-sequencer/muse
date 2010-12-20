@@ -18,5 +18,9 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/drummaps .*\\.map )
+file (GLOB drummaps_files *.map)
+
+install( FILES ${drummaps_files}
+      DESTINATION ${MusE_SHARE_DIR}/drummaps
+      )
 

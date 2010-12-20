@@ -18,54 +18,91 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-include(${PROJECT_SOURCE_DIR}/pch.txt)
+##
+## Expand Qt macros in source files
+##
+QT4_WRAP_CPP ( deicsonze_mocs
+      deicsonzegui.h
+      )
 
-QT4_WRAP_CPP ( deicsonze_mocs deicsonzegui.h )
+##
+## UI files
+##
+file (GLOB deicsonze_ui_files
+      deicsonzegui.ui
+      )
+QT4_WRAP_UI ( deicsonze_uis ${deicsonze_ui_files} )
 
-file (GLOB UI_FILES deicsonzegui.ui )
-QT4_WRAP_UI ( deicsonze_uis ${UI_FILES} )
-
+##
+## Resource files
+##
 QT4_ADD_RESOURCES (deicsonze_qrc_files
-                  deicsonze.qrc
-                  )
+      deicsonze.qrc
+      )
 
-file (GLOB SOURCE_FILES
+##
+## List of source files to compile
+##
+file (GLOB deicsonze_source_files
       deicsonze.cpp
       deicsonzepreset.cpp
       deicsonzeplugin.cpp
       deicsonzefilter.cpp
       deicsonzegui.cpp
-      deicsonzegui.h
       )
 
+##
+## Define target
+##
 add_library ( deicsonze SHARED
-      ${SOURCE_FILES}
-      ${PROJECT_BINARY_DIR}/all.h
-      ${PROJECT_BINARY_DIR}/all-pic.h.pch
+      ${deicsonze_source_files}
       ${deicsonze_mocs}
       ${deicsonze_uis}
       ${deicsonze_qrc_files}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${deicsonze_source_files}
+      ${deicsonze_ui_files}
+      CACHE INTERNAL ""
+      )
 
-target_link_libraries( deicsonze synti )
-
+##
+## Compilation flags and target name
+##
 # - tell cmake to name target deicsonze.so instead of
 #   libdeicsonze.so
 # - use precompiled header files
 #
 set_target_properties ( deicsonze
-   PROPERTIES PREFIX ""
-   #COMPILE_FLAGS "-O2 -include ${PROJECT_BINARY_DIR}/all-pic.h"
-   COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
-   )
+      PROPERTIES PREFIX ""
+      #COMPILE_FLAGS "-O2 -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      )
 
+##
+## Linkage
+##
 target_link_libraries(deicsonze
-      al awl synti
+      al
+      awl
+      synti
       ${QT_LIBRARIES}
       )
 
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ deicsonze )
-
-install_files ( /share/${MusE_INSTALL_NAME}/presets/deicsonze SutulaBank.dei )
+##
+## Install location
+##
+install( TARGETS deicsonze
+      DESTINATION ${MusE_SYNTHI_DIR}
+      )
+install( FILES SutulaBank.dei
+      DESTINATION ${MusE_SHARE_DIR}/presets/deicsonze
+      )
+install( FILES README TODO
+      DESTINATION ${MusE_DOC_DIR}/deicsonze
+      )
