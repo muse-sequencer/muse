@@ -9,7 +9,7 @@
 #include "gconfig.h"
 
 GlobalConfigValues config = {
-      150,                        // globalAlphaBlend    
+      190,                        // globalAlphaBlend    
       {
         QColor(0xff, 0xff, 0xff),   // palette
         QColor(0xff, 0xff, 0xff),

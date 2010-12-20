@@ -106,7 +106,15 @@ NPart::NPart(Part* e) : CItem(Event(), e)
       {
       int th = track()->height();
       int y  = track()->y();
-      setPos(QPoint(e->tick(), y + 1));
+      //printf("NPart::NPart track name:%s, y:%d h:%d\n", track()->name().toLatin1().constData(), y, th);  // REMOVE Tim.
+      
+      ///setPos(QPoint(e->tick(), y + 1));
+      setPos(QPoint(e->tick(), y));
+      
+      ///setBBox(QRect(e->tick(), y + 1, e->lenTick(), th));
+      // NOTE: For adjustable border size: If using a two-pixel border width while drawing, use second line. 
+      //       If one-pixel width, use first line. Tim.
+      //setBBox(QRect(e->tick(), y, e->lenTick(), th));
       setBBox(QRect(e->tick(), y + 1, e->lenTick(), th));
       }
 
@@ -186,14 +194,12 @@ void PartCanvas::returnPressed()
       lineEditor->hide();
       Part* oldPart = editPart->part();
       Part* newPart = oldPart->clone();
-      // Added by Tim. p3.3.6
       //printf("PartCanvas::returnPressed before msgChangePart oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oldPart->events()->refCount(), oldPart->events()->arefCount(), newPart->events()->refCount(), newPart->events()->arefCount());
       
       newPart->setName(lineEditor->text());
       // Indicate do undo, and do port controller values but not clone parts. 
       //audio->msgChangePart(oldPart, newPart);
       audio->msgChangePart(oldPart, newPart, true, true, false);
-      // Added by Tim. p3.3.6
       //printf("PartCanvas::returnPressed after msgChangePart oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oldPart->events()->refCount(), oldPart->events()->arefCount(), newPart->events()->refCount(), newPart->events()->arefCount());
       
       editMode = false;
@@ -483,7 +489,6 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
 
       dpart->setTick(dtick);
 
-      // Added by Tim. p3.3.6
       //printf("PartCanvas::moveItem before add/changePart clone:%d spart:%p events:%p refs:%d Arefs:%d sn:%d dpart:%p events:%p refs:%d Arefs:%d sn:%d\n", clone, spart, spart->events(), spart->events()->refCount(), spart->events()->arefCount(), spart->sn(), dpart, dpart->events(), dpart->events()->refCount(), dpart->events()->arefCount(), dpart->sn());
       
       if(t == MOVE_MOVE) 
@@ -522,7 +527,6 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
             
             spart->setSelected(false);
             }
-      // Added by Tim. p3.3.6
       //printf("PartCanvas::moveItem after add/changePart spart:%p events:%p refs:%d Arefs:%d dpart:%p events:%p refs:%d Arefs:%d\n", spart, spart->events(), spart->events()->refCount(), spart->events()->arefCount(), dpart, dpart->events(), dpart->events()->refCount(), dpart->events()->arefCount());
       
       if (song->len() < (dpart->lenTick() + dpart->tick()))
@@ -874,7 +878,6 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   Part* spart  = npart->part();
                   Track* track = npart->track();
                   Part* dpart  = track->newPart(spart, false);
-                  // Added by Tim. p3.3.6
                   //printf("PartCanvas::itemPopup: #1 spart %s %p next:%s %p prev:%s %p\n", spart->name().toLatin1().constData(), spart, spart->nextClone()->name().toLatin1().constData(), spart->nextClone(), spart->prevClone()->name().toLatin1().constData(), spart->prevClone()); 
                   //printf("PartCanvas::itemPopup: #1 dpart %s %p next:%s %p prev:%s %p\n", dpart->name().toLatin1().constData(), dpart, dpart->nextClone()->name().toLatin1().constData(), dpart->nextClone(), dpart->prevClone()->name().toLatin1().constData(), dpart->prevClone()); 
 
@@ -889,7 +892,6 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   // Indicate no undo, and do port controller values but not clone parts. 
                   //audio->msgChangePart(spart, dpart, false);
                   audio->msgChangePart(spart, dpart, false, true, false);
-                  // Added by Tim. p3.3.6
                   //printf("PartCanvas::itemPopup: #2 spart %s %p next:%s %p prev:%s %p\n", spart->name().toLatin1().constData(), spart, spart->nextClone()->name().toLatin1().constData(), spart->nextClone(), spart->prevClone()->name().toLatin1().constData(), spart->prevClone()); 
                   //printf("PartCanvas::itemPopup: #2 dpart %s %p next:%s %p prev:%s %p\n", dpart->name().toLatin1().constData(), dpart, dpart->nextClone()->name().toLatin1().constData(), dpart->nextClone(), dpart->prevClone()->name().toLatin1().constData(), dpart->prevClone()); 
 
@@ -946,7 +948,6 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                     {
                       for(int i = 0; i < j; ++i)
                       {
-                        // Added by Tim. p3.3.6
                         //printf("PartCanvas::itemPopup i:%d %s %p events %p refs:%d arefs:%d\n", i, p->name().toLatin1().constData(), p, part->cevents(), part->cevents()->refCount(), j); 
                         
                         p->setSelected(true);
@@ -1422,9 +1423,9 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
 
       //printf("part start tick %d part start pixel %d\n", part->tick(), r.x());
 
-      // Added by Tim. p3.3.6
       //printf("PartCanvas::drawItem %s evRefs:%d pTick:%d pLen:%d bb.x:%d bb.w:%d rect.x:%d rect.w:%d r.x:%d r.w:%d\n", part->name().toLatin1().constData(), part->events()->arefCount(), pTick, part->lenTick(), item->bbox().x(), item->bbox().width(), rect.x(), rect.width(), r.x(), r.width());
   
+      // THIS WAS IN MUSE-1:
       // Must be reasonable about very low negative x values! With long songs > 15min
       //  and with high horizontal magnification, 'ghost' drawings appeared,
       //  apparently the result of truncation later (xp = -65006 caused ghosting
@@ -1438,45 +1439,56 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         
       p.setPen(Qt::black);
       if (part->mute()) {
-            p.setBrush(Qt::gray);
-            p.drawRect(r);
+            QColor c(Qt::white);
+            c.setAlpha(config.globalAlphaBlend);
+            p.setBrush(c);
+            
+            // NOTE: For one-pixel border use first line For two-pixel border use second.
+            p.drawRect(QRect(r.x(), r.y()-1, r.width(), r.height()));
+            //p.drawRect(r);
+            
             return;
             }
       if (item->isMoving()) {
-            p.setBrush(Qt::gray);
-            p.drawRect(r);
+            QColor c(Qt::gray);
+            c.setAlpha(config.globalAlphaBlend);
+            p.setBrush(c);
+            
+            // NOTE: For one-pixel border use first line. For two-pixel border use second.
+            p.drawRect(QRect(r.x(), r.y()-1, r.width(), r.height()));
+            //p.drawRect(r);
+            
             }
       //else if (part->mute())
       //      return;
       else if (part->selected()) {
             bool clone = part->events()->arefCount() > 1;
-            //p.setPen(config.partColors[i]);
-            //p.setPen(QPen(config.partColors[i], 2, clone ? Qt::DashLine : Qt::SolidLine));
+            
+            // NOTE: For one-pixel border use first line and don't bother with setCosmetic.
+            //       For a two-pixel border use second line and MUST use setCosmetic! Tim.
+            //p.setPen(QPen(config.partColors[i], 0, clone ? Qt::DashLine : Qt::SolidLine));
             QPen pen(config.partColors[i], 2, clone ? Qt::DashLine : Qt::SolidLine);
             pen.setCosmetic(true);
+            
             p.setPen(pen);
-            //p.setBrush(Qt::black);
-            QColor c(Qt::black);
             // Hm, put some kind of lower limit? If so do that globally to the adjustment.
-            c.setAlpha(config.globalAlphaBlend);  
+            QColor c(Qt::black);
+            c.setAlpha(config.globalAlphaBlend);
             p.setBrush(c);
             p.drawRect(r);
             }
       else {
             bool clone = part->events()->arefCount() > 1;
+            
+            // NOTE: Pixel width: See above note.
             //p.setPen(QPen(Qt::black, 0, clone ? Qt::DashLine : Qt::SolidLine));
             QPen pen(Qt::black, 2, clone ? Qt::DashLine : Qt::SolidLine);
             pen.setCosmetic(true);
-            p.setPen(pen);
             
-            //p.setBrush(config.partColors[i]);
+            p.setPen(pen);
             QColor c(config.partColors[i]);
             c.setAlpha(config.globalAlphaBlend);
             p.setBrush(c);
-            //p.setBrush(QColor(config.partColors[i].red(), 
-            //                  config.partColors[i].green(), 
-            //                  config.partColors[i].blue(),
-            //                  127));   
                        
             p.drawRect(r);
             }
@@ -1589,8 +1601,20 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
         //if(!item->isMoving()) 
         //  return;
         p.setPen( Qt::black);
-        p.setBrush( Qt::NoBrush);
-        p.drawRect(item->mp().x(), item->mp().y()+1, item->width(), item->height());
+        
+        //p.setBrush( Qt::NoBrush);
+        //QColor c(Qt::gray);
+        Part* part = ((NPart*)item)->part();
+        QColor c(config.partColors[part->colorIndex()]);        
+        
+        ///c.setAlpha(config.globalAlphaBlend);
+        c.setAlpha(128);  // Fix this regardless of global setting. Should be OK.
+        
+        p.setBrush(c);
+        
+        // NOTE: For one-pixel border use second line. For two-pixel border use first.
+        //p.drawRect(item->mp().x(), item->mp().y()+1, item->width(), item->height());
+        p.drawRect(item->mp().x(), item->mp().y(), item->width(), item->height());
       }
 
 //---------------------------------------------------------
@@ -2765,13 +2789,19 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 
       TrackList* tl = song->tracks();
       int yy = 0;
+      int th;
       for (iTrack it = tl->begin(); it != tl->end(); ++it) {
             if (yy > y + h)
                   break;
             Track* track = *it;
-            if (/*config.canvasShowGrid ||*/ !track->isMidiTrack()) {
+            th = track->height();
+            ///if (/*config.canvasShowGrid ||*/ !track->isMidiTrack()) {
+            if (config.canvasShowGrid && (track->isMidiTrack() || track->type() == Track::WAVE))   // Tim.
+            {
+              //printf("PartCanvas::drawCanvas track name:%s, y:%d h:%d\n", track->name().toLatin1().constData(), yy, th);  // REMOVE Tim.
               p.setPen(baseColor.dark(130));
-              p.drawLine(x, yy, x + w, yy);
+              ///p.drawLine(x, yy, x + w, yy);
+              p.drawLine(x, yy + th, x + w, yy + th);  // Tim.
               p.setPen(baseColor);
             }
             if (!track->isMidiTrack() && (track->type() != Track::WAVE)) {
@@ -2795,8 +2825,21 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 
 void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* /* t */)
 {
-      p.setPen(QPen(Qt::black, 2, Qt::SolidLine));
-      p.setBrush(Qt::gray);
+      // NOTE: For one-pixel border use first line and don't bother with setCosmetic.
+      //       For a two-pixel border use second line and MUST use setCosmetic! Tim.
+      QPen pen(Qt::black, 0, Qt::SolidLine);
+      //p.setPen(QPen(Qt::black, 2, Qt::SolidLine));
+      //pen.setCosmetic(true);
+      p.setPen(pen);
+      //p.setBrush(Qt::gray);
+      QColor c(Qt::gray);
+      c.setAlpha(config.globalAlphaBlend);
+      p.setBrush(c);
+      
+      // Factor in pen stroking size:
+      //QRect rr(r);
+      //rr.setHeight(rr.height() -1);
+      
       p.drawRect(r);
 }
 
