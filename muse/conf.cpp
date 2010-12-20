@@ -836,12 +836,6 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.dummyAudioBufSize = xml.parseInt();
                         else if (tag == "guiRefresh")
                               config.guiRefresh = xml.parseInt();
-                        else if (tag == "helpBrowser")
-                              {
-                              QString tmp = xml.parse1();
-                              if (tmp.isNull()) {tmp = "";}
-                              config.helpBrowser = tmp;
-                              }
                         else if (tag == "midiTransform")
                               readMidiTransform(xml);
                         else if (tag == "midiInputTransform")
@@ -878,41 +872,6 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
       }
 
 //---------------------------------------------------------
-//   probeMachineSpecificConfiguration
-//---------------------------------------------------------
-
-static void probeMachineSpecificConfiguration()
-      {
-      // set a default help browser (crude way to find out)
-      if (!system("which konqueror > /dev/null"))
-           {
-           config.helpBrowser = QString("konqueror");
-           }
-      else if (!system("which opera > /dev/null"))
-           {
-           config.helpBrowser = QString("opera");
-           }
-      else if (!system("which mozilla-firefox > /dev/null"))
-           {
-           config.helpBrowser = QString("mozilla-firefox");
-           }
-      else if (!system("which firefox > /dev/null"))
-           {
-           config.helpBrowser = QString("firefox");
-           }
-      else if (!system("which mozilla > /dev/null"))
-           {
-           config.helpBrowser = QString("mozilla");
-           }
-      else
-           {
-           config.helpBrowser = QString("");
-             // was not able to find a browser
-           }
-      // More preconfiguration
-      }
-
-//---------------------------------------------------------
 //   readConfiguration
 //---------------------------------------------------------
 
@@ -923,8 +882,6 @@ bool readConfiguration()
             if (debugMsg || debugMode)
                   fprintf(stderr, "NO Config File <%s> found\n", configName.toLatin1().constData());
 
-            // if the config file does not exist launch probeMachineSpecificConfiguration
-            probeMachineSpecificConfiguration();
             return true;
             }
       Xml xml(f);
@@ -1120,7 +1077,8 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.intTag(level, "dummyAudioSampleRate", config.dummyAudioSampleRate);
 
       xml.intTag(level, "guiRefresh", config.guiRefresh);
-      xml.strTag(level, "helpBrowser", config.helpBrowser);
+      // Removed by Orcan. 20101220
+      //xml.strTag(level, "helpBrowser", config.helpBrowser);
       xml.intTag(level, "extendedMidi", config.extendedMidi);
       xml.intTag(level, "midiExportDivision", config.midiDivision);
       xml.intTag(level, "guiDivision", config.guiDivision);

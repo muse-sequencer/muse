@@ -78,7 +78,6 @@ struct GlobalConfigValues {
       double minSlider;
       bool freewheelMode;
       int guiRefresh;
-      QString helpBrowser;
 
       bool extendedMidi;      // extended smf format
       int midiDivision;       // division for smf export

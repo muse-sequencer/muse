@@ -78,7 +78,6 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       //dummyAudioRealRate->setText(dad ? QString().setNum(sampleRate) : "---");
       dummyAudioRealRate->setText(QString().setNum(sampleRate));
       
-      helpBrowser->setText(config.helpBrowser);
       startSongEntry->setText(config.startSong);
       startSongGroup->button(config.startMode)->setChecked(true);
 
@@ -183,7 +182,6 @@ void GlobalSettingsConfig::updateSettings()
       //dummyAudioRealRate->setText(dad ? QString().setNum(sampleRate) : "---");
       dummyAudioRealRate->setText(QString().setNum(sampleRate));
       
-      helpBrowser->setText(config.helpBrowser);
       startSongEntry->setText(config.startSong);
       startSongGroup->button(config.startMode)->setChecked(true);
 
@@ -258,7 +256,6 @@ void GlobalSettingsConfig::apply()
       config.useOutputLimiter = outputLimiterCheckBox->isChecked();
       config.vstInPlace  = vstInPlaceCheckBox->isChecked();
       config.rtcTicks    = rtcResolutions[rtcticks];
-      config.helpBrowser = helpBrowser->text();
       config.startSong   = startSongEntry->text();
       config.startMode   = startSongGroup->checkedId();
       int das = dummyAudioSize->currentIndex();

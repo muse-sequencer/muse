@@ -9,8 +9,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include <QDesktopServices>
 #include <QMessageBox>
-#include <QProcess>
+#include <QUrl>
 
 #include "app.h"
 #include "globals.h"
@@ -25,9 +26,9 @@
 void MusE::startHelpBrowser()
       {
       QString lang(getenv("LANG"));
-      QString museHelp = museGlobalShare + QString("/html/index_") + lang + QString(".html");
+      QString museHelp = DOCDIR + QString("/html/index_") + lang + QString(".html");
       if (access(museHelp.toLatin1(), R_OK) != 0) {
-    	      museHelp = museGlobalShare + QString("/html/index.html");
+            museHelp = DOCDIR + QString("/html/index.html");
             if (access(museHelp.toLatin1(), R_OK) != 0) {
                   QString info(tr("no help found at: "));
                   info += museHelp;
@@ -82,33 +83,12 @@ void MusE::aboutQt()
 
 void MusE::launchBrowser(QString &whereTo)
       {
-      char testStr[40];
-      strcpy(testStr, "which ");
-      strcat(testStr, config.helpBrowser.toLatin1());
-      if (config.helpBrowser == "" || system(testStr))
-          {
-          QMessageBox::information( this, "Unable to launch help",
-                                            "For some reason MusE has failed to detect or launch\n"
-                                            "a browser on your machine. Please go to Settings->Global Settings->GUI\n"
-                                            "and insert the program name of your favourite browser.",
-                                            "Ok",
-                                            0 );
-          return;
-          }
-
-      QString exe = QString("/bin/sh");
-      if(QFile::exists(exe))
+      if (! QDesktopServices::openUrl(QUrl(whereTo)))
             {
-            // Orcan: Shall we use this instead? Opens the default browser of the user:
-            // QDesktopServices::openUrl(QUrl(whereTo));
-            QStringList arguments;
-            arguments << "-c" << config.helpBrowser << whereTo;
-            QProcess helper;
-            helper.start(exe, arguments);
-            }
-      else
-            {
+            QMessageBox::information(this, tr("Unable to launch help"), 
+                                     tr("For some reason MusE has to launch the default\n"
+                                        "browser on your machine."),
+                                     QMessageBox::Ok, QMessageBox::Ok);
             printf("Unable to launch help\n");
             }
-
       }
