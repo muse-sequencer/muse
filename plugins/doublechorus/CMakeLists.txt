@@ -18,10 +18,26 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-add_library ( doublechorus SHARED
-      doublechorus.cpp doublechorusmodel.cpp simplechorusmodel.cpp
+##
+## List of source files to compile
+##
+file (GLOB doublechorus_source_files
+      doublechorus.cpp
+      doublechorusmodel.cpp
+      simplechorusmodel.cpp
       )
 
+##
+## Define target
+##
+add_library ( doublechorus SHARED
+      ${doublechorus_source_files}
+      )
+
+
+##
+## Compilation flags and target name
+##
 # tell cmake to name the target doublechorus.so instead of
 # libdoublechorus.so
 #
@@ -30,4 +46,9 @@ set_target_properties (doublechorus
       #COMPILE_FLAGS "-O3"
       )
 
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins doublechorus)
+##
+## Install location
+##
+install( TARGETS doublechorus
+      DESTINATION ${MusE_PLUGINS_DIR}
+      )

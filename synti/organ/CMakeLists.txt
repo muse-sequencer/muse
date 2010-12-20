@@ -18,42 +18,73 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-QT4_WRAP_CPP ( organ_mocs organgui.h )
+##
+## Expand Qt macros in source files
+##
+QT4_WRAP_CPP ( organ_mocs
+      organgui.h
+      )
 
-file (GLOB UI_FILES organguibase.ui )
-QT4_WRAP_UI ( organ_uis ${UI_FILES} )
+##
+## UI files
+##
+file (GLOB organ_ui_files
+      organguibase.ui
+      )
+QT4_WRAP_UI ( organ_uis ${organ_ui_files} )
 
-file (GLOB SOURCE_FILES
+##
+## List of source files to compile
+##
+file (GLOB organ_source_files
       organ.cpp
       organgui.cpp
       # reverb.cpp
       # routing.cpp
-      # organgui.h
       )
 
+##
+## Define target
+##
 add_library ( organ SHARED
       ${PROJECT_SOURCE_DIR}/muse/xml.cpp
-      ${SOURCE_FILES}
+      ${organ_source_files}
       ${organ_mocs}
       ${organ_uis}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${organ_source_files}
+      ${organ_ui_files}
+      CACHE INTERNAL ""
+      )
 
 # - tell cmake to name target organ.so instead of
 #   liborgan.so
 # - use precompiled header files
 #
 set_target_properties ( organ
-   PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-fvisibility=hidden -O2 -include ${PROJECT_BINARY_DIR}/all-pic.h"
-   )
+      PROPERTIES PREFIX ""
+      COMPILE_FLAGS "-fvisibility=hidden -O2 -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      )
 
+##
+## Linkage
+##
 target_link_libraries(organ
       synti
       # awl
       ${QT_LIBRARIES}
       )
 
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ organ )
+##
+## Install location
+##
+install( TARGETS organ
+      DESTINATION ${MusE_SYNTHI_DIR}
+      )
 

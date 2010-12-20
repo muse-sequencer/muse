@@ -18,45 +18,78 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-QT4_WRAP_CPP ( fluid_mocs fluidgui.h )
-
-file (GLOB UI_FILES fluidguibase.ui )
-QT4_WRAP_UI (  fluid_uis ${UI_FILES} )
-
-file (GLOB SOURCE_FILES
-      fluid.cpp 
-      fluidgui.cpp
+##
+## Expand Qt macros in source files
+##
+QT4_WRAP_CPP ( fluid_mocs
       fluidgui.h
       )
 
+##
+## UI files
+##
+file (GLOB fluid_ui_files
+      fluidguibase.ui
+      )
+QT4_WRAP_UI ( fluid_uis ${fluid_ui_files} )
+
+##
+## List of source files to compile
+##
+file (GLOB fluid_source_files
+      fluid.cpp 
+      fluidgui.cpp
+      )
+
+##
+## Define target
+##
 add_library ( fluid SHARED 
-      ${SOURCE_FILES}
+      ${fluid_source_files}
       ${fluid_mocs}
       ${fluid_uis}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${fluid_source_files}
+      ${fluid_ui_files}
+      CACHE INTERNAL ""
+      )
 
-# target_link_libraries( fluid synti )
-
+##
+## Compilation flags and target name
+##
 # - tell cmake to name target fluid.so instead of 
 #   libfluid.so
 # - use precompiled header files
 #
 set_target_properties ( fluid
-   PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
-   LINK_FLAGS "${FLUIDSYN_LDFLAGS}"   # "-lfluidsynth"
-   )
+      PROPERTIES PREFIX ""
+      COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      LINK_FLAGS "${FLUIDSYN_LDFLAGS}"   # "-lfluidsynth"
+      )
+
+##
+## Linkage
+##
 target_link_libraries(fluid
       synti
       ${QT_LIBRARIES}
-      # Can't do this. FLUIDSYN_LIBRARIES = fluidsynth, which is the name of our fluidsynth.so shared synthesizer library.
+      # Can't do this. FLUIDSYN_LIBRARIES = fluidsynth, which is the name 
+      # of our fluidsynth.so shared synthesizer library.
       # This caused ../fluidsynth/fluidsynth.so to appear in the link line.
       # ${FLUIDSYN_LIBRARIES}
       # Try giving full path: Nope, path is empty!
       # ${FLUIDSYN_LIBRARY_DIRS}/${FLUIDSYN_LIBRARIES}
       )
 
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ fluid )
-
+##
+## Install location
+##
+install( TARGETS fluid 
+      DESTINATION ${MusE_SYNTHI_DIR}
+      )

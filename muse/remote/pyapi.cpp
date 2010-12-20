@@ -980,7 +980,7 @@ static void* pyapithreadfunc(void*)
 
       PyObject *pMainModule     = PyImport_AddModule( "__main__" );
       PyObject *pMainDictionary = PyModule_GetDict( pMainModule );
-      string launcherfilename = string(INSTPREFIX) + string("/share/muse/pybridge/museplauncher.py");
+      string launcherfilename = string(SHAREDIR) + string("/pybridge/museplauncher.py");
       printf("Initiating MusE Pybridge launcher from %s\n", launcherfilename.c_str());
       FILE* fp = fopen(launcherfilename.c_str(),"r");
       PyRun_File(fp, launcherfilename.c_str(), Py_file_input, pMainDictionary, pMainDictionary);

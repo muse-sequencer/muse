@@ -18,11 +18,13 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-# FIXME: Won't work.
-#install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/html .*\\.html .*\\.txt .*\\.jpg )  
+file (GLOB html_files
+      *.css
+      *.html
+      *.jpg
+      toc_.txt
+      )
 
-install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/html .*\\.html )  
-install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/html .*\\.jpg )  
-# FIXME: Installs CMakeLists.txt !!!
-install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/html .*\\.txt )  
-
+install( FILES ${html_files}
+      DESTINATION ${MusE_DOC_DIR}/html
+      )

@@ -18,46 +18,68 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+##
+## Expand Qt macros in source files
+##
 QT4_WRAP_CPP (ctrl_mocs
-#       configmidictrl.h
-#       definemidictrl.h
-#       ctrldialog.h
-#       ctrledit.h
-        
-      ctrledit.h 
+      # configmidictrl.h
+      # ctrldialog.h
+      # definemidictrl.h
       ctrlcanvas.h 
+      ctrledit.h 
       ctrlpanel.h
       )
 
-file (GLOB SOURCE_FILES
-      ctrledit.cpp ctrledit.h 
-      ctrlcanvas.cpp ctrlcanvas.h 
-      ctrlpanel.cpp ctrlpanel.h
+##
+## List of source files to compile
+##
+file (GLOB ctrl_source_files
+      ctrlcanvas.cpp
+      ctrledit.cpp 
+      ctrlpanel.cpp
       )
 
+##
+## Define target
+##
 add_library ( ctrl SHARED
-#       configmidictrl.cpp
-#       definemidictrl.cpp
-#       ctrldialog.cpp
-#       ctrleditor.cpp
-#       ctrledit.cpp
-      
-      ${SOURCE_FILES}
+      # configmidictrl.cpp
+      # definemidictrl.cpp
+      # ctrldialog.cpp
+      # ctrleditor.cpp
+      ${ctrl_source_files}
       ${ctrl_mocs}
-      # ${ctrl_ui_headers}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${ctrl_source_files}
+      CACHE INTERNAL ""
+      )
 
+##
+## Compilation flags and target name
+##
+set_target_properties( ctrl
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      OUTPUT_NAME muse_ctrl
+      )
+
+##
+## Linkage
+##
 target_link_libraries ( ctrl
       ${QT_LIBRARIES}
       widgets
       )
 
-install(TARGETS ctrl DESTINATION ${MUSE_MODULES_DIR})
-
-set_target_properties( ctrl
-  PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
-             OUTPUT_NAME muse_ctrl
-  )
+##
+## Install location
+##
+install(TARGETS ctrl
+      DESTINATION ${MusE_MODULES_DIR}
+      )
 

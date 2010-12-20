@@ -18,55 +18,89 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-QT4_WRAP_CPP ( fluidsynth_mocs fluidsynthgui.h )
-
-file (GLOB UI_FILES fluidsynthguibase.ui )
-QT4_WRAP_UI ( fluidsynth_uis ${UI_FILES} )
-
-QT4_ADD_RESOURCES (fluidsynth_qrc_files
-                  fluidsynth.qrc
-                  )
-
-file (GLOB SOURCE_FILES
-      fluidsynti.cpp 
-      fluidsynthgui.cpp
+##
+## Expand Qt macros in source files
+##
+QT4_WRAP_CPP ( fluidsynth_mocs
       fluidsynthgui.h
       )
 
+##
+## UI files
+##
+file (GLOB fluidsynth_ui_files
+      fluidsynthguibase.ui
+      )
+QT4_WRAP_UI ( fluidsynth_uis ${fluidsynth_ui_files} )
+
+##
+## Resource files
+##
+QT4_ADD_RESOURCES (fluidsynth_qrc_files
+      fluidsynth.qrc
+      )
+
+##
+## List of source files to compile
+##
+file (GLOB fluidsynth_source_files
+      fluidsynti.cpp 
+      fluidsynthgui.cpp
+      )
+
+##
+## Define target
+##
 add_library ( fluidsynth SHARED 
-      ${SOURCE_FILES}
+      ${fluidsynth_source_files}
       ${fluidsynth_mocs}
       ${fluidsynth_uis}
       ${fluidsynth_qrc_files}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE 
+      ${FILES_TO_TRANSLATE}
+      ${fluidsynth_source_files}
+      ${fluidsynth_ui_files}
+      CACHE INTERNAL ""
+      )
 
-# target_link_libraries( fluidsynth synti )
-
+##
+## Compilation flags and target name
+##
 # - tell cmake to name target fluidsynth.so instead of 
 #   libfluidsynth.so
 # - use precompiled header files
 #
 set_target_properties ( fluidsynth 
-   PROPERTIES PREFIX ""
-   COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
-   LINK_FLAGS "${FLUIDSYN_LDFLAGS}"   # "-lfluidsynth"
-   )
+      PROPERTIES PREFIX ""
+      COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      LINK_FLAGS "${FLUIDSYN_LDFLAGS}"   # "-lfluidsynth"
+      )
 
+
+##
+## Linkage
+##
 target_link_libraries(fluidsynth
       synti
       ${QT_LIBRARIES}
-      # Can't do this here, since FLUIDSYN_LIBRARIES evaluates to 'fluidsynth', the same name as our target.
+      # Can't do this here, since FLUIDSYN_LIBRARIES evaluates 
+      # to 'fluidsynth', the same name as our target.
       # ${FLUIDSYN_LIBRARIES}
       # Try giving full path:  Nope, path is empty!
       #${FLUIDSYN_LIBRARY_DIRS}/${FLUIDSYN_LIBRARIES}
       )
 
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ fluidsynth )
-
-# FIXME: Won't work
-# install_files ( /${MusE_INSTALL_NAME}/synthi TODO README.txt )
-
-install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/synthi/fluidsynth TODO )
-install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/synthi/fluidsynth README.txt )
+##
+## Install location
+##
+install( TARGETS fluidsynth 
+      DESTINATION ${MusE_SYNTHI_DIR}
+      )
+install( FILES README.txt TODO
+      DESTINATION ${MusE_DOC_DIR}/fluidsynth/
+      )

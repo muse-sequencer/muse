@@ -18,27 +18,9 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-# subdirs(
-#         libmidiplugin
-#         splitlayer
-#         filter 
-#       metronom
-#       transform
-#       trigg 
-#       dump
-#       drumglue
-#  )
-# 
-# set ( CMAKE_CXX_FLAGS 
-#       "${CMAKE_CXX_FLAGS} -DQT_NO_DEBUG -DQT_PLUGIN -DQT_SHARED -fPIC"
-#       )
-# 
-# set ( CMAKE_LDD_FLAGS -module -avoid-version )
-
-
-file (GLOB UI_FILES midifilter.ui mrconfigbase.ui )
-QT4_WRAP_UI ( mplugins_uis ${UI_FILES} )
-
+##
+## Expand Qt macros in source files
+##
 if ( ENABLE_EXPERIMENTAL )
       QT4_WRAP_UI ( mplugins_experimental_uis rhythmbase.ui)
       set ( experimental_hdrs rhythm.h )
@@ -47,46 +29,81 @@ if ( ENABLE_EXPERIMENTAL )
             ${mplugins_experimental_uis}
             )
 endif ( ENABLE_EXPERIMENTAL )
-
-QT4_WRAP_CPP ( mplugins_mocs  mittranspose.h midiitransform.h midifilterimpl.h mrconfig.h ${experimental_hdrs} )
-
-file (GLOB SOURCE_FILES
-      mitplugin.cpp mitplugin.h 
-      mittranspose.cpp 
-      midiitransform.cpp 
-      midifilterimpl.cpp 
-      mrconfig.cpp 
-      random.cpp random.h 
+QT4_WRAP_CPP ( mplugins_mocs
+      midifilterimpl.h
+      midiitransform.h
+      mittranspose.h
+      mrconfig.h
+      ${experimental_hdrs}
       )
 
+##
+## UI files
+##
+file (GLOB mplugins_ui_files
+      midifilter.ui
+      mrconfigbase.ui
+      )
+QT4_WRAP_UI ( mplugins_uis ${mplugins_ui_files} )
+
+##
+## List of source files to compile
+##
+file (GLOB mplugins_source_files
+      midifilterimpl.cpp 
+      midiitransform.cpp 
+      mitplugin.cpp
+      mittranspose.cpp 
+      mrconfig.cpp 
+      random.cpp
+      )
+
+##
+## Define target
+##
 add_library ( mplugins SHARED
-      ${SOURCE_FILES}
+      ${mplugins_source_files}
       ${mplugins_mocs}
       ${mplugins_uis}
       ${experimental_srcs}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${mplugins_source_files}
+      ${mplugins_ui_files}
+      CACHE INTERNAL ""
+      )
 
-install(TARGETS mplugins DESTINATION ${MUSE_MODULES_DIR})
-
-add_dependencies(mplugins widgets)
-
-target_link_libraries( mplugins
-   # midiplugin
-   ${QT_LIBRARIES}
-   widgets
-   )
-
+##
+## Compilation flags and target name
+##
 # - tell cmake to name target transform.so instead of 
 #   libtransform.so
 # - use precompiled header files
 #
 set_target_properties ( mplugins
-   # PROPERTIES PREFIX ""
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
-              OUTPUT_NAME muse_mplugins
-   )
+      # PROPERTIES PREFIX ""
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      OUTPUT_NAME muse_mplugins
+      )
 
-# install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/midiplugins/ transform )
+##
+## Linkage
+##
+target_link_libraries( mplugins
+      # midiplugin
+      ${QT_LIBRARIES}
+      widgets
+      )
+
+##
+## Install location
+##
+install(TARGETS mplugins
+      DESTINATION ${MusE_MODULES_DIR}
+      )
 

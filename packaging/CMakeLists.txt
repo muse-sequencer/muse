@@ -18,5 +18,10 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-install_files ( /${SHARE_INSTALL_PREFIX}/icons/hicolor/64x64/apps/ muse_icon.png)
-install_files ( /${SHARE_INSTALL_PREFIX}/applications/ muse.desktop)
+install( FILES muse_icon.png
+      DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/64x64/apps/
+      )
+install( FILES muse.desktop
+      DESTINATION ${SHARE_INSTALL_PREFIX}/applications/
+      )
+

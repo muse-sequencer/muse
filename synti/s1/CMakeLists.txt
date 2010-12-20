@@ -18,23 +18,51 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-file (GLOB SOURCE_FILES s1.cpp )
-add_library ( s1 SHARED ${SOURCE_FILES} )
+##
+## List of source files to compile
+##
+file (GLOB s1_source_files
+      s1.cpp
+      )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+##
+## Define target
+##
+add_library ( s1 SHARED
+      ${s1_source_files}
+      )
 
-# target_link_libraries( s1 synti )
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${s1_source_files}
+      CACHE INTERNAL ""
+      )
 
+##
+## Compilation flags and target name
+##
 # tell cmake to name target s1.so instead of 
 # libs1.so
 #
 set_target_properties ( s1 
-  PROPERTIES PREFIX "" 
-  COMPILE_FLAGS "-fvisibility=hidden"
-  )
+      PROPERTIES PREFIX "" 
+      COMPILE_FLAGS "-fvisibility=hidden"
+      )
 
+##
+## Linkage
+##
 target_link_libraries(s1
       synti
       )
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi/ s1 )
+
+##
+## Install location
+##
+install( TARGETS s1
+      DESTINATION ${MusE_SYNTHI_DIR}
+      )
 

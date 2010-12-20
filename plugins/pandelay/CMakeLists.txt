@@ -18,10 +18,25 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-add_library ( pandelay SHARED
-      pandelay.cpp ladspapandelay.cpp pandelaymodel.cpp
+##
+## List of source files to compile
+##
+file (GLOB pandelay_source_files
+      ladspapandelay.cpp
+      pandelay.cpp
+      pandelaymodel.cpp
       )
 
+##
+## Define target
+##
+add_library ( pandelay SHARED
+      ${pandelay_source_files}
+      )
+
+##
+## Compilation flags and target name
+##
 # tell cmake to name the target pandelay.so instead of
 # libpandelay.so
 #
@@ -30,4 +45,9 @@ set_target_properties (pandelay
       #COMPILE_FLAGS "-O3"
       )
 
-install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins pandelay)
+##
+## Install location
+##
+install( TARGETS pandelay
+      DESTINATION ${MusE_PLUGINS_DIR}
+      )

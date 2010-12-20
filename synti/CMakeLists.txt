@@ -27,9 +27,15 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/synti
    )
 
-# set (SubDirs libsynti organ deicsonze deicsonze2 simpledrums vam)
-# set (SubDirs libsynti organ deicsonze simpledrums vam)
-set (SubDirs libsynti organ deicsonze simpledrums2 vam)
+set (SubDirs
+      deicsonze
+      # deicsonze2
+      libsynti
+      organ
+      # simpledrums
+      simpledrums2
+      vam
+      )
 
 if (ENABLE_EXPERIMENTAL)
       set (SubDirs ${SubDirs} s1 )

@@ -18,7 +18,23 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-add_executable ( grepmidi grepmidi.cpp )
+##
+## List of source files to compile
+##
+file (GLOB grepmidi_source_files
+      grepmidi.cpp
+      )
 
-install_targets ( /bin grepmidi )
+##
+## Define target
+##
+add_executable ( grepmidi
+      ${grepmidi_source_files}
+      )
 
+##
+## Install location
+##
+install(TARGETS grepmidi 
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+      )

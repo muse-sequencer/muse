@@ -20,7 +20,10 @@
 
 include(${PROJECT_SOURCE_DIR}/pch.txt)
 
-file (GLOB SOURCE_FILES
+##
+## List of source files to compile
+##
+file (GLOB synti_source_files
       mess.cpp
       # mess2.cpp
       gui.cpp
@@ -31,20 +34,37 @@ file (GLOB SOURCE_FILES
       ## mpevent.cpp
       )
 
+##
+## Define target
+##
 add_library(synti SHARED
       ${PROJECT_BINARY_DIR}/all-pic.h.pch
-      ${SOURCE_FILES}
+      ${synti_source_files}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${synti_source_files}
+      CACHE INTERNAL ""
+      )
 
-install(TARGETS synti DESTINATION ${MUSE_MODULES_DIR})
-
+##
+## Compilation flags and target name
+##
 #
 # -fPIC is necessary for 64 bit systems
 #
 set_target_properties( synti
-   PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all-pic.h"
-              OUTPUT_NAME muse_synti
-   )
+      PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      OUTPUT_NAME muse_synti
+      )
 
+##
+## Install location
+##
+install(TARGETS synti 
+      DESTINATION ${MusE_MODULES_DIR}
+      )

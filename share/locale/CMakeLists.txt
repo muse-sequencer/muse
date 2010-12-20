@@ -59,6 +59,6 @@ if (UPDATE_TRANSLATIONS)
             )
 endif (UPDATE_TRANSLATIONS)
 
-#install_files( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/locale .*\\.qm )
-install(FILES ${QM_FILES} DESTINATION
-      ${CMAKE_INSTALL_PREFIX}/${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/locale)
+install(FILES ${QM_FILES}
+      DESTINATION ${MusE_SHARE_DIR}/locale
+      )

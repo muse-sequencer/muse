@@ -18,6 +18,15 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-subdirs( drummaps html instruments locale plugins pybridge scripts templates wallpapers)
-# subdirs( drummaps instruments locale plugins pybridge scripts templates wallpapers)
+subdirs(
+      drummaps
+      html
+      instruments
+      locale
+      plugins
+      pybridge
+      scripts
+      templates
+      wallpapers
+      )
 

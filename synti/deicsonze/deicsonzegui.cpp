@@ -440,18 +440,11 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   setEnabledPreset(false);
   
   // Tim.
-  QString sharePath(QString(INSTPREFIX) + QString("/") +                                             
-                            QString(SHAREINSTPREFIX) + QString("/") +  // This has no prefix. Default is "share", set in top cmake script.
-                            QString(INSTALL_NAME));   
-                            
+  QString sharePath(SHAREDIR);                            
   updateInitSetPath
-    ///(INSTPREFIX "/share/muse-" VERSION "/presets/deicsonze/SutulaBank.dei");
     (sharePath + QString("/presets/deicsonze/SutulaBank.dei"));    // Tim.
     
-    //"/usr/local/share/muse-1.0pre1/presets/deicsonze/SutulaBank.dei")
-    //);
   updateBackgroundPixPath
-    ///(INSTPREFIX "/share/muse-" VERSION "/wallpapers/paper2.jpg");
     (sharePath + QString("/wallpapers/paper2.jpg"));    // Tim.
     
   updateBackgroundPixCheckBox(true);

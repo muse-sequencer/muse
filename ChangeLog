@@ -7,6 +7,11 @@
         - Individual parts are now built as shared libraries. (Orcan)
         - Moved main() and first degree relatives into main.cpp (Orcan)
         - Fixed bad link in README. Updated German README. (Orcan)
+        - Major clean-up in all CMakeLists.txt files. Hopefully, this will be the last time. 
+          Unified their notation. Added copyright notices to those which were missing. 
+        - Defined MusE_SHARE_DIR and MusE_LIB_DIR in config.h.in so that these directories 
+          can be accessed conveniently in the code. (Orcan)
+        - Install documentation files to the standard docdir specified by FHS. (Orcan)
 18.12.2010:
         - Fixed transport shortcuts not working in some windows or situations. (Tim)
           Added event->ignore to PartCanvas::keyPress. Added setFocusPolicy() to WaveView, Master.

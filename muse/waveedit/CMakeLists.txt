@@ -18,43 +18,70 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+##
+## Expand Qt macros in source files
+##
 QT4_WRAP_CPP ( waveedit_mocs
+      editgain.h
       waveedit.h
       waveview.h
-      editgain.h
       )
 
-file (GLOB UI_FILES
+##
+## UI files
+##
+file (GLOB waveedit_ui_files
       editgainbase.ui
       )
+QT4_WRAP_UI (waveedit_ui_headers ${waveedit_ui_files} )
 
-QT4_WRAP_UI (waveedit_ui_headers
-      ${UI_FILES}
-      )
-
-file (GLOB SOURCE_FILES
+##
+## List of source files to compile
+##
+file (GLOB waveedit_source_files
+      editgain.cpp
       waveedit.cpp
       waveview.cpp
-      editgain.cpp
       )
 
+##
+## Define target
+##
 add_library ( waveedit SHARED
-      ${SOURCE_FILES}
+      ${waveedit_source_files}
       ${waveedit_ui_headers}
       ${waveedit_mocs}
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${waveedit_source_files}
+      ${waveedit_ui_files}
+      CACHE INTERNAL ""
+      )
 
-install(TARGETS waveedit DESTINATION ${MUSE_MODULES_DIR})
-
-target_link_libraries( waveedit
-   ${QT_LIBRARIES}
-   widgets
-   )
-
-
+##
+## Compilation flags and target name
+##
 set_target_properties( waveedit
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
-                 OUTPUT_NAME muse_waveedit
+      OUTPUT_NAME muse_waveedit
+      )
+
+##
+## Linkage
+##
+target_link_libraries( waveedit
+      ${QT_LIBRARIES}
+      widgets
+      )
+
+##
+## Install location
+##
+install(TARGETS waveedit
+      DESTINATION ${MusE_MODULES_DIR}
       )

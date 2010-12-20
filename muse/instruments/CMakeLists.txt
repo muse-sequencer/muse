@@ -18,45 +18,72 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+##
+## Expand Qt macros in source files
+##
 QT4_WRAP_CPP ( instruments_mocs
-   # minstrument.h editinstrument.h
    editinstrument.h
+   # minstrument.h
    )
 
-file (GLOB UI_FILES
+##
+## UI files
+##
+file (GLOB instruments_ui_files
+      # ccontrollerbase.ui # not built. It needs to be converted to Qt4 for revival.
       editinstrumentbase.ui
       )
+QT4_WRAP_UI ( instruments_uis ${instruments_ui_files} )
 
-QT4_WRAP_UI ( instruments_ui_headers
-      ${UI_FILES}
+##
+## List of source files to compile
+##
+file (GLOB instruments_source_files
+   editinstrument.cpp
+   editinstrument.h
+   minstrument.cpp
+   minstrument.h
+   )
+
+##
+## Define target
+##
+add_library ( instruments SHARED
+   ${instruments_source_files}
+   ${instruments_mocs}
+   ${instruments_uis}
+   )
+
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${instruments_source_files}
+      ${instruments_ui_files}
+      CACHE INTERNAL ""
       )
 
-# Note that ccontrollerbase.ui is not built. It needs to be converted to Qt4 for revival.
+##
+## Compilation flags and target name
+##
+set_target_properties( instruments
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      OUTPUT_NAME muse_instruments
+      )
 
-file (GLOB SOURCE_FILES
-   minstrument.cpp
-   editinstrument.cpp
-   minstrument.h
-   editinstrument.h
-   )
-
-add_library ( instruments SHARED
-   ${SOURCE_FILES}
-   ${instruments_mocs}
-   ${instruments_ui_headers}
-   )
-
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
-
-install(TARGETS instruments DESTINATION ${MUSE_MODULES_DIR})
-
+##
+## Linkage
+##
 target_link_libraries ( instruments
       ${QT_LIBRARIES}
       icons
       )
 
-set_target_properties( instruments
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
-              OUTPUT_NAME muse_instruments
-   )
+##
+## Install location
+##
+install(TARGETS instruments
+      DESTINATION ${MusE_MODULES_DIR}
+      )
 

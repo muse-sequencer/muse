@@ -18,5 +18,9 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-install_files ( /${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME}/demos .*\\.med )
+file (GLOB med_files *.med)
+
+install( FILES ${med_files}
+      DESTINATION ${MusE_SHARE_DIR}/demos
+      )
 

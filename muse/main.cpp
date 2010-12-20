@@ -159,8 +159,7 @@ static QString localeList()
       {
       // Find out what translations are available:
       QStringList deliveredLocaleListFiltered;
-      QString distLocale = QString(INSTPREFIX) + "/" + SHAREINSTPREFIX + "/"
-                           + INSTALL_NAME + "/locale";
+      QString distLocale = QString(SHAREDIR) + "/locale";
       QFileInfo distLocaleFi(distLocale);
       if (distLocaleFi.isDir()) {
             QDir dir = QDir(distLocale);
@@ -243,26 +242,17 @@ int main(int argc, char* argv[])
             museGlobal = p;
 
       if (museGlobal.isEmpty()) {
-            //QString museGlobal(INSTPREFIX);
-            //QString museGlobalLibDir(INSTLIBDIR); 
-            //QString museGlobalLibDir(LIBINSTPREFIX); // This has no prefix.
-            //museGlobalLib   =  museGlobalLibDir + "/muse";
-            //museGlobalShare =  museGlobal + "/share/muse";
-            
-            // p4.0.7
-            museGlobalLib   =  QString(INSTPREFIX) + QString("/") +
-                               QString(LIBINSTPREFIX) + QString("/") + 
-                               QString(INSTALL_NAME);   
-            //museGlobalShare =  museGlobal + QString("/share/") + QString(INSTALL_NAME);   
-            museGlobalShare =  QString(INSTPREFIX) + QString("/") +                                             
-                               QString(SHAREINSTPREFIX) + QString("/") +  // This has no prefix. Default is "share", set in top cmake script.
-                               QString(INSTALL_NAME);   
+            museGlobalLib   = QString(LIBDIR);
+            museGlobalShare = QString(SHAREDIR);
             }
       else {
-            //museGlobalLib   = museGlobal + "/lib";
-            //museGlobalShare = museGlobal + "/share";
-            museGlobalLib   = museGlobal + QString("/") + QString(LIBINSTPREFIX);    // p4.0.7
-            museGlobalShare = museGlobal + QString("/") + QString(SHAREINSTPREFIX);
+            // Doesn't it make more sense to hardcode these dirs? 
+            // Well... They will be set properly anyways...
+            // Need to discuss this with Tim. - Orcan
+            museGlobalLib   = museGlobal + "/lib";
+            museGlobalShare = museGlobal + "/share";
+            //museGlobalLib   = museGlobal + QString("/") + QString(LIBINSTPREFIX);    // p4.0.7
+            //museGlobalShare = museGlobal + QString("/") + QString(SHAREINSTPREFIX);
             }
       museProject = museProjectInitPath; //getcwd(0, 0);
       configName  = QString(getenv("HOME")) + QString("/.MusE");

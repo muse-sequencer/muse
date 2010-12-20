@@ -4,7 +4,7 @@
 #  $Id:$
 #
 #  Copyright (C) 2002-2006 by Werner Schweer and others
-#                                                                                                                                                                                                             
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License version 2.
 #
@@ -18,112 +18,112 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-include(${PROJECT_SOURCE_DIR}/pch.txt)
-
-MACRO(WRAP_CPP outfiles )
-   FOREACH(it ${ARGN})
-      SET(${outfiles} ${${outfiles}} ${it}.cpp)
-      ENDFOREACH(it)
-   ENDMACRO(WRAP_CPP)
-
-MACRO(WRAP_H outfiles )
-   FOREACH(it ${ARGN})
-      SET(${outfiles} ${${outfiles}} ${it}.h)
-      ENDFOREACH(it)
-   ENDMACRO(WRAP_H)
-
-set(mocs
-      aslider knob panknob slider volknob volslider floatentry
-      volentry panentry midivolentry midipanentry midipanknob
-      mslider midimslider midimeter combobox checkbox 
-      posedit
-      pitchedit 
-      # poslabel 
-      pitchlabel tempolabel 
-      sigedit 
-      # tcanvas
-      tempoedit drawbar
+##
+## Expand Qt macros in source files
+##
+QT4_WRAP_CPP (awl_mocs
+      aslider.h
+      # awlplugin.h
+      checkbox.h
+      combobox.h
+      drawbar.h
+      floatentry.h
+      knob.h
+      midimeter.h
+      midimslider.h
+      midipanentry.h
+      midipanknob.h
+      midivolentry.h
+      mslider.h
+      panentry.h
+      panknob.h
+      pitchedit.h
+      pitchlabel.h
+      posedit.h
+      # poslabel.h
+      sigedit.h
+      slider.h
+      # tcanvas.h
+      tempoedit.h
+      tempolabel.h
+      volentry.h
+      volknob.h
+      volslider.h
       )
 
-WRAP_H(mocH ${mocs})
-WRAP_CPP(mocCPP ${mocs})
-
-QT4_WRAP_CPP (moc_headers ${mocH})
-
-set(awl_src
-      awl.cpp utils.cpp  ${mocCPP} ${moc_headers}
+##
+## List of source files to compile
+##
+file (GLOB awl_source_files
+      aslider.cpp
+      awl.cpp
+      # awlplugin.cpp
+      checkbox.cpp
+      combobox.cpp
+      drawbar.cpp
+      floatentry.cpp
+      knob.cpp
+      # ltest.cpp
+      midimeter.cpp
+      midimslider.cpp
+      midipanentry.cpp
+      midipanknob.cpp
+      midivolentry.cpp
+      mslider.cpp
+      panentry.cpp
+      panknob.cpp
+      pitchedit.cpp
+      pitchlabel.cpp
+      posedit.cpp
+      # poslabel.cpp
+      sigedit.cpp
+      slider.cpp
+      # tcanvas.cpp
+      tempoedit.cpp
+      tempolabel.cpp
+      utils.cpp
+      volentry.cpp
+      volknob.cpp
+      volslider.cpp
       )
 
-# TODO: Better filtering
-file (GLOB SOURCE_FILES *.cpp *.h )
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} CACHE INTERNAL "")
-
-add_library (
-      awl
-      SHARED
-      ${awl_src}
-      ${PROJECT_BINARY_DIR}/all.h.pch
+##
+## Define target
+##
+add_library ( awl SHARED
+      ${awl_source_files}
+      ${awl_mocs}
       )
 
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${SOURCE_FILES}
+      CACHE INTERNAL ""
+      )
+
+##
+## Compilation flags and target name
+##
+set_target_properties( awl
+      PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all.h"
+      OUTPUT_NAME muse_awl
+      )
+
+##
+## Linkage
+##
 target_link_libraries ( awl
       ${QT_LIBRARIES}
       al
       )
 
-set_target_properties( awl
-   PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all.h"
-              OUTPUT_NAME muse_awl
-   )
+##
+## Install location
+##
+install(TARGETS awl
+      DESTINATION ${MusE_MODULES_DIR}
+      )
 
-install(TARGETS awl DESTINATION ${MUSE_MODULES_DIR})
-
-# IF (APPLE)
-#    message("Not yet able to build awlplugin under OS X.")
-# ELSE (APPLE)
-# 
-#    #
-#    #  build libawlplugin.so
-#    #
-#    QT4_WRAP_CPP (moc_awlplugin_headers
-#       awlplugin.h
-#       volknob.h knob.h aslider.h
-#       slider.h volslider.h mslider.h
-#       posedit.h poslabel.h
-#       tempoedit.h tempolabel.h
-#       combobox.h checkbox.h
-#       panknob.h midipanknob.h
-#       floatentry.h
-#       drawbar.h
-#       )
-# 
-#    add_library ( awlplugin SHARED
-#        awlplugin.cpp
-#        volknob.cpp knob.cpp aslider.cpp
-#        slider.cpp volslider.cpp mslider.cpp
-#        posedit.cpp poslabel.cpp
-#        tempoedit.cpp tempolabel.cpp
-#        combobox.cpp checkbox.cpp
-#        panknob.cpp midipanknob.cpp
-#        floatentry.cpp
-#        drawbar.cpp
-#        ${moc_awlplugin_headers}
-#        ${PROJECT_BINARY_DIR}/all-pic.h.pch
-#        )
-# 
-#    set_target_properties( awlplugin
-#       PROPERTIES COMPILE_FLAGS
-#          "-D_GNU_SOURCE -D_REENTRANT -DHAVE_CONFIG_H -DQT_PLUGIN -DQT_SHARED -DQT_NO_DEBUG -include ${PROJECT_BINARY_DIR}/all-pic.h"
-#       )
-#    target_link_libraries( awlplugin
-#       al pthread asound
-#       )
-# 
-#    install( TARGETS awlplugin DESTINATION ${QT_PLUGINS_DIR}/designer/ )
-# 
-#    add_executable( ltest ltest.cpp )
-#    target_link_libraries ( ltest
-#       awlplugin
-#       ${QT_LIBRARIES}
-#       )
-# 
-# ENDIF (APPLE)

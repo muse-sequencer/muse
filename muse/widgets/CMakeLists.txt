@@ -18,120 +18,69 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-include(${PROJECT_SOURCE_DIR}/pch.txt)
-
-# FIXME: Can't build shared widgets library while using QT3 support for the widgets code. 
-# QT3's QWidgetPlugin no longer supported in QT4. Our code would have to be native QT4...
-# Rules seem OK but get compile errors.
-
-# IF (APPLE)
-#    message("Not yet able to build musewidgetsplugin under OS X.")
-# ELSE (APPLE)
-# 
-#    #
-#    #  build libmusewidgetsplugin.so
-#    #
-#    QT4_WRAP_CPP (moc_widgetsplugin_headers
-#       posedit.h poslabel.h   sigedit.h     pitchedit.h pitchlabel.h tempolabel.h 
-#       slider.h  sliderbase.h doublelabel.h dentry.h    checkbox.h   combobox.h
-#       )
-# 
-#    add_library ( musewidgetsplugin SHARED
-#        sclif.cpp  scldiv.cpp mmath.cpp scldraw.cpp  dimap.cpp drange.cpp 
-#        
-#        posedit.cpp poslabel.cpp sigedit.cpp pitchedit.cpp pitchlabel.cpp tempolabel.cpp 
-#        slider.cpp sliderbase.cpp doublelabel.cpp dentry.cpp checkbox.cpp combobox.cpp
-#       
-#        musewidgetsplug.cpp 
-#        sigedit.h 
-#        ${PROJECT_SOURCE_DIR}/muse/xml.cpp ${PROJECT_SOURCE_DIR}/muse/tempo.cpp 
-#        ${PROJECT_SOURCE_DIR}/muse/sig.cpp ${PROJECT_SOURCE_DIR}/muse/pos.cpp
-#        
-#        ${moc_widgetsplugin_headers}
-#        ${PROJECT_BINARY_DIR}/all-pic.h.pch
-#        )
-# 
-#    set_target_properties( musewidgetsplugin
-#       PROPERTIES COMPILE_FLAGS
-#          "-D_GNU_SOURCE -D_REENTRANT -DHAVE_CONFIG_H -DQT_PLUGIN -DQT_SHARED -DQT_NO_DEBUG -include ${PROJECT_BINARY_DIR}/all-pic.h"
-#       )
-#    target_link_libraries( musewidgetsplugin
-#       # TODO: what do we need here?
-#       al pthread asound
-#       )
-# 
-#    # install( TARGETS awlplugin DESTINATION ${QT_PLUGINS_DIR}/designer/ )
-#    # install_targets ( /${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins/ musewidgetsplugin )
-#    install( TARGETS musewidgetsplugin DESTINATION ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins/ )
-#    
-# # 
-# #    add_executable( ltest ltest.cpp )
-# #    target_link_libraries ( ltest
-# #       musewidgetsplugin
-# #       ${QT_LIBRARIES}
-# #       )
-# # 
-#
-# ENDIF (APPLE)
- 
-
+##
+## Expand Qt macros in source files
+##
 QT4_WRAP_CPP (widget_mocs
-      scrollscale.h  
-      view.h  
-      nentry.h  
-      mtscale.h  
-      sigscale.h  
+      aboutbox_impl.h 
+      action.h
+      bigtime.h  
+      canvas.h  
+      checkbox.h  
+      comboQuant.h  
+      combobox.h  
+      comment.h  
+      ctrlcombo.h  
+      dentry.h  
+      didyouknow.h
+      doublelabel.h  
+      filedialog.h  
+      gatetime.h  
+      genset.h  
+      header.h  
       hitscale.h  
       intlabel.h  
-      doublelabel.h  
-      canvas.h  
-      noteinfo.h  
-      dentry.h  
-      siglabel.h  
-      # ttoolbar.h  
-      ttoolbutton.h  
-      tb1.h  
-      lcombo.h  
-      swidget.h  
-      tempolabel.h  
-      tools.h  
-      popupmenu.h  
-      ctrlcombo.h  
-      sliderbase.h  
-      slider.h  
-      midisyncimpl.h  
-      header.h  
       knob.h  
-      mlabel.h  
-      genset.h  
-      mixdowndialog.h  
-      spinboxFP.h  
-      spinbox.h  
-      comboQuant.h  
-      bigtime.h  
-      comment.h  
-      splitter.h  
-      gatetime.h  
-      velocity.h  
+      lcombo.h  
       metronome.h  
-      # posedit.h  
+      midisyncimpl.h  
+      mixdowndialog.h  
+      mlabel.h  
+      mtscale.h  
+      nentry.h  
+      noteinfo.h  
       pitchedit.h  
       pitchlabel.h  
+      popupmenu.h  
+      # posedit.h  
       poslabel.h  
-      filedialog.h  
-      # sigedit.h  
-      shortcutconfig.h  
+      scrollscale.h  
       shortcutcapturedialog.h  
-      combobox.h  
-      aboutbox_impl.h 
-      checkbox.h  
-      vscale.h  
-      action.h
+      shortcutconfig.h  
+      # sigedit.h  
+      siglabel.h  
+      sigscale.h  
+      slider.h  
+      sliderbase.h  
       songinfo.h
-      didyouknow.h
+      spinbox.h  
+      spinboxFP.h  
+      splitter.h  
+      swidget.h  
+      tb1.h  
+      tempolabel.h  
+      tools.h  
+      # ttoolbar.h  
+      ttoolbutton.h  
+      velocity.h  
+      view.h  
+      vscale.h  
       )
 
-file (GLOB UI_FILES
+##
+## UI files
+##
+file (GLOB widgets_ui_files
       aboutbox.ui  
       appearancebase.ui 
       cliplisteditorbase.ui  
@@ -157,107 +106,117 @@ file (GLOB UI_FILES
       transposebase.ui  
       velocitybase.ui  
       )
+QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 
-QT4_WRAP_UI (widget_ui_headers ${UI_FILES})      
-
-# add_custom_command(OUTPUT ui_midisync.h
-#      COMMAND ${QT_UIC_EXECUTABLE}
-#      ARGS -o ${CMAKE_CURRENT_BINARY_DIR}/ui_midisync.h ${CMAKE_CURRENT_SOURCE_DIR}/midisync.ui
-#      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/midisync.ui
-#      )
-
-# ADD_FILE_DEPENDENCIES(moc_midisync.cxx ${CMAKE_CURRENT_BINARY_DIR}/ui_midisync.h)
-
-file (GLOB SOURCE_FILES
-      utils.cpp 
+##
+## List of source files to compile
+##
+file (GLOB widgets_source_files
+      aboutbox_impl.cpp 
+      bigtime.cpp 
+      canvas.cpp 
+      checkbox.cpp 
       citem.cpp
-      vscale.cpp
+      comboQuant.cpp 
+      combobox.cpp  
+      comment.cpp 
+      ctrlcombo.cpp 
+      dentry.cpp 
+      dimap.cpp
+      doublelabel.cpp 
       drange.cpp
-      sclif.cpp
-      dimap.cpp dimap.h  
-      scldiv.cpp scldiv.h  
-      mmath.cpp mmath.h  
-      scldraw.cpp scldraw.h  
-      action.h  
-      scrollscale.cpp  
-      view.cpp    
-      nentry.cpp 
-      mtscale.cpp 
-      sigscale.cpp 
+      filedialog.cpp 
+      gatetime.cpp 
+      genset.cpp 
+      header.cpp 
       hitscale.cpp 
       intlabel.cpp 
-      doublelabel.cpp 
-      canvas.cpp 
-      noteinfo.cpp 
-      dentry.cpp 
-      siglabel.cpp 
-      ttoolbar.cpp 
-      ttoolbutton.cpp 
-      tb1.cpp   
-      lcombo.cpp 
-      swidget.cpp 
-      tempolabel.cpp 
-      tools.cpp 
-      ctrlcombo.cpp 
-      sliderbase.cpp 
-      slider.cpp 
-      midisyncimpl.cpp 
-      header.cpp 
       knob.cpp 
-      mlabel.cpp 
-      genset.cpp 
-      mixdowndialog.cpp 
-      spinboxFP.cpp 
-      spinbox.cpp 
-      comboQuant.cpp 
-      bigtime.cpp 
-      comment.cpp 
-      splitter.cpp  
-      gatetime.cpp 
-      velocity.cpp 
+      lcombo.cpp 
       metronome.cpp 
-      # posedit.cpp 
-      section.h 
+      midisyncimpl.cpp 
+      mixdowndialog.cpp 
+      mlabel.cpp 
+      mmath.cpp
+      mtscale.cpp 
+      nentry.cpp 
+      noteinfo.cpp 
       pitchedit.cpp 
       pitchlabel.cpp 
-      poslabel.cpp 
-      filedialog.cpp 
-      # sigedit.cpp 
-      shortcutconfig.cpp 
-      shortcutcapturedialog.cpp 
-      combobox.cpp  
-      checkbox.cpp 
-      aboutbox_impl.cpp 
       popupmenu.cpp 
-      menutitleitem.h  
+      # posedit.cpp 
+      poslabel.cpp 
+      scldiv.cpp
+      scldraw.cpp
+      sclif.cpp
+      scrollscale.cpp  
+      shortcutcapturedialog.cpp 
+      shortcutconfig.cpp 
+      # sigedit.cpp 
+      siglabel.cpp 
+      sigscale.cpp 
+      slider.cpp 
+      sliderbase.cpp 
+      spinbox.cpp 
+      spinboxFP.cpp 
+      splitter.cpp  
+      swidget.cpp 
+      tb1.cpp   
+      tempolabel.cpp 
+      tools.cpp 
+      ttoolbar.cpp 
+      ttoolbutton.cpp 
+      utils.cpp 
+      velocity.cpp 
+      view.cpp    
+      vscale.cpp
       )
 
+##
+## Define target
+##
 add_library ( widgets SHARED 
       ${widget_ui_headers}
       ${widget_mocs}
-      ${SOURCE_FILES}
+      ${widgets_source_files}
       )
 
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${widgets_source_files}
+      ${widgets_ui_files}
+      CACHE INTERNAL ""
+      )
+
+##
+## Compilation flags and target name
+##
+set_target_properties( widgets
+      # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti -fPIC"
+      OUTPUT_NAME muse_widgets
+      )
+
+##
+## Linkage
+##
 target_link_libraries ( widgets
       ${QT_LIBRARIES}
       icons
       )
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${SOURCE_FILES} ${UI_FILES} CACHE INTERNAL "")
+##
+## Install location
+##
+install(TARGETS widgets
+      DESTINATION
+      ${MusE_MODULES_DIR}
+      )
 
-install(TARGETS widgets DESTINATION ${MUSE_MODULES_DIR})
 
-
-# AM_CXXFLAGS +=-DSVNVERSION=\"$(shell svnversion)\"
-# EXEC_PROGRAM( svnversion
-#      ARGS ${PROJECT_SOURCE_DIR}
-#      OUTPUT_VARIABLE SVNVER )
-
-set_target_properties( widgets
-   # PROPERTIES COMPILE_FLAGS "-DSVNVERSION='\"${SVNVER}\"' -include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
-   PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti -fPIC"
-              OUTPUT_NAME muse_widgets
-   )
 
 
 

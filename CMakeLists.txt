@@ -30,11 +30,11 @@ endif(COMMAND cmake_policy)
 
 # set libdir if not use -DCMAKE_INSTALL_LIBDIR
 if (NOT CMAKE_INSTALL_LIBDIR)
-	SET(CMAKE_INSTALL_LIBDIR "lib")
+	SET(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib")
 endif (NOT CMAKE_INSTALL_LIBDIR)
 
 IF(NOT DEFINED SHARE_INSTALL_PREFIX)
-        SET(SHARE_INSTALL_PREFIX share)
+        SET(SHARE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/share")
 ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
 
 #set(CMAKE_BUILD_TYPE debug)
@@ -68,13 +68,37 @@ SET(MusE_VERSION       "2.0.1")
 SET(MusE_VERSION_FULL  "2.0.1")
 SET(MusE_INSTALL_NAME  "muse-2.0")
 
-SET(MUSE_MODULES_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/modules)
-SET(CMAKE_INSTALL_RPATH ${MUSE_MODULES_DIR})
+## The library where we will install the shared components:
+SET(MusE_MODULES_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/modules)
+SET(CMAKE_INSTALL_RPATH ${MusE_MODULES_DIR})
 
-EXEC_PROGRAM( svnversion
-      ARGS ${PROJECT_SOURCE_DIR}
-      OUTPUT_VARIABLE MusE_SVNVER )
-      
+## Synthesizers directory
+SET(MusE_SYNTHI_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi)
+
+## Plugins directory
+SET(MusE_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins)
+
+## Top documentation dir
+IF(NOT DEFINED MusE_DOC_DIR)
+      SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${PROJECT_NAME}-${MusE_VERSION_FULL}/)
+ENDIF(NOT DEFINED MusE_DOC_DIR)
+
+## Data directory
+SET(MusE_SHARE_DIR ${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME})
+
+## Lib directory
+SET(MusE_LIB_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME})
+
+FIND_PROGRAM(SVNVER svnversion)
+if (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
+      SET (MusE_SVNVER 0)
+else (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
+      EXEC_PROGRAM( svnversion
+            ARGS ${PROJECT_SOURCE_DIR}
+            OUTPUT_VARIABLE MusE_SVNVER )
+endif (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
+
+# Do we need this? - Orcan:
 # include ( ${PROJECT_SOURCE_DIR}/cmake/WrapMacros.cmake)
 
 option ( ENABLE_LASH        "enable LASH Audio Session Handler"                              ON)
@@ -121,10 +145,6 @@ endif (NOT QT4_FOUND)
 SET(QT_USE_QTUITOOLS TRUE)
 
 include(${QT_USE_FILE})
-
-# set (MUSE_QT_WRAP_CPP QT4_WRAP_CPP)
-# set (MUSE_QT_WRAP_UI QT4_WRAP_UI)
-include ( ${PROJECT_SOURCE_DIR}/cmake/QtWrapMacros.cmake)
 
 
 ##
@@ -283,15 +303,6 @@ add_custom_command(
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )
 
-# uninstall custom target
-# CONFIGURE_FILE(
-#     "${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
-#     "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-#     IMMEDIATE @ONLY)
-# 
-# ADD_CUSTOM_TARGET(uninstall
-#     "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
-
 include_directories(
    .
    ${PROJECT_SOURCE_DIR}
@@ -343,7 +354,25 @@ set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
 #subdirs(al lib grepmidi plugins muse share demos synti )
 subdirs(al awl grepmidi plugins muse share synti packaging utils demos)
 
-# Uninstall support
+## Install doc files
+file (GLOB doc_files
+      AUTHORS
+      ChangeLog
+      COPYING
+      NEWS
+      README
+      README.de
+      README.effects-rack
+      README.instruments
+      README.ladspaguis
+      README.shortcuts
+      README.softsynth
+      README.translate
+      SECURITY
+      )
+INSTALL( FILES ${doc_files} DESTINATION ${MusE_DOC_DIR})
+
+## Uninstall support
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake"
@@ -352,7 +381,7 @@ configure_file(
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
 
-# Show a summary of what we got
+## Show a summary of what we got
 summary_add("Lash support" HAVE_LASH)
 summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)
@@ -361,7 +390,7 @@ summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
 summary_add("Experimental features" ENABLE_EXPERIMENTAL)
 summary_show()
 
-# Make the user aware of what type they're building.
+## Make the user aware of what type they're building.
 if (NOT CMAKE_BUILD_TYPE)
     message(" Build type: CMAKE_BUILD_TYPE is empty. Plain un-optimized build.")
 else (NOT CMAKE_BUILD_TYPE)
