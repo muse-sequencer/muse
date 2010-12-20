@@ -1,5 +1,8 @@
 20.12.2010:
         - Fixed arranger grid h-line drawing, track, and part drawing alignment, border issues. (Tim)
+        - To open help pages, use the default browser of the system via QDeskopServices. Removed
+          the configuration option to select the browser. (Orcan)
+        - Added some groupboxes and layouts to Global Settings to make it look more uniform. (Orcan)
 19.12.2010:
         - Fixed not saving part colours and part canvas background appearance settings. (Tim)
         *Feature: Added 'global opaqueness' (transparency) appearance setting. (Tim)
