@@ -456,6 +456,10 @@ Word-breaking but only with spaces.</source>
         <source>Qt style sheets (*.qss)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Global opaqueness (inverse of transparency).</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AppearanceDialogBase</name>
@@ -702,6 +706,10 @@ Word-breaking but only with spaces.</source>
     <message>
         <source>Font 6</source>
         <translation type="unfinished">Typsnitt 6</translation>
+    </message>
+    <message>
+        <source>Global opaqueness</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4412,7 +4420,7 @@ Configuration</source>
     </message>
     <message>
         <source>Help Browser:</source>
-        <translation>Hjälpläsare:</translation>
+        <translation type="obsolete">Hjälpläsare:</translation>
     </message>
     <message>
         <source>GUI Refresh Rate</source>
@@ -4627,6 +4635,14 @@ Shorter periods are desirable.</source>
     </message>
     <message>
         <source>Move single armed track with selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On Launch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Behavior</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7884,6 +7900,15 @@ Do you still want to import it?</source>
         <source>&amp;No</source>
         <translation type="unfinished">&amp;Nej</translation>
     </message>
+    <message>
+        <source>Unable to launch help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For some reason MusE has to launch the default
+browser on your machine.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NewPreset</name>
@@ -9773,6 +9798,10 @@ click on the Restart button.</source>
 </source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Automation:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SongInfo</name>
@@ -9977,17 +10006,6 @@ ljudfilerna skall hamna.</translation>
     <name>TempoSig</name>
     <message>
         <source>Tempo/Sig</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>TimeCanvas</name>
-    <message>
-        <source>Ctrl</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add Controller View</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
