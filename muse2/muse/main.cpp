@@ -159,7 +159,7 @@ static QString localeList()
       {
       // Find out what translations are available:
       QStringList deliveredLocaleListFiltered;
-      QString distLocale = QString(SHAREDIR) + "/locale";
+      QString distLocale = museGlobalShare + "/locale";
       QFileInfo distLocaleFi(distLocale);
       if (distLocaleFi.isDir()) {
             QDir dir = QDir(distLocale);
@@ -230,44 +230,16 @@ int main(int argc, char* argv[])
       getCapabilities();
       int noAudio = false;
 
-      const char* mu = getenv("MUSEHOME");
-      if(mu)
-        museUser = QString(mu);
-      if(museUser.isEmpty())
-        museUser = QString(getenv("HOME"));
-            
-      QString museGlobal;
-      const char* p = getenv("MUSE");
-      if (p)
-            museGlobal = p;
-
-      if (museGlobal.isEmpty()) {
-            museGlobalLib   = QString(LIBDIR);
-            museGlobalShare = QString(SHAREDIR);
-            }
-      else {
-            // Doesn't it make more sense to hardcode these dirs? 
-            // Well... They will be set properly anyways...
-            // Need to discuss this with Tim. - Orcan
-            museGlobalLib   = museGlobal + "/lib";
-            museGlobalShare = museGlobal + "/share";
-            //museGlobalLib   = museGlobal + QString("/") + QString(LIBINSTPREFIX);    // p4.0.7
-            //museGlobalShare = museGlobal + QString("/") + QString(SHAREINSTPREFIX);
-            }
+      museUser = QString(getenv("HOME"));
+      museGlobalLib   = QString(LIBDIR);
+      museGlobalShare = QString(SHAREDIR);
       museProject = museProjectInitPath; //getcwd(0, 0);
+      museInstruments = museGlobalShare + QString("/instruments");
 
       // Create config dir if it doesn't exists
       QDir cPath = QDir(configPath);
       if (! cPath.exists())
             cPath.mkpath(".");
-
-      museInstruments = museGlobalShare + QString("/instruments");
-      
-      const char* ins = getenv("MUSEINSTRUMENTS");
-      if(ins)
-        museUserInstruments = QString(ins);
-      if(museUserInstruments.isEmpty())
-        museUserInstruments = museUser + QString("/muse_instruments");
 
 #ifdef HAVE_LASH
       lash_args_t * lash_args = 0;
@@ -283,6 +255,8 @@ int main(int argc, char* argv[])
 
       initShortCuts();
       readConfiguration();
+
+      museUserInstruments = config.userInstrumentsDir;
 
       if (config.useDenormalBias)
           printf("Denormal protection enabled.\n");

@@ -30,6 +30,8 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void bigtimeCurrent();
       void arrangerCurrent();
       void transportCurrent();
+      void selectInstrumentsPath();
+      void defaultInstrumentsPath();
 
     protected:
       void showEvent(QShowEvent*);

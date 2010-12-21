@@ -121,7 +121,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _saveConfig = true;
   _isInitSet = true; //false if an initial bank must be download
   
-  QString sharePath(SHAREDIR);
+  QString sharePath(museGlobalShare);
   _initSetPath = sharePath + QString("/presets/deicsonze/SutulaBank.dei");
   
   

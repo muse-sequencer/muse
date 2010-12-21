@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-#include <QDialog>
+#include <QFileDialog>
 #include <QRect>
 #include <QShowEvent>
 
@@ -17,6 +17,7 @@
 #include "gconfig.h"
 #include "midiseq.h"
 #include "globals.h"
+#include "icons.h"
 
 static int rtcResolutions[] = {
       1024, 2048, 4096, 8192, 16384, 32768
@@ -64,7 +65,13 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
                   break;
                   }
             }
-      
+
+      userInstrumentsPath->setText(config.userInstrumentsDir);
+      selectInstrumentsDirButton->setIcon(*openIcon);
+      defaultInstrumentsDirButton->setIcon(*undoIcon);
+      connect(selectInstrumentsDirButton, SIGNAL(clicked()), SLOT(selectInstrumentsPath()));
+      connect(defaultInstrumentsDirButton, SIGNAL(clicked()), SLOT(defaultInstrumentsPath()));
+
       guiRefreshSelect->setValue(config.guiRefresh);
       minSliderSelect->setValue(int(config.minSlider));
       minMeterSelect->setValue(config.minMeter);
@@ -256,6 +263,7 @@ void GlobalSettingsConfig::apply()
       config.useOutputLimiter = outputLimiterCheckBox->isChecked();
       config.vstInPlace  = vstInPlaceCheckBox->isChecked();
       config.rtcTicks    = rtcResolutions[rtcticks];
+      config.userInstrumentsDir = userInstrumentsPath->text();
       config.startSong   = startSongEntry->text();
       config.startMode   = startSongGroup->checkedId();
       int das = dummyAudioSize->currentIndex();
@@ -339,6 +347,8 @@ void GlobalSettingsConfig::apply()
             }
       muse->resize(config.geometryMain.size());
       muse->move(config.geometryMain.topLeft());
+
+      museUserInstruments = config.userInstrumentsDir;
 
       muse->setHeartBeat();        // set guiRefresh
       midiSeq->msgSetRtc();        // set midi tick rate
@@ -439,3 +449,16 @@ void GlobalSettingsConfig::transportCurrent()
       transportY->setValue(r.y());
       }
 
+void GlobalSettingsConfig::selectInstrumentsPath()
+      {
+      QString dir = QFileDialog::getExistingDirectory(this, 
+                                                      tr("Selects instruments directory"), 
+                                                      config.userInstrumentsDir);
+      userInstrumentsPath->setText(dir);
+      }
+
+void GlobalSettingsConfig::defaultInstrumentsPath()
+      {
+      QString dir = configPath + "/instruments";
+      userInstrumentsPath->setText(dir);
+      }

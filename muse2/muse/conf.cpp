@@ -836,6 +836,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.dummyAudioBufSize = xml.parseInt();
                         else if (tag == "guiRefresh")
                               config.guiRefresh = xml.parseInt();
+                        else if (tag == "userInstrumentsDir")
+                              config.userInstrumentsDir = xml.parse1();
                         else if (tag == "midiTransform")
                               readMidiTransform(xml);
                         else if (tag == "midiInputTransform")
@@ -882,6 +884,8 @@ bool readConfiguration()
             if (debugMsg || debugMode)
                   fprintf(stderr, "NO Config File <%s> found\n", configName.toLatin1().constData());
 
+            if (config.userInstrumentsDir.isEmpty()) 
+                  config.userInstrumentsDir = configPath + "/instruments";
             return true;
             }
       Xml xml(f);
@@ -1077,6 +1081,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.intTag(level, "dummyAudioSampleRate", config.dummyAudioSampleRate);
 
       xml.intTag(level, "guiRefresh", config.guiRefresh);
+      xml.strTag(level, "userInstrumentsDir", config.userInstrumentsDir);
       // Removed by Orcan. 20101220
       //xml.strTag(level, "helpBrowser", config.helpBrowser);
       xml.intTag(level, "extendedMidi", config.extendedMidi);

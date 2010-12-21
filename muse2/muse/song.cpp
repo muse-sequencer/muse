@@ -3724,7 +3724,7 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
       //
       // List scripts
       // 
-      QString distScripts = QString(SHAREDIR) + "/scripts";
+      QString distScripts = museGlobalShare + "/scripts";
 
       QString userScripts = configPath + "/scripts";
 
@@ -3779,7 +3779,7 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
 QString Song::getScriptPath(int id, bool isdelivered)
 {
       if (isdelivered) {
-            QString path = QString(SHAREDIR) + "/scripts/" + deliveredScriptNames[id];
+            QString path = museGlobalShare + "/scripts/" + deliveredScriptNames[id];
             return path;
             }
 
