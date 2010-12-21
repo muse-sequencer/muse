@@ -1,10 +1,11 @@
 21.12.2010:
         - Moved all the config files "~/.musePrj, ~/.MusE, ~/.deicsonze.dco" into ~/.config/MusE/
           and renamed them as "projects, MusE.cfg, deicsonze.dco", respectively. (Orcan)
-          TODO: user instruments path will be made user configurable with default location in
-          ~/.config/MusE/
+        - User instruments path is made user configurable with default location in
+          ~/.config/MusE/instruments
         - In simpledrums2, set the 64bit ladpsa plugin paths. (Orcan)
         - Fix: gensetbase was opening in the last tab instead of the first. (Orcan)
+        - Eliminated environment variables usage (MUSE, MUSEHOME, MUSEINSTRUMENTS). (Orcan)
 20.12.2010:
         - Fixed arranger grid h-line drawing, track, and part drawing alignment, border issues. (Tim)
         - To open help pages, use the default browser of the system via QDeskopServices. Removed

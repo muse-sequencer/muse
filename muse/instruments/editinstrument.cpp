@@ -394,7 +394,7 @@ void EditInstrument::saveAs()
         if(QMessageBox::question(this,
             tr("MusE:"),
             tr("The user instrument directory\n") + museUserInstruments + tr("\ndoes not exist yet. Create it now?\n") +
-              tr("(You can override with the environment variable MUSEINSTRUMENTS)"),
+              tr("(You can change the user instruments directory at Settings->Global Settings->Midi)"),
             QMessageBox::Ok | QMessageBox::Default,
             QMessageBox::Cancel | QMessageBox::Escape,
             Qt::NoButton) == QMessageBox::Ok)
@@ -686,7 +686,7 @@ void EditInstrument::fileSaveAs()
         if(QMessageBox::question(this,
             tr("MusE:"),
             tr("The user instrument directory\n") + museUserInstruments + tr("\ndoes not exist yet. Create it now?\n") +
-              tr("(You can override with the environment variable MUSEINSTRUMENTS)"),
+              tr("(You can change the user instruments directory at Settings->Global Settings->Midi)"),
             QMessageBox::Ok | QMessageBox::Default,
             QMessageBox::Cancel | QMessageBox::Escape,
             Qt::NoButton) == QMessageBox::Ok)

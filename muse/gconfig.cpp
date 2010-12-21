@@ -82,6 +82,7 @@ GlobalConfigValues config = {
       -60.0,                        // double minSlider;
       false,                        // use Jack freewheel
       20,                           // int guiRefresh;
+      QString(""),                  // userInstrumentsDir
       //QString(""),                  // helpBrowser; // Obsolete
       true,                         // extendedMidi
       384,                          // division for smf export

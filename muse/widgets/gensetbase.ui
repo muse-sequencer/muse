@@ -907,13 +907,7 @@ Shorter periods are desirable.</string>
          <property name="title">
           <string>Ticks</string>
          </property>
-         <layout class="QGridLayout">
-          <property name="margin">
-           <number>11</number>
-          </property>
-          <property name="spacing">
-           <number>6</number>
-          </property>
+         <layout class="QGridLayout" name="gridLayout9">
           <item row="0" column="0">
            <widget class="QLabel" name="TextLabel3">
             <property name="text">
@@ -1083,6 +1077,30 @@ Shorter periods are desirable.</string>
               <string>12288</string>
              </property>
             </item>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="TextLabel3_4">
+            <property name="text">
+             <string>Instruments Directory</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="userInstrumentsPath"/>
+          </item>
+          <item row="3" column="2">
+           <widget class="QPushButton" name="selectInstrumentsDirButton">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="QPushButton" name="defaultInstrumentsDirButton">
+            <property name="text">
+             <string/>
+            </property>
            </widget>
           </item>
          </layout>

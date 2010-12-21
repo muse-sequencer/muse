@@ -440,7 +440,7 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   setEnabledPreset(false);
   
   // Tim.
-  QString sharePath(SHAREDIR);                            
+  QString sharePath(museGlobalShare);                            
   updateInitSetPath
     (sharePath + QString("/presets/deicsonze/SutulaBank.dei"));    // Tim.
     
