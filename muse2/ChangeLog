@@ -4,6 +4,7 @@
           the configuration option to select the browser. (Orcan)
         - Added some groupboxes and layouts to Global Settings to make it look more uniform. (Orcan)
         - Don't pack the binary and subversion directories when doing "make package_source". (Orcan)
+        - Updated the Russian translation again thanks to Alex, alex54m -> mail.ru
 19.12.2010:
         - Fixed not saving part colours and part canvas background appearance settings. (Tim)
         *Feature: Added 'global opaqueness' (transparency) appearance setting. (Tim)
