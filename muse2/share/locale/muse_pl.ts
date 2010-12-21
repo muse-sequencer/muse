@@ -431,6 +431,10 @@ Word-breaking but only with spaces.</source>
         <source>Qt style sheets (*.qss)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Global opaqueness (inverse of transparency).</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AppearanceDialogBase</name>
@@ -657,6 +661,10 @@ Word-breaking but only with spaces.</source>
     <message>
         <source>Font 6</source>
         <translation type="unfinished">Czcionka 6</translation>
+    </message>
+    <message>
+        <source>Global opaqueness</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4187,7 +4195,7 @@ RTC (Rzeczywista Rozdzielczość Zegara)
     </message>
     <message>
         <source>Help Browser:</source>
-        <translation>Przeglądarka pomocy:</translation>
+        <translation type="obsolete">Przeglądarka pomocy:</translation>
     </message>
     <message>
         <source>Application</source>
@@ -4394,6 +4402,14 @@ Shorter periods are desirable.</source>
     </message>
     <message>
         <source>Move single armed track with selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On Launch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Behavior</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7577,6 +7593,15 @@ Do you still want to import it?</source>
         <source>&amp;No</source>
         <translation type="unfinished">&amp;Nie</translation>
     </message>
+    <message>
+        <source>Unable to launch help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For some reason MusE has to launch the default
+browser on your machine.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NoteInfo</name>
@@ -9121,6 +9146,10 @@ click on the Restart button.</source>
 </source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Automation:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SongInfo</name>
@@ -9288,17 +9317,6 @@ click on the Restart button.</source>
     <message>
         <source>Tempo/Sig</source>
         <translation>Tempo/Metrum</translation>
-    </message>
-</context>
-<context>
-    <name>TimeCanvas</name>
-    <message>
-        <source>Ctrl</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add Controller View</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

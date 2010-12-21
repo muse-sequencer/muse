@@ -1,4 +1,6 @@
-<!DOCTYPE TS><TS>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
 <context>
     <name>@default</name>
     <message>
@@ -439,6 +441,10 @@ Word-breaking but only with spaces.</source>
         <source>Qt style sheets (*.qss)</source>
         <translation>Таблицы стилей Qt (*.qss)</translation>
     </message>
+    <message>
+        <source>Global opaqueness (inverse of transparency).</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AppearanceDialogBase</name>
@@ -665,6 +671,10 @@ Word-breaking but only with spaces.</source>
     <message>
         <source>Font 6</source>
         <translation>Шрифт 6</translation>
+    </message>
+    <message>
+        <source>Global opaqueness</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1895,15 +1905,15 @@ Right-click to show GUI.</source>
         <source>Release Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <source>2° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <source>1° Decay Level</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <source>1° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2568,7 +2578,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
     </message>
     <message>
         <source>Vol</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Громк</translation>
     </message>
     <message>
         <source>Channel Ctrl</source>
@@ -2576,7 +2586,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
     </message>
     <message>
         <source>Release</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Послезвучие</translation>
     </message>
     <message>
         <source>Attack</source>
@@ -4374,7 +4384,7 @@ Configuration</source>
     </message>
     <message>
         <source>Help Browser:</source>
-        <translation>В чём читать справку:</translation>
+        <translation type="obsolete">В чём читать справку:</translation>
     </message>
     <message>
         <source>GUI Refresh Rate</source>
@@ -4597,6 +4607,14 @@ Shorter periods are desirable.</source>
     <message>
         <source>Move single armed track with selection</source>
         <translation>Назначать &quot;для записи&quot; выбранный трек</translation>
+    </message>
+    <message>
+        <source>On Launch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Behavior</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6565,14 +6583,14 @@ You can specify more than one channel for
 recording:
    1 2 3      record from channel 1 2 and 3
    1-3         same
-   1-3 5<byte value="x9"/>     record from channel 1 2 3 and 5</source>
+   1-3 5	     record from channel 1 2 3 and 5</source>
         <translation type="obsolete">События со всех настроенных каналов
 записываются в этот трек.
 Вы можете указать несколько каналов для
 записи:
    1 2 3      записывать с каналов 1, 2 и 3
    1-3         то же самое
-   1-3 5<byte value="x9"/>   записывать с каналов 1, 2, 3 и 5</translation>
+   1-3 5	   записывать с каналов 1, 2, 3 и 5</translation>
     </message>
     <message>
         <source>record:</source>
@@ -7809,6 +7827,15 @@ Do you still want to import it?</source>
         <source>&amp;No</source>
         <translation>&amp;Нет</translation>
     </message>
+    <message>
+        <source>Unable to launch help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For some reason MusE has to launch the default
+browser on your machine.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NewPreset</name>
@@ -8773,7 +8800,7 @@ exists. Overwrite?</source>
         <translation>Степень</translation>
     </message>
     <message>
-        <source>Don&#xb4;t Quantize</source>
+        <source>Don´t Quantize</source>
         <translation>Не Квантовать</translation>
     </message>
     <message>
@@ -9517,6 +9544,10 @@ click on the Restart button.</source>
 </source>
         <translation>MusE не может запустить скрипт</translation>
     </message>
+    <message>
+        <source>Automation:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SongInfo</name>
@@ -9690,12 +9721,12 @@ click on the Restart button.</source>
     <name>TimeCanvas</name>
     <message>
         <source>Ctrl</source>
-        <translation>Ctrl
+        <translation type="obsolete">Ctrl
 </translation>
     </message>
     <message>
         <source>Add Controller View</source>
-        <translation>Добавить Панель Контроллеров</translation>
+        <translation type="obsolete">Добавить Панель Контроллеров</translation>
     </message>
 </context>
 <context>
@@ -10055,7 +10086,7 @@ click on the Restart button.</source>
         <source>On</source>
         <translation>Вкл</translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <source>VAM 1.0beta2
 Virtual Analog for MusE
 Released under GPL.
@@ -10069,7 +10100,7 @@ Copyright(C) 2002
 Jotsif Lindman Hörnlund
 ( jotsif@linux.nu )</translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <source>VAM 1.0beta3
 Virtual Analog for MusE
 Released under GPL.

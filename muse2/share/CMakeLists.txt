@@ -18,15 +18,17 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+# NOTE: locale/ directory needs to be at the end so that the translations
+#       are scanned before coming to share/locale
 subdirs(
       drummaps
       html
       instruments
-      locale
       plugins
       pybridge
       scripts
       templates
       wallpapers
+      locale
       )
 

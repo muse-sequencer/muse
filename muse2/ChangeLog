@@ -6,6 +6,9 @@
         - Don't pack the binary and subversion directories when doing "make package_source". (Orcan)
         - Updated the Russian translation again thanks to Alex, alex54m -> mail.ru
         - Fix a typo in awl/CMakeLists.txt that disabled the translations for awl. (Orcan)
+        - Updated all the .ts files with the latest strings. Made sure that share/locale/CMakeLists
+          is scanned last so that all the translations are collected before coming to that. (Orcan)
+        - Fix: cliplist target should depend on widgets target. (Orcan)
 19.12.2010:
         - Fixed not saving part colours and part canvas background appearance settings. (Tim)
         *Feature: Added 'global opaqueness' (transparency) appearance setting. (Tim)
