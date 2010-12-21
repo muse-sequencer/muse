@@ -789,7 +789,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //routingPopupView      = 0;
       
       appName               = QString("MusE");
-
+      setWindowTitle(appName);
       editSignalMapper = new QSignalMapper(this);
       midiPluginSignalMapper = new QSignalMapper(this);
       followSignalMapper = new QSignalMapper(this);
@@ -1475,8 +1475,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //  read list of "Recent Projects"
       //---------------------------------------------------
 
-      QString prjPath(getenv("HOME"));
-      prjPath += QString("/.musePrj");
+      QString prjPath(configPath);
+      prjPath += QString("/projects");
       FILE* f = fopen(prjPath.toLatin1().constData(), "r");
       if (f == 0) {
             perror("open projectfile");
@@ -2021,8 +2021,8 @@ void MusE::closeEvent(QCloseEvent* event)
             }
 
       // save "Open Recent" list
-      QString prjPath(getenv("HOME"));
-      prjPath += "/.musePrj";
+      QString prjPath(configPath);
+      prjPath += "/projects";
       FILE* f = fopen(prjPath.toLatin1().constData(), "w");
       if (f) {
             for (int i = 0; i < PROJECT_LIST_LEN; ++i) {

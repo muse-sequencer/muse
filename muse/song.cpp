@@ -3719,17 +3719,14 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
 }
 
 
-#define USERSCRIPTSSUFFIX "/.muse/scripts/"
 void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
 {
       //
       // List scripts
       // 
       QString distScripts = QString(SHAREDIR) + "/scripts";
-      QString home = "";
-      if (getenv("HOME") != NULL)
-            home = QString(getenv("HOME"));
-      QString userScripts = home + QString(USERSCRIPTSSUFFIX);
+
+      QString userScripts = configPath + "/scripts";
 
       QFileInfo distScriptsFi(distScripts);
       if (distScriptsFi.isDir()) {
@@ -3786,7 +3783,7 @@ QString Song::getScriptPath(int id, bool isdelivered)
             return path;
             }
 
-      QString path = QString(getenv("HOME")) + USERSCRIPTSSUFFIX + userScriptNames[id - deliveredScriptNames.size()];
+      QString path = configPath + "/scripts/" + userScriptNames[id - deliveredScriptNames.size()];
       return path;
 }
 

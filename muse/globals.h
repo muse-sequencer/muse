@@ -48,6 +48,7 @@ extern QString museUser;
 extern QString museProject;
 extern QString museProjectInitPath;
 extern QString configName;
+extern QString configPath;
 extern QString museInstruments;
 extern QString museUserInstruments;
 

@@ -255,7 +255,11 @@ int main(int argc, char* argv[])
             //museGlobalShare = museGlobal + QString("/") + QString(SHAREINSTPREFIX);
             }
       museProject = museProjectInitPath; //getcwd(0, 0);
-      configName  = QString(getenv("HOME")) + QString("/.MusE");
+
+      // Create config dir if it doesn't exists
+      QDir cPath = QDir(configPath);
+      if (! cPath.exists())
+            cPath.mkpath(".");
 
       museInstruments = museGlobalShare + QString("/instruments");
       

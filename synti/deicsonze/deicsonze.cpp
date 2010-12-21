@@ -166,7 +166,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   
   //Load configuration
   QString defaultConf = 
-    (QString(getenv("HOME")) + QString("/." DEICSONZESTR ".dco"));
+    (configPath + QString("/" DEICSONZESTR ".dco"));
   FILE* f;
   f = fopen(defaultConf.toAscii().data(), "r");
   if(f) {

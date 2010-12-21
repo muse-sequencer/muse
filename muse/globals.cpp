@@ -12,6 +12,8 @@
 #include <stdlib.h>
 
 #include <QActionGroup>
+#include <QDir>
+#include <QFileInfo>
 
 #include "globals.h"
 #include "config.h"
@@ -75,7 +77,8 @@ QString museGlobalShare;
 QString museUser;
 QString museProject;
 QString museProjectInitPath("./");
-QString configName;
+QString configName = QString(getenv("HOME")) + QString("/.config/MusE/MusE.cfg");
+QString configPath = QFileInfo(configName).absoluteDir().absolutePath();
 QString museInstruments;
 QString museUserInstruments;
 
