@@ -100,7 +100,7 @@ add_library ( awl SHARED
 ##
 set (FILES_TO_TRANSLATE
       ${FILES_TO_TRANSLATE}
-      ${SOURCE_FILES}
+      ${awl_source_files}
       CACHE INTERNAL ""
       )
 
