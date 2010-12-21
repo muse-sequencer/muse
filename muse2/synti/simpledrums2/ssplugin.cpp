@@ -97,7 +97,7 @@ void SS_initPlugins()
 
       const char* ladspaPath = getenv("LADSPA_PATH");
       if (ladspaPath == 0)
-            ladspaPath = "/usr/lib/ladspa:/usr/local/lib/ladspa";
+            ladspaPath = "/usr/lib/ladspa:/usr/local/lib/ladspa:/usr/lib64/ladspa:/usr/local/lib64/ladspa";
 
       const char* p = ladspaPath;
       while (*p != '\0') {
