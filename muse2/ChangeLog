@@ -5,6 +5,7 @@
         - Added some groupboxes and layouts to Global Settings to make it look more uniform. (Orcan)
         - Don't pack the binary and subversion directories when doing "make package_source". (Orcan)
         - Updated the Russian translation again thanks to Alex, alex54m -> mail.ru
+        - Fix a typo in awl/CMakeLists.txt that disabled the translations for awl. (Orcan)
 19.12.2010:
         - Fixed not saving part colours and part canvas background appearance settings. (Tim)
         *Feature: Added 'global opaqueness' (transparency) appearance setting. (Tim)
