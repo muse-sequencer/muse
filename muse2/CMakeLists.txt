@@ -38,7 +38,7 @@ IF(NOT DEFINED SHARE_INSTALL_PREFIX)
 ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
 
 #set(CMAKE_BUILD_TYPE debug)
-set(CMAKE_BUILD_TYPE release)
+#set(CMAKE_BUILD_TYPE release)
 
 # If no CMAKE_BUILD_TYPE is given on the command line,
 #  cmake either uses the cached value, or 'empty' (plain un-opt build). 
@@ -61,12 +61,12 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # The MusE version number.
-SET(MusE_VERSION_MAJOR 2)
-SET(MusE_VERSION_MINOR 0)
-SET(MusE_VERSION_PATCH 1)
-SET(MusE_VERSION       "2.0.1")
-SET(MusE_VERSION_FULL  "2.0.1")
-SET(MusE_INSTALL_NAME  "muse-2.0")
+SET(MusE_VERSION_MAJOR 1)
+SET(MusE_VERSION_MINOR 9)
+SET(MusE_VERSION_PATCH 0)
+SET(MusE_VERSION       "1.9.0")
+SET(MusE_VERSION_FULL  "1.9.0")
+SET(MusE_INSTALL_NAME  "muse-1.9")
 
 ## The library where we will install the shared components:
 SET(MusE_MODULES_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/modules)
