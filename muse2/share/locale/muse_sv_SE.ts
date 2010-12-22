@@ -464,7 +464,7 @@ Word-breaking but only with spaces.</source>
 <context>
     <name>AppearanceDialogBase</name>
     <message>
-        <source>MusE: Appearance settings</source>
+        <source>MusE: Appearance Settings</source>
         <translation>MusE: Utseendeinställningar</translation>
     </message>
     <message>
@@ -7373,15 +7373,15 @@ inspelning:
         <translation>Bigtime fönster</translation>
     </message>
     <message>
-        <source>dont follow Song</source>
+        <source>Don't Follow Song</source>
         <translation>följ inte Sång</translation>
     </message>
     <message>
-        <source>follow page</source>
+        <source>Follow Page</source>
         <translation>följ sida</translation>
     </message>
     <message>
-        <source>follow continuous</source>
+        <source>Follow Continuous</source>
         <translation>följ kontinuerligt</translation>
     </message>
     <message>
@@ -7393,7 +7393,7 @@ inspelning:
         <translation>Globala Inställningar</translation>
     </message>
     <message>
-        <source>follow song</source>
+        <source>Follow Song</source>
         <translation>följ sång</translation>
     </message>
     <message>
@@ -7409,7 +7409,7 @@ inspelning:
         <translation type="obsolete">Midi Filkonfigurering</translation>
     </message>
     <message>
-        <source>Appearance settings</source>
+        <source>Appearance Settings</source>
         <translation>Utseendeinställningar</translation>
     </message>
     <message>
@@ -7651,7 +7651,7 @@ Spara nuvarande Projekt?</translation>
         <translation type="unfinished">Inställningar</translation>
     </message>
     <message>
-        <source>Configure shortcuts</source>
+        <source>Configure Shortcuts</source>
         <translation type="unfinished">Konfigurera kortkommandon</translation>
     </message>
     <message>

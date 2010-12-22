@@ -1038,20 +1038,20 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       //-------- Settings Actions
       settingsGlobalAction = new QAction(QIcon(*settings_globalsettingsIcon), tr("Global Settings"), this);
-      settingsShortcutsAction = new QAction(QIcon(*settings_configureshortcutsIcon), tr("Configure shortcuts"), this);
-      follow = new QMenu(tr("follow song"), this);
-      dontFollowAction = new QAction(tr("dont follow Song"), this);
+      settingsShortcutsAction = new QAction(QIcon(*settings_configureshortcutsIcon), tr("Configure Shortcuts"), this);
+      follow = new QMenu(tr("Follow Song"), this);
+      dontFollowAction = new QAction(tr("Don't Follow Song"), this);
       dontFollowAction->setCheckable(true);
-      followPageAction = new QAction(tr("follow page"), this);
+      followPageAction = new QAction(tr("Follow Page"), this);
       followPageAction->setCheckable(true);
       followPageAction->setChecked(true);
-      followCtsAction = new QAction(tr("follow continuous"), this);
+      followCtsAction = new QAction(tr("Follow Continuous"), this);
       followCtsAction->setCheckable(true);
 
       settingsMetronomeAction = new QAction(QIcon(*settings_metronomeIcon), tr("Metronome"), this);
       settingsMidiSyncAction = new QAction(QIcon(*settings_midisyncIcon), tr("Midi Sync"), this);
       settingsMidiIOAction = new QAction(QIcon(*settings_midifileexportIcon), tr("Midi File Import/Export"), this);
-      settingsAppearanceAction = new QAction(QIcon(*settings_appearance_settingsIcon), tr("Appearance settings"), this);
+      settingsAppearanceAction = new QAction(QIcon(*settings_appearance_settingsIcon), tr("Appearance Settings"), this);
       settingsMidiPortAction = new QAction(QIcon(*settings_midiport_softsynthsIcon), tr("Midi Ports / Soft Synth"), this);
 
       //-------- Help Actions
@@ -1061,7 +1061,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       helpAboutAction = new QAction(tr("&About MusE"), this);
 
 
-      // Connections
+      //---- Connections
+      //-------- File connections
 
       connect(fileNewAction,  SIGNAL(activated()), SLOT(loadTemplate()));
       connect(fileOpenAction, SIGNAL(activated()), SLOT(loadProject()));
@@ -1077,7 +1078,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       connect(fileImportWaveAction, SIGNAL(activated()), SLOT(importWave()));
       connect(quitAction, SIGNAL(activated()), SLOT(quitDoc()));
-      
+
+      //-------- Edit connections
       connect(editCutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editCopyAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editPasteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -1087,7 +1089,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(editPasteC2TAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editInsertEMAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editDeleteSelectedAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      
+
       connect(editSelectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editDeselectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editInvertSelectionAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -1126,6 +1128,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       connect(editSongInfoAction, SIGNAL(activated()), SLOT(startSongInfo()));
 
+      //-------- View connections
       connect(viewTransportAction, SIGNAL(toggled(bool)), SLOT(toggleTransport(bool)));
       connect(viewBigtimeAction, SIGNAL(toggled(bool)), SLOT(toggleBigTime(bool)));
       connect(viewMixerAAction, SIGNAL(toggled(bool)),SLOT(toggleMixer1(bool)));
@@ -1133,12 +1136,14 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(viewCliplistAction, SIGNAL(toggled(bool)), SLOT(startClipList(bool)));
       connect(viewMarkerAction, SIGNAL(toggled(bool)), SLOT(toggleMarker(bool)));
 
+      //-------- Structure connections
       connect(strGlobalCutAction, SIGNAL(activated()), SLOT(globalCut()));
       connect(strGlobalInsertAction, SIGNAL(activated()), SLOT(globalInsert()));
       connect(strGlobalSplitAction, SIGNAL(activated()), SLOT(globalSplit()));
       connect(strCopyRangeAction, SIGNAL(activated()), SLOT(copyRange())); 
       connect(strCutEventsAction, SIGNAL(activated()), SLOT(cutEvents()));
 
+      //-------- Midi connections
       connect(midiEditInstAction, SIGNAL(activated()), SLOT(startEditInstrument()));
       connect(midiResetInstAction, SIGNAL(activated()), SLOT(resetMidiDevices()));
       connect(midiInitInstActions, SIGNAL(activated()), SLOT(initMidiDevices()));
@@ -1161,14 +1166,17 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       connect(midiPluginSignalMapper, SIGNAL(mapped(int)), this, SLOT(startMidiInputPlugin(int)));
       
+      //-------- Audio connections
       connect(audioBounce2TrackAction, SIGNAL(activated()), SLOT(bounceToTrack()));
       connect(audioBounce2FileAction, SIGNAL(activated()), SLOT(bounceToFile()));
       connect(audioRestartAction, SIGNAL(activated()), SLOT(seqRestart()));
 
+      //-------- Automation connections
       connect(autoMixerAction, SIGNAL(activated()), SLOT(switchMixerAutomation()));
       connect(autoSnapshotAction, SIGNAL(activated()), SLOT(takeAutomationSnapshot()));
       connect(autoClearAction, SIGNAL(activated()), SLOT(clearAutomation()));
 
+      //-------- Settings connections
       connect(settingsGlobalAction, SIGNAL(activated()), SLOT(configGlobalSettings()));
       connect(settingsShortcutsAction, SIGNAL(activated()), SLOT(configShortCuts()));
       connect(settingsMetronomeAction, SIGNAL(activated()), SLOT(configMetronome()));
@@ -1187,6 +1195,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       connect(followSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
 
+      //-------- Help connections
       connect(helpManualAction, SIGNAL(activated()), SLOT(startHelpBrowser()));
       connect(helpHomepageAction, SIGNAL(activated()), SLOT(startHomepageBrowser()));
       connect(helpReportAction, SIGNAL(activated()), SLOT(startBugBrowser()));

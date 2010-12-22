@@ -1,3 +1,7 @@
+22.12.2010:
+        - Capitalizations in the menus thanks to Geoff King (gsking1->gmail. com)
+        - Added some comments in app.cpp that I've been willing to include for a while. (Orcan)
+        - Added a line to CMakeLists to install the splash image. Commented out for now. (Orcan)
 21.12.2010:
         - Moved all the config files "~/.musePrj, ~/.MusE, ~/.deicsonze.dco" into ~/.config/MusE/
           and renamed them as "projects, MusE.cfg, deicsonze.dco", respectively. (Orcan)

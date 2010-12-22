@@ -425,7 +425,7 @@ Word-breaking but only with spaces.</source>
 <context>
     <name>AppearanceDialogBase</name>
     <message>
-        <source>MusE: Appearance settings</source>
+        <source>MusE: Appearance Settings</source>
         <translation>MusE: Erscheinungsbild einstellen</translation>
     </message>
     <message>
@@ -6951,15 +6951,15 @@ Zur Aufnahme können mehrere Kanäle gewählt werden:
         <translation>Zeitanzeige groß</translation>
     </message>
     <message>
-        <source>dont follow Song</source>
+        <source>Don't Follow Song</source>
         <translation>Fenster folgt nicht dem Lied</translation>
     </message>
     <message>
-        <source>follow page</source>
+        <source>Follow Page</source>
         <translation>Fenster folgt dem Lied seitenweise</translation>
     </message>
     <message>
-        <source>follow continuous</source>
+        <source>Follow Continuous</source>
         <translation>Fenster folgt dem Lied ständig</translation>
     </message>
     <message>
@@ -6967,7 +6967,7 @@ Zur Aufnahme können mehrere Kanäle gewählt werden:
         <translation>Globale Einstellungen</translation>
     </message>
     <message>
-        <source>follow song</source>
+        <source>Follow Song</source>
         <translation>Folge dem Lied</translation>
     </message>
     <message>
@@ -6979,7 +6979,7 @@ Zur Aufnahme können mehrere Kanäle gewählt werden:
         <translation>Midi Sync</translation>
     </message>
     <message>
-        <source>Appearance settings</source>
+        <source>Appearance Settings</source>
         <translation>Erscheinungsbild einstellen</translation>
     </message>
     <message>
@@ -7331,7 +7331,7 @@ Wave Spur als Zielspur auswählen</translation>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <source>Configure shortcuts</source>
+        <source>Configure Shortcuts</source>
         <translation>Tastenkürzel einstellen</translation>
     </message>
     <message>

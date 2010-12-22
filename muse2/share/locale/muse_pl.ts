@@ -439,7 +439,7 @@ Word-breaking but only with spaces.</source>
 <context>
     <name>AppearanceDialogBase</name>
     <message>
-        <source>MusE: Appearance settings</source>
+        <source>MusE: Appearance Settings</source>
         <translation type="unfinished">MuzA: Wygląd aplikacji.</translation>
     </message>
     <message>
@@ -6959,15 +6959,15 @@ Możesz określić więcej niż jeden ślad do nagrywania:
         <translation>Duży Zegar</translation>
     </message>
     <message>
-        <source>dont follow Song</source>
+        <source>Don't Follow Song</source>
         <translation>nie podążaj za utworem</translation>
     </message>
     <message>
-        <source>follow page</source>
+        <source>Follow Page</source>
         <translation>kursor się przesuwa</translation>
     </message>
     <message>
-        <source>follow continuous</source>
+        <source>Follow Continuous</source>
         <translation>takty się przesuwają (kursor stoi)</translation>
     </message>
     <message>
@@ -6975,7 +6975,7 @@ Możesz określić więcej niż jeden ślad do nagrywania:
         <translation>Globalne Ustawienia</translation>
     </message>
     <message>
-        <source>follow song</source>
+        <source>Follow Song</source>
         <translation>podążanie kursora za utworem</translation>
     </message>
     <message>
@@ -6987,7 +6987,7 @@ Możesz określić więcej niż jeden ślad do nagrywania:
         <translation>Synchronizacja Midi</translation>
     </message>
     <message>
-        <source>Appearance settings</source>
+        <source>Appearance Settings</source>
         <translation>Ustawienia wyglądu</translation>
     </message>
     <message>
@@ -7340,7 +7340,7 @@ zaznacz ślad audio jako docelowy</translation>
         <translation>&amp;Ustawienia</translation>
     </message>
     <message>
-        <source>Configure shortcuts</source>
+        <source>Configure Shortcuts</source>
         <translation>Konfiguracja skrótów</translation>
     </message>
     <message>

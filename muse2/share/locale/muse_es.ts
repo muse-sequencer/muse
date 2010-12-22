@@ -446,7 +446,7 @@ Word-breaking but only with spaces.</source>
 <context>
     <name>AppearanceDialogBase</name>
     <message>
-        <source>MusE: Appearance settings</source>
+        <source>MusE: Appearance Settings</source>
         <translation type="unfinished">MusE: Configuraci� de apariencia</translation>
     </message>
     <message>
@@ -7386,15 +7386,15 @@ Puedes especificar m� de un canal para grabar:
         <translation type="unfinished">ventana BigTime</translation>
     </message>
     <message>
-        <source>dont follow Song</source>
+        <source>Don't Follow Song</source>
         <translation type="unfinished">no sigas la canci�</translation>
     </message>
     <message>
-        <source>follow page</source>
+        <source>Follow Page</source>
         <translation type="unfinished">sigue la p�ina</translation>
     </message>
     <message>
-        <source>follow continuous</source>
+        <source>Follow Continuous</source>
         <translation type="unfinished">sigue cont�uamente</translation>
     </message>
     <message>
@@ -7406,7 +7406,7 @@ Puedes especificar m� de un canal para grabar:
         <translation type="unfinished">Selecciones Globales</translation>
     </message>
     <message>
-        <source>follow song</source>
+        <source>Follow Song</source>
         <translation type="unfinished">seguir canci�</translation>
     </message>
     <message>
@@ -7422,7 +7422,7 @@ Puedes especificar m� de un canal para grabar:
         <translation type="obsolete">Configuraci� de archivos MIDI</translation>
     </message>
     <message>
-        <source>Appearance settings</source>
+        <source>Appearance Settings</source>
         <translation type="unfinished">Selecciones de apariencia</translation>
     </message>
     <message>
@@ -7850,7 +7850,7 @@ selecciona una pista de audio como destino</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Configure shortcuts</source>
+        <source>Configure Shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
