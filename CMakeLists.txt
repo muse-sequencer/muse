@@ -38,7 +38,7 @@ IF(NOT DEFINED SHARE_INSTALL_PREFIX)
 ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
 
 #set(CMAKE_BUILD_TYPE debug)
-#set(CMAKE_BUILD_TYPE release)
+set(CMAKE_BUILD_TYPE release)
 
 # If no CMAKE_BUILD_TYPE is given on the command line,
 #  cmake either uses the cached value, or 'empty' (plain un-opt build). 
