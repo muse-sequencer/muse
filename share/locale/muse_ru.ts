@@ -449,7 +449,7 @@ Word-breaking but only with spaces.</source>
 <context>
     <name>AppearanceDialogBase</name>
     <message>
-        <source>MusE: Appearance settings</source>
+        <source>MusE: Appearance Settings</source>
         <translation>MusE: Настройки вида</translation>
     </message>
     <message>
@@ -7351,15 +7351,15 @@ recording:
         <translation>Окно хронометра</translation>
     </message>
     <message>
-        <source>dont follow Song</source>
+        <source>Don't Follow Song</source>
         <translation>не следовать за проектом</translation>
     </message>
     <message>
-        <source>follow page</source>
+        <source>Follow Page</source>
         <translation>следовать постранично</translation>
     </message>
     <message>
-        <source>follow continuous</source>
+        <source>Follow Continuous</source>
         <translation>следовать плавно</translation>
     </message>
     <message>
@@ -7367,7 +7367,7 @@ recording:
         <translation>Общие настройки</translation>
     </message>
     <message>
-        <source>follow song</source>
+        <source>Follow Song</source>
         <translation>следовать за проектом</translation>
     </message>
     <message>
@@ -7379,7 +7379,7 @@ recording:
         <translation>MIDI-синхр</translation>
     </message>
     <message>
-        <source>Appearance settings</source>
+        <source>Appearance Settings</source>
         <translation>Настройки вида</translation>
     </message>
     <message>
@@ -7574,7 +7574,7 @@ Save Current Project?</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <source>Configure shortcuts</source>
+        <source>Configure Shortcuts</source>
         <translation>Настроить горячие клавиши</translation>
     </message>
     <message>

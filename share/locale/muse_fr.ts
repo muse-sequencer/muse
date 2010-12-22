@@ -474,7 +474,7 @@ Word-breaking but only with spaces.</source>
 <context>
     <name>AppearanceDialogBase</name>
     <message>
-        <source>MusE: Appearance settings</source>
+        <source>MusE: Appearance Settings</source>
         <translation>MusE: réglages de l&apos;apparence</translation>
     </message>
     <message>
@@ -7237,15 +7237,15 @@ pour l&apos;enregistrement:
         <translation>Fenêtre GrandeHorloge</translation>
     </message>
     <message>
-        <source>dont follow Song</source>
+        <source>Don't Follow Song</source>
         <translation>Ne pas suivre la chanson</translation>
     </message>
     <message>
-        <source>follow page</source>
+        <source>Follow Page</source>
         <translation>Défilement par page</translation>
     </message>
     <message>
-        <source>follow continuous</source>
+        <source>Follow Continuous</source>
         <translation>Défilement fin</translation>
     </message>
     <message>
@@ -7257,7 +7257,7 @@ pour l&apos;enregistrement:
         <translation>Paramètres Généraux</translation>
     </message>
     <message>
-        <source>follow song</source>
+        <source>Follow Song</source>
         <translation>suivre la chanson</translation>
     </message>
     <message>
@@ -7273,7 +7273,7 @@ pour l&apos;enregistrement:
         <translation type="obsolete">Paramètres du fichier MIDI</translation>
     </message>
     <message>
-        <source>Appearance settings</source>
+        <source>Appearance Settings</source>
         <translation>Apparence</translation>
     </message>
     <message>
@@ -7755,7 +7755,7 @@ destination</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Configure shortcuts</source>
+        <source>Configure Shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
