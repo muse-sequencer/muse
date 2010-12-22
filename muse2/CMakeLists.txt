@@ -61,12 +61,12 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # The MusE version number.
-SET(MusE_VERSION_MAJOR 1)
-SET(MusE_VERSION_MINOR 9)
+SET(MusE_VERSION_MAJOR 2)
+SET(MusE_VERSION_MINOR 0)
 SET(MusE_VERSION_PATCH 0)
-SET(MusE_VERSION       "1.9.0")
-SET(MusE_VERSION_FULL  "1.9.0")
-SET(MusE_INSTALL_NAME  "muse-1.9")
+SET(MusE_VERSION       "2.0alpha")
+SET(MusE_VERSION_FULL  "2.0alpha")
+SET(MusE_INSTALL_NAME  "muse-2.0alpha")
 
 ## The library where we will install the shared components:
 SET(MusE_MODULES_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/modules)
