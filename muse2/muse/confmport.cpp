@@ -1016,13 +1016,11 @@ void MPConfig::removeInstanceClicked()
 
 void MusE::configMidiPorts()
       {
-      if (!midiPortConfig)
-	midiPortConfig = new MPConfig(0);
-     if (midiPortConfig->isVisible()) {
+      if (!midiPortConfig) {
+         midiPortConfig = new MPConfig(this);
+      }
+         midiPortConfig->show();
          midiPortConfig->raise();
          midiPortConfig->activateWindow();
-         }
-      else
-            midiPortConfig->show();
       }
 

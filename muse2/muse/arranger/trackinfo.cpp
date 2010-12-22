@@ -9,6 +9,7 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <QTimer>
+#include <QMessageBox>
 
 #include <math.h>
 #include <string.h>
@@ -605,8 +606,19 @@ void Arranger::inRoutesPressed()
   
   PopupMenu* pup = muse->prepareRoutingPopupMenu(selected, false);
   //PopupView* pup = muse->prepareRoutingPopupView(selected, false);
-  if(!pup)
+
+  if(!pup) {
+    int ret = QMessageBox::warning(this, tr("No inputs"),
+                                   tr("There are no midi inputs.\n"
+                                      "Do you want to open the midi configuration dialog?"),
+                                   QMessageBox::Ok | QMessageBox::Cancel,
+                                   QMessageBox::Ok);
+    if (ret == QMessageBox::Ok) {
+        printf("open config midi ports\n");
+        muse->configMidiPorts();
+    }
     return;
+  }
   
   gRoutingPopupMenuMaster = midiTrackInfo;
   connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));

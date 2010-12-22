@@ -242,7 +242,6 @@ class MusE : public QMainWindow
       void toggleMixer1(bool);
       void toggleMixer2(bool);
 
-      void configMidiPorts();
       void configMidiSync();
       void configMidiFile();
       void configShortCuts();
@@ -335,6 +334,7 @@ class MusE : public QMainWindow
       void showDidYouKnowDialog();
       
       void routingPopupMenuAboutToHide();
+      void configMidiPorts();
 
    public:
       MusE(int argc, char** argv);
