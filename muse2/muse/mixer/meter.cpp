@@ -24,6 +24,13 @@
 Meter::Meter(QWidget* parent, MeterType type)
    : QFrame(parent) //Qt::WNoAutoErase
       {
+      setBackgroundRole(QPalette::NoRole);
+      setAttribute(Qt::WA_NoSystemBackground);
+      setAttribute(Qt::WA_StaticContents);
+      // This is absolutely required for speed! Otherwise painfully slow because we get 
+      //  full rect paint events even on small scrolls! See help on QPainter::scroll().
+      setAttribute(Qt::WA_OpaquePaintEvent);
+      
       mtype = type;
       overflow    = false;
       val         = 0.0;
