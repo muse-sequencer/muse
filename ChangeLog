@@ -3,6 +3,11 @@
         - Added some comments in app.cpp that I've been willing to include for a while. (Orcan)
         - Added a line to CMakeLists to install the splash image. Commented out for now. (Orcan)
         - added new-user help dialog for Input button on midi track-info (rj)
+        - Fixed *some* gui drawing speed issues. (Tim)
+          Use Qt::WA_OpaquePaintEvent for windows we fully draw on, like part canvas, track list, meter.
+          In PartCanvas::drawItem(), ignore null intersect of item bbox + rect.
+          TODO: Other windows like Slider and Knob could probably use this. And with many parts,
+                 drawing is still slow (esp waves), possibly because of alpha blending. 
 21.12.2010:
         - Moved all the config files "~/.musePrj, ~/.MusE, ~/.deicsonze.dco" into ~/.config/MusE/
           and renamed them as "projects, MusE.cfg, deicsonze.dco", respectively. (Orcan)

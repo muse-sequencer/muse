@@ -106,7 +106,7 @@ NPart::NPart(Part* e) : CItem(Event(), e)
       {
       int th = track()->height();
       int y  = track()->y();
-      //printf("NPart::NPart track name:%s, y:%d h:%d\n", track()->name().toLatin1().constData(), y, th);  // REMOVE Tim.
+      //printf("NPart::NPart track name:%s, y:%d h:%d\n", track()->name().toLatin1().constData(), y, th);  
       
       ///setPos(QPoint(e->tick(), y + 1));
       setPos(QPoint(e->tick(), y));
@@ -1417,26 +1417,23 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if((unsigned int)to > part->lenTick())
         to = part->lenTick();  
 
+      // Item bounding box x is in tick coordinates, same as rectangle.
+      if(item->bbox().intersect(rect).isNull())
+      {
+        //printf("PartCanvas::drawItem rectangle is null\n");
+        return;
+      }
+      
       QRect r    = item->bbox();
-      //QRect r    = item->bbox().intersect(rect);
-      int i      = part->colorIndex();
-
-      //printf("part start tick %d part start pixel %d\n", part->tick(), r.x());
-
-      //printf("PartCanvas::drawItem %s evRefs:%d pTick:%d pLen:%d bb.x:%d bb.w:%d rect.x:%d rect.w:%d r.x:%d r.w:%d\n", part->name().toLatin1().constData(), part->events()->arefCount(), pTick, part->lenTick(), item->bbox().x(), item->bbox().width(), rect.x(), rect.width(), r.x(), r.width());
+      
+      //printf("PartCanvas::drawItem %s evRefs:%d pTick:%d pLen:%d\nbb.x:%d bb.y:%d bb.w:%d bb.h:%d\n"
+      //       "rect.x:%d rect.y:%d rect.w:%d rect.h:%d\nr.x:%d r.y:%d r.w:%d r.h:%d\n",
+      //  part->name().toLatin1().constData(), part->events()->arefCount(), pTick, part->lenTick(), 
+      //  bb.x(), bb.y(), bb.width(), bb.height(), 
+      //  rect.x(), rect.y(), rect.width(), rect.height(), 
+      //  r.x(), r.y(), r.width(), r.height());
   
-      // THIS WAS IN MUSE-1:
-      // Must be reasonable about very low negative x values! With long songs > 15min
-      //  and with high horizontal magnification, 'ghost' drawings appeared,
-      //  apparently the result of truncation later (xp = -65006 caused ghosting
-      //  at bar 245 with magnification at max.), even with correct clipping region
-      //  applied to painter in View::paint(). Tim.  Apr 5 2009 
-      // Quote: "Warning: Note that QPainter does not attempt to work around 
-      //  coordinate limitations in the underlying window system. Some platforms may 
-      //  behave incorrectly with coordinates as small as +/-4000."
-      //if(r.isEmpty())
-      //  return;
-        
+      int i = part->colorIndex();
       p.setPen(Qt::black);
       if (part->mute()) {
             QColor c(Qt::white);
@@ -1626,6 +1623,9 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
 void PartCanvas::drawWavePart(QPainter& p,
    const QRect& bb, WavePart* wp, const QRect& _pr)
       {
+      //printf("PartCanvas::drawWavePart bb.x:%d bb.y:%d bb.w:%d bb.h:%d  pr.x:%d pr.y:%d pr.w:%d pr.h:%d\n", 
+      //  bb.x(), bb.y(), bb.width(), bb.height(), _pr.x(), _pr.y(), _pr.width(), _pr.height());              
+      
       QRect rr = p.worldMatrix().mapRect(bb);
       QRect pr = p.worldMatrix().mapRect(_pr);
 
@@ -2620,7 +2620,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       {
       //printf("void PartCanvas::viewDropEvent(QDropEvent* event)\n");
       if (event->source() == this) {
-            printf("local DROP\n");    // REMOVE Tim  
+            printf("local DROP\n");    
             //event->ignore();                     // TODO CHECK Tim.
             return;
             }
@@ -2798,7 +2798,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
             ///if (/*config.canvasShowGrid ||*/ !track->isMidiTrack()) {
             if (config.canvasShowGrid && (track->isMidiTrack() || track->type() == Track::WAVE))   // Tim.
             {
-              //printf("PartCanvas::drawCanvas track name:%s, y:%d h:%d\n", track->name().toLatin1().constData(), yy, th);  // REMOVE Tim.
+              //printf("PartCanvas::drawCanvas track name:%s, y:%d h:%d\n", track->name().toLatin1().constData(), yy, th);  
               p.setPen(baseColor.dark(130));
               ///p.drawLine(x, yy, x + w, yy);
               p.drawLine(x, yy + th, x + w, yy + th);  // Tim.

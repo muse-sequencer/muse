@@ -24,6 +24,8 @@ class QResizeEvent;
 //---------------------------------------------------------
 
 class View : public QWidget {
+      QPixmap pm;             // for double buffering
+      bool pmValid;
       QPixmap bgPixmap;       // background Pixmap
       QBrush brush;
       bool _virt;
@@ -72,6 +74,7 @@ class View : public QWidget {
       int mapxDev(int x) const;
       int rmapy(int y) const;
       int rmapyDev(int y) const;
+      //QRect devToVirt(const QRect&);
 
       void setPainter(QPainter& p);
 

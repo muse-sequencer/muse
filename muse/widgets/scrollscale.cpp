@@ -265,7 +265,7 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 	box->addWidget ( scale, 5 );
 	setLayout(box);
 	connect ( scale, SIGNAL ( valueChanged ( int ) ), SLOT ( setScale ( int ) ) );
-	connect ( scale, SIGNAL ( valueChanged ( int ) ), SIGNAL ( lscaleChanged ( int ) ) );
+	///connect ( scale, SIGNAL ( valueChanged ( int ) ), SIGNAL ( lscaleChanged ( int ) ) );  // ??
 	connect ( scroll, SIGNAL ( valueChanged ( int ) ), SIGNAL ( scrollChanged ( int ) ) );
 }
 

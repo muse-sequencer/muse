@@ -16,6 +16,12 @@
 #include <QKeyEvent>
 #include <QPaintEvent>
 
+// Don't use this, it was just for debugging. 
+// It's much slower than muse-1 no matter how hard I tried.
+// The left/right pixmap shifters in seXPos setYPos 
+//  just ate up all the time no matter what I tried.
+//#defines VIEW_USE_DOUBLE_BUFFERING 1
+
 //---------------------------------------------------------
 //   View::View
 //    double xMag = (xmag < 0) ? 1.0/-xmag : double(xmag)
@@ -24,6 +30,12 @@
 View::View(QWidget* w, int xm, int ym, const char* name)
    : QWidget(w)
       {
+      setAttribute(Qt::WA_NoSystemBackground);
+      setAttribute(Qt::WA_StaticContents);
+      // This is absolutely required for speed! Otherwise painfully slow because we get 
+      //  full rect paint events even on small scrolls! See help on QPainter::scroll().
+      setAttribute(Qt::WA_OpaquePaintEvent);
+          
       setObjectName(QString(name));
       xmag  = xm;
       ymag  = ym;
@@ -35,6 +47,9 @@ View::View(QWidget* w, int xm, int ym, const char* name)
       setBackgroundRole(QPalette::NoRole);
       brush.setStyle(Qt::SolidPattern);
       brush.setColor(Qt::lightGray);
+      #ifdef VIEW_USE_DOUBLE_BUFFERING
+      pmValid = false;
+      #endif
       }
 
 //---------------------------------------------------------
@@ -78,12 +93,55 @@ void View::setXPos(int x)
       int delta  = xpos - x;         // -  -> shift left
       xpos  = x;
       
-      //int w = width();
-      //int h = height();
+      #ifdef VIEW_USE_DOUBLE_BUFFERING
+      if (pm.isNull())
+            return;
+      if (!pmValid) {
+            //printf("View::setXPos !pmValid x:%d width:%d delta:%d\n", x, width(), delta);
+            redraw();
+            return;
+            }
+            
+      int w = width();
+      int h = height();
 
-      scroll(delta, 0);
+      QRect r;
+      if (delta >= w || delta <= -w)
+            r = QRect(0, 0, w, h);
+      else if (delta < 0) {   // shift left
+            //bitBlt(&pm,  0, 0, &pm,  -delta, 0, w + delta, h, CopyROP, true);
+            QPainter p(&pm);
+            p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing, false);
+            //printf("View::setXPos x:%d w:%d delta:%d r.x:%d r.w:%d\n", 
+            //  x, w, delta, r.x(), r.width());                    
+            p.drawPixmap(0, 0, pm, -delta, 0, w + delta, h);
+            r = QRect(w + delta, 0, -delta, h);
+            }
+      else {                  // shift right
+            //bitBlt(&pm,  delta, 0, &pm,     0, 0, w-delta, h, CopyROP, true);
+            QPainter p(&pm);
+            p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing, false);
+            //printf("View::setXPos x:%d w:%d delta:%d r.x:%d r.w:%d\n", 
+            //  x, w, delta, r.x(), r.width());                    
+            p.drawPixmap(delta, 0, pm,     0, 0, w-delta, h);
+            r = QRect(0, 0, delta, h);
+            }
+      QRect olr = overlayRect();
+      QRect olr1(olr);
+      olr1.translate(delta, 0);
+
+      r |= olr;
+      r |= olr1;
       
-      //update();
+      //printf("View::setXPos x:%d w:%d delta:%d r.x:%d r.w:%d\n", x, w, delta, r.x(), r.width());
+      //printf("View::setXPos paint delta:%d r.x:%d r.y:%d r.w:%d r.h:%d\n", delta, r.x(), r.y(), r.width(), r.height());  
+      
+      paint(r);
+      update();
+      
+      #else
+      scroll(delta, 0);
+      #endif
       }
 
 //---------------------------------------------------------
@@ -95,21 +153,71 @@ void View::setYPos(int y)
       int delta  = ypos - y;         // -  -> shift up
       ypos  = y;
       
-      //int w = width();
-      //int h = height();
+      #ifdef VIEW_USE_DOUBLE_BUFFERING
+      if (pm.isNull())
+            return;
+      if (!pmValid) {
+            //printf("View::setYPos !pmValid y:%d height:%d delta:%d\n", y, height(), delta);
+            
+            redraw();
+            return;
+            }
       
-      scroll(0, delta);
+      int w = width();
+      int h = height();
+      
+      QRect r;
+      if (delta >= h || delta <= -h)
+            r = QRect(0, 0, w, h);
+      else if (delta < 0) {   // shift up
+            //bitBlt(&pm,  0, 0, &pm, 0, -delta, w, h + delta, CopyROP, true);
+            QPainter p(&pm);
+            p.drawPixmap(0, 0, pm, 0, -delta, w, h + delta);
+            r = QRect(0, h + delta, w, -delta);
+            }
+      else {                  // shift down
+            //bitBlt(&pm,  0, delta, &pm, 0, 0, w, h-delta, CopyROP, true);
+            QPainter p(&pm);
+            p.drawPixmap(0, delta, pm, 0, 0, w, h-delta);
+            r = QRect(0, 0, w, delta);
+            }
+      QRect olr = overlayRect();
+      QRect olr1(olr);
+      olr1.translate(0, delta);
 
-      //update();
+      r |= olr;
+      r |= olr1;
+
+      //printf("View::setYPos paint delta:%d r.x:%d r.y:%d r.w:%d r.h:%d\n", delta, r.x(), r.y(), r.width(), r.height());  
+      
+      paint(r);
+      update();
+      
+      #else
+      scroll(0, delta);
+      #endif
       }
 
 //---------------------------------------------------------
 //   resizeEvent
 //---------------------------------------------------------
 
-void View::resizeEvent(QResizeEvent* /*ev*/)
+void View::resizeEvent(QResizeEvent* ev)
       {
+      #ifdef VIEW_USE_DOUBLE_BUFFERING
+      //pm.resize(ev->size());
+      //printf("View::resizeEvent width:%d height:%d\n", 
+      //  ev->size().width(), ev->size().height());  
       
+      if(pm.isNull())
+      {
+        //printf("View::resizeEvent pixmap is null\n"); 
+        pm = QPixmap(ev->size().width(), ev->size().height());
+      }  
+      else  
+        pm = pm.copy(QRect(QPoint(0, 0), ev->size()));
+      pmValid = false;
+      #endif
       }
 
 //---------------------------------------------------------
@@ -121,7 +229,18 @@ void View::paintEvent(QPaintEvent* ev)
       //printf("View::paintEvent x:%d width:%d y:%d height:%d\n", 
       //  ev->rect().x(), ev->rect().width(), ev->rect().y(), ev->rect().height());  
         
+      #ifdef VIEW_USE_DOUBLE_BUFFERING
+      if (!pmValid)
+            paint(ev->rect());
+      
+      //bitBlt(this, ev->rect().topLeft(), &pm, ev->rect(), CopyROP, true);
+      QPainter p(this);
+      p.setCompositionMode(QPainter::CompositionMode_Source);
+      p.drawPixmap(ev->rect().topLeft(), pm, ev->rect());
+      
+      #else
       paint(ev->rect());
+      #endif
       }
 
 //---------------------------------------------------------
@@ -130,7 +249,13 @@ void View::paintEvent(QPaintEvent* ev)
 
 void View::redraw()
       {
-      //printf("View::redraw()\n");  // REMOVE Tim.
+      //printf("View::redraw()\n");  
+      
+      #ifdef VIEW_USE_DOUBLE_BUFFERING
+      QRect r(0, 0, pm.width(), pm.height());
+      //printf("View::redraw() r.x:%d r.w:%d\n", r.x(), r.width()); 
+      paint(r);
+      #endif
       
       update();
       }
@@ -141,7 +266,12 @@ void View::redraw()
 
 void View::redraw(const QRect& r)
       {
-      //printf("View::redraw(QRect& r) r.x:%d r.w:%d\n", r.x(), r.width()); 
+      //printf("View::redraw(QRect& r) r.x:%d r.w:%d\n", r.x(), r.width());  
+      
+      #ifdef VIEW_USE_DOUBLE_BUFFERING
+      paint(r);
+      #endif
+      
       update(r);
       }
 
@@ -152,17 +282,36 @@ void View::redraw(const QRect& r)
 
 void View::paint(const QRect& r)
       {
+      #ifdef VIEW_USE_DOUBLE_BUFFERING
+      if (pm.isNull())
+            return;
+      #endif
+      
       QRect rr(r);
       
-      //printf("View::paint x:%d width:%d y:%d height:%d\n", r.x(), r.width(), r.y(), r.height());  
+      //printf("View::paint x:%d width:%d y:%d height:%d\n", r.x(), r.width(), r.y(), r.height());   
       
+      #ifdef VIEW_USE_DOUBLE_BUFFERING
+      if (!pmValid) {
+            pmValid = true;
+            rr = QRect(0, 0, pm.width(), pm.height());
+            }
+      
+      QPainter p(&pm);
+      #else
       QPainter p(this);
+      #endif
+      
+      p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing, false);
+      
       if (bgPixmap.isNull())
             p.fillRect(rr, brush);
       else
             p.drawTiledPixmap(rr, bgPixmap, QPoint(xpos + rmapx(xorg)
                + rr.x(), ypos + rmapy(yorg) + rr.y()));
+      
       p.setClipRegion(rr);
+
       //printf("View::paint r.x:%d w:%d\n", rr.x(), rr.width());
       pdraw(p, rr);       // draw into pixmap
 
@@ -267,7 +416,7 @@ void View::setBg(const QPixmap& bgpm)
 
 void View::pdraw(QPainter& p, const QRect& r)
       {
-      //printf("View::pdraw x:%d width:%d y:%d height:%d\n", r.x(), r.width(), r.y(), r.height());  
+      //printf("View::pdraw virt:%d x:%d width:%d y:%d height:%d\n", virt(), r.x(), r.width(), r.y(), r.height());  
       
       if (virt()) {
             setPainter(p);
@@ -304,6 +453,7 @@ void View::pdraw(QPainter& p, const QRect& r)
                   x = 0;
             if (y < 0)
                   y = 0;
+            
             draw(p, QRect(x, y, w, h));
             }
       else
@@ -447,3 +597,43 @@ int View::rmapyDev(int y) const
             return (y + ymag/2) / ymag;
       }
 
+/*
+QRect View::devToVirt(const QRect& r)
+{
+    int x = r.x();
+    int y = r.y();
+    int w = r.width();
+    int h = r.height();
+    if (xmag <= 0) {
+          x -= 1;
+          w += 2;
+          x = (x + xpos + rmapx(xorg)) * (-xmag);
+          w = w * (-xmag);
+          }
+    else {
+          x = (x + xpos + rmapx(xorg)) / xmag;
+          w = (w + xmag - 1) / xmag;
+          x -= 1;
+          w += 2;
+          }
+    if (ymag <= 0) {
+          y -= 1;
+          h += 2;
+          y = (y + ypos + rmapy(yorg)) * (-ymag);
+          h = h * (-ymag);
+          }
+    else {
+          y = (y + ypos + rmapy(yorg)) / ymag;
+          h = (h + ymag - 1) / ymag;
+          y -= 1;
+          h += 2;
+          }
+
+    if (x < 0)
+          x = 0;
+    if (y < 0)
+          y = 0;
+    
+    return QRect(x, y, w, h);
+}
+*/

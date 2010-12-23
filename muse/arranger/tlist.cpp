@@ -59,6 +59,13 @@ static const int WHEEL_DELTA = 120;
 TList::TList(Header* hdr, QWidget* parent, const char* name)
    : QWidget(parent) // Qt::WNoAutoErase | Qt::WResizeNoErase are no longer needed according to Qt4 doc
       {
+      setBackgroundRole(QPalette::NoRole);
+      setAttribute(Qt::WA_NoSystemBackground);
+      setAttribute(Qt::WA_StaticContents);
+      // This is absolutely required for speed! Otherwise painfully slow because we get 
+      //  full rect paint events even on small scrolls! See help on QPainter::scroll().
+      setAttribute(Qt::WA_OpaquePaintEvent);
+      
       setObjectName(name);
       ypos = 0;
       editMode = false;
