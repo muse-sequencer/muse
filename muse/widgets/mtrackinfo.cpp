@@ -502,9 +502,9 @@ void MidiTrackInfo::setLabelText()
 
 void MidiTrackInfo::setLabelFont()
 {
-      MidiTrack* track = (MidiTrack*)selected;
-      if(!track)
+      if(!selected)
         return;
+      MidiTrack* track = (MidiTrack*)selected;
         
       // Use the new font #6 I created just for these labels (so far).
       // Set the label's font.
@@ -520,6 +520,8 @@ void MidiTrackInfo::setLabelFont()
 void MidiTrackInfo::iOutputChannelChanged(int channel)
       {
       --channel;
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       if (channel != track->outChannel()) {
             // Changed by T356.
@@ -541,6 +543,8 @@ void MidiTrackInfo::iOutputChannelChanged(int channel)
 
 void MidiTrackInfo::iOutputPortChanged(int index)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       if (index == track->outPort())
             return;
@@ -651,6 +655,8 @@ void MidiTrackInfo::outRoutesPressed()
 
 void MidiTrackInfo::iProgHBankChanged()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int channel = track->outChannel();
       int port    = track->outPort();
@@ -727,6 +733,8 @@ void MidiTrackInfo::iProgHBankChanged()
 
 void MidiTrackInfo::iProgLBankChanged()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int channel = track->outChannel();
       int port    = track->outPort();
@@ -803,6 +811,8 @@ void MidiTrackInfo::iProgLBankChanged()
 
 void MidiTrackInfo::iProgramChanged()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int channel = track->outChannel();
       int port    = track->outPort();
@@ -881,6 +891,8 @@ void MidiTrackInfo::iProgramChanged()
 
 void MidiTrackInfo::iLautstChanged(int val)
     {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int outPort = track->outPort();
       int chan = track->outChannel();
@@ -908,6 +920,8 @@ void MidiTrackInfo::iLautstChanged(int val)
 
 void MidiTrackInfo::iTranspChanged(int val)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       track->transposition = val;
       }
@@ -918,6 +932,8 @@ void MidiTrackInfo::iTranspChanged(int val)
 
 void MidiTrackInfo::iAnschlChanged(int val)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       track->velocity = val;
       }
@@ -928,6 +944,8 @@ void MidiTrackInfo::iAnschlChanged(int val)
 
 void MidiTrackInfo::iVerzChanged(int val)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       track->delay = val;
       }
@@ -938,6 +956,8 @@ void MidiTrackInfo::iVerzChanged(int val)
 
 void MidiTrackInfo::iLenChanged(int val)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       track->len = val;
       }
@@ -948,6 +968,8 @@ void MidiTrackInfo::iLenChanged(int val)
 
 void MidiTrackInfo::iKomprChanged(int val)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       track->compression = val;
       }
@@ -958,6 +980,8 @@ void MidiTrackInfo::iKomprChanged(int val)
 
 void MidiTrackInfo::iPanChanged(int val)
     {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int port    = track->outPort();
       int chan = track->outChannel();
@@ -986,6 +1010,8 @@ void MidiTrackInfo::iPanChanged(int val)
 
 void MidiTrackInfo::instrPopup()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int channel = track->outChannel();
       int port    = track->outPort();
@@ -1020,6 +1046,8 @@ void MidiTrackInfo::instrPopup()
 
 void MidiTrackInfo::recEchoToggled(bool v)
 {
+  if(!selected)
+    return;
   MidiTrack* track = (MidiTrack*)selected;
   track->setRecEcho(v);
   
@@ -1032,6 +1060,8 @@ void MidiTrackInfo::recEchoToggled(bool v)
 
 void MidiTrackInfo::iProgramDoubleClicked()
 {
+  if(!selected)
+    return;
   MidiTrack* track = (MidiTrack*)selected;
   int port = track->outPort();
   int chan = track->outChannel();
@@ -1088,6 +1118,8 @@ void MidiTrackInfo::iProgramDoubleClicked()
 
 void MidiTrackInfo::iLautstDoubleClicked()
 {
+  if(!selected)
+    return;
   MidiTrack* track = (MidiTrack*)selected;
   int port = track->outPort();
   int chan = track->outChannel();
@@ -1144,6 +1176,8 @@ void MidiTrackInfo::iLautstDoubleClicked()
 
 void MidiTrackInfo::iPanDoubleClicked()
 {
+  if(!selected)
+    return;
   MidiTrack* track = (MidiTrack*)selected;
   int port = track->outPort();
   int chan = track->outChannel();
@@ -1203,7 +1237,6 @@ void MidiTrackInfo::updateTrackInfo(int flags)
 {
       if(!selected)
         return;
-      
       MidiTrack* track = (MidiTrack*)selected;
       
       // Is it simply a midi controller value adjustment? Forget it.
@@ -1385,6 +1418,8 @@ void MidiTrackInfo::updateTrackInfo(int flags)
 
 void MidiTrackInfo::progRecClicked()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int portno       = track->outPort();
       int channel      = track->outChannel();
@@ -1408,6 +1443,8 @@ void MidiTrackInfo::progRecClicked()
 
 void MidiTrackInfo::volRecClicked()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int portno       = track->outPort();
       int channel      = track->outChannel();
@@ -1431,6 +1468,8 @@ void MidiTrackInfo::volRecClicked()
 
 void MidiTrackInfo::panRecClicked()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int portno       = track->outPort();
       int channel      = track->outChannel();
@@ -1454,6 +1493,8 @@ void MidiTrackInfo::panRecClicked()
 
 void MidiTrackInfo::recordClicked()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int portno       = track->outPort();
       int channel      = track->outChannel();
