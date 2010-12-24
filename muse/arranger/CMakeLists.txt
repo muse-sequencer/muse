@@ -36,7 +36,6 @@ file (GLOB arranger_source_files
       arranger.cpp
       pcanvas.cpp
       tlist.cpp
-      trackinfo.cpp
       )
 
 #

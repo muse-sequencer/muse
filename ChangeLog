@@ -1,4 +1,7 @@
 23.12.2010:
+        - MidiTrackInfo is now self-contained. (Tim)
+          Moved all of its members from Arranger into MidiTrackInfo. Removed trackinfo.cpp
+23.12.2010:
         - MusE 2.0alpha released! (rj)
 22.12.2010:
         - Capitalizations in the menus thanks to Geoff King (gsking1->gmail. com)

@@ -12,7 +12,6 @@
 
 #include "midieditor.h"
 #include "pcanvas.h"
-#include "ui_mtrackinfobase.h"
 #include "trackautomationview.h"
 
 class QAction;
@@ -32,7 +31,7 @@ class Xml;
 class Splitter;
 class LabelCombo;
 class PosLabel;
-class MidiTrackInfoBase;
+class MidiTrackInfo;
 class TLLayout;
 class WidgetStack;
 class AudioStrip;
@@ -55,17 +54,6 @@ class WidgetStack : public QWidget {
       QWidget* visibleWidget() const;
       int curIdx() const { return top; }
       QSize minimumSizeHint() const;
-      };
-
-
-//---------------------------------------------------------
-//   MidiTrackInfo
-//---------------------------------------------------------
-
-class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase {
-   public:
-      bool _midiDetect;
-      MidiTrackInfo(QWidget* parent) : QWidget(parent) { setupUi(this); _midiDetect = false; }
       };
 
 //---------------------------------------------------------
@@ -103,13 +91,11 @@ class Arranger : public QWidget {
       PosLabel* cursorPos;
       SpinBox* globalTempoSpinBox;
       SpinBox* globalPitchSpinBox;
-      int program, pan, volume;
       
       unsigned cursVal;
       void genTrackInfo(QWidget* parent);
       void genMidiTrackInfo();
       void genWaveTrackInfo();
-      void updateMidiTrackInfo(int flags);
       void switchInfo(int);
       void setHeaderToolTips();
       void setHeaderWhatsThis();
@@ -120,28 +106,8 @@ class Arranger : public QWidget {
       void showTrackInfo(bool);
       void trackSelectionChanged();
       void trackInfoScroll(int);
-      
-      //void iNameChanged();
-      ///void iInputChannelChanged(const QString&);
-      void iOutputChannelChanged(int);
-      ///void iInputPortChanged(const QString&);
-      void iOutputPortChanged(int);
-      void iProgHBankChanged();
-      void iProgLBankChanged();
-      void iProgramChanged();
-      void iProgramDoubleClicked();
-      void iLautstChanged(int);
-      void iLautstDoubleClicked();
-      void iTranspChanged(int);
-      void iAnschlChanged(int);
-      void iVerzChanged(int);
-      void iLenChanged(int);
-      void iKomprChanged(int);
-      void iPanChanged(int);
-      void iPanDoubleClicked();
       void songChanged(int);
       void modeChange(int);
-      void instrPopup();
       void setTime(unsigned);
       void headerMoved();
       void globalPitchChanged(int);
@@ -150,16 +116,7 @@ class Arranger : public QWidget {
       void setTempo100();
       void setTempo200();
       //void seek();
-      void recordClicked();
-      void progRecClicked();
-      void volRecClicked();
-      void panRecClicked();
-      void recEchoToggled(bool);
       void verticalScrollSetYpos(unsigned);
-      void inRoutesPressed();
-      void outRoutesPressed();
-      void routingPopupMenuActivated(QAction*);
-      //void routingPopupViewActivated(const QModelIndex&);
       
    signals:
       void redirectWheelEvent(QWheelEvent*);
@@ -174,11 +131,7 @@ class Arranger : public QWidget {
 
 
    protected:
-
       virtual void wheelEvent(QWheelEvent* e);
-
-   protected slots:
-      virtual void midiTrackInfoHeartBeat();
 
    public slots:
       void dclickPart(Track*);
@@ -194,9 +147,6 @@ class Arranger : public QWidget {
       Arranger(QMainWindow* parent, const char* name = 0);
       void setMode(int);
       void reset();
-
-      void setTrackInfoLabelText();
-      void setTrackInfoLabelFont();
       
       void writeStatus(int level, Xml&);
       void readStatus(Xml&);
