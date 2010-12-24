@@ -21,9 +21,11 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWheelEvent>
+#include <QPainter>
 
 #include "arranger.h"
 #include "song.h"
+#include "app.h"
 #include "mtscale.h"
 #include "scrollscale.h"
 #include "pcanvas.h"
@@ -31,6 +33,7 @@
 #include "xml.h"
 #include "splitter.h"
 #include "lcombo.h"
+#include "mtrackinfo.h"
 #include "midiport.h"
 #include "mididev.h"
 #include "utils.h"
@@ -97,9 +100,9 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       selected = 0;
       // Since program covers 3 controls at once, it is in 'midi controller' units rather than 'gui control' units.
       //program  = -1;
-      program  = CTRL_VAL_UNKNOWN;
-      pan      = -65;
-      volume   = -1;
+      ///program  = CTRL_VAL_UNKNOWN;
+      ///pan      = -65;
+      ///volume   = -1;
       setMinimumSize(600, 50);
       showTrackinfoFlag = true;
       
@@ -251,7 +254,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
 
       infoScroll = new QScrollBar(Qt::Vertical, tracklist);
       infoScroll->setObjectName("infoScrollBar");
-      genTrackInfo(tracklist);
+      //genTrackInfo(tracklist); // Moved below
 
       // Track-Info Button
       ib  = new QToolButton(tracklist);
@@ -291,6 +294,9 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       header->setMovable (true );
       list = new TList(header, tracklist, "tracklist");
 
+      // Do this now that the list is available.
+      genTrackInfo(tracklist);
+      
       connect(list, SIGNAL(selectionChanged()), SLOT(trackSelectionChanged()));
       connect(header, SIGNAL(sectionResized(int,int,int)), list, SLOT(redraw()));
       connect(header, SIGNAL(sectionMoved(int,int,int)), list, SLOT(redraw()));
@@ -788,116 +794,6 @@ void Arranger::verticalScrollSetYpos(unsigned ypos)
       }
 
 //---------------------------------------------------------
-//   progRecClicked
-//---------------------------------------------------------
-
-void Arranger::progRecClicked()
-      {
-      MidiTrack* track = (MidiTrack*)selected;
-      int portno       = track->outPort();
-      int channel      = track->outChannel();
-      MidiPort* port   = &midiPorts[portno];
-      int program      = port->hwCtrlState(channel, CTRL_PROGRAM);
-      if(program == CTRL_VAL_UNKNOWN || program == 0xffffff) 
-        return;
-
-      unsigned tick = song->cpos();
-      Event a(Controller);
-      a.setTick(tick);
-      a.setA(CTRL_PROGRAM);
-      a.setB(program);
-
-      song->recordEvent(track, a);
-      }
-
-//---------------------------------------------------------
-//   volRecClicked
-//---------------------------------------------------------
-
-void Arranger::volRecClicked()
-      {
-      MidiTrack* track = (MidiTrack*)selected;
-      int portno       = track->outPort();
-      int channel      = track->outChannel();
-      MidiPort* port   = &midiPorts[portno];
-      int volume       = port->hwCtrlState(channel, CTRL_VOLUME);
-      if(volume == CTRL_VAL_UNKNOWN) 
-        return;
-
-      unsigned tick = song->cpos();
-      Event a(Controller);
-      a.setTick(tick);
-      a.setA(CTRL_VOLUME);
-      a.setB(volume);
-
-      song->recordEvent(track, a);
-      }
-
-//---------------------------------------------------------
-//   panRecClicked
-//---------------------------------------------------------
-
-void Arranger::panRecClicked()
-      {
-      MidiTrack* track = (MidiTrack*)selected;
-      int portno       = track->outPort();
-      int channel      = track->outChannel();
-      MidiPort* port   = &midiPorts[portno];
-      int pan          = port->hwCtrlState(channel, CTRL_PANPOT);
-      if(pan == CTRL_VAL_UNKNOWN) 
-        return;
-
-      unsigned tick = song->cpos();
-      Event a(Controller);
-      a.setTick(tick);
-      a.setA(CTRL_PANPOT);
-      a.setB(pan);
-
-      song->recordEvent(track, a);
-      }
-
-//---------------------------------------------------------
-//   recordClicked
-//---------------------------------------------------------
-
-void Arranger::recordClicked()
-      {
-      MidiTrack* track = (MidiTrack*)selected;
-      int portno       = track->outPort();
-      int channel      = track->outChannel();
-      MidiPort* port   = &midiPorts[portno];
-      unsigned tick = song->cpos();
-      
-      int program = port->hwCtrlState(channel, CTRL_PROGRAM);
-      if(program != CTRL_VAL_UNKNOWN && program != 0xffffff) 
-      {
-        Event a(Controller);
-        a.setTick(tick);
-        a.setA(CTRL_PROGRAM);
-        a.setB(program);
-        song->recordEvent(track, a);
-      }
-      int volume = port->hwCtrlState(channel, CTRL_VOLUME);
-      if(volume != CTRL_VAL_UNKNOWN) 
-      {
-        Event a(Controller);
-        a.setTick(tick);
-        a.setA(CTRL_VOLUME);
-        a.setB(volume);
-        song->recordEvent(track, a);
-      }
-      int pan = port->hwCtrlState(channel, CTRL_PANPOT);
-      if(pan != CTRL_VAL_UNKNOWN) 
-      {
-        Event a(Controller);
-        a.setTick(tick);
-        a.setA(CTRL_PANPOT);
-        a.setB(pan);
-        song->recordEvent(track, a);
-      }
-    }
-
-//---------------------------------------------------------
 //   trackInfoScroll
 //---------------------------------------------------------
 
@@ -1012,3 +908,103 @@ void Arranger::controllerChanged(Track *t)
 {
       canvas->controllerChanged(t);
 }
+
+//---------------------------------------------------------
+//   showTrackInfo
+//---------------------------------------------------------
+
+void Arranger::showTrackInfo(bool flag)
+      {
+      showTrackinfoFlag = flag;
+      trackInfo->setShown(flag);
+      infoScroll->setShown(flag);
+      updateTrackInfo(-1);
+      }
+
+//---------------------------------------------------------
+//   genTrackInfo
+//---------------------------------------------------------
+
+void Arranger::genTrackInfo(QWidget* parent)
+      {
+      trackInfo = new WidgetStack(parent, "trackInfoStack");
+
+      noTrackInfo          = new QWidget(trackInfo);
+      QPixmap *noInfoPix   = new QPixmap(160, 1000); //muse_leftside_logo_xpm);
+      const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
+      noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
+      // Orcan - check
+      //copyBlt(noInfoPix, 10, 0, logo, 0,0, logo->width(), logo->height());
+      QPainter p;
+      p.begin(noInfoPix);
+      p.drawImage(10, 0, logo->toImage(), 0,0, logo->width(), logo->height());
+
+      //noTrackInfo->setPaletteBackgroundPixmap(*noInfoPix);
+      QPalette palette;
+      palette.setBrush(noTrackInfo->backgroundRole(), QBrush(*noInfoPix));
+      noTrackInfo->setPalette(palette);
+      noTrackInfo->setGeometry(0, 0, 65, 200);
+      noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
+
+      midiTrackInfo = new MidiTrackInfo(trackInfo);
+      trackInfo->addWidget(noTrackInfo,   0);
+      trackInfo->addWidget(midiTrackInfo, 1);
+      trackInfo->addWidget(0, 2);
+
+///      genMidiTrackInfo();
+      connect(midiTrackInfo, SIGNAL(outputPortChanged(int)), list, SLOT(redraw()));
+      }
+
+//---------------------------------------------------------
+//   updateTrackInfo
+//---------------------------------------------------------
+
+void Arranger::updateTrackInfo(int flags)
+      {
+      if (!showTrackinfoFlag) {
+            switchInfo(-1);
+            return;
+            }
+      if (selected == 0) {
+            switchInfo(0);
+            return;
+            }
+      if (selected->isMidiTrack()) {
+            switchInfo(1);
+            ///updateMidiTrackInfo(flags);
+            midiTrackInfo->setTrack(selected);
+            midiTrackInfo->updateTrackInfo(flags);
+            }
+      else {
+            switchInfo(2);
+            }
+      }
+
+//---------------------------------------------------------
+//   switchInfo
+//---------------------------------------------------------
+
+void Arranger::switchInfo(int n)
+      {
+      if (n == 2) {
+            AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
+            if (w == 0 || selected != w->getTrack()) {
+                  if (w)
+                        delete w;
+                  w = new AudioStrip(trackInfo, (AudioTrack*)selected);
+                  connect(song, SIGNAL(songChanged(int)), w, SLOT(songChanged(int)));
+                  connect(muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
+                  w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
+                  trackInfo->addWidget(w, 2);
+                  w->show();
+                  tgrid->activate();
+                  tgrid->update();   // muse-2 Qt4
+                  }
+            }
+      if (trackInfo->curIdx() == n)
+            return;
+      trackInfo->raiseWidget(n);
+      tgrid->activate();
+      tgrid->update();   // muse-2 Qt4
+      }
+
