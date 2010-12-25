@@ -690,6 +690,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.canvasShowGrid = xml.parseInt();
                         else if (tag == "canvasBgPixmap")
                               config.canvasBgPixmap = xml.parse1();
+                        else if (tag == "canvasCustomBgList")
+                              config.canvasCustomBgList = xml.parse1().split(";", QString::SkipEmptyParts);
                         else if (tag == "geometryMain")
                               config.geometryMain = readGeometry(xml, tag);
                         else if (tag == "geometryTransport")
@@ -1221,6 +1223,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.intTag(level, "canvasShowPartEvent", config.canvasShowPartEvent);
       xml.intTag(level, "canvasShowGrid", config.canvasShowGrid);
       xml.strTag(level, "canvasBgPixmap", config.canvasBgPixmap);
+      xml.strTag(level, "canvasCustomBgList", config.canvasCustomBgList.join(";"));
 
       xml.colorTag(level, "transportHandleColor",  config.transportHandleColor);
       xml.colorTag(level, "bigtimeForegroundcolor", config.bigTimeForegroundColor);

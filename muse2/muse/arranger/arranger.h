@@ -145,6 +145,8 @@ class Arranger : public QWidget {
              CMD_INSERT_PART, CMD_INSERT_EMPTYMEAS };
 
       Arranger(QMainWindow* parent, const char* name = 0);
+
+      PartCanvas* getCanvas() { return canvas; }
       void setMode(int);
       void reset();
       

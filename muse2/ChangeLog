@@ -1,3 +1,5 @@
+25.12.2010:
+        - Added fancy background selection widget with live preview to Appearance Settings. (Orcan)
 23.12.2010:
         - MidiTrackInfo is now self-contained. (Tim)
           Moved all of its members from Arranger into MidiTrackInfo. Removed trackinfo.cpp
