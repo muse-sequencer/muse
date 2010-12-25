@@ -4,8 +4,6 @@
 //  $Id: appearance.cpp,v 1.11.2.5 2009/11/14 03:37:48 terminator356 Exp $
 //=========================================================
 
-#include <stdio.h>
-
 #include <QAbstractButton>
 #include <QButtonGroup>
 #include <QColor>
@@ -16,6 +14,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QPainter>
 #include <QtGlobal>
 
 #include "icons.h"
@@ -30,6 +29,42 @@
 #include "globals.h"
 #include "conf.h"
 #include "gconfig.h"
+
+int BG_ITEM_HEIGHT = 30;
+
+class BgPreviewWidget : public QWidget {
+      QPixmap pixmap;
+      QString imagefile;
+      QTreeWidget* t_widget;
+      int text_h;
+      int text_w;
+
+   protected:
+      void paintEvent(QPaintEvent* event)
+            {
+            QPainter p(this);
+            int w = t_widget->width() - 65;
+            p.drawTiledPixmap(1,1,w,BG_ITEM_HEIGHT-2, pixmap);
+
+           // We can also draw a rectangle behind the text:
+           //const QPalette& pal = palette();
+           //QColor dark = pal.dark().color();
+           //p.fillRect(QRect(w/2 - text_w/2,6,text_w + 20,text_h+4), dark);
+
+           QFontMetrics fm = p.fontMetrics();
+           text_w = fm.width(imagefile);
+           text_h = fm.height();
+           p.drawText(w/2 - text_w/2,6, text_w + 20, text_h+4, Qt::AlignCenter, imagefile);
+           QWidget::paintEvent(event);
+           }
+   public:
+      BgPreviewWidget(QString imagepath, QTreeWidget *treewidget)
+            { 
+            pixmap = QPixmap(imagepath);
+            imagefile = imagepath.right(imagepath.length() - imagepath.lastIndexOf("/") - 1 );
+            t_widget = treewidget;
+            }
+      };
 
 //---------------------------------------------------------
 //   IdListViewItem
@@ -57,7 +92,7 @@ class IdListViewItem : public QTreeWidgetItem {
 //---------------------------------------------------------
 
 Appearance::Appearance(Arranger* a, QWidget* parent)
-   : QDialog(parent)
+   : QDialog(parent, Qt::Window)
       {
       setupUi(this);
       arr    = a;
@@ -77,12 +112,11 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       
       // ARRANGER
 
+      global_bg = new QTreeWidgetItem(backgroundTree, QStringList(tr("Standard")), 0);
+      global_bg->setFlags(Qt::ItemIsEnabled);
+      user_bg = new QTreeWidgetItem(backgroundTree, QStringList(tr("Custom")), 0);
+      user_bg->setFlags(Qt::ItemIsEnabled);
       /*
-      currentBg = ::config.canvasBgPixmap;
-      if (currentBg.isEmpty())
-            currentBg = "<none>";
-      currentBgLabel->setText(currentBg);
-
       partShownames->setChecked(config->canvasShowPartType & 1);
       partShowevents->setChecked(config->canvasShowPartType & 2);
       partShowCakes->setChecked(!(config->canvasShowPartType & 2));
@@ -229,7 +263,8 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
       connect(okButton, SIGNAL(clicked()), SLOT(ok()));
       connect(cancelButton, SIGNAL(clicked()), SLOT(cancel()));
-      connect(selectBgButton, SIGNAL(clicked()), SLOT(configBackground()));
+      connect(addBgButton, SIGNAL(clicked()), SLOT(addBackground()));
+      connect(removeBgButton, SIGNAL(clicked()), SLOT(removeBackground()));
       connect(clearBgButton, SIGNAL(clicked()), SLOT(clearBackground()));
       connect(partShowevents, SIGNAL(toggled(bool)), eventButtonGroup, SLOT(setEnabled(bool)));
       //updateColor();
@@ -279,11 +314,44 @@ void Appearance::resetValues()
       palette14->setPalette(pal);
       pal.setColor(palette15->backgroundRole(), config->palette[15]);
       palette15->setPalette(pal);
-      
-      currentBg = ::config.canvasBgPixmap;
-      if (currentBg.isEmpty())
-            currentBg = tr("<none>");
-      currentBgLabel->setText(currentBg);
+
+      global_bg->takeChildren();
+      user_bg->takeChildren();
+
+      QDir bgdir = museGlobalShare + "/wallpapers/";
+      QStringList filters;
+      filters << "*.jpg" << "*.jpeg" << "*.gif";
+      bgdir.setNameFilters(filters);
+      backgroundTree->model()->setData(backgroundTree->model()->index(0,0), 
+                                       QVariant(QSize(200,BG_ITEM_HEIGHT)), 
+                                       Qt::SizeHintRole);
+      QStringList bglist = bgdir.entryList(QDir::Files, QDir::Name);
+      foreach (const QString &bgfile, bglist)
+            {
+            QTreeWidgetItem* item = new QTreeWidgetItem(global_bg, 0);
+            item->setData(0, Qt::UserRole, QVariant(museGlobalShare + "/wallpapers/" + bgfile));
+            BgPreviewWidget* bgw = new BgPreviewWidget(museGlobalShare + "/wallpapers/" + bgfile, backgroundTree);
+            backgroundTree->setItemWidget(item, 0, bgw);
+            if (config->canvasBgPixmap == museGlobalShare + "/wallpapers/" + bgfile)
+                  backgroundTree->setCurrentItem(item);
+            }
+
+      foreach (const QString &bgfile, config->canvasCustomBgList)
+            {
+            QTreeWidgetItem* item = new QTreeWidgetItem(user_bg, 0);
+            BgPreviewWidget* bgw = new BgPreviewWidget(bgfile, backgroundTree);
+            backgroundTree->setItemWidget(item, 0, bgw);
+            item->setData(0, Qt::UserRole, QVariant(bgfile));
+            if (config->canvasBgPixmap == bgfile)
+                  backgroundTree->setCurrentItem(item);
+            }
+
+      removeBgButton->setEnabled(false);
+
+      backgroundTree->expandAll();
+      connect(backgroundTree, 
+              SIGNAL(itemClicked(QTreeWidgetItem*, int )), 
+              SLOT(bgSelectionChanged(QTreeWidgetItem*)));
 
       partShownames->setChecked(config->canvasShowPartType & 1);
       partShowevents->setChecked(config->canvasShowPartType & 2);
@@ -322,6 +390,30 @@ void Appearance::resetValues()
       
       updateColor();
       
+      }
+
+
+//---------------------------------------------------------
+//   bgSelectionChanged
+//---------------------------------------------------------
+
+void Appearance::bgSelectionChanged(QTreeWidgetItem* item)
+      {
+      if (item->text(0).length() && lastSelectedBgItem)
+            {
+            backgroundTree->setCurrentItem(lastSelectedBgItem);
+            item = lastSelectedBgItem;
+            }
+
+      removeBgButton->setEnabled(false);
+  
+      QTreeWidgetItem* parent = item->parent();
+      if (parent)
+            if (parent->text(0) == user_bg->text(0))
+	          removeBgButton->setEnabled(true);
+  
+      lastSelectedBgItem = item;
+      muse->arranger->getCanvas()->setBg(QPixmap(item->data(0, Qt::UserRole).toString()));
       }
 
 //---------------------------------------------------------
@@ -410,10 +502,16 @@ void Appearance::apply()
 
       config->canvasShowPartEvent = showPartEvent;
 
-      if (currentBg == tr("<none>"))
+      QTreeWidgetItem* cbgitem = backgroundTree->currentItem();
+
+      if (cbgitem)
+            config->canvasBgPixmap = cbgitem->data(0, Qt::UserRole).toString();
+      else
             config->canvasBgPixmap = QString();
-      else      
-            config->canvasBgPixmap = currentBg;
+
+      config->canvasCustomBgList = QStringList();
+      for (int i = 0; i < user_bg->childCount(); ++i)
+            config->canvasCustomBgList << user_bg->child(i)->data(0, Qt::UserRole).toString();
       
       config->styleSheetFile = styleSheetPath->text();
       
@@ -483,23 +581,48 @@ void Appearance::ok()
 
 void Appearance::cancel()
       {
+      muse->arranger->getCanvas()->setBg(QPixmap(config->canvasBgPixmap));
       close();
       }
 
 //---------------------------------------------------------
-//   configBackground
+//   removeBackground
 //---------------------------------------------------------
 
-void Appearance::configBackground()
+void Appearance::removeBackground()
       {
-      QString cur(currentBg);
-      if (cur == tr("<none>"))
-            cur = museGlobalShare + "/wallpapers";
-      currentBg = getImageFileName(cur, image_file_pattern, this,
-         tr("MusE: load image"));
-      if (currentBg.isEmpty())
-            currentBg = tr("<none>");
-      currentBgLabel->setText(currentBg);
+      QTreeWidgetItem* item = backgroundTree->currentItem();
+      muse->arranger->getCanvas()->setBg(QPixmap());
+      user_bg->takeChild(user_bg->indexOfChild(item));
+      backgroundTree->setCurrentItem (0);
+      removeBgButton->setEnabled(false);
+      }
+
+//---------------------------------------------------------
+//   addBackground
+//---------------------------------------------------------
+
+void Appearance::addBackground()
+      {
+      QString cur = getenv("HOME");
+      QString user_bgfile = getImageFileName(cur, image_file_pattern, this,
+                                             tr("MusE: load image"));
+
+      bool image_exists = false;
+      for (int i = 0; i < global_bg->childCount(); ++i)
+            if (global_bg->child(i)->data(0, Qt::UserRole).toString() == user_bgfile)
+                  image_exists = true;
+      for (int i = 0; i < user_bg->childCount(); ++i)
+            if (user_bg->child(i)->data(0, Qt::UserRole).toString() == user_bgfile)
+                  image_exists = true;
+
+      if (! image_exists)
+            {
+            QTreeWidgetItem* item = new QTreeWidgetItem(user_bg, 0);
+            item->setData(0, Qt::UserRole, QVariant(user_bgfile));
+            BgPreviewWidget* bgw = new BgPreviewWidget(user_bgfile, backgroundTree);
+            backgroundTree->setItemWidget(item, 0, bgw);
+            }
       }
 
 //---------------------------------------------------------
@@ -508,8 +631,9 @@ void Appearance::configBackground()
 
 void Appearance::clearBackground()
       {
-      currentBg = tr("<none>");
-      currentBgLabel->setText(currentBg);
+      muse->arranger->getCanvas()->setBg(QPixmap());
+      backgroundTree->setCurrentItem (0);
+      removeBgButton->setEnabled(false);
       }
 
 //---------------------------------------------------------

@@ -123,6 +123,7 @@ GlobalConfigValues config = {
       5,                            // canvasShowPartEvent
       true,                        // canvasShowGrid;
       QString(""),                  // canvasBgPixmap;
+      QStringList(),                // canvasCustomBgList
       QString(":/style.qss"),       // default styleSheetFile
       QString(""),                  // style
       QString("sweep"),             // externalWavEditor

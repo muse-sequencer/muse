@@ -17,9 +17,11 @@ class GlobalConfigValues;
 class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       Arranger* arr;
       QColor* color;
-      QString currentBg;
       GlobalConfigValues* config;
       QButtonGroup* aPalette;
+      QTreeWidgetItem* user_bg;
+      QTreeWidgetItem* global_bg;
+      QTreeWidgetItem* lastSelectedBgItem;
 
       Q_OBJECT
       void updateFonts();
@@ -29,7 +31,8 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void apply();
       void ok();
       void cancel();
-      void configBackground();
+      void addBackground();
+      void removeBackground();
       void clearBackground();
       void colorItemSelectionChanged();
       void browseStyleSheet();
@@ -52,6 +55,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void vsliderChanged(int);
       void addToPaletteClicked();
       void paletteClicked(int);
+      void bgSelectionChanged(QTreeWidgetItem*);
 
    public:
       Appearance(Arranger*, QWidget* parent=0);

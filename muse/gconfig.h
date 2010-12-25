@@ -114,6 +114,7 @@ struct GlobalConfigValues {
       int canvasShowPartEvent;      //
       bool canvasShowGrid;
       QString canvasBgPixmap;
+      QStringList canvasCustomBgList;
       QString styleSheetFile;
       QString style;
 
