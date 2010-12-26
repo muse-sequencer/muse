@@ -69,6 +69,7 @@ class PianoCanvas : public EventCanvas {
       virtual void itemReleased(const CItem*, const QPoint&);
       virtual void itemMoved(const CItem*, const QPoint&);
       virtual void curPartChanged();
+      virtual void resizeEvent(QResizeEvent*);
 
    private slots:
       void midiNote(int pitch, int velo);
@@ -76,6 +77,7 @@ class PianoCanvas : public EventCanvas {
    signals:
       void quantChanged(int);
       void rasterChanged(int);
+      void newWidth(int);
 
    public slots:
       void pianoCmd(int);

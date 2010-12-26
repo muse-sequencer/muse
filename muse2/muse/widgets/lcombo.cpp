@@ -44,6 +44,8 @@ void LabelCombo::setCurrentIndex(int i)
   int c = i / rc;
   if(c >= box->model()->columnCount())
     return;
-  box->setModelColumn(c);
-  box->setCurrentIndex(r); 
+  if(box->modelColumn() != c)
+    box->setModelColumn(c);
+  if(box->currentIndex() != r)  
+    box->setCurrentIndex(r); 
 } 

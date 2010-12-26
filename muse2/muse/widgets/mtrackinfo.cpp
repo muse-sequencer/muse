@@ -33,8 +33,16 @@
 
 void MidiTrackInfo::setTrack(Track* t)
 {
+  if(!t)
+  {
+    selected = 0;
+    return;
+  }  
+  
+  if(!t->isMidiTrack())
+    return;
   selected = t;
-  //updateTrackInfo(-1);
+  updateTrackInfo(-1);
 }
 
 //---------------------------------------------------------
@@ -53,6 +61,8 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   program  = CTRL_VAL_UNKNOWN;
   pan      = -65;
   volume   = -1;
+  
+  setFont(config.fonts[2]);
   
   //iChanDetectLabel->setPixmap(*darkgreendotIcon);
   iChanDetectLabel->setPixmap(*darkRedLedIcon);
@@ -87,10 +97,11 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   trackNameLabel->setFrameStyle(QFrame::Sunken | QFrame::StyledPanel);
   trackNameLabel->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
   
-  // Added by Tim. p3.3.9
   setLabelText();
   setLabelFont();
 
+  //setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding));
+  
   connect(iPatch, SIGNAL(released()), SLOT(instrPopup()));
 
   ///pop = new QMenu(iPatch);
@@ -126,9 +137,12 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   connect(iRButton, SIGNAL(pressed()), SLOT(inRoutesPressed()));
   
   // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
-  oRButton->setEnabled(false);
-  oRButton->setVisible(false);
-  connect(oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
+  //oRButton->setEnabled(false);
+  //oRButton->setVisible(false);
+  //connect(oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
+  
+  connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+  connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
   
   connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
 }
@@ -425,63 +439,40 @@ void MidiTrackInfo::heartBeat()
 }
 
 //---------------------------------------------------------
+//   configChanged
+//---------------------------------------------------------
+
+void MidiTrackInfo::configChanged()
+      {
+      //printf("MidiTrackInfo::configChanged\n");
+      
+      //if (config.canvasBgPixmap.isEmpty()) {
+      //      canvas->setBg(config.partCanvasBg);
+      //      canvas->setBg(QPixmap());
+      //}
+      //else {
+      //      canvas->setBg(QPixmap(config.canvasBgPixmap));
+      //}
+      
+      setFont(config.fonts[2]);
+      //updateTrackInfo(type);
+      }
+
+//---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
 void MidiTrackInfo::songChanged(int type)
-      {
-      // Is it simply a midi controller value adjustment? Forget it.
-      if(type != SC_MIDI_CONTROLLER)
-      {
-/*        
-        unsigned endTick = song->len();
-        int offset  = AL::sigmap.ticksMeasure(endTick);
-        hscroll->setRange(-offset, endTick + offset);  //DEBUG
-        canvas->setOrigin(-offset, 0);
-        time->setOrigin(-offset, 0);
-  
-        int bar, beat;
-        unsigned tick;
-        AL::sigmap.tickValues(endTick, &bar, &beat, &tick);
-        if (tick || beat)
-              ++bar;
-        lenEntry->blockSignals(true);
-        lenEntry->setValue(bar);
-        lenEntry->blockSignals(false);
-  
-        trackSelectionChanged();
-        canvas->partsChanged();
-        typeBox->setCurrentIndex(int(song->mtype()));
-        if (type & SC_SIG)
-              time->redraw();
-        if (type & SC_TEMPO)
-              setGlobalTempo(tempomap.globalTempo());
-              
-        if(type & SC_TRACK_REMOVED)
-        {
-          AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
-          if(w)
-          {
-            Track* t = w->getTrack();
-            if(t)
-            {
-              TrackList* tl = song->tracks();
-              iTrack it = tl->find(t);
-              if(it == tl->end())
-              {
-                delete w;
-                trackInfo->addWidget(0, 2);
-                selected = 0;
-              } 
-            }   
-          } 
-        }
-*/
-      
-      }
-            
-      updateTrackInfo(type);
-    }
+{
+  // Is it simply a midi controller value adjustment? Forget it.
+  if(type == SC_MIDI_CONTROLLER)
+    return;
+  if(type == SC_SELECTION)
+    return;
+  if(!isVisible())  
+    return;
+  updateTrackInfo(type);
+}      
 
 //---------------------------------------------------------
 //   setLabelText
@@ -502,9 +493,9 @@ void MidiTrackInfo::setLabelText()
 
 void MidiTrackInfo::setLabelFont()
 {
-      if(!selected)
-        return;
-      MidiTrack* track = (MidiTrack*)selected;
+      //if(!selected)
+      //  return;
+      //MidiTrack* track = (MidiTrack*)selected;
         
       // Use the new font #6 I created just for these labels (so far).
       // Set the label's font.
@@ -645,7 +636,7 @@ void MidiTrackInfo::outRoutesPressed()
   connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));
   connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
   pup->popup(QCursor::pos());
-  oRButton->setDown(false);     
+  ///oRButton->setDown(false);     
   return;
 }
 
@@ -1235,14 +1226,14 @@ void MidiTrackInfo::iPanDoubleClicked()
 
 void MidiTrackInfo::updateTrackInfo(int flags)
 {
-      if(!selected)
-        return;
-      MidiTrack* track = (MidiTrack*)selected;
-      
       // Is it simply a midi controller value adjustment? Forget it.
       if(flags == SC_MIDI_CONTROLLER)
         return;
         
+      if(!selected)
+        return;
+      MidiTrack* track = (MidiTrack*)selected;
+      
       // p3.3.47 Update the routing popup menu if anything relevant changes.
       //if(gRoutingPopupMenuMaster == midiTrackInfo && selected && (flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))) 
       if(flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))     // p3.3.50

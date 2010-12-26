@@ -36,20 +36,20 @@ class TLLayout : public QLayout
       ~TLLayout() { clear(); }
 
       void addItem(QLayoutItem *item) { ilist.append(item); }
-      Qt::Orientations expandingDirections() const { return 0; }
-      bool hasHeightForWidth() const { return false; }
-      int count() const { return ilist.size(); }
+      virtual Qt::Orientations expandingDirections() const { return 0; }
+      virtual bool hasHeightForWidth() const { return false; }
+      virtual int count() const { return ilist.size(); }
       void clear();
 
       void wadd(int idx, QWidget* w);
-      ///virtual QSize sizeHint() const;
-      ///virtual QSize minimumSize() const;
-      ///virtual QSize maximumSize() const;
-      QSize sizeHint() const;
-      QSize minimumSize() const;
-      QSize maximumSize() const;
+      virtual QSize sizeHint() const;
+      virtual QSize minimumSize() const;
+      virtual QSize maximumSize() const;
+      //QSize sizeHint() const;
+      //QSize minimumSize() const;
+      //QSize maximumSize() const;
       ///QLayoutIterator iterator();
-      void setGeometry(const QRect &rect);
+      virtual void setGeometry(const QRect &rect);
 
       //virtual QLayoutItem* itemAt(int) const { return 0;} // ddskrjo, is pure virtual, overridden
       virtual QLayoutItem* itemAt(int i) const { return ilist.value(i);} 

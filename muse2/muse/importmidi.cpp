@@ -255,7 +255,7 @@ bool MusE::importMidi(const QString name, bool merge)
             song->updatePos();
 
             arranger->reset();
-            arranger->setMode(int(song->mtype()));
+            ///arranger->setMode(int(song->mtype())); // p4.0.7 Tim
             }
       else {
             song->initLen();

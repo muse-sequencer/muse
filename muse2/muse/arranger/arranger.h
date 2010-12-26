@@ -53,7 +53,8 @@ class WidgetStack : public QWidget {
       QWidget* getWidget(unsigned int idx);
       QWidget* visibleWidget() const;
       int curIdx() const { return top; }
-      QSize minimumSizeHint() const;
+      virtual QSize minimumSizeHint() const;
+      //QSize minimumSize() const { return minimumSizeHint(); }
       };
 
 //---------------------------------------------------------

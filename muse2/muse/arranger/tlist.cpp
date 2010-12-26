@@ -711,9 +711,11 @@ void TList::moveSelection(int n)
                   ++nselect;
       if (nselect != 1)
             return;
+      Track* selTrack = 0;
       for (iTrack t = tracks->begin(); t != tracks->end(); ++t) {
             iTrack s = t;
             if ((*t)->selected()) {
+                  selTrack = *t;
                   if (n > 0) {
                         while (n--) {
                               ++t;
@@ -746,7 +748,8 @@ void TList::moveSelection(int n)
                   break;
                   }
             }
-      emit selectionChanged();
+      ///emit selectionChanged();
+      emit selectionChanged(selTrack);
       }
 
 TrackList TList::getRecEnabledTracks()
@@ -861,7 +864,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         song->deselectTracks();
                         t->setSelected(true);
   
-                        emit selectionChanged();
+                        ///emit selectionChanged();
+                        emit selectionChanged(t);
                         adjustScrollbar();
                       }  
                     }
@@ -986,7 +990,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                               t->setSelected(!t->selected());
                         if (editTrack && editTrack != t)
                               returnPressed();
-                        emit selectionChanged();
+                        ///emit selectionChanged();
+                        emit selectionChanged(t->selected() ? t : 0);
                         }
                   else if (button == Qt::RightButton) {
                         mode = NORMAL;
@@ -1110,7 +1115,8 @@ void TList::selectTrack(Track* tr)
       // By T356. Force a redraw for wave tracks, since it does not seem to happen.
       //if(!tr->isMidiTrack())
         redraw();
-      emit selectionChanged();
+      ///emit selectionChanged();
+      emit selectionChanged(tr);
       }
 
 //---------------------------------------------------------

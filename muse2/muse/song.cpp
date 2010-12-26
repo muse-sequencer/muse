@@ -1612,6 +1612,7 @@ void Song::setMType(MType t)
       {
 //   printf("set MType %d\n", t);
       _mtype = t;
+      song->update(SC_SONG_TYPE);  // p4.0.7 Tim.
       }
 
 //---------------------------------------------------------

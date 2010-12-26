@@ -297,7 +297,9 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       // Do this now that the list is available.
       genTrackInfo(tracklist);
       
-      connect(list, SIGNAL(selectionChanged()), SLOT(trackSelectionChanged()));
+      ///connect(list, SIGNAL(selectionChanged()), SLOT(trackSelectionChanged()));
+      connect(list, SIGNAL(selectionChanged(Track*)), SLOT(trackSelectionChanged()));
+      connect(list, SIGNAL(selectionChanged(Track*)), midiTrackInfo, SLOT(setTrack(Track*)));
       connect(header, SIGNAL(sectionResized(int,int,int)), list, SLOT(redraw()));
       connect(header, SIGNAL(sectionMoved(int,int,int)), list, SLOT(redraw()));
       connect(header, SIGNAL(sectionMoved(int,int,int)), this, SLOT(headerMoved()));
@@ -398,6 +400,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       connect(canvas, SIGNAL(startEditor(PartList*,int)),   SIGNAL(startEditor(PartList*, int)));
 
       connect(song,   SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      //connect(song,   SIGNAL(mTypeChanged(MType)), SLOT(setMode((int)MType)));    // p4.0.7 Tim.
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
       connect(canvas, SIGNAL(dropSongFile(const QString&)), SIGNAL(dropSongFile(const QString&)));
@@ -482,7 +485,6 @@ void Arranger::dclickPart(Track* t)
 
 void Arranger::configChanged()
       {
-      // Added by Tim. p3.3.6
       //printf("Arranger::configChanged\n");
       
       if (config.canvasBgPixmap.isEmpty()) {
@@ -495,7 +497,7 @@ void Arranger::configChanged()
             //printf("Arranger::configChanged - bitmap %s!\n", config.canvasBgPixmap.ascii());
             canvas->setBg(QPixmap(config.canvasBgPixmap));
       }
-      midiTrackInfo->setFont(config.fonts[2]);
+      ///midiTrackInfo->setFont(config.fonts[2]);
       //updateTrackInfo(type);
       }
 
@@ -532,6 +534,9 @@ void Arranger::songChanged(int type)
         lenEntry->setValue(bar);
         lenEntry->blockSignals(false);
   
+        if(type & SC_SONG_TYPE)    // p4.0.7 Tim.
+          setMode(song->mtype());
+          
         trackSelectionChanged();
         canvas->partsChanged();
         typeBox->setCurrentIndex(int(song->mtype()));
@@ -600,7 +605,10 @@ void Arranger::modeChange(int mode)
 
 void Arranger::setMode(int mode)
       {
+      typeBox->blockSignals(true);          //
+      // This will only set if different.
       typeBox->setCurrentIndex(mode);
+      typeBox->blockSignals(false);         //
       }
 
 //---------------------------------------------------------
@@ -873,7 +881,10 @@ QWidget* WidgetStack::visibleWidget() const
 QSize WidgetStack::minimumSizeHint() const
       {
       if (top == -1)
+      {
+            //printf("WidgetStack::minimumSizeHint top is -1\n");
             return (QSize(0, 0));
+      }      
       QSize s(0,0);
       for (unsigned int i = 0; i < stack.size(); ++i) {
             if (stack[i]) {
@@ -883,6 +894,7 @@ QSize WidgetStack::minimumSizeHint() const
                   s = s.expandedTo(ss);
                   }
             }
+      //printf("WidgetStack::minimumSizeHint width:%d height:%d\n", s.width(), s.height());  
       return s;
       }
 
@@ -972,7 +984,7 @@ void Arranger::updateTrackInfo(int flags)
       if (selected->isMidiTrack()) {
             switchInfo(1);
             ///updateMidiTrackInfo(flags);
-            midiTrackInfo->setTrack(selected);
+            //midiTrackInfo->setTrack(selected);
             midiTrackInfo->updateTrackInfo(flags);
             }
       else {
