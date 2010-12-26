@@ -226,7 +226,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       
       menuFunctions->setTearOffEnabled(true);
       
-      fixedAction = menuFunctions->addAction(tr("Set fixed length"));
+      fixedAction = menuFunctions->addAction(tr("Set Fixed Length"));
       veloAction = menuFunctions->addAction(tr("Modify Velocity"));
 
       connect(fixedAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
