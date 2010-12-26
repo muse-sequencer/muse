@@ -1730,3 +1730,14 @@ void PianoCanvas::modifySelected(NoteInfo::ValType type, int delta)
       audio->msgIdle(false);
       }
 
+//---------------------------------------------------------
+//   resizeEvent
+//---------------------------------------------------------
+
+void PianoCanvas::resizeEvent(QResizeEvent* ev)
+      {
+      if (ev->size().width() != ev->oldSize().width())
+            emit newWidth(ev->size().width());
+      EventCanvas::resizeEvent(ev);
+      }
+

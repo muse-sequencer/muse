@@ -42,6 +42,9 @@ class SNode;
 class QMenu;
 class QAction;
 class QWidget;
+class QScrollBar;
+class MidiTrackInfo;
+class QScrollArea;
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -133,6 +136,9 @@ class PianoRoll : public MidiEditor {
       QuantConfig* quantConfig;
       bool _playEvents;
 
+      //QScrollBar* infoScroll;
+      QScrollArea* infoScroll;
+      MidiTrackInfo* trackInfo;
 
       Q_OBJECT
       void initShortcuts();
@@ -148,6 +154,7 @@ class PianoRoll : public MidiEditor {
       CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void soloChanged(bool flag);
+      //void trackInfoScroll(int);
       void setRaster(int);
       void setQuant(int);
       void configQuant();
@@ -165,6 +172,8 @@ class PianoRoll : public MidiEditor {
       void follow(int pos);
       void songChanged1(int);
       void configChanged();
+      void newCanvasWidth(int);
+      void toggleTrackInfo();
 
    signals:
       void deleted(unsigned long);
