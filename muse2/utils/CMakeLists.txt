@@ -18,8 +18,11 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-install( FILES
+file(GLOB utils_files
       muse-find-unused-wavs
       muse-song-convert.py
+      )
+
+install (PROGRAMS ${utils_files}
       DESTINATION ${MusE_SHARE_DIR}/utils/
       )

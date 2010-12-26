@@ -80,7 +80,7 @@ SET(MusE_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins)
 
 ## Top documentation dir
 IF(NOT DEFINED MusE_DOC_DIR)
-      SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${PROJECT_NAME}-${MusE_VERSION_FULL}/)
+      SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${MusE_INSTALL_NAME}/)
 ENDIF(NOT DEFINED MusE_DOC_DIR)
 
 ## Data directory
@@ -348,7 +348,7 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
-set(CMAKE_CXX_FLAGS         "-Wl,-rpath,${QT_LIBRARY_DIR} -Wall -Wextra -Winvalid-pch -fno-exceptions ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS         "-Wall -Wextra -Winvalid-pch -fno-exceptions ${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fstrength-reduce ${CMAKE_CXX_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
 

@@ -2,6 +2,15 @@
         - Initial addition of midi track info to pianoroll. WORK IN PROGRESS. (Tim)
           TODO: Just to get off the hard drive. A few things still need to be linked up!
                 And we really need icons to replace those 'T' 'C' 'S' 'X' buttons.
+        - Fix minor issues that surfaced when I built an RPM for the alpha release (Orcan):
+              o Added missing AudioVideo category to the .desktop file.
+              o Fixed the executable name in the .desktop file.
+              o Converted README.softsynth, synti/vam/README, README.de, SECURITY to UTF8.
+              o Made the default MusE_DOC_DIR consistent with other default definitions.
+              o Removed explicit rpath to ${QT_LIBRARY_DIR}. cmake should add it automatically
+                if there's need.
+              o Removed unnecessary linkage to libQtSvg.
+              o utils are installed with executable permissons.
 25.12.2010:
         - Added fancy background selection widget with live preview to Appearance Settings. (Orcan)
         - Applied Geoff King's second capitalization patch.
