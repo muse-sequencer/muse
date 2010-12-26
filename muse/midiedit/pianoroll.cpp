@@ -150,7 +150,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       menuConfig = menuBar()->addMenu(tr("&Config"));      
       
-      eventColor = menuConfig->addMenu(tr("&Event color"));      
+      eventColor = menuConfig->addMenu(tr("&Event Color"));      
       
       QActionGroup* actgrp = new QActionGroup(this);
       actgrp->setExclusive(true);
@@ -263,11 +263,11 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       funcCreateMeasureAction->setEnabled(false);
       connect(funcCreateMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      funcSetFixedLenAction = menuFunctions->addAction(tr("Set fixed length"));
+      funcSetFixedLenAction = menuFunctions->addAction(tr("Set Fixed Length"));
       mapper->setMapping(funcSetFixedLenAction, PianoCanvas::CMD_FIXED_LEN);
       connect(funcSetFixedLenAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      funcDelOverlapsAction = menuFunctions->addAction(tr("Delete overlaps"));
+      funcDelOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
       mapper->setMapping(funcDelOverlapsAction, PianoCanvas::CMD_DELETE_OVERLAPS);
       connect(funcDelOverlapsAction, SIGNAL(triggered()), mapper, SLOT(map()));
       

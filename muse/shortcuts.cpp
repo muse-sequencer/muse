@@ -151,7 +151,7 @@ void initShortCuts()
 
       defShrt(SHRT_SELECT_ALL,       Qt::CTRL + Qt::Key_A, "Edit: Select all", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_all");
       defShrt(SHRT_SELECT_NONE,      Qt::CTRL + Qt::SHIFT + Qt::Key_A, "Edit: Select none", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_none");
-      defShrt(SHRT_SELECT_INVERT,    Qt::CTRL + Qt::Key_I, "Edit: Invert selection", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,  "sel_inv");
+      defShrt(SHRT_SELECT_INVERT,    Qt::CTRL + Qt::Key_I, "Edit: Invert Selection", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,  "sel_inv");
       defShrt(SHRT_SELECT_ILOOP,     0, "Edit: Select events/parts inside locators", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,  "sel_ins_loc");
       defShrt(SHRT_SELECT_OLOOP,     0, "Edit: Select events/parts outside locators", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_out_loc");
       defShrt(SHRT_SELECT_PREV_PART, Qt::ALT + Qt::Key_Left, "Edit: Select previous part", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_prv_prt");
@@ -167,7 +167,7 @@ void initShortCuts()
       defShrt(SHRT_DEC_POS,          Qt::CTRL + Qt::Key_Left,   "Edit: Decrease event position", PROLL_SHRT + DEDIT_SHRT, "sel_dec_pos");
       defShrt(SHRT_ZOOM_IN,          Qt::CTRL + Qt::Key_PageUp,   "View: Zoom in",  PROLL_SHRT + DEDIT_SHRT, "zoom_in");
       defShrt(SHRT_ZOOM_OUT,         Qt::CTRL + Qt::Key_PageDown, "View: Zoom out", PROLL_SHRT + DEDIT_SHRT, "zoom_out");
-      defShrt(SHRT_GOTO_CPOS,        Qt::Key_C, "View: Goto current position", PROLL_SHRT + DEDIT_SHRT, "goto_cpos");
+      defShrt(SHRT_GOTO_CPOS,        Qt::Key_C, "View: Goto Current Position", PROLL_SHRT + DEDIT_SHRT, "goto_cpos");
       defShrt(SHRT_SCROLL_LEFT,      Qt::Key_H, "View: Scroll left", PROLL_SHRT + DEDIT_SHRT, "scroll_left");
       defShrt(SHRT_SCROLL_RIGHT,     Qt::Key_L, "View: Scroll left", PROLL_SHRT + DEDIT_SHRT, "scroll_right");
 
@@ -175,7 +175,7 @@ void initShortCuts()
       //Drum:
       //-----------------------------------------------------------
 
-      defShrt(SHRT_FIXED_LEN,   Qt::ALT + Qt::Key_L, "Edit: Set fixed length on midi events", PROLL_SHRT + DEDIT_SHRT, "midi_fixed_len");
+      defShrt(SHRT_FIXED_LEN,   Qt::ALT + Qt::Key_L, "Edit: Set Fixed Length on Midi Events", PROLL_SHRT + DEDIT_SHRT, "midi_fixed_len");
 
       //-----------------------------------------------------------
       //Pianoroll:
@@ -191,14 +191,14 @@ void initShortCuts()
       defShrt(SHRT_CRESCENDO,        0, "Edit: Crescendo", PROLL_SHRT, "midi_crescendo");
       defShrt(SHRT_THIN_OUT,         0, "Edit: Thin Out", PROLL_SHRT, "midi_thin_out");
       defShrt(SHRT_ERASE_EVENT,      0, "Edit: Erase Event", PROLL_SHRT, "midi_erase_event");
-      defShrt(SHRT_DELETE_OVERLAPS,  0, "Edit: Delete overlaps", PROLL_SHRT, "midi_delete_overlaps");
+      defShrt(SHRT_DELETE_OVERLAPS,  0, "Edit: Delete Overlaps", PROLL_SHRT, "midi_delete_overlaps");
       defShrt(SHRT_NOTE_SHIFT,       0, "Edit: Note Shift", PROLL_SHRT, "midi_note_shift");
       defShrt(SHRT_MOVE_CLOCK,       0, "Edit: Move Clock", PROLL_SHRT, "midi_move_clock");
       defShrt(SHRT_COPY_MEASURE,     0, "Edit: Copy Measure", PROLL_SHRT, "midi_copy_measure");
       defShrt(SHRT_ERASE_MEASURE,    0, "Edit: Erase Measure", PROLL_SHRT,"midi_erase_measure");
       defShrt(SHRT_DELETE_MEASURE,   0, "Edit: Delete Measure", PROLL_SHRT, "midi_delete_measure");
       defShrt(SHRT_CREATE_MEASURE,   0, "Edit: Create Measure", PROLL_SHRT, "midi_create_measure");
-      defShrt(SHRT_EVENT_COLOR,      Qt::Key_E, "Edit: Change event color", PROLL_SHRT, "change_event_color");
+      defShrt(SHRT_EVENT_COLOR,      Qt::Key_E, "Edit: Change Event Color", PROLL_SHRT, "change_event_color");
 
 
       // Shortcuts for tools
