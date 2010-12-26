@@ -233,7 +233,6 @@ target_link_libraries(core
       widgets 
       
       ${QT_LIBRARIES}
-      QtSvg
       ${SNDFILE_LIBRARIES}
       ${SAMPLERATE_LIBRARIES}
       ${UUID_LIBRARIES}

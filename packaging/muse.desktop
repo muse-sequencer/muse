@@ -1,9 +1,9 @@
 [Desktop Entry]
-Name=Muse
+Name=MusE
 GenericName=Audio/MIDI Sequencer
 Comment=Midi Music Editor
 Icon=muse_icon
 Type=Application
-Exec=muse
+Exec=muse2
 Terminal=false
-Categories=Sequencer;Midi;X-Jack;X-Sequencers;X-MIDI;Audio;
+Categories=Sequencer;Midi;X-Jack;X-Sequencers;X-MIDI;Audio;AudioVideo;

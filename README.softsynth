@@ -73,7 +73,7 @@ These are the software synthesizers currently available:
         "organ" implements a gui connected bidirectional
         to the synth via stdin/stdout
 
-      - fluid, is the adapted version of Peter Hanappe´s
+      - fluid, is the adapted version of Peter HanappeÂ´s
         sample based fluid synthesizer (formerly known as iiwu)
             - loadable sound fonts
             - multi timbral

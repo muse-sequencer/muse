@@ -6,14 +6,14 @@ Guten Tag!
 dies ist MusE, der Open Source MIDI/Audio Sequencer.
 
 MusE steht unter der GNU General Public Licence (GPL).
-Für Einzelheiten siehe COPYING.
+FÃ¼r Einzelheiten siehe COPYING.
 
 ,-----------------------------------------------------------------.
 | HINWEIS                                                         |
 |-----------------------------------------------------------------|
-| Viel Teile des Codes von MusE sind EXPERIMENTELL und können     |
-| zu Programmabstürzen und wer weiß was sonst noch allem          |
-| führen.                                                         |
+| Viel Teile des Codes von MusE sind EXPERIMENTELL und kÃ¶nnen     |
+| zu ProgrammabstÃ¼rzen und wer weiÃŸ was sonst noch allem          |
+| fÃ¼hren.                                                         |
 | SIE BENUTZEN DIESE SOFTWARE AUF EIGENES RISIKO!                 |
 `-----------------------------------------------------------------'
 
@@ -36,18 +36,18 @@ Für Einzelheiten siehe COPYING.
         download:
 	  http://jackit.sourceforge.net/download/
 
-      - fluidsynth-1.0.3 (die synti früher bekannt als "iiwusynth") von
+      - fluidsynth-1.0.3 (die synti frÃ¼her bekannt als "iiwusynth") von
         http://savannah.nongnu.org/download/fluid
 
       - Linux Kernel mit rtc (RealTimeClock) Treiber (device /dev/rtc)
-        ("low latency patches" für minimales timing-jitter wären fein)
+        ("low latency patches" fÃ¼r minimales timing-jitter wÃ¤ren fein)
 
       - ALSA von http://www.alsa-project.org/
         Version 0.9.x oder neuer
 
       - gcc >= 4.x.x
 
-      - natürlich: eine Soundkarte und/oder irgendwelche Midi Geräte
+      - natÃ¼rlich: eine Soundkarte und/oder irgendwelche Midi GerÃ¤te
 
   =============================
       Kompilierung
