@@ -247,36 +247,6 @@ void MFileDialog::directoryChanged(const QString&)
             }
       }
 
-/* ORCAN - disable preview for now. It is not available in qt4. We will
-           need to implement it ourselves.
-//---------------------------------------------------------
-//   ContentsPreview
-//---------------------------------------------------------
-
-ContentsPreview::~ContentsPreview()
-      {
-      if (bg)
-            delete bg;
-      }
-
-//---------------------------------------------------------
-//   ContentsPreview::showPreview
-//---------------------------------------------------------
-
-void ContentsPreview::previewUrl(const Q3Url& url)
-      {
-      if (!url.isLocalFile())
-            return;
-      if (url.path() == path)
-            return;
-      path = url.path();
-      if (bg)
-            delete bg;
-      bg  = new QPixmap(path);
-      if (bg)
-            setBackgroundPixmap(*bg);
-      }
-*/
 
 //---------------------------------------------------------
 //   getFilterExtension

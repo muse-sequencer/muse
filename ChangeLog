@@ -8,6 +8,13 @@
         - changed 'new' project from listing PROJECT_VIEW to GLOBAL_VIEW where the
           templates reside, an enhancement would be to list USER_VIEW if it's template
           dir exists (rj)
+        - Added myself to the AUTHORS list. Oops. (Orcan)
+        - Added a mimetype file for *.med, *.med.gz, *.med.bz2 and associated MusE with this
+          mimetype (and also midi and xml mimetypes) in the .desktop file. (Orcan)
+        - Got manpages from Debian by Daniel Kobras, and updated them for MusE2. (Orcan)
+        - Remove rem'd preview code in filedialog.cpp. I reimplemented it in appearance.cpp. (Orcan)
+        - Remove the environment variables info from the usage output. (Orcan)
+        - midiedit links to ctrl. (Orcan)
 26.12.2010:
         - Initial addition of midi track info to pianoroll. WORK IN PROGRESS. (Tim)
           TODO: Just to get off the hard drive. A few things still need to be linked up!

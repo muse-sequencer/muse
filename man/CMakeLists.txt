@@ -19,23 +19,19 @@
 #=============================================================================
 
 #
-# produce the .desktop file
+# produce the manpages
 #
 configure_file (
-      muse.desktop.in
-      ${PROJECT_BINARY_DIR}/packaging/muse.desktop
+      muse.1.in
+      ${PROJECT_BINARY_DIR}/man/${MusE_EXEC_NAME}.1
+      )
+configure_file (
+      grepmidi.1.in
+      ${PROJECT_BINARY_DIR}/man/grepmidi.1
       )
 
-#
-# install the desktop and mime files
-#
-install( FILES muse_icon.png
-      DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/64x64/apps/
+install( FILES 
+      ${PROJECT_BINARY_DIR}/man/${MusE_EXEC_NAME}.1
+      ${PROJECT_BINARY_DIR}/man/grepmidi.1
+      DESTINATION ${SHARE_INSTALL_PREFIX}/man/man1/
       )
-install( FILES ${PROJECT_BINARY_DIR}/packaging/muse.desktop
-      DESTINATION ${SHARE_INSTALL_PREFIX}/applications/
-      )
-install( FILES muse.xml
-      DESTINATION ${SHARE_INSTALL_PREFIX}/mime/packages/
-      )
-

@@ -67,6 +67,7 @@ SET(MusE_VERSION_PATCH 0)
 SET(MusE_VERSION       "2.0alpha")
 SET(MusE_VERSION_FULL  "2.0alpha")
 SET(MusE_INSTALL_NAME  "muse-2.0alpha")
+SET(MusE_EXEC_NAME     "muse2")
 
 ## The library where we will install the shared components:
 SET(MusE_MODULES_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/modules)
@@ -357,7 +358,7 @@ set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
 #subdirs(al lib grepmidi plugins muse share demos synti )
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
-subdirs(al awl grepmidi plugins muse synti packaging utils demos share)
+subdirs(al awl grepmidi man plugins muse synti packaging utils demos share)
 
 ## Install doc files
 file (GLOB doc_files
