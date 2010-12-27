@@ -1,3 +1,6 @@
+28.12.2010:
+        - Tweaked and added some delays during project load to counter threading
+          issues during loading of projects (rj)
 27.12.2010:
         - Added a first try at project creation dialog, we'll see how much territory
           it covers, intentionally it's only used upon creation of a project, later 'Save As'

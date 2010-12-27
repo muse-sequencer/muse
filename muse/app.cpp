@@ -1628,6 +1628,7 @@ void MusE::loadProjectFile(const QString& name)
 
 void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
       {
+      QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
       //
       // stop audio threads if running
       //
@@ -1640,14 +1641,15 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
                   }
             seqStop();
             }
-      microSleep(200000);
+      microSleep(100000);
       loadProjectFile1(name, songTemplate, loadAll);
-      microSleep(200000);
+      microSleep(100000);
       if (restartSequencer)
             seqStart();
 
       if (song->getSongInfo().length()>0)
           startSongInfo(false);
+      QApplication::restoreOverrideCursor();
       }
 
 //---------------------------------------------------------
@@ -4446,6 +4448,7 @@ bool MusE::clearSong()
             while (audio->isPlaying())
                   qApp->processEvents();
             }
+      microSleep(100000);
 
 again:
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
@@ -4465,7 +4468,9 @@ again:
                         goto again;
                   }
             }
+      microSleep(100000);
       song->clear(false);
+      microSleep(100000);
       return false;
       }
 
