@@ -204,7 +204,7 @@ set_target_properties( core
       OUTPUT_NAME muse_core
       )
 set_target_properties( muse
-      PROPERTIES OUTPUT_NAME muse2
+      PROPERTIES OUTPUT_NAME ${MusE_EXEC_NAME}
       )
 set_target_properties( icons
       PROPERTIES OUTPUT_NAME muse_icons
