@@ -61,6 +61,8 @@ class PianoRoll : public MidiEditor {
 
       
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
+      MidiTrackInfo *midiTrackInfo;
+      Track* selected;
       
       QAction* editCutAction; 
       QAction* editCopyAction; 
@@ -113,6 +115,8 @@ class PianoRoll : public MidiEditor {
 
       Toolbar1* toolbar;
       Splitter* splitter;
+      Splitter* hsplitter;
+      Splitter* ctrlLane;
 
       QToolButton* speaker;
       QToolBar* tools;
@@ -138,7 +142,6 @@ class PianoRoll : public MidiEditor {
 
       //QScrollBar* infoScroll;
       QScrollArea* infoScroll;
-      MidiTrackInfo* trackInfo;
 
       Q_OBJECT
       void initShortcuts();
@@ -174,6 +177,7 @@ class PianoRoll : public MidiEditor {
       void configChanged();
       void newCanvasWidth(int);
       void toggleTrackInfo();
+      void updateTrackInfo();
 
    signals:
       void deleted(unsigned long);
