@@ -93,6 +93,7 @@ target_link_libraries ( midiedit
       al
       icons
       widgets
+      ctrl
       )
 
 ##

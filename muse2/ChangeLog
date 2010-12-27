@@ -1,3 +1,13 @@
+27.12.2010:
+        - Added a first try at project creation dialog, we'll see how much territory
+          it covers, intentionally it's only used upon creation of a project, later 'Save As'
+          operations use the old dialog so multiple .med files can be saved for the
+          same project (rj)
+        - deferred creating *.wav files until the global record button is clicked,
+          if a project does not exist at that time, pop up the new project dialog (rj)
+        - changed 'new' project from listing PROJECT_VIEW to GLOBAL_VIEW where the
+          templates reside, an enhancement would be to list USER_VIEW if it's template
+          dir exists (rj)
 26.12.2010:
         - Initial addition of midi track info to pianoroll. WORK IN PROGRESS. (Tim)
           TODO: Just to get off the hard drive. A few things still need to be linked up!

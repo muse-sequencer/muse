@@ -127,6 +127,8 @@ struct GlobalConfigValues {
       bool vstInPlace; // Enable VST in-place processing
       int dummyAudioSampleRate; 
       int dummyAudioBufSize;
+      QString projectBaseFolder;
+      bool projectStoreInFolder;
       };
 
 extern GlobalConfigValues config;

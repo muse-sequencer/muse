@@ -848,6 +848,10 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.startMode = xml.parseInt();
                         else if (tag == "startSong")
                               config.startSong = xml.parse1();
+                        else if (tag == "projectBaseFolder")
+                              config.projectBaseFolder = xml.parse1();
+                        else if (tag == "projectStoreInFolder")
+                              config.projectStoreInFolder = xml.parseInt();
                         else
                               xml.unknown("configuration");
                         break;
@@ -1096,7 +1100,8 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.intTag(level, "importMidiSplitParts", config.importMidiSplitParts);
       xml.intTag(level, "startMode", config.startMode);
       xml.strTag(level, "startSong", config.startSong);
-
+      xml.strTag(level, "projectBaseFolder", config.projectBaseFolder);
+      xml.intTag(level, "projectStoreInFolder", config.projectStoreInFolder);
       xml.intTag(level, "midiInputDevice", midiInputPorts);
       xml.intTag(level, "midiInputChannel", midiInputChannel);
       xml.intTag(level, "midiRecordType", midiRecordType);

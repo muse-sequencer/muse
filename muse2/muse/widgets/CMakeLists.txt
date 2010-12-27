@@ -55,6 +55,7 @@ QT4_WRAP_CPP (widget_mocs
       popupmenu.h  
       # posedit.h  
       poslabel.h  
+      projectcreateimpl.h
       scrollscale.h  
       shortcutcapturedialog.h  
       shortcutconfig.h  
@@ -98,14 +99,15 @@ file (GLOB widgets_ui_files
       midisync.ui  
       mittransposebase.ui  
       mixdowndialogbase.ui  
-      mtrackinfobase.ui  
+      mtrackinfobase.ui
+      projectcreate.ui
       shortcutcapturedialogbase.ui  
       shortcutconfigbase.ui  
       songinfo.ui  
       synthconfigbase.ui  
       transformbase.ui  
       transposebase.ui  
-      velocitybase.ui  
+      velocitybase.ui
       )
 QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 
@@ -147,7 +149,8 @@ file (GLOB widgets_source_files
       pitchlabel.cpp 
       popupmenu.cpp 
       # posedit.cpp 
-      poslabel.cpp 
+      poslabel.cpp
+      projectcreateimpl.cpp 
       scldiv.cpp
       scldraw.cpp
       sclif.cpp
