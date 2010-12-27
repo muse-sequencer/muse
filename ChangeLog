@@ -15,6 +15,7 @@
         - Remove rem'd preview code in filedialog.cpp. I reimplemented it in appearance.cpp. (Orcan)
         - Remove the environment variables info from the usage output. (Orcan)
         - midiedit links to ctrl. (Orcan)
+        - Merged changes from ccherrett into pianroll (h-splittter). (Tim)
 26.12.2010:
         - Initial addition of midi track info to pianoroll. WORK IN PROGRESS. (Tim)
           TODO: Just to get off the hard drive. A few things still need to be linked up!
