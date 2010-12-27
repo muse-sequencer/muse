@@ -71,7 +71,7 @@
        <item>
         <widget class="QCheckBox" name="createFolderCheckbox">
          <property name="text">
-          <string>Create project folder (always use for audio projects)</string>
+          <string>Create project folder (recommended for audio projects)</string>
          </property>
         </widget>
        </item>
