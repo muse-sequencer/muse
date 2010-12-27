@@ -414,6 +414,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       //connect(time, SIGNAL(addMarker(int)), SIGNAL(addMarker(int)));
       
       configChanged();  // set configuration values
+      if(canvas->part())
+        midiTrackInfo->setTrack(canvas->part()->track());   // Tim.
       showTrackInfo(showTrackinfoFlag);
       }
 
