@@ -16,6 +16,7 @@
 #include "icons.h"
 #include "filedialog.h"
 #include "../globals.h"
+#include "gconfig.h"
 
 MFileDialog::ViewType MFileDialog::lastViewUsed = GLOBAL_VIEW;
 QString MFileDialog::lastUserDir = "";
@@ -130,7 +131,8 @@ void MFileDialog::projectToggled(bool flag)
             if (museProject == museProjectInitPath ) {
                   // if project path is uninitialized, meaning it is still set to museProjectInitPath.
                   // then project path is set to current pwd instead.
-                  s = QString(getcwd(0,0)) + QString("/");
+                  //s = QString(getcwd(0,0)) + QString("/");
+                  s = config.projectBaseFolder;
                   }
             else
                   s = museProject + QString("/"); // + baseDir;
