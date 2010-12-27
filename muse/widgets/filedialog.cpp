@@ -308,15 +308,19 @@ QString getFilterExtension(const QString &filter)
 //---------------------------------------------------------
 //   getOpenFileName
 //---------------------------------------------------------
-
 QString getOpenFileName(const QString &startWith,
-   //const char** filters, QWidget* parent, const QString& name, bool* all)
-   const QStringList& filters, QWidget* parent, const QString& name, bool* all)
+                        const QStringList& filters, QWidget* parent, const QString& name, bool* all, MFileDialog::ViewType viewType)
       {
       QString initialSelection;  // FIXME Tim.
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, false);
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
+      if (viewType == MFileDialog::GLOBAL_VIEW)
+        dlg->globalToggled(true);
+      else if (viewType == MFileDialog::PROJECT_VIEW)
+        dlg->projectToggled(true);
+      else if (viewType == MFileDialog::USER_VIEW)
+        dlg->userToggled(true);
       if (all) {
             dlg->buttons.loadAllGroup->setVisible(true);
             //dlg->buttons.globalButton->setVisible(false);

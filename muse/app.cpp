@@ -48,6 +48,7 @@
 #include "transport.h"
 #include "transpose.h"
 #include "waveedit.h"
+#include "widgets/projectcreateimpl.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -1678,6 +1679,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                   return;
                   }
             project.setFile("untitled");
+            museProject = museProjectInitPath;
             }
       else {
             printf("Setting project path to %s\n", fi.absolutePath().toLatin1().constData());
@@ -1832,7 +1834,7 @@ void MusE::setUntitledProject()
       {
       setConfigDefaults();
       QString name("untitled");
-      museProject = QFileInfo(name).absolutePath();
+      museProject = "./"; //QFileInfo(name).absolutePath();
       project.setFile(name);
       setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
       }
@@ -1913,7 +1915,7 @@ void MusE::loadProject()
 void MusE::loadTemplate()
       {
       QString fn = getOpenFileName(QString("templates"), med_file_pattern, this,
-         tr("MusE: load template"), 0);
+                                   tr("MusE: load template"), 0, MFileDialog::GLOBAL_VIEW);
       if (!fn.isEmpty()) {
             // museProject = QFileInfo(fn).absolutePath();
             loadProjectFile(fn, true, true);
@@ -3046,10 +3048,25 @@ PopupView* MusE::prepareRoutingPopupView(Track* track, bool dst)
 
 bool MusE::saveAs()
       {
-//      QString name = getSaveFileName(museProject, med_file_pattern, this,
-//      QString name = getSaveFileName(QString(""), med_file_pattern, this,
-      QString name = getSaveFileName(QString(""), med_file_save_pattern, this,
-         tr("MusE: Save As"));
+      QString name;
+      if (museProject == museProjectInitPath ) {
+        ProjectCreateImpl pci(muse);
+        if (pci.exec() == QDialog::Rejected) {
+          return false;
+        }
+
+        name = pci.getProjectPath();
+        song->setSongInfo(pci.getSongInfo());
+        museProject = QFileInfo(name).absolutePath();
+        QDir dirmanipulator;
+        if (!dirmanipulator.mkpath(museProject)) {
+          QMessageBox::warning(this,"Path error","Can't create project path", QMessageBox::Ok);
+          return false;
+        }
+      }
+      else {
+        name = getSaveFileName(QString(""), med_file_save_pattern, this, tr("MusE: Save As"));
+      }
       bool ok = false;
       if (!name.isEmpty()) {
             QString tempOldProj = museProject;
@@ -4843,4 +4860,3 @@ void MusE::execUserScript(int id)
 {
       song->executeScript(song->getScriptPath(id, false).toLatin1().constData(), song->getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
-

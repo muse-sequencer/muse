@@ -33,19 +33,20 @@ class FileDialogButtonsWidget : public QWidget, public Ui::FileDialogButtons
 class MFileDialog : public QFileDialog {
       Q_OBJECT
 
-      enum ViewType { GLOBAL_VIEW, PROJECT_VIEW, USER_VIEW }; //!< The three different viewtypes
-      static ViewType lastViewUsed;
       static QString  lastUserDir, lastGlobalDir;
       bool showButtons;
       QString baseDir;
 
    private slots:
+      void directoryChanged(const QString& directory);
+   public slots:
       void globalToggled(bool);
       void userToggled(bool);
       void projectToggled(bool);
-      void directoryChanged(const QString& directory);
 
    public:
+      enum ViewType { GLOBAL_VIEW, PROJECT_VIEW, USER_VIEW }; //!< The three different viewtypes
+      static ViewType lastViewUsed;
       FileDialogButtonsWidget buttons;
       MFileDialog(const QString& dir, const QString& filter = QString::null,
          QWidget* parent = 0, bool writeFlag = false);
@@ -78,7 +79,7 @@ QString getSaveFileName(const QString& startWidth, const QStringList& filters,
          QWidget* parent, const QString& name);
 //QString getOpenFileName(const QString& startWidth, const char** filter,
 QString getOpenFileName(const QString& startWidth, const QStringList& filters,
-         QWidget* parent, const QString& name, bool* openAll);
+                        QWidget* parent, const QString& name, bool* openAll, MFileDialog::ViewType viewType = MFileDialog::PROJECT_VIEW);
 //QString getImageFileName(const QString& startWith, const char** filters, 
 QString getImageFileName(const QString& startWith, const QStringList& filters, 
          QWidget* parent, const QString& name);

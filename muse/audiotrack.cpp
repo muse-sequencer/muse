@@ -1587,13 +1587,13 @@ bool AudioTrack::setRecordFlag1(bool f)
                      SF_FORMAT_WAV | SF_FORMAT_FLOAT,
                      _channels, sampleRate);
                   }
-            if(_recFile->openWrite())
-                  {
-                  QMessageBox::critical(NULL, "MusE write error.", "Error creating target wave file\n" 
-                                                                  "Check your configuration.");
-                  return false;
-
-                  }
+//            if(_recFile->openWrite())
+//                  {
+//                  QMessageBox::critical(NULL, "MusE write error.", "Error creating target wave file\n"
+//                                                                  "Check your configuration.");
+//                  return false;
+//
+//                  }
             if (debugMsg)
                   printf("AudioNode::setRecordFlag1: create internal file %s\n",
                      _recFile->path().toLatin1().constData());
@@ -1619,6 +1619,16 @@ bool AudioTrack::setRecordFlag1(bool f)
             }
       return true;
       }
+bool AudioTrack::prepareRecording()
+{
+      if(_recFile->openWrite())
+            {
+            QMessageBox::critical(NULL, "MusE write error.", "Error creating target wave file\n"
+                                                            "Check your configuration.");
+            return false;
+
+            }
+}
 double AudioTrack::auxSend(int idx) const
       {
       if (unsigned(idx) >= _auxSend.size()) {

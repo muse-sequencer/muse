@@ -318,7 +318,8 @@ class AudioTrack : public Track {
 
       virtual bool setRecordFlag1(bool f);
       virtual void setRecordFlag2(bool f);
-      
+      bool prepareRecording();
+
       bool processed() { return _processed; }
       //void setProcessed(bool v) { _processed = v; }
 
