@@ -326,9 +326,8 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       //---------------------------------------------------
 
       splitter = new Splitter(Qt::Vertical, mainw, "splitter");
-      splitter->setHandleWidth(2);  // Disabled by Tim.
+      splitter->setHandleWidth(2);  
       
-      // ccherrett
       hsplitter = new Splitter(Qt::Horizontal, mainw, "hsplitter");
       hsplitter->setChildrenCollapsible(true);
       hsplitter->setHandleWidth(2);
@@ -353,32 +352,25 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       
       QSizeGrip* corner = new QSizeGrip(mainw);
 
-      // ccherrett
       midiTrackInfo       = new MidiTrackInfo(mainw);        
-      //midiTrackInfo       = new MidiTrackInfo(this, canvas->part() ? canvas->part()->track() : 0);  // Tim.
-      midiTrackInfo->setMinimumWidth(105);   
-      midiTrackInfo->setMaximumWidth(150);   
+      int mtiw = midiTrackInfo->width(); // Save this.
+      //midiTrackInfo->setMinimumWidth(105);   
+      //midiTrackInfo->setMaximumWidth(150);   
 
-      // Tim.
-      //midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding));
       infoScroll          = new QScrollArea;
       infoScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);  
-      //infoScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn); /// No choice right now. Got 'Issues' with AsNeeded.
       infoScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded); 
       infoScroll->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding));
-      //infoScroll->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       infoScroll->setWidget(midiTrackInfo);
       infoScroll->setWidgetResizable(true);
-      ///infoScroll->setVisible(false);
-      ///infoScroll->setEnabled(false);
+      //infoScroll->setVisible(false);
+      //infoScroll->setEnabled(false);
 
-      // ccherrett
       //hsplitter->addWidget(midiTrackInfo);
       hsplitter->addWidget(infoScroll);  // Tim.
       hsplitter->addWidget(splitter);
           
-      // ccherrett
       mainGrid->setRowStretch(0, 100);
       mainGrid->setColumnStretch(1, 100);
       mainGrid->addWidget(hsplitter, 0, 1, 1, 3);
@@ -404,7 +396,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       */
       
       //mainGrid->addRowSpacing(1, hscroll->sizeHint().height());
-///      mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); // Orig + Tim.
+      //mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); // Orig + Tim.
       
       QWidget* split1     = new QWidget(splitter);
       split1->setObjectName("split1");
@@ -418,9 +410,6 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
       vscroll             = new ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
       
-      //if(canvas->part())
-      //  midiTrackInfo->setTrack(canvas->part()->track());   // Tim.
-      
       int offset = -(config.division/4);
       canvas->setOrigin(offset, 0);
       canvas->setCanvasTools(pianorollTools);
@@ -429,10 +418,9 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       time->setOrigin(offset, 0);
 
       gridS1->setRowStretch(2, 100);
-      gridS1->setColumnStretch(1, 100);     // Orig + ccharrett.
-      ///gridS1->setColumnStretch(2, 100);  // Tim.
+      gridS1->setColumnStretch(1, 100);     
+      //gridS1->setColumnStretch(2, 100);  // Tim.
 
-      // Orig + ccharrett.
       gridS1->addWidget(time,                   0, 1, 1, 2);
       gridS1->addWidget(hLine(split1),          1, 0, 1, 3);
       gridS1->addWidget(piano,                  2,    0);
@@ -466,11 +454,17 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       
       piano->setFixedWidth(pianoWidth);
 
+      // Tim.
+      QList<int> mops;
+      mops.append(mtiw + 30);  // 30 for possible scrollbar
+      mops.append(width() - mtiw - 30);
+      hsplitter->setSizes(mops);
+      
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
 
       //connect(midiTrackInfo, SIGNAL(outputPortChanged(int)), list, SLOT(redraw()));
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
-      ///connect(trackInfoButton, SIGNAL(clicked()), SLOT(toggleTrackInfo()));  Tim.
+      //connect(trackInfoButton, SIGNAL(clicked()), SLOT(toggleTrackInfo()));  Tim.
       connect(info, SIGNAL(valueChanged(NoteInfo::ValType, int)), SLOT(noteinfoChanged(NoteInfo::ValType, int)));
       connect(vscroll, SIGNAL(scrollChanged(int)), piano,  SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));

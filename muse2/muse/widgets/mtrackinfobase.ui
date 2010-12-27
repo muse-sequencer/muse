@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>100</width>
-    <height>400</height>
+    <width>103</width>
+    <height>468</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Ignored" vsizetype="MinimumExpanding">
+   <sizepolicy hsizetype="Maximum" vsizetype="MinimumExpanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -38,11 +38,14 @@
    <string/>
   </property>
   <layout class="QGridLayout">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetDefaultConstraint</enum>
+   </property>
    <property name="margin">
     <number>0</number>
    </property>
    <property name="spacing">
-    <number>0</number>
+    <number>-1</number>
    </property>
    <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="trackNameLabel">
@@ -73,7 +76,7 @@
    <item row="2" column="0">
     <widget class="SpinBox" name="iOutputChannel" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -95,7 +98,7 @@
    <item row="2" column="1">
     <widget class="QLabel" name="TextLabel2">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -115,11 +118,11 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <layout class="QHBoxLayout">
+    <layout class="QHBoxLayout" stretch="0,0">
      <item>
       <widget class="QToolButton" name="iRButton">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -128,14 +131,10 @@
         <string>input routing</string>
        </property>
        <property name="text">
-        <string>Inputs</string>
+        <string>In</string>
        </property>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item row="3" column="1">
-    <layout class="QHBoxLayout">
      <item>
       <widget class="QLabel" name="iChanDetectLabel">
        <property name="sizePolicy">
@@ -163,10 +162,14 @@
        </property>
       </widget>
      </item>
+    </layout>
+   </item>
+   <item row="3" column="1">
+    <layout class="QHBoxLayout">
      <item>
       <widget class="QToolButton" name="recEchoButton">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -188,11 +191,11 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Expanding</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>4</width>
+         <width>2</width>
          <height>2</height>
         </size>
        </property>
@@ -203,7 +206,7 @@
    <item row="5" column="0">
     <widget class="SpinBox" name="iTransp" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -225,7 +228,7 @@
    <item row="5" column="1">
     <widget class="QLabel" name="TextLabel9">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -244,7 +247,7 @@
    <item row="6" column="0">
     <widget class="SpinBox" name="iVerz" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -263,7 +266,7 @@
    <item row="6" column="1">
     <widget class="QLabel" name="TextLabel10">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -304,7 +307,7 @@
    <item row="7" column="1">
     <widget class="QLabel" name="TextLabel11">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -323,7 +326,7 @@
    <item row="8" column="0">
     <widget class="SpinBox" name="iAnschl" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -342,7 +345,7 @@
    <item row="8" column="1">
     <widget class="QLabel" name="TextLabel12">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -386,7 +389,7 @@
    <item row="9" column="1">
     <widget class="QLabel" name="TextLabel13">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -452,13 +455,13 @@
    <item row="12" column="0">
     <widget class="QLabel" name="textLabel1">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Record:</string>
+      <string>Rec:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -476,11 +479,11 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Minimum</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>4</width>
+         <width>2</width>
          <height>2</height>
         </size>
        </property>
@@ -508,11 +511,11 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Expanding</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>4</width>
+         <width>2</width>
          <height>2</height>
         </size>
        </property>
@@ -523,7 +526,7 @@
    <item row="13" column="0">
     <widget class="SpinBox" name="iHBank" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -548,7 +551,7 @@
    <item row="13" column="1">
     <widget class="QLabel" name="TextLabel4">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -573,7 +576,7 @@
    <item row="14" column="0">
     <widget class="SpinBox" name="iLBank" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -598,7 +601,7 @@
    <item row="14" column="1">
     <widget class="QLabel" name="TextLabel5">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -623,7 +626,7 @@
    <item row="15" column="0">
     <widget class="SpinBox" name="iProgram" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -659,11 +662,11 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Minimum</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>4</width>
+         <width>2</width>
          <height>2</height>
         </size>
        </property>
@@ -681,7 +684,7 @@
         <string>Add bank + prog settings to song</string>
        </property>
        <property name="text">
-        <string>Prog.</string>
+        <string>Prog</string>
        </property>
       </widget>
      </item>
@@ -691,11 +694,11 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Expanding</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>4</width>
+         <width>2</width>
          <height>2</height>
         </size>
        </property>
@@ -706,7 +709,7 @@
    <item row="16" column="0">
     <widget class="SpinBox" name="iLautst" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -742,11 +745,11 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Minimum</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>4</width>
+         <width>2</width>
          <height>2</height>
         </size>
        </property>
@@ -764,7 +767,7 @@
         <string>Add vol setting to song</string>
        </property>
        <property name="text">
-        <string>Vol.</string>
+        <string>Vol</string>
        </property>
       </widget>
      </item>
@@ -774,11 +777,11 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Expanding</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>4</width>
+         <width>2</width>
          <height>2</height>
         </size>
        </property>
@@ -789,7 +792,7 @@
    <item row="17" column="0">
     <widget class="SpinBox" name="iPan" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -828,11 +831,11 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Minimum</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>4</width>
+         <width>2</width>
          <height>2</height>
         </size>
        </property>
@@ -841,7 +844,7 @@
      <item>
       <widget class="QToolButton" name="panRecButton">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -860,11 +863,11 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Expanding</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>4</width>
+         <width>2</width>
          <height>2</height>
         </size>
        </property>

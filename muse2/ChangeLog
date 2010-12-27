@@ -17,6 +17,7 @@
         - midiedit links to ctrl. (Orcan)
         - Merged changes from ccherrett into pianroll (h-splittter). (Tim)
         - changed open dialog to view stored project directory for PROJECT_VIEW (rj)
+        - Fixed midi track info size issues. (Tim)
 26.12.2010:
         - Initial addition of midi track info to pianoroll. WORK IN PROGRESS. (Tim)
           TODO: Just to get off the hard drive. A few things still need to be linked up!
