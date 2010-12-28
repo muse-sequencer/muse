@@ -172,12 +172,12 @@ void MidiTrackInfo::heartBeat()
       MidiPort* mp = &midiPorts[outPort];
       
       // Set record echo.
-      if(recEchoButton->isChecked() != track->recEcho())
-      {
-        recEchoButton->blockSignals(true);
-        recEchoButton->setChecked(track->recEcho());
-        recEchoButton->blockSignals(false);
-      }
+      //if(recEchoButton->isChecked() != track->recEcho())
+      //{
+      //  recEchoButton->blockSignals(true);
+      //  recEchoButton->setChecked(track->recEcho());
+      //  recEchoButton->blockSignals(false);
+      //}
       
       // Check for detection of midi general activity on chosen channels...
       int mpt = 0;
@@ -524,7 +524,7 @@ void MidiTrackInfo::iOutputChannelChanged(int channel)
             
             // may result in adding/removing mixer strip:
             //song->update(-1);
-            song->update(SC_MIDI_CHANNEL);
+            song->update(SC_MIDI_TRACK_PROP);
             }
       }
 
@@ -546,8 +546,7 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       track->setOutPortAndUpdate(index);
       audio->msgIdle(false);
       
-      ///list->redraw();
-      emit outputPortChanged(index);  
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -915,6 +914,7 @@ void MidiTrackInfo::iTranspChanged(int val)
         return;
       MidiTrack* track = (MidiTrack*)selected;
       track->transposition = val;
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -927,6 +927,7 @@ void MidiTrackInfo::iAnschlChanged(int val)
         return;
       MidiTrack* track = (MidiTrack*)selected;
       track->velocity = val;
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -939,6 +940,7 @@ void MidiTrackInfo::iVerzChanged(int val)
         return;
       MidiTrack* track = (MidiTrack*)selected;
       track->delay = val;
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -951,6 +953,7 @@ void MidiTrackInfo::iLenChanged(int val)
         return;
       MidiTrack* track = (MidiTrack*)selected;
       track->len = val;
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -963,6 +966,7 @@ void MidiTrackInfo::iKomprChanged(int val)
         return;
       MidiTrack* track = (MidiTrack*)selected;
       track->compression = val;
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -1041,8 +1045,7 @@ void MidiTrackInfo::recEchoToggled(bool v)
     return;
   MidiTrack* track = (MidiTrack*)selected;
   track->setRecEcho(v);
-  
-  //song->update(SC_???);
+  song->update(SC_MIDI_TRACK_PROP);  
 }
 
 //---------------------------------------------------------
@@ -1229,6 +1232,8 @@ void MidiTrackInfo::updateTrackInfo(int flags)
       // Is it simply a midi controller value adjustment? Forget it.
       if(flags == SC_MIDI_CONTROLLER)
         return;
+      if(flags == SC_SELECTION)
+        return;
         
       if(!selected)
         return;
@@ -1246,13 +1251,31 @@ void MidiTrackInfo::updateTrackInfo(int flags)
       setLabelText();
       setLabelFont();
         
-      //{
+      if(flags & (SC_MIDI_TRACK_PROP))  
+      {
+        iTransp->blockSignals(true);
+        iAnschl->blockSignals(true);
+        iVerz->blockSignals(true);
+        iLen->blockSignals(true);
+        iKompr->blockSignals(true);
+        iTransp->setValue(track->transposition);
+        iAnschl->setValue(track->velocity);
+        iVerz->setValue(track->delay);
+        iLen->setValue(track->len);
+        iKompr->setValue(track->compression);
+        iTransp->blockSignals(false);
+        iAnschl->blockSignals(false);
+        iVerz->blockSignals(false);
+        iLen->blockSignals(false);
+        iKompr->blockSignals(false);
+        
         int outChannel = track->outChannel();
         ///int inChannel  = track->inChannelMask();
         int outPort    = track->outPort();
         //int inPort     = track->inPortMask();
         ///unsigned int inPort     = track->inPortMask();
   
+        iOutput->blockSignals(true);
         //iInput->clear();
         iOutput->clear();
   
@@ -1263,6 +1286,8 @@ void MidiTrackInfo::updateTrackInfo(int flags)
               if (i == outPort)
                     iOutput->setCurrentIndex(i);
               }
+        iOutput->blockSignals(false);
+        
         //iInput->setText(bitmap2String(inPort));
         ///iInput->setText(u32bitmap2String(inPort));
         
@@ -1274,7 +1299,9 @@ void MidiTrackInfo::updateTrackInfo(int flags)
         //      iName->home(false);
         //      }
         
+        iOutputChannel->blockSignals(true);
         iOutputChannel->setValue(outChannel+1);
+        iOutputChannel->blockSignals(false);
         ///iInputChannel->setText(bitmap2String(inChannel));
         
         // Set record echo.
@@ -1284,7 +1311,10 @@ void MidiTrackInfo::updateTrackInfo(int flags)
           recEchoButton->setChecked(track->recEcho());
           recEchoButton->blockSignals(false);
         }
+      }
         
+        int outChannel = track->outChannel();
+        int outPort    = track->outPort();
         MidiPort* mp = &midiPorts[outPort];
         int nprogram = mp->hwCtrlState(outChannel, CTRL_PROGRAM);
         if(nprogram == CTRL_VAL_UNKNOWN)
@@ -1387,20 +1417,6 @@ void MidiTrackInfo::updateTrackInfo(int flags)
         iPan->blockSignals(false);
       //}
       
-      
-      // Does it include a midi controller value adjustment? Then handle it...
-      //if(flags & SC_MIDI_CONTROLLER)
-      //  seek();
-
-      // Is it simply a midi controller value adjustment? Forget it.
-      //if(flags != SC_MIDI_CONTROLLER)
-      //{
-        iTransp->setValue(track->transposition);
-        iAnschl->setValue(track->velocity);
-        iVerz->setValue(track->delay);
-        iLen->setValue(track->len);
-        iKompr->setValue(track->compression);
-      //}
 }
 
 //---------------------------------------------------------

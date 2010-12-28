@@ -966,7 +966,6 @@ void Arranger::genTrackInfo(QWidget* parent)
       trackInfo->addWidget(0, 2);
 
 ///      genMidiTrackInfo();
-      connect(midiTrackInfo, SIGNAL(outputPortChanged(int)), list, SLOT(redraw()));
       }
 
 //---------------------------------------------------------

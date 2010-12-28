@@ -52,9 +52,6 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
    protected slots:
       virtual void heartBeat();
 
-   signals:
-      void outputPortChanged(int);  
-   
    public slots:
       void setTrack(Track*); 
       void configChanged();
