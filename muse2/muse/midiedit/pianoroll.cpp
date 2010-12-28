@@ -294,7 +294,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       midiin->setToolTip(tr("Midi Input"));
       midiin->setIcon(*midiinIcon);
       midiin->setCheckable(true);
-      tools->addWidget(midiin);
+      //tools->addWidget(midiin);
 
       speaker  = new QToolButton();
       speaker->setToolTip(tr("Play Events"));
@@ -443,7 +443,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(piano, SIGNAL(keyPressed(int, int, bool)), canvas, SLOT(pianoPressed(int, int, bool)));
       connect(piano, SIGNAL(keyReleased(int, bool)), canvas, SLOT(pianoReleased(int, bool)));
       connect(srec, SIGNAL(toggled(bool)), SLOT(setSteprec(bool)));
-      connect(midiin, SIGNAL(toggled(bool)), canvas, SLOT(setMidiin(bool)));
+      //connect(midiin, SIGNAL(toggled(bool)), canvas, SLOT(setMidiin(bool)));
       connect(speaker, SIGNAL(toggled(bool)), SLOT(setSpeaker(bool)));
       connect(canvas, SIGNAL(followEvent(int)), SLOT(follow(int)));
 
@@ -1159,11 +1159,11 @@ void PianoRoll::configQuant()
 //---------------------------------------------------------
 
 void PianoRoll::setSteprec(bool flag)
-      {
+{
       canvas->setSteprec(flag);
-      if (flag == false)
-            midiin->setChecked(flag);
-      }
+      //if (flag == false)
+      //      midiin->setChecked(flag);
+}
 
 //---------------------------------------------------------
 //   eventColorModeChanged
