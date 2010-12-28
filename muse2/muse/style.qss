@@ -280,6 +280,9 @@ QSpinBox {
      padding-right: 15px; /* make room for the arrows */
      border-image: url(:/images/frame.png) 4;
      border-width: 3;
+	 background-color: #081401;
+	 /*color: #99e203;*/
+	 color: #76ac01;
  }
 
  QSpinBox::up-button {
