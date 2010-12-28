@@ -466,7 +466,6 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(time,     SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(pcbar,    SIGNAL(selectInstrument()), midiTrackInfo, SLOT(instrPopup()));
       connect(pcbar,    SIGNAL(addProgramChange()), midiTrackInfo, SLOT(progRecClicked()));
-      //connect(midiTrackInfo,       SIGNAL(programChangeAdded(Track*)),  SLOT(redraw()));
       connect(toolbar,  SIGNAL(quantChanged(int)), SLOT(setQuant(int)));
       connect(toolbar,  SIGNAL(rasterChanged(int)),SLOT(setRaster(int)));
       connect(toolbar,  SIGNAL(toChanged(int)),    SLOT(setTo(int)));
@@ -474,6 +473,10 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       setFocusPolicy(Qt::StrongFocus);
       setEventColorMode(colorMode);
+	  canvas->setMidiin(true);
+	  midiin->setChecked(true);
+      canvas->playEvents(true);
+	  speaker->setChecked(true);
 
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
