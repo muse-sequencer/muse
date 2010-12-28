@@ -1400,6 +1400,7 @@ void MidiTrackInfo::progRecClicked()
       a.setB(program);
 
       song->recordEvent(track, a);
+	  //emit programChangeAdded(track);
       }
 
 //---------------------------------------------------------

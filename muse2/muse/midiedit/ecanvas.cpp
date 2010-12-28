@@ -40,7 +40,7 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       _playEvents = false;
       curVelo     = 70;
 
-      setBg(Qt::white);
+      setBg(QColor(226,229,229));
       setAcceptDrops(true);
       setFocusPolicy(Qt::StrongFocus);
       setMouseTracking(true);

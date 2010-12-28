@@ -160,6 +160,7 @@ HEADERS = \
 ./muse/widgets/tempolabel.h \
 ./muse/widgets/noteinfo.h \
 ./muse/widgets/mtscale.h \
+./muse/widgets/pcscale.h \
 ./muse/widgets/transposebase.h \
 ./muse/widgets/dentry.h \
 ./muse/event.h \
@@ -404,7 +405,9 @@ SOURCES =  \
 ./muse/widgets/moc_combobox.cpp \
 ./muse/widgets/moc_spinbox.cpp \
 ./muse/widgets/moc_mtscale.cpp \
+./muse/widgets/moc_pcscale.cpp \
 ./muse/widgets/mtscale.cpp \
+./muse/widgets/pcscale.cpp \
 ./muse/widgets/ttoolbutton.cpp \
 ./muse/widgets/spinbox.cpp \
 ./muse/widgets/drange.cpp \

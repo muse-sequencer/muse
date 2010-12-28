@@ -289,15 +289,21 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       //---------------------------------------------------
 
       p.setPen(Qt::blue);
-      if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
+      if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) 
+	  {
             p.drawLine(pos[1], y, pos[1], y2);
-            }
+      }
       if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2))
             p.drawLine(pos[2], y, pos[2], y2);
-      p.setPen(Qt::red);
-      if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
+	  
+	  //QPen playbackPen(QColor(0,58,72), 9, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+	  //p.setPen(playbackPen);
+	  p.setPen(Qt::red);
+
+      if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) 
+	  {
             p.drawLine(pos[0], y, pos[0], y2);
-            }
+      }
       
       //---------------------------------------------------
       //    draw lasso

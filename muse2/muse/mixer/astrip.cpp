@@ -1558,7 +1558,8 @@ void AudioStrip::iRoutePressed()
       
       PopupMenu* pup = muse->getRoutingPopupMenu();
       pup->disconnect();
-      
+
+
       AudioTrack* t = (AudioTrack*)track;
       RouteList* irl = t->inRoutes();
 
@@ -1590,6 +1591,16 @@ void AudioStrip::iRoutePressed()
               return;
             }
             std::list<QString> ol = audioDevice->outputPorts();
+			
+            if(ol.size() >= 75 && ol.size() <= 125)
+            {
+                pup->setStyleSheet("font-size:8pt");
+            }
+            else if(ol.size() >= 126)
+            {
+                pup->setStyleSheet("font-size:6pt; font-family:'fixed'; ");
+            }
+
             for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) 
             {
               id = gid * 16 + i;

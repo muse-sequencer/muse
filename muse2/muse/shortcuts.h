@@ -242,6 +242,9 @@ enum {
       SHRT_TOGGLE_PUNCT2, // ,
 
       SHRT_EVENT_COLOR, //e
+	  
+	  SHRT_ADD_PROGRAM, //Add program change back slash
+	  SHRT_SEL_INSTRUMENT,
 
       // Shortcuts for tools
       // global

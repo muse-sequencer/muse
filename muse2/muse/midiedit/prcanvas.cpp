@@ -137,7 +137,7 @@ int PianoCanvas::y2pitch(int y) const
 
 void PianoCanvas::drawItem(QPainter& p, const CItem* item,
    const QRect& rect)
-      {
+{
       QRect r = item->bbox();
       if(!virt())
         r.moveCenter(map(item->pos()));
@@ -145,11 +145,13 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       if(!r.isValid())
         return;
       p.setPen(Qt::black);
-      struct Triple {
-            int r, g, b;
-            };
+      struct Triple 
+	  {
+      		int r, g, b;
+	  };
 
-      static Triple myColors /*Qt::color1*/[12] = {  // ddskrjp
+      static Triple myColors /*Qt::color1*/[12] = 
+	  {  // ddskrjp
             { 0xff, 0x3d, 0x39 },
             { 0x39, 0xff, 0x39 },
             { 0x39, 0x3d, 0xff },
@@ -162,52 +164,134 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
             { 0xff, 0x7e, 0xbf },
             { 0x7a, 0xbf, 0xff },
             { 0xff, 0xbf, 0x7a }
-            };
+      };
+	  
+	  QPen mainPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+	  p.setPen(mainPen);
+	  
+	  QColor colMoving;
+      colMoving.setRgb(220, 220, 120);
+
+	  QPen movingPen(Qt::darkGray, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+                  
+	  QColor colSelected;
+      colSelected.setRgb(243, 206, 105);
 
       NEvent* nevent   = (NEvent*) item;
       Event event = nevent->event();
-      if (nevent->part() != curPart){
+      if (nevent->part() != curPart)
+	  {
             if(item->isMoving()) 
-              p.setBrush(Qt::gray);
-            else if(item->isSelected()) 
-              p.setBrush(Qt::black);
-            else  
+			{
+	  		  p.setPen(movingPen);
+              p.setBrush(colMoving);
+			}
+            else if(item->isSelected())
+			{
+	  		  p.setPen(mainPen);
+              p.setBrush(colSelected);
+            }
+			else
+			{
+	  		  p.setPen(movingPen);
               p.setBrush(Qt::lightGray);
+			}
       }      
       else {
-            if (item->isMoving()) {
-                    p.setBrush(Qt::gray);
-                }
-            else if (item->isSelected()) {
-                  p.setBrush(Qt::black);
-                  }
-            else {
+            if (item->isMoving())
+			{
+	  			p.setPen(movingPen);
+                p.setBrush(colMoving);
+            	//p.setBrush(Qt::gray);
+            }
+            else if (item->isSelected()) 
+			{
+	  			p.setPen(mainPen);
+                p.setBrush(colSelected);
+            }
+            else 
+			{
                   QColor color;
-                  color.setRgb(0, 0, 255);
-                  switch(colorMode) {
+                  color.setRgb(80, 102, 143);
+                  switch(colorMode) 
+				  {
                         case 0:
                               break;
                         case 1:     // pitch
-                              {
+                        {
                               Triple* c = &myColors/*Qt::color1*/[event.pitch() % 12];
                               color.setRgb(c->r, c->g, c->b);
-                              }
-                              break;
+                        }
+                        break;
                         case 2:     // velocity
-                              {
+                        {
                               int velo = event.velo();
+							  /*
                               if (velo < 64)
                                     color.setRgb(velo*4, 0, 0xff);
                               else
                                     color.setRgb(0xff, 0, (127-velo) * 4);
-                              }
-                              break;
+							  */
+							  /*
+							  if(velo <= 11)
+                              	color.setRgb(75,145,47);
+							  else if(velo <= 22)
+                              	color.setRgb(56,145,79);
+							  else if(velo <= 33)
+                              	color.setRgb(64,139,84);
+							  else if(velo <= 44)
+                              	color.setRgb(60,137,99);
+							  else if(velo <= 55)
+                              	color.setRgb(55,134,113);
+							  else if(velo <= 66)
+                              	color.setRgb(51,132,127);
+							  else if(velo <= 77)
+                              	color.setRgb(48,130,141);
+							  else if(velo <= 88)
+                              	color.setRgb(57,121,144);
+							  else if(velo <= 99)
+                              	color.setRgb(72,108,143);
+							  else if(velo <= 110)
+                              	color.setRgb(86,96,142);
+							  else if(velo <= 121)
+                              	color.setRgb(101,84,141);
+							  else
+                              	color.setRgb(116,72,140);
+							  */
+
+							  if(velo <= 11)
+                              	color.setRgb(147,186,195);
+							  else if(velo <= 22)
+                              	color.setRgb(119,169,181);
+							  else if(velo <= 33)
+                              	color.setRgb(85,157,175);
+							  else if(velo <= 44)
+                              	color.setRgb(58,152,176);
+							  else if(velo <= 55)
+                              	color.setRgb(33,137,163);
+							  else if(velo <= 66)
+                              	color.setRgb(30,136,162);
+							  else if(velo <= 77)
+                              	color.setRgb(13,124,151);
+							  else if(velo <= 88)
+                              	color.setRgb(0,110,138);
+							  else if(velo <= 99)
+                              	color.setRgb(0,99,124);
+							  else if(velo <= 110)
+                              	color.setRgb(0,77,96);
+							  else if(velo <= 121)
+                              	color.setRgb(0,69,86);
+							  else
+                              	color.setRgb(0,58,72);
+							  	
                         }
-                  p.setBrush(color);
+                        break;
                   }
-            }
-      p.drawRect(r);
+                  p.setBrush(color);
+              }
       }
+      p.drawRect(r);
+}
 
 
 //---------------------------------------------------------
@@ -787,7 +871,16 @@ void PianoCanvas::pianoReleased(int pitch, bool)
 //---------------------------------------------------------
 
 void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
-      {
+{
+
+      QColor colBeat;
+      colBeat.setRgb(210, 216, 219);
+      QColor colBar1;
+      colBar1.setRgb(82,85,87);
+      QColor colBar2;
+      colBar2.setRgb(150,160,167);
+
+
       int bar1, bar2, beat;
       unsigned tick;
       AL::sigmap.tickValues(x, &bar1, &beat, &tick);
@@ -796,7 +889,7 @@ void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
       int y2 = y + h;
       for (int bar = bar1; bar < bar2; ++bar) {
             unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
-            p.setPen(Qt::black);
+            p.setPen(colBar1);
             p.drawLine(x, y, x, y2);
             int z, n;
             AL::sigmap.timesig(x, z, n);
@@ -813,8 +906,9 @@ void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
             //      case 192:         // 8tel
             //      case 128:         // 8tel Triolen
             //      case 288:
-            p.setPen(Qt::lightGray);
-            if (raster>=4) {
+            p.setPen(colBeat);
+            if (raster>=4) 
+			{
                         int xx = x + qq;
                         int xxx = AL::sigmap.bar2tick(bar, z, 0);
                         while (xx <= xxx) {
@@ -822,19 +916,20 @@ void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
                                xx += qq;
                                }
                         xx = xxx;
-                        }
+            }
             //            break;
             //      default:
             //            break;
             // }
-            p.setPen(Qt::gray);
-            for (int beat = 1; beat < z; beat++) {
+            p.setPen(colBar2);
+            for (int beat = 1; beat < z; beat++) 
+			{
                         int xx = AL::sigmap.bar2tick(bar, beat, 0);
                         p.drawLine(xx, y, xx, y2);
-                        }
-
             }
+
       }
+}
 
 //---------------------------------------------------------
 //   draw
@@ -853,28 +948,31 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
 
       int yy  = ((y-1) / KH) * KH + KH;
       int key = 75 - (yy / KH);
-      for (; yy < y + h; yy += KH) {
-            switch (key % 7) {
+      for (; yy < y + h; yy += KH) 
+	  {
+            switch (key % 7) 
+			{
                   case 0:
                   case 3:
-                        p.setPen(Qt::black);
+                        p.setPen(QColor(213,220,213));
                         p.drawLine(x, yy, x + w, yy);
                         break;
                   default:
                         //p.setPen(lightGray);
-                        p.fillRect(x, yy-3, w, 6, QBrush(QColor(230,230,230)));
+                        //p.fillRect(x, yy-3, w, 6, QBrush(QColor(230,230,230)));
+                        p.fillRect(x, yy-3, w, 6, QBrush(QColor(209,213,209)));
                         //p.drawLine(x, yy, x + w, yy);
                         break;
-                  }
+             }
             --key;
-            }
+      }
 
       //---------------------------------------------------
       // vertical lines
       //---------------------------------------------------
 
       drawTickRaster(p, x, y, w, h, editor->raster());
-      }
+}
 
 //---------------------------------------------------------
 //   cmd

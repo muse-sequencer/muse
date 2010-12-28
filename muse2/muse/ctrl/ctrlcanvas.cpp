@@ -107,7 +107,7 @@ void CEventList::clearDelete()
 CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
    const char* name, CtrlPanel* pnl) : View(parent, xmag, 1, name)
       {
-      setBg(Qt::white);
+      setBg(QColor(165,174,173));
       editor = e;
       drag   = DRAG_OFF;
       tool   = PointerTool;

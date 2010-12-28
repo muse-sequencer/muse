@@ -45,7 +45,8 @@ MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
       connect(song, SIGNAL(markerChanged(int)), SLOT(redraw()));
 	
       setFixedHeight(28);
-      setBg(QColor(0xe0, 0xe0, 0xe0));
+      //setBg(QColor(53, 51, 56));
+      setBg(QColor(150, 176, 187));
       }
 
 //---------------------------------------------------------
@@ -200,6 +201,7 @@ void MTScale::leaveEvent(QEvent*)
 
 void MTScale::pdraw(QPainter& p, const QRect& r)
       {
+	  QColor colTimeLine = QColor(0,0,0);
       int x = r.x();
       int w = r.width();
 
@@ -214,7 +216,8 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
       //---------------------------------------------------
 
       int y = 12;
-      p.setPen(Qt::black);
+      //p.setPen(QColor(255,255,255));
+      p.setPen(colTimeLine);
       p.setFont(config.fonts[4]);
       p.drawLine(r.x(), y+1, r.x() + r.width(), y+1);
       QRect tr(r);
@@ -251,7 +254,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
               if (m->second.current()) 
               {
                     //p.fillRect(tr, white);
-                    p.fillRect(wr, Qt::white);
+                    p.fillRect(wr, QColor(89,89,102));
               }
               
               int x2;
@@ -283,7 +286,9 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
               if(xp >= -1023)
               {
                 QRect r = QRect(xp+10, 0, x2-xp, 12);
-                p.setPen(Qt::black);
+                //p.setPen(QColor(220,222,223));
+      			//p.setPen(QColor(255,255,255));
+      			p.setPen(colTimeLine);
                 p.drawText(r, Qt::AlignLeft|Qt::AlignVCenter, m->second.name());
               }  
               
@@ -323,7 +328,8 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                         }
                   }
             }
-      p.setPen(Qt::black);
+      //p.setPen(QColor(220,222,223));
+      p.setPen(colTimeLine);
       if (pos[3] != MAXINT) {
             int xp = mapx(pos[3]);
             if (xp >= x && xp < x+w)

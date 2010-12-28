@@ -29,6 +29,7 @@
 
 #include "xml.h"
 #include "mtscale.h"
+#include "pcscale.h"
 #include "prcanvas.h"
 #include "pianoroll.h"
 #include "scrollscale.h"
@@ -46,6 +47,8 @@
 #include "cmd.h"
 #include "quantconfig.h"
 #include "shortcuts.h"
+
+#include "mtrackinfo.h"
 
 int PianoRoll::_quantInit = 96;
 int PianoRoll::_rasterInit = 96;
@@ -323,7 +326,13 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       //---------------------------------------------------
 
       splitter = new Splitter(Qt::Vertical, mainw, "splitter");
-      QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
+	  splitter->setHandleWidth(2);
+      
+	  hsplitter = new Splitter(Qt::Horizontal, mainw, "hsplitter");
+	  hsplitter->setChildrenCollapsible(true);
+	  hsplitter->setHandleWidth(2);
+	        
+	  QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(config.fonts[3]);
       ctrl->setToolTip(tr("Add Controller View"));
@@ -332,25 +341,40 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       QSizeGrip* corner = new QSizeGrip(mainw);
 
-      mainGrid->setRowStretch(0, 100);
+      midiTrackInfo       = new MidiTrackInfo(mainw);
+      midiTrackInfo->setMinimumWidth(105);
+      midiTrackInfo->setMaximumWidth(150);
+      //midiTrackInfo->setFixedWidth(150);
+
+	  hsplitter->addWidget(midiTrackInfo);
+	  hsplitter->addWidget(splitter);
+	  
+	  mainGrid->setRowStretch(0, 100);
       mainGrid->setColumnStretch(1, 100);
-      mainGrid->addWidget(splitter, 0, 0, 1, 3);
-      mainGrid->addWidget(ctrl,    1, 0);
-      mainGrid->addWidget(hscroll, 1, 1);
-      mainGrid->addWidget(corner,  1, 2, Qt::AlignBottom|Qt::AlignRight);
-      
+      mainGrid->addWidget(hsplitter, 0, 1, 1, 3);
+      /*
+	  mainGrid->addWidget(ctrl,    1, 1);
+      mainGrid->addWidget(hscroll, 1, 2);
+      mainGrid->addWidget(corner,  1, 3, Qt::AlignBottom|Qt::AlignRight);
+      */
       //mainGrid->addRowSpacing(1, hscroll->sizeHint().height());
-      mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); 
+      
+	  //mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); 
       
       QWidget* split1     = new QWidget(splitter);
       split1->setObjectName("split1");
       QGridLayout* gridS1 = new QGridLayout(split1);
       gridS1->setContentsMargins(0, 0, 0, 0);
       gridS1->setSpacing(0);  
+	  //Defined and configure your program change bar here.
+	  //This may well be a copy of MTScale extended for our needs
+	  pcbar               = new PCScale(&_raster, split1, this, xscale);
+	  //pcbar->setEditor(this);
       time                = new MTScale(&_raster, split1, xscale);
       Piano* piano        = new Piano(split1, yscale);
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
       vscroll             = new ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
+
 
       int offset = -(config.division/4);
       canvas->setOrigin(offset, 0);
@@ -358,26 +382,42 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
       time->setOrigin(offset, 0);
+      pcbar->setOrigin(offset, 0);
 
       gridS1->setRowStretch(2, 100);
       gridS1->setColumnStretch(1, 100);
 
-      gridS1->addWidget(time,                   0, 1, 1, 2);
-      gridS1->addWidget(hLine(split1),          1, 0, 1, 3);
-      gridS1->addWidget(piano,                  2,    0);
-      gridS1->addWidget(canvas,                 2,    1);
+	  gridS1->addWidget(pcbar, 					0, 1, 1, 2);
+	  gridS1->addWidget(time, 					1, 1, 1, 2);
+	  gridS1->addWidget(hLine(split1), 			2, 0, 1, 3); 
+	  gridS1->addWidget(piano, 					3, 	  0); 
+      gridS1->addWidget(canvas,                 3,    1);
       
-      gridS1->addWidget(vscroll,                2,    2);
+      gridS1->addWidget(vscroll,                3,    2);
 //      gridS1->addWidget(time,                   0,    1);
 //      gridS1->addWidget(hLine(split1),          1,    1);
 //      gridS1->addWidget(piano,                  2,    0);
 //      gridS1->addWidget(canvas,                 2,    1);
 //      gridS1->addMultiCellWidget(vscroll,        1,  2, 2, 2);
 
+      ctrlLane = new Splitter(Qt::Vertical, splitter, "ctrllane");
+      QWidget* split2     = new QWidget(splitter);
+	  split2->setMaximumHeight(hscroll->sizeHint().height());
+	  split2->setMinimumHeight(hscroll->sizeHint().height());
+      QGridLayout* gridS2 = new QGridLayout(split2);
+      gridS2->setContentsMargins(0, 0, 0, 0);
+      gridS2->setSpacing(0);  
+      gridS2->setRowStretch(0, 100);
+      gridS2->setColumnStretch(1, 100);
+	  gridS2->addWidget(ctrl,    0, 0);
+      gridS2->addWidget(hscroll, 0, 1);
+      gridS2->addWidget(corner,  0, 2, Qt::AlignBottom|Qt::AlignRight);
+	  //splitter->setCollapsible(0, true);
       piano->setFixedWidth(pianoWidth);
 
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
 
+      //connect(midiTrackInfo, SIGNAL(outputPortChanged(int)), list, SLOT(redraw()));
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
       connect(info, SIGNAL(valueChanged(NoteInfo::ValType, int)), SLOT(noteinfoChanged(NoteInfo::ValType, int)));
       connect(vscroll, SIGNAL(scrollChanged(int)), piano,  SLOT(setYPos(int)));
@@ -387,9 +427,11 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas,   SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scrollChanged(int)), time,     SLOT(setXPos(int)));
+      connect(hscroll, SIGNAL(scrollChanged(int)), pcbar,     SLOT(setXPos(int)));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  canvas,   SLOT(setXMag(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  time,     SLOT(setXMag(int)));
+      connect(hscroll, SIGNAL(scaleChanged(int)),  pcbar,     SLOT(setXMag(int)));
 
       connect(canvas, SIGNAL(pitchChanged(int)), piano, SLOT(setPitch(int)));   
       connect(canvas, SIGNAL(verticalScroll(unsigned)), vscroll, SLOT(setPos(unsigned)));
@@ -422,6 +464,9 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(canvas,   SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(piano,    SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));
       connect(time,     SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
+      connect(pcbar,    SIGNAL(selectInstrument()), midiTrackInfo, SLOT(instrPopup()));
+      connect(pcbar,    SIGNAL(addProgramChange()), midiTrackInfo, SLOT(progRecClicked()));
+      //connect(midiTrackInfo,       SIGNAL(programChangeAdded(Track*)),  SLOT(redraw()));
       connect(toolbar,  SIGNAL(quantChanged(int)), SLOT(setQuant(int)));
       connect(toolbar,  SIGNAL(rasterChanged(int)),SLOT(setRaster(int)));
       connect(toolbar,  SIGNAL(toChanged(int)),    SLOT(setTo(int)));
@@ -443,7 +488,10 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       //canvas->selectFirst();
 //      
       if(canvas->track())
+	  {
+	  	updateTrackInfo();
         toolbar->setSolo(canvas->track()->solo());
+	  }
         
       unsigned pos;
       if(initPos >= MAXINT)
@@ -468,6 +516,7 @@ void PianoRoll::songChanged1(int bits)
             return;
         }      
         songChanged(bits);
+		updateTrackInfo();
       }
 
 //---------------------------------------------------------
@@ -499,6 +548,15 @@ void PianoRoll::updateHScrollRange()
         hscroll->setRange(s, e);
 }
 
+void PianoRoll::updateTrackInfo()
+{
+	selected = curCanvasPart()->track();
+      if (selected->isMidiTrack()) {
+            midiTrackInfo->setTrack(selected);
+            midiTrackInfo->updateTrackInfo(-1);
+      }
+}
+
 //---------------------------------------------------------
 //   follow
 //---------------------------------------------------------
@@ -522,6 +580,7 @@ void PianoRoll::setTime(unsigned tick)
       {
       toolbar->setTime(tick);                      
       time->setPos(3, tick, false);               
+      pcbar->setPos(3, tick, false);               
       }
 
 //---------------------------------------------------------
@@ -658,7 +717,7 @@ void PianoRoll::noteinfoChanged(NoteInfo::ValType type, int val)
 
 CtrlEdit* PianoRoll::addCtrl()
       {
-      CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, xscale, false, "pianoCtrlEdit");
+      CtrlEdit* ctrlEdit = new CtrlEdit(ctrlLane/*splitter*/, this, xscale, false, "pianoCtrlEdit");
       connect(tools2,   SIGNAL(toolChanged(int)),   ctrlEdit, SLOT(setTool(int)));
       connect(hscroll,  SIGNAL(scrollChanged(int)), ctrlEdit, SLOT(setXPos(int)));
       connect(hscroll,  SIGNAL(scaleChanged(int)),  ctrlEdit, SLOT(setXMag(int)));
@@ -1020,6 +1079,14 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             hscroll->setPos(pos);
             return;
             }
+	  else if (key == shortcuts[SHRT_SEL_INSTRUMENT].key) {
+	  	midiTrackInfo->instrPopup();
+		return;
+	  }
+	  else if (key == shortcuts[SHRT_ADD_PROGRAM].key) {
+		midiTrackInfo->progRecClicked();
+		return;
+	  }
       else if (key == shortcuts[SHRT_SET_QUANT_1].key)
             val = rasterTable[8 + off];
       else if (key == shortcuts[SHRT_SET_QUANT_2].key)
@@ -1058,16 +1125,16 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
                   }
             else
                   return;
-            }
+      }
       else { //Default:
             event->ignore();
             return;
-            }
+      }
       setQuant(val);
       setRaster(val);
       toolbar->setQuant(_quant);
       toolbar->setRaster(_raster);
-      }
+}
 
 //---------------------------------------------------------
 //   configQuant
@@ -1234,5 +1301,16 @@ void PianoRoll::execUserScript(int id)
 {
       QString scriptfile = song->getScriptPath(id, false);
       song->executeScript(scriptfile.toAscii().data(), parts(), quant(), true);
+}
+
+void PianoRoll::deleteEvent(Event& evt, Part* part)
+{
+	//Place holder overwrite
+	//song->startUndo();
+	printf("Started undo\n");
+	audio->msgDeleteEvent(evt, part);
+	printf("Sent Message\n");
+	//song->endUndo(SC_EVENT_MODIFIED);
+	printf("Ending undo\n");
 }
 

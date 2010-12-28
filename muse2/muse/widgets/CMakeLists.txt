@@ -47,6 +47,7 @@ QT4_WRAP_CPP (widget_mocs
       mixdowndialog.h  
       mlabel.h  
       mtscale.h  
+      pcscale.h  
       mtrackinfo.h
       nentry.h  
       noteinfo.h  
@@ -141,6 +142,7 @@ file (GLOB widgets_source_files
       mmath.cpp
       mtrackinfo.cpp
       mtscale.cpp 
+      pcscale.cpp 
       nentry.cpp 
       noteinfo.cpp 
       pitchedit.cpp 

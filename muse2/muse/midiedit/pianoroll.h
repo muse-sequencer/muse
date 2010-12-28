@@ -26,6 +26,7 @@ class PitchLabel;
 class QLabel;
 class PianoCanvas;
 class MTScale;
+class PCScale;
 class Track;
 class QToolButton;
 class QToolBar;
@@ -42,6 +43,8 @@ class SNode;
 class QMenu;
 class QAction;
 class QWidget;
+class MidiTrackInfo;
+class WidgetStack;
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -58,6 +61,9 @@ class PianoRoll : public MidiEditor {
 
       
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
+      MidiTrackInfo *midiTrackInfo;
+      Track* selected;
+	  PCScale* pcbar;
       
       QAction* editCutAction; 
       QAction* editCopyAction; 
@@ -110,6 +116,8 @@ class PianoRoll : public MidiEditor {
 
       Toolbar1* toolbar;
       Splitter* splitter;
+      Splitter* hsplitter;
+      Splitter* ctrlLane;
 
       QToolButton* speaker;
       QToolBar* tools;
@@ -165,6 +173,7 @@ class PianoRoll : public MidiEditor {
       void follow(int pos);
       void songChanged1(int);
       void configChanged();
+	  void updateTrackInfo();
 
    signals:
       void deleted(unsigned long);
@@ -180,6 +189,7 @@ class PianoRoll : public MidiEditor {
       virtual void writeStatus(int, Xml&) const;
       static void readConfiguration(Xml&);
       static void writeConfiguration(int, Xml&);
+	  void deleteEvent(Event&, Part*);
       };
 
 #endif
