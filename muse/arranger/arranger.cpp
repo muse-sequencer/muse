@@ -984,9 +984,13 @@ void Arranger::updateTrackInfo(int flags)
             }
       if (selected->isMidiTrack()) {
             switchInfo(1);
-            ///updateMidiTrackInfo(flags);
-            //midiTrackInfo->setTrack(selected);
-            midiTrackInfo->updateTrackInfo(flags);
+            // If a new part was selected, and only if it's different.
+            if((flags & SC_SELECTION) && midiTrackInfo->track() != selected)
+              // Set a new track and do a complete update.
+              midiTrackInfo->setTrack(selected);
+            else  
+              // Otherwise just regular update with specific flags.
+              midiTrackInfo->updateTrackInfo(flags);
             }
       else {
             switchInfo(2);
