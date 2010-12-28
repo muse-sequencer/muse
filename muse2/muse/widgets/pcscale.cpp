@@ -177,7 +177,7 @@ void PCScale::viewMouseMoveEvent(QMouseEvent* event)
 	}
 	else if (i== 2 && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker 
 		//Delete Program change here
-		song->setPos(i, p);
+		//song->setPos(i, p);
 		Track* track = song->findTrack(currentEditor->curCanvasPart());
 		PartList* parts = track->parts();
 		for (iPart p = parts->begin(); p != parts->end(); ++p) 
@@ -202,8 +202,8 @@ void PCScale::viewMouseMoveEvent(QMouseEvent* event)
 						{
 							printf("Found Program Change to delete at: %d\n", x);
 							//audio->msgDeleteEvent(pcevt, mprt, false, true, true);
-							//song->deleteEvent(pcevt, mprt);
-							currentEditor->deleteEvent(pcevt, mprt);
+							song->deleteEvent(pcevt, mprt);
+							//currentEditor->deleteEvent(pcevt, mprt);
 						}
 					}
 				}
