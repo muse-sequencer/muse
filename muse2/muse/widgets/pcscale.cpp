@@ -198,7 +198,7 @@ void PCScale::viewMouseMoveEvent(QMouseEvent* event)
 						printf("Pos x: %d\n", x);
 						int xp = pcevt.tick()+mprt->tick();
 						printf("Event x: %d\n", xp);
-						if(x == xp)
+						if(xp >= x && xp <= (x+50))
 						{
 							printf("Found Program Change to delete at: %d\n", x);
 							//audio->msgDeleteEvent(pcevt, mprt, false, true, true);
@@ -274,7 +274,7 @@ void PCScale::pdraw(QPainter& p, const QRect& r)
 					int xp = mapx(pcevt.tick()+mprt->tick());
 					if (xp > x+w)
 					{
-						printf("Its dying from greater than bar size");
+						printf("Its dying from greater than bar size\n");
 						break;
 					}
 					int xe = r.x() + r.width();
@@ -286,8 +286,6 @@ void PCScale::pdraw(QPainter& p, const QRect& r)
 					QRect wr = r.intersect(tr);
 					if(!wr.isEmpty()) 
 					{
-						printf("We have intersect\n");
-						
 						int x2;
 						if (mm != eventList->end())
 						{
