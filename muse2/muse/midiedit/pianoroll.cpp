@@ -354,7 +354,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       midiTrackInfo       = new MidiTrackInfo(mainw);        
       int mtiw = midiTrackInfo->width(); // Save this.
-      //midiTrackInfo->setMinimumWidth(105);   
+      midiTrackInfo->setMinimumWidth(100);   
       //midiTrackInfo->setMaximumWidth(150);   
 
       midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding));
@@ -462,7 +462,6 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
 
-      //connect(midiTrackInfo, SIGNAL(outputPortChanged(int)), list, SLOT(redraw()));
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
       //connect(trackInfoButton, SIGNAL(clicked()), SLOT(toggleTrackInfo()));  Tim.
       connect(info, SIGNAL(valueChanged(NoteInfo::ValType, int)), SLOT(noteinfoChanged(NoteInfo::ValType, int)));
@@ -559,7 +558,9 @@ void PianoRoll::songChanged1(int bits)
         }      
         songChanged(bits);
         //trackInfo->songChanged(bits);
-        updateTrackInfo();  // ccharrett
+        // We'll receive SC_SELECTION if a different part is selected.
+        if (bits & SC_SELECTION)
+          updateTrackInfo();  
       }
 
 //---------------------------------------------------------
@@ -592,12 +593,12 @@ void PianoRoll::updateHScrollRange()
         hscroll->setRange(s, e);
 }
 
-void PianoRoll::updateTrackInfo()  // ccharrett
+void PianoRoll::updateTrackInfo()  
 {
       selected = curCanvasPart()->track();
       if (selected->isMidiTrack()) {
             midiTrackInfo->setTrack(selected);
-            midiTrackInfo->updateTrackInfo(-1);
+            ///midiTrackInfo->updateTrackInfo(-1);
       }
 }
 
@@ -1355,8 +1356,9 @@ void PianoRoll::execUserScript(int id)
 //   newCanvasWidth
 //---------------------------------------------------------
 
-void PianoRoll::newCanvasWidth(int w)
+void PianoRoll::newCanvasWidth(int /*w*/)
       {
+/*      
       int nw = w + (vscroll->width() - 18); // 18 is the fixed width of the CtlEdit VScale widget.
       if(nw < 1)
         nw = 1;
@@ -1369,6 +1371,7 @@ void PianoRoll::newCanvasWidth(int w)
             }
             
       updateHScrollRange();
+*/      
       }
 
 //---------------------------------------------------------

@@ -536,7 +536,7 @@ void AudioMixerApp::songChanged(int flags)
             action = STRIP_REMOVED;
       else if (flags & SC_TRACK_INSERTED)
             action = STRIP_INSERTED;
-      else if (flags & SC_MIDI_CHANNEL)
+      else if (flags & SC_MIDI_TRACK_PROP)
             action = UPDATE_MIDI;
       if (action != NO_UPDATE)
             updateMixer(action);

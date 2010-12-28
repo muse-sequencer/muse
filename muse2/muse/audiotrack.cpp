@@ -1628,6 +1628,7 @@ bool AudioTrack::prepareRecording()
             return false;
 
             }
+      return true;      
 }
 double AudioTrack::auxSend(int idx) const
       {

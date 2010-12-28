@@ -93,7 +93,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 void TList::songChanged(int flags)
       {
       if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_INSERTED
-         | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_ROUTE | SC_CHANNELS | SC_MIDI_CHANNEL))
+         | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_ROUTE | SC_CHANNELS | SC_MIDI_TRACK_PROP))
             redraw();
       if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
             adjustScrollbar();
@@ -1068,7 +1068,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                             // may result in adding/removing mixer strip:
                             //song->update(-1);
                             //song->update(SC_CHANNELS);
-                            song->update(SC_MIDI_CHANNEL);
+                            song->update(SC_MIDI_TRACK_PROP);
                       }
                     }
                     else
@@ -1327,7 +1327,7 @@ void TList::wheelEvent(QWheelEvent* ev)
                               
                               // may result in adding/removing mixer strip:
                               //song->update(-1);
-                              song->update(SC_MIDI_CHANNEL);
+                              song->update(SC_MIDI_TRACK_PROP);
                               }
                         }
                   else {
