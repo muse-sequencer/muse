@@ -1065,9 +1065,19 @@ Track* PartCanvas::y2Track(int y) const
 void PartCanvas::keyPress(QKeyEvent* event)
       {
       int key = event->key();
-      if (editMode) {
-            returnPressed();
-            return;
+      if (editMode)
+            {
+            if ( key == Qt::Key_Return || key == Qt::Key_Enter ) 
+                  {
+                  returnPressed();
+                  return;
+                  }
+            else if ( key == Qt::Key_Escape )
+                  {
+                  lineEditor->hide();
+                  editMode = false;
+                  return;
+                  }
             }
 
       if (event->modifiers() &  Qt::ShiftModifier)
