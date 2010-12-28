@@ -3,6 +3,7 @@
           issues during loading of projects (rj)
         - Commented out the comment placeholder text line in projectcreateimpl.cpp. It
           broke the compilation against Qt-4.7. (Orcan)
+        - Fixed the shift modifier issue in renaming parts in the arranger. (Orcan)
 27.12.2010:
         - Added a first try at project creation dialog, we'll see how much territory
           it covers, intentionally it's only used upon creation of a project, later 'Save As'
