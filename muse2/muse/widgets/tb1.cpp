@@ -72,14 +72,16 @@ Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)
       QLabel* label = new QLabel(tr("Cursor"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      addWidget(label);
+      //addWidget(label);
       pos   = new PosLabel(0, "pos");
       pos->setFixedHeight(22);
+	  pos->setObjectName("Cursor");
       addWidget(pos);
       if (showPitch) {
             pitch = new PitchLabel(0);
-            pitch->setEnabled(false);
+            //pitch->setEnabled(false);
             pitch->setFixedHeight(22);
+			pitch->setObjectName("pitchLabel");
             addWidget(pitch);
             }
 
@@ -145,7 +147,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)
       //connect(qlist,  SIGNAL(cellClicked(int,int)), SLOT(_quantChanged(int,int)));
       connect(toList,     SIGNAL(activated(int)), SIGNAL(toChanged(int)));
       connect(solo,   SIGNAL(toggled(bool)), SIGNAL(soloChanged(bool)));
-      pos->setEnabled(false);
+      //pos->setEnabled(false);
       }
 
 //---------------------------------------------------------
@@ -177,7 +179,7 @@ void Toolbar1::_quantChanged(int /*i*/)
 void Toolbar1::setPitch(int val)
       {
       if (pitch && showPitch) {
-            pitch->setEnabled(val != -1);
+            //pitch->setEnabled(val != -1); //Removed by Andrew there is no need for this as its not a control item
             pitch->setPitch(val);
             }
       }
@@ -185,7 +187,7 @@ void Toolbar1::setPitch(int val)
 void Toolbar1::setInt(int val)
       {
       if (pitch && showPitch) {
-            pitch->setEnabled(val != -1);
+            //pitch->setEnabled(val != -1); //Removed by Andrew there is no need for this as its not a control item
             pitch->setInt(val);
             }
       }
@@ -200,12 +202,14 @@ void Toolbar1::setTime(unsigned val)
             //printf("NOT visible\n");
             return;
             }
-      if (val == MAXINT)
-            pos->setEnabled(false);
-      else {
-            pos->setEnabled(true);
+      if (val != MAXINT)
             pos->setValue(val);
-            }
+      //if (val == MAXINT)
+      //      pos->setEnabled(false);
+      //else {
+            //pos->setEnabled(true);
+            //pos->setValue(val);
+            //}
       }
 
 //---------------------------------------------------------

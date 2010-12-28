@@ -276,7 +276,27 @@ QSlider::handle:vertical
 	 background-color: #d0d0d0;
  }
 
-QSpinBox {
+QLabel#Cursor {
+     /*padding-right: 15px;  make room for the arrows */
+     border-image: url(:/images/frame.png) 4;
+     border-width: 3;
+	 border-right: 0;
+	 background-color: #081401;
+	 color: #99e203;
+	 /*color: #76ac01;*/
+ }
+
+QLabel#pitchLabel {
+     /*padding-right: 15px;  make room for the arrows */
+     border-image: url(:/images/frame.png) 4;
+     border-width: 3;
+	 border-left: 0;
+	 background-color: #081401;
+	 color: #99e203;
+	 /*color: #76ac01;*/
+ }
+
+QAbstractSpinBox {
      padding-right: 15px; /* make room for the arrows */
      border-image: url(:/images/frame.png) 4;
      border-width: 3;
@@ -285,7 +305,7 @@ QSpinBox {
 	 /*color: #76ac01;*/
  }
 
- QSpinBox::up-button {
+ QAbstractSpinBox::up-button {
      subcontrol-origin: border;
      subcontrol-position: top right; /* position at the top right corner */
 
@@ -294,25 +314,25 @@ QSpinBox {
      border-width: 1px;
  }
 
- QSpinBox::up-button:hover {
+ QAbstractSpinBox::up-button:hover {
      border-image: url(:/images/spinup_hover.png) 1;
  }
 
- QSpinBox::up-button:pressed {
+ QAbstractSpinBox::up-button:pressed {
      border-image: url(:/images/spinup_pressed.png) 1;
  }
 
- QSpinBox::up-arrow {
+ QAbstractSpinBox::up-arrow {
      image: url(:/images/up_arrow.png);
      width: 7px;
      height: 7px;
  }
 
- QSpinBox::up-arrow:disabled, QSpinBox::up-arrow:off { /* off state when value is max */
+ QAbstractSpinBox::up-arrow:disabled, QSpinBox::up-arrow:off { /* off state when value is max */
     image: url(:/images/up_arrow_disabled.png);
  }
 
- QSpinBox::down-button {
+ QAbstractSpinBox::down-button {
      subcontrol-origin: border;
      subcontrol-position: bottom right; /* position at bottom right corner */
 
@@ -322,22 +342,22 @@ QSpinBox {
      border-top-width: 0;
  }
 
- QSpinBox::down-button:hover {
+ QAbstractSpinBox::down-button:hover {
      border-image: url(:/images/spindown_hover.png) 1;
  }
 
- QSpinBox::down-button:pressed {
+ QAbstractSpinBox::down-button:pressed {
      border-image: url(:/images/spindown_pressed.png) 1;
  }
 
- QSpinBox::down-arrow {
+ QAbstractSpinBox::down-arrow {
      image: url(:/images/down_arrow.png);
      width: 7px;
      height: 7px;
  }
 
- QSpinBox::down-arrow:disabled,
- QSpinBox::down-arrow:off { /* off state when value in min */
+ QAbstractSpinBox::down-arrow:disabled,
+ QAbstractSpinBox::down-arrow:off { /* off state when value in min */
     image: url(:/images/down_arrow_disabled.png);
  }
 
