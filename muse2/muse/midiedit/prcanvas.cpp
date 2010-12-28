@@ -212,7 +212,8 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
             else 
 			{
                   QColor color;
-                  color.setRgb(80, 102, 143);
+                  //color.setRgb(80, 102, 143);
+                  color.setRgb(13,124,151);
                   switch(colorMode) 
 				  {
                         case 0:
