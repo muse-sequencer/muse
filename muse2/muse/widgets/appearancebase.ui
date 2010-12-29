@@ -734,7 +734,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Global opaqueness</string>
+            <string>Global opacity</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>

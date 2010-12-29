@@ -66,12 +66,14 @@ BigTime::BigTime(QWidget* parent)
       oldAbsTick = oldAbsFrame = -1;
       setString(MAXINT);
 
+      dwin->setStyleSheet("font-size:10px; font-family:'Courier'; ");   // Tim p4.0.8
+      
       configChanged();
 
-      QFont f(QString("Courier"));
-      f.setPixelSize(10);
+      //QFont f(QString("Courier"));
+      //f.setPixelSize(10);
+      //dwin->setFont(f);
       
-      dwin->setFont(f);
       setWindowTitle(tr("MusE: Bigtime"));
       }
 
@@ -315,21 +317,26 @@ void BigTime::resizeEvent(QResizeEvent *ev)
 	//int tw     = fm.width(QString("00:00:00:00"));
         int tw     = fm.width(QString("000:00:00:00"));
   
-	int nfs         = ((ev->size().width() - hspace*2)*fs) / tw;
+	fs         = ((ev->size().width() - hspace*2)*fs) / tw;
  
 	// set min/max
-	if (nfs < 10)
-            nfs = 10;
-	else if (nfs > 256)
-            nfs = 256;
+	if (fs < 10)
+            fs = 10;
+	else if (fs > 256)
+            fs = 256;
         
         //if(debugMsg)  
         //  printf("resize BigTime: Font name:%s CurSize:%d NewSize:%d, NewWidth:%d\n", 
         //    f.family().toLatin1().constData(), fs, nfs, ev->size().width()); 
 	
-        f.setPixelSize(nfs);
+  //f.setPixelSize(fs);
 	
-  dwin->setFont(f);
+  //dwin->setFont(f);
+  QString fstr = QString("font-size:%1px; font-family:'Courier'; ").arg(fs);  // Tim p4.0.8
+  dwin->setStyleSheet(fstr);
+  setBgColor(config.bigTimeBackgroundColor);
+  setFgColor(config.bigTimeForegroundColor);
+  
   int digitWidth = dwin->fontMetrics().width(QString("0"));
 	int vspace = (ev->size().height() - (fs*2)) / 3;
   int tickY = vspace;
