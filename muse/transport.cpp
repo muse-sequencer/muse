@@ -47,6 +47,7 @@ static QToolButton* newButton(const QString& s, const QString& tt,
       button->setText(s);
       button->setCheckable(toggle);
       button->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
+      button->setFocusPolicy(Qt::NoFocus);
       button->setToolTip(tt);
       return button;
       }
@@ -59,6 +60,7 @@ static QToolButton* newButton(const QPixmap* pm, const QString& tt,
       button->setIcon(QIcon(*pm));
       button->setCheckable(toggle);
       button->setToolTip(tt);
+      button->setFocusPolicy(Qt::NoFocus);
       return button;
       }
 
@@ -123,10 +125,12 @@ TempoSig::TempoSig(QWidget* parent)
 
       // ORCAN get rid of l1 l2 last arguments (parent)?
       l1 = new DoubleLabel(120.0, 20.0, 400.0, 0);
+      l1->setFocusPolicy(Qt::NoFocus);
       l1->setSpecialText(QString("extern"));
       vb2->addWidget(l1);
       
       l2 = new SigLabel(4, 4, 0);
+      l2->setFocusPolicy(Qt::NoFocus);
       vb2->addWidget(l2);
 
       f->setLayout(vb2);
@@ -316,6 +320,8 @@ Transport::Transport(QWidget* parent, const char* name)
       tl1 = new Awl::PosEdit(0);
       tl1->setMinimumSize(105,0);
       tl1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+      tl1->setFocusPolicy(Qt::NoFocus);
+
       marken->addWidget(tl1);
 
       l5 = new QLabel(tr("Left Mark"));
@@ -328,6 +334,7 @@ Transport::Transport(QWidget* parent, const char* name)
       tl2->setMinimumSize(105,0);
       tl2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       marken->addWidget(tl2);
+      tl2->setFocusPolicy(Qt::NoFocus);
 
       l6 = new QLabel(tr("Right Mark"));
       l6->setFont(config.fonts[2]);
@@ -356,6 +363,8 @@ Transport::Transport(QWidget* parent, const char* name)
       time2->setMinimumSize(105,0);
       time1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
       time2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+      time1->setFocusPolicy(Qt::NoFocus);
+      time2->setFocusPolicy(Qt::NoFocus);
 
       hbox1->addWidget(time1);
       hbox1->addWidget(time2);
@@ -367,6 +376,7 @@ Transport::Transport(QWidget* parent, const char* name)
       slider->setPageStep(1000);
       slider->setValue(0);
       slider->setOrientation(Qt::Horizontal);
+      slider->setFocusPolicy(Qt::NoFocus);
 
       box4->addWidget(slider);
 
@@ -432,6 +442,10 @@ Transport::Transport(QWidget* parent, const char* name)
       clickButton->setChecked(song->click());
       syncButton->setChecked(extSyncFlag.value());
       jackTransportButton->setChecked(useJackTransport.value());
+      quantizeButton->setFocusPolicy(Qt::NoFocus);
+      clickButton->setFocusPolicy(Qt::NoFocus);
+      syncButton->setFocusPolicy(Qt::NoFocus);
+      jackTransportButton->setFocusPolicy(Qt::NoFocus);
 
       button1->addWidget(quantizeButton);
       button1->addWidget(clickButton);
@@ -462,10 +476,12 @@ Transport::Transport(QWidget* parent, const char* name)
 
       tempo        = new TempoSig;
       tempo->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+      tempo->setFocusPolicy(Qt::NoFocus);
       box5->addWidget(tempo);
 
       masterButton = newButton(tr("Master"), tr("use master track"), true);
       masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+      masterButton->setFocusPolicy(Qt::NoFocus);
       box5->addWidget(masterButton);
 
       connect(masterButton, SIGNAL(toggled(bool)), song, SLOT(setMasterFlag(bool)));
