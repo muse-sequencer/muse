@@ -320,7 +320,7 @@ void Appearance::resetValues()
 
       QDir bgdir = museGlobalShare + "/wallpapers/";
       QStringList filters;
-      filters << "*.jpg" << "*.jpeg" << "*.gif";
+      filters << "*.jpg" << "*.jpeg" << "*.png" << "*.gif";
       bgdir.setNameFilters(filters);
       backgroundTree->model()->setData(backgroundTree->model()->index(0,0), 
                                        QVariant(QSize(200,BG_ITEM_HEIGHT)), 
