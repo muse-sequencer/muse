@@ -189,7 +189,7 @@ class PianoRoll : public MidiEditor {
       virtual void writeStatus(int, Xml&) const;
       static void readConfiguration(Xml&);
       static void writeConfiguration(int, Xml&);
-	  void deleteEvent(Event&, Part*);
+	  void deleteSelectedProgramChange();
       };
 
 #endif

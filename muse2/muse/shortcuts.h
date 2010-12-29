@@ -243,7 +243,8 @@ enum {
 
       SHRT_EVENT_COLOR, //e
 	  
-	  SHRT_ADD_PROGRAM, //Add program change back slash
+	  SHRT_ADD_PROGRAM, //Add program change backslash
+	  SHRT_DEL_PROGRAM, //Delete program change under cursor shit+backslash
 	  SHRT_SEL_INSTRUMENT,
 
       // Shortcuts for tools

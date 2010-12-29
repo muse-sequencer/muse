@@ -276,13 +276,32 @@ QSlider::handle:vertical
 	 background-color: #d0d0d0;
  }
 
+QHeaderView#header {
+     /*padding-right: 15px;  make room for the arrows */
+     border-image: url(:/images/frame.png) 4;
+     border-width: 3;
+	 border-right: 0;
+	 background-color: #010f14;
+	 color: #03c0e2;
+	 /*color: #76ac01;*/
+ }
+
 QLabel#Cursor {
      /*padding-right: 15px;  make room for the arrows */
      border-image: url(:/images/frame.png) 4;
      border-width: 3;
 	 border-right: 0;
-	 background-color: #081401;
-	 color: #99e203;
+	 background-color: #010f14;
+	 color: #03c0e2;
+	 /*color: #76ac01;*/
+ }
+
+QLabel#arrangerCursor {
+     /*padding-right: 15px;  make room for the arrows */
+     border-image: url(:/images/frame.png) 4;
+     border-width: 3;
+	 background-color: #010f14;
+	 color: #03c0e2;
 	 /*color: #76ac01;*/
  }
 
@@ -291,17 +310,19 @@ QLabel#pitchLabel {
      border-image: url(:/images/frame.png) 4;
      border-width: 3;
 	 border-left: 0;
-	 background-color: #081401;
-	 color: #99e203;
+	 background-color: #010f14;
+	 color: #03c0e2;
 	 /*color: #76ac01;*/
  }
 
 QAbstractSpinBox {
+	 border-radius: 8px;
      padding-right: 15px; /* make room for the arrows */
      border-image: url(:/images/frame.png) 4;
      border-width: 3;
-	 background-color: #081401;
-	 color: #99e203;
+	 border-color: #484848;
+	 background-color: #010f14;
+	 color: #03c0e2;
 	 /*color: #76ac01;*/
  }
 

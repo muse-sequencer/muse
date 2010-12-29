@@ -305,21 +305,26 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       tools2 = new EditToolBar(this, pianorollTools);
       addToolBar(tools2);
 
-      QToolBar* panicToolbar = addToolBar(tr("panic"));         
+      QToolBar* panicToolbar = new QToolBar(tr("panic"));
       panicToolbar->addAction(panicAction);
+	  panicToolbar->setAllowedAreas(Qt::BottomToolBarArea);
 
       //-------------------------------------------------------------
       //    Transport Bar
-      QToolBar* transport = addToolBar(tr("transport"));
+      QToolBar* transport = new QToolBar(tr("transport"));
+	  addToolBar(Qt::BottomToolBarArea, transport);
       transport->addActions(transportAction->actions());
+	  transport->setAllowedAreas(Qt::BottomToolBarArea);
+	  addToolBar(Qt::BottomToolBarArea, panicToolbar);         
 
-      addToolBarBreak();
+      //addToolBarBreak();
       toolbar = new Toolbar1(this, _rasterInit, _quantInit);
       addToolBar(toolbar);
 
-      addToolBarBreak();
+      //addToolBarBreak();
       info    = new NoteInfo(this);
-      addToolBar(info);
+      addToolBar(Qt::BottomToolBarArea, info);
+	  info->setAllowedAreas(Qt::BottomToolBarArea);
 
       //---------------------------------------------------
       //    split
@@ -1090,6 +1095,45 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
 		midiTrackInfo->progRecClicked();
 		return;
 	  }
+	  else if (key == shortcuts[SHRT_DEL_PROGRAM].key) {
+	  	printf("Delete KeyStroke recieved\n");
+		int x = song->cpos();
+		Track* track = song->findTrack(curCanvasPart());/*{{{*/
+		PartList* parts = track->parts();
+		for (iPart p = parts->begin(); p != parts->end(); ++p) 
+		{
+			Part* mprt = p->second;
+			EventList* eventList = mprt->events();//m->second.events();
+			for(iEvent evt = eventList->begin(); evt != eventList->end(); ++evt)
+			{
+				//Get event type.
+				Event pcevt = evt->second;
+				printf("Found events %d \n", pcevt.type());
+				if(!pcevt.isNote())
+				{
+					printf("Found none Note events of type: %d with dataA: %d\n", pcevt.type(), pcevt.dataA());
+					if(pcevt.type() == Controller && pcevt.dataA() == CTRL_PROGRAM)
+					{
+						printf("Found Program Change event type\n");
+						printf("Pos x: %d\n", x);
+						int xp = pcevt.tick()+mprt->tick();
+						printf("Event x: %d\n", xp);
+						if(xp >= x && xp <= (x+50))
+						{
+							printf("Found Program Change to delete at: %d\n", x);
+							pcevt.setSelected(true);
+							//pc->pianoCmd(PianoCanvas::CMD_DELETE_PROGRAM);
+							//audio->msgDeleteEvent(pcevt, mprt, false, true, true);
+							song->deleteEvent(pcevt, mprt);
+							//currentEditor->deleteEvent(pcevt, mprt);
+						}
+					}
+				}
+			}
+		}/*}}}*/
+	  	//pcbar->deleteProgram();
+		return;
+	  }
       else if (key == shortcuts[SHRT_SET_QUANT_1].key)
             val = rasterTable[8 + off];
       else if (key == shortcuts[SHRT_SET_QUANT_2].key)
@@ -1306,14 +1350,9 @@ void PianoRoll::execUserScript(int id)
       song->executeScript(scriptfile.toAscii().data(), parts(), quant(), true);
 }
 
-void PianoRoll::deleteEvent(Event& evt, Part* part)
+void PianoRoll::deleteSelectedProgramChange()
 {
-	//Place holder overwrite
-	//song->startUndo();
-	printf("Started undo\n");
-	audio->msgDeleteEvent(evt, part);
-	printf("Sent Message\n");
-	//song->endUndo(SC_EVENT_MODIFIED);
-	printf("Ending undo\n");
+      PianoCanvas* pc = (PianoCanvas*)canvas;
+      pc->pianoCmd(PianoCanvas::CMD_DELETE_PROGRAM);
 }
 

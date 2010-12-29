@@ -118,10 +118,11 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       QLabel* label = new QLabel(tr("Cursor"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      toolbar->addWidget(label);
+      //toolbar->addWidget(label);
       cursorPos = new PosLabel(0);
       cursorPos->setEnabled(false);
       cursorPos->setFixedHeight(22);
+	  cursorPos->setObjectName("arrangerCursor");
       toolbar->addWidget(cursorPos);
 
       const char* rastval[] = {

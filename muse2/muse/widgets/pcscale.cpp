@@ -14,6 +14,7 @@
 #include "song.h"
 #include "icons.h"
 #include "gconfig.h"
+#include "prcanvas.h"
 
 //---------------------------------------------------------
 //   PCScale
@@ -202,6 +203,8 @@ void PCScale::viewMouseMoveEvent(QMouseEvent* event)
 						{
 							printf("Found Program Change to delete at: %d\n", x);
 							//audio->msgDeleteEvent(pcevt, mprt, false, true, true);
+							pcevt.setSelected(true);
+							//currentEditor->deleteSelectedProgramChange();
 							song->deleteEvent(pcevt, mprt);
 							//currentEditor->deleteEvent(pcevt, mprt);
 						}
@@ -274,7 +277,7 @@ void PCScale::pdraw(QPainter& p, const QRect& r)
 					int xp = mapx(pcevt.tick()+mprt->tick());
 					if (xp > x+w)
 					{
-						printf("Its dying from greater than bar size\n");
+						//printf("Its dying from greater than bar size\n");
 						break;
 					}
 					int xe = r.x() + r.width();
