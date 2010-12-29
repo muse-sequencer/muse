@@ -4,6 +4,8 @@
         - Commented out the comment placeholder text line in projectcreateimpl.cpp. It
           broke the compilation against Qt-4.7. (Orcan)
         - Fixed the shift modifier issue in renaming parts in the arranger. (Orcan)
+        - Fixed the 'no selected track' trackinfo background MusE logo display. (Tim)
+          It was a memory leak as well. Was a simple fix in Arranger::genTrackInfo().
 27.12.2010:
         - Added a first try at project creation dialog, we'll see how much territory
           it covers, intentionally it's only used upon creation of a project, later 'Save As'
