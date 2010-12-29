@@ -18,7 +18,7 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-file (GLOB wallpapers_files *.gif *.jpg)
+file (GLOB wallpapers_files *.gif *.jpg *.png)
 
 install( FILES ${wallpapers_files}
       DESTINATION ${MusE_SHARE_DIR}/wallpapers
