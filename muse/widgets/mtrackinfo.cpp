@@ -68,14 +68,9 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   iChanDetectLabel->setPixmap(*darkRedLedIcon);
   
   QIcon recEchoIconSet;
-  //recEchoIconSet.addPixmap(*recEchoIconOn, QIcon::Normal, QIcon::On);
-  //recEchoIconSet.addPixmap(*recEchoIconOff, QIcon::Normal, QIcon::Off);
-  recEchoIconSet.addPixmap(*midiConnectorRedBorderIcon, QIcon::Normal, QIcon::On);
-  recEchoIconSet.addPixmap(*edit_midiIcon, QIcon::Normal, QIcon::Off);
+  recEchoIconSet.addPixmap(*midiThruOnIcon, QIcon::Normal, QIcon::On);
+  recEchoIconSet.addPixmap(*midiThruOffIcon, QIcon::Normal, QIcon::Off);
   recEchoButton->setIcon(recEchoIconSet);
-  //recEchoButton->setIcon(QIcon(*edit_midiIcon));
-  //recEchoButton->setIconSize(edit_midiIcon->size());  
-  
   
   // MusE-2: AlignCenter and WordBreak are set in the ui(3) file, but not supported by QLabel. Turn them on here.
   trackNameLabel->setAlignment(Qt::AlignCenter);
