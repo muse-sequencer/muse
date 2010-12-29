@@ -1,3 +1,9 @@
+29.12.2010:
+        - Fixed Bigtime display when using a style sheet for MusE. (Tim)
+          Set window font using a style sheet. Bigtime used QFont::setPixelSize(). 
+          Application style sheets (even a blank one) override with the fixed application 
+          font size (evidenced by adjusting MusE config font#0, then bigtime font size changed). 
+          TODO: Darn, the tooltips fonts are as big as the labels! Must fix.
 28.12.2010:
         - Tweaked and added some delays during project load to counter threading
           issues during loading of projects (rj)

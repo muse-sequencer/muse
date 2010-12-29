@@ -108,7 +108,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       fontName6->setToolTip(tr("Mixer label font. Auto-font-sizing up to chosen font size.\nWord-breaking but only with spaces."));
       fontSize6->setToolTip(tr("Maximum mixer label auto-font-sizing font size."));
       
-      globalAlphaSlider->setToolTip(tr("Global opaqueness (inverse of transparency)."));
+      globalAlphaSlider->setToolTip(tr("Global opacity (opposite of transparency)."));
       
       // ARRANGER
 
