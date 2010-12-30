@@ -245,8 +245,6 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 		 bool loaded = thumbp.load(":images/slider_thumb.png");
 		 if(loaded)
          p->drawPixmap(ipos, cr.y(), thumbp);
-		 //else
-		 //	printf("Failed to load thumb pixmap\n");
  		 
  		 if (lineDist > 1)
  		    qDrawShadeLine(p,markerPos, cr.y() + lineDist , markerPos,
@@ -290,8 +288,6 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 		 bool loaded = thumbp.load(":images/slider_thumb.png");
 		 if(loaded)
          p->drawPixmap(cr.x()+2, ipos-12, thumbp);
-		 else
-		 	printf("Failed to load thumb pixmap\n");
  		// if (lineDist > 1)
  		//    qDrawShadeLine(p, cr.x() + lineDist , markerPos,
  		//       cr.x() + cr.width() - lineDist, markerPos,
