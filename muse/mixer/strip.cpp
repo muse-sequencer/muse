@@ -94,28 +94,36 @@ void Strip::setLabelText()
       QColor c;
       switch(track->type()) {
             case Track::AUDIO_OUTPUT:
-                  c = Qt::green;
+                  //c = Qt::green;
+                  c = config.outputTrackLabelBg;
                   break;
             case Track::AUDIO_GROUP:
-                  c = Qt::yellow;
+                  //c = Qt::yellow;
+                  c = config.groupTrackLabelBg;
                   break;
             case Track::AUDIO_AUX:
-                  c = QColor(120, 255, 255);   // Light blue
+                  //c = QColor(120, 255, 255);   // Light blue
+                  c = config.auxTrackLabelBg;
                   break;
             case Track::WAVE:
-                  c = Qt::magenta;
+                  //c = Qt::magenta;
+                  c = config.waveTrackLabelBg;
                   break;
             case Track::AUDIO_INPUT:
-                  c = Qt::red;
+                  //c = Qt::red;
+                  c = config.inputTrackLabelBg;
                   break;
             case Track::AUDIO_SOFTSYNTH:
-                  c = QColor(255, 130, 0);  // Med orange
+                  //c = QColor(255, 130, 0);  // Med orange
+                  c = config.synthTrackLabelBg;
                   break;
             case Track::MIDI:
+                  //c = QColor(0, 160, 255); // Med blue
+                  c = config.midiTrackLabelBg;
+                  break;
             case Track::DRUM:
-                  {
-                  c = QColor(0, 160, 255); // Med blue
-                  }
+                  //c = QColor(0, 160, 255); // Med blue
+                  c = config.drumTrackLabelBg;
                   break;
             default:
                   return;      
@@ -125,6 +133,7 @@ void Strip::setLabelText()
       QPalette palette;
       palette.setColor(label->backgroundRole(), c);
       label->setPalette(palette);
+      //label->setStyleSheet(QString("background-color: ") + c.name());
 }
 
 //---------------------------------------------------------

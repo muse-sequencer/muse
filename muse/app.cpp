@@ -1216,7 +1216,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //--------------------------------------------------
       
       tools = addToolBar(tr("File Buttons"));
-
       tools->addAction(fileNewAction);
       tools->addAction(fileOpenAction);
       tools->addAction(fileSaveAction);

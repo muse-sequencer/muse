@@ -42,6 +42,14 @@ void MidiTrackInfo::setTrack(Track* t)
   if(!t->isMidiTrack())
     return;
   selected = t;
+  
+  QPalette pal;
+  if(selected->type() == Track::DRUM)
+    pal.setColor(trackNameLabel->backgroundRole(), config.drumTrackLabelBg); 
+  else  
+    pal.setColor(trackNameLabel->backgroundRole(), config.midiTrackLabelBg); 
+  trackNameLabel->setPalette(pal);
+  
   updateTrackInfo(-1);
 }
 
@@ -71,6 +79,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   recEchoIconSet.addPixmap(*midiThruOnIcon, QIcon::Normal, QIcon::On);
   recEchoIconSet.addPixmap(*midiThruOffIcon, QIcon::Normal, QIcon::Off);
   recEchoButton->setIcon(recEchoIconSet);
+  recEchoButton->setIconSize(midiThruOnIcon->size());  
   
   // MusE-2: AlignCenter and WordBreak are set in the ui(3) file, but not supported by QLabel. Turn them on here.
   trackNameLabel->setAlignment(Qt::AlignCenter);
@@ -81,10 +90,23 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   //trackNameLabel->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
   
   if(selected)
+  {
     trackNameLabel->setObjectName(selected->cname());
-  QPalette pal;
-  pal.setColor(trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
-  trackNameLabel->setPalette(pal);
+    QPalette pal;
+    //pal.setColor(trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
+    if(selected->type() == Track::DRUM)
+      pal.setColor(trackNameLabel->backgroundRole(), config.drumTrackLabelBg); 
+    else  
+      pal.setColor(trackNameLabel->backgroundRole(), config.midiTrackLabelBg); 
+    trackNameLabel->setPalette(pal);
+  }    
+  //else
+  //{
+  //  pal.setColor(trackNameLabel->backgroundRole(), config.midiTrackLabelBg); 
+  //  trackNameLabel->setPalette(pal);
+  //}  
+  
+  //trackNameLabel->setStyleSheet(QString("background-color: ") + QColor(0, 160, 255).name()); // Med blue
   trackNameLabel->setWordWrap(true);
   trackNameLabel->setAutoFillBackground(true);
   trackNameLabel->setTextFormat(Qt::PlainText);

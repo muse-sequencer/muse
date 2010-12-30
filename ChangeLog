@@ -1,3 +1,11 @@
+30.12.2010:
+        *Feature: Appearance part color names now can now be edited. (Tim)
+          TODO: Add per-song settings and add toolbar with some colour goodies.
+        *Feature: Mixer label colours can now be edited in the appearance settings. (Tim)
+          TODO: Remix track icons using use alpha channel and special routine to mix in 
+           these settable colours.
+        *Fixed: Appearance settings palette was broken. (Tim)
+          Note: A few odd Qt styles are wacky (Motif, Windows). Your mileage may vary.
 29.12.2010:
         - Fixed Bigtime display when using a style sheet for MusE. (Tim)
           Set window font using a style sheet. Bigtime used QFont::setPixelSize(). 
