@@ -142,6 +142,18 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
       
       int y1 = int((maxScale - redScale) * h / range);
       int y2 = int((maxScale - yellowScale) * h / range);
+      int y3 = int((maxScale - yellowScale) * h / range);
+      int y4 = int((maxScale - -15) * h / range);
+      int y5 = int((maxScale - -20) * h / range);
+      int y6 = int((maxScale - -25) * h / range);
+      int y7 = int((maxScale - -30) * h / range);
+      int y8 = int((maxScale - -35) * h / range);
+      int y9 = int((maxScale - -40) * h / range);
+      int y10 = int((maxScale - -45) * h / range);
+      int y11 = int((maxScale - -50) * h / range);
+      int y12 = int((maxScale - -55) * h / range);
+      int y13 = int((maxScale - -5) * h / range);
+      int y14 = int((maxScale - 5) * h / range);
 	  QPen myPen = QPen(green, 5, Qt::SolidLine, Qt::RoundCap );
 	  if(ymax == 0)
 	  {
@@ -165,6 +177,19 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
 	  //myPen.setColor(QColor(122,122,122));
       p.setPen(myPen);//-10 db
 	  p.drawLine(3, y2, w-4, y2);
+	  p.drawLine(3, y2, w-4, y2);
+	  p.drawLine(6, y3, w-8, y3);
+	  p.drawLine(6, y4, w-8, y4);
+	  p.drawLine(6, y5, w-8, y5);
+	  p.drawLine(6, y6, w-8, y6);
+	  p.drawLine(6, y7, w-8, y7);
+	  p.drawLine(6, y8, w-8, y8);
+	  p.drawLine(6, y9, w-8, y9);
+	  p.drawLine(6, y10, w-8, y10);
+	  p.drawLine(6, y11, w-8, y11);
+	  p.drawLine(6, y12, w-8, y12);
+	  p.drawLine(6, y13, w-8, y13);
+	  p.drawLine(6, y14, w-8, y14);
 }
 
 //---------------------------------------------------------
