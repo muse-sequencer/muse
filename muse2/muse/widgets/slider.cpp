@@ -245,8 +245,8 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 		 bool loaded = thumbp.load(":images/slider_thumb.png");
 		 if(loaded)
          p->drawPixmap(ipos, cr.y(), thumbp);
-		 else
-		 	printf("Failed to load thumb pixmap\n");
+		 //else
+		 //	printf("Failed to load thumb pixmap\n");
  		 
  		 if (lineDist > 1)
  		    qDrawShadeLine(p,markerPos, cr.y() + lineDist , markerPos,
