@@ -28,6 +28,7 @@ class Meter : public QFrame {
 	  QColor green;
 	  QColor red;
 	  QColor yellow;
+	  QColor bgColor;
 
       void drawVU(QPainter& p, int, int, int);
 

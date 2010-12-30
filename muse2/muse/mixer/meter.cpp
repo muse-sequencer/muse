@@ -44,6 +44,7 @@ Meter::Meter(QWidget* parent, MeterType type)
 	  green = QColor(49,175,197);
 	  yellow = QColor(156,85,115);
 	  red = QColor(197,49,87);
+	  bgColor = QColor(0,12,16);
 }
 
 //---------------------------------------------------------
@@ -142,7 +143,11 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
       int y1 = int((maxScale - redScale) * h / range);
       int y2 = int((maxScale - yellowScale) * h / range);
 	  QPen myPen = QPen(green, 5, Qt::SolidLine, Qt::RoundCap );
-	  if(ymax <= y1)
+	  if(ymax == 0)
+	  {
+	  	myPen.setColor(bgColor);
+	  }
+	  else if(ymax <= y1)
 	  {
 	  	myPen.setColor(red);
 	  }
@@ -151,7 +156,7 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
 	  	myPen.setColor(yellow);
 	  }
 	  p.setPen(myPen);//floating vu levels
-      p.drawLine(5, ymax, w-5, ymax);
+      p.drawLine(5, ymax, w-6, ymax);
 	  
 	  myPen.setWidth(1);
 	  myPen.setColor(QColor(63,74,80));
@@ -168,7 +173,6 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
 
 void Meter::drawVU(QPainter& p, int w, int h, int yv)
 {
-	  QColor bgColor = QColor(0,12,16);
       /*if(mtype == DBMeter) 
       {*/
         double range = maxScale - minScale;
