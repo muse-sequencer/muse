@@ -24,6 +24,7 @@
 PCScale::PCScale(int* r, QWidget* parent, PianoRoll* editor, int xs, bool _mode)
    : View(parent, xs, 1)
       {
+	  audio = 0;
 	  currentEditor = editor;
       waveMode = _mode;
       setToolTip(tr("bar pcscale"));
@@ -178,35 +179,30 @@ void PCScale::viewMouseMoveEvent(QMouseEvent* event)
 	}
 	else if (i== 2 && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker 
 		//Delete Program change here
-		//song->setPos(i, p);
 		Track* track = song->findTrack(currentEditor->curCanvasPart());
 		PartList* parts = track->parts();
 		for (iPart p = parts->begin(); p != parts->end(); ++p) 
 		{
 			Part* mprt = p->second;
-			EventList* eventList = mprt->events();//m->second.events();
+			EventList* eventList = mprt->events();
 			for(iEvent evt = eventList->begin(); evt != eventList->end(); ++evt)
 			{
 				//Get event type.
 				Event pcevt = evt->second;
-				printf("Found events %d \n", pcevt.type());
 				if(!pcevt.isNote())
 				{
-					printf("Found none Note events of type: %d with dataA: %d\n", pcevt.type(), pcevt.dataA());
 					if(pcevt.type() == Controller && pcevt.dataA() == CTRL_PROGRAM)
 					{
-						printf("Found Program Change event type\n");
-						printf("Pos x: %d\n", x);
 						int xp = pcevt.tick()+mprt->tick();
-						printf("Event x: %d\n", xp);
 						if(xp >= x && xp <= (x+50))
 						{
-							printf("Found Program Change to delete at: %d\n", x);
-							//audio->msgDeleteEvent(pcevt, mprt, false, true, true);
-							pcevt.setSelected(true);
-							//currentEditor->deleteSelectedProgramChange();
-							song->deleteEvent(pcevt, mprt);
-							//currentEditor->deleteEvent(pcevt, mprt);
+							//currentEditor->deleteSelectedProgramChange(evt->second, p->second);
+							if(audio)
+							{
+								song->startUndo();
+								audio->msgDeleteEvent(evt->second, p->second, true, true, true);
+								song->endUndo(SC_EVENT_MODIFIED);
+							}
 						}
 					}
 				}
@@ -235,6 +231,14 @@ void PCScale::updateProgram()
 {
 		redraw();
 }
+
+void PCScale::setAudio(Audio* a)
+{
+	if(!a)
+		return;
+	audio = a;
+}
+
 
 //---------------------------------------------------------
 //   draw

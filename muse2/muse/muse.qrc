@@ -16,6 +16,7 @@
 		<file>images/spindown_hover.png</file>
 		<file>images/spindown_pressed.png</file>
 		<file>images/toolbar_handle.png</file>
+		<file>images/slider_thumb.png</file>
 	</qresource>
 </RCC>
 

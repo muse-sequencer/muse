@@ -17,6 +17,7 @@
 #include "sclif.h"
 #include "sliderbase.h"
 #include "scldraw.h"
+#include <QPixmap>
 
 //---------------------------------------------------------
 //   Slider

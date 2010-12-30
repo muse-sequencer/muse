@@ -11,6 +11,7 @@
 #include "view.h"
 #include "pianoroll.h"
 #include "midictrl.h"
+#include "audio.h"
 
 //---------------------------------------------------------
 //   PCScale
@@ -25,6 +26,7 @@ class PCScale : public View {
       int button;
       bool barLocator;
       bool waveMode;
+	  Audio* audio;
 
 
    private slots:
@@ -44,6 +46,7 @@ class PCScale : public View {
    public slots:
       void setPos(int, unsigned, bool);
 	  void updateProgram();
+	  void setAudio(Audio*);
 
    public:
       PCScale(int* raster, QWidget* parent, PianoRoll* editor, int xscale, bool f = false);

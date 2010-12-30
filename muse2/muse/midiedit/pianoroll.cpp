@@ -414,6 +414,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 	  //Defined and configure your program change bar here.
 	  //This may well be a copy of MTScale extended for our needs
 	  pcbar               = new PCScale(&_raster, split1, this, xscale);
+	  pcbar->setAudio(audio);
 	  //pcbar->setEditor(this);
       time                = new MTScale(&_raster, split1, xscale);
       Piano* piano        = new Piano(split1, yscale);
@@ -1181,11 +1182,9 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
 						if(xp >= x && xp <= (x+50))
 						{
 							printf("Found Program Change to delete at: %d\n", x);
-							pcevt.setSelected(true);
-							//pc->pianoCmd(PianoCanvas::CMD_DELETE_PROGRAM);
-							//audio->msgDeleteEvent(pcevt, mprt, false, true, true);
-							song->deleteEvent(pcevt, mprt);
-							//currentEditor->deleteEvent(pcevt, mprt);
+							song->startUndo();
+							audio->msgDeleteEvent(evt->second, p->second, true, true, true);
+							song->endUndo(SC_EVENT_MODIFIED);
 						}
 					}
 				}
@@ -1424,8 +1423,9 @@ void PianoRoll::execUserScript(int id)
 
 void PianoRoll::deleteSelectedProgramChange()
 {
-      PianoCanvas* pc = (PianoCanvas*)canvas;
-      pc->pianoCmd(PianoCanvas::CMD_DELETE_PROGRAM);
+	/*song->startUndo();
+	audio->msgDeleteEvent(evt, mprt, true, true, true);
+	song->endUndo(SC_EVENT_MODIFIED);*/
 }
 
 //---------------------------------------------------------
